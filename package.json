@@ -1,0 +1,27 @@
+{
+  "name": "@syncfusion/ej2",
+  "version": "1.0.0",
+  "description": "Syncfusion TypeScript",
+  "author": "Syncfusion Inc.",
+  "license": "SEE LICENSE IN license",
+  "dependencies": {
+    "@syncfusion/ej2-base": "*",
+    "@syncfusion/ej2-buttons": "*",
+    "@syncfusion/ej2-calendars": "*",
+    "@syncfusion/ej2-charts": "*",
+    "@syncfusion/ej2-data": "*",
+    "@syncfusion/ej2-grids": "*",
+    "@syncfusion/ej2-inputs": "*",
+    "@syncfusion/ej2-lists": "*",
+    "@syncfusion/ej2-navigations": "*"
+  },
+  "devDependencies": {
+    "@syncfusion/ej2-build": "*",
+    "@types/chai": "^3.4.28",
+    "@types/es6-promise": "0.0.28"
+  },
+  "scripts": {
+    "build": "gulp npmignore && gulp build && gulp global-scripts",
+    "ci-publish": "gulp ej2-publish && gulp publish-github"
+  }
+}
