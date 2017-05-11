@@ -801,7 +801,7 @@
 
 .e-dialog .e-footer-content {
   bottom: 0;
-  position: relative;
+  position: absolute;
   right: 0;
   width: 100%;
 }

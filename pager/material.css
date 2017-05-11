@@ -1239,6 +1239,11 @@
   opacity: 0.87;
 }
 
+.e-pager .e-numericitem:not(.e-active):not(.e-np):not(.e-pp):hover {
+  background-color: #eee;
+  opacity: 1;
+}
+
 .e-pager .e-numericitem {
   background: #fff;
   border-right-color: #e0e0e0;

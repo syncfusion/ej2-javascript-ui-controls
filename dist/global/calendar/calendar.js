@@ -279,6 +279,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     var ICON = 'e-icons';
     var PREVICON = 'e-prev';
     var NEXTICON = 'e-next';
+    var RIPPLESTYLE = 'e-ripple-style';
     var PREVSPAN = 'e-icon-prev';
     var NEXTSPAN = 'e-icon-next ';
     var ICONCONTAINER = 'e-icon-container';
@@ -346,12 +347,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
             this.header();
             this.content();
             this.wireEvents();
-            if (this.getModuleName() === 'calendar') {
-                this.rippleFn = ej2_base_1.ripple(this.element, '.e-header .e-prev, .e-header .e-next, .e-content td > span.e-link');
-            }
-            else {
-                this.rippleFn = ej2_base_1.ripple(this.baseElement, '.e-header .e-prev, .e-header .e-next, .e-content td > span.e-link');
-            }
         };
         Calendar.prototype.processDate = function () {
             this.validateDate();
@@ -415,8 +410,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
             this.headerEle = dom_1.createElement('div', { className: HEADER });
             var iconContainer = dom_1.createElement('div', { className: ICONCONTAINER });
             this.prevIcon = dom_1.createElement('a', { className: '' + PREVICON });
+            this.prevIcon.classList.add(RIPPLESTYLE);
             dom_1.attributes(this.prevIcon, ariaPrevAttrs);
             this.nextIcon = dom_1.createElement('a', { className: '' + NEXTICON });
+            this.nextIcon.classList.add(RIPPLESTYLE);
             dom_1.attributes(this.nextIcon, ariaNextAttrs);
             this.hdrTitleEle = dom_1.createElement('a', { className: '' + LINK + ' ' + TITLE, attrs: {} });
             dom_1.attributes(this.hdrTitleEle, ariaTitleAttrs);
@@ -880,7 +877,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                 trEle = dom_1.createElement('tr', { attrs: { 'role': 'row' } });
                 for (rowIterator = 0 + rowIterator; rowIterator < row; rowIterator++) {
                     if (elements[rowIterator].children[0]) {
-                        dom_1.addClass([elements[rowIterator].children[0]], 'e-link');
+                        dom_1.addClass([elements[rowIterator].children[0]], [LINK, RIPPLESTYLE]);
                     }
                     trEle.appendChild(elements[rowIterator]);
                     if (!this.weekNumber && rowIterator === otherMonthCell && elements[otherMonthCell].classList.contains(OTHERMONTH)) {
@@ -902,7 +899,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                 var ani = {};
                 this.tbodyEle.appendChild(trEle);
                 if (elements[dayCell].children[0]) {
-                    dom_1.addClass([elements[dayCell].children[0]], 'e-link');
+                    dom_1.addClass([elements[dayCell].children[0]], [LINK, RIPPLESTYLE]);
                 }
             }
             this.aniObj.animate(this.table.querySelector('tbody'), this.effect);
@@ -1106,7 +1103,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
             this.nextIconHandler(true);
             this.keyboardModule.destroy();
             _super.prototype.destroy.call(this);
-            this.rippleFn();
         };
         Calendar.prototype.title = function () {
             var currentView = this.getViewNumber(this.currentView());
@@ -1403,6 +1399,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     __decorate([
         ej2_base_1.Property(false)
     ], Calendar.prototype, "weekNumber", void 0);
+    __decorate([
+        ej2_base_1.Event()
+    ], Calendar.prototype, "created", void 0);
+    __decorate([
+        ej2_base_1.Event()
+    ], Calendar.prototype, "destroyed", void 0);
     __decorate([
         ej2_base_1.Event()
     ], Calendar.prototype, "change", void 0);

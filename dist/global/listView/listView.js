@@ -2928,7 +2928,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
                 return createListFromArray(dataSource, isSingleLevel);
             }
             else {
-                return createListFromJson(dataSource, options, null, isSingleLevel);
+                return createListFromJson(dataSource, options, 0, isSingleLevel);
             }
         }
         ListBase.createList = createList;
@@ -2964,6 +2964,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
                 else {
                     li = generateLI(curItem, fields, curOpt.itemClass, innerEle, options);
                     li.classList.add(exports.cssClass.level + '-' + level);
+                    li.setAttribute('aria-level', level + '');
                     if (fields.tooltip) {
                         li.setAttribute('title', curItem[fields.tooltip]);
                     }
@@ -3085,14 +3086,14 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
         }
         ListBase.createJsonFromElement = createJsonFromElement;
         function renderContentTemplate(template, dataSource, fields) {
-            var ulElement = dom_1.createElement('ul', { className: exports.cssClass.ul });
+            var ulElement = dom_1.createElement('ul', { className: exports.cssClass.ul, attrs: { role: 'presentation' } });
             var compiledString = ej2_base_1.compile(template);
             var liCollection = [];
             for (var _i = 0, dataSource_1 = dataSource; _i < dataSource_1.length; _i++) {
                 var item = dataSource_1[_i];
                 var isHeader = item.isHeader;
                 var li = dom_1.createElement('li', {
-                    className: isHeader ? exports.cssClass.group : exports.cssClass.li
+                    className: isHeader ? exports.cssClass.group : exports.cssClass.li, attrs: { role: 'presentation' }
                 });
                 if (isHeader) {
                     li.innerText = item[fields.text];
@@ -3140,7 +3141,8 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
         }
         function generateSingleLevelLI(text, value, className, innerElements, grpLI) {
             var li = dom_1.createElement('li', {
-                className: (grpLI === true ? exports.cssClass.group : exports.cssClass.li) + ' ' + className
+                className: (grpLI === true ? exports.cssClass.group : exports.cssClass.li) + ' ' + className,
+                attrs: { role: (grpLI === true ? 'group' : 'presentation') }
             });
             if (grpLI) {
                 li.innerText = text;
@@ -3166,7 +3168,8 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
                     ? true : false;
             }
             var li = dom_1.createElement('li', {
-                className: (grpLI === true ? exports.cssClass.group : exports.cssClass.li) + ' ' + className
+                className: (grpLI === true ? exports.cssClass.group : exports.cssClass.li) + ' ' + className,
+                attrs: { role: (grpLI === true ? 'group' : 'presentation') }
             });
             if (uID) {
                 li.setAttribute('uID', uID);
@@ -3184,13 +3187,13 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
                 if (!util_1.isUndefined(innerElements)) {
                     dom_1.append(innerElements, li);
                 }
-                innerDiv.appendChild(dom_1.createElement('span', { className: exports.cssClass.text, innerHTML: text }));
+                innerDiv.appendChild(dom_1.createElement('span', { className: exports.cssClass.text, innerHTML: text, attrs: { role: 'list-item' } }));
                 li.appendChild(innerDiv);
             }
             return li;
         }
         function generateUL(innerEle, className) {
-            var element = dom_1.createElement('ul', { className: exports.cssClass.ul + ' ' + className });
+            var element = dom_1.createElement('ul', { className: exports.cssClass.ul + ' ' + className, attrs: { role: 'presentation' } });
             dom_1.append(innerEle, element);
             return element;
         }
@@ -3566,8 +3569,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
         };
         ListView.prototype.removeSelect = function () {
             var selectedLI = this.element.querySelectorAll('.' + classNames.selected);
-            if (selectedLI.length) {
-                dom_1.removeClass(selectedLI, classNames.selected);
+            for (var _i = 0, selectedLI_1 = selectedLI; _i < selectedLI_1.length; _i++) {
+                var ele = selectedLI_1[_i];
+                ele.removeAttribute('aria-selected');
+                if (ele.className !== '') {
+                    ele.classList.remove(classNames.selected);
+                }
             }
         };
         ListView.prototype.isValidLI = function (li) {
@@ -3581,6 +3588,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                 && this.enable) {
                 this.removeSelect();
                 li.classList.add(classNames.selected);
+                li.setAttribute('aria-selected', 'true');
                 this.removeHover();
                 var data = this.getItemData(li);
                 this.selectedItems = {
@@ -3764,7 +3772,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                 this.curDSLevel.push(uID);
                 this.setViewDataSource(this.getSubDS());
                 if (!ele) {
-                    ele = list_base_1.ListBase.createListFromJson(this.curViewDS, this.listBaseOption);
+                    ele = list_base_1.ListBase.createListFromJson(this.curViewDS, this.listBaseOption, this.curDSLevel.length);
                     ele.setAttribute('pID', uID);
                     ele.style.display = 'none';
                     this.renderIntoDom(ele);
@@ -3797,6 +3805,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
         };
         ListView.prototype.render = function () {
             this.element.classList.add(classNames.root);
+            dom_1.attributes(this.element, { role: 'list' });
             this.setCSSClass();
             this.setEnableRTL();
             this.setEnable();

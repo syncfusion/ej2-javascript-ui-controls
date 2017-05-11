@@ -825,7 +825,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                 }
             }
         };
-        Dialog.prototype.show = function () {
+        Dialog.prototype.show = function (isFullScreen) {
+            if (!util_1.isNullOrUndefined(isFullScreen)) {
+                this.fullScreen(isFullScreen);
+            }
             this.storeActiveElement = document.activeElement;
             this.element.tabIndex = -1;
             this.trigger('beforeOpen');
@@ -2149,6 +2152,7 @@ var Button = (function (_super) {
             this.controlStatus(this.disabled);
         }
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__syncfusion_ej2_base__["ripple"])(this.element, '.' + cssClassName.BUTTON);
+        this.wireEvents();
     };
     Button.prototype.controlStatus = function (disabled) {
         this.element.disabled = disabled;
@@ -2169,12 +2173,30 @@ var Button = (function (_super) {
             }
         }
     };
+    Button.prototype.wireEvents = function () {
+        if (this.isToggle) {
+            __WEBPACK_IMPORTED_MODULE_0__syncfusion_ej2_base__["EventHandler"].add(this.element, 'click', this.btnClickHandler, this);
+        }
+    };
+    Button.prototype.unWireEvents = function () {
+        if (this.isToggle) {
+            __WEBPACK_IMPORTED_MODULE_0__syncfusion_ej2_base__["EventHandler"].remove(this.element, 'click', this.btnClickHandler);
+        }
+    };
+    Button.prototype.btnClickHandler = function () {
+        if (this.element.classList.contains('e-active')) {
+            this.element.classList.remove('e-active');
+        }
+        else {
+            this.element.classList.add('e-active');
+        }
+    };
     Button.prototype.destroy = function () {
         var span;
         var element = this.element;
         _super.prototype.destroy.call(this);
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__syncfusion_ej2_base_dom__["removeClass"])([this.element], [cssClassName.PRIMARY, cssClassName.RTL, 'e-success',
-            'e-info', 'e-danger', 'e-warning', 'e-flat', 'e-outline', 'e-small', 'e-bigger']);
+            'e-info', 'e-danger', 'e-warning', 'e-flat', 'e-outline', 'e-small', 'e-bigger', 'e-active']);
         ['role', 'aria-describedby', 'e-ripple', 'disabled'].forEach(function (value) {
             element.removeAttribute(value);
         });
@@ -2185,6 +2207,7 @@ var Button = (function (_super) {
         if (span) {
             span.remove();
         }
+        this.unWireEvents();
     };
     Button.prototype.getModuleName = function () {
         return 'btn';
@@ -2249,6 +2272,15 @@ var Button = (function (_super) {
                     this.element.innerHTML = newProp.content;
                     this.setIconCss();
                     break;
+                case 'isToggle':
+                    if (newProp.isToggle) {
+                        __WEBPACK_IMPORTED_MODULE_0__syncfusion_ej2_base__["EventHandler"].add(this.element, 'click', this.btnClickHandler, this);
+                    }
+                    else {
+                        __WEBPACK_IMPORTED_MODULE_0__syncfusion_ej2_base__["EventHandler"].remove(this.element, 'click', this.btnClickHandler);
+                        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__syncfusion_ej2_base_dom__["removeClass"])([this.element], ['e-active']);
+                    }
+                    break;
             }
         }
     };
@@ -2272,6 +2304,9 @@ __decorate([
 __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__syncfusion_ej2_base__["Property"])('')
 ], Button.prototype, "content", void 0);
+__decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__syncfusion_ej2_base__["Property"])(false)
+], Button.prototype, "isToggle", void 0);
 Button = __decorate([
     __WEBPACK_IMPORTED_MODULE_0__syncfusion_ej2_base__["NotifyPropertyChanges"]
 ], Button);

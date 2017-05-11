@@ -1512,6 +1512,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
             nav.parentElement.removeChild(nav);
             event_handler_1.EventHandler.remove(this.scrollEle, 'scroll', this.scrollEventHandler);
             this.touchModule.destroy();
+            this.touchModule = null;
             _super.prototype.destroy.call(this);
         };
         HScroll.prototype.createNavigationIcon = function (element, classList) {
@@ -1524,40 +1525,33 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
             element.insertBefore(nav, element.firstChild);
             event_handler_1.EventHandler.add(this.scrollEle, 'scroll', this.scrollEventHandler, this);
             var tchObj = new touch_1.Touch(nav, { taphold: this.tabHoldHandler.bind(this) });
+            nav.addEventListener('mouseup', this.repeatScroll.bind(this));
+            nav.addEventListener('touchend', this.repeatScroll.bind(this));
             nav.addEventListener('contextmenu', function (e) {
                 e.preventDefault();
             });
             event_handler_1.EventHandler.add(nav, 'click', this.clickEventHandler, this);
             this.touchModule = new touch_1.Touch(element, { scroll: this.touchScrollHandler.bind(this) });
         };
-        HScroll.prototype.tabHoldHandler = function (e) {
-            var ele = this.scrollEle;
-            if (ele.scrollLeft === 0 || Math.round(ele.offsetWidth + ele.scrollLeft) >= ele.scrollWidth) {
-                return;
-            }
-            var eventArgs = e.event;
-            var trgt = eventArgs.target;
-            var navItem;
-            if (trgt.classList.contains(CLASSNAMES.HSCROLLNAV)) {
-                navItem = trgt.firstChild.classList;
-            }
-            else {
-                navItem = trgt.classList;
-            }
-            if (navItem.contains(CLASSNAMES.NAVRIGHTARROW)) {
-                navItem.add(CLASSNAMES.NAVLEFTARROW);
-                navItem.remove(CLASSNAMES.NAVRIGHTARROW);
-            }
-            else {
-                navItem.add(CLASSNAMES.NAVRIGHTARROW);
-                navItem.remove(CLASSNAMES.NAVLEFTARROW);
-            }
+        HScroll.prototype.repeatScroll = function (e) {
+            clearInterval(this.timeout);
         };
-        HScroll.prototype.clickEventHandler = function (e) {
-            var target = e.target;
-            var classList = target.classList;
+        HScroll.prototype.tabHoldHandler = function (e) {
+            var _this = this;
+            var trgt = e.originalEvent.target;
+            trgt = trgt.classList.contains(CLASSNAMES.HSCROLLNAV) ? trgt.firstElementChild : trgt;
+            var timeoutFun = function () {
+                var element = _this.scrollEle;
+                var scrollDis = 10;
+                _this.contentScrolling(scrollDis, trgt);
+            };
+            this.timeout = setInterval(function () {
+                timeoutFun();
+            }, 50);
+        };
+        HScroll.prototype.contentScrolling = function (scrollDis, trgt) {
             var element = this.scrollEle;
-            var scrollDis = this.scrollStep;
+            var classList = trgt.classList;
             if (classList.contains(CLASSNAMES.HSCROLLNAV)) {
                 classList = this.element.querySelector('.' + CLASSNAMES.NAVARROW).classList;
             }
@@ -1581,17 +1575,18 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                 }
             }
         };
+        HScroll.prototype.clickEventHandler = function (e) {
+            this.contentScrolling(this.scrollStep, e.target);
+        };
         HScroll.prototype.touchScrollHandler = function (e) {
             var ele = this.scrollEle;
-            if (e.eventName === 'scroll') {
-                var distance = void 0;
-                distance = e.distanceX;
-                if (e.scrollDirection === 'Left') {
-                    ele.scrollLeft = ele.scrollLeft + distance;
-                }
-                else {
-                    ele.scrollLeft = ele.scrollLeft - distance;
-                }
+            var distance;
+            distance = e.distanceX;
+            if (e.scrollDirection === 'Left') {
+                ele.scrollLeft = ele.scrollLeft + distance;
+            }
+            else {
+                ele.scrollLeft = ele.scrollLeft - distance;
             }
         };
         HScroll.prototype.scrollEventHandler = function (e) {
@@ -1615,7 +1610,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                         navClassList.remove(CLASSNAMES.NAVRIGHTARROW);
                     }
                 }
-                else if (Math.round(width + scrollLeft) >= target.scrollWidth) {
+                else if (Math.ceil(width + scrollLeft) >= target.scrollWidth) {
                     if (!this.element.classList.contains(CLASSNAMES.RTL) || browser_1.Browser.info.name === 'mozilla') {
                         navClassList.add(CLASSNAMES.NAVLEFTARROW);
                         navClassList.remove(CLASSNAMES.NAVRIGHTARROW);
@@ -2114,7 +2109,13 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
             }
             innerNav = ele.querySelector('.' + CLASSNAMES.TBARNAV);
             var eleWidth = (ele.offsetWidth - (innerNav.offsetWidth));
+            if (this.enableRtl) {
+                this.element.classList.remove('e-rtl');
+            }
             this.checkPriority(ele, innerEle, eleWidth, true);
+            if (this.enableRtl) {
+                this.element.classList.add('e-rtl');
+            }
             this.createPopup();
         };
         Toolbar.prototype.createPopupIcon = function (element) {
@@ -2603,18 +2604,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
             if (this.popupObj && dom_1.isVisible(this.popupObj.element)) {
                 this.popupObj.hide();
             }
-            if (this.enableRtl) {
-                ele.classList.remove(CLASSNAMES.RTL);
-            }
             var checkOverflow = this.checkOverflow(ele, ele.getElementsByClassName(CLASSNAMES.ITEMS)[0]);
             if (this.offsetWid > ele.offsetWidth || this.scrollModule || checkOverflow) {
                 this.renderOverflowMode();
             }
             if (this.popupObj) {
                 this.popupRefresh(this.popupObj.element, false);
-            }
-            if (this.enableRtl) {
-                ele.classList.add(CLASSNAMES.RTL);
             }
             this.offsetWid = ele.offsetWidth;
             this.tbResize = false;
@@ -2652,14 +2647,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                             var popNav = this.element.querySelector('.' + CLASSNAMES.TBARNAV);
                             this.popupRefresh(this.popupObj.element, true);
                             popNav.remove();
-                        }
-                        if (this.enableRtl) {
-                            if (newProp.overflowMode === 'Popup') {
-                                this.element.classList.remove(CLASSNAMES.RTL);
-                            }
-                            else {
-                                this.element.classList.add(CLASSNAMES.RTL);
-                            }
                         }
                         this.renderOverflowMode();
                         if (this.enableRtl) {
@@ -4277,6 +4264,7 @@ var Button = (function (_super) {
             this.controlStatus(this.disabled);
         }
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__syncfusion_ej2_base__["ripple"])(this.element, '.' + cssClassName.BUTTON);
+        this.wireEvents();
     };
     Button.prototype.controlStatus = function (disabled) {
         this.element.disabled = disabled;
@@ -4297,12 +4285,30 @@ var Button = (function (_super) {
             }
         }
     };
+    Button.prototype.wireEvents = function () {
+        if (this.isToggle) {
+            __WEBPACK_IMPORTED_MODULE_0__syncfusion_ej2_base__["EventHandler"].add(this.element, 'click', this.btnClickHandler, this);
+        }
+    };
+    Button.prototype.unWireEvents = function () {
+        if (this.isToggle) {
+            __WEBPACK_IMPORTED_MODULE_0__syncfusion_ej2_base__["EventHandler"].remove(this.element, 'click', this.btnClickHandler);
+        }
+    };
+    Button.prototype.btnClickHandler = function () {
+        if (this.element.classList.contains('e-active')) {
+            this.element.classList.remove('e-active');
+        }
+        else {
+            this.element.classList.add('e-active');
+        }
+    };
     Button.prototype.destroy = function () {
         var span;
         var element = this.element;
         _super.prototype.destroy.call(this);
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__syncfusion_ej2_base_dom__["removeClass"])([this.element], [cssClassName.PRIMARY, cssClassName.RTL, 'e-success',
-            'e-info', 'e-danger', 'e-warning', 'e-flat', 'e-outline', 'e-small', 'e-bigger']);
+            'e-info', 'e-danger', 'e-warning', 'e-flat', 'e-outline', 'e-small', 'e-bigger', 'e-active']);
         ['role', 'aria-describedby', 'e-ripple', 'disabled'].forEach(function (value) {
             element.removeAttribute(value);
         });
@@ -4313,6 +4319,7 @@ var Button = (function (_super) {
         if (span) {
             span.remove();
         }
+        this.unWireEvents();
     };
     Button.prototype.getModuleName = function () {
         return 'btn';
@@ -4377,6 +4384,15 @@ var Button = (function (_super) {
                     this.element.innerHTML = newProp.content;
                     this.setIconCss();
                     break;
+                case 'isToggle':
+                    if (newProp.isToggle) {
+                        __WEBPACK_IMPORTED_MODULE_0__syncfusion_ej2_base__["EventHandler"].add(this.element, 'click', this.btnClickHandler, this);
+                    }
+                    else {
+                        __WEBPACK_IMPORTED_MODULE_0__syncfusion_ej2_base__["EventHandler"].remove(this.element, 'click', this.btnClickHandler);
+                        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__syncfusion_ej2_base_dom__["removeClass"])([this.element], ['e-active']);
+                    }
+                    break;
             }
         }
     };
@@ -4400,6 +4416,9 @@ __decorate([
 __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__syncfusion_ej2_base__["Property"])('')
 ], Button.prototype, "content", void 0);
+__decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__syncfusion_ej2_base__["Property"])(false)
+], Button.prototype, "isToggle", void 0);
 Button = __decorate([
     __WEBPACK_IMPORTED_MODULE_0__syncfusion_ej2_base__["NotifyPropertyChanges"]
 ], Button);
@@ -5832,7 +5851,10 @@ var Dialog = (function (_super) {
             }
         }
     };
-    Dialog.prototype.show = function () {
+    Dialog.prototype.show = function (isFullScreen) {
+        if (!__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__syncfusion_ej2_base_util__["isNullOrUndefined"])(isFullScreen)) {
+            this.fullScreen(isFullScreen);
+        }
         this.storeActiveElement = document.activeElement;
         this.element.tabIndex = -1;
         this.trigger('beforeOpen');

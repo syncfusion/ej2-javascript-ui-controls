@@ -3513,11 +3513,13 @@ Animation = Animation_1 = __decorate([
 function ripple(element, selector) {
     element.setAttribute('e-ripple', 'true');
     __WEBPACK_IMPORTED_MODULE_2__event_handler__["a" /* EventHandler */].add(element, 'mousedown', rippleHandler, { parent: element, selector: selector });
-    __WEBPACK_IMPORTED_MODULE_2__event_handler__["a" /* EventHandler */].add(element, 'mouseup', rippleRemoveHandler, { parent: element, selector: selector });
+    __WEBPACK_IMPORTED_MODULE_2__event_handler__["a" /* EventHandler */].add(element, 'mouseup', rippleUpHandler, { parent: element, selector: selector });
+    __WEBPACK_IMPORTED_MODULE_2__event_handler__["a" /* EventHandler */].add(element, 'mousemove', rippleMoveHandler, { parent: element, selector: selector });
     return (function () {
         element.removeAttribute('e-ripple');
         __WEBPACK_IMPORTED_MODULE_2__event_handler__["a" /* EventHandler */].remove(element, 'mousedown', rippleHandler);
-        __WEBPACK_IMPORTED_MODULE_2__event_handler__["a" /* EventHandler */].remove(element, 'mouseup', rippleHandler);
+        __WEBPACK_IMPORTED_MODULE_2__event_handler__["a" /* EventHandler */].remove(element, 'mouseup', rippleUpHandler);
+        __WEBPACK_IMPORTED_MODULE_2__event_handler__["a" /* EventHandler */].remove(element, 'mousemove', rippleMoveHandler);
     });
 }
 function rippleHandler(e) {
@@ -3543,17 +3545,25 @@ function rippleHandler(e) {
     window.getComputedStyle(rippleElement).getPropertyValue('opacity');
     rippleElement.style.transform = 'scale(1)';
 }
-function rippleRemoveHandler(e) {
+function rippleUpHandler(e) {
+    removeRipple(e, this);
+}
+function rippleMoveHandler(e) {
+    removeRipple(e, this);
+}
+function removeRipple(e, eventArgs) {
     var duration = 350;
     var target = (e.target);
-    var element = this.selector ? __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__dom__["g" /* closest */])(target, this.selector) : target;
-    if (!element) {
+    var element = eventArgs.selector ? __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__dom__["g" /* closest */])(target, eventArgs.selector) : target;
+    if (!element || (element && element.className.indexOf('e-ripple') === -1)) {
         return;
     }
     var rippleElements = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__dom__["b" /* selectAll */])('.e-ripple-element', element);
     var rippleElement = rippleElements[rippleElements.length - 1];
     setTimeout(function () {
-        rippleElement.parentNode.removeChild(rippleElement);
+        if (rippleElement && rippleElement.parentNode) {
+            rippleElement.parentNode.removeChild(rippleElement);
+        }
         if (!element.getElementsByClassName('e-ripple-element').length) {
             element.classList.remove('e-ripple');
         }
@@ -5110,7 +5120,7 @@ FormValidator.checkValidator = {
         return new RegExp('^([0-9]{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$').test(option.value);
     },
     number: function (option) {
-        return !isNaN(Number(option.value));
+        return !isNaN(Number(option.value)) && option.value.indexOf(' ') === -1;
     },
     digits: function (option) {
         return new RegExp('^[0-9]*$').test(option.value);

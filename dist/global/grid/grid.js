@@ -5293,7 +5293,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
             var gObj = this.parent;
             this.isPrinting = true;
             this.element = gObj.element.cloneNode(true);
-            this.printWindow = window.open('', 'print', 'height=452,width=1024,tabbar=no');
+            this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
+            this.printWindow.moveTo(0, 0);
+            this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
             if (gObj.allowPaging) {
                 if (gObj.printMode === 'currentpage') {
                     this.element.querySelector('.e-gridpager').style.display = 'none';
@@ -6956,7 +6958,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
                 this.contentRefresh = false;
                 for (var _i = 0, _a = gObj.filterSettings.columns; _i < _a.length; _i++) {
                     var col = _a[_i];
-                    this.filterColumn(col.field, col.operator, col.value, col.predicate, col.matchCase, col.actualFilterValue, col.actualOperator);
+                    this.filterByColumn(col.field, col.operator, col.value, col.predicate, col.matchCase, col.actualFilterValue, col.actualOperator);
                 }
                 this.updateFilterMsg();
                 this.contentRefresh = true;
@@ -6982,7 +6984,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
             this.parent.off(events.columnPositionChanged, this.columnPositionChanged);
             this.parent.off(events.headerRefreshed, this.render);
         };
-        Filter.prototype.filterColumn = function (fieldName, filterOperator, filterValue, predicate, matchCase, actualFilterValue, actualOperator) {
+        Filter.prototype.filterByColumn = function (fieldName, filterOperator, filterValue, predicate, matchCase, actualFilterValue, actualOperator) {
             var gObj = this.parent;
             var filterCell;
             this.column = gObj.getColumnByField(fieldName);
@@ -7183,7 +7185,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
                 return;
             }
             this.validateFilterValue(this.value);
-            this.filterColumn(this.column.field, this.operator, this.value, this.predicate, this.matchCase);
+            this.filterByColumn(this.column.field, this.operator, this.value, this.predicate, this.matchCase);
             this.values[this.column.field] = filterValue;
             filterElement.value = filterValue;
             this.updateFilterMsg();
@@ -9668,20 +9670,20 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(1), __webpack_require__(0), __webpack_require__(2), __webpack_require__(1), __webpack_require__(1), __webpack_require__(12), __webpack_require__(15), __webpack_require__(88), __webpack_require__(19), __webpack_require__(90), __webpack_require__(92), __webpack_require__(93), __webpack_require__(180), __webpack_require__(94), __webpack_require__(52), __webpack_require__(175), __webpack_require__(83), __webpack_require__(169), __webpack_require__(82), __webpack_require__(81)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, ej2_base_1, util_1, dom_1, ej2_base_2, ej2_base_3, util_2, events, render_1, enum_1, cell_render_factory_1, service_locator_1, value_formatter_1, renderer_factory_1, width_controller_1, aria_service_1, page_settings_1, search_1, show_hide_1, scroll_1, print_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var SortColumn = (function (_super) {
-        __extends(SortColumn, _super);
-        function SortColumn() {
+    var SortDescriptor = (function (_super) {
+        __extends(SortDescriptor, _super);
+        function SortDescriptor() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        return SortColumn;
+        return SortDescriptor;
     }(ej2_base_1.ChildProperty));
     __decorate([
         ej2_base_2.Property()
-    ], SortColumn.prototype, "field", void 0);
+    ], SortDescriptor.prototype, "field", void 0);
     __decorate([
         ej2_base_2.Property()
-    ], SortColumn.prototype, "direction", void 0);
-    exports.SortColumn = SortColumn;
+    ], SortDescriptor.prototype, "direction", void 0);
+    exports.SortDescriptor = SortDescriptor;
     var SortSettings = (function (_super) {
         __extends(SortSettings, _super);
         function SortSettings() {
@@ -9690,38 +9692,38 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
         return SortSettings;
     }(ej2_base_1.ChildProperty));
     __decorate([
-        ej2_base_2.Collection([], SortColumn)
+        ej2_base_2.Collection([], SortDescriptor)
     ], SortSettings.prototype, "columns", void 0);
     exports.SortSettings = SortSettings;
-    var FilterColumn = (function (_super) {
-        __extends(FilterColumn, _super);
-        function FilterColumn() {
+    var Predicate = (function (_super) {
+        __extends(Predicate, _super);
+        function Predicate() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        return FilterColumn;
+        return Predicate;
     }(ej2_base_1.ChildProperty));
     __decorate([
         ej2_base_2.Property()
-    ], FilterColumn.prototype, "field", void 0);
+    ], Predicate.prototype, "field", void 0);
     __decorate([
         ej2_base_2.Property()
-    ], FilterColumn.prototype, "operator", void 0);
+    ], Predicate.prototype, "operator", void 0);
     __decorate([
         ej2_base_2.Property()
-    ], FilterColumn.prototype, "value", void 0);
+    ], Predicate.prototype, "value", void 0);
     __decorate([
         ej2_base_2.Property()
-    ], FilterColumn.prototype, "matchCase", void 0);
+    ], Predicate.prototype, "matchCase", void 0);
     __decorate([
         ej2_base_2.Property()
-    ], FilterColumn.prototype, "predicate", void 0);
+    ], Predicate.prototype, "predicate", void 0);
     __decorate([
         ej2_base_2.Property({})
-    ], FilterColumn.prototype, "actualFilterValue", void 0);
+    ], Predicate.prototype, "actualFilterValue", void 0);
     __decorate([
         ej2_base_2.Property({})
-    ], FilterColumn.prototype, "actualOperator", void 0);
-    exports.FilterColumn = FilterColumn;
+    ], Predicate.prototype, "actualOperator", void 0);
+    exports.Predicate = Predicate;
     var FilterSettings = (function (_super) {
         __extends(FilterSettings, _super);
         function FilterSettings() {
@@ -9730,7 +9732,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
         return FilterSettings;
     }(ej2_base_1.ChildProperty));
     __decorate([
-        ej2_base_2.Collection([], FilterColumn)
+        ej2_base_2.Collection([], Predicate)
     ], FilterSettings.prototype, "columns", void 0);
     __decorate([
         ej2_base_2.Property('filterbar')
@@ -10274,8 +10276,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
         Grid.prototype.removeSortColumn = function (field) {
             this.sortModule.removeSortColumn(field);
         };
-        Grid.prototype.filterColumn = function (fieldName, filterOperator, filterValue, predicate, matchCase, actualFilterValue, actualOperator) {
-            this.filterModule.filterColumn(fieldName, filterOperator, filterValue, predicate, matchCase, actualFilterValue, actualOperator);
+        Grid.prototype.filterByColumn = function (fieldName, filterOperator, filterValue, predicate, matchCase, actualFilterValue, actualOperator) {
+            this.filterModule.filterByColumn(fieldName, filterOperator, filterValue, predicate, matchCase, actualFilterValue, actualOperator);
         };
         Grid.prototype.clearFiltering = function () {
             this.filterModule.clearFiltering();

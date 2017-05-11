@@ -523,7 +523,8 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
                 });
                 xValues.sort(function (first, second) { return first - second; });
                 if (xValues.length === 1) {
-                    minVal = xValues[0] - axis.visibleRange.min;
+                    minVal = xValues[0] - ((series.xMin && series.xAxis.valueType !== 'DateTime') ?
+                        series.xMin : axis.visibleRange.min);
                     if (minVal !== 0) {
                         minDelta = Math.min(minDelta, minVal);
                     }
@@ -2905,6 +2906,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.loaded = 'loaded';
+    exports.load = 'load';
     exports.animationComplete = 'animationComplete';
     exports.legendRender = 'legendRender';
     exports.textRender = 'textRender';
@@ -4963,6 +4965,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     __decorate([
         ej2_base_1.Property('Hide')
     ], Axis.prototype, "labelIntersectAction", void 0);
+    __decorate([
+        ej2_base_1.Property(null)
+    ], Axis.prototype, "description", void 0);
+    __decorate([
+        ej2_base_1.Property(2)
+    ], Axis.prototype, "tabIndex", void 0);
     exports.Axis = Axis;
     var VisibleLabels = (function () {
         function VisibleLabels(text, value, size) {
@@ -5104,11 +5112,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
         LineBase.prototype.doProgressiveAnimation = function (series, option) {
             var animation = new ej2_base_1.Animation({});
             var path = series.pathElement;
-            var strokeDashArray = +path.getAttribute('stroke-dasharray');
+            var strokeDashArray = path.getAttribute('stroke-dasharray');
             var pathLength = series.pathElement.getTotalLength();
             var currentTime;
-            strokeDashArray = strokeDashArray ? strokeDashArray : 0;
             path.style.visibility = 'hidden';
+            strokeDashArray = strokeDashArray !== 'null' ? strokeDashArray : '0';
             animation.animate(path, {
                 duration: option.duration,
                 delay: option.delay,
@@ -5120,7 +5128,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
                     }
                 },
                 end: function (model) {
-                    path.setAttribute('stroke-dasharray', strokeDashArray.toString());
+                    path.setAttribute('stroke-dasharray', strokeDashArray);
                     series.chart.trigger('animationComplete', { series: series });
                 }
             });
@@ -5551,7 +5559,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
                     minimum -= (minimum % interval);
                 }
             }
-            maximum = (end + (end - startValue) / 20);
+            maximum = (end > 0) ? (end + (end - startValue) / 20) : (end - (end - startValue) / 20);
             remaining = interval - (maximum % interval);
             if ((0.365 * interval) >= remaining) {
                 maximum += interval;
@@ -5691,7 +5699,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
                                     var axis_1 = axisCollection_1[_f];
                                     for (var _g = 0, _h = axis_1.series; _g < _h.length; _g++) {
                                         var series_1 = _h[_g];
-                                        if (series_1 === rowSeries && this_1.rectSeriesInChart(series_1)) {
+                                        if (series_1 === rowSeries && this_1.rectSeriesInChart(series_1) && series_1.visible) {
                                             seriesCollection.push(series_1);
                                         }
                                     }
@@ -5765,13 +5773,14 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
             return argsData;
         };
         ColumnBase.prototype.drawRectangle = function (series, point, rect, argsData) {
-            if (rect.width <= 0) {
+            var check = series.chart.requireInvertedAxis ? rect.height : rect.width;
+            if (check <= 0) {
                 return null;
             }
             var direction = ('M' + ' ' + (rect.x) + ' ' + (rect.y + rect.height) + ' ' +
                 'L' + ' ' + (rect.x) + ' ' + (rect.y) + ' ' +
                 'L' + ' ' + (rect.x + rect.width) + ' ' + (rect.y) + ' ' +
-                'L' + ' ' + (rect.x + rect.width) + ' ' + (rect.y + rect.height) + ' ');
+                'L' + ' ' + (rect.x + rect.width) + ' ' + (rect.y + rect.height) + ' ' + 'Z');
             var options = new helper_1.PathOption(series.chart.element.id + '_Series_' + series.index + '_Point_' + point.index, argsData.fill, argsData.border.width, argsData.border.color, series.opacity, series.dashArray, direction);
             var element = series.chart.renderer.drawPath(options);
             element.setAttribute('aria-label', point.x.toString() + ':' + point.y.toString());
@@ -5978,6 +5987,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     __decorate([
         ej2_base_1.Property(true)
     ], LegendSettings.prototype, "toggleVisibility", void 0);
+    __decorate([
+        ej2_base_1.Property(null)
+    ], LegendSettings.prototype, "description", void 0);
+    __decorate([
+        ej2_base_1.Property(3)
+    ], LegendSettings.prototype, "tabIndex", void 0);
     exports.LegendSettings = LegendSettings;
     var Legend = (function () {
         function Legend(chart) {
@@ -6144,6 +6159,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                     var legendOption = _a[_i];
                     if (legendOption.render && legendOption.text !== '') {
                         legendSeriesGroup = chart.renderer.createGroup({ id: this.legendID + '_series_' + count });
+                        legendSeriesGroup.setAttribute('tabindex', legend.tabIndex.toString());
+                        legendSeriesGroup.setAttribute('aria-label', legend.description || 'Click to show or hide the ' + legendOption.text + ' series');
                         this.getRenderPoint(legendOption, start.x, textPadding, previousLegend, legendBounds, count, firstLegend);
                         this.renderSymbol(legendOption, legendSeriesGroup, count);
                         this.renderText(chart, legendOption, legendSeriesGroup, textOptions, count);
@@ -6225,7 +6242,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
             textOptions.x = legendOption.location.x + (legend.shapeWidth / 2) + legend.shapePadding;
             textOptions.y = legendOption.location.y + this.maxitemHeight / 4;
             var element = helper_2.textElement(textOptions, legend.textStyle, fontcolor, group);
-            element.setAttribute('aria-label', 'Click to show or hide the ' + legendOption.text + ' series');
+            element.setAttribute('aria-label', legend.description || 'Click to show or hide the ' + legendOption.text + ' series');
         };
         Legend.prototype.renderPagingElements = function (chart, bounds, textOption, legendGroup) {
             var paginggroup = chart.renderer.createGroup({ id: this.legendID + '_navigation' });
@@ -6635,6 +6652,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
             var pointsLength;
             var lastValue;
             var column;
+            var row;
             var axisSeries;
             for (var _i = 0, _a = this.chart.columns; _i < _a.length; _i++) {
                 var item = _a[_i];
@@ -6646,55 +6664,62 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                     axisCollection.push(columnAxis);
                 }
                 for (var index = 0; index < this.chart.rows.length; index++) {
-                    seriesCollection = [];
-                    for (var _d = 0, axisCollection_1 = axisCollection; _d < axisCollection_1.length; _d++) {
-                        var axis_1 = axisCollection_1[_d];
-                        if (axis_1.rowIndex === index) {
-                            for (var _e = 0, _f = axis_1.series; _e < _f.length; _e++) {
-                                var series = _f[_e];
-                                if ((axis_1.rowIndex === series.yAxis.rowIndex) && (axis_1.columnIndex === series.yAxis.columnIndex) &&
-                                    series.visible) {
-                                    seriesCollection.push(series);
+                    for (var _d = 0, _e = this.chart.rows; _d < _e.length; _d++) {
+                        var item_1 = _e[_d];
+                        row = item_1;
+                        seriesCollection = [];
+                        for (var _f = 0, _g = row.axes; _f < _g.length; _f++) {
+                            var rowAxis = _g[_f];
+                            for (var _h = 0, _j = rowAxis.series; _h < _j.length; _h++) {
+                                var rowSeries = _j[_h];
+                                for (var _k = 0, axisCollection_1 = axisCollection; _k < axisCollection_1.length; _k++) {
+                                    var axis_1 = axisCollection_1[_k];
+                                    for (var _l = 0, _m = axis_1.series; _l < _m.length; _l++) {
+                                        var series = _m[_l];
+                                        if (series === rowSeries && series.visible) {
+                                            seriesCollection.push(series);
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
-                    lastPositive = [];
-                    lastNegative = [];
-                    for (var _g = 0, seriesCollection_1 = seriesCollection; _g < seriesCollection_1.length; _g++) {
-                        var series = seriesCollection_1[_g];
-                        if (series.type.indexOf('Stacking') !== -1) {
-                            stackingGroup = series.stackingGroup;
-                            stackingGroup = ((series.type !== 'StackingArea') && stackingGroup) ? stackingGroup : '';
-                            if (!lastPositive[stackingGroup]) {
-                                lastPositive[stackingGroup] = [];
-                                lastNegative[stackingGroup] = [];
+                        lastPositive = [];
+                        lastNegative = [];
+                        for (var _o = 0, seriesCollection_1 = seriesCollection; _o < seriesCollection_1.length; _o++) {
+                            var series = seriesCollection_1[_o];
+                            if (series.type.indexOf('Stacking') !== -1) {
+                                stackingGroup = series.stackingGroup;
+                                stackingGroup = ((series.type !== 'StackingArea') && stackingGroup) ? stackingGroup : '';
+                                if (!lastPositive[stackingGroup]) {
+                                    lastPositive[stackingGroup] = [];
+                                    lastNegative[stackingGroup] = [];
+                                }
+                                yValues = series.yData;
+                                startValues = [];
+                                endValues = [];
+                                for (var j = 0, pointsLength_1 = series.points.length; j < pointsLength_1; j++) {
+                                    lastValue = 0;
+                                    if (lastPositive[stackingGroup][series.points[j].xValue] === undefined) {
+                                        lastPositive[stackingGroup][series.points[j].xValue] = 0;
+                                    }
+                                    if (lastNegative[stackingGroup][series.points[j].xValue] === undefined) {
+                                        lastNegative[stackingGroup][series.points[j].xValue] = 0;
+                                    }
+                                    if (yValues[j] >= 0) {
+                                        lastValue = lastPositive[stackingGroup][series.points[j].xValue];
+                                        lastPositive[stackingGroup][series.points[j].xValue] += yValues[j];
+                                    }
+                                    else {
+                                        lastValue = lastNegative[stackingGroup][series.points[j].xValue];
+                                        lastNegative[stackingGroup][series.points[j].xValue] += yValues[j];
+                                    }
+                                    startValues.push(lastValue);
+                                    endValues.push(yValues[j] + lastValue);
+                                }
+                                series.stackedValues = new helper_1.StackValues(startValues, endValues);
+                                series.yMin = Math.min.apply(series.yMin, endValues);
+                                series.yMax = Math.max.apply(series.yMax, endValues);
                             }
-                            yValues = series.yData;
-                            startValues = [];
-                            endValues = [];
-                            for (var j = 0, pointsLength_1 = series.points.length; j < pointsLength_1; j++) {
-                                lastValue = 0;
-                                if (lastPositive[stackingGroup][series.points[j].xValue] === undefined) {
-                                    lastPositive[stackingGroup][series.points[j].xValue] = 0;
-                                }
-                                if (lastNegative[stackingGroup][series.points[j].xValue] === undefined) {
-                                    lastNegative[stackingGroup][series.points[j].xValue] = 0;
-                                }
-                                if (yValues[j] >= 0) {
-                                    lastValue = lastPositive[stackingGroup][series.points[j].xValue];
-                                    lastPositive[stackingGroup][series.points[j].xValue] += yValues[j];
-                                }
-                                else {
-                                    lastValue = lastNegative[stackingGroup][series.points[j].xValue];
-                                    lastNegative[stackingGroup][series.points[j].xValue] += yValues[j];
-                                }
-                                startValues.push(lastValue);
-                                endValues.push(yValues[j] + lastValue);
-                            }
-                            series.stackedValues = new helper_1.StackValues(startValues, endValues);
-                            series.yMin = Math.min.apply(series.yMin, endValues);
-                            series.yMax = Math.max.apply(series.yMax, endValues);
                         }
                     }
                 }
@@ -7589,6 +7614,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
             if (!this.chart.delayRedraw) {
                 this.calculateAxisSize(this.initialClipRect);
             }
+            this.leftSize = 0;
+            this.rightSize = 0;
+            this.topSize = 0;
+            this.bottomSize = 0;
             this.measureRowAxis(chart, this.initialClipRect);
             this.seriesClipRect = helper_1.subtractThickness(this.seriesClipRect, new helper_2.Thickness(this.leftSize, this.rightSize, 0, 0));
             this.measureColumnAxis(chart, this.initialClipRect);
@@ -7836,8 +7865,8 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
             var axisElement = chart.renderer.createGroup({ id: chart.element.id + 'AxisCollection' });
             var definitionElement = chart.renderer.createGroup({ id: chart.element.id + 'DefintionLine' });
             for (var i = 0, len = chart.axisCollections.length; i < len; i++) {
-                this.element = chart.renderer.createGroup({ id: chart.element.id + 'AxisGroup' + i });
                 axis = chart.axisCollections[i];
+                this.element = chart.renderer.createGroup({ id: chart.element.id + 'AxisGroup' + i });
                 if (axis.orientation === 'Horizontal') {
                     if (axis.lineStyle.width > 0) {
                         this.drawAxisLine(axis, i, axis.plotOffset, 0);
@@ -8047,7 +8076,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
             var x = rect.x + padding;
             var y = rect.y + rect.height / 2;
             var options = new helper_1.TextOption(chart.element.id + '_AxisTitle_' + index, x, y - this.padding, 'middle', axis.title, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')');
-            helper_1.textElement(options, axis.titleStyle, axis.titleStyle.color, this.element);
+            var element = helper_1.textElement(options, axis.titleStyle, axis.titleStyle.color, this.element);
+            element.setAttribute('aria-label', axis.description || axis.title);
+            element.setAttribute('tabindex', axis.tabIndex.toString());
         };
         CartesianAxisLayoutPanel.prototype.drawXAxisGridLine = function (axis, index) {
             var chart = this.chart;
@@ -8230,7 +8261,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
             var rect = axis.rect;
             padding = axis.opposedPosition ? -(padding + elementSize.height / 4) : (padding + (3 * elementSize.height / 4));
             var options = new helper_1.TextOption(chart.element.id + '_AxisTitle_' + index, rect.x + rect.width / 2, rect.y + padding, 'middle', axis.title);
-            helper_1.textElement(options, axis.titleStyle, axis.titleStyle.color, this.element);
+            var element = helper_1.textElement(options, axis.titleStyle, axis.titleStyle.color, this.element);
+            element.setAttribute('aria-label', axis.description || axis.title);
+            element.setAttribute('tabindex', axis.tabIndex.toString());
         };
         CartesianAxisLayoutPanel.prototype.renderTickLine = function (axis, index, majorTick, minorTick) {
             var options;
@@ -8423,7 +8456,8 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
                 this.max = Date.parse(dateParser(dateFormatter(new Date(1970, 5, 1))));
             }
             if (this.min === this.max) {
-                this.max = this.min + 2592000000;
+                this.max = this.max + 2592000000;
+                this.min = this.min - 2592000000;
             }
             axis.actualRange = {};
             axis.doubleRange = new double_range_1.DoubleRange(this.min, this.max);
@@ -8887,6 +8921,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
             this.storedPoints = [];
         };
         Chart.prototype.render = function () {
+            this.trigger(constants_1.load, { chart: this });
             this.calculateAreaType();
             this.calculateVisibleSeries();
             this.calculateVisibleAxis();
@@ -9088,7 +9123,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                 var areaBounds = this.chartAxisLayoutPanel.seriesClipRect;
                 this.elementSize = helper_1.measureText(this.title, this.titleStyle);
                 var options = new helper_1.TextOption(this.element.id + '_ChartTitle', this.availableSize.width / 2, this.margin.top + 3 * (this.elementSize.height / 4), 'middle', this.title);
-                helper_2.textElement(options, this.titleStyle, this.titleStyle.color, this.svgObject);
+                var element = helper_2.textElement(options, this.titleStyle, this.titleStyle.color, this.svgObject);
+                element.setAttribute('aria-label', this.description || this.title);
+                element.setAttribute('tabindex', this.tabIndex.toString());
             }
         };
         Chart.prototype.renderBorder = function () {
@@ -9189,7 +9226,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                 ej2_base_3.EventHandler.add(window, 'resize', this.chartResize, this);
             }
             this.longPress = this.longPress.bind(this);
-            new ej2_base_2.Touch(this.element, { taphold: this.longPress, tapholdThreshold: 300 });
+            new ej2_base_2.Touch(this.element, { taphold: this.longPress, tapholdThreshold: 500 });
             this.setStyle(this.element);
         };
         Chart.prototype.chartRightClick = function (event) {
@@ -9215,8 +9252,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
             return ('orientation' in window && 'onorientationchange' in window);
         };
         Chart.prototype.longPress = function (e) {
-            this.mouseX = e ? (e.event.changedTouches[0].clientX - this.offset.x) : 0;
-            this.mouseY = e ? (e.event.changedTouches[0].clientY - this.offset.y) : 0;
+            this.mouseX = e ? (e.originalEvent.changedTouches[0].clientX - this.offset.x) : 0;
+            this.mouseY = e ? (e.originalEvent.changedTouches[0].clientY - this.offset.y) : 0;
             this.startMove = true;
             if (this.crosshairModule && helper_2.withInBounds(this.mouseX, this.mouseY, this.chartAxisLayoutPanel.seriesClipRect)) {
                 if (this.tooltipModule) {
@@ -9482,6 +9519,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                 }
             }
             else {
+                touchList = touchList ? touchList : [];
                 if (touchList.length === 0) {
                     touchList.push({ pageX: e.clientX, pageY: e.clientY, pointerId: e.pointerId });
                 }
@@ -9718,12 +9756,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                             break;
                         case 'selectedDataIndexes':
                         case 'selectionMode':
-                            if (newProp.selectionMode && newProp.selectionMode.indexOf('Drag') === -1) {
+                            if (this.selectionModule && newProp.selectionMode && newProp.selectionMode.indexOf('Drag') === -1) {
                                 this.selectionModule.redrawSelection(this, oldProp.selectionMode);
                             }
                             break;
                         case 'isMultiSelect':
-                            if (!newProp.isMultiSelect && this.selectionModule.selectedDataIndexes.length > 1) {
+                            if (this.selectionModule && !newProp.isMultiSelect && this.selectionModule.selectedDataIndexes.length > 1) {
                                 this.selectionModule.redrawSelection(this, oldProp.selectionMode);
                             }
                             break;
@@ -9815,8 +9853,17 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
         ej2_base_1.Property(false)
     ], Chart.prototype, "useGroupingSeparator", void 0);
     __decorate([
+        ej2_base_1.Property(null)
+    ], Chart.prototype, "description", void 0);
+    __decorate([
+        ej2_base_1.Property(1)
+    ], Chart.prototype, "tabIndex", void 0);
+    __decorate([
         ej2_base_3.Event()
     ], Chart.prototype, "loaded", void 0);
+    __decorate([
+        ej2_base_3.Event()
+    ], Chart.prototype, "load", void 0);
     __decorate([
         ej2_base_3.Event()
     ], Chart.prototype, "animationComplete", void 0);
@@ -9983,7 +10030,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
                     }
                     firstPoint = helper_1.getPoint(currentXValue, point.yValue, series);
                     direction += ('L' + ' ' + (firstPoint.x) + ' ' + (firstPoint.y) + ' ');
-                    if (point[i + 1] && !point[i + 1].visible) {
+                    if (series.points[i + 1] && !series.points[i + 1].visible) {
                         firstPoint = helper_1.getPoint(currentXValue, origin, series);
                         endPoint = helper_1.getPoint(startPoint.x, startPoint.y, series);
                         direction += ('L' + ' ' + (firstPoint.x) + ' ' + (firstPoint.y) + ' ' + 'L' +
@@ -10444,7 +10491,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
                     point.symbolLocation = null;
                 }
             }
-            options = new helper_1.PathOption(series.chart.element.id + '_Series_' + series.index, 'transparent', series.width, series.interior, series.opacity, series.dashArray, direction);
+            options = new helper_1.PathOption(series.chart.element.id + '_Series_' + series.index, 'none', series.width, series.interior, series.opacity, series.dashArray, direction);
             this.appendLinePath(options, series);
             this.renderMarker(series);
         };
@@ -10504,13 +10551,17 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
             }
         };
         Marker.prototype.doMarkerAnimation = function (series) {
-            var markerElements = series.symbolElement.childNodes;
-            var delay = series.animation.delay + series.animation.duration;
-            for (var i = 0, count = markerElements.length - 1; i < count; i++) {
-                if (!series.points[i].symbolLocation) {
-                    continue;
+            if (!(series.type.indexOf('Column') > -1 || series.type.indexOf('Bar') > -1 || series.type === 'Scatter')) {
+                var markerElements = series.symbolElement.childNodes;
+                var delay = series.animation.delay + series.animation.duration;
+                var j = 1;
+                for (var i = 0; i < series.points.length; i++) {
+                    if (!series.points[i].symbolLocation) {
+                        continue;
+                    }
+                    helper_1.markerAnimate(markerElements[j], delay, 200, series, i, series.points[i].symbolLocation, false);
+                    j++;
                 }
-                helper_1.markerAnimate(markerElements[i + 1], delay, 200, series, i, series.points[i].symbolLocation, false);
             }
         };
         Marker.prototype.getModuleName = function () {
@@ -10664,6 +10715,8 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = 
                 }
                 else {
                     startPoint = 'M';
+                    firstPoint = null;
+                    point.symbolLocation = null;
                 }
             }
             options = new helper_1.PathOption(series.chart.element.id + '_Series_' + series.index, 'transparent', series.width, series.interior, series.opacity, series.dashArray, direction);
@@ -11409,12 +11462,13 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
                 this.padding = 0;
                 this.elementSize = new helper_1.Size(rect.width, rect.height);
                 var tooltipRect = this.seriesTooltipLocation(data, new helper_1.ChartLocation(0, 0), new helper_1.ChartLocation(0, 0));
-                if (chart.tooltip.enableAnimation && !chart.tooltip.shared && !isFirst) {
+                if (chart.tooltip.enableAnimation && !chart.tooltip.shared && !isFirst && !this.isComplete) {
                     this.animateTooltipDiv(parent, tooltipRect);
                 }
                 else {
                     this.updateDiv(parent, tooltipRect.x, tooltipRect.y);
                 }
+                this.isComplete = false;
             }
             else {
                 this.removeHighlight(chart);
@@ -11505,12 +11559,13 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
             var start = chart.tooltip.border.width / 2;
             var pointRect = new helper_1.Rect(start + x, start + y, rect.width - start, rect.height - start);
             groupElement.setAttribute('opacity', '1');
-            if (chart.tooltip.enableAnimation && !chart.tooltip.shared && !isFirst) {
+            if (chart.tooltip.enableAnimation && !chart.tooltip.shared && !isFirst && !this.isComplete) {
                 this.animateTooltipDiv(tooltipDiv, rect);
             }
             else {
                 this.updateDiv(tooltipDiv, rect.x, rect.y);
             }
+            this.isComplete = false;
             svgObject.setAttribute('height', (rect.height + chart.tooltip.border.width + (inverted ? 0 : this.arrowPadding)).toString());
             svgObject.setAttribute('width', (rect.width + chart.tooltip.border.width + (!inverted ? 0 : this.arrowPadding)).toString());
             pathElement.setAttribute('d', helper_2.findDirection(this.rx, this.ry, pointRect, arrowLocation, this.arrowPadding, isTop, isBottom, isLeft, tipLocation.x, tipLocation.y));
@@ -11670,7 +11725,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
             var symbolId = this.element.id + '_Series_' + series.index + '_Point_' + point.index + '_Trackball';
             var size = new helper_1.Size(marker.width + 5, marker.height + 5);
             var options = new helper_2.PathOption(symbolId, marker.fill ? marker.fill : point.color, marker.border.width, marker.border.color, marker.opacity / 4, null, null);
-            element.appendChild(helper_2.drawSymbol(point.symbolLocation, shape, size, null, options, ''));
+            var symbol = helper_2.drawSymbol(point.symbolLocation, shape, size, null, options, '');
+            symbol.setAttribute('style', 'pointer-events:none');
+            element.appendChild(symbol);
         };
         Tooltip.prototype.highlightPoint = function (series, pointIndex, highlight) {
             var element = this.getElement(this.element.id + '_Series_' + series.index + '_Point_' + pointIndex);
@@ -11800,6 +11857,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
                                     tooltipGroup_1.style.display = 'none';
                                 }
                                 chart.trigger('animationComplete', {});
+                                _this.isComplete = true;
                             }
                         });
                     }
@@ -11880,7 +11938,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 /* 160 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(1), __webpack_require__(2), __webpack_require__(4)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, ej2_base_1, dom_1, helper_1) {
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports, __webpack_require__(1), __webpack_require__(2), __webpack_require__(4), __webpack_require__(4)], __WEBPACK_AMD_DEFINE_RESULT__ = function (require, exports, ej2_base_1, dom_1, helper_1, helper_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Toolkit = (function () {
@@ -11951,16 +12009,24 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
             parentElement.appendChild(childElement);
             this.wireEvents(childElement, this.zoomOut);
         };
-        Toolkit.prototype.createResetButton = function (childElement, parentElement, chart) {
+        Toolkit.prototype.createResetButton = function (childElement, parentElement, chart, isDevice) {
             var render = this.chart.renderer;
             var fillColor = this.fillColor;
+            var size;
             var direction = 'M12.364,8h-2.182l2.909,3.25L16,8h-2.182c0-3.575-2.618-6.5-5.818-6.5c-1.128,0-2.218,0.366-3.091,';
             direction += '1.016l1.055,1.178C6.581,3.328,7.272,3.125,8,3.125C10.4,3.125,12.363,5.319,12.364,8L12.364,8z M11.091,';
             direction += '13.484l-1.055-1.178C9.419,12.672,8.728,12.875,8,12.875c-2.4,0-4.364-2.194-4.364-4.875h2.182L2.909,4.75L0,8h2.182c0,';
             childElement.id = this.elementId + '_Zooming_Reset';
             childElement.setAttribute('aria-label', 'Reset');
-            childElement.appendChild(render.drawRectangle(new helper_1.RectOption(this.elementId + '_Zooming_Reset_1', 'transparent', {}, 1, new helper_1.Rect(0, 0, 16, 16))));
-            childElement.appendChild(render.drawPath(new helper_1.PathOption(this.elementId + '_Zooming_Reset_2', fillColor, null, null, 1, null, direction + '3.575,2.618,6.5,5.818,6.5C9.128,14.5,10.219,14.134,11.091,13.484L11.091,13.484z')));
+            if (!isDevice) {
+                childElement.appendChild(render.drawRectangle(new helper_1.RectOption(this.elementId + '_Zooming_Reset_1', 'transparent', {}, 1, new helper_1.Rect(0, 0, 16, 16))));
+                childElement.appendChild(render.drawPath(new helper_1.PathOption(this.elementId + '_Zooming_Reset_2', fillColor, null, null, 1, null, direction + '3.575,2.618,6.5,5.818,6.5C9.128,14.5,10.219,14.134,11.091,13.484L11.091,13.484z')));
+            }
+            else {
+                size = helper_1.measureText('Reset Zoom', { size: '12px' });
+                childElement.appendChild(render.drawRectangle(new helper_1.RectOption(this.elementId + '_Zooming_Reset_1', 'transparent', {}, 1, new helper_1.Rect(0, 0, size.width, size.height))));
+                helper_2.textElement(new helper_2.TextOption(this.elementId + '_Zooming_Reset_2', 0 + size.width / 2, 0 + size.height * 3 / 4, 'middle', 'Reset Zoom', 'rotate(0,' + (0) + ',' + (0) + ')', 'auto'), { size: '12px' }, 'black', childElement);
+            }
             parentElement.appendChild(childElement);
             this.wireEvents(childElement, this.reset);
         };
@@ -12082,8 +12148,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
             this.zooming = zooming;
             this.elementId = chart.element.id;
             this.zoomingRect = new helper_1.Rect(0, 0, 0, 0);
+            this.zoomAxes = [];
         }
         Zoom.prototype.renderZooming = function (e, chart, isTouch) {
+            this.calculateZoomAxesRange(chart, chart.axisCollections);
             if (this.zooming.enableSelectionZooming && (!isTouch
                 || (chart.isDoubleTap && this.touchStartList.length === 1)) && (!this.isPanning || chart.isDoubleTap)) {
                 this.isPanning = this.isDevice ? true : this.isPanning;
@@ -12119,10 +12187,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
         Zoom.prototype.doPan = function (chart, axes) {
             var currentScale;
             var offset;
-            var seriesClipRect = chart.chartAxisLayoutPanel.seriesClipRect;
-            var transX;
-            var transY;
             this.isZoomed = true;
+            var translateX;
+            var translateY;
+            this.offset = !chart.delayRedraw ? chart.chartAxisLayoutPanel.seriesClipRect : this.offset;
             chart.delayRedraw = true;
             chart.disableTrackTooltip = true;
             axes.forEach(function (axis) {
@@ -12137,9 +12205,17 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
                 }
             });
             if (this.zooming.enableDeferredZooming) {
-                transX = (chart.mouseX - chart.mouseDownX);
-                transY = (chart.mouseY - chart.mouseDownY);
-                this.setTransform(transX, transY, null, null, chart, false);
+                translateX = chart.mouseX - chart.mouseDownX;
+                translateY = chart.mouseY - chart.mouseDownY;
+                switch (this.zooming.mode) {
+                    case 'X':
+                        translateY = 0;
+                        break;
+                    case 'Y':
+                        translateX = 0;
+                        break;
+                }
+                this.setTransform(translateX, translateY, null, null, chart, false);
                 this.refreshAxis(chart.chartAxisLayoutPanel, chart, chart.axisCollections);
             }
             else {
@@ -12160,8 +12236,6 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
                 else if (chart.disableTrackTooltip) {
                     chart.disableTrackTooltip = false;
                     chart.delayRedraw = false;
-                    this.previousScaleX = null;
-                    this.previousScaleY = null;
                     chart.removeSvg();
                     chart.refreshAxis();
                     chart.refreshBound();
@@ -12169,12 +12243,13 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
             }
         };
         Zoom.prototype.refreshAxis = function (layout, chart, axes) {
+            var mode = chart.zoomSettings.mode;
             layout.measureAxis(new helper_1.Rect(chart.initialClipRect.x, chart.initialClipRect.y, chart.initialClipRect.width, chart.initialClipRect.height));
             axes.map(function (axis, index) {
-                if (axis.orientation === 'Horizontal') {
+                if (axis.orientation === 'Horizontal' && mode !== 'Y') {
                     layout.drawXAxisLabels(axis, index);
                 }
-                else {
+                if (axis.orientation === 'Vertical' && mode !== 'X') {
                     layout.drawYAxisLabels(axis, index);
                 }
             });
@@ -12224,6 +12299,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
             var zoomFactor;
             var zoomPosition;
             this.isZoomed = true;
+            this.calculateZoomAxesRange(chart, chart.axisCollections);
             chart.disableTrackTooltip = true;
             axes.forEach(function (axis) {
                 if ((axis.orientation === 'Vertical' && mode !== 'X') ||
@@ -12248,91 +12324,100 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
             if (this.zoomingRect.width > 0 && this.zoomingRect.height > 0) {
                 return false;
             }
+            this.calculateZoomAxesRange(chart, chart.axisCollections);
             this.isZoomed = true;
             this.isPanning = true;
+            this.offset = !chart.delayRedraw ? chart.chartAxisLayoutPanel.seriesClipRect : this.offset;
             chart.delayRedraw = true;
             chart.disableTrackTooltip = true;
-            var mode = this.zooming.mode;
-            var offset = chart.element.getBoundingClientRect();
+            var elementOffset = chart.element.getBoundingClientRect();
             var touchDown = this.touchStartList;
             var touchMove = this.touchMoveList;
-            var touch0StartX = Math.min(touchDown[0].pageX, touchDown[1].pageX) - offset.left;
-            var touch0StartY = Math.max(touchDown[0].pageY, touchDown[1].pageY) - offset.top;
-            var touch0EndX = Math.min(touchMove[0].pageX, touchMove[1].pageX) - offset.left;
-            var touch0EndY = Math.max(touchMove[0].pageY, touchMove[1].pageY) - offset.top;
-            var touch1StartX = Math.max(touchDown[0].pageX, touchDown[1].pageX) - offset.left;
-            var touch1StartY = Math.min(touchDown[0].pageY, touchDown[1].pageY) - offset.top;
-            var touch1EndX = Math.max(touchMove[0].pageX, touchMove[1].pageX) - offset.left;
-            var touch1EndY = Math.min(touchMove[0].pageY, touchMove[1].pageY) - offset.top;
+            var touch0StartX = touchDown[0].pageX - elementOffset.left;
+            var touch0StartY = touchDown[0].pageY - elementOffset.top;
+            var touch0EndX = touchMove[0].pageX - elementOffset.left;
+            var touch0EndY = touchMove[0].pageY - elementOffset.top;
+            var touch1StartX = touchDown[1].pageX - elementOffset.left;
+            var touch1StartY = touchDown[1].pageY - elementOffset.top;
+            var touch1EndX = touchMove[1].pageX - elementOffset.left;
+            var touch1EndY = touchMove[1].pageY - elementOffset.top;
             var scaleX;
             var scaleY;
             var translateXValue;
             var translateYValue;
-            touch0EndX -= (touch1EndX - touch1StartX);
-            touch0EndY -= (touch1EndY - touch1StartY);
-            touch1EndX = touch1StartX;
-            touch1EndY = touch1StartY;
+            var pinchRect;
+            var clipX;
+            var clipY;
             scaleX = Math.abs(touch0EndX - touch1EndX) / Math.abs(touch0StartX - touch1StartX);
             scaleY = Math.abs(touch0EndY - touch1EndY) / Math.abs(touch0StartY - touch1StartY);
+            clipX = ((this.offset.x - touch0EndX) / scaleX) + touch0StartX;
+            clipY = ((this.offset.y - touch0EndY) / scaleY) + touch0StartY;
+            pinchRect = new helper_1.Rect(clipX, clipY, this.offset.width / scaleX, this.offset.height / scaleY);
             translateXValue = (touch0EndX - (scaleX * touch0StartX));
             translateYValue = (touch0EndY - (scaleY * touch0StartY));
             if (!isNaN(scaleX - scaleX) && !isNaN(scaleY - scaleY)) {
-                switch (mode) {
+                switch (this.zooming.mode) {
                     case 'XY':
-                        this.setTransform(translateXValue, translateYValue, scaleX, scaleY, chart, touch1EndX > offset.width / 2);
+                        this.setTransform(translateXValue, translateYValue, scaleX, scaleY, chart, true);
                         break;
                     case 'X':
-                        this.setTransform(translateXValue, 0, scaleX, 1, chart, touch1EndX > offset.width / 2);
+                        this.setTransform(translateXValue, 0, scaleX, 1, chart, true);
                         break;
                     case 'Y':
                         this.setTransform(0, translateYValue, 1, scaleY, chart, true);
                         break;
                 }
             }
-            if (this.previousScaleX) {
-                this.calculatePinchZoomFactor(chart, scaleX, scaleY, (touchMove[0].pageX + touchMove[1].pageX) / 2, (touchMove[0].pageY + touchMove[1].pageY) / 2);
-                this.previousScaleX = scaleX;
-                this.previousScaleY = scaleY;
-            }
-            else {
-                this.previousScaleX = scaleX;
-                this.previousScaleY = scaleY;
-            }
+            this.calculatePinchZoomFactor(chart, pinchRect);
             this.refreshAxis(chart.chartAxisLayoutPanel, chart, chart.axisCollections);
             return true;
         };
-        Zoom.prototype.calculatePinchZoomFactor = function (chart, scaleX, scaleY, centerX, centerY) {
+        Zoom.prototype.calculatePinchZoomFactor = function (chart, pinchRect) {
             var _this = this;
-            var ensureValueInMinMax = helper_1.minMax;
-            var currentScale;
-            var previousScale;
-            var cumulativeScale;
-            var currentZoomFactor;
-            var origin;
             var mode = this.zooming.mode;
-            var areaBounds = chart.element.getBoundingClientRect();
-            var scaleLimit = 10000;
-            chart.axisCollections.forEach(function (axis) {
+            var selectionMin;
+            var selectionMax;
+            var rangeMin;
+            var rangeMax;
+            var value;
+            var axisTrans;
+            chart.axisCollections.forEach(function (axis, index) {
                 if ((axis.orientation === 'Horizontal' && mode !== 'Y') ||
                     (axis.orientation === 'Vertical' && mode !== 'X')) {
-                    currentZoomFactor = axis.zoomFactor;
-                    currentScale = axis.orientation === 'Horizontal' ? scaleX : scaleY;
-                    previousScale = axis.orientation === 'Horizontal' ? _this.previousScaleX : _this.previousScaleY;
-                    cumulativeScale = ensureValueInMinMax((1 / axis.zoomFactor) + ((1 / axis.zoomFactor) * (currentScale - previousScale) / previousScale), 1, scaleLimit);
-                    origin = axis.orientation === 'Horizontal' ? (centerX / areaBounds.width) :
-                        (1 - centerY / areaBounds.height);
-                    axis.zoomFactor = ensureValueInMinMax(1 / cumulativeScale, 1 / scaleLimit, 1);
-                    axis.zoomPosition = ensureValueInMinMax(axis.zoomPosition + (currentZoomFactor - axis.zoomFactor) * origin, 0, 1 - axis.zoomFactor);
+                    if (axis.orientation === 'Horizontal') {
+                        value = pinchRect.x - _this.offset.x;
+                        axisTrans = axis.rect.width / _this.zoomAxes[index].delta;
+                        rangeMin = value / axisTrans + _this.zoomAxes[index].min;
+                        value = pinchRect.x + pinchRect.width - _this.offset.x;
+                        rangeMax = value / axisTrans + _this.zoomAxes[index].min;
+                    }
+                    else {
+                        value = pinchRect.y - _this.offset.y;
+                        axisTrans = axis.rect.height / _this.zoomAxes[index].delta;
+                        rangeMin = (value * -1 + axis.rect.height) / axisTrans + _this.zoomAxes[index].min;
+                        value = pinchRect.y + pinchRect.height - _this.offset.y;
+                        rangeMax = (value * -1 + axis.rect.height) / axisTrans + _this.zoomAxes[index].min;
+                    }
+                    selectionMin = Math.min(rangeMin, rangeMax);
+                    selectionMax = Math.max(rangeMin, rangeMax);
+                    axis.zoomPosition = (selectionMin - _this.zoomAxes[index].actualMin) / _this.zoomAxes[index].actualDelta;
+                    axis.zoomFactor = (selectionMax - selectionMin) / _this.zoomAxes[index].actualDelta;
+                    axis.zoomPosition = axis.zoomPosition < 0 ? 0 : axis.zoomPosition;
+                    axis.zoomFactor = axis.zoomFactor > 1 ? 1 : axis.zoomFactor;
                 }
             });
         };
         Zoom.prototype.setTransform = function (transX, transY, scaleX, scaleY, chart, isPinch) {
             chart.seriesElements.setAttribute('clip-path', 'url(#' + this.elementId + '_ChartAreaClipRect_)');
             var translate;
+            var xAxisLoc;
+            var yAxisLoc;
             if (transX !== null && transY !== null) {
                 chart.visibleSeries.forEach(function (value) {
-                    translate = 'translate(' + (transX + (isPinch ? (scaleX * value.xAxis.rect.x) : value.xAxis.rect.x)) +
-                        ',' + (transY + (isPinch ? (scaleY * value.yAxis.rect.y) : value.yAxis.rect.y)) + ')';
+                    xAxisLoc = chart.requireInvertedAxis ? value.yAxis.rect.x : value.xAxis.rect.x;
+                    yAxisLoc = chart.requireInvertedAxis ? value.xAxis.rect.y : value.yAxis.rect.y;
+                    translate = 'translate(' + (transX + (isPinch ? (scaleX * xAxisLoc) : xAxisLoc)) +
+                        ',' + (transY + (isPinch ? (scaleY * yAxisLoc) : yAxisLoc)) + ')';
                     translate = (scaleX || scaleY) ? translate + ' scale(' + scaleX + ' ' + scaleY + ')' : translate;
                     value.seriesElement.setAttribute('transform', translate);
                     if (value.symbolElement) {
@@ -12345,13 +12430,37 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
                 });
             }
         };
+        Zoom.prototype.calculateZoomAxesRange = function (chart, axes) {
+            var _this = this;
+            var range;
+            var axisRange;
+            chart.axisCollections.forEach(function (axis, index) {
+                axisRange = axis.actualRange;
+                if (_this.zoomAxes[index]) {
+                    if (!chart.delayRedraw) {
+                        _this.zoomAxes[index].min = axisRange.min;
+                        _this.zoomAxes[index].delta = axisRange.delta;
+                    }
+                }
+                else {
+                    range = {
+                        actualMin: axisRange.min,
+                        actualDelta: axisRange.delta,
+                        min: axisRange.min,
+                        delta: axisRange.delta
+                    };
+                    _this.zoomAxes[index] = range;
+                }
+            });
+        };
         Zoom.prototype.showZoomingToolkit = function (chart) {
             var toolboxItems = this.zooming.toolbarItems;
             var areaBounds = chart.chartAxisLayoutPanel.seriesClipRect;
             var spacing = 5;
             var render = chart.renderer;
-            var length = toolboxItems.length;
-            var iconSize = 16;
+            var length = this.isDevice ? 1 : toolboxItems.length;
+            var iconSize = this.isDevice ? helper_1.measureText('Reset Zoom', { size: '12px' }).width : 16;
+            var height = this.isDevice ? helper_1.measureText('Reset Zoom', { size: '12px' }).height : 16;
             var width = (length * iconSize) + ((length + 1) * spacing) + ((length - 1) * spacing);
             var transX = areaBounds.x + areaBounds.width - width - spacing;
             var transY = (areaBounds.y + spacing);
@@ -12366,14 +12475,15 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
                 return false;
             }
             var defElement = render.createDefs();
+            toolboxItems = this.isDevice ? ['Reset'] : toolboxItems;
             defElement.innerHTML = shadowElement;
             this.toolkitElements = render.createGroup({
                 id: this.elementId + '_Zooming_KitCollection',
                 transform: 'translate(' + transX + ',' + transY + ')'
             });
             this.toolkitElements.appendChild(defElement);
-            this.toolkitElements.appendChild(render.drawRectangle(new helper_1.RectOption(this.elementId + '_Zooming_Rect', 'white', { color: 'transparent', width: 1 }, 1, new helper_1.Rect(0, 0, width, (iconSize + (spacing * 2))), 0, 0)));
-            outerElement = render.drawRectangle(new helper_1.RectOption(this.elementId + '_Zooming_Rect', '#fafafa', { color: 'transparent', width: 1 }, 0.1, new helper_1.Rect(0, 0, width, (iconSize + (spacing * 2))), 0, 0));
+            this.toolkitElements.appendChild(render.drawRectangle(new helper_1.RectOption(this.elementId + '_Zooming_Rect', '#fafafa', { color: 'transparent', width: 1 }, 1, new helper_1.Rect(0, 0, width, (height + (spacing * 2))), 0, 0)));
+            outerElement = render.drawRectangle(new helper_1.RectOption(this.elementId + '_Zooming_Rect', '#fafafa', { color: 'transparent', width: 1 }, 0.1, new helper_1.Rect(0, 0, width, (height + (spacing * 2))), 0, 0));
             outerElement.setAttribute('filter', 'url(#chart_shadow)');
             this.toolkitElements.appendChild(outerElement);
             var currentItem;
@@ -12396,40 +12506,40 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
                         toolkit.createZoomOutButton(element, this.toolkitElements, chart);
                         break;
                     case 'Reset':
-                        toolkit.createResetButton(element, this.toolkitElements, chart);
+                        toolkit.createResetButton(element, this.toolkitElements, chart, this.isDevice);
                         break;
                 }
                 xPosition += iconSize + (spacing * 2);
             }
-            this.toolkitElements.setAttribute('opacity', '0.3');
+            this.toolkitElements.setAttribute('opacity', this.isDevice ? '1' : '0.3');
             this.toolkitElements.setAttribute('cursor', 'auto');
             chart.svgObject.appendChild(this.toolkitElements);
-            ej2_base_1.EventHandler.add(this.toolkitElements, 'mousemove touchstart', this.zoomToolkitMove, this);
-            ej2_base_1.EventHandler.add(this.toolkitElements, 'mouseleave touchend', this.zoomToolkitLeave, this);
-            if (this.isPanning) {
-                toolkit.pan();
+            if (!this.isDevice) {
+                ej2_base_1.EventHandler.add(this.toolkitElements, 'mousemove touchstart', this.zoomToolkitMove, this);
+                ej2_base_1.EventHandler.add(this.toolkitElements, 'mouseleave touchend', this.zoomToolkitLeave, this);
+                if (this.isPanning) {
+                    toolkit.pan();
+                }
             }
             return true;
         };
         Zoom.prototype.applyZoomToolkit = function (chart, axes) {
             var showToolkit = false;
             var toolkitElement = helper_1.getElement(this.elementId + '_Zooming_KitCollection');
-            if (!this.isDevice) {
-                axes.forEach(function (axis) {
-                    showToolkit = (showToolkit || (axis.zoomFactor !== 1 || axis.zoomPosition !== 0));
-                });
-                if (showToolkit) {
-                    this.showZoomingToolkit(chart);
-                    this.isZoomed = true;
+            axes.forEach(function (axis) {
+                showToolkit = (showToolkit || (axis.zoomFactor !== 1 || axis.zoomPosition !== 0));
+            });
+            if (showToolkit) {
+                this.showZoomingToolkit(chart);
+                this.isZoomed = true;
+            }
+            else {
+                this.toolkit.removeTooltip();
+                if (this.toolkitElements) {
+                    this.toolkitElements.remove();
                 }
-                else {
-                    this.toolkit.removeTooltip();
-                    if (this.toolkitElements) {
-                        this.toolkitElements.remove();
-                    }
-                    this.isPanning = false;
-                    this.isZoomed = false;
-                }
+                this.isPanning = false;
+                this.isZoomed = false;
             }
         };
         Zoom.prototype.zoomToolkitMove = function (e) {
