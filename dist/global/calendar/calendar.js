@@ -323,25 +323,13 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
         }
         Calendar.prototype.render = function () {
             this.globalize = new ej2_base_1.Internationalization(this.locale);
-            if (this.getModuleName() === 'calendar') {
-                this.element.classList.add(ROOT);
-                if (this.enableRtl) {
-                    this.element.classList.add(RTL);
-                }
-                dom_1.attributes(this.element, {
-                    'role': 'calendar'
-                });
+            this.element.classList.add(ROOT);
+            if (this.enableRtl) {
+                this.element.classList.add(RTL);
             }
-            else {
-                this.baseElement = dom_1.createElement('div');
-                this.baseElement.classList.add(ROOT);
-                if (this.enableRtl) {
-                    this.baseElement.classList.add(RTL);
-                }
-                dom_1.attributes(this.baseElement, {
-                    'role': 'calendar'
-                });
-            }
+            dom_1.attributes(this.element, {
+                'role': 'calendar'
+            });
             this.aniObj = new ej2_base_4.Animation(this.animateOptions);
             this.processDate();
             this.header();
@@ -423,12 +411,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
             iconContainer.appendChild(this.prevIcon);
             iconContainer.appendChild(this.nextIcon);
             this.headerEle.appendChild(iconContainer);
-            if (this.getModuleName() === 'calendar') {
-                this.element.appendChild(this.headerEle);
-            }
-            else {
-                this.baseElement.appendChild(this.headerEle);
-            }
+            this.element.appendChild(this.headerEle);
         };
         Calendar.prototype.content = function () {
             this.effect = {
@@ -440,12 +423,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
             this.previousDate = this.value;
             this.contentEle = dom_1.createElement('div', { className: CONTENT });
             this.table = dom_1.createElement('table', { attrs: { tabIndex: '0', 'role': 'grid', 'aria-activedescendant': '' } });
-            if (this.getModuleName() === 'calendar') {
-                this.element.appendChild(this.contentEle);
-            }
-            else {
-                this.baseElement.appendChild(this.contentEle);
-            }
+            this.element.appendChild(this.contentEle);
             this.contentEle.appendChild(this.table);
             this.contentHdr();
             this.contentBody();
@@ -466,15 +444,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
             return culShortNames;
         };
         Calendar.prototype.contentHdr = function () {
-            if (this.getModuleName() === 'calendar') {
-                if (this.element.querySelectorAll('.e-content .e-week-header')[0]) {
-                    dom_1.remove(this.element.querySelectorAll('.e-content .e-week-header')[0]);
-                }
-            }
-            else {
-                if (this.baseElement.querySelectorAll('.e-content .e-week-header')[0]) {
-                    dom_1.remove(this.baseElement.querySelectorAll('.e-content .e-week-header')[0]);
-                }
+            if (this.element.querySelectorAll('.e-content .e-week-header')[0]) {
+                dom_1.remove(this.element.querySelectorAll('.e-content .e-week-header')[0]);
             }
             var daysCount = 6;
             var html = '';
@@ -495,15 +466,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
             this.table.appendChild(this.theadEle);
         };
         Calendar.prototype.contentBody = function () {
-            if (this.getModuleName() === 'calendar') {
-                if (this.element.querySelectorAll('.e-content tbody')[0]) {
-                    dom_1.remove(this.element.querySelectorAll('.e-content tbody')[0]);
-                }
-            }
-            else {
-                if (this.baseElement.querySelectorAll('.e-content tbody')[0]) {
-                    dom_1.remove(this.baseElement.querySelectorAll('.e-content tbody')[0]);
-                }
+            if (this.element.querySelectorAll('.e-content tbody')[0]) {
+                dom_1.remove(this.element.querySelectorAll('.e-content tbody')[0]);
             }
             switch (this.start) {
                 case 'year':
@@ -1008,20 +972,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                         break;
                     case 'enableRtl':
                         if (newProp.enableRtl) {
-                            if (this.getModuleName() === 'calendar') {
-                                this.element.classList.add('e-rtl');
-                            }
-                            else {
-                                this.baseElement.classList.add('e-rtl');
-                            }
+                            this.element.classList.add('e-rtl');
                         }
                         else {
-                            if (this.getModuleName() === 'calendar') {
-                                this.element.classList.remove('e-rtl');
-                            }
-                            else {
-                                this.baseElement.classList.remove('e-rtl');
-                            }
+                            this.element.classList.remove('e-rtl');
                         }
                         break;
                     case 'weekNumber':
@@ -1092,12 +1046,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
             }
         };
         Calendar.prototype.destroy = function () {
-            if (this.getModuleName() === 'calendar') {
-                this.element.classList.remove(ROOT);
-            }
-            else {
-                this.baseElement.classList.remove(ROOT);
-            }
+            this.element.classList.remove(ROOT);
             ej2_base_1.EventHandler.remove(this.hdrTitleEle, 'click', this.navTitle);
             this.prevIconHandler(true);
             this.nextIconHandler(true);
