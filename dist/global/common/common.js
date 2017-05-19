@@ -1781,8 +1781,9 @@ var Browser = (function () {
                     browserInfo.name = 'msie';
                     break;
                 }
-                if (browserInfo.name === 'safari') {
-                    browserInfo.version = Browser.userAgent.match(REGX_VERSION)[2];
+                var version = Browser.userAgent.match(REGX_VERSION);
+                if (browserInfo.name === 'safari' && version) {
+                    browserInfo.version = version[2];
                 }
                 break;
             }

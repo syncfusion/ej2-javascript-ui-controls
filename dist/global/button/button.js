@@ -344,7 +344,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
             }
             span = element.querySelector('span.e-btn-icon');
             if (span) {
-                span.remove();
+                dom_1.detach(span);
             }
             this.unWireEvents();
         };
@@ -389,7 +389,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                     case 'iconPosition':
                         span = this.element.querySelector('span.e-btn-icon');
                         if (span) {
-                            span.remove();
+                            dom_1.detach(span);
                         }
                         this.setIconCss();
                         break;

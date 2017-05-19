@@ -1052,14 +1052,14 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
         };
         NumericTextBox.prototype.destroy = function () {
             this.unwireEvents();
-            this.hiddenInput.remove();
+            dom_1.detach(this.hiddenInput);
             if (this.showSpinButton) {
                 this.unwireSpinBtnEvents();
-                this.spinUp.remove();
-                this.spinDown.remove();
+                dom_1.detach(this.spinUp);
+                dom_1.detach(this.spinDown);
             }
             this.container.parentElement.appendChild(this.cloneElement);
-            this.container.remove();
+            dom_1.detach(this.container);
             _super.prototype.destroy.call(this);
         };
         NumericTextBox.prototype.getText = function () {
@@ -1110,8 +1110,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                             this.spinBtnCreation();
                         }
                         else {
-                            this.spinUp.remove();
-                            this.spinDown.remove();
+                            dom_1.detach(this.spinUp);
+                            dom_1.detach(this.spinDown);
                         }
                         break;
                     case 'value':

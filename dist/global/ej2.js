@@ -1781,8 +1781,9 @@ var Browser = (function () {
                     browserInfo.name = 'msie';
                     break;
                 }
-                if (browserInfo.name === 'safari') {
-                    browserInfo.version = Browser.userAgent.match(REGX_VERSION)[2];
+                var version = Browser.userAgent.match(REGX_VERSION);
+                if (browserInfo.name === 'safari' && version) {
+                    browserInfo.version = version[2];
                 }
                 break;
             }
@@ -6349,7 +6350,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
             }
             span = element.querySelector('span.e-btn-icon');
             if (span) {
-                span.remove();
+                dom_1.detach(span);
             }
             this.unWireEvents();
         };
@@ -6394,7 +6395,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                     case 'iconPosition':
                         span = this.element.querySelector('span.e-btn-icon');
                         if (span) {
-                            span.remove();
+                            dom_1.detach(span);
                         }
                         this.setIconCss();
                         break;
@@ -26199,7 +26200,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                         break;
                     case 'header':
                         if (this.header === '') {
-                            this.headerEle.remove();
+                            dom_1.detach(this.headerEle);
                         }
                         else {
                             this.element.getElementsByClassName(DLG_HEADER).length > 0 ?
@@ -26214,10 +26215,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                     case 'showCloseIcon':
                         if (this.element.getElementsByClassName(DLG_CLOSE_ICON).length > 0) {
                             if (!this.showCloseIcon && this.header === '') {
-                                this.headerContent.remove();
+                                dom_1.detach(this.headerContent);
                             }
                             else if (!this.showCloseIcon) {
-                                this.closeIcon.remove();
+                                dom_1.detach(this.closeIcon);
                             }
                         }
                         else {
@@ -26241,7 +26242,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                         else {
                             dom_1.removeClass([this.element], MODAL_DLG);
                             dom_1.removeClass([document.body], SCROLL_DISABLED);
-                            this.dlgOverlay.remove();
+                            dom_1.detach(this.dlgOverlay);
                         }
                         break;
                     case 'height':
@@ -26303,7 +26304,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                     this.btnObj.destroy();
                 }
                 if (this.isModal) {
-                    this.dlgOverlay.remove();
+                    dom_1.detach(this.dlgOverlay);
                 }
                 this.element.innerHTML = '';
             }
@@ -27394,8 +27395,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
                         browserInfo.name = 'msie';
                         break;
                     }
-                    if (browserInfo.name === 'safari') {
-                        browserInfo.version = Browser.userAgent.match(REGX_VERSION)[2];
+                    var version = Browser.userAgent.match(REGX_VERSION);
+                    if (browserInfo.name === 'safari' && version) {
+                        browserInfo.version = version[2];
                     }
                     break;
                 }
@@ -27711,7 +27713,7 @@ var Button = (function (_super) {
         }
         span = element.querySelector('span.e-btn-icon');
         if (span) {
-            span.remove();
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__syncfusion_ej2_base_dom__["detach"])(span);
         }
         this.unWireEvents();
     };
@@ -27756,7 +27758,7 @@ var Button = (function (_super) {
                 case 'iconPosition':
                     span = this.element.querySelector('span.e-btn-icon');
                     if (span) {
-                        span.remove();
+                        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__syncfusion_ej2_base_dom__["detach"])(span);
                     }
                     this.setIconCss();
                     break;
@@ -45286,14 +45288,14 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
         };
         NumericTextBox.prototype.destroy = function () {
             this.unwireEvents();
-            this.hiddenInput.remove();
+            dom_1.detach(this.hiddenInput);
             if (this.showSpinButton) {
                 this.unwireSpinBtnEvents();
-                this.spinUp.remove();
-                this.spinDown.remove();
+                dom_1.detach(this.spinUp);
+                dom_1.detach(this.spinDown);
             }
             this.container.parentElement.appendChild(this.cloneElement);
-            this.container.remove();
+            dom_1.detach(this.container);
             _super.prototype.destroy.call(this);
         };
         NumericTextBox.prototype.getText = function () {
@@ -45344,8 +45346,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                             this.spinBtnCreation();
                         }
                         else {
-                            this.spinUp.remove();
-                            this.spinDown.remove();
+                            dom_1.detach(this.spinUp);
+                            dom_1.detach(this.spinDown);
                         }
                         break;
                     case 'value':
@@ -48943,8 +48945,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
                         browserInfo.name = 'msie';
                         break;
                     }
-                    if (browserInfo.name === 'safari') {
-                        browserInfo.version = Browser.userAgent.match(REGX_VERSION)[2];
+                    var version = Browser.userAgent.match(REGX_VERSION);
+                    if (browserInfo.name === 'safari' && version) {
+                        browserInfo.version = version[2];
                     }
                     break;
                 }
@@ -49260,7 +49263,7 @@ var Button = (function (_super) {
         }
         span = element.querySelector('span.e-btn-icon');
         if (span) {
-            span.remove();
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__syncfusion_ej2_base_dom__["detach"])(span);
         }
         this.unWireEvents();
     };
@@ -49305,7 +49308,7 @@ var Button = (function (_super) {
                 case 'iconPosition':
                     span = this.element.querySelector('span.e-btn-icon');
                     if (span) {
-                        span.remove();
+                        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__syncfusion_ej2_base_dom__["detach"])(span);
                     }
                     this.setIconCss();
                     break;
@@ -50443,7 +50446,7 @@ var Dialog = (function (_super) {
                     break;
                 case 'header':
                     if (this.header === '') {
-                        this.headerEle.remove();
+                        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__syncfusion_ej2_base_dom__["detach"])(this.headerEle);
                     }
                     else {
                         this.element.getElementsByClassName(DLG_HEADER).length > 0 ?
@@ -50458,10 +50461,10 @@ var Dialog = (function (_super) {
                 case 'showCloseIcon':
                     if (this.element.getElementsByClassName(DLG_CLOSE_ICON).length > 0) {
                         if (!this.showCloseIcon && this.header === '') {
-                            this.headerContent.remove();
+                            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__syncfusion_ej2_base_dom__["detach"])(this.headerContent);
                         }
                         else if (!this.showCloseIcon) {
-                            this.closeIcon.remove();
+                            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__syncfusion_ej2_base_dom__["detach"])(this.closeIcon);
                         }
                     }
                     else {
@@ -50485,7 +50488,7 @@ var Dialog = (function (_super) {
                     else {
                         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__syncfusion_ej2_base_dom__["removeClass"])([this.element], MODAL_DLG);
                         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__syncfusion_ej2_base_dom__["removeClass"])([document.body], SCROLL_DISABLED);
-                        this.dlgOverlay.remove();
+                        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__syncfusion_ej2_base_dom__["detach"])(this.dlgOverlay);
                     }
                     break;
                 case 'height':
@@ -50547,7 +50550,7 @@ var Dialog = (function (_super) {
                 this.btnObj.destroy();
             }
             if (this.isModal) {
-                this.dlgOverlay.remove();
+                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__syncfusion_ej2_base_dom__["detach"])(this.dlgOverlay);
             }
             this.element.innerHTML = '';
         }
@@ -52711,7 +52714,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
             if (this.uniqueId) {
                 this.element.removeAttribute('id');
             }
-            this.scrollEle.remove();
+            dom_1.detach(this.scrollEle);
             nav.parentElement.removeChild(nav);
             event_handler_1.EventHandler.remove(this.scrollEle, 'scroll', this.scrollEventHandler);
             this.touchModule.destroy();
@@ -52728,6 +52731,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
             element.insertBefore(nav, element.firstChild);
             event_handler_1.EventHandler.add(this.scrollEle, 'scroll', this.scrollEventHandler, this);
             var tchObj = new touch_1.Touch(nav, { taphold: this.tabHoldHandler.bind(this) });
+            if (browser_1.Browser.info.name === 'msie') {
+                nav.classList.add('e-ie-align');
+            }
             nav.addEventListener('mouseup', this.repeatScroll.bind(this));
             nav.addEventListener('touchend', this.repeatScroll.bind(this));
             nav.addEventListener('contextmenu', function (e) {
@@ -53325,6 +53331,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
             var id = element.id.concat('_nav');
             var className = 'e-' + element.id.concat('_nav ' + CLASSNAMES.POPUPNAV);
             var nav = dom_2.createElement('div', { id: id, className: className });
+            if (ej2_base_1.Browser.info.name === 'msie') {
+                nav.classList.add('e-ie-align');
+            }
             var navItem = dom_2.createElement('div', { className: CLASSNAMES.POPUPDOWN + ' e-icons' });
             nav.appendChild(navItem);
             nav.setAttribute('tabindex', '0');
@@ -53605,9 +53614,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
             }
             popupEle.style.display = 'none';
             if (popupEle.children.length === 0) {
-                popNav.remove();
+                dom_1.detach(popNav);
                 this.popupObj.destroy();
-                this.popupObj.element.remove();
+                dom_1.detach(this.popupObj.element);
                 this.popupObj = null;
                 this.element.setAttribute('aria-haspopup', 'false');
                 this.element.classList.remove('e-toolpop');
@@ -53669,7 +53678,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
         Toolbar.prototype.removeItemByIndex = function (index, innerItems) {
             if (this.tbarEle[index] && innerItems[index]) {
                 var eleIdx = innerItems.indexOf(this.tbarEle[index]);
-                innerItems[eleIdx].remove();
+                dom_1.detach(innerItems[eleIdx]);
                 this.items.splice(index, 1);
                 this.tbarEle.splice(index, 1);
             }
@@ -53849,7 +53858,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
                         if (this.popupObj) {
                             var popNav = this.element.querySelector('.' + CLASSNAMES.TBARNAV);
                             this.popupRefresh(this.popupObj.element, true);
-                            popNav.remove();
                         }
                         this.renderOverflowMode();
                         if (this.enableRtl) {
@@ -54641,8 +54649,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
                         browserInfo.name = 'msie';
                         break;
                     }
-                    if (browserInfo.name === 'safari') {
-                        browserInfo.version = Browser.userAgent.match(REGX_VERSION)[2];
+                    var version = Browser.userAgent.match(REGX_VERSION);
+                    if (browserInfo.name === 'safari' && version) {
+                        browserInfo.version = version[2];
                     }
                     break;
                 }
@@ -55520,7 +55529,7 @@ var Button = (function (_super) {
         }
         span = element.querySelector('span.e-btn-icon');
         if (span) {
-            span.remove();
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__syncfusion_ej2_base_dom__["detach"])(span);
         }
         this.unWireEvents();
     };
@@ -55565,7 +55574,7 @@ var Button = (function (_super) {
                 case 'iconPosition':
                     span = this.element.querySelector('span.e-btn-icon');
                     if (span) {
-                        span.remove();
+                        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__syncfusion_ej2_base_dom__["detach"])(span);
                     }
                     this.setIconCss();
                     break;
@@ -56922,7 +56931,7 @@ var Dialog = (function (_super) {
                     break;
                 case 'header':
                     if (this.header === '') {
-                        this.headerEle.remove();
+                        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__syncfusion_ej2_base_dom__["detach"])(this.headerEle);
                     }
                     else {
                         this.element.getElementsByClassName(DLG_HEADER).length > 0 ?
@@ -56937,10 +56946,10 @@ var Dialog = (function (_super) {
                 case 'showCloseIcon':
                     if (this.element.getElementsByClassName(DLG_CLOSE_ICON).length > 0) {
                         if (!this.showCloseIcon && this.header === '') {
-                            this.headerContent.remove();
+                            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__syncfusion_ej2_base_dom__["detach"])(this.headerContent);
                         }
                         else if (!this.showCloseIcon) {
-                            this.closeIcon.remove();
+                            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__syncfusion_ej2_base_dom__["detach"])(this.closeIcon);
                         }
                     }
                     else {
@@ -56964,7 +56973,7 @@ var Dialog = (function (_super) {
                     else {
                         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__syncfusion_ej2_base_dom__["removeClass"])([this.element], MODAL_DLG);
                         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__syncfusion_ej2_base_dom__["removeClass"])([document.body], SCROLL_DISABLED);
-                        this.dlgOverlay.remove();
+                        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__syncfusion_ej2_base_dom__["detach"])(this.dlgOverlay);
                     }
                     break;
                 case 'height':
@@ -57026,7 +57035,7 @@ var Dialog = (function (_super) {
                 this.btnObj.destroy();
             }
             if (this.isModal) {
-                this.dlgOverlay.remove();
+                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__syncfusion_ej2_base_dom__["detach"])(this.dlgOverlay);
             }
             this.element.innerHTML = '';
         }

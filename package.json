@@ -17,10 +17,15 @@
 	},
 	"devDependencies": {
 		"@types/chai": "^3.4.28",
-		"@types/es6-promise": "0.0.28"
+		"@types/es6-promise": "0.0.28",
+		"es6-promise": "^3.2.1",
+		"gulp": "^3.9.1",
+		"gulp-sass": "^3.1.0",
+		"gulp-typescript": "^3.1.6",
+		"requirejs": "^2.3.3",
+		"typescript": "2.2.2"
 	},
 	"scripts": {
-		"build": "gulp npmignore && gulp build && gulp global-scripts",
-		"ci-publish": "gulp ej2-publish && gulp publish-github"
+		"build": "gulp build"
 	}
 }
