@@ -17,7 +17,7 @@
     "allowJs": false,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
-    "types": ["jasmine","jasmine-ajax","requirejs","chai","es6-promise"],
+    "types": ["requirejs","chai","es6-promise"],
     "suppressImplicitAnyIndexErrors": true    
   },
   "exclude": [
