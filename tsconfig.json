@@ -17,7 +17,10 @@
     "allowJs": false,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
-    "types": ["requirejs","chai","es6-promise"],
+    "lib": [
+      "es2015", "es2015.promise", "dom"
+    ],
+    "types": ["requirejs"],
     "suppressImplicitAnyIndexErrors": true    
   },
   "exclude": [

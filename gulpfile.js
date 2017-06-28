@@ -10,17 +10,20 @@ gulp.task('build', ['scripts', 'styles']);
 /**
  * Compile ts files
  */
-gulp.task('scripts', function() {
+gulp.task('scripts', function(done) {
     var ts = require('gulp-typescript');
     var tsProject = ts.createProject('tsconfig.json', { typescript: require('typescript') });
 
     var tsResult = gulp.src(['./**/*.ts', '!./node_modules/**/*.ts'], { base: '.' })
         .pipe(tsProject());
-    tsResult.js.pipe(gulp.dest('./'));
+    tsResult.js.pipe(gulp.dest('./'))
+        .on('end', function() {
+            done();
+        });
 });
 
 /**
- * Compile scss files
+ * Compile styles
  */
 gulp.task('styles', function() {
     var sass = require('gulp-sass');

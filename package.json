@@ -16,15 +16,21 @@
 		"@syncfusion/ej2-navigations": "*"
 	},
 	"devDependencies": {
-		"@types/chai": "^3.4.28",
-		"@types/es6-promise": "0.0.28",
-		"@types/requirejs": "^2.1.26",
 		"es6-promise": "^3.2.1",
 		"gulp": "^3.9.1",
 		"gulp-sass": "^3.1.0",
 		"gulp-typescript": "^3.1.6",
 		"requirejs": "^2.3.3",
-		"typescript": "2.2.2"
+		"typescript": "2.3.4"
+	},
+	"keywords": [
+		"ej2",
+		"syncfusion",
+		"ej2-all"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/syncfusion/ej2"
 	},
 	"scripts": {
 		"build": "gulp build"
