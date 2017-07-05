@@ -1,1 +1,1 @@
-export * from "@syncfusion/ej2-popups";
+export * from "@syncfusion/ej2-popups/popup";
