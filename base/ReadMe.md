@@ -5,6 +5,8 @@ A common package of Essential JS 2 base libraries, methods and class definitions
 
 # 1.0.10
 
+# 1.0.10-preview (2017-07-05)
+
 ## Bug Fixes
 
 - Resolved DateParser issue in Chinese culture, when the date string is in 12 hours format.

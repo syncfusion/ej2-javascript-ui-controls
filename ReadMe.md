@@ -6,6 +6,14 @@ Essential JS 2 is a modern JavaScript UI toolkit that has been the built from th
 * [Pure JS Demos](http://ej2.syncfusion.com/demos/)  
 * [Pure JS Documentation](http://ej2.syncfusion.com/documentation/)
 
+# 1.0.10
+
+# 1.0.10-preview (2017-07-05)
+
+## New Components
+
+- Added Tooltip component - [demos](http://ej2.syncfusion.com/demos/#/tooltip/default.html)
+
 ## Installing
 
 To install all dependent packages, use the below command
