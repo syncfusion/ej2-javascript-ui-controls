@@ -5,6 +5,7 @@ Easily creates Alert, Confirmation, Prompt dialogs and Tooltip. It comes with fu
 ## Resources
 
 * [Dialog Demos](http://ej2.syncfusion.com/demos/#/dialog/basic.html)
+* [Tooltip Demos](http://ej2.syncfusion.com/demos/#/tooltip/default.html)
 
 # 1.0.10
 ## Dialog
