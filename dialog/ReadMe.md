@@ -8,6 +8,9 @@ Easily creates Alert, Confirmation, Prompt dialogs and Tooltip. It comes with fu
 * [Tooltip Demos](http://ej2.syncfusion.com/demos/#/tooltip/default.html)
 
 # 1.0.10
+
+# 1.0.10-preview (2017-07-05)
+
 ## Dialog
 ### New Features
 -   Removed the default value for zIndex property and updated the calculation based on parent elements z-index.
