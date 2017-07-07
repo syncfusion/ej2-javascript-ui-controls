@@ -3,11 +3,12 @@ A common package of Essential JS 2 base libraries, methods and class definitions
 ## Resources
 [Demos](http://ej2.syncfusion.com/demos/) 
 
-# 1.0.10
+## Changelog
 
-# 1.0.10-preview (2017-07-05)
+### [Unreleased]
 
-## Bug Fixes
+### 1.0.10-preview (2017-07-05)
+
+#### Bug Fixes
 
 - Resolved DateParser issue in Chinese culture, when the date string is in 12 hours format.
-
