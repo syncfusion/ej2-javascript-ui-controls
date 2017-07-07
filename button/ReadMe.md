@@ -10,6 +10,8 @@ Provides several built-in styles to customize the appearance and behaviour of bu
 
 # 1.0.10
 
+# 1.0.10-preview (2017-07-05)
+
 ## Button
 
 ### Bug Fixes
