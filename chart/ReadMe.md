@@ -7,6 +7,9 @@ High performance charting library with over chart types. Its rich feature set in
 [Demos](http://ej2.syncfusion.com/demos/#/chart/line.html)
 
 # 1.0.10
+
+# 1.0.10-preview (2017-07-05)
+
 ## Chart
 ### New Features
 -	Provided support to render StackingColumn100 percent series.
