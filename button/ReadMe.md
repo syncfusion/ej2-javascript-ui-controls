@@ -8,13 +8,15 @@ Provides several built-in styles to customize the appearance and behaviour of bu
 * [Documentation](http://ej2.syncfusion.com/documentation/button)
 
 
-# 1.0.10
+## Changelog
 
-# 1.0.10-preview (2017-07-05)
+### [Unreleased]
 
-## Button
+### 1.0.10-preview (2017-07-05)
 
-### Bug Fixes
+#### Button
+
+###### Bug Fixes
 
 - Round button icon misalignment in IE bug was fixed.
 
