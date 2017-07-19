@@ -21,12 +21,12 @@ Also, it comes with full documentation and support which is available for commer
 * [Demo](http://ej2.syncfusion.com/demos/#/grid/default.html)
 * [Documentation](http://ej2.syncfusion.com/documentation/grid/)
 
-# 1.0.10
+## [Unreleased]
 
-# 1.0.10-preview (2017-07-05)
+## 1.0.10-preview (2017-07-05)
 
-## Grid
+### Grid
 
-### New Features
+#### New Features
 - Detail Template added.
 - Hierarchy Grid added.
