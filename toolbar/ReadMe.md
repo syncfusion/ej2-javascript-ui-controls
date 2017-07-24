@@ -6,12 +6,16 @@ Displays a group of command buttons arranged horizontally.It comes with full sup
 
 * [Demos](http://ej2.syncfusion.com/demos/#/toolbar/default.html)
 
-# 1.0.10
+## Changelog
 
-## Toolbar
+### [Unreleased]
 
-### New Features
+### 1.0.10-preview (2017-07-05)
+
+#### Toolbar
+
+##### New Features
 
 - Toolbar Item Alignment
 
-    1. Toolbar commands can be aligned in `left`, `right`, and `center` positions. By default, all the commands are aligned in left position.
+  - Toolbar commands can be aligned in `left`, `right`, and `center` positions. By default, all the commands are aligned in left position.
