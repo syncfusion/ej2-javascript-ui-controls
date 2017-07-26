@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2",
-	"version": "1.20.0",
+	"version": "1.21.0",
 	"description": "Syncfusion TypeScript",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -13,7 +13,8 @@
 		"@syncfusion/ej2-grids": "*",
 		"@syncfusion/ej2-inputs": "*",
 		"@syncfusion/ej2-lists": "*",
-		"@syncfusion/ej2-navigations": "*"
+		"@syncfusion/ej2-navigations": "*",
+		"@syncfusion/ej2-popups": "*"
 	},
 	"devDependencies": {
 		"es6-promise": "^3.2.1",
