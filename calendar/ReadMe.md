@@ -6,11 +6,3 @@ Calendar interface for selecting dates with options for disabling dates, restric
 
 [Demo](http://ej2.syncfusion.com/demos/#/calendar/default.html)       
 [Documentation](http://ej2.syncfusion.com/documentation/calendar)
-
-# 1.0.10
-
-## Calendar
-
-### Bug Fixes
-
-Enhanced the Calendar animation when navigating back and forth from month to year and vice versa
