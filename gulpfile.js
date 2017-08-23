@@ -14,7 +14,7 @@ gulp.task('scripts', function(done) {
     var ts = require('gulp-typescript');
     var tsProject = ts.createProject('tsconfig.json', { typescript: require('typescript') });
 
-    var tsResult = gulp.src(['./**/*.ts', '!./node_modules/**/*.ts'], { base: '.' })
+    var tsResult = gulp.src(['./**/*.ts','./**/*.tsx', '!./node_modules/**/*.ts','!./node_modules/**/*.tsx'], { base: '.' })
         .pipe(tsProject());
     tsResult.js.pipe(gulp.dest('./'))
         .on('end', function() {
