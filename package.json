@@ -9,6 +9,7 @@
 		"@syncfusion/ej2-buttons": "*",
 		"@syncfusion/ej2-calendars": "*",
 		"@syncfusion/ej2-charts": "*",
+		"@syncfusion/ej2-circulargauge": "*",
 		"@syncfusion/ej2-data": "*",
 		"@syncfusion/ej2-dropdowns": "*",
 		"@syncfusion/ej2-grids": "*",
