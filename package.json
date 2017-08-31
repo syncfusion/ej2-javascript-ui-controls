@@ -14,6 +14,7 @@
 		"@syncfusion/ej2-dropdowns": "*",
 		"@syncfusion/ej2-grids": "*",
 		"@syncfusion/ej2-inputs": "*",
+		"@syncfusion/ej2-lineargauge": "*",
 		"@syncfusion/ej2-lists": "*",
 		"@syncfusion/ej2-navigations": "*",
 		"@syncfusion/ej2-popups": "*"
