@@ -1,7 +1,7 @@
 {
 	"name": "@syncfusion/ej2",
 	"version": "1.0.14",
-	"description": "Syncfusion TypeScript",
+	"description": "Essential JS 2",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"dependencies": {
