@@ -1,42 +1,42 @@
 {
-	"name": "@syncfusion/ej2",
-	"version": "1.0.16",
-	"description": "Essential JS 2",
-	"author": "Syncfusion Inc.",
-	"license": "SEE LICENSE IN license",
-	"dependencies": {
-		"@syncfusion/ej2-base": "*",
-		"@syncfusion/ej2-buttons": "*",
-		"@syncfusion/ej2-calendars": "*",
-		"@syncfusion/ej2-charts": "*",
-		"@syncfusion/ej2-circulargauge": "*",
-		"@syncfusion/ej2-data": "*",
-		"@syncfusion/ej2-dropdowns": "*",
-		"@syncfusion/ej2-grids": "*",
-		"@syncfusion/ej2-inputs": "*",
-		"@syncfusion/ej2-lineargauge": "*",
-		"@syncfusion/ej2-lists": "*",
-		"@syncfusion/ej2-navigations": "*",
-		"@syncfusion/ej2-popups": "*"
-	},
-	"devDependencies": {
-		"es6-promise": "^3.2.1",
-		"gulp": "^3.9.1",
-		"gulp-sass": "^3.1.0",
-		"gulp-typescript": "^3.1.6",
-		"requirejs": "^2.3.3",
-		"typescript": "2.3.4"
-	},
-	"keywords": [
-		"ej2",
-		"syncfusion",
-		"ej2-all"
-	],
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/syncfusion/ej2"
-	},
-	"scripts": {
-		"build": "gulp build"
-	}
+  "name": "@syncfusion/ej2",
+  "version": "1.0.17",
+  "description": "Essential JS 2",
+  "author": "Syncfusion Inc.",
+  "license": "SEE LICENSE IN license",
+  "dependencies": {
+    "@syncfusion/ej2-base": "^1.0.16",
+    "@syncfusion/ej2-buttons": "^1.0.14",
+    "@syncfusion/ej2-calendars": "^1.0.16",
+    "@syncfusion/ej2-charts": "^1.0.16",
+    "@syncfusion/ej2-circulargauge": "^1.0.14",
+    "@syncfusion/ej2-data": "^1.0.14",
+    "@syncfusion/ej2-dropdowns": "^1.0.17",
+    "@syncfusion/ej2-grids": "^1.0.17",
+    "@syncfusion/ej2-inputs": "^1.0.17",
+    "@syncfusion/ej2-lineargauge": "^1.0.14",
+    "@syncfusion/ej2-lists": "^1.0.14",
+    "@syncfusion/ej2-navigations": "^1.0.17",
+    "@syncfusion/ej2-popups": "^1.0.17"
+  },
+  "devDependencies": {
+    "es6-promise": "^3.2.1",
+    "gulp": "^3.9.1",
+    "gulp-sass": "^3.1.0",
+    "gulp-typescript": "^3.1.6",
+    "requirejs": "^2.3.3",
+    "typescript": "2.3.4"
+  },
+  "keywords": [
+    "ej2",
+    "syncfusion",
+    "ej2-all"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/syncfusion/ej2"
+  },
+  "scripts": {
+    "build": "gulp build"
+  }
 }
