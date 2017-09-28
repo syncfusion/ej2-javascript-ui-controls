@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 1.0.19-preview (2017-09-28)
+
+### New Components
+
+- Added AutoComplete component - [demos](http://ej2.syncfusion.com/demos/#/material/autocomplete/default.html)
+- Added ComboBox component - [demos](http://ej2.syncfusion.com/demos/#/material/combobox/default.html)
+- Added TimePicker component - [demos](http://ej2.syncfusion.com/demos/#/material/timepicker/default.html)
+- Added RadioButton component - [demos](http://ej2.syncfusion.com/demos/#/material/button/radio-button.html)
+
+### New Features
+
+- Provided bootstrap theme support.
+
 ## 1.0.14-preview (2017-08-31)
 
 ### New Components
