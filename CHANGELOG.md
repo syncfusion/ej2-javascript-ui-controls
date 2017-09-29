@@ -2,8 +2,6 @@
 
 ## [Unreleased]
 
-## 1.0.19-preview (2017-09-28)
-
 ### New Components
 
 - Added AutoComplete component - [demos](http://ej2.syncfusion.com/demos/#/material/autocomplete/default.html)
