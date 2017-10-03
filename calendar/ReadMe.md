@@ -7,6 +7,6 @@ Calendar interface for selecting dates with options for disabling dates, restric
 [Calendar Demo](http://ej2.syncfusion.com/demos/#/calendar/default.html)    
 [Calendar Documentation](http://ej2.syncfusion.com/documentation/calendar)  
 [DatePicker Demo](http://ej2.syncfusion.com/demos/#/datepicker/default.html)       
-[DatePicker Documentation](http://ej2.syncfusion.com/documentation/datepicker) 
+[DatePicker Documentation](http://ej2.syncfusion.com/documentation/datepicker)    
 [TimePicker Demo](http://ej2.syncfusion.com/demos/#/timepicker/default.html)       
 [TimePicker Documentation](http://ej2.syncfusion.com/documentation/timepicker) 
