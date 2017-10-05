@@ -12,6 +12,7 @@
 		"@syncfusion/ej2-circulargauge": "*",
 		"@syncfusion/ej2-data": "*",
 		"@syncfusion/ej2-dropdowns": "*",
+		"@syncfusion/ej2-file-utils": "*",
 		"@syncfusion/ej2-grids": "*",
 		"@syncfusion/ej2-inputs": "*",
 		"@syncfusion/ej2-lineargauge": "*",
