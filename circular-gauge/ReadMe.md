@@ -4,4 +4,4 @@ The Circular Gauge control is ideal to visualize numeric values over a circular 
 
 ## Resources
 
-[Demos](http://ej2.syncfusion.com/demos/#/circulargauge/default.html)
+[Demos](http://ej2.syncfusion.com/demos/index.html#/material/circulargauge/default.html)
