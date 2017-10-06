@@ -13,6 +13,7 @@
 		"@syncfusion/ej2-compression": "*",
 		"@syncfusion/ej2-data": "*",
 		"@syncfusion/ej2-dropdowns": "*",
+		"@syncfusion/ej2-excel-export": "*",
 		"@syncfusion/ej2-file-utils": "*",
 		"@syncfusion/ej2-grids": "*",
 		"@syncfusion/ej2-inputs": "*",
