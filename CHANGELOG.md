@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## 1.0.21-preview (2017-10-06)
+
 ### New Components
 
 - Added MaskedTextBox component - [demos](http://ej2.syncfusion.com/demos/#/material/maskedtextbox/default.html)
