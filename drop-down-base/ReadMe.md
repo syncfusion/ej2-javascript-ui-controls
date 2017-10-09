@@ -68,3 +68,26 @@ Also, it comes with full documentation and support which is available for commer
 [AngularDocumentation](http://ej2.syncfusion.com/angular/documentation/auto-complete/)
 [ReactDemo](http://ej2.syncfusion.com/react/demos/#/material/autocomplete/default)  
 [ReactDocumentation](http://ej2.syncfusion.com/react/documentation/auto-complete/)
+
+# MultiSelect
+
+The MultiSelect component contains a list of predefined values from which a multiple value can be chosen. The functionality of MultiSelect resembles the SELECT form element of HTML.
+
+Also, it comes with full documentation and support which is available for commercial and community licensed users. To know more, please visit www.syncfusion.com.
+
+## Key features
+
+* Local and Remote Data Binding
+* Custom value support
+* Filter search support.
+* Grouping & Sorting support
+* Template support
+* Accessibility and Keyboard interaction
+
+## Resources
+[Demo](http://ej2.syncfusion.com/demos/#/material/multiselect/default.html)  
+[Documentation](http://ej2.syncfusion.com/documentation/multi-select/)  
+[AngularDemo](http://ej2.syncfusion.com/angular/demos/#/material/multiselect/default)  
+[AngularDocumentation](http://ej2.syncfusion.com/angular/documentation/multi-select/)
+[ReactDemo](http://ej2.syncfusion.com/react/demos/#/material/multiselect/default)  
+[ReactDocumentation](http://ej2.syncfusion.com/react/documentation/multi-select/)
