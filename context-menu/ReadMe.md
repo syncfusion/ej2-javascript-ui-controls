@@ -1,0 +1,8 @@
+# Overview
+
+A package of Essential JS 2 navigation components. It comes with full support and is available under commercial and community licenses – please visit www.syncfusion.com to get started.
+
+## Resources
+
+* [Toolbar Demos](http://ej2.syncfusion.com/demos/#/material/toolbar/default.html)
+* [Accordion Demos](http://ej2.syncfusion.com/demos/#/material/accordion/default.html)
