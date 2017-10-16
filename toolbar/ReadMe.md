@@ -8,3 +8,4 @@ A package of Essential JS 2 navigation components. It comes with full support an
 * [Accordion Demos](http://ej2.syncfusion.com/demos/#/material/accordion/default.html)
 * [Tab Demos](http://ej2.syncfusion.com/demos/#/material/tab/default.html)
 * [ContextMenu Demos](http://ej2.syncfusion.com/demos/#/material/material/context-menu/context-menu.html)
+* [TreeView](http://ej2.syncfusion.com/demos/#/material/treeview/default.html)
