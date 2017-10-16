@@ -4,7 +4,9 @@ A package of Essential JS 2 Button and CheckBox components. It comes with docume
 
 ## Resources
 
-* [Button Demo](http://ej2.syncfusion.com/demos/#/button/default.html)
+* [Button Demo](http://ej2.syncfusion.com/demos/#/material/button/default.html)
 * [Button Documentation](http://ej2.syncfusion.com/documentation/button)
-* [CheckBox Demo](http://ej2.syncfusion.com/demos/#/button/check-box.html)
+* [CheckBox Demo](http://ej2.syncfusion.com/demos/#/material/button/check-box.html)
 * [CheckBox Documentation](http://ej2.syncfusion.com/documentation/check-box)
+* [RadioButton Demo](http://ej2.syncfusion.com/demos/#/material/button/radio-button.html)
+* [RadioButton Documentation](http://ej2.syncfusion.com/documentation/radio-button)
