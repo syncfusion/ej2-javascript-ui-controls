@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 1.0.22-preview (2017-10-16)
+
+### New Components
+
+- Added Accordion component - [demos](http://ej2.syncfusion.com/demos/#/material/accordion/default.html)
+- Added ContextMenu component - [demos](http://ej2.syncfusion.com/demos/#/material/context-menu/context-menu.html)
+- Added DateRangePicker component - [demos](http://ej2.syncfusion.com/demos/#/material/daterangepicker/default.html)
+- Added MultiSelect component - [demos](http://ej2.syncfusion.com/demos/#/material/multiselect/default.html) 
+- Added TreeView component - [demos](http://ej2.syncfusion.com/demos/#/material/treeview/default.html)
+
 ## 1.0.21-preview (2017-10-06)
 
 ### New Components
