@@ -18,5 +18,5 @@ Also, it comes with full documentation and support which is available for commer
 * **Localization** - Provides inherent support to localize the UI.
 
 ## Resources
-* [Demo](http://ej2.syncfusion.com/demos/#/grid/default.html)
+* [Demo](http://ej2.syncfusion.com/demos/#/material/grid/default.html)
 * [Documentation](http://ej2.syncfusion.com/documentation/grid/)
