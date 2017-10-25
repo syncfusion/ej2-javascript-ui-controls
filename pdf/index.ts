@@ -1,1 +1,1 @@
-export * from "@syncfusion/ej2-pdf";
+export * from "@syncfusion/ej2-pdf-export";

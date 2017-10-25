@@ -20,7 +20,7 @@
 		"@syncfusion/ej2-lineargauge": "*",
 		"@syncfusion/ej2-lists": "*",
 		"@syncfusion/ej2-navigations": "*",
-		"@syncfusion/ej2-pdf": "*",
+		"@syncfusion/ej2-pdf-export": "*",
 		"@syncfusion/ej2-popups": "*"
 	},
 	"devDependencies": {
