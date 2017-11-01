@@ -15,5 +15,5 @@ rendered using Scalable Vector Graphics (SVG).
 
 ## Resources
 
-[Demos](http://ej2.syncfusion.com/demos/index.html#/material/chart/line.html)
+[Demos](http://ej2.syncfusion.com/demos/#/chart/line.html)
 [Documentation](http://ej2.syncfusion.com/documentation/chart/)
