@@ -1,6 +1,6 @@
 # Overview
 
-A package of Essential JS 2 Button and CheckBox components. It comes with documentation and support, which is available under commercial and community licenses. Please visit www.syncfusion.com to get started.
+A package of Essential JS 2 Button, CheckBox and RadioButton components. It comes with documentation and support, which is available under commercial and community licenses. Please visit www.syncfusion.com to get started.
 
 ## Resources
 
