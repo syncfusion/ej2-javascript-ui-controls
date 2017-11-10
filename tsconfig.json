@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "module": "amd",
+    "target": "es2015",
+    "module": "es6",
+    "importHelpers": true,
     "declaration": true,
     "removeComments": true,
     "noLib": false,

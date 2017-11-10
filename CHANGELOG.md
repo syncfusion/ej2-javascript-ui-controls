@@ -2,59 +2,32 @@
 
 ## [Unreleased]
 
-## 1.0.22-preview (2017-10-16)
+Essential JS 2 is a modern JavaScript UI toolkit that has been built from the ground up to be lightweight, responsive, modular, and touch friendly. It is written in TypeScript and has no external dependences. It also includes complete support for Angular and React frameworks. The following components are currently available:
 
-### New Components
-
-- Added Accordion component - [demos](http://ej2.syncfusion.com/demos/#/material/accordion/default.html)
-- Added ContextMenu component - [demos](http://ej2.syncfusion.com/demos/#/material/context-menu/context-menu.html)
-- Added DateRangePicker component - [demos](http://ej2.syncfusion.com/demos/#/material/daterangepicker/default.html)
-- Added MultiSelect component - [demos](http://ej2.syncfusion.com/demos/#/material/multiselect/default.html) 
-- Added TreeView component - [demos](http://ej2.syncfusion.com/demos/#/material/treeview/default.html)
-
-## 1.0.21-preview (2017-10-06)
-
-### New Components
-
-- Added MaskedTextBox component - [demos](http://ej2.syncfusion.com/demos/#/material/maskedtextbox/default.html)
-
-## 1.0.19-preview (2017-09-28)
-
-### New Components
-
-- Added AutoComplete component - [demos](http://ej2.syncfusion.com/demos/#/material/autocomplete/default.html)
-- Added ComboBox component - [demos](http://ej2.syncfusion.com/demos/#/material/combobox/default.html)
-- Added TimePicker component - [demos](http://ej2.syncfusion.com/demos/#/material/timepicker/default.html)
-- Added RadioButton component - [demos](http://ej2.syncfusion.com/demos/#/material/button/radio-button.html)
-
-### New Features
-
-- Provided bootstrap theme support.
-
-## 1.0.14-preview (2017-08-31)
-
-### New Components
-
-- Added DropDownList component - [demos](http://ej2.syncfusion.com/demos/#/material/dropdownlist/default.html)
-- Added CircularGauge component - [demos](http://ej2.syncfusion.com/demos/#/material/circulargauge/default.html)
-- Added LinearGauge component - [demos](http://ej2.syncfusion.com/demos/#/material/lineargauge/default.html)
-
-### New Features
-
-- Provided fabric theme support.
-
-### Breaking Changes
-
-- **Animation**: Ripple effect is disabled by default. Use `enableRipple(true)` method to enable or disable ripple effect in samples.
-- **Package reference modified for individal packages**
-
-| **Old reference**                                           | **New reference**                                            |
-|:---------------------------------------------------------------:|:----------------------------------------------------------:|
-| import { extend, setValue } from '@syncfusion/ej2-base/util'; | import { extend, setValue } from '@syncfusion/ej2-base'; |
-| import { addClass, append } from '@syncfusion/ej2-base/dom';  | import { addClass, append } from '@syncfusion/ej2-base'; |
-
-## 1.0.10-preview (2017-07-05)
-
-### New Components
-
-- Added Tooltip component - [demos](http://ej2.syncfusion.com/demos/#/material/tooltip/default.html)
+- Grid
+- Chart
+- Drop-Down List
+- Tree View
+- Date Picker
+- Dialog
+- Numeric Text Box
+- Tab
+- Toolbar
+- Circular Gauge
+- Linear Gauge
+- Form Validator
+- Combo Box
+- Autocomplete
+- Multiselect Drop-Down
+- Calendar
+- Date Range Picker
+- Button
+- Radio Button
+- Check Box
+- Text Box
+- Time Picker
+- Masked Text Box
+- List View
+- Tooltip
+- Context Menu
+- Accordion
