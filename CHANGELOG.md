@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+#### New Features
+
+- Added Essential JS 1 compatible CSS files.
+
 ## 15.4.21-preview (2017-12-08)
 
 Essential JS 2 is a modern JavaScript UI toolkit that has been built from the ground up to be lightweight, responsive, modular, and touch friendly. It is written in TypeScript and has no external dependences. It also includes complete support for Angular and React frameworks. The following components are currently available:
