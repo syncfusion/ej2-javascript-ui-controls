@@ -1,53 +1,53 @@
 {
-	"name": "@syncfusion/ej2",
-	"version": "15.4.26",
-	"description": "Essential JS 2",
-	"author": "Syncfusion Inc.",
-	"license": "SEE LICENSE IN license",
-	"dependencies": {
-		"@syncfusion/ej2-base": "*",
-		"@syncfusion/ej2-buttons": "*",
-		"@syncfusion/ej2-calendars": "*",
-		"@syncfusion/ej2-charts": "*",
-		"@syncfusion/ej2-circulargauge": "*",
-		"@syncfusion/ej2-compression": "*",
-		"@syncfusion/ej2-data": "*",
-		"@syncfusion/ej2-dropdowns": "*",
-		"@syncfusion/ej2-excel-export": "*",
-		"@syncfusion/ej2-file-utils": "*",
-		"@syncfusion/ej2-grids": "*",
-		"@syncfusion/ej2-inputs": "*",
-		"@syncfusion/ej2-lineargauge": "*",
-		"@syncfusion/ej2-lists": "*",
-		"@syncfusion/ej2-navigations": "*",
-		"@syncfusion/ej2-pdf-export": "*",
-		"@syncfusion/ej2-popups": "*",
-		"tslib": "^1.8.0"
-	},
-	"devDependencies": {
-		"rollup": "^0.51.3",
-		"rollup-plugin-commonjs": "^8.2.6",
-		"rollup-plugin-node-resolve": "^3.0.0",
-		"rollup-plugin-sourcemaps": "^0.4.2",
-		"rollup-plugin-typescript": "^0.8.1",
-		"rollup-plugin-uglify": "^2.0.1",
-		"es6-promise": "^3.2.1",
-		"gulp": "^3.9.1",
-		"gulp-sass": "^3.1.0",
-		"gulp-typescript": "^3.1.6",
-		"requirejs": "^2.3.3",
-		"typescript": "2.6.2"
-	},
-	"keywords": [
-		"ej2",
-		"syncfusion",
-		"ej2-all"
-	],
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/syncfusion/ej2"
-	},
-	"scripts": {
-		"build": "gulp build"
-	}
+  "name": "@syncfusion/ej2",
+  "version": "15.4.30",
+  "description": "Essential JS 2",
+  "author": "Syncfusion Inc.",
+  "license": "SEE LICENSE IN license",
+  "dependencies": {
+    "@syncfusion/ej2-base": "^15.4.23",
+    "@syncfusion/ej2-buttons": "^15.4.30",
+    "@syncfusion/ej2-calendars": "^15.4.26",
+    "@syncfusion/ej2-charts": "^15.4.27",
+    "@syncfusion/ej2-circulargauge": "^15.4.27",
+    "@syncfusion/ej2-compression": "^15.4.26",
+    "@syncfusion/ej2-data": "^15.4.30",
+    "@syncfusion/ej2-dropdowns": "^15.4.27",
+    "@syncfusion/ej2-excel-export": "^15.4.30",
+    "@syncfusion/ej2-file-utils": "^15.4.26",
+    "@syncfusion/ej2-grids": "^15.4.30",
+    "@syncfusion/ej2-inputs": "^15.4.29",
+    "@syncfusion/ej2-lineargauge": "^15.4.23",
+    "@syncfusion/ej2-lists": "^15.4.26",
+    "@syncfusion/ej2-navigations": "^15.4.30",
+    "@syncfusion/ej2-pdf-export": "^15.4.30",
+    "@syncfusion/ej2-popups": "^15.4.27",
+    "tslib": "^1.8.0"
+  },
+  "devDependencies": {
+    "rollup": "^0.51.3",
+    "rollup-plugin-commonjs": "^8.2.6",
+    "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-sourcemaps": "^0.4.2",
+    "rollup-plugin-typescript": "^0.8.1",
+    "rollup-plugin-uglify": "^2.0.1",
+    "es6-promise": "^3.2.1",
+    "gulp": "^3.9.1",
+    "gulp-sass": "^3.1.0",
+    "gulp-typescript": "^3.1.6",
+    "requirejs": "^2.3.3",
+    "typescript": "2.6.2"
+  },
+  "keywords": [
+    "ej2",
+    "syncfusion",
+    "ej2-all"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/syncfusion/ej2"
+  },
+  "scripts": {
+    "build": "gulp build"
+  }
 }
