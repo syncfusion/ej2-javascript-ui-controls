@@ -2,9 +2,17 @@
 
 ## [Unreleased]
 
-#### New Features
+### New Features
 
-- Added Essential JS 1 compatible CSS files.
+- Essential JS 2 is now officially released and production ready.
+- Angular Universal support added.
+- New High Contrast theme added.
+- A web based tool for Custom Resource Generator is released for JavaScript (ES5) users.
+
+### Breaking Changes
+ 
+- Tag prefix for Angular components is changed from `ej` to `ejs`. For example, `ej-grid` is changed to `ejs-grid`.
+- **Touch**: Removed `doubleTap` event and added `tapCount` argument in tap event.
 
 ## 15.4.21-preview (2017-12-08)
 
