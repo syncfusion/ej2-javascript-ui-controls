@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## 16.1.24 (2018-02-22)
+
 ### New Features
 
 - Essential JS 2 is now officially released and production ready.
