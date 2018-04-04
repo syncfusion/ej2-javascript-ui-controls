@@ -4,7 +4,6 @@
 import * as base from './base';
 import * as buttons from './buttons';
 import * as calendars from './calendars';
-import * as cards from './cards';
 import * as charts from './charts';
 import * as circulargauge from './circulargauge';
 import * as compression from './compression';
@@ -22,4 +21,4 @@ import * as pdfexport from './pdf-export';
 import * as popups from './popups';
 import * as schedule from './schedule';
 import * as splitbuttons from './splitbuttons';
-export { base, buttons, calendars, cards, charts, circulargauge, compression, data, dropdowns, excelexport, fileutils, grids, inputs, lineargauge, lists, maps, navigations, pdfexport, popups, schedule, splitbuttons };
+export { base, buttons, calendars, charts, circulargauge, compression, data, dropdowns, excelexport, fileutils, grids, inputs, lineargauge, lists, maps, navigations, pdfexport, popups, schedule, splitbuttons };
