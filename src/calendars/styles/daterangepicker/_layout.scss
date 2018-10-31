@@ -1,0 +1,349 @@
+@include export-module('daterangepicker-layout') {
+  /*! daterangepicker layout */
+
+  #{&}.e-daterangepicker {
+    &.e-popup {
+      border: $range-popup-border;
+      border-radius: $range-popup-border-radius;
+      box-shadow: $range-box-shadow;
+      max-height: $range-max-height;
+      max-width: $range-max-width;
+
+      &.e-preset-wrapper {
+        min-width: $range-preset-min-width;
+
+        & .e-presets {
+          max-height: $range-value-none;
+        }
+      }& .e-range-header {
+        margin: $range-control-header-margin;
+        width: $range-control-header-width;
+
+        & .e-start-label,
+        & .e-end-label {
+          cursor: $range-cursor-default-style;
+          display: $range-inline-block-style;
+          font-size: $range-header-label-size;
+          overflow: $range-visibility-hidden;
+          text-align: $range-align-center;
+          text-decoration: $range-value-none;
+          text-overflow: $range-text-overflow;
+          user-select: $range-browser-select-none;
+          white-space: $range-text-nowrap;
+          width: $range-start-end-label-width;
+        }& .e-change-icon {
+          font-size: $range-font-size;
+          font-weight: $range-font-weight-bold;
+          text-align: $range-align-center;
+          width: $range-change-icon-width;
+        }& .e-day-span {
+          direction: $range-direction-left;
+          font-size: $range-calendar-small-font-size;
+          height: $range-day-span-height;
+          margin: $range-indicator-margin;
+          text-align: $range-align-center;
+          user-select: $range-browser-select-none;
+          width: $range-indicator-label-width;
+        }& .e-start-end {
+          align-items: $range-align-center;
+          display: $range-flex-style;
+          height: $range-start-end-container-height;
+        }
+      }& .e-separator {
+        height: $range-separator-height;
+        margin: $range-separator-margin;
+      }& .e-calendar {
+        border: $range-calendar-border;
+        margin: $range-calendar-margin;
+        padding: $range-calendar-popup-padding;
+
+        & .e-content table {
+          padding: $range-calendar-normal-table-padding;
+        }& .e-header {
+          & .e-title {
+            cursor: $range-cursor-pointer-style;
+            float: $range-float-none;
+            font-weight: $range-font-weight-normal;
+            line-height: $range-normal-nav-icon-height;
+            margin-left: $range-value-zero;
+            width: $range-control-header-width;
+          }&.e-month,
+          &.e-year,
+          &.e-decade {
+            padding: $range-calendar-header-padding;
+          }& .e-next {
+            float: $range-float-right;
+          }& .e-prev {
+            float: $range-float-left;
+          }& .e-next,
+          & .e-prev {
+            height: $range-normal-nav-icon-height;
+            width: $range-normal-nav-icon-width;
+          }& .e-next span,
+          & .e-prev span {
+            padding: $range-icon-normal-padding;
+          }
+        }& .e-start-date.e-selected.e-range-hover {
+          border-radius: $range-hover-start-radius;
+        }& .e-end-date.e-selected.e-range-hover {
+          border-radius: $range-hover-end-radius;
+        }& .e-end-date.e-selected.e-range-hover span.e-day,
+        & .e-start-date.e-selected.e-range-hover span.e-day {
+          border: $range-calendar-hover-border;
+        }
+      }& .e-footer {
+        align-items: $range-align-center;
+        border-top: $range-border-value;
+        clear: $range-float-clear;
+        display: $range-flex-style;
+        flex-direction: $range-flex-direction-row-reverse;
+        height: $range-footer-height;
+      }& .e-footer .e-btn {
+        font-weight: $range-btn-font-weight;
+        height: $range-btn-normal-height;
+        line-height: $range-btn-normal-line-height;
+        overflow: $range-visibility-hidden;
+        padding: $range-btn-padding;
+        text-overflow: $range-text-overflow;
+      }& .e-footer .e-btn.e-apply {
+        margin: $range-normal-footer-margin;
+      }& .e-date-range-container {
+        float: $range-float-left;
+
+        &.e-range-border {
+          border-right: $range-border-value;
+        }
+      }& .e-calendar-container {
+        display: $range-flex-style;
+
+        & .e-left-container,
+        & .e-right-container {
+          float: $range-float-left;
+        }& .e-left-container {
+          border-right: $range-border-value;
+        }
+      }& .e-presets {
+        max-height: $range-presets-height;
+        overflow: auto;
+        width: $range-width-auto;
+
+        & .e-list-item {
+          border-radius: $range-list-border-radius;
+          cursor: $range-cursor-pointer-style;
+          line-height: $range-list-item-height;
+          overflow: $range-visibility-hidden;
+          padding: $range-list-item-padding;
+          white-space: $range-text-nowrap;
+        }& .e-list-parent {
+          margin: $range-value-zero;
+          max-width: $range-presets-width;
+          padding: $range-value-zero;
+        }& .e-text-content {
+          line-height: $range-list-item-line-height;
+        }& .e-ul {
+
+          & li.e-list-item {
+            font-size: $range-presets-normal-list-font-size;
+            height: $range-preset-normal-list-height;
+            line-height: $range-preset-normal-list-height;
+          }
+        }
+      }& .e-hide-range {
+        display: $range-display-none;
+      }
+    }&.e-rtl {
+      & .e-date-range-container {
+        float: $range-float-right;
+
+        &.e-range-border {
+          border-left: $range-border-value;
+          border-right: $range-value-zero;
+        }& .e-left-container {
+          border-left: $range-border-value;
+          border-right: $range-value-zero;
+        }& .e-calendar {
+          & .e-next {
+            float: $range-float-left;
+          }& .e-prev {
+            float: $range-float-right;
+          }& .e-start-date.e-selected.e-range-hover {
+            border-radius: $range-hover-end-radius;
+          }& .e-end-date.e-selected.e-range-hover {
+            border-radius: $range-hover-start-radius;
+          }
+        }
+      }& .e-footer {
+        flex-direction: $range-flex-direction-row;
+        justify-content: $range-flex-justify-content;
+
+        & .e-btn.e-cancel {
+          margin: $range-normal-rtl-footer-margin;
+        }& .e-btn.e-apply {
+          margin-left: $range-value-zero;
+        }
+      }
+    }
+  }
+
+  .e-bigger #{&}.e-daterangepicker.e-range-modal,
+  &.e-device#{&}.e-daterangepicker.e-range-modal {
+    background-color: $range-overlay;
+    height: 100%;
+    left: 0;
+    opacity: .5;
+    pointer-events: auto;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 999;
+  }
+
+  //bigger style
+
+  .e-bigger #{&}.e-daterangepicker,
+  &.e-bigger#{&}.e-daterangepicker,
+  &.e-device#{&}.e-daterangepicker {
+    &.e-popup {
+      &.e-preset-wrapper {
+        max-width: $range-bigger-max-width;
+        min-width: $range-width-auto;
+
+        & .e-presets {
+          max-height: $range-value-none;
+        }
+      }& .e-range-header {
+        width: $range-control-header-width;
+
+        & .e-start-end {
+          align-items: $range-align-center;
+          cursor: $range-cursor-pointer-style;
+          display: $range-flex-style;
+          height: $range-device-header-container-height;
+          justify-content: $range-align-center;
+          user-select: $range-browser-select-none;
+          width: $range-device-header-container-width;
+
+          & .e-start-btn,
+          & .e-end-btn {
+            border: $range-btn-border-value;
+            box-shadow: $range-box-shadow-none;
+            font-size: $range-calendar-btn-font-size;
+            font-weight: $range-range-btn-font-weight;
+            height: $range-btn-height;
+            line-height: $range-device-btn-line-height;
+            max-width: $range-header-btn-max-width;
+            overflow: $range-visibility-hidden;
+            padding: $range-sart-end-btn-padding;
+            text-overflow: $range-text-overflow;
+            width: $range-btn-width;
+          }& .e-end-btn {
+            border-left: $range-value-zero;
+            border-radius: $range-btn-right-radius;
+          }& .e-start-btn {
+            border-radius: $range-btn-left-radius;
+          }& .e-start-btn:hover,
+          & .e-end-btn:hover:not([disabled]) {
+            box-shadow: $range-box-shadow-none;
+          }& .e-start-btn.e-active,
+          & .e-start-btn.e-active:active,
+          & .e-end-btn.e-active,
+          & .e-end-btn.e-active:active:not([disabled]),
+          & .e-start-btn.e-active:hover,
+          & .e-end-btn.e-active:hover {
+            box-shadow: $range-box-shadow-none;
+          }& .e-start-btn,
+          & .e-end-btn {
+            max-width: $range-header-btn-bigger-max-width;
+          }
+        }
+      }& .e-presets {
+        max-height: $range-bigger-presets-height;
+
+        &.e-preset-wrapper {
+          max-height: $range-value-none;
+        }
+
+        & ul {
+          max-width: $range-value-none;
+
+          & li.e-list-item {
+            font-size: $range-presets-bigger-list-font-size;
+            height: $range-preset-bigger-list-height;
+            line-height: $range-preset-bigger-list-height;
+            padding: $range-device-list-item-padding;
+          }
+        }
+      }
+    }& .e-calendar {
+      max-width: $range-calendar-bigger-max;
+      padding: $range-calendar-popup-padding;
+
+      & .e-content table {
+        padding: $range-calendar-bigger-table-padding;
+      }& .e-header {
+        & .e-next,
+        & .e-prev {
+          height: $range-bigger-nav-icon-height;
+          width: $range-bigger-nav-icon-width;
+
+          & span {
+            padding: $range-icon-bigger-padding;
+          }
+        }
+
+        & .e-title {
+          cursor: $range-cursor-pointer-style;
+          line-height: $range-bigger-nav-icon-height;
+        }&.e-month,
+        &.e-year,
+        &.e-decade {
+          padding: $range-e-bigger-header-padding;
+        }
+      }
+    }& .e-footer {
+      height: $range-bigger-footer-height;
+
+      & .e-btn {
+        height: $range-btn-bigger-height;
+        line-height: $range-btn-bigger-line-height;
+        overflow: $range-visibility-hidden;
+      }& .e-btn.e-apply {
+        margin: $range-bigger-footer-margin;
+      }
+    }&.e-rtl.e-popup {
+      & .e-range-header .e-start-end {
+        & .e-end-btn {
+          border: $range-btn-border-value;
+          border-radius: $range-btn-left-radius;
+          border-right: $range-value-zero;
+        }& .e-start-btn {
+          border-radius: $range-btn-right-radius;
+        }
+      }& .e-footer {
+        &.e-btn.e-cancel {
+          margin: $range-bigger-rtl-footer-margin;
+        }& .e-btn.e-apply {
+          margin-left: $range-value-zero;
+        }
+      }
+    }&.e-device {
+      &.e-popup {
+        max-width: $range-device-max-width;
+
+        & .e-range-header {
+          margin: $range-device-control-header-margin;
+
+          & .e-day-span {
+            margin: $range-device-indicator-margin;
+          }
+        }
+      }
+    }
+  }
+}
+
+// sass-lint:disable-all
+.e-range-overflow {
+  overflow: auto;
+}
+// sass-lint:enable-all

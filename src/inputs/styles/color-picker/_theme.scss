@@ -1,0 +1,74 @@
+@include export-module('color-picker-theme') {
+  .e-container {
+    background-color: $color-picker-color;
+
+    & .e-palette {
+      & .e-tile {
+        &:hover,
+        &.e-selected {
+          border-color: $tile-active-border-color;
+        }
+      }
+    }
+
+    & .e-handler,
+    & .e-handle {
+      &.e-hide-handler {
+        background-color: transparent;
+        border-color: transparent;
+        box-shadow: none;
+      }
+    }
+  }
+
+  .e-container .e-control-wrapper.e-slider-container {
+    & .e-slider.e-hue-slider,
+    & .e-slider.e-opacity-slider {
+      & .e-handle:not(.e-tab-handle) {
+        background-color: $slider-handler-color;
+        border-color: $slider-handler-color;
+
+        &.e-handle-start:not(.e-tab-handle) {
+          background-color: $slider-handler-color;
+          border-color: $slider-handler-color;
+        }
+      }
+
+      & .e-handle {
+        &.e-tab-handle {
+          background-color: $slider-tab-handler-color;
+          border-color: $slider-handler-focus-color;
+          box-shadow: $slider-tab-shadow;
+        }
+      }
+    }
+  }
+
+  .e-colorpicker-wrapper {
+    &.e-disabled {
+      & .e-value-switch-btn,
+      & .e-mode-switch-btn {
+        color: $btn-disabled-color;
+
+        &:focus {
+          background-color: transparent;
+          color: $btn-disabled-color;
+          outline: none;
+          outline-offset: none;
+        }
+
+        &:active {
+          background-color: transparent;
+          color: $btn-disabled-color;
+        }
+      }
+    }
+  }
+
+  .e-popup.e-tooltip-wrap {
+    &.e-color-picker-tooltip {
+      background-color: $handler-tooltip-color;
+      border-color: $handler-tooltip-color;
+    }
+  }
+}

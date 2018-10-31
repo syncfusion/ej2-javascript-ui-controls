@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Tab - Top icons</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="utf-8" />
+    <link href="../../styles/fabric.css" rel="stylesheet" />
+    <script>
+        window.require = {
+            config: function (json) {
+                window.rsConfig = json;
+                window.rsConfig.baseUrl = '';
+            }
+        };
+    </script>
+    <script src="../demo-config.js"></script>
+    <script data-main="./icons-top" src="../../node_modules/requirejs/require.js"></script>
+    <script>
+        require.config(window.rsConfig);
+    </script>
+</head>
+
+<body class="e-bigger">
+    <tr>
+        <td> <button id="btn_mouse" class="e-btn">Mouse</button> </td>
+    </tr>
+    <tr>
+        <td> <button id="btn_touch" class="e-btn">Touch</button> </td>
+    </tr>
+    <tr>
+        <td> <button id="btn_high" class="e-btn">HighContrast</button> </td>
+    </tr>
+    <tr>
+        <td> <button id="btn_boot" class="e-btn">Bootstrap</button> </td>
+    </tr>
+    <tr>
+        <td> <button id="btn_fabric" class="e-btn">Fabric</button> </td>
+    </tr>
+    <tr>
+        <td> <button id="btn_material" class="e-btn">Material</button> </td>
+    </tr>
+    <tr>
+        <td> <button id="btn_closeButton" class="e-btn">showCloseButton</button> </td>
+    </tr>
+    <tr>
+        <td> <button id="btn_enableRtl" class="e-btn">enableRtl</button> </td>
+    </tr>
+    <tr>
+        <td> <button id="btn_orientation" class="e-btn">headerPlacement</button> </td>
+    </tr>
+    <tr>
+        <td> <button id="btn_overflowModes" class="e-btn">OverflowModes</button> </td>
+    </tr>
+    <tr>
+        <td> <button id="btn_default" class="e-btn">default</button> </td>
+    </tr>
+    <tr>
+        <td> <button id="btn_fill" class="e-btn">Fill</button> </td>
+    </tr>
+    <tr>
+        <td> <button id="btn_bg" class="e-btn">Background</button> </td>
+    </tr>
+    <tr>
+        <td> <button id="btn_accent" class="e-btn">Accent</button> </td>
+    </tr>
+    <br/><br/>
+    <div class="container">
+        <div id="ej2Tab" style="height:auto">
+        </div>
+    </div>
+    <style>
+        .container {
+            width: 800px;
+            height: auto;
+        }
+        .e-content .e-item {
+            font-size: 12px;
+            margin: 10px;
+            text-align: justify;
+        }
+        .e-cut:before {
+            content: "\e759"
+        }
+        
+        .e-copy:before {
+            content: "\e70a"
+        }
+        
+        .e-paste:before {
+            content: "\e77e"
+        }
+        
+        .e-bold:before {
+            content: "\e71c"
+        }
+
+        .e-underline-icon:before {
+            content: "\e75a"
+        }
+        
+        .e-alignleft-icon:before {
+            content: "\e75e"
+        }
+        
+        .e-alignright-icon:before {
+            content: "\e75f"
+        }
+        
+        .e-aligncenter-icon:before {
+            content: "\e74b"
+        }
+        
+        .e-alignjustify-icon:before {
+            content: "\e756"
+        }
+        
+        .e-upload-icon:before {
+            content: "\e725"
+        }
+        
+        .e-download-icon:before {
+            content: "\e824"
+        }
+        
+        .e-indent-icon:before {
+            content: "\e742"
+        }
+        
+        .e-outdent-icon:before {
+            content: "\e746"
+        }
+        
+        .e-clear-icon:before {
+            content: "\e760"
+        }
+        
+        .e-reload-icon:before {
+            content: "\e837"
+        }
+        
+        .e-export-icon:before {
+            content: "\e7fb"
+        }
+        
+        .e-italic-icon:before {
+            content: "\e709"
+        }
+        
+        .e-bullets-icon:before {
+            content: "\e75c"
+        }
+        
+        .e-numbering-icon:before {
+            content: "\e733"
+        }
+    </style>
+</body>
+
+</html>

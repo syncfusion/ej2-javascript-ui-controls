@@ -1,0 +1,35 @@
+// icon styles
+@include export-module('uploader-icons') {
+  .e-upload .e-upload-files .e-file-remove-btn.e-icons::before {
+    content: $clear-icon-font-content;
+  }
+
+  .e-upload .e-upload-files .e-icons.e-file-pause-btn::before {
+    content: $pause-icon-font-content;
+  }
+
+  .e-upload .e-upload-files .e-icons.e-file-reload-btn::before {
+    content: $reload-icon-font-content;
+  }
+
+  .e-upload .e-upload-files .e-icons.e-file-play-btn::before {
+    content: $play-icon-font-content;
+  }
+
+  .e-upload .e-upload-files .e-file-delete-btn.e-icons::before {
+    content: $delete-icon-font-content;
+  }
+
+  .e-upload .e-upload-files .e-file-abort-btn.e-icons::before {
+    content: $abort-icon-font-content;
+  }
+
+  .e-upload .e-upload-files .e-icons.e-msie::before {
+    position: relative;
+    right: $ie-icons-position-value;
+  }
+
+  .e-upload .e-upload-files .e-icons.e-file-abort-icon.e-msie::before {
+    right: $ie-abort-icon-position-value;
+  }
+}

@@ -1,0 +1,57 @@
+/*! component's default definitions and variables */
+
+$hscroll-border-type: solid;
+$hscroll-border-size: $border-size;
+$hscroll-box-shadow:  0 0 2px $shadow-color;
+$hscroll-nav-nrml-minheight: 42px;
+$hscroll-nav-bgr-minheight: 56px;
+$hscroll-nav-nrml-width: 40px;
+$hscroll-nav-bgr-width: 50px;
+$hscroll-nrml-padding: 0 $hscroll-nav-nrml-width;
+$hscroll-bgr-padding: 0 $hscroll-nav-bgr-width;
+$hscroll-border-radius: $border-radius;
+$hscroll-default-bg: $default-bg-color  ;
+$hscroll-default-border: $default-border-color ;
+$hscroll-default-icon-color: $default-icon-color ;
+$hscroll-hover-bg:  $hover-bg-color;
+$hscroll-hover-font: $hover-font-color ;
+$hscroll-hover-border-color: $hover-border-color ;
+$hscroll-dash-border: 2px solid #fff;
+$hscroll-overlay-opacity: .5;
+$hscroll-overlay-bg: $hscroll-default-bg;
+$hscroll-overlay-start: rgba($hscroll-overlay-bg, .0001);
+$hscroll-overlay-end: rgba($hscroll-overlay-bg, $hscroll-overlay-opacity);
+$hscroll-right-bg: linear-gradient(to right, $hscroll-overlay-start 0, $hscroll-overlay-end 100%);
+$hscroll-left-bg: linear-gradient(to right, $hscroll-overlay-end 0, $hscroll-overlay-start 100%);
+
+$hscroll-device-arrow-box-shadow: -4px 0 8px 0 rgba($shadow , .6);
+$hscroll-device-arrow-bg: $hscroll-default-bg;
+$hscroll-device-arrow-border-size: none;
+$hscroll-device-arrow-border-color: $default-border-color ;
+$hscroll-device-arrow-color: $default-icon-color ;
+$hscroll-device-arrow-size: 14px;
+$hscroll-device-arrow-width: $hscroll-nav-bgr-width;
+
+$hscroll-focus-border: '';
+$hscroll-active-border: '';
+$hscroll-hover-border: '';
+$hscroll-active-box-shadow: '';
+
+$hscroll-active-font-color: $active-font-color ;
+$hscroll-press-bg: $active-bg-color ;
+$hscroll-press-font: $active-font-color ;
+
+$hscroll-font-family: $font-family;
+$hscroll-left-arrow-icon: '\e913';
+$hscroll-right-arrow-icon: '\e904';
+
+$hscroll-device-left-arrow-icon: '\e913';
+$hscroll-device-right-arrow-icon: '\e904';
+
+@mixin hscroll-btn-animation {
+  content: '';
+}
+
+@mixin hscroll-btn-animation-after {
+  content: '';
+}

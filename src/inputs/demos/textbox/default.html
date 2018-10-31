@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>TextBox</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Typescript UI Controls" />
+    <meta name="author" content="Syncfusion" />
+    <link id="theme" href="./styles/material.css" rel="stylesheet" />
+    <script src="../../node_modules/requirejs/require.js" data-main="default"></script>
+    <script>
+        require.config({
+            packages: [{
+                name: '@syncfusion/ej2-base',
+                location: '../../node_modules/@syncfusion/ej2-base/dist',
+                main: 'ej2-base.umd.min.js'
+            }
+            ]
+        });
+    </script>
+
+</head>
+
+<body>
+    <table style='margin: 30px auto'>
+        <tr>
+            <td>
+                <div id="wrapper" style='margin:auto 250px'>
+                    <input id='default'/>
+                </div>
+            </td>
+            <td>
+                <div class='btns'>
+                    <button id='readonly' class='e-btn e-control'> Enable Readonly</button>
+                </div>
+                <div class='btns'>
+                    <button id='enable' class='e-btn e-control'> Disabled </button>
+                </div>
+                <div class='btns'>
+                    <button id='rtl' class='e-btn e-control'> Enable Rtl </button>
+                </div>
+                <div class='btns'>
+                    <button id='type' class='e-btn e-control'> Number Type</button>
+                </div>
+                <div class='btns'>
+                    <button id='float' class='e-btn e-control'> Disable FloatLabelType</button>
+                </div>
+                <div class='btns'>
+                    <button id='clear' class='e-btn e-control'> Enable ClearButton </button>
+                </div>
+                <div class='btns'>
+                    <button id='destroy' class='e-btn e-control'> Destroy </button>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+<style>
+    tr{
+        margin-top: 100px;
+    }
+    td{
+        width: 50%;
+    }
+    .btns {
+        margin: 25px;
+    }
+    .btns .e-btn {
+        width: 220px;
+        height: 35px;
+    }
+    #wrapper .e-control-wrapper{
+        width: 200px;
+    }
+</style>
+</body>
+</html>

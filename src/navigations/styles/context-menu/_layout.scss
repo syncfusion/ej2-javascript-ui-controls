@@ -1,0 +1,58 @@
+@import 'layout-mixin.scss';
+@include export-module('contextmenu-layout') {
+  /*! contextmenu layout */
+  .e-contextmenu-wrapper {
+    @at-root {
+      & ul {
+        @include ul-layout;
+        @include ul-size;
+        display: none;
+        min-width: $min-width;
+        position: absolute;
+
+        &.e-contextmenu {
+          box-shadow: $parent-ul-box-shadow;
+        }
+
+        & .e-menu-item  {
+          @include li-layout;
+          @include li-size;
+
+          & .e-previous {
+            margin-right: $back-icon-margin;
+
+            &::before {
+              content: $back-icon;
+            }
+          }
+
+          &.e-disabled {
+            cursor: auto;
+            pointer-events: none;
+          }
+        }
+      }
+    }
+  }
+
+  .e-rtl.e-contextmenu-wrapper .e-menu-item {
+    @include rtl-li-layout;
+    @include rtl-li-size;
+  }
+
+  .e-bigger .e-contextmenu-wrapper ul,
+  .e-bigger.e-contextmenu-wrapper ul {
+    @include bigger-ul-size;
+    max-width: $bigger-max-width;
+    min-width: $bigger-min-width;
+
+    & .e-menu-item  {
+      @include bigger-li-size;
+    }
+  }
+
+  .e-bigger .e-contextmenu-wrapper.e-rtl ul .e-blankicon,
+  .e-bigger.e-contextmenu-wrapper.e-rtl ul .e-blankicon {
+    @include bigger-rtl-blank-icon;
+  }
+}

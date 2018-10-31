@@ -1,0 +1,26 @@
+@import 'definition.scss';
+
+$skin-name: 'highcontrast';
+$tooltip-shadow-color: rgba(0, 0, 0, .25);
+$tooltip-drop-shadow: none;
+$tooltip-content-bg-color: $bg-base-100;
+$tooltip-content-border-color: $border-default;
+$tooltip-content-font-color:  $invert-font;
+$tooltip-default-icon-color: $bg-base-0;
+$tooltip-icon-bg-normal: $bg-base-100;
+$tooltip-hover-icon-color: $bg-base-0;
+$tooltip-icon-bg-hover: $bg-base-100;
+$tooltip-icon-border-color: $bg-base-0;
+$tooltip-font-size: 11px;
+$tooltip-mobile-font-size: 12px;
+$tooltip-border-radius: 0;
+$tooltip-opacity: 1;
+$tooltip-arrow-outer-border: 7px;
+$tooltip-arrow-inner-border: 7px;
+$tooltip-horizontal-padding: 12px;
+$tooltip-vertical-padding: 12px;
+$tooltip-mobile-horizontal-padding: 15px;
+$tooltip-mobile-vertical-padding: 15px;
+$tooltip-line-height: 16px;
+$tooltip-close-icon-color: $bg-base-100;
+$tooltip-arrow-icon-font-size: 15px;

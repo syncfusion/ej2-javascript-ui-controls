@@ -1,0 +1,131 @@
+@include export-module('datetimepicker-layout') {
+  //   datetimepicker layout
+  .e-datetime-wrapper {
+    // sass-lint:disable no-vendor-prefixes
+    -webkit-tap-highlight-color: transparent;
+
+    & .e-time-icon.e-icons::before {
+      font-size: $icon-normal-font-size;
+    }
+
+    &.e-control-wrapper {
+      box-sizing: border-box;
+    }
+
+    & .e-time-icon.e-icons.e-disabled,
+    & .e-date-icon.e-icons.e-disabled {
+      pointer-events: none;
+    }
+
+    & .e-clear-icon {
+      box-sizing: content-box;
+    }
+
+    & span {
+      cursor: pointer;
+    }
+
+    & .e-input-group-icon.e-date-icon,
+    & .e-input-group-icon.e-time-icon {
+      font-size: 16px;
+      margin: $date-icon-margin;
+      min-height: $normal-min-height;
+      min-width: $normal-min-width;
+      outline: none;
+    }
+
+    & .e-input-group-icon.e-time-icon {
+      border: $time-icon-border;
+      border-style: $time-icon-border-style;
+      margin: $time-icon-margin;
+    }
+
+    &.e-rtl .e-input-group-icon.e-time-icon {
+      margin: $time-rtl-icon-margin;
+    }
+  }
+
+  #{&}.e-datetimepicker.e-time-modal {
+    background-color: $default-overlay;
+    height: 100%;
+    left: 0;
+    opacity: .5;
+    pointer-events: auto;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 999;
+	}
+
+  #{&}.e-datetimepicker.e-popup {
+    border-style: solid;
+    border-width: 1px;
+    overflow: auto;
+
+    & .e-content {
+      position: relative;
+    }
+
+    & .e-list-parent.e-ul {
+      margin: 0;
+      padding: $list-normal-padding 0;
+
+      & .e-list-item {
+        color: $list-default-font-color;
+        cursor: default;
+        font-size: $list-normal-font-size;
+        overflow: hidden;
+        position: relative;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+        white-space: nowrap;
+        width: 100%;
+      }
+
+      & .e-list-item.e-hover {
+        cursor: pointer;
+      }
+    }
+  }
+
+  //normal styles
+
+  #{&}.e-datetimepicker.e-popup {
+    & .e-list-parent.e-ul .e-list-item {
+      line-height: $list-normal-line-height;
+      text-indent: $list-normal-text-indent;
+    }
+  }
+
+  //bigger styles
+  .e-bigger.e-datetime-wrapper,
+  &.e-bigger .e-datetime-wrapper {
+
+    & .e-time-icon.e-icons::before {
+      font-size: $icon-bigger-font-size;
+    }
+
+    & .e-input-group-icon.e-time-icon {
+      margin: $time-bigger-icon-margin;
+      min-height: $bigger-min-height;
+      min-width: $bigger-min-width;
+    }
+
+    &.e-rtl .e-input-group-icon.e-time-icon {
+      margin: $time-rtl-bigger-icon-margin;
+    }
+  }
+
+  .e-bigger #{&}.e-datetimepicker.e-popup,
+  &.e-bigger#{&}.e-datetimepicker.e-popup {
+    & .e-list-parent.e-ul {
+      padding: $list-bigger-padding 0;
+
+      & .e-list-item {
+        font-size: $list-bigger-font-size;
+        line-height: $list-bigger-line-height;
+        text-indent: $list-bigger-text-indent;
+      }
+    }
+  }
+}

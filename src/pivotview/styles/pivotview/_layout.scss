@@ -1,0 +1,229 @@
+@include export-module('pivotview-layout') {
+  /*! PivotView layout */
+  .e-pivotview {
+
+    // sass-lint:disable-all
+    .e-member-editor-dialog {
+      max-height: 450px !important;
+    }
+    // sass-lint:enable-all
+
+    .e-member-editor-dialog {
+      border-radius: $pivotgrid-default-border-radius;
+      max-width: 400px;
+      width: auto;
+
+      .e-dlg-header-content,
+      .e-footer-content {
+        border-radius: $pivotgrid-default-border-radius;
+      }
+
+      .e-dlg-header-content {
+        border: 0;
+        font-weight: normal;
+      }
+
+      .e-footer-content {
+        border-top: $pivotgrid-border-size $pivotgrid-border-type $pivotgrid-default-border-color;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        padding-bottom: 8px;
+        padding-top: 8px;
+
+        .e-clear-filter-button {
+          float: left;
+
+          &.e-disable {
+            display: none;
+          }
+        }
+      }
+
+      .e-dlg-content {
+        overflow: hidden;
+        padding: 0;
+
+        .e-member-editor-wrapper {
+          .e-editor-search-wrapper {
+            padding: 0 $pivotgrid-editor-search-padding-size 10px;
+          }
+
+          .e-member-prompt {
+            padding: 15px $pivotgrid-editor-search-padding-size;
+            text-align: center;
+            width: 100%;
+          }
+
+          .e-member-editor-container {
+            height: $pivotgrid-member-filter-list-height;
+            max-width: 400px;
+            overflow: auto;
+            overflow-x: hidden;
+          }
+
+          .e-select-all-wrapper ul,
+          .e-member-editor-container ul {
+            margin-left: $pivotgrid-member-filter-list-padding-size;
+            overflow: hidden;
+          }
+
+          .e-disable {
+            display: none;
+          }
+        }
+
+        // sass-lint:disable-all
+        .e-filter-tab-wrapper {
+          border: none;
+          // sass-lint:enable-all
+
+          .e-tab-header {
+            .e-toolbar-item .e-icon-left + .e-tab-text {
+              margin: 0 0 0 6px;
+            }
+
+            .e-text-wrap {
+              .e-tab-icon {
+                height: 14px;
+                min-width: 14px;
+                width: 14px;
+
+                &::before {
+                  font-size: 14px;
+                }
+              }
+            }
+          }
+
+          &.e-rtl {
+            .e-tab-header {
+              .e-toolbar-item .e-icon-left + .e-tab-text {
+                margin: 0 6px 0 0;
+              }
+            }
+          }
+        }
+
+        .e-excelfilter {
+          padding-top: 20px;
+
+          .e-member-editor-container {
+            height: $pivotgrid-excel-member-filter-height;
+          }
+        }
+
+        .e-label-filter,
+        .e-value-filter {
+          height: $pivotgrid-excel-filter-height;
+          overflow: auto;
+          padding: 20px;
+          padding-bottom: 0;
+
+          .e-filter-text-div {
+            font-size: 13px;
+            font-weight: 500;
+          }
+
+          .e-filter-option-wrapper-1,
+          .e-filter-option-wrapper-2,
+          .e-separator-div {
+            padding-top: 20px;
+          }
+
+          .e-between-text-div {
+            padding: 8px 0;
+          }
+
+          .e-disable {
+            display: none;
+          }
+        }
+      }
+
+      &.e-excel-filter {
+        min-width: 280px;
+      }
+
+      &.e-rtl {
+        .e-member-editor-wrapper {
+          ul {
+            margin-left: 0;
+            margin-right: $pivotgrid-member-filter-list-padding-size;
+          }
+        }
+
+        .e-footer-content {
+          .e-clear-filter-button {
+            float: right;
+          }
+        }
+      }
+    }
+  }
+
+  .e-bigger #{&}.e-pivotview,
+  .e-bigger#{&}.e-pivotview,
+  .e-bigger .e-pivotview,
+  .e-bigger.e-pivotview {
+    .e-member-editor-dialog .e-dlg-content .e-member-editor-wrapper .e-member-editor-container {
+      height: $pivotgrid-member-filter-list-bigger-height;
+    }
+
+    .e-member-editor-dialog {
+      .e-dlg-header-content {
+        .e-clear-filter-button.e-small {
+          font-size: 14px;
+          top: 0;
+        }
+      }
+
+      .e-dlg-content {
+        .e-filter-tab-wrapper {
+          .e-tab-header {
+            .e-toolbar-item .e-icon-left + .e-tab-text {
+              margin: 0 0 0 6px;
+            }
+          }
+
+          &.e-rtl {
+            .e-tab-header {
+              .e-toolbar-item .e-icon-left + .e-tab-text {
+                margin: 0 6px 0 0;
+              }
+            }
+          }
+        }
+
+        .e-excelfilter {
+          .e-member-editor-container {
+            height: $pivotgrid-excel-member-filter-bigger-height;
+          }
+        }
+
+        .e-label-filter,
+        .e-value-filter {
+          height: $pivotgrid-excel-filter-bigger-height;
+
+          .e-filter-text-div {
+            font-size: 14px;
+          }
+
+          .e-filter-option-wrapper-1,
+          .e-filter-option-wrapper-2,
+          .e-separator-div {
+            padding-top: 24px;
+          }
+
+          .e-between-text-div {
+            padding: 10px 0;
+          }
+        }
+      }
+
+      &.e-excel-filter {
+        min-width: $pivotgrid-bigger-excel-dialog-min-width;
+      }
+    }
+  }
+}
+  

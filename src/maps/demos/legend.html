@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>EJ2 Maps Typescript Component</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="description" content="Typescript UI Controls" />
+    <meta name="author" content="Syncfusion" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../styles/maps/material.css" />
+    <script src="../node_modules/requirejs/require.js" data-main="legend.js"></script>
+</head>
+<script type="text/javascript">
+    require.config({
+        packages: [{
+            name: "@syncfusion/ej2-base",
+            location: "../node_modules/@syncfusion/ej2-base",
+            main: "index.js"
+        }, {
+            name: "@syncfusion/ej2-data",
+            location: "../node_modules/@syncfusion/ej2-data",
+            main: "src/index.js"
+        },
+        {
+            name: "@syncfusion/ej2-buttons",
+            location: "../node_modules/@syncfusion/ej2-buttons",
+            main: "src/index.js"
+        }, {
+            name: "@syncfusion/ej2-popups",
+            location: "../node_modules/@syncfusion/ej2-popups",
+            main: "src/index.js"
+        },
+        {
+            name: "@syncfusion/ej2-pdf-export",
+            location: "../node_modules/@syncfusion/ej2-pdf-export",
+            main: "src/index.js"
+        },
+        {
+            name: "@syncfusion/ej2-compression",
+            location: "../node_modules/@syncfusion/ej2-compression",
+            main: "src/index.js"
+        },
+        {
+            name: "@syncfusion/ej2-file-utils",
+            location: "../node_modules/@syncfusion/ej2-file-utils",
+            main: "src/index.js"
+        }
+        ]
+    });
+</script>
+<body>  
+    <!-- htmllint preset="none" -->    
+        <div class="control-section">
+                <div id="container" align="center"></div>
+                <div style="float: right; margin-right: 10px;">Source:
+                   <a href="https://simple.wikipedia.org/wiki/List_of_countries_by_population_density" target="_blank">simple.wikipedia.org</a>
+                </div>
+            </div>
+</body>
+</html>

@@ -1,0 +1,1345 @@
+@include export-module('tab-theme') {
+  /*! tab theme */
+  #{&}.e-tab {
+    background: $tab-bg-color;
+    border: $tab-border;
+
+    .e-tab-header {
+      background: inherit;
+      border: 0;
+      border-bottom: $tab-hdr-border;
+      border-radius: 0;
+
+      @if $skin-name == 'bootstrap' {
+
+        &[style*= 'overflow: hidden'] {
+          border: 0;
+        }
+
+        &[style*= 'overflow: hidden'] .e-toolbar-items {
+          border-bottom: $tab-items-border;
+        }
+      }
+
+      .e-toolbar-items {
+        background: inherit;
+      }
+
+      .e-indicator {
+        background: $tab-border-color;
+      }
+
+      .e-toolbar-item {
+        background: inherit;
+        border: $tab-item-border;
+
+        .e-ripple-element {
+          background: $tab-ripple-bg-color;
+        }
+
+        .e-tab-wrap {
+          border-radius: $tab-item-wrap-border-radius;
+          color: $tab-text-color;
+
+          @if $skin-name == 'fabric' {
+            border: 1px solid $tab-wrap-border-color;
+          }
+          @else if $skin-name == 'highcontrast' {
+            border: 2px solid $tab-wrap-border-color;
+          }
+
+          .e-tab-icon {
+            color: $tab-text-color;
+          }
+
+          @media screen and (max-width: 480px) {
+            color: $tab-mob-text-color;
+
+            .e-tab-icon {
+              color: $tab-mob-text-color;
+            }
+
+            .e-close-icon {
+              color: $tab-mob-close-icon-color;
+            }
+          }
+
+          &:hover {
+            background: $tab-item-hover-bg-color;
+
+            @media screen and (max-width: 480px) {
+              background: $tab-mob-item-hover-bg-color;
+            }
+
+            .e-tab-text,
+            .e-tab-icon {
+              color: $tab-hover-text-color;
+            }
+          }
+        }
+
+        &.e-active {
+          border: $tab-active-item-border;
+          border-bottom: $tab-active-item-border-bottom;
+          border-top-left-radius: $tab-active-item-border-radius;
+          border-top-right-radius: $tab-active-item-border-radius;
+
+          .e-tab-wrap {
+
+            &:hover {
+
+              .e-tab-text,
+              .e-tab-icon {
+                color: $tab-active-text-color;
+              }
+            }
+          }
+
+          .e-text-wrap {
+            @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+              position: relative;
+
+              &::before {
+                border: 1px solid $tab-active-line-color;
+                content: '';
+                display: block;
+                position: absolute;
+                top: 95%;
+                width: 100%;
+              }
+            }
+          }
+
+          .e-tab-text,
+          .e-tab-icon {
+            color: $tab-active-text-color;
+          }
+
+          &.e-ileft,
+          &.e-iright {
+
+            .e-tab-icon {
+              color: $tab-comb-icon-color;
+            }
+
+            .e-tab-text {
+              color: $tab-comb-text-color;
+            }
+          }
+        }
+
+        .e-close-icon {
+          color: $tab-close-icon-color;
+
+          &:hover {
+            color: $tab-close-icon-hover-color;
+          }
+
+          &:active {
+            color: $tab-close-icon-active-color;
+          }
+        }
+
+        &.e-disable.e-overlay {
+          background: inherit;
+          opacity: 1;
+          pointer-events: none;
+
+          .e-tab-text,
+          .e-tab-icon {
+            color: $tab-disable-text-color;
+          }
+        }
+      }
+
+      .e-toolbar-pop {
+        background: $tab-pop-bg-color;
+        border: $tab-pop-border;
+        border-radius: $tab-pop-border-radius;
+        box-shadow: $tab-pop-box-shadow;
+        overflow-y: auto;
+
+        &[e-animate = 'true'] {
+          overflow-y: hidden;
+        }
+
+        @media screen and (max-width: 480px) {
+          box-shadow: $tab-pop-box-shadow;
+        }
+
+        .e-toolbar-item {
+
+          .e-tab-wrap {
+
+            .e-tab-text,
+            .e-tab-icon {
+              color: $tab-pop-text-color;
+            }
+
+            &:hover {
+              background: $tab-hover-bg-color;
+
+              @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+                border-color: $tab-wrap-hover-border-color;
+              }
+
+              @if $skin-name == 'highcontrast' {
+                background: $tab-wrap-hover-bg-color;
+              }
+
+              .e-tab-text,
+              .e-tab-icon {
+                color: $tab-hover-text-color;
+              }
+            }
+
+            &:active {
+              background: $tab-active-bg-color;
+
+              @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+                border-color: $tab-wrap-active-border-color;
+              }
+              @if $skin-name == 'highcontrast' {
+
+                .e-tab-text,
+                .e-tab-icon {
+                  color: $tab-wrap-active-color;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .e-scroll-nav,
+      .e-hscroll:not(.e-scroll-device) .e-scroll-nav {
+        background: inherit;
+        border: 0;
+
+        .e-nav-arrow {
+          color: $tab-nav-icon-color;
+
+          @if $skin-name == 'fabric' {
+            border: 1px solid $tab-wrap-border-color;
+          }
+
+          @if $skin-name == 'highcontrast' {
+            border: 2px solid $tab-wrap-border-color;
+          }
+
+          &:hover {
+            background: $tab-hover-nav-bg-color;
+            color: $tab-hover-nav-icon-color;
+
+            @if $skin-name == 'highcontrast' {
+              border: 2px solid $tab-wrap-hover-border-color;
+            }
+          }
+
+          &:active {
+            box-shadow: none;
+
+            @if $skin-name == 'fabric' {
+              border: 1px solid $tab-wrap-active-border-color;
+            }
+          }
+        }
+
+        &:focus {
+
+          .e-nav-arrow {
+            background: $tab-nav-focus-bg-color;
+            color: $tab-nav-focus-icon-color;
+
+            @if $skin-name == 'fabric' {
+              border: 1px solid $tab-wrap-focus-border-color;
+            }
+
+            @if $skin-name == 'highcontrast' {
+              border: 2px solid $tab-wrap-focus-border-color;
+            }
+
+            &:hover {
+              background: $tab-hover-nav-bg-color;
+              color: $tab-hover-nav-icon-color;
+
+              @if $skin-name == 'highcontrast' {
+                border: 2px solid $tab-nav-focus-hover-border-color;
+              }
+            }
+
+            &:active {
+              @if $skin-name == 'highcontrast' {
+                background: $tab-nav-focus-active-bg-color;
+                border-color: $tab-nav-focus-active-border-color;
+                color: $tab-nav-focus-active-color;
+              }
+            }
+          }
+        }
+
+        &:active {
+
+          @if $skin-name == 'bootstrap' {
+            box-shadow: $tab-nav-active-box-shadow;
+          }
+        }
+
+        &.e-overlay {
+
+          .e-nav-arrow {
+            color: $tab-disable-nav-icon-color;
+
+            &:hover {
+              color: $tab-disable-nav-icon-color;
+
+              @if $skin-name == 'highcontrast' {
+                background: $tab-nav-disable-hover-bg-color;
+                border-color: $tab-nav-disable-hover-border-color;
+              }
+            }
+          }
+        }
+      }
+
+      .e-hor-nav,
+      .e-hor-nav:not(.e-expended-nav) {
+        background: transparent;
+        border: 0;
+
+        .e-popup-up-icon,
+        .e-popup-down-icon {
+          color: $tab-pop-icon-color;
+
+          @if $skin-name == 'fabric' {
+            border: 1px solid $tab-wrap-border-color;
+          }
+
+          @if $skin-name == 'highcontrast' {
+            border: 2px solid $tab-wrap-border-color;
+          }
+
+          &:hover {
+            background: $tab-pop-icon-hover-bg-color;
+            border: $tab-pop-icon-hover-border;
+            border-radius: $tab-active-item-border-radius;
+
+            @if $skin-name == 'fabric' {
+              border: 1px solid $tab-wrap-hover-border-color;
+            }
+
+            @if $skin-name == 'highcontrast' {
+              border: 2px solid $tab-wrap-hover-border-color;
+            }
+          }
+        }
+
+        .e-popup-down-icon {
+
+          &:hover {
+            color: $tab-hover-nav-icon-color;
+          }
+        }
+
+        &:focus {
+
+          .e-popup-up-icon,
+          .e-popup-down-icon {
+            background: $tab-nav-focus-bg-color;
+            border: $tab-pop-icon-focus-border;
+            border-radius: $tab-active-item-border-radius;
+            color: $tab-nav-focus-icon-color;
+
+            @if $skin-name == 'fabric' {
+              border: 1px solid $tab-nav-focus-border-color;
+            }
+
+            @if $skin-name == 'bootstrap' {
+              background: $tab-nav-focus-bg-color;
+            }
+
+            @if $skin-name == 'highcontrast' {
+              border: 2px solid $tab-wrap-focus-border-color;
+            }
+
+            &:hover {
+              background: $tab-pop-icon-hover-bg-color;
+              border: $tab-pop-icon-hover-border;
+              border-radius: $tab-active-item-border-radius;
+
+              @if $skin-name == 'fabric' {
+                border: 1px solid $tab-nav-focus-hover-border-color;
+              }
+
+              @if $skin-name == 'highcontrast' {
+                border: 2px solid $tab-nav-focus-hover-border-color;
+              }
+            }
+
+            &:active {
+              background: $tab-pop-icon-hover-bg-color;
+              border: $tab-pop-icon-active-border;
+              border-radius: $tab-active-item-border-radius;
+              box-shadow: $tab-pop-border-box-shadow;
+
+              @if $skin-name == 'fabric' {
+                border: 1px solid $tab-nav-focus-active-border-color;
+              }
+
+              @if $skin-name == 'highcontrast' {
+                background: $tab-nav-focus-active-bg-color;
+                border: 2px solid $tab-nav-focus-active-border-color;
+                color: $tab-nav-focus-active-color;
+              }
+            }
+          }
+        }
+
+        &:hover {
+          border: 0;
+
+          &:active {
+            background: transparent;
+          }
+        }
+
+        &:active {
+
+          @if $skin-name == 'bootstrap' {
+            box-shadow: $tab-nav-active-box-shadow;
+          }
+        }
+
+        &.e-nav-active {
+          background: inherit;
+          border: 0;
+          box-shadow: none;
+
+          @if $skin-name == 'highcontrast' {
+            .e-icons {
+              color: $tab-nav-pop-arrow-active-color;
+            }
+
+            &:focus {
+              border: $tab-nav-pop-arrow-active-focus-border;
+            }
+          }
+        }
+      }
+
+      &:nth-child(even) {
+        border-bottom: 0;
+        border-top: $tab-hdr-border;
+
+        @if $skin-name == 'bootstrap' {
+
+          &[style*= 'overflow: hidden'] {
+            border: 0;
+          }
+
+          &[style*= 'overflow: hidden'] .e-toolbar-items {
+            border-bottom: 0;
+            border-top: $tab-items-border;
+          }
+        }
+
+        .e-toolbar-item {
+
+          &.e-active {
+            border-bottom: 0;
+            border-bottom-left-radius: $tab-active-item-border-radius;
+            border-bottom-right-radius: $tab-active-item-border-radius;
+            border-top: $tab-even-active-item-border-bottom;
+            border-top-color: $tab-active-item-border-color;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+
+            @if $skin-name == 'bootstrap' {
+              border-bottom: 1px solid $tab-even-active-item-bottom-border-color;
+            }
+          }
+        }
+      }
+    }
+
+    &.e-focused .e-tab-header {
+
+      .e-toolbar-item {
+
+        .e-tab-wrap:focus {
+          background: $tab-focus-bg-color;
+
+          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+            border-color: $tab-focused-wrap-focus-border-color;
+          }
+
+          @if $skin-name == 'highcontrast' {
+            border-style: solid;
+          }
+
+          .e-tab-icon,
+          .e-tab-text {
+            color: $tab-focus-text-color;
+          }
+        }
+      }
+
+      .e-scroll-nav {
+
+        &:focus {
+
+          .e-nav-arrow {
+            color: $tab-nav-focus-icon-color;
+
+            @if $skin-name == 'highcontrast' {
+              background: inherit;
+              border: 2px solid $tab-focused-nav-focus-border-color;
+            }
+          }
+        }
+      }
+
+      .e-hor-nav {
+
+        &:focus {
+
+          .e-popup-up-icon,
+          .e-popup-down-icon {
+            color: $tab-nav-focus-icon-color;
+
+            @if $skin-name == 'highcontrast' {
+              background: inherit;
+              border: 2px solid $tab-focused-nav-focus-border-color;
+            }
+          }
+        }
+      }
+    }
+
+    &.e-disable {
+      pointer-events: none;
+
+      .e-tab-header {
+
+        .e-indicator {
+          background: $tab-disable-border-color;
+        }
+
+        .e-toolbar-item {
+
+          .e-tab-wrap {
+            color: $tab-disable-text-color;
+          }
+
+          &.e-active {
+
+            .e-tab-text,
+            .e-tab-icon {
+              color: $tab-disable-active-text-color;
+            }
+          }
+        }
+      }
+
+      .e-content {
+        opacity: $tab-disable-cnt-opacity;
+      }
+    }
+
+    &.e-fill {
+
+      .e-tab-header {
+        border-bottom: $tab-fill-hdr-border;
+
+        @if $skin-name == 'bootstrap' {
+          .e-toolbar-items.e-hscroll {
+            border: 0;
+          }
+        }
+
+        .e-toolbar-item {
+          border: $tab-alt-item-border;
+
+          .e-ripple-element {
+            background: $tab-fill-ripple-bg-color;
+          }
+
+          .e-tab-wrap {
+            color: $tab-text-color;
+
+            &:hover .e-tab-text,
+            &:hover .e-tab-icon {
+              color: $tab-hover-text-color;
+            }
+          }
+
+          .e-text-wrap {
+            margin-top: 0;
+          }
+
+          &.e-active {
+            border: 0;
+
+            .e-tab-wrap {
+              background: $tab-fill-active-bg-color;
+              border-radius: $tab-active-item-border-radius;
+
+              @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+                border-color: $tab-fill-active-wrap-border-color;
+              }
+
+              &:hover .e-tab-text,
+              &:hover .e-tab-icon {
+                color: $tab-alt-active-text-color;
+              }
+            }
+
+            .e-text-wrap {
+              margin-top: 0;
+            }
+
+            .e-text-wrap::before {
+              @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+                border: 0;
+              }
+            }
+
+            .e-tab-text,
+            .e-tab-icon {
+              color: $tab-alt-active-text-color;
+            }
+
+            .e-close-icon {
+              color: $tab-alt-active-close-icon-color;
+            }
+
+            .e-close-icon:hover {
+              color: $tab-alt-active-hover-close-icon-color;
+            }
+          }
+        }
+
+        .e-toolbar-pop {
+
+          .e-toolbar-item:active:hover {
+
+            @if $skin-name == 'highcontrast' {
+              .e-tab-text,
+              .e-tab-icon {
+                color: $tab-fill-pop-item-active-hover-color;
+              }
+            }
+          }
+        }
+
+        &:nth-child(even) {
+          border-bottom: 0;
+          border-top: $tab-fill-hdr-border;
+
+          .e-toolbar-item {
+
+            &.e-active .e-text-wrap {
+              margin-top: 0;
+            }
+          }
+        }
+      }
+
+      &.e-corner {
+
+        .e-tab-header {
+
+          .e-toolbar-item {
+
+            &.e-active .e-tab-wrap {
+              border-radius: $tab-fill-active-wrap-corner;
+            }
+          }
+
+          &:nth-child(even) {
+
+            .e-toolbar-item.e-active .e-tab-wrap {
+              border-radius: $tab-fill-even-active-wrap-corner;
+            }
+          }
+        }
+      }
+
+      &.e-disable {
+
+        .e-tab-header {
+          border-bottom: $tab-fill-disable-hdr-border;
+
+          .e-toolbar-item {
+
+            .e-tab-wrap {
+              color: $tab-disable-text-color;
+            }
+
+            &.e-active {
+              opacity: $tab-alt-disable-active-item-opacity;
+
+              .e-tab-wrap,
+              .e-tab-wrap:focus {
+                background: $tab-fill-disable-active-bg-color;
+              }
+
+              .e-tab-wrap .e-tab-text,
+              .e-tab-wrap .e-tab-icon,
+              .e-tab-wrap:focus .e-tab-text,
+              .e-tab-wrap:focus .e-tab-icon {
+                color: $tab-alt-disable-active-text-color;
+              }
+            }
+          }
+
+          &:nth-child(even) {
+            border-bottom: 0;
+            border-top: $tab-fill-disable-hdr-border;
+          }
+        }
+      }
+
+      &.e-focused .e-tab-header {
+
+        .e-toolbar-item {
+
+          .e-tab-wrap:focus .e-tab-icon,
+          .e-tab-wrap:focus .e-tab-text {
+            color: $tab-alt-hover-text-color;
+          }
+
+          &.e-active .e-tab-wrap:focus {
+            background: $tab-fill-focus-bg-color;
+
+            @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+              border-color: $tab-fill-focused-active-wrap-focus-border-color;
+            }
+
+            @if $skin-name == 'bootstrap' {
+
+              .e-tab-text,
+              .e-close-icon {
+                color: $tab-fill-focused-active-wrap-focus-color;
+              }
+            }
+
+            @if $skin-name == 'highcontrast' {
+              border-style: solid;
+            }
+
+            .e-tab-text,
+            .e-tab-icon {
+              color: $tab-alt-active-hover-text-color;
+            }
+          }
+        }
+      }
+    }
+
+    &.e-background {
+
+      .e-tab-header {
+        background: $tab-alt-hdr-bg-color;
+        border: 0;
+
+        .e-toolbar-items {
+          background: $tab-alt-item-bg-color;
+        }
+
+        @if $skin-name == 'bootstrap' {
+          .e-toolbar-items.e-hscroll {
+            border: 0;
+          }
+        }
+
+        .e-indicator {
+          background: $tab-alt-border-color;
+        }
+
+        .e-toolbar-item {
+          border: $tab-alt-item-border;
+
+          .e-ripple-element {
+            background: $tab-alt-ripple-bg-color;
+          }
+
+          .e-tab-wrap {
+            background: $tab-alt-item-bg-color;
+
+            @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+              border-color: $tab-alt-wrap-border-color;
+            }
+
+            &:hover {
+              background: $tab-item-hover-bg-color;
+
+              .e-tab-text,
+              .e-tab-icon {
+                color: $tab-alt-active-text-color;
+
+                @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+                  color: $tab-alt-wrap-hover-color;
+                }
+              }
+
+              @if $skin-name == 'material' {
+                .e-close-icon {
+
+                  &:hover,
+                  &:active {
+                    color: $tab-alt-wrap-hover-close-icon-focus-or-active-color;
+                  }
+                }
+              }
+
+              @if $skin-name == 'bootstrap' {
+                .e-tab-text,
+                .e-close-icon {
+                  color: $tab-alt-wrap-hover-color;
+                }
+              }
+
+              @if $skin-name == 'highcontrast' {
+                background-color: $tab-alt-wrap-hover-bg-color;
+                border-color: $tab-alt-wrap-hover-border-color;
+
+                .e-tab-text,
+                .e-close-icon {
+                  color: $tab-alt-wrap-hover-color;
+                }
+
+                .e-close-icon {
+
+                  &:hover,
+                  &:active {
+                    color: $tab-alt-wrap-hover-close-active-or-hover-color;
+                  }
+                }
+              }
+            }
+          }
+
+          .e-tab-text,
+          .e-tab-icon,
+          .e-close-icon {
+            color: $tab-alt-text-color;
+          }
+
+          .e-close-icon {
+            color: $tab-alt-close-icon-color;
+          }
+
+          .e-close-icon:hover {
+            color: $tab-alt-hover-text-color;
+          }
+
+          &.e-active {
+            border: 0;
+
+            .e-tab-wrap {
+              background: $tab-alt-active-bg-color;
+              border-radius: $tab-active-item-border-radius;
+
+              @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+                border-color: $tab-alt-active-wrap-border-color;
+              }
+
+              &:hover {
+
+                .e-tab-text,
+                .e-tab-icon {
+                  color: $tab-alt-active-text-color;
+                }
+
+                @if $skin-name == 'fabric' {
+                  background: $tab-alt-active-wrap-hover-bg-color;
+                }
+
+                @if $skin-name == 'bootstrap' {
+                  .e-close-icon {
+                    color: $tab-alt-active-wrap-hover-close-color;
+                  }
+                }
+
+                @if $skin-name == 'highcontrast' {
+                  background: $tab-alt-active-wrap-hover-bg-color;
+                  border-color: $tab-alt-active-wrap-hover-border-color;
+
+                  .e-tab-icon,
+                  .e-tab-text,
+                  .e-close-icon {
+                    color: $tab-alt-active-wrap-hover-color;
+                  }
+
+                  .e-close-icon {
+
+                    &:hover,
+                    &:active {
+                      color: $tab-alt-active-wrap-hover-close-hover-or-active-color;
+                    }
+                  }
+
+                  &:focus {
+                    background: $tab-alt-active-wrap-hover-focus-bg-color;
+
+                    .e-tab-icon,
+                    .e-tab-text {
+                      color: $tab-alt-active-wrap-hover-focus-color;
+                    }
+                  }
+                }
+              }
+
+              &:focus {
+                background: $tab-alt-active-focus-bg-color;
+
+                .e-tab-text,
+                .e-tab-icon {
+                  color: $tab-alt-active-text-color;
+                }
+              }
+
+              &:focus:hover {
+
+                @if $skin-name == 'bootstrap' {
+
+                  .e-tab-text,
+                  .e-close-icon {
+                    color: $tab-alt-active-text-color;
+                  }
+                }
+              }
+            }
+
+            @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+              .e-text-wrap::before {
+                border: 0;
+              }
+            }
+
+            .e-tab-text,
+            .e-tab-icon {
+              color: $tab-alt-active-text-color;
+            }
+
+            .e-close-icon {
+              color: $tab-alt-active-close-icon-color;
+            }
+
+            .e-close-icon:hover {
+              color: $tab-alt-active-hover-close-icon-color;
+            }
+
+            &.e-itop .e-tab-wrap,
+            &.e-ibottom .e-tab-wrap {
+              background: $tab-alt-tb-active-bg-color;
+            }
+          }
+
+          &.e-disable {
+            .e-tab-text,
+            .e-tab-icon,
+            .e-close-icon {
+              color: $tab-alt-disable-text-color;
+            }
+          }
+        }
+
+        .e-toolbar-pop {
+
+          .e-toolbar-item {
+            background: $tab-alt-item-bg-color;
+
+            .e-tab-wrap {
+
+              .e-tab-text,
+              .e-tab-icon {
+                color: $tab-alt-text-color;
+              }
+
+              &:hover {
+                background: $tab-alt-hover-bg-color;
+
+                .e-tab-text,
+                .e-tab-icon {
+                  color: $tab-alt-active-text-color;
+
+                  @if $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'highcontrast' {
+                    color: $tab-alt-pop-wrap-hover-color;
+                  }
+                }
+              }
+
+              &:active {
+                @if $skin-name == 'highcontrast' {
+                  background: $tab-alt-pop-wrap-active-bg-color;
+
+                  .e-tab-text,
+                  .e-close-icon {
+                    color: $tab-alt-pop-wrap-active-color;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        .e-scroll-nav {
+
+          .e-nav-arrow {
+            color: $tab-alt-nav-icon-color;
+
+            @if $skin-name == 'fabric' {
+              border: 1px solid $tab-alt-nav-border-color;
+            }
+
+            @if $skin-name == 'highcontrast' {
+              border: 2px solid $tab-alt-nav-border-color;
+            }
+
+            &:hover {
+              background: $tab-bg-hover-nav-bg-color;
+              color: $tab-bg-hover-nav-icon-color;
+
+              @if $skin-name == 'highcontrast' {
+                border-color: $tab-alt-nav-hover-border-color;
+                color: $tab-alt-nav-hover-color;
+              }
+            }
+
+            &:active {
+
+              @if $skin-name == 'highcontrast' {
+                background: $tab-alt-nav-active-bg-color;
+                color: $tab-alt-nav-active-color;
+              }
+
+              .e-icons {
+                @if $skin-name == 'highcontrast' {
+                  color: $tab-alt-nav-active-color;
+                }
+              }
+            }
+          }
+
+          &:focus {
+
+            .e-nav-arrow {
+              color: $tab-bg-hover-nav-icon-color;
+
+              @if $skin-name == 'fabric' {
+                border: 1px solid $tab-nav-focus-border-color;
+              }
+
+              @if $skin-name == 'highcontrast' {
+                background: transparent;
+                border: 2px solid $tab-alt-nav-focus-border-color;
+              }
+
+              &:hover {
+                background: $tab-bg-hover-nav-bg-color;
+                color: $tab-bg-hover-nav-icon-color;
+
+                @if $skin-name == 'highcontrast' {
+                  border: 2px solid $tab-nav-focus-hover-border-color;
+                  color: $tab-alt-nav-focus-hover-color;
+                }
+              }
+
+              &:active {
+                @if $skin-name == 'highcontrast' {
+                  background: $tab-nav-focus-active-bg-color;
+                  border-color: $tab-nav-focus-active-border-color;
+                  color: $tab-nav-focus-active-color;
+                }
+              }
+            }
+          }
+
+          &:active::after {
+            @include hscroll-alt-btn-animation-after;
+          }
+        }
+
+        .e-hor-nav {
+
+          .e-popup-up-icon,
+          .e-popup-down-icon {
+            color: $tab-alt-nav-icon-color;
+
+            @if $skin-name == 'fabric' {
+              border: 1px solid $tab-alt-nav-border-color;
+            }
+
+            @if $skin-name == 'highcontrast' {
+              border: 2px solid $tab-alt-nav-border-color;
+            }
+
+            &:hover {
+              background: $tab-bg-hover-nav-bg-color;
+              color: $tab-bg-hover-nav-icon-color;
+
+              @if $skin-name == 'bootstrap' {
+                background: $tab-alt-nav-hover-bg-color;
+              }
+
+              @if $skin-name == 'highcontrast' {
+                border-color: $tab-alt-nav-hover-border-color;
+                color: $tab-alt-nav-hover-color;
+              }
+            }
+
+            &:active {
+
+              .e-icons {
+                @if $skin-name == 'highcontrast' {
+                  color: $tab-alt-nav-active-color;
+                }
+              }
+
+              &:hover {
+
+                @if $skin-name == 'highcontrast' {
+                  background: $tab-alt-nav-active-bg-color;
+                  color: $tab-alt-nav-active-color;
+                }
+              }
+            }
+          }
+
+          &:focus {
+
+            .e-popup-up-icon,
+            .e-popup-down-icon {
+              color: $tab-bg-hover-nav-icon-color;
+
+              @if $skin-name == 'fabric' {
+                border: 1px solid $tab-nav-focus-border-color;
+              }
+
+              @if $skin-name == 'highcontrast' {
+                background: $tab-alt-nav-focus-bg-color;
+                border: 2px solid $tab-alt-nav-focus-border-color;
+              }
+
+              &:hover {
+
+                @if $skin-name == 'highcontrast' {
+                  background: $tab-alt-nav-focus-hover-bg-color;
+                  border: 2px solid $tab-nav-focus-hover-border-color;
+                  color: $tab-alt-nav-focus-hover-color;
+                }
+              }
+
+              &:active {
+                @if $skin-name == 'highcontrast' {
+                  background: $tab-nav-focus-active-bg-color;
+                  border-color: $tab-nav-focus-active-border-color;
+                  color: $tab-nav-focus-active-color;
+                }
+              }
+            }
+          }
+
+          &:active::after {
+            @include tbar-alt-btn-animation-after;
+          }
+
+          &.e-nav-active {
+
+            .e-popup-up-icon {
+              color: $tab-bg-hover-nav-icon-color;
+            }
+          }
+        }
+      }
+
+      &.e-disable .e-tab-header {
+
+        .e-indicator {
+          background: $tab-alt-disable-border-color;
+        }
+
+        .e-toolbar-item {
+
+          .e-tab-wrap {
+            color: $tab-alt-disable-text-color;
+
+            .e-tab-text,
+            .e-tab-icon {
+              color: $tab-alt-disable-text-color;
+            }
+
+            &:focus {
+
+              .e-tab-text,
+              .e-tab-icon {
+                color: $tab-alt-disable-text-color;
+              }
+            }
+          }
+
+          &.e-active {
+            opacity: $tab-alt-disable-active-item-opacity;
+
+            .e-tab-wrap,
+            .e-tab-wrap:focus {
+              background: $tab-alt-disable-active-bg-color;
+              color: $tab-alt-disable-active-text-color;
+
+              .e-tab-text,
+              .e-tab-icon {
+                color: $tab-alt-disable-active-text-color;
+              }
+            }
+          }
+        }
+      }
+
+      &.e-accent .e-tab-header {
+
+        .e-indicator {
+          background: $tab-border-color;
+        }
+
+        &.e-disable {
+
+          .e-indicator {
+            background: $tab-disable-border-color;
+          }
+        }
+      }
+
+      &.e-focused .e-tab-header {
+
+        .e-toolbar-item {
+
+          .e-tab-wrap:focus {
+
+            @if $skin-name == 'material' or $skin-name == 'bootstrap' {
+              background: $tab-alt-hover-bg-color;
+            }
+
+            @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+              border-color: $tab-wrap-focus-border-color;
+            }
+
+            @if $skin-name == 'highcontrast' {
+              border-style: solid;
+            }
+
+            .e-tab-icon,
+            .e-tab-text {
+              color: $tab-alt-text-color;
+            }
+          }
+
+          &.e-active {
+
+            .e-tab-wrap:focus {
+
+              @if $skin-name == 'material' or $skin-name == 'bootstrap' {
+                background: $tab-key-alt-active-focus-bg-color;
+              }
+
+              @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+                border-color: $tab-alt-focused-active-wrap-focus-border-color;
+              }
+
+              @if $skin-name == 'highcontrast' {
+                border-style: solid;
+              }
+            }
+
+            .e-tab-wrap:focus .e-tab-text,
+            .e-tab-wrap:focus .e-tab-icon {
+              color: $tab-alt-active-hover-text-color;
+            }
+
+            .e-tab-wrap:hover {
+
+              @if $skin-name == 'fabric' {
+                background: $tab-alt-focused-active-wrap-hover-bg-color;
+              }
+            }
+
+            .e-tab-wrap:focus,
+            .e-tab-wrap:hover {
+
+              @if $skin-name == 'bootstrap' {
+                .e-tab-text,
+                .e-close-icon {
+                  color: $tab-alt-focused-active-wrap-focus-or-hover-color;
+                }
+              }
+            }
+
+            .e-tab-wrap:focus:hover {
+
+              @if $skin-name == 'bootstrap' {
+
+                .e-tab-text,
+                .e-close-icon {
+                  color: $tab-alt-focused-active-wrap-focus-and-hover-color;
+                }
+              }
+            }
+
+            &.e-itop .e-tab-wrap,
+            &.e-ibottom .e-tab-wrap {
+              background: $tab-alt-tb-active-bg-color;
+
+              &:focus {
+                background: $tab-key-alt-active-focus-bg-color;
+              }
+            }
+          }
+        }
+
+        .e-scroll-nav {
+
+          &:focus {
+
+            .e-nav-arrow {
+              color: $tab-bg-nav-focus-icon-color;
+            }
+          }
+        }
+
+        .e-hor-nav {
+
+          &:focus {
+
+            .e-popup-up-icon,
+            .e-popup-down-icon {
+              color: $tab-bg-nav-focus-icon-color;
+            }
+          }
+        }
+      }
+    }
+
+    &.e-rtl {
+
+      .e-tab-header {
+
+        .e-hscroll.e-rtl {
+
+          .e-scroll-nav {
+            border: 0;
+          }
+        }
+      }
+    }
+
+    .e-content {
+      background: inherit;
+
+      .e-item {
+        background: inherit;
+        color: $tab-content-font-color;
+      }
+    }
+  }
+}

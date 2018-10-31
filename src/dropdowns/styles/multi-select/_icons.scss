@@ -1,0 +1,24 @@
+.e-multi-select-wrapper .e-close-hooker::before {
+  content: $overall-close-icon;
+  cursor: pointer;
+  left: $overall-close-left;
+  position: relative;
+  top: $overall-close-top;
+}
+
+.e-multi-select-wrapper .e-chips .e-chips-close::before {
+  content: $chip-close-icon;
+  cursor: pointer;
+  left: $chip-close-left;
+  position: relative;
+  top: $chip-close-top;
+}
+
+.e-multiselect.e-input-group .e-ddl-icon::before {
+  content: $down-icon-content;
+  font-family: 'e-icons';
+}
+
+.e-multiselect.e-input-group .e-ddl-disable-icon::before {
+  content: '';
+}

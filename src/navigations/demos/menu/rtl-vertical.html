@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Menu - RTL Vertical Sample</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="utf-8" />
+    <script>
+        window.require = {
+            config: function (json) {
+                window.rsConfig = json;
+                window.rsConfig.baseUrl = '';
+            }
+        };
+    </script>
+    <script src="../demo-config.js"></script>
+    <script data-main="./rtl-vertical" src="../../node_modules/requirejs/require.js"></script>
+    <script>
+        require.config(window.rsConfig);
+    </script>
+    <style type="text/css">
+        html {
+            -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+            margin: 30px auto;
+        }
+
+        #menu-control {
+            text-align: center;
+            margin: auto 0;
+            padding: 2%;
+            min-height: 150px;
+        }
+
+        .theme-option .e-checkbox-wrapper {
+            display: block;
+            margin-top: 20px;
+        }
+
+        .theme-option {
+            text-align: center;
+            padding-bottom: 30px;
+        }
+
+        .e-menu-wrapper {
+            text-align: center;
+        }
+
+        .theme-option button {
+            margin: 10px 10px;
+        }
+
+        .e-home::before {
+            content: "\e7d9";
+        }
+
+        .e-book::before {
+            content: '\e74c';
+        }
+
+        .e-share::before {
+            content: '\e7fe';
+        }
+
+        .e-purchase::before {
+            content: '\e7a5';
+        }
+
+        .e-contact::before {
+            content: '\e80f';
+        }
+
+        .e-login::before {
+            content: '\e7d4';
+        }
+
+        .darkBG {
+            background-color: #000;
+            color: #fff;
+        }
+    </style>
+    <link id="theme" rel="stylesheet" type="text/css" href="./theme-files/material.css" />
+</head>
+
+<body>
+    <div class="theme-option">
+        <button id="material">Material</button>
+        <button id="fabric">Fabric</button>
+        <button id="bootstrap">Bootstrap</button>
+        <button id="highcontrast">Highcontrast</button>
+        <input type="checkbox" id="touchMode" />
+    </div>
+    <div id="menu-control">
+        <ul id="menu"></ul>
+    </div>
+</body>
+
+</html>

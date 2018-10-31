@@ -1,0 +1,62 @@
+$skin-name: 'material';
+
+//dimention variables
+
+//Mouse Mode
+
+$toast-icon-nrml-height: 14px;
+$toast-icon-nrml-width: 14px;
+$toast-icon-nrml-size: 15px;
+$toast-icon-nrml-right-margin: 10px;
+$toast-close-icon-nrml-height: 14px;
+$toast-close-icon-nrml-width: 14px;
+$toast-close-icon-nrml-size: 15px;
+$toast-position-nrml-distance: 10px;
+$multitoast-nrml-gap-distance: 10px;
+$toast-nrml-padding: 14px 24px;
+$toast-action-btn-nrml-padding: 24px 0 14px 0;
+$toast-action-btn-nrml-margin: 10px;
+$toast-progressbar-nrml-height: 4px;
+$toast-content-nrml-padding: 14px 0 24px 0;
+$toast-nrml-border-radious: 2px;
+$toast-font-nrml-size: 14px;
+$toast-title-font-nrml-size: 15px;
+
+//Touch Mode
+$toast-icon-bgr-height: 24px;
+$toast-icon-bgr-width: 24px;
+$toast-icon-bgr-size: 18px;
+$toast-icon-bgr-right-margin: 14px;
+$toast-close-icon-bgr-height: 24px;
+$toast-close-icon-bgr-width: 24px;
+$toast-close-icon-bgr-size: 20px;
+$toast-position-bgr-distance: 10px;
+$multitoast-bgr-gap-distance: 10px;
+$toast-bgr-min-height: 48px;
+$toast-bgr-padding: 14px 24px;
+$toast-action-btn-bgr-padding: 24px 0 14px 0;
+$toast-action-btn-bgr-margin: 10px;
+$toast-progressbar-bgr-height: 4px;
+$toast-content-bgr-padding: 14px 0 24px 0;
+$toast-bgr-border-radious: 2px;
+$toast-font-bgr-size: 14px;
+
+$toast-title-font-weight: bold;
+
+//theme variables
+
+$toast-box-shadow: 0 2px 5px 0 rgba(0 , 0 , 0 , .16) , 0 2px 10px 0 rgba(0 , 0 , 0 , .12);
+$toast-hover-box-shadow: 0 8px 17px 0 rgba(0 , 0 , 0 , .2) , 0 6px 20px 0 rgba(0 , 0 , 0 , .19);
+$toast-progress-color: #000;
+$toast-bg-color: $default-bg-color;
+$toast-hover-bg-color: $default-bg-color;
+$toast-active-bg-color: $default-bg-color;
+$toast-font-color: $default-font-color;
+$toast-icon-color: $default-font-color;
+$toast-close-icon-color: $default-font-color;
+$toast-title-color: $default-font-color;
+$toast-content-color: $default-font-color;
+
+//icon variabels
+
+$toast-close-icon: '\e7e9';

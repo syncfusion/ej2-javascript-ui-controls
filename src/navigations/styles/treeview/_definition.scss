@@ -1,0 +1,47 @@
+/*! TreeView's default definitions and variables */
+
+$treeview-font-family: $font-family;
+$treeview-drag-icon-font-size: 12px;
+$treeview-drag-icon-padding: 6px;
+
+$ripple-size: -7px;
+$ripple-height: 32px;
+$ripple-width: 32px;
+
+// sass-lint:disable no-vendor-prefixes
+#{&}.e-treeview {
+
+  .e-list-item {
+
+    div.e-icons.interaction {
+      -webkit-transition: -webkit-transform .3s ease-in-out;
+      border-radius: 15px;
+      transition: -webkit-transform .3s ease-in-out;
+      transition: transform .3s ease-in-out;
+      transition: transform .3s ease-in-out, -webkit-transform .3s ease-in-out;
+    }
+
+    .e-icons.e-icon-collapsible {
+      -webkit-transform: rotate(90deg);
+      transform: rotate(90deg);
+    }
+  }
+
+  &.e-drag-item {
+
+    &.e-rtl {
+
+      .e-icons.e-drop-next {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  &.e-rtl {
+
+    div.e-icons {
+      transform: rotate(180deg);
+    }
+  }
+}
+// sass-lint:enable no-vendor-prefixes

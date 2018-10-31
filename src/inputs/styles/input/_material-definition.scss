@@ -1,0 +1,278 @@
+@import 'definition.scss';
+
+$skin-name: 'material';
+$input-box-border-radius: $zero-value;
+$input-group-child-border-width: $zero-value;
+$input-bg-color: transparent;
+$input-font-size: 13px;
+$input-bigger-font-size: 14px;
+$input-small-font-size: 12px;
+$input-bigger-small-font-size: 13px;
+$input-padding: 4px $zero-value 8px;
+$float-input-padding: 4px $zero-value 8px;
+$float-label-padding: $zero-value;
+$float-input-wrap-padding-top: $zero-value;
+$input-padding-bottom: 8px;
+$input-focus-padding-bottom: 7px;
+$input-clear-icon: 12px;
+$input-bigger-clear-icon: 12px;
+$input-small-clear-icon: 10px;
+$input-bigger-small-clear-icon: 12px;
+$input-clear-icon-padding: $zero-value;
+$input-clear-icon-position: center;
+$input-bigger-padding: 8px $zero-value 8px;
+$float-input-bigger-padding: 8px $zero-value 8px;
+$float-input-bigger-wrap-padding-top: $zero-value;
+$input-bigger-padding-bottom: 8px;
+$input-focus-bigger-padding-bottom: 7px;
+$input-child-padding: $zero-value;
+$input-child-min-height: 18px;
+$input-child-min-width: 18px;
+$input-bigger-child-padding: $zero-value;
+$input-bigger-child-min-height: 20px;
+$input-bigger-child-min-width: 20px;
+$input-margin-bottom: 4px;
+$input-bigger-margin-bottom: 8px;
+$input-small-margin-bottom: 4px;
+$input-small-bigger-margin-bottom: 4px;
+$input-margin-top: 16px;
+$input-bigger-margin-top: 17px;
+$input-small-margin-top: 16px;
+$input-small-bigger-margin-top: 17px;
+$input-small-padding: 4px $zero-value 6px;
+$float-input-small-padding: 4px $zero-value 6px;
+$float-input-small-wrap-padding-top: $zero-value;
+$input-small-padding-bottom: 6px;
+$input-focus-small-padding-bottom: 5px;
+$input-bigger-small-padding: 4px $zero-value 8px;
+$float-input-bigger-small-padding: 4px $zero-value 8px;
+$float-input-bigger-small-wrap-padding-top: $zero-value;
+$input-bigger-small-padding-bottom: 8px;
+$input-focus-bigger-small-padding-bottom: 7px;
+$input-bigger-small-child-padding: $zero-value;
+$input-bigger-small-child-min-height: 18px;
+$input-bigger-small-child-min-width: 18px;
+$input-small-child-padding: $zero-value;
+$input-small-child-min-height: 16px;
+$input-small-child-min-width: 16px;
+$input-font-family: $font-family;
+$input-font-style: normal;
+$input-font-normal: normal;
+$input-border: $zero-value $border-type;
+$float-input-border: $zero-value $border-type;
+$input-box-border-width: $zero-value $zero-value $one-value $zero-value;
+$float-input-border-width: $zero-value $zero-value $one-value $zero-value;
+$input-focus-border-width: $zero-value $zero-value 2px $zero-value;
+$input-box-border-color: rgba($grey-light-font, .42);
+$input-font-color: rgba($grey-light-font, .87);
+$input-icon-font-color: rgba($grey-black, .54);
+$input-clear-icon-color: rgba($grey-light-font, .54);
+$input-clear-icon-hover-color: rgba($grey-light-font, .54);
+$input-error-color: $error-font;
+$input-accent: $accent;
+$input-placeholder: rgba($grey-light-font, .42);
+$input-active-border-color: $accent;
+$input-group-active-border-color: transparent;
+$input-disable-border-type: dashed;
+$input-disable-border-color: $input-box-border-color;
+$input-disabled-group-bg-color: transparent;
+$input-border-left-width: $zero-value;
+$input-group-active-border: transparent;
+$input-group-border: 1px $border-type;
+$input-group-border-width: $zero-value;
+$input-group-border-radius: 2px;
+$input-group-pressed-bg: transparent;
+$input-hover-bg-color:  $grey-200;
+$input-active-accent-color: $accent;
+$input-valid-group-border-width: 2px;
+$input-header-font-color: rgba($grey-light-font, .42);
+$input-child-margin-bottom: 8px;
+$input-child-margin-right: 4px;
+$input-child-margin-top: 4px;
+$float-input-child-margin-top: 2px;
+$input-child-small-bigger-margin-bottom: 8px;
+$input-child-small-bigger-margin-right: 4px;
+$input-child-small-bigger-margin-top: 4px;
+$float-input-child-small-bigger-margin-top: 4px;
+$input-child-small-margin-bottom: 6px;
+$input-child-small-margin-right: 4px;
+$input-child-small-margin-top: 4px;
+$float-input-child-small-margin-top: 4px;
+$input-child-bigger-margin-bottom: 8px;
+$input-child-bigger-margin-right: 8px;
+$input-child-bigger-margin-top: 9px;
+$float-input-child-bigger-margin-top: 9px;
+$input-disable-group-border-width: $zero-value $zero-value $one-value $zero-value;
+$input-opacity: 1;
+$input-opacity-filter: 100;
+$input-group-border-width-focus: $zero-value $zero-value $one-value $zero-value;;
+$input-group-border-type-focus: $border-type;
+$input-group-border-color-focus: $input-box-border-color;
+$input-group-border-color-hover: $input-box-border-color;
+$input-group-border-width-hover: 1px;
+$input-group-border-right-focus: transparent;
+$input-group-border-left-focus: transparent;
+$input-group-full-border-color: $input-box-border-color;
+$input-group-full-border-width: $zero-value $zero-value $one-value $zero-value;
+$input-group-success-color: $input-success-color;
+$input-group-warning-color: $input-warning-color;
+$input-group-error-color: $input-error-color;
+$input-valid-border-bottom-width: 2px;
+$input-group-pressed-color: rgba($grey-black, .54);
+$input-select-font-color: $grey-dark-font;
+$input-right-border-width: $zero-value;
+$input-text-indent: $zero-value;
+$input-small-text-indent: $zero-value;
+$input-bigger-text-indent: $zero-value;
+$input-small-bigger-text-indent: $zero-value;
+$input-disable-font-color: rgba($grey-light-font, .42);
+$float-label-font-color: rgba($grey-light-font, .54);
+$float-label-disbale-font-color: $input-disable-font-color;
+$float-label-font-size: 13px;
+$float-label-bigger-font-size: 14px;
+$float-label-small-font-size: 12px;
+$float-label-bigger-small-font-size: 13px;
+$float-placeholder-font-size: 13px;
+$float-placeholder-bigger-font-size: 14px;
+$float-placeholder-small-font-size: 12px;
+$float-placeholder-bigger-small-font-size: 13px;
+$input-border-size: 1px;
+$input-normal-height: 32px - $input-border-size;
+$input-bigger-height: 40px - $input-border-size;
+$input-small-height: 26px - $input-border-size;
+$input-bigger-small-height: 36px - $input-border-size;
+$float-input-normal-height: 32px;
+$float-input-bigger-height: 40px;
+$float-input-small-height: 26px;
+$float-input-bigger-small-height: 36px;
+$input-full-height: 100%;
+$textarea-normal-height: auto;
+$textarea-bigger-height: auto;
+$textarea-small-height: auto;
+$textarea-bigger-small-height: auto;
+$textarea-full-height: 100%;
+$input-group-disabled-color: rgba($grey-light-font, .26);
+$input-group-hovered-color: $input-icon-font-color;
+$input-icon-font-size: 12px;
+$input-bigger-icon-font-size: 12px;
+$input-small-icon-font-size: 12px;
+$input-bigger-small-icon-font-size: 12px;
+$input-inner-wrap-margin-left: 16px;
+$input-clear-icon-padding-bottom: 8px;
+$input-clear-icon-padding-right: 4px;
+$input-clear-icon-padding-top: 4px;
+$float-input-clear-icon-padding-top: 4px;
+$input-clear-icon-small-bigger-padding-bottom: 8px;
+$input-clear-icon-small-bigger-padding-right: 4px;
+$input-clear-icon-small-bigger-padding-top: 4px;
+$float-input-clear-icon-small-bigger-padding-top: 4px;
+$input-clear-icon-small-padding-bottom: 6px;
+$input-clear-icon-small-padding-right: 4px;
+$input-clear-icon-small-padding-top: 4px;
+$float-input-clear-icon-small-padding-top: 4px;
+$input-clear-icon-bigger-padding-bottom: 8px;
+$input-clear-icon-bigger-padding-right: 8px;
+$input-clear-icon-bigger-padding-top: 9px;
+$float-input-clear-icon-bigger-padding-top: 9px;
+$input-clear-icon-min-height: 18px;
+$input-clear-icon-min-width: 18px;
+$input-bigger-clear-icon-min-height: 20px;
+$input-bigger-clear-icon-min-width: 20px;
+$input-bigger-small-clear-icon-min-height: 18px;
+$input-bigger-small-clear-icon-min-width: 18px;
+$input-small-clear-icon-min-height: 16px;
+$input-small-clear-icon-min-width: 16px;
+
+$input-left-icon-font-size: 20px;
+$input-bigger-left-icon-font-size: 20px;
+$input-small-left-icon-font-size: 20px;
+$input-bigger-small-left-icon-font-size: 20px;
+$input-left-child-min-height: 30px;
+$input-left-child-min-width: 30px;
+$input-bigger-left-child-min-height: 32px;
+$input-bigger-left-child-min-width: 32px;
+$input-small-left-child-min-height: 28px;
+$input-small-left-child-min-width: 28px;
+$input-bigger-small-left-child-min-height: 30px;
+$input-bigger-small-left-child-min-width: 30px;
+$input-icon-inner-width: 10px;
+$input-icon-inner-height: 10px;
+$input-clear-icon-font: '\e932';
+
+@mixin input-sizing {
+  box-sizing: content-box;
+}
+@mixin input-height ($height) {
+  content: '';
+}
+@mixin input-state-color ($color) {
+  border-bottom-color: $color;
+}
+@mixin input-selection {
+  background: $input-accent;
+  color: $accent-font;
+}
+@mixin float-label-alignment {
+  content: '';
+}
+
+// sass-lint:disable no-vendor-prefixes
+@mixin input-group-animation {
+  -moz-transition: .2s cubic-bezier(.4, 0, .4, 1);
+  bottom: 0;
+  content: '';
+  height: 2px;
+  position: absolute;
+  transition: .2s cubic-bezier(.4, 0, .4, 1);
+  width: 0;
+}
+@mixin input-group-animation-left {
+  left: 50%;
+}
+@mixin input-group-animation-width {
+  width: 50%;
+}
+@mixin input-group-animation-right {
+  right: 50%;
+}
+@mixin input-group-animation-bg {
+  background: $input-active-border-color;
+}
+@mixin input-group-hover-bg {
+  background: $input-group-border-color-hover;
+}
+@mixin input-group-success-animation-bg {
+  background: $input-success-color;
+}
+@mixin input-group-warning-animation-bg {
+  background: $input-warning-color;
+}
+@mixin input-group-error-animation-bg {
+  background: $input-error-color;
+}
+@mixin input-ripple-parent {
+  position: relative;
+}
+@mixin input-ripple-style {
+  background: $grey-400;
+  border-radius: 100%;
+  content: '';
+  display: block;
+  filter: alpha(opacity=75);
+  height: 50%;
+  left: 25%;
+  opacity: .75;
+  position: absolute;
+  top: 25%;
+  transform: scale(0);
+  width: 50%;
+}
+@mixin input-ripple-animation {
+  animation: e-input-ripple .45s linear;
+}
+@keyframes e-input-ripple {
+  100% {
+    opacity: 0;
+    transform: scale(4);
+   }
+ }

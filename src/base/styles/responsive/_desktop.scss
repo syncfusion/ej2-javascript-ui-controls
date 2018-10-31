@@ -1,0 +1,18 @@
+@include export-module('base-desktop') {
+  /*! responsive desktop */
+  @media screen and (min-width: 961px) {
+    .ts {
+      border: 0;
+    }
+  }
+  @media screen and (min-width: 1025px) {
+    .ts {
+      border: 0;
+    }
+  }
+  @media screen and (min-width: 1281px) {
+    .ts {
+      border: 0;
+    }
+  }
+}

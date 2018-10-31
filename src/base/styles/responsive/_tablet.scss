@@ -1,0 +1,13 @@
+@include export-module('base-tablet') {
+  /*! responsive tablet */
+  @media (min-width: 481px) {
+    .ts {
+      border: 0;
+    }
+  }
+  @media (min-width: 641px) {
+    .ts {
+      border: 0;
+    }
+  }
+}

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Schedule Typescript Component</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="description" content="Typescript UI Controls" />
+    <meta name="author" content="Syncfusion" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../css/material.css" />
+    <script data-main="quick-info-templates" src="../../node_modules/requirejs/require.js"></script>
+    <script src="require.config.js"></script>
+    <style>
+        .e-textlabel {
+            font-weight: bold;
+            padding-right: 5px;
+        }
+
+        .custom-event-editor td {
+            padding: 5px;
+        }
+
+        .e-quick-popup-wrapper .e-cell-content {
+            padding: 0 10px 10px 10px;
+        }
+
+        .e-quick-popup-wrapper .e-cell-content div {
+            padding-bottom: 10px;
+        }
+
+        .e-quick-popup-wrapper .e-cell-content .e-field {
+            border-left-width: 0;
+            border-top-width: 0;
+            border-right-width: 0;
+            height: 25px;
+            width: 100%;
+        }
+
+        .e-quick-popup-wrapper .e-event-content {
+            display: flex;
+        }
+
+        .e-quick-popup-wrapper .e-event-content img {
+            width: 100px;
+        }
+
+        .e-quick-popup-wrapper .e-event-header {
+            position: absolute;
+            right: 0;
+        }
+
+        .e-quick-popup-wrapper .e-cell-footer .e-event-create,
+        .e-quick-popup-wrapper .e-event-footer .e-event-edit {
+            position: absolute;
+            right: 0;
+        }
+
+        .e-quick-popup-wrapper .e-event-footer .e-event-delete {
+            padding-left: 100px;
+        }
+
+        .e-quick-popup-wrapper .e-event-content .subject {
+            padding-top: 30px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+    </style>
+    <script id="headerTemplate" type="text/x-template">
+        <div>
+            ${if (elementType === 'cell')}
+            <div class="e-cell-header">
+                <div class="e-header-icon-wrapper">
+                    <button class="e-close" title="Close"></button>
+                </div>
+            </div>
+            ${else}
+            <div class="e-event-header">
+                <div class="e-header-icon-wrapper">
+                    <button class="e-close" title="CLOSE"></button>
+                </div>
+            </div>
+            ${/if}
+        </div>
+    </script>
+    <script id="contentTemplate" type="text/x-template">
+        <div>
+            ${if (elementType === 'cell')}
+            <div class="e-cell-content">
+                <form class="e-schedule-form">
+                    <div>
+                        <input class="subject e-field" type="text" name="Subject" placeholder="Title">
+                    </div>
+                    <div>
+                        <input class="location e-field" type="text" name="Location" placeholder="Location">
+                    </div>
+                </form>
+            </div>
+            ${else}
+            <div class="e-event-content">
+                <div class="e-image-wrap">
+                    <img src="images/${getResourceName(data)}.png" alt="logo" />
+                </div>
+                <div class="e-subject-wrap">
+                    ${if (Subject)}
+                    <div class="subject">${Subject}</div>${/if} ${if (Location)}
+                    <div class="location">${Location}</div>${/if} ${if (Description)}
+                    <div class="description">${Description}</div>${/if}
+                </div>
+            </div>
+            ${/if}
+        </div>
+    </script>
+    <script id="footerTemplate" type="text/x-template">
+        <div>
+            ${if (elementType === 'cell')}
+            <div class="e-cell-footer">
+                <button class="e-event-details" title="Extra Details">Extra Details</button>
+                <button class="e-event-create" title="Add">Add</button>
+            </div>
+            ${else}
+            <div class="e-event-footer">
+                <button class="e-event-edit" title="Edit">Edit</button>
+                <button class="e-event-delete" title="Delete">Delete</button>
+            </div>
+            ${/if}
+        </div>
+    </script>
+</head>
+
+<body>
+    <div class="container-fluid" style="margin-top:15px;">
+        <div class="row">
+            <div class="col-md-9">
+                <div id="schedule"> </div>
+            </div>
+            <div class="col-md-3">
+                <div class="prop-grid">
+                    <div class="row">
+                        <div class="col-md-10">
+                            <div class="form-check">
+                                <label class="form-check-label">
+                                    <input id="hT" checked="true" class="form-check-input" type="checkbox"> Header Template
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-10">
+                            <div class="form-check">
+                                <label class="form-check-label">
+                                    <input id="cT" checked="true" class="form-check-input" type="checkbox"> Content Template
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-10">
+                            <div class="form-check">
+                                <label class="form-check-label">
+                                    <input id="fT" checked="true" class="form-check-input" type="checkbox"> Footer Template
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

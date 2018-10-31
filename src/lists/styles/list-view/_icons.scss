@@ -1,0 +1,91 @@
+@include export-module('listview-icons') {
+  /*! component icons */
+  #{&}.e-listview {
+
+    @if $skin-name == 'material' {
+      .e-icon-back::before {
+        content: '\e85b';
+        font-size: $listview-back-icon-font-size;
+      }
+
+      .e-icon-collapsible::before {
+        content: '\e844';
+      }
+    }
+    @else if $skin-name == 'bootstrap' {
+      .e-icon-back::before {
+        content: '\e94b';
+        font-size: $listview-back-icon-font-size;
+      }
+
+      .e-icon-collapsible::before {
+        content: '\e943';
+      }
+    }
+    @else if $skin-name == 'fabric' {
+      .e-icon-back::before {
+        content: '\e85b';
+        font-size: $listview-back-icon-font-size;
+      }
+
+      .e-icon-collapsible::before {
+        content: '\e85c';
+      }
+    }
+    @else {
+      .e-icon-back::before {
+        content: '\e85b';
+        font-size: $listview-back-icon-font-size;
+      }
+
+      .e-icon-collapsible::before {
+        content: '\e85c';
+      }
+    }
+
+    &.e-rtl {
+
+      @if $skin-name == 'material' {
+        & .e-icon-back::before {
+          content: '\e860';
+          font-size: $listview-back-icon-font-size;
+        }
+
+        & .e-icon-collapsible::before {
+          content: '\e839';
+        }
+      }
+      @else if $skin-name == 'bootstrap' {
+        & .e-icon-back::before {
+          content: '\e85f';
+          font-size: $listview-back-icon-font-size;
+        }
+
+        & .e-icon-collapsible::before {
+          content: '\e981';
+        }
+      }
+      @else if $skin-name == 'fabric' {
+        & .e-icon-back::before {
+          content: '\e830';
+          font-size: $listview-back-icon-font-size;
+        }
+
+        & .e-icon-collapsible::before {
+          content: '\e98f';
+        }
+      }
+      @else {
+        & .e-icon-back::before {
+          content: '\e830';
+          font-size: $listview-back-icon-font-size;
+        }
+
+        & .e-icon-collapsible::before {
+          content: '\e98f';
+        }
+      }
+    }
+
+  }
+}

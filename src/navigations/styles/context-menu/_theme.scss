@@ -1,0 +1,36 @@
+@import 'theme-mixin.scss';
+@include export-module('contextmenu-theme') {
+  /*! contextmenu theme */
+  .e-contextmenu-wrapper {
+    @at-root {
+      & ul {
+        background-color: $ul-bgcolor;
+        color: $color;
+
+        & .e-menu-item  {
+          @include icon-color;
+
+          & .e-menu-url {
+            color: $color;
+          }
+
+          &.e-focused {
+            @include focused-color;
+            @include focused-icon-color;
+          }
+
+          &.e-selected {
+            @include selected-color;
+            @include selected-icon-color;
+          }
+        }
+
+        @include disabled-color;
+
+        & .e-separator {
+          border-bottom-color: $li-border-color;
+        }
+      }
+    }
+  }
+}

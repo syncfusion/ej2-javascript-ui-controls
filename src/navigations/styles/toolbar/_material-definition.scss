@@ -1,0 +1,130 @@
+@import 'definition.scss';
+
+/*! component's theme wise override definitions and variables */
+$skin-name: 'material';
+$tbar-default-bg: $grey-50;
+$tbar-press-bg: $grey-400;
+$tbar-press-border-color: $tbar-press-bg;
+$tbar-active-bg: $grey-400;
+
+$tbar-nrml-size: 42px;
+$tbar-bgr-size: 56px;
+$tbar-nrml-items-size: 42px;
+$tbar-bgr-items-size: 56px;
+$tbar-nrml-item-size: 42px;
+$tbar-bgr-item-size: 48px;
+$tbar-item-nrml-minwidth: 34px;
+$tbar-btn-pop-nrml-minheight: 24px;
+$tbar-btn-pop-bgr-minheight: 30px;
+$tbar-item-nrml-mrgn: 3px;
+$tbar-item-bgr-mrgn: 3px;
+$tbar-nav-nrml-width: 32px;
+$tbar-nav-bgr-width: 40px;
+$tbar-popup-padding: 0;
+$tbar-btn-border-radius: '';
+$tbar-btn-pressed-box-shadow: '';
+
+$tbar-item-bgr-padding: 5px;
+$tbar-item-nrml-padding: 3.5px;
+$btn-txt-nrml-padding: 0 2px 0 2px;
+$btn-txt-bgr-padding: 0 2.5px 0 2.5px;
+$tbar-item-pop-nrml-padding: 0;
+$tbar-item-pop-bgr-padding: 0;
+$tbar-multirow-items-mrgn-bigger: 24px;
+$tbar-multirow-items-mrgn-small: 18px;
+$tbar-multirow-item-mrgn: 0;
+
+$tbar-btn-bgr-mrgn: 5.5px 0;
+$tbar-btn-bgr-height: calc(100% - 11px);
+$tbar-btn-nrml-height: calc(100% - 10px);
+$tbar-btn-nrml-mrgn: 4px 0;
+$tbar-separator-nrml-mrgn: 7.5px 3px ;
+$tbar-separator-bgr-mrgn: 10px 5px ;
+$tbar-separator-nrml-height: calc(100% - 15px);
+$tbar-separator-bgr-height: calc(100% - 20px);
+$tbar-separator-nrml-minheight: 27px;
+$tbar-separator-bgr-minheight: 36px;
+$tbar-btn-icon-bgr-width: 27px;
+$tbar-btn-icon-bgr-height: 34px;
+$tbar-btn-bgr-line-height: 35px;
+$tbar-btn-nrml-line-height: 25px;
+$tbar-btn-icon-bgr-line-height: 34px;
+$tbar-btn-txt-line-height: inherit;
+$tbar-btn-icon-nrml-width: 24px;
+$tbar-btn-icon-nrml-height: 25px;
+$tbar-btn-icon-nrml-line-height: 25px;
+$tbar-left-item-line-height: 35px;
+$tbar-right-item-line-height: 24px;
+$tbar-btn-bgr-padding: $tbar-zero-value 6px ;
+$tbar-btn-nrml-padding: $tbar-zero-value 1.5px ;
+$tbar-pop-btn-bgr-padding: $tbar-zero-value 16px;
+$tbar-pop-btn-nrml-padding: $tbar-zero-value 16px;
+
+$tbar-nav-press-border: '';
+$tbar-nav-hover-border: '';
+$tbar-nav-focus-border: '';
+$tbar-nav-pressed-box-shadow: '';
+$tbar-border-nav-active-type: '';
+$tbar-border-size: 1px;
+$tbar-border-type: none;
+$tbar-box-shadow: none;
+$tbar-separator-size: .5px;
+$tbar-btn-weight: 400;
+$tbar-btn-family: 'Roboto', 'Segoe UI', 'GeezaPro', 'DejaVu Serif';;
+$tbar-btn-font-size: 14px;
+$tbar-btn-txt-font-size: $tbar-btn-font-size;
+$tbar-hover-bg: rgba($grey-black, .12);
+$tbar-hover-border-color: rgba($grey-black, .12);
+$tbar-focus-border-color: $tbar-hover-border-color;
+$tbar-focus-bg: $tbar-hover-bg;
+$tbar-default-icon-color: rgba($grey-light-font, .54);
+$tbar-default-font: rgba($grey-light-font, .87) ;
+$tbar-hover-font: $tbar-default-font;
+$tbar-active-font-color: $tbar-default-font;
+$tbar-press-font: $tbar-default-font;
+
+$tbar-pressed-bg: $tbar-hover-bg;
+$tbar-pressed-border: $tbar-hover-border-color;
+$tbar-pressed-font: $tbar-hover-font;
+$tbar-select-font: $tbar-hover-font;
+
+
+$tbar-default-icon-overlay: rgba($grey-light-font, .26);
+$tbar-default-font-overlay: rgba($grey-light-font, .38);
+$tbar-separator-border: rgba($grey-black, .12);
+$tbar-default-border: $tbar-separator-border;
+
+$tbar-ribble-animation-border-frame: rgba(255, 255, 255, .5);
+$tbar-ribble-animation-shadow-frame: 0 0 0 0 $tbar-ribble-animation-border-frame;
+$tbar-ribble-animation-shadow-frame-end: 0 0 0 200px rgba(255, 255, 255, .12);
+
+
+@mixin tbar-btn-animation {
+  background-color: transparent;
+  border-radius: 50%;
+  border-width: 1px;
+  box-sizing: border-box;
+  content: '' ;
+  height: 1px;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  visibility: hidden;
+  width: 1px;
+}
+
+@mixin tbar-btn-animation-after {
+  animation: tbar-popup-shadow .6s ease-out 0ms;
+  visibility: visible;
+}
+
+@keyframes tbar-popup-shadow {
+  0% {
+    border-color: $tbar-ribble-animation-border-frame;
+    box-shadow: $tbar-ribble-animation-shadow-frame;
+    }
+
+  100% {
+    box-shadow: $tbar-ribble-animation-shadow-frame-end;
+    }
+ }

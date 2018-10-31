@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title> Typescript Components</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Typescript UI Controls" />
+    <meta name="author" content="Syncfusion" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" />
+    <link href="../../theme-files/material.css" rel="stylesheet" />
+    
+    <script>
+        window.require = {
+            config: function (json) {
+                window.rsConfig = json;
+                window.rsConfig.baseUrl = '';
+            }
+        };
+    </script>
+    <script src="./../../demo-config.js"></script>
+    <script src="./../../../node_modules/requirejs/require.js" data-main="./default"></script>
+    <script>
+        require.config(window.rsConfig);
+    </script>
+</head>
+
+<body>
+    <div id="radio-size">
+        <div class="wrapper1">
+            <h3>Default</h3>
+            <input type="radio" id="radio1"><br/>
+            <input type="radio" id="radio2"><br/>
+            <input type="radio" id="radio3"><br/>
+        </div>
+        <div class="wrapper2">
+            <h3>Small</h3>
+            <input type="radio" id="radio4"><br/>
+            <input type="radio" id="radio5"><br/>
+            <input type="radio" id="radio6"><br/>
+        </div>
+        <div class="e-bigger">
+        <div class="wrapper3">
+            <h3>Bigger</h3>
+            <input type="radio" id="radio7"><br/>
+            <input type="radio" id="radio8"><br/>
+            <input type="radio" id="radio9"><br/>
+        </div>
+        <div class="wrapper4">
+            <h3>Bigger Small</h3>
+            <input type="radio" id="radio10"><br/>
+            <input type="radio" id="radio11"><br/>
+            <input type="radio" id="radio12"><br/>
+        </div>
+    </div>
+</div>
+
+<style>
+    .wrapper1 {
+        display: inline-block;
+        margin: 0px 25%;
+    }
+
+    .wrapper2 {
+        display: inline-block;
+        margin: 0px 15px;
+    }
+
+    .wrapper3 {
+        display: inline-block;
+        margin: 0px 25%;
+    }
+
+    .wrapper4 {
+        display: inline-block;
+    }
+
+    #radio-size {
+        min-height: 350px;
+        border: 1px solid #dddddd;
+        border-radius: 3px;
+    }
+
+    @media only screen and (max-width: 1300px) 
+    { 
+        .wrapper1 { 
+            margin: 0px 15%;
+        } 
+
+        .wrapper3 { 
+            margin: 0px 15%;
+        } 
+    }
+</style>
+</body>
+
+</html>

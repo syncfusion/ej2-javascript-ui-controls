@@ -1,0 +1,41 @@
+@include export-module('datepicker-icons') {
+  /*! component icons */
+  .e-input-group-icon.e-date-icon,
+  &.e-control-wrapper .e-input-group-icon.e-date-icon {
+    font-size: $date-icon-font-size;
+    margin: $date-icon-normal-margin;
+    min-height: $date-icon-container-min-height;
+    min-width: $date-icon-container-min-width;
+    outline: none;
+
+    &::before {
+      content: $datepicker-icon;
+      font-family: 'e-icons';
+  }
+
+    &:focus {
+      background: $date-icon-hover-color;
+      border-radius: $date-icon-border-radius;
+	}
+}
+
+  .e-bigger .e-input-group-icon.e-date-icon,
+  &.e-control-wrapper.e-bigger .e-input-group-icon.e-date-icon,
+  &.e-bigger .e-control-wrapper .e-input-group-icon.e-date-icon {
+    font-size: $date-bigger-icon-font-size;
+    margin: $date-icon-bigger-margin;
+    min-height: $date-bigger-icon-container-min-height;
+    min-width: $date-bigger-icon-container-min-width;
+
+    &::before {
+      content: $datepicker-icon;
+      font-family: 'e-icons';
+  }
+
+    &:focus {
+      background: $date-icon-hover-color;
+      border-radius: $date-icon-border-radius;
+	}
+}
+}
+

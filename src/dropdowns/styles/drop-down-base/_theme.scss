@@ -1,0 +1,63 @@
+@include export-module('dropdownbase-theme') {
+  .e-dropdownbase {
+    border-color: $list-border-color;
+    @at-root {
+      & .e-list-item {
+        background-color: $list-bg-color;
+        border-bottom: $list-bottom-border;
+        border-color: $list-gradient-color;
+        color: $list-default-font-color;
+        font-family: $list-font-family;
+        font-size: $list-font-size;
+        line-height: $list-line-height;
+        min-height: $list-line-height;
+        padding-right: $list-padding-right;
+        text-indent: $list-text-indent;
+      }
+
+      & .e-list-group-item,
+      .e-fixed-head {
+        background-color: $list-bg-color;
+        border-color: $list-gradient-color;
+        color: $list-header-font-color;
+        font-family: $list-font-family;
+        font-size: $group-list-font-size;
+        font-weight: $header-font-weight;
+        line-height: $list-line-height;
+        min-height: $list-line-height;
+        padding-left: $list-header-padding-left;
+        padding-right: $list-padding-right;
+      }
+
+      & .e-list-item.e-active,
+      & .e-list-item.e-active.e-hover {
+        background-color: $list-active-bg-color;
+        border-color: $list-active-border-color;
+        color: $list-active-font-color;
+       }
+
+      & .e-list-item.e-hover {
+        background-color: $list-hover-bg-color;
+        border-color: $list-hover-border-color;
+        color: $list-hover-font-color;
+      }
+
+      & .e-list-item:last-child {
+        border-bottom: $last-child-bottom-border;
+      }
+
+      & .e-list-item.e-item-focus {
+        background-color: $list-hover-bg-color;
+      }
+    }
+  }
+
+  .e-bigger .e-dropdownbase {
+    @at-root {
+      & .e-list-group-item,
+      & .e-fixed-head {
+        font-size: $bigger-list-header-font-size;
+      }
+    }
+  }
+}

@@ -1,0 +1,343 @@
+@include export-module('toolbar-theme') {
+  /*! toolbar theme */
+  // sass-lint:disable no-vendor-prefixes
+  #{&}.e-toolbar {
+    -webkit-tap-highlight-color: $tbar-tab-highlight-color;
+    background: $tbar-default-bg;
+    border: $tbar-border-size $tbar-border-type $tbar-default-border;
+    box-shadow: $tbar-box-shadow;
+
+    &.e-extended-toolbar {
+
+      .e-toolbar-extended {
+
+        .e-toolbar-item.e-overlay {
+          background: $tbar-default-bg;
+        }
+
+        .e-toolbar-item.e-separator {
+          border-right: $tbar-separator-size $tbar-separator-border-type $tbar-separator-border;
+        }
+
+        .e-toolbar-item .e-tbar-btn .e-icons {
+          color: $tbar-default-icon-color;
+        }
+
+        .e-toolbar-item .e-tbar-btn {
+          background: $tbar-default-bg;
+          box-shadow: $tbar-btn-box-shadow;
+          color: $tbar-default-font;
+          @if $skin-name == 'bootstrap' {
+            margin: 1px 0;
+          }
+
+          @if $skin-name == 'highcontrast' {
+            border: 2px $tbar-border-type $ext-tbar-btn-border-color;
+          }
+
+          &:focus {
+            background: $tbar-focus-bg;
+            border-color: $tbar-focus-border-color;
+            border-radius: $tbar-btn-border-radius;
+            color: $tbar-hover-font;
+
+            @if $skin-name == 'bootstrap' {
+              border: 1px solid $tbar-focus-border-color;
+              margin: 0;
+            }
+
+            @if $skin-name == 'highcontrast' {
+              border: $tbar-dash-border;
+
+              &:active {
+                background: $ext-tbar-btn-focus-active-bg-color;
+              }
+            }
+          }
+
+          &:hover {
+            background: $tbar-hover-bg;
+            border-color: $tbar-hover-border-color;
+            border-radius: $tbar-btn-border-radius;
+            color: $tbar-hover-font;
+
+            @if $skin-name == 'bootstrap' {
+              border: 1px solid $tbar-hover-border-color;
+            }
+
+            @if $skin-name == 'highcontrast' {
+              border: 2px $tbar-border-type $ext-tbar-btn-hover-border-color;
+
+              .e-icons {
+                color: $tbar-hover-font;
+              }
+
+              &:focus {
+
+                .e-icons,
+                .e-tbar-btn-text {
+                  color: $tbar-hover-font;
+                }
+              }
+
+              &:active {
+
+                .e-icons,
+                .e-tbar-btn-text {
+                  color: $tbar-select-font;
+                }
+              }
+            }
+          }
+
+          &:active {
+            background: $tbar-press-bg;
+            border-color: $tbar-press-border-color;
+            border-radius: $tbar-btn-border-radius;
+            box-shadow: $tbar-btn-pressed-box-shadow;
+            color: $tbar-press-font;
+
+            @if $skin-name == 'bootstrap' {
+              border-left: 1px solid $tbar-press-border-color;
+            }
+            @if $skin-name == 'highcontrast' {
+              color: $tbar-pressed-font;
+
+              .e-icons,
+              .e-tbar-btn-text {
+                color: $tbar-pressed-font;
+              }
+            }
+          }
+
+        }
+
+        .e-toolbar-item .e-tbar-btn-text {
+          color: $tbar-default-font;
+        }
+      }
+    }
+
+    .e-icons {
+      color: $tbar-default-icon-color;
+    }
+
+    .e-toolbar-pop {
+      background: $tbar-default-bg;
+      border: $tbar-border-size $tbar-border-type $tbar-default-border;
+      box-shadow: $tbar-pop-box-shadow;
+
+      .e-toolbar-item {
+
+        .e-tbar-btn-text {
+          color: $tbar-default-font;
+        }
+
+        @if $skin-name == 'highcontrast' or $skin-name == 'fabric' {
+          .e-btn:focus {
+            outline: none;
+          }
+        }
+      }
+    }
+
+    &.e-toolpop {
+
+      .e-hor-nav.e-nav-active,
+      .e-hor-nav.e-nav-active:not(.e-expended-nav) {
+        background: $tbar-pressed-bg;
+        border: $tbar-nav-press-border;
+        border-left: $border-size $tbar-border-nav-active-type $tbar-pressed-bg;
+        box-shadow: $tbar-nav-pressed-box-shadow;
+
+        @if $skin-name == 'highcontrast' {
+          &:focus {
+            border: $tbar-dash-border;
+          }
+        }
+
+        .e-icons {
+          color: $tbar-active-font-color;
+        }
+      }
+    }
+
+    .e-tbar-btn {
+      background: $tbar-default-bg;
+      box-shadow: $tbar-btn-box-shadow;
+      color: $tbar-default-font;
+      @if $skin-name == 'bootstrap' {
+        margin: 1px 0;
+      }
+
+      @if $skin-name == 'highcontrast' {
+        border: 2px $tbar-border-type $tbar-btn-border-color;
+      }
+
+      &:focus {
+        background: $tbar-focus-bg;
+        @if $skin-name == 'bootstrap' {
+          border: 1px solid $tbar-focus-border-color;
+          margin: 0;
+        }
+        border-color: $tbar-focus-border-color;
+        border-radius: $tbar-btn-border-radius;
+        color: $tbar-hover-font;
+        @if $skin-name == 'highcontrast' {
+          border: $tbar-dash-border;
+
+          &:active {
+            background: $tbar-btn-focus-active-bg-color;
+          }
+        }
+      }
+
+      &:hover {
+        background: $tbar-hover-bg;
+        @if $skin-name == 'bootstrap' {
+          border: 1px solid $tbar-hover-border-color;
+        }
+        border-color: $tbar-hover-border-color;
+        border-radius: $tbar-btn-border-radius;
+        color: $tbar-hover-font;
+
+        @if $skin-name == 'highcontrast' {
+          border: 2px $tbar-border-type $tbar-btn-hover-border-color;
+
+          .e-icons {
+            color: $tbar-hover-font;
+          }
+
+          &:focus {
+            .e-icons,
+            .e-tbar-btn-text {
+              color: $tbar-hover-font;
+            }
+          }
+
+          &:active {
+            .e-icons,
+            .e-tbar-btn-text {
+              color: $tbar-select-font;
+            }
+          }
+        }
+      }
+    }
+
+    .e-toolbar-items {
+      background: $tbar-default-bg;
+
+      .e-toolbar-item {
+
+        &.e-overlay {
+          background: $tbar-default-bg;
+
+          @if $skin-name == 'highcontrast' {
+            opacity: 1;
+          }
+
+          .e-tbar-btn-text {
+            color: $tbar-default-font-overlay;
+          }
+
+          .e-icons {
+            color: $tbar-default-icon-overlay;
+          }
+        }
+
+        .e-tbar-btn-text {
+          color: $tbar-default-font;
+        }
+
+        &.e-separator {
+          border-right: $tbar-separator-size $tbar-separator-border-type $tbar-separator-border;
+        }
+      }
+    }
+
+    &.e-rtl .e-hor-nav {
+      background: $tbar-default-bg;
+      border-left: 0;
+      border-right: $border-size $tbar-border-nav-type $tbar-default-border;
+
+      &:not(.e-hor-nav.e-nav-active):hover {
+        background: $tbar-hover-bg;
+        color: $tbar-hover-font;
+      }
+    }
+
+    .e-hor-nav {
+      background: $tbar-default-bg;
+      border-left: $border-size $tbar-border-nav-type $tbar-default-border;
+    }
+
+    .e-hor-nav:not(.e-expended-nav)  {
+
+      &::after {
+        @include tbar-btn-animation;
+      }
+
+      &:active {
+        border: $tbar-nav-press-border;
+        box-shadow: $tbar-nav-pressed-box-shadow;
+        color: $tbar-select-font;
+
+        &::after {
+          @include tbar-btn-animation-after;
+        }
+     }
+
+      &:hover {
+        background: $tbar-hover-bg;
+        border-left: $tbar-nav-hover-border;
+        color: $tbar-hover-font;
+
+        @if $skin-name == 'highcontrast' {
+          &:not(.e-nav-active) {
+            border: 2px $tbar-border-type $tbar-nav-hover-color;
+          }
+
+          &:active {
+            background: $tbar-nav-hover-active-bg-color;
+            border: 0;
+          }
+        }
+      }
+
+      &:focus {
+        background: $tbar-hover-bg;
+        border-color: $tbar-pressed-border;
+        border-left: $tbar-nav-focus-border;
+        color: $tbar-pressed-font;
+
+        @if $skin-name == 'highcontrast' {
+          background: inherit;
+          border: $tbar-dash-border;
+        }
+      }
+    }
+
+    .e-tbar-btn {
+
+      &:active {
+        background:  $tbar-press-bg;
+        @if $skin-name == 'bootstrap' {
+          border-left: 1px solid $tbar-press-border-color;
+        }
+        border-color: $tbar-press-border-color;
+        border-radius: $tbar-btn-border-radius;
+        box-shadow: $tbar-btn-pressed-box-shadow;
+        color: $tbar-press-font;
+        @if $skin-name == 'highcontrast' {
+          color: $tbar-pressed-font;
+
+          .e-icons,
+          .e-tbar-btn-text {
+            color: $tbar-pressed-font;
+          }
+        }
+      }
+    }
+  }
+}

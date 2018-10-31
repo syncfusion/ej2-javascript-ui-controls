@@ -1,0 +1,21 @@
+@import 'definition.scss';
+
+$badge-padding: .25em .4em .3em .4em;
+$badge-notification-line-height: 1.1;
+$badge-notification-ghost-line-height: .9;
+$badge-notification-padding: .25em .4em .3em .4em;
+$badge-circle-line-height: 1.8em;
+
+$badge-primary-bg-color: $selection-bg;
+$badge-secondary-bg-color: $bg-base-75;
+$badge-success-bg-color: $success-bg;
+$badge-danger-bg-color: $error-bg;
+$badge-warning-bg-color: $alert-bg;
+$badge-info-bg-color: $info-bg;
+$badge-light-bg-color: $bg-base-100;
+$badge-dark-bg-color: $bg-base-10;
+
+$badge-primary-font-color: $selection-font;
+$badge-secondary-font-color: $invert-font;
+$badge-light-font-color: $invert-font;
+$badge-dark-font-color: $content-font;

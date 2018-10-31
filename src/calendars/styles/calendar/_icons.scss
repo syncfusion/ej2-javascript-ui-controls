@@ -1,0 +1,12 @@
+@include export-module('calendar-icons') {
+  /*! component icons */
+  .e-calendar .e-header {
+    & .e-date-icon-prev::before {
+      content: $calendar-prev-icon;
+      }
+
+    & .e-date-icon-next::before {
+      content: $calendar-next-icon;
+      }
+  }
+}

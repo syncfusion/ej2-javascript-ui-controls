@@ -1,0 +1,21 @@
+@import 'definition.scss';
+
+$badge-padding: .25em .4em .25em .4em;
+$badge-notification-line-height: 18px;
+$badge-notification-ghost-line-height: 16px;
+$badge-notification-padding: 0 8px 0 8px;
+$badge-circle-line-height: 1.834em;
+
+$badge-primary-bg-color: $primary;
+$badge-secondary-bg-color: $accent;
+$badge-success-bg-color: #4d841d;
+$badge-danger-bg-color: #d64113;
+$badge-warning-bg-color: #c15700;
+$badge-info-bg-color: #0378d5;
+$badge-light-bg-color: $grey-white;
+$badge-dark-bg-color: $grey-dark;
+
+$badge-primary-font-color: $primary-font;
+$badge-secondary-font-color: $accent-font;
+$badge-light-font-color: $grey-light-font;
+$badge-dark-font-color: $grey-dark-font;

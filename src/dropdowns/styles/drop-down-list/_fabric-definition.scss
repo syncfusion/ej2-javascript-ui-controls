@@ -1,0 +1,87 @@
+@import 'definition.scss';
+
+$list-search-icon-padding: 8px;
+$list-filter-text-indent: 0 12px;
+$list-icon-color: $neutral-primary;
+$list-box-shadow-color: rgba(0, 0, 0, .4);
+$bigger-list-font-size: 15px;
+$default-border-color: $neutral-light;
+$popup-background-color: $neutral-white;
+$filter-border: 1px solid $neutral-tertiary-alt;
+$filter-top-border: 0;
+$filter-padding: 5px;
+$filter-box-shadow: 0;
+$filter-background-color: $neutral-white;
+$back-icon-margin: -2px 10px 0 -54px;
+$back-icon-padding: 0;
+$search-icon-content: '\e97d';
+$back-icon-content: '\e962';
+$ddl-icon-content: '\e966';
+
+@include export-module('dropdownlist-fabric') {
+  .e-ddl#{&}.e-popup {
+    border: 0;
+    box-shadow: 0 0 5px 0 $list-box-shadow-color;
+    margin-top: 1px;
+    @at-root {
+      & .e-input-group {
+        & input {
+          line-height: 15px;
+        }
+      }
+    }
+  }
+
+  .e-ddl#{&}.e-popup .e-input-group {
+    display: flex;
+    width: auto;
+  }
+
+  .e-ddl#{&}.e-popup .e-filter-parent {
+    border-left-width: 0;
+    border-right-width: 0;
+  }
+
+  .e-bigger #{&}.e-popup.e-ddl-device-filter {
+    margin-top: 0;
+  }
+
+  .e-bigger .e-ddl#{&}.e-popup {
+    @at-root {
+      & .e-list-item,
+      & .e-list-group-item,
+      & .e-fixed-head {
+        font-size: 15px;
+        line-height: 45px;
+        padding-left: 0;
+        text-indent: 16px;
+      }
+
+      & .e-dd-group .e-list-item {
+        padding-left: 4px;
+      }
+
+      & .e-input-group {
+        padding: 4px 0;
+      }
+
+      & .e-input-group input,
+      & .e-input-group input.e-input {
+        height: 30px;
+      }
+    }
+  }
+
+  .e-input-group:not(.e-disabled) .e-control#{&}.e-dropdownlist ~ .e-ddl-icon:active,
+  .e-input-group:not(.e-disabled) .e-control#{&}.e-dropdownlist ~ .e-ddl-icon:hover,
+  .e-ddl#{&}.e-popup .e-input-group:not(.e-disabled) .e-clear-icon:active,
+  .e-ddl#{&}.e-popup .e-input-group:not(.e-disabled) .e-clear-icon:hover {
+    background: transparent;
+    color: $list-icon-color;
+  }
+
+  .e-bigger #{&}.e-popup.e-ddl-device .e-input-group {
+    margin: 0 0 0 55px;
+  }
+}
+

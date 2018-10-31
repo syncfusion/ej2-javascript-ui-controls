@@ -1,0 +1,37 @@
+@import 'definition.scss';
+
+$default-text-indent: 16px;
+$list-bigger-line-height: 48px;
+$list-normal-line-height: 36px;
+$list-normal-font-size: 13px;
+$list-bigger-font-size: 14px;
+$list-normal-text-indent: $default-text-indent;
+$list-bigger-text-indent: 16px;
+$popup-border-radius: 2px;
+$list-font-weight: normal;
+$popup-shadow: 0 5px 5px -3px rgba($grey-light-font, .2), 0 8px 10px 1px rgba($grey-light-font, .14), 0 3px 14px 2px rgba($grey-light-font, .12);
+$list-default-font-color: rgba($grey-light-font, .87);
+$list-default-border-style: none;
+$list-border-color: none;
+$list-hover-border-color: none;
+$list-bg-color: $grey-white;
+$list-active-bg-color: $grey-200;
+$list-active-font-color: $accent;
+$list-active-icon-color: $accent;
+$list-hover-bg-color: $grey-200;
+$list-hover-font-color: $grey-light-font;
+$list-popup-icon-active-color: $accent;
+$list-active-hover-bg-color: $grey-200;
+$list-active-hover-font-color: $accent;
+$list-normal-padding: 0;
+$list-bigger-padding: 0;
+$time-font-icon: '\e20c';
+$icon-normal-font-size: 16px;
+$icon-bigger-font-size: 20px;
+$normal-min-height: 20px;
+$normal-min-width: 20px;
+$bigger-min-height: 22px;
+$bigger-min-width: 22px;
+$disable-text: rgba($grey-light-font, .38);
+$disable-opacity: 1;
+

@@ -1,0 +1,52 @@
+@include export-module('timepicker-theme') {
+  /*! timepicker theme */
+  .e-time-wrapper {
+    & .e-input-group-icon.e-icons.e-active {
+      color: $list-active-icon-color;
+    }
+
+    &.e-input-group:not(.e-disabled) .e-input-group-icon.e-active:active {
+      color: $list-popup-icon-active-color;
+    }
+  }
+
+  #{&}.e-timepicker.e-popup {
+    border: $list-border-color;
+    border-radius: $popup-border-radius;
+    box-shadow: $popup-shadow;
+
+    & .e-list-parent.e-ul {
+      background-color: $list-bg-color;
+
+      & li.e-list-item {
+        border: $list-default-border-style;
+        color: $list-default-font-color;
+      }
+
+      & .e-list-item.e-disabled {
+        color: $disable-text;
+        opacity: $disable-opacity;
+        pointer-events: none;
+        touch-action: none;
+      }
+
+      & .e-list-item.e-hover,
+      & .e-list-item.e-navigation,
+      & .e-list-item:focus {
+        background-color: $list-hover-bg-color;
+        border: $list-hover-border-color;
+        color: $list-hover-font-color;
+      }
+
+      & .e-list-item.e-active {
+        background-color: $list-active-bg-color;
+        color: $list-active-font-color;
+      }
+
+      & .e-list-item.e-active.e-hover {
+        background-color: $list-active-hover-bg-color;
+        color: $list-active-hover-font-color;
+      }
+    }
+  }
+}

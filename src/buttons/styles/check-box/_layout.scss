@@ -1,0 +1,265 @@
+@include export-module('checkbox-layout') {
+  /*! checkbox layout */
+  .e-checkbox-wrapper,
+  .e-css.e-checkbox-wrapper {
+    cursor: pointer;
+    display: inline-block;
+    line-height: 1;
+    outline: none;
+    user-select: none;
+    @at-root {
+
+      & label {
+        cursor: pointer;
+        display: inline-block;
+        line-height: 0;
+        margin: 0;
+        position: relative;
+        white-space: nowrap;
+      }
+
+      &:focus {
+        & .e-frame {
+          box-shadow: $focussed-box-shadow;
+        }
+      }
+
+      & .e-ripple-container {
+        border-radius: 50%;
+        bottom: $ripple-size;
+        height: $ripple-height;
+        left:  $ripple-size;
+        pointer-events: none;
+        position: absolute;
+        right:  $ripple-size;
+        top:  $ripple-size;
+        width: $ripple-width;
+        z-index: 1;
+      }
+
+      & .e-label {
+        cursor: pointer;
+        display: inline-block;
+        font-family: $font-family;
+        font-size: $font-size;
+        font-weight: normal;
+        line-height: $height;
+        user-select: none;
+        vertical-align: middle;
+        white-space: normal;
+      }
+
+      & .e-checkbox {
+        height: 1px;
+        opacity: 0;
+        position: absolute;
+        width: 1px;
+
+        +.e-label {
+          margin-right: $margin;
+        }
+      }
+
+      & .e-frame {
+        border: $border;
+        border-radius: $border-radius;
+        box-sizing: border-box;
+        cursor: pointer;
+        display: inline-block;
+        font-family: 'e-icons';
+        height: $height;
+        line-height: $lineheight;
+        padding: $padding;
+        text-align: center;
+        vertical-align: middle;
+        width: $width;
+
+        +.e-label {
+          margin-left: $margin;
+        }
+
+        +.e-ripple-container {
+          left: auto;
+        }
+      }
+
+      & .e-check {
+        font-size: $check-fontsize;
+
+        &::before {
+          content: $checkmark-content;
+        }
+      }
+
+      & .e-stop {
+        font-size: $indeterminate-fontsize;
+        line-height: $indeterminate-lineheight;
+
+        &::before {
+          content: $indeterminate-content;
+        }
+      }
+
+      &.e-checkbox-disabled {
+        cursor: default;
+        pointer-events: none;
+
+        & .e-frame {
+          cursor: default;
+        }
+
+        & .e-label {
+          cursor: default;
+        }
+      }
+
+      &.e-rtl {
+
+        .e-ripple-container {
+          right: $ripple-size;
+        }
+
+        & .e-frame {
+          margin: 0;
+
+          + .e-ripple-container {
+            left: $ripple-size;
+            right: auto;
+          }
+        }
+
+        & .e-label {
+          margin-left: 0;
+          margin-right: $margin;
+
+          +.e-frame {
+            margin: 0;
+          }
+        }
+
+        & .e-checkbox {
+          +.e-label {
+            margin-left: $margin;
+            margin-right: 0;
+          }
+        }
+      }
+
+      &.e-small {
+        & .e-frame {
+          height: $small-height;
+          line-height: $small-lineheight;
+          width: $small-width;
+        }
+
+        & .e-check {
+          font-size: $small-check-fontsize;
+        }
+
+        & .e-stop {
+          font-size: $small-indeterminate-fontsize;
+          line-height: $small-indeterminate-lineheight;
+        }
+
+        & .e-label {
+          font-size: $small-font-size;
+          line-height: $small-height;
+        }
+
+        & .e-ripple-container {
+          bottom: $ripple-small-size;
+          height: $ripple-small-height;
+          left: $ripple-small-size;
+          right: $ripple-small-size;
+          top: $ripple-small-size;
+          width: $ripple-small-width;
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-checkbox-wrapper,
+  .e-bigger.e-checkbox-wrapper,
+  .e-bigger .e-css.e-checkbox-wrapper,
+  .e-bigger.e-css.e-checkbox-wrapper {
+    & .e-frame {
+      height: $bigger-height;
+      line-height: $bigger-lineheight;
+      width: $bigger-width;
+
+      +.e-label {
+        font-size: $bigger-font-size;
+        line-height: $bigger-height;
+        margin-left: $bigger-margin;
+      }
+    }
+
+    & .e-check {
+      font-size: $bigger-check-fontsize;
+    }
+
+    & .e-stop {
+      font-size: $bigger-indeterminate-fontsize;
+      line-height: $bigger-indeterminate-lineheight;
+    }
+
+    & .e-label {
+      font-size: $bigger-font-size;
+    }
+
+    & .e-ripple-container {
+      bottom: $ripple-bigger-size;
+      height: $ripple-bigger-height;
+      left: $ripple-bigger-size;
+      right: $ripple-bigger-size;
+      top: $ripple-bigger-size;
+      width: $ripple-bigger-width;
+    }
+
+    &.e-rtl {
+      & .e-frame {
+        margin: 0;
+
+        +.e-label {
+          margin-left: 0;
+          margin-right: $bigger-margin;
+        }
+
+        +.e-ripple-container {
+          right: auto;
+        }
+      }
+    }
+
+    &.e-small {
+      & .e-frame {
+        height: $bigger-small-height;
+        line-height: $bigger-small-lineheight;
+        width: $bigger-small-width;
+      }
+
+      & .e-check {
+        font-size: $bigger-small-check-fontsize;
+      }
+
+      & .e-stop {
+        font-size: $bigger-small-indeterminate-fontsize;
+        line-height: $bigger-small-indeterminate-lineheight;
+      }
+
+      & .e-label {
+        font-size: $bigger-small-font-size;
+        line-height: $bigger-small-height;
+      }
+
+      & .e-ripple-container {
+        bottom: $ripple-bigger-small-size;
+        height: $ripple-bigger-small-height;
+        left: $ripple-bigger-small-size;
+        right: $ripple-bigger-small-size;
+        top: $ripple-bigger-small-size;
+        width: $ripple-bigger-small-width;
+      }
+    }
+  }
+}
