@@ -1,0 +1,41 @@
+  @include export-module('pager-icons') {
+  /*! component icons */
+
+  #{&}.e-pager,
+  .e-grid-menu {
+
+    .e-icon-last::before {
+      content: $pager-last-content-icon;
+    }
+
+    .e-icon-first::before {
+      content: $pager-first-content-icon;
+    }
+
+    .e-icon-prev::before {
+      content: $pager-prev-content-icon;
+    }
+
+    .e-icon-next::before {
+      content: $pager-next-content-icon;
+    }&.e-rtl {
+      & .e-icon-last.e-lastpage::before,
+      & .e-icon-last.e-lastpage:hover,
+      & .e-icon-last.e-lastpagedisabled::before {
+        content: $pager-rtl-last-content-icon;
+    }& .e-icon-first.e-firstpage::before,
+      & .e-icon-first.e-firstpage:hover,
+      & .e-icon-first.e-firstpagedisabled::before {
+        content: $pager-rtl-first-content-icon;
+    }& .e-icon-prev.e-prevpage::before,
+      & .e-icon-prev.e-prevpage:hover,
+      & .e-icon-prev.e-prevpagedisabled::before {
+        content: $pager-rtl-prev-content-icon;
+    }& .e-icon-next.e-nextpage::before,
+      & .e-icon-next.e-nextpage:hover,
+      & .e-icon-next.e-nextpagedisabled::before {
+        content: $pager-rtl-next-content-icon;
+}
+     }
+  }
+  }

@@ -1,0 +1,55 @@
+/*! component's theme wise override definitions and variables */
+
+$tbar-default-bg: $grey-50;
+$tbar-press-bg: $grey-400;
+$tbar-active-bg: $grey-400;
+$tbar-border-size: 1px;
+$tbar-border-type: none;
+$tbar-box-shadow: none;
+$tbar-separator-size: .5px;
+$tbar-btn-weight: 400;
+$tbar-btn-family: 'Roboto';
+$tbar-btn-font-size: 14px;
+$tbar-hover-bg: rebeccapurple;
+$tbar-hover-border:yellow;
+$tbar-default-icon-color:blue;
+$tbar-default-font: gray ;
+
+$tbar-default-icon-overlay: green;
+$tbar-default-font-overlay: red;
+$tbar-separator-border:#333300;
+
+$tbar-ribble-animation-border-frame: rgba(255, 255, 255, .5);
+$tbar-ribble-animation-shadow-frame: 0 0 0 0 $tbar-ribble-animation-border-frame;
+$tbar-ribble-animation-shadow-frame-end: 0 0 0 200px rgba(255, 255, 255, .12);
+
+
+@mixin tbar-btn-animation {
+  background-color: transparent;
+  border-radius: 50%;
+  border-width: 1px;
+  box-sizing: border-box;
+  content: '' ;
+  height: 1px;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  visibility: hidden;
+  width: 1px;
+}
+
+@mixin tbar-btn-animation-after {
+  animation: tbar-popup-shadow .6s ease-out 0ms;
+  visibility: visible;
+}
+
+@keyframes tbar-popup-shadow {
+  0% {
+    border-color: $tbar-ribble-animation-border-frame;
+    box-shadow: $tbar-ribble-animation-shadow-frame;
+    }
+
+  100% {
+    box-shadow: $tbar-ribble-animation-shadow-frame-end;
+    }
+ }

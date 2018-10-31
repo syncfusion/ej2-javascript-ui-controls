@@ -1,0 +1,74 @@
+@import '../context-menu/theme-mixin.scss';
+@include export-module('menu-theme') {
+  /*! menu theme */
+  .e-menu-wrapper {
+    @at-root {
+      & ul {
+        background-color: $menu-ul-bgcolor;
+        border-color: $menu-li-border-color;
+        color: $menu-color;
+
+        &.e-menu {
+          &:not(.e-vertical) {
+            & .e-separator {
+              border-right-color: $seperator-border-color;
+            }
+          }
+        }
+
+        & .e-menu-item  {
+          @include icon-color;
+
+          & .e-menu-url {
+            color: $menu-color;
+          }
+
+          &.e-focused {
+            @include focused-icon-color;
+            background-color: $menu-li-bgcolor;
+            color: $menu-li-selection-font-color;
+            outline: $menu-li-hover-outline;
+            outline-offset: $menu-li-hover-outline-offset;
+          }
+
+          &.e-selected {
+            @include selected-icon-color;
+            background-color: $menu-li-selection-bgcolor;
+            color: $menu-selected-color;
+            outline: $menu-li-selected-outline;
+            outline-offset: $menu-li-selected-outline-offset;
+          }
+
+          &.e-separator {
+            border-bottom-color: $seperator-border-color;
+          }
+        }
+
+        @include disabled-color;
+      }
+
+      & .e-ul {
+        background-color: $ul-bgcolor;
+        color: $color;
+
+        & .e-menu-item {
+          & .e-menu-url {
+            color: $color;
+          }
+
+          &.e-focused {
+            @include focused-color;
+          }
+
+          &.e-selected {
+            @include selected-color;
+          }
+
+          &.e-separator {
+            border-bottom-color: $li-border-color;
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,298 @@
+@import '../context-menu/layout-mixin.scss';
+@include export-module('menu-layout') {
+  /*! menu layout */
+  .e-menu-wrapper {
+    display: inline-flex;
+
+    @at-root {
+      & ul {
+        @include ul-layout;
+        border: $menu-ul-border;
+        display: inline-block;
+        font-size: $menu-font-size;
+        padding: $menu-ul-padding;
+        text-align: left;
+        white-space: nowrap;
+
+        &.e-vertical {
+          & .e-menu-item {
+            display: block;
+
+            &.e-blankicon {
+              padding-left: $menu-blank-icon;
+            }
+          }
+
+          & .e-separator {
+            @include separator-size;
+          }
+
+          & .e-menu-item {
+            & .e-caret {
+              &::before {
+                content: $caret-icon;
+              }
+            }
+          }
+        }
+
+        &.e-menu {
+          &:not(.e-vertical) {
+            padding: $ul-header-padding;
+
+            & .e-separator {
+              border-right-style: $li-border-style;
+              border-right-width: $li-border-width;
+              padding: $menu-separator-padding;
+            }
+          }
+
+          &.e-scrollable {
+            display: block;
+            overflow: auto;
+          }
+        }
+
+        & .e-menu-item  {
+          @include li-layout;
+          display: inline-block;
+          height: $menu-li-height;
+          line-height: $menu-li-height;
+          padding: $menu-li-padding;
+          vertical-align: top;
+          white-space: nowrap;
+
+          & .e-menu-icon {
+            font-size: $icon-font-size;
+            height: auto;
+            line-height: $menu-li-height;
+            margin-right: $menu-icon-margin-right;
+            text-align: center;
+            width: $menu-icon-width;
+          }
+
+          & .e-caret {
+            font-size: $menu-caret-font-size;
+            height: auto;
+            line-height: $menu-li-height;
+            position: absolute;
+            right: $menu-caret-right;
+            width: auto;
+
+            &::before {
+              content: $menu-caret-icon;
+            }
+          }
+
+          &.e-menu-caret-icon {
+            padding-right: $menu-caret-li-padding;
+          }
+
+          &.e-disabled {
+            cursor: auto;
+            opacity: $disable-opacity;
+            pointer-events: none;
+          }
+        }
+
+        & .e-menu-template {
+          display: inline-block;
+        }
+      }
+
+      & .e-ul {
+        @include ul-size;
+        min-width: $min-width;
+        position: absolute;
+
+        & .e-menu-item {
+          @include li-size;
+          display: block;
+          float: none;
+
+          & .e-menu-icon {
+            width: auto;
+          }
+        }
+      }
+    }
+  }
+
+  .e-rtl.e-menu-wrapper ul {
+    & .e-menu-item {
+      @include rtl-li-layout;
+      text-align: right;
+
+      & .e-menu-icon {
+        margin-left: $menu-icon-margin-right;
+      }
+
+      & .e-caret {
+        left: $menu-caret-right;
+      }
+
+      &.e-menu-caret-icon {
+        padding-left: $menu-caret-li-padding;
+        padding-right: $menu-li-right-padding;
+      }
+    }
+
+    &.e-vertical {
+      & .e-menu-item {
+        &.e-blankicon {
+          padding-right: $menu-blank-icon;
+        }
+      }
+
+      & .e-caret {
+        &::before {
+          content: $caret-icon-rtl;
+        }
+      }
+    }
+
+    &.e-ul {
+      & .e-menu-item {
+        @include rtl-li-size;
+      }
+    }
+  }
+
+  .e-bigger.e-menu-wrapper,
+  .e-bigger .e-menu-wrapper {
+    display: block;
+  }
+
+  .e-bigger .e-menu-wrapper ul,
+  .e-bigger.e-menu-wrapper ul {
+    font-size: $bigger-menu-font-size;
+
+    & .e-menu-item {
+      height: $menu-bigger-li-height;
+      line-height: $menu-bigger-li-height;
+      padding: $menu-bigger-li-padding;
+
+      & .e-menu-icon {
+        font-size: $icon-bigger-font-size;
+        line-height: $menu-bigger-li-height;
+        margin-right: $bigger-icon-margin-right;
+        width: $menu-icon-width;
+      }
+
+      &.e-menu-caret-icon {
+        padding-right: $bigger-caret-li-padding;
+      }
+
+      & .e-caret {
+        font-size: $bigger-menu-caret-font-size;
+        line-height: $menu-bigger-li-height;
+        right: $bigger-caret-right;
+      }
+
+      &.e-separator {
+        padding: $menu-separator-bigger-padding;
+      }
+    }
+
+    &.e-menu {
+      &:not(.e-vertical) {
+        padding: $ul-bigger-header-padding;
+      }
+
+      &.e-vertical {
+        & .e-menu-item {
+          &.e-separator {
+            @include separator-bigger-size;
+          }
+
+          &.e-blankicon {
+            padding-left: $menu-blank-icon-bigger;
+          }
+        }
+      }
+    }
+
+    &.e-ul {
+      @include bigger-ul-size;
+      max-width: $bigger-max-width;
+      min-width: $bigger-min-width;
+
+      & .e-menu-item  {
+        @include bigger-li-size;
+        padding: $li-padding;
+
+        & .e-caret {
+          right: $caret-right;
+        }
+
+        &.e-menu-caret-icon {
+          padding-right: $caret-li-padding;
+        }
+
+        & .e-menu-icon {
+          margin-right: $icon-margin-right;
+          width: auto;
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-rtl.e-menu-wrapper ul,
+  .e-bigger.e-rtl.e-menu-wrapper ul {
+    & .e-menu-item {
+      text-align: right;
+
+      & .e-menu-icon {
+        margin-left: $bigger-icon-margin-right;
+        margin-right: 0;
+      }
+
+      & .e-caret {
+        left: $bigger-caret-right;
+        margin-left: 0;
+        right: auto;
+      }
+
+      &.e-menu-caret-icon {
+        padding-left: $bigger-caret-li-padding;
+        padding-right: $bigger-li-right-padding;
+      }
+    }
+
+    &.e-vertical {
+      & .e-menu-item {
+        &.e-blankicon {
+          padding-right: $menu-blank-icon-bigger;
+        }
+      }
+
+      & .e-caret {
+
+        &::before {
+          content: $caret-icon-rtl;
+        }
+      }
+    }
+
+    &.e-ul {
+      & .e-menu-item {
+        & .e-menu-icon {
+          margin-left: $icon-margin-right;
+        }
+
+        & .e-caret {
+          left: $caret-right;
+        }
+
+        &.e-menu-caret-icon {
+          padding-left: $caret-li-padding;
+          padding-right: $li-right-padding;
+        }
+
+        &.e-blankicon {
+          @include bigger-rtl-blank-icon;
+        }
+      }
+    }
+  }
+}

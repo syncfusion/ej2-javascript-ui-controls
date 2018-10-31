@@ -1,0 +1,50 @@
+@import 'definition.scss';
+
+/*! Schedule component's material theme definitions and variables */
+$skin: 'material';
+$schedule-header-bg-color: $grey-white;
+$schedule-header-border-color: rgba($grey-light-font, .12);
+$schedule-header-font-color: rgba($grey-light-font, .87);
+$schedule-header-hover-color: $grey-300;
+$schedule-content-bg-color: $grey-50;
+$schedule-content-border-color: rgba($grey-light-font, .12);
+$schedule-primary-content-font-color: rgba($grey-light-font, .87);
+$schedule-select-font-color: rgba($grey-light-font, .87);
+$schedule-secondary-content-font-color: rgba($grey-light-font, .54);
+$schedule-select-bg-color: $grey-300;
+$schedule-work-cells-bg-color: $schedule-content-bg-color;
+$schedule-workhour-bg-color: $grey-white;
+$schedule-hover-bg-color: $grey-100;
+$schedule-active-border-color: $accent;
+$schedule-active-font-color: $accent;
+$schedule-active-color: $accent-font;
+$schedule-mobile-work-cells-bg-color: $grey-white;
+$schedule-appointment-bg-color: $primary;
+$schedule-appointment-font-color: $primary-font;
+$schedule-appointment-border-color: $primary-50;
+$schedule-appointment-active-border-color: #000;
+$schedule-month-agenda-app-indicator-color: $primary;
+$schedule-month-agenda-border: 2px solid $schedule-content-border-color;
+$schedule-mobile-popup-title-color: $schedule-content-bg-color;
+$schedule-header-hover-border-radius: 100%;
+$schedule-box-shadow: 0 1px 0 rgba($grey-black, .15);
+
+$schedule-popup-header-icon-color: $primary-font;
+$schedule-popup-header-icon-hover-color: $primary-font;
+$schedule-popup-header-icon-hover-bg-color: rgba(255, 255, 255, .15);
+$schedule-popup-icon-color: $schedule-appointment-active-border-color;
+$schedule-popup-icon-hover-color: $schedule-appointment-active-border-color;
+$schedule-popup-icon-hover-bg-color: $schedule-select-bg-color;
+$schedule-popup-content-icon-color: $schedule-secondary-content-font-color;
+
+$schedule-current-date-bg-color: $schedule-active-font-color;
+
+$schedule-tbar-default-bg: $grey-50;
+$schedule-tbar-box-shadow: 0 1px 2px rgba(0, 0, 0, .15);
+$schedule-tbar-box-shadow-bottom-margin: 3px;
+$schedule-tbar-separator-size: $border-size;
+$schedule-tbar-separator-border: rgba($grey-black, .12);
+$schedule-tbar-border-nav: $grey-100;
+$schedule-tbar-hover-bg: $grey-300;
+$schedule-tbar-hover-font: rgba($grey-light-font, .87);
+$schedule-tbar-default-icon-color: rgba($grey-light-font, .54);

@@ -1,0 +1,80 @@
+@include export-module('pivotview-icons') {
+  .e-pivotview {
+    .e-expand::before {
+      content: $pivotgrid-expand-icon;
+      font-size: $pivotgrid-expand-icon-fontsize;
+    }
+
+    .e-icons {
+      height: auto;
+      width: auto;
+    }
+
+    .e-collapse::before {
+      content: $pivotgrid-collapse-icon;
+      font-size: $pivotgrid-collapse-icon-fonsize;
+    }
+
+    .e-expand,
+    .e-collapse {
+      cursor: pointer;
+      display: inline-block;
+      height: 16px;
+      text-align: center;
+      width: 24px;
+    }
+
+    // sass-lint:disable-all
+
+    th .e-expand,
+    th .e-collapse {
+      float: left;
+      font-size: $pivotgrid-expcoldiv-fontsize !important;
+      margin-left: -6px;
+      margin-top: $pivotgrid-drill-margintop;
+    }
+
+    // sass-lint:enable-all
+
+    &.e-rtl {
+      .e-expand::before,
+      .e-collapse::before {
+        margin-left: 0;
+      }
+
+      .e-expand::before {
+        content: $pivotgrid-rtl-expand-icon;
+      }
+
+      th .e-expand,
+      th .e-collapse {
+        float: right;
+        margin-right: -8px;
+      }
+    }
+
+    .e-sort::before {
+      content: $pivotgrid-sorting-icon;
+    }
+
+    .e-pv-filter::before {
+      content: $pivotgrid-filter-icon;
+    }
+
+    .e-pv-filtered::before {
+      content: $pivotgrid-filtered-icon;
+    }
+
+    .e-remove::before {
+      content: $pivotgrid-remove-icon;
+    }
+
+    .e-selected-option-icon::before {
+      content: '\ea84';
+    }
+
+    .e-clear-filter-icon::before {
+      content: $pivotgrid-clear-filter-icon;
+    }
+  }
+}

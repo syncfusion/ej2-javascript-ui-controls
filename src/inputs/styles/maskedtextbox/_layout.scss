@@ -1,0 +1,21 @@
+@include export-module('maskedtextbox-layout') {
+  /*! maskedtextbox layout */
+  .e-widget.e-control-wrapper.e-mask #{&}.e-maskedtextbox {
+    @if $skin-name != 'bootstrap' {
+      font-family: $mask-font-family;
+      font-size: $mask-font-size;
+       }
+    }
+
+  .e-bigger .e-widget.e-control-wrapper.e-mask #{&}.e-maskedtextbox {
+    @if $skin-name != 'bootstrap' {
+      font-size: $mask-bigger-font-size;
+        }
+     }
+
+  .e-widget.e-control-wrapper.e-mask.e-bigger #{&}.e-maskedtextbox {
+    @if $skin-name != 'bootstrap' {
+      font-size: $mask-bigger-font-size;
+        }
+     }
+}

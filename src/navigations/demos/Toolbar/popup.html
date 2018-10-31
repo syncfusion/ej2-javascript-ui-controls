@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>TypeScript HTML App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="utf-8" />
+    <link href="../../styles/material.css" rel="stylesheet" />
+    <script>
+        window.require = {
+            config: function (json) {
+                window.rsConfig = json;
+                window.rsConfig.baseUrl = '';
+            }
+        };
+    </script>
+    <script src="./demo-config.js"></script>
+    <script data-main="./popup" src="../../node_modules/requirejs/require.js"></script>
+    <script>
+        require.config(window.rsConfig);
+    </script>
+    <style>
+        /* Toolbar Styles */
+
+        .e-cut-icon:before {
+            content: "\e759"
+        }
+
+        .e-copy-icon:before {
+            content: "\e70a"
+        }
+
+        .e-paste-icon:before {
+            content: "\e77e"
+        }
+
+        .e-bold-icon:before {
+            content: "\e71c"
+        }
+
+        .e-design-icon:before {
+            content: '\e7cc'
+        }
+
+        .e-table-icon:before {
+            content: '\e705'
+        }
+
+        .e-picture-icon:before {
+            content: '\e80b'
+        }
+
+        .e-chart-icon:before {
+            content: '\e712'
+        }
+
+        .e-alignleft-icon:before {
+            content: "\e75e"
+        }
+
+        .e-italic-icon:before {
+            content: "\e709"
+        }
+
+        .e-redo-icon:before {
+            content: "\e726"
+        }
+
+        .e-bullets-icon:before {
+            content: "\e75c"
+        }
+
+        .e-numbering-icon:before {
+            content: "\e733"
+        }
+
+        .e-doughnut-icon:before {
+            content: "\e70d"
+        }
+
+        .e-bubble-icon:before {
+            content: "\e76f"
+        }
+
+        .e-line-icon:before {
+            content: "\e70c"
+        }
+
+        .e-radar-icon:before {
+            content: "\e76a"
+        }
+
+        .e-undo-icon:before {
+            content: "\e76e"
+        }
+
+        .e-alignright-icon:before {
+            content: "\e75f"
+        }
+
+        .e-aligncenter-icon:before {
+            content: "\e74b"
+        }
+
+        .e-underline-icon:before {
+            content: "\e75a"
+        }
+
+        .e-alignjustify-icon:before {
+            content: "\e756"
+        }
+    </style>
+</head>
+
+<body class="e-bigger">
+    <tr>
+        <td> <button id="btn_mouse" class="e-btn">Mouse</button> </td>
+    </tr>
+    <tr>
+        <td> <button id="btn_touch" class="e-btn">Touch</button> </td>
+    </tr>
+    <tr>
+        <td> <button id="btn_fabric" class="e-btn">Fabric</button> </td>
+    </tr>
+    <tr>
+        <td> <button id="btn_boot" class="e-btn">Bootstrap</button> </td>
+    </tr>
+    <div style="margin-top : 48px; height: 1000px" id="ej2Toolbar">
+        <div id="ej2Toolbar_pop">
+        </div>
+    </div>
+</body>
+
+</html>

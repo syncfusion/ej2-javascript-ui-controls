@@ -1,0 +1,179 @@
+@import 'definition.scss';
+
+$skin-name: 'bootstrap';
+$rte-border-color: $grey-dd;
+$rte-full-screen-bg: $grey-white;
+$rte-content-bg: $grey-white;
+$rte-content-font-color: #333;
+$rte-item-color: $base-font;
+$rte-icons-color: $base-font;
+
+$rte-big-quick-item-btn-width: 39px;
+$rte-quick-item-btn-width: 27px;
+$rte-big-quick-item-btn-height: 34px;
+$rte-quick-item-btn-height: 26px;
+$rte-big-quick-item-padding: 0;
+$rte-quick-item-padding: 0;
+$rte-quick-item-icon-min-width: 25px;
+$rte-big-quick-item-line-height: normal;
+$rte-quick-item-line-height: 20px;
+$rte-quick-item-active-bg: rgba($grey-base, .12);
+$rte-quick-item-active-font-color: $base-font;
+$rte-quick-item-border: $rte-border-size solid transparent;
+$rte-quick-item-hover-border-color: $grey-8c;
+$rte-quick-item-active-border-color: $grey-8c;
+
+$rte-big-quick-drop-btn-line-height: 33px;
+$rte-quick-drop-btn-line-height: 24px;
+$rte-big-quick-drop-btn-margin: 4px 0;
+$rte-quick-drop-btn-margin: 4px 0;
+$rte-big-quick-drop-btn-padding: 0;
+$rte-quick-drop-btn-padding: 0;
+$rte-big-quick-drop-btn-icon-size: 16px;
+$rte-quick-drop-btn-icon-size: 14px;
+$rte-big-quick-drop-btn-caret-icon-size: 10px;
+$rte-quick-drop-btn-caret-icon-size: 12px;
+$rte-big-quick-drop-btn-caret-font-size: 11px;
+$rte-quick-drop-btn-caret-font-size: 10px;
+$rte-quick-drop-btn-border-color: $grey-white;
+$rte-quick-drop-btn-hover-border-color: $grey-8c;
+
+$rte-quick-pop-border: 0;
+$rte-quick-tb-border: 0;
+$rte-quick-pop-bg: $grey-white;
+$rte-quick-vr-line-color: rgba($grey-base, .05);
+$rte-quick-pop-shadow: 0 2px 6px rgba($grey-base, .26);
+$rte-quick-pop-item-focus-bg: rgba($grey-base, .12);
+$rte-quick-tb-btn-hover: rgba($grey-base, .12);
+$rte-mob-drop-down-pop-shadow: rgba($grey-base, .12);
+
+$rte-big-tb-items-margin-left: 3px;
+$rte-tb-items-margin-left: 6px;
+$rte-big-tb-items-padding-left: 3px;
+$rte-tb-items-padding-left: 6px;
+$rte-big-active-tb-item-btn-padding: 0 6px;
+$rte-active-tb-item-btn-padding: 0 1.5px;
+$rte-hor-nav-focus-color: $grey-dark;
+$rte-hor-nav-active-color: $grey-dark;
+$rte-hor-nav-focus-bg: inherit;
+$rte-hor-nav-hover-bg: inherit;
+$rte-hor-nav-active-bg: inherit;
+$rte-hor-nav-active-border-color: inherit;
+$rte-hor-nav-border-left: 0;
+$rte-hor-nav-active-border-left: 0;
+$rte-tb-item-active-bg: rgba($grey-base, .12);
+$rte-tb-active-font-color: $base-font;
+$rte-tb-item-active-border: $rte-border-size $rte-border-type $grey-8c;
+$rte-expand-tb-border-bottom: $rte-border-size $rte-border-type rgb(250, 250, 250);
+$rte-color-picker-active-bg: inherit;
+$rte-drop-btn-active-bg: $grey-e6;
+$rte-drop-btn-active-color: $base-font;
+$rte-drop-btn-active-border-color: $grey-8c;
+$rte-split-btn-active-hover-font-color: $base-font;
+
+$rte-split-btn-color: $base-font;
+$rte-split-btn-active-color: $base-font;
+$rte-split-btn-hover-bg: inherit;
+$rte-split-btn-active-bg: $grey-e6;
+$rte-split-btn-span-hover-bg: $grey-e6;
+$rte-split-btn-span-focus-bg: $grey-e6;
+$rte-split-btn-span-active-bg: $grey-e6;
+$rte-split-btn-bar-bg: $grey-ad;
+$rte-split-btn-active-bar-bg: $grey-ad;
+$rte-split-btn-bar-size: 1px;
+$rte-split-btn-active-border: 1px solid $grey-ad;
+$rte-split-btn-active-color-icon-line-height: 25px;
+$rte-big-split-btn-active-color-icon-line-height: 34px;
+
+$rte-link-valid-color: #f00;
+$rte-img-popup-color: #000;
+$rte-img-border-color: #ccc;
+$rte-img-popup-border: 1px solid $rte-img-border-color;
+$rte-img-popup-box-shadow: 0 2px 3px 1px rgba($rte-img-popup-color, .21);
+$rte-upload-drag-border-clr: $grey-d4;
+$rte-img-header-clr: $grey-light-font;
+$rte-drop-text-clr: $grey-ad;
+$rte-default-character-count-color: #000;
+$rte-warning-character-count-color: #ffb74d;
+$rte-error-character-count-color: #c62828;
+$rte-img-border: solid 2px $brand-primary;
+$rte-font-family: $font-family;
+$rte-content-color: $rte-content-font-color;
+$rte-content-blockquote-border-left-color: solid 2px $rte-content-font-color;
+$dropdown-selection-bgcolor: $grey-e6;
+$rte-format-btn-min-width: 75px;
+$rte-font-name-btn-min-width: 67px;
+$rte-font-size-btn-min-width: 36px;
+$rte-drop-btn-padding-left: 9px;
+$rte-drop-btn-padding-right: 3.5px;
+$rte-drop-btn-action-padding-left: 8px;
+$rte-drop-btn-action-padding-right: 2.5px;
+$rte-big-drop-btn-padding-left: 12px;
+$rte-big-drop-btn-padding-right: 7px;
+$rte-big-drop-btn-action-padding-left: 11px;
+$rte-big-drop-btn-action-padding-right: 6px;
+$rte-ext-tbar-overlay-icons-color: $base-font;
+$rte-colorpicker-parent-padding: 1px;
+$rte-colorpicker-parent-padding-hover: 0;
+$rte-colorpicker-parent-padding-active-hover: 1px;
+$overlay-color: #383838;
+$rte-font-icon-width: 30px;
+$rte-font-arrow-width: 18px;
+$rte-font-arrow-touch-width: 20px;
+$rte-font-icon-line-height: 1;
+$rte-colorpicker-padding: 1.5px 0;
+$dropdown-hover-bgcolor: $grey-e6;
+$dropdown-selection-color: $grey-dark;
+$rte-anchor-color: #2e2ef1;
+$rte-ext-tbar-overlay-dropdown-color: $grey-dark;
+$rte-placeholder-line-height: 18px;
+$rte-img-resize-back-color: #4a90e2;
+$rte-img-resize-color: #fff;
+$rte-table-header-color: rgba($grey-light-font, .87);
+$rte-table-span-bg-color: $grey-white;
+$rte-table-span-border: 1px solid $grey-cc;
+$rte-table-span-active-bg-color: rgba($brand-primary, .2);
+$rte-table-span-active-border-color: $grey-cc;
+$rte-table-select-border-color: #0478d7;
+$rte-table-popup-bg: $brand-primary-font;
+$rte-table-popup-color: $grey-base;
+$rte-table-popup-box: 0 3px 8px 0 rgba($grey-base, .26);
+$rte-table-border-color: #bdbdbd;
+$rte-table-alternate-color: #f5f5f5;
+$rte-table-header-bg: #e0e0e0;
+$rte-dropdown-active-border: 1px solid #8c8c8c;
+$rte-dropdown-active-bg: #e6e6e6;
+
+@include export-module('richtexteditor-bootstrap') {
+  .e-richtexteditor {
+    & .e-rte-toolbar {
+      &.e-extended-toolbar .e-toolbar-items .e-toolbar-item {
+        & .e-rte-dropdown-btn.e-active.e-tbar-btn {
+          background: $rte-dropdown-active-bg;
+          border: $rte-dropdown-active-border;
+          padding-left: 8px;
+          padding-right: 2.5px;
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-richtexteditor {
+    & .e-rte-toolbar {
+      &.e-extended-toolbar .e-toolbar-items .e-toolbar-item {
+        & .e-tbar-btn.e-btn.e-control.e-dropdown-btn.e-rte-dropdown-btn.e-active {
+          padding-left: 11px;
+          padding-right: 6px;
+        }
+      }
+
+      & .e-toolbar-items .e-toolbar-item {
+        & .e-tbar-btn.e-btn,
+        & .e-tbar-btn.e-btn.e-control {
+          padding-bottom: 0;
+          padding-top: 0;
+        }
+      }
+    }
+  }
+}

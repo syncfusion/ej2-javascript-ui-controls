@@ -1,0 +1,74 @@
+/*! component's default definitions and variables */
+$skin-name: 'material';
+$acrdn-tab-highlight-color:  rgba(0, 0, 0, 0);
+$acrdn-nrml-header-minheight: 36px;
+$acrdn-bgr-header-minheight: 48px;
+$acrdn-nrml-header-lineheight: 35px;
+$acrdn-bgr-header-lineheight: 47px;
+
+$acrdn-nrml-header-paddingpix: 16px;
+$acrdn-bgr-header-paddingpix: 16px;
+
+// Header, Nested header and RTL mode Padding
+$acrdn-nest-nrml-header-padding: 0 40px 0 32px;
+$acrdn-nest-bgr-header-padding: 0 46px 0 32px;
+$acrdn-nest-second-nrml-header-padding: 0 40px 0 48px;
+$acrdn-nest-second-bgr-header-padding: 0 46px 0 48px;
+$acrdn-nrml-header-padding: 0 40px 0 16px;
+$acrdn-bgr-header-padding: 0 46px 0 16px;
+$acrdn-rtl-nrml-header-padding: 0 16px 0 40px;
+$acrdn-rtl-bgr-header-padding: 0 16px 0 46px;
+$acrdn-rtl-nest-nrml-header-padding: 0 32px 0 40px;
+$acrdn-rtl-nest-bgr-header-padding: 0 32px 0 46px;
+$acrdn-rtl-nest-second-nrml-header-padding: 0 48px 0 40px;
+$acrdn-rtl-nest-second-bgr-header-padding: 0 48px 0 46px;
+
+// Content, Nested content and RTL mode Padding
+$acrdn-nrml-content-padding: 16px;
+$acrdn-bgr-content-padding: 16px;
+$acrdn-nest-nrml-content-padding: 5px 16px 5px 32px;
+$acrdn-nest-bgr-content-padding: 5px 16px 5px 32px;
+$acrdn-nest-second-nrml-content-padding: 5px 16px 5px 48px;
+$acrdn-nest-second-bgr-content-padding: 5px 16px 5px 48px;
+$acrdn-rtl-nest-nrml-content-padding: 5px 32px 5px 16px;
+$acrdn-rtl-nest-bgr-content-padding: 5px 32px 5px 16px;
+$acrdn-rtl-nest-second-nrml-content-padding: 5px 48px 5px 16px;
+$acrdn-rtl-nest-second-bgr-content-padding: 5px 48px 5px 16px;
+
+$acrdn-nrml-header-icon-padding: 8px;
+$acrdn-bgr-header-icon-padding: 14px;
+$acrdn-active-bg: $default-bg-color;
+$acrdn-bg-color: $default-bg-color;
+$acrdn-nrml-icn-minwidth: 24px;
+$acrdn-bgr-icn-minwidth: 30px;
+$acrdn-font-family: $font-family;
+$acrdn-selected-header-font-color: $header-font-color;
+$acrdn-selected-header-color: $header-bg-color;
+$acrdn-icon-color: $header-icon-color;
+$acrdn-selected-icon-color: $header-icon-color;
+$acrdn-content-color: $content-font-color;
+$acrdn-header-font-size: 15px;
+$acrdn-nest-header-font-size: 14px;
+$acrdn-content-font-size: 13px;
+$acrdn-header-font-bgr-size: 16px;
+$acrdn-content-font-bgr-size: 14px;
+$acrdn-content-line-height: 1.5;
+$acrdn-icon-font-size: $font-size;
+$acrdn-header-font-weight: normal;
+$acrdn-slct-header-font-weight: normal;
+$acrdn-selected-border-size: $border-size;
+$acrdn-item-padding-size: $acrdn-selected-border-size;
+$acrdn-selected-border-type: $border-type;
+$acrdn-selected-border-color: $default-border-color;
+$acrdn-header-focus-bg:  $hover-bg-color;
+$acrdn-header-hover-bg: '';
+$acrdn-header-active-bg: '';
+$acrdn-header-font: $header-font-color;
+$acrdn-nested-header-font: $header-font-color;
+
+
+$acrdn-border-type: $border-type;
+$acrdn-border-size: $border-size;
+$acrdn-default-border: $default-border-color;
+
+$acrd-expand-collapse-icon: '\e857';

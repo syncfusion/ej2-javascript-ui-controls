@@ -1,0 +1,294 @@
+import { Property, Component, Complex, Collection, NotifyPropertyChanges, INotifyPropertyChanged, SvgRenderer } from '@syncfusion/ej2-base';import { ModuleDeclaration, Internationalization, Event, EmitType, Browser, EventHandler, Touch } from '@syncfusion/ej2-base';import { remove, extend, isNullOrUndefined } from '@syncfusion/ej2-base';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';import { Font, Margin, Border, TooltipSettings, Indexes } from '../common/model/base';import { AccumulationSeries, AccPoints } from './model/acc-base';import { AccumulationType, AccumulationSelectionMode } from './model/enum';import { IAccSeriesRenderEventArgs, IAccTextRenderEventArgs, IAccTooltipRenderEventArgs } from './model/pie-interface';import { IAccAnimationCompleteEventArgs, IAccPointRenderEventArgs, IAccLoadedEventArgs } from './model/pie-interface';import { Theme, getThemeColor } from '../common/model/theme';import { ILegendRenderEventArgs, IMouseEventArgs, IPointEventArgs } from '../common/model/interface';import {  IAnnotationRenderEventArgs } from '../common/model/interface';import { load, seriesRender, legendRender, textRender, tooltipRender, pointClick } from '../common/model/constants';import { pointMove, chartMouseClick, chartMouseDown } from '../common/model/constants';import { chartMouseLeave, chartMouseMove, chartMouseUp, resized } from '../common/model/constants';import { FontModel, MarginModel, BorderModel, IndexesModel, TooltipSettingsModel } from '../common/model/base-model';import { AccumulationSeriesModel} from './model/acc-base-model';import { LegendSettings } from '../common/legend/legend';import { AccumulationLegend } from './renderer/legend';import { LegendSettingsModel } from '../common/legend/legend-model';import { Rect, ChartLocation, Size, subtractRect, indexFinder, appendChildElement, redrawElement } from '../common/utils/helper';import { measureText, RectOption, showTooltip } from '../common/utils/helper';import { textElement, TextOption, createSvg, calculateSize, removeElement, firstToLowerCase } from '../common/utils/helper';import { getElement, titlePositionX } from '../common/utils/helper';import { Data } from '../common/model/data';import { AccumulationTooltip } from './user-interaction/tooltip';import { AccumulationBase } from './renderer/accumulation-base';import { PieSeries } from './renderer/pie-series';import { AccumulationDataLabel } from './renderer/dataLabel';import { FunnelSeries } from './renderer/funnel-series';import { PyramidSeries } from './renderer/pyramid-series';import { AccumulationSelection } from './user-interaction/selection';import { AccumulationTheme } from './model/enum';import { AccumulationAnnotationSettingsModel } from './model/acc-base-model';import { AccumulationAnnotationSettings } from './model/acc-base';import { AccumulationAnnotation } from './annotation/annotation';import { IPrintEventArgs } from '../common/model/interface';import { ExportUtils } from '../common/utils/export';import { ExportType, Alignment } from '../common/utils/enum';import { getTitle } from '../common/utils/helper';import {Index} from '../common/model/base';import { IThemeStyle, Chart, RangeNavigator } from '../index';import { IAccResizeEventArgs } from './model/pie-interface';import { DataManager } from '@syncfusion/ej2-data';
+import {ComponentModel} from '@syncfusion/ej2-base';
+
+/**
+ * Interface for a class AccumulationChart
+ */
+export interface AccumulationChartModel extends ComponentModel{
+
+    /**
+     * The width of the chart as a string in order to provide input as both like '100px' or '100%'.
+     * If specified as '100%, chart will render to the full width of its parent element.
+     * @default null
+     */
+
+    width?: string;
+
+    /**
+     * The height of the chart as a string in order to provide input as both like '100px' or '100%'.
+     * If specified as '100%, chart will render to the full height of its parent element.
+     * @default null
+     */
+
+    height?: string;
+
+    /**
+     * Title for accumulation chart
+     * @default null
+     */
+    title?: string;
+
+    /**
+    * Specifies the dataSource for the AccumulationChart. It can be an array of JSON objects or an instance of DataManager.
+    * ```html
+    * <div id='Pie'></div>
+    * ```
+    * ```typescript
+    * let dataManager: DataManager = new DataManager({
+    *         url: 'http://mvc.syncfusion.com/Services/Northwnd.svc/Tasks/'
+    * });
+    * let query: Query = new Query().take(50).where('Estimate', 'greaterThan', 0, false);
+    * let pie: AccumulationChart = new AccumulationChart({
+    * ...
+    *     dataSource: dataManager,
+    *     series: [{
+    *        xName: 'Id',
+    *        yName: 'Estimate',
+    *        query: query
+    *    }],
+    * ...
+    * });
+    * pie.appendTo('#Pie');
+    * ```
+    * @default ''
+    */
+
+    dataSource?: Object | DataManager;
+
+    /**
+     * Options for customizing the `title` of accumulation chart.
+     */
+
+    titleStyle?: FontModel;
+
+    /**
+     * SubTitle for accumulation chart
+     * @default null
+     */
+    subTitle?: string;
+
+    /**
+     * Options for customizing the `subtitle` of accumulation chart.
+     */
+
+    subTitleStyle?: FontModel;
+
+    /**
+     * Options for customizing the legend of accumulation chart.
+     */
+    legendSettings?: LegendSettingsModel;
+
+    /**
+     * Options for customizing the tooltip of accumulation chart.
+     */
+
+    tooltip?:  TooltipSettingsModel;
+
+    /**
+     * Specifies whether point has to get selected or not. Takes value either 'None 'or 'Point'
+     * @default None
+     */
+    selectionMode?: AccumulationSelectionMode;
+
+    /**
+     * If set true, enables the multi selection in accumulation chart. It requires `selectionMode` to be `Point`.
+     * @default false
+     */
+    isMultiSelect?: boolean;
+
+    /**
+     * If set true, enables the animation for both chart and accumulation.
+     * @default true
+     */
+    enableAnimation?: boolean;
+
+    /**
+     * Specifies the point indexes to be selected while loading a accumulation chart.
+     * It requires `selectionMode` to be `Point`.
+     * ```html
+     * <div id='Pie'></div>
+     * ```
+     * ```typescript
+     * let pie: AccumulationChart = new AccumulationChart({
+     * ...
+     *   selectionMode: 'Point',
+     *   selectedDataIndexes: [ { series: 0, point: 1},
+     *                          { series: 2, point: 3} ],
+     * ...
+     * });
+     * pie.appendTo('#Pie');
+     * ```
+     * @default []
+     */
+    selectedDataIndexes?: IndexesModel[];
+
+    /**
+     *  Options to customize the left, right, top and bottom margins of accumulation chart.
+     */
+
+    margin?: MarginModel;
+
+    /**
+     * If set true, labels for the point will be placed smartly without overlapping.
+     * @default true
+     */
+    enableSmartLabels?: boolean;
+
+    /**
+     * Options for customizing the color and width of the chart border.
+     */
+
+    border?: BorderModel;
+
+    /**
+     * The background color of the chart, which accepts value in hex, rgba as a valid CSS color string.
+     * @default null
+     */
+    background?: string;
+
+    /**
+     * The configuration for series in accumulation chart.
+     */
+
+    series?: AccumulationSeriesModel[];
+
+    /**
+     * The configuration for annotation in chart.
+     */
+
+    annotations?: AccumulationAnnotationSettingsModel[];
+
+    /**
+     * Specifies the theme for accumulation chart.
+     * @default 'Material'
+     */
+    theme?: AccumulationTheme;
+
+    /**
+     * Triggers after accumulation chart loaded.
+     * @event
+     */
+    loaded?: EmitType<IAccLoadedEventArgs>;
+
+    /**
+     * Triggers before accumulation chart load.
+     * @event
+     */
+    load?: EmitType<IAccLoadedEventArgs>;
+
+    /**
+     * Triggers before the series gets rendered.
+     * @event
+     */
+    seriesRender?: EmitType<IAccSeriesRenderEventArgs>;
+
+    /**
+     * Triggers before the legend gets rendered.
+     * @event
+     */
+    legendRender?: EmitType<ILegendRenderEventArgs>;
+
+    /**
+     * Triggers before the data label for series gets rendered.
+     * @event
+     */
+    textRender?: EmitType<IAccTextRenderEventArgs>;
+
+    /**
+     * Triggers before the tooltip for series gets rendered.
+     * @event
+     */
+    tooltipRender?: EmitType<IAccTooltipRenderEventArgs>;
+
+    /**
+     * Triggers before each points for series gets rendered.
+     * @event
+     */
+
+    pointRender?: EmitType<IAccPointRenderEventArgs>;
+
+    /**
+     * Triggers before the annotation gets rendered.
+     * @event
+     */
+
+    annotationRender?: EmitType<IAnnotationRenderEventArgs>;
+
+    /**
+     * Triggers before the prints gets started.
+     * @event
+     */
+
+    beforePrint?: EmitType<IPrintEventArgs>;
+
+    /**
+     * Triggers on hovering the accumulation chart.
+     * @event
+     */
+
+    chartMouseMove?: EmitType<IMouseEventArgs>;
+
+    /**
+     * Triggers on clicking the accumulation chart.
+     * @event
+     */
+
+    chartMouseClick?: EmitType<IMouseEventArgs>;
+
+    /**
+     * Triggers on point click.
+     * @event
+     */
+
+    pointClick?: EmitType<IPointEventArgs>;
+
+    /**
+     * Triggers on point move.
+     * @event
+     */
+
+    pointMove?: EmitType<IPointEventArgs>;
+
+    /**
+     * Triggers after animation gets completed for series.
+     * @event
+     */
+    animationComplete?: EmitType<IAccAnimationCompleteEventArgs>;
+
+    /**
+     * Triggers on mouse down.
+     * @event
+     */
+
+    chartMouseDown?: EmitType<IMouseEventArgs>;
+
+    /**
+     * Triggers while cursor leaves the accumulation chart.
+     * @event
+     */
+
+    chartMouseLeave?: EmitType<IMouseEventArgs>;
+
+    /**
+     * Triggers on mouse up.
+     * @event
+     */
+
+    chartMouseUp?: EmitType<IMouseEventArgs>;
+
+    /**
+     * Triggers after window resize.
+     * @event
+     */
+
+    resized?: EmitType<IAccResizeEventArgs>;
+
+    /**
+     * Defines the currencyCode format of the accumulation chart
+     * @private
+     * @aspType string
+     */
+
+    currencyCode?: string;
+
+}

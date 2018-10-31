@@ -1,0 +1,258 @@
+@mixin button-focus {
+  background-color: $btn-focus-bgcolor;
+  border-color: $btn-focus-border-color;
+  box-shadow: $btn-hover-focus-box-shadow;
+  color: $btn-focus-color;
+  outline: $focus-outline;
+  outline-offset: $focus-outline-offset;
+}
+
+@mixin button-active {
+  background-color: $btn-active-bgcolor;
+  border-color: $btn-active-border-color;
+  box-shadow: $btn-active-box-shadow;
+  color: $btn-active-color;
+  outline: $active-outline;
+  outline-offset: $active-outline-offset;
+}
+
+@mixin primary-focus {
+  background-color: $btn-primary-focus-bgcolor;
+  border-color: $btn-primary-focus-border-color;
+  box-shadow: $btn-hover-focus-box-shadow;
+  color: $btn-primary-focus-color;
+  outline: $primary-outline;
+}
+
+@mixin primary-active {
+  background-color: $btn-primary-active-bgcolor;
+  border-color: $btn-primary-active-border-color;
+  box-shadow: $btn-active-box-shadow;
+  color: $btn-primary-active-color;
+  outline: $active-outline;
+}
+
+@mixin primary-disabled {
+  background-color: $btn-primary-disabled-bgcolor;
+  border-color: $btn-primary-disabled-border-color;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-primary-disabled-color;
+}
+
+@mixin outline-focus {
+  background-color: $btn-outline-focus-bgcolor;
+  border-color: $btn-outline-default-focus-border-color;
+  box-shadow: $btn-hover-focus-box-shadow;
+  color: $btn-outline-focus-color;
+}
+
+@mixin outline-active {
+  background-color: $btn-outline-active-bgcolor;
+  border-color: $btn-outline-active-border-color;
+  box-shadow: $btn-outline-active-box-shadow;
+  color: $btn-outline-active-color;
+}
+
+@mixin outline-primary-focus {
+  background-color: $btn-primary-focus-bgcolor;
+  border-color: $btn-outline-primary-focus-border-color;
+  color: $btn-primary-focus-color;
+}
+
+@mixin outline-primary-active {
+  background-color: $btn-primary-active-bgcolor;
+  border-color: $btn-outline-primary-active-border-color;
+  box-shadow: $btn-outline-active-box-shadow;
+  color: $btn-primary-active-color;
+}
+
+@mixin outline-success-focus {
+  background-color: $btn-success-focus-bgcolor;
+  border-color: $btn-success-focus-border-color;
+  color: $btn-success-focus-color;
+}
+
+@mixin outline-success-active {
+  background-color: $btn-success-active-bgcolor;
+  border-color: $btn-success-active-border-color;
+  box-shadow: $btn-outline-active-box-shadow;
+  color: $btn-success-active-color;
+}
+
+@mixin outline-info-focus {
+  background-color: $btn-info-hover-bgcolor;
+  border-color: $btn-info-focus-border-color;
+  color: $btn-info-color;
+}
+
+@mixin outline-info-active {
+  background-color: $btn-info-active-bgcolor;
+  border-color: $btn-info-active-border-color;
+  box-shadow: $btn-outline-active-box-shadow;
+  color: $btn-info-active-color;
+}
+
+@mixin outline-warning-focus {
+  background-color: $btn-warning-hover-bgcolor;
+  border-color: $btn-warning-focus-border-color;
+  color: $btn-warning-color;
+}
+
+@mixin outline-warning-active {
+  background-color: $btn-warning-active-bgcolor;
+  border-color: $btn-warning-active-border-color;
+  box-shadow: $btn-outline-active-box-shadow;
+  color: $btn-warning-active-color;
+}
+
+@mixin outline-danger-focus {
+  background-color: $btn-danger-hover-bgcolor;
+  border-color: $btn-danger-focus-border-color;
+  color: $btn-danger-color;
+}
+
+@mixin outline-danger-active {
+  background-color: $btn-danger-active-bgcolor;
+  border-color: $btn-danger-active-border-color;
+  box-shadow: $btn-outline-active-box-shadow;
+  color: $btn-danger-active-color;
+}
+
+@mixin outline-disabled {
+  background-color: $btn-outline-bgcolor;
+  border-color: $btn-outline-primary-disabled-border-color;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-outline-primary-disabled-color;
+}
+
+@mixin outline-primary-disabled {
+  background-color: $btn-outline-bgcolor;
+  border-color: $btn-outline-primary-disabled-border-color;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-outline-primary-disabled-color;
+}
+
+@mixin outline-success-disabled {
+  background-color: $btn-outline-bgcolor;
+  border-color: $btn-outline-success-disabled-border-color;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-outline-success-disabled-color;
+}
+
+@mixin outline-info-disabled {
+  background-color: $btn-outline-bgcolor;
+  border-color: $btn-outline-info-disabled-border-color;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-outline-info-disabled-color;
+}
+
+@mixin outline-warning-disabled {
+  background-color: $btn-outline-bgcolor;
+  border-color: $btn-outline-warning-disabled-border-color;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-outline-warning-disabled-color;
+}
+
+@mixin outline-danger-disabled {
+  background-color: $btn-outline-bgcolor;
+  border-color: $btn-outline-danger-disabled-border-color;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-outline-danger-disabled-color;
+}
+
+@mixin success-focus {
+  background-color: $btn-success-focus-bgcolor;
+  border-color: $btn-success-focus-border-color;
+  box-shadow: $btn-hover-focus-box-shadow;
+  color: $btn-success-hover-color;
+}
+
+@mixin success-active {
+  background-color: $btn-success-active-bgcolor;
+  border-color: $btn-success-active-border-color;
+  box-shadow: $btn-active-box-shadow;
+  color: $btn-success-active-color;
+}
+
+@mixin info-focus {
+  background-color: $btn-info-focus-bgcolor;
+  border-color: $btn-info-focus-border-color;
+  box-shadow: $btn-hover-focus-box-shadow;
+  color: $btn-info-hover-color;
+}
+
+@mixin info-active {
+  background-color: $btn-info-active-bgcolor;
+  border-color: $btn-info-active-border-color;
+  box-shadow: $btn-active-box-shadow;
+  color: $btn-info-active-color;
+}
+
+@mixin warning-focus {
+  background-color: $btn-warning-focus-bgcolor;
+  border-color: $btn-warning-focus-border-color;
+  box-shadow: $btn-hover-focus-box-shadow;
+  color: $btn-warning-hover-color;
+}
+
+@mixin warning-active {
+  background-color: $btn-warning-active-bgcolor;
+  border-color: $btn-warning-active-border-color;
+  box-shadow: $btn-active-box-shadow;
+  color: $btn-warning-active-color;
+}
+
+@mixin danger-focus {
+  background-color: $btn-danger-focus-bgcolor;
+  border-color: $btn-danger-focus-border-color;
+  box-shadow: $btn-hover-focus-box-shadow;
+  color: $btn-danger-hover-color;
+}
+
+@mixin danger-active {
+  background-color: $btn-danger-active-bgcolor;
+  border-color: $btn-danger-active-border-color;
+  box-shadow: $btn-active-box-shadow;
+  color: $btn-danger-active-color;
+}
+
+@mixin link-focus {
+  border-radius: 0;
+  color: $btn-link-hover-color;
+  text-decoration: underline;
+}
+
+@mixin success-disabled {
+  background-color: $btn-success-disabled-bgcolor;
+  border-color: $btn-disabled-border-color;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-success-disabled-color;
+}
+
+@mixin info-disabled {
+  background-color: $btn-info-disabled-bgcolor;
+  border-color: $btn-disabled-border-color;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-info-disabled-color;
+}
+
+@mixin warning-disabled {
+  background-color: $btn-warning-disabled-bgcolor;
+  border-color: $btn-disabled-border-color;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-warning-disabled-color;
+}
+
+@mixin danger-disabled {
+  background-color: $btn-danger-disabled-bgcolor;
+  border-color: $btn-disabled-border-color;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-danger-disabled-color;
+}
+
+@mixin link-disabled {
+  background-color: $btn-link-disabled-bgcolor;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-disabled-color;
+  text-decoration: none;
+}

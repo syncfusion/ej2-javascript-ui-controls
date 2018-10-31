@@ -1,0 +1,92 @@
+@include export-module('timepicker-layout') {
+  //   timepicker layout
+  .e-time-wrapper,
+  &.e-control-wrapper.e-time-wrapper {
+    // sass-lint:disable no-vendor-prefixes
+    -webkit-tap-highlight-color: transparent;
+
+    & .e-time-icon.e-icons {
+      font-size: $icon-normal-font-size;
+      min-height: $normal-min-height;
+      min-width: $normal-min-width;
+    }
+
+    & .e-time-icon.e-icons::before {
+      content: $time-font-icon;
+    }
+
+    & .e-time-icon.e-icons.e-disabled {
+      pointer-events: none;
+    }
+
+    & span {
+      cursor: pointer;
+    }
+  }
+
+  #{&}.e-timepicker.e-popup {
+    border-style: solid;
+    border-width: 1px;
+    overflow: auto;
+
+    & .e-content {
+      position: relative;
+    }
+
+    & .e-list-parent.e-ul {
+      margin: 0;
+      padding: $list-normal-padding 0;
+
+      & .e-list-item {
+        cursor: default;
+        font-size: $list-normal-font-size;
+        overflow: hidden;
+        position: relative;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+        white-space: nowrap;
+        width: 100%;
+      }
+
+      & .e-list-item.e-hover {
+        cursor: pointer;
+      }
+    }
+  }
+
+  //normal styles
+
+  #{&}.e-timepicker.e-popup {
+    & .e-list-parent.e-ul .e-list-item {
+      line-height: $list-normal-line-height;
+      text-indent: $list-normal-text-indent;
+    }
+  }
+
+  //bigger styles
+  .e-bigger .e-time-wrapper,
+  &.e-bigger.e-time-wrapper,
+  &.e-bigger .e-control-wrapper .e-time-wrapper,
+  &.e-control-wrapper.e-bigger.e-time-wrapper {
+
+    & .e-time-icon.e-icons {
+      font-size: $icon-bigger-font-size;
+      min-height: $bigger-min-height;
+      min-width: $bigger-min-width;
+    }
+  }
+
+  .e-bigger #{&}.e-timepicker.e-popup,
+  &.e-bigger#{&}.e-timepicker.e-popup {
+
+    & .e-list-parent.e-ul {
+      padding: $list-bigger-padding 0;
+
+      & .e-list-item {
+        font-size: $list-bigger-font-size;
+        line-height: $list-bigger-line-height;
+        text-indent: $list-bigger-text-indent;
+      }
+    }
+  }
+}

@@ -1,0 +1,328 @@
+@include export-module('radiobutton-layout') {
+  /*! radiobutton layout */
+
+  .e-radio-wrapper {
+    display: inline-block;
+    line-height: 1;
+  }
+
+  // sass-lint:disable no-vendor-prefixes
+  #{&}.e-radio {
+    -webkit-appearance: none;
+    height: 1px;
+    opacity: 0;
+    position: absolute;
+    width: 1px;
+
+    +label {
+      -webkit-tap-highlight-color: transparent;
+      cursor: pointer;
+      display: inline-block;
+      margin: 0;
+      position: relative;
+      user-select: none;
+      vertical-align: middle;
+      white-space: nowrap;
+
+      & .e-label {
+        display: inline-block;
+        font-family: $font-family;
+        font-size: $font-size;
+        font-weight: normal;
+        line-height: $line-height;
+        padding-left: $padding;
+        vertical-align: text-top;
+        white-space: normal;
+      }
+
+      &::before {
+        border: $border;
+        border-radius: 50%;
+        box-sizing: border-box;
+        content: '';
+        height: $height;
+        left: 0;
+        position: absolute;
+        top: 0;
+        width: $width;
+      }
+
+      &:focus {
+        &::before {
+          box-shadow: $focussed-box-shadow;
+        }
+      }
+
+      &::after {
+        border: 1px solid;
+        border-radius: 50%;
+        box-sizing: border-box;
+        content: '';
+        height: $icon-height;
+        left: $icon-left;
+        position: absolute;
+        top: $icon-top;
+        transform: scale(0);
+        width: $icon-width;
+      }
+
+      & .e-ripple-container {
+        border-radius: 50%;
+        height: $ripple-size;
+        left: $ripple-position;
+        position: absolute;
+        top:  $ripple-position;
+        width: $ripple-size;
+        z-index: 1;
+      }
+
+      &.e-right,
+      &.e-rtl {
+        & .e-label {
+          padding-left: 0;
+          padding-right: $padding;
+        }
+
+        &::before {
+          left: auto;
+          right: 0;
+        }
+
+        &::after {
+          left: auto;
+          right: $icon-right;
+        }
+
+        & .e-ripple-container {
+          left: auto;
+          right: $ripple-position;
+        }
+      }
+
+      &.e-right {
+        &.e-rtl {
+          & .e-label {
+            padding-left: $padding;
+            padding-right: 0;
+          }
+
+          &::before {
+            left: 0;
+            right: auto;
+          }
+
+          &::after {
+            left: $icon-right;
+            right: auto;
+          }
+
+          & .e-ripple-container {
+            left: -8px;
+            right: auto;
+            }
+        }
+      }
+
+      &.e-small {
+
+        & .e-label {
+          line-height: $small-line-height;
+          padding-left: $small-padding;
+        }
+
+        &::before {
+          height: $small-height;
+          width: $small-width;
+        }
+
+        &::after {
+          height: $small-icon-height;
+          left: $small-icon-left;
+          top: $small-icon-top;
+          width: $small-icon-width;
+        }
+
+        & .e-ripple-container {
+          left: $small-ripple-position;
+          top: $small-ripple-position;
+        }
+
+        &.e-right,
+        &.e-rtl {
+          & .e-label {
+            padding-left: 0;
+            padding-right: $small-padding;
+          }
+
+          &::after {
+            left: auto;
+            right: $small-icon-right;
+          }
+
+          & .e-ripple-container {
+            left: auto;
+            right: $small-ripple-position;
+          }
+        }
+
+        &.e-right {
+          &.e-rtl {
+            & .e-label {
+              padding-left: $small-padding;
+              padding-right: 0;
+            }
+
+            &::after {
+              left: $small-icon-right;
+              right: auto;
+            }
+
+            & .e-ripple-container {
+              left: -10px;
+              right: auto;
+            }
+          }
+        }
+      }
+    }
+
+    &:checked {
+      +label {
+        &::after {
+          transform: scale(1);
+          transition: $check-transition;
+        }
+      }
+    }
+  }
+
+  .e-bigger #{&}.e-radio+label,
+  #{&}.e-radio+label.e-bigger {
+
+    & .e-label {
+      font-size: $bigger-font-size;
+      line-height: $bigger-line-height;
+      padding-left: $bigger-padding;
+    }
+
+    &::before {
+      height: $bigger-height;
+      width: $bigger-width;
+    }
+
+    &::after {
+      height: $bigger-icon-height;
+      left: $bigger-icon-left;
+      top: $bigger-icon-top;
+      width: $bigger-icon-width;
+    }
+
+    & .e-ripple-container {
+      height: $bigger-ripple-size;
+      left: $bigger-ripple-position;
+      top: $bigger-ripple-position;
+      width: $bigger-ripple-size;
+    }
+
+    &.e-right,
+    &.e-rtl {
+      & .e-label {
+        padding-left: 0;
+        padding-right: $bigger-padding;
+      }
+
+      &::after {
+        left: auto;
+        right: $bigger-icon-right;
+      }
+
+      & .e-ripple-container {
+        left: auto;
+        right: $bigger-ripple-position;
+      }
+    }
+
+    &.e-right {
+      &.e-rtl {
+        & .e-label {
+          padding-left: $bigger-padding;
+          padding-right: 0;
+        }
+
+        &::after {
+          left: $bigger-icon-right;
+          right: auto;
+        }
+
+        & .e-ripple-container {
+          left: -12px;
+          right: auto;
+        }
+      }
+    }
+
+    &.e-small {
+
+      & .e-label {
+        line-height: $bigger-small-line-height;
+        padding-left: $bigger-small-padding;
+      }
+
+      &::before {
+        height: $bigger-small-height;
+        width: $bigger-small-width;
+      }
+
+      &::after {
+        height: $bigger-small-icon-height;
+        left: $bigger-small-icon-left;
+        top: $bigger-small-icon-top;
+        width: $bigger-small-icon-width;
+      }
+
+      & .e-ripple-container {
+        height: $bigger-small-ripple-size;
+        left: $bigger-ripple-position;
+        top: $bigger-ripple-position;
+        width: $bigger-small-ripple-size;
+      }
+
+      &.e-right,
+      &.e-rtl {
+        & .e-label {
+          padding-left: 0;
+          padding-right: $bigger-small-padding;
+        }
+
+        &::after {
+          left: auto;
+          right: $bigger-small-icon-right;
+        }
+
+        & .e-ripple-container {
+          left: auto;
+          right: $small-ripple-position;
+        }
+      }
+
+      &.e-right {
+        &.e-rtl {
+          & .e-label {
+            padding-left: $bigger-small-padding;
+            padding-right: 0;
+          }
+
+          &::after {
+            left: $bigger-small-icon-right;
+            right: auto;
+          }
+
+          & .e-ripple-container {
+            left: -10px;
+            right: auto;
+          }
+        }
+      }
+    }
+  }
+}

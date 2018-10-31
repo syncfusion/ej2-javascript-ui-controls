@@ -1,0 +1,74 @@
+@include export-module('tooltip-layout') {
+  /*! tooltip layout */
+  .e-tooltip-wrap.e-popup {
+    max-width: 350px;
+    min-width: 30px;
+    padding: 0;
+    position: absolute;
+    visibility: visible;
+
+    /*! tooltip arrow */
+    .e-arrow-tip {
+      overflow: hidden;
+      position: absolute;
+
+      &.e-tip-bottom {
+        height: 8px;
+        left: 50%;
+        top: 100%;
+        width: 16px;
+      }
+
+      &.e-tip-top {
+        height: 8px;
+        left: 50%;
+        top: -9px;
+        width: 16px;
+      }
+
+      &.e-tip-left {
+        height: 16px;
+        left: -9px;
+        top: 48%;
+        width: 8px;
+      }
+
+      &.e-tip-right {
+        height: 16px;
+        left: 100%;
+        top: 50%;
+        width: 8px;
+      }
+    }
+
+    /*! tooltip sticky mode close icon */
+    .e-tooltip-close {
+      float: right;
+      position: absolute;
+      right: -9px;
+      top: -9px;
+    }
+
+    /*! tooltip content area */
+    .e-tip-content {
+      background-color: inherit;
+      height: 100%;
+      line-height: $tooltip-line-height;
+      overflow-wrap: break-word;
+      overflow-x: hidden;
+      padding: $tooltip-horizontal-padding $tooltip-vertical-padding;
+      position: relative;
+      white-space: normal;
+      width: 100%;
+      word-break: break-word;
+    }
+  }
+
+  /*! Bigger Style */
+  .e-bigger .e-tooltip-wrap.e-popup .e-tip-content,
+  &.e-tooltip-wrap.e-popup.e-bigger .e-tip-content {
+    line-height: 20px;
+    padding: $tooltip-mobile-horizontal-padding $tooltip-mobile-vertical-padding;
+  }
+
+}

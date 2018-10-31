@@ -1,0 +1,139 @@
+@include export-module('checkbox-theme') {
+  /*! checkbox theme */
+  .e-checkbox-wrapper,
+  .e-css.e-checkbox-wrapper {
+    // sass-lint:disable no-vendor-prefixes
+    -webkit-tap-highlight-color: transparent;
+    @at-root {
+      & .e-frame {
+        background-color: $bgcolor;
+        border-color: $border-color;
+
+        &.e-check {
+          background-color: $checkmark-bgcolor;
+          border-color: $checkmark-border-color;
+          color: $checkmark-color;
+        }
+
+        &.e-stop {
+          background-color: $indeterminate-bgcolor;
+          border-color: $indeterminate-border-color;
+          color: $indeterminate-color;
+        }
+      }
+
+      & .e-ripple-element {
+        background: $checked-ripple-bgcolor;
+      }
+
+      & .e-ripple-check {
+        & .e-ripple-element {
+          background: $ripple-bgcolor;
+        }
+      }
+
+      &:active {
+        & .e-ripple-element {
+          background: $ripple-bgcolor;
+        }
+
+        & .e-ripple-check {
+          & .e-ripple-element {
+            background: $checked-ripple-bgcolor;
+          }
+        }
+      }
+
+      & .e-label {
+        color: $color;
+      }
+
+      & .e-checkbox {
+        &:focus {
+          +.e-frame {
+            background-color: $focussed-bgcolor;
+            border-color: $focussed-border-color;
+            box-shadow: $focussed-box-shadow;
+
+            &.e-check {
+              background-color: $focussed-checkmark-bgcolor;
+              border-color: $focussed-checkmark-border-color;
+              box-shadow: $focussed-box-shadow;
+              color: $focussed-checkmark-color;
+            }
+
+            &.e-stop {
+              box-shadow: $focussed-box-shadow;
+              color: $indeterminate-hover-color;
+            }
+          }
+        }
+      }
+
+      &:hover {
+        & .e-frame {
+          background-color: $hover-bgcolor;
+          border-color: $hover-border-color;
+
+          &.e-check {
+            background-color: $checkmark-hover-bgcolor;
+            border-color: $checkmark-hover-border-color;
+            color: $checkmark-hover-color;
+          }
+
+          &.e-stop {
+            color: $indeterminate-hover-color;
+          }
+        }
+
+        & .e-label {
+          color: $hover-color;
+        }
+      }
+
+      &.e-checkbox-disabled {
+        & .e-frame {
+          background-color: $disabled-bgcolor;
+          border-color: $disabled-border-color;
+          color: $disabled-color;
+
+          &.e-check {
+            background-color: $checkmark-disabled-bgcolor;
+            border-color: $checkmark-disabled-border-color;
+            color: $checkmark-disabled-color;
+          }
+
+          &.e-stop {
+            background-color: $indeterminate-disabled-bgcolor;
+            border-color: $indeterminate-disabled-border-color;
+            color: $indeterminate-disabled-color;
+          }
+        }
+
+        & .e-label {
+          color: $disabled-color;
+        }
+      }
+
+      &.e-focus {
+        & .e-ripple-container {
+          background-color: $key-focussed-bgcolor;
+
+          &.e-ripple-check {
+            background-color: $checked-ripple-bgcolor;
+          }
+        }
+
+        & .e-frame {
+          outline: $focus-outline;
+          outline-offset: $focus-outline-offset;
+
+          &.e-check {
+            outline: $focus-outline;
+            outline-offset: $focus-outline-offset;
+          }
+        }
+      }
+    }
+  }
+}

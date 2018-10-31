@@ -1,0 +1,50 @@
+@import 'common/mixin.scss';
+@import 'definition/material.scss';
+
+@if not variable-exists('is-roboto-loaded') {
+  //sass-lint:disable no-url-protocols,no-url-domains
+  @import url('https://fonts.googleapis.com/css?family=Roboto:400,500');
+}
+
+$is-roboto-loaded: 'true';
+$skin: '';
+$font-family: 'Roboto', 'Segoe UI', 'GeezaPro', 'DejaVu Serif', 'sans-serif', '-apple-system', 'BlinkMacSystemFont';
+$font-size: 12px;
+$font-weight: normal;
+$font-path: 'common-images';
+$header-bg-color: $grey-white;
+$header-gradient-color: none;
+$header-border-color: $grey-black;
+$header-font-color: $grey-light-font;
+$header-icon-color: $grey-light-font;
+$content-bg-color: $grey-white;
+$content-border-color: $grey-black;
+$content-font-color: $grey-light-font;
+$default-bg-color: $grey-white;
+$default-gradient-color: none;
+$default-border-color: $grey-black;
+$default-font-color: $grey-light-font;
+$default-icon-color: $grey-light-font;
+$hover-bg-color: $grey-200;
+$hover-gradient-color: none;
+$hover-border-color: $grey-black;
+$hover-font-color: $grey-light-font;
+$hover-icon-color: $grey-light-font;
+$active-bg-color: $grey-100;
+$active-gradient-color: none;
+$active-border-color: $grey-black;
+$active-font-color: $grey-light-font;
+$active-icon-color: $grey-light-font;
+$error-font-color: $error-font;
+$warning-font-color: #ffca1c;
+$success-font-color: #22b24b;
+$information-font-color: #489bd5;
+$overlay-bg-color: #383838;
+$shadow-color: rgba(0, 0, 0, .4);
+$border-size: 1px;
+$border-type: solid;
+$border-radius: 0;
+$border-left-radius: 0;
+$border-right-radius: 0;
+$border-top-radius: 0;
+$border-bottom-radius: 0;

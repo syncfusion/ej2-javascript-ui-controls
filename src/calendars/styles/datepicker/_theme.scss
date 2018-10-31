@@ -1,0 +1,32 @@
+@include export-module('datepicker-theme') {
+  #{&}.e-datepicker {
+    &.e-popup-wrapper {
+      border: $popup-border;
+      box-shadow: $popup-box-shadow;
+   }
+
+    & .e-calendar {
+      background-color: $popup-bg-color;
+      border: $calendar-border-style;
+   }
+
+  }
+
+  &.e-input-group {
+    &.e-date-wrapper.e-dateinput-active:active:not(.e-success):not(.e-warning):not(.e-error) {
+      border: $datepicker-input-border-style;
+	  }
+      }
+
+  .e-date-wrapper {
+    & span.e-input-group-icon {
+      &.e-date-icon.e-icons:hover:not(:active) {
+        background: $datepicker-icon-hover-bg-color;
+      }&.e-date-icon.e-icons.e-active {
+        color: $datepicker-icon-color;
+      }&.e-date-icon.e-icons.e-active {
+        color: $datepicker-active-icon-color;
+      }
+    }
+  }
+}

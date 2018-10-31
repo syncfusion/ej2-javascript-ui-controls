@@ -1,0 +1,393 @@
+@include export-module('accordion-theme') {
+  /*! accordion theme */
+  // sass-lint:disable no-vendor-prefixes
+  #{&}.e-accordion {
+    -webkit-tap-highlight-color: $acrdn-tab-highlight-color;
+    background: $acrdn-bg-color;
+    border: $acrdn-border-size $acrdn-border-type $acrdn-default-border;
+
+    @if $skin-name == 'highcontrast' {
+      background: $acrdn-bg;
+    }
+
+    .e-active {
+      background: $acrdn-active-bg;
+      @if $skin-name == 'highcontrast' {
+        background: $acrdn-active-item-bg;
+      }
+    }
+
+    .e-acrdn-item {
+      @if $skin-name == 'fabric' {
+        border-bottom: 1px solid $acrdn-item-border-color;
+        border-top: 1px solid $acrdn-item-border-color;
+      }
+
+      &.e-item-focus {
+        @if $skin-name == 'fabric' {
+          border-bottom: 1px solid $acrdn-header-focus-bg;
+          border-top: 1px solid $acrdn-header-focus-bg;
+        }
+
+        @if $skin-name == 'highcontrast' {
+          .e-acrdn-header:focus {
+            border-color: $acrdn-focus-hdr-focus-border-color;
+          }
+        }
+      }
+
+      &.e-item-focus.e-select.e-selected.e-expand-state {
+        @if $skin-name == 'fabric' or $skin-name == 'material' {
+          border-top: 1px solid $acrdn-selected-header-color;
+        }
+
+        @if $skin-name == 'highcontrast' {
+          .e-acrdn-header:focus {
+            border: 2px dashed $acrdn-focus-exp-hdr-focus-border-color;
+          }
+
+          .e-acrdn-header:hover:focus {
+            background: $acrdn-focus-exp-hdr-hover-focus-bg-color;
+            border-color: $acrdn-focus-exp-hdr-hover-focus-border-color;
+
+            .e-icons,
+            .e-acrdn-header-content {
+              color: $acrdn-focus-exp-hdr-hover-focus-color;
+            }
+          }
+        }
+      }
+
+      &.e-item-focus.e-expand-state.e-select,
+      &.e-item-focus.e-select.e-selected.e-expand-state  {
+        @if $skin-name == 'material' {
+          border-color: $acrdn-header-focus-bg;
+        }
+      }
+
+      &.e-expand-state.e-select {
+        @if $skin-name == 'fabric' or $skin-name == 'material' {
+          border-bottom: 1px solid $acrdn-selected-header-color;
+          border-top: 1px solid $acrdn-selected-header-color;
+        }
+      }
+
+      .e-acrdn-header {
+        @if $skin-name == 'fabric' {
+          border: 1px solid $acrdn-item-header-border-color;
+        }
+      }
+
+      &.e-overlay {
+        background: $acrdn-bg-color;
+
+        @if $skin-name == 'highcontrast' {
+          .e-acrdn-header {
+
+            .e-icons,
+            .e-acrdn-header-content {
+              color: $disable;
+            }
+          }
+        }
+      }
+
+      &.e-selected.e-select.e-expand-state > .e-acrdn-header {
+
+        &:focus {
+          @if $skin-name == 'fabric' {
+            border: 1px solid $acrdn-item-exp-hdr-focus-border-color;
+          }
+          @else if $skin-name == 'highcontrast' {
+            border: 2px dashed $acrdn-item-exp-hdr-focus-border-color;
+          }
+          @else {
+            background: $acrdn-header-focus-bg;
+          }
+        }
+      }
+
+      .e-acrdn-panel.e-nested {
+
+        .e-acrdn-header .e-acrdn-header-content {
+          color: $acrdn-header-font;
+        }
+
+        @if $skin-name == 'highcontrast' {
+          .e-expand-state {
+            > .e-icons,
+            > .e-acrdn-header-content {
+              color: $acrdn-nested-exp-color;
+            }
+          }
+        }
+      }
+
+      &.e-select {
+
+        @if $skin-name == 'bootstrap' {
+          background: $acrdn-item-select-bg;
+          border: $acrdn-border-size solid $acrdn-default-border;
+        }
+
+        .e-acrdn-panel .e-acrdn-content {
+          color: $acrdn-content-color;
+
+          @if $skin-name == 'highcontrast' {
+            background: $acrdn-selected-item-content-color;
+          }
+        }
+
+        @if $skin-name == 'material' {
+          .e-acrdn-panel .e-acrdn-content .e-content-icon {
+            color: $acrdn-icon-color;
+          }
+        }
+      }
+
+      .e-acrdn-header {
+
+        .e-acrdn-header-content {
+          color: $acrdn-header-font;
+        }
+
+        .e-acrdn-header-icon {
+          color: $acrdn-icon-color;
+        }
+      }
+
+      &.e-expand-state.e-select:not(.e-selected) > .e-acrdn-header {
+
+        &:focus {
+          @if $skin-name == 'fabric' {
+            border: 1px solid $acrdn-item-exp-hdr-focus-border-color;
+          }
+          @else if $skin-name == 'highcontrast' {
+            border-color: $acrdn-item-exp-hdr-focus-border-color;
+          }
+          @else {
+            background: $acrdn-header-focus-bg;
+          }
+        }
+      }
+
+      .e-acrdn-header {
+
+        @if $skin-name == 'highcontrast' {
+          border: 1px solid $acrdn-item-header-border-color;
+        }
+
+        &:hover {
+          @if $skin-name == 'fabric' {
+            border: 1px solid $acrdn-header-hover-bg;
+          }
+          background: $acrdn-header-hover-bg;
+          @if $skin-name == 'highcontrast' {
+            border-color: $acrdn-item-header-hover-border-color;
+          }
+        }
+
+        &:active {
+          @if $skin-name == 'fabric' {
+            border: 1px solid $acrdn-header-active-bg;
+          }
+          background: $acrdn-header-active-bg;
+          @if $skin-name == 'highcontrast' {
+            border-color: $acrdn-item-header-active-border-color;
+          }
+        }
+
+        &:focus {
+          @if $skin-name == 'fabric' {
+            border: 1px solid $acrdn-header-focus-bg;
+          }
+          background: $acrdn-header-focus-bg;
+          @if $skin-name == 'highcontrast' {
+            background: $acrdn-item-header-focus-bg-color;
+            border: 2px dashed $acrdn-item-header-focus-border-color;
+
+            &:active {
+
+              .e-icons,
+              .e-acrdn-header-content,
+              .e-toggle-icon {
+                color: $acrdn-item-header-focus-active-color;
+              }
+            }
+          }
+        }
+      }
+
+      &.e-select {
+
+        &.e-selected.e-expand-state > .e-acrdn-header,
+        &.e-expand-state > .e-acrdn-header {
+          @if $skin-name == 'fabric' {
+            border: 1px solid $acrdn-selected-header-color;
+          }
+          background: $acrdn-selected-header-color;
+
+          @if $skin-name == 'highcontrast' {
+            background: $acrdn-exp-hdr-bg-color;
+            border-color: $acrdn-exp-hdr-border-color;
+
+            .e-acrdn-header-icon {
+              color: $acrdn-exp-hdr-icon-color;
+            }
+
+            &:hover {
+              background: $acrdn-exp-hdr-hover-bg-color;
+              border-color: $acrdn-exp-hdr-hover-border-color;
+
+              .e-icons,
+              .e-acrdn-header-content {
+                color: $acrdn-exp-hdr-hover-color;
+              }
+
+              &:focus .e-icons,
+              &:focus .e-acrdn-header-content {
+                color: $acrdn-exp-hdr-hover-focus-hdr-color;
+              }
+            }
+          }
+
+          > .e-toggle-icon {
+            color: $acrdn-selected-icon-color;
+          }
+
+          .e-acrdn-header-icon,
+          .e-acrdn-header-content {
+            color: $acrdn-selected-header-font-color;
+          }
+        }
+
+        &.e-expand-state > .e-acrdn-header:hover:focus {
+          @if $skin-name == 'highcontrast' {
+            .e-icons,
+            .e-acrdn-header-content {
+              color: $acrdn-exp-hdr-hover-focus-color;
+            }
+          }
+        }
+      }
+
+      &.e-select {
+        @if $skin-name == 'material' {
+          border-bottom: $acrdn-selected-border-size $acrdn-selected-border-type transparent;
+          border-top: $acrdn-selected-border-size $acrdn-selected-border-type transparent;
+
+          &.e-item-focus {
+            border-color: $acrdn-header-focus-bg;
+          }
+        }
+
+        @if $skin-name == 'highcontrast' {
+          &.e-expand-state .e-acrdn-header:hover {
+            border-color: $acrdn-exp-hdr-hover-border-color;
+
+            .e-icons,
+            .e-acrdn-header-content {
+              color: $acrdn-exp-hdr-hover-color;
+            }
+          }
+        }
+      }
+
+      &.e-selected {
+        @if $skin-name == 'bootstrap' {
+          border:  $acrdn-border-size solid $acrdn-default-border;
+        }
+        @else {
+          &.e-select {
+            border-bottom: $acrdn-selected-border-size $acrdn-selected-border-type  $acrdn-selected-border-color;
+            border-top: $acrdn-selected-border-size $acrdn-selected-border-type  $acrdn-selected-border-color;
+          }
+        }
+
+        + .e-selected {
+          @if $skin-name == 'bootstrap' {
+            border:  $acrdn-border-size solid $acrdn-default-border;
+          }
+          @if $skin-name == 'material' {
+            border-top: $acrdn-selected-border-size solid  transparent;
+          }
+          @else {
+            border-top: $acrdn-selected-border-size none  $acrdn-selected-border-color;
+          }
+        }
+        @if $skin-name != 'bootstrap' {
+          .e-selected:last-child {
+            border-bottom: $acrdn-selected-border-size none  $acrdn-selected-border-color;
+          }
+        }
+
+        @if $skin-name == 'highcontrast' {
+          .e-acrdn-item.e-selected:not(.e-expand-state) {
+            > .e-acrdn-header .e-icons,
+            > .e-acrdn-header .e-acrdn-header-content {
+              color: $acrdn-nested-selected-item-hdr-color;
+            }
+          }
+
+          .e-acrdn-item.e-selected.e-expand-state {
+            > .e-acrdn-header .e-icons,
+            > .e-acrdn-header .e-acrdn-header-content {
+              color: $acrdn-nested-selected-exp-item-hdr-color;
+            }
+
+            &:hover {
+              > .e-acrdn-header .e-icons,
+              > .e-acrdn-header .e-acrdn-header-content {
+                color: $acrdn-nested-selected-exp-hover-item-hdr-color;
+              }
+            }
+          }
+        }
+
+        &.e-select > .e-acrdn-header {
+          @if $skin-name == 'bootstrap' {
+            background: $acrdn-selected-header-color;
+            border: 0;
+            border-bottom:  $acrdn-border-size solid $acrdn-default-border;
+            border-radius: 0;
+          }
+
+          @if $skin-name == 'highcontrast' {
+
+            &:focus {
+              border: 2px dashed $acrdn-selected-hdr-focus-border-color;
+            }
+
+            &:hover {
+              border-color: $acrdn-selected-hdr-hover-border-color;
+
+              .e-icons,
+              .e-acrdn-header-content {
+                color: $acrdn-selected-hdr-hover-color;
+              }
+            }
+          }
+        }
+
+        > .e-acrdn-panel {
+
+          .e-acrdn-content {
+            color: $acrdn-content-color;
+          }
+
+          .e-acrdn-header-content {
+            color: $acrdn-nested-header-font;
+          }
+        }
+      }
+
+      .e-toggle-icon {
+        color: $acrdn-icon-color;
+      }
+
+      .e-acrdn-panel {
+        font-size: $acrdn-content-font-size;
+      }
+    }
+  }
+}

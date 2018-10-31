@@ -1,0 +1,52 @@
+// Base Badge
+$badge-base-border-radius: .25em;
+$badge-base-font-size: .75em;
+$badge-base-line-height: 1;
+$badge-base-font-weight: 500;
+$badge-base-text-indent: 0;
+$badge-base-text-color: rgba(0, 0, 0, .87);
+$badge-base-background-color: #fafafa;
+
+// Pill Badge
+$badge-pill-border-radius: 5em;
+
+// Notification Badge
+$badge-notification-top: -10px;
+$badge-notification-left: 100%;
+$badge-notification-font-size: 12px;
+$badge-notification-border-radius: 1em;
+$badge-notification-min-width: 24px;
+$badge-notification-height: 18px;
+$badge-notification-padding: 0 8px 0 8px;
+
+// Circle Badge
+$badge-circle-width: 1.834em;
+$badge-circle-height: 1.834em;
+$badge-circle-line-height: 1.834em;
+$badge-circle-border-radius: 50%;
+$badge-circle-padding: 0;
+$badge-circle-min-width: 0;
+$badge-circle-ghost-line-height: 1.8em;
+
+// Overlap Badge
+$badge-overlap-top: -10px;
+$badge-overlap-transform-left: translateX(-50%);
+
+// Button Badge
+$badge-button-line-height: .9;
+$badge-button-circle-width: 2em;
+$badge-button-circle-height: 2em;
+$badge-button-circle-line-height: 2em;
+$badge-ghost-circle-line-height: 1.9em;
+$badge-button-top: -2px;
+
+// Dot Badge
+$badge-dot-top: -3px;
+$badge-dot-width: 6px;
+$badge-dot-height: 6px;
+$badge-dot-line-height: 1;
+$badge-dot-border-radius: 100%;
+$badge-dot-padding: 0;
+$badge-dot-min-width: 0;
+$badge-dot-left: 100%;
+$badge-dot-box-shadow: 0 0 0 1px #fff;

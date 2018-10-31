@@ -1,0 +1,8 @@
+@include export-module('numerictextbox-theme') {
+  .e-control-wrapper.e-numeric.e-input-group:not(.e-disabled):active:not(.e-success):not(.e-warning):not(.e-error):not(.e-input-focus) {
+    @if $skin-name == 'bootstrap' {
+      border-color: $input-group-full-border-color;
+      box-shadow: none;
+    }
+  }
+}

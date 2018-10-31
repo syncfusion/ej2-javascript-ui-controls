@@ -1,0 +1,17 @@
+
+@include export-module('accordion-icons') {
+  /*! accordion icons */
+  #{&}.e-accordion {
+
+    .e-tgl-collapse-icon {
+
+      &::before {
+        content: $acrd-expand-collapse-icon;
+      }
+
+      &.e-expand-icon {
+        transform: rotate(-180deg);
+      }
+  }
+  }
+}

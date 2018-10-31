@@ -1,0 +1,114 @@
+@import 'definition.scss';
+
+$skin-name: 'bootstrap';
+
+//dimention variables
+
+//Mouse Mode
+
+$toast-icon-nrml-height: 24px;
+$toast-icon-nrml-width: 24px;
+$toast-icon-nrml-size: 12px;
+$toast-icon-nrml-right-margin: 14px;
+$toast-close-icon-nrml-height: 24px;
+$toast-close-icon-nrml-width: 24px;
+$toast-close-icon-nrml-size: 12px;
+$toast-position-nrml-distance: 10px;
+$multitoast-nrml-gap-distance: 10px;
+$toast-nrml-min-height: 48px;
+$toast-nrml-padding: 15px;
+$toast-action-btn-nrml-padding: 5px 0 0 0;
+$toast-action-btn-nrml-margin: 10px;
+$toast-progressbar-nrml-height: 4px;
+$toast-content-nrml-padding: 10px 0 5px 0;
+$toast-nrml-border-radious: 4px;
+$toast-font-nrml-size: 14px;
+$toast-title-font-nrml-size: 14px;
+
+//Touch Mode
+$toast-icon-bgr-height: 24px;
+$toast-icon-bgr-width: 24px;
+$toast-icon-bgr-size: 12px;
+$toast-icon-bgr-right-margin: 14px;
+$toast-close-icon-bgr-height: 24px;
+$toast-close-icon-bgr-width: 24px;
+$toast-close-icon-bgr-size: 12px;
+$toast-position-bgr-distance: 10px;
+$multitoast-bgr-gap-distance: 10px;
+$toast-bgr-min-height: 48px;
+$toast-bgr-padding: 15px;
+$toast-action-btn-bgr-padding: 5px 0 0 0;
+$toast-action-btn-bgr-margin: 10px;
+$toast-progressbar-bgr-height: 4px;
+$toast-content-bgr-padding: 10px 0 5px 0;
+$toast-bgr-border-radious: 4px;
+$toast-font-bgr-size: 14px;
+
+//theme variables
+
+$toast-box-shadow: 0 2px 5px 0 rgba($grey-base, .26);
+$toast-hover-box-shadow: 0 3px 6px 0 rgba($grey-base, .26);
+$toast-progress-color: $brand-primary;
+$toast-bg-color: $grey-white;
+$toast-hover-bg-color: $grey-f5;
+$toast-active-bg-color: $grey-f5;
+$toast-font-color: $grey-light-font;
+$toast-icon-color: $grey-light-font;
+$toast-close-icon-color: $grey-cc;
+$toast-title-color: $grey-light-font;
+$toast-content-color: $grey-light-font;
+
+// Toast Types theme definitions
+
+$toast-border-color: $grey-cc;
+
+$toast-success-bg-color: #dff0d8;
+$toast-success-color: #3c763d;
+$toast-success-title-color: $toast-success-color;
+$toast-success-icon-color: $toast-success-color;
+$toast-success-content-color: $toast-success-color;
+$toast-success-border-color: #d6e9c6;
+$toast-success-hover-bg-color: #d3f0c7;
+$toast-success-hover-color: $toast-success-color;
+$toast-success-hover-border-color: #d6e9c6;
+$toast-success-hover-box-shadow: 0 3px 6px 0;
+
+
+$toast-info-bg-color: #d9edf7;
+$toast-info-color: #31708f;
+$toast-info-title-color: $toast-info-color;
+$toast-info-icon-color: $toast-info-color;
+$toast-info-content-color: $toast-info-color;
+$toast-info-border-color: #bce8f1;
+$toast-info-hover-bg-color: #bee2f4;
+$toast-info-hover-color: $toast-info-color;
+$toast-info-hover-border-color: #bce8f1;
+$toast-info-hover-box-shadow: 0 3px 6px 0;
+
+
+$toast-warning-bg-color: #fcf8e3;
+$toast-warning-color: #8a6d3b;
+$toast-warning-title-color: $toast-warning-color;
+$toast-warning-icon-color: $toast-warning-color;
+$toast-warning-content-color: $toast-warning-color;
+$toast-warning-border-color: #faebcc;
+$toast-warning-hover-bg-color: #f6efcc;
+$toast-warning-hover-color: $toast-warning-color;
+$toast-warning-hover-border-color: #faebcc;
+$toast-warning-hover-box-shadow: 0 3px 6px 0;
+
+
+$toast-danger-bg-color: #f2dede;
+$toast-danger-color: #a94442;
+$toast-danger-title-color: $toast-danger-color;
+$toast-danger-icon-color: $toast-danger-color;
+$toast-danger-content-color: $toast-danger-color;
+$toast-danger-border-color: #ebccd1;
+$toast-danger-hover-bg-color: #f1cfcf;
+$toast-danger-hover-color: $toast-danger-color;
+$toast-danger-hover-border-color: #ebccd1;
+$toast-danger-hover-box-shadow: 0 3px 6px 0;
+
+//icon variabels
+
+$toast-close-icon: '\e96c';

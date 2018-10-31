@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>EJ2 Maps Typescript Component</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="description" content="Typescript UI Controls" />
+    <meta name="author" content="Syncfusion" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../styles/maps/material.css" />
+    <script src="../node_modules/requirejs/require.js" data-main="drilldown.js"></script>
+    <style>
+        .backLabel:hover {
+            cursor: pointer;
+        }
+    
+        .markerTemplate {
+            height: 30px;
+            width: 30px;
+            display: block;
+            margin: auto;
+        }
+    
+        #category:hover {
+            cursor: pointer;
+        }
+    
+        .markerTemplate {
+            font-size: 12px;
+            color: white;
+            text-shadow: 0px 1px 1px black;
+            font-weight: 500
+        }
+    </style>
+</head>
+<script type="text/javascript">
+    require.config({
+        packages: [{
+            name: "@syncfusion/ej2-base",
+            location: "../node_modules/@syncfusion/ej2-base",
+            main: "index.js"
+        }, {
+            name: "@syncfusion/ej2-data",
+            location: "../node_modules/@syncfusion/ej2-data",
+            main: "src/index.js"
+        },
+        {
+            name: "@syncfusion/ej2-buttons",
+            location: "../node_modules/@syncfusion/ej2-buttons",
+            main: "src/index.js"
+        }, {
+            name: "@syncfusion/ej2-popups",
+            location: "../node_modules/@syncfusion/ej2-popups",
+            main: "src/index.js"
+        },
+        {
+            name: "@syncfusion/ej2-pdf-export",
+            location: "../node_modules/@syncfusion/ej2-pdf-export",
+            main: "src/index.js"
+        },
+        {
+            name: "@syncfusion/ej2-compression",
+            location: "../node_modules/@syncfusion/ej2-compression",
+            main: "src/index.js"
+        },
+        {
+            name: "@syncfusion/ej2-file-utils",
+            location: "../node_modules/@syncfusion/ej2-file-utils",
+            main: "src/index.js"
+        }
+        ]
+    });
+</script>
+<body>   
+    <!-- htmllint preset="none" --> 
+        <div id="button" style="font-size:14px;margin-left: 10px;margin-top: 20px;display:none;left:50px;top:50px;">
+                <a id="category" style="visibility:hidden; display:inline-block">
+                    World Map
+                </a>
+                <p style="visibility:hidden; display:inline-block" id="symbol">&nbsp;&gt;&gt;&nbsp;</p>
+                <p id="text" style="display:inline-block;"></p>
+            </div>
+            <div class="control-section">
+                <div id="mapdrilldown"></div>
+                <div align="center">
+                    <p>
+                        <i>
+                            <div align="center">
+                                <p id="content" style="font-size: 16px;color:grey">Click on a shape to drill</p>
+                            </div>
+                        </i>
+                    </p>
+                </div>
+            </div>
+</body>
+</html>

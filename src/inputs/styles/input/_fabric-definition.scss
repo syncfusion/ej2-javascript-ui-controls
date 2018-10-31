@@ -1,0 +1,265 @@
+@import 'definition.scss';
+
+$skin-name: 'fabric';
+$input-text-indent: 10px;
+$input-small-text-indent: 10px;
+$input-bigger-text-indent: 12px;
+$input-small-bigger-text-indent: 12px;
+$input-bg-color: $content-bg-color;
+$input-success-color: $success-font;
+$input-warning-color: $alert-font;
+$input-error-color: $error-font;
+$input-disable-bg-color: $neutral-lighter;
+$input-disable-font-color: $neutral-tertiary;
+$input-font-size: 14px;
+$input-bigger-font-size: 15px;
+$input-small-font-size: 13px;
+$input-bigger-small-font-size: 14px;
+$input-box-border-radius: $zero-value;
+$input-group-child-border-width: $zero-value;
+$input-padding: $zero-value;
+$float-input-padding: $zero-value;
+$float-label-padding: 10px;
+$float-input-wrap-padding-top: $zero-value;
+$input-padding-bottom: $zero-value;
+$input-focus-padding-bottom: $zero-value;
+$input-clear-icon: 12px;
+$input-bigger-clear-icon: 12px;
+$input-small-clear-icon: 10px;
+$input-bigger-small-clear-icon: 12px;
+$input-clear-icon-padding: $zero-value;
+$input-clear-icon-position: center;
+$input-bigger-padding: $zero-value;
+$float-input-bigger-padding: $zero-value;
+$float-input-bigger-wrap-padding-top: $zero-value;
+$input-bigger-padding-bottom: $zero-value;
+$input-focus-bigger-padding-bottom: $zero-value;
+$input-child-padding: $zero-value;
+$input-child-min-height: 30px;
+$input-child-min-width: 30px;
+$input-bigger-child-padding: $zero-value;
+$input-bigger-child-min-height: 38px;
+$input-bigger-child-min-width: 38px;
+$input-margin-bottom: $zero-value;
+$input-bigger-margin-bottom: $zero-value;
+$input-small-margin-bottom: $zero-value;
+$input-small-bigger-margin-bottom: $zero-value;
+$input-margin-top: 28px;
+$input-bigger-margin-top: 28px;
+$input-small-margin-top: 25px;
+$input-small-bigger-margin-top: 26px;
+$input-small-padding: $zero-value;
+$float-input-small-padding: $zero-value;
+$float-input-small-wrap-padding-top: $zero-value;
+$input-small-padding-bottom: $zero-value;
+$input-focus-small-padding-bottom: $zero-value;
+$input-bigger-small-padding: $zero-value;
+$float-input-bigger-small-padding: $zero-value;
+$float-input-bigger-small-wrap-padding-top: $zero-value;
+$input-bigger-small-padding-bottom: $zero-value;
+$input-focus-bigger-small-padding-bottom: $zero-value;
+$input-bigger-small-child-padding: $zero-value;
+$input-bigger-small-child-min-height: 34px;
+$input-bigger-small-child-min-width: 34px;
+$input-small-child-padding: $zero-value;
+$input-small-child-min-height: 24px;
+$input-small-child-min-width: 24px;
+$input-font-family: $font-family;
+$input-font-style: normal;
+$input-font-normal: normal;
+$input-border: $zero-value $border-type;
+$float-input-border: $zero-value $border-type;
+$input-box-border-width: 1px;
+$float-input-border-width: 1px;
+$input-focus-border-width: 1px;
+$input-box-border-color: $neutral-tertiary-alt;
+$input-font-color: $neutral-light-font;
+$input-icon-font-color: $neutral-light-font;
+$input-clear-icon-color: $neutral-light-font;
+$input-clear-icon-hover-color: $neutral-light;
+$input-error-color: $error-font;
+$input-accent: $theme-primary;
+$input-placeholder: $neutral-tertiary;
+$input-active-border-color: $theme-primary;
+$input-group-active-border-color: transparent;
+$input-disable-border-type: solid;
+$input-disable-border-color: $neutral-lighter;
+$input-disabled-group-bg-color: $neutral-lighter;
+$input-border-left-width: $zero-value;
+$input-group-active-border: transparent;
+$input-group-border: 1px $border-type;
+$input-group-border-width: $zero-value;
+$input-group-border-radius: $zero-value;
+$input-group-pressed-bg: $theme-primary;
+$input-hover-bg-color:  $neutral-lighter;
+$input-active-accent-color: $theme-primary;
+$input-valid-group-border-width: 2px;
+$input-header-font-color: $neutral-tertiary;
+$input-child-margin-bottom: $zero-value;
+$input-child-margin-top: $zero-value;
+$float-input-child-margin-top: $zero-value;
+$input-child-margin-right: $zero-value;
+$input-child-small-bigger-margin-bottom: $zero-value;
+$input-child-small-bigger-margin-top: $zero-value;
+$float-input-child-small-bigger-margin-top: $zero-value;
+$input-child-small-bigger-margin-right: $zero-value;
+$input-child-small-margin-bottom: $zero-value;
+$input-child-small-margin-top: $zero-value;
+$float-input-child-small-margin-top: $zero-value;
+$input-child-small-margin-right: $zero-value;
+$input-child-bigger-margin-bottom: $zero-value;
+$input-child-bigger-margin-top: $zero-value;
+$float-input-child-bigger-margin-top: $zero-value;
+$input-child-bigger-margin-right:  $zero-value;
+$input-disable-group-border-width: $one-value;
+$input-opacity: 1;
+$input-opacity-filter: 100;
+$input-group-border-width-focus: $one-value;
+$input-group-border-type-focus: $border-type;
+$input-group-border-color-focus: $theme-primary;
+$input-group-border-color-hover: $neutral-secondary-alt;
+$input-group-border-width-hover: 1px;
+$input-group-border-right-focus: transparent;
+$input-group-border-left-focus: transparent;
+$input-group-full-border-color: $input-box-border-color;
+$input-group-full-border-width: $one-value;
+$input-group-success-color: $input-success-color;
+$input-group-warning-color: $input-warning-color;
+$input-group-error-color: $input-error-color;
+$input-valid-border-bottom-width: 2px;
+$input-group-pressed-color: $theme-primary-font;
+$input-select-font-color: $active-font-color;
+$input-right-border-width: $zero-value;
+$float-label-font-color: $input-font-color;
+$float-label-disbale-font-color: $input-disable-font-color;
+$float-label-font-size: 12px;
+$float-label-bigger-font-size: 13px;
+$float-label-small-font-size: 11px;
+$float-label-bigger-small-font-size: 12px;
+$float-placeholder-font-size: 14px;
+$float-placeholder-bigger-font-size: 15px;
+$float-placeholder-small-font-size: 13px;
+$float-placeholder-bigger-small-font-size: 14px;
+$input-border-size: 2px;
+$input-normal-height: 32px - $input-border-size;
+$input-bigger-height: 40px - $input-border-size;
+$input-small-height: 26px - $input-border-size;
+$input-bigger-small-height: 36px - $input-border-size;
+$float-input-normal-height: 32px;
+$float-input-bigger-height: 40px;
+$float-input-small-height: 26px;
+$float-input-bigger-small-height: 36px;
+$input-full-height: 100%;
+$textarea-normal-height: auto;
+$textarea-bigger-height: auto;
+$textarea-small-height: auto;
+$textarea-bigger-small-height: auto;
+$textarea-full-height: 100%;
+$input-group-disabled-color: $neutral-tertiary;
+$input-group-hovered-color: $neutral-light-fontalt;
+$input-icon-font-size: 12px;
+$input-bigger-icon-font-size: 12px;
+$input-small-icon-font-size: 10px;
+$input-bigger-small-icon-font-size: 12px;
+$input-inner-wrap-margin-left: $zero-value;
+$input-clear-icon-padding-bottom: $zero-value;
+$input-clear-icon-padding-right: $zero-value;
+$input-clear-icon-padding-top: $zero-value;
+$float-input-clear-icon-padding-top: $zero-value;
+$input-clear-icon-small-bigger-padding-bottom: $zero-value;
+$input-clear-icon-small-bigger-padding-right: $zero-value;
+$input-clear-icon-small-bigger-padding-top: $zero-value;
+$float-input-clear-icon-small-bigger-padding-top: $zero-value;
+$input-clear-icon-small-padding-bottom: $zero-value;
+$input-clear-icon-small-padding-right: $zero-value;
+$input-clear-icon-small-padding-top: $zero-value;
+$float-input-clear-icon-small-padding-top: $zero-value;
+$input-clear-icon-bigger-padding-bottom: $zero-value;
+$input-clear-icon-bigger-padding-right: $zero-value;
+$input-clear-icon-bigger-padding-top: $zero-value;
+$float-input-clear-icon-bigger-padding-top: $zero-value;
+$input-clear-icon-min-height: $zero-value;
+$input-clear-icon-min-width: 30px;
+$input-bigger-clear-icon-min-height: $zero-value;
+$input-bigger-clear-icon-min-width: 38px;
+$input-bigger-small-clear-icon-min-height: $zero-value;
+$input-bigger-small-clear-icon-min-width: 34px;
+$input-small-clear-icon-min-height: $zero-value;
+$input-small-clear-icon-min-width: 24px;
+$input-left-icon-font-size: $zero-value;
+$input-bigger-left-icon-font-size: $zero-value;
+$input-small-left-icon-font-size: $zero-value;
+$input-bigger-small-left-icon-font-size: $zero-value;
+$input-left-child-min-height: $zero-value;
+$input-left-child-min-width: $zero-value;
+$input-bigger-left-child-min-height: $zero-value;
+$input-bigger-left-child-min-width: $zero-value;
+$input-small-left-child-min-height: $zero-value;
+$input-small-left-child-min-width: $zero-value;
+$input-bigger-small-left-child-min-height: $zero-value;
+$input-bigger-small-left-child-min-width: $zero-value;
+$input-icon-inner-width: $zero-value;
+$input-icon-inner-height: $zero-value;
+$input-clear-icon-font: '\e953';
+
+@mixin input-sizing {
+  box-sizing: border-box;
+}
+@mixin input-height ($height) {
+  height: $height;
+}
+@mixin input-state-color ($color) {
+  border-color: $color;
+}
+@mixin input-selection {
+  background: $theme-primary;
+  color: $theme-primary-font;
+}
+// sass-lint:disable no-vendor-prefixes  
+@mixin float-label-alignment {
+  -moz-transform: translate(-0%, -50%);
+  -ms-transform: translate(-0%, -50%);
+  -o-transform: translate(-0%, -50%);
+  -webkit-transform: translate(-0%, -50%);
+  box-sizing: border-box;
+  left: 0%;
+  top: 50%;
+  transform: translate(-0%, -50%);
+  width: 100%;
+}
+@mixin input-group-animation {
+  content: '';
+}
+@mixin input-group-animation-left {
+  content: '';
+}
+@mixin input-group-animation-width {
+  content: '';
+}
+@mixin input-group-animation-right {
+  content: '';
+}
+@mixin input-group-animation-bg {
+  content: '';
+}
+@mixin input-group-hover-bg {
+  content: '';
+}
+@mixin input-group-success-animation-bg {
+  content: '';
+}
+@mixin input-group-warning-animation-bg {
+  content: '';
+}
+@mixin input-group-error-animation-bg {
+  content: '';
+}
+@mixin input-ripple-parent {
+  content: '';
+}
+@mixin input-ripple-style {
+  content: '';
+}
+@mixin input-ripple-animation {
+  content: '';
+}

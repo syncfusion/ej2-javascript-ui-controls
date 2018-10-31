@@ -1,0 +1,240 @@
+@include export-module('switch-theme') {
+  /*! switch theme */
+  .e-switch-wrapper,
+  .e-css.e-switch-wrapper {
+    // sass-lint:disable no-vendor-prefixes
+    -webkit-tap-highlight-color: transparent;
+
+    & .e-switch-off {
+      background-color: $switch-off-bg-color;
+    }
+
+    & .e-switch-handle {
+      background-color: $handle-bg-color;
+      box-shadow: $handle-shadow;
+    }
+
+    & .e-switch-on {
+      background-color: $switch-on-bg-color;
+      color: $inner-on-font-color;
+    }
+
+    & .e-switch-handle.e-switch-active {
+      background-color: $active-handle-bg;
+    }
+
+    & .e-switch-inner.e-switch-active {
+      background-color: $inner-active-bg;
+      border-color: $inner-active-border-color;
+    }
+
+    & .e-switch-inner {
+      background-color: $inner-bg;
+    }
+
+    & .e-ripple-element {
+      background-color: $checked-ripple-bg-color;
+    }
+
+    & .e-ripple-check .e-ripple-element {
+      background-color: $ripple-bg-color;
+    }
+
+    &.e-switch-disabled {
+      & .e-switch-handle {
+        background-color: $switch-handle-disabled-bg-color;
+        box-shadow: $handle-shadow-disabled;
+      }
+
+      & .e-switch-inner .e-switch-on,
+      & .e-switch-inner .e-switch-off {
+        background-color: $switch-on-off-disabled-bg-color;
+        color: $switch-disabled-font-color;
+        opacity: $switch-on-off-disabled-bg-color-opacity;
+      }
+
+      & .e-switch-inner {
+        background-color: $switch-on-off-disabled-bg-color;
+        border-color: $switch-border-disabled-bg-color;
+        opacity: $switch-on-off-disabled-bg-color-opacity;
+      }
+
+      &:hover {
+        & .e-switch-inner.e-switch-active {
+          background-color: $switch-on-off-disabled-bg-color;
+          border-color: $switch-border-disabled-bg-color;
+        }
+
+        & .e-switch-inner {
+          border-color: $switch-border-disabled-bg-color;
+          color: $switch-disabled-font-color;
+        }
+
+        & .e-switch-inner.e-switch-active .e-switch-on {
+          background-color: $switch-on-disabled-bg-color;
+          color: $switch-disabled-font-color;
+        }
+
+        & .e-switch-handle {
+          background-color: $switch-handle-disabled-bg-color;
+        }
+
+        & .e-switch-handle.e-switch-active {
+          background-color: $switch-handle-disabled-bg-color;
+        }
+    }
+    }
+
+    &:hover {
+      & .e-switch-inner.e-switch-active {
+        background-color: $switch-inner-hover-bg-color;
+        border-color: $switch-inner-hover-border-color;
+      }
+
+      & .e-switch-inner {
+        background-color: $switch-hover-bg-color;
+        border-color: $switch-hover-border;
+      }
+
+      & .e-switch-inner.e-switch-active .e-switch-on {
+        background-color: $switch-on-hover-bg-color;
+        color: $inner-hover-on-font-color;
+      }
+
+      & .e-switch-handle.e-switch-active {
+        background-color: $switch-handle-hover-bg-color;
+      }
+      }
+
+    &.e-focus {
+      & .e-switch-inner {
+        background-color: $switch-inner-focus-off-bg;
+        border-color: $switch-inner-focus-border;
+        box-shadow: $focus-inner-box-shadow;
+        outline: $focused-outline;
+        outline-offset: $focused-outline-offset;
+      }
+
+      & .e-switch-inner.e-switch-active {
+        background-color: $switch-inner-focus-bg-color;
+        border-color: $focus-border-color-active;
+        outline: $focused-outline-active;
+      }
+
+      & .e-ripple-container {
+        background-color: $checked-ripple-bg-color;
+      }
+
+      & .e-ripple-check.e-ripple-container {
+        background-color: $ripple-bg-color;
+      }
+      }
+
+    &.e-rtl {
+      &.e-focus {
+
+        & .e-switch-on {
+          background-color: $switch-on-off-hover-bg-color;
+        }
+
+        & .e-switch-inner.e-switch-active {
+          background-color: $switch-inner-focus-bg-color;
+          border-color: $focus-border-color-active;
+          outline: $focused-outline-active;
+        }
+      }
+
+      & .e-switch-on {
+        background-color: $switch-inner-active;
+      }
+
+      & .e-switch-handle {
+        background-color: $handle-bg-color;
+        box-shadow: $handle-shadow;
+      }
+
+      & .e-switch-inner.e-switch-active .e-switch-off {
+        background-color: $switch-off-bg-color;
+      }
+
+      & .e-switch-handle.e-switch-active {
+        background-color: $active-handle-bg;
+      }
+
+      & .e-switch-inner.e-switch-active {
+        background-color: $inner-active-bg;
+        border-color: $inner-active-border-color;
+      }
+
+      &:hover {
+        & .e-switch-inner.e-switch-active {
+          background-color: $switch-inner-hover-bg-color;
+          border-color: $switch-inner-hover-border-color;
+        }
+
+        & .e-switch-inner {
+          border-color: $switch-hover-border;
+        }
+
+        & .e-switch-inner.e-switch-active .e-switch-on {
+          background-color: $switch-on-hover-bg-color;
+        }
+
+        & .e-switch-handle.e-switch-active {
+          background-color: $switch-handle-hover-bg-color;
+        }
+    }
+
+      &.e-switch-disabled {
+        & .e-switch-handle {
+          background-color: $switch-handle-disabled-bg-color;
+          box-shadow: $handle-shadow-disabled;
+        }
+
+        & .e-switch-inner .e-switch-on,
+        & .e-switch-inner .e-switch-off {
+          background-color: $switch-on-off-disabled-bg-color;
+          color: $switch-disabled-font-color;
+          opacity: $switch-on-off-disabled-bg-color-opacity;
+        }
+
+        & .e-switch-inner {
+          background-color: $switch-on-off-disabled-bg-color;
+          border-color: $switch-border-disabled-bg-color;
+          opacity: $switch-on-off-disabled-bg-color-opacity;
+        }
+
+        &:hover {
+          & .e-switch-inner.e-switch-active .e-switch-on {
+            background-color: $switch-on-disabled-bg-color;
+            color: $switch-disabled-font-color;
+          }
+
+          & .e-switch-inner.e-switch-active {
+            background-color: $switch-on-off-disabled-bg-color;
+            border-color: $switch-border-disabled-bg-color;
+          }
+
+          & .e-switch-inner {
+            border-color: $switch-border-disabled-bg-color;
+            color: $switch-disabled-font-color;
+          }
+
+          & .e-switch-handle {
+            background-color: $switch-handle-disabled-bg-color;
+          }
+        }
+        }
+    }
+
+    &.e-small {
+      &.e-rtl.e-switch-disabled {
+        &:hover {
+          & .e-switch-inner.e-switch-active {
+            background-color: $small-disabled-rtl-active-bg-color;
+          }
+         }
+        }
+    }
+}
+}

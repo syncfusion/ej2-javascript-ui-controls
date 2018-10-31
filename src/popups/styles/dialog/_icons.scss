@@ -1,0 +1,22 @@
+@include export-module('dialog-icons') {
+  /*! component icons */
+  #{&}.e-dialog {
+
+    .e-icon-dlg-close::before {
+      content: $dialog-close-icon-content;
+      position: relative;
+    }
+
+    .e-icon-dlg-close {
+      opacity: $dialog-close-icon-normal-opacity;
+    }
+
+    .e-icon-dlg-close:active {
+      opacity: $dialog-close-icon-active-opacity;
+    }
+
+    .e-icon-dlg-close:hover {
+      opacity: $dialog-close-icon-active-opacity;
+    }
+  }
+}

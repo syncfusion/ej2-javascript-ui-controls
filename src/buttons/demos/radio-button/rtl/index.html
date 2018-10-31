@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title> Typescript Components</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Typescript UI Controls" />
+    <meta name="author" content="Syncfusion" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" />
+    <link href="../../theme-files/material.css" rel="stylesheet" />
+    
+    <script>
+        window.require = {
+            config: function (json) {
+                window.rsConfig = json;
+                window.rsConfig.baseUrl = '';
+            }
+        };
+    </script>
+    <script src="./../../demo-config.js"></script>
+    <script src="./../../../node_modules/requirejs/require.js" data-main="./rtl"></script>
+    <script>
+        require.config(window.rsConfig);
+    </script>
+</head>
+
+<body>
+    
+
+                                    
+<div class="control-section">
+    <div class="radio-control" id="radio-rtl">
+        <h4 class="row">Label Positioning</h4>
+        <div class="row">
+            <input id="radio1" type="radio">
+        </div>
+        <div class="row">
+            <input id="radio2" type="radio">
+        </div>
+    </div>
+</div>
+
+<style>
+    /* RadioButton Styles */
+    .radio-control {
+        min-height: 350px;
+        border: 1px solid #dddddd;
+        border-radius: 3px;
+        margin: auto 25%; 
+    }
+
+    .control-section .row {
+        margin: 5% 40%;
+    }
+
+    .radio-control h4 {
+        color: rgba(0, 0, 0, 0.64);
+    }
+
+    @media only screen and (max-width: 800px) {
+        .radio-control {
+            margin: 10% 10%;
+        }
+
+        .control-section {
+            min-height: 200px;
+        }
+    }
+
+    @media only screen and (max-width: 500px) {
+        .radio-control {
+            margin: 10% 10%; 
+        }
+
+        .control-section .row {
+            margin: 15% 20%;
+        }
+    }
+</style>
+</body>
+
+</html>

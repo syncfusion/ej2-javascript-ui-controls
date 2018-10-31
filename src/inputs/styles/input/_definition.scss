@@ -1,0 +1,217 @@
+$skin-name: 'default';
+$input-text-indent: 10px;
+$input-bigger-text-indent: 10px;
+$input-font-size: 14px;
+$input-bigger-font-size: 14px;
+$input-small-font-size: 13px;
+$input-bigger-small-font-size: 14px;
+$input-box-border-radius: 4px;
+$zero-value: 0;
+$one-value: 1px;
+$input-group-child-border-width: $one-value;
+$input-clear-icon: 12px;
+$input-bigger-clear-icon: 14px;
+$input-small-clear-icon: 10px;
+$input-bigger-small-clear-icon: 12px;
+$input-clear-icon-padding: $zero-value;
+$input-clear-icon-position: center;
+$input-padding: 8px;
+$float-input-padding: $zero-value;
+$float-label-padding: 10px;
+$float-input-wrap-padding-top: $zero-value;
+$input-padding-bottom: 8px;
+$input-bigger-padding: 14px;
+$float-input-bigger-padding: $zero-value;
+$float-input-bigger-wrap-padding-top: $zero-value;
+$input-bigger-padding-bottom: 14px;
+$input-bigger-margin-bottom: $zero-value;
+$input-child-padding: 8px;
+$input-bigger-child-padding: 14px;
+$input-margin-bottom: $zero-value;
+$input-small-margin-bottom: $zero-value;
+$input-small-bigger-margin-bottom: $zero-value;
+$input-margin-top: 10px;
+$input-bigger-margin-top: 10px;
+$input-small-margin-top: 8px;
+$input-small-bigger-margin-top: 8px;
+$input-small-padding: 6px;
+$float-input-small-padding: $zero-value;
+$float-input-small-wrap-padding-top: $zero-value;
+$input-small-padding-bottom: 6px;
+$input-bigger-small-padding: 11px;
+$float-input-bigger-small-padding: $zero-value;
+$float-input-bigger-small-wrap-padding-top: $zero-value;
+$input-small-child-padding: 6px;
+$input-bigger-small-child-padding: 11px;
+$input-bigger-small-padding-bottom: 11px;
+$input-font-family: $font-family;
+$input-font-style: normal;
+$input-font-normal: normal;
+$input-border: $border-size $border-type;
+$float-input-border: $zero-value $border-type;
+$input-box-border-width: $one-value;
+$float-input-border-width: 1px;
+$input-focus-border-width: $one-value;
+$input-bg-color: $content-bg-color;
+$input-box-border-color: $content-border-color;
+$input-hover-bg-color: $hover-bg-color;
+$input-font-color: $content-font-color;
+$input-icon-font-color: $default-font-color;
+$input-clear-icon-color: $default-icon-color;
+$input-clear-icon-hover-color: $default-icon-color;
+$input-success-color: $success-font-color;
+$input-warning-color: $warning-font-color;
+$input-error-color: $error-font-color;
+$input-disable-bg-color: transparent;
+$input-disable-font-color: $zero-value;
+$input-active-bg-color: $active-bg-color;
+$input-active-font-color: $active-font-color;
+$input-press-font-color: $active-font-color;
+$input-select-font-color: $active-font-color;
+$input-header-font-color: $default-font-color;
+$input-accent: $input-active-bg-color;
+$input-placeholder: $header-border-color;
+$input-active-border-color: $active-bg-color;
+$input-group-active-border-color: $active-bg-color;
+$input-disable-border-type: $border-type;
+$input-disable-border-color: $zero-value;
+$input-disabled-group-bg-color: $zero-value;
+$input-border-left-width: $one-value;
+$input-group-active-border: $active-bg-color;
+$input-group-border: $zero-value;
+$input-group-border-width: $one-value;
+$input-group-border-radius: $zero-value;
+$input-group-pressed-bg: $active-bg-color;
+$input-active-accent-color: $active-bg-color;
+$input-valid-group-border-width: $zero-value;
+$input-child-padding-bottom: $zero-value;
+$input-child-small-bigger-padding-bottom: $zero-value;
+$input-child-small-padding-bottom: $zero-value;
+$input-child-bigger-padding-bottom: $zero-value;
+$input-disable-group-border-width: $zero-value;
+$input-opacity: .6;
+$input-opacity-filter: 60;
+$input-group-border-width-focus: $one-value;
+$input-group-border-type-focus: $border-type;
+$input-group-border-color-focus: $active-bg-color;
+$input-group-border-color-hover: $zero-value;
+$input-group-border-right-focus: transparent $input-box-border-color transparent transparent;
+$input-group-border-left-focus: transparent transparent transparent $input-box-border-color;
+$input-group-full-border: $border-size $border-type;
+$input-group-full-border-color: transparent;
+$input-group-full-border-width: $one-value;
+$input-group-success-color: transparent;
+$input-group-warning-color: transparent;
+$input-group-error-color: transparent;
+$input-valid-border-bottom-width: $one-value;
+$input-group-pressed-color: $active-font-color;
+$input-select-font-color: $active-font-color;
+$input-right-border-width: $one-value;
+$float-label-font-color: $input-font-color;
+$float-label-disbale-font-color: $zero-value;
+$float-label-font-size: 14px;
+$float-label-bigger-font-size: 15px;
+$float-label-small-font-size: 13px;
+$float-label-bigger-small-font-size: 14px;
+$float-placeholder-font-size: 14px;
+$float-placeholder-bigger-font-size: 15px;
+$float-placeholder-small-font-size: 13px;
+$float-placeholder-bigger-small-font-size: 14px;
+$input-border-size: 2px;
+$input-normal-height: 32px - $input-border-size;
+$input-bigger-height: 40px - $input-border-size;
+$input-small-height: 26px - $input-border-size;
+$input-bigger-small-height: 36px - $input-border-size;
+$input-full-height: 100%;
+$textarea-normal-height: auto;
+$textarea-bigger-height: auto;
+$textarea-small-height: auto;
+$textarea-bigger-small-height: auto;
+$textarea-full-height: 100%;
+$input-group-disabled-color: $zero-value;
+$input-group-hovered-color: $zero-value;
+$input-icon-font-size: 17px;
+$input-bigger-icon-font-size: 17px;
+$input-small-icon-font-size: 14px;
+$input-bigger-small-icon-font-size: 15px;
+$input-bigger-small-child-min-height: $zero-value;
+$input-small-child-min-height: $zero-value;
+$input-child-min-height: $zero-value;
+$input-bigger-child-min-height: $zero-value;
+$input-child-small-bigger-padding-top: $zero-value;
+$input-bigger-small-child-min-width: $zero-value;
+$input-child-small-padding-top: $zero-value;
+$input-small-child-min-width: $zero-value;
+$input-child-padding-top: $zero-value;
+$input-child-min-width: $zero-value;
+$input-child-bigger-padding-top: $zero-value;
+$input-bigger-child-min-width: $zero-value;
+$input-clear-icon-padding: $zero-value;
+$input-clear-icon-position: center;
+$input-clear-icon-padding-bottom: 3px;
+$input-clear-icon-padding-top: 4px;
+$input-clear-icon-small-bigger-padding-bottom: 3px;
+$input-clear-icon-small-bigger-padding-top: 12px;
+$input-clear-icon-small-padding-bottom: 2px;
+$input-clear-icon-small-padding-top: 10px;
+$input-clear-icon-bigger-padding-bottom: 5px;
+$input-clear-icon-bigger-padding-top: 12px;
+$input-clear-icon-min-height: 24px;
+$input-clear-icon-min-width: 24px;
+$input-bigger-clear-icon-min-height: 28px;
+$input-bigger-clear-icon-min-width: 28px;
+$input-bigger-small-clear-icon-min-height: 24px;
+$input-bigger-small-clear-icon-min-width: 24px;
+$input-small-clear-icon-min-height: 18px;
+$input-small-clear-icon-min-width: 18px;
+$input-bigger-small-clear-icon: 12px;
+$input-clear-icon-font: '\e932';
+@mixin input-sizing {
+  content: '';
+}
+@mixin input-height ($height) {
+  content: '';
+}
+@mixin input-state-color ($color) {
+  content: '';
+}
+@mixin input-selection {
+  content: '';
+}
+// sass-lint:disable no-vendor-prefixes  
+@mixin float-label-alignment {
+  content: '';
+}
+@mixin input-group-animation {
+  content: '';
+}
+@mixin input-group-animation-left {
+  content: '';
+}
+@mixin input-group-animation-width {
+  content: '';
+}
+@mixin input-group-animation-right {
+  content: '';
+}
+@mixin input-group-animation-bg {
+  content: '';
+}
+@mixin input-group-success-animation-bg {
+  content: '';
+}
+@mixin input-group-warning-animation-bg {
+  content: '';
+}
+@mixin input-group-error-animation-bg {
+  content: '';
+}
+@mixin input-ripple-parent {
+  content: '';
+}
+@mixin input-ripple-style {
+  content: '';
+}
+@mixin input-ripple-animation {
+  content: '';
+}

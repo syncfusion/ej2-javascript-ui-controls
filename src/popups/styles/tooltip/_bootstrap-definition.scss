@@ -1,0 +1,24 @@
+@import 'definition.scss';
+
+$skin-name: 'bootstrap';
+$tooltip-drop-shadow: none;
+$tooltip-content-bg-color: $grey-base;
+$tooltip-content-border-color: $grey-base;
+$tooltip-content-font-color: $grey-dark-font;
+$tooltip-default-icon-color: $grey-base;
+$tooltip-icon-bg-normal: $grey-white;
+$tooltip-hover-icon-color: $grey-base;
+$tooltip-icon-bg-hover: $grey-dd;
+$tooltip-font-size: 12px;
+$tooltip-mobile-font-size: 13px;
+$tooltip-border-radius: 4px;
+$tooltip-opacity: 1;
+$tooltip-arrow-outer-border: 8px;
+$tooltip-arrow-inner-border: 7px;
+$tooltip-horizontal-padding: 3px;
+$tooltip-vertical-padding: 8px;
+$tooltip-mobile-horizontal-padding: 5px;
+$tooltip-mobile-vertical-padding: 10px;
+$tooltip-line-height: 17px;
+$tooltip-arrow-icon-font-size: 16px;
+$tooltip-icon-border-color: transparent;

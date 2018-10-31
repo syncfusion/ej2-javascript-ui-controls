@@ -1,0 +1,15 @@
+@include export-module('numerictextbox-icons') {
+  /*! component icons */
+  .e-input-group-icon.e-spin-up::before {
+    content: $numeric-spin-up-icon;
+  }
+
+  .e-input-group-icon.e-spin-down::before {
+    content: $numeric-spin-down-icon;
+  }
+
+  .e-input-group-icon.e-spin-up::before,
+  .e-input-group-icon.e-spin-down::before {
+    font-family: 'e-icons';
+  }
+}

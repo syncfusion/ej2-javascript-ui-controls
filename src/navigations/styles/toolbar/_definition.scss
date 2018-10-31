@@ -1,0 +1,121 @@
+/*! component's default definitions and variables */
+$skin-name: 'material';
+$btn-txt-nrml-padding: 0 2px 0 2px;
+$btn-txt-bgr-padding: 0 2.5px 0 2.5px;
+$deafult-padding: 5px;
+$tbar-nrml-size: 42px;
+$tbar-bgr-size: 56px;
+$tbar-nrml-items-size: 42px;
+$tbar-bgr-items-size: 56px;
+$tbar-nrml-item-size: 42px;
+$tbar-bgr-item-size: 48px;
+$tbar-item-nrml-minwidth: 34px;
+$tbar-item-bgr-padding: 5px;
+$tbar-item-nrml-padding: 3.5px;
+$tbar-item-pop-nrml-padding: $tbar-item-nrml-padding;
+$tbar-item-pop-bgr-padding: $tbar-item-bgr-padding;
+$tbar-btn-pop-nrml-minheight: 24px;
+$tbar-btn-pop-bgr-minheight: 30px;
+$tbar-btn-icn-nrml-padding: 0;
+$tbar-btn-icn-bgr-padding: 0;
+$tbar-btn-icn-right-bgr-padding: 0;
+$tbar-btn-icn-right-nrml-padding: 0;
+$tbar-item-nrml-mrgn: 3px;
+$tbar-item-bgr-mrgn: 3px;
+$tbar-nav-nrml-width: 32px;
+$tbar-nav-bgr-width: 40px;
+$tbar-btn-bgr-mrgn: 5.5px 0;
+$tbar-btn-nrml-mrgn: 4px 0;
+$tbar-btn-bgr-height: calc(100% - 11px);
+$tbar-btn-nrml-height: calc(100% - 8px);
+$tbar-btn-icon-bgr-width: 27px;
+$tbar-btn-icon-nrml-width: 24px;
+$tbar-separator-nrml-mrgn: 7.5px 3px ;
+$tbar-separator-bgr-mrgn: 10px 5px ;
+$tbar-separator-nrml-height: calc(100% - 15px);
+$tbar-separator-bgr-height: calc(100% - 20px);
+$tbar-separator-nrml-minheight: 27px;
+$tbar-separator-bgr-minheight: 36px;
+$tbar-btn-nrml-minheight: 0;
+$tbar-btn-bgr-minheight: 0;
+$tbar-btn-nrml-minwidth: 0;
+$tbar-btn-bgr-minwidth: '';
+$tbar-btn-border-radius: '';
+$tbar-zero-value: 0;
+$tbar-btn-bgr-padding: $tbar-zero-value 6px ;
+$tbar-btn-nrml-padding: $tbar-zero-value 1.5px ;
+$tbar-pop-btn-bgr-padding: $tbar-zero-value 4px;
+$tbar-pop-btn-nrml-padding: $tbar-zero-value 4px;
+$tbar-tab-highlight-color:  rgba(0, 0, 0, 0);
+$tbar-pop-btn-txt-bgr-pad: 0;
+$tbar-pop-btn-txt-nrml-pad: 0;
+$tbar-btn-bgr-line-height: 35px;
+$tbar-btn-nrml-line-height: 25px;
+
+$tbar-dash-border: 2px solid #fff;
+$tbar-border-radius: $border-radius;
+$tbar-border-type: $border-type;
+$tbar-separator-border-type: $border-type;
+$tbar-border-size: $border-size;
+$tbar-btn-family: $font-family;
+$tbar-btn-font-size:  $font-size;
+$tbar-btn-txt-font-size: $tbar-btn-font-size;
+$tbar-font-size: $font-size;
+$tbar-font-family: $font-family;
+$tbar-default-bg: $default-bg-color  ;
+$tbar-default-border: $default-border-color ;
+$tbar-default-font: $default-font-color ;
+$tbar-separator-size: $border-size ;
+$tbar-separator-border: $default-border-color ;
+$tbar-default-icon-color: $default-icon-color ;
+$tbar-default-icon-overlay: $default-icon-color ;
+$tbar-default-font-overlay: $default-font-color ;
+$tbar-hover-bg:  $hover-bg-color;
+$tbar-hover-font: $hover-font-color ;
+$tbar-hover-border-color: $hover-border-color ;
+$tbar-focus-bg:  $hover-bg-color;
+$tbar-focus-font: $hover-font-color ;
+$tbar-focus-border: $hover-border-color ;
+$tbar-active-bg: $active-bg-color;
+$tbar-active-icon-color: $active-font-color ;
+$tbar-active-font-color: $active-font-color ;
+$tbar-press-bg: $active-bg-color ;
+$tbar-press-border: $active-border-color ;
+$tbar-press-font: $active-font-color ;
+$tbar-press-icon-color: $active-font-color ;
+$tbar-press-icon-border: $active-border-color ;
+$tbar-press-icon-bg: $active-bg-color ;
+$tbar-btn-pressed-box-shadow: '';
+
+$tbar-popup-padding: 0;
+$tbar-btn-box-shadow: none;
+$tbar-border-nav-type: solid;
+$tbar-border-nav-active-type: solid;
+$tbar-pop-radius: '';
+$tbar-radius: '';
+$tbar-btn-weight: 400;
+$tbar-pop-icon-bgr-padding: 0;
+$tbar-pop-icon-nrml-padding: 0;
+$tbar-box-shadow: 0 0 2px $shadow-color;
+$tbar-pop-box-shadow: 0 2px 2px 1px rgba(0, 0, 0, .21);
+$tbar-icons-bgr-font-size: 18px;
+
+$tbar-pressed-bg: $tbar-hover-bg;
+$tbar-pressed-border: $tbar-hover-border-color;
+$tbar-pressed-font: $tbar-hover-font;
+$tbar-select-font: $tbar-hover-font;
+$tbar-nav-press-border: '';
+$tbar-nav-hover-border: '';
+$tbar-nav-focus-border: '';
+$tbar-nav-pressed-box-shadow: '';
+
+$tbar-popup-down-icon: '\e916';
+$tbar-popup-up-icon: '\e910';
+
+@mixin tbar-btn-animation {
+  content: '';
+}
+
+@mixin tbar-btn-animation-after {
+  content: '';
+}

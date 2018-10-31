@@ -1,0 +1,210 @@
+
+/*! component's default definitions and variables */
+$skin: 'material';
+$schedule-header-bg-color: $header-bg-color;
+$schedule-header-border-color: $header-border-color;
+$schedule-header-font-color: $header-font-color;
+$schedule-header-hover-color: $content-bg-color;
+$schedule-content-bg-color: $content-bg-color;
+$schedule-appointment-font-color: $content-bg-color;
+$schedule-select-font-color: $default-font-color;
+$schedule-work-cells-bg-color: $content-bg-color;
+$schedule-content-border-color: $content-border-color;
+$schedule-primary-content-font-color: $content-font-color;
+$schedule-secondary-content-font-color: $content-font-color;
+$schedule-disable-font-color: rgba($default-font-color, .26);
+$schedule-select-bg-color: $content-bg-color;
+$schedule-hover-border-color: $content-border-color;
+$schedule-workhour-bg-color: $content-bg-color;
+$schedule-hover-bg-color: $hover-bg-color;
+$schedule-hover-font-color: $header-font-color;
+$schedule-active-border-color: $active-border-color;
+$schedule-active-font-color: $active-font-color;
+$schedule-alternate-cell-border: dotted;
+$schedule-header-cells-height: 60px;
+$schedule-header-cells-width: 36px;
+$schedule-month-header-cells-nrml-height: 30px;
+$schedule-month-header-cells-bgr-height: 35px;
+$schedule-mobile-popup-title-color: $schedule-content-bg-color;
+$schedule-active-color: $content-bg-color;
+
+$schedule-date-navigation-font-size: 14px;
+$schedule-header-nrml-font-size: 14px;
+$schedule-header-bgr-font-size: 16px;
+$schedule-header-device-font-size: 14px;
+$schedule-content-nrml-font-size: 13px;
+$schedule-content-bgr-font-size: 14px;
+$schedule-content-device-font-size: 14px;
+$schedule-date-month-header-wrap-bgr-font-size: 14px;
+$schedule-date-header-wrap-nrml-font-size: 13px;
+$schedule-date-header-wrap-bgr-font-size: $schedule-header-bgr-font-size;
+$schedule-date-header-wrap-device-font-size: 13px;
+
+$schedule-allday-cells-height: 0;
+$schedule-work-cells-height: 36px;
+$schedule-work-cells-width: 36px;
+$schedule-mobile-work-cells-bg-color: $content-bg-color;
+$schedule-appointment-bg-color: #039be5;
+$schedule-appointment-border-color: lighten($schedule-appointment-bg-color, 40%);
+$schedule-appointment-active-border-color: #000;
+$schedule-month-agenda-app-indicator-color: $schedule-appointment-bg-color;
+$schedule-month-appointment-height: 22px;
+$schedule-month-appointment-text-line-height: 20px;
+$schedule-appointment-text-line-height: 20px;
+$schedule-month-appointment-time-padding: 1.5px;
+$schedule-month-appointment-subject-padding: 1px 2px;
+$schedule-timescale-appointment-height: 54px;
+
+$schedule-header-day-nrml-font-size: 13px;
+$schedule-header-day-bgr-font-size: 14px;
+$schedule-header-day-device-font-size: 14px;
+$schedule-header-date-device-font-size: 20px;
+$schedule-header-date-nrml-font-size: 18px;
+$schedule-header-date-bgr-font-size: 20px;
+$schedule-time-scale-nrml-font-size: 12px;
+$schedule-time-scale-bgr-font-size: 13px;
+$schedule-device-time-scale-font-size: 11px;
+$schedule-current-time-nrml-font-size: 11px;
+$schedule-current-time-bgr-font-size: 12px;
+$schedule-current-time-bgr-device-font-size: 9px;
+$schedule-time-scale-width: 85px;
+$schedule-device-time-scale-width: 35px;
+
+$schedule-vertical-work-cells-border: 0 0 1px 1px;
+$schedule-rtl-vertical-work-cells-border: 0 1px 1px 0;
+$schedule-month-work-cells-border: 0 0 1px 1px;
+$schedule-rtl-month-work-cells-border: 0 1px 1px 0;
+$schedule-month-agenda-header-cells-border: 0 0 1px 0;
+$schedule-month-agenda-work-cells-border: 0;
+$schedule-rtl-month-agenda-work-cells-border: 0;
+$schedule-month-agenda-border: 2px solid $schedule-content-border-color;
+$schedule-agenda-color: #fff;
+$schedule-recurrence-font-size: 11px;
+
+$schedule-tbar-bgr-min-height: 56px;
+$schedule-tbar-border-bottom-size: 0;
+$schedule-tbar-box-shadow: none;
+$schedule-tbar-box-shadow-bottom-margin: 0;
+$schedule-tbar-min-height: 42px;
+$schedule-tbar-down-arrow-font-size: 10px;
+$schedule-tbar-down-arrow-padding-top: 0;
+$schedule-tbar-default-icon-color: $default-icon-color;
+$schedule-tbar-separator-size: $border-size;
+$schedule-tbar-default-bg: $default-bg-color;
+$schedule-tbar-separator-border: $default-border-color;
+$schedule-tbar-border-nav: $default-border-color;
+$schedule-tbar-border-nav-type: solid;
+$schedule-tbar-hover-bg: $hover-bg-color;
+$schedule-tbar-hover-font: $hover-font-color;
+$schedule-tbar-nav-bgr-width: 32px;
+$schedule-tbar-bgr-item-size: 34px;
+$schedule-tbar-bgr-size: $schedule-tbar-bgr-min-height;
+$schedule-tbar-bgr-items-size: $schedule-tbar-bgr-min-height;
+$schedule-tbar-separator-bgr-height: calc(100% - 15px);
+$schedule-tbar-separator-bgr-mrgn: 7.5px 3px;
+$schedule-tbar-separator-bgr-minheight: 27px;
+$schedule-tbar-btn-icon-bgr-width: 24px;
+$schedule-tbar-btn-bgr-mrgn: 4px 0;
+$schedule-tbar-btn-bgr-minheight: 0;
+$schedule-tbar-btn-bgr-minwidth: 34px;
+$schedule-tbar-btn-bgr-padding: 0 1.5px;
+$schedule-tbar-btn-icn-bgr-padding: 0;
+$schedule-tbar-btn-icn-right-bgr-padding: 0;
+
+$schedule-content-nrml-font-text-transform: uppercase;
+$schedule-header-hover-border-radius: 0%;
+$schedule-box-shadow: 0 1px 0 rgba(0, 0, 0, .15);
+$schedule-popup-box-shadow-1: 0 24px 38px 3px rgba(0, 0, 0, .14);
+$schedule-popup-box-shadow-2: 0 9px 46px 8px rgba(0, 0, 0, .12);
+$schedule-popup-box-shadow-3: 0 11px 15px -7px rgba(0, 0, 0, .2);
+$schedule-popup-border-color: #e0e0e0;
+$schedule-popup-bg-color: $content-bg-color;
+
+$schedule-popup-header-icon-color: $schedule-secondary-content-font-color;
+$schedule-popup-header-icon-hover-color: $schedule-appointment-active-border-color;
+$schedule-popup-header-icon-hover-bg-color: $schedule-select-bg-color;
+$schedule-popup-icon-color: $schedule-secondary-content-font-color;
+$schedule-popup-icon-hover-color: $schedule-appointment-active-border-color;
+$schedule-popup-icon-hover-bg-color: $schedule-select-bg-color;
+$schedule-popup-content-icon-color: $schedule-secondary-content-font-color;
+
+$schedule-popup-title-color: rgba($color: $schedule-appointment-bg-color, $alpha: .3);
+$schedule-popup-btn-border: none;
+$schedule-btn-txt-bgr-padding: 5px 12px;
+$schedule-icon-color: rgba(0, 0, 0, .54);
+
+$schedule-event-box-shadow-1: 0 6px 10px 0 rgba(0, 0, 0, .14);
+$schedule-event-box-shadow-2: 0 1px 18px 0 rgba(0, 0, 0, .12);
+$schedule-event-box-shadow-3: 0 3px 5px -1px rgba(0, 0, 0, .2);
+$schedule-more-indicator-shadow-color: $shadow-color;
+$schedule-more-indicator-nrml-font-size: 11px;
+$schedule-more-popup-close-margin-top: 0;
+
+$schedule-timeline-header-cells-height: 36px;
+$schedule-timeline-work-cells-height: 60px;
+$schedule-timeline-work-cells-width: 50px;
+$schedule-timeline-month-cells-width: 70px;
+$schedule-timeline-work-cells-border: 0 0 1px 1px;
+$schedule-rtl-timeline-work-cells-border: 0 1px 1px 0;
+$schedule-timeline-resources-width: 200px;
+$schedule-timeline-appointment-height: 38px;
+
+$schedule-tree-bg-color: $content-bg-color;
+$schedule-popup-overlay-bg-color: #383838;
+
+$schedule-val-error-color: #f44336;
+$schedule-val-error-bg-color: #fcdbe4;
+
+$schedule-menu-icon: '\e99a';
+$schedule-prev-icon: '\e937';
+$schedule-next-icon: '\e956';
+$schedule-add-icon: '\e963';
+$schedule-today-icon: '\e322';
+$schedule-down-arrow-icon: '\e969';
+$schedule-day-icon: '\e31b';
+$schedule-week-icon: '\e315';
+$schedule-work-week-icon: '\e314';
+$schedule-month-icon: '\e93c';
+$schedule-agenda-icon: '\e31d';
+$schedule-month-agenda-icon: '\e313';
+$schedule-popup-down-icon: '\e984';
+$schedule-popup-up-icon: '\e984';
+$schedule-rtl-prev-icon: '\e956';
+$schedule-rtl-next-icon: '\e937';
+$schedule-close-icon: '\e7fc';
+$schedule-recurrence-icon: '\e308';
+$schedule-recurrence-edit-icon: '\e30a';
+$schedule-event-up-icon: '\e306';
+$schedule-event-down-icon: '\e304';
+$schedule-event-left-icon: '\e302';
+$schedule-event-right-icon: '\e300';
+$schedule-all-day-event-icon: '\e916';
+$schedule-select-event-popup-edit-icon: '\e891';
+$schedule-select-event-popup-delete-icon: '\e94a';
+$schedule-select-event-popup-close-icon: '\e7fc';
+$schedule-select-event-popup-date-time-icon: '\e20c';
+$schedule-select-event-popup-calendar-icon: '\e30c';
+$schedule-select-event-popup-event-zone-icon: '\e30e';
+$schedule-select-event-popup-event-note-icon: '\e30d';
+$schedule-rtl-event-left-icon: '\e300';
+$schedule-rtl-event-right-icon: '\e302';
+$schedule-tooltip-close-icon: '\e7fc';
+$schedule-dialog-back-icon: '\e977';
+$schedule-dialog-save-icon: '\e98e';
+$schedule-dialog-recurrence-edit-icon: '\e944';
+$schedule-dialog-rtl-back-icon: '\e85f';
+$schedule-select-event-popup-resource-icon: '\e424';
+$schedule-quick-popup-date-time-icon: '\e421';
+$schedule-tree-icon: '\e22f';
+$schedule-timeline-day-icon: '\ea85';
+$schedule-timeline-week-icon: '\ea88';
+$schedule-timeline-work-week-icon: '\ea8b';
+$schedule-timeline-month-icon: '\ea8e';
+
+@mixin tbar-btn-animation {
+  content: '';
+}
+
+@mixin tbar-btn-animation-after {
+  content: '';
+}

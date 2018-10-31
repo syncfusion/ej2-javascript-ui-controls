@@ -1,0 +1,34 @@
+@import 'definition.scss';
+
+$list-border-color: rgba($neutral-light, .25);
+$list-font-family: $font-family;
+$list-gradient-color: none;
+$list-bg-color: $neutral-white;
+$list-header-bg-color: $neutral-white;
+$list-header-border-color: 1px $neutral-light;
+$list-default-font-color: rgba($neutral-light-font, .87);
+$list-active-border-color: $neutral-white;
+$list-active-font-color: $neutral-light-font;
+$list-active-bg-color: $theme-lighter;
+$list-hover-bg-color: $neutral-lighter;
+$list-hover-border-color: $neutral-white;
+$list-hover-font-color: $neutral-light-font;
+$nodata-font-color: $neutral-light-font;
+$group-list-padding-left: 20px;
+$list-header-padding-left: 10px;
+$list-font-size: 14px;
+$group-list-font-size: 14px;
+$list-header-font-color: $theme-primary;
+$list-text-indent: 10px;
+$list-line-height: 36px;
+$bigger-list-header-font-size: $list-font-size;
+
+@include export-module('dropdownbase-fabric') {
+  .e-dropdownbase .e-list-item .e-list-icon {
+    padding: 0 10px 0 0;
+  }
+
+  .e-bigger .e-dropdownbase .e-list-item .e-list-icon {
+    padding: 0 12px 0 0;
+  }
+}

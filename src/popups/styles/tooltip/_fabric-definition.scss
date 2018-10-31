@@ -1,0 +1,25 @@
+@import 'definition.scss';
+
+$skin-name: 'fabric';
+$tooltip-shadow-color: rgba(0, 0, 0, .25);
+$tooltip-drop-shadow: drop-shadow(1px 1px 3px $tooltip-shadow-color);
+$tooltip-content-bg-color: $neutral-white;
+$tooltip-content-border-color: $neutral-light;
+$tooltip-content-font-color:  $neutral-light-font;
+$tooltip-default-icon-color: $neutral-white;
+$tooltip-icon-bg-normal: $base-font;
+$tooltip-hover-icon-color: $neutral-light;
+$tooltip-icon-bg-hover: $neutral-light-font;
+$tooltip-font-size: 11px;
+$tooltip-mobile-font-size: 12px;
+$tooltip-border-radius: 0;
+$tooltip-opacity: 1;
+$tooltip-arrow-outer-border: 8px;
+$tooltip-arrow-inner-border: 7px;
+$tooltip-horizontal-padding: 12px;
+$tooltip-vertical-padding: 12px;
+$tooltip-mobile-horizontal-padding: 15px;
+$tooltip-mobile-vertical-padding: 15px;
+$tooltip-line-height: 16px;
+$tooltip-arrow-icon-font-size: 16px;
+$tooltip-icon-border-color: transparent;
