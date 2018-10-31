@@ -1,6 +1,6 @@
-# Essential JS 2 - Modern JavaScript UI Components
+# Syncfusion JavaScript UI Controls Library
 
-The only JavaScript UI package you will ever need.
+The only JavaScript UI library you will ever need.
 
 [![Screens of showcase applications](https://ej2.syncfusion.com/products/ej2-banner.gif)](https://syncfusion.com/products/javascript/)
 
