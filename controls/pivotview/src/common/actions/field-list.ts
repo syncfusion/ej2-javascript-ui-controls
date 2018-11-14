@@ -2,7 +2,7 @@ import { PivotView } from '../../pivotview/base/pivotview';
 import { IAction } from '../../common/base/interface';
 import * as events from '../../common/base/constant';
 import * as cls from '../base/css-constant';
-import { PivotFieldList } from '../../field-list/base/field-list';
+import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
 import { createElement, setStyleAttribute, formatUnit, prepend, addClass, removeClass } from '@syncfusion/ej2-base';
 import { CalculatedField } from '../../common/calculatedfield/calculated-field';
 

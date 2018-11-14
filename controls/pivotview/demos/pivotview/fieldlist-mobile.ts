@@ -4,7 +4,7 @@
 
 import { IDataSet } from '../../src/base/engine';
 import { pivot_dataset } from '../../spec/base/datasource.spec';
-import { PivotFieldList } from '../../src/field-list/base/field-list';
+import { PivotFieldList } from '../../src/pivotfieldlist/base/field-list';
 import { CalculatedField } from '../../src/common/calculatedfield/calculated-field';
 import { enableRipple } from '@syncfusion/ej2-base';
 import { LoadEventArgs } from '../../src/common/base/interface';

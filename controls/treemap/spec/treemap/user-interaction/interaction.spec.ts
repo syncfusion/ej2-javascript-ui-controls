@@ -294,6 +294,69 @@ describe('TreeMap component Spec', () => {
             treemap.refresh();
         });
 
+        it('Checking with selection - Child mode', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let layoutID: string = args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout';
+                let layoutEle: Element = document.getElementById(layoutID);
+                let rectEle: Element; let eventObj: Object = {};
+                rectEle = layoutEle.childNodes[1] as Element;
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousedown',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+            };
+            treemap.selectionSettings.enable = true;
+            treemap.selectionSettings.mode = 'Child';
+            treemap.refresh();
+        });
+
+        it('Checking with selection - Parent mode', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let layoutID: string = args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout';
+                let layoutEle: Element = document.getElementById(layoutID);
+                let rectEle: Element; let eventObj: Object = {};
+                rectEle = layoutEle.childNodes[2] as Element;
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousedown',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+            };
+            treemap.selectionSettings.enable = true;
+            treemap.selectionSettings.mode = 'Parent';
+            treemap.refresh();
+        });
+
+        it('Checking with selection - All mode', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let layoutID: string = args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout';
+                let layoutEle: Element = document.getElementById(layoutID);
+                let rectEle: Element; let eventObj: Object = {};
+                rectEle = layoutEle.childNodes[3] as Element;
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousedown',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+            };
+            treemap.selectionSettings.enable = true;
+            treemap.selectionSettings.mode = 'All';
+            treemap.refresh();
+        });
+
         it('Checking with highlight and selection together ', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 let layoutID: string = args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout';

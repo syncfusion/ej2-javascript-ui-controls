@@ -1435,14 +1435,8 @@ var Axis = /** @__PURE__ @class */ (function (_super) {
             var baseRange = this.actualRange;
             var start = void 0;
             var end = void 0;
-            if (!this.isInversed) {
-                start = this.actualRange.min + this.zoomPosition * this.actualRange.delta;
-                end = start + this.zoomFactor * this.actualRange.delta;
-            }
-            else {
-                start = this.actualRange.max - (this.zoomPosition * this.actualRange.delta);
-                end = start - (this.zoomFactor * this.actualRange.delta);
-            }
+            start = this.actualRange.min + this.zoomPosition * this.actualRange.delta;
+            end = start + this.zoomFactor * this.actualRange.delta;
             if (start < baseRange.min) {
                 end = end + (baseRange.min - start);
                 start = baseRange.min;
@@ -6419,8 +6413,9 @@ var BaseLegend = /** @__PURE__ @class */ (function () {
         var symbolColor = legendOption.visible ? legendOption.fill : '#D3D3D3';
         var shape = (legendOption.shape === 'SeriesType') ? legendOption.type : legendOption.shape;
         shape = shape === 'Scatter' ? legendOption.markerShape : shape;
-        var strokewidth = (legendOption.shape === 'HorizontalLine') ? (this.legend.shapeHeight / 10) :
-            ((legendOption.shape === 'VerticalLine') ? (this.legend.shapeWidth / 10) : 1);
+        var isStrokeWidth = (this.chart.getModuleName() === 'chart' && (legendOption.shape === 'SeriesType') &&
+            (legendOption.type.toLowerCase().indexOf('line') > -1) && (legendOption.type.toLowerCase().indexOf('area') === -1));
+        var strokewidth = isStrokeWidth ? this.chart.visibleSeries[i].width : 1;
         var symbolOption = new PathOption(this.legendID + this.generateId(legendOption, '_shape_', i), symbolColor, strokewidth, symbolColor, 1, '', '');
         group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight), '', symbolOption, 'Click to show or hide the ' + legendOption.text + ' series'));
         if (shape === 'Line' && legendOption.markerVisibility && legendOption.markerShape !== 'Image' ||
@@ -10785,6 +10780,7 @@ var AreaSeries = /** @__PURE__ @class */ (function (_super) {
         var origin = series.chart.chartAreaType === 'PolarRadar' ? series.points[0].yValue :
             Math.max(series.yAxis.visibleRange.min, 0);
         var currentXValue;
+        var isPolar = (series.chart && series.chart.chartAreaType === 'PolarRadar');
         var isDropMode = (series.emptyPointSettings && series.emptyPointSettings.mode === 'Drop');
         var borderWidth = series.border ? series.border.width : 0;
         var borderColor = series.border ? series.border.color : 'transparent';
@@ -10805,6 +10801,9 @@ var AreaSeries = /** @__PURE__ @class */ (function (_super) {
                 _this.storePointLocation(point, series, isInverted, getCoordinate);
             }
         });
+        if (isPolar) {
+            direction = direction.concat(direction + ' ' + 'Z');
+        }
         this.appendLinePath(new PathOption(series.chart.element.id + '_Series_' + series.index, series.interior, borderWidth, borderColor, series.opacity, series.dashArray, (series.points.length > 1 ? (direction + this.getAreaPathDirection(series.points[series.points.length - 1].xValue, series.chart.chartAreaType === 'PolarRadar' ?
             series.points[series.points.length - 1].yValue : origin, series, isInverted, getCoordinate, null, 'L')) : '')), series, '');
         this.renderMarker(series);
@@ -20903,8 +20902,10 @@ var ScrollElements = /** @__PURE__ @class */ (function () {
     ScrollElements.prototype.renderElements = function (scroll, renderer) {
         var scrollGroup = renderer.createGroup({
             id: 'scrollBar_' + scroll.axis.name,
-            transform: 'translate(' + (scroll.isVertical ? scroll.height : '0') +
-                ',0) rotate(' + (scroll.isVertical ? '90' : '0') + ')'
+            transform: 'translate(' + (scroll.isVertical && scroll.axis.isInversed ? scroll.height : scroll.axis.isInversed ?
+                scroll.width : '0') + ',' + (scroll.isVertical && scroll.axis.isInversed ? '0' : scroll.axis.isInversed ?
+                scroll.height : scroll.isVertical ? scroll.width : '0') + ') rotate(' + (scroll.isVertical && scroll.axis.isInversed ?
+                '90' : scroll.isVertical ? '270' : scroll.axis.isInversed ? '180' : '0') + ')'
         });
         var backRectGroup = renderer.createGroup({
             id: 'scrollBar_backRect_' + scroll.axis.name
@@ -21112,7 +21113,9 @@ var ScrollBar = /** @__PURE__ @class */ (function () {
         this.getMouseXY(e);
         this.isResizeLeft = this.isExist(id, '_leftCircle_') || this.isExist(id, '_leftArrow_');
         this.isResizeRight = this.isExist(id, '_rightCircle_') || this.isExist(id, '_rightArrow_');
-        this.previousXY = this.isVertical ? this.mouseY : this.mouseX;
+        //this.previousXY = this.isVertical ? this.mouseY : this.mouseX;
+        this.previousXY = (this.isVertical && this.axis.isInversed) ? this.mouseY : this.isVertical ? this.width -
+            this.mouseY : this.axis.isInversed ? this.width - this.mouseX : this.mouseX;
         this.previousWidth = elem.thumbRectWidth;
         this.previousRectX = elem.thumbRectX;
         this.startZoomPosition = this.axis.zoomPosition;
@@ -21200,7 +21203,8 @@ var ScrollBar = /** @__PURE__ @class */ (function () {
         this.getMouseXY(e);
         this.setCursor(target);
         this.setTheme(target);
-        var mouseXY = this.isVertical ? this.mouseY : this.mouseX;
+        var mouseXY = (this.isVertical && this.axis.isInversed) ? this.mouseY : this.isVertical ? this.width - this.mouseY :
+            this.axis.isInversed ? this.width - this.mouseX : this.mouseX;
         var range = this.axis.visibleRange;
         var zoomPosition = this.zoomPosition;
         var zoomFactor = this.zoomFactor;
@@ -21355,7 +21359,8 @@ var ScrollBar = /** @__PURE__ @class */ (function () {
         var gripWidth = 14;
         var minThumbWidth = circleRadius * 2 + padding * 2 + gripWidth;
         var thumbX = this.previousRectX;
-        var mouseXY = this.isVertical ? this.mouseY : this.mouseX;
+        var mouseXY = (this.isVertical && this.axis.isInversed) ? this.mouseY : this.isVertical ? this.width - this.mouseY :
+            this.axis.isInversed ? this.width - this.mouseX : this.mouseX;
         var diff = Math.abs(this.previousXY - mouseXY);
         if (this.isResizeLeft && mouseXY >= 0) {
             var currentX = thumbX + (mouseXY > this.previousXY ? diff : -diff);
@@ -21414,6 +21419,7 @@ var ScrollBar = /** @__PURE__ @class */ (function () {
         this.width = this.isVertical ? axis.rect.height : axis.rect.width;
         this.height = 16;
         var currentX = axis.zoomPosition * (this.isVertical ? axis.rect.height : this.width);
+        currentX = axis.zoomPosition === 1 ? axis.zoomPosition * (this.width / 2) : currentX;
         this.scrollElements.thumbRectX = currentX > circleRadius ? currentX : circleRadius;
         this.scrollElements.thumbRectWidth = ((currentWidth + this.scrollElements.thumbRectX) < this.width - (circleRadius * 2))
             ? currentWidth : this.width - this.scrollElements.thumbRectX - circleRadius;

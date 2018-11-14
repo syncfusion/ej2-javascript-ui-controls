@@ -936,13 +936,8 @@ export class Axis extends ChildProperty<Axis> {
             let baseRange: VisibleRangeModel = this.actualRange;
             let start: number;
             let end: number;
-            if (!this.isInversed) {
-                start = this.actualRange.min + this.zoomPosition * this.actualRange.delta;
-                end = start + this.zoomFactor * this.actualRange.delta;
-            } else {
-                start = this.actualRange.max - (this.zoomPosition * this.actualRange.delta);
-                end = start - (this.zoomFactor * this.actualRange.delta);
-            }
+            start = this.actualRange.min + this.zoomPosition * this.actualRange.delta;
+            end = start + this.zoomFactor * this.actualRange.delta;
             if (start < baseRange.min) {
                 end = end + (baseRange.min - start);
                 start = baseRange.min;

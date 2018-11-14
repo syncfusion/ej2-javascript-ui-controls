@@ -44,6 +44,7 @@ export class DataBinding {
     }
 
 
+   /**   @private  */
     public dataTable: Object = {};
 
     /**

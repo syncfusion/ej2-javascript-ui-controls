@@ -1,4 +1,4 @@
-import { createElement, compile, append } from '@syncfusion/ej2-base';
+import { compile } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { MS_PER_DAY, getWeekNumber } from '../base/util';
 import { TdData, CellTemplateArgs } from '../base/interface';
@@ -64,8 +64,6 @@ export class TimelineHeaderRow {
         let keys: string[] = Object.keys(data);
         for (let i: number = 0; i < keys.length; i++) {
             let dates: Date[] = data[keys[i]];
-            let content: string;
-            let ele: HTMLElement = createElement('div');
             let htmlCol: NodeList;
             if (!tempFn) {
                 htmlCol = compile(template, customHelper)({ date: dates[0] });
@@ -73,10 +71,8 @@ export class TimelineHeaderRow {
                 let args: CellTemplateArgs = { date: dates[0], type: type };
                 htmlCol = tempFn(args);
             }
-            append([].slice.call(htmlCol), ele);
-            content = ele.innerHTML;
             tdDatas.push({
-                date: dates[0], type: type, className: [cls], colSpan: dates.length * colspan, text: content
+                date: dates[0], type: type, className: [cls], colSpan: dates.length * colspan, template: htmlCol
             });
         }
         return tdDatas;

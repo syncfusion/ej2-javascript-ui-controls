@@ -40,8 +40,10 @@ export class BpmnDiagrams {
     //Code conversion for Bpmn Shapes
     //Start Region
 
+    /**   @private  */
     public annotationObjects: {} = {};
 
+    /**   @private  */
     public get textAnnotationConnectors(): ConnectorModel[] {
         let connectors: ConnectorModel[] = [];
         for (let key of Object.keys(this.annotationObjects)) {
@@ -67,6 +69,7 @@ export class BpmnDiagrams {
         return connectors;
     }
 
+    /**   @private  */
     public getSize(node: NodeModel, content: DiagramElement): Size {
         let size: Size = new Size(node.width, node.height);
         if (size.width === undefined || size.height === undefined) {
@@ -1239,6 +1242,7 @@ export class BpmnDiagrams {
         }
     }
 
+    /**   @private  */
     public isBpmnTextAnnotation(activeLabel: ActiveLabel, diagram: Diagram): NodeModel {
         if (this.annotationObjects) {
             let parentNodeId: string = activeLabel.parentId;
@@ -1271,6 +1275,7 @@ export class BpmnDiagrams {
         }
     }
 
+    /**   @private  */
     public updateQuad(actualObject: Node, diagram: Diagram): void {
         let annotation: BpmnAnnotationModel = (actualObject.shape as BpmnShape).annotations;
         let annotationNode: NodeModel;

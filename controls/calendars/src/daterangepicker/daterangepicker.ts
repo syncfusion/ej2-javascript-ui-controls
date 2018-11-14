@@ -779,12 +779,14 @@ export class DateRangePicker extends CalendarBase {
         this.hide(e);
     }
 
-    protected formResetHandler(): void {
-        this.value = null;
-        if (this.inputElement) {
-            Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
-            attributes(this.inputElement, { 'aria-invalid': 'false' });
-            removeClass([this.inputWrapper.container], ERROR);
+    protected formResetHandler(e: MouseEvent): void {
+        if (this.formElement && e.target === this.formElement) {
+            this.value = null;
+            if (this.inputElement) {
+                Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
+                attributes(this.inputElement, { 'aria-invalid': 'false' });
+                removeClass([this.inputWrapper.container], ERROR);
+            }
         }
     }
     private clear(): void {

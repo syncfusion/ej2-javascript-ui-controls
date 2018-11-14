@@ -1,0 +1,25 @@
+@import 'definition.scss';
+
+$btn-zindex: 2;
+$btn-border-radius: 0;
+$btn-focus-border-color: $border-fg;
+$btn-focus-vertical-border-color: $border-fg;
+$btn-focus-outline-offset: -4px;
+$vertical-secondary-icon-line-height: .213em;
+$btn-seperator-border: 1px solid;
+$btn-seperator-border-color: $border-fg;
+$btn-seperator-default-border-color: $border-fg;
+$btn-seperator-vertical-border-color: $border-fg;
+$btn-hover-border-color: $border-fg;
+$btn-hover-vertical-border-color: $hover-border;
+$btn-active-border-color: $selection-bg;
+$btn-active-vertical-border-color: $selection-bg;
+$btn-disabled-vertical-border-color: $disable;
+$btn-active-box-shadow: none;
+$btn-disabled-left-border-color: $disable;
+$btn-hover-left-border-color: $border-fg;
+$btn-focus-left-border-color: $border-fg;
+$btn-active-left-border-color: $selection-bg;
+$btn-sec-btn-margin-left: -1px;
+$icon-btn-padding: 8px;
+$icon-btn-padding-bigger: 11px;

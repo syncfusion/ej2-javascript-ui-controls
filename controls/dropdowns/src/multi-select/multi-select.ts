@@ -1,6 +1,6 @@
 /// <reference path='../drop-down-base/drop-down-base-model.d.ts'/>
 import { DropDownBase, SelectEventArgs, dropDownBaseClasses, PopupEventArgs, FilteringEventArgs } from '../drop-down-base/drop-down-base';
-import { ResultData } from '../drop-down-base/drop-down-base';
+import { ResultData, FocusEventArgs } from '../drop-down-base/drop-down-base';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { Popup, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { IInput, FloatLabelType } from '@syncfusion/ej2-inputs';
@@ -558,6 +558,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.mode === 'CheckBox') {
             addClass([this.overAllWrapper], [iconAnimation]);
         }
+        this.refreshPopup();
         this.popupObj.show(eventArgs.animation, (this.zIndex === 1000) ? this.element : null);
         attributes(this.inputElement, { 'aria-expanded': 'true' });
         if (!this.isFirstClick) {
@@ -680,7 +681,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (!isNullOrUndefined(this.value) && !this.allowCustomValue) {
             for (let i: number = 0; i < this.value.length; i++) {
                 let checkEle: Element = ((this.allowFiltering && !isNullOrUndefined(this.mainList)) ?
-                 this.mainList : ulElement).querySelector('li[data-value="' + proxy.value[i] + '"]');
+                    this.mainList : ulElement).querySelector('li[data-value="' + proxy.value[i] + '"]');
                 if (!checkEle) {
                     valuecheck.push(proxy.value[i] as string);
                 }
@@ -1018,7 +1019,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.dispatchEvent(this.inputElement, 'focus');
         }
         if (!this.inputFocus && this.mode === 'CheckBox') {
-            this.focusIn();
+            this.focusIn(e);
         }
         if (e.target && (<HTMLElement>e.target).classList.toString().indexOf(CHIP_CLOSE) !== -1) {
             if (this.isPopupOpen()) {
@@ -1169,7 +1170,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         return this.ulElement ? (<HTMLElement[] & NodeListOf<Element>>this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li
             + ':not(.' + HIDE_LIST + ')')) : null;
     }
-    private focusIn(): boolean {
+    private focusIn(e?: FocusEvent | MouseEvent | KeyboardEvent | TouchEvent): boolean {
         if (this.enabled && !this.readonly) {
             this.showOverAllClear();
             this.inputFocus = true;
@@ -1193,7 +1194,8 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
             if (this.focused) {
                 this.inputElement.focus();
-                this.trigger('focus');
+                let args: FocusEventArgs = { isInteracted: e ? true : false, event: e };
+                this.trigger('focus', args);
                 this.focused = false;
             }
             if (!this.overAllWrapper.classList.contains(FOCUS)) {
@@ -2571,7 +2573,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         EventHandler.remove(this.componentWrapper, 'mouseout', this.mouseOut);
         EventHandler.remove(this.overAllClear, 'mousedown', this.ClearAll);
     }
-    private selectAllItem(state: boolean): void {
+    private selectAllItem(state: boolean, event?: MouseEvent): void {
         let li: HTMLElement[] & NodeListOf<Element>;
         li = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll(state ?
             'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide)' :
@@ -2579,7 +2581,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         let length: number = li.length;
         if (li && li.length) {
             while (length > 0) {
-                this.updateListSelection(li[length - 1], null, length);
+                this.updateListSelection(li[length - 1], event, length);
                 length--;
             }
         }
@@ -2616,6 +2618,34 @@ export class MultiSelect extends DropDownBase implements IInput {
     private onLoadSelect(): void {
         this.setDynValue = true;
         this.renderPopup();
+    }
+    protected selectAllItems(state: boolean, event?: MouseEvent): void {
+        if (isNullOrUndefined(this.list)) {
+            this.selectAllAction = () => {
+                if (this.mode === 'CheckBox' && this.showSelectAll) {
+                    let args: { [key: string]: Object | string } = {
+                        module: 'CheckBoxSelection',
+                        enable: this.mode === 'CheckBox',
+                        value: state ? 'check' : 'uncheck'
+                    };
+                    this.notify('checkSelectAll', args);
+                }
+                this.selectAllItem(state, event);
+                this.selectAllAction = null;
+            };
+            super.render();
+        } else {
+            this.selectAllAction = null;
+            if (this.mode === 'CheckBox' && this.showSelectAll) {
+                let args: { [key: string]: Object | string } = {
+                    value: state ? 'check' : 'uncheck',
+                    enable: this.mode === 'CheckBox',
+                    module: 'CheckBoxSelection'
+                };
+                this.notify('checkSelectAll', args);
+            }
+            this.selectAllItem(state, event);
+        }
     }
     /**
      * Get the properties to be maintained in the persisted state.
@@ -2781,32 +2811,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      * @returns void
      */
     public selectAll(state: boolean): void {
-        if (isNullOrUndefined(this.list)) {
-            this.selectAllAction = () => {
-                if (this.mode === 'CheckBox' && this.showSelectAll) {
-                    let args: { [key: string]: Object | string } = {
-                        module: 'CheckBoxSelection',
-                        enable: this.mode === 'CheckBox',
-                        value: state ? 'check' : 'uncheck'
-                    };
-                    this.notify('checkSelectAll', args);
-                }
-                this.selectAllItem(state);
-                this.selectAllAction = null;
-            };
-            super.render();
-        } else {
-            this.selectAllAction = null;
-            if (this.mode === 'CheckBox' && this.showSelectAll) {
-                let args: { [key: string]: Object | string } = {
-                    module: 'CheckBoxSelection',
-                    enable: this.mode === 'CheckBox',
-                    value: state ? 'check' : 'uncheck'
-                };
-                this.notify('checkSelectAll', args);
-            }
-            this.selectAllItem(state);
-        }
+        this.selectAllItems(state);
     }
 
     public getModuleName(): string {

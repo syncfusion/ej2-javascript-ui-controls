@@ -13,7 +13,7 @@ import {
 import { ContextMenu as Menu, MenuItemModel, ContextMenuModel } from '@syncfusion/ej2-navigations';
 import { IAction } from '../../common/base/interface';
 import * as events from '../../common/base/constant';
-import { PivotFieldList } from '../../field-list/base/field-list';
+import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
 import { Tab, Accordion, AccordionItemModel } from '@syncfusion/ej2-navigations';
 
 /**

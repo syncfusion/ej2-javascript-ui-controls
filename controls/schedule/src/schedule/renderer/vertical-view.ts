@@ -362,7 +362,10 @@ export class VerticalView extends ViewBase implements IRenderer {
             if (this.parent.activeViewOptions.showWeekNumber && data.className.indexOf(cls.HEADER_CELLS_CLASS) !== -1) {
                 data.className.push(cls.WEEK_NUMBER_CLASS);
                 let weekNo: number = util.getWeekNumber(this.renderDates.slice(-1)[0]);
-                data.text = '<span title="' + this.parent.localeObj.getConstant('week') + ' ' + weekNo + '">' + weekNo + '</span>';
+                data.template = [createElement('span', {
+                    innerHTML: '' + weekNo,
+                    attrs: { title: this.parent.localeObj.getConstant('week') + ' ' + weekNo }
+                })];
             }
             ntr.appendChild(this.createTd(data));
             tbl.querySelector('tbody').appendChild(ntr);

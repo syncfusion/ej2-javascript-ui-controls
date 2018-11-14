@@ -141,8 +141,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         if (this.parent.groupSettings.columns.length) {
             this.refreshOffsets();
         }
-
-        let translate: number = this.getTranslateY(this.content.scrollTop, this.content.getBoundingClientRect().height, info);
+        let vHeight: string | number = this.parent.height.toString().indexOf('%') < 0 ? this.parent.height :
+        this.parent.element.getBoundingClientRect().height;
+        let translate: number = this.getTranslateY(this.content.scrollTop, <number>vHeight, info);
         this.virtualEle.adjustTable(cOffset, translate);
 
         if (this.parent.enableColumnVirtualization) {

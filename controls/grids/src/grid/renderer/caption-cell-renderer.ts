@@ -34,11 +34,7 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
         let value: string = cell.isForeignKey ? fKeyValue : cell.column.enableGroupByFormat ? data.key :
         this.format(cell.column, (cell.column.valueAccessor as Function)('key', data, cell.column));
         if (!isNullOrUndefined(gObj.groupSettings.captionTemplate)) {
-            if (gObj.groupSettings.captionTemplate.indexOf('#') !== -1) {
-                result = templateCompiler(document.querySelector(gObj.groupSettings.captionTemplate).innerHTML.trim())(data);
-            } else {
-                result = templateCompiler(gObj.groupSettings.captionTemplate)(data);
-            }
+            result = templateCompiler(gObj.groupSettings.captionTemplate)(data);
             appendChildren(node, result);
         } else {
             node.innerHTML = cell.column.headerText + ': ' + value + ' - ' + data.count + ' ' +

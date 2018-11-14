@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-documenteditor",
-	"version": "16.3.27",
+	"version": "16.3.30",
 	"description": "Feature-rich document editor control with built-in support for context menu, options pane and dialogs.",
 	"keywords": [
 		"ej2",
@@ -32,7 +32,7 @@
 	},
 	"devDependencies": {
 		"@types/chai": "^3.4.28",
-		"@types/jasmine": "^2.2.29",
+		"@types/jasmine": "2.8.9",
 		"@types/jasmine-ajax": "^3.1.27",
 		"@types/requirejs": "^2.1.26",
 		"es6-promise": "^3.2.1",

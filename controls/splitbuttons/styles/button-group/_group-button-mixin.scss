@@ -1,0 +1,101 @@
+@mixin apply-border {
+  &:not(:first-of-type):not(:last-of-type) {
+    border-left: transparent;
+    border-right: transparent;
+  }
+
+  &:first-of-type {
+    border-right: transparent;
+  }
+
+  &:last-of-type {
+    border-left: transparent;
+  }
+}
+
+@mixin apply-border-vertical {
+  &:not(:first-of-type):not(:last-of-type) {
+    border-bottom: transparent;
+    border-top: transparent;
+  }
+
+  &:first-of-type {
+    border-bottom: transparent;
+  }
+
+  &:last-of-type {
+    border-top: transparent;
+  }
+}
+
+@mixin different-states {
+  // Outline focus
+  .e-btn:focus,
+  input:focus+label.e-btn {
+    &.e-outline {
+      border-color: $outline-focus-border-color;
+      outline-color: $outline-focus-color;
+
+      &.e-primary {
+        border-color: $outline-primary-focus-border-color;
+        outline-color: $outline-focus-primary-color;
+      }
+
+      &.e-success {
+        border-color: $outline-success-focus-border-color;
+        outline-color: $outline-focus-success-color;
+      }
+
+      &.e-info {
+        border-color: $outline-info-focus-border-color;
+        outline-color: $outline-focus-info-color;
+      }
+
+      &.e-warning {
+        border-color: $outline-warning-focus-border-color;
+        outline-color: $outline-focus-warning-color;
+      }
+
+      &.e-danger {
+        border-color: $outline-danger-focus-border-color;
+        outline-color: $outline-focus-danger-color;
+     }
+   }
+  }
+
+  // Outline active and checked
+  .e-btn:active,
+  input:active+label.e-btn,
+  input:checked+label.e-btn {
+    &.e-outline {
+      border-color: $outline-active-border-color;
+
+      &.e-primary {
+        border-color: $outline-primary-active-border-color;
+      }
+
+      &.e-success {
+        border-color: $outline-success-active-border-color;
+      }
+
+      &.e-info {
+        border-color: $outline-info-active-border-color;
+      }
+
+      &.e-warning {
+        border-color: $outline-warning-active-border-color;
+      }
+
+      &.e-danger {
+        border-color: $outline-danger-active-border-color;
+      }
+    }
+  }
+}
+
+@mixin disabled {
+  background-color: $btn-disabled-bgcolor;
+  border-color: $btn-disabled-border-color;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-disabled-color;
+}

@@ -959,4 +959,52 @@ describe('Scrollbar Chart ', () => {
            
 
         });});
+
+    describe('Inversed Scrollbar ', function () {
+            let chartObj: Chart;
+            let loaded: EmitType<ILoadedEventArgs>;
+            let load: EmitType<ILoadedEventArgs>;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'container' });
+                document.body.appendChild(ele);
+                chartObj = new Chart(
+                    {
+                        primaryXAxis: { title: 'PrimaryXAxis', valueType: 'Double', isInversed:true },
+                        primaryYAxis: { title: 'PrimaryYAxis' },
+                        series: [{
+                            dataSource: [{ x: 10, y: 46 }, { x: 20, y: 27 }, { x: 30, y: 26 }, { x: 40, y: 16 }, { x: 50, y: 31 }],
+                            xName: 'x', yName: 'y', marker: { visible: true }, type: 'Line'
+                        }],
+                        title: 'Chart Title',
+                        legendSettings: { visible: true },
+                        width: '900',
+                        zoomSettings: { enableSelectionZooming: true, enableScrollbar: true, mode: 'X' }
+                    }
+                );
+                chartObj.appendTo('#container');
+    
+            })
+            afterAll(function () {
+                chartObj.destroy();
+                ele.remove();
+            });
+              it('Checking scrollbar is isInversed', function (done) {
+                    trigger.draganddropEvent(ele, 200, 200, 350, 350);
+                    var svgChildEle = document.getElementById('scrollBar_svgprimaryXAxis').children[0];
+                    var backRectEle = svgChildEle.children[0].children[0];
+                    var width = backRectEle.getAttribute('width');
+                    expect(svgChildEle.id === 'scrollBar_primaryXAxis').toBe(true);
+                    expect(svgChildEle.getAttribute('transform') === 'translate(836.5,16) rotate(180)').toBe(true);
+                    expect(backRectEle.getAttribute('x') === '0').toBe(true);
+                    expect(backRectEle.getAttribute('y') === '0').toBe(true);
+                    expect(backRectEle.getAttribute('height') === '16').toBe(true);
+                    expect(width === '832.5' || width === '836.5').toBe(true);
+                    expect(backRectEle.getAttribute('rx') === '0').toBe(true);
+                    expect(backRectEle.id === 'scrollBarBackRect_primaryXAxis').toBe(true);
+                    done();
+               
+            });
+        });
+
+    
 });

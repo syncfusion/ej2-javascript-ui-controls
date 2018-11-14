@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.3.32 (2018-11-15)
+
+### DataManager
+
+#### Bug Fixes
+
+- Filter value is not encoded properly in `WebApiAdaptor` is resolved.
+
 ## 16.3.27 (2018-10-23)
 
 ### DataManager

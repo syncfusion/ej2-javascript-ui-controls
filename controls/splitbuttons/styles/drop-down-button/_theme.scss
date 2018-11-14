@@ -1,0 +1,47 @@
+@include export-module('drop-down-button-theme') {
+  /*! drop-down button theme */
+  #{&}.e-dropdown-popup {
+    background-color: $ul-bgcolor;
+    color: $color;
+
+    & ul {
+      & .e-item  {
+        & .e-menu-url {
+          color: $color;
+        }
+
+        & .e-menu-icon {
+          color: $menu-icon-color;
+        }
+
+        &.e-focused {
+          background-color: $li-focus-bgcolor;
+          box-shadow: $li-box-shadow;
+        }
+
+        &:hover {
+          background-color: $li-bgcolor;
+          color: $li-selection-font-color;
+        }
+
+        &:active,
+        &.e-selected {
+          background-color: $li-selection-bgcolor;
+          color: $selected-color;
+
+          & .e-menu-url {
+            color: $selected-color;
+          }
+
+          & .e-menu-icon {
+            color: $selected-color;
+          }
+        }
+      }
+
+      & .e-separator {
+        border-bottom-color: $li-border-color;
+      }
+    }
+  }
+}

@@ -391,15 +391,17 @@ export class DatePicker extends Calendar implements IInput {
                 keyConfigs: this.keyConfigs
             });
     }
-    protected resetFormHandler(): void {
+    protected resetFormHandler(e: MouseEvent): void {
         if (this.inputElement.getAttribute('value')) {
             this.value = this.checkDateValue(new Date('' + this.element.getAttribute('value')));
         } else {
-            this.value = null;
-            if (this.inputElement) {
-                Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
-                attributes(this.inputElement, { 'aria-invalid': 'false' });
-                removeClass([this.inputWrapper.container], ERROR);
+            if (this.formElement && e.target === this.formElement) {
+                this.value = null;
+                if (this.inputElement) {
+                    Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
+                    attributes(this.inputElement, { 'aria-invalid': 'false' });
+                    removeClass([this.inputWrapper.container], ERROR);
+                }
             }
         }
     }
@@ -577,7 +579,7 @@ export class DatePicker extends Calendar implements IInput {
             if (this.checkDateValue(this.globalize.parseDate(this.inputElement.value, dateOptions))) {
                 date = this.globalize.parseDate(this.inputElement.value, dateOptions);
             } else {
-                date = this.globalize.parseDate(this.inputElement.value, {type: 'dateTime', skeleton: 'yMd' });
+                date = this.globalize.parseDate(this.inputElement.value, { type: 'dateTime', skeleton: 'yMd' });
             }
         } else {
             date = this.globalize.parseDate(this.inputElement.value, dateOptions);
@@ -1168,7 +1170,7 @@ export class DatePicker extends Calendar implements IInput {
                 case 'cssClass':
                     Input.setCssClass(newProp.cssClass, [this.inputWrapper.container]);
                     if (this.popupWrapper) {
-                        this.popupWrapper.className +=  ' ' + newProp.cssClass;
+                        this.popupWrapper.className += ' ' + newProp.cssClass;
                     }
                     break;
                 case 'showClearButton':

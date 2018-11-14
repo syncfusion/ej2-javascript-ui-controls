@@ -20,9 +20,15 @@ export class PathElement extends DiagramElement {
      */
     private pathData: string = '';
 
+    /**
+     * Gets the geometry of the path element
+     */
     public get data(): string {
         return this.pathData;
     }
+    /**
+     * Sets the geometry of the path element
+     */
     public set data(value: string) {
         if (this.pathData !== value) {
             this.pathData = value;
@@ -40,6 +46,7 @@ export class PathElement extends DiagramElement {
     public absolutePath: string = '';
 
     //Private variables
+    /**   @private  */
     public absoluteBounds: Rect = new Rect();
 
     private points: PointModel[];

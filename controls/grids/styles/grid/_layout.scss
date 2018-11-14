@@ -342,7 +342,8 @@
     .e-emptyrow td,
     .e-frozencontent table tr td:first-child:empty,
     .e-movablecontent table tr td:first-child:empty,
-    .e-gridcontent tr td:first-child:empty {
+    .e-gridcontent tr td:first-child:empty,
+    .e-gridcontent tr.e-row .e-rowcell:empty {
       line-height: $grid-bigger-rowcell-line-height;
     }
 
@@ -368,7 +369,8 @@
     .e-frozencontent table tr td:first-child:empty,
     .e-movablecontent table tr td:first-child:empty,
     .e-frozenhdrcont table tr td:first-child:empty,
-    .e-gridcontent tr td:first-child:empty {
+    .e-gridcontent tr td:first-child:empty,
+    .e-gridcontent tr.e-row .e-rowcell:empty {
       height: $grid-bigger-rowcell-line-height + $grid-bigger-content-padding +  $grid-bigger-content-padding;
     }
 
@@ -876,7 +878,8 @@
     .e-frozencontent table tr td:first-child:empty,
     .e-movablecontent table tr td:first-child:empty,
     .e-frozenhdrcont table tr td:first-child:empty,
-    .e-gridcontent tr td:first-child:empty {
+    .e-gridcontent tr td:first-child:empty,
+    .e-gridcontent tr.e-row .e-rowcell:empty {
       height: $grid-rowcell-line-height + $grid-content-padding + $grid-content-padding;
     }
 
@@ -1849,11 +1852,6 @@
       padding: 0;
     }
 
-    .e-dialog table {
-      border-collapse: separate;
-      border-spacing: 11px;
-    }
-
     .e-row .e-input-group .e-input.e-field,
     .e-row .e-input-focus .e-input.e-field {
       font-family: $grid-font-family;
@@ -2594,7 +2592,8 @@
   .e-frozencontent table tr td:first-child:empty,
   .e-movablecontent table tr td:first-child:empty,
   .e-frozenhdrcont table tr td:first-child:empty,
-  .e-gridcontent tr td:first-child:empty {
+  .e-gridcontent tr td:first-child:empty,
+  .e-gridcontent tr.e-row .e-rowcell:empty {
     height: 18px;
    }
 }
@@ -2608,4 +2607,14 @@
       text-align: right;
     }
   }
+}
+
+.e-edit-dialog .e-gridform .e-table {
+  border-collapse: separate;
+  border-spacing: 11px;
+  width: 100%;
+}
+
+.e-edit-dialog .e-dlg-content {
+  position: relative;
 }

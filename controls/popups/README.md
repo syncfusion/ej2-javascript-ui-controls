@@ -24,15 +24,15 @@ Following list of components are available in the package
 
 ## Dialog
 
-*   [Getting Started](https://ej2.syncfusion.com/documentation/dialog/getting-started.html?lang=typescript&utm_source=npm&utm_campaign=dialog)
+*   [Getting Started](https://ej2.syncfusion.com/documentation/dialog/getting-started?utm_source=npm&utm_campaign=dialog)
 *   [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=dialog#/material/dialog/default.html)
-*   [Product Page](https://www.syncfusion.com/products/javascript/dialog/?utm_source=npm&utm_campaign=dialog)
+*   [Product Page](https://www.syncfusion.com/javascript-ui-controls/modal-dialog?utm_source=npm&utm_campaign=dialog)
 
 ## Tooltip
 
-*   [Getting Started](https://ej2.syncfusion.com/documentation/tooltip/getting-started.html?lang=typescript?utm_source=npm&utm_campaign=tooltip)
+*   [Getting Started](https://ej2.syncfusion.com/documentation/tooltip/getting-started?utm_source=npm&utm_campaign=tooltip)
 *   [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=tooltip#/material/tooltip/default.html)
-*   [Product Page](https://www.syncfusion.com/products/javascript/tooltip/?utm_source=npm&utm_campaign=tooltip)
+*   [Product Page](https://www.syncfusion.com/javascript-ui-controls/tooltip?utm_source=npm&utm_campaign=tooltip)
 
 ## Supported Frameworks
 
@@ -41,9 +41,9 @@ These components are available in following list of:
 1.	[Angular](https://github.com/syncfusion/ej2-ng-popups?utm_source=npm&utm_campaign=popup)
 2.	[React](https://github.com/syncfusion/ej2-react-popups?utm_source=npm&utm_campaign=popup)
 3.	[Vue](https://github.com/syncfusion/ej2-vue-popups?utm_source=npm&utm_campaign=popup)
-4.	[ASP.NET Core](https://www.syncfusion.com/products/aspnetcore/)
-5.	[ASP.NET MVC](https://www.syncfusion.com/products/aspnetmvc/)
-6.	[JavaScript (ES5)](https://www.syncfusion.com/products/javascript/)
+4.	[ASP.NET Core](https://www.syncfusion.com/aspnet-core-ui-controls/)
+5.	[ASP.NET MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls/)
+6.	[JavaScript (ES5)](https://www.syncfusion.com/javascript-ui-controls/)
 
 ## Use-case samples / Showcase samples
 
@@ -78,16 +78,16 @@ These components are available in following list of:
 Product support is available for through following mediums:
 
 *	Creating incident in Syncfusion [Direct-trac](https://www.syncfusion.com/support/directtrac/incidents?utm_source=npm&utm_campaign=popup) support system or [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_campaign=popup).
-*	New [GitHub issue](https://github.com/syncfusion/ej2-popups/issues/new).
+*	New [GitHub issue](https://github.com/syncfusion/ej2-javascript-ui-controls/issues/new).
 *	Ask your query in Stack Overflow with tag `syncfusion` and `ej2`.
 
 ## License
 
-Check the license detail [here](https://github.com/syncfusion/ej2-popups/blob/master/license?utm_source=npm&utm_campaign=popup).
+Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license).
 
 ## Changelog
 
-Check the changelog [here](https://github.com/syncfusion/ej2-popups/blob/master/CHANGELOG.md?utm_source=npm&utm_campaign=dialog).
+Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/popups/CHANGELOG.md?utm_source=npm&utm_campaign=dialog).
 
 
 &copy; Copyright 2018 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

@@ -48,7 +48,7 @@ function getValue(nameSpace, obj) {
     /* tslint:disable no-any */
     let value = obj;
     let splits = nameSpace.replace(/\[/g, '.').replace(/\]/g, '').split('.');
-    for (let i = 0; i < splits.length && !isUndefined(value); i++) {
+    for (let i = 0; i < splits.length && !isNullOrUndefined(value); i++) {
         value = value[splits[i]];
     }
     return value;
@@ -5131,7 +5131,8 @@ let Component = class Component extends Base {
             window.localStorage.setItem(this.getModuleName() + this.element.id, this.getPersistData());
         }
     }
-    clearTemplate(templateName) {
+    //tslint:disable-next-line
+    clearTemplate(templateName, index) {
         //No Code
     }
     getUniqueID(definedName) {
@@ -6146,7 +6147,12 @@ class L10n {
      */
     getConstant(prop) {
         /* tslint:disable no-any */
-        return this.currentLocale[prop] || this.localeStrings[prop] || '';
+        let returnString = this.currentLocale[prop];
+        if (isNullOrUndefined(returnString)) {
+            /* tslint:disable no-any */
+            returnString = this.localeStrings[prop] || '';
+        }
+        return returnString;
     }
     /**
      * Returns the control constant object for current object and the locale specified.

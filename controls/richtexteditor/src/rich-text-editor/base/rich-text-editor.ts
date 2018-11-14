@@ -659,13 +659,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.valueContainer = this.element as HTMLTextAreaElement;
             this.valueContainer.classList.remove('e-control', 'e-richtexteditor');
             this.valueContainer.id = this.getID() + '-value';
+            this.valueContainer.name = this.element.hasAttribute('name') ? this.element.getAttribute('name') : this.getID();
             this.element = rteOutterWrapper;
         } else {
             this.valueContainer = this.createElement('textarea', {
                 id: this.getID() + '-value'
             }) as HTMLTextAreaElement;
+            this.valueContainer.name = this.getID();
         }
-        this.valueContainer.name = this.getID();
         this.valueContainer.style.display = 'none';
         if (this.value !== null) {
             this.valueContainer.value = this.value;
@@ -911,6 +912,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             } else {
                 this.valueContainer.value = '';
             }
+            this.element = this.valueContainer;
         } else {
             if (this.originalElement.innerHTML.trim() !== '') {
                 this.element.innerHTML = this.originalElement.innerHTML.trim();

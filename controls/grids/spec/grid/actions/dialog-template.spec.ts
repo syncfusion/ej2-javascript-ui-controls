@@ -266,7 +266,7 @@ describe('Dialog Template Editing module', () => {
             };
             spyOn((<Column>gridObj.columns[4]).edit, 'read');
             spyOn((<Column>gridObj.columns[4]).edit, 'destroy');
-            (<HTMLInputElement>gridObj.element.querySelector('#' + 'OrderID')).value = '10333';
+            (<HTMLInputElement>document.querySelector('#' + 'OrderID')).value = '10333';
             gridObj.endEdit();
         });
 
@@ -515,7 +515,7 @@ describe('Inline Template Editing module', () => {
             };
             spyOn((<Column>gridObj.columns[4]).edit, 'read');
             spyOn((<Column>gridObj.columns[4]).edit, 'destroy');
-            (<HTMLInputElement>gridObj.element.querySelector('#' + 'OrderID')).value = '10333';
+            (<HTMLInputElement>document.querySelector('#' + 'OrderID')).value = '10333';
             gridObj.endEdit();
         });
 
@@ -682,8 +682,8 @@ describe('Edit Template Editing module', () => {
                 done();
             };
             spyOn((<Column>gridObj.columns[4]).edit, 'read');
-            (<HTMLInputElement>gridObj.element.querySelector('[name=OrderID]')).value = '10333';
-            (<HTMLInputElement>gridObj.element.querySelector('[name=CustomerID_CustomerID]')).value = 'hello';
+            (<HTMLInputElement>document.querySelector('[name=OrderID]')).value = '10333';
+            (<HTMLInputElement>document.querySelector('[name=CustomerID_CustomerID]')).value = 'hello';
             gridObj.endEdit();
         });
 

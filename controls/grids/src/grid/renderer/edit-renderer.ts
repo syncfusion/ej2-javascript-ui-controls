@@ -59,7 +59,9 @@ export class EditRender {
         let value: string;
         let fForm: Element;
         let frzCols: number = gObj.getFrozenColumns();
-        let form: Element = gObj.element.querySelector('.e-gridform');
+        let form: Element = gObj.editSettings.mode === 'Dialog' ?
+        document.querySelector('#' + gObj.element.id + '_dialogEdit_wrapper').querySelector('.e-gridform') :
+        gObj.element.querySelector('.e-gridform');
         if (frzCols && gObj.editSettings.mode === 'Normal') {
             let rowIndex: number = parseInt(args.row.getAttribute('aria-rowindex'), 10);
             if (gObj.frozenRows && (args.requestType === 'add' || rowIndex < gObj.frozenRows)) {

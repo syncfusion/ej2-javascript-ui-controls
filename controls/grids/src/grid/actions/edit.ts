@@ -368,8 +368,10 @@ export class Edit implements IAction {
                 break;
             case 'date':
             case 'datetime':
-                if (col.editType !== 'datepickeredit' && col.editType !== 'datetimepickeredit') {
-                    val = (value && (value as string).length) ? new Date(value as string) : null;
+                if (col.editType !== 'datepickeredit' && col.editType !== 'datetimepickeredit' && value && (value as string).length) {
+                    val = new Date(value as string);
+                } else if (value === '') {
+                    val = null;
                 }
                 break;
         }
@@ -709,7 +711,9 @@ export class Edit implements IAction {
     public applyFormValidation(cols?: Column[]): void {
         let gObj: IGrid = this.parent;
         let frzCols: number = gObj.getFrozenColumns();
-        let form: HTMLFormElement = gObj.element.querySelector('.e-gridform') as HTMLFormElement;
+        let form: HTMLFormElement = this.parent.editSettings.mode !== 'Dialog' ?
+        gObj.element.querySelector('.e-gridform') as HTMLFormElement :
+        document.querySelector('#' + gObj.element.id + '_dialogEdit_wrapper').querySelector('.e-gridform') as HTMLFormElement;
         let mForm: HTMLFormElement = gObj.element.querySelectorAll('.e-gridform')[1] as HTMLFormElement;
         let rules: Object = {};
         let mRules: Object = {};
@@ -763,7 +767,7 @@ export class Edit implements IAction {
                 > (parseInt(closest(inputElement, '.e-row').getAttribute('aria-rowindex'), 10) || 0));
         }
         return this.parent.editSettings.mode !== 'Dialog' ? isFHdr ? this.parent.getHeaderTable() : this.parent.getContentTable() :
-            this.parent.element.querySelector('#' + this.parent.element.id + '_dialogEdit_wrapper');
+            document.querySelector('#' + this.parent.element.id + '_dialogEdit_wrapper');
     }
 
     private validationComplete(args: { status: string, inputName: string, element: HTMLElement, message: string }): void {
@@ -791,7 +795,7 @@ export class Edit implements IAction {
         let fCont: Element = this.parent.getContent().querySelector('.e-frozencontent');
         let table: Element = isInline ?
             (isFHdr ? this.parent.getHeaderTable() : this.parent.getContentTable()) :
-            this.parent.element.querySelector('#' + this.parent.element.id + '_dialogEdit_wrapper').querySelector('.e-dlg-content');
+            document.querySelector('#' + this.parent.element.id + '_dialogEdit_wrapper').querySelector('.e-dlg-content');
         let client: ClientRect = table.getBoundingClientRect();
         let left: number = isInline ?
             this.parent.element.getBoundingClientRect().left : client.left;

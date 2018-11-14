@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title> Typescript Components</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Typescript UI Controls" />
+    <meta name="author" content="Syncfusion" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" />
+    <link id="theme" href="../../theme-files/material.css" rel="stylesheet" />
+    <script>
+        window.require = {
+            config: function (json) {
+                window.rsConfig = json;
+                window.rsConfig.baseUrl = '';
+            }
+        };
+    </script>
+    <script src="./../../demo-config.js"></script>
+    <script src="./../../../node_modules/requirejs/require.js" data-main="index"></script>
+    <script>
+        require.config(window.rsConfig);
+    </script>
+    <style>
+        button {
+            margin: 25px 10px 10px 20px;
+        }
+
+        table {
+            border-collapse: collapse;
+            border-radius: 0;
+            margin: 20px auto;
+        }
+
+        table th {
+            padding-right: 40px;
+        }
+
+        .frame {
+            border: 1px solid #dddddd;
+            margin: 20px 20px 10px 20px;
+        }
+
+        @media only screen and (max-width: 500px) {
+            .frame {
+                overflow: scroll;
+            }
+        }
+
+        .e-filter::before {
+            content: '\e818';
+        }
+
+        .e-more::before {
+            content: '\e7f9';
+        }
+
+        .e-unread::before {
+            content: '\e80f';
+        }
+
+        .e-important::before {
+            content: '\e7e2';
+        }
+
+        .e-download::before {
+            content: '\e752';
+        }
+
+        .e-attachments::before {
+            content: '\e71d';
+        }
+
+        .e-categorized::before {
+            content: '\e714';
+        }
+
+        .e-align::before {
+            content: '\e756';
+        }
+
+        .e-left::before {
+            content: '\e75e';
+        }
+
+        .e-center::before {
+            content: "\e749";
+        }
+
+        .e-right::before {
+            content: '\e713';
+        }
+    </style>
+</head>
+
+<body>
+    <table id="dropdownbtn">
+        <tbody>
+            <tr>
+                <td>
+                    <button class="e-btn" id="material">Material</button>
+                </td>
+                <td>
+                    <button class="e-btn" id="fabric">Fabric</button>
+                </td>
+                <td>
+                    <button class="e-btn" id="bootstrap">Bootstrap</button>
+                </td>
+                <td>
+                    <button class="e-btn" id="highcontrast">Highcontrast</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="frame">
+        <table id="basic-drop-down-btn">
+            <thead>
+                <th>
+                    <b>Default DropdownButton</b>
+                </th>
+                <th>
+                    <b>Icon Only DropdownButton</b>
+                </th>
+                <th>
+                    <b>DropdownButton with Icons</b>
+                </th>
+                <th>
+                    <b>DropdownButton without Arrow</b>
+                </th>
+                <th>
+                    <b>DropdownButton Disabled</b>
+                </th>
+                <th>
+                    <b>DropdownButton RTL</b>
+                </th>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <button id="default">New Items</button>
+                    </td>
+                    <td>
+                        <button id="icon-only"></button>
+                    </td>
+                    <td>
+                        <button id="icon">Filter Email</button>
+                    </td>
+                    <td>
+                        <button id="hide">User Settings</button>
+                    </td>
+                    <td>
+                        <button id="disabled">Filter Email</button>
+                    </td>
+                    <td>
+                        <button id="rtl">Filter Email</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>

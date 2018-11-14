@@ -59,4 +59,37 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
+    
+    describe('EJ2-18135 - name attribute of textarea element', () => {
+        let rteObj: RichTextEditor;
+        let elem: HTMLTextAreaElement;
+        beforeEach((done: Function) => {
+            done();
+        });
+
+        it('name attribute to textarea element', (done) => {
+            elem = <HTMLTextAreaElement>createElement('textarea', { id: 'rte_test_EJ2_18135', attrs: { name: 'formName' } });
+            document.body.appendChild(elem);
+            rteObj = new RichTextEditor({
+            });
+            rteObj.appendTo(elem);
+            expect((rteObj as any).valueContainer.getAttribute('name') === 'formName').toBe(true);
+            done();
+        });
+
+        it('name attribute to div element', (done) => {
+            elem = <HTMLTextAreaElement>createElement('div', { id: 'rte_test_div_EJ2_18135', attrs: { name: 'formName' } });
+            document.body.appendChild(elem);
+            rteObj = new RichTextEditor({
+            });
+            rteObj.appendTo(elem);
+            expect((rteObj as any).valueContainer.getAttribute('name') === 'rte_test_div_EJ2_18135').toBe(true);
+            done();
+        });
+
+        afterEach((done) => {
+            destroy(rteObj);
+            done();
+        });
+    });
 })

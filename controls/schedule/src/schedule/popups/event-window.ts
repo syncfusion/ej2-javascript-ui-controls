@@ -12,7 +12,7 @@ import { DatePicker, DateTimePicker, ChangedEventArgs } from '@syncfusion/ej2-ca
 import { Schedule } from '../base/schedule';
 import { EJ2Instance, EventFieldsMapping, PopupOpenEventArgs, TdData, CellClickEventArgs } from '../base/interface';
 import { CurrentAction } from '../base/type';
-import { localTimezoneName, timezoneData } from '../timezone/timezone';
+import { Timezone, timezoneData } from '../timezone/timezone';
 import { FieldValidator } from './form-validator';
 import { RecurrenceEditor } from '../../recurrence-editor/recurrence-editor';
 import { ResourcesModel } from '../models/resources-model';
@@ -46,6 +46,7 @@ export class EventWindow {
     private buttonObj: Button;
     private repeatStartDate: Date;
     private cellClickAction: boolean;
+    private localTimezoneName: string;
     private duration: number;
 
     /**
@@ -56,6 +57,8 @@ export class EventWindow {
         this.l10n = this.parent.localeObj;
         this.fields = this.parent.eventFields;
         this.fieldValidator = new FieldValidator();
+        let timezone: Timezone = new Timezone();
+        this.localTimezoneName = timezone.getLocalTimezoneName();
         this.renderEventWindow();
     }
 
@@ -185,8 +188,7 @@ export class EventWindow {
             attrs: { onsubmit: 'return false;' }
         }) as HTMLFormElement;
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
-            let templeteEle: HTMLCollection = this.parent.getEditorTemplate()();
-            append([].slice.call(templeteEle), form);
+            append(this.parent.getEditorTemplate()(), form);
         } else {
             let content: HTMLElement = this.getDefaultEventWindowContent();
             form.appendChild(content);
@@ -927,17 +929,17 @@ export class EventWindow {
             let endTimezoneObj: DropDownList = this.getInstance(cls.EVENT_WINDOW_END_TZ_CLASS) as DropDownList;
             let timezone: { [key: string]: Object; }[] = startTimezoneObj.dataSource as { [key: string]: Object; }[];
             if (!startTimezoneObj.value || !this.parent.timezone) {
-                let found: boolean = timezone.some((tz: { [key: string]: Object }) => { return tz.Value === localTimezoneName; });
+                let found: boolean = timezone.some((tz: { [key: string]: Object }) => { return tz.Value === this.localTimezoneName; });
                 if (!found) {
-                    timezone.push({ Value: localTimezoneName, Text: localTimezoneName });
+                    timezone.push({ Value: this.localTimezoneName, Text: this.localTimezoneName });
                     startTimezoneObj.dataSource = timezone;
                     endTimezoneObj.dataSource = timezone;
                     startTimezoneObj.dataBind();
                     endTimezoneObj.dataBind();
                 }
             }
-            startTimezoneObj.value = startTimezoneObj.value || this.parent.timezone || localTimezoneName;
-            endTimezoneObj.value = endTimezoneObj.value || this.parent.timezone || localTimezoneName;
+            startTimezoneObj.value = startTimezoneObj.value || this.parent.timezone || this.localTimezoneName;
+            endTimezoneObj.value = endTimezoneObj.value || this.parent.timezone || this.localTimezoneName;
             startTimezoneObj.dataBind();
             endTimezoneObj.dataBind();
         } else {

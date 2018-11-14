@@ -25,6 +25,7 @@ export interface IMulitSelect extends Component<HTMLElement> {
     unSelectAllText?: string;
     popupObj?: Popup;
     onDocumentFocus?: boolean;
+    selectAllItems?(status: boolean, event?: MouseEvent): void;
     hidePopup?(): void;
     refreshPopup?(): void;
     refreshListItems?(data?: string): void;

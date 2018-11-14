@@ -14,7 +14,15 @@ export class DiagramHtmlElement extends DiagramElement {
         this.nodeId = nodeId;
     }
     private data: string | HTMLElement = '';
+
+    /**
+     * Gets the node id for the element
+     */
     public nodeId: string = '';
+
+    /**
+     * Gets the diagram id for the html element
+     */
     public diagramId: string = '';
     /**
      * Gets or sets the geometry of the html element
@@ -22,6 +30,10 @@ export class DiagramHtmlElement extends DiagramElement {
     public get content(): string | HTMLElement {
         return this.data;
     }
+
+    /**
+     * Gets or sets the value of the html element
+     */
     public set content(value: string | HTMLElement) {
         this.data = value;
         this.template = getContent(this, true) as HTMLElement;

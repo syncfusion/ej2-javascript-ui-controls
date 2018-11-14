@@ -3,10 +3,10 @@ import { Encoding, Save } from '@syncfusion/ej2-file-utils';
 /**
  * array literal codes
  */
-const arrLiteralCodes = new Int16Array(286);
-const arrLiteralLengths = new Uint8Array(286);
-const arrDistanceCodes = new Int16Array(30);
-const arrDistanceLengths = new Uint8Array(30);
+const ARR_LITERAL_CODES = new Int16Array(286);
+const ARR_LITERAL_LENGTHS = new Uint8Array(286);
+const ARR_DISTANCE_CODES = new Int16Array(30);
+const ARR_DISTANCE_LENGTHS = new Uint8Array(30);
 /**
  * represent compression stream writer
  * ```typescript
@@ -46,6 +46,10 @@ class CompressedStreamWriter {
         this.maxDist = this.windowSize - 262;
         this.checkSum = 1;
         this.noWrap = false;
+        if (!CompressedStreamWriter.isHuffmanTreeInitiated) {
+            CompressedStreamWriter.initHuffmanTree();
+            CompressedStreamWriter.isHuffmanTreeInitiated = true;
+        }
         this.treeLiteral = new CompressorHuffmanTree(this, 286, 257, 15);
         this.treeDistances = new CompressorHuffmanTree(this, 30, 1, 15);
         this.treeCodeLengths = new CompressorHuffmanTree(this, 19, 4, 7);
@@ -348,10 +352,10 @@ class CompressedStreamWriter {
             this.treeLiteral.getEncodedLength() + this.treeDistances.getEncodedLength() + this.extraBits;
         let static_len = this.extraBits;
         for (let i = 0; i < 286; i++) {
-            static_len += this.treeLiteral.codeFrequencies[i] * arrLiteralLengths[i];
+            static_len += this.treeLiteral.codeFrequencies[i] * ARR_LITERAL_LENGTHS[i];
         }
         for (let i = 0; i < 30; i++) {
-            static_len += this.treeDistances.codeFrequencies[i] * arrDistanceLengths[i];
+            static_len += this.treeDistances.codeFrequencies[i] * ARR_DISTANCE_LENGTHS[i];
         }
         if (opt_len >= static_len) {
             // Force static trees.
@@ -363,8 +367,8 @@ class CompressedStreamWriter {
         else if (opt_len == static_len) {
             // Encode with static tree.
             this.pendingBufferWriteBits((1 << 1) + (lastBlock ? 1 : 0), 3);
-            this.treeLiteral.setStaticCodes(arrLiteralCodes, arrLiteralLengths);
-            this.treeDistances.setStaticCodes(arrDistanceCodes, arrDistanceLengths);
+            this.treeLiteral.setStaticCodes(ARR_LITERAL_CODES, ARR_LITERAL_LENGTHS);
+            this.treeDistances.setStaticCodes(ARR_DISTANCE_CODES, ARR_DISTANCE_LENGTHS);
             this.huffmanCompressBlock();
             this.huffmanReset();
         }
@@ -494,6 +498,33 @@ class CompressedStreamWriter {
         this.pendingBufBitsInCache = 0;
     }
     /**
+     * Huffman Tree literal calculation
+     * @private
+     */
+    static initHuffmanTree() {
+        let i = 0;
+        while (i < 144) {
+            ARR_LITERAL_CODES[i] = CompressorHuffmanTree.bitReverse((0x030 + i) << 8);
+            ARR_LITERAL_LENGTHS[i++] = 8;
+        }
+        while (i < 256) {
+            ARR_LITERAL_CODES[i] = CompressorHuffmanTree.bitReverse((0x190 - 144 + i) << 7);
+            ARR_LITERAL_LENGTHS[i++] = 9;
+        }
+        while (i < 280) {
+            ARR_LITERAL_CODES[i] = CompressorHuffmanTree.bitReverse((0x000 - 256 + i) << 9);
+            ARR_LITERAL_LENGTHS[i++] = 7;
+        }
+        while (i < 286) {
+            ARR_LITERAL_CODES[i] = CompressorHuffmanTree.bitReverse((0x0c0 - 280 + i) << 8);
+            ARR_LITERAL_LENGTHS[i++] = 8;
+        }
+        for (i = 0; i < 30; i++) {
+            ARR_DISTANCE_CODES[i] = CompressorHuffmanTree.bitReverse(i << 11);
+            ARR_DISTANCE_LENGTHS[i] = 5;
+        }
+    }
+    /**
      * close the stream and write all pending buffer in to stream
      * @returns {void}
      */
@@ -554,6 +585,7 @@ class CompressedStreamWriter {
         this.noWrap = undefined;
     }
 }
+CompressedStreamWriter.isHuffmanTreeInitiated = false;
 /**
  * represent the Huffman Tree
  */
@@ -929,34 +961,8 @@ class ChecksumCalculator {
 ChecksumCalculator.checkSumBitOffset = 16;
 ChecksumCalculator.checksumBase = 65521;
 ChecksumCalculator.checksumIterationCount = 3800;
-/**
- * Huffman Tree literal calculation
- */
-(() => {
-    let i = 0;
-    while (i < 144) {
-        arrLiteralCodes[i] = CompressorHuffmanTree.bitReverse((0x030 + i) << 8);
-        arrLiteralLengths[i++] = 8;
-    }
-    while (i < 256) {
-        arrLiteralCodes[i] = CompressorHuffmanTree.bitReverse((0x190 - 144 + i) << 7);
-        arrLiteralLengths[i++] = 9;
-    }
-    while (i < 280) {
-        arrLiteralCodes[i] = CompressorHuffmanTree.bitReverse((0x000 - 256 + i) << 9);
-        arrLiteralLengths[i++] = 7;
-    }
-    while (i < 286) {
-        arrLiteralCodes[i] = CompressorHuffmanTree.bitReverse((0x0c0 - 280 + i) << 8);
-        arrLiteralLengths[i++] = 8;
-    }
-    for (i = 0; i < 30; i++) {
-        arrDistanceCodes[i] = CompressorHuffmanTree.bitReverse(i << 11);
-        arrDistanceLengths[i] = 5;
-    }
-})();
 
-const crc32Table = [];
+const CRC32TABLE = [];
 /**
  * class provide compression library
  * ```typescript
@@ -993,6 +999,9 @@ class ZipArchive {
      * constructor for creating ZipArchive instance
      */
     constructor() {
+        if (CRC32TABLE.length === 0) {
+            ZipArchive.initCrc32Table();
+        }
         this.files = [];
         this.level = 'Normal';
         Save.isMicrosoftBrowser = !(!navigator.msSaveBlob);
@@ -1137,7 +1146,7 @@ class ZipArchive {
                         isDirectory: false
                     };
                     if (zipArchive.level === 'Normal') {
-                        zipArchive.compressData(input, data, crc32Table);
+                        zipArchive.compressData(input, data, CRC32TABLE);
                         let length = 0;
                         for (let i = 0; i < data.compressedData.length; i++) {
                             length += data.compressedData[i].length;
@@ -1147,7 +1156,7 @@ class ZipArchive {
                     }
                     else {
                         data.compressedSize = input.length;
-                        data.crc32Value = zipArchive.calculateCrc32Value(0, input, crc32Table);
+                        data.crc32Value = zipArchive.calculateCrc32Value(0, input, CRC32TABLE);
                         data.compressionType = '\x00\x00'; // Stored = 0
                         data.compressedData.push(input);
                     }
@@ -1283,6 +1292,20 @@ class ZipArchive {
         }
         return (crc32Value ^ (-1));
     }
+    /**
+     * construct cyclic redundancy code table
+     * @private
+     */
+    static initCrc32Table() {
+        let i;
+        for (let j = 0; j < 256; j++) {
+            i = j;
+            for (let k = 0; k < 8; k++) {
+                i = ((i & 1) ? (0xEDB88320 ^ (i >>> 1)) : (i >>> 1));
+            }
+            CRC32TABLE[j] = i;
+        }
+    }
 }
 /**
  * Class represent unique ZipArchive item
@@ -1332,19 +1355,6 @@ class ZipArchiveItem {
         this.data = undefined;
     }
 }
-/**
- * construct cyclic redundancy code table
- */
-(() => {
-    let i;
-    for (let j = 0; j < 256; j++) {
-        i = j;
-        for (let k = 0; k < 8; k++) {
-            i = ((i & 1) ? (0xEDB88320 ^ (i >>> 1)) : (i >>> 1));
-        }
-        crc32Table[j] = i;
-    }
-})();
 
 /**
  * export ZipArchive class

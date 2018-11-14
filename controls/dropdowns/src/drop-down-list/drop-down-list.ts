@@ -1,5 +1,5 @@
 /// <reference path='../drop-down-base/drop-down-base-model.d.ts'/>
-import { EventHandler, Property, Event, compile, EmitType, KeyboardEvents, append } from '@syncfusion/ej2-base';
+import { EventHandler, Property, Event, compile, EmitType, KeyboardEvents, append, extend } from '@syncfusion/ej2-base';
 import { attributes, isNullOrUndefined, getUniqueID, formatUnit, isUndefined, getValue } from '@syncfusion/ej2-base';
 import { Animation, AnimationModel, Browser, KeyboardEventArgs, NotifyPropertyChanges } from '@syncfusion/ej2-base';
 import { addClass, removeClass, setStyleAttribute, closest, prepend, detach, classList } from '@syncfusion/ej2-base';
@@ -7,6 +7,7 @@ import { Popup, isCollide, createSpinner, showSpinner, hideSpinner } from '@sync
 import { IInput, Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';
 import { incrementalSearch } from '../common/incremental-search';
 import { DropDownBase, dropDownBaseClasses, SelectEventArgs, FilteringEventArgs, PopupEventArgs } from '../drop-down-base/drop-down-base';
+import { FocusEventArgs } from '../drop-down-base/drop-down-base';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { DropDownListModel } from '../drop-down-list';
 /* tslint:disable */
@@ -446,21 +447,33 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     protected clear(e?: MouseEvent | KeyboardEventArgs, properties?: DropDownListModel): void {
-        if (isNullOrUndefined(properties) || (!isNullOrUndefined(properties) && isNullOrUndefined(properties.dataSource))) {
-            this.resetSelection();
+        if (isNullOrUndefined(properties) || (!isNullOrUndefined(properties) &&
+            (isNullOrUndefined(properties.dataSource) ||
+                (!(properties.dataSource instanceof DataManager) && properties.dataSource.length === 0)))) {
+            this.resetSelection(properties);
         }
         let dataItem: { [key: string]: string } = this.getItemData();
         if (this.previousValue === dataItem.value) { return; }
         this.onChangeEvent(e);
     }
 
-    private resetSelection(): void {
+    private resetSelection(properties?: DropDownListModel): void {
         if (this.list) {
-            if (this.allowFiltering && this.getModuleName() !== 'autocomplete'
-                && !isNullOrUndefined(this.actionCompleteData.ulElement) && !isNullOrUndefined(this.actionCompleteData.list)) {
-                this.onActionComplete(this.actionCompleteData.ulElement.cloneNode(true) as HTMLElement, this.actionCompleteData.list);
+            if ((!isNullOrUndefined(properties) &&
+                (isNullOrUndefined(properties.dataSource) ||
+                    (!(properties.dataSource instanceof DataManager) && properties.dataSource.length === 0)))) {
+                this.selectedLI = null;
+                this.actionCompleteData.isUpdated = false;
+                this.actionCompleteData.ulElement = null;
+                this.actionCompleteData.list = null;
+                this.resetList(properties.dataSource);
+            } else {
+                if (this.allowFiltering && this.getModuleName() !== 'autocomplete'
+                    && !isNullOrUndefined(this.actionCompleteData.ulElement) && !isNullOrUndefined(this.actionCompleteData.list)) {
+                    this.onActionComplete(this.actionCompleteData.ulElement.cloneNode(true) as HTMLElement, this.actionCompleteData.list);
+                }
+                this.resetFocusElement();
             }
-            this.resetFocusElement();
         }
         this.hiddenElement.innerHTML = '';
         this.inputElement.value = '';
@@ -497,7 +510,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 } else {
                     let defaultAttr: string[] = ['title', 'id', 'placeholder'];
                     let validateAttr: string[] = ['name', 'required'];
-                    if (validateAttr.indexOf(htmlAttr) > -1) {
+                    if (htmlAttr.indexOf('data') === 0 || validateAttr.indexOf(htmlAttr) > -1) {
                         this.hiddenElement.setAttribute(htmlAttr, this.htmlAttributes[htmlAttr]);
                     } else if (defaultAttr.indexOf(htmlAttr) > -1) {
                         htmlAttr === 'placeholder' ? Input.setPlaceholder(this.htmlAttributes[htmlAttr], this.inputElement) :
@@ -674,10 +687,11 @@ export class DropDownList extends DropDownBase implements IInput {
         this.trigger('blur');
     }
 
-    protected onFocus(): void {
+    protected onFocus(e?: FocusEvent | MouseEvent | KeyboardEvent | TouchEvent): void {
         if (!this.isInteracted) {
             this.isInteracted = true;
-            this.trigger('focus');
+            let args: FocusEventArgs = { isInteracted: e ? true : false, event: e };
+            this.trigger('focus', args);
         }
         this.updateIconState();
     }
@@ -1025,7 +1039,7 @@ export class DropDownList extends DropDownBase implements IInput {
 
     private focusDropDown(e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         if (!this.initial && this.isFilterLayout()) {
-            this.focusIn();
+            this.focusIn(e);
         }
     }
 
@@ -1041,7 +1055,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.hidePopup();
                 if (this.isFilterLayout()) { this.focusDropDown(e); }
             } else {
-                this.focusIn();
+                this.focusIn(e);
                 this.floatLabelChange();
                 this.queryString = this.inputElement.value.trim() === '' ? null : this.inputElement.value;
                 this.isDropDownClick = true;
@@ -1052,7 +1066,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 setTimeout(() => { proxy.cloneElements(); }, 100);
             }
         } else {
-            this.focusIn();
+            this.focusIn(e);
         }
     }
     protected cloneElements(): void {
@@ -1512,7 +1526,8 @@ export class DropDownList extends DropDownBase implements IInput {
                 if (!this.actionCompleteData.isUpdated || ((!this.isCustomFilter
                     && !this.isFilterFocus)
                     && ((this.dataSource instanceof DataManager)
-                        || (!isNullOrUndefined(this.dataSource.length) && this.dataSource.length !== 0)))) {
+                        || (!isNullOrUndefined(this.dataSource) &&
+                            !isNullOrUndefined(this.dataSource.length) && this.dataSource.length !== 0)))) {
                     this.actionCompleteData = { ulElement: ulElement.cloneNode(true) as HTMLElement, list: list, isUpdated: true };
                 }
                 this.addNewItem(list, selectedItem);
@@ -1983,6 +1998,15 @@ export class DropDownList extends DropDownBase implements IInput {
         this.hiddenElement.id = id + '_hidden';
         this.targetElement().setAttribute('tabindex', this.tabIndex);
         attributes(this.targetElement(), this.getAriaAttributes());
+        let invalidAttr: string[] = ['class', 'style', 'id'];
+        let htmlAttr: { [key: string]: string; } = {};
+        for (let a: number = 0; a < this.element.attributes.length; a++) {
+            if (invalidAttr.indexOf(this.element.attributes[a].name) === -1) {
+                htmlAttr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
+            }
+        }
+        extend(htmlAttr, this.htmlAttributes, htmlAttr);
+        this.setProperties({ htmlAttributes: htmlAttr }, true);
         this.setHTMLAttributes();
         if (this.value !== null || this.activeIndex !== null || this.text !== null) {
             this.initValue();
@@ -2052,7 +2076,10 @@ export class DropDownList extends DropDownBase implements IInput {
     }
     protected updateDataSource(props?: DropDownListModel): void {
         this.clear(null, props);
-        this.resetList(this.dataSource);
+        if (!(!isNullOrUndefined(props) && (isNullOrUndefined(props.dataSource)
+            || (!(props.dataSource instanceof DataManager) && props.dataSource.length === 0)))) {
+            this.resetList(this.dataSource);
+        }
         if (!this.isCustomFilter && !this.isFilterFocus && document.activeElement !== this.filterInput) {
             this.itemData = this.getDataByValue(this.value);
             let dataItem: { [key: string]: string } = this.getItemData();
@@ -2238,7 +2265,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * Sets the focus on the component for interaction.
      * @returns void.
      */
-    public focusIn(): void {
+    public focusIn(e?: FocusEvent | MouseEvent | KeyboardEvent | TouchEvent): void {
         if (!this.enabled) {
             return;
         }
@@ -2254,7 +2281,7 @@ export class DropDownList extends DropDownBase implements IInput {
             this.targetElement().focus();
         }
         addClass([this.inputWrapper.container], [dropDownListClasses.inputFocus]);
-        this.onFocus();
+        this.onFocus(e);
     }
     /**
      * Moves the focus from the component if the component is already focused. 

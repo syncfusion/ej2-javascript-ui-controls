@@ -15,7 +15,9 @@ import { ConnectorModel } from '../objects/connector-model';
 export class DiagramScroller {
     /** @private */
     public transform: TransformFactor = { tx: 0, ty: 0, scale: 1 };
+    /**   @private  */
     public oldCollectionObjects: string[] = [];
+    /**   @private  */
     public removeCollection: string[] = [];
     private diagram: Diagram;
     private objects: IElement[];
@@ -232,6 +234,7 @@ export class DiagramScroller {
         return objects;
     }
 
+    /**   @private  */
     public virtualizeElements(): void {
         let viewWidth: number = this.viewPortWidth / this.currentZoom;
         let viewHeight: number = this.viewPortHeight / this.currentZoom;

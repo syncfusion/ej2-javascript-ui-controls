@@ -1582,6 +1582,11 @@
           font-size: $schedule-date-header-wrap-device-font-size;
         }
 
+        .e-date-header-wrap td {
+          border-left-width: 0;
+          border-right-width: 0;
+        }
+
         .e-content-wrap {
           font-size: $schedule-content-device-font-size;
         }
@@ -2792,7 +2797,6 @@
           .e-delete-icon,
           .e-close-icon {
             font-size: 11px;
-            line-height: 0;
           }
 
           .e-delete:disabled {
@@ -2985,12 +2989,6 @@
           }
         }
 
-        .e-header-icon-wrapper .e-close {
-          .e-close-icon {
-            font-size: 12px;
-          }
-        }
-
         .e-header-icon-wrapper .e-edit,
         .e-header-icon-wrapper .e-delete,
         .e-header-icon-wrapper .e-close {
@@ -3090,10 +3088,10 @@
 
     &.e-device {
       .e-event-popup .e-popup-header {
-        .e-header-icon-wrapper .e-close {
-          .e-close-icon {
-            font-size: 14px;
-          }
+        .e-close-icon,
+        .e-edit-icon,
+        .e-delete-icon {
+          font-size: 14px;
         }
       }
 

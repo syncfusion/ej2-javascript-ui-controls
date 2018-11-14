@@ -16,6 +16,7 @@ import { IRenderer } from './../rendering/IRenderer';
 /** @private */
 export class CanvasRenderer implements IRenderer {
 
+    /**   @private  */
     public static getContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
         return canvas.getContext('2d');
     }
@@ -27,6 +28,7 @@ export class CanvasRenderer implements IRenderer {
         }
     };
 
+    /**   @private  */
     public renderGradient(options: StyleAttributes, ctx: CanvasRenderingContext2D, x?: number, y?: number): CanvasRenderingContext2D {
         let max: number; let min: number;
         let grd: CanvasGradient;
@@ -52,6 +54,7 @@ export class CanvasRenderer implements IRenderer {
         return ctx;
     }
 
+    /**   @private  */
     public renderShadow(options: BaseAttributes, canvas: HTMLCanvasElement, collection: Object[] = null): void {
         let ctx: CanvasRenderingContext2D = CanvasRenderer.getContext(canvas);
         ctx.save();
@@ -78,6 +81,7 @@ export class CanvasRenderer implements IRenderer {
         ctx.restore();
     }
 
+    /**   @private  */
     public static createCanvas(id: string, width: number, height: number): HTMLCanvasElement {
         let canvasObj: HTMLCanvasElement = createHtmlElement('canvas', { 'id': id }) as HTMLCanvasElement;
         this.setCanvasSize(canvasObj, width, height);
@@ -128,6 +132,7 @@ export class CanvasRenderer implements IRenderer {
         ctx.font = font;
     }
 
+    /**   @private  */
     public parseDashArray(dashArray: string): number[] {
         let dashes: number[] = [];
         let separator: string = dashArray.indexOf(' ') !== -1 ? ' ' : ',';
@@ -139,6 +144,7 @@ export class CanvasRenderer implements IRenderer {
     }
     //Rendering Part
 
+    /**   @private  */
     public drawRectangle(canvas: HTMLCanvasElement, options: RectAttributes): void {
         if (options.visible === true) {
             if (options.cornerRadius) {
@@ -201,6 +207,7 @@ export class CanvasRenderer implements IRenderer {
     //     ctx.closePath();
     //     ctx.restore();
     // }
+    /**   @private  */
     public drawPath(canvas: HTMLCanvasElement, options: PathAttributes): void {
         let collection: Object[] = [];
         collection = processPathData(options.data);
@@ -223,6 +230,7 @@ export class CanvasRenderer implements IRenderer {
         ctx.restore();
     }
 
+    /**   @private  */
     public renderPath(canvas: HTMLCanvasElement, options: PathAttributes, collection: Object[]): void {
         if (options.visible === true) {
             let ctx: CanvasRenderingContext2D = CanvasRenderer.getContext(canvas);
@@ -325,6 +333,7 @@ export class CanvasRenderer implements IRenderer {
         }
     }
 
+    /**   @private  */
     public drawText(canvas: HTMLCanvasElement, options: TextAttributes): void {
         if (options.content && options.visible === true) {
             let ctx: CanvasRenderingContext2D = CanvasRenderer.getContext(canvas);
@@ -395,6 +404,7 @@ export class CanvasRenderer implements IRenderer {
         ctx.rotate(-(obj.angle * Math.PI / 180));
     }
 
+    /**   @private  */
     public drawImage(canvas: HTMLCanvasElement, obj: ImageAttributes, parentSvg?: SVGSVGElement, fromPalette?: boolean): void {
 
         if (obj.visible) {
@@ -533,6 +543,7 @@ export class CanvasRenderer implements IRenderer {
     // text utility
 
 
+    /**   @private  */
     public labelAlign(text: TextAttributes, wrapBounds: TextBounds, childNodes: SubTextElement[]): PointModel {
         let bounds: Size = new Size(wrapBounds.width, childNodes.length * (text.fontSize * 1.2));
         let position: PointModel = { x: 0, y: 0 };

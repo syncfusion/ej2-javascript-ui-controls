@@ -232,7 +232,8 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
         }
     }
 
-    protected clearTemplate(templateName?: string[]): void {
+    //tslint:disable-next-line
+    protected clearTemplate(templateName?: string[], index?: any): void {
         //No Code
     }
 

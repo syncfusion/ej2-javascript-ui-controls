@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 16.3.32 (2018-11-15)
+
+### Schedule
+
+#### Bug Fixes
+
+- An issue with date and time displaying wrongly on `quick popup` in the presence of Daylight Saving Time has been fixed.
+
+## 16.3.31 (2018-11-07)
+
+### Schedule
+
+#### Breaking Changes
+
+- Misalignment issue with edit and delete icons on edit `event popup` has been fixed.
+
+## 16.3.29 (2018-10-31)
+
 ### Schedule
 
 #### New Features

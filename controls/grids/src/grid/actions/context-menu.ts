@@ -99,7 +99,7 @@ export class ContextMenu implements IAction {
     /**
      * @hidden
      */
-    public addEventListener() : void {
+    public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.on(events.uiUpdate, this.enableAfterRenderMenu, this);
         this.parent.on(events.initialLoad, this.render, this);
@@ -108,7 +108,7 @@ export class ContextMenu implements IAction {
     /**
      * @hidden
      */
-    public removeEventListener() : void {
+    public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.initialLoad, this.render);
         this.parent.off(events.uiUpdate, this.enableAfterRenderMenu);
@@ -203,31 +203,39 @@ export class ContextMenu implements IAction {
                 this.parent.ungroupColumn(this.targetColumn.field);
                 break;
             case 'Edit':
-                if (this.parent.editSettings.mode === 'Batch') {
-                    if (this.row && this.cell && !isNaN(parseInt(this.cell.getAttribute('aria-colindex'), 10))) {
-                        this.parent.editModule.editCell(parseInt(this.row.getAttribute('aria-rowindex'), 10), (this.parent.getColumns()
-                        [parseInt(this.cell.getAttribute('aria-colindex'), 10)] as Column).field);
+                if (this.parent.editModule) {
+                    if (this.parent.editSettings.mode === 'Batch') {
+                        if (this.row && this.cell && !isNaN(parseInt(this.cell.getAttribute('aria-colindex'), 10))) {
+                            this.parent.editModule.editCell(parseInt(this.row.getAttribute('aria-rowindex'), 10), (this.parent.getColumns()
+                            [parseInt(this.cell.getAttribute('aria-colindex'), 10)] as Column).field);
+                        }
+                    } else {
+                        this.parent.editModule.endEdit();
+                        this.parent.editModule.startEdit(this.row);
                     }
-                } else {
-                    this.parent.editModule.endEdit();
-                    this.parent.editModule.startEdit(this.row);
                 }
                 break;
             case 'Delete':
-                if (this.parent.editSettings.mode !== 'Batch') {
-                    this.parent.editModule.endEdit();
-                }
-                if (this.parent.getSelectedRecords().length === 1) {
-                    this.parent.editModule.deleteRow(this.row);
-                } else {
-                    this.parent.deleteRecord();
+                if (this.parent.editModule) {
+                    if (this.parent.editSettings.mode !== 'Batch') {
+                        this.parent.editModule.endEdit();
+                    }
+                    if (this.parent.getSelectedRecords().length === 1) {
+                        this.parent.editModule.deleteRow(this.row);
+                    } else {
+                        this.parent.deleteRecord();
+                    }
                 }
                 break;
             case 'Save':
-                this.parent.editModule.endEdit();
+                if (this.parent.editModule) {
+                    this.parent.editModule.endEdit();
+                }
                 break;
             case 'Cancel':
-                this.parent.editModule.closeEdit();
+                if (this.parent.editModule) {
+                    this.parent.editModule.closeEdit();
+                }
                 break;
             case 'Copy':
                 this.parent.copy();
@@ -314,10 +322,11 @@ export class ContextMenu implements IAction {
                         if (key !== 'Save' && key !== 'Cancel') {
                             this.hiddenItems.push(item.text);
                         }
-                    } else if (this.parent.editSettings.mode === 'Batch' && ((closest(args.event.target as Element, '.e-gridform')) ||
-                        this.parent.editModule.getBatchChanges()[changedRecords].length ||
-                        this.parent.editModule.getBatchChanges()[addedRecords].length ||
-                        this.parent.editModule.getBatchChanges()[deletedRecords].length) && (key === 'Save' || key === 'Cancel')) {
+                    } else if (this.parent.editModule && this.parent.editSettings.mode === 'Batch' &&
+                        ((closest(args.event.target as Element, '.e-gridform')) ||
+                            this.parent.editModule.getBatchChanges()[changedRecords].length ||
+                            this.parent.editModule.getBatchChanges()[addedRecords].length ||
+                            this.parent.editModule.getBatchChanges()[deletedRecords].length) && (key === 'Save' || key === 'Cancel')) {
                         continue;
                     } else if (isNullOrUndefined(args.parentItem) && args.event
                         && !this.ensureTarget(args.event.target as HTMLElement, dItem.target)) {

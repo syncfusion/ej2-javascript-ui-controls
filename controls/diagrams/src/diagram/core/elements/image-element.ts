@@ -17,9 +17,16 @@ export class ImageElement extends DiagramElement {
      */
     private imageSource: string = '';
 
+    /**
+     * Gets the source for the image element
+     */
     public get source(): string {
         return this.imageSource;
     }
+
+    /**
+     * Sets the source for the image element
+     */
     public set source(value: string) {
         this.imageSource = value;
         this.isDirt = true;

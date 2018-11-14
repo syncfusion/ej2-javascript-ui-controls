@@ -22,18 +22,17 @@ npm install @syncfusion/ej2-schedule
 
 * [Getting Started](https://ej2.syncfusion.com/documentation/schedule/getting-started.html?lang=typescript)
 * [View Online Demos](https://ej2.syncfusion.com/16.2.41/demos/#/material/schedule/default.html)
-* [Product Page](https://www.syncfusion.com/products/javascript/scheduler)
+* [Product Page](https://www.syncfusion.com/javascript-ui-controls/scheduler)
 
 ## Supported Frameworks
 
 Schedule component is also available in following list of frameworks.
 
-1. [Angular](https://github.com/syncfusion/ej2-ng-schedule)
-2. [React](https://github.com/syncfusion/ej2-react-schedule)
-3. [VueJS](https://www.syncfusion.com/products/vue/scheduler)
-4. [ASP.NET Core](https://www.syncfusion.com/products/aspnetcore/scheduler)
-5. [ASP.NET MVC](https://www.syncfusion.com/products/aspnetmvc/scheduler)
-6. [JavaScript (ES5)](https://www.syncfusion.com/products/javascript/scheduler)
+1. [Angular](https://github.com/syncfusion/ej2-angular-ui-components)
+2. [React](https://github.com/syncfusion/ej2-react-ui-components)
+3. [VueJS](https://github.com/syncfusion/ej2-vue-ui-components)
+4. [ASP.NET Core](https://www.syncfusion.com/aspnet-core-ui-controls/scheduler)
+5. [ASP.NET MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls/scheduler)
 
 ## Showcase samples
 
@@ -43,8 +42,8 @@ Schedule component is also available in following list of frameworks.
 
 * [**Views**](https://ej2.syncfusion.com/16.2.41/demos/#/material/schedule/views.html) - Schedule is now availed with 10 different view modes – day, week, work week, month, timeline day, timeline week, timeline work-week, timeline month, agenda and month agenda. It is possible to configure view-based settings on each view mode. The `Week` view is set as active view by default.
 * [**Data binding**](https://ej2.syncfusion.com/16.2.41/demos/#/material/schedule/remote-data.html) - Seamless data binding with various client-side and remote data sources thus allowing the data to load on demand by default to reduce the data transfer and loading time.
-* [**Drag and drop**] - Appointments can be easily rescheduled to another time by dragging and dropping them onto the required time slots.
-* [**Appointment resize**] - An appointment’s time can be easily extended by resizing its start or end handlers.
+* **Drag and drop** - Appointments can be easily rescheduled to another time by dragging and dropping them onto the required time slots.
+* **Appointment resize** - An appointment’s time can be easily extended by resizing its start or end handlers.
 * [**Multiple resources**](https://ej2.syncfusion.com/16.2.41/demos/#/material/schedule/group.html) - Supports planning and management of events for multiple resources and allows to group them under appropriate resources. Also, supports date-wise grouping, linked appointments and other group related customizations.
 * [**Recurrence**](https://ej2.syncfusion.com/16.2.41/demos/#/material/schedule/recurrence-events.html) - Allows the user to repeat a set of events on a daily, weekly, monthly, or yearly basis.
 * [**Template**](https://ej2.syncfusion.com/16.2.41/demos/#/material/schedule/event-template.html) - The key elements like events, date header, work cells and event tooltip comes with the default template support which allows the flexible end-user customization to embed any kind of text, images, or styles to it.
@@ -62,15 +61,15 @@ Schedule component is also available in following list of frameworks.
 Product support is available through following mediums.
 
 * Creating incident through Syncfusion [Direct-trac](https://www.syncfusion.com/support/directtrac/incidents) support system or [Community forum](https://www.syncfusion.com/forums/essential-js2).
-* New [GitHub issue](https://github.com/syncfusion/ej2-schedule/issues/new).
+* New [GitHub issue](https://github.com/syncfusion/ej2-javascript-ui-controls/issues/new).
 * Ask your query in Stack Overflow with tag `syncfusion`, `ej2`.
 
 ## License
 
-Check the license detail [here](https://github.com/syncfusion/ej2/blob/master/license).
+Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/LICENSE).
 
 ## Changelog
 
-Check the changelog [here](https://github.com/syncfusion/ej2-schedule/blob/master/CHANGELOG.md).
+Check the changelog [here](https://ej2.syncfusion.com/documentation/release-notes).
 
 © Copyright 2018 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

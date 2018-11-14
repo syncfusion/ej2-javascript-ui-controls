@@ -22,32 +22,32 @@ Following list of components are available in the package
 *	Chart  - Feature-rich chart control with built-in support for over 25 chart types, technical indictors, trendline, zooming, tooltip, selection, crosshair and trackball. 
       *	[Getting Started](https://ej2.syncfusion.com/documentation/chart/getting-started.html?lang=typescript)
       *	[View Online Demos](https://ej2.syncfusion.com/demos/#/material/chart/line.html)
-      *	[Product Page](https://www.syncfusion.com/products/javascript/chart)
+      *	[Product Page](https://www.syncfusion.com/javascript-ui-controls/charts)
 *	Accumulation Chart  - Built-in support for Pie, Doughnut, Pyramid and funnel series type, to show the proportions and percentages between the categories.
       *	[Getting Started](https://ej2.syncfusion.com/documentation/accumulation-chart/getting-started.html?lang=typescript)
       *	[View Online Demos](https://ej2.syncfusion.com/demos/#/material/chart/default-pie.html)
-      *	[Product Page](https://www.syncfusion.com/products/javascript/chart)
+      *	[Product Page](https://www.syncfusion.com/javascript-ui-controls/charts)
 *	Range Navigator  - Interface for selecting a small range from a large collection. It is commonly used in financial dashboards to filter a date range for data that needs to be visualized.
       *	[Getting Started](https://ej2.syncfusion.com/documentation/rangenavigator/getting-started.html?lang=typescript)
       *	[View Online Demos](https://ej2.syncfusion.com/demos/#/material/rangenavigator/default.html)
-      *	[Product Page](https://www.syncfusion.com/products/javascript/rangenavigator)
+      *	[Product Page](https://www.syncfusion.com/javascript-ui-controls/range-selector)
 *	Sparkline: Very small chart control drawn without axes or coordinates. The sparklines are easy to interpret and convey more information to users by visualizing data in a small amount of space.
       *	[Getting started](https://ej2.syncfusion.com/documentation/sparkline/getting-started.html?lang=typescript)
       *	[View online demos](https://ej2.syncfusion.com/demos/#/material/sparkline/default.html)
-      *	[Product page](https://www.syncfusion.com/products/javascript/sparkline)
+      *	[Product page](https://www.syncfusion.com/javascript-ui-controls/sparkline)
 *	Smith chart: Tool for visualize data of high frequency circuit applications. It contains two sets of circles to plot parameters of transmission lines.
       *	[Getting started](https://ej2.syncfusion.com/documentation/smithchart/getting-started.html?lang=typescript)
       *	[View online demos](https://ej2.syncfusion.com/demos/#/material/smithchart/default.html)
-      *	[Product page](https://www.syncfusion.com/products/javascript/smithchart)
+      *	[Product page](https://www.syncfusion.com/javascript-ui-controls/smith-chart)
 
 ## Supported frameworks
  These components are available in following list of
-  1. [Angular](https://github.com/syncfusion/ej2-ng-charts/?utm_source=npm&utm_campaign=chart)
-  2. [React](https://github.com/syncfusion/ej2-react-charts?utm_source=npm&utm_campaign=chart)
-  3. [Vue.js](https://github.com/syncfusion/ej2-vue-charts?utm_source=npm&utm_campaign=chart)
+  1. [Angular](https://github.com/syncfusion/ej2-angular-ui-components/?utm_source=npm&utm_campaign=chart)
+  2. [React](https://github.com/syncfusion/ej2-react-ui-components/?utm_source=npm&utm_campaign=chart)
+  3. [Vue.js](https://github.com/syncfusion/ej2-vue-ui-components/?utm_source=npm&utm_campaign=chart)
   4. [ASP.NET Core](https://aspdotnetcore.syncfusion.com/Chart/Line#/material)
   5. [ASP.NET MVC](https://aspnetmvc.syncfusion.com/Chart/Line#/material)
-  6. [JavaScript (ES5)](https://www.syncfusion.com/products/javascript/chart)
+  6. [JavaScript (ES5)](https://www.syncfusion.com/javascript-ui-controls/charts)
 
 ## Showcase samples
 
@@ -113,15 +113,15 @@ Following list of components are available in the package
 Product support is available for through following mediums.
 
 * Creating incident in Syncfusion [Direct-trac](https://www.syncfusion.com/support/directtrac/incidents?utm_source=npm&utm_campaign=chart) support system or [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_campaign=chart).
-* New [GitHub issues](https://github.com/syncfusion/ej2-charts/issues) 
+* New [GitHub issues](https://github.com/syncfusion/ej2-javascript-ui-controls/issues/new) 
 * Ask your query in Stack Overflow with tag `syncfusion`, `ej2`.
 
 ## License
 
-Check the license detail [here](https://github.com/syncfusion/ej2/blob/master/license?utm_source=npm&utm_campaign=chart)
+Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license?utm_source=npm&utm_campaign=chart)
 
 ## Changelog
 
-Check the changelog [here](https://github.com/syncfusion/ej2-charts/blob/master/CHANGELOG.md?utm_source=npm&utm_campaign=chart)
+Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/src/charts/CHANGELOG.md?utm_source=npm&utm_campaign=chart)
 
 © Copyright 2018 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

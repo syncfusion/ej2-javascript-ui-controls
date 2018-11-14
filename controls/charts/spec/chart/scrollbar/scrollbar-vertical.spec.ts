@@ -80,7 +80,7 @@ describe('Scrollbar Chart', () => {
             let svgChildEle: Element = document.getElementById('scrollBar_svgprimaryYAxis').children[0];
             let backRectEle: Element = svgChildEle.children[0].children[0];
             expect(svgChildEle.id === 'scrollBar_primaryYAxis').toBe(true)
-            expect(svgChildEle.getAttribute('transform') === 'translate(16,0) rotate(90)').toBe(true);
+            expect(svgChildEle.getAttribute('transform') === 'translate(0,351.25) rotate(270)').toBe(true);
             expect(backRectEle.getAttribute('x') === '0').toBe(true);
             expect(backRectEle.getAttribute('y') === '0').toBe(true);
             expect(backRectEle.getAttribute('height') === '16').toBe(true);
@@ -504,7 +504,7 @@ describe('Scrollbar Chart', () => {
             chartObj.axisCollections[1].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 75, 220)));
             chartObj.axisCollections[1].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 75, 275)));
             let thumbEle: Element = document.getElementById('scrollBarThumb_primaryYAxis');
-            expect(thumbEle.getAttribute('x') === '182.5' || thumbEle.getAttribute('x') === '186.49999999999997').toBe(true);
+            expect(thumbEle.getAttribute('x') === '182.5' || thumbEle.getAttribute('x') === '76.49999999999997').toBe(true);
             expect(thumbEle.getAttribute('width') === '120').toBe(true);
             chartObj.axisCollections[1].zoomingScrollBar.scrollMouseUp(<PointerEvent>(trigger.onTouchEnd(currentTarget, 0, 0, 0, 0, 75, 275)));
             done();
@@ -515,11 +515,11 @@ describe('Scrollbar Chart', () => {
             chartObj.axisCollections[1].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 75, 355)));
             chartObj.axisCollections[1].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 650, 380)));
             let thumbEle: Element = document.getElementById('scrollBarThumb_primaryYAxis');
-            expect(thumbEle.getAttribute('x') === '182.5' || thumbEle.getAttribute('x') === '186.49999999999997').toBe(true);
-            expect(thumbEle.getAttribute('width') === '144.25' || thumbEle.getAttribute('width') === '143.25000000000003').toBe(true);
+            expect(thumbEle.getAttribute('x') === '182.5' || thumbEle.getAttribute('x') === '76.49999999999997').toBe(true);
+            expect(thumbEle.getAttribute('width') === '144.25' || thumbEle.getAttribute('width') === '120').toBe(true);
             chartObj.axisCollections[1].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 75, 355)));
-            expect(thumbEle.getAttribute('x') === '182.5' || thumbEle.getAttribute('x') === '186.49999999999997').toBe(true);
-            expect(thumbEle.getAttribute('width') === '119.25' || thumbEle.getAttribute('width') === '118.25000000000003').toBe(true);
+            expect(thumbEle.getAttribute('x') === '182.5' || thumbEle.getAttribute('x') === '76.49999999999997').toBe(true);
+            expect(thumbEle.getAttribute('width') === '119.25' || thumbEle.getAttribute('width') === '120').toBe(true);
             chartObj.axisCollections[1].zoomingScrollBar.scrollMouseUp(<PointerEvent>(trigger.onTouchEnd(currentTarget, 0, 0, 0, 0, 75, 355)));
             done();
         });
@@ -528,11 +528,11 @@ describe('Scrollbar Chart', () => {
             chartObj.axisCollections[1].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 75, 235)));
             chartObj.axisCollections[1].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 75, 190)));
             let thumbEle: Element = document.getElementById('scrollBarThumb_primaryYAxis');
-            expect(thumbEle.getAttribute('x') === '137.5' || thumbEle.getAttribute('x') === '141.49999999999997').toBe(true);
-            expect(thumbEle.getAttribute('width') === '164.25' || thumbEle.getAttribute('width') === '163.25000000000003').toBe(true);
+            expect(thumbEle.getAttribute('x') === '137.5' || thumbEle.getAttribute('x') === '76.49999999999997').toBe(true);
+            expect(thumbEle.getAttribute('width') === '164.25' || thumbEle.getAttribute('width') === '120').toBe(true);
             chartObj.axisCollections[1].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 75, 235)));
-            expect(thumbEle.getAttribute('x') === '182.5' || thumbEle.getAttribute('x') === '186.49999999999997').toBe(true);
-            expect(thumbEle.getAttribute('width') === '119.25' || thumbEle.getAttribute('width') === '118.25000000000003').toBe(true);
+            expect(thumbEle.getAttribute('x') === '182.5' || thumbEle.getAttribute('x') === '76.49999999999997').toBe(true);
+            expect(thumbEle.getAttribute('width') === '119.25' || thumbEle.getAttribute('width') === '120').toBe(true);
             done();
         });
 
@@ -549,8 +549,8 @@ describe('Scrollbar Chart', () => {
                 };
                 chartObj.axisCollections[1].zoomingScrollBar.scrollMouseWheel(<WheelEvent>wheelArgs);
                 let thumbEle: Element = document.getElementById('scrollBarThumb_primaryYAxis');
-                expect(thumbEle.getAttribute('x') === '227.71934101437492' || thumbEle.getAttribute('x') === '231.7393114045904').toBe(true);
-                expect(thumbEle.getAttribute('width') === '41.568627450980394' || thumbEle.getAttribute('width') === '40.39857651245553').toBe(true);
+                expect(thumbEle.getAttribute('x') === '227.71934101437492' || thumbEle.getAttribute('x') === '122.42295795735588').toBe(true);
+                expect(thumbEle.getAttribute('width') === '41.568627450980394' || thumbEle.getAttribute('width') === '40.99644128113879').toBe(true);
                 done();
             };
             chartObj.zoomSettings.enableMouseWheelZooming = true;
@@ -571,12 +571,57 @@ describe('Scrollbar Chart', () => {
                 };
                 chartObj.axisCollections[1].zoomingScrollBar.scrollMouseWheel(<WheelEvent>wheelArgs);
                 let thumbEle: Element = document.getElementById('scrollBarThumb_primaryYAxis');
-                expect(thumbEle.getAttribute('x') === '242.5385384348554' || thumbEle.getAttribute('x') === '246.32987733252972').toBe(true);
+                expect(thumbEle.getAttribute('x') === '242.5385384348554' || thumbEle.getAttribute('x') === '137.2216947843075').toBe(true);
                 expect(thumbEle.getAttribute('width') === '40').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
             chartObj.refresh();
+        });
+    });
+    describe('Transposed and Inversed Scrollbar ', function () {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let load: EmitType<ILoadedEventArgs>;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { title: 'PrimaryXAxis', valueType: 'Double', isInversed:true },
+                    primaryYAxis: { title: 'PrimaryYAxis' },
+                    series: [{
+                        dataSource: [{ x: 10, y: 46 }, { x: 20, y: 27 }, { x: 30, y: 26 }, { x: 40, y: 16 }, { x: 50, y: 31 }],
+                        xName: 'x', yName: 'y', marker: { visible: true }, type: 'Line'
+                    }],
+                    title: 'Chart Title',
+                    legendSettings: { visible: true },
+                    isTransposed :true,
+                    width: '900',
+                    zoomSettings: { enableSelectionZooming: true, enableScrollbar: true}
+                }
+            );
+            chartObj.appendTo('#container');
+
+        })
+        afterAll(function () {
+            chartObj.destroy();
+            ele.remove();
+        });
+          it('Checking scrollbar is isTransposed and isInversed', function (done) {
+                trigger.draganddropEvent(ele, 200, 200, 350, 350);
+                let svgChildEle: Element = document.getElementById('scrollBar_svgprimaryXAxis').children[0];
+                let backRectEle: Element = svgChildEle.children[0].children[0];
+                expect(svgChildEle.id === 'scrollBar_primaryXAxis').toBe(true)
+                expect(svgChildEle.getAttribute('transform') === 'translate(16,0) rotate(90)').toBe(true);
+                expect(backRectEle.getAttribute('x') === '0').toBe(true);
+                expect(backRectEle.getAttribute('y') === '0').toBe(true);
+                expect(backRectEle.getAttribute('height') === '16').toBe(true);
+                expect(backRectEle.getAttribute('width') === '328.25' || backRectEle.getAttribute('width') === '335.25').toBe(true);
+                expect(backRectEle.getAttribute('rx') === '0').toBe(true);
+                expect(backRectEle.id === 'scrollBarBackRect_primaryXAxis').toBe(true);
+                done();
+           
         });
     });
 });

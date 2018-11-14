@@ -1262,14 +1262,8 @@ class Axis extends ChildProperty {
             let baseRange = this.actualRange;
             let start;
             let end;
-            if (!this.isInversed) {
-                start = this.actualRange.min + this.zoomPosition * this.actualRange.delta;
-                end = start + this.zoomFactor * this.actualRange.delta;
-            }
-            else {
-                start = this.actualRange.max - (this.zoomPosition * this.actualRange.delta);
-                end = start - (this.zoomFactor * this.actualRange.delta);
-            }
+            start = this.actualRange.min + this.zoomPosition * this.actualRange.delta;
+            end = start + this.zoomFactor * this.actualRange.delta;
             if (start < baseRange.min) {
                 end = end + (baseRange.min - start);
                 start = baseRange.min;
@@ -6039,8 +6033,9 @@ class BaseLegend {
         let symbolColor = legendOption.visible ? legendOption.fill : '#D3D3D3';
         let shape = (legendOption.shape === 'SeriesType') ? legendOption.type : legendOption.shape;
         shape = shape === 'Scatter' ? legendOption.markerShape : shape;
-        let strokewidth = (legendOption.shape === 'HorizontalLine') ? (this.legend.shapeHeight / 10) :
-            ((legendOption.shape === 'VerticalLine') ? (this.legend.shapeWidth / 10) : 1);
+        let isStrokeWidth = (this.chart.getModuleName() === 'chart' && (legendOption.shape === 'SeriesType') &&
+            (legendOption.type.toLowerCase().indexOf('line') > -1) && (legendOption.type.toLowerCase().indexOf('area') === -1));
+        let strokewidth = isStrokeWidth ? this.chart.visibleSeries[i].width : 1;
         let symbolOption = new PathOption(this.legendID + this.generateId(legendOption, '_shape_', i), symbolColor, strokewidth, symbolColor, 1, '', '');
         group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight), '', symbolOption, 'Click to show or hide the ' + legendOption.text + ' series'));
         if (shape === 'Line' && legendOption.markerVisibility && legendOption.markerShape !== 'Image' ||
@@ -10155,6 +10150,7 @@ class AreaSeries extends MultiColoredSeries {
         let origin = series.chart.chartAreaType === 'PolarRadar' ? series.points[0].yValue :
             Math.max(series.yAxis.visibleRange.min, 0);
         let currentXValue;
+        let isPolar = (series.chart && series.chart.chartAreaType === 'PolarRadar');
         let isDropMode = (series.emptyPointSettings && series.emptyPointSettings.mode === 'Drop');
         let borderWidth = series.border ? series.border.width : 0;
         let borderColor = series.border ? series.border.color : 'transparent';
@@ -10175,6 +10171,9 @@ class AreaSeries extends MultiColoredSeries {
                 this.storePointLocation(point, series, isInverted, getCoordinate);
             }
         });
+        if (isPolar) {
+            direction = direction.concat(direction + ' ' + 'Z');
+        }
         this.appendLinePath(new PathOption(series.chart.element.id + '_Series_' + series.index, series.interior, borderWidth, borderColor, series.opacity, series.dashArray, (series.points.length > 1 ? (direction + this.getAreaPathDirection(series.points[series.points.length - 1].xValue, series.chart.chartAreaType === 'PolarRadar' ?
             series.points[series.points.length - 1].yValue : origin, series, isInverted, getCoordinate, null, 'L')) : '')), series, '');
         this.renderMarker(series);
@@ -19505,8 +19504,10 @@ class ScrollElements {
     renderElements(scroll, renderer) {
         let scrollGroup = renderer.createGroup({
             id: 'scrollBar_' + scroll.axis.name,
-            transform: 'translate(' + (scroll.isVertical ? scroll.height : '0') +
-                ',0) rotate(' + (scroll.isVertical ? '90' : '0') + ')'
+            transform: 'translate(' + (scroll.isVertical && scroll.axis.isInversed ? scroll.height : scroll.axis.isInversed ?
+                scroll.width : '0') + ',' + (scroll.isVertical && scroll.axis.isInversed ? '0' : scroll.axis.isInversed ?
+                scroll.height : scroll.isVertical ? scroll.width : '0') + ') rotate(' + (scroll.isVertical && scroll.axis.isInversed ?
+                '90' : scroll.isVertical ? '270' : scroll.axis.isInversed ? '180' : '0') + ')'
         });
         let backRectGroup = renderer.createGroup({
             id: 'scrollBar_backRect_' + scroll.axis.name
@@ -19713,7 +19714,9 @@ class ScrollBar {
         this.getMouseXY(e);
         this.isResizeLeft = this.isExist(id, '_leftCircle_') || this.isExist(id, '_leftArrow_');
         this.isResizeRight = this.isExist(id, '_rightCircle_') || this.isExist(id, '_rightArrow_');
-        this.previousXY = this.isVertical ? this.mouseY : this.mouseX;
+        //this.previousXY = this.isVertical ? this.mouseY : this.mouseX;
+        this.previousXY = (this.isVertical && this.axis.isInversed) ? this.mouseY : this.isVertical ? this.width -
+            this.mouseY : this.axis.isInversed ? this.width - this.mouseX : this.mouseX;
         this.previousWidth = elem.thumbRectWidth;
         this.previousRectX = elem.thumbRectX;
         this.startZoomPosition = this.axis.zoomPosition;
@@ -19801,7 +19804,8 @@ class ScrollBar {
         this.getMouseXY(e);
         this.setCursor(target);
         this.setTheme(target);
-        let mouseXY = this.isVertical ? this.mouseY : this.mouseX;
+        let mouseXY = (this.isVertical && this.axis.isInversed) ? this.mouseY : this.isVertical ? this.width - this.mouseY :
+            this.axis.isInversed ? this.width - this.mouseX : this.mouseX;
         let range = this.axis.visibleRange;
         let zoomPosition = this.zoomPosition;
         let zoomFactor = this.zoomFactor;
@@ -19956,7 +19960,8 @@ class ScrollBar {
         let gripWidth = 14;
         let minThumbWidth = circleRadius * 2 + padding * 2 + gripWidth;
         let thumbX = this.previousRectX;
-        let mouseXY = this.isVertical ? this.mouseY : this.mouseX;
+        let mouseXY = (this.isVertical && this.axis.isInversed) ? this.mouseY : this.isVertical ? this.width - this.mouseY :
+            this.axis.isInversed ? this.width - this.mouseX : this.mouseX;
         let diff = Math.abs(this.previousXY - mouseXY);
         if (this.isResizeLeft && mouseXY >= 0) {
             let currentX = thumbX + (mouseXY > this.previousXY ? diff : -diff);
@@ -20015,6 +20020,7 @@ class ScrollBar {
         this.width = this.isVertical ? axis.rect.height : axis.rect.width;
         this.height = 16;
         let currentX = axis.zoomPosition * (this.isVertical ? axis.rect.height : this.width);
+        currentX = axis.zoomPosition === 1 ? axis.zoomPosition * (this.width / 2) : currentX;
         this.scrollElements.thumbRectX = currentX > circleRadius ? currentX : circleRadius;
         this.scrollElements.thumbRectWidth = ((currentWidth + this.scrollElements.thumbRectX) < this.width - (circleRadius * 2))
             ? currentWidth : this.width - this.scrollElements.thumbRectX - circleRadius;

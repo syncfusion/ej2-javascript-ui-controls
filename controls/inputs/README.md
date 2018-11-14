@@ -23,50 +23,50 @@ npm install @syncfusion/ej2-inputs
 Following list of components are available in the package.
 
 * **ColorPicker** - Color picker is a user interface that is used to select and adjust color values.
-  * [Getting Started](https://ej2.syncfusion.com/documentation/color-picker/getting-started.html?lang=typescript&utm_source=npm&utm_campaign=button)
+  * [Getting Started](https://ej2.syncfusion.com/documentation/color-picker/getting-started?lang=typescript&utm_source=npm&utm_campaign=color-picker)
   * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=color-picker#/material/color-picker/default.html)
-  * [Product Page](https://www.syncfusion.com/products/javascript/color-picker)
+  * [Product Page](https://www.syncfusion.com/javascript-ui-controls/color-picker)
 
 * **FormValidator** - The FormValidator is used to validate the form elements before submitting to the server.
-  * [Getting Started](https://ej2.syncfusion.com/documentation/form-validator/?lang=typescript&utm_source=npm&utm_campaign=formvalidator)
+  * [Getting Started](https://ej2.syncfusion.com/documentation/form-validator?lang=typescript&utm_source=npm&utm_campaign=formvalidator)
   * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=formvalidator#/material/form-validator/default.html)
-  * [Product Page](https://www.syncfusion.com/products/javascript/form-validator)
+  * [Product Page](https://www.syncfusion.com/javascript-ui-controls/form-validator?utm_source=npm&utm_campaign=form-validator)
 
 * **TextBox** - The text box component is an extended version of the HTML input control which is used to edit or display text input on a form.
-  * [Getting Started](https://ej2.syncfusion.com/documentation/textbox/getting-started.html?lang=typescript&utm_source=npm&utm_campaign=textbox)
+  * [Getting Started](https://ej2.syncfusion.com/documentation/textbox/getting-started?lang=typescript&utm_source=npm&utm_campaign=textbox)
   * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=textbox#/material/textbox/default.html)
-  * [Product Page](https://www.syncfusion.com/products/javascript/text-box)
+  * [Product Page](https://www.syncfusion.com/javascript-ui-controls/text-box?utm_source=npm&utm_campaign=text-box)
 
 * **MaskedTextBox** - MaskedTextBox allows the user to enter the valid input only based on the provided mask.
-  * [Getting Started](https://ej2.syncfusion.com/documentation/maskedtextbox/getting-started.html?lang=typescript&utm_source=npm&utm_campaign=maskedtextbox)
+  * [Getting Started](https://ej2.syncfusion.com/documentation/maskedtextbox/getting-started?lang=typescript&utm_source=npm&utm_campaign=maskedtextbox)
   * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=maskedtextbox#/material/maskedtextbox/default.html)
-  * [Product Page](https://www.syncfusion.com/products/javascript/maskedtextbox)
+  * [Product Page](https://www.syncfusion.com/javascript-ui-controls/maskedtextbox?utm_source=npm&utm_campaign=maskedtextbox)
 
 * **NumericTextBox** - NumericTextBox is used to get the number inputs from the user. The input values can be incremented or decremented by a predefined step value.
-  * [Getting Started](https://ej2.syncfusion.com/documentation/numerictextbox/getting-started.html?lang=typescript&utm_source=npm&utm_campaign=numerictextbox)
+  * [Getting Started](https://ej2.syncfusion.com/documentation/numerictextbox/getting-started?lang=typescript&utm_source=npm&utm_campaign=numerictextbox)
   * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=numerictextbox#/material/numerictextbox/default.html)
-  * [Product Page](https://www.syncfusion.com/products/javascript/numerictextbox)
+  * [Product Page](https://www.syncfusion.com/javascript-ui-controls/numerictextbox?utm_source=npm&utm_campaign=numerictextbox)
 
 * **Slider** - The slider component allows you to select a value or range of values between the min and max range.
-  * [Getting Started](https://ej2.syncfusion.com/documentation/slider/getting-started.html?lang=typescript&utm_source=npm&utm_campaign=slider)
+  * [Getting Started](https://ej2.syncfusion.com/documentation/slider/getting-started?lang=typescript&utm_source=npm&utm_campaign=slider)
   * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=slider#/material/slider/default.html)
-  * [Product Page](https://www.syncfusion.com/products/javascript/slider?utm_source=npm&utm_campaign=slider)
+  * [Product Page](https://www.syncfusion.com/javascript-ui-controls/slider?utm_source=npm&utm_campaign=slider)
 
 * **Uploader** - The uploader component is an extended version of the HTML5 upload control which is used to upload images, documents, and other files to a server.
-  * [Getting Started](https://ej2.syncfusion.com/documentation/uploader/getting-started.html?lang=typescript&utm_source=npm&utm_campaign=upload)
+  * [Getting Started](https://ej2.syncfusion.com/documentation/uploader/getting-started?lang=typescript&utm_source=npm&utm_campaign=upload)
   * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=uploader#/material/uploader/default.html)
-  * [Product Page](https://www.syncfusion.com/products/javascript/uploader)
+  * [Product Page](https://www.syncfusion.com/javascript-ui-controls/uploader?utm_source=npm&utm_campaign=uploader)
 
 ## Supported frameworks
 
 Input component is also offered in following list of frameworks.
 
-1. [Angular](https://github.com/syncfusion/ej2-ng-inputs)
-2. [React](https://github.com/syncfusion/ej2-react-inputs)
-3. [VueJS](https://github.com/syncfusion/ej2-vue-inputs)
-4. [ASP.NET Core](https://www.syncfusion.com/products/aspnetcore/numerictextbox)
-5. [ASP.NET MVC](https://www.syncfusion.com/products/aspnetmvc/maskedtextbox)
-6. [JavaScript (ES5)](https://www.syncfusion.com/products/javascript/slider)
+1. [Angular](https://github.com/syncfusion/ej2-angular-ui-components/tree/master/components/inputs?utm_source=npm&utm_campaign=input)
+2. [React](https://github.com/syncfusion/ej2-react-ui-components/tree/master/components/inputs?utm_source=npm&utm_campaign=input)
+3. [VueJS](https://github.com/syncfusion/ej2-vue-ui-components/tree/master/components/inputs?utm_source=npm&utm_campaign=input)
+4. [ASP.NET Core](https://www.syncfusion.com/aspnet-core-ui-controls/numeric-textbox)
+5. [ASP.NET MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls/input-mask)
+6. [JavaScript (ES5)](https://www.syncfusion.com/javascript-ui-controls/range-slider)
 
 ## Showcase samples
 
@@ -78,11 +78,11 @@ Input component is also offered in following list of frameworks.
 
 ### 1. ColorPicker
 - [**Color specification**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=color-picker#/material/color-picker/default.html) - Supports `Red Green Blue`, `Hue Saturation Value` and `Hex` codes.
-- [**Mode**](https://ej2.syncfusion.com/documentation/color-picker/mode-and-value.html?lang=typescript#mode-and-value) - Supports `Picker` and `Palette` mode.
+- [**Mode**](https://ej2.syncfusion.com/documentation/color-picker/mode-and-value#mode-and-value) - Supports `Picker` and `Palette` mode.
 - [**Inline**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=color-picker#/material/color-picker/inline.html) - Supports inline type rendering of color picker.
 - [**Custom palettes**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=color-picker#/material/color-picker/custom.html) - Allows you to customize palettes and supports multiple palette groups rendering.
-- [**Opacity**](https://ej2.syncfusion.com/documentation/color-picker/mode-and-value.html?lang=typescript#color-value) - Allows to set and change the `opacity` of the selected color.
-- [**Accessibility**](https://ej2.syncfusion.com/documentation/color-picker/accessibility.html?lang=typescript#accessibility) - Built-in accessibility features to access color picker using the keyboard, screen readers, or other assistive technology devices.
+- [**Opacity**](https://ej2.syncfusion.com/documentation/color-picker/mode-and-value#color-value) - Allows to set and change the `opacity` of the selected color.
+- [**Accessibility**](https://ej2.syncfusion.com/documentation/color-picker/accessibility#accessibility) - Built-in accessibility features to access color picker using the keyboard, screen readers, or other assistive technology devices.
 
 ### 2. TextBox
 - [**Floating Label**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=textbox#/material/textbox/default.html) – floats the placeholder text while focus.
@@ -92,17 +92,17 @@ Input component is also offered in following list of frameworks.
 
 ### 3. MaskedTextBox
 - [**Custom Characters**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=maskedtextbox#/material/maskedtextbox/custommask.html) - allows you to use your own characters as the mask elements.
-- [**Regular Expression**](https://ej2.syncfusion.com/documentation/maskedtextbox/mask-configuration.html?lang=typescript&utm_source=npm&utm_campaign=maskedtextbox#regular-expression) - can be used as a mask element for each character of the MaskedTextBox.
-- [**Accessibility**](https://ej2.syncfusion.com/documentation/maskedtextbox/accessibility.html?lang=typescript&utm_source=npm&utm_campaign=maskedtextbox) - provides built-in accessibility support which helps to access all the MaskedTextBox component features through keyboard, on-screen readers, or other assistive technology devices.
+- [**Regular Expression**](https://ej2.syncfusion.com/documentation/maskedtextbox/mask-configuration#regular-expression?lang=typescript&utm_source=npm&utm_campaign=maskedtextbox#regular-expression) - can be used as a mask element for each character of the MaskedTextBox.
+- [**Accessibility**](https://ej2.syncfusion.com/documentation/maskedtextbox/accessibility?lang=typescript&utm_source=npm&utm_campaign=maskedtextbox) - provides built-in accessibility support which helps to access all the MaskedTextBox component features through keyboard, on-screen readers, or other assistive technology devices.
 
 ### 4. NumericTextBox
 - [**Range Validation**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=numerictextbox#/material/numerictextbox/range.html) - allows to set the minimum and maximum range of values in the NumericTextBox.
 - [**Number Formats**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=numerictextbox#/material/numerictextbox/format.html) - supports the number display formatting with MSDN standard and custom number formats.
 - [**Precision Of Numbers**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=numerictextbox#/material/numerictextbox/restrict.html) - allows to restrict the number precision when enters the value.
-- [**Keyboard Interaction**](https://ej2.syncfusion.com/documentation/numerictextbox/accessibility.html?lang=typescript&utm_source=npm&utm_campaign=numerictextbox#keyboard-interaction) - allows users to interact with the NumericTextBox using the keyboard.
-- [**Accessibility**](https://ej2.syncfusion.com/documentation/numerictextbox/accessibility.html?lang=typescript&utm_source=npm&utm_campaign=numerictextbox) - provides built-in accessibility support which helps to access all the NumericTextBox component features through keyboard, on-screen readers or other assistive technology devices.
-- [**Internationalization**](https://ej2.syncfusion.com/documentation/numerictextbox/internationalization.html?lang=typescript&utm_source=npm&utm_campaign=numerictextbox) - library provides support for formatting and parsing number using the official Unicode CLDR JSON data.
-- [**Localization**](https://ej2.syncfusion.com/documentation/numerictextbox/internationalization.html?lang=typescript&utm_source=npm&utm_campaign=numerictextbox#localization) - Supports to localize spin up and down buttons title for the tooltip to different cultures.
+- [**Keyboard Interaction**](https://ej2.syncfusion.com/documentation/numerictextbox/accessibility#keyboard-interaction?lang=typescript&utm_source=npm&utm_campaign=numerictextbox#keyboard-interaction) - allows users to interact with the NumericTextBox using the keyboard.
+- [**Accessibility**](https://ej2.syncfusion.com/documentation/numerictextbox/accessibility?lang=typescript&utm_source=npm&utm_campaign=numerictextbox) - provides built-in accessibility support which helps to access all the NumericTextBox component features through keyboard, on-screen readers or other assistive technology devices.
+- [**Internationalization**](https://ej2.syncfusion.com/documentation/numerictextbox/globalization#internationalization?lang=typescript&utm_source=npm&utm_campaign=numerictextbox) - library provides support for formatting and parsing number using the official Unicode CLDR JSON data.
+- [**Localization**](https://ej2.syncfusion.com/documentation/numerictextbox/globalization#internationalization?lang=typescript&utm_source=npm&utm_campaign=numerictextbox#localization) - Supports to localize spin up and down buttons title for the tooltip to different cultures.
 
 ### 5. Slider
 - [**Types**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=slider#/material/slider/default.html) - Provided three types of Slider.
@@ -128,16 +128,16 @@ Input component is also offered in following list of frameworks.
 Product support is available for through following mediums.
 
 * Creating incident in Syncfusion [Direct-trac](https://www.syncfusion.com/support/directtrac/incidents?utm_source=npm&utm_campaign=input) support system or [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_campaign=input).
-* New [GitHub issue](https://github.com/syncfusion/ej2-inputs/issues/new).
+* New [GitHub issue](https://github.com/syncfusion/ej2-javascript-ui-controls/issues/new).
 * Ask your query in Stack Overflow with tag `syncfusion`, `ej2`.
 
 ## License
 
-Check the license detail [here](https://github.com/syncfusion/ej2/blob/master/license?utm_source=npm&utm_campaign=input).
+Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license?utm_source=npm&utm_campaign=input).
 
 ## Changelog
 
-Check the changelog [here](https://github.com/syncfusion/ej2-inputs/blob/master/CHANGELOG.md?utm_source=npm&utm_campaign=input)
+Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/inputs/CHANGELOG.md?utm_source=npm&utm_campaign=input)
 
 
 © Copyright 2018 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

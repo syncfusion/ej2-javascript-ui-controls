@@ -1,0 +1,373 @@
+
+
+// Base Badge
+$badge-base-border-radius: .25em;
+$badge-base-font-size: .75em;
+$badge-base-line-height: 1;
+$badge-base-font-weight: 500;
+$badge-base-text-indent: 0;
+$badge-base-text-color: rgba(0, 0, 0, .87);
+$badge-base-background-color: #fafafa;
+
+// Pill Badge
+$badge-pill-border-radius: 5em;
+
+// Notification Badge
+$badge-notification-top: -10px;
+$badge-notification-left: 100%;
+$badge-notification-font-size: 12px;
+$badge-notification-border-radius: 1em;
+$badge-notification-min-width: 24px;
+$badge-notification-height: 18px;
+$badge-notification-padding: 0 8px 0 8px;
+
+// Circle Badge
+$badge-circle-width: 1.834em;
+$badge-circle-height: 1.834em;
+$badge-circle-line-height: 1.834em;
+$badge-circle-border-radius: 50%;
+$badge-circle-padding: 0;
+$badge-circle-min-width: 0;
+$badge-circle-ghost-line-height: 1.8em;
+
+// Overlap Badge
+$badge-overlap-top: -10px;
+$badge-overlap-transform-left: translateX(-50%);
+
+// Button Badge
+$badge-button-line-height: .9;
+$badge-button-circle-width: 2em;
+$badge-button-circle-height: 2em;
+$badge-button-circle-line-height: 2em;
+$badge-ghost-circle-line-height: 1.9em;
+$badge-button-top: -2px;
+
+// Dot Badge
+$badge-dot-top: -3px;
+$badge-dot-width: 6px;
+$badge-dot-height: 6px;
+$badge-dot-line-height: 1;
+$badge-dot-border-radius: 100%;
+$badge-dot-padding: 0;
+$badge-dot-min-width: 0;
+$badge-dot-left: 100%;
+$badge-dot-box-shadow: 0 0 0 1px #fff;
+
+@include export-module('badge-layout') {
+  #{&}.e-badge {
+    background: $badge-base-background-color;
+    border-color: transparent;
+    border-radius: $badge-base-border-radius;
+    box-shadow: 0 0 0 2px transparent;
+    box-sizing: border-box;
+    color: $badge-base-text-color;
+    display: inline-block;
+    font-family: $font-family;
+    font-size: $badge-base-font-size;
+    font-weight: $badge-base-font-weight;
+    line-height: $badge-base-line-height;
+    overflow: hidden;
+    padding: $badge-padding;
+    text-align: center;
+    text-decoration: none;
+    text-indent: $badge-base-text-indent;
+    vertical-align: middle;
+
+    &:hover {
+      text-decoration: none;
+    }
+
+    &.e-badge-pill {
+      border-radius: $badge-pill-border-radius;
+    }
+
+    &.e-badge-notification {
+      border-radius: $badge-notification-border-radius;
+      font-size: $badge-notification-font-size;
+      height: $badge-notification-height;
+      left: $badge-notification-left;
+      line-height: $badge-notification-line-height;
+      min-width: $badge-notification-min-width;
+      padding: $badge-notification-padding;
+      position: absolute;
+      top: $badge-notification-top;
+      width: auto;
+
+      &.e-badge-ghost {
+        line-height: $badge-notification-ghost-line-height;
+      }
+    }
+
+    &.e-badge-circle {
+      border-radius: $badge-circle-border-radius;
+      height: $badge-circle-height;
+      line-height: $badge-circle-line-height;
+      min-width: $badge-circle-min-width;
+      padding: $badge-circle-padding;
+      width: $badge-circle-width;
+
+      &.e-badge-ghost {
+        line-height: $badge-circle-ghost-line-height;
+      }
+    }
+
+    &.e-badge-overlap {
+      position: absolute;
+      top: $badge-overlap-top;
+      transform: $badge-overlap-transform-left;
+    }
+
+    &.e-badge-dot {
+      border-radius: $badge-dot-border-radius;
+      box-shadow: $badge-dot-box-shadow;
+      height: $badge-dot-height;
+      left: $badge-dot-left;
+      line-height: $badge-dot-line-height;
+      margin: 0;
+      min-width: $badge-dot-min-width;
+      overflow: visible;
+      padding: $badge-dot-padding;
+      position: absolute;
+      top: $badge-dot-top;
+      width: $badge-dot-width;
+    }
+
+    &.e-badge-bottom {
+      &.e-badge-dot {
+        bottom: 3px;
+        position: absolute;
+        top: auto;
+      }
+
+      &.e-badge-notification {
+        bottom: -3px;
+        position: absolute;
+        top: auto;
+      }
+    }
+
+    @at-root {
+      button#{''} .e-badge {
+        line-height: .9;
+        position: relative;
+        top: $badge-button-top;
+
+        &.e-badge-circle {
+          height: $badge-button-circle-height;
+          line-height: $badge-button-circle-line-height;
+          width: $badge-button-circle-width;
+
+          &.e-badge-ghost {
+            line-height: $badge-ghost-circle-line-height;
+          }
+        }
+      }
+    }
+  }
+}
+@include export-module('badge-theme') {
+  //sass-lint:disable no-color-literals
+  #{&}.e-badge {
+    &.e-badge-primary:not(.e-badge-ghost):not([href]),
+    &.e-badge-primary[href]:not(.e-badge-ghost) {
+      background-color: $badge-primary-bg-color;
+      color: $badge-primary-font-color;
+    }
+
+    &.e-badge-secondary:not(.e-badge-ghost):not([href]),
+    &.e-badge-secondary[href]:not(.e-badge-ghost) {
+      background-color: $badge-secondary-bg-color;
+      color: $badge-secondary-font-color;
+    }
+
+    &.e-badge-success:not(.e-badge-ghost):not([href]),
+    &.e-badge-success[href]:not(.e-badge-ghost) {
+      background-color: $badge-success-bg-color;
+      color: $badge-dark-font-color;
+    }
+
+    &.e-badge-danger:not(.e-badge-ghost):not([href]),
+    &.e-badge-danger[href]:not(.e-badge-ghost) {
+      background-color: $badge-danger-bg-color;
+      color: $badge-dark-font-color;
+    }
+
+    &.e-badge-warning:not(.e-badge-ghost):not([href]),
+    &.e-badge-warning[href]:not(.e-badge-ghost) {
+      background-color: $badge-warning-bg-color;
+      color: $badge-dark-font-color;
+    }
+
+    &.e-badge-info:not(.e-badge-ghost):not([href]),
+    &.e-badge-info[href]:not(.e-badge-ghost) {
+      background-color: $badge-info-bg-color;
+      color: $badge-dark-font-color;
+    }
+
+    &.e-badge-light:not(.e-badge-ghost):not([href]),
+    &.e-badge-light[href]:not(.e-badge-ghost) {
+      background-color: $badge-light-bg-color;
+      color: $badge-light-font-color;
+    }
+
+    &.e-badge-dark:not(.e-badge-ghost):not([href]),
+    &.e-badge-dark[href]:not(.e-badge-ghost) {
+      background-color: $badge-dark-bg-color;
+      color: $badge-dark-font-color;
+    }
+
+    &.e-badge-primary[href]:not(.e-badge-ghost) {
+      &:hover {
+        background-color: darken($color: $badge-primary-bg-color, $amount: 10%);
+      }
+    }
+
+    &.e-badge-secondary[href]:not(.e-badge-ghost) {
+      &:hover {
+        background-color: darken($color: $badge-secondary-bg-color, $amount: 10%);
+      }
+    }
+
+    &.e-badge-success[href]:not(.e-badge-ghost) {
+      &:hover {
+        background-color: darken($color: $badge-success-bg-color, $amount: 10%);
+      }
+    }
+
+    &.e-badge-danger[href]:not(.e-badge-ghost) {
+      &:hover {
+        background-color: darken($color: $badge-danger-bg-color, $amount: 10%);
+      }
+    }
+
+    &.e-badge-warning[href]:not(.e-badge-ghost) {
+      &:hover {
+        background-color: darken($color: $badge-warning-bg-color, $amount: 10%);
+      }
+    }
+
+    &.e-badge-info[href]:not(.e-badge-ghost) {
+      &:hover {
+        background-color: darken($color: $badge-info-bg-color, $amount: 10%);
+      }
+    }
+
+    &.e-badge-light[href]:not(.e-badge-ghost) {
+      &:hover {
+        background-color: darken($color: $badge-light-bg-color, $amount: 10%);
+      }
+    }
+
+    &.e-badge-dark[href]:not(.e-badge-ghost) {
+      &:hover {
+        background-color: darken($color: $badge-dark-bg-color, $amount: 10%);
+      }
+    }
+
+    &.e-badge-primary[href].e-badge-ghost {
+      &:hover {
+        border-color: darken($color: $badge-primary-bg-color, $amount: 15%);
+        color: darken($color: $badge-primary-bg-color, $amount: 15%);
+      }
+    }
+
+    &.e-badge-secondary[href].e-badge-ghost {
+      &:hover {
+        border-color: darken($color: $badge-secondary-bg-color, $amount: 15%);
+        color: darken($color: $badge-secondary-bg-color, $amount: 15%);
+      }
+    }
+
+    &.e-badge-success[href].e-badge-ghost {
+      &:hover {
+        border-color: darken($color: $badge-success-bg-color, $amount: 15%);
+        color: darken($color: $badge-success-bg-color, $amount: 15%);
+      }
+    }
+
+    &.e-badge-danger[href].e-badge-ghost {
+      &:hover {
+        border-color: darken($color: $badge-danger-bg-color, $amount: 15%);
+        color: darken($color: $badge-danger-bg-color, $amount: 15%);
+      }
+    }
+
+    &.e-badge-warning[href].e-badge-ghost {
+      &:hover {
+        border-color: darken($color: $badge-warning-bg-color, $amount: 15%);
+        color: darken($color: $badge-warning-bg-color, $amount: 15%);
+      }
+    }
+
+    &.e-badge-info[href].e-badge-ghost {
+      &:hover {
+        border-color: darken($color: $badge-info-bg-color, $amount: 15%);
+        color: darken($color: $badge-info-bg-color, $amount: 15%);
+      }
+    }
+
+    &.e-badge-light[href].e-badge-ghost {
+      &:hover {
+        border-color: darken($color: $badge-light-bg-color, $amount: 15%);
+        color: darken($color: $badge-light-bg-color, $amount: 15%);
+      }
+    }
+
+    &.e-badge-dark[href].e-badge-ghost {
+      &:hover {
+        border-color: darken($color: $badge-dark-bg-color, $amount: 15%);
+        color: darken($color: $badge-dark-bg-color, $amount: 15%);
+      }
+    }
+
+    &.e-badge-ghost {
+      &.e-badge-primary {
+        background-color: transparent;
+        border: 1px solid $badge-primary-bg-color;
+        color: $badge-primary-bg-color;
+      }
+
+      &.e-badge-secondary {
+        background-color: transparent;
+        border: 1px solid $badge-secondary-bg-color;
+        color: $badge-secondary-bg-color;
+      }
+
+      &.e-badge-success {
+        background-color: transparent;
+        border: 1px solid $badge-success-bg-color;
+        color: $badge-success-bg-color;
+      }
+
+      &.e-badge-danger {
+        background-color: transparent;
+        border: 1px solid $badge-danger-bg-color;
+        color: $badge-danger-bg-color;
+      }
+
+      &.e-badge-warning {
+        background-color: transparent;
+        border: 1px solid $badge-warning-bg-color;
+        color: $badge-warning-bg-color;
+      }
+
+      &.e-badge-info {
+        background-color: transparent;
+        border: 1px solid $badge-info-bg-color;
+        color: $badge-info-bg-color;
+      }
+
+      &.e-badge-light {
+        background-color: transparent;
+        border: 1px solid $badge-light-bg-color;
+        color: $badge-light-bg-color;
+      }
+
+      &.e-badge-dark {
+        background-color: transparent;
+        border: 1px solid $badge-dark-bg-color;
+        color: $badge-dark-bg-color;
+      }
+    }
+  }
+}

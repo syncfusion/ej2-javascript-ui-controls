@@ -29,17 +29,17 @@ Following list of components are available in the package
 
 * ContextMenu - Graphical user interface that appears on the user right click/touch hold action. It has the support to provide nested level menu items.
 
-  * [Getting Started](https://ej2.syncfusion.com/documentation/context-menu/getting-started.html?lang=typescript&utm_source=npm&utm_campaign=context-menu)
-  * [API References](https://ej2.syncfusion.com/documentation/context-menu/api-contextMenu.html?utm_source=npm&utm_campaign=context-menu)
-  * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=accordion#/material/context-menu/context-menu.html)
-  * [Product Page](https://www.syncfusion.com/products/javascript/context-menu)
+  * [Getting Started](https://ej2.syncfusion.com/documentation/context-menu/getting-started?lang=typescript&utm_source=npm&utm_campaign=context-menu)
+  * [API References](https://ej2.syncfusion.com/documentation/api/context-menu?utm_source=npm&utm_campaign=context-menu)
+  * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=context-menu#/material/context-menu/default.html)
+  * [Product Page](https://www.syncfusion.com/javascript-ui-controls/context-menu)
 
 * Sidebar - Expandable and collapsible component that typically acts as a side container to place primary or secondary content alongside the main content.
 
   * [Getting started](https://ej2.syncfusion.com/documentation/sidebar/getting-started.html?lang=typescript&utm_source=npm&utm_campaign=sidebar)
-  * [API references](https://ej2.syncfusion.com/documentation/sidebar/api-sidebar.html?utm_source=npm&utm_campaign=sidebar)
-  * [View online demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=tab#/material/sidebar/default.html)
-  * [Product page](https://www.syncfusion.com/products/javascript/sidebar)
+  * [API references](https://ej2.syncfusion.com/documentation/api/sidebar?utm_source=npm&utm_campaign=sidebar)
+  * [View online demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=sidebar#/material/sidebar/default.html)
+  * [Product page](https://www.syncfusion.com/javascript-ui-controls/sidebar?utm_source=npm&utm_campaign=sidebar)
 
 * Tab - Content panel to show multiple contents in a specific space, one at a time.
 
@@ -64,28 +64,28 @@ Following list of components are available in the package
 
 * Menu - Graphical user interface that serves as navigation header for your application or site. It has the support to provide nested level menu items that can be populated from a data source such as an array of JavaScript objects.
 
-  * [Getting Started](https://ej2.syncfusion.com/documentation/menu/getting-started.html?lang=typescript&utm_source=npm&utm_campaign=menu)
-  * [API References](https://ej2.syncfusion.com/documentation/menu/api-menu.html?utm_source=npm&utm_campaign=menu)
-  * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=accordion#/material/menu/default.html)
-  * [Product Page](https://www.syncfusion.com/products/javascript/menu)
+  * [Getting Started](https://ej2.syncfusion.com/documentation/menu/getting-started?lang=typescript&utm_source=npm&utm_campaign=menu)
+  * [API References](https://ej2.syncfusion.com/documentation/api/menu?utm_source=npm&utm_campaign=menu)
+  * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=menu#/material/menu/default.html)
+  * [Product Page](https://www.syncfusion.com/javascript-ui-controls/menu)
 
 ## Supported Frameworks
 
 `Navigation` component is also offered in following list of frameworks,
 
-1. [Angular](https://www.npmjs.com/package/@syncfusion/ej2-ng-navigations?utm_source=npm&utm_campaign=navigation)
-2. [React](https://www.npmjs.com/package/@syncfusion/ej2-react-navigations?utm_source=npm&utm_campaign=navigation)
-3. [VueJS](https://www.npmjs.com/package/@syncfusion/ej2-vue-navigations?utm_source=npm&utm_campaign=navigation)
-4. [ASP.NET Core](https://www.syncfusion.com/products/aspnetcore/accordion)
-5. [ASP.NET MVC](https://www.syncfusion.com/products/aspnetmvc/accordion)
-6. [JavaScript (ES5)](https://www.syncfusion.com/products/javascript/accordion)
+1. [Angular](https://github.com/syncfusion/ej2-angular-ui-components/tree/master/components/navigations?utm_source=npm&utm_campaign=navigation)
+2. [React](https://github.com/syncfusion/ej2-react-ui-components/tree/master/components/navigations?utm_source=npm&utm_campaign=navigation)
+3. [VueJS](https://github.com/syncfusion/ej2-vue-ui-components/tree/master/components/navigations?utm_source=npm&utm_campaign=navigation)
+4. [ASP.NET Core](https://www.syncfusion.com/aspnet-core-ui-controls/accordion)
+5. [ASP.NET MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls/accordion)
+6. [JavaScript (ES5)](https://www.syncfusion.com/javascript-ui-controls/accordion)
 
 ## Use-case samples / Showcase samples
 
 Sidebar component is used in the following samples.
 
-* Expanse tracker ([Source](https://github.com/syncfusion/ej2-sample-ts-expensetracker), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/expensetracker/?utm_source=npm&utm_campaign=sidebar#/dashboard))
-* Web mail ([Source](https://github.com/syncfusion/ej2-sample-ts-webmail), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/webmail/?utm_source=npm&utm_campaign=sidebar))
+* Expanse tracker ([Source](https://github.com/syncfusion/ej2-showcase-ts-expensetracker), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/expensetracker/?utm_source=npm&utm_campaign=sidebar#/dashboard))
+* Web mail ([Source](https://github.com/syncfusion/ej2-showcase-ts-webmail), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/webmail/?utm_source=npm&utm_campaign=sidebar#/home))
 
 ## Key Features
 
@@ -152,15 +152,15 @@ Sidebar component is used in the following samples.
 Product support is available for through following mediums.
 
 * Creating incident in Syncfusion [Direct-trac](https://www.syncfusion.com/support/directtrac/incidents?utm_source=npm&utm_campaign=navigation) support system or [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_campaign=navigation).
-* New [GitHub issue](https://github.com/syncfusion/ej2-navigations/issues/new).
+* New [GitHub issue](https://github.com/syncfusion/ej2-javascript-ui-controls/issues/new).
 * Ask your query in [Stack Overflow](https://stackoverflow.com/?utm_source=npm&utm_campaign=navigation) with tag `syncfusion` and `ej2`.
 
 ## License
 
-Check the license detail [here](https://github.com/syncfusion/ej2-navigations/blob/master/license?utm_source=npm&utm_campaign=navigation).
+Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license?utm_source=npm&utm_campaign=navigation).
 
 ## Changelog
 
-Check the changelog [here](https://github.com/syncfusion/ej2-navigations/blob/master/CHANGELOG.md?utm_source=npm&utm_campaign=navigation)
+Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/navigations/CHANGELOG.md?utm_source=npm&utm_campaign=navigation)
 
 © Copyright 2018 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

@@ -1,0 +1,124 @@
+/*! component's default definitions and variables */
+$skin-name: 'material';
+$card-img-brdr-radious: 50%;
+$card-brdr-radious: $border-radius;
+$card-box-shadow: $shadow-color;
+$card-action-btn-txt-transform: none;;
+$card-bg-color: $default-bg-color;
+$card-focus-bg-color: $default-bg-color;
+$card-hover-bg-color: $default-bg-color;
+$card-active-bg-color: $default-bg-color;
+$card-focus-brdr-color: $default-border-color;
+$card-hover-brdr-color: $default-border-color;
+$card-active-brdr-color: $default-border-color;
+$card-highlight-color: rgba(0, 0, 0, 0);
+
+$card-title-nrml-lheight: 12px;
+$card-title-bigger-lheight: 13px;
+$card-header-image-width: 40px;
+$card-header-image-height: 40px;
+$card-header-minheight: 30px;
+$card-header-nrml-padding: 16px 0 16px 16px;
+$card-header-txt-nrml-padding: 0 0 0 8px;
+$card-action-btn-font: 14px;
+$card-nrml-content-padding: 16px;
+$card-nrml-nested-content-padding: 16px;
+$card-content-font-size: 14px;
+$card-title-nrml-padding: 8px;
+$card-action-nrml-padding: 8px;
+$card-action-nrml-nested-margin: 8px;
+$card-action-nrml-vertical-padding: 0 8px;
+$card-action-nrml-btn-vertical-margin: 0 0 8px 0;
+$card-action-btn-nrml-margin: 0 0 0 8px;
+$card-action-btn-nrml-padding: 0 6px;
+$card-action-btn-nrml-height: 36px;
+$card-nrml-mheight: 48px;
+$card-nrml-lheight: 16px;
+$card-nrml-padding: 16px 0;
+$card-image-mheight: 150px;
+$card-image-title-font: 24px;
+$card-image-title-lheight: 22px;
+$card-header-txt-title-nrml-padding: 0 0 8px;
+$card-header-txt-title-font: 15px;
+$card-header-font: 15px;
+$card-header-padding: 16px;
+$card-header-lheight: 16px;
+$card-title-font: 18px;
+$card-image-title-nrml-padding: 16px;
+$card-hor-image-margin: 2px;
+$card-header-txt-subtitle-font: 14px;
+$card-header-txt-subtitle-lheight: 14px;
+$card-header-txt-title-lheight: 18px;
+$card-header-title-font: 15px;
+$card-header-sub-title-font: 14px;
+$card-image-title-mheight: 40px;
+$card-header-txt-nrml-title-font: 13px;
+$card-header-txt-nrml-subtitle-font: 12px;
+$card-action-btn-icon-width: 24px;
+$card-action-btn-icon-height: 24px;
+
+//bigger
+
+$card-bigger-lheight: 36px;
+$card-bigger-mheight: 36px;
+$card-header-bigger-padding: 12px;
+$card-header-bigger-lheight: 12px;
+$card-title-bigger-margin: 18px 12px 12px;
+$card-hor-image-bigger-margin: 2px;
+$card-sep-bigger-margin: 12px 0;
+$card-header-bigger-minheight: 22.5px;
+$card-header-bigger-padding: 12px;
+$card-header-txt-bigger-padding: 0 0 0 12px;
+$card-header-txt-title-bigger-lheight: 13.5px;
+$card-header-txt-title-bigger-padding: 0 0 6px;
+$card-header-txt-subtitle-bigger-lheight: 10.5px;
+$card-header-image-bigger-width: 30px;
+$card-header-image-bigger-height: 30px;
+$card-image-bigger-mheight: 112.5px;
+$card-image-title-bigger-lheight: 18px;
+$card-image-title-bigger-mheight: 30px;
+$card-img-title-bigger-padding: 6px;
+$card-action-bigger-padding: 6px;
+$card-action-bigger-vertical-padding: 0 6px;
+$card-action-bigger-btn-vertical-margin: 0 0 6px 0;
+$card-action-btn-bigger-height: 27px;
+$card-action-btn-bigger-margin: 0 0 0 6px;
+$card-action-btn-bigger-padding: 0 6px;
+$card-bigger-content-padding: 12px;
+$card-header-txt-bigger-title-font: 15px;
+$card-header-txt-bigger-subtitle-font: 14px;
+$card-image-title-bigger-font: 24px;
+$card-action-btn-bigger-icon-width: 24px;
+$card-action-btn-bigger-icon-height: 24px;
+
+
+//color
+
+$card-brdr-size: 1px ;
+$card-brdr-type: solid;
+$card-brdr-color: $default-border-color;
+$card-sep-margin: 16px 0;
+$card-sep-brdr-size: 1px ;
+$card-sep-brdr-type: solid;
+$card-sep-brdr-color: $default-border-color;
+$card-image-title-color: $default-font-color;
+$card-image-title-bg: $default-bg-color;
+$card-action-btn-bg-color: $default-bg-color;
+$card-action-btn-font-color: $default-font-color;
+$card-action-btn-border: 0;
+$card-action-btn-hover-bg: $default-bg-color;
+$card-action-btn-hover-border: 0;
+$card-action-btn-hover-font: $default-font-color;
+$card-action-btn-focus-bg: $default-bg-color;
+$card-action-btn-focus-border: 0;
+$card-action-btn-focus-font: $default-font-color;
+$card-action-btn-pressed-bg: $default-bg-color;
+$card-action-btn-pressed-border: 0;
+$card-action-btn-pressed-font: $default-font-color;
+$card-font-color: $default-font-color;
+$card-header-txt-title-color: $default-font-color;
+$card-header-txt-subtitle-color: $default-font-color;
+$card-content-font-color: $card-header-txt-subtitle-color;
+$card-action-btn-icon-color: $default-font-color;
+
+

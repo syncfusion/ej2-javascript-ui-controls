@@ -76,6 +76,7 @@ export class ToolBase {
      */
     protected currentElement: IElement = null;
 
+    /**   @private  */
     public blocked: boolean = false;
 
     protected isTooltipVisible: boolean = false;
@@ -95,6 +96,7 @@ export class ToolBase {
         this.inAction = true;
     }
 
+    /**   @private  */
     public mouseDown(args: MouseEventArgs): void {
         this.currentElement = args.source;
         this.startPosition = this.currentPosition = this.prevPosition = args.position;
@@ -103,6 +105,7 @@ export class ToolBase {
         this.commandHandler.startTransaction(this.isProtectChange);
     }
 
+    /**   @private  */
     public mouseMove(args: MouseEventArgs): boolean {
         this.currentPosition = args.position;
         //this.currentElement = currentElement;
@@ -110,6 +113,7 @@ export class ToolBase {
 
     }
 
+    /**   @private  */
     public mouseUp(args: MouseEventArgs): void {
         this.currentPosition = args.position;
         // this.currentElement = currentElement;
@@ -130,10 +134,12 @@ export class ToolBase {
         this.blocked = false;
     }
 
+    /**   @private  */
     public mouseWheel(args: MouseEventArgs): void {
         this.currentPosition = args.position;
     }
 
+    /**   @private  */
     public mouseLeave(args: MouseEventArgs): void {
         this.mouseUp(args);
     }
@@ -258,11 +264,13 @@ export class SelectTool extends ToolBase {
         super(commandHandler, true);
         this.action = action;
     }
+    /**   @private  */
     public mouseDown(args: MouseEventArgs): void {
         this.inAction = true;
         super.mouseDown(args);
     }
 
+    /**   @private  */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         //draw selected region
@@ -273,6 +281,7 @@ export class SelectTool extends ToolBase {
         return !this.blocked;
     }
 
+    /**   @private  */
     public mouseUp(args: MouseEventArgs): void {
         //rubber band selection
         if (Point.equals(this.currentPosition, this.prevPosition) === false && this.inAction) {
@@ -305,6 +314,7 @@ export class SelectTool extends ToolBase {
         super.mouseUp(args);
     }
 
+    /**   @private  */
     public mouseLeave(args: MouseEventArgs): void {
         if (this.inAction) {
             this.mouseUp(args);
@@ -319,6 +329,7 @@ export class ConnectTool extends ToolBase {
 
     protected endPoint: string;
 
+    /**   @private  */
     public selectedSegment: BezierSegment;
 
     constructor(commandHandler: CommandHandler, endPoint: string) {
@@ -326,6 +337,7 @@ export class ConnectTool extends ToolBase {
         this.endPoint = endPoint;
     }
 
+    /**   @private  */
     public mouseDown(args: MouseEventArgs): void {
         this.inAction = true;
         this.undoElement = undefined;
@@ -354,6 +366,7 @@ export class ConnectTool extends ToolBase {
         this.currentPosition = args.position;
     }
 
+    /**   @private  */
     public mouseUp(args: MouseEventArgs): void {
         this.commandHandler.updateSelector();
         this.commandHandler.removeSnap();
@@ -411,6 +424,7 @@ export class ConnectTool extends ToolBase {
         super.mouseUp(args);
     }
 
+    /**   @private  */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         if ((!(this instanceof ConnectorDrawingTool)) && ((this.endPoint === 'ConnectorSourceEnd' &&
@@ -496,6 +510,7 @@ export class ConnectTool extends ToolBase {
         this.prevPosition = this.currentPosition;
         return !this.blocked;
     }
+    /**   @private  */
     public mouseLeave(args: MouseEventArgs): void {
         this.mouseUp(args);
     }
@@ -504,6 +519,7 @@ export class ConnectTool extends ToolBase {
         return 'X:' + Math.round(position.x) + ' ' + 'Y:' + Math.round(position.y);
     }
 
+    /**   @private  */
     public endAction(): void {
         super.endAction();
         this.prevPosition = null;
@@ -522,6 +538,7 @@ export class MoveTool extends ToolBase {
 
     private initialOffset: PointModel;
 
+    /**   @private  */
     public currentTarget: IElement = null;
 
     private objectType: ObjectTypes;
@@ -535,6 +552,7 @@ export class MoveTool extends ToolBase {
         this.objectType = objType;
     }
 
+    /**   @private  */
     public mouseDown(args: MouseEventArgs): void {
         if (args.source instanceof Node || args.source instanceof Connector) {
             this.commandHandler.selectObjects([args.source], args.info && args.info.ctrlKey);
@@ -557,6 +575,7 @@ export class MoveTool extends ToolBase {
         this.initialOffset = { x: 0, y: 0 };
     }
 
+    /**   @private  */
     public mouseUp(args: MouseEventArgs): void {
         let obj: SelectorModel; let historyAdded: boolean = false;
         let redoObject: SelectorModel = { nodes: [], connectors: [] };
@@ -633,6 +652,7 @@ export class MoveTool extends ToolBase {
         super.mouseUp(args);
     }
 
+    /**   @private  */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         let isSame: boolean = false;
@@ -727,10 +747,12 @@ export class MoveTool extends ToolBase {
         return 'X:' + Math.round(node.wrapper.bounds.x) + ' ' + 'Y:' + Math.round(node.wrapper.bounds.y);
     }
 
+    /**   @private  */
     public mouseLeave(args: MouseEventArgs): void {
         this.mouseUp(args);
     }
 
+    /**   @private  */
     public endAction(): void {
         super.endAction();
         this.currentTarget = null;
@@ -747,6 +769,7 @@ export class RotateTool extends ToolBase {
         super(commandHandler, true);
     }
 
+    /**   @private  */
     public mouseDown(args: MouseEventArgs): void {
         this.undoElement = cloneObject(args.source);
         if (this.undoElement.nodes[0] && this.undoElement.nodes[0].children) {
@@ -762,6 +785,7 @@ export class RotateTool extends ToolBase {
         super.mouseDown(args);
     }
 
+    /**   @private  */
     public mouseUp(args: MouseEventArgs): void {
         if (this.undoElement.rotateAngle !== args.source.wrapper.rotateAngle) {
             let oldValue: SelectorModel = { rotateAngle: args.source.wrapper.rotateAngle };
@@ -782,6 +806,7 @@ export class RotateTool extends ToolBase {
         super.mouseUp(args);
     }
 
+    /**   @private  */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         if (this.undoElement.rotateAngle === args.source.wrapper.rotateAngle) {
@@ -823,10 +848,12 @@ export class RotateTool extends ToolBase {
         return Math.round((node.rotateAngle % 360)).toString() + '\xB0';
     }
 
+    /**   @private  */
     public mouseLeave(args: MouseEventArgs): void {
         this.mouseUp(args);
     }
 
+    /**   @private  */
     public endAction(): void {
         super.endAction();
     }
@@ -843,8 +870,10 @@ export class ResizeTool extends ToolBase {
 
     private corner: string;
 
+    /**   @private  */
     public initialOffset: PointModel;
 
+    /**   @private  */
     public initialBounds: Rect = new Rect();
 
 
@@ -853,6 +882,7 @@ export class ResizeTool extends ToolBase {
         this.corner = corner;
     }
 
+    /**   @private  */
     public mouseDown(args: MouseEventArgs): void {
         this.undoElement = cloneObject(args.source);
         this.undoParentElement = this.commandHandler.getSubProcess(args.source);
@@ -873,6 +903,7 @@ export class ResizeTool extends ToolBase {
 
     }
 
+    /**   @private  */
     public mouseUp(args: MouseEventArgs): boolean {
         this.commandHandler.removeSnap();
         if (this.undoElement.offsetX !== args.source.wrapper.offsetX || this.undoElement.offsetY !== args.source.wrapper.offsetY) {
@@ -908,6 +939,7 @@ export class ResizeTool extends ToolBase {
         return !this.blocked;
     }
 
+    /**   @private  */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         if (this.undoElement.offsetX === args.source.wrapper.offsetX && this.undoElement.offsetY === args.source.wrapper.offsetY) {
@@ -941,6 +973,7 @@ export class ResizeTool extends ToolBase {
         this.prevPosition = this.currentPosition;
         return !this.blocked;
     }
+    /**   @private  */
     public mouseLeave(args: MouseEventArgs): void {
         this.mouseUp(args);
     }
@@ -1025,11 +1058,13 @@ export class NodeDrawingTool extends ToolBase {
         this.sourceObject = sourceObject;
     }
 
+    /**   @private  */
     public mouseDown(args: MouseEventArgs): void {
         super.mouseDown(args);
         this.inAction = true;
     }
 
+    /**   @private  */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         let checkBoundaryConstraints: boolean;
@@ -1050,6 +1085,7 @@ export class NodeDrawingTool extends ToolBase {
         return checkBoundaryConstraints;
     }
 
+    /**   @private  */
     public mouseUp(args: MouseEventArgs): void {
         let checkBoundaryConstraints: boolean;
         let rect: Rect = Rect.toBounds([this.prevPosition, this.currentPosition]);
@@ -1062,10 +1098,12 @@ export class NodeDrawingTool extends ToolBase {
         this.inAction = false;
     }
 
+    /**   @private  */
     public endAction(): void {
         super.endAction();
     }
 
+    /**   @private  */
     public mouseLeave(args: MouseEventArgs): void {
         if (this.inAction) {
             this.mouseUp(args);
@@ -1087,11 +1125,13 @@ export class ConnectorDrawingTool extends ConnectTool {
         this.sourceObject = sourceObject;
     }
 
+    /**   @private  */
     public mouseDown(args: MouseEventArgs): void {
         super.mouseDown(args);
         this.inAction = true;
     }
 
+    /**   @private  */
     public mouseMove(args: MouseEventArgs): boolean {
         if (this.inAction) {
             let connector: ConnectorModel = {
@@ -1117,6 +1157,7 @@ export class ConnectorDrawingTool extends ConnectTool {
 
     }
 
+    /**   @private  */
     public mouseUp(args: MouseEventArgs): void {
         if (this.drawingObject && this.drawingObject instanceof Connector) {
             this.commandHandler.addObjectToDiagram(this.drawingObject);
@@ -1126,10 +1167,12 @@ export class ConnectorDrawingTool extends ConnectTool {
         super.mouseUp(args);
     }
 
+    /**   @private  */
     public endAction(): void {
         super.endAction();
     }
 
+    /**   @private  */
     public mouseLeave(args: MouseEventArgs): void {
         if (this.inAction) {
             this.mouseUp(args);
@@ -1140,11 +1183,14 @@ export class ConnectorDrawingTool extends ConnectTool {
 
 export class TextDrawingTool extends ToolBase {
 
+
+    /**   @private  */
     public drawingNode: Node | Connector;
 
     constructor(commandHandler: CommandHandler) {
         super(commandHandler, true);
     }
+    /**   @private  */
     public mouseDown(args: MouseEventArgs): void {
         super.mouseDown(args);
         this.commandHandler.clearSelection();
@@ -1158,6 +1204,7 @@ export class TextDrawingTool extends ToolBase {
         }
     }
 
+    /**   @private  */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         if (!this.drawingNode) {
@@ -1178,6 +1225,7 @@ export class TextDrawingTool extends ToolBase {
         return !this.blocked;
     }
 
+    /**   @private  */
     public mouseUp(args: MouseEventArgs): void {
         if (this.drawingNode) {
             this.drawingNode.style.strokeColor = 'none';
@@ -1192,6 +1240,7 @@ export class TextDrawingTool extends ToolBase {
         this.inAction = false;
     }
 
+    /**   @private  */
     public endAction(): void {
         super.endAction();
     }
@@ -1209,11 +1258,13 @@ export class ZoomPanTool extends ToolBase {
         this.zooming = zoom;
     }
 
+    /**   @private  */
     public mouseDown(args: MouseEventArgs): void {
         super.mouseDown(args);
         this.inAction = true;
     }
 
+    /**   @private  */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         if (this.inAction) {
@@ -1236,11 +1287,13 @@ export class ZoomPanTool extends ToolBase {
         return !this.blocked;
     }
 
+    /**   @private  */
     public mouseUp(args: MouseEventArgs): void {
         super.mouseUp(args);
         this.inAction = false;
     }
 
+    /**   @private  */
     public endAction(): void {
         super.endAction();
     }
@@ -1265,6 +1318,7 @@ export class ExpandTool extends ToolBase {
         super(commandHandler, true);
     }
 
+    /**   @private  */
     public mouseUp(args: MouseEventArgs): void {
         this.commandHandler.initExpand(args);
         super.mouseUp(args);
@@ -1280,6 +1334,7 @@ export class LabelTool extends ToolBase {
         super(commandHandler, true);
     }
 
+    /**   @private  */
     public mouseUp(args: MouseEventArgs): void {
         let win: Window = window.open((args.sourceWrapper as TextElement).hyperlink.link, '_blank');
         win.focus();
@@ -1297,6 +1352,7 @@ export class PolygonDrawingTool extends ToolBase {
     constructor(commandHandler: CommandHandler) {
         super(commandHandler, true);
     }
+    /**   @private  */
     public mouseDown(args: MouseEventArgs): void {
         super.mouseDown(args);
         this.inAction = true;
@@ -1324,6 +1380,7 @@ export class PolygonDrawingTool extends ToolBase {
         }
     }
 
+    /**   @private  */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         if (this.inAction) {
@@ -1342,6 +1399,7 @@ export class PolygonDrawingTool extends ToolBase {
         return true;
     }
 
+    /**   @private  */
     public mouseUp(args: MouseEventArgs, dblClickArgs?: IDoubleClickEventArgs | IClickEventArgs): void {
         super.mouseMove(args);
         if (this.inAction) {
@@ -1353,11 +1411,13 @@ export class PolygonDrawingTool extends ToolBase {
         this.endAction();
     }
 
+    /**   @private  */
     public mouseWheel(args: MouseEventArgs): void {
         super.mouseWheel(args);
         this.mouseMove(args as MouseEventArgs);
     }
 
+    /**   @private  */
     public endAction(): void {
         this.inAction = false;
         this.drawingObject = null;
@@ -1372,6 +1432,7 @@ export class PolyLineDrawingTool extends ToolBase {
     constructor(commandHandler: CommandHandler) {
         super(commandHandler, true);
     }
+    /**   @private  */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         if (this.inAction) {
@@ -1381,6 +1442,7 @@ export class PolyLineDrawingTool extends ToolBase {
         }
         return true;
     }
+    /**   @private  */
     public mouseDown(args: MouseEventArgs): void {
         super.mouseDown(args);
         this.inAction = true;
@@ -1400,9 +1462,11 @@ export class PolyLineDrawingTool extends ToolBase {
             drawObject.segments[drawObject.segments.length - 1] = segment;
         }
     }
+    /**   @private  */
     public mouseWheel(args: MouseEventArgs): void {
         super.mouseWheel(args); this.mouseMove(args as MouseEventArgs);
     }
+    /**   @private  */
     public mouseUp(args: MouseEventArgs): void {
         super.mouseMove(args);
         if (this.inAction) {
@@ -1412,7 +1476,7 @@ export class PolyLineDrawingTool extends ToolBase {
         }
         this.endAction();
     }
-
+    /**   @private  */
     public endAction(): void {
         this.drawingObject = null;
         this.inAction = false;
@@ -1424,12 +1488,14 @@ export class LabelDragTool extends ToolBase {
     constructor(commandHandler: CommandHandler) {
         super(commandHandler, true);
     }
+    /**   @private  */
     public mouseDown(args: MouseEventArgs): void {
         this.inAction = true;
         this.undoElement = cloneObject(args.source);
         this.annotationId = args.sourceWrapper.id;
         super.mouseDown(args);
     }
+    /**   @private  */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         let difx: number = this.currentPosition.x - this.prevPosition.x;
@@ -1448,6 +1514,7 @@ export class LabelDragTool extends ToolBase {
         this.prevPosition = this.currentPosition;
         return !this.blocked;
     }
+    /**   @private  */
     public mouseUp(args: MouseEventArgs): void {
         let redoValue: NodeModel | ConnectorModel = args.source;
         this.inAction = false;
@@ -1459,6 +1526,7 @@ export class LabelDragTool extends ToolBase {
         this.commandHandler.addHistoryEntry(entryValue);
         super.mouseUp(args);
     }
+    /**   @private  */
     public mouseLeave(args: MouseEventArgs): void {
         this.mouseUp(args);
     }
@@ -1471,6 +1539,7 @@ export class LabelResizeTool extends ToolBase {
         super(commandHandler, true);
         this.corner = corner;
     }
+    /**   @private  */
     public mouseDown(args: MouseEventArgs): void {
         this.inAction = true;
         let object: NodeModel | ConnectorModel = ((args.source as Selector).nodes.length) ?
@@ -1486,6 +1555,7 @@ export class LabelResizeTool extends ToolBase {
         } as Rect;
         super.mouseDown(args);
     }
+    /**   @private  */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         if (this.inAction) {
@@ -1493,6 +1563,7 @@ export class LabelResizeTool extends ToolBase {
         }
         return !this.blocked;
     }
+    /**   @private  */
     public mouseUp(args: MouseEventArgs): void {
         let redoObject: NodeModel | ConnectorModel = ((args.source as Selector).nodes.length) ?
             (args.source as Selector).nodes[0] : (args.source as Selector).connectors[0];
@@ -1504,9 +1575,11 @@ export class LabelResizeTool extends ToolBase {
         this.commandHandler.addHistoryEntry(entry);
         super.mouseUp(args);
     }
+    /**   @private  */
     public mouseLeave(args: MouseEventArgs): void {
         this.mouseUp(args);
     }
+    /**   @private  */
     public resizeObject(args: MouseEventArgs): void {
         let object: NodeModel | ConnectorModel;
         object = ((args.source as Selector).nodes.length) ? (args.source as Selector).nodes[0] : (args.source as Selector).connectors[0];
@@ -1538,6 +1611,7 @@ export class LabelRotateTool extends ToolBase {
     constructor(commandHandler: CommandHandler) {
         super(commandHandler, true);
     }
+    /**   @private  */
     public mouseDown(args: MouseEventArgs): void {
         this.inAction = true;
         this.annotationId = args.source.wrapper.children[0].id;
@@ -1546,6 +1620,7 @@ export class LabelRotateTool extends ToolBase {
         this.undoElement = cloneObject(object);
         super.mouseDown(args);
     }
+    /**   @private  */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         if (args.source) {
@@ -1563,6 +1638,7 @@ export class LabelRotateTool extends ToolBase {
         return !this.blocked;
     }
 
+    /**   @private  */
     public mouseUp(args: MouseEventArgs): void {
         this.inAction = false;
         let redoEntry: NodeModel | ConnectorModel = ((args.source as Selector).nodes.length) ?
@@ -1575,6 +1651,7 @@ export class LabelRotateTool extends ToolBase {
         this.commandHandler.addHistoryEntry(entryObject);
         super.mouseUp(args);
     }
+    /**   @private  */
     public mouseLeave(args: MouseEventArgs): void {
         this.mouseUp(args);
     }

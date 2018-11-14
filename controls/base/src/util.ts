@@ -61,7 +61,7 @@ export function getValue(nameSpace: string, obj: any): any {
     let value: any = obj;
     let splits: string[] =  nameSpace.replace(/\[/g, '.').replace(/\]/g, '').split('.');
 
-    for (let i: number = 0; i < splits.length && !isUndefined(value); i++) {
+    for (let i: number = 0; i < splits.length && !isNullOrUndefined(value); i++) {
         value = value[splits[i]];
     }
     return value;

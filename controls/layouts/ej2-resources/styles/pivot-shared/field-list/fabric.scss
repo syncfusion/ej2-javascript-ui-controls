@@ -1,0 +1,248 @@
+
+$field-list-cell-border-color: #cecece;
+$field-list-border-type: $border-type;
+$field-list-border-size: $border-size;
+$field-list-table-background-color: #fff;
+$field-list-content-font-size: 12px;
+$field-list-font-family: $font-family;
+$field-list-header-background-color: #cecece;
+$field-list-drag-clone-color: #eee;
+/*! component's theme wise override definitions and variables */
+
+@include export-module('field-list-icons') {
+  /*! field-list component icons */
+  #{&}.e-pivottable {
+    .e-select-table::before {
+      content: '\e734';
+    }
+  }
+
+  #{&}.e-pivottable-wrapper {
+    .e-sort::before {
+      content: '\e925';
+    }
+
+    .e-filter::before {
+      content: '\e818';
+    }
+
+    .e-filtered::before {
+      content: '\e819';
+    }
+  }
+}
+@include export-module('field-list-layout') {
+
+  /*! field-list theme */
+
+  #{&}.e-pivottable {
+    .e-disable {
+      display: none;
+    }
+  }
+
+  #{&}.e-pivottable-wrapper {
+    .e-member-editor-wrapper {
+      .e-member-editor-container {
+        border: $field-list-border-size $field-list-border-type $field-list-cell-border-color;
+        height: 220px;
+        overflow: auto;
+
+        ul {
+          margin-left: -30px;
+        }
+      }
+    }
+  }
+
+  #{&}.e-drag-item.e-treeview {
+    .e-text-content {
+      padding-left: 0;
+    }
+
+    .e-text-content>.e-icons {
+      display: none;
+    }
+  }
+
+  #{&}.e-field-list-drag-clone {
+    background-color: $field-list-drag-clone-color;
+    height: auto;
+    padding: 5px;
+    width: auto;
+    z-index: 100000;
+  }
+}
+@include export-module('field-list-theme') {
+
+  /*! field-list theme */
+
+  #{&}.e-pivottable {
+    .e-select-list {
+      font-size: 25px;
+      margin-left: 7px;
+    }
+  }
+
+  #{&}.e-pivottable-wrapper {
+    font-family: $field-list-font-family;
+    font-size: $field-list-content-font-size;
+    min-width: 300px;
+
+    &.e-static {
+      border: $field-list-border-size $field-list-border-type $field-list-cell-border-color;
+      padding: 5px;
+    }
+
+    .e-field-list-title {
+      font-size: 18px;
+      min-height: 25px;
+      padding: 5px;
+      width: 100%;
+    }
+
+    .e-field-list-container {
+      display: flex;
+      height: 330px;
+
+      .e-field-table {
+        display: inline-block;
+        overflow: hidden;
+        width: 30%;
+
+        .e-field-list-tree {
+          .e-sibling {
+            display: none;
+          }
+        }
+
+        .e-field-header,
+        .e-field-list, {
+          border: $field-list-border-size $field-list-border-type $field-list-cell-border-color;
+          width: 100%;
+        }
+
+        .e-field-header {
+          background-color: $field-list-header-background-color;
+          height: 25px;
+          overflow: hidden;
+          padding: 5px;
+          text-align: left;
+          text-overflow: ellipsis;
+        }
+
+        .e-field-list {
+          height: 305px;
+          overflow: auto;
+
+          ul {
+            margin-left: -30px;
+          }
+        }
+      }
+
+      .e-axis-table {
+        display: flex;
+        overflow: hidden;
+        width: 70%;
+
+        .e-left-axis-fields,
+        .e-right-axis-fields {
+          padding-left: 20px;
+          width: 50%;
+        }
+
+        .e-right-axis-fields {
+          padding-left: 10px;
+        }
+
+        .e-left-axis-fields .e-field-list-filters,
+        .e-left-axis-fields .e-field-list-rows,
+        .e-right-axis-fields .e-field-list-columns,
+        .e-right-axis-fields .e-field-list-values {
+          background-color: $field-list-table-background-color;
+          border: $field-list-border-size $field-list-border-type $field-list-cell-border-color;
+          min-height: 160px;
+          position: relative;
+          width: 100%;
+
+          .e-axis-header {
+            background-color: $field-list-header-background-color;
+            height: 25px;
+            padding: 5px 0 0 14px;
+          }
+
+          .e-axis-content .e-pivot-button {
+            cursor: move;
+            display: flex;
+            height: 25px;
+            margin-bottom: 2px;
+            width: 99.5%;
+            z-index: 1;
+
+            .e-content {
+              flex: auto;
+              overflow: hidden;
+              text-align: left;
+              text-overflow: ellipsis;
+              width: 80%;
+            }
+
+            .e-sort,
+            .e-filter,
+            .e-filtered {
+              cursor: pointer;
+              display: inline-block;
+              margin-left: 7px;
+            }
+          }
+
+          .e-sort {
+            transform: rotate(0deg);
+            transition: transform 200ms ease-in-out;
+
+            &.e-descend {
+              transform: rotate(180deg);
+            }
+          }
+
+          .e-axis-content {
+            height: 133px;
+            overflow: auto;
+          }
+
+          .e-draggable-prompt {
+            bottom: 25%;
+            color: $field-list-header-background-color;
+            height: 25px;
+            pointer-events: none;
+            position: absolute;
+            text-align: center;
+            width: 100%;
+          }
+        }
+
+        .e-left-axis-fields .e-field-list-rows,
+        .e-right-axis-fields .e-field-list-values {
+          margin-top: 10px;
+        }
+      }
+    }
+
+    .e-calculated-field {
+      margin-right: 10px;
+    }
+
+    .e-field-list-footer {
+      min-height: 35px;
+      padding: 5px 0;
+      position: relative;
+      width: 100%;
+
+      .e-calculated-field {
+        float: right;
+        margin-right: 0;
+      }
+    }
+  }
+}

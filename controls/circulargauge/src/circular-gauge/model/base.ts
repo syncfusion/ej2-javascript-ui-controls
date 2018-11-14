@@ -161,4 +161,11 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     @Complex<BorderModel>({}, Border)
     public border: BorderModel;
 
+    /**
+     * Options to show the tooltip position on pointer
+     * @default false
+     */
+    @Property(false)
+    public showAtMousePosition: boolean;
+
 }

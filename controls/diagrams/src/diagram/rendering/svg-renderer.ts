@@ -20,6 +20,7 @@ import { createSvgElement, createHtmlElement, getBackgroundLayerSvg } from '../u
 
 /** @private */
 export class SvgRenderer implements IRenderer {
+    /**   @private  */
     public renderShadow(options: BaseAttributes, canvas: SVGElement, collection: Object[] = null, parentSvg?: SVGSVGElement): void {
         let pointModel: PointModel = { x: 0, y: 0 };
         let point: PointModel = Point.transform(pointModel, options.shadow.angle, options.shadow.distance);
@@ -58,12 +59,14 @@ export class SvgRenderer implements IRenderer {
     }
 
 
+    /**   @private  */
     public parseDashArray(dashArray: string): number[] {
         let dashes: number[] = [];
 
         return dashes;
     }
 
+    /**   @private  */
     public drawRectangle(
         svg: SVGElement, options: RectAttributes, diagramId: string, onlyRect?: boolean,
         isSelector?: Boolean, parentSvg?: SVGSVGElement, ariaLabel?: Object):
@@ -111,6 +114,7 @@ export class SvgRenderer implements IRenderer {
         this.setSvgStyle(rect, options as StyleAttributes, diagramId);
     }
 
+    /**   @private  */
     public updateSelectionRegion(gElement: SVGElement, options: RectAttributes): void {
         let rect: SVGElement;
         rect = (gElement.parentNode as SVGSVGElement).getElementById(options.id) as SVGElement;
@@ -129,6 +133,7 @@ export class SvgRenderer implements IRenderer {
         setAttributeSvg(rect, attr);
     }
 
+    /**   @private  */
     public createGElement(elementType: string, attribute: Object): SVGGElement {
         let gElement: SVGGElement = createSvgElement(elementType, attribute) as SVGGElement;
         return gElement;
@@ -179,6 +184,7 @@ export class SvgRenderer implements IRenderer {
         setAttributeSvg(circle, attr);
         gElement.appendChild(circle);
     }
+    /**   @private  */
     public drawPath(
         svg: SVGElement, options: PathAttributes, diagramId: string, isSelector?: Boolean,
         parentSvg?: SVGSVGElement, ariaLabel?: Object): void {
@@ -220,6 +226,7 @@ export class SvgRenderer implements IRenderer {
         this.setSvgStyle(path, options as StyleAttributes, diagramId);
     }
 
+    /**   @private  */
     public renderPath(svg: SVGElement, options: PathAttributes, collection: Object[]): void {
         let x1: number; let y1: number;
         let x2: number; let y2: number;
@@ -269,6 +276,7 @@ export class SvgRenderer implements IRenderer {
         text.style.fontFamily = options.fontFamily;
     }
 
+    /**   @private  */
     public drawText(canvas: SVGElement, options: TextAttributes, parentSvg?: SVGSVGElement, ariaLabel?: Object, diagramId?: string): void {
         if (options.content !== undefined) {
             let textNode: Text;
@@ -333,6 +341,7 @@ export class SvgRenderer implements IRenderer {
             setAttributeSvg(text, attr);
         }
     }
+    /**   @private  */
     public drawImage(canvas: SVGElement | HTMLCanvasElement, obj: ImageAttributes, parentSvg?: SVGSVGElement, fromPalette?: boolean): void {
         let id: string = obj.id + '_image';
 
@@ -468,6 +477,7 @@ export class SvgRenderer implements IRenderer {
         return group;
     }
 
+    /**   @private  */
     public renderGradient(options: StyleAttributes, svg: SVGElement, diagramId?: string): SVGElement {
         let max: number; let min: number; let grd: SVGElement;
 
@@ -517,6 +527,7 @@ export class SvgRenderer implements IRenderer {
         return grd;
     }
 
+    /**   @private  */
     public createLinearGradient(linear: LinearGradientModel): SVGElement {
         let lineargradient: SVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
         let attr: Object = {
@@ -526,6 +537,7 @@ export class SvgRenderer implements IRenderer {
         return lineargradient;
     }
 
+    /**   @private  */
     public createRadialGradient(radial: RadialGradientModel): SVGElement {
         let radialgradient: SVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
         let attr: Object = {
@@ -534,6 +546,7 @@ export class SvgRenderer implements IRenderer {
         setAttributeSvg(radialgradient, attr);
         return radialgradient;
     }
+    /**   @private  */
     public setSvgStyle(svg: SVGElement, style: StyleAttributes, diagramId?: string): void {
         if (style.fill === 'none') { style.fill = 'transparent'; }
         if (style.stroke === 'none') { style.stroke = 'transparent'; }
@@ -568,6 +581,7 @@ export class SvgRenderer implements IRenderer {
 
     // text utility
 
+    /**   @private  */
     public svgLabelAlign(text: TextAttributes, wrapBound: TextBounds, childNodes: SubTextElement[]): PointModel {
         let bounds: Size = new Size(wrapBound.width, childNodes.length * (text.fontSize * 1.2));
         let pos: PointModel = { x: 0, y: 0 }; let x: number = 0; let y: number = 1.2;

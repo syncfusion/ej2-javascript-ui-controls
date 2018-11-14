@@ -151,7 +151,11 @@ export class PointerRenderer {
             value, axis.visibleRange.max, axis.visibleRange.min,
             axis.startAngle, axis.endAngle, isClockWise
         );
-        endAngle = isClockWise ? endAngle : [startAngle, startAngle = endAngle][0];
+        if (isClockWise) {
+            endAngle = startAngle === endAngle ? endAngle + 1 : endAngle;
+        } else {
+            endAngle  = startAngle === endAngle ? [startAngle, startAngle = endAngle - 1][0] : [startAngle, startAngle = endAngle][0];
+        }
         let roundedStartAngle: number;
         let roundedEndAngle: number;
         let oldStart: number;

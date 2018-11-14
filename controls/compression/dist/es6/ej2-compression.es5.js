@@ -3,10 +3,10 @@ import { Encoding, Save } from '@syncfusion/ej2-file-utils';
 /**
  * array literal codes
  */
-var arrLiteralCodes = new Int16Array(286);
-var arrLiteralLengths = new Uint8Array(286);
-var arrDistanceCodes = new Int16Array(30);
-var arrDistanceLengths = new Uint8Array(30);
+var ARR_LITERAL_CODES = new Int16Array(286);
+var ARR_LITERAL_LENGTHS = new Uint8Array(286);
+var ARR_DISTANCE_CODES = new Int16Array(30);
+var ARR_DISTANCE_LENGTHS = new Uint8Array(30);
 /**
  * represent compression stream writer
  * ```typescript
@@ -46,6 +46,10 @@ var CompressedStreamWriter = /** @__PURE__ @class */ (function () {
         this.maxDist = this.windowSize - 262;
         this.checkSum = 1;
         this.noWrap = false;
+        if (!CompressedStreamWriter.isHuffmanTreeInitiated) {
+            CompressedStreamWriter.initHuffmanTree();
+            CompressedStreamWriter.isHuffmanTreeInitiated = true;
+        }
         this.treeLiteral = new CompressorHuffmanTree(this, 286, 257, 15);
         this.treeDistances = new CompressorHuffmanTree(this, 30, 1, 15);
         this.treeCodeLengths = new CompressorHuffmanTree(this, 19, 4, 7);
@@ -356,10 +360,10 @@ var CompressedStreamWriter = /** @__PURE__ @class */ (function () {
             this.treeLiteral.getEncodedLength() + this.treeDistances.getEncodedLength() + this.extraBits;
         var static_len = this.extraBits;
         for (var i = 0; i < 286; i++) {
-            static_len += this.treeLiteral.codeFrequencies[i] * arrLiteralLengths[i];
+            static_len += this.treeLiteral.codeFrequencies[i] * ARR_LITERAL_LENGTHS[i];
         }
         for (var i = 0; i < 30; i++) {
-            static_len += this.treeDistances.codeFrequencies[i] * arrDistanceLengths[i];
+            static_len += this.treeDistances.codeFrequencies[i] * ARR_DISTANCE_LENGTHS[i];
         }
         if (opt_len >= static_len) {
             // Force static trees.
@@ -371,8 +375,8 @@ var CompressedStreamWriter = /** @__PURE__ @class */ (function () {
         else if (opt_len == static_len) {
             // Encode with static tree.
             this.pendingBufferWriteBits((1 << 1) + (lastBlock ? 1 : 0), 3);
-            this.treeLiteral.setStaticCodes(arrLiteralCodes, arrLiteralLengths);
-            this.treeDistances.setStaticCodes(arrDistanceCodes, arrDistanceLengths);
+            this.treeLiteral.setStaticCodes(ARR_LITERAL_CODES, ARR_LITERAL_LENGTHS);
+            this.treeDistances.setStaticCodes(ARR_DISTANCE_CODES, ARR_DISTANCE_LENGTHS);
             this.huffmanCompressBlock();
             this.huffmanReset();
         }
@@ -502,6 +506,33 @@ var CompressedStreamWriter = /** @__PURE__ @class */ (function () {
         this.pendingBufBitsInCache = 0;
     };
     /**
+     * Huffman Tree literal calculation
+     * @private
+     */
+    CompressedStreamWriter.initHuffmanTree = function () {
+        var i = 0;
+        while (i < 144) {
+            ARR_LITERAL_CODES[i] = CompressorHuffmanTree.bitReverse((0x030 + i) << 8);
+            ARR_LITERAL_LENGTHS[i++] = 8;
+        }
+        while (i < 256) {
+            ARR_LITERAL_CODES[i] = CompressorHuffmanTree.bitReverse((0x190 - 144 + i) << 7);
+            ARR_LITERAL_LENGTHS[i++] = 9;
+        }
+        while (i < 280) {
+            ARR_LITERAL_CODES[i] = CompressorHuffmanTree.bitReverse((0x000 - 256 + i) << 9);
+            ARR_LITERAL_LENGTHS[i++] = 7;
+        }
+        while (i < 286) {
+            ARR_LITERAL_CODES[i] = CompressorHuffmanTree.bitReverse((0x0c0 - 280 + i) << 8);
+            ARR_LITERAL_LENGTHS[i++] = 8;
+        }
+        for (i = 0; i < 30; i++) {
+            ARR_DISTANCE_CODES[i] = CompressorHuffmanTree.bitReverse(i << 11);
+            ARR_DISTANCE_LENGTHS[i] = 5;
+        }
+    };
+    /**
      * close the stream and write all pending buffer in to stream
      * @returns {void}
      */
@@ -561,6 +592,7 @@ var CompressedStreamWriter = /** @__PURE__ @class */ (function () {
         this.checkSum = undefined;
         this.noWrap = undefined;
     };
+    CompressedStreamWriter.isHuffmanTreeInitiated = false;
     return CompressedStreamWriter;
 }());
 /**
@@ -954,34 +986,8 @@ var ChecksumCalculator = /** @__PURE__ @class */ (function () {
     ChecksumCalculator.checksumIterationCount = 3800;
     return ChecksumCalculator;
 }());
-/**
- * Huffman Tree literal calculation
- */
-(function () {
-    var i = 0;
-    while (i < 144) {
-        arrLiteralCodes[i] = CompressorHuffmanTree.bitReverse((0x030 + i) << 8);
-        arrLiteralLengths[i++] = 8;
-    }
-    while (i < 256) {
-        arrLiteralCodes[i] = CompressorHuffmanTree.bitReverse((0x190 - 144 + i) << 7);
-        arrLiteralLengths[i++] = 9;
-    }
-    while (i < 280) {
-        arrLiteralCodes[i] = CompressorHuffmanTree.bitReverse((0x000 - 256 + i) << 9);
-        arrLiteralLengths[i++] = 7;
-    }
-    while (i < 286) {
-        arrLiteralCodes[i] = CompressorHuffmanTree.bitReverse((0x0c0 - 280 + i) << 8);
-        arrLiteralLengths[i++] = 8;
-    }
-    for (i = 0; i < 30; i++) {
-        arrDistanceCodes[i] = CompressorHuffmanTree.bitReverse(i << 11);
-        arrDistanceLengths[i] = 5;
-    }
-})();
 
-var crc32Table = [];
+var CRC32TABLE = [];
 /**
  * class provide compression library
  * ```typescript
@@ -997,6 +1003,9 @@ var ZipArchive = /** @__PURE__ @class */ (function () {
      * constructor for creating ZipArchive instance
      */
     function ZipArchive() {
+        if (CRC32TABLE.length === 0) {
+            ZipArchive.initCrc32Table();
+        }
         this.files = [];
         this.level = 'Normal';
         Save.isMicrosoftBrowser = !(!navigator.msSaveBlob);
@@ -1171,7 +1180,7 @@ var ZipArchive = /** @__PURE__ @class */ (function () {
                         isDirectory: false
                     };
                     if (zipArchive.level === 'Normal') {
-                        zipArchive.compressData(input, data, crc32Table);
+                        zipArchive.compressData(input, data, CRC32TABLE);
                         var length_1 = 0;
                         for (var i = 0; i < data.compressedData.length; i++) {
                             length_1 += data.compressedData[i].length;
@@ -1181,7 +1190,7 @@ var ZipArchive = /** @__PURE__ @class */ (function () {
                     }
                     else {
                         data.compressedSize = input.length;
-                        data.crc32Value = zipArchive.calculateCrc32Value(0, input, crc32Table);
+                        data.crc32Value = zipArchive.calculateCrc32Value(0, input, CRC32TABLE);
                         data.compressionType = '\x00\x00'; // Stored = 0
                         data.compressedData.push(input);
                     }
@@ -1317,6 +1326,20 @@ var ZipArchive = /** @__PURE__ @class */ (function () {
         }
         return (crc32Value ^ (-1));
     };
+    /**
+     * construct cyclic redundancy code table
+     * @private
+     */
+    ZipArchive.initCrc32Table = function () {
+        var i;
+        for (var j = 0; j < 256; j++) {
+            i = j;
+            for (var k = 0; k < 8; k++) {
+                i = ((i & 1) ? (0xEDB88320 ^ (i >>> 1)) : (i >>> 1));
+            }
+            CRC32TABLE[j] = i;
+        }
+    };
     return ZipArchive;
 }());
 /**
@@ -1372,19 +1395,6 @@ var ZipArchiveItem = /** @__PURE__ @class */ (function () {
     };
     return ZipArchiveItem;
 }());
-/**
- * construct cyclic redundancy code table
- */
-(function () {
-    var i;
-    for (var j = 0; j < 256; j++) {
-        i = j;
-        for (var k = 0; k < 8; k++) {
-            i = ((i & 1) ? (0xEDB88320 ^ (i >>> 1)) : (i >>> 1));
-        }
-        crc32Table[j] = i;
-    }
-})();
 
 /**
  * export ZipArchive class

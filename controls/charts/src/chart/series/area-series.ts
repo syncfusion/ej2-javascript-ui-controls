@@ -21,6 +21,7 @@ export class AreaSeries extends MultiColoredSeries {
         let origin: number = series.chart.chartAreaType === 'PolarRadar' ? series.points[0].yValue :
             Math.max(<number>series.yAxis.visibleRange.min, 0);
         let currentXValue: number;
+        let isPolar: boolean = (series.chart && series.chart.chartAreaType === 'PolarRadar');
         let isDropMode: boolean = (series.emptyPointSettings && series.emptyPointSettings.mode === 'Drop');
         let borderWidth: number = series.border ? series.border.width : 0;
         let borderColor: string = series.border ? series.border.color : 'transparent';
@@ -50,6 +51,9 @@ export class AreaSeries extends MultiColoredSeries {
                 this.storePointLocation(point, series, isInverted, getCoordinate);
             }
         });
+        if (isPolar) {
+            direction = direction.concat(direction + ' ' + 'Z');
+        }
         this.appendLinePath(
             new PathOption(
                 series.chart.element.id + '_Series_' + series.index, series.interior,

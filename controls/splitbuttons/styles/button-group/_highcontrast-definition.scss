@@ -1,0 +1,42 @@
+@import 'definition.scss';
+
+$skin-name: 'highcontrast';
+$btn-margin: -1px;
+$btn-margin-left: 0;
+$wrapper-border: 0;
+$hover-border: $hover-border;
+$primary-outline-color: $bg-base-0;
+$btn-round-radius: 20px;
+$icon-font-size: 14px;
+$icon-font-size-bigger: 16px;
+
+//Normal Outline GroupButton
+$outline-hover-border-color: $hover-border;
+$outline-focus-border-color: $bg-base-100;
+$outline-active-border-color: $selection-bg;
+
+//Outline Primary
+$outline-primary-hover-border-color: $border-fg;
+$outline-primary-focus-border-color: transparent;
+$outline-primary-active-border-color: $selection-bg;
+$outline-focus-primary-color: $primary-outline-color;
+
+//Outline Success
+$outline-success-hover-border-color: $hover-border;
+$outline-success-focus-border-color: transparent;
+$outline-success-active-border-color: $content-font;
+
+//Outline Info
+$outline-info-hover-border-color: $hover-border;
+$outline-info-focus-border-color: transparent;
+$outline-info-active-border-color: $content-font;
+
+//Outline warning
+$outline-warning-hover-border-color: $hover-border;
+$outline-warning-focus-border-color: transparent;
+$outline-warning-active-border-color: $content-font;
+
+//Outline danger
+$outline-danger-hover-border-color: $hover-border;
+$outline-danger-focus-border-color: transparent;
+$outline-danger-active-border-color: $content-font;

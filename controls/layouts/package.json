@@ -1,0 +1,48 @@
+{
+	"name": "@syncfusion/ej2-layouts",
+	"version": "16.3.30",
+	"description": "A package of Essential JS 2 layout pure CSS components such as card and avatar. The card is used as small container to show content in specific structure, whereas the avatars are icons, initials or figures representing particular person.",
+	"author": "Syncfusion Inc.",
+	"license": "SEE LICENSE IN license",
+	"dependencies": {
+		"@syncfusion/ej2-base": "*"
+	},
+	"devDependencies": {
+		"@types/chai": "^3.4.28",
+		"@types/jasmine": "^2.2.29",
+		"@types/jasmine-ajax": "^3.1.27",
+		"@types/requirejs": "^2.1.26",
+		"es6-promise": "^3.2.1",
+		"gulp": "^3.9.1",
+		"gulp-sass": "^3.1.0",
+		"gulp-typescript": "^3.1.6",
+		"requirejs": "^2.3.3",
+		"typescript": "2.3.4"
+	},
+	"keywords": [
+		"ej2",
+		"syncfusion",
+		"ej2-layouts",
+		"ej2-cards",
+		"cards",
+		"ej2-avatar",
+		"avatar",
+		"circle avatar",
+		"cards css",
+		"avatar css"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/syncfusion/ej2-layouts.git"
+	},
+	"scripts": {
+		"build": "gulp build"
+	},
+	"config": {
+		"ghooks": {
+			"pre-commit": "gulp pre-commit",
+			"pre-push": "gulp pre-push",
+			"commit-msg": "gulp commit-msg"
+		}
+	}
+}

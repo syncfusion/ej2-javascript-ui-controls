@@ -8,6 +8,17 @@
 
 ## [Unreleased]
 
+## 16.3.32 (2018-11-13)
+
+### Chart
+
+#### Bug Fixes
+
+- Polar area type border closing issue fixed.
+- scrollbar inverted axis position issue fixed.
+
+## 16.3.29 (2018-10-31)
+
 ### Chart
 
 #### New Features

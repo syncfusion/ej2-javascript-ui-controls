@@ -1,0 +1,176 @@
+
+
+$default-text-indent: 16px;
+$popup-border-radius: 0;
+$list-bigger-line-height: 48px;
+$list-normal-line-height: 36px;
+$list-font-size: 14px;
+$list-normal-font-size: 14px;
+$list-bigger-font-size: 13px;
+$list-font-weight: normal;
+$popup-shadow: 0 2px 3px 1px  rgba($default-font-color, .21);
+$list-normal-text-indent: $default-text-indent;
+$list-bigger-text-indent: 16px;
+$list-default-font-color: $default-font-color;
+$list-border-color: $default-border-color;
+$list-bg-color: $default-bg-color;
+$list-active-bg-color: $active-bg-color;
+$list-active-font-color: $active-font-color;
+$list-hover-bg-color: $hover-bg-color;
+$list-hover-font-color: $hover-font-color;
+$list-popup-icon-active-color: $active-bg-color;
+$list-active-hover-bg-color: $hover-bg-color;
+$list-active-hover-font-color: $hover-font-color;
+$list-padding: 0;
+$time-font-icon: '\e744';
+$icon-normal-font-size: 16px;
+$icon-bigger-font-size: 20px;
+$normal-min-height: 20px;
+$normal-min-width: 20px;
+$bigger-min-height: 22px;
+$bigger-min-width: 22px;
+
+@include export-module('timepicker-layout') {
+  //   timepicker layout
+  .e-time-wrapper,
+  &.e-control-wrapper.e-time-wrapper {
+    // sass-lint:disable no-vendor-prefixes
+    -webkit-tap-highlight-color: transparent;
+
+    & .e-time-icon.e-icons {
+      font-size: $icon-normal-font-size;
+      min-height: $normal-min-height;
+      min-width: $normal-min-width;
+    }
+
+    & .e-time-icon.e-icons::before {
+      content: $time-font-icon;
+    }
+
+    & .e-time-icon.e-icons.e-disabled {
+      pointer-events: none;
+    }
+
+    & span {
+      cursor: pointer;
+    }
+  }
+
+  #{&}.e-timepicker.e-popup {
+    border-style: solid;
+    border-width: 1px;
+    overflow: auto;
+
+    & .e-content {
+      position: relative;
+    }
+
+    & .e-list-parent.e-ul {
+      margin: 0;
+      padding: $list-normal-padding 0;
+
+      & .e-list-item {
+        cursor: default;
+        font-size: $list-normal-font-size;
+        overflow: hidden;
+        position: relative;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+        white-space: nowrap;
+        width: 100%;
+      }
+
+      & .e-list-item.e-hover {
+        cursor: pointer;
+      }
+    }
+  }
+
+  //normal styles
+
+  #{&}.e-timepicker.e-popup {
+    & .e-list-parent.e-ul .e-list-item {
+      line-height: $list-normal-line-height;
+      text-indent: $list-normal-text-indent;
+    }
+  }
+
+  //bigger styles
+  .e-bigger .e-time-wrapper,
+  &.e-bigger.e-time-wrapper,
+  &.e-bigger .e-control-wrapper .e-time-wrapper,
+  &.e-control-wrapper.e-bigger.e-time-wrapper {
+
+    & .e-time-icon.e-icons {
+      font-size: $icon-bigger-font-size;
+      min-height: $bigger-min-height;
+      min-width: $bigger-min-width;
+    }
+  }
+
+  .e-bigger #{&}.e-timepicker.e-popup,
+  &.e-bigger#{&}.e-timepicker.e-popup {
+
+    & .e-list-parent.e-ul {
+      padding: $list-bigger-padding 0;
+
+      & .e-list-item {
+        font-size: $list-bigger-font-size;
+        line-height: $list-bigger-line-height;
+        text-indent: $list-bigger-text-indent;
+      }
+    }
+  }
+}
+@include export-module('timepicker-theme') {
+  /*! timepicker theme */
+  .e-time-wrapper {
+    & .e-input-group-icon.e-icons.e-active {
+      color: $list-active-icon-color;
+    }
+
+    &.e-input-group:not(.e-disabled) .e-input-group-icon.e-active:active {
+      color: $list-popup-icon-active-color;
+    }
+  }
+
+  #{&}.e-timepicker.e-popup {
+    border: $list-border-color;
+    border-radius: $popup-border-radius;
+    box-shadow: $popup-shadow;
+
+    & .e-list-parent.e-ul {
+      background-color: $list-bg-color;
+
+      & li.e-list-item {
+        border: $list-default-border-style;
+        color: $list-default-font-color;
+      }
+
+      & .e-list-item.e-disabled {
+        color: $disable-text;
+        opacity: $disable-opacity;
+        pointer-events: none;
+        touch-action: none;
+      }
+
+      & .e-list-item.e-hover,
+      & .e-list-item.e-navigation,
+      & .e-list-item:focus {
+        background-color: $list-hover-bg-color;
+        border: $list-hover-border-color;
+        color: $list-hover-font-color;
+      }
+
+      & .e-list-item.e-active {
+        background-color: $list-active-bg-color;
+        color: $list-active-font-color;
+      }
+
+      & .e-list-item.e-active.e-hover {
+        background-color: $list-active-hover-bg-color;
+        color: $list-active-hover-font-color;
+      }
+    }
+  }
+}

@@ -147,7 +147,9 @@ export class ScrollBar {
         this.getMouseXY(e);
         this.isResizeLeft = this.isExist(id, '_leftCircle_') || this.isExist(id, '_leftArrow_');
         this.isResizeRight = this.isExist(id, '_rightCircle_') || this.isExist(id, '_rightArrow_');
-        this.previousXY = this.isVertical ? this.mouseY : this.mouseX;
+        //this.previousXY = this.isVertical ? this.mouseY : this.mouseX;
+        this.previousXY =  (this.isVertical && this.axis.isInversed) ? this.mouseY : this.isVertical ? this.width -
+        this.mouseY : this.axis.isInversed ? this.width - this.mouseX : this.mouseX;
         this.previousWidth = elem.thumbRectWidth;
         this.previousRectX = elem.thumbRectX;
         this.startZoomPosition = this.axis.zoomPosition;
@@ -233,7 +235,8 @@ export class ScrollBar {
         this.getMouseXY(e);
         this.setCursor(target);
         this.setTheme(target);
-        let mouseXY: number = this.isVertical ? this.mouseY : this.mouseX;
+        let mouseXY : number =  (this.isVertical && this.axis.isInversed) ? this.mouseY : this.isVertical ? this.width - this.mouseY :
+        this.axis.isInversed ? this.width - this.mouseX : this.mouseX;
         let range: VisibleRangeModel = this.axis.visibleRange;
         let zoomPosition: number = this.zoomPosition;
         let zoomFactor: number = this.zoomFactor;
@@ -394,7 +397,8 @@ export class ScrollBar {
         let gripWidth: number = 14;
         let minThumbWidth: number = circleRadius * 2 + padding * 2 + gripWidth;
         let thumbX: number = this.previousRectX;
-        let mouseXY: number = this.isVertical ? this.mouseY : this.mouseX;
+        let mouseXY : number = (this.isVertical && this.axis.isInversed) ? this.mouseY : this.isVertical ? this.width - this.mouseY :
+        this.axis.isInversed ? this.width - this.mouseX : this.mouseX;
         let diff: number = Math.abs(this.previousXY - mouseXY);
         if (this.isResizeLeft && mouseXY >= 0) {
             let currentX: number = thumbX + (mouseXY > this.previousXY ? diff : -diff);
@@ -455,6 +459,7 @@ export class ScrollBar {
         this.width = this.isVertical ? axis.rect.height : axis.rect.width;
         this.height = 16;
         let currentX: number = axis.zoomPosition * (this.isVertical ? axis.rect.height : this.width);
+        currentX = axis.zoomPosition === 1 ? axis.zoomPosition *  (this.width / 2) : currentX ;
         this.scrollElements.thumbRectX = currentX > circleRadius ? currentX : circleRadius;
         this.scrollElements.thumbRectWidth = ((currentWidth + this.scrollElements.thumbRectX) < this.width - (circleRadius * 2))
             ? currentWidth : this.width - this.scrollElements.thumbRectX - circleRadius;

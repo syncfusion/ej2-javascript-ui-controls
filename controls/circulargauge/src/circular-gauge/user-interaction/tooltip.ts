@@ -2,7 +2,7 @@ import { CircularGauge } from '../circular-gauge';
 import { Axis, Pointer } from '../axes/axis';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
 import { IVisiblePointer, ITooltipRenderEventArgs } from '../model/interface';
-import { GaugeLocation, getPointer, Rect } from '../utils/helper';
+import { GaugeLocation, getPointer, Rect, getMousePosition, getElementSize, Size } from '../utils/helper';
 import { getAngleFromValue, getLabelFormat, getLocationFromAngle } from '../utils/helper';
 import { TooltipSettings } from '../model/base';
 import { FontModel, BorderModel } from '../model/base-model';
@@ -13,7 +13,6 @@ import { tooltipRender } from '../model/constants';
  */
 
 export class GaugeTooltip {
-
     private gauge: CircularGauge;
     private tooltipEle: HTMLElement;
     private currentAxis: Axis;
@@ -23,11 +22,11 @@ export class GaugeTooltip {
     private textStyle: FontModel;
     private svgTooltip: Tooltip;
     private tooltipId: string;
-    private isTouch: boolean;
     private tooltipPosition: string;
     private arrowInverted: boolean;
     private tooltipRect: Rect;
     private clearTimeout: number;
+    private pointerEle: Element;
     /**
      * Constructor for Tooltip module.
      * @private.
@@ -45,18 +44,31 @@ export class GaugeTooltip {
      * Method to render the tooltip for circular gauge.
      */
     /* tslint:disable:no-string-literal */
+    /* tslint:disable:max-func-body-length */
     public renderTooltip(e: PointerEvent): void {
         let pageX: number; let pageY: number; let target: Element; let touchArg: TouchEvent;
-        let tooltipContent: string[] = [];
+        let location: GaugeLocation; let samePointerEle: boolean = false;
         if (e.type.indexOf('touch') !== - 1) {
-            this.isTouch = true;
             touchArg = <TouchEvent & PointerEvent>e;
             target = <Element>touchArg.target;
+            pageX = touchArg.changedTouches[0].pageX;
+            pageY = touchArg.changedTouches[0].pageY;
         } else {
-            this.isTouch = e.pointerType === 'touch';
             target = <Element>e.target;
+            pageX = e.pageX;
+            pageY = e.pageY;
         }
         if (target.id.indexOf('_Pointer_') >= 0) {
+            if (this.pointerEle !== null) {
+                samePointerEle = (this.pointerEle === target);
+            }
+            let svgRect: ClientRect = this.gauge.svgObject.getBoundingClientRect();
+            let elementRect: ClientRect = this.gauge.element.getBoundingClientRect();
+            let rect: Rect = new Rect(
+                Math.abs(elementRect.left - svgRect.left),
+                Math.abs(elementRect.top - svgRect.top),
+                svgRect.width, svgRect.height
+            );
             let currentPointer: IVisiblePointer = getPointer(target.id, this.gauge);
             this.currentAxis = <Axis>this.gauge.axes[currentPointer.axisIndex];
             this.currentPointer = <Pointer>(this.currentAxis.pointers)[currentPointer.pointerIndex];
@@ -64,9 +76,6 @@ export class GaugeTooltip {
                 this.currentPointer.currentValue, this.currentAxis.visibleRange.max, this.currentAxis.visibleRange.min,
                 this.currentAxis.startAngle, this.currentAxis.endAngle, this.currentAxis.direction === 'ClockWise'
             ) % 360;
-            let location: GaugeLocation = getLocationFromAngle(
-                angle, this.currentAxis.currentRadius, this.gauge.midPoint
-            );
             let tooltipFormat: string = this.gauge.tooltip.format || this.currentAxis.labelStyle.format;
             let customLabelFormat: boolean = tooltipFormat && tooltipFormat.match('{value}') !== null;
             let format: Function = this.gauge.intl.getNumberFormat({
@@ -85,9 +94,11 @@ export class GaugeTooltip {
             let content: string = customLabelFormat ?
                 tooltipFormat.replace(new RegExp('{value}', 'g'), format(this.currentPointer.currentValue)) :
                 format(this.currentPointer.currentValue);
+            location = getLocationFromAngle(
+                angle, this.currentAxis.currentRadius, this.gauge.midPoint
+            );
             location.x = (this.tooltip.template && ((angle >= 150 && angle <= 250) || (angle >= 330 && angle <= 360) ||
                 (angle >= 0 && angle <= 45))) ? (location.x + 10) : location.x;
-            this.findPosition(angle, content, location);
             let tooltipArgs: ITooltipRenderEventArgs = {
                 name: tooltipRender, cancel: false, content: content, location: location, axis: this.currentAxis,
                 tooltip: this.tooltip, pointer: this.currentPointer, event: e, gauge: this.gauge
@@ -97,18 +108,37 @@ export class GaugeTooltip {
             if (template !== null && Object.keys(template).length === 1) {
                 template = template[Object.keys(template)[0]];
             }
-            if (!tooltipArgs.cancel) {
+            if (!this.tooltip.showAtMousePosition) {
+                if (template) {
+                    let pointerRect: ClientRect = target.getBoundingClientRect();
+                    let size: Size = getElementSize(this.tooltip.template, this.gauge, this.tooltipEle);
+                    let width: number = Math.abs(svgRect.width - pointerRect.width) - Math.abs(pointerRect.left - svgRect.left);
+                    if (size.height > Math.abs(svgRect.height - location.y) - 20) {
+                        location.y += size.height / 2;
+                    }
+                    if (size.width > width) {
+                        location.x -= Math.abs((svgRect.left + svgRect.width) - (location.x + size.width));
+                        this.tooltipRect = rect;
+                    } else {
+                        this.tooltipRect = rect;
+                        this.findPosition(rect, angle, content, location);
+                    }
+                } else {
+                    this.findPosition(rect, angle, content, location);
+                }
+            } else {
+                location = getMousePosition(pageX, pageY, this.gauge.svgObject);
+                this.tooltipRect = rect;
+            }
+            if (!tooltipArgs.cancel && !samePointerEle) {
                 tooltipArgs['tooltip']['properties']['textStyle']['color'] = (this.gauge.theme === 'Highcontrast') ? '#00000' : '#FFFFFF';
                 this.svgTooltip = new Tooltip({
                     enable: true,
-                    header: '',
                     data: { value: tooltipArgs.content },
                     template: template,
                     enableAnimation: tooltipArgs.tooltip.enableAnimation,
                     content: [tooltipArgs.content],
-                    shapes: [],
                     location: tooltipArgs.location,
-                    palette: [],
                     inverted: this.arrowInverted,
                     areaBounds: this.tooltipRect,
                     fill: (this.gauge.theme === 'Highcontrast') ? '#FFFFFF' : tooltipArgs.tooltip.fill,
@@ -117,8 +147,7 @@ export class GaugeTooltip {
                     theme: this.gauge.theme
                 });
                 this.svgTooltip.appendTo(this.tooltipEle);
-            } else {
-                this.removeTooltip();
+                this.pointerEle = target;
             }
         } else {
             this.removeTooltip();
@@ -128,15 +157,8 @@ export class GaugeTooltip {
     /**
      * Method to find the position of the tooltip anchor for circular gauge.
      */
-    private findPosition(angle: number, text: string, location: GaugeLocation): void {
-        let svgRect: ClientRect = this.gauge.svgObject.getBoundingClientRect();
-        let elementRect: ClientRect = this.gauge.element.getBoundingClientRect();
+    private findPosition(rect: Rect, angle: number, text: string, location: GaugeLocation): void {
         let addLeft: number; let addTop: number; let addHeight: number; let addWidth: number;
-        let rect: Rect = new Rect(
-            Math.abs(elementRect.left - svgRect.left),
-            Math.abs(elementRect.top - svgRect.top),
-            svgRect.width, svgRect.height
-        );
         switch (true) {
             case (angle >= 0 && angle < 45):
                 this.arrowInverted = true;
@@ -191,6 +213,7 @@ export class GaugeTooltip {
     public removeTooltip(): void {
         if (document.getElementsByClassName('EJ2-CircularGauge-Tooltip').length > 0) {
             document.getElementsByClassName('EJ2-CircularGauge-Tooltip')[0].remove();
+            this.pointerEle = null;
         }
     }
 

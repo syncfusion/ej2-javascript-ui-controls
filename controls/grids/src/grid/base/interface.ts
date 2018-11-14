@@ -337,6 +337,8 @@ export interface IGrid extends Component<HTMLElement> {
 
     isEdit?: boolean;
 
+    commonQuery?: Query;
+
     isLastCellPrimaryKey?: boolean;
 
     editModule?: Edit;
@@ -458,7 +460,9 @@ export interface IGrid extends Component<HTMLElement> {
     setCellValue(key: string | number, field: string, value: string | number | boolean | Date): void;
     setRowData(key: string | number, rowData?: Object): void;
     getState?(): Object;
-    destroyTemplate?(templateName: string[]): void;
+    //tslint:disable-next-line:no-any
+    destroyTemplate?(templateName: string[], index?: any): void;
+    getQuery?(): Query;
 }
 
 /** @hidden */
@@ -1329,6 +1333,8 @@ export interface AddEventArgs {
      * Defines the record objects.
      */
     rowData?: Object;
+    /** Define the target for dialog */
+    target?: HTMLElement;
 }
 
 export interface SaveEventArgs extends AddEventArgs {
@@ -1352,6 +1358,8 @@ export interface EditEventArgs extends BeginEditArgs {
     form?: HTMLFormElement;
     /** Define the movable table form element */
     movableForm?: HTMLFormElement;
+    /** Defines the target for dialog */
+    target?: HTMLElement;
 }
 
 export interface DialogEditEventArgs extends EditEventArgs {

@@ -89,11 +89,17 @@ export class Ruler extends Component<HTMLElement> implements INotifyPropertyChan
     @Property(400)
     public length: number;
 
+    /**   @private  */
     public offset: number = 0;
+    /**   @private  */
     public scale: number = 1;
+    /**   @private  */
     public startValue: number;
+    /**   @private  */
     public defStartValue: number;
+    /**   @private  */
     public hRulerOffset: number;
+    /**   @private  */
     public vRulerOffset: number;
 
 

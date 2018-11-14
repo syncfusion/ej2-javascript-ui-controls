@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.3.32 (2018-11-15)
+
+### Toast
+
+#### Bug Fixes
+
+- Resolved the issue "window is not define" on registering component as plugin in Toast component.
+
 ## 16.2.45 (2018-07-17)
 
 ### Toast

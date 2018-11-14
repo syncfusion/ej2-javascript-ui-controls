@@ -5,7 +5,7 @@
 import { IDataSet } from '../../src/base/engine';
 import { pivot_dataset } from '../../spec/base/datasource.spec';
 import { PivotView } from '../../src/pivotview/base/pivotview';
-import { PivotFieldList } from '../../src/field-list/base/field-list';
+import { PivotFieldList } from '../../src/pivotfieldlist/base/field-list';
 import { CalculatedField } from '../../src/common/calculatedfield/calculated-field';
 
 PivotFieldList.Inject(CalculatedField);

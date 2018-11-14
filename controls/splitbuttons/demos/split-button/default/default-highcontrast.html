@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title> Typescript Components</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Typescript UI Controls" />
+    <meta name="author" content="Syncfusion" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" />
+    <link id="theme" href="../../theme-files/highcontrast.css" rel="stylesheet" />
+    <script>
+        window.require = {
+            config: function (json) {
+                window.rsConfig = json;
+                window.rsConfig.baseUrl = '';
+            }
+        };
+    </script>
+    <script src="./../../demo-config.js"></script>
+    <script src="./../../../node_modules/requirejs/require.js" data-main="index"></script>
+    <script>
+        require.config(window.rsConfig);
+    </script>
+    <style>
+        .e-split-btn-wrapper {
+            margin-left: 50px;
+        }
+
+        #material, #fabric, #bootstrap, #highcontrast {
+            margin-right: 30px;
+        }
+
+        .e-sum::before {
+            content: '\e817';
+        }
+
+        .theme {
+            border-collapse: collapse;
+            margin-left: 32%;
+            margin-top: 12%;
+        }
+
+        .content {
+            border-collapse: collapse;
+            margin-left: 35%;
+            margin-top: 6%;
+        }
+    </style>
+</head>
+
+<body style="background-color: #000; color: #fff">
+    <table class="theme">
+        <tbody>
+            <tr>
+                <td>
+                    <button class="e-btn" id="material">Material</button>
+                </td>
+                <td>
+                    <button class="e-btn" id="fabric">Fabric</button>
+                </td>
+                <td>
+                    <button class="e-btn" id="bootstrap">Bootstrap</button>
+                </td>
+                <td>
+                    <button class="e-btn" id="highcontrast">High Contrast</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="content">
+        <tbody>
+            <tr>
+                <td>
+                    <button id="textbtn" title="text"></button>
+                </td>
+                <td>
+                    <button id="icontextbtn" title="text1"></button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+
+</html>

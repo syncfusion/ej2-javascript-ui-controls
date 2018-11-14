@@ -438,6 +438,7 @@ export class ExcelExport {
             } else {
                 this.rows.push({ index: this.rowLength++, cells: cells });
             }
+            gObj.notify(events.exportRowDataBound, { rowObj: record[r], type: 'excel' });
         }
     }
     /* tslint:disable-next-line:no-any */
@@ -550,7 +551,7 @@ export class ExcelExport {
         templateFn[getEnumValue(CellType, cell.cellType)] = compile(template);
         /* tslint:disable-next-line:max-line-length */
         let txt: NodeList = (templateFn[getEnumValue(CellType, cell.cellType)](row.data[cell.column.field ? cell.column.field : cell.column.columnName]));
-        return (<Text>txt[0]).wholeText;
+        return (<Text>txt[0]).textContent;
     }
     /* tslint:disable-next-line:no-any */
     private mergeOptions(JSON1: any, JSON2: any): any {

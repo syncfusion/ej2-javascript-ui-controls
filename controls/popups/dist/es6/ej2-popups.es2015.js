@@ -1507,7 +1507,7 @@ let Dialog = class Dialog extends Component {
     setMaxHeight() {
         let display = this.element.style.display;
         this.element.style.display = 'none';
-        this.element.style.maxHeight = (!isNullOrUndefined(this.target)) ?
+        this.element.style.maxHeight = (!isNullOrUndefined(this.target)) && (this.targetEle.offsetHeight < window.innerHeight) ?
             (this.targetEle.offsetHeight - 20) + 'px' : (window.innerHeight - 20) + 'px';
         this.element.style.display = display;
     }

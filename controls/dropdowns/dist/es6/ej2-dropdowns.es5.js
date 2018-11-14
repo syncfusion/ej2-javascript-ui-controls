@@ -857,13 +857,26 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
         var index;
         index = (isNullOrUndefined(itemIndex) || itemIndex < 0 || itemIndex > itemsCount - 1) ? itemsCount : itemIndex;
         var fields = this.fields;
+        if (items && fields.groupBy) {
+            items = ListBase.groupDataSource(items, fields.properties);
+        }
         var liCollections = [];
         for (var i = 0; i < items.length; i++) {
             var item = items[i];
-            var li = this.createElement('li', { className: dropDownBaseClasses.li, id: 'option-add-' + i });
+            var isHeader = item.isHeader;
+            var li = this.createElement('li', { className: isHeader ? dropDownBaseClasses.group : dropDownBaseClasses.li, id: 'option-add-' + i });
+            if (isHeader) {
+                li.innerText = getValue(fields.text, item);
+            }
+            if (this.itemTemplate && !isHeader) {
+                var compiledString = compile(this.itemTemplate);
+                append(compiledString(item), li);
+            }
+            else if (!isHeader) {
+                li.appendChild(document.createTextNode(getValue(fields.text, item)));
+            }
             li.setAttribute('data-value', getValue(fields.value, item));
             li.setAttribute('role', 'option');
-            li.appendChild(document.createTextNode(getValue(fields.text, item)));
             this.notify('addItem', { module: 'CheckBoxSelection', item: li });
             liCollections.push(li);
             this.listData.push(item);
@@ -1191,8 +1204,10 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DropDownList.prototype.clear = function (e, properties) {
-        if (isNullOrUndefined(properties) || (!isNullOrUndefined(properties) && isNullOrUndefined(properties.dataSource))) {
-            this.resetSelection();
+        if (isNullOrUndefined(properties) || (!isNullOrUndefined(properties) &&
+            (isNullOrUndefined(properties.dataSource) ||
+                (!(properties.dataSource instanceof DataManager) && properties.dataSource.length === 0)))) {
+            this.resetSelection(properties);
         }
         var dataItem = this.getItemData();
         if (this.previousValue === dataItem.value) {
@@ -1200,13 +1215,24 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         }
         this.onChangeEvent(e);
     };
-    DropDownList.prototype.resetSelection = function () {
+    DropDownList.prototype.resetSelection = function (properties) {
         if (this.list) {
-            if (this.allowFiltering && this.getModuleName() !== 'autocomplete'
-                && !isNullOrUndefined(this.actionCompleteData.ulElement) && !isNullOrUndefined(this.actionCompleteData.list)) {
-                this.onActionComplete(this.actionCompleteData.ulElement.cloneNode(true), this.actionCompleteData.list);
+            if ((!isNullOrUndefined(properties) &&
+                (isNullOrUndefined(properties.dataSource) ||
+                    (!(properties.dataSource instanceof DataManager) && properties.dataSource.length === 0)))) {
+                this.selectedLI = null;
+                this.actionCompleteData.isUpdated = false;
+                this.actionCompleteData.ulElement = null;
+                this.actionCompleteData.list = null;
+                this.resetList(properties.dataSource);
             }
-            this.resetFocusElement();
+            else {
+                if (this.allowFiltering && this.getModuleName() !== 'autocomplete'
+                    && !isNullOrUndefined(this.actionCompleteData.ulElement) && !isNullOrUndefined(this.actionCompleteData.list)) {
+                    this.onActionComplete(this.actionCompleteData.ulElement.cloneNode(true), this.actionCompleteData.list);
+                }
+                this.resetFocusElement();
+            }
         }
         this.hiddenElement.innerHTML = '';
         this.inputElement.value = '';
@@ -1247,7 +1273,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 else {
                     var defaultAttr = ['title', 'id', 'placeholder'];
                     var validateAttr = ['name', 'required'];
-                    if (validateAttr.indexOf(htmlAttr) > -1) {
+                    if (htmlAttr.indexOf('data') === 0 || validateAttr.indexOf(htmlAttr) > -1) {
                         this.hiddenElement.setAttribute(htmlAttr, this.htmlAttributes[htmlAttr]);
                     }
                     else if (defaultAttr.indexOf(htmlAttr) > -1) {
@@ -1421,10 +1447,11 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         }
         this.trigger('blur');
     };
-    DropDownList.prototype.onFocus = function () {
+    DropDownList.prototype.onFocus = function (e) {
         if (!this.isInteracted) {
             this.isInteracted = true;
-            this.trigger('focus');
+            var args = { isInteracted: e ? true : false, event: e };
+            this.trigger('focus', args);
         }
         this.updateIconState();
     };
@@ -1767,7 +1794,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
     };
     DropDownList.prototype.focusDropDown = function (e) {
         if (!this.initial && this.isFilterLayout()) {
-            this.focusIn();
+            this.focusIn(e);
         }
     };
     DropDownList.prototype.dropDownClick = function (e) {
@@ -1789,7 +1816,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             else {
-                this.focusIn();
+                this.focusIn(e);
                 this.floatLabelChange();
                 this.queryString = this.inputElement.value.trim() === '' ? null : this.inputElement.value;
                 this.isDropDownClick = true;
@@ -1801,7 +1828,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             }
         }
         else {
-            this.focusIn();
+            this.focusIn(e);
         }
     };
     DropDownList.prototype.cloneElements = function () {
@@ -2262,7 +2289,8 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 if (!this.actionCompleteData.isUpdated || ((!this.isCustomFilter
                     && !this.isFilterFocus)
                     && ((this.dataSource instanceof DataManager)
-                        || (!isNullOrUndefined(this.dataSource.length) && this.dataSource.length !== 0)))) {
+                        || (!isNullOrUndefined(this.dataSource) &&
+                            !isNullOrUndefined(this.dataSource.length) && this.dataSource.length !== 0)))) {
                     this.actionCompleteData = { ulElement: ulElement.cloneNode(true), list: list, isUpdated: true };
                 }
                 this.addNewItem(list, selectedItem);
@@ -2730,6 +2758,15 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         this.hiddenElement.id = id + '_hidden';
         this.targetElement().setAttribute('tabindex', this.tabIndex);
         attributes(this.targetElement(), this.getAriaAttributes());
+        var invalidAttr = ['class', 'style', 'id'];
+        var htmlAttr = {};
+        for (var a = 0; a < this.element.attributes.length; a++) {
+            if (invalidAttr.indexOf(this.element.attributes[a].name) === -1) {
+                htmlAttr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
+            }
+        }
+        extend(htmlAttr, this.htmlAttributes, htmlAttr);
+        this.setProperties({ htmlAttributes: htmlAttr }, true);
         this.setHTMLAttributes();
         if (this.value !== null || this.activeIndex !== null || this.text !== null) {
             this.initValue();
@@ -2800,7 +2837,10 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
     };
     DropDownList.prototype.updateDataSource = function (props) {
         this.clear(null, props);
-        this.resetList(this.dataSource);
+        if (!(!isNullOrUndefined(props) && (isNullOrUndefined(props.dataSource)
+            || (!(props.dataSource instanceof DataManager) && props.dataSource.length === 0)))) {
+            this.resetList(this.dataSource);
+        }
         if (!this.isCustomFilter && !this.isFilterFocus && document.activeElement !== this.filterInput) {
             this.itemData = this.getDataByValue(this.value);
             var dataItem = this.getItemData();
@@ -3022,7 +3062,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
      * Sets the focus on the component for interaction.
      * @returns void.
      */
-    DropDownList.prototype.focusIn = function () {
+    DropDownList.prototype.focusIn = function (e) {
         if (!this.enabled) {
             return;
         }
@@ -3040,7 +3080,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             this.targetElement().focus();
         }
         addClass([this.inputWrapper.container], [dropDownListClasses.inputFocus]);
-        this.onFocus();
+        this.onFocus(e);
     };
     /**
      * Moves the focus from the component if the component is already focused.
@@ -4522,6 +4562,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         if (this.mode === 'CheckBox') {
             addClass([this.overAllWrapper], [iconAnimation]);
         }
+        this.refreshPopup();
         this.popupObj.show(eventArgs.animation, (this.zIndex === 1000) ? this.element : null);
         attributes(this.inputElement, { 'aria-expanded': 'true' });
         if (!this.isFirstClick) {
@@ -4987,7 +5028,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             this.dispatchEvent(this.inputElement, 'focus');
         }
         if (!this.inputFocus && this.mode === 'CheckBox') {
-            this.focusIn();
+            this.focusIn(e);
         }
         if (e.target && e.target.classList.toString().indexOf(CHIP_CLOSE) !== -1) {
             if (this.isPopupOpen()) {
@@ -5131,7 +5172,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         return this.ulElement ? this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li
             + ':not(.' + HIDE_LIST + ')') : null;
     };
-    MultiSelect.prototype.focusIn = function () {
+    MultiSelect.prototype.focusIn = function (e) {
         if (this.enabled && !this.readonly) {
             this.showOverAllClear();
             this.inputFocus = true;
@@ -5157,7 +5198,8 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             }
             if (this.focused) {
                 this.inputElement.focus();
-                this.trigger('focus');
+                var args = { isInteracted: e ? true : false, event: e };
+                this.trigger('focus', args);
                 this.focused = false;
             }
             if (!this.overAllWrapper.classList.contains(FOCUS)) {
@@ -6602,7 +6644,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         EventHandler.remove(this.componentWrapper, 'mouseout', this.mouseOut);
         EventHandler.remove(this.overAllClear, 'mousedown', this.ClearAll);
     };
-    MultiSelect.prototype.selectAllItem = function (state) {
+    MultiSelect.prototype.selectAllItem = function (state, event) {
         var li;
         li = this.list.querySelectorAll(state ?
             'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide)' :
@@ -6610,7 +6652,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         var length = li.length;
         if (li && li.length) {
             while (length > 0) {
-                this.updateListSelection(li[length - 1], null, length);
+                this.updateListSelection(li[length - 1], event, length);
                 length--;
             }
         }
@@ -6650,6 +6692,36 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     MultiSelect.prototype.onLoadSelect = function () {
         this.setDynValue = true;
         this.renderPopup();
+    };
+    MultiSelect.prototype.selectAllItems = function (state, event) {
+        var _this = this;
+        if (isNullOrUndefined(this.list)) {
+            this.selectAllAction = function () {
+                if (_this.mode === 'CheckBox' && _this.showSelectAll) {
+                    var args = {
+                        module: 'CheckBoxSelection',
+                        enable: _this.mode === 'CheckBox',
+                        value: state ? 'check' : 'uncheck'
+                    };
+                    _this.notify('checkSelectAll', args);
+                }
+                _this.selectAllItem(state, event);
+                _this.selectAllAction = null;
+            };
+            _super.prototype.render.call(this);
+        }
+        else {
+            this.selectAllAction = null;
+            if (this.mode === 'CheckBox' && this.showSelectAll) {
+                var args = {
+                    value: state ? 'check' : 'uncheck',
+                    enable: this.mode === 'CheckBox',
+                    module: 'CheckBoxSelection'
+                };
+                this.notify('checkSelectAll', args);
+            }
+            this.selectAllItem(state, event);
+        }
     };
     /**
      * Get the properties to be maintained in the persisted state.
@@ -6828,34 +6900,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     MultiSelect.prototype.selectAll = function (state) {
-        var _this = this;
-        if (isNullOrUndefined(this.list)) {
-            this.selectAllAction = function () {
-                if (_this.mode === 'CheckBox' && _this.showSelectAll) {
-                    var args = {
-                        module: 'CheckBoxSelection',
-                        enable: _this.mode === 'CheckBox',
-                        value: state ? 'check' : 'uncheck'
-                    };
-                    _this.notify('checkSelectAll', args);
-                }
-                _this.selectAllItem(state);
-                _this.selectAllAction = null;
-            };
-            _super.prototype.render.call(this);
-        }
-        else {
-            this.selectAllAction = null;
-            if (this.mode === 'CheckBox' && this.showSelectAll) {
-                var args = {
-                    module: 'CheckBoxSelection',
-                    enable: this.mode === 'CheckBox',
-                    value: state ? 'check' : 'uncheck'
-                };
-                this.notify('checkSelectAll', args);
-            }
-            this.selectAllItem(state);
-        }
+        this.selectAllItems(state);
     };
     MultiSelect.prototype.getModuleName = function () {
         return 'multiselect';
@@ -7377,7 +7422,7 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
             frameSpan.classList.add(CHECK);
             ariaState = 'true';
             if (selectAll) {
-                this.parent.selectAll(true);
+                this.parent.selectAllItems(true, e);
                 this.setLocale(true);
             }
         }
@@ -7385,7 +7430,7 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
             removeClass([frameSpan], [CHECK, INDETERMINATE]);
             ariaState = 'false';
             if (selectAll) {
-                this.parent.selectAll(false);
+                this.parent.selectAllItems(false, e);
                 this.setLocale();
             }
         }

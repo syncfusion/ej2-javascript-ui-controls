@@ -832,13 +832,26 @@ let DropDownBase = class DropDownBase extends Component {
         let index;
         index = (isNullOrUndefined(itemIndex) || itemIndex < 0 || itemIndex > itemsCount - 1) ? itemsCount : itemIndex;
         let fields = this.fields;
+        if (items && fields.groupBy) {
+            items = ListBase.groupDataSource(items, fields.properties);
+        }
         let liCollections = [];
         for (let i = 0; i < items.length; i++) {
             let item = items[i];
-            let li = this.createElement('li', { className: dropDownBaseClasses.li, id: 'option-add-' + i });
+            let isHeader = item.isHeader;
+            let li = this.createElement('li', { className: isHeader ? dropDownBaseClasses.group : dropDownBaseClasses.li, id: 'option-add-' + i });
+            if (isHeader) {
+                li.innerText = getValue(fields.text, item);
+            }
+            if (this.itemTemplate && !isHeader) {
+                let compiledString = compile(this.itemTemplate);
+                append(compiledString(item), li);
+            }
+            else if (!isHeader) {
+                li.appendChild(document.createTextNode(getValue(fields.text, item)));
+            }
             li.setAttribute('data-value', getValue(fields.value, item));
             li.setAttribute('role', 'option');
-            li.appendChild(document.createTextNode(getValue(fields.text, item)));
             this.notify('addItem', { module: 'CheckBoxSelection', item: li });
             liCollections.push(li);
             this.listData.push(item);
@@ -1148,8 +1161,10 @@ let DropDownList = class DropDownList extends DropDownBase {
         }
     }
     clear(e, properties) {
-        if (isNullOrUndefined(properties) || (!isNullOrUndefined(properties) && isNullOrUndefined(properties.dataSource))) {
-            this.resetSelection();
+        if (isNullOrUndefined(properties) || (!isNullOrUndefined(properties) &&
+            (isNullOrUndefined(properties.dataSource) ||
+                (!(properties.dataSource instanceof DataManager) && properties.dataSource.length === 0)))) {
+            this.resetSelection(properties);
         }
         let dataItem = this.getItemData();
         if (this.previousValue === dataItem.value) {
@@ -1157,13 +1172,24 @@ let DropDownList = class DropDownList extends DropDownBase {
         }
         this.onChangeEvent(e);
     }
-    resetSelection() {
+    resetSelection(properties) {
         if (this.list) {
-            if (this.allowFiltering && this.getModuleName() !== 'autocomplete'
-                && !isNullOrUndefined(this.actionCompleteData.ulElement) && !isNullOrUndefined(this.actionCompleteData.list)) {
-                this.onActionComplete(this.actionCompleteData.ulElement.cloneNode(true), this.actionCompleteData.list);
+            if ((!isNullOrUndefined(properties) &&
+                (isNullOrUndefined(properties.dataSource) ||
+                    (!(properties.dataSource instanceof DataManager) && properties.dataSource.length === 0)))) {
+                this.selectedLI = null;
+                this.actionCompleteData.isUpdated = false;
+                this.actionCompleteData.ulElement = null;
+                this.actionCompleteData.list = null;
+                this.resetList(properties.dataSource);
             }
-            this.resetFocusElement();
+            else {
+                if (this.allowFiltering && this.getModuleName() !== 'autocomplete'
+                    && !isNullOrUndefined(this.actionCompleteData.ulElement) && !isNullOrUndefined(this.actionCompleteData.list)) {
+                    this.onActionComplete(this.actionCompleteData.ulElement.cloneNode(true), this.actionCompleteData.list);
+                }
+                this.resetFocusElement();
+            }
         }
         this.hiddenElement.innerHTML = '';
         this.inputElement.value = '';
@@ -1203,7 +1229,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                 else {
                     let defaultAttr = ['title', 'id', 'placeholder'];
                     let validateAttr = ['name', 'required'];
-                    if (validateAttr.indexOf(htmlAttr) > -1) {
+                    if (htmlAttr.indexOf('data') === 0 || validateAttr.indexOf(htmlAttr) > -1) {
                         this.hiddenElement.setAttribute(htmlAttr, this.htmlAttributes[htmlAttr]);
                     }
                     else if (defaultAttr.indexOf(htmlAttr) > -1) {
@@ -1376,10 +1402,11 @@ let DropDownList = class DropDownList extends DropDownBase {
         }
         this.trigger('blur');
     }
-    onFocus() {
+    onFocus(e) {
         if (!this.isInteracted) {
             this.isInteracted = true;
-            this.trigger('focus');
+            let args = { isInteracted: e ? true : false, event: e };
+            this.trigger('focus', args);
         }
         this.updateIconState();
     }
@@ -1722,7 +1749,7 @@ let DropDownList = class DropDownList extends DropDownBase {
     }
     focusDropDown(e) {
         if (!this.initial && this.isFilterLayout()) {
-            this.focusIn();
+            this.focusIn(e);
         }
     }
     dropDownClick(e) {
@@ -1744,7 +1771,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                 }
             }
             else {
-                this.focusIn();
+                this.focusIn(e);
                 this.floatLabelChange();
                 this.queryString = this.inputElement.value.trim() === '' ? null : this.inputElement.value;
                 this.isDropDownClick = true;
@@ -1756,7 +1783,7 @@ let DropDownList = class DropDownList extends DropDownBase {
             }
         }
         else {
-            this.focusIn();
+            this.focusIn(e);
         }
     }
     cloneElements() {
@@ -2215,7 +2242,8 @@ let DropDownList = class DropDownList extends DropDownBase {
                 if (!this.actionCompleteData.isUpdated || ((!this.isCustomFilter
                     && !this.isFilterFocus)
                     && ((this.dataSource instanceof DataManager)
-                        || (!isNullOrUndefined(this.dataSource.length) && this.dataSource.length !== 0)))) {
+                        || (!isNullOrUndefined(this.dataSource) &&
+                            !isNullOrUndefined(this.dataSource.length) && this.dataSource.length !== 0)))) {
                     this.actionCompleteData = { ulElement: ulElement.cloneNode(true), list: list, isUpdated: true };
                 }
                 this.addNewItem(list, selectedItem);
@@ -2679,6 +2707,15 @@ let DropDownList = class DropDownList extends DropDownBase {
         this.hiddenElement.id = id + '_hidden';
         this.targetElement().setAttribute('tabindex', this.tabIndex);
         attributes(this.targetElement(), this.getAriaAttributes());
+        let invalidAttr = ['class', 'style', 'id'];
+        let htmlAttr = {};
+        for (let a = 0; a < this.element.attributes.length; a++) {
+            if (invalidAttr.indexOf(this.element.attributes[a].name) === -1) {
+                htmlAttr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
+            }
+        }
+        extend(htmlAttr, this.htmlAttributes, htmlAttr);
+        this.setProperties({ htmlAttributes: htmlAttr }, true);
         this.setHTMLAttributes();
         if (this.value !== null || this.activeIndex !== null || this.text !== null) {
             this.initValue();
@@ -2747,7 +2784,10 @@ let DropDownList = class DropDownList extends DropDownBase {
     }
     updateDataSource(props) {
         this.clear(null, props);
-        this.resetList(this.dataSource);
+        if (!(!isNullOrUndefined(props) && (isNullOrUndefined(props.dataSource)
+            || (!(props.dataSource instanceof DataManager) && props.dataSource.length === 0)))) {
+            this.resetList(this.dataSource);
+        }
         if (!this.isCustomFilter && !this.isFilterFocus && document.activeElement !== this.filterInput) {
             this.itemData = this.getDataByValue(this.value);
             let dataItem = this.getItemData();
@@ -2968,7 +3008,7 @@ let DropDownList = class DropDownList extends DropDownBase {
      * Sets the focus on the component for interaction.
      * @returns void.
      */
-    focusIn() {
+    focusIn(e) {
         if (!this.enabled) {
             return;
         }
@@ -2986,7 +3026,7 @@ let DropDownList = class DropDownList extends DropDownBase {
             this.targetElement().focus();
         }
         addClass([this.inputWrapper.container], [dropDownListClasses.inputFocus]);
-        this.onFocus();
+        this.onFocus(e);
     }
     /**
      * Moves the focus from the component if the component is already focused.
@@ -4415,6 +4455,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         if (this.mode === 'CheckBox') {
             addClass([this.overAllWrapper], [iconAnimation]);
         }
+        this.refreshPopup();
         this.popupObj.show(eventArgs.animation, (this.zIndex === 1000) ? this.element : null);
         attributes(this.inputElement, { 'aria-expanded': 'true' });
         if (!this.isFirstClick) {
@@ -4879,7 +4920,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             this.dispatchEvent(this.inputElement, 'focus');
         }
         if (!this.inputFocus && this.mode === 'CheckBox') {
-            this.focusIn();
+            this.focusIn(e);
         }
         if (e.target && e.target.classList.toString().indexOf(CHIP_CLOSE) !== -1) {
             if (this.isPopupOpen()) {
@@ -5023,7 +5064,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         return this.ulElement ? this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li
             + ':not(.' + HIDE_LIST + ')') : null;
     }
-    focusIn() {
+    focusIn(e) {
         if (this.enabled && !this.readonly) {
             this.showOverAllClear();
             this.inputFocus = true;
@@ -5049,7 +5090,8 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             }
             if (this.focused) {
                 this.inputElement.focus();
-                this.trigger('focus');
+                let args = { isInteracted: e ? true : false, event: e };
+                this.trigger('focus', args);
                 this.focused = false;
             }
             if (!this.overAllWrapper.classList.contains(FOCUS)) {
@@ -6492,7 +6534,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         EventHandler.remove(this.componentWrapper, 'mouseout', this.mouseOut);
         EventHandler.remove(this.overAllClear, 'mousedown', this.ClearAll);
     }
-    selectAllItem(state) {
+    selectAllItem(state, event) {
         let li;
         li = this.list.querySelectorAll(state ?
             'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide)' :
@@ -6500,7 +6542,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         let length = li.length;
         if (li && li.length) {
             while (length > 0) {
-                this.updateListSelection(li[length - 1], null, length);
+                this.updateListSelection(li[length - 1], event, length);
                 length--;
             }
         }
@@ -6540,6 +6582,35 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     onLoadSelect() {
         this.setDynValue = true;
         this.renderPopup();
+    }
+    selectAllItems(state, event) {
+        if (isNullOrUndefined(this.list)) {
+            this.selectAllAction = () => {
+                if (this.mode === 'CheckBox' && this.showSelectAll) {
+                    let args = {
+                        module: 'CheckBoxSelection',
+                        enable: this.mode === 'CheckBox',
+                        value: state ? 'check' : 'uncheck'
+                    };
+                    this.notify('checkSelectAll', args);
+                }
+                this.selectAllItem(state, event);
+                this.selectAllAction = null;
+            };
+            super.render();
+        }
+        else {
+            this.selectAllAction = null;
+            if (this.mode === 'CheckBox' && this.showSelectAll) {
+                let args = {
+                    value: state ? 'check' : 'uncheck',
+                    enable: this.mode === 'CheckBox',
+                    module: 'CheckBoxSelection'
+                };
+                this.notify('checkSelectAll', args);
+            }
+            this.selectAllItem(state, event);
+        }
     }
     /**
      * Get the properties to be maintained in the persisted state.
@@ -6717,33 +6788,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
      * @returns void
      */
     selectAll(state) {
-        if (isNullOrUndefined(this.list)) {
-            this.selectAllAction = () => {
-                if (this.mode === 'CheckBox' && this.showSelectAll) {
-                    let args = {
-                        module: 'CheckBoxSelection',
-                        enable: this.mode === 'CheckBox',
-                        value: state ? 'check' : 'uncheck'
-                    };
-                    this.notify('checkSelectAll', args);
-                }
-                this.selectAllItem(state);
-                this.selectAllAction = null;
-            };
-            super.render();
-        }
-        else {
-            this.selectAllAction = null;
-            if (this.mode === 'CheckBox' && this.showSelectAll) {
-                let args = {
-                    module: 'CheckBoxSelection',
-                    enable: this.mode === 'CheckBox',
-                    value: state ? 'check' : 'uncheck'
-                };
-                this.notify('checkSelectAll', args);
-            }
-            this.selectAllItem(state);
-        }
+        this.selectAllItems(state);
     }
     getModuleName() {
         return 'multiselect';
@@ -7262,7 +7307,7 @@ class CheckBoxSelection {
             frameSpan.classList.add(CHECK);
             ariaState = 'true';
             if (selectAll) {
-                this.parent.selectAll(true);
+                this.parent.selectAllItems(true, e);
                 this.setLocale(true);
             }
         }
@@ -7270,7 +7315,7 @@ class CheckBoxSelection {
             removeClass([frameSpan], [CHECK, INDETERMINATE]);
             ariaState = 'false';
             if (selectAll) {
-                this.parent.selectAll(false);
+                this.parent.selectAllItems(false, e);
                 this.setLocale();
             }
         }

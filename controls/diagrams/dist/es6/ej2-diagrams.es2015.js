@@ -11,6 +11,7 @@ class Size {
         this.width = width;
         this.height = height;
     }
+    /**   @private  */
     isEmpty() {
         return this.height === 0 && this.width === 0;
     }
@@ -27,6 +28,7 @@ class Size {
     //     size.width = Math.max(size.width, this.width);
     //     size.height = Math.max(size.height, this.height);
     // }
+    /**   @private  */
     clone() {
         return new Size(this.width, this.height);
     }
@@ -42,6 +44,7 @@ var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, 
  * Defines and processes coordinates
  */
 class Point extends ChildProperty {
+    /**   @private  */
     static equals(point1, point2) {
         if (point1 === point2) {
             return true;
@@ -90,16 +93,19 @@ class Point extends ChildProperty {
     // public distance(point2: PointModel): number {
     //     return Math.sqrt(Math.pow(this.x - point2.x, 2) + Math.pow(this.y - point2.y, 2));
     // }
+    /**   @private  */
     static transform(point, angle, length) {
         let pt = { x: 0, y: 0 };
         pt.x = Math.round((point.x + length * Math.cos(angle * Math.PI / 180)) * 100) / 100;
         pt.y = Math.round((point.y + length * Math.sin(angle * Math.PI / 180)) * 100) / 100;
         return pt;
     }
+    /**   @private  */
     static findLength(s, e) {
         let length = Math.sqrt(Math.pow((s.x - e.x), 2) + Math.pow((s.y - e.y), 2));
         return length;
     }
+    /**   @private  */
     static findAngle(point1, point2) {
         let angle = Math.atan2(point2.y - point1.y, point2.x - point1.x);
         angle = (180 * angle / Math.PI);
@@ -109,9 +115,11 @@ class Point extends ChildProperty {
         }
         return angle;
     }
+    /**   @private  */
     static distancePoints(pt1, pt2) {
         return Math.sqrt(Math.pow(pt2.x - pt1.x, 2) + Math.pow(pt2.y - pt1.y, 2));
     }
+    /**   @private  */
     static getLengthFromListOfPoints(points) {
         let length = 0;
         for (let j = 0; j < points.length - 1; j++) {
@@ -119,6 +127,7 @@ class Point extends ChildProperty {
         }
         return length;
     }
+    /**   @private  */
     static adjustPoint(source, target, isStart, length) {
         let pt = isStart ? { x: source.x, y: source.y } : { x: target.x, y: target.y };
         let angle;
@@ -150,6 +159,7 @@ class Point extends ChildProperty {
         }
         return pt;
     }
+    /**   @private  */
     static direction(pt1, pt2) {
         if (Math.abs(pt2.x - pt1.x) > Math.abs(pt2.y - pt1.y)) {
             return pt1.x < pt2.x ? 'Right' : 'Left';
@@ -805,48 +815,63 @@ class Rect {
         this.width = width;
         this.height = height;
     }
+    /**   @private  */
     get left() {
         return this.x;
     }
+    /**   @private  */
     get right() {
         return this.x + this.width;
     }
+    /**   @private  */
     get top() {
         return this.y;
     }
+    /**   @private  */
     get bottom() {
         return this.y + this.height;
     }
+    /**   @private  */
     get topLeft() {
         return { x: this.left, y: this.top };
     }
+    /**   @private  */
     get topRight() {
         return { x: this.right, y: this.top };
     }
+    /**   @private  */
     get bottomLeft() {
         return { x: this.left, y: this.bottom };
     }
+    /**   @private  */
     get bottomRight() {
         return { x: this.right, y: this.bottom };
     }
+    /**   @private  */
     get middleLeft() {
         return { x: this.left, y: this.y + this.height / 2 };
     }
+    /**   @private  */
     get middleRight() {
         return { x: this.right, y: this.y + this.height / 2 };
     }
+    /**   @private  */
     get topCenter() {
         return { x: this.x + this.width / 2, y: this.top };
     }
+    /**   @private  */
     get bottomCenter() {
         return { x: this.x + this.width / 2, y: this.bottom };
     }
+    /**   @private  */
     get center() {
         return { x: this.x + this.width / 2, y: this.y + this.height / 2 };
     }
+    /**   @private  */
     equals(rect1, rect2) {
         return rect1.x === rect2.x && rect1.y === rect2.y && rect1.width === rect2.width && rect1.height === rect2.height;
     }
+    /**   @private  */
     uniteRect(rect) {
         let right = Math.max(Number.NaN === this.right || this.x === Number.MAX_VALUE ? rect.right : this.right, rect.right);
         let bottom = Math.max(Number.NaN === this.bottom || this.y === Number.MAX_VALUE ? rect.bottom : this.bottom, rect.bottom);
@@ -856,6 +881,7 @@ class Rect {
         this.height = bottom - this.y;
         return this;
     }
+    /**   @private  */
     unitePoint(point) {
         if (this.x === Number.MAX_VALUE) {
             this.x = point.x;
@@ -881,6 +907,7 @@ class Rect {
     //     }
     //     return Rect.empty;
     // }
+    /**   @private  */
     Inflate(padding) {
         this.x -= padding;
         this.y -= padding;
@@ -901,15 +928,18 @@ class Rect {
     //     this.width += width * 2;
     //     this.height += height * 2;
     // }
+    /**   @private  */
     intersects(rect) {
         if (this.right < rect.left || this.left > rect.right || this.top > rect.bottom || this.bottom < rect.top) {
             return false;
         }
         return true;
     }
+    /**   @private  */
     containsRect(rect) {
         return this.left <= rect.left && this.right >= rect.right && this.top <= rect.top && this.bottom >= rect.bottom;
     }
+    /**   @private  */
     containsPoint(point, padding = 0) {
         return this.left - padding <= point.x && this.right + padding >= point.x
             && this.top - padding <= point.y && this.bottom + padding >= point.y;
@@ -922,6 +952,7 @@ class Rect {
     //     points.push(this.bottomRight);
     //     return points;
     // }
+    /**   @private  */
     static toBounds(points) {
         let rect = new Rect();
         for (let pt of points) {
@@ -930,6 +961,7 @@ class Rect {
         return rect;
     }
 }
+/**   @private  */
 Rect.empty = new Rect(Number.MAX_VALUE, Number.MIN_VALUE, 0, 0);
 
 /**
@@ -2065,6 +2097,9 @@ class DiagramElement {
          * Gets the rotate angle that is set to the immediate parent of the element
          */
         this.parentTransform = 0;
+        /**
+         * Gets/Set the boolean value for the element
+         */
         this.isSvgRender = false;
         /**
          * Gets/Sets the boundary of the element
@@ -2082,10 +2117,14 @@ class DiagramElement {
          * Defines whether the element has to be measured or not
          */
         this.staticSize = false;
+        /**
+         * check whether the element is rect or not
+         */
         this.isRectElement = false;
         //private variables
         this.position = undefined;
         this.unitMode = undefined;
+        /**   @private  */
         this.float = false;
         this.floatingBounds = undefined;
         this.id = randomId();
@@ -2117,9 +2156,14 @@ class DiagramElement {
         }
         return undefined;
     }
+    /**   @private  */
     get outerBounds() {
         return this.floatingBounds || this.bounds;
     }
+    /**
+     * used to set the outer bounds value
+     * @private
+     */
     set outerBounds(bounds) {
         this.floatingBounds = bounds;
     }
@@ -2493,6 +2537,7 @@ class Container extends DiagramElement {
         this.desiredBounds = undefined;
         /** @private */
         this.measureChildren = true;
+        /**   @private  */
         this.prevRotateAngle = 0;
     }
     /**
@@ -2683,11 +2728,18 @@ class PathElement extends DiagramElement {
          */
         this.absolutePath = '';
         //Private variables
+        /**   @private  */
         this.absoluteBounds = new Rect();
     }
+    /**
+     * Gets the geometry of the path element
+     */
     get data() {
         return this.pathData;
     }
+    /**
+     * Sets the geometry of the path element
+     */
     set data(value) {
         if (this.pathData !== value) {
             this.pathData = value;
@@ -2787,7 +2839,13 @@ class DiagramNativeElement extends DiagramElement {
     constructor(nodeId, diagramId) {
         super();
         this.data = '';
+        /**
+         * set the node id
+         */
         this.nodeId = '';
+        /**
+         * set the diagram id
+         */
         this.diagramId = '';
         /**
          * sets scaling factor of the Native Element
@@ -2796,12 +2854,13 @@ class DiagramNativeElement extends DiagramElement {
         this.diagramId = diagramId;
         this.nodeId = nodeId;
     }
-    /**
-     * Gets or sets the geometry of the native element
-     */
+    /**   @private  */
     get content() {
         return this.data;
     }
+    /**
+     * sets the geometry of the native element
+     */
     set content(value) {
         this.data = value;
         this.template = getContent(this, false);
@@ -2856,6 +2915,9 @@ class TextElement extends DiagramElement {
          * sets or gets the image source
          */
         this.textContent = '';
+        /**
+         * sets the hyperlink color to blue
+         */
         this.hyperlink = {
             color: 'blue'
         };
@@ -2875,9 +2937,15 @@ class TextElement extends DiagramElement {
         this.style.fill = 'transparent';
         this.style.strokeColor = 'transparent';
     }
+    /**
+     * gets the content for the text element
+     */
     get content() {
         return this.textContent;
     }
+    /**
+     * sets the content for the text element
+     */
     set content(value) {
         if (this.textContent !== value) {
             this.textContent = value;
@@ -2885,15 +2953,27 @@ class TextElement extends DiagramElement {
             this.doWrap = true;
         }
     }
+    /**
+     * sets the content for the text element
+     */
     get childNodes() {
         return this.textNodes;
     }
+    /**
+     * gets the content for the text element
+     */
     set childNodes(value) {
         this.textNodes = value;
     }
+    /**
+     * gets the wrapBounds for the text
+     */
     get wrapBounds() {
         return this.textWrapBounds;
     }
+    /**
+     * sets the wrapBounds for the text
+     */
     set wrapBounds(value) {
         this.textWrapBounds = value;
     }
@@ -2963,9 +3043,15 @@ class ImageElement extends DiagramElement {
          */
         this.stretch = 'Stretch';
     }
+    /**
+     * Gets the source for the image element
+     */
     get source() {
         return this.imageSource;
     }
+    /**
+     * Sets the source for the image element
+     */
     set source(value) {
         this.imageSource = value;
         this.isDirt = true;
@@ -6828,6 +6914,7 @@ class Connector extends NodeBase {
     distance(pt1, pt2) {
         return Math.sqrt(Math.pow(pt2.x - pt1.x, 2) + Math.pow(pt2.y - pt1.y, 2));
     }
+    /**   @private  */
     findPath(sourcePt, targetPt) {
         let beginningpoint = { x: sourcePt.x, y: sourcePt.y };
         let distance = this.distance(sourcePt, targetPt);
@@ -7779,7 +7866,13 @@ class DiagramHtmlElement extends DiagramElement {
     constructor(nodeId, diagramId) {
         super();
         this.data = '';
+        /**
+         * Gets the node id for the element
+         */
         this.nodeId = '';
+        /**
+         * Gets the diagram id for the html element
+         */
         this.diagramId = '';
         this.diagramId = diagramId;
         this.nodeId = nodeId;
@@ -7790,6 +7883,9 @@ class DiagramHtmlElement extends DiagramElement {
     get content() {
         return this.data;
     }
+    /**
+     * Gets or sets the value of the html element
+     */
     set content(value) {
         this.data = value;
         this.template = getContent(this, true);
@@ -8608,7 +8704,9 @@ class Ruler extends Component {
      */
     constructor(options, element) {
         super(options, element);
+        /**   @private  */
         this.offset = 0;
+        /**   @private  */
         this.scale = 1;
     }
     /**
@@ -11197,6 +11295,7 @@ function getFunction(value) {
  */
 /** @private */
 class CanvasRenderer {
+    /**   @private  */
     static getContext(canvas) {
         return canvas.getContext('2d');
     }
@@ -11207,6 +11306,7 @@ class CanvasRenderer {
         }
     }
     ;
+    /**   @private  */
     renderGradient(options, ctx, x, y) {
         let max;
         let min;
@@ -11233,6 +11333,7 @@ class CanvasRenderer {
         }
         return ctx;
     }
+    /**   @private  */
     renderShadow(options, canvas, collection = null) {
         let ctx = CanvasRenderer.getContext(canvas);
         ctx.save();
@@ -11260,6 +11361,7 @@ class CanvasRenderer {
         ctx.closePath();
         ctx.restore();
     }
+    /**   @private  */
     static createCanvas(id, width, height) {
         let canvasObj = createHtmlElement('canvas', { 'id': id });
         this.setCanvasSize(canvasObj, width, height);
@@ -11311,6 +11413,7 @@ class CanvasRenderer {
         font += text.fontFamily;
         ctx.font = font;
     }
+    /**   @private  */
     parseDashArray(dashArray) {
         let dashes = [];
         let separator = dashArray.indexOf(' ') !== -1 ? ' ' : ',';
@@ -11321,6 +11424,7 @@ class CanvasRenderer {
         return dashes;
     }
     //Rendering Part
+    /**   @private  */
     drawRectangle(canvas, options) {
         if (options.visible === true) {
             if (options.cornerRadius) {
@@ -11381,6 +11485,7 @@ class CanvasRenderer {
     //     ctx.closePath();
     //     ctx.restore();
     // }
+    /**   @private  */
     drawPath(canvas, options) {
         let collection = [];
         collection = processPathData(options.data);
@@ -11402,6 +11507,7 @@ class CanvasRenderer {
         ctx.stroke();
         ctx.restore();
     }
+    /**   @private  */
     renderPath(canvas, options, collection) {
         if (options.visible === true) {
             let ctx = CanvasRenderer.getContext(canvas);
@@ -11540,6 +11646,7 @@ class CanvasRenderer {
             }
         }
     }
+    /**   @private  */
     drawText(canvas, options) {
         if (options.content && options.visible === true) {
             let ctx = CanvasRenderer.getContext(canvas);
@@ -11605,6 +11712,7 @@ class CanvasRenderer {
         this.image(ctx, image, obj.x, obj.y, obj.width, obj.height, obj);
         ctx.rotate(-(obj.angle * Math.PI / 180));
     }
+    /**   @private  */
     drawImage(canvas, obj, parentSvg, fromPalette) {
         if (obj.visible) {
             let ctx = CanvasRenderer.getContext(canvas);
@@ -11728,6 +11836,7 @@ class CanvasRenderer {
     // angle between two vectors
     a(u, v) { return (u[0] * v[1] < u[1] * v[0] ? -1 : 1) * Math.acos(this.r(u, v)); }
     // text utility
+    /**   @private  */
     labelAlign(text, wrapBounds, childNodes) {
         let bounds = new Size(wrapBounds.width, childNodes.length * (text.fontSize * 1.2));
         let position = { x: 0, y: 0 };
@@ -11762,6 +11871,7 @@ class CanvasRenderer {
  */
 /** @private */
 class SvgRenderer {
+    /**   @private  */
     renderShadow(options, canvas, collection = null, parentSvg) {
         let pointModel = { x: 0, y: 0 };
         let point = Point.transform(pointModel, options.shadow.angle, options.shadow.distance);
@@ -11800,10 +11910,12 @@ class SvgRenderer {
             this.renderPath(shadowElement, options, collection);
         }
     }
+    /**   @private  */
     parseDashArray(dashArray) {
         let dashes = [];
         return dashes;
     }
+    /**   @private  */
     drawRectangle(svg, options, diagramId, onlyRect, isSelector, parentSvg, ariaLabel) {
         if (options.shadow && !onlyRect) {
             this.renderShadow(options, svg, undefined, parentSvg);
@@ -11848,6 +11960,7 @@ class SvgRenderer {
         setAttributeSvg(rect, attr);
         this.setSvgStyle(rect, options, diagramId);
     }
+    /**   @private  */
     updateSelectionRegion(gElement, options) {
         let rect;
         rect = gElement.parentNode.getElementById(options.id);
@@ -11865,6 +11978,7 @@ class SvgRenderer {
         this.setSvgStyle(rect, options);
         setAttributeSvg(rect, attr);
     }
+    /**   @private  */
     createGElement(elementType, attribute) {
         let gElement = createSvgElement(elementType, attribute);
         return gElement;
@@ -11913,6 +12027,7 @@ class SvgRenderer {
         setAttributeSvg(circle, attr);
         gElement.appendChild(circle);
     }
+    /**   @private  */
     drawPath(svg, options, diagramId, isSelector, parentSvg, ariaLabel) {
         let id;
         let x = Math.floor((Math.random() * 10) + 1);
@@ -11951,6 +12066,7 @@ class SvgRenderer {
         setAttributeSvg(path, attr);
         this.setSvgStyle(path, options, diagramId);
     }
+    /**   @private  */
     renderPath(svg, options, collection) {
         let x1;
         let y1;
@@ -12016,6 +12132,7 @@ class SvgRenderer {
         text.style.fontSize = options.fontSize.toString() + 'px';
         text.style.fontFamily = options.fontFamily;
     }
+    /**   @private  */
     drawText(canvas, options, parentSvg, ariaLabel, diagramId) {
         if (options.content !== undefined) {
             let textNode;
@@ -12083,6 +12200,7 @@ class SvgRenderer {
             setAttributeSvg(text, attr);
         }
     }
+    /**   @private  */
     drawImage(canvas, obj, parentSvg, fromPalette) {
         let id = obj.id + '_image';
         let image;
@@ -12204,6 +12322,7 @@ class SvgRenderer {
         group.setAttribute('clip-path', 'url(#' + node.id + '_clip)');
         return group;
     }
+    /**   @private  */
     renderGradient(options, svg, diagramId) {
         let max;
         let min;
@@ -12252,6 +12371,7 @@ class SvgRenderer {
         }
         return grd;
     }
+    /**   @private  */
     createLinearGradient(linear) {
         let lineargradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
         let attr = {
@@ -12260,6 +12380,7 @@ class SvgRenderer {
         setAttributeSvg(lineargradient, attr);
         return lineargradient;
     }
+    /**   @private  */
     createRadialGradient(radial) {
         let radialgradient = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
         let attr = {
@@ -12268,6 +12389,7 @@ class SvgRenderer {
         setAttributeSvg(radialgradient, attr);
         return radialgradient;
     }
+    /**   @private  */
     setSvgStyle(svg, style, diagramId) {
         if (style.fill === 'none') {
             style.fill = 'transparent';
@@ -12303,6 +12425,7 @@ class SvgRenderer {
     }
     //end region
     // text utility
+    /**   @private  */
     svgLabelAlign(text, wrapBound, childNodes) {
         let bounds = new Size(wrapBound.width, childNodes.length * (text.fontSize * 1.2));
         let pos = { x: 0, y: 0 };
@@ -12338,6 +12461,7 @@ class SvgRenderer {
 /** @private */
 class DiagramRenderer {
     constructor(name, svgRender, isSvgMode) {
+        /**   @private  */
         this.renderer = null;
         /** @private */
         this.isSvgMode = true;
@@ -12348,6 +12472,7 @@ class DiagramRenderer {
         this.isSvgMode = isSvgMode;
         this.renderer = isSvgMode ? new SvgRenderer() : new CanvasRenderer();
     }
+    /**   @private  */
     setCursor(canvas, cursor) {
         canvas.style.cursor = cursor;
     }
@@ -12429,6 +12554,7 @@ class DiagramRenderer {
         }
         return { g: gElement, svg: svgElement };
     }
+    /**   @private  */
     renderElement(element, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue) {
         if (element instanceof Container) {
             this.renderContainer(element, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue);
@@ -12452,6 +12578,7 @@ class DiagramRenderer {
             this.renderRect(element, canvas, transform, parentSvg);
         }
     }
+    /**   @private  */
     drawSelectionRectangle(x, y, w, h, canvas, t) {
         x = (x + t.tx) * t.scale;
         y = (y + t.ty) * t.scale;
@@ -12484,12 +12611,15 @@ class DiagramRenderer {
         };
         this.svgRenderer.drawRectangle(canvas, options, this.diagramId);
     }
+    /**   @private  */
     drawLine(canvas, options) {
         this.svgRenderer.drawLine(canvas, options);
     }
+    /**   @private  */
     drawPath(canvas, options) {
         this.svgRenderer.drawPath(canvas, options, this.diagramId);
     }
+    /**   @private  */
     renderResizeHandle(element, canvas, constraints, currentZoom, selectorConstraints, transform, canMask, enableNode) {
         let left = element.offsetX - element.actualSize.width * element.pivot.x;
         let top = element.offsetY - element.actualSize.height * element.pivot.y;
@@ -12530,6 +12660,7 @@ class DiagramRenderer {
             this.renderCircularHandle('resizeEast', element, left + width, top + height / 2, canvas, canShowCorner(selectorConstraints, 'ResizeEast'), constraints & ThumbsConstraints.ResizeEast, transform, undefined, canMask, { 'aria-label': 'Thumb to resize the selected object on right side direction' }, undefined, 'e-diagram-resize-handle e-east');
         }
     }
+    /**   @private  */
     renderEndPointHandle(selector, canvas, constraints, selectorConstraints, transform, connectedSource, connectedTarget, isSegmentEditing) {
         let sourcePoint = selector.sourcePoint;
         let targetPoint = selector.targetPoint;
@@ -12569,6 +12700,7 @@ class DiagramRenderer {
             }
         }
     }
+    /**   @private  */
     renderOrthogonalThumbs(id, selector, segment, canvas, visibility, t) {
         let orientation;
         let visible;
@@ -12581,6 +12713,7 @@ class DiagramRenderer {
             this.renderOrthogonalThumb((id + '_' + (j + 1)), selector, (((segment.points[j].x + segment.points[j + 1].x) / 2)), (((segment.points[j].y + segment.points[j + 1].y) / 2)), canvas, visible, orientation, t);
         }
     }
+    /**   @private  */
     renderOrthogonalThumb(id, selector, x, y, canvas, visible, orientation, t) {
         let path;
         let h;
@@ -12602,6 +12735,7 @@ class DiagramRenderer {
         };
         this.svgRenderer.drawPath(canvas, options, this.diagramId);
     }
+    /**   @private  */
     renderPivotLine(element, canvas, transform, selectorConstraints, canMask) {
         let wrapper = element;
         let dashArray = '2,3';
@@ -12628,6 +12762,7 @@ class DiagramRenderer {
         options.endPoint = endPoint;
         this.svgRenderer.drawLine(canvas, options);
     }
+    /**   @private  */
     renderBezierLine(id, wrapper, canvas, start, end, transform) {
         let dashArray = '3,3';
         let options = this.getBaseAttributes(wrapper, transform);
@@ -12650,6 +12785,7 @@ class DiagramRenderer {
         options.endPoint = endPoint;
         this.svgRenderer.drawLine(canvas, options);
     }
+    /**   @private  */
     renderCircularHandle(id, selector, cx, cy, canvas, visible, enableSelector, t, connected, canMask, ariaLabel, count, className) {
         let wrapper = selector;
         let radius = 7;
@@ -12686,6 +12822,7 @@ class DiagramRenderer {
         }
         this.svgRenderer.drawCircle(canvas, options, enableSelector, ariaLabel);
     }
+    /**   @private  */
     renderBorder(selector, canvas, transform, enableNode) {
         let wrapper = selector;
         let options = this.getBaseAttributes(wrapper, transform);
@@ -12706,6 +12843,7 @@ class DiagramRenderer {
         let parentSvg = this.getParentSvg(selector, 'selector');
         this.svgRenderer.drawRectangle(canvas, options, this.diagramId, undefined, true, parentSvg);
     }
+    /**   @private  */
     renderUserHandler(selectorItem, canvas, transform) {
         let wrapper = selectorItem.wrapper;
         for (let obj of selectorItem.userHandles) {
@@ -12752,6 +12890,7 @@ class DiagramRenderer {
             this.svgRenderer.drawPath(canvas, options, this.diagramId, undefined, undefined, { 'aria-label': obj.name + 'user handle' });
         }
     }
+    /**   @private  */
     renderRotateThumb(wrapper, canvas, transform, selectorConstraints, canMask) {
         let element = new PathElement();
         let newPoint;
@@ -12800,6 +12939,7 @@ class DiagramRenderer {
         options.id = 'rotateThumb';
         this.svgRenderer.drawPath(canvas, options, this.diagramId, true, undefined, { 'aria-label': 'Thumb to rotate the selected object' });
     }
+    /**   @private  */
     renderPathElement(element, canvas, transform, parentSvg, fromPalette) {
         let options = this.getBaseAttributes(element, transform);
         options.data = element.absolutePath;
@@ -12807,6 +12947,7 @@ class DiagramRenderer {
         let ariaLabel = element.description ? element.description : element.id;
         this.renderer.drawPath(canvas, options, this.diagramId, undefined, parentSvg, ariaLabel);
     }
+    /**   @private  */
     renderSvgGridlines(snapSettings, gridSvg, t, rulerSettings, hRuler, vRuler) {
         //render gridlines
         let pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
@@ -12908,6 +13049,7 @@ class DiagramRenderer {
             }
         }
     }
+    /**   @private  */
     updateGrid(snapSettings, svgGrid, transform, rulerSettings, hRuler, vRuler) {
         let grid = svgGrid.getElementById(this.diagramId + '_grid_rect');
         let i;
@@ -13000,6 +13142,7 @@ class DiagramRenderer {
         }
         return scale;
     }
+    /**   @private  */
     renderTextElement(element, canvas, transform, parentSvg, fromPalette) {
         let options = this.getBaseAttributes(element, transform);
         options.cornerRadius = 0;
@@ -13077,6 +13220,7 @@ class DiagramRenderer {
             this.svgRenderer.drawHTMLContent(element, htmlLayer.children[0], transform, isDiagramChild(htmlLayer));
         }
     }
+    /**   @private  */
     renderImageElement(element, canvas, transform, parentSvg, fromPalette) {
         let options = this.getBaseAttributes(element, transform);
         options.cornerRadius = 0;
@@ -13132,6 +13276,7 @@ class DiagramRenderer {
         options.description = element.description ? element.description : element.id;
         this.renderer.drawImage(canvas, options, parentSvg, fromPalette);
     }
+    /**   @private  */
     renderContainer(group, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue) {
         let svgParent = { svg: parentSvg, g: canvas };
         if (this.diagramId) {
@@ -13173,6 +13318,7 @@ class DiagramRenderer {
             }
         }
     }
+    /**   @private  */
     hasNativeParent(children, count) {
         if (children && children.length > 0 && (count || 0 < 3)) {
             let child = children[0];
@@ -13185,16 +13331,19 @@ class DiagramRenderer {
         }
         return undefined;
     }
+    /**   @private  */
     renderRect(element, canvas, transform, parentSvg) {
         let options = this.getBaseAttributes(element, transform);
         options.cornerRadius = element.cornerRadius || 0;
         let ariaLabel = element.description ? element.description : element.id;
         this.renderer.drawRectangle(canvas, options, this.diagramId, undefined, undefined, parentSvg, ariaLabel);
     }
+    /**   @private  */
     drawRect(canvas, options) {
         options.cornerRadius = 0;
         this.svgRenderer.drawRectangle(canvas, options, this.diagramId);
     }
+    /**   @private  */
     getBaseAttributes(element, transform) {
         let options = {
             width: element.actualSize.width, height: element.actualSize.height,
@@ -13211,6 +13360,7 @@ class DiagramRenderer {
         }
         return options;
     }
+    /**   @private  */
     static renderSvgBackGroundImage(background, diagramElement, x, y, width, height) {
         let container = document.getElementById(diagramElement.id);
         let backgroundLayer = getBackgroundLayerSvg(diagramElement.id);
@@ -13236,6 +13386,7 @@ class DiagramRenderer {
             setAttributeSvg(target, attr);
         }
     }
+    /**   @private  */
     transformLayers(transform, svgMode) {
         let tx = transform.tx * transform.scale;
         let ty = transform.ty * transform.scale;
@@ -14050,6 +14201,7 @@ class ToolBase {
          * Sets/Gets the current element that is under mouse
          */
         this.currentElement = null;
+        /**   @private  */
         this.blocked = false;
         this.isTooltipVisible = false;
         /** @private */
@@ -14066,6 +14218,7 @@ class ToolBase {
         this.currentElement = currentElement;
         this.inAction = true;
     }
+    /**   @private  */
     mouseDown(args) {
         this.currentElement = args.source;
         this.startPosition = this.currentPosition = this.prevPosition = args.position;
@@ -14073,11 +14226,13 @@ class ToolBase {
         this.startAction(args.source);
         this.commandHandler.startTransaction(this.isProtectChange);
     }
+    /**   @private  */
     mouseMove(args) {
         this.currentPosition = args.position;
         //this.currentElement = currentElement;
         return !this.blocked;
     }
+    /**   @private  */
     mouseUp(args) {
         this.currentPosition = args.position;
         // this.currentElement = currentElement;
@@ -14096,9 +14251,11 @@ class ToolBase {
         this.inAction = false;
         this.blocked = false;
     }
+    /**   @private  */
     mouseWheel(args) {
         this.currentPosition = args.position;
     }
+    /**   @private  */
     mouseLeave(args) {
         this.mouseUp(args);
     }
@@ -14234,10 +14391,12 @@ class SelectTool extends ToolBase {
         super(commandHandler, true);
         this.action = action;
     }
+    /**   @private  */
     mouseDown(args) {
         this.inAction = true;
         super.mouseDown(args);
     }
+    /**   @private  */
     mouseMove(args) {
         super.mouseMove(args);
         //draw selected region
@@ -14247,6 +14406,7 @@ class SelectTool extends ToolBase {
         }
         return !this.blocked;
     }
+    /**   @private  */
     mouseUp(args) {
         //rubber band selection
         if (Point.equals(this.currentPosition, this.prevPosition) === false && this.inAction) {
@@ -14282,6 +14442,7 @@ class SelectTool extends ToolBase {
         this.inAction = false;
         super.mouseUp(args);
     }
+    /**   @private  */
     mouseLeave(args) {
         if (this.inAction) {
             this.mouseUp(args);
@@ -14296,6 +14457,7 @@ class ConnectTool extends ToolBase {
         super(commandHandler, true);
         this.endPoint = endPoint;
     }
+    /**   @private  */
     mouseDown(args) {
         this.inAction = true;
         this.undoElement = undefined;
@@ -14323,6 +14485,7 @@ class ConnectTool extends ToolBase {
         }
         this.currentPosition = args.position;
     }
+    /**   @private  */
     mouseUp(args) {
         this.commandHandler.updateSelector();
         this.commandHandler.removeSnap();
@@ -14378,6 +14541,7 @@ class ConnectTool extends ToolBase {
         }
         super.mouseUp(args);
     }
+    /**   @private  */
     mouseMove(args) {
         super.mouseMove(args);
         if ((!(this instanceof ConnectorDrawingTool)) && ((this.endPoint === 'ConnectorSourceEnd' &&
@@ -14461,12 +14625,14 @@ class ConnectTool extends ToolBase {
         this.prevPosition = this.currentPosition;
         return !this.blocked;
     }
+    /**   @private  */
     mouseLeave(args) {
         this.mouseUp(args);
     }
     getTooltipContent(position) {
         return 'X:' + Math.round(position.x) + ' ' + 'Y:' + Math.round(position.y);
     }
+    /**   @private  */
     endAction() {
         super.endAction();
         this.prevPosition = null;
@@ -14479,9 +14645,11 @@ class ConnectTool extends ToolBase {
 class MoveTool extends ToolBase {
     constructor(commandHandler, objType) {
         super(commandHandler, true);
+        /**   @private  */
         this.currentTarget = null;
         this.objectType = objType;
     }
+    /**   @private  */
     mouseDown(args) {
         if (args.source instanceof Node || args.source instanceof Connector) {
             this.commandHandler.selectObjects([args.source], args.info && args.info.ctrlKey);
@@ -14504,6 +14672,7 @@ class MoveTool extends ToolBase {
         super.mouseDown(args);
         this.initialOffset = { x: 0, y: 0 };
     }
+    /**   @private  */
     mouseUp(args) {
         let obj;
         let historyAdded = false;
@@ -14581,6 +14750,7 @@ class MoveTool extends ToolBase {
         }
         super.mouseUp(args);
     }
+    /**   @private  */
     mouseMove(args) {
         super.mouseMove(args);
         let isSame = false;
@@ -14672,9 +14842,11 @@ class MoveTool extends ToolBase {
     getTooltipContent(node) {
         return 'X:' + Math.round(node.wrapper.bounds.x) + ' ' + 'Y:' + Math.round(node.wrapper.bounds.y);
     }
+    /**   @private  */
     mouseLeave(args) {
         this.mouseUp(args);
     }
+    /**   @private  */
     endAction() {
         super.endAction();
         this.currentTarget = null;
@@ -14688,6 +14860,7 @@ class RotateTool extends ToolBase {
     constructor(commandHandler) {
         super(commandHandler, true);
     }
+    /**   @private  */
     mouseDown(args) {
         this.undoElement = cloneObject(args.source);
         if (this.undoElement.nodes[0] && this.undoElement.nodes[0].children) {
@@ -14700,6 +14873,7 @@ class RotateTool extends ToolBase {
         }
         super.mouseDown(args);
     }
+    /**   @private  */
     mouseUp(args) {
         if (this.undoElement.rotateAngle !== args.source.wrapper.rotateAngle) {
             let oldValue = { rotateAngle: args.source.wrapper.rotateAngle };
@@ -14719,6 +14893,7 @@ class RotateTool extends ToolBase {
         }
         super.mouseUp(args);
     }
+    /**   @private  */
     mouseMove(args) {
         super.mouseMove(args);
         if (this.undoElement.rotateAngle === args.source.wrapper.rotateAngle) {
@@ -14754,9 +14929,11 @@ class RotateTool extends ToolBase {
     getTooltipContent(node) {
         return Math.round((node.rotateAngle % 360)).toString() + '\xB0';
     }
+    /**   @private  */
     mouseLeave(args) {
         this.mouseUp(args);
     }
+    /**   @private  */
     endAction() {
         super.endAction();
     }
@@ -14767,9 +14944,11 @@ class RotateTool extends ToolBase {
 class ResizeTool extends ToolBase {
     constructor(commandHandler, corner) {
         super(commandHandler, true);
+        /**   @private  */
         this.initialBounds = new Rect();
         this.corner = corner;
     }
+    /**   @private  */
     mouseDown(args) {
         this.undoElement = cloneObject(args.source);
         this.undoParentElement = this.commandHandler.getSubProcess(args.source);
@@ -14788,6 +14967,7 @@ class ResizeTool extends ToolBase {
         this.initialBounds.height = args.source.wrapper.actualSize.height;
         this.initialBounds.width = args.source.wrapper.actualSize.width;
     }
+    /**   @private  */
     mouseUp(args) {
         this.commandHandler.removeSnap();
         if (this.undoElement.offsetX !== args.source.wrapper.offsetX || this.undoElement.offsetY !== args.source.wrapper.offsetY) {
@@ -14821,6 +15001,7 @@ class ResizeTool extends ToolBase {
         super.mouseUp(args);
         return !this.blocked;
     }
+    /**   @private  */
     mouseMove(args) {
         super.mouseMove(args);
         if (this.undoElement.offsetX === args.source.wrapper.offsetX && this.undoElement.offsetY === args.source.wrapper.offsetY) {
@@ -14852,6 +15033,7 @@ class ResizeTool extends ToolBase {
         this.prevPosition = this.currentPosition;
         return !this.blocked;
     }
+    /**   @private  */
     mouseLeave(args) {
         this.mouseUp(args);
     }
@@ -14924,10 +15106,12 @@ class NodeDrawingTool extends ToolBase {
         super(commandHandler, true);
         this.sourceObject = sourceObject;
     }
+    /**   @private  */
     mouseDown(args) {
         super.mouseDown(args);
         this.inAction = true;
     }
+    /**   @private  */
     mouseMove(args) {
         super.mouseMove(args);
         let checkBoundaryConstraints;
@@ -14947,6 +15131,7 @@ class NodeDrawingTool extends ToolBase {
         }
         return checkBoundaryConstraints;
     }
+    /**   @private  */
     mouseUp(args) {
         let checkBoundaryConstraints;
         let rect = Rect.toBounds([this.prevPosition, this.currentPosition]);
@@ -14958,9 +15143,11 @@ class NodeDrawingTool extends ToolBase {
         super.mouseUp(args);
         this.inAction = false;
     }
+    /**   @private  */
     endAction() {
         super.endAction();
     }
+    /**   @private  */
     mouseLeave(args) {
         if (this.inAction) {
             this.mouseUp(args);
@@ -14975,10 +15162,12 @@ class ConnectorDrawingTool extends ConnectTool {
         super(commandHandler, endPoint);
         this.sourceObject = sourceObject;
     }
+    /**   @private  */
     mouseDown(args) {
         super.mouseDown(args);
         this.inAction = true;
     }
+    /**   @private  */
     mouseMove(args) {
         if (this.inAction) {
             let connector = {
@@ -15002,6 +15191,7 @@ class ConnectorDrawingTool extends ConnectTool {
         super.mouseMove(args);
         return !this.blocked;
     }
+    /**   @private  */
     mouseUp(args) {
         if (this.drawingObject && this.drawingObject instanceof Connector) {
             this.commandHandler.addObjectToDiagram(this.drawingObject);
@@ -15010,9 +15200,11 @@ class ConnectorDrawingTool extends ConnectTool {
         this.inAction = false;
         super.mouseUp(args);
     }
+    /**   @private  */
     endAction() {
         super.endAction();
     }
+    /**   @private  */
     mouseLeave(args) {
         if (this.inAction) {
             this.mouseUp(args);
@@ -15023,6 +15215,7 @@ class TextDrawingTool extends ToolBase {
     constructor(commandHandler) {
         super(commandHandler, true);
     }
+    /**   @private  */
     mouseDown(args) {
         super.mouseDown(args);
         this.commandHandler.clearSelection();
@@ -15035,6 +15228,7 @@ class TextDrawingTool extends ToolBase {
             this.drawingNode = this.commandHandler.drawObject(node);
         }
     }
+    /**   @private  */
     mouseMove(args) {
         super.mouseMove(args);
         if (!this.drawingNode) {
@@ -15055,6 +15249,7 @@ class TextDrawingTool extends ToolBase {
         }
         return !this.blocked;
     }
+    /**   @private  */
     mouseUp(args) {
         if (this.drawingNode) {
             this.drawingNode.style.strokeColor = 'none';
@@ -15069,6 +15264,7 @@ class TextDrawingTool extends ToolBase {
         super.mouseUp(args);
         this.inAction = false;
     }
+    /**   @private  */
     endAction() {
         super.endAction();
     }
@@ -15081,10 +15277,12 @@ class ZoomPanTool extends ToolBase {
         super(commandHandler);
         this.zooming = zoom;
     }
+    /**   @private  */
     mouseDown(args) {
         super.mouseDown(args);
         this.inAction = true;
     }
+    /**   @private  */
     mouseMove(args) {
         super.mouseMove(args);
         if (this.inAction) {
@@ -15107,10 +15305,12 @@ class ZoomPanTool extends ToolBase {
         }
         return !this.blocked;
     }
+    /**   @private  */
     mouseUp(args) {
         super.mouseUp(args);
         this.inAction = false;
     }
+    /**   @private  */
     endAction() {
         super.endAction();
     }
@@ -15131,6 +15331,7 @@ class ExpandTool extends ToolBase {
     constructor(commandHandler) {
         super(commandHandler, true);
     }
+    /**   @private  */
     mouseUp(args) {
         this.commandHandler.initExpand(args);
         super.mouseUp(args);
@@ -15143,6 +15344,7 @@ class LabelTool extends ToolBase {
     constructor(commandHandler) {
         super(commandHandler, true);
     }
+    /**   @private  */
     mouseUp(args) {
         let win = window.open(args.sourceWrapper.hyperlink.link, '_blank');
         win.focus();
@@ -15156,6 +15358,7 @@ class PolygonDrawingTool extends ToolBase {
     constructor(commandHandler) {
         super(commandHandler, true);
     }
+    /**   @private  */
     mouseDown(args) {
         super.mouseDown(args);
         this.inAction = true;
@@ -15182,6 +15385,7 @@ class PolygonDrawingTool extends ToolBase {
             this.drawingObject.shape.points.push(pt);
         }
     }
+    /**   @private  */
     mouseMove(args) {
         super.mouseMove(args);
         if (this.inAction) {
@@ -15198,6 +15402,7 @@ class PolygonDrawingTool extends ToolBase {
         }
         return true;
     }
+    /**   @private  */
     mouseUp(args, dblClickArgs) {
         super.mouseMove(args);
         if (this.inAction) {
@@ -15208,10 +15413,12 @@ class PolygonDrawingTool extends ToolBase {
         }
         this.endAction();
     }
+    /**   @private  */
     mouseWheel(args) {
         super.mouseWheel(args);
         this.mouseMove(args);
     }
+    /**   @private  */
     endAction() {
         this.inAction = false;
         this.drawingObject = null;
@@ -15224,6 +15431,7 @@ class PolyLineDrawingTool extends ToolBase {
     constructor(commandHandler) {
         super(commandHandler, true);
     }
+    /**   @private  */
     mouseMove(args) {
         super.mouseMove(args);
         if (this.inAction) {
@@ -15233,6 +15441,7 @@ class PolyLineDrawingTool extends ToolBase {
         }
         return true;
     }
+    /**   @private  */
     mouseDown(args) {
         super.mouseDown(args);
         this.inAction = true;
@@ -15253,10 +15462,12 @@ class PolyLineDrawingTool extends ToolBase {
             drawObject.segments[drawObject.segments.length - 1] = segment;
         }
     }
+    /**   @private  */
     mouseWheel(args) {
         super.mouseWheel(args);
         this.mouseMove(args);
     }
+    /**   @private  */
     mouseUp(args) {
         super.mouseMove(args);
         if (this.inAction) {
@@ -15266,6 +15477,7 @@ class PolyLineDrawingTool extends ToolBase {
         }
         this.endAction();
     }
+    /**   @private  */
     endAction() {
         this.drawingObject = null;
         this.inAction = false;
@@ -15275,12 +15487,14 @@ class LabelDragTool extends ToolBase {
     constructor(commandHandler) {
         super(commandHandler, true);
     }
+    /**   @private  */
     mouseDown(args) {
         this.inAction = true;
         this.undoElement = cloneObject(args.source);
         this.annotationId = args.sourceWrapper.id;
         super.mouseDown(args);
     }
+    /**   @private  */
     mouseMove(args) {
         super.mouseMove(args);
         let difx = this.currentPosition.x - this.prevPosition.x;
@@ -15300,6 +15514,7 @@ class LabelDragTool extends ToolBase {
         this.prevPosition = this.currentPosition;
         return !this.blocked;
     }
+    /**   @private  */
     mouseUp(args) {
         let redoValue = args.source;
         this.inAction = false;
@@ -15311,6 +15526,7 @@ class LabelDragTool extends ToolBase {
         this.commandHandler.addHistoryEntry(entryValue);
         super.mouseUp(args);
     }
+    /**   @private  */
     mouseLeave(args) {
         this.mouseUp(args);
     }
@@ -15320,6 +15536,7 @@ class LabelResizeTool extends ToolBase {
         super(commandHandler, true);
         this.corner = corner;
     }
+    /**   @private  */
     mouseDown(args) {
         this.inAction = true;
         let object = (args.source.nodes.length) ?
@@ -15335,6 +15552,7 @@ class LabelResizeTool extends ToolBase {
         };
         super.mouseDown(args);
     }
+    /**   @private  */
     mouseMove(args) {
         super.mouseMove(args);
         if (this.inAction) {
@@ -15342,6 +15560,7 @@ class LabelResizeTool extends ToolBase {
         }
         return !this.blocked;
     }
+    /**   @private  */
     mouseUp(args) {
         let redoObject = (args.source.nodes.length) ?
             args.source.nodes[0] : args.source.connectors[0];
@@ -15353,9 +15572,11 @@ class LabelResizeTool extends ToolBase {
         this.commandHandler.addHistoryEntry(entry);
         super.mouseUp(args);
     }
+    /**   @private  */
     mouseLeave(args) {
         this.mouseUp(args);
     }
+    /**   @private  */
     resizeObject(args) {
         let object;
         object = (args.source.nodes.length) ? args.source.nodes[0] : args.source.connectors[0];
@@ -15389,6 +15610,7 @@ class LabelRotateTool extends ToolBase {
     constructor(commandHandler) {
         super(commandHandler, true);
     }
+    /**   @private  */
     mouseDown(args) {
         this.inAction = true;
         this.annotationId = args.source.wrapper.children[0].id;
@@ -15397,6 +15619,7 @@ class LabelRotateTool extends ToolBase {
         this.undoElement = cloneObject(object);
         super.mouseDown(args);
     }
+    /**   @private  */
     mouseMove(args) {
         super.mouseMove(args);
         if (args.source) {
@@ -15412,6 +15635,7 @@ class LabelRotateTool extends ToolBase {
         this.prevPosition = this.currentPosition;
         return !this.blocked;
     }
+    /**   @private  */
     mouseUp(args) {
         this.inAction = false;
         let redoEntry = (args.source.nodes.length) ?
@@ -15424,6 +15648,7 @@ class LabelRotateTool extends ToolBase {
         this.commandHandler.addHistoryEntry(entryObject);
         super.mouseUp(args);
     }
+    /**   @private  */
     mouseLeave(args) {
         this.mouseUp(args);
     }
@@ -15437,6 +15662,7 @@ class ConnectorEditing extends ToolBase {
         super(commandHandler, true);
         this.endPoint = endPoint;
     }
+    /**   @private  */
     mouseDown(args) {
         this.inAction = true;
         this.undoElement = cloneObject(args.source);
@@ -15466,6 +15692,7 @@ class ConnectorEditing extends ToolBase {
             }
         }
     }
+    /**   @private  */
     mouseMove(args) {
         super.mouseMove(args);
         this.currentPosition = args.position;
@@ -15493,6 +15720,7 @@ class ConnectorEditing extends ToolBase {
         this.prevPosition = this.currentPosition;
         return !this.blocked;
     }
+    /**   @private  */
     mouseUp(args) {
         let connector;
         if (args.source && args.source.connectors) {
@@ -16075,6 +16303,7 @@ class DiagramEventHandler {
     /** @private */
     constructor(diagram, commandHandler) {
         this.currentAction = 'None';
+        /**   @private  */
         this.focus = false;
         this.isBlocked = false;
         this.isMouseDown = false;
@@ -16255,6 +16484,7 @@ class DiagramEventHandler {
         }
         return false;
     }
+    /**   @private  */
     mouseDown(evt) {
         this.focus = true;
         let touches;
@@ -16342,6 +16572,7 @@ class DiagramEventHandler {
             evt.preventDefault();
         }
     }
+    /**   @private  */
     mouseMoveExtend(e, obj) {
         if (this.tool instanceof PolygonDrawingTool || this.tool instanceof PolyLineDrawingTool) {
             this.tool.mouseMove(this.eventArgs);
@@ -17429,16 +17660,21 @@ __decorate$17([
  */
 class CommandHandler {
     constructor(diagram) {
+        /**   @private  */
         this.clipboardData = {};
+        /**   @private  */
         this.connectorsTable = [];
+        /**   @private  */
         this.processTable = {};
         this.childTable = {};
         this.parentTable = {};
         this.diagram = diagram;
     }
+    /**   @private  */
     get snappingModule() {
         return this.diagram.snappingModule;
     }
+    /**   @private  */
     get layoutAnimateModule() {
         return this.diagram.layoutAnimateModule;
     }
@@ -18843,6 +19079,7 @@ class CommandHandler {
             }
         }
     }
+    /**   @private  */
     updateNativeNodeIndex(nodeId, targetID) {
         let nodes = this.diagram.selectedItems.nodes;
         for (let i = 0; i < this.diagram.views.length; i++) {
@@ -18857,6 +19094,7 @@ class CommandHandler {
             }
         }
     }
+    /**   @private  */
     initSelectorWrapper() {
         let selectorModel = this.diagram.selectedItems;
         selectorModel.init(this.diagram);
@@ -18919,6 +19157,7 @@ class CommandHandler {
             return this.dragTargetEnd(connector, tx, ty, null, point, endPoint, undefined, segment);
         }
     }
+    /**   @private  */
     getSelectedObject() {
         let selectormodel = this.diagram.selectedItems;
         return (selectormodel.nodes).concat(selectormodel.connectors);
@@ -18999,6 +19238,7 @@ class CommandHandler {
             }
         }
     }
+    /**   @private  */
     connectorSegmentChange(actualObject, existingInnerBounds, isRotate) {
         let tx;
         let ty;
@@ -19523,6 +19763,7 @@ class CommandHandler {
         }
         return currentPosition;
     }
+    /**   @private  */
     snapAngle(angle) {
         if ((this.diagram.snapSettings.constraints & SnapConstraints.SnapToLines)
             && this.snappingModule) {
@@ -19532,6 +19773,7 @@ class CommandHandler {
             return 0;
         }
     }
+    /**   @private  */
     rotatePoints(conn, angle, pivot) {
         if (!conn.sourceWrapper || !conn.targetWrapper) {
             let matrix = identityMatrix();
@@ -19617,6 +19859,7 @@ class CommandHandler {
         }
         return (innerParent) ? parentNodes : nodes;
     }
+    /**   @private  */
     getChildren(node, nodes) {
         let temp = node;
         if (node.children) {
@@ -20034,6 +20277,7 @@ class CommandHandler {
         }
         return selector;
     }
+    /**   @private  */
     checkBoundaryConstraints(tx, ty, nodeBounds) {
         let pageSettings = this.diagram.pageSettings;
         let boundaryConstraints = this.diagram.pageSettings.boundaryConstraints;
@@ -20513,7 +20757,9 @@ class DiagramScroller {
     constructor(diagram) {
         /** @private */
         this.transform = { tx: 0, ty: 0, scale: 1 };
+        /**   @private  */
         this.oldCollectionObjects = [];
+        /**   @private  */
         this.removeCollection = [];
         this.vPortWidth = 0;
         this.vPortHeight = 0;
@@ -20713,6 +20959,7 @@ class DiagramScroller {
         }
         return objects;
     }
+    /**   @private  */
     virtualizeElements() {
         let viewWidth = this.viewPortWidth / this.currentZoom;
         let viewHeight = this.viewPortHeight / this.currentZoom;
@@ -21292,6 +21539,7 @@ class SpatialSearch {
         }
         return -1;
     }
+    /** @private */
     updateQuad(node) {
         this.setCurrentNode(node);
         let nodBounds = node.outerBounds;
@@ -22923,6 +23171,7 @@ class Diagram extends Component {
             }
         }
     }
+    /** @private */
     removeObjectsFromLayer(obj) {
         let layer = this.layers.indexOf(this.commandHandler.getObjectLayer(obj.id));
         let objects = this.layers[layer].objects;
@@ -22935,6 +23184,7 @@ class Diagram extends Component {
             delete this.layers[layer].zIndexTable[this.nameTable[obj.id].zIndex];
         }
     }
+    /** @private */
     removeElements(currentObj) {
         if (this.mode === 'SVG' || (this.mode === 'Canvas' && currentObj.shape.type === 'Native')) {
             let removeElement$$1 = getDiagramElement(currentObj.id + '_groupElement', this.element.id);
@@ -23799,6 +24049,7 @@ class Diagram extends Component {
         this.diagramLayerDiv.appendChild(nativeLayerSvg);
         setAttributeSvg(nativeLayerSvg, { 'class': 'e-native-layer', 'style': commonStyle });
     }
+    /** @private */
     createSvg(id, width, height) {
         let svgObj = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         setAttributeSvg(svgObj, { 'id': id, 'width': width, 'height': height });
@@ -23811,6 +24062,7 @@ class Diagram extends Component {
         this.initLayerObjects();
         this.updateBridging(isLoad);
     }
+    /** @private */
     initLayerObjects() {
         let hasLayers = this.layers.length > 1;
         let connectors = [];
@@ -24570,6 +24822,7 @@ class Diagram extends Component {
         }
         clearInterval(clearIntervalVal);
     }
+    /** @private */
     updateVirtualObjects(collection, remove$$1, tCollection) {
         let diagramElementsLayer = document.getElementById('diagram_diagramLayer');
         let htmlLayer = getHTMLLayer('diagram');
@@ -25038,6 +25291,7 @@ class Diagram extends Component {
             }
         }
     }
+    /** @private */
     renderSelectorForAnnotation(selectorModel, selectorElement) {
         this.diagramRenderer.renderResizeHandle(selectorModel.wrapper.children[0], selectorElement, selectorModel.thumbsConstraints, this.scroller.currentZoom, selectorModel.constraints, this.scroller.transform, undefined, canMove(selectorModel.annotation));
     }
@@ -25103,6 +25357,7 @@ class Diagram extends Component {
         }
         return wrapper;
     }
+    /** @private */
     getEndNodeWrapper(node, connector, source) {
         if (node.shape.type === 'Bpmn' && node.wrapper.children[0] instanceof Canvas) {
             if (node.shape.shape === 'Activity') {
@@ -25515,6 +25770,7 @@ class Diagram extends Component {
             this.connectorPropertyChange(connector, {}, conn);
         }
     }
+    /** @private */
     updateConnectorEdges(actualObject) {
         if (actualObject.inEdges.length > 0) {
             for (let j = 0; j < actualObject.inEdges.length; j++) {
@@ -26674,6 +26930,7 @@ class PrintAndExport {
             }
         }
     }
+    /**   @private  */
     getObjectsBound(options) {
         let nodes = this.diagram.nodes;
         let nodebounds;
@@ -27250,6 +27507,7 @@ class DataBinding {
      * @private
      */
     constructor() {
+        /**   @private  */
         this.dataTable = {};
         //constructs the data binding module
     }
@@ -27845,9 +28103,11 @@ class BpmnDiagrams {
     constructor() {
         //Code conversion for Bpmn Shapes
         //Start Region
+        /**   @private  */
         this.annotationObjects = {};
         //constructs the BpmnDiagrams module
     }
+    /**   @private  */
     get textAnnotationConnectors() {
         let connectors = [];
         for (let key of Object.keys(this.annotationObjects)) {
@@ -27871,6 +28131,7 @@ class BpmnDiagrams {
         }
         return connectors;
     }
+    /**   @private  */
     getSize(node, content) {
         let size = new Size(node.width, node.height);
         if (size.width === undefined || size.height === undefined) {
@@ -29107,6 +29368,7 @@ class BpmnDiagrams {
             wrapper.offsetY = node.offsetY = point.y;
         }
     }
+    /**   @private  */
     isBpmnTextAnnotation(activeLabel, diagram) {
         if (this.annotationObjects) {
             let parentNodeId = activeLabel.parentId;
@@ -29137,6 +29399,7 @@ class BpmnDiagrams {
             }
         }
     }
+    /**   @private  */
     updateQuad(actualObject, diagram) {
         let annotation = actualObject.shape.annotations;
         let annotationNode;
@@ -32801,6 +33064,7 @@ class HierarchicalTree {
          */
         return 'OrganizationalChart';
     }
+    /**   @private  */
     updateLayout(nodes, nameTable, layoutProp, viewport, uniqueId) {
         let layout = {
             type: layoutProp.type,
@@ -34414,6 +34678,7 @@ class MindMap {
          */
         return 'MindMapChart';
     }
+    /**   @private  */
     updateLayout(nodes, nameTable, layoutProp, viewPort, uniqueId, root) {
         let isRoot;
         isRoot = this.checkRoot(nodes, layoutProp, uniqueId, root, nameTable);
@@ -34537,6 +34802,7 @@ class RadialTree {
          */
         return 'RadialTree';
     }
+    /**   @private  */
     updateLayout(nodes, nameTable, layoutProp, viewport) {
         let layout = {
             type: layoutProp.type,
@@ -35489,6 +35755,7 @@ class ComplexHierarchicalTree {
          */
         return 'ComplexHierarchicalTree';
     }
+    /**   @private  */
     doLayout(nodes, nameTable, layout, viewPort) {
         new HierarchicalLayoutUtil().doLayout(nodes, nameTable, layout, viewPort);
     }
@@ -37114,7 +37381,9 @@ class SymbolPalette extends Component {
      */
     constructor(options, element) {
         super(options, element);
+        /**   @private  */
         this.symbolTable = {};
+        /**   @private  */
         this.childTable = {};
         this.info = 'info';
         /**

@@ -1,0 +1,547 @@
+
+
+$background-color: #fff;
+$border: 2px solid;
+$border-color: #ccc;
+$bigger-font-size: 14px;
+$bigger-height: 22px;
+$bigger-line-height: 23px;
+$bigger-padding: 36px;
+$bigger-ripple-position: -11px;
+$bigger-ripple-size: 48px;
+$bigger-small-ripple-size: 36px;
+$bigger-small-height: 22px;
+$bigger-small-line-height: 20px;
+$bigger-small-padding: 34px;
+$bigger-small-width: 22px;
+$bigger-width: 22px;
+$checked-border-color: #ff4081;
+$checked-color: #ff4081;
+$checked-ripple-bgcolor: #ff4081;
+$check-transition: none;
+$disabled-border-color: #bdbdbd;
+$disabled-checked-color: #bdbdbd;
+$disabled-color: #bdbdbd;
+$focus-ripple-bgcolor: #000;
+$focussed-bgcolor: rgba(48, 48, 48, .12);
+$focussed-border-color: #767676;
+$focussed-box-shadow: none;
+$font-color: #000;
+$font-size: 13px;
+$hover-bgcolor: #fff;
+$hover-border-color: #757575;
+$hover-check-bg-color: #ff4081;
+$hover-check-border-color: #ff4081;
+$height: 18px;
+$width: 18px;
+$small-height: 14px;
+$small-width: 14px;
+$icon-left: 5px;
+$icon-top: 5px;
+$icon-right: 5px;
+$small-icon-left: 4px;
+$small-icon-top: 4px;
+$small-icon-right: 4px;
+$bigger-icon-left: 6px;
+$bigger-icon-top: 6px;
+$bigger-icon-right: 6px;
+$bigger-small-icon-left: 6px;
+$bigger-small-icon-top: 6px;
+$bigger-small-icon-right: 6px;
+$icon-height: 8px;
+$icon-width: 8px;
+$small-icon-height: 6px;
+$small-icon-width: 6px;
+$bigger-icon-height: 10px;
+$bigger-icon-width: 10px;
+$bigger-small-icon-height: 8px;
+$bigger-small-icon-width: 8px;
+$line-height: 20px;
+$padding: 31px;
+$ripple-bgcolor:  rgba(0, 0, 0, .3);
+$ripple-position: -8px;
+$ripple-size: 34px;
+$small-line-height: 13px;
+$small-padding: 26px;
+$small-ripple-position: -10px;
+$focus-check-bg-color: $hover-check-bg-color;
+$focus-check-border-color: $hover-check-border-color;
+$focus-outline: $background-color 0 solid;
+$focus-outline-offset: 0;
+
+@include export-module('radiobutton-layout') {
+  /*! radiobutton layout */
+
+  .e-radio-wrapper {
+    display: inline-block;
+    line-height: 1;
+  }
+
+  // sass-lint:disable no-vendor-prefixes
+  #{&}.e-radio {
+    -webkit-appearance: none;
+    height: 1px;
+    opacity: 0;
+    position: absolute;
+    width: 1px;
+
+    +label {
+      -webkit-tap-highlight-color: transparent;
+      cursor: pointer;
+      display: inline-block;
+      margin: 0;
+      position: relative;
+      user-select: none;
+      vertical-align: middle;
+      white-space: nowrap;
+
+      & .e-label {
+        display: inline-block;
+        font-family: $font-family;
+        font-size: $font-size;
+        font-weight: normal;
+        line-height: $line-height;
+        padding-left: $padding;
+        vertical-align: text-top;
+        white-space: normal;
+      }
+
+      &::before {
+        border: $border;
+        border-radius: 50%;
+        box-sizing: border-box;
+        content: '';
+        height: $height;
+        left: 0;
+        position: absolute;
+        top: 0;
+        width: $width;
+      }
+
+      &:focus {
+        &::before {
+          box-shadow: $focussed-box-shadow;
+        }
+      }
+
+      &::after {
+        border: 1px solid;
+        border-radius: 50%;
+        box-sizing: border-box;
+        content: '';
+        height: $icon-height;
+        left: $icon-left;
+        position: absolute;
+        top: $icon-top;
+        transform: scale(0);
+        width: $icon-width;
+      }
+
+      & .e-ripple-container {
+        border-radius: 50%;
+        height: $ripple-size;
+        left: $ripple-position;
+        position: absolute;
+        top:  $ripple-position;
+        width: $ripple-size;
+        z-index: 1;
+      }
+
+      &.e-right,
+      &.e-rtl {
+        & .e-label {
+          padding-left: 0;
+          padding-right: $padding;
+        }
+
+        &::before {
+          left: auto;
+          right: 0;
+        }
+
+        &::after {
+          left: auto;
+          right: $icon-right;
+        }
+
+        & .e-ripple-container {
+          left: auto;
+          right: $ripple-position;
+        }
+      }
+
+      &.e-right {
+        &.e-rtl {
+          & .e-label {
+            padding-left: $padding;
+            padding-right: 0;
+          }
+
+          &::before {
+            left: 0;
+            right: auto;
+          }
+
+          &::after {
+            left: $icon-right;
+            right: auto;
+          }
+
+          & .e-ripple-container {
+            left: -8px;
+            right: auto;
+            }
+        }
+      }
+
+      &.e-small {
+
+        & .e-label {
+          line-height: $small-line-height;
+          padding-left: $small-padding;
+        }
+
+        &::before {
+          height: $small-height;
+          width: $small-width;
+        }
+
+        &::after {
+          height: $small-icon-height;
+          left: $small-icon-left;
+          top: $small-icon-top;
+          width: $small-icon-width;
+        }
+
+        & .e-ripple-container {
+          left: $small-ripple-position;
+          top: $small-ripple-position;
+        }
+
+        &.e-right,
+        &.e-rtl {
+          & .e-label {
+            padding-left: 0;
+            padding-right: $small-padding;
+          }
+
+          &::after {
+            left: auto;
+            right: $small-icon-right;
+          }
+
+          & .e-ripple-container {
+            left: auto;
+            right: $small-ripple-position;
+          }
+        }
+
+        &.e-right {
+          &.e-rtl {
+            & .e-label {
+              padding-left: $small-padding;
+              padding-right: 0;
+            }
+
+            &::after {
+              left: $small-icon-right;
+              right: auto;
+            }
+
+            & .e-ripple-container {
+              left: -10px;
+              right: auto;
+            }
+          }
+        }
+      }
+    }
+
+    &:checked {
+      +label {
+        &::after {
+          transform: scale(1);
+          transition: $check-transition;
+        }
+      }
+    }
+  }
+
+  .e-bigger #{&}.e-radio+label,
+  #{&}.e-radio+label.e-bigger {
+
+    & .e-label {
+      font-size: $bigger-font-size;
+      line-height: $bigger-line-height;
+      padding-left: $bigger-padding;
+    }
+
+    &::before {
+      height: $bigger-height;
+      width: $bigger-width;
+    }
+
+    &::after {
+      height: $bigger-icon-height;
+      left: $bigger-icon-left;
+      top: $bigger-icon-top;
+      width: $bigger-icon-width;
+    }
+
+    & .e-ripple-container {
+      height: $bigger-ripple-size;
+      left: $bigger-ripple-position;
+      top: $bigger-ripple-position;
+      width: $bigger-ripple-size;
+    }
+
+    &.e-right,
+    &.e-rtl {
+      & .e-label {
+        padding-left: 0;
+        padding-right: $bigger-padding;
+      }
+
+      &::after {
+        left: auto;
+        right: $bigger-icon-right;
+      }
+
+      & .e-ripple-container {
+        left: auto;
+        right: $bigger-ripple-position;
+      }
+    }
+
+    &.e-right {
+      &.e-rtl {
+        & .e-label {
+          padding-left: $bigger-padding;
+          padding-right: 0;
+        }
+
+        &::after {
+          left: $bigger-icon-right;
+          right: auto;
+        }
+
+        & .e-ripple-container {
+          left: -12px;
+          right: auto;
+        }
+      }
+    }
+
+    &.e-small {
+
+      & .e-label {
+        line-height: $bigger-small-line-height;
+        padding-left: $bigger-small-padding;
+      }
+
+      &::before {
+        height: $bigger-small-height;
+        width: $bigger-small-width;
+      }
+
+      &::after {
+        height: $bigger-small-icon-height;
+        left: $bigger-small-icon-left;
+        top: $bigger-small-icon-top;
+        width: $bigger-small-icon-width;
+      }
+
+      & .e-ripple-container {
+        height: $bigger-small-ripple-size;
+        left: $bigger-ripple-position;
+        top: $bigger-ripple-position;
+        width: $bigger-small-ripple-size;
+      }
+
+      &.e-right,
+      &.e-rtl {
+        & .e-label {
+          padding-left: 0;
+          padding-right: $bigger-small-padding;
+        }
+
+        &::after {
+          left: auto;
+          right: $bigger-small-icon-right;
+        }
+
+        & .e-ripple-container {
+          left: auto;
+          right: $small-ripple-position;
+        }
+      }
+
+      &.e-right {
+        &.e-rtl {
+          & .e-label {
+            padding-left: $bigger-small-padding;
+            padding-right: 0;
+          }
+
+          &::after {
+            left: $bigger-small-icon-right;
+            right: auto;
+          }
+
+          & .e-ripple-container {
+            left: -10px;
+            right: auto;
+          }
+        }
+      }
+    }
+  }
+}
+@include export-module('radiobutton-theme') {
+  /*! radiobutton theme */
+
+  #{&}.e-radio {
+    +label {
+      &::before {
+        background-color: $background-color;
+        border-color: $border-color;
+      }
+
+      &.e-focus {
+        & .e-ripple-container {
+          background-color: $focus-ripple-bgcolor;
+        }
+      }
+
+      & .e-label {
+        color: $font-color;
+      }
+
+      & .e-ripple-element {
+        background-color: $checked-ripple-bgcolor;
+      }
+
+      &:active {
+        & .e-ripple-element {
+          background-color: $ripple-bgcolor;
+        }
+      }
+    }
+
+    &:focus {
+      +label {
+        &::before {
+          border-color: $hover-border-color;
+          box-shadow: $focussed-box-shadow;
+        }
+      }
+    }
+
+    &:hover {
+      +label {
+        &::before {
+          border-color: $hover-border-color;
+        }
+      }
+    }
+
+    &:checked {
+      +label {
+        &::before {
+          border-color: $checked-border-color;
+        }
+
+        &::after {
+          background-color: $checked-color;
+          color: $checked-color;
+        }
+
+        &:active {
+          & .e-ripple-element {
+            background-color: $checked-ripple-bgcolor;
+          }
+        }
+      }
+
+      +.e-focus {
+        & .e-ripple-container {
+          background-color: $checked-ripple-bgcolor;
+        }
+
+        &::before {
+          outline: $focus-outline;
+          outline-offset: $focus-outline-offset;
+        }
+      }
+    }
+
+    &:checked {
+      &:focus {
+        +label {
+          &::before {
+            border-color: $focus-check-border-color;
+          }
+
+          &::after {
+            background-color: $focus-check-bg-color;
+          }
+        }
+      }
+
+      +label {
+        &:hover {
+          &::before {
+            border-color: $hover-check-border-color;
+          }
+
+          &::after {
+            background-color: $hover-check-bg-color;
+          }
+        }
+      }
+    }
+
+    &:disabled {
+      +label {
+        cursor: default;
+        pointer-events: none;
+
+        &::before {
+          border-color: $disabled-border-color;
+          cursor: default;
+        }
+
+        & .e-ripple-container {
+          background-color: transparent;
+
+          &::after {
+            background-color: transparent;
+            cursor: default;
+          }
+        }
+
+        & .e-label {
+          color: $disabled-color;
+        }
+      }
+
+      &:checked {
+        +label {
+          &::after {
+            background-color: $disabled-checked-color;
+            border-color: $disabled-checked-color;
+            cursor: default;
+          }
+
+          & .e-ripple-container {
+            background-color: transparent;
+
+            &::after {
+              background-color: transparent;
+            }
+          }
+        }
+      }
+    }
+  }
+}

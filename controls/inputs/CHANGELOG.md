@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## 16.3.29 (2018-10-31)
+
 ### MaskedTextBox
 
 #### Bug Fixes

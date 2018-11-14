@@ -38,7 +38,7 @@ export function setTime(date: Date, time: number): Date {
     let tzOffsetBefore: number = date.getTimezoneOffset();
     let d: Date = new Date(date.getTime() + time);
     let tzOffsetDiff: number = d.getTimezoneOffset() - tzOffsetBefore;
-    date.setTime(d.getTime() + tzOffsetDiff * MS_PER_DAY);
+    date.setTime(d.getTime() + tzOffsetDiff * MS_PER_MINUTE);
     return date;
 }
 export function resetTime(date: Date): Date {

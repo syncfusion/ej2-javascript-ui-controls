@@ -2285,16 +2285,18 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             keyConfigs: this.keyConfigs
         });
     };
-    DatePicker.prototype.resetFormHandler = function () {
+    DatePicker.prototype.resetFormHandler = function (e) {
         if (this.inputElement.getAttribute('value')) {
             this.value = this.checkDateValue(new Date('' + this.element.getAttribute('value')));
         }
         else {
-            this.value = null;
-            if (this.inputElement) {
-                Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
-                attributes(this.inputElement, { 'aria-invalid': 'false' });
-                removeClass([this.inputWrapper.container], ERROR);
+            if (this.formElement && e.target === this.formElement) {
+                this.value = null;
+                if (this.inputElement) {
+                    Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
+                    attributes(this.inputElement, { 'aria-invalid': 'false' });
+                    removeClass([this.inputWrapper.container], ERROR);
+                }
             }
         }
     };
@@ -3610,12 +3612,14 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         this.clearRange();
         this.hide(e);
     };
-    DateRangePicker.prototype.formResetHandler = function () {
-        this.value = null;
-        if (this.inputElement) {
-            Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
-            attributes(this.inputElement, { 'aria-invalid': 'false' });
-            removeClass([this.inputWrapper.container], ERROR$1);
+    DateRangePicker.prototype.formResetHandler = function (e) {
+        if (this.formElement && e.target === this.formElement) {
+            this.value = null;
+            if (this.inputElement) {
+                Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
+                attributes(this.inputElement, { 'aria-invalid': 'false' });
+                removeClass([this.inputWrapper.container], ERROR$1);
+            }
         }
     };
     DateRangePicker.prototype.clear = function () {

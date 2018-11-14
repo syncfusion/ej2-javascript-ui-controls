@@ -87,7 +87,7 @@ export class PdfExport {
         if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource) && pdfExportProperties.dataSource instanceof DataManager) {
             return new Promise((resolve: Function, reject: Function) => {
                 /* tslint:disable-next-line:no-any *//* tslint:disable-next-line:max-line-length */
-                new DataManager({ url: (pdfExportProperties.dataSource as DataManager).dataSource.url, adaptor: (pdfExportProperties.dataSource as DataManager).adaptor }).executeQuery(new Query()).then((returnType: any) => {
+                (<DataManager>pdfExportProperties.dataSource).executeQuery(new Query()).then((returnType: any) => {
                     this.init(parent);
                     if (!isNullOrUndefined(pdfDoc)) {
                         this.pdfDocument = <PdfDocument>pdfDoc;
@@ -626,7 +626,7 @@ export class PdfExport {
                         leastCaptionSummaryIndex = result.leastCaptionSummaryIndex;
                         /* tslint:disable-next-line:max-line-length */
                         let txt: NodeList = (templateFn[getEnumValue(CellType, cell.cellType)](row.data[cell.column.field ? cell.column.field : cell.column.columnName]));
-                        value.push((<Text>txt[0]).wholeText);
+                        value.push((<Text>txt[0]).textContent);
                         isEmpty = false;
                     } else {
                         /* tslint:disable-next-line:no-any */
@@ -781,6 +781,7 @@ export class PdfExport {
                     j += (args.colSpan - 1);
                 }
             }
+            this.parent.notify( events.exportRowDataBound, { type: 'pdf', rowObj: items });
         }
     }
     /* tslint:disable-next-line:no-any */

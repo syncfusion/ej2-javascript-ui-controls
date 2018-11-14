@@ -216,14 +216,14 @@ export class CheckBoxSelection {
             frameSpan.classList.add(CHECK);
             ariaState = 'true';
             if (selectAll) {
-                this.parent.selectAll(true);
+                this.parent.selectAllItems(true, e as MouseEvent);
                 this.setLocale(true);
             }
         } else if (state === 'uncheck' && (frameSpan.classList.contains(CHECK) || frameSpan.classList.contains(INDETERMINATE))) {
             removeClass([frameSpan], [CHECK, INDETERMINATE]);
             ariaState = 'false';
             if (selectAll) {
-                this.parent.selectAll(false);
+                this.parent.selectAllItems(false, e as MouseEvent);
                 this.setLocale();
             }
         }

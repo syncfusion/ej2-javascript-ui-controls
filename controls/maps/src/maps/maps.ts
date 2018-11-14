@@ -453,7 +453,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /** @private */
     public baseTileTranslatePoint: Point = new Point(0, 0);
     /** @private */
-    public isDevice: Boolean = Browser.isDevice;
+    public isDevice: Boolean = false;
     /** @private */
     public tileZoomLevel: number;
     /** @private */
@@ -482,6 +482,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Initializing pre-required values.
      */
     protected preRender(): void {
+
+        this.isDevice = Browser.isDevice;
 
         this.initPrivateVariable();
 

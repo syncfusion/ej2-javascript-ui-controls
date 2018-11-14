@@ -863,10 +863,10 @@ function getCustomDateFormat(format, colType) {
     return formatvalue;
 }
 function extendObjWithFn(copied, first, second, deep) {
-    var result = copied || {};
-    var length = arguments.length;
+    var res = copied || {};
+    var len = arguments.length;
     if (deep) {
-        length = length - 1;
+        len = len - 1;
     }
     var _loop_1 = function (i) {
         if (!arguments_1[i]) {
@@ -876,29 +876,29 @@ function extendObjWithFn(copied, first, second, deep) {
         var keys = Object.keys(Object.getPrototypeOf(obj1)).length ?
             Object.keys(obj1).concat(Object.keys(Object.getPrototypeOf(obj1))) : Object.keys(obj1);
         keys.forEach(function (key) {
-            var src = result[key];
-            var copy = obj1[key];
-            var clone;
-            if (deep && (isObject(copy) || Array.isArray(copy))) {
-                if (isObject(copy)) {
-                    clone = src ? src : {};
-                    result[key] = extend({}, clone, copy, deep);
+            var source = res[key];
+            var cpy = obj1[key];
+            var cln;
+            if (deep && (isObject(cpy) || Array.isArray(cpy))) {
+                if (isObject(cpy)) {
+                    cln = source ? source : {};
+                    res[key] = extend({}, cln, cpy, deep);
                 }
                 else {
-                    clone = src ? src : [];
-                    result[key] = extend([], clone, copy, deep);
+                    cln = source ? source : [];
+                    res[key] = extend([], cln, cpy, deep);
                 }
             }
             else {
-                result[key] = copy;
+                res[key] = cpy;
             }
         });
     };
     var arguments_1 = arguments;
-    for (var i = 1; i < length; i++) {
+    for (var i = 1; i < len; i++) {
         _loop_1(i);
     }
-    return result;
+    return res;
 }
 
 /** @hidden */
@@ -1218,6 +1218,10 @@ var recordAdded = 'recordAdded';
 var cancelBegin = 'cancel-Begin';
 /** @hidden */
 var editNextValCell = 'editNextValCell';
+/** @hidden */
+var printGridInit = 'printGrid-Init';
+/** @hidden */
+var exportRowDataBound = 'export-RowDataBound';
 
 /**
  * Defines types of Cell
@@ -1746,7 +1750,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         return query;
     };
     CheckBoxFilter.prototype.getAllData = function () {
-        var query = this.parent.query.clone();
+        var query = this.parent.getQuery().clone();
         query.requiresCount(); //consider take query
         this.addDistinct(query);
         var args = {
@@ -2118,6 +2122,7 @@ var Data = /** @__PURE__ @class */ (function () {
      */
     Data.prototype.generateQuery = function (skipPage) {
         var gObj = this.parent;
+        gObj.query = gObj.getQuery().clone();
         var query = gObj.query.clone();
         if (this.parent.columnQueryMode === 'ExcludeHidden') {
             query.select(this.parent.getColumns().filter(function (column) { return !(column.isPrimaryKey !== true && column.visible === false || column.field === undefined); }).map(function (column) { return column.field; }));
@@ -3416,9 +3421,18 @@ var ContentRender = /** @__PURE__ @class */ (function () {
             mCont.querySelector('tbody').innerHTML = '';
         }
         var idx = modelData[0].cells[0].index;
-        // tslint:disable-next-line:no-any
+        /* tslint:disable:no-any */
         if (this.parent.registeredTemplate && this.parent.registeredTemplate.template && !args.isFrozen) {
-            this.parent.destroyTemplate(['template']);
+            var templatetoclear = [];
+            for (var i = 0; i < this.parent.registeredTemplate.template.length; i++) {
+                for (var j = 0; j < this.parent.registeredTemplate.template[i].rootNodes.length; j++) {
+                    if (isNullOrUndefined(this.parent.registeredTemplate.template[i].rootNodes[j].parentNode)) {
+                        templatetoclear.push(this.parent.registeredTemplate.template[i]);
+                        /* tslint:enable:no-any */
+                    }
+                }
+            }
+            this.parent.destroyTemplate(['template'], templatetoclear);
         }
         if (this.parent.enableColumnVirtualization) {
             var cellMerge = new CellMergeRender(this.serviceLocator, this.parent);
@@ -4858,12 +4872,7 @@ var GroupCaptionCellRenderer = /** @__PURE__ @class */ (function (_super) {
         var value = cell.isForeignKey ? fKeyValue : cell.column.enableGroupByFormat ? data.key :
             this.format(cell.column, cell.column.valueAccessor('key', data, cell.column));
         if (!isNullOrUndefined(gObj.groupSettings.captionTemplate)) {
-            if (gObj.groupSettings.captionTemplate.indexOf('#') !== -1) {
-                result = templateCompiler(document.querySelector(gObj.groupSettings.captionTemplate).innerHTML.trim())(data);
-            }
-            else {
-                result = templateCompiler(gObj.groupSettings.captionTemplate)(data);
-            }
+            result = templateCompiler(gObj.groupSettings.captionTemplate)(data);
             appendChildren(node, result);
         }
         else {
@@ -5131,18 +5140,22 @@ var Render = /** @__PURE__ @class */ (function () {
             var deffered = new Deferred();
             dataManager = this.getFData(deffered);
         }
+        var query;
         if (!dataManager) {
-            dataManager = this.data.getData(args, this.data.generateQuery().requiresCount());
+            query = this.data.generateQuery();
+            dataManager = this.data.getData(args, query.requiresCount());
+            this.parent.query.queries = query.queries;
         }
         else {
             dataManager = dataManager.then(function (e) {
-                var query = _this.data.generateQuery().requiresCount();
+                query = _this.data.generateQuery();
                 if (_this.emptyGrid) {
                     var def = new Deferred();
                     def.resolve({ result: [], count: 0 });
                     return def.promise;
                 }
-                return _this.data.getData(args, query);
+                _this.parent.query.queries = query.queries;
+                return _this.data.getData(args, query.requiresCount());
             });
         }
         if (this.parent.getForeignKeyColumns().length && (!isFActon || this.parent.searchSettings.key.length)) {
@@ -5267,6 +5280,7 @@ var Render = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    /** @hidden */
     Render.prototype.dataManagerSuccess = function (e, args) {
         var gObj = this.parent;
         gObj.trigger(beforeDataBound, e);
@@ -6661,7 +6675,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         EventHandler.remove(this.parent.getContent(), 'mousedown', this.mouseDownHandler);
     };
     Selection.prototype.isEditing = function () {
-        return (this.parent.editSettings.mode === 'Normal' || (this.parent.editSettings.mode === 'Batch' &&
+        return (this.parent.editSettings.mode === 'Normal' || (this.parent.editSettings.mode === 'Batch' && this.parent.editModule &&
             this.parent.editModule.formObj && !this.parent.editModule.formObj.validate())) &&
             this.parent.isEdit && !this.parent.isPersistSelection;
     };
@@ -6676,7 +6690,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         var gObj = this.parent;
         var added = 'addedRecords';
         var deleted = 'deletedRecords';
-        if (gObj.editSettings.mode === 'Batch') {
+        if (gObj.editSettings.mode === 'Batch' && gObj.editModule) {
             var currentRecords = iterateExtend(this.parent.getCurrentViewRecords());
             currentRecords = this.parent.editModule.getBatchChanges()[added].concat(currentRecords);
             var deletedRecords = this.parent.editModule.getBatchChanges()[deleted];
@@ -6702,6 +6716,10 @@ var Selection = /** @__PURE__ @class */ (function () {
      * @return {void}
      */
     Selection.prototype.selectRow = function (index, isToggle) {
+        if (this.selectedRowIndexes.length && this.selectionSettings.enableSimpleMultiRowSelection) {
+            this.addRowsToSelection([index]);
+            return;
+        }
         var gObj = this.parent;
         var selectedRow = gObj.getRowByIndex(index);
         var selectedMovableRow = this.getSelectedMovableRow(index);
@@ -6725,7 +6743,8 @@ var Selection = /** @__PURE__ @class */ (function () {
             args = {
                 data: selectData, rowIndex: index, isCtrlPressed: this.isMultiCtrlRequest,
                 isShiftPressed: this.isMultiShiftRequest, row: selectedRow,
-                previousRow: gObj.getRowByIndex(this.prevRowIndex), previousRowIndex: this.prevRowIndex, target: this.target, cancel: false
+                previousRow: gObj.getRowByIndex(this.prevRowIndex),
+                previousRowIndex: this.prevRowIndex, target: this.actualTarget, cancel: false
             };
             args = this.addMovableArgs(args, selectedMovableRow);
             this.onActionBegin(args, rowSelecting);
@@ -6747,7 +6766,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             args = {
                 data: selectData, rowIndex: index,
                 row: selectedRow, previousRow: gObj.getRowByIndex(this.prevRowIndex),
-                previousRowIndex: this.prevRowIndex, target: this.target
+                previousRowIndex: this.prevRowIndex, target: this.actualTarget
             };
             args = this.addMovableArgs(args, selectedMovableRow);
             this.onActionComplete(args, rowSelected);
@@ -6788,7 +6807,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             return;
         }
         var args = {
-            rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.target,
+            rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.actualTarget,
             prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
             isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
             data: selectedData
@@ -6818,7 +6837,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             this.updateRowProps(rowIndex);
         }
         args = {
-            rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.target,
+            rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.actualTarget,
             prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
             data: selectedData
         };
@@ -6864,7 +6883,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             }
             else {
                 args = {
-                    data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this.target,
+                    data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this.actualTarget,
                     prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
                     isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
                     foreignKeyData: rowObj.foreignKeyData
@@ -6884,7 +6903,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             }
             if (!isUnSelected) {
                 args = {
-                    data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this.target,
+                    data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this.actualTarget,
                     prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
                     foreignKeyData: rowObj.foreignKeyData
                 };
@@ -7070,8 +7089,10 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.rowDeselect = function (type, rowIndex, data, row, foreignKeyData$$1, target, mRow) {
         var cancl = 'cancel';
         this.updatePersistCollection(row[0], false);
-        var rowDeselectObj = { rowIndex: rowIndex, data: data, row: row, foreignKeyData: foreignKeyData$$1,
-            cancel: false, target: target };
+        var rowDeselectObj = {
+            rowIndex: rowIndex, data: data, row: row, foreignKeyData: foreignKeyData$$1,
+            cancel: false, target: target
+        };
         this.parent.trigger(type, this.parent.getFrozenColumns() ? __assign({}, rowDeselectObj, { mRow: mRow }) : rowDeselectObj);
         this.isCancelDeSelect = rowDeselectObj[cancl];
         this.updateCheckBoxes(row[0]);
@@ -7585,7 +7606,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (e.shiftKey || e.ctrlKey) {
             e.preventDefault();
         }
-        if (target.classList.contains('e-rowcell') && !e.shiftKey && !e.ctrlKey) {
+        if (parentsUntil(target, 'e-rowcell') && !e.shiftKey && !e.ctrlKey) {
             if (gObj.selectionSettings.cellSelectionMode === 'Box' && !this.isRowType() && !this.isSingleSel()) {
                 this.isCellDrag = true;
                 isDrag = true;
@@ -8058,6 +8079,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     };
     Selection.prototype.clickHandler = function (e) {
         var target = e.target;
+        this.actualTarget = target;
         this.isMultiCtrlRequest = e.ctrlKey || this.enableSelectMultiTouch;
         this.isMultiShiftRequest = e.shiftKey;
         this.popUpClickHandler(e);
@@ -8082,7 +8104,6 @@ var Selection = /** @__PURE__ @class */ (function () {
                 }
                 else {
                     this.checkSelect(checkBox);
-                    this.target = closest(target, '.e-rowcell');
                 }
             }
             else {
@@ -8125,9 +8146,11 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
     };
     Selection.prototype.showPopup = function (e) {
-        setCssInGridPopUp(this.parent.element.querySelector('.e-gridpopup'), e, 'e-rowselect e-icons e-icon-rowselect' +
-            (!this.isSingleSel() && (this.selectedRecords.length > (this.parent.getFrozenColumns() ? 2 : 1)
-                || this.selectedRowCellIndexes.length > 1) ? ' e-spanclicked' : ''));
+        if (!this.selectionSettings.enableSimpleMultiRowSelection) {
+            setCssInGridPopUp(this.parent.element.querySelector('.e-gridpopup'), e, 'e-rowselect e-icons e-icon-rowselect' +
+                (!this.isSingleSel() && (this.selectedRecords.length > (this.parent.getFrozenColumns() ? 2 : 1)
+                    || this.selectedRowCellIndexes.length > 1) ? ' e-spanclicked' : ''));
+        }
     };
     Selection.prototype.rowCellSelectionHandler = function (rowIndex, cellIndex) {
         if ((!this.isMultiCtrlRequest && !this.isMultiShiftRequest) || this.isSingleSel()) {
@@ -8137,7 +8160,8 @@ var Selection = /** @__PURE__ @class */ (function () {
             this.selectCell({ rowIndex: rowIndex, cellIndex: cellIndex }, true);
         }
         else if (this.isMultiShiftRequest) {
-            if (this.parent.isCheckBoxSelection || (!this.parent.isCheckBoxSelection && !this.target.classList.contains('e-gridchkbox'))) {
+            if (this.parent.isCheckBoxSelection || (!this.parent.isCheckBoxSelection &&
+                !closest(this.target, '.e-rowcell').classList.contains('e-gridchkbox'))) {
                 this.selectRowsByRange(isUndefined(this.prevRowIndex) ? rowIndex : this.prevRowIndex, rowIndex);
             }
             else {
@@ -9078,6 +9102,8 @@ var Print = /** @__PURE__ @class */ (function () {
             }
         }
         var printGrid = new Grid(printGridModel);
+        printGrid.query = gObj.getQuery().clone();
+        gObj.notify(printGridInit, { element: element, printgrid: printGrid });
         printGrid.appendTo(element);
         printGrid.registeredTemplate = this.parent.registeredTemplate;
         printGrid[this.printing] = true;
@@ -9677,6 +9703,9 @@ var SelectionSettings = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property('Default')
     ], SelectionSettings.prototype, "checkboxMode", void 0);
+    __decorate([
+        Property(false)
+    ], SelectionSettings.prototype, "enableSimpleMultiRowSelection", void 0);
     return SelectionSettings;
 }(ChildProperty));
 /**
@@ -10172,6 +10201,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         prepareColumns(this.columns, this.enableColumnVirtualization);
         this.getColumns();
         this.processModel();
+        this.commonQuery = this.query.clone();
         this.gridRender();
         this.wireEvents();
         this.addListener();
@@ -10441,15 +10471,15 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                     this.scrollModule.removePadding(!newProp.enableRtl);
                     this.scrollModule.setPadding();
                 }
-                if (this.toolbar) {
+                if (this.toolbar && this.toolbarModule) {
                     this.toolbarModule.getToolbar().ej2_instances[0].enableRtl = newProp.enableRtl;
                     this.toolbarModule.getToolbar().ej2_instances[0].dataBind();
                 }
-                if (this.contextMenuItems) {
+                if (this.contextMenuItems && this.contextMenuModule) {
                     this.contextMenuModule.getContextMenu().ej2_instances[0].enableRtl = newProp.enableRtl;
                     this.contextMenuModule.getContextMenu().ej2_instances[0].dataBind();
                 }
-                if (this.showColumnMenu) {
+                if (this.showColumnMenu && this.columnMenuModule) {
                     this.columnMenuModule.getColumnMenu().ej2_instances[0].enableRtl = newProp.enableRtl;
                     this.columnMenuModule.getColumnMenu().ej2_instances[0].dataBind();
                 }
@@ -10621,6 +10651,12 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      */
     Grid.prototype.getColumnIndexesInView = function () {
         return this.inViewIndexes;
+    };
+    /**
+     * @private
+     */
+    Grid.prototype.getQuery = function () {
+        return this.commonQuery;
     };
     /**
      * @private
@@ -11206,7 +11242,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @return {number[]}
      */
     Grid.prototype.getSelectedRowCellIndexes = function () {
-        return this.selectionModule.selectedRowCellIndexes;
+        return this.selectionModule ? this.selectionModule.selectedRowCellIndexes : [];
     };
     /**
      * Gets the collection of selected records.
@@ -11296,7 +11332,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     Grid.prototype.goToPage = function (pageNo) {
-        this.pagerModule.goToPage(pageNo);
+        if (this.pagerModule) {
+            this.pagerModule.goToPage(pageNo);
+        }
     };
     /**
      * Defines the text of external message.
@@ -11304,7 +11342,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     Grid.prototype.updateExternalMessage = function (message) {
-        this.pagerModule.updateExternalMessage(message);
+        if (this.pagerModule) {
+            this.pagerModule.updateExternalMessage(message);
+        }
     };
     /**
      * Sorts a column with the given options.
@@ -11314,14 +11354,18 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     Grid.prototype.sortColumn = function (columnName, direction, isMultiSort) {
-        this.sortModule.sortColumn(columnName, direction, isMultiSort);
+        if (this.sortModule) {
+            this.sortModule.sortColumn(columnName, direction, isMultiSort);
+        }
     };
     /**
      * Clears all the sorted columns of the Grid.
      * @return {void}
      */
     Grid.prototype.clearSorting = function () {
-        this.sortModule.clearSorting();
+        if (this.sortModule) {
+            this.sortModule.clearSorting();
+        }
     };
     /**
      * Remove sorted column by field name.
@@ -11330,7 +11374,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @hidden
      */
     Grid.prototype.removeSortColumn = function (field) {
-        this.sortModule.removeSortColumn(field);
+        if (this.sortModule) {
+            this.sortModule.removeSortColumn(field);
+        }
     };
     /**
      * Filters grid row by column name with the given options.
@@ -11347,14 +11393,18 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     Grid.prototype.filterByColumn = function (fieldName, filterOperator, filterValue, predicate, matchCase, ignoreAccent, actualFilterValue, actualOperator) {
-        this.filterModule.filterByColumn(fieldName, filterOperator, filterValue, predicate, matchCase, ignoreAccent, actualFilterValue, actualOperator);
+        if (this.filterModule) {
+            this.filterModule.filterByColumn(fieldName, filterOperator, filterValue, predicate, matchCase, ignoreAccent, actualFilterValue, actualOperator);
+        }
     };
     /**
      * Clears all the filtered rows of the Grid.
      * @return {void}
      */
     Grid.prototype.clearFiltering = function () {
-        this.filterModule.clearFiltering();
+        if (this.filterModule) {
+            this.filterModule.clearFiltering();
+        }
     };
     /**
      * Removes filtered column by field name.
@@ -11364,7 +11414,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @hidden
      */
     Grid.prototype.removeFilteredColsByField = function (field, isClearFilterBar) {
-        this.filterModule.removeFilteredColsByField(field, isClearFilterBar);
+        if (this.filterModule) {
+            this.filterModule.removeFilteredColsByField(field, isClearFilterBar);
+        }
     };
     /**
      * Selects a row by given index.
@@ -11373,7 +11425,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     Grid.prototype.selectRow = function (index, isToggle) {
-        this.selectionModule.selectRow(index, isToggle);
+        if (this.selectionModule) {
+            this.selectionModule.selectRow(index, isToggle);
+        }
     };
     /**
      * Selects a collection of rows by indexes.
@@ -11381,14 +11435,18 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     Grid.prototype.selectRows = function (rowIndexes) {
-        this.selectionModule.selectRows(rowIndexes);
+        if (this.selectionModule) {
+            this.selectionModule.selectRows(rowIndexes);
+        }
     };
     /**
      * Deselects the current selected rows and cells.
      * @return {void}
      */
     Grid.prototype.clearSelection = function () {
-        this.selectionModule.clearSelection();
+        if (this.selectionModule) {
+            this.selectionModule.clearSelection();
+        }
     };
     /**
      * Selects a cell by the given index.
@@ -11397,7 +11455,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     Grid.prototype.selectCell = function (cellIndex, isToggle) {
-        this.selectionModule.selectCell(cellIndex, isToggle);
+        if (this.selectionModule) {
+            this.selectionModule.selectCell(cellIndex, isToggle);
+        }
     };
     /**
      * Searches Grid records using the given key.
@@ -11407,7 +11467,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     Grid.prototype.search = function (searchString) {
-        this.searchModule.search(searchString);
+        if (this.searchModule) {
+            this.searchModule.search(searchString);
+        }
     };
     /**
      * By default, prints all the pages of the Grid and hides the pager.
@@ -11416,7 +11478,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     Grid.prototype.print = function () {
-        this.printModule.print();
+        if (this.printModule) {
+            this.printModule.print();
+        }
     };
     /**
      * Delete a record with Given options. If fieldname and data is not given then grid will delete the selected record.
@@ -11425,26 +11489,34 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @param {Object} data - Defines the JSON data of the record to be deleted.
      */
     Grid.prototype.deleteRecord = function (fieldname, data) {
-        this.editModule.deleteRecord(fieldname, data);
+        if (this.editModule) {
+            this.editModule.deleteRecord(fieldname, data);
+        }
     };
     /**
      * To edit any particular row by TR element.
      * @param {HTMLTableRowElement} tr - Defines the table row to be edited.
      */
     Grid.prototype.startEdit = function () {
-        this.editModule.startEdit();
+        if (this.editModule) {
+            this.editModule.startEdit();
+        }
     };
     /**
      * If Grid is in editable state, you can save a record by invoking endEdit.
      */
     Grid.prototype.endEdit = function () {
-        this.editModule.endEdit();
+        if (this.editModule) {
+            this.editModule.endEdit();
+        }
     };
     /**
      * Cancels edited state.
      */
     Grid.prototype.closeEdit = function () {
-        this.editModule.closeEdit();
+        if (this.editModule) {
+            this.editModule.closeEdit();
+        }
     };
     /**
      * Adds a new record to the Grid. Without passing parameters, it adds empty rows.
@@ -11453,21 +11525,27 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @param {number} index - Defines the row index to be added
      */
     Grid.prototype.addRecord = function (data, index) {
-        this.editModule.addRecord(data, index);
+        if (this.editModule) {
+            this.editModule.addRecord(data, index);
+        }
     };
     /**
      * Delete any visible row by TR element.
      * @param {HTMLTableRowElement} tr - Defines the table row element.
      */
     Grid.prototype.deleteRow = function (tr) {
-        this.editModule.deleteRow(tr);
+        if (this.editModule) {
+            this.editModule.deleteRow(tr);
+        }
     };
     /**
      * Copy the selected rows or cells data into clipboard.
      * @param {boolean} withHeader - Specifies whether the column header text needs to be copied along with rows or cells.
      */
     Grid.prototype.copy = function (withHeader) {
-        this.clipboardModule.copy(withHeader);
+        if (this.clipboardModule) {
+            this.clipboardModule.copy(withHeader);
+        }
     };
     /**
      * @hidden
@@ -11512,7 +11590,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     Grid.prototype.reorderColumns = function (fromFName, toFName) {
-        this.reorderModule.reorderColumns(fromFName, toFName);
+        if (this.reorderModule) {
+            this.reorderModule.reorderColumns(fromFName, toFName);
+        }
     };
     /**
      * Changes the column width to automatically fit its content to ensure that the width shows the content without wrapping/hiding.
@@ -11538,13 +11618,17 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      *
      */
     Grid.prototype.autoFitColumns = function (fieldNames) {
-        this.resizeModule.autoFitColumns(fieldNames);
+        if (this.resizeModule) {
+            this.resizeModule.autoFitColumns(fieldNames);
+        }
     };
     /**
      * @hidden
      */
     Grid.prototype.createColumnchooser = function (x, y, target) {
-        this.columnChooserModule.renderColumnChooser(x, y, target);
+        if (this.columnChooserModule) {
+            this.columnChooserModule.renderColumnChooser(x, y, target);
+        }
     };
     Grid.prototype.initializeServices = function () {
         this.serviceLocator.register('widthService', this.widthService = new ColumnWidthService(this));
@@ -11755,6 +11839,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     Grid.prototype.mouseMoveHandler = function (e) {
         if (this.isEllipsisTooltip()) {
             var element = parentsUntil(e.target, 'e-ellipsistooltip');
+            this.toolTipObj.close();
             if (element) {
                 if (element.getAttribute('aria-describedby')) {
                     return;
@@ -11768,12 +11853,6 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                     }
                     this.toolTipObj.open(element);
                 }
-                else {
-                    this.toolTipObj.close();
-                }
-            }
-            else {
-                this.toolTipObj.close();
             }
         }
     };
@@ -12067,7 +12146,8 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     Grid.prototype.excelExport = function (excelExportProperties, isMultipleExport, 
     /* tslint:disable-next-line:no-any */
     workbook, isBlob) {
-        return this.excelExportModule.Map(this, excelExportProperties, isMultipleExport, workbook, false, isBlob);
+        return this.excelExportModule ?
+            this.excelExportModule.Map(this, excelExportProperties, isMultipleExport, workbook, false, isBlob) : null;
     };
     /**
      * Export Grid data to CSV file.
@@ -12081,7 +12161,8 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     Grid.prototype.csvExport = function (excelExportProperties, 
     /* tslint:disable-next-line:no-any */
     isMultipleExport, workbook, isBlob) {
-        return this.excelExportModule.Map(this, excelExportProperties, isMultipleExport, workbook, true, isBlob);
+        return this.excelExportModule ?
+            this.excelExportModule.Map(this, excelExportProperties, isMultipleExport, workbook, true, isBlob) : null;
     };
     /**
      * Export Grid data to PDF document.
@@ -12095,7 +12176,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     Grid.prototype.pdfExport = function (pdfExportProperties, 
     /* tslint:disable-next-line:no-any */
     isMultipleExport, pdfDoc, isBlob) {
-        return this.pdfExportModule.Map(this, pdfExportProperties, isMultipleExport, pdfDoc, isBlob);
+        return this.pdfExportModule ? this.pdfExportModule.Map(this, pdfExportProperties, isMultipleExport, pdfDoc, isBlob) : null;
     };
     /**
      * Groups a column by column name.
@@ -12103,7 +12184,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     Grid.prototype.groupColumn = function (columnName) {
-        this.groupModule.groupColumn(columnName);
+        if (this.groupModule) {
+            this.groupModule.groupColumn(columnName);
+        }
     };
     /**
      * Ungroups a column by column name.
@@ -12111,7 +12194,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     Grid.prototype.ungroupColumn = function (columnName) {
-        this.groupModule.ungroupColumn(columnName);
+        if (this.groupModule) {
+            this.groupModule.ungroupColumn(columnName);
+        }
     };
     /**
      * @hidden
@@ -12129,8 +12214,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * Destroys the given template reference.
      * @param {string[]} propertyNames - Defines the collection of template name.
      */
-    Grid.prototype.destroyTemplate = function (propertyNames) {
-        this.clearTemplate(propertyNames);
+    //tslint:disable-next-line:no-any
+    Grid.prototype.destroyTemplate = function (propertyNames, index) {
+        this.clearTemplate(propertyNames, index);
     };
     __decorate([
         Property([])
@@ -13453,7 +13539,7 @@ var Pager = /** @__PURE__ @class */ (function (_super) {
                     this.refresh();
                     break;
                 case 'pageSizes':
-                    if (this.checkpagesizes()) {
+                    if (this.checkpagesizes() && this.pagerdropdownModule) {
                         this.pagerdropdownModule.destroy();
                         this.pagerdropdownModule.render();
                     }
@@ -15395,7 +15481,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         var actObj = new AutoComplete({
             dataSource: dataSource instanceof DataManager ? dataSource : new DataManager(dataSource),
             fields: fields,
-            query: this.parent.query.clone(),
+            query: this.parent.getQuery().clone(),
             sortOrder: 'Ascending',
             locale: this.parent.locale,
             autofill: true,
@@ -19569,7 +19655,9 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         if (this.parent.groupSettings.columns.length) {
             this.refreshOffsets();
         }
-        var translate = this.getTranslateY(this.content.scrollTop, this.content.getBoundingClientRect().height, info);
+        var vHeight = this.parent.height.toString().indexOf('%') < 0 ? this.parent.height :
+            this.parent.element.getBoundingClientRect().height;
+        var translate = this.getTranslateY(this.content.scrollTop, vHeight, info);
         this.virtualEle.adjustTable(cOffset, translate);
         if (this.parent.enableColumnVirtualization) {
             this.header.virtualEle.adjustTable(cOffset, 0);
@@ -19841,7 +19929,9 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
     };
     VirtualScroll.prototype.ensurePageSize = function () {
         var rowHeight = this.parent.getRowHeight();
-        this.blockSize = ~~(this.parent.height / rowHeight);
+        var vHeight = this.parent.height.toString().indexOf('%') < 0 ? this.parent.height :
+            this.parent.element.getBoundingClientRect().height;
+        this.blockSize = ~~(vHeight / rowHeight);
         var height = this.blockSize * 2;
         var size = this.parent.pageSettings.pageSize;
         this.parent.setProperties({ pageSettings: { pageSize: size < height ? height : size } }, true);
@@ -20160,18 +20250,18 @@ var DialogEditRender = /** @__PURE__ @class */ (function () {
         this.dialog = this.parent.createElement('div', { id: gObj.element.id + '_dialogEdit_wrapper', styles: 'width: auto' });
         gObj.element.appendChild(this.dialog);
         this.setLocaleObj();
-        var position = this.parent.element.getBoundingClientRect().height < 400 ?
-            { X: 'center', Y: 'top' } : { X: 'center', Y: 'center' };
+        // let position: PositionDataModel = this.parent.element.getBoundingClientRect().height < 400 ?
+        //     { X: 'center', Y: 'top' } : { X: 'center', Y: 'center' };
         this.dialogObj = args.dialog = new Dialog({
             header: this.isEdit ? this.l10n.getConstant('EditFormTitle') + args.primaryKeyValue[0] :
                 this.l10n.getConstant('AddFormTitle'), isModal: true, visible: true, cssClass: 'e-edit-dialog',
             content: this.getEditElement(elements, args),
             showCloseIcon: true,
             allowDragging: true,
-            position: position,
+            // position: position,
             close: this.dialogClose.bind(this),
             closeOnEscape: true, width: gObj.editSettings.template ? 'auto' : '330px',
-            target: gObj.element, animationSettings: { effect: 'None' },
+            target: args.target ? args.target : document.body, animationSettings: { effect: 'None' },
             buttons: [{
                     click: this.btnClick.bind(this),
                     buttonModel: { content: this.l10n.getConstant('SaveButton'), cssClass: 'e-primary', isPrimary: true }
@@ -20280,7 +20370,9 @@ var EditRender = /** @__PURE__ @class */ (function () {
         var value;
         var fForm;
         var frzCols = gObj.getFrozenColumns();
-        var form = gObj.element.querySelector('.e-gridform');
+        var form = gObj.editSettings.mode === 'Dialog' ?
+            document.querySelector('#' + gObj.element.id + '_dialogEdit_wrapper').querySelector('.e-gridform') :
+            gObj.element.querySelector('.e-gridform');
         if (frzCols && gObj.editSettings.mode === 'Normal') {
             var rowIndex = parseInt(args.row.getAttribute('aria-rowindex'), 10);
             if (gObj.frozenRows && (args.requestType === 'add' || rowIndex < gObj.frozenRows)) {
@@ -20548,7 +20640,7 @@ var DropDownEditCell = /** @__PURE__ @class */ (function () {
     DropDownEditCell.prototype.dropDownOpen = function (args) {
         var dlgElement = parentsUntil(this.obj.element, 'e-dialog');
         if (this.parent.editSettings.mode === 'Dialog' && !isNullOrUndefined(dlgElement)) {
-            var dlgObj = this.parent.element.querySelector('#' + dlgElement.id).ej2_instances[0];
+            var dlgObj = document.querySelector('#' + dlgElement.id).ej2_instances[0];
             args.popup.element.style.zIndex = (dlgObj.zIndex + 1).toString();
         }
     };
@@ -20710,7 +20802,7 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
         var args = {
             row: tr, primaryKey: primaryKeys, primaryKeyValue: primaryKeyValues, requestType: 'beginEdit',
             rowData: this.previousData, rowIndex: this.rowIndex, type: 'edit', cancel: false,
-            foreignKeyData: rowObj && rowObj.foreignKeyData
+            foreignKeyData: rowObj && rowObj.foreignKeyData, target: undefined
         };
         gObj.trigger(beginEdit, args);
         args.type = 'actionBegin';
@@ -20722,7 +20814,7 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
         if (gObj.editSettings.mode !== 'Dialog') {
             gObj.clearSelection();
         }
-        if (gObj.editSettings.mode === 'Dialog') {
+        if (gObj.editSettings.mode === 'Dialog' && gObj.selectionModule) {
             gObj.selectionModule.preventFocus = true;
             args.row.classList.add('e-dlgeditrow');
         }
@@ -20762,7 +20854,10 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
             requestType: 'save', type: actionBegin, data: editedData, cancel: false,
             previousData: this.previousData, selectedRow: gObj.selectedRowIndex, foreignKeyData: {}
         });
-        editedData = gObj.editModule.getCurrentEditedData(gObj.element.querySelector('.e-gridform'), editedData);
+        var isDlg = gObj.editSettings.mode === 'Dialog';
+        var dlgWrapper = document.querySelector('#' + gObj.element.id + '_dialogEdit_wrapper');
+        var dlgForm = isDlg ? dlgWrapper.querySelector('.e-gridform') : gObj.element.querySelector('.e-gridform');
+        editedData = gObj.editModule.getCurrentEditedData(dlgForm, editedData);
         if (gObj.getFrozenColumns() && gObj.editSettings.mode === 'Normal') {
             var mForm = gObj.element.querySelector('.e-movableheader').querySelector('.e-gridform');
             if (gObj.frozenRows && mForm) {
@@ -20772,7 +20867,8 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
                 editedData = gObj.editModule.getCurrentEditedData(gObj.element.querySelector('.e-movablecontent').querySelector('.e-gridform'), editedData);
             }
         }
-        if (gObj.element.querySelectorAll('.e-editedrow').length) {
+        if (isDlg ? dlgWrapper.querySelectorAll('.e-editedrow').length :
+            gObj.element.querySelectorAll('.e-editedrow').length) {
             args.action = 'edit';
             gObj.trigger(actionBegin, args);
             if (args.cancel) {
@@ -20921,7 +21017,7 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
         var args = {
             cancel: false, foreignKeyData: {},
             requestType: 'add', data: this.previousData, type: actionBegin, index: index,
-            rowData: this.previousData
+            rowData: this.previousData, target: undefined
         };
         gObj.trigger(actionBegin, args);
         if (args.cancel) {
@@ -21425,44 +21521,50 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         if (args.cancel) {
             return;
         }
-        gObj.clearSelection();
-        var uid = args.row.getAttribute('data-uid');
-        if (args.row.classList.contains('e-insertedrow')) {
-            this.removeRowObjectFromUID(uid);
-            remove(args.row);
-        }
-        else {
-            var rowObj = gObj.getRowObjectFromUID(uid);
-            rowObj.isDirty = true;
-            rowObj.edit = 'delete';
-            classList(args.row, ['e-hiddenrow', 'e-updatedtd'], []);
-            if (gObj.getFrozenColumns()) {
-                classList(data ? gObj.getMovableRows()[index] : selectedRows[1], ['e-hiddenrow', 'e-updatedtd'], []);
-                if (gObj.frozenRows && index < gObj.frozenRows) {
-                    gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody')
-                        .appendChild(gObj.getMovableRowByIndex(gObj.frozenRows - 1));
-                    gObj.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody')
-                        .appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
+        if (this.parent.frozenColumns || selectedRows.length === 1) {
+            var uid = args.row.getAttribute('data-uid');
+            if (args.row.classList.contains('e-insertedrow')) {
+                this.removeRowObjectFromUID(uid);
+                remove(args.row);
+            }
+            else {
+                var rowObj = gObj.getRowObjectFromUID(uid);
+                rowObj.isDirty = true;
+                rowObj.edit = 'delete';
+                classList(args.row, ['e-hiddenrow', 'e-updatedtd'], []);
+                if (gObj.getFrozenColumns()) {
+                    classList(data ? gObj.getMovableRows()[index] : selectedRows[1], ['e-hiddenrow', 'e-updatedtd'], []);
+                    if (gObj.frozenRows && index < gObj.frozenRows) {
+                        gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody')
+                            .appendChild(gObj.getMovableRowByIndex(gObj.frozenRows - 1));
+                        gObj.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody')
+                            .appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
+                    }
+                }
+                else if (gObj.frozenRows && index < gObj.frozenRows) {
+                    gObj.getHeaderContent().querySelector('tbody').appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
                 }
             }
-            else if (gObj.frozenRows && index < gObj.frozenRows) {
-                gObj.getHeaderContent().querySelector('tbody').appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
-            }
-        }
-        if (!this.parent.frozenColumns && selectedRows.length > 1) {
-            for (var i = 0; i < selectedRows.length; i++) {
-                classList(selectedRows[i], ['e-hiddenrow', 'e-updatedtd'], []);
-                var uniqueid = selectedRows[i].getAttribute('data-uid');
-                var selectedRow = gObj.getRowObjectFromUID(uniqueid);
-                selectedRow.isDirty = true;
-                selectedRow.edit = 'delete';
-                delete selectedRows[i];
-            }
-        }
-        else {
             delete args.row;
         }
+        else {
+            for (var i = 0; i < selectedRows.length; i++) {
+                var uniqueid = selectedRows[i].getAttribute('data-uid');
+                if (selectedRows[i].classList.contains('e-insertedrow')) {
+                    this.removeRowObjectFromUID(uniqueid);
+                    remove(selectedRows[i]);
+                }
+                else {
+                    classList(selectedRows[i], ['e-hiddenrow', 'e-updatedtd'], []);
+                    var selectedRow = gObj.getRowObjectFromUID(uniqueid);
+                    selectedRow.isDirty = true;
+                    selectedRow.edit = 'delete';
+                    delete selectedRows[i];
+                }
+            }
+        }
         this.refreshRowIdx();
+        gObj.clearSelection();
         gObj.selectRow(index);
         gObj.trigger(batchDelete, args);
         gObj.notify(batchDelete, { rows: this.parent.getRowsObject() });
@@ -22303,8 +22405,11 @@ var Edit = /** @__PURE__ @class */ (function () {
                 break;
             case 'date':
             case 'datetime':
-                if (col.editType !== 'datepickeredit' && col.editType !== 'datetimepickeredit') {
-                    val = (value && value.length) ? new Date(value) : null;
+                if (col.editType !== 'datepickeredit' && col.editType !== 'datetimepickeredit' && value && value.length) {
+                    val = new Date(value);
+                }
+                else if (value === '') {
+                    val = null;
                 }
                 break;
         }
@@ -22628,7 +22733,9 @@ var Edit = /** @__PURE__ @class */ (function () {
     Edit.prototype.applyFormValidation = function (cols) {
         var gObj = this.parent;
         var frzCols = gObj.getFrozenColumns();
-        var form = gObj.element.querySelector('.e-gridform');
+        var form = this.parent.editSettings.mode !== 'Dialog' ?
+            gObj.element.querySelector('.e-gridform') :
+            document.querySelector('#' + gObj.element.id + '_dialogEdit_wrapper').querySelector('.e-gridform');
         var mForm = gObj.element.querySelectorAll('.e-gridform')[1];
         var rules = {};
         var mRules = {};
@@ -22683,7 +22790,7 @@ var Edit = /** @__PURE__ @class */ (function () {
                 > (parseInt(closest(inputElement, '.e-row').getAttribute('aria-rowindex'), 10) || 0));
         }
         return this.parent.editSettings.mode !== 'Dialog' ? isFHdr ? this.parent.getHeaderTable() : this.parent.getContentTable() :
-            this.parent.element.querySelector('#' + this.parent.element.id + '_dialogEdit_wrapper');
+            document.querySelector('#' + this.parent.element.id + '_dialogEdit_wrapper');
     };
     Edit.prototype.validationComplete = function (args) {
         if (this.parent.isEdit) {
@@ -22710,7 +22817,7 @@ var Edit = /** @__PURE__ @class */ (function () {
         var fCont = this.parent.getContent().querySelector('.e-frozencontent');
         var table = isInline ?
             (isFHdr ? this.parent.getHeaderTable() : this.parent.getContentTable()) :
-            this.parent.element.querySelector('#' + this.parent.element.id + '_dialogEdit_wrapper').querySelector('.e-dlg-content');
+            document.querySelector('#' + this.parent.element.id + '_dialogEdit_wrapper').querySelector('.e-dlg-content');
         var client = table.getBoundingClientRect();
         var left = isInline ?
             this.parent.element.getBoundingClientRect().left : client.left;
@@ -24017,6 +24124,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
             else {
                 this.rows.push({ index: this.rowLength++, cells: cells });
             }
+            gObj.notify(exportRowDataBound, { rowObj: record[r], type: 'excel' });
         }
     };
     /* tslint:disable-next-line:no-any */
@@ -24143,7 +24251,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
         templateFn[getEnumValue(CellType, cell.cellType)] = compile(template);
         /* tslint:disable-next-line:max-line-length */
         var txt = (templateFn[getEnumValue(CellType, cell.cellType)](row.data[cell.column.field ? cell.column.field : cell.column.columnName]));
-        return txt[0].wholeText;
+        return txt[0].textContent;
     };
     /* tslint:disable-next-line:no-any */
     ExcelExport.prototype.mergeOptions = function (JSON1, JSON2) {
@@ -24486,7 +24594,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource) && pdfExportProperties.dataSource instanceof DataManager) {
             return new Promise(function (resolve, reject) {
                 /* tslint:disable-next-line:no-any */ /* tslint:disable-next-line:max-line-length */
-                new DataManager({ url: pdfExportProperties.dataSource.dataSource.url, adaptor: pdfExportProperties.dataSource.adaptor }).executeQuery(new Query()).then(function (returnType) {
+                pdfExportProperties.dataSource.executeQuery(new Query()).then(function (returnType) {
                     _this.init(parent);
                     if (!isNullOrUndefined(pdfDoc)) {
                         _this.pdfDocument = pdfDoc;
@@ -25059,7 +25167,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
                         leastCaptionSummaryIndex = result.leastCaptionSummaryIndex;
                         /* tslint:disable-next-line:max-line-length */
                         var txt = (templateFn[getEnumValue(CellType, cell.cellType)](row.data[cell.column.field ? cell.column.field : cell.column.columnName]));
-                        value.push(txt[0].wholeText);
+                        value.push(txt[0].textContent);
                         isEmpty = false;
                     }
                     else {
@@ -25229,6 +25337,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
                     j += (args.colSpan - 1);
                 }
             }
+            this.parent.notify(exportRowDataBound, { type: 'pdf', rowObj: items });
         }
     };
     /* tslint:disable-next-line:no-any */
@@ -25629,7 +25738,7 @@ var CommandColumn = /** @__PURE__ @class */ (function () {
         }
         var buttonObj = target.ej2_instances[0];
         var type = buttonObj.commandType;
-        if (buttonObj.disabled) {
+        if (buttonObj.disabled || !gObj.editModule) {
             return;
         }
         switch (type) {
@@ -25840,32 +25949,40 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
                 this.parent.ungroupColumn(this.targetColumn.field);
                 break;
             case 'Edit':
-                if (this.parent.editSettings.mode === 'Batch') {
-                    if (this.row && this.cell && !isNaN(parseInt(this.cell.getAttribute('aria-colindex'), 10))) {
-                        this.parent.editModule.editCell(parseInt(this.row.getAttribute('aria-rowindex'), 10), this.parent.getColumns()[parseInt(this.cell.getAttribute('aria-colindex'), 10)].field);
+                if (this.parent.editModule) {
+                    if (this.parent.editSettings.mode === 'Batch') {
+                        if (this.row && this.cell && !isNaN(parseInt(this.cell.getAttribute('aria-colindex'), 10))) {
+                            this.parent.editModule.editCell(parseInt(this.row.getAttribute('aria-rowindex'), 10), this.parent.getColumns()[parseInt(this.cell.getAttribute('aria-colindex'), 10)].field);
+                        }
                     }
-                }
-                else {
-                    this.parent.editModule.endEdit();
-                    this.parent.editModule.startEdit(this.row);
+                    else {
+                        this.parent.editModule.endEdit();
+                        this.parent.editModule.startEdit(this.row);
+                    }
                 }
                 break;
             case 'Delete':
-                if (this.parent.editSettings.mode !== 'Batch') {
-                    this.parent.editModule.endEdit();
-                }
-                if (this.parent.getSelectedRecords().length === 1) {
-                    this.parent.editModule.deleteRow(this.row);
-                }
-                else {
-                    this.parent.deleteRecord();
+                if (this.parent.editModule) {
+                    if (this.parent.editSettings.mode !== 'Batch') {
+                        this.parent.editModule.endEdit();
+                    }
+                    if (this.parent.getSelectedRecords().length === 1) {
+                        this.parent.editModule.deleteRow(this.row);
+                    }
+                    else {
+                        this.parent.deleteRecord();
+                    }
                 }
                 break;
             case 'Save':
-                this.parent.editModule.endEdit();
+                if (this.parent.editModule) {
+                    this.parent.editModule.endEdit();
+                }
                 break;
             case 'Cancel':
-                this.parent.editModule.closeEdit();
+                if (this.parent.editModule) {
+                    this.parent.editModule.closeEdit();
+                }
                 break;
             case 'Copy':
                 this.parent.copy();
@@ -25953,10 +26070,11 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
                             this.hiddenItems.push(item.text);
                         }
                     }
-                    else if (this.parent.editSettings.mode === 'Batch' && ((closest(args.event.target, '.e-gridform')) ||
-                        this.parent.editModule.getBatchChanges()[changedRecords].length ||
-                        this.parent.editModule.getBatchChanges()[addedRecords].length ||
-                        this.parent.editModule.getBatchChanges()[deletedRecords].length) && (key === 'Save' || key === 'Cancel')) {
+                    else if (this.parent.editModule && this.parent.editSettings.mode === 'Batch' &&
+                        ((closest(args.event.target, '.e-gridform')) ||
+                            this.parent.editModule.getBatchChanges()[changedRecords].length ||
+                            this.parent.editModule.getBatchChanges()[addedRecords].length ||
+                            this.parent.editModule.getBatchChanges()[deletedRecords].length) && (key === 'Save' || key === 'Cancel')) {
                         continue;
                     }
                     else if (isNullOrUndefined(args.parentItem) && args.event
@@ -26470,11 +26588,11 @@ var FreezeRender = /** @__PURE__ @class */ (function (_super) {
             fRowHgt = height[i];
             mRowHgt = width[i];
             if (fRows[i].childElementCount && ((isWrap && fRowHgt < mRowHgt) || (!isWrap && fRowHgt > mRowHgt) ||
-                (this.parent.allowResizing && !this.parent.resizeModule.isFrozenColResized))) {
+                (this.parent.allowResizing && this.parent.resizeModule && !this.parent.resizeModule.isFrozenColResized))) {
                 fRows[i].style.height = mRowHgt + 'px';
             }
             if (mRows[i].childElementCount && ((isWrap && fRowHgt > mRowHgt) || (!isWrap && fRowHgt < mRowHgt) ||
-                (this.parent.allowResizing && this.parent.resizeModule.isFrozenColResized))) {
+                (this.parent.allowResizing && this.parent.resizeModule && this.parent.resizeModule.isFrozenColResized))) {
                 mRows[i].style.height = fRowHgt + 'px';
             }
         }
@@ -27275,5 +27393,5 @@ var ForeignKey = /** @__PURE__ @class */ (function (_super) {
  * Export Grid components
  */
 
-export { SortDescriptor, SortSettings, Predicate$1 as Predicate, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, getUpdateUsingRaf, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, getObject, getCustomDateFormat, extendObjWithFn, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, recordAdded, cancelBegin, editNextValCell, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, Global, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Column, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, Pager, ExternalMessage, NumericContainer, PagerMessage };
+export { SortDescriptor, SortSettings, Predicate$1 as Predicate, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, getUpdateUsingRaf, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, getObject, getCustomDateFormat, extendObjWithFn, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, recordAdded, cancelBegin, editNextValCell, printGridInit, exportRowDataBound, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, Global, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Column, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, Pager, ExternalMessage, NumericContainer, PagerMessage };
 //# sourceMappingURL=ej2-grids.es5.js.map

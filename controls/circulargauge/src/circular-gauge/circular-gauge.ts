@@ -1,7 +1,8 @@
 /**
  * Circular Gauge
  */
-import { Property, NotifyPropertyChanges, Component, INotifyPropertyChanged, Complex, Browser } from '@syncfusion/ej2-base';
+import { Property, NotifyPropertyChanges, Component, INotifyPropertyChanged } from '@syncfusion/ej2-base';
+import { Complex, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Event, EmitType, SvgRenderer, EventHandler, Collection, Internationalization, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { remove, createElement } from '@syncfusion/ej2-base';
 import { CircularGaugeModel } from './circular-gauge-model';
@@ -137,6 +138,13 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
 
     @Property(null)
     public centerY: string;
+
+    /**
+     * To place the half or quarter circle in center position, if values not specified for centerX and centerY.
+     * @default false
+     */
+    @Property(false)
+    public moveToCenter: boolean;
 
     /**
      * Specifies the theme for circular gauge.
@@ -292,6 +300,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public activePointer: Pointer;
     /** @private */
     public activeAxis: Axis;
+    /** @private */
+    public gaugeRect: Rect;
     /** @private */
     public animatePointer: boolean;
     /** @private */
@@ -646,9 +656,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      * Method to calculate the availble size for circular gauge.
      */
     private calculateBounds(): void {
-        let padding: number = 5;
+        let padding: number = 5; let rect: Rect;
         let margin: MarginModel = this.margin;
-        // Title Height;
         let titleHeight: number = 0;
         if (this.title) {
             titleHeight = measureText(this.title, this.titleStyle).height + padding;
@@ -658,10 +667,16 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         let width: number = this.availableSize.width - left - margin.right - this.border.width;
         let height: number = this.availableSize.height - top - this.border.width - margin.bottom;
         let radius: number = Math.min(width, height) / 2;
-        let rect: Rect = new Rect(
-            (left + (width / 2) - radius), (top + (height / 2) - radius),
-            radius * 2, radius * 2
-        );
+        if (this.moveToCenter && this.axes.length === 1 &&
+            isNullOrUndefined(this.centerX) && isNullOrUndefined(this.centerY)) {
+            rect = new Rect(left, top, width, height);
+        } else {
+            rect = new Rect(
+                (left + (width / 2) - radius), (top + (height / 2) - radius),
+                radius * 2, radius * 2
+            );
+        }
+        this.gaugeRect = rect;
         let centerX: number = this.centerX !== null ?
             stringToNumber(this.centerX, this.availableSize.width) : rect.x + (rect.width / 2);
         let centerY: number = this.centerY !== null ?

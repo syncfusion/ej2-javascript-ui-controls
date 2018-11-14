@@ -12,12 +12,19 @@ export enum MatrixTypes {
 
 /** @private */
 export class Matrix {
+    /**   @private  */
     public m11: number;
+    /**   @private  */
     public m12: number;
+    /**   @private  */
     public m21: number;
+    /**   @private  */
     public m22: number;
+    /**   @private  */
     public offsetX: number;
+    /**   @private  */
     public offsetY: number;
+    /**   @private  */
     public type: MatrixTypes;
 
     constructor(m11: number, m12: number, m21: number, m22: number, offsetX: number, offsetY: number, type?: MatrixTypes) {

@@ -855,6 +855,8 @@ export class Connector extends NodeBase implements IElement {
     public distance(pt1: PointModel, pt2: PointModel): number {
         return Math.sqrt(Math.pow(pt2.x - pt1.x, 2) + Math.pow(pt2.y - pt1.y, 2));
     }
+
+    /**   @private  */
     public findPath(sourcePt: PointModel, targetPt: PointModel): Object {
         let beginningpoint: PointModel = { x: sourcePt.x, y: sourcePt.y };
         let distance: number = this.distance(sourcePt, targetPt);

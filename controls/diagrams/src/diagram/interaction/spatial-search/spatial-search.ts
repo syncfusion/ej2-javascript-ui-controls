@@ -90,6 +90,7 @@ export class SpatialSearch {
         return -1;
     }
 
+    /** @private */
     public updateQuad(node: IGroupable): boolean {
         this.setCurrentNode(node);
         let nodBounds: Rect = node.outerBounds;

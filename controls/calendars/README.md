@@ -49,9 +49,9 @@ The `calendar` is a graphical user interface component that displays a Gregorian
 #### Resources
 
 * [Getting started](https://ej2.syncfusion.com/documentation/calendar/getting-started.html?utm_source=npm&utm_campaign=calendar)
-* [API reference](https://ej2.syncfusion.com/documentation/calendar/api-calendar.html?utm_source=npm&utm_campaign=calendar)
+* [API reference](https://ej2.syncfusion.com/documentation/api/calendar?utm_source=npm&utm_campaign=calendar)
 * [View online demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=calendar#/material/calendar/default)
-* [Product page](https://www.syncfusion.com/products/javascript/calendar)
+* [Product page](https://www.syncfusion.com/javascript-ui-controls/calendar?utm_source=npm&utm_campaign=ej2-calendars)
 
 ### DatePicker
 
@@ -67,9 +67,9 @@ The date picker is inherited from the calendar component. So, all the key featur
 #### Resources
 
 * [Getting started](https://ej2.syncfusion.com/documentation/datepicker/getting-started.html?utm_source=npm&utm_campaign=datepicker)
-* [API reference](https://ej2.syncfusion.com/documentation/datepicker/api-datePicker.html?utm_source=npm&utm_campaign=datepicker)
+* [API reference](https://ej2.syncfusion.com/documentation/api/datepicker?utm_source=npm&utm_campaign=datepicker)
 * [View online demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=datepicker#/material/datepicker/default)
-* [Product page](https://www.syncfusion.com/products/javascript/datepicker)
+* [Product page](https://www.syncfusion.com/javascript-ui-controls/datepicker?utm_source=npm&utm_campaign=ej2-calendars)
 
 ### TimePicker
 
@@ -89,9 +89,9 @@ The date picker is inherited from the calendar component. So, all the key featur
 #### Resources
 
 * [Getting started](https://ej2.syncfusion.com/documentation/timepicker/getting-started.html?utm_source=npm&utm_campaign=timepicker)
-* [API reference](https://ej2.syncfusion.com/documentation/timepicker/api-timePicker.html?utm_source=npm&utm_campaign=timepicker)
+* [API reference](https://ej2.syncfusion.com/documentation/api/timepicker?utm_source=npm&utm_campaign=timepicker)
 * [View online demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=timepicker#/material/timepicker/default)
-* [Product page](https://www.syncfusion.com/products/javascript/timepicker)
+* [Product page](https://www.syncfusion.com/javascript-ui-controls/time-picker?utm_source=npm&utm_campaign=ej2-calendars)
 
 ### DateTimePicker
 
@@ -107,9 +107,9 @@ The date time picker is inherited from the date picker and time picker component
 #### Resources
 
 * [Getting started](https://ej2.syncfusion.com/documentation/datetimepicker/getting-started.html?utm_source=npm&utm_campaign=datetimepicker)
-* [API reference](https://ej2.syncfusion.com/documentation/datetimepicker/api-dateTimePicker.html?utm_source=npm&utm_campaign=datetimepicker)
+* [API reference](https://ej2.syncfusion.com/documentation/api/datetimepicker?utm_source=npm&utm_campaign=datetimepicker)
 * [View online demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=datetimepicker#/material/datetimepicker/default)
-* [Product page](https://www.syncfusion.com/products/javascript/datetimepicker)
+* [Product page](https://www.syncfusion.com/javascript-ui-controls/datetime-picker?utm_source=npm&utm_campaign=ej2-calendars)
 
 ### DateRangePicker
 
@@ -129,41 +129,40 @@ The `date range picker` is a graphical user interface control that allows an end
 #### Resources
 
 * [Getting started](https://ej2.syncfusion.com/documentation/daterangepicker/getting-started.html?utm_source=npm&utm_campaign=daterangepicker)
-* [API reference](https://ej2.syncfusion.com/documentation/daterangepicker/api-dateRangePicker.html?utm_source=npm&utm_campaign=daterangepicker)
+* [API reference](https://ej2.syncfusion.com/documentation/api/daterangepicker?utm_source=npm&utm_campaign=daterangepicker)
 * [View online demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=daterangepicker#/material/daterangepicker/default)
-* [Product page](https://www.syncfusion.com/products/javascript/daterangepicker)
+* [Product page](https://www.syncfusion.com/javascript-ui-controls/date-range-picker?utm_source=npm&utm_campaign=ej2-calendars)
 
 ## Supported Frameworks
 
 Date time components are also offered in the following list of frameworks.
 
-* [Angular](https://github.com/syncfusion/ej2-ng-calendars?utm_source=npm&utm_campaign=calendars)
-* [React](https://github.com/syncfusion/ej2-react-calendars?utm_source=npm&utm_campaign=calendars)
-* [VueJS](https://github.com/syncfusion/ej2-vue-calendars?utm_source=npm&utm_campaign=calendars)
-* [ASP.NET Core](https://www.syncfusion.com/products/aspnetcore/calendar)
-* [ASP.NET MVC](https://www.syncfusion.com/products/aspnetmvc/calendar)
-* [JavaScript (ES5)](https://www.syncfusion.com/products/javascript/calendar)
+* [Angular](https://www.syncfusion.com/angular-ui-components?utm_source=npm&utm_campaign=ej2-calendars)
+* [React](https://www.syncfusion.com/react-ui-components?utm_source=npm&utm_campaign=ej2-calendars)
+* [VueJS](https://www.syncfusion.com/vue-ui-components?utm_source=npm&utm_campaign=ej2-calendars)
+* [ASP.NET Core](https://www.syncfusion.com/aspnet-core-ui-controls?utm_source=npm&utm_campaign=ej2-calendars)
+* [ASP.NET MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_source=npm&utm_campaign=ej2-calendars)
 
 ## Showcase samples
 
-1. Expanse tracker ([Source](https://github.com/syncfusion/ej2-sample-ts-expensetracker), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/expensetracker/#/dashboard?utm_source=npm&utm_campaign=daterangepicker)) - Date range picker component is used in this showcase sample to depict total expenses.
+1. Expanse tracker ([Source](https://github.com/syncfusion/ej2-showcase-ts-expensetracker), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/expensetracker/#/dashboard?utm_source=npm&utm_campaign=daterangepicker)) - Date range picker component is used in this showcase sample to depict total expenses.
 
-2. Loan calculator ([Source](https://github.com/syncfusion/ej2-sample-ts-loancalculator), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/loancalculator/?utm_source=npm&utm_campaign=datepicker)) - Date picker component in this showcase sample displays the balance from monthly payment.
+2. Loan calculator ([Source](https://github.com/syncfusion/ej2-showcase-ts-loancalculator), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/loancalculator/?utm_source=npm&utm_campaign=datepicker#/default)) - Date picker component in this showcase sample displays the balance from monthly payment.
 
 ## Support
 
 Product support is available through the following mediums.
 
 * Creating incident in Syncfusion [Direct-trac](https://www.syncfusion.com/support/directtrac/incidents?utm_source=npm&utm_campaign=calendar) support system or [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_campaign=calendar).
-* New [GitHub issue](https://github.com/syncfusion/ej2-calendars/issues/new).
+* New [GitHub issue](https://github.com/syncfusion/ej2-javascript-ui-controls/issues/new).
 * Ask your queries in Stack Overflow with tag `syncfusion`, `ej2`, and so on.
 
 ## License
 
-Check the license details [here](https://github.com/syncfusion/ej2/blob/master/license).
+Check the license details [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license).
 
 ## Changelog
 
-Check the changelog [here](https://github.com/syncfusion/ej2-calendars/blob/master/CHANGELOG.md).
+Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/calendars/CHANGELOG.md).
 
 © Copyright 2018 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, SvgRenderer, compile, createElement, merge, remove, setStyleAttribute } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, SvgRenderer, compile, createElement, isNullOrUndefined, merge, remove, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
 
 /**
@@ -332,6 +332,23 @@ function getTemplateFunction(template) {
     }
     return templateFn;
 }
+function getElementSize(template, gauge, parent) {
+    let elementSize;
+    let element;
+    let templateFn = getTemplateFunction(template);
+    if (templateFn && templateFn(gauge).length) {
+        element = gauge.createElement('div', { id: gauge.element.id + '_Measure_Element' });
+        gauge.element.appendChild(element);
+        let templateElement = templateFn(gauge);
+        while (templateElement.length > 0) {
+            element.appendChild(templateElement[0]);
+        }
+        parent.appendChild(element);
+        elementSize = new Size(parent.getBoundingClientRect().width, parent.getBoundingClientRect().height);
+        remove(element);
+    }
+    return elementSize;
+}
 /**
  * Function to remove the element from id.
  * @private
@@ -354,6 +371,22 @@ function getPointer(targetId, gauge) {
         axisIndex: +tempString[0],
         pointerIndex: +tempString[tempString.length - 1]
     };
+}
+/**
+ * Function to get the mouse position
+ * @param pageX
+ * @param pageY
+ * @param element
+ */
+function getMousePosition(pageX, pageY, element) {
+    let elementRect = element.getBoundingClientRect();
+    let pageXOffset = element.ownerDocument.defaultView.pageXOffset;
+    let pageYOffset = element.ownerDocument.defaultView.pageYOffset;
+    let clientTop = element.ownerDocument.documentElement.clientTop;
+    let clientLeft = element.ownerDocument.documentElement.clientLeft;
+    let positionX = elementRect.left + pageXOffset - clientLeft;
+    let positionY = elementRect.top + pageYOffset - clientTop;
+    return new GaugeLocation((pageX - positionX), (pageY - positionY));
 }
 /**
  * Function to convert the label using formar for cirular gauge.
@@ -596,6 +629,9 @@ __decorate$1([
 __decorate$1([
     Complex({}, Border)
 ], TooltipSettings.prototype, "border", void 0);
+__decorate$1([
+    Property(false)
+], TooltipSettings.prototype, "showAtMousePosition", void 0);
 
 /**
  * Specifies gauge Themes
@@ -1046,24 +1082,36 @@ class GaugeTooltip {
      * Method to render the tooltip for circular gauge.
      */
     /* tslint:disable:no-string-literal */
+    /* tslint:disable:max-func-body-length */
     renderTooltip(e) {
+        let pageX;
+        let pageY;
         let target;
         let touchArg;
+        let location;
+        let samePointerEle = false;
         if (e.type.indexOf('touch') !== -1) {
-            this.isTouch = true;
             touchArg = e;
             target = touchArg.target;
+            pageX = touchArg.changedTouches[0].pageX;
+            pageY = touchArg.changedTouches[0].pageY;
         }
         else {
-            this.isTouch = e.pointerType === 'touch';
             target = e.target;
+            pageX = e.pageX;
+            pageY = e.pageY;
         }
         if (target.id.indexOf('_Pointer_') >= 0) {
+            if (this.pointerEle !== null) {
+                samePointerEle = (this.pointerEle === target);
+            }
+            let svgRect = this.gauge.svgObject.getBoundingClientRect();
+            let elementRect = this.gauge.element.getBoundingClientRect();
+            let rect = new Rect(Math.abs(elementRect.left - svgRect.left), Math.abs(elementRect.top - svgRect.top), svgRect.width, svgRect.height);
             let currentPointer = getPointer(target.id, this.gauge);
             this.currentAxis = this.gauge.axes[currentPointer.axisIndex];
             this.currentPointer = (this.currentAxis.pointers)[currentPointer.pointerIndex];
             let angle = getAngleFromValue(this.currentPointer.currentValue, this.currentAxis.visibleRange.max, this.currentAxis.visibleRange.min, this.currentAxis.startAngle, this.currentAxis.endAngle, this.currentAxis.direction === 'ClockWise') % 360;
-            let location = getLocationFromAngle(angle, this.currentAxis.currentRadius, this.gauge.midPoint);
             let tooltipFormat = this.gauge.tooltip.format || this.currentAxis.labelStyle.format;
             let customLabelFormat = tooltipFormat && tooltipFormat.match('{value}') !== null;
             let format = this.gauge.intl.getNumberFormat({
@@ -1083,9 +1131,9 @@ class GaugeTooltip {
             let content = customLabelFormat ?
                 tooltipFormat.replace(new RegExp('{value}', 'g'), format(this.currentPointer.currentValue)) :
                 format(this.currentPointer.currentValue);
+            location = getLocationFromAngle(angle, this.currentAxis.currentRadius, this.gauge.midPoint);
             location.x = (this.tooltip.template && ((angle >= 150 && angle <= 250) || (angle >= 330 && angle <= 360) ||
                 (angle >= 0 && angle <= 45))) ? (location.x + 10) : location.x;
-            this.findPosition(angle, content, location);
             let tooltipArgs = {
                 name: tooltipRender, cancel: false, content: content, location: location, axis: this.currentAxis,
                 tooltip: this.tooltip, pointer: this.currentPointer, event: e, gauge: this.gauge
@@ -1095,18 +1143,40 @@ class GaugeTooltip {
             if (template !== null && Object.keys(template).length === 1) {
                 template = template[Object.keys(template)[0]];
             }
-            if (!tooltipArgs.cancel) {
+            if (!this.tooltip.showAtMousePosition) {
+                if (template) {
+                    let pointerRect = target.getBoundingClientRect();
+                    let size = getElementSize(this.tooltip.template, this.gauge, this.tooltipEle);
+                    let width = Math.abs(svgRect.width - pointerRect.width) - Math.abs(pointerRect.left - svgRect.left);
+                    if (size.height > Math.abs(svgRect.height - location.y) - 20) {
+                        location.y += size.height / 2;
+                    }
+                    if (size.width > width) {
+                        location.x -= Math.abs((svgRect.left + svgRect.width) - (location.x + size.width));
+                        this.tooltipRect = rect;
+                    }
+                    else {
+                        this.tooltipRect = rect;
+                        this.findPosition(rect, angle, content, location);
+                    }
+                }
+                else {
+                    this.findPosition(rect, angle, content, location);
+                }
+            }
+            else {
+                location = getMousePosition(pageX, pageY, this.gauge.svgObject);
+                this.tooltipRect = rect;
+            }
+            if (!tooltipArgs.cancel && !samePointerEle) {
                 tooltipArgs['tooltip']['properties']['textStyle']['color'] = (this.gauge.theme === 'Highcontrast') ? '#00000' : '#FFFFFF';
                 this.svgTooltip = new Tooltip({
                     enable: true,
-                    header: '',
                     data: { value: tooltipArgs.content },
                     template: template,
                     enableAnimation: tooltipArgs.tooltip.enableAnimation,
                     content: [tooltipArgs.content],
-                    shapes: [],
                     location: tooltipArgs.location,
-                    palette: [],
                     inverted: this.arrowInverted,
                     areaBounds: this.tooltipRect,
                     fill: (this.gauge.theme === 'Highcontrast') ? '#FFFFFF' : tooltipArgs.tooltip.fill,
@@ -1115,9 +1185,7 @@ class GaugeTooltip {
                     theme: this.gauge.theme
                 });
                 this.svgTooltip.appendTo(this.tooltipEle);
-            }
-            else {
-                this.removeTooltip();
+                this.pointerEle = target;
             }
         }
         else {
@@ -1127,14 +1195,11 @@ class GaugeTooltip {
     /**
      * Method to find the position of the tooltip anchor for circular gauge.
      */
-    findPosition(angle, text, location) {
-        let svgRect = this.gauge.svgObject.getBoundingClientRect();
-        let elementRect = this.gauge.element.getBoundingClientRect();
+    findPosition(rect, angle, text, location) {
         let addLeft;
         let addTop;
         let addHeight;
         let addWidth;
-        let rect = new Rect(Math.abs(elementRect.left - svgRect.left), Math.abs(elementRect.top - svgRect.top), svgRect.width, svgRect.height);
         switch (true) {
             case (angle >= 0 && angle < 45):
                 this.arrowInverted = true;
@@ -1187,6 +1252,7 @@ class GaugeTooltip {
     removeTooltip() {
         if (document.getElementsByClassName('EJ2-CircularGauge-Tooltip').length > 0) {
             document.getElementsByClassName('EJ2-CircularGauge-Tooltip')[0].remove();
+            this.pointerEle = null;
         }
     }
     mouseUpHandler(e) {
@@ -1561,7 +1627,12 @@ class PointerRenderer {
         let isClockWise = axis.direction === 'ClockWise';
         let startAngle = getAngleFromValue(axis.visibleRange.min, axis.visibleRange.max, axis.visibleRange.min, axis.startAngle, axis.endAngle, isClockWise);
         let endAngle = getAngleFromValue(value, axis.visibleRange.max, axis.visibleRange.min, axis.startAngle, axis.endAngle, isClockWise);
-        endAngle = isClockWise ? endAngle : [startAngle, startAngle = endAngle][0];
+        if (isClockWise) {
+            endAngle = startAngle === endAngle ? endAngle + 1 : endAngle;
+        }
+        else {
+            endAngle = startAngle === endAngle ? [startAngle, startAngle = endAngle - 1][0] : [startAngle, startAngle = endAngle][0];
+        }
         let roundedStartAngle;
         let roundedEndAngle;
         let oldStart;
@@ -1715,6 +1786,8 @@ class AxisLayoutPanel {
         let totalRadius;
         let currentRadius;
         let rangeMaximumRadius = 0;
+        let xMarginDiff = this.gauge.margin.left + this.gauge.margin.right;
+        let yMarginDiff = this.gauge.margin.top + this.gauge.margin.bottom;
         for (let axis of this.gauge.axes) {
             totalRadius = (Math.min(axis.rect.width, axis.rect.height) / 2);
             currentRadius = axis.radius != null ? stringToNumber(axis.radius, totalRadius) : totalRadius;
@@ -1725,6 +1798,78 @@ class AxisLayoutPanel {
             currentRadius = (rangeMaximumRadius > 100 && axis.radius == null) ?
                 (currentRadius * 100) / rangeMaximumRadius : currentRadius;
             axis.currentRadius = currentRadius - axis.nearSize;
+            if (this.gauge.moveToCenter && this.gauge.axes.length === 1 &&
+                isNullOrUndefined(this.gauge.centerX) && isNullOrUndefined(this.gauge.centerY)) {
+                let startAngle;
+                let endAngle;
+                startAngle = axis.startAngle;
+                startAngle = !isCompleteAngle(startAngle, axis.endAngle) ? startAngle : [0, endAngle = 360][0];
+                let startPoint = getLocationFromAngle(startAngle - 90, currentRadius, this.gauge.midPoint);
+                endAngle = axis.endAngle;
+                endAngle -= isCompleteAngle(startAngle, endAngle) ? 0.0001 : 0;
+                let endPoint = getLocationFromAngle(endAngle - 90, currentRadius, this.gauge.midPoint);
+                let xDiff;
+                let yDiff;
+                let startXDiff;
+                let endXDiff;
+                let startYDiff;
+                let endYDiff;
+                let newPoint;
+                if ((startAngle >= 270 && startAngle <= 360) && ((endAngle > 270 && endAngle <= 360) ||
+                    (endAngle >= 0 && endAngle <= 180))) {
+                    startXDiff = Math.abs(this.gauge.gaugeRect.x - Math.abs(startPoint.x - this.gauge.gaugeRect.x));
+                    newPoint = (endAngle <= 360 && endAngle >= 270) ? this.gauge.midPoint : (endAngle <= 90) ? endPoint :
+                        getLocationFromAngle(90 - 90, currentRadius, this.gauge.midPoint);
+                    endXDiff = Math.abs(newPoint.x - this.gauge.gaugeRect.width);
+                    startPoint = (endAngle <= 360 && endAngle >= 270) ? endPoint :
+                        getLocationFromAngle(360 - 90, currentRadius, this.gauge.midPoint);
+                    startYDiff = Math.abs(startPoint.y - this.gauge.gaugeRect.y);
+                    endPoint = (endAngle <= 360 && endAngle >= 270 || (endAngle >= 0 && endAngle < 90)) ?
+                        this.gauge.midPoint : (endAngle >= 90 && endAngle <= 180) ? endPoint :
+                        getLocationFromAngle(180 - 90, currentRadius, this.gauge.midPoint);
+                    endYDiff = Math.abs(endPoint.y - (this.gauge.gaugeRect.y + this.gauge.gaugeRect.height));
+                }
+                else if ((startAngle >= 0 && startAngle < 90) && (endAngle >= 0 && endAngle <= 270)) {
+                    startYDiff = Math.abs(startPoint.y - this.gauge.gaugeRect.y);
+                    newPoint = (endAngle >= 180) ? getLocationFromAngle(180 - 90, currentRadius, this.gauge.midPoint) :
+                        endPoint;
+                    endYDiff = Math.abs(newPoint.y - (this.gauge.gaugeRect.y + this.gauge.gaugeRect.height));
+                    startPoint = (endAngle >= 180) ? endPoint : this.gauge.midPoint;
+                    startXDiff = Math.abs(this.gauge.gaugeRect.x - Math.abs(startPoint.x - this.gauge.gaugeRect.x));
+                    endPoint = (endAngle >= 90) ? getLocationFromAngle(90 - 90, currentRadius, this.gauge.midPoint) : endPoint;
+                    endXDiff = Math.abs(endPoint.x - this.gauge.gaugeRect.width);
+                }
+                else if ((startAngle >= 90 && startAngle < 180) && (endAngle > 90 && endAngle <= 360)) {
+                    newPoint = (endAngle <= 180) ? this.gauge.midPoint : (endAngle >= 270) ?
+                        getLocationFromAngle(270 - 90, currentRadius, this.gauge.midPoint) : endPoint;
+                    startXDiff = Math.abs(newPoint.x - this.gauge.gaugeRect.x);
+                    endXDiff = Math.abs(startPoint.x - this.gauge.gaugeRect.width);
+                    startPoint = (endAngle > 270) ? getLocationFromAngle(endAngle - 90, currentRadius, this.gauge.midPoint) :
+                        this.gauge.midPoint;
+                    startYDiff = Math.abs(this.gauge.gaugeRect.y - startPoint.y);
+                    endPoint = (endAngle >= 180) ? getLocationFromAngle(180 - 90, currentRadius, this.gauge.midPoint) : endPoint;
+                    endYDiff = Math.abs(endPoint.y - (this.gauge.gaugeRect.y + this.gauge.gaugeRect.height));
+                }
+                else if ((startAngle >= 180 && startAngle <= 270) && ((endAngle <= 360 && endAngle >= 270) ||
+                    (endAngle <= 90 && endAngle >= 0))) {
+                    newPoint = (endAngle > 180 && endAngle < 270) ? endPoint :
+                        getLocationFromAngle(270 - 90, currentRadius, this.gauge.midPoint);
+                    startXDiff = Math.abs(this.gauge.gaugeRect.x - Math.abs(newPoint.x - this.gauge.gaugeRect.x));
+                    newPoint = (endAngle >= 180 && endAngle <= 360) ? this.gauge.midPoint : endPoint;
+                    endXDiff = Math.abs(newPoint.x - this.gauge.gaugeRect.width);
+                    newPoint = (endAngle > 180 && endAngle < 270) ? this.gauge.midPoint : (endAngle >= 270 && endAngle <= 360) ? endPoint :
+                        getLocationFromAngle(360 - 90, currentRadius, this.gauge.midPoint);
+                    startYDiff = Math.abs(newPoint.y - this.gauge.gaugeRect.y);
+                    endYDiff = Math.abs(startPoint.y - (this.gauge.gaugeRect.y + this.gauge.gaugeRect.height));
+                }
+                xDiff = Math.abs((startXDiff + endXDiff) - xMarginDiff);
+                yDiff = Math.abs((startYDiff + endYDiff) - yMarginDiff);
+                this.gauge.midPoint.x = this.gauge.midPoint.x - (startXDiff / 2) + (endXDiff / 2);
+                this.gauge.midPoint.y = this.gauge.midPoint.y - (startYDiff / 2) + (endYDiff / 2);
+                totalRadius = (Math.min(this.gauge.gaugeRect.width, this.gauge.gaugeRect.height) / 2) +
+                    (Math.min(xDiff, yDiff) / 2);
+                axis.currentRadius = (axis.radius != null ? stringToNumber(axis.radius, totalRadius) : totalRadius) - axis.nearSize;
+            }
             axis.visibleRange.interval = this.calculateNumericInterval(axis, axis.rect);
             this.calculateVisibleLabels(axis);
         }
@@ -2268,8 +2413,8 @@ let CircularGauge = class CircularGauge extends Component {
      */
     calculateBounds() {
         let padding = 5;
+        let rect;
         let margin = this.margin;
-        // Title Height;
         let titleHeight = 0;
         if (this.title) {
             titleHeight = measureText(this.title, this.titleStyle).height + padding;
@@ -2279,7 +2424,14 @@ let CircularGauge = class CircularGauge extends Component {
         let width = this.availableSize.width - left - margin.right - this.border.width;
         let height = this.availableSize.height - top - this.border.width - margin.bottom;
         let radius = Math.min(width, height) / 2;
-        let rect = new Rect((left + (width / 2) - radius), (top + (height / 2) - radius), radius * 2, radius * 2);
+        if (this.moveToCenter && this.axes.length === 1 &&
+            isNullOrUndefined(this.centerX) && isNullOrUndefined(this.centerY)) {
+            rect = new Rect(left, top, width, height);
+        }
+        else {
+            rect = new Rect((left + (width / 2) - radius), (top + (height / 2) - radius), radius * 2, radius * 2);
+        }
+        this.gaugeRect = rect;
         let centerX = this.centerX !== null ?
             stringToNumber(this.centerX, this.availableSize.width) : rect.x + (rect.width / 2);
         let centerY = this.centerY !== null ?
@@ -2564,6 +2716,9 @@ __decorate([
     Property(null)
 ], CircularGauge.prototype, "centerY", void 0);
 __decorate([
+    Property(false)
+], CircularGauge.prototype, "moveToCenter", void 0);
+__decorate([
     Property('Material')
 ], CircularGauge.prototype, "theme", void 0);
 __decorate([
@@ -2629,5 +2784,5 @@ CircularGauge = __decorate([
  * Circular Gauge component exported.
  */
 
-export { CircularGauge, Annotations, Line, Label, Range, Tick, Cap, NeedleTail, Animation$1 as Animation, Annotation, Pointer, Axis, Border, Font, Margin, TooltipSettings, GaugeTooltip, measureText, toPixel, getFontStyle, setStyles, measureElementRect, stringToNumber, textElement, appendPath, calculateSum, linear, getAngleFromValue, getDegree, getValueFromAngle, isCompleteAngle, getAngleFromLocation, getLocationFromAngle, getPathArc, getRangePath, getRoundedPathArc, getRoundedPath, getCompleteArc, getCirclePath, getCompletePath, getElement, getTemplateFunction, removeElement, getPointer, getLabelFormat, calculateShapes, getRangeColor, CustomizeOption, PathOption, RectOption, Size, GaugeLocation, Rect, TextOption, VisibleLabels };
+export { CircularGauge, Annotations, Line, Label, Range, Tick, Cap, NeedleTail, Animation$1 as Animation, Annotation, Pointer, Axis, Border, Font, Margin, TooltipSettings, GaugeTooltip, measureText, toPixel, getFontStyle, setStyles, measureElementRect, stringToNumber, textElement, appendPath, calculateSum, linear, getAngleFromValue, getDegree, getValueFromAngle, isCompleteAngle, getAngleFromLocation, getLocationFromAngle, getPathArc, getRangePath, getRoundedPathArc, getRoundedPath, getCompleteArc, getCirclePath, getCompletePath, getElement, getTemplateFunction, getElementSize, removeElement, getPointer, getMousePosition, getLabelFormat, calculateShapes, getRangeColor, CustomizeOption, PathOption, RectOption, Size, GaugeLocation, Rect, TextOption, VisibleLabels };
 //# sourceMappingURL=ej2-circulargauge.es2015.js.map

@@ -57,8 +57,10 @@ export class ScrollElements {
     public renderElements(scroll: ScrollBar, renderer: SvgRenderer): Element {
         let scrollGroup: Element = renderer.createGroup({
             id: 'scrollBar_' + scroll.axis.name,
-            transform: 'translate(' + (scroll.isVertical ? scroll.height : '0') +
-                ',0) rotate(' + (scroll.isVertical ? '90' : '0') + ')'
+              transform: 'translate(' + ( scroll.isVertical && scroll.axis.isInversed ? scroll.height : scroll.axis.isInversed ?
+               scroll.width : '0') + ',' + ( scroll.isVertical && scroll.axis.isInversed ? '0' : scroll.axis.isInversed ?
+               scroll.height : scroll.isVertical ? scroll.width  : '0' ) + ') rotate(' + (scroll.isVertical && scroll.axis.isInversed ?
+                '90' : scroll.isVertical ? '270' : scroll.axis.isInversed ? '180' : '0') + ')'
         });
         let backRectGroup: Element = renderer.createGroup({
             id: 'scrollBar_backRect_' + scroll.axis.name

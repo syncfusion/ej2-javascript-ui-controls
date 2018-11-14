@@ -96,7 +96,7 @@ export class NormalEdit {
         let args: EditEventArgs = {
             row: tr, primaryKey: primaryKeys, primaryKeyValue: primaryKeyValues, requestType: 'beginEdit',
             rowData: this.previousData, rowIndex: this.rowIndex, type: 'edit', cancel: false,
-            foreignKeyData: rowObj && rowObj.foreignKeyData
+            foreignKeyData: rowObj && rowObj.foreignKeyData, target: undefined
         };
         gObj.trigger(events.beginEdit, args);
         args.type = 'actionBegin';
@@ -108,8 +108,8 @@ export class NormalEdit {
         if (gObj.editSettings.mode !== 'Dialog') {
             gObj.clearSelection();
         }
-        if (gObj.editSettings.mode === 'Dialog') {
-            (<{selectionModule?: {preventFocus: boolean}}>gObj).selectionModule.preventFocus = true;
+        if (gObj.editSettings.mode === 'Dialog' && (<{ selectionModule?: { preventFocus: boolean } }>gObj).selectionModule) {
+            (<{ selectionModule?: { preventFocus: boolean } }>gObj).selectionModule.preventFocus = true;
             args.row.classList.add('e-dlgeditrow');
         }
         this.renderer.update(args);
@@ -151,7 +151,10 @@ export class NormalEdit {
             requestType: 'save', type: events.actionBegin, data: editedData, cancel: false,
             previousData: this.previousData, selectedRow: gObj.selectedRowIndex, foreignKeyData: {}
         });
-        editedData = gObj.editModule.getCurrentEditedData(gObj.element.querySelector('.e-gridform'), editedData);
+        let isDlg: Boolean = gObj.editSettings.mode === 'Dialog';
+        let dlgWrapper: Element = document.querySelector('#' + gObj.element.id + '_dialogEdit_wrapper');
+        let dlgForm: Element = isDlg ? dlgWrapper.querySelector('.e-gridform') : gObj.element.querySelector('.e-gridform');
+        editedData = gObj.editModule.getCurrentEditedData(dlgForm , editedData);
         if (gObj.getFrozenColumns() && gObj.editSettings.mode === 'Normal') {
             let mForm: Element = gObj.element.querySelector('.e-movableheader').querySelector('.e-gridform');
             if (gObj.frozenRows && mForm) {
@@ -161,7 +164,8 @@ export class NormalEdit {
                     gObj.element.querySelector('.e-movablecontent').querySelector('.e-gridform'), editedData);
             }
         }
-        if (gObj.element.querySelectorAll('.e-editedrow').length) {
+        if (isDlg ? dlgWrapper.querySelectorAll('.e-editedrow').length :
+        gObj.element.querySelectorAll('.e-editedrow').length) {
             args.action = 'edit';
             gObj.trigger(events.actionBegin, args);
             if (args.cancel) {
@@ -212,7 +216,7 @@ export class NormalEdit {
         if (this.parent.editModule.formObj && !this.parent.editModule.formObj.isDestroyed) {
             this.destroyElements();
             this.stopEditStatus();
-            if (this.parent.editSettings.mode === 'Dialog' && (<{action?: string}>args).action !== 'add') {
+            if (this.parent.editSettings.mode === 'Dialog' && (<{ action?: string }>args).action !== 'add') {
                 this.parent.element.querySelector('.e-dlgeditrow').classList.remove('e-dlgeditrow');
             }
         }
@@ -308,13 +312,13 @@ export class NormalEdit {
         this.uid = '';
         (<Column[]>gObj.columns).forEach((col: Column) => {
             if (col.field) {
-                DataUtil.setValue(col.field, col.defaultValue, this.previousData );
+                DataUtil.setValue(col.field, col.defaultValue, this.previousData);
             }
         });
         let args: AddEventArgs = {
             cancel: false, foreignKeyData: {}, //foreign key support
             requestType: 'add', data: this.previousData, type: events.actionBegin, index: index,
-            rowData: this.previousData
+            rowData: this.previousData, target: undefined
         };
         gObj.trigger(events.actionBegin, args);
         if (args.cancel) {

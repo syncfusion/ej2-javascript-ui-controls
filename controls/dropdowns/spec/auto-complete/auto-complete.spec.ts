@@ -81,7 +81,7 @@ describe('AutoComplete', () => {
             atcObj.value = 'PHP';
             atcObj.dataBind();
             expect(atcObj.value === 'PHP').toBe(true);
-            atcObj.dataSource = [];
+            atcObj.dataSource = [{ id: 'list1', text: 'JAVA' }, { id: 'list2', text: 'PYTHON' }];
             atcObj.dataBind();
             expect(atcObj.value === 'PHP').toBe(false);
         });

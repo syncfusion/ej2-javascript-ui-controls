@@ -36,6 +36,7 @@ export class ComplexHierarchicalTree {
         return 'ComplexHierarchicalTree';
     }
 
+    /**   @private  */
     public doLayout(nodes: INode[], nameTable: {}, layout: Layout, viewPort: PointModel): void {
         new HierarchicalLayoutUtil().doLayout(nodes, nameTable, layout, viewPort);
     }

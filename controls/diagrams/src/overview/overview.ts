@@ -116,6 +116,7 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
 
     private event: boolean = true;
 
+    /**   @private  */
     public diagramRenderer: DiagramRenderer;
 
     constructor(options?: OverviewModel, element?: HTMLElement | string) {

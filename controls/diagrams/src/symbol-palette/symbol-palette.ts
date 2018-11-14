@@ -305,7 +305,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
 
     /** @private */
     public selectedSymbols: NodeModel | ConnectorModel;
+    /**   @private  */
     public symbolTable: {} = {};
+    /**   @private  */
     public childTable: {} = {};
     private diagramRenderer: DiagramRenderer;
     private svgRenderer: DiagramRenderer;

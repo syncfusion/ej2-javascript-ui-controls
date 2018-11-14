@@ -1,0 +1,69 @@
+
+
+/*! component's default definitions and variables */
+
+// @include export-module('fileexplorer-icons') {
+//   /*! fileexplorer icons */
+// }
+@include export-module('fileexplorer-layout') {
+  #{&}.e-fileexplorer {
+    border: 1px solid;
+
+    .e-toolbar {
+      border-bottom: 1px solid;
+    }
+
+    .e-layout {
+      position: relative;
+    }
+
+    .e-treeview {
+      border-bottom: 1px solid;
+      border-right: 1px solid;
+      float: left;
+      height: 353px;
+      overflow: auto;
+      position: relative;
+      width: 297px;
+    }
+
+    .e-grid {
+      border-width: 0 0 1px;
+      float: left;
+
+      .e-gridheader {
+        border-top-width: 0;
+      }
+    }
+
+    .e-dialog {
+
+      .e-fe-label {
+        padding-bottom: 10px;
+      }
+    }
+
+    .e-blur {
+      // sass-lint:disable-all
+      opacity: 0.2;
+    }
+  }
+}
+@include export-module('fileexplorer-theme') {
+  #{&}.e-fileexplorer {
+    border-color: $fe-border-color;
+
+    .e-toolbar {
+      border-bottom-color: $fe-border-color;
+    }
+
+    .e-treeview {
+      border-bottom-color: $fe-border-color;
+      border-right-color: $fe-border-color;
+    }
+
+    .e-fe-error {
+      color: $fe-error-color;
+    }
+  }
+}

@@ -170,9 +170,18 @@ export class ContentRender implements IRenderer {
             mCont.querySelector('tbody').innerHTML = '';
         }
         let idx: number = modelData[0].cells[0].index;
-        // tslint:disable-next-line:no-any
+        /* tslint:disable:no-any */
         if ((this.parent as any).registeredTemplate && (this.parent as any).registeredTemplate.template && !args.isFrozen) {
-            this.parent.destroyTemplate(['template']);
+            let templatetoclear: any = [];
+            for (let i: number = 0; i < (this.parent as any).registeredTemplate.template.length; i++) {
+                for (let j: number = 0; j < (this.parent as any).registeredTemplate.template[i].rootNodes.length; j++) {
+                    if (isNullOrUndefined((this.parent as any).registeredTemplate.template[i].rootNodes[j].parentNode)) {
+                        templatetoclear.push((this.parent as any).registeredTemplate.template[i]);
+                        /* tslint:enable:no-any */
+                    }
+                }
+            }
+            this.parent.destroyTemplate(['template'], templatetoclear);
         }
         if (this.parent.enableColumnVirtualization) {
             let cellMerge: CellMergeRender<Column> = new CellMergeRender(this.serviceLocator, this.parent);

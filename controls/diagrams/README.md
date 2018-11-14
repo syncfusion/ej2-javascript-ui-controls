@@ -22,18 +22,18 @@ npm install @syncfusion/ej2-diagrams
 
 * [Getting Started](https://ej2.syncfusion.com/documentation/diagram/getting-started.html?lang=typescript&utm_source=npm&utm_campaign=diagram)
 * [View Online Demos](https://ej2.syncfusion.com/16.2.41/demos/#/material/diagram/default-functionalities.html)
-* [Product Page](https://www.syncfusion.com/products/javascript/diagram)
+* [Product Page](https://www.syncfusion.com/javascript-ui-controls/diagram)
 
 ## Supported Frameworks
 
 Diagram component is also offered in following list of frameworks.
 
-1. [Angular](https://www.npmjs.com/package/@syncfusion/ej2-ng-diagrams?utm_source=npm&utm_campaign=diagram)
-2. [React](https://www.npmjs.com/package/@syncfusion/ej2-react-diagrams?utm_source=npm&utm_campaign=diagram)
-3. [VueJS](https://www.npmjs.com/package/@syncfusion/ej2-vue-diagrams?utm_source=npm&utm_campaign=diagram)
-4. [ASP.NET Core](https://www.syncfusion.com/products/aspnetcore/diagram)
-5. [ASP.NET MVC](https://www.syncfusion.com/products/aspnetmvc/diagram)
-6. [JavaScript (ES5)](https://www.syncfusion.com/products/javascript/diagram)
+1. [Angular](https://github.com/syncfusion/ej2-angular-ui-components?utm_source=npm&utm_campaign=diagram)
+2. [React](https://github.com/syncfusion/ej2-react-ui-components?utm_source=npm&utm_campaign=diagram)
+3. [VueJS](https://github.com/syncfusion/ej2-vue-ui-components?utm_source=npm&utm_campaign=diagram)
+4. [ASP.NET Core](https://aspdotnetcore.syncfusion.com/Diagram/FlowChart#/material)
+5. [ASP.NET MVC](https://aspnetmvc.syncfusion.com/Diagram/DefaultFunctionalities#/material)
+6. [JavaScript (ES5)](https://www.syncfusion.com/javascript-ui-controls/diagram)
 
 ## Showcase samples
 
@@ -72,6 +72,6 @@ Check the license detail [here](https://github.com/syncfusion/ej2/blob/master/li
 
 ## Changelog
 
-Check the changelog [here](https://github.com/syncfusion/ej2-diagrams/blob/master/CHANGELOG.md?utm_source=npm&utm_campaign=diagram)
+Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/src/diagrams/CHANGELOG.md?utm_source=npm&utm_campaign=diagram)
 
 © Copyright 2018 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

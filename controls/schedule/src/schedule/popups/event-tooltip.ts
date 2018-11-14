@@ -6,7 +6,7 @@ import * as cls from '../base/css-constant';
 import * as util from '../base/util';
 
 /**
- * Tooltip on appointments in Schedule
+ * Tooltip for Schedule
  */
 export class EventTooltip {
     private parent: Schedule;
@@ -42,7 +42,6 @@ export class EventTooltip {
         if (!isNullOrUndefined(args.target.getAttribute('data-tooltip-id'))) {
             return;
         }
-        let content: string = '';
         if (args.target.classList.contains(cls.RESOURCE_CELLS_CLASS) && this.parent.activeViewOptions.group.resources.length > 0) {
             let resCollection: TdData;
             if (this.parent.activeView.isTimelineView()) {
@@ -57,18 +56,17 @@ export class EventTooltip {
                 resource: resCollection.resource,
                 resourceData: resCollection.resourceData
             };
-            let ele: HTMLElement = createElement('div');
-            append([].slice.call(this.parent.getHeaderTooltipTemplate()(data)), ele);
-            content = ele.innerHTML;
-            this.tooltipObj.content = content;
+            let contentContainer: HTMLElement = createElement('div');
+            append(this.parent.getHeaderTooltipTemplate()(data), contentContainer);
+            this.tooltipObj.content = contentContainer;
             return;
         }
         let record: { [key: string]: Object } =
             <{ [key: string]: Object }>this.parent.eventBase.getEventByGuid(args.target.getAttribute('data-guid'));
         if (!isNullOrUndefined(this.parent.eventSettings.tooltipTemplate)) {
-            let ele: HTMLElement = createElement('div');
-            append([].slice.call(this.parent.getEventTooltipTemplate()(record)), ele);
-            content = ele.innerHTML;
+            let contentContainer: HTMLElement = createElement('div');
+            append(this.parent.getEventTooltipTemplate()(record), contentContainer);
+            this.tooltipObj.content = contentContainer;
         } else {
             let globalize: Internationalization = this.parent.globalize; let fields: EventFieldsMapping = this.parent.eventFields;
             let eventStart: Date = new Date('' + record[fields.startTime]) as Date;
@@ -92,12 +90,11 @@ export class EventTooltip {
             }
             let tooltipTime: string = (record[fields.isAllDay]) ? this.parent.localeObj.getConstant('allDay') :
                 (startTime + ' - ' + endTime);
-            content = '<div><div class="e-subject">' + tooltipSubject + '</div>' +
+            this.tooltipObj.content = '<div><div class="e-subject">' + tooltipSubject + '</div>' +
                 '<div class="e-location">' + tooltipLocation + '</div>' +
                 '<div class="e-details">' + tooltipDetails + '</div>' +
                 '<div class="e-all-day">' + tooltipTime + '</div></div>';
         }
-        this.tooltipObj.content = content;
     }
 
     public close(): void {

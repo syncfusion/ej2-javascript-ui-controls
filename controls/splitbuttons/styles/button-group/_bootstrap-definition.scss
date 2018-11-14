@@ -1,0 +1,39 @@
+@import 'definition.scss';
+
+$skin-name: 'bootstrap';
+$btn-margin: -1px;
+$btn-margin-left: -1px;
+$wrapper-border: 4px;
+$btn-round-radius: 20px;
+$icon-font-size: 12px;
+$icon-font-size-bigger: 14px;
+
+//Normal Outline GroupButton
+$outline-hover-border-color: $grey-ad;
+$outline-focus-border-color: $grey-8c;
+$outline-active-border-color: $grey-ad;
+
+//Outline Primary
+$outline-primary-hover-border-color: $brand-primary-darken-10;
+$outline-primary-focus-border-color: $brand-primary-darken-35;
+$outline-primary-active-border-color: $brand-primary-darken-10;
+
+//Outline Success
+$outline-success-hover-border-color: #2d672d;
+$outline-success-focus-border-color: #1e441e;
+$outline-success-active-border-color: #2d672d;
+
+//Outline Info
+$outline-info-hover-border-color: #1f7e9a;
+$outline-info-focus-border-color: #175b70;
+$outline-info-active-border-color: #1f7e9a;
+
+//Outline warning
+$outline-warning-hover-border-color: #b06d0f;
+$outline-warning-focus-border-color: #81500b;
+$outline-warning-active-border-color: #b06d0f;
+
+//Outline danger
+$outline-danger-hover-border-color: #8b211e;
+$outline-danger-focus-border-color:  #611715;
+$outline-danger-active-border-color: #8b211e;

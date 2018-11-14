@@ -316,3 +316,7 @@ export const recordAdded: string = 'recordAdded';
 export const cancelBegin: string = 'cancel-Begin';
 /** @hidden */
 export const editNextValCell: string = 'editNextValCell';
+/** @hidden */
+export const printGridInit: string = 'printGrid-Init';
+/** @hidden */
+export const exportRowDataBound: string = 'export-RowDataBound';

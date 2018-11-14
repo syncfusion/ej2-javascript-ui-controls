@@ -64,6 +64,7 @@ export class Data implements IDataProcessor {
      */
     public generateQuery(skipPage?: boolean): Query {
         let gObj: IGrid = this.parent;
+        gObj.query = gObj.getQuery().clone();
         let query: Query = gObj.query.clone();
         if (this.parent.columnQueryMode === 'ExcludeHidden') {
             query.select((<Column[]>this.parent.getColumns()).filter(

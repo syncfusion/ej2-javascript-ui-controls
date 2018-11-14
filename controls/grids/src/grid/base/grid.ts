@@ -69,6 +69,7 @@ import { ContextMenu } from '../actions/context-menu';
 import { BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { ColumnMenu } from '../actions/column-menu';
 import { CheckState } from './enum';
+import { Aggregate } from '../actions/aggregate';
 
 /** 
  * Represents the field name and direction of sort column. 
@@ -362,6 +363,13 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
      */
     @Property('Default')
     public checkboxMode: CheckboxSelectionType;
+
+    /**
+     * If 'enableSimpleMultiRowSelection' set to true, then the user can able to perform multiple row selection with single clicks.
+     * @default false
+     */
+    @Property(false)
+    public enableSimpleMultiRowSelection: boolean;
 }
 
 /**    
@@ -650,6 +658,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** @hidden */
     public isEdit: boolean;
     /** @hidden */
+    public commonQuery: Query;
+    /** @hidden */
     public isLastCellPrimaryKey: boolean;
     /** @hidden */
     public filterOperators: IFilterOperator;
@@ -791,6 +801,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @hidden
      */
     public columnChooserModule: ColumnChooser;
+
+    /**
+     * The `aggregateModule` is used to manipulate aggregate functionality in the Grid.
+     * @hidden
+     */
+    public aggregateModule: Aggregate;
 
     private commandColumnModule: CommandColumn;
     private focusModule: FocusStrategy;
@@ -2054,6 +2070,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         prepareColumns(this.columns as Column[], this.enableColumnVirtualization);
         this.getColumns();
         this.processModel();
+        this.commonQuery = this.query.clone();
         this.gridRender();
         this.wireEvents();
         this.addListener();
@@ -2206,8 +2223,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 case 'pageSettings':
                     this.notify(events.inBoundModelChanged, { module: 'pager', properties: newProp.pageSettings });
                     if (isNullOrUndefined(newProp.pageSettings.currentPage) && isNullOrUndefined(newProp.pageSettings.totalRecordsCount)
-                    || !isNullOrUndefined(oldProp.pageSettings) &&
-                    ((newProp.pageSettings.currentPage !== oldProp.pageSettings.currentPage)
+                        || !isNullOrUndefined(oldProp.pageSettings) &&
+                        ((newProp.pageSettings.currentPage !== oldProp.pageSettings.currentPage)
                             && !this.enableColumnVirtualization && !this.enableVirtualization
                             && this.pageSettings.totalRecordsCount <= this.pageSettings.pageSize)) { requireRefresh = true; }
                     break;
@@ -2301,15 +2318,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     this.scrollModule.removePadding(!newProp.enableRtl);
                     this.scrollModule.setPadding();
                 }
-                if (this.toolbar) {
+                if (this.toolbar && this.toolbarModule) {
                     (<EJ2Intance>this.toolbarModule.getToolbar()).ej2_instances[0].enableRtl = newProp.enableRtl;
                     (<EJ2Intance>this.toolbarModule.getToolbar()).ej2_instances[0].dataBind();
                 }
-                if (this.contextMenuItems) {
+                if (this.contextMenuItems && this.contextMenuModule) {
                     (<EJ2Intance>this.contextMenuModule.getContextMenu()).ej2_instances[0].enableRtl = newProp.enableRtl;
                     (<EJ2Intance>this.contextMenuModule.getContextMenu()).ej2_instances[0].dataBind();
                 }
-                if (this.showColumnMenu) {
+                if (this.showColumnMenu && this.columnMenuModule) {
                     (<EJ2Intance>this.columnMenuModule.getColumnMenu()).ej2_instances[0].enableRtl = newProp.enableRtl;
                     (<EJ2Intance>this.columnMenuModule.getColumnMenu()).ej2_instances[0].dataBind();
                 }
@@ -2475,6 +2492,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public getColumnIndexesInView(): number[] {
         return this.inViewIndexes;
+    }
+
+    /**
+     * @private
+     */
+    public getQuery(): Query {
+        return this.commonQuery;
     }
 
     /**
@@ -3119,7 +3143,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {number[]}
      */
     public getSelectedRowCellIndexes(): ISelectedCell[] {
-        return this.selectionModule.selectedRowCellIndexes;
+        return this.selectionModule ? this.selectionModule.selectedRowCellIndexes : [];
     }
 
     /**
@@ -3217,7 +3241,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {void} 
      */
     public goToPage(pageNo: number): void {
-        this.pagerModule.goToPage(pageNo);
+        if (this.pagerModule) {
+            this.pagerModule.goToPage(pageNo);
+        }
     }
 
     /** 
@@ -3226,7 +3252,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {void} 
      */
     public updateExternalMessage(message: string): void {
-        this.pagerModule.updateExternalMessage(message);
+        if (this.pagerModule) {
+            this.pagerModule.updateExternalMessage(message);
+        }
     }
 
     /** 
@@ -3237,7 +3265,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {void} 
      */
     public sortColumn(columnName: string, direction: SortDirection, isMultiSort?: boolean): void {
-        this.sortModule.sortColumn(columnName, direction, isMultiSort);
+        if (this.sortModule) {
+            this.sortModule.sortColumn(columnName, direction, isMultiSort);
+        }
     }
 
     /**  
@@ -3245,7 +3275,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {void} 
      */
     public clearSorting(): void {
-        this.sortModule.clearSorting();
+        if (this.sortModule) {
+            this.sortModule.clearSorting();
+        }
     }
 
     /** 
@@ -3255,7 +3287,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @hidden
      */
     public removeSortColumn(field: string): void {
-        this.sortModule.removeSortColumn(field);
+        if (this.sortModule) {
+            this.sortModule.removeSortColumn(field);
+        }
     }
 
     /** 
@@ -3275,10 +3309,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public filterByColumn(
         fieldName: string, filterOperator: string, filterValue: string | number | Date | boolean, predicate?: string, matchCase?: boolean,
         ignoreAccent?: boolean, actualFilterValue?: string, actualOperator?: string): void {
-        this.filterModule.filterByColumn(
-            fieldName, filterOperator, filterValue, predicate, matchCase, ignoreAccent,
-            actualFilterValue, actualOperator
-        );
+        if (this.filterModule) {
+            this.filterModule.filterByColumn(
+                fieldName, filterOperator, filterValue, predicate, matchCase, ignoreAccent,
+                actualFilterValue, actualOperator
+            );
+        }
     }
 
     /** 
@@ -3286,7 +3322,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {void} 
      */
     public clearFiltering(): void {
-        this.filterModule.clearFiltering();
+        if (this.filterModule) {
+            this.filterModule.clearFiltering();
+        }
     }
 
     /** 
@@ -3297,7 +3335,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @hidden
      */
     public removeFilteredColsByField(field: string, isClearFilterBar?: boolean): void {
-        this.filterModule.removeFilteredColsByField(field, isClearFilterBar);
+        if (this.filterModule) {
+            this.filterModule.removeFilteredColsByField(field, isClearFilterBar);
+        }
     }
 
     /** 
@@ -3307,7 +3347,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {void} 
      */
     public selectRow(index: number, isToggle?: boolean): void {
-        this.selectionModule.selectRow(index, isToggle);
+        if (this.selectionModule) {
+            this.selectionModule.selectRow(index, isToggle);
+        }
     }
 
     /** 
@@ -3316,7 +3358,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {void} 
      */
     public selectRows(rowIndexes: number[]): void {
-        this.selectionModule.selectRows(rowIndexes);
+        if (this.selectionModule) {
+            this.selectionModule.selectRows(rowIndexes);
+        }
     }
 
     /** 
@@ -3324,7 +3368,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {void} 
      */
     public clearSelection(): void {
-        this.selectionModule.clearSelection();
+        if (this.selectionModule) {
+            this.selectionModule.clearSelection();
+        }
     }
 
     /**
@@ -3334,7 +3380,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {void}
      */
     public selectCell(cellIndex: IIndex, isToggle?: boolean): void {
-        this.selectionModule.selectCell(cellIndex, isToggle);
+        if (this.selectionModule) {
+            this.selectionModule.selectCell(cellIndex, isToggle);
+        }
     }
 
     /** 
@@ -3345,7 +3393,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {void} 
      */
     public search(searchString: string): void {
-        this.searchModule.search(searchString);
+        if (this.searchModule) {
+            this.searchModule.search(searchString);
+        }
     }
 
     /**
@@ -3355,7 +3405,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {void}
      */
     public print(): void {
-        this.printModule.print();
+        if (this.printModule) {
+            this.printModule.print();
+        }
     }
 
     /**
@@ -3365,7 +3417,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param {Object} data - Defines the JSON data of the record to be deleted.
      */
     public deleteRecord(fieldname?: string, data?: Object): void {
-        this.editModule.deleteRecord(fieldname, data);
+        if (this.editModule) {
+            this.editModule.deleteRecord(fieldname, data);
+        }
     }
 
     /**
@@ -3373,21 +3427,27 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param {HTMLTableRowElement} tr - Defines the table row to be edited.
      */
     public startEdit(): void {
-        this.editModule.startEdit();
+        if (this.editModule) {
+            this.editModule.startEdit();
+        }
     }
 
     /**
      * If Grid is in editable state, you can save a record by invoking endEdit.
      */
     public endEdit(): void {
-        this.editModule.endEdit();
+        if (this.editModule) {
+            this.editModule.endEdit();
+        }
     }
 
     /**
      * Cancels edited state.
      */
     public closeEdit(): void {
-        this.editModule.closeEdit();
+        if (this.editModule) {
+            this.editModule.closeEdit();
+        }
     }
 
     /**
@@ -3397,7 +3457,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param {number} index - Defines the row index to be added
      */
     public addRecord(data?: Object, index?: number): void {
-        this.editModule.addRecord(data, index);
+        if (this.editModule) {
+            this.editModule.addRecord(data, index);
+        }
     }
 
     /**
@@ -3405,7 +3467,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param {HTMLTableRowElement} tr - Defines the table row element.
      */
     public deleteRow(tr: HTMLTableRowElement): void {
-        this.editModule.deleteRow(tr);
+        if (this.editModule) {
+            this.editModule.deleteRow(tr);
+        }
     }
 
     /**
@@ -3413,7 +3477,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param {boolean} withHeader - Specifies whether the column header text needs to be copied along with rows or cells.
      */
     public copy(withHeader?: boolean): void {
-        this.clipboardModule.copy(withHeader);
+        if (this.clipboardModule) {
+            this.clipboardModule.copy(withHeader);
+        }
     }
 
     /**    
@@ -3459,7 +3525,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {void} 
      */
     public reorderColumns(fromFName: string, toFName: string): void {
-        this.reorderModule.reorderColumns(fromFName, toFName);
+        if (this.reorderModule) {
+            this.reorderModule.reorderColumns(fromFName, toFName);
+        }
     }
 
     /** 
@@ -3486,14 +3554,18 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *  
      */
     public autoFitColumns(fieldNames?: string | string[]): void {
-        this.resizeModule.autoFitColumns(fieldNames);
+        if (this.resizeModule) {
+            this.resizeModule.autoFitColumns(fieldNames);
+        }
     }
 
     /** 
      * @hidden
      */
     public createColumnchooser(x: number, y: number, target: Element): void {
-        this.columnChooserModule.renderColumnChooser(x, y, target);
+        if (this.columnChooserModule) {
+            this.columnChooserModule.renderColumnChooser(x, y, target);
+        }
     }
 
     private initializeServices(): void {
@@ -3711,6 +3783,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private mouseMoveHandler(e: MouseEvent): void {
         if (this.isEllipsisTooltip()) {
             let element: HTMLElement = parentsUntil((e.target as Element), 'e-ellipsistooltip') as HTMLElement;
+            this.toolTipObj.close();
             if (element) {
                 if (element.getAttribute('aria-describedby')) {
                     return;
@@ -3722,11 +3795,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                         this.toolTipObj.content = element.innerText;
                     }
                     this.toolTipObj.open(element);
-                } else {
-                    this.toolTipObj.close();
                 }
-            } else {
-                this.toolTipObj.close();
             }
         }
     }
@@ -4032,7 +4101,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean,
         /* tslint:disable-next-line:no-any */
         workbook?: any, isBlob?: boolean): Promise<any> {
-        return this.excelExportModule.Map(this, excelExportProperties, isMultipleExport, workbook, false, isBlob);
+        return this.excelExportModule ?
+            this.excelExportModule.Map(this, excelExportProperties, isMultipleExport, workbook, false, isBlob) : null;
     }
 
     /**
@@ -4048,7 +4118,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         excelExportProperties?: ExcelExportProperties,
         /* tslint:disable-next-line:no-any */
         isMultipleExport?: boolean, workbook?: any, isBlob?: boolean): Promise<any> {
-        return this.excelExportModule.Map(this, excelExportProperties, isMultipleExport, workbook, true, isBlob);
+        return this.excelExportModule ?
+            this.excelExportModule.Map(this, excelExportProperties, isMultipleExport, workbook, true, isBlob) : null;
     }
     /**
      * Export Grid data to PDF document.
@@ -4063,7 +4134,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         pdfExportProperties?: PdfExportProperties,
         /* tslint:disable-next-line:no-any */
         isMultipleExport?: boolean, pdfDoc?: Object, isBlob?: boolean): Promise<Object> {
-        return this.pdfExportModule.Map(this, pdfExportProperties, isMultipleExport, pdfDoc, isBlob);
+        return this.pdfExportModule ? this.pdfExportModule.Map(this, pdfExportProperties, isMultipleExport, pdfDoc, isBlob) : null;
     }
 
     /** 
@@ -4072,7 +4143,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {void} 
      */
     public groupColumn(columnName: string): void {
-        this.groupModule.groupColumn(columnName);
+        if (this.groupModule) {
+            this.groupModule.groupColumn(columnName);
+        }
     }
 
     /** 
@@ -4081,7 +4154,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {void} 
      */
     public ungroupColumn(columnName: string): void {
-        this.groupModule.ungroupColumn(columnName);
+        if (this.groupModule) {
+            this.groupModule.ungroupColumn(columnName);
+        }
     }
 
     /** 
@@ -4102,8 +4177,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Destroys the given template reference.
      * @param {string[]} propertyNames - Defines the collection of template name.
      */
-    public destroyTemplate(propertyNames?: string[]): void {
-        this.clearTemplate(propertyNames);
+    //tslint:disable-next-line:no-any
+    public destroyTemplate(propertyNames?: string[], index?: any): void {
+        this.clearTemplate(propertyNames, index);
     }
 
 }

@@ -11,6 +11,7 @@ var Size = /** @__PURE__ @class */ (function () {
         this.width = width;
         this.height = height;
     }
+    /**   @private  */
     Size.prototype.isEmpty = function () {
         return this.height === 0 && this.width === 0;
     };
@@ -27,6 +28,7 @@ var Size = /** @__PURE__ @class */ (function () {
     //     size.width = Math.max(size.width, this.width);
     //     size.height = Math.max(size.height, this.height);
     // }
+    /**   @private  */
     Size.prototype.clone = function () {
         return new Size(this.width, this.height);
     };
@@ -60,6 +62,7 @@ var Point = /** @__PURE__ @class */ (function (_super) {
     function Point() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
+    /**   @private  */
     Point.equals = function (point1, point2) {
         if (point1 === point2) {
             return true;
@@ -108,16 +111,19 @@ var Point = /** @__PURE__ @class */ (function (_super) {
     // public distance(point2: PointModel): number {
     //     return Math.sqrt(Math.pow(this.x - point2.x, 2) + Math.pow(this.y - point2.y, 2));
     // }
+    /**   @private  */
     Point.transform = function (point, angle, length) {
         var pt = { x: 0, y: 0 };
         pt.x = Math.round((point.x + length * Math.cos(angle * Math.PI / 180)) * 100) / 100;
         pt.y = Math.round((point.y + length * Math.sin(angle * Math.PI / 180)) * 100) / 100;
         return pt;
     };
+    /**   @private  */
     Point.findLength = function (s, e) {
         var length = Math.sqrt(Math.pow((s.x - e.x), 2) + Math.pow((s.y - e.y), 2));
         return length;
     };
+    /**   @private  */
     Point.findAngle = function (point1, point2) {
         var angle = Math.atan2(point2.y - point1.y, point2.x - point1.x);
         angle = (180 * angle / Math.PI);
@@ -127,9 +133,11 @@ var Point = /** @__PURE__ @class */ (function (_super) {
         }
         return angle;
     };
+    /**   @private  */
     Point.distancePoints = function (pt1, pt2) {
         return Math.sqrt(Math.pow(pt2.x - pt1.x, 2) + Math.pow(pt2.y - pt1.y, 2));
     };
+    /**   @private  */
     Point.getLengthFromListOfPoints = function (points) {
         var length = 0;
         for (var j = 0; j < points.length - 1; j++) {
@@ -137,6 +145,7 @@ var Point = /** @__PURE__ @class */ (function (_super) {
         }
         return length;
     };
+    /**   @private  */
     Point.adjustPoint = function (source, target, isStart, length) {
         var pt = isStart ? { x: source.x, y: source.y } : { x: target.x, y: target.y };
         var angle;
@@ -168,6 +177,7 @@ var Point = /** @__PURE__ @class */ (function (_super) {
         }
         return pt;
     };
+    /**   @private  */
     Point.direction = function (pt1, pt2) {
         if (Math.abs(pt2.x - pt1.x) > Math.abs(pt2.y - pt1.y)) {
             return pt1.x < pt2.x ? 'Right' : 'Left';
@@ -825,6 +835,7 @@ var Rect = /** @__PURE__ @class */ (function () {
         this.height = height;
     }
     Object.defineProperty(Rect.prototype, "left", {
+        /**   @private  */
         get: function () {
             return this.x;
         },
@@ -832,6 +843,7 @@ var Rect = /** @__PURE__ @class */ (function () {
         configurable: true
     });
     Object.defineProperty(Rect.prototype, "right", {
+        /**   @private  */
         get: function () {
             return this.x + this.width;
         },
@@ -839,6 +851,7 @@ var Rect = /** @__PURE__ @class */ (function () {
         configurable: true
     });
     Object.defineProperty(Rect.prototype, "top", {
+        /**   @private  */
         get: function () {
             return this.y;
         },
@@ -846,6 +859,7 @@ var Rect = /** @__PURE__ @class */ (function () {
         configurable: true
     });
     Object.defineProperty(Rect.prototype, "bottom", {
+        /**   @private  */
         get: function () {
             return this.y + this.height;
         },
@@ -853,6 +867,7 @@ var Rect = /** @__PURE__ @class */ (function () {
         configurable: true
     });
     Object.defineProperty(Rect.prototype, "topLeft", {
+        /**   @private  */
         get: function () {
             return { x: this.left, y: this.top };
         },
@@ -860,6 +875,7 @@ var Rect = /** @__PURE__ @class */ (function () {
         configurable: true
     });
     Object.defineProperty(Rect.prototype, "topRight", {
+        /**   @private  */
         get: function () {
             return { x: this.right, y: this.top };
         },
@@ -867,6 +883,7 @@ var Rect = /** @__PURE__ @class */ (function () {
         configurable: true
     });
     Object.defineProperty(Rect.prototype, "bottomLeft", {
+        /**   @private  */
         get: function () {
             return { x: this.left, y: this.bottom };
         },
@@ -874,6 +891,7 @@ var Rect = /** @__PURE__ @class */ (function () {
         configurable: true
     });
     Object.defineProperty(Rect.prototype, "bottomRight", {
+        /**   @private  */
         get: function () {
             return { x: this.right, y: this.bottom };
         },
@@ -881,6 +899,7 @@ var Rect = /** @__PURE__ @class */ (function () {
         configurable: true
     });
     Object.defineProperty(Rect.prototype, "middleLeft", {
+        /**   @private  */
         get: function () {
             return { x: this.left, y: this.y + this.height / 2 };
         },
@@ -888,6 +907,7 @@ var Rect = /** @__PURE__ @class */ (function () {
         configurable: true
     });
     Object.defineProperty(Rect.prototype, "middleRight", {
+        /**   @private  */
         get: function () {
             return { x: this.right, y: this.y + this.height / 2 };
         },
@@ -895,6 +915,7 @@ var Rect = /** @__PURE__ @class */ (function () {
         configurable: true
     });
     Object.defineProperty(Rect.prototype, "topCenter", {
+        /**   @private  */
         get: function () {
             return { x: this.x + this.width / 2, y: this.top };
         },
@@ -902,6 +923,7 @@ var Rect = /** @__PURE__ @class */ (function () {
         configurable: true
     });
     Object.defineProperty(Rect.prototype, "bottomCenter", {
+        /**   @private  */
         get: function () {
             return { x: this.x + this.width / 2, y: this.bottom };
         },
@@ -909,15 +931,18 @@ var Rect = /** @__PURE__ @class */ (function () {
         configurable: true
     });
     Object.defineProperty(Rect.prototype, "center", {
+        /**   @private  */
         get: function () {
             return { x: this.x + this.width / 2, y: this.y + this.height / 2 };
         },
         enumerable: true,
         configurable: true
     });
+    /**   @private  */
     Rect.prototype.equals = function (rect1, rect2) {
         return rect1.x === rect2.x && rect1.y === rect2.y && rect1.width === rect2.width && rect1.height === rect2.height;
     };
+    /**   @private  */
     Rect.prototype.uniteRect = function (rect) {
         var right = Math.max(Number.NaN === this.right || this.x === Number.MAX_VALUE ? rect.right : this.right, rect.right);
         var bottom = Math.max(Number.NaN === this.bottom || this.y === Number.MAX_VALUE ? rect.bottom : this.bottom, rect.bottom);
@@ -927,6 +952,7 @@ var Rect = /** @__PURE__ @class */ (function () {
         this.height = bottom - this.y;
         return this;
     };
+    /**   @private  */
     Rect.prototype.unitePoint = function (point) {
         if (this.x === Number.MAX_VALUE) {
             this.x = point.x;
@@ -952,6 +978,7 @@ var Rect = /** @__PURE__ @class */ (function () {
     //     }
     //     return Rect.empty;
     // }
+    /**   @private  */
     Rect.prototype.Inflate = function (padding) {
         this.x -= padding;
         this.y -= padding;
@@ -972,15 +999,18 @@ var Rect = /** @__PURE__ @class */ (function () {
     //     this.width += width * 2;
     //     this.height += height * 2;
     // }
+    /**   @private  */
     Rect.prototype.intersects = function (rect) {
         if (this.right < rect.left || this.left > rect.right || this.top > rect.bottom || this.bottom < rect.top) {
             return false;
         }
         return true;
     };
+    /**   @private  */
     Rect.prototype.containsRect = function (rect) {
         return this.left <= rect.left && this.right >= rect.right && this.top <= rect.top && this.bottom >= rect.bottom;
     };
+    /**   @private  */
     Rect.prototype.containsPoint = function (point, padding) {
         if (padding === void 0) { padding = 0; }
         return this.left - padding <= point.x && this.right + padding >= point.x
@@ -994,6 +1024,7 @@ var Rect = /** @__PURE__ @class */ (function () {
     //     points.push(this.bottomRight);
     //     return points;
     // }
+    /**   @private  */
     Rect.toBounds = function (points) {
         var rect = new Rect();
         for (var _i = 0, points_1 = points; _i < points_1.length; _i++) {
@@ -1002,6 +1033,7 @@ var Rect = /** @__PURE__ @class */ (function () {
         }
         return rect;
     };
+    /**   @private  */
     Rect.empty = new Rect(Number.MAX_VALUE, Number.MIN_VALUE, 0, 0);
     return Rect;
 }());
@@ -2143,6 +2175,9 @@ var DiagramElement = /** @__PURE__ @class */ (function () {
          * Gets the rotate angle that is set to the immediate parent of the element
          */
         this.parentTransform = 0;
+        /**
+         * Gets/Set the boolean value for the element
+         */
         this.isSvgRender = false;
         /**
          * Gets/Sets the boundary of the element
@@ -2160,10 +2195,14 @@ var DiagramElement = /** @__PURE__ @class */ (function () {
          * Defines whether the element has to be measured or not
          */
         this.staticSize = false;
+        /**
+         * check whether the element is rect or not
+         */
         this.isRectElement = false;
         //private variables
         this.position = undefined;
         this.unitMode = undefined;
+        /**   @private  */
         this.float = false;
         this.floatingBounds = undefined;
         this.id = randomId();
@@ -2196,9 +2235,14 @@ var DiagramElement = /** @__PURE__ @class */ (function () {
         return undefined;
     };
     Object.defineProperty(DiagramElement.prototype, "outerBounds", {
+        /**   @private  */
         get: function () {
             return this.floatingBounds || this.bounds;
         },
+        /**
+         * used to set the outer bounds value
+         * @private
+         */
         set: function (bounds) {
             this.floatingBounds = bounds;
         },
@@ -2649,6 +2693,7 @@ var Container = /** @__PURE__ @class */ (function (_super) {
         _this.desiredBounds = undefined;
         /** @private */
         _this.measureChildren = true;
+        /**   @private  */
         _this.prevRotateAngle = 0;
         return _this;
     }
@@ -2856,13 +2901,20 @@ var PathElement = /** @__PURE__ @class */ (function (_super) {
          */
         _this.absolutePath = '';
         //Private variables
+        /**   @private  */
         _this.absoluteBounds = new Rect();
         return _this;
     }
     Object.defineProperty(PathElement.prototype, "data", {
+        /**
+         * Gets the geometry of the path element
+         */
         get: function () {
             return this.pathData;
         },
+        /**
+         * Sets the geometry of the path element
+         */
         set: function (value) {
             if (this.pathData !== value) {
                 this.pathData = value;
@@ -2981,7 +3033,13 @@ var DiagramNativeElement = /** @__PURE__ @class */ (function (_super) {
     function DiagramNativeElement(nodeId, diagramId) {
         var _this = _super.call(this) || this;
         _this.data = '';
+        /**
+         * set the node id
+         */
         _this.nodeId = '';
+        /**
+         * set the diagram id
+         */
         _this.diagramId = '';
         /**
          * sets scaling factor of the Native Element
@@ -2992,12 +3050,13 @@ var DiagramNativeElement = /** @__PURE__ @class */ (function (_super) {
         return _this;
     }
     Object.defineProperty(DiagramNativeElement.prototype, "content", {
-        /**
-         * Gets or sets the geometry of the native element
-         */
+        /**   @private  */
         get: function () {
             return this.data;
         },
+        /**
+         * sets the geometry of the native element
+         */
         set: function (value) {
             this.data = value;
             this.template = getContent(this, false);
@@ -3070,6 +3129,9 @@ var TextElement = /** @__PURE__ @class */ (function (_super) {
          * sets or gets the image source
          */
         _this.textContent = '';
+        /**
+         * sets the hyperlink color to blue
+         */
         _this.hyperlink = {
             color: 'blue'
         };
@@ -3091,9 +3153,15 @@ var TextElement = /** @__PURE__ @class */ (function (_super) {
         return _this;
     }
     Object.defineProperty(TextElement.prototype, "content", {
+        /**
+         * gets the content for the text element
+         */
         get: function () {
             return this.textContent;
         },
+        /**
+         * sets the content for the text element
+         */
         set: function (value) {
             if (this.textContent !== value) {
                 this.textContent = value;
@@ -3105,9 +3173,15 @@ var TextElement = /** @__PURE__ @class */ (function (_super) {
         configurable: true
     });
     Object.defineProperty(TextElement.prototype, "childNodes", {
+        /**
+         * sets the content for the text element
+         */
         get: function () {
             return this.textNodes;
         },
+        /**
+         * gets the content for the text element
+         */
         set: function (value) {
             this.textNodes = value;
         },
@@ -3115,9 +3189,15 @@ var TextElement = /** @__PURE__ @class */ (function (_super) {
         configurable: true
     });
     Object.defineProperty(TextElement.prototype, "wrapBounds", {
+        /**
+         * gets the wrapBounds for the text
+         */
         get: function () {
             return this.textWrapBounds;
         },
+        /**
+         * sets the wrapBounds for the text
+         */
         set: function (value) {
             this.textWrapBounds = value;
         },
@@ -3207,9 +3287,15 @@ var ImageElement = /** @__PURE__ @class */ (function (_super) {
         return _this;
     }
     Object.defineProperty(ImageElement.prototype, "source", {
+        /**
+         * Gets the source for the image element
+         */
         get: function () {
             return this.imageSource;
         },
+        /**
+         * Sets the source for the image element
+         */
         set: function (value) {
             this.imageSource = value;
             this.isDirt = true;
@@ -7250,6 +7336,7 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
     Connector.prototype.distance = function (pt1, pt2) {
         return Math.sqrt(Math.pow(pt2.x - pt1.x, 2) + Math.pow(pt2.y - pt1.y, 2));
     };
+    /**   @private  */
     Connector.prototype.findPath = function (sourcePt, targetPt) {
         var beginningpoint = { x: sourcePt.x, y: sourcePt.y };
         var distance = this.distance(sourcePt, targetPt);
@@ -8239,7 +8326,13 @@ var DiagramHtmlElement = /** @__PURE__ @class */ (function (_super) {
     function DiagramHtmlElement(nodeId, diagramId) {
         var _this = _super.call(this) || this;
         _this.data = '';
+        /**
+         * Gets the node id for the element
+         */
         _this.nodeId = '';
+        /**
+         * Gets the diagram id for the html element
+         */
         _this.diagramId = '';
         _this.diagramId = diagramId;
         _this.nodeId = nodeId;
@@ -8252,6 +8345,9 @@ var DiagramHtmlElement = /** @__PURE__ @class */ (function (_super) {
         get: function () {
             return this.data;
         },
+        /**
+         * Gets or sets the value of the html element
+         */
         set: function (value) {
             this.data = value;
             this.template = getContent(this, true);
@@ -9196,7 +9292,9 @@ var Ruler = /** @__PURE__ @class */ (function (_super) {
      */
     function Ruler(options, element) {
         var _this = _super.call(this, options, element) || this;
+        /**   @private  */
         _this.offset = 0;
+        /**   @private  */
         _this.scale = 1;
         return _this;
     }
@@ -11800,6 +11898,7 @@ function getFunction(value) {
 var CanvasRenderer = /** @__PURE__ @class */ (function () {
     function CanvasRenderer() {
     }
+    /**   @private  */
     CanvasRenderer.getContext = function (canvas) {
         return canvas.getContext('2d');
     };
@@ -11810,6 +11909,7 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
         }
     };
     
+    /**   @private  */
     CanvasRenderer.prototype.renderGradient = function (options, ctx, x, y) {
         var max;
         var min;
@@ -11836,6 +11936,7 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
         }
         return ctx;
     };
+    /**   @private  */
     CanvasRenderer.prototype.renderShadow = function (options, canvas, collection) {
         if (collection === void 0) { collection = null; }
         var ctx = CanvasRenderer.getContext(canvas);
@@ -11864,6 +11965,7 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
         ctx.closePath();
         ctx.restore();
     };
+    /**   @private  */
     CanvasRenderer.createCanvas = function (id, width, height) {
         var canvasObj = createHtmlElement('canvas', { 'id': id });
         this.setCanvasSize(canvasObj, width, height);
@@ -11915,6 +12017,7 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
         font += text.fontFamily;
         ctx.font = font;
     };
+    /**   @private  */
     CanvasRenderer.prototype.parseDashArray = function (dashArray) {
         var dashes = [];
         var separator = dashArray.indexOf(' ') !== -1 ? ' ' : ',';
@@ -11926,6 +12029,7 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
         return dashes;
     };
     //Rendering Part
+    /**   @private  */
     CanvasRenderer.prototype.drawRectangle = function (canvas, options) {
         if (options.visible === true) {
             if (options.cornerRadius) {
@@ -11986,6 +12090,7 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
     //     ctx.closePath();
     //     ctx.restore();
     // }
+    /**   @private  */
     CanvasRenderer.prototype.drawPath = function (canvas, options) {
         var collection = [];
         collection = processPathData(options.data);
@@ -12007,6 +12112,7 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
         ctx.stroke();
         ctx.restore();
     };
+    /**   @private  */
     CanvasRenderer.prototype.renderPath = function (canvas, options, collection) {
         if (options.visible === true) {
             var ctx = CanvasRenderer.getContext(canvas);
@@ -12145,6 +12251,7 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    /**   @private  */
     CanvasRenderer.prototype.drawText = function (canvas, options) {
         if (options.content && options.visible === true) {
             var ctx = CanvasRenderer.getContext(canvas);
@@ -12210,6 +12317,7 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
         this.image(ctx, image, obj.x, obj.y, obj.width, obj.height, obj);
         ctx.rotate(-(obj.angle * Math.PI / 180));
     };
+    /**   @private  */
     CanvasRenderer.prototype.drawImage = function (canvas, obj, parentSvg, fromPalette) {
         var _this = this;
         if (obj.visible) {
@@ -12334,6 +12442,7 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
     // angle between two vectors
     CanvasRenderer.prototype.a = function (u, v) { return (u[0] * v[1] < u[1] * v[0] ? -1 : 1) * Math.acos(this.r(u, v)); };
     // text utility
+    /**   @private  */
     CanvasRenderer.prototype.labelAlign = function (text, wrapBounds, childNodes) {
         var bounds = new Size(wrapBounds.width, childNodes.length * (text.fontSize * 1.2));
         var position = { x: 0, y: 0 };
@@ -12371,6 +12480,7 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
 var SvgRenderer = /** @__PURE__ @class */ (function () {
     function SvgRenderer() {
     }
+    /**   @private  */
     SvgRenderer.prototype.renderShadow = function (options, canvas, collection, parentSvg) {
         if (collection === void 0) { collection = null; }
         var pointModel = { x: 0, y: 0 };
@@ -12410,10 +12520,12 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
             this.renderPath(shadowElement, options, collection);
         }
     };
+    /**   @private  */
     SvgRenderer.prototype.parseDashArray = function (dashArray) {
         var dashes = [];
         return dashes;
     };
+    /**   @private  */
     SvgRenderer.prototype.drawRectangle = function (svg, options, diagramId, onlyRect, isSelector, parentSvg, ariaLabel) {
         if (options.shadow && !onlyRect) {
             this.renderShadow(options, svg, undefined, parentSvg);
@@ -12458,6 +12570,7 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
         setAttributeSvg(rect, attr);
         this.setSvgStyle(rect, options, diagramId);
     };
+    /**   @private  */
     SvgRenderer.prototype.updateSelectionRegion = function (gElement, options) {
         var rect;
         rect = gElement.parentNode.getElementById(options.id);
@@ -12475,6 +12588,7 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
         this.setSvgStyle(rect, options);
         setAttributeSvg(rect, attr);
     };
+    /**   @private  */
     SvgRenderer.prototype.createGElement = function (elementType, attribute) {
         var gElement = createSvgElement(elementType, attribute);
         return gElement;
@@ -12523,6 +12637,7 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
         setAttributeSvg(circle, attr);
         gElement.appendChild(circle);
     };
+    /**   @private  */
     SvgRenderer.prototype.drawPath = function (svg, options, diagramId, isSelector, parentSvg, ariaLabel) {
         var id;
         var x = Math.floor((Math.random() * 10) + 1);
@@ -12561,6 +12676,7 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
         setAttributeSvg(path, attr);
         this.setSvgStyle(path, options, diagramId);
     };
+    /**   @private  */
     SvgRenderer.prototype.renderPath = function (svg, options, collection) {
         var x1;
         var y1;
@@ -12626,6 +12742,7 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
         text.style.fontSize = options.fontSize.toString() + 'px';
         text.style.fontFamily = options.fontFamily;
     };
+    /**   @private  */
     SvgRenderer.prototype.drawText = function (canvas, options, parentSvg, ariaLabel, diagramId) {
         if (options.content !== undefined) {
             var textNode = void 0;
@@ -12693,6 +12810,7 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
             setAttributeSvg(text, attr);
         }
     };
+    /**   @private  */
     SvgRenderer.prototype.drawImage = function (canvas, obj, parentSvg, fromPalette) {
         var id = obj.id + '_image';
         var image;
@@ -12814,6 +12932,7 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
         group.setAttribute('clip-path', 'url(#' + node.id + '_clip)');
         return group;
     };
+    /**   @private  */
     SvgRenderer.prototype.renderGradient = function (options, svg, diagramId) {
         var max;
         var min;
@@ -12862,6 +12981,7 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
         }
         return grd;
     };
+    /**   @private  */
     SvgRenderer.prototype.createLinearGradient = function (linear) {
         var lineargradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
         var attr = {
@@ -12870,6 +12990,7 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
         setAttributeSvg(lineargradient, attr);
         return lineargradient;
     };
+    /**   @private  */
     SvgRenderer.prototype.createRadialGradient = function (radial) {
         var radialgradient = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
         var attr = {
@@ -12878,6 +12999,7 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
         setAttributeSvg(radialgradient, attr);
         return radialgradient;
     };
+    /**   @private  */
     SvgRenderer.prototype.setSvgStyle = function (svg, style, diagramId) {
         if (style.fill === 'none') {
             style.fill = 'transparent';
@@ -12913,6 +13035,7 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
     };
     //end region
     // text utility
+    /**   @private  */
     SvgRenderer.prototype.svgLabelAlign = function (text, wrapBound, childNodes) {
         var bounds = new Size(wrapBound.width, childNodes.length * (text.fontSize * 1.2));
         var pos = { x: 0, y: 0 };
@@ -12949,6 +13072,7 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
 /** @private */
 var DiagramRenderer = /** @__PURE__ @class */ (function () {
     function DiagramRenderer(name, svgRender, isSvgMode) {
+        /**   @private  */
         this.renderer = null;
         /** @private */
         this.isSvgMode = true;
@@ -12959,6 +13083,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         this.isSvgMode = isSvgMode;
         this.renderer = isSvgMode ? new SvgRenderer() : new CanvasRenderer();
     }
+    /**   @private  */
     DiagramRenderer.prototype.setCursor = function (canvas, cursor) {
         canvas.style.cursor = cursor;
     };
@@ -13040,6 +13165,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         }
         return { g: gElement, svg: svgElement };
     };
+    /**   @private  */
     DiagramRenderer.prototype.renderElement = function (element, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue) {
         if (element instanceof Container) {
             this.renderContainer(element, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue);
@@ -13063,6 +13189,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
             this.renderRect(element, canvas, transform, parentSvg);
         }
     };
+    /**   @private  */
     DiagramRenderer.prototype.drawSelectionRectangle = function (x, y, w, h, canvas, t) {
         x = (x + t.tx) * t.scale;
         y = (y + t.ty) * t.scale;
@@ -13095,12 +13222,15 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         };
         this.svgRenderer.drawRectangle(canvas, options, this.diagramId);
     };
+    /**   @private  */
     DiagramRenderer.prototype.drawLine = function (canvas, options) {
         this.svgRenderer.drawLine(canvas, options);
     };
+    /**   @private  */
     DiagramRenderer.prototype.drawPath = function (canvas, options) {
         this.svgRenderer.drawPath(canvas, options, this.diagramId);
     };
+    /**   @private  */
     DiagramRenderer.prototype.renderResizeHandle = function (element, canvas, constraints, currentZoom, selectorConstraints, transform, canMask, enableNode) {
         var left = element.offsetX - element.actualSize.width * element.pivot.x;
         var top = element.offsetY - element.actualSize.height * element.pivot.y;
@@ -13141,6 +13271,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
             this.renderCircularHandle('resizeEast', element, left + width, top + height / 2, canvas, canShowCorner(selectorConstraints, 'ResizeEast'), constraints & ThumbsConstraints.ResizeEast, transform, undefined, canMask, { 'aria-label': 'Thumb to resize the selected object on right side direction' }, undefined, 'e-diagram-resize-handle e-east');
         }
     };
+    /**   @private  */
     DiagramRenderer.prototype.renderEndPointHandle = function (selector, canvas, constraints, selectorConstraints, transform, connectedSource, connectedTarget, isSegmentEditing) {
         var sourcePoint = selector.sourcePoint;
         var targetPoint = selector.targetPoint;
@@ -13180,6 +13311,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    /**   @private  */
     DiagramRenderer.prototype.renderOrthogonalThumbs = function (id, selector, segment, canvas, visibility, t) {
         var orientation;
         var visible;
@@ -13192,6 +13324,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
             this.renderOrthogonalThumb((id + '_' + (j + 1)), selector, (((segment.points[j].x + segment.points[j + 1].x) / 2)), (((segment.points[j].y + segment.points[j + 1].y) / 2)), canvas, visible, orientation, t);
         }
     };
+    /**   @private  */
     DiagramRenderer.prototype.renderOrthogonalThumb = function (id, selector, x, y, canvas, visible, orientation, t) {
         var path;
         var h;
@@ -13213,6 +13346,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         };
         this.svgRenderer.drawPath(canvas, options, this.diagramId);
     };
+    /**   @private  */
     DiagramRenderer.prototype.renderPivotLine = function (element, canvas, transform, selectorConstraints, canMask) {
         var wrapper = element;
         var dashArray = '2,3';
@@ -13239,6 +13373,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         options.endPoint = endPoint;
         this.svgRenderer.drawLine(canvas, options);
     };
+    /**   @private  */
     DiagramRenderer.prototype.renderBezierLine = function (id, wrapper, canvas, start, end, transform) {
         var dashArray = '3,3';
         var options = this.getBaseAttributes(wrapper, transform);
@@ -13261,6 +13396,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         options.endPoint = endPoint;
         this.svgRenderer.drawLine(canvas, options);
     };
+    /**   @private  */
     DiagramRenderer.prototype.renderCircularHandle = function (id, selector, cx, cy, canvas, visible, enableSelector, t, connected, canMask, ariaLabel, count, className) {
         var wrapper = selector;
         var radius = 7;
@@ -13297,6 +13433,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         }
         this.svgRenderer.drawCircle(canvas, options, enableSelector, ariaLabel);
     };
+    /**   @private  */
     DiagramRenderer.prototype.renderBorder = function (selector, canvas, transform, enableNode) {
         var wrapper = selector;
         var options = this.getBaseAttributes(wrapper, transform);
@@ -13317,6 +13454,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         var parentSvg = this.getParentSvg(selector, 'selector');
         this.svgRenderer.drawRectangle(canvas, options, this.diagramId, undefined, true, parentSvg);
     };
+    /**   @private  */
     DiagramRenderer.prototype.renderUserHandler = function (selectorItem, canvas, transform) {
         var wrapper = selectorItem.wrapper;
         for (var _i = 0, _a = selectorItem.userHandles; _i < _a.length; _i++) {
@@ -13364,6 +13502,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
             this.svgRenderer.drawPath(canvas, options, this.diagramId, undefined, undefined, { 'aria-label': obj.name + 'user handle' });
         }
     };
+    /**   @private  */
     DiagramRenderer.prototype.renderRotateThumb = function (wrapper, canvas, transform, selectorConstraints, canMask) {
         var element = new PathElement();
         var newPoint;
@@ -13412,6 +13551,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         options.id = 'rotateThumb';
         this.svgRenderer.drawPath(canvas, options, this.diagramId, true, undefined, { 'aria-label': 'Thumb to rotate the selected object' });
     };
+    /**   @private  */
     DiagramRenderer.prototype.renderPathElement = function (element, canvas, transform, parentSvg, fromPalette) {
         var options = this.getBaseAttributes(element, transform);
         options.data = element.absolutePath;
@@ -13419,6 +13559,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         var ariaLabel = element.description ? element.description : element.id;
         this.renderer.drawPath(canvas, options, this.diagramId, undefined, parentSvg, ariaLabel);
     };
+    /**   @private  */
     DiagramRenderer.prototype.renderSvgGridlines = function (snapSettings, gridSvg, t, rulerSettings, hRuler, vRuler) {
         //render gridlines
         var pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
@@ -13522,6 +13663,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    /**   @private  */
     DiagramRenderer.prototype.updateGrid = function (snapSettings, svgGrid, transform, rulerSettings, hRuler, vRuler) {
         var grid = svgGrid.getElementById(this.diagramId + '_grid_rect');
         var i;
@@ -13614,6 +13756,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         }
         return scale;
     };
+    /**   @private  */
     DiagramRenderer.prototype.renderTextElement = function (element, canvas, transform, parentSvg, fromPalette) {
         var options = this.getBaseAttributes(element, transform);
         options.cornerRadius = 0;
@@ -13691,6 +13834,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
             this.svgRenderer.drawHTMLContent(element, htmlLayer.children[0], transform, isDiagramChild(htmlLayer));
         }
     };
+    /**   @private  */
     DiagramRenderer.prototype.renderImageElement = function (element, canvas, transform, parentSvg, fromPalette) {
         var options = this.getBaseAttributes(element, transform);
         options.cornerRadius = 0;
@@ -13746,6 +13890,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         options.description = element.description ? element.description : element.id;
         this.renderer.drawImage(canvas, options, parentSvg, fromPalette);
     };
+    /**   @private  */
     DiagramRenderer.prototype.renderContainer = function (group, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue) {
         var svgParent = { svg: parentSvg, g: canvas };
         if (this.diagramId) {
@@ -13788,6 +13933,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    /**   @private  */
     DiagramRenderer.prototype.hasNativeParent = function (children, count) {
         if (children && children.length > 0 && (count || 0 < 3)) {
             var child = children[0];
@@ -13800,16 +13946,19 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         }
         return undefined;
     };
+    /**   @private  */
     DiagramRenderer.prototype.renderRect = function (element, canvas, transform, parentSvg) {
         var options = this.getBaseAttributes(element, transform);
         options.cornerRadius = element.cornerRadius || 0;
         var ariaLabel = element.description ? element.description : element.id;
         this.renderer.drawRectangle(canvas, options, this.diagramId, undefined, undefined, parentSvg, ariaLabel);
     };
+    /**   @private  */
     DiagramRenderer.prototype.drawRect = function (canvas, options) {
         options.cornerRadius = 0;
         this.svgRenderer.drawRectangle(canvas, options, this.diagramId);
     };
+    /**   @private  */
     DiagramRenderer.prototype.getBaseAttributes = function (element, transform) {
         var options = {
             width: element.actualSize.width, height: element.actualSize.height,
@@ -13826,6 +13975,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         }
         return options;
     };
+    /**   @private  */
     DiagramRenderer.renderSvgBackGroundImage = function (background, diagramElement, x, y, width, height) {
         var container = document.getElementById(diagramElement.id);
         var backgroundLayer = getBackgroundLayerSvg(diagramElement.id);
@@ -13851,6 +14001,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
             setAttributeSvg(target, attr);
         }
     };
+    /**   @private  */
     DiagramRenderer.prototype.transformLayers = function (transform, svgMode) {
         var tx = transform.tx * transform.scale;
         var ty = transform.ty * transform.scale;
@@ -14793,6 +14944,7 @@ var ToolBase = /** @__PURE__ @class */ (function () {
          * Sets/Gets the current element that is under mouse
          */
         this.currentElement = null;
+        /**   @private  */
         this.blocked = false;
         this.isTooltipVisible = false;
         /** @private */
@@ -14809,6 +14961,7 @@ var ToolBase = /** @__PURE__ @class */ (function () {
         this.currentElement = currentElement;
         this.inAction = true;
     };
+    /**   @private  */
     ToolBase.prototype.mouseDown = function (args) {
         this.currentElement = args.source;
         this.startPosition = this.currentPosition = this.prevPosition = args.position;
@@ -14816,11 +14969,13 @@ var ToolBase = /** @__PURE__ @class */ (function () {
         this.startAction(args.source);
         this.commandHandler.startTransaction(this.isProtectChange);
     };
+    /**   @private  */
     ToolBase.prototype.mouseMove = function (args) {
         this.currentPosition = args.position;
         //this.currentElement = currentElement;
         return !this.blocked;
     };
+    /**   @private  */
     ToolBase.prototype.mouseUp = function (args) {
         this.currentPosition = args.position;
         // this.currentElement = currentElement;
@@ -14839,9 +14994,11 @@ var ToolBase = /** @__PURE__ @class */ (function () {
         this.inAction = false;
         this.blocked = false;
     };
+    /**   @private  */
     ToolBase.prototype.mouseWheel = function (args) {
         this.currentPosition = args.position;
     };
+    /**   @private  */
     ToolBase.prototype.mouseLeave = function (args) {
         this.mouseUp(args);
     };
@@ -14980,10 +15137,12 @@ var SelectTool = /** @__PURE__ @class */ (function (_super) {
         _this.action = action;
         return _this;
     }
+    /**   @private  */
     SelectTool.prototype.mouseDown = function (args) {
         this.inAction = true;
         _super.prototype.mouseDown.call(this, args);
     };
+    /**   @private  */
     SelectTool.prototype.mouseMove = function (args) {
         _super.prototype.mouseMove.call(this, args);
         //draw selected region
@@ -14993,6 +15152,7 @@ var SelectTool = /** @__PURE__ @class */ (function (_super) {
         }
         return !this.blocked;
     };
+    /**   @private  */
     SelectTool.prototype.mouseUp = function (args) {
         //rubber band selection
         if (Point.equals(this.currentPosition, this.prevPosition) === false && this.inAction) {
@@ -15028,6 +15188,7 @@ var SelectTool = /** @__PURE__ @class */ (function (_super) {
         this.inAction = false;
         _super.prototype.mouseUp.call(this, args);
     };
+    /**   @private  */
     SelectTool.prototype.mouseLeave = function (args) {
         if (this.inAction) {
             this.mouseUp(args);
@@ -15045,6 +15206,7 @@ var ConnectTool = /** @__PURE__ @class */ (function (_super) {
         _this.endPoint = endPoint;
         return _this;
     }
+    /**   @private  */
     ConnectTool.prototype.mouseDown = function (args) {
         this.inAction = true;
         this.undoElement = undefined;
@@ -15072,6 +15234,7 @@ var ConnectTool = /** @__PURE__ @class */ (function (_super) {
         }
         this.currentPosition = args.position;
     };
+    /**   @private  */
     ConnectTool.prototype.mouseUp = function (args) {
         this.commandHandler.updateSelector();
         this.commandHandler.removeSnap();
@@ -15127,6 +15290,7 @@ var ConnectTool = /** @__PURE__ @class */ (function (_super) {
         }
         _super.prototype.mouseUp.call(this, args);
     };
+    /**   @private  */
     ConnectTool.prototype.mouseMove = function (args) {
         _super.prototype.mouseMove.call(this, args);
         if ((!(this instanceof ConnectorDrawingTool)) && ((this.endPoint === 'ConnectorSourceEnd' &&
@@ -15210,12 +15374,14 @@ var ConnectTool = /** @__PURE__ @class */ (function (_super) {
         this.prevPosition = this.currentPosition;
         return !this.blocked;
     };
+    /**   @private  */
     ConnectTool.prototype.mouseLeave = function (args) {
         this.mouseUp(args);
     };
     ConnectTool.prototype.getTooltipContent = function (position) {
         return 'X:' + Math.round(position.x) + ' ' + 'Y:' + Math.round(position.y);
     };
+    /**   @private  */
     ConnectTool.prototype.endAction = function () {
         _super.prototype.endAction.call(this);
         this.prevPosition = null;
@@ -15230,10 +15396,12 @@ var MoveTool = /** @__PURE__ @class */ (function (_super) {
     __extends$24(MoveTool, _super);
     function MoveTool(commandHandler, objType) {
         var _this = _super.call(this, commandHandler, true) || this;
+        /**   @private  */
         _this.currentTarget = null;
         _this.objectType = objType;
         return _this;
     }
+    /**   @private  */
     MoveTool.prototype.mouseDown = function (args) {
         if (args.source instanceof Node || args.source instanceof Connector) {
             this.commandHandler.selectObjects([args.source], args.info && args.info.ctrlKey);
@@ -15256,6 +15424,7 @@ var MoveTool = /** @__PURE__ @class */ (function (_super) {
         _super.prototype.mouseDown.call(this, args);
         this.initialOffset = { x: 0, y: 0 };
     };
+    /**   @private  */
     MoveTool.prototype.mouseUp = function (args) {
         var obj;
         var historyAdded = false;
@@ -15333,6 +15502,7 @@ var MoveTool = /** @__PURE__ @class */ (function (_super) {
         }
         _super.prototype.mouseUp.call(this, args);
     };
+    /**   @private  */
     MoveTool.prototype.mouseMove = function (args) {
         _super.prototype.mouseMove.call(this, args);
         var isSame = false;
@@ -15424,9 +15594,11 @@ var MoveTool = /** @__PURE__ @class */ (function (_super) {
     MoveTool.prototype.getTooltipContent = function (node) {
         return 'X:' + Math.round(node.wrapper.bounds.x) + ' ' + 'Y:' + Math.round(node.wrapper.bounds.y);
     };
+    /**   @private  */
     MoveTool.prototype.mouseLeave = function (args) {
         this.mouseUp(args);
     };
+    /**   @private  */
     MoveTool.prototype.endAction = function () {
         _super.prototype.endAction.call(this);
         this.currentTarget = null;
@@ -15442,6 +15614,7 @@ var RotateTool = /** @__PURE__ @class */ (function (_super) {
     function RotateTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
+    /**   @private  */
     RotateTool.prototype.mouseDown = function (args) {
         this.undoElement = cloneObject(args.source);
         if (this.undoElement.nodes[0] && this.undoElement.nodes[0].children) {
@@ -15454,6 +15627,7 @@ var RotateTool = /** @__PURE__ @class */ (function (_super) {
         }
         _super.prototype.mouseDown.call(this, args);
     };
+    /**   @private  */
     RotateTool.prototype.mouseUp = function (args) {
         if (this.undoElement.rotateAngle !== args.source.wrapper.rotateAngle) {
             var oldValue = { rotateAngle: args.source.wrapper.rotateAngle };
@@ -15473,6 +15647,7 @@ var RotateTool = /** @__PURE__ @class */ (function (_super) {
         }
         _super.prototype.mouseUp.call(this, args);
     };
+    /**   @private  */
     RotateTool.prototype.mouseMove = function (args) {
         _super.prototype.mouseMove.call(this, args);
         if (this.undoElement.rotateAngle === args.source.wrapper.rotateAngle) {
@@ -15508,9 +15683,11 @@ var RotateTool = /** @__PURE__ @class */ (function (_super) {
     RotateTool.prototype.getTooltipContent = function (node) {
         return Math.round((node.rotateAngle % 360)).toString() + '\xB0';
     };
+    /**   @private  */
     RotateTool.prototype.mouseLeave = function (args) {
         this.mouseUp(args);
     };
+    /**   @private  */
     RotateTool.prototype.endAction = function () {
         _super.prototype.endAction.call(this);
     };
@@ -15523,10 +15700,12 @@ var ResizeTool = /** @__PURE__ @class */ (function (_super) {
     __extends$24(ResizeTool, _super);
     function ResizeTool(commandHandler, corner) {
         var _this = _super.call(this, commandHandler, true) || this;
+        /**   @private  */
         _this.initialBounds = new Rect();
         _this.corner = corner;
         return _this;
     }
+    /**   @private  */
     ResizeTool.prototype.mouseDown = function (args) {
         this.undoElement = cloneObject(args.source);
         this.undoParentElement = this.commandHandler.getSubProcess(args.source);
@@ -15545,6 +15724,7 @@ var ResizeTool = /** @__PURE__ @class */ (function (_super) {
         this.initialBounds.height = args.source.wrapper.actualSize.height;
         this.initialBounds.width = args.source.wrapper.actualSize.width;
     };
+    /**   @private  */
     ResizeTool.prototype.mouseUp = function (args) {
         this.commandHandler.removeSnap();
         if (this.undoElement.offsetX !== args.source.wrapper.offsetX || this.undoElement.offsetY !== args.source.wrapper.offsetY) {
@@ -15578,6 +15758,7 @@ var ResizeTool = /** @__PURE__ @class */ (function (_super) {
         _super.prototype.mouseUp.call(this, args);
         return !this.blocked;
     };
+    /**   @private  */
     ResizeTool.prototype.mouseMove = function (args) {
         _super.prototype.mouseMove.call(this, args);
         if (this.undoElement.offsetX === args.source.wrapper.offsetX && this.undoElement.offsetY === args.source.wrapper.offsetY) {
@@ -15609,6 +15790,7 @@ var ResizeTool = /** @__PURE__ @class */ (function (_super) {
         this.prevPosition = this.currentPosition;
         return !this.blocked;
     };
+    /**   @private  */
     ResizeTool.prototype.mouseLeave = function (args) {
         this.mouseUp(args);
     };
@@ -15684,10 +15866,12 @@ var NodeDrawingTool = /** @__PURE__ @class */ (function (_super) {
         _this.sourceObject = sourceObject;
         return _this;
     }
+    /**   @private  */
     NodeDrawingTool.prototype.mouseDown = function (args) {
         _super.prototype.mouseDown.call(this, args);
         this.inAction = true;
     };
+    /**   @private  */
     NodeDrawingTool.prototype.mouseMove = function (args) {
         _super.prototype.mouseMove.call(this, args);
         var checkBoundaryConstraints;
@@ -15707,6 +15891,7 @@ var NodeDrawingTool = /** @__PURE__ @class */ (function (_super) {
         }
         return checkBoundaryConstraints;
     };
+    /**   @private  */
     NodeDrawingTool.prototype.mouseUp = function (args) {
         var checkBoundaryConstraints;
         var rect = Rect.toBounds([this.prevPosition, this.currentPosition]);
@@ -15718,9 +15903,11 @@ var NodeDrawingTool = /** @__PURE__ @class */ (function (_super) {
         _super.prototype.mouseUp.call(this, args);
         this.inAction = false;
     };
+    /**   @private  */
     NodeDrawingTool.prototype.endAction = function () {
         _super.prototype.endAction.call(this);
     };
+    /**   @private  */
     NodeDrawingTool.prototype.mouseLeave = function (args) {
         if (this.inAction) {
             this.mouseUp(args);
@@ -15738,10 +15925,12 @@ var ConnectorDrawingTool = /** @__PURE__ @class */ (function (_super) {
         _this.sourceObject = sourceObject;
         return _this;
     }
+    /**   @private  */
     ConnectorDrawingTool.prototype.mouseDown = function (args) {
         _super.prototype.mouseDown.call(this, args);
         this.inAction = true;
     };
+    /**   @private  */
     ConnectorDrawingTool.prototype.mouseMove = function (args) {
         if (this.inAction) {
             var connector = {
@@ -15765,6 +15954,7 @@ var ConnectorDrawingTool = /** @__PURE__ @class */ (function (_super) {
         _super.prototype.mouseMove.call(this, args);
         return !this.blocked;
     };
+    /**   @private  */
     ConnectorDrawingTool.prototype.mouseUp = function (args) {
         if (this.drawingObject && this.drawingObject instanceof Connector) {
             this.commandHandler.addObjectToDiagram(this.drawingObject);
@@ -15773,9 +15963,11 @@ var ConnectorDrawingTool = /** @__PURE__ @class */ (function (_super) {
         this.inAction = false;
         _super.prototype.mouseUp.call(this, args);
     };
+    /**   @private  */
     ConnectorDrawingTool.prototype.endAction = function () {
         _super.prototype.endAction.call(this);
     };
+    /**   @private  */
     ConnectorDrawingTool.prototype.mouseLeave = function (args) {
         if (this.inAction) {
             this.mouseUp(args);
@@ -15788,6 +15980,7 @@ var TextDrawingTool = /** @__PURE__ @class */ (function (_super) {
     function TextDrawingTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
+    /**   @private  */
     TextDrawingTool.prototype.mouseDown = function (args) {
         _super.prototype.mouseDown.call(this, args);
         this.commandHandler.clearSelection();
@@ -15800,6 +15993,7 @@ var TextDrawingTool = /** @__PURE__ @class */ (function (_super) {
             this.drawingNode = this.commandHandler.drawObject(node);
         }
     };
+    /**   @private  */
     TextDrawingTool.prototype.mouseMove = function (args) {
         _super.prototype.mouseMove.call(this, args);
         if (!this.drawingNode) {
@@ -15820,6 +16014,7 @@ var TextDrawingTool = /** @__PURE__ @class */ (function (_super) {
         }
         return !this.blocked;
     };
+    /**   @private  */
     TextDrawingTool.prototype.mouseUp = function (args) {
         if (this.drawingNode) {
             this.drawingNode.style.strokeColor = 'none';
@@ -15834,6 +16029,7 @@ var TextDrawingTool = /** @__PURE__ @class */ (function (_super) {
         _super.prototype.mouseUp.call(this, args);
         this.inAction = false;
     };
+    /**   @private  */
     TextDrawingTool.prototype.endAction = function () {
         _super.prototype.endAction.call(this);
     };
@@ -15849,10 +16045,12 @@ var ZoomPanTool = /** @__PURE__ @class */ (function (_super) {
         _this.zooming = zoom;
         return _this;
     }
+    /**   @private  */
     ZoomPanTool.prototype.mouseDown = function (args) {
         _super.prototype.mouseDown.call(this, args);
         this.inAction = true;
     };
+    /**   @private  */
     ZoomPanTool.prototype.mouseMove = function (args) {
         _super.prototype.mouseMove.call(this, args);
         if (this.inAction) {
@@ -15875,10 +16073,12 @@ var ZoomPanTool = /** @__PURE__ @class */ (function (_super) {
         }
         return !this.blocked;
     };
+    /**   @private  */
     ZoomPanTool.prototype.mouseUp = function (args) {
         _super.prototype.mouseUp.call(this, args);
         this.inAction = false;
     };
+    /**   @private  */
     ZoomPanTool.prototype.endAction = function () {
         _super.prototype.endAction.call(this);
     };
@@ -15901,6 +16101,7 @@ var ExpandTool = /** @__PURE__ @class */ (function (_super) {
     function ExpandTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
+    /**   @private  */
     ExpandTool.prototype.mouseUp = function (args) {
         this.commandHandler.initExpand(args);
         _super.prototype.mouseUp.call(this, args);
@@ -15915,6 +16116,7 @@ var LabelTool = /** @__PURE__ @class */ (function (_super) {
     function LabelTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
+    /**   @private  */
     LabelTool.prototype.mouseUp = function (args) {
         var win = window.open(args.sourceWrapper.hyperlink.link, '_blank');
         win.focus();
@@ -15930,6 +16132,7 @@ var PolygonDrawingTool = /** @__PURE__ @class */ (function (_super) {
     function PolygonDrawingTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
+    /**   @private  */
     PolygonDrawingTool.prototype.mouseDown = function (args) {
         _super.prototype.mouseDown.call(this, args);
         this.inAction = true;
@@ -15956,6 +16159,7 @@ var PolygonDrawingTool = /** @__PURE__ @class */ (function (_super) {
             this.drawingObject.shape.points.push(pt);
         }
     };
+    /**   @private  */
     PolygonDrawingTool.prototype.mouseMove = function (args) {
         _super.prototype.mouseMove.call(this, args);
         if (this.inAction) {
@@ -15972,6 +16176,7 @@ var PolygonDrawingTool = /** @__PURE__ @class */ (function (_super) {
         }
         return true;
     };
+    /**   @private  */
     PolygonDrawingTool.prototype.mouseUp = function (args, dblClickArgs) {
         _super.prototype.mouseMove.call(this, args);
         if (this.inAction) {
@@ -15982,10 +16187,12 @@ var PolygonDrawingTool = /** @__PURE__ @class */ (function (_super) {
         }
         this.endAction();
     };
+    /**   @private  */
     PolygonDrawingTool.prototype.mouseWheel = function (args) {
         _super.prototype.mouseWheel.call(this, args);
         this.mouseMove(args);
     };
+    /**   @private  */
     PolygonDrawingTool.prototype.endAction = function () {
         this.inAction = false;
         this.drawingObject = null;
@@ -16000,6 +16207,7 @@ var PolyLineDrawingTool = /** @__PURE__ @class */ (function (_super) {
     function PolyLineDrawingTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
+    /**   @private  */
     PolyLineDrawingTool.prototype.mouseMove = function (args) {
         _super.prototype.mouseMove.call(this, args);
         if (this.inAction) {
@@ -16009,6 +16217,7 @@ var PolyLineDrawingTool = /** @__PURE__ @class */ (function (_super) {
         }
         return true;
     };
+    /**   @private  */
     PolyLineDrawingTool.prototype.mouseDown = function (args) {
         _super.prototype.mouseDown.call(this, args);
         this.inAction = true;
@@ -16029,10 +16238,12 @@ var PolyLineDrawingTool = /** @__PURE__ @class */ (function (_super) {
             drawObject.segments[drawObject.segments.length - 1] = segment;
         }
     };
+    /**   @private  */
     PolyLineDrawingTool.prototype.mouseWheel = function (args) {
         _super.prototype.mouseWheel.call(this, args);
         this.mouseMove(args);
     };
+    /**   @private  */
     PolyLineDrawingTool.prototype.mouseUp = function (args) {
         _super.prototype.mouseMove.call(this, args);
         if (this.inAction) {
@@ -16042,6 +16253,7 @@ var PolyLineDrawingTool = /** @__PURE__ @class */ (function (_super) {
         }
         this.endAction();
     };
+    /**   @private  */
     PolyLineDrawingTool.prototype.endAction = function () {
         this.drawingObject = null;
         this.inAction = false;
@@ -16053,12 +16265,14 @@ var LabelDragTool = /** @__PURE__ @class */ (function (_super) {
     function LabelDragTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
+    /**   @private  */
     LabelDragTool.prototype.mouseDown = function (args) {
         this.inAction = true;
         this.undoElement = cloneObject(args.source);
         this.annotationId = args.sourceWrapper.id;
         _super.prototype.mouseDown.call(this, args);
     };
+    /**   @private  */
     LabelDragTool.prototype.mouseMove = function (args) {
         _super.prototype.mouseMove.call(this, args);
         var difx = this.currentPosition.x - this.prevPosition.x;
@@ -16078,6 +16292,7 @@ var LabelDragTool = /** @__PURE__ @class */ (function (_super) {
         this.prevPosition = this.currentPosition;
         return !this.blocked;
     };
+    /**   @private  */
     LabelDragTool.prototype.mouseUp = function (args) {
         var redoValue = args.source;
         this.inAction = false;
@@ -16089,6 +16304,7 @@ var LabelDragTool = /** @__PURE__ @class */ (function (_super) {
         this.commandHandler.addHistoryEntry(entryValue);
         _super.prototype.mouseUp.call(this, args);
     };
+    /**   @private  */
     LabelDragTool.prototype.mouseLeave = function (args) {
         this.mouseUp(args);
     };
@@ -16101,6 +16317,7 @@ var LabelResizeTool = /** @__PURE__ @class */ (function (_super) {
         _this.corner = corner;
         return _this;
     }
+    /**   @private  */
     LabelResizeTool.prototype.mouseDown = function (args) {
         this.inAction = true;
         var object = (args.source.nodes.length) ?
@@ -16116,6 +16333,7 @@ var LabelResizeTool = /** @__PURE__ @class */ (function (_super) {
         };
         _super.prototype.mouseDown.call(this, args);
     };
+    /**   @private  */
     LabelResizeTool.prototype.mouseMove = function (args) {
         _super.prototype.mouseMove.call(this, args);
         if (this.inAction) {
@@ -16123,6 +16341,7 @@ var LabelResizeTool = /** @__PURE__ @class */ (function (_super) {
         }
         return !this.blocked;
     };
+    /**   @private  */
     LabelResizeTool.prototype.mouseUp = function (args) {
         var redoObject = (args.source.nodes.length) ?
             args.source.nodes[0] : args.source.connectors[0];
@@ -16134,9 +16353,11 @@ var LabelResizeTool = /** @__PURE__ @class */ (function (_super) {
         this.commandHandler.addHistoryEntry(entry);
         _super.prototype.mouseUp.call(this, args);
     };
+    /**   @private  */
     LabelResizeTool.prototype.mouseLeave = function (args) {
         this.mouseUp(args);
     };
+    /**   @private  */
     LabelResizeTool.prototype.resizeObject = function (args) {
         var object;
         object = (args.source.nodes.length) ? args.source.nodes[0] : args.source.connectors[0];
@@ -16172,6 +16393,7 @@ var LabelRotateTool = /** @__PURE__ @class */ (function (_super) {
     function LabelRotateTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
+    /**   @private  */
     LabelRotateTool.prototype.mouseDown = function (args) {
         this.inAction = true;
         this.annotationId = args.source.wrapper.children[0].id;
@@ -16180,6 +16402,7 @@ var LabelRotateTool = /** @__PURE__ @class */ (function (_super) {
         this.undoElement = cloneObject(object);
         _super.prototype.mouseDown.call(this, args);
     };
+    /**   @private  */
     LabelRotateTool.prototype.mouseMove = function (args) {
         _super.prototype.mouseMove.call(this, args);
         if (args.source) {
@@ -16195,6 +16418,7 @@ var LabelRotateTool = /** @__PURE__ @class */ (function (_super) {
         this.prevPosition = this.currentPosition;
         return !this.blocked;
     };
+    /**   @private  */
     LabelRotateTool.prototype.mouseUp = function (args) {
         this.inAction = false;
         var redoEntry = (args.source.nodes.length) ?
@@ -16207,6 +16431,7 @@ var LabelRotateTool = /** @__PURE__ @class */ (function (_super) {
         this.commandHandler.addHistoryEntry(entryObject);
         _super.prototype.mouseUp.call(this, args);
     };
+    /**   @private  */
     LabelRotateTool.prototype.mouseLeave = function (args) {
         this.mouseUp(args);
     };
@@ -16236,6 +16461,7 @@ var ConnectorEditing = /** @__PURE__ @class */ (function (_super) {
         _this.endPoint = endPoint;
         return _this;
     }
+    /**   @private  */
     ConnectorEditing.prototype.mouseDown = function (args) {
         this.inAction = true;
         this.undoElement = cloneObject(args.source);
@@ -16265,6 +16491,7 @@ var ConnectorEditing = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    /**   @private  */
     ConnectorEditing.prototype.mouseMove = function (args) {
         _super.prototype.mouseMove.call(this, args);
         this.currentPosition = args.position;
@@ -16292,6 +16519,7 @@ var ConnectorEditing = /** @__PURE__ @class */ (function (_super) {
         this.prevPosition = this.currentPosition;
         return !this.blocked;
     };
+    /**   @private  */
     ConnectorEditing.prototype.mouseUp = function (args) {
         var connector;
         if (args.source && args.source.connectors) {
@@ -16875,6 +17103,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
     /** @private */
     function DiagramEventHandler(diagram, commandHandler) {
         this.currentAction = 'None';
+        /**   @private  */
         this.focus = false;
         this.isBlocked = false;
         this.isMouseDown = false;
@@ -17064,6 +17293,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
         }
         return false;
     };
+    /**   @private  */
     DiagramEventHandler.prototype.mouseDown = function (evt) {
         this.focus = true;
         var touches;
@@ -17151,6 +17381,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
             evt.preventDefault();
         }
     };
+    /**   @private  */
     DiagramEventHandler.prototype.mouseMoveExtend = function (e, obj) {
         if (this.tool instanceof PolygonDrawingTool || this.tool instanceof PolyLineDrawingTool) {
             this.tool.mouseMove(this.eventArgs);
@@ -18263,14 +18494,18 @@ var Layer = /** @__PURE__ @class */ (function (_super) {
  */
 var CommandHandler = /** @__PURE__ @class */ (function () {
     function CommandHandler(diagram) {
+        /**   @private  */
         this.clipboardData = {};
+        /**   @private  */
         this.connectorsTable = [];
+        /**   @private  */
         this.processTable = {};
         this.childTable = {};
         this.parentTable = {};
         this.diagram = diagram;
     }
     Object.defineProperty(CommandHandler.prototype, "snappingModule", {
+        /**   @private  */
         get: function () {
             return this.diagram.snappingModule;
         },
@@ -18278,6 +18513,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         configurable: true
     });
     Object.defineProperty(CommandHandler.prototype, "layoutAnimateModule", {
+        /**   @private  */
         get: function () {
             return this.diagram.layoutAnimateModule;
         },
@@ -19702,6 +19938,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    /**   @private  */
     CommandHandler.prototype.updateNativeNodeIndex = function (nodeId, targetID) {
         var nodes = this.diagram.selectedItems.nodes;
         for (var i = 0; i < this.diagram.views.length; i++) {
@@ -19716,6 +19953,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    /**   @private  */
     CommandHandler.prototype.initSelectorWrapper = function () {
         var selectorModel = this.diagram.selectedItems;
         selectorModel.init(this.diagram);
@@ -19778,6 +20016,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             return this.dragTargetEnd(connector, tx, ty, null, point, endPoint, undefined, segment);
         }
     };
+    /**   @private  */
     CommandHandler.prototype.getSelectedObject = function () {
         var selectormodel = this.diagram.selectedItems;
         return (selectormodel.nodes).concat(selectormodel.connectors);
@@ -19858,6 +20097,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    /**   @private  */
     CommandHandler.prototype.connectorSegmentChange = function (actualObject, existingInnerBounds, isRotate) {
         var tx;
         var ty;
@@ -20383,6 +20623,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         }
         return currentPosition;
     };
+    /**   @private  */
     CommandHandler.prototype.snapAngle = function (angle) {
         if ((this.diagram.snapSettings.constraints & SnapConstraints.SnapToLines)
             && this.snappingModule) {
@@ -20392,6 +20633,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             return 0;
         }
     };
+    /**   @private  */
     CommandHandler.prototype.rotatePoints = function (conn, angle, pivot) {
         if (!conn.sourceWrapper || !conn.targetWrapper) {
             var matrix = identityMatrix();
@@ -20478,6 +20720,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         }
         return (innerParent) ? parentNodes : nodes;
     };
+    /**   @private  */
     CommandHandler.prototype.getChildren = function (node, nodes) {
         var temp = node;
         if (node.children) {
@@ -20895,6 +21138,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         }
         return selector;
     };
+    /**   @private  */
     CommandHandler.prototype.checkBoundaryConstraints = function (tx, ty, nodeBounds) {
         var pageSettings = this.diagram.pageSettings;
         var boundaryConstraints = this.diagram.pageSettings.boundaryConstraints;
@@ -21376,7 +21620,9 @@ var DiagramScroller = /** @__PURE__ @class */ (function () {
     function DiagramScroller(diagram) {
         /** @private */
         this.transform = { tx: 0, ty: 0, scale: 1 };
+        /**   @private  */
         this.oldCollectionObjects = [];
+        /**   @private  */
         this.removeCollection = [];
         this.vPortWidth = 0;
         this.vPortHeight = 0;
@@ -21596,6 +21842,7 @@ var DiagramScroller = /** @__PURE__ @class */ (function () {
         }
         return objects;
     };
+    /**   @private  */
     DiagramScroller.prototype.virtualizeElements = function () {
         var viewWidth = this.viewPortWidth / this.currentZoom;
         var viewHeight = this.viewPortHeight / this.currentZoom;
@@ -22177,6 +22424,7 @@ var SpatialSearch = /** @__PURE__ @class */ (function () {
         }
         return -1;
     };
+    /** @private */
     SpatialSearch.prototype.updateQuad = function (node) {
         this.setCurrentNode(node);
         var nodBounds = node.outerBounds;
@@ -23878,6 +24126,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    /** @private */
     Diagram.prototype.removeObjectsFromLayer = function (obj) {
         var layer = this.layers.indexOf(this.commandHandler.getObjectLayer(obj.id));
         var objects = this.layers[layer].objects;
@@ -23890,6 +24139,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             delete this.layers[layer].zIndexTable[this.nameTable[obj.id].zIndex];
         }
     };
+    /** @private */
     Diagram.prototype.removeElements = function (currentObj) {
         if (this.mode === 'SVG' || (this.mode === 'Canvas' && currentObj.shape.type === 'Native')) {
             var removeElement_1 = getDiagramElement(currentObj.id + '_groupElement', this.element.id);
@@ -24759,6 +25009,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         this.diagramLayerDiv.appendChild(nativeLayerSvg);
         setAttributeSvg(nativeLayerSvg, { 'class': 'e-native-layer', 'style': commonStyle });
     };
+    /** @private */
     Diagram.prototype.createSvg = function (id, width, height) {
         var svgObj = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         setAttributeSvg(svgObj, { 'id': id, 'width': width, 'height': height });
@@ -24771,6 +25022,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         this.initLayerObjects();
         this.updateBridging(isLoad);
     };
+    /** @private */
     Diagram.prototype.initLayerObjects = function () {
         var hasLayers = this.layers.length > 1;
         var connectors = [];
@@ -25550,6 +25802,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         }
         clearInterval(clearIntervalVal);
     };
+    /** @private */
     Diagram.prototype.updateVirtualObjects = function (collection, remove$$1, tCollection) {
         var _this = this;
         var diagramElementsLayer = document.getElementById('diagram_diagramLayer');
@@ -26025,6 +26278,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    /** @private */
     Diagram.prototype.renderSelectorForAnnotation = function (selectorModel, selectorElement) {
         this.diagramRenderer.renderResizeHandle(selectorModel.wrapper.children[0], selectorElement, selectorModel.thumbsConstraints, this.scroller.currentZoom, selectorModel.constraints, this.scroller.transform, undefined, canMove(selectorModel.annotation));
     };
@@ -26090,6 +26344,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         }
         return wrapper;
     };
+    /** @private */
     Diagram.prototype.getEndNodeWrapper = function (node, connector, source) {
         if (node.shape.type === 'Bpmn' && node.wrapper.children[0] instanceof Canvas) {
             if (node.shape.shape === 'Activity') {
@@ -26508,6 +26763,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             this.connectorPropertyChange(connector, {}, conn);
         }
     };
+    /** @private */
     Diagram.prototype.updateConnectorEdges = function (actualObject) {
         if (actualObject.inEdges.length > 0) {
             for (var j = 0; j < actualObject.inEdges.length; j++) {
@@ -27680,6 +27936,7 @@ var PrintAndExport = /** @__PURE__ @class */ (function () {
             _loop_1(j);
         }
     };
+    /**   @private  */
     PrintAndExport.prototype.getObjectsBound = function (options) {
         var nodes = this.diagram.nodes;
         var nodebounds;
@@ -28279,6 +28536,7 @@ var DataBinding = /** @__PURE__ @class */ (function () {
      * @private
      */
     function DataBinding() {
+        /**   @private  */
         this.dataTable = {};
         //constructs the data binding module
     }
@@ -28882,10 +29140,12 @@ var BpmnDiagrams = /** @__PURE__ @class */ (function () {
     function BpmnDiagrams() {
         //Code conversion for Bpmn Shapes
         //Start Region
+        /**   @private  */
         this.annotationObjects = {};
         //constructs the BpmnDiagrams module
     }
     Object.defineProperty(BpmnDiagrams.prototype, "textAnnotationConnectors", {
+        /**   @private  */
         get: function () {
             var connectors = [];
             for (var _i = 0, _a = Object.keys(this.annotationObjects); _i < _a.length; _i++) {
@@ -28915,6 +29175,7 @@ var BpmnDiagrams = /** @__PURE__ @class */ (function () {
         }
         return connectors;
     };
+    /**   @private  */
     BpmnDiagrams.prototype.getSize = function (node, content) {
         var size = new Size(node.width, node.height);
         if (size.width === undefined || size.height === undefined) {
@@ -30156,6 +30417,7 @@ var BpmnDiagrams = /** @__PURE__ @class */ (function () {
             wrapper.offsetY = node.offsetY = point.y;
         }
     };
+    /**   @private  */
     BpmnDiagrams.prototype.isBpmnTextAnnotation = function (activeLabel, diagram) {
         if (this.annotationObjects) {
             var parentNodeId = activeLabel.parentId;
@@ -30187,6 +30449,7 @@ var BpmnDiagrams = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    /**   @private  */
     BpmnDiagrams.prototype.updateQuad = function (actualObject, diagram) {
         var annotation = actualObject.shape.annotations;
         var annotationNode;
@@ -33860,6 +34123,7 @@ var HierarchicalTree = /** @__PURE__ @class */ (function () {
          */
         return 'OrganizationalChart';
     };
+    /**   @private  */
     HierarchicalTree.prototype.updateLayout = function (nodes, nameTable, layoutProp, viewport, uniqueId) {
         var layout = {
             type: layoutProp.type,
@@ -35474,6 +35738,7 @@ var MindMap = /** @__PURE__ @class */ (function () {
          */
         return 'MindMapChart';
     };
+    /**   @private  */
     MindMap.prototype.updateLayout = function (nodes, nameTable, layoutProp, viewPort, uniqueId, root) {
         var isRoot;
         isRoot = this.checkRoot(nodes, layoutProp, uniqueId, root, nameTable);
@@ -35603,6 +35868,7 @@ var RadialTree = /** @__PURE__ @class */ (function () {
          */
         return 'RadialTree';
     };
+    /**   @private  */
     RadialTree.prototype.updateLayout = function (nodes, nameTable, layoutProp, viewport) {
         var layout = {
             type: layoutProp.type,
@@ -36566,6 +36832,7 @@ var ComplexHierarchicalTree = /** @__PURE__ @class */ (function () {
          */
         return 'ComplexHierarchicalTree';
     };
+    /**   @private  */
     ComplexHierarchicalTree.prototype.doLayout = function (nodes, nameTable, layout, viewPort) {
         new HierarchicalLayoutUtil().doLayout(nodes, nameTable, layout, viewPort);
     };
@@ -38228,7 +38495,9 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
      */
     function SymbolPalette(options, element) {
         var _this = _super.call(this, options, element) || this;
+        /**   @private  */
         _this.symbolTable = {};
+        /**   @private  */
         _this.childTable = {};
         _this.info = 'info';
         /**

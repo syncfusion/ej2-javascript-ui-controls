@@ -108,7 +108,7 @@ function setTime(date, time) {
     var tzOffsetBefore = date.getTimezoneOffset();
     var d = new Date(date.getTime() + time);
     var tzOffsetDiff = d.getTimezoneOffset() - tzOffsetBefore;
-    date.setTime(d.getTime() + tzOffsetDiff * MS_PER_DAY);
+    date.setTime(d.getTime() + tzOffsetDiff * MS_PER_MINUTE);
     return date;
 }
 function resetTime(date) {
@@ -2086,10 +2086,12 @@ var Timezone = /** @__PURE__ @class */ (function () {
     Timezone.prototype.removeLocalOffset = function (date) {
         return new Date(+date - (date.getTimezoneOffset() * 60000));
     };
+    Timezone.prototype.getLocalTimezoneName = function () {
+        return window.Intl ?
+            Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC' : 'UTC';
+    };
     return Timezone;
 }());
-var localTimezoneName = window.Intl ?
-    Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC' : 'UTC';
 var timezoneData = [
     { Value: 'Pacific/Niue', Text: '(UTC-11:00) Niue' },
     { Value: 'Pacific/Pago_Pago', Text: '(UTC-11:00) Pago Pago' },
@@ -4947,7 +4949,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
 }());
 
 /**
- * Tooltip on appointments in Schedule
+ * Tooltip for Schedule
  */
 var EventTooltip = /** @__PURE__ @class */ (function () {
     function EventTooltip(parent) {
@@ -4979,7 +4981,6 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(args.target.getAttribute('data-tooltip-id'))) {
             return;
         }
-        var content = '';
         if (args.target.classList.contains(RESOURCE_CELLS_CLASS) && this.parent.activeViewOptions.group.resources.length > 0) {
             var resCollection = void 0;
             if (this.parent.activeView.isTimelineView()) {
@@ -4995,17 +4996,16 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
                 resource: resCollection.resource,
                 resourceData: resCollection.resourceData
             };
-            var ele = createElement('div');
-            append([].slice.call(this.parent.getHeaderTooltipTemplate()(data)), ele);
-            content = ele.innerHTML;
-            this.tooltipObj.content = content;
+            var contentContainer = createElement('div');
+            append(this.parent.getHeaderTooltipTemplate()(data), contentContainer);
+            this.tooltipObj.content = contentContainer;
             return;
         }
         var record = this.parent.eventBase.getEventByGuid(args.target.getAttribute('data-guid'));
         if (!isNullOrUndefined(this.parent.eventSettings.tooltipTemplate)) {
-            var ele = createElement('div');
-            append([].slice.call(this.parent.getEventTooltipTemplate()(record)), ele);
-            content = ele.innerHTML;
+            var contentContainer = createElement('div');
+            append(this.parent.getEventTooltipTemplate()(record), contentContainer);
+            this.tooltipObj.content = contentContainer;
         }
         else {
             var globalize = this.parent.globalize;
@@ -5032,12 +5032,11 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
             }
             var tooltipTime = (record[fields.isAllDay]) ? this.parent.localeObj.getConstant('allDay') :
                 (startTime + ' - ' + endTime);
-            content = '<div><div class="e-subject">' + tooltipSubject + '</div>' +
+            this.tooltipObj.content = '<div><div class="e-subject">' + tooltipSubject + '</div>' +
                 '<div class="e-location">' + tooltipLocation + '</div>' +
                 '<div class="e-details">' + tooltipDetails + '</div>' +
                 '<div class="e-all-day">' + tooltipTime + '</div></div>';
         }
-        this.tooltipObj.content = content;
     };
     EventTooltip.prototype.close = function () {
         this.tooltipObj.close();
@@ -6114,6 +6113,8 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         this.l10n = this.parent.localeObj;
         this.fields = this.parent.eventFields;
         this.fieldValidator = new FieldValidator();
+        var timezone = new Timezone();
+        this.localTimezoneName = timezone.getLocalTimezoneName();
         this.renderEventWindow();
     }
     EventWindow.prototype.renderEventWindow = function () {
@@ -6237,8 +6238,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             attrs: { onsubmit: 'return false;' }
         });
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
-            var templeteEle = this.parent.getEditorTemplate()();
-            append([].slice.call(templeteEle), form);
+            append(this.parent.getEditorTemplate()(), form);
         }
         else {
             var content = this.getDefaultEventWindowContent();
@@ -6953,6 +6953,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         }
     };
     EventWindow.prototype.timezoneChangeStyle = function (value) {
+        var _this = this;
         var timezoneDiv = this.element.querySelector('.' + EVENT_WINDOW_TIME_ZONE_DIV_CLASS);
         if (value) {
             addClass([timezoneDiv], ENABLE_CLASS);
@@ -6960,17 +6961,17 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             var endTimezoneObj = this.getInstance(EVENT_WINDOW_END_TZ_CLASS);
             var timezone = startTimezoneObj.dataSource;
             if (!startTimezoneObj.value || !this.parent.timezone) {
-                var found = timezone.some(function (tz) { return tz.Value === localTimezoneName; });
+                var found = timezone.some(function (tz) { return tz.Value === _this.localTimezoneName; });
                 if (!found) {
-                    timezone.push({ Value: localTimezoneName, Text: localTimezoneName });
+                    timezone.push({ Value: this.localTimezoneName, Text: this.localTimezoneName });
                     startTimezoneObj.dataSource = timezone;
                     endTimezoneObj.dataSource = timezone;
                     startTimezoneObj.dataBind();
                     endTimezoneObj.dataBind();
                 }
             }
-            startTimezoneObj.value = startTimezoneObj.value || this.parent.timezone || localTimezoneName;
-            endTimezoneObj.value = endTimezoneObj.value || this.parent.timezone || localTimezoneName;
+            startTimezoneObj.value = startTimezoneObj.value || this.parent.timezone || this.localTimezoneName;
+            endTimezoneObj.value = endTimezoneObj.value || this.parent.timezone || this.localTimezoneName;
             startTimezoneObj.dataBind();
             endTimezoneObj.dataBind();
         }
@@ -11598,8 +11599,8 @@ var ViewBase = /** @__PURE__ @class */ (function () {
         }
     };
     ViewBase.prototype.addAttributes = function (td, element) {
-        if (td.text) {
-            element.innerHTML = td.text;
+        if (td.template) {
+            append(td.template, element);
         }
         if (td.colSpan) {
             element.setAttribute('colspan', td.colSpan.toString());
@@ -11837,15 +11838,11 @@ var ViewBase = /** @__PURE__ @class */ (function () {
     ViewBase.prototype.setResourceHeaderContent = function (tdElement, tdData, className) {
         if (className === void 0) { className = 'e-text-ellipsis'; }
         if (this.parent.activeViewOptions.resourceHeaderTemplate) {
-            var cntEle = void 0;
             var data = {
                 resource: tdData.resource,
                 resourceData: tdData.resourceData
             };
-            cntEle = this.parent.getResourceHeaderTemplate()(data);
-            if (cntEle && cntEle.length) {
-                append([].slice.call(cntEle), tdElement);
-            }
+            append(this.parent.getResourceHeaderTemplate()(data), tdElement);
         }
         else {
             tdElement.appendChild(createElement('div', {
@@ -12716,7 +12713,7 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
                 templateElement = [wrap];
             }
         }
-        append([].slice.call(templateElement), appointmentDetails);
+        append(templateElement, appointmentDetails);
         this.appendEventIcons(record, appointmentDetails);
         this.renderResizeHandler(appointmentWrapper, record.data);
         return appointmentWrapper;
@@ -13256,7 +13253,10 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
             if (this.parent.activeViewOptions.showWeekNumber && data_1.className.indexOf(HEADER_CELLS_CLASS) !== -1) {
                 data_1.className.push(WEEK_NUMBER_CLASS);
                 var weekNo = getWeekNumber(this.renderDates.slice(-1)[0]);
-                data_1.text = '<span title="' + this.parent.localeObj.getConstant('week') + ' ' + weekNo + '">' + weekNo + '</span>';
+                data_1.template = [createElement('span', {
+                        innerHTML: '' + weekNo,
+                        attrs: { title: this.parent.localeObj.getConstant('week') + ' ' + weekNo }
+                    })];
             }
             ntr_1.appendChild(this.createTd(data_1));
             tbl.querySelector('tbody').appendChild(ntr_1);
@@ -14326,7 +14326,7 @@ var AgendaBase = /** @__PURE__ @class */ (function () {
                                 dateObj = {
                                     rowSpan: 1, type: 'dateColumn', resource: resColl[resColl.length - 1],
                                     groupOrder: resData[res].groupOrder, resourceData: resData[res].resourceData,
-                                    date: agendaDate, text: ''
+                                    date: agendaDate
                                 };
                                 if (!lastLevelInfo[tempIndex]) {
                                     lastLevelInfo[tempIndex] = [];
@@ -14338,7 +14338,7 @@ var AgendaBase = /** @__PURE__ @class */ (function () {
                             agendaDate = addDays(agendaDate, 1);
                             if (agendaDate.getTime() >= agendaLastDate.getTime() || this.parent.activeViewOptions.group.byDate
                                 || this.parent.currentView === 'MonthAgenda') {
-                                lastLevelInfo[lastLevelInfo.length - 1][1].text = 'lastRow';
+                                lastLevelInfo[lastLevelInfo.length - 1][1].cssClass = AGENDA_DAY_BORDER_CLASS;
                                 var tempObj = {
                                     rowSpan: data.length, type: 'resourceColumn', resource: resColl[resColl.length - 1],
                                     groupOrder: resData[res].groupOrder.slice(0, -1), resourceData: resData[res].resourceData,
@@ -14419,8 +14419,8 @@ var AgendaBase = /** @__PURE__ @class */ (function () {
                     ntd.setAttribute('data-date', data.date.getTime().toString());
                     ntd.appendChild(this.createDateHeaderElement(data.date));
                     var className = [AGENDA_CELLS_CLASS, AGENDA_DATE_CLASS];
-                    if (data.text === 'lastRow') {
-                        className.push(AGENDA_DAY_BORDER_CLASS);
+                    if (data.cssClass) {
+                        className.push(data.cssClass);
                     }
                     addClass([ntd], className);
                     ntr.appendChild(ntd);
@@ -15446,8 +15446,6 @@ var TimelineHeaderRow = /** @__PURE__ @class */ (function () {
         var keys = Object.keys(data);
         for (var i = 0; i < keys.length; i++) {
             var dates = data[keys[i]];
-            var content = void 0;
-            var ele = createElement('div');
             var htmlCol = void 0;
             if (!tempFn) {
                 htmlCol = compile(template, customHelper)({ date: dates[0] });
@@ -15456,10 +15454,8 @@ var TimelineHeaderRow = /** @__PURE__ @class */ (function () {
                 var args = { date: dates[0], type: type };
                 htmlCol = tempFn(args);
             }
-            append([].slice.call(htmlCol), ele);
-            content = ele.innerHTML;
             tdDatas.push({
-                date: dates[0], type: type, className: [cls], colSpan: dates.length * colspan, text: content
+                date: dates[0], type: type, className: [cls], colSpan: dates.length * colspan, template: htmlCol
             });
         }
         return tdDatas;
@@ -15897,5 +15893,5 @@ var TimelineMonth = /** @__PURE__ @class */ (function (_super) {
  * Export Schedule components
  */
 
-export { Schedule, cellClick, cellDoubleClick, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, contentReady, scroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, tapHoldReady, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getWeekFirstDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, Resize, DragAndDrop, HeaderRenderer, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, Timezone, localTimezoneName, timezoneData, RecurrenceEditor };
+export { Schedule, cellClick, cellDoubleClick, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, contentReady, scroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, tapHoldReady, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getWeekFirstDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, Resize, DragAndDrop, HeaderRenderer, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, Timezone, timezoneData, RecurrenceEditor };
 //# sourceMappingURL=ej2-schedule.es5.js.map

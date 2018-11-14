@@ -38,6 +38,7 @@ import { RulerModel, Ruler } from '../../ruler';
  */
 /** @private */
 export class DiagramRenderer {
+    /**   @private  */
     public renderer: IRenderer = null;
     private diagramId: string;
     /** @private */
@@ -58,6 +59,7 @@ export class DiagramRenderer {
         this.renderer = isSvgMode ? new SvgRenderer() : new CanvasRenderer();
     }
 
+    /**   @private  */
     public setCursor(canvas: HTMLElement, cursor: string): void {
         canvas.style.cursor = cursor;
     }
@@ -143,6 +145,7 @@ export class DiagramRenderer {
         return { g: gElement, svg: svgElement };
     }
 
+    /**   @private  */
     public renderElement(
         element: DiagramElement, canvas: HTMLCanvasElement | SVGElement, htmlLayer: HTMLElement, transform?: Transforms,
         parentSvg?: SVGSVGElement, createParent?: boolean, fromPalette?: boolean, indexValue?: number):
@@ -164,6 +167,7 @@ export class DiagramRenderer {
         }
     }
 
+    /**   @private  */
     public drawSelectionRectangle(x: number, y: number, w: number, h: number, canvas: HTMLCanvasElement | SVGElement, t: Transforms):
         void {
         x = (x + t.tx) * t.scale;
@@ -199,14 +203,17 @@ export class DiagramRenderer {
         this.svgRenderer.drawRectangle(canvas, options, this.diagramId);
     }
 
+    /**   @private  */
     public drawLine(canvas: SVGElement, options: LineAttributes): void {
         (this.svgRenderer as SvgRenderer).drawLine(canvas, options);
     }
 
+    /**   @private  */
     public drawPath(canvas: SVGElement, options: PathAttributes): void {
         (this.svgRenderer as SvgRenderer).drawPath(canvas, options, this.diagramId);
     }
 
+    /**   @private  */
     public renderResizeHandle(
         element: DiagramElement, canvas: HTMLCanvasElement | SVGElement, constraints: ThumbsConstraints, currentZoom: number,
         selectorConstraints?: SelectorConstraints, transform?: Transforms, canMask?: boolean, enableNode?: number)
@@ -289,6 +296,7 @@ export class DiagramRenderer {
     }
 
 
+    /**   @private  */
     public renderEndPointHandle(
         selector: ConnectorModel, canvas: HTMLCanvasElement | SVGElement, constraints: ThumbsConstraints,
         selectorConstraints: SelectorConstraints, transform: Transforms, connectedSource: boolean,
@@ -359,6 +367,7 @@ export class DiagramRenderer {
         }
     }
 
+    /**   @private  */
     public renderOrthogonalThumbs(
         id: string, selector: DiagramElement, segment: OrthogonalSegment, canvas: HTMLCanvasElement | SVGElement,
         visibility: boolean, t: Transforms): void {
@@ -373,6 +382,7 @@ export class DiagramRenderer {
         }
     }
 
+    /**   @private  */
     public renderOrthogonalThumb(
         id: string, selector: DiagramElement, x: number, y: number, canvas: HTMLCanvasElement | SVGElement,
         visible: boolean, orientation: string, t: Transforms): void {
@@ -388,6 +398,7 @@ export class DiagramRenderer {
         this.svgRenderer.drawPath(canvas as SVGElement, options, this.diagramId);
     }
 
+    /**   @private  */
     public renderPivotLine(
         element: DiagramElement, canvas: HTMLCanvasElement | SVGElement, transform?: Transforms,
         selectorConstraints?: SelectorConstraints, canMask?: boolean): void {
@@ -414,6 +425,7 @@ export class DiagramRenderer {
         this.svgRenderer.drawLine(canvas as SVGElement, options as LineAttributes);
     }
 
+    /**   @private  */
     public renderBezierLine(
         id: string, wrapper: DiagramElement, canvas: HTMLCanvasElement | SVGElement,
         start: PointModel, end: PointModel, transform?: Transforms): void {
@@ -439,6 +451,7 @@ export class DiagramRenderer {
         this.svgRenderer.drawLine(canvas as SVGElement, options as LineAttributes);
     }
 
+    /**   @private  */
     public renderCircularHandle(
         id: string, selector: DiagramElement, cx: number, cy: number, canvas: HTMLCanvasElement | SVGElement,
         visible: boolean, enableSelector?: number, t?: Transforms, connected?: boolean, canMask?: boolean,
@@ -482,6 +495,7 @@ export class DiagramRenderer {
         this.svgRenderer.drawCircle(canvas as SVGElement, options, enableSelector, ariaLabel);
     }
 
+    /**   @private  */
     public renderBorder(
         selector: DiagramElement, canvas: HTMLCanvasElement | SVGElement, transform?: Transforms, enableNode?: number)
         :
@@ -505,6 +519,7 @@ export class DiagramRenderer {
         this.svgRenderer.drawRectangle(canvas as SVGElement, options as RectAttributes, this.diagramId, undefined, true, parentSvg);
     }
 
+    /**   @private  */
     public renderUserHandler(selectorItem: SelectorModel, canvas: HTMLCanvasElement | SVGElement, transform?: Transforms): void {
         let wrapper: DiagramElement = selectorItem.wrapper;
         for (let obj of selectorItem.userHandles) {
@@ -553,6 +568,7 @@ export class DiagramRenderer {
         }
     }
 
+    /**   @private  */
     public renderRotateThumb(
         wrapper: DiagramElement, canvas: HTMLCanvasElement | SVGElement, transform?: Transforms,
         selectorConstraints?: SelectorConstraints, canMask?: boolean): void {
@@ -609,6 +625,7 @@ export class DiagramRenderer {
             undefined, { 'aria-label': 'Thumb to rotate the selected object' });
     }
 
+    /**   @private  */
     public renderPathElement(
         element: PathElement, canvas: HTMLCanvasElement | SVGElement,
         transform?: Transforms, parentSvg?: SVGSVGElement, fromPalette?: boolean):
@@ -620,6 +637,7 @@ export class DiagramRenderer {
         this.renderer.drawPath(canvas, options as PathAttributes, this.diagramId, undefined, parentSvg, ariaLabel);
     }
 
+    /**   @private  */
     public renderSvgGridlines(
         snapSettings: SnapSettingsModel, gridSvg: SVGElement, t: Transforms,
         rulerSettings: RulerSettingsModel, hRuler: RulerModel, vRuler: RulerModel
@@ -731,6 +749,7 @@ export class DiagramRenderer {
         }
     }
 
+    /**   @private  */
     public updateGrid(
         snapSettings: SnapSettingsModel, svgGrid: SVGSVGElement, transform: Transforms,
         rulerSettings: RulerSettingsModel, hRuler: RulerModel, vRuler: RulerModel
@@ -828,6 +847,7 @@ export class DiagramRenderer {
         return scale;
     }
 
+    /**   @private  */
     public renderTextElement(
         element: TextElement, canvas: HTMLCanvasElement | SVGElement,
         transform?: Transforms, parentSvg?: SVGSVGElement, fromPalette?: boolean):
@@ -912,6 +932,7 @@ export class DiagramRenderer {
         }
     }
 
+    /**   @private  */
     public renderImageElement(
         element: ImageElement, canvas: HTMLCanvasElement | SVGElement,
         transform?: Transforms, parentSvg?: SVGSVGElement, fromPalette?: boolean):
@@ -972,6 +993,7 @@ export class DiagramRenderer {
         this.renderer.drawImage(canvas, options as ImageAttributes, parentSvg, fromPalette);
     }
 
+    /**   @private  */
     public renderContainer(
         group: Container, canvas: HTMLCanvasElement | SVGElement, htmlLayer: HTMLElement,
         transform?: Transforms, parentSvg?: SVGSVGElement, createParent?: boolean, fromPalette?: boolean, indexValue?: number):
@@ -1016,6 +1038,7 @@ export class DiagramRenderer {
         }
     }
 
+    /**   @private  */
     public hasNativeParent(children: DiagramElement[], count?: number): DiagramElement {
         if (children && children.length > 0 && (count || 0 < 3)) {
             let child: DiagramElement = children[0];
@@ -1028,6 +1051,7 @@ export class DiagramRenderer {
         return undefined;
     }
 
+    /**   @private  */
     public renderRect(element: DiagramElement, canvas: HTMLCanvasElement | SVGElement, transform?: Transforms, parentSvg?: SVGSVGElement):
         void {
         let options: RectAttributes = this.getBaseAttributes(element, transform);
@@ -1036,11 +1060,13 @@ export class DiagramRenderer {
         this.renderer.drawRectangle(canvas, options, this.diagramId, undefined, undefined, parentSvg, ariaLabel);
     }
 
+    /**   @private  */
     public drawRect(canvas: SVGElement, options: RectAttributes): void {
         options.cornerRadius = 0;
         this.svgRenderer.drawRectangle(canvas, options, this.diagramId);
     }
 
+    /**   @private  */
     public getBaseAttributes(element: DiagramElement, transform?: Transforms): BaseAttributes {
         let options: BaseAttributes = {
             width: element.actualSize.width, height: element.actualSize.height,
@@ -1058,6 +1084,7 @@ export class DiagramRenderer {
         return options;
     }
 
+    /**   @private  */
     public static renderSvgBackGroundImage
         (background: BackgroundModel, diagramElement: HTMLElement, x: number, y: number, width: number, height: number): void {
         let container: HTMLElement = document.getElementById(diagramElement.id);
@@ -1086,6 +1113,7 @@ export class DiagramRenderer {
         }
     }
 
+    /**   @private  */
     public transformLayers(transform: Transforms, svgMode: boolean): boolean {
 
         let tx: number = transform.tx * transform.scale;

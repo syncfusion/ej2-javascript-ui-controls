@@ -177,7 +177,7 @@ export class AgendaBase {
                                 dateObj = {
                                     rowSpan: 1, type: 'dateColumn', resource: resColl[resColl.length - 1],
                                     groupOrder: resData[res].groupOrder, resourceData: resData[res].resourceData,
-                                    date: agendaDate, text: ''
+                                    date: agendaDate
                                 };
                                 if (!lastLevelInfo[tempIndex]) {
                                     lastLevelInfo[tempIndex] = [];
@@ -189,7 +189,7 @@ export class AgendaBase {
                             agendaDate = util.addDays(agendaDate, 1);
                             if (agendaDate.getTime() >= agendaLastDate.getTime() || this.parent.activeViewOptions.group.byDate
                                 || this.parent.currentView === 'MonthAgenda') {
-                                lastLevelInfo[lastLevelInfo.length - 1][1].text = 'lastRow';
+                                lastLevelInfo[lastLevelInfo.length - 1][1].cssClass = cls.AGENDA_DAY_BORDER_CLASS;
                                 let tempObj: TdData = {
                                     rowSpan: data.length, type: 'resourceColumn', resource: resColl[resColl.length - 1],
                                     groupOrder: resData[res].groupOrder.slice(0, -1), resourceData: resData[res].resourceData,
@@ -271,8 +271,8 @@ export class AgendaBase {
                     ntd.setAttribute('data-date', data.date.getTime().toString());
                     ntd.appendChild(this.createDateHeaderElement(data.date));
                     let className: string[] = [cls.AGENDA_CELLS_CLASS, cls.AGENDA_DATE_CLASS];
-                    if (data.text === 'lastRow') {
-                        className.push(cls.AGENDA_DAY_BORDER_CLASS);
+                    if (data.cssClass) {
+                        className.push(data.cssClass);
                     }
                     addClass([ntd], className);
                     ntr.appendChild(ntd);

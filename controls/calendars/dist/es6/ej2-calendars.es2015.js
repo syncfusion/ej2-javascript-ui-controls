@@ -2247,16 +2247,18 @@ let DatePicker = class DatePicker extends Calendar {
             keyConfigs: this.keyConfigs
         });
     }
-    resetFormHandler() {
+    resetFormHandler(e) {
         if (this.inputElement.getAttribute('value')) {
             this.value = this.checkDateValue(new Date('' + this.element.getAttribute('value')));
         }
         else {
-            this.value = null;
-            if (this.inputElement) {
-                Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
-                attributes(this.inputElement, { 'aria-invalid': 'false' });
-                removeClass([this.inputWrapper.container], ERROR);
+            if (this.formElement && e.target === this.formElement) {
+                this.value = null;
+                if (this.inputElement) {
+                    Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
+                    attributes(this.inputElement, { 'aria-invalid': 'false' });
+                    removeClass([this.inputWrapper.container], ERROR);
+                }
             }
         }
     }
@@ -3547,12 +3549,14 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         this.clearRange();
         this.hide(e);
     }
-    formResetHandler() {
-        this.value = null;
-        if (this.inputElement) {
-            Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
-            attributes(this.inputElement, { 'aria-invalid': 'false' });
-            removeClass([this.inputWrapper.container], ERROR$1);
+    formResetHandler(e) {
+        if (this.formElement && e.target === this.formElement) {
+            this.value = null;
+            if (this.inputElement) {
+                Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
+                attributes(this.inputElement, { 'aria-invalid': 'false' });
+                removeClass([this.inputWrapper.container], ERROR$1);
+            }
         }
     }
     clear() {

@@ -21,7 +21,7 @@ import { DataSource } from '../model/dataSource';
 import { GridSettings } from '../model/gridsettings';
 import { GridSettingsModel } from '../model/gridsettings-model';
 import { PivotButton } from '../../common/actions/pivot-button';
-import { PivotFieldList } from '../../field-list/base/field-list';
+import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
 import { Grid, Column, QueryCellInfoEventArgs, HeaderCellInfoEventArgs, ResizeArgs } from '@syncfusion/ej2-grids';
 import { PdfExportProperties, ExcelExportProperties, ExcelQueryCellInfoEventArgs, ColumnDragEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelHeaderQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs, PdfHeaderQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';

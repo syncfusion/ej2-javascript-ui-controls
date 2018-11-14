@@ -1,0 +1,158 @@
+
+
+$pivotgrid-cell-border-color: #cecece;
+$pivotgrid-border-type: $border-type;
+$pivotgrid-border-size: $border-size;
+$pivotgrid-table-background-color: #fff;
+$pivotgrid-content-font-size: 12px;
+$pivotgrid-font-family: $font-family;
+$pivotgrid-expand-icon: '\e859';
+$pivotgrid-rtl-expand-icon: '\e854';
+$pivotgrid-collapse-icon: '\e83d';
+
+@include export-module('pivotgrid-icons') {
+  .e-pivotgrid {
+    .e-expand::before {
+      content: $pivotgrid-expand-icon;
+      margin-left: 7px;
+    }
+
+    .e-collapse::before {
+      content: $pivotgrid-collapse-icon;
+      margin-left: 7px;
+    }
+
+    .e-expand,
+    .e-collapse {
+      display: inline-block;
+    }
+
+    &.e-rtl {
+      .e-expand::before,
+      .e-collapse::before {
+        margin-left: 0;
+        margin-right: 7px;
+      }
+
+      .e-expand::before {
+        content: $pivotgrid-rtl-expand-icon;
+      }
+    }
+  }
+}
+/*! layout section */
+@include export-module('pivotgrid-theme') {
+  /*! PivotGrid theme */
+  .e-pivotgrid {
+    font-family: $pivotgrid-font-family;
+    font-size: $pivotgrid-content-font-size;
+
+    .e-pivottable td {
+      background-color: $pivotgrid-table-background-color;
+      border: $pivotgrid-border-size $pivotgrid-border-type $pivotgrid-cell-border-color;
+      height: 32px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .e-pgheaders,
+    .e-body {
+      border: $pivotgrid-border-size $pivotgrid-border-type $pivotgrid-cell-border-color;
+    }
+
+    .e-pgheaders {
+      border-bottom: 0;
+    }
+
+    .e-body {
+      border-top: 0;
+    }
+
+    .e-pivottable {
+      border-collapse: collapse;
+      table-layout: fixed;
+      width: 100%;
+    }
+
+    .e-body {
+      overflow-x: auto;
+      overflow-y: hidden;
+      position: relative;
+    }
+
+    .e-rowsheader {
+      float: left;
+      height: inherit;
+      overflow: hidden;
+      width: min-content;
+    }
+
+    .e-valuescontent {
+      height: inherit;
+      overflow: auto;
+    }
+
+    .e-valuescontent tr:first-child td,
+    .e-rowsheader tr:first-child td,
+    .e-columnsheader tr:first-child td,
+    .e-topheader tr:first-child td {
+      border-top: 0;
+    }
+
+    .e-valuescontent tr td:first-child,
+    .e-rowsheader tr td:first-child,
+    .e-columnsheader tr td:first-child,
+    .e-topheader tr td:first-child {
+      border-left-width: 0;
+    }
+
+    .e-topheader {
+      float: left;
+      width: min-content;
+    }
+
+    .e-columnsheader {
+      overflow: hidden;
+    }
+
+    .e-headercell .e-cellvalue {
+      margin-left: 7px;
+    }
+
+    // sass-lint:disable-all
+    .e-spancell {
+      border-left: 0 !important;
+      border-right: 0 !important;
+    }
+    // sass-lint:enable-all
+
+    .e-valuecell {
+      text-align: right;
+    }
+
+    .e-valuecell .e-cellvalue {
+      margin-right: 7px;
+    }
+
+    &.e-rtl {
+      .e-topheader,
+      .e-rowsheader {
+        float: right;
+      }
+
+      .e-headercell .e-cellvalue {
+        margin-left: 0;
+        margin-right: 7px;
+      }
+
+      .e-valuescontent tr td:first-child,
+      .e-rowsheader tr td:first-child,
+      .e-columnsheader tr td:first-child,
+      .e-topheader tr td:first-child {
+        border-left-width: 1px;
+        border-right-width: 0;
+      }
+    }
+  }
+}

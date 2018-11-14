@@ -31,6 +31,7 @@ export class ConnectorEditing extends ToolBase {
         this.endPoint = endPoint;
     }
 
+    /**   @private  */
     public mouseDown(args: MouseEventArgs): void {
         this.inAction = true;
         this.undoElement = cloneObject(args.source);
@@ -59,6 +60,7 @@ export class ConnectorEditing extends ToolBase {
             }
         }
     }
+    /**   @private  */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         this.currentPosition = args.position;
@@ -87,6 +89,7 @@ export class ConnectorEditing extends ToolBase {
         return !this.blocked;
     }
 
+    /**   @private  */
     public mouseUp(args: MouseEventArgs): void {
         let connector: ConnectorModel;
         if (args.source && (args.source as SelectorModel).connectors) {

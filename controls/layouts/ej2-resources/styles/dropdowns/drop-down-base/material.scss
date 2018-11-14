@@ -1,0 +1,170 @@
+
+
+$list-line-height: 36px;
+$header-font-weight: 600;
+$last-child-bottom-border: 0;
+$default-font-family: $font-family;
+$list-font-size: 15px;
+$list-border-size: 1px;
+$default-header-font-color: $default-font-color;
+$list-default-font-color: $default-font-color;
+$list-border-color: $default-border-color;
+$list-bg-color: $default-bg-color;
+$list-bottom-border: $list-border-size;
+$list-gradient-color: $default-gradient-color;
+$list-font-family: $default-font-family;
+$list-header-border-color: $header-border-color;
+$list-header-bg-color: $header-bg-color;
+$list-active-bg-color: $active-bg-color;
+$list-active-border-color: $active-border-color;
+$list-active-font-color: $active-font-color;
+$list-hover-bg-color: $hover-bg-color;
+$list-hover-border-color: $hover-border-color;
+$list-hover-font-color: $hover-font-color;
+$group-list-padding-left: 2em;
+$list-padding-right: 16px;
+
+@include export-module('dropdownbase-layout') {
+  .e-bigger .e-dropdownbase,
+  .e-dropdownbase.e-bigger {
+    min-height: 45px;
+    @at-root {
+      & .e-list-item,
+      & .e-list-group-item,
+      & .e-fixed-head {
+        line-height: 48px;
+      }
+
+      & .e-list-item .e-list-icon {
+        font-size: 20px;
+      }
+    }
+  }
+
+  .e-dropdownbase {
+    display: block;
+    height: 100%;
+    min-height: 36px;
+    position: relative;
+    width: 100%;
+    @at-root {
+      & .e-list-parent {
+        margin: 0;
+        padding: 0;
+      }
+
+      & .e-list-group-item,
+      & .e-fixed-head {
+        cursor: default;
+      }
+
+      & .e-list-item {
+        cursor: pointer;
+        overflow: hidden;
+        position: relative;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+        white-space: nowrap;
+        width: 100%;
+      }
+
+      & .e-list-item .e-list-icon {
+        font-size: 16px;
+        vertical-align: middle;
+      }
+
+      & .e-fixed-head {
+        position: absolute;
+        top: 0;.e-rtl & {
+          left: 33px;
+        }
+      }
+    }
+  }
+
+  .e-dropdownbase.e-content {
+    overflow: auto;
+    position: relative;
+  }
+
+  #{&}.e-popup.e-ddl .e-dropdownbase.e-nodata {
+    color: $nodata-font-color;
+    cursor: default;
+    font-family: $list-font-family;
+    font-size: 14px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+
+  .e-rtl .e-dropdownbase.e-dd-group .e-list-item {
+    padding-right: $group-list-padding-left;
+  }
+
+  .e-dropdownbase.e-dd-group .e-list-item {
+    padding-left: $group-list-padding-left;
+    text-indent: 0;
+  }
+}
+@include export-module('dropdownbase-theme') {
+  .e-dropdownbase {
+    border-color: $list-border-color;
+    @at-root {
+      & .e-list-item {
+        background-color: $list-bg-color;
+        border-bottom: $list-bottom-border;
+        border-color: $list-gradient-color;
+        color: $list-default-font-color;
+        font-family: $list-font-family;
+        font-size: $list-font-size;
+        line-height: $list-line-height;
+        min-height: $list-line-height;
+        padding-right: $list-padding-right;
+        text-indent: $list-text-indent;
+      }
+
+      & .e-list-group-item,
+      .e-fixed-head {
+        background-color: $list-bg-color;
+        border-color: $list-gradient-color;
+        color: $list-header-font-color;
+        font-family: $list-font-family;
+        font-size: $group-list-font-size;
+        font-weight: $header-font-weight;
+        line-height: $list-line-height;
+        min-height: $list-line-height;
+        padding-left: $list-header-padding-left;
+        padding-right: $list-padding-right;
+      }
+
+      & .e-list-item.e-active,
+      & .e-list-item.e-active.e-hover {
+        background-color: $list-active-bg-color;
+        border-color: $list-active-border-color;
+        color: $list-active-font-color;
+       }
+
+      & .e-list-item.e-hover {
+        background-color: $list-hover-bg-color;
+        border-color: $list-hover-border-color;
+        color: $list-hover-font-color;
+      }
+
+      & .e-list-item:last-child {
+        border-bottom: $last-child-bottom-border;
+      }
+
+      & .e-list-item.e-item-focus {
+        background-color: $list-hover-bg-color;
+      }
+    }
+  }
+
+  .e-bigger .e-dropdownbase {
+    @at-root {
+      & .e-list-group-item,
+      & .e-fixed-head {
+        font-size: $bigger-list-header-font-size;
+      }
+    }
+  }
+}

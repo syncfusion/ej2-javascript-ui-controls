@@ -204,6 +204,7 @@ export class PrintAndExport {
             }
         }
     }
+    /**   @private  */
     public getObjectsBound(options?: IExportOptions): Rect {
         let nodes: NodeModel[] = this.diagram.nodes;
         let nodebounds: Rect;

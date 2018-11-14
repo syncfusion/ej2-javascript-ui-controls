@@ -3700,7 +3700,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         /** @private */
         _this.baseTileTranslatePoint = new Point(0, 0);
         /** @private */
-        _this.isDevice = Browser.isDevice;
+        _this.isDevice = false;
         return _this;
     }
     /**
@@ -3715,6 +3715,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
      * Initializing pre-required values.
      */
     Maps.prototype.preRender = function () {
+        this.isDevice = Browser.isDevice;
         this.initPrivateVariable();
         this.trigger(load, { maps: this });
         this.themeEffect();
@@ -7344,6 +7345,14 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 ((layerRect.top + layerRect.height) >= (elementRect.top + elementRect.height) + map.mapAreaRect.y + map.margin.top)));
             if (panningXDirection && panningYDirection) {
                 map.translatePoint = new Point(x_2, y_2);
+                this.applyTransform();
+            }
+            else if (panningXDirection) {
+                map.translatePoint = new Point(x_2, map.translatePoint.y);
+                this.applyTransform();
+            }
+            else if (panningYDirection) {
+                map.translatePoint = new Point(map.translatePoint.x, y_2);
                 this.applyTransform();
             }
         }

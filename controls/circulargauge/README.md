@@ -20,7 +20,7 @@ npm install @syncfusion/ej2-circulargauge
 
 * [Getting Started](https://ej2.syncfusion.com/documentation/circular-gauge/getting-started.html?lang=typescript)
 * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=circulargauge#/material/circulargauge/default.html)
-* [Product Page](https://www.syncfusion.com/products/javascript/circulargauge)
+* [Product Page](https://www.syncfusion.com/javascript-ui-controls/gauge-charts)
 
 ## Supported Frameworks
 
@@ -31,7 +31,7 @@ Circular gauge component is also offered in following list of frameworks.
 3. [Vue.js](https://www.npmjs.com/package/@syncfusion/ej2-vue-circulargauge?utm_source=npm&utm_campaign=circulargauge)
 4. [ASP.NET Core](https://aspdotnetcore.syncfusion.com/CircularGauge/Default#/material)
 5. [ASP.NET MVC](https://aspnetmvc.syncfusion.com/CircularGauge/DefaultFunctionalities#/material)
-6. [JavaScript (ES5)](https://www.syncfusion.com/products/javascript/circulargauge)
+6. [JavaScript (ES5)](https://www.syncfusion.com/javascript-ui-controls/gauge-charts)
 
 ## Use case samples
 

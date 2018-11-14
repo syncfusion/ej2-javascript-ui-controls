@@ -23,8 +23,14 @@ export class TextElement extends DiagramElement {
      */
     private textContent: string = '';
 
+    /**
+     * sets the constraints for the text element
+     */
     public constraints: AnnotationConstraints;
 
+    /**
+     * sets the hyperlink color to blue
+     */
     public hyperlink: HyperlinkModel = {
         color: 'blue'
     };
@@ -32,9 +38,16 @@ export class TextElement extends DiagramElement {
     /** @private */
     public doWrap: boolean = true;
 
+    /**
+     * gets the content for the text element
+     */
     public get content(): string {
         return this.textContent;
     }
+
+    /**
+     * sets the content for the text element
+     */
     public set content(value: string) {
         if (this.textContent !== value) {
             this.textContent = value;
@@ -44,17 +57,31 @@ export class TextElement extends DiagramElement {
     }
 
     private textNodes: SubTextElement[] = [];
+
+    /**
+     * sets the content for the text element
+     */
     public get childNodes(): SubTextElement[] {
         return this.textNodes;
     }
+
+    /**
+     * gets the content for the text element
+     */
     public set childNodes(value: SubTextElement[]) {
         this.textNodes = value;
     }
 
     private textWrapBounds: TextBounds;
+    /**
+     * gets the wrapBounds for the text
+     */
     public get wrapBounds(): TextBounds {
         return this.textWrapBounds;
     }
+    /**
+     * sets the wrapBounds for the text
+     */
     public set wrapBounds(value: TextBounds) {
         this.textWrapBounds = value;
     }

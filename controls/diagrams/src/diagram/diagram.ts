@@ -1003,6 +1003,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public currentDrawingObject: Node | Connector;
     /** @private */
     public currentSymbol: Node | Connector;
+    /** @private */
     public diagramRenderer: DiagramRenderer;
     private gridlineSvgLayer: SVGElement;
     private renderer: CanvasRenderer;
@@ -2417,6 +2418,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     }
 
+    /** @private */
     public removeObjectsFromLayer(obj: (NodeModel | ConnectorModel)): void {
         let layer: number = this.layers.indexOf(this.commandHandler.getObjectLayer(obj.id));
         let objects: string[] = this.layers[layer].objects;
@@ -2429,6 +2431,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             delete (this.layers[layer] as Layer).zIndexTable[this.nameTable[obj.id].zIndex];
         }
     }
+
+    /** @private */
     public removeElements(currentObj: NodeModel | ConnectorModel): void {
         if (this.mode === 'SVG' || (this.mode === 'Canvas' && currentObj.shape.type === 'Native')) {
             let removeElement: HTMLElement = getDiagramElement(currentObj.id + '_groupElement', this.element.id);
@@ -3332,6 +3336,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         setAttributeSvg(nativeLayerSvg, { 'class': 'e-native-layer', 'style': commonStyle });
     }
 
+    /** @private */
     public createSvg(id: string, width: string | Number, height: string | Number): SVGElement {
         let svgObj: SVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         setAttributeSvg(svgObj, { 'id': id, 'width': width, 'height': height });
@@ -3346,6 +3351,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.updateBridging(isLoad);
     }
 
+    /** @private */
     public initLayerObjects(): void {
         let hasLayers: boolean = this.layers.length > 1;
         let set: boolean = false;
@@ -4136,6 +4142,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         clearInterval(clearIntervalVal as number);
     }
 
+    /** @private */
     public updateVirtualObjects(
         collection: string[], remove: boolean, tCollection?: string[]):
         void {
@@ -4647,6 +4654,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
+    /** @private */
     public renderSelectorForAnnotation(selectorModel: Selector, selectorElement: (SVGElement | HTMLCanvasElement)): void {
         this.diagramRenderer.renderResizeHandle(
             selectorModel.wrapper.children[0], selectorElement, selectorModel.thumbsConstraints,
@@ -4725,6 +4733,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         return wrapper;
     }
 
+    /** @private */
     public getEndNodeWrapper(node: NodeModel, connector: ConnectorModel, source: boolean): DiagramElement {
         if (node.shape.type === 'Bpmn' && node.wrapper.children[0] instanceof Canvas) {
             if ((node.shape as BpmnShape).shape === 'Activity') {
@@ -5114,6 +5123,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.connectorPropertyChange(connector as Connector, {} as Connector, conn);
         }
     }
+    /** @private */
     public updateConnectorEdges(actualObject: Node): void {
         if (actualObject.inEdges.length > 0) {
             for (let j: number = 0; j < actualObject.inEdges.length; j++) {

@@ -646,12 +646,12 @@ export function getCustomDateFormat(format: string | Object, colType: string): s
 }
 
 export function extendObjWithFn(copied: Object, first: Object, second?: Object, deep?: boolean): Object {
-    let result: IKeyValue = copied as IKeyValue || {} as IKeyValue;
-    let length: number = arguments.length;
+    let res: IKeyValue = copied as IKeyValue || {} as IKeyValue;
+    let len: number = arguments.length;
     if (deep) {
-        length = length - 1;
+        len = len - 1;
     }
-    for (let i: number = 1; i < length; i++) {
+    for (let i: number = 1; i < len; i++) {
         if (!arguments[i]) {
             continue;
         }
@@ -659,21 +659,21 @@ export function extendObjWithFn(copied: Object, first: Object, second?: Object, 
         let keys: string[] = Object.keys(Object.getPrototypeOf(obj1)).length ?
         Object.keys(obj1).concat(Object.keys(Object.getPrototypeOf(obj1))) : Object.keys(obj1);
         keys.forEach((key: string) => {
-            let src: Object = result[key];
-            let copy: Object = obj1[key];
-            let clone: Object;
-            if (deep && (isObject(copy) || Array.isArray(copy))) {
-                if (isObject(copy)) {
-                    clone = src ? src : {};
-                    result[key] = baseExtend({}, clone, copy, deep);
+            let source: Object = res[key];
+            let cpy: Object = obj1[key];
+            let cln: Object;
+            if (deep && (isObject(cpy) || Array.isArray(cpy))) {
+                if (isObject(cpy)) {
+                    cln = source ? source : {};
+                    res[key] = baseExtend({}, cln, cpy, deep);
                 } else {
-                    clone = src ? src : [];
-                    result[key] = baseExtend([], clone, copy, deep);
+                    cln = source ? source : [];
+                    res[key] = baseExtend([], cln, cpy, deep);
                 }
             } else {
-                result[key] = copy;
+                res[key] = cpy;
             }
         });
     }
-    return result;
+    return res;
 }

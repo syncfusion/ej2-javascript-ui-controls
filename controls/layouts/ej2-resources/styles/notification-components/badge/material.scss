@@ -1,0 +1,361 @@
+
+// Base Badge
+$badge-base-border-radius: .25em;
+$badge-base-font-size: .75em;
+$badge-base-line-height: 1;
+$badge-base-font-weight: 600;
+$badge-base-padding: .25em .4em .25em .4em;
+$badge-base-text-indent: 0;
+$badge-base-text-color: rgba(0, 0, 0, .87);
+$badge-base-background-color: #fafafa;
+
+// Pill Badge
+$badge-pill-border-radius: 5em;
+
+// Notification Badge
+$badge-notification-top: -10px;
+$badge-notification-left: 100%;
+$badge-notification-font-size: 12px;
+$badge-notification-border-radius: 1em;
+$badge-notification-min-width: 22px;
+$badge-notification-height: 18px;
+$badge-notification-line-height: 18px;
+$badge-notification-padding: 0 8px 0 8px;
+$badge-notification-ghost-line-height: 16px;
+
+// Circle Badge
+$badge-circle-width: 1.834em;
+$badge-circle-height: 1.834em;
+$badge-circle-line-height: 1.834em;
+$badge-circle-border-radius: 50%;
+$badge-circle-padding: 0;
+$badge-circle-min-width: 0;
+$badge-circle-ghost-line-height: 1.8em;
+
+// Overlap Badge
+$badge-overlap-top: -10px;
+$badge-overlap-transform-left: translateX(-50%);
+
+// Button Badge
+$badge-button-line-height: .9;
+$badge-button-circle-width: 2em;
+$badge-button-circle-height: 2em;
+$badge-button-circle-line-height: 2em;
+$badge-ghost-circle-line-height: 1.9em;
+$badge-button-top: -2px;
+
+// Dot Badge
+$badge-dot-top: -3px;
+$badge-dot-width: 6px;
+$badge-dot-height: 6px;
+$badge-dot-line-height: 1;
+$badge-dot-border-radius: 100%;
+$badge-dot-padding: 0;
+$badge-dot-min-width: 0;
+$badge-dot-left: 100%;
+$badge-dot-box-shadow: 0 0 0 1px #fff;
+
+
+@include export-module('badge-layout') {
+  #{&}.e-badge {
+    background: $badge-base-background-color;
+    border-color: transparent;
+    border-radius: $badge-base-border-radius;
+    box-sizing: border-box;
+    color: $badge-base-text-color;
+    display: inline-block;
+    font-family: initial;
+    font-size: $badge-base-font-size;
+    font-weight: $badge-base-font-weight;
+    line-height: $badge-base-line-height;
+    overflow: hidden;
+    padding: $badge-base-padding;
+    text-align: center;
+    text-decoration: none;
+    text-indent: $badge-base-text-indent;
+    vertical-align: middle;
+
+    &:hover {
+      text-decoration: none;
+    }
+
+    &.e-badge-pill {
+      border-radius: $badge-pill-border-radius;
+    }
+
+    &.e-badge-notification {
+      border-radius: $badge-notification-border-radius;
+      font-size: $badge-notification-font-size;
+      height: $badge-notification-height;
+      left: $badge-notification-left;
+      line-height: $badge-notification-line-height;
+      min-width: $badge-notification-min-width;
+      padding: $badge-notification-padding;
+      position: absolute;
+      top: $badge-notification-top;
+      width: auto;
+
+      &.e-badge-ghost {
+        line-height: $badge-notification-ghost-line-height;
+      }
+    }
+
+    &.e-badge-circle {
+      border-radius: $badge-circle-border-radius;
+      height: $badge-circle-height;
+      line-height: $badge-circle-line-height;
+      min-width: $badge-circle-min-width;
+      padding: $badge-circle-padding;
+      width: $badge-circle-width;
+
+      &.e-badge-ghost {
+        line-height: $badge-circle-ghost-line-height;
+      }
+    }
+
+    &.e-badge-overlap {
+      position: absolute;
+      top: $badge-overlap-top;
+      transform: $badge-overlap-transform-left;
+    }
+
+    &.e-badge-dot {
+      border-radius: $badge-dot-border-radius;
+      box-shadow: $badge-dot-box-shadow;
+      height: $badge-dot-height;
+      left: $badge-dot-left;
+      line-height: $badge-dot-line-height;
+      margin: 0;
+      min-width: $badge-dot-min-width;
+      overflow: visible;
+      padding: $badge-dot-padding;
+      position: absolute;
+      top: $badge-dot-top;
+      width: $badge-dot-width;
+    }
+
+    @at-root {
+      button#{''} .e-badge {
+        line-height: .9;
+        position: relative;
+        top: $badge-button-top;
+
+        &.e-badge-circle {
+          height: $badge-button-circle-height;
+          line-height: $badge-button-circle-line-height;
+          width: $badge-button-circle-width;
+
+          &.e-badge-ghost {
+            line-height: $badge-ghost-circle-line-height;
+          }
+        }
+      }
+    }
+  }
+}
+@include export-module('badge-theme') {
+  //sass-lint:disable no-color-literals
+  #{&}.e-badge {
+    &.e-badge-primary:not(.e-badge-ghost):not([href]),
+    &.e-badge-primary[href]:not(.e-badge-ghost) {
+      background-color: #ff4081;
+      color: #fff;
+    }
+
+    &.e-badge-secondary:not(.e-badge-ghost):not([href]),
+    &.e-badge-secondary[href]:not(.e-badge-ghost) {
+      background-color: #6c757d;
+      color: #fff;
+    }
+
+    &.e-badge-success:not(.e-badge-ghost):not([href]),
+    &.e-badge-success[href]:not(.e-badge-ghost) {
+      background-color: #4d841d;
+      color: #fff;
+    }
+
+    &.e-badge-danger:not(.e-badge-ghost):not([href]),
+    &.e-badge-danger[href]:not(.e-badge-ghost) {
+      background-color: #d64113;
+      color: #fff;
+    }
+
+    &.e-badge-warning:not(.e-badge-ghost):not([href]),
+    &.e-badge-warning[href]:not(.e-badge-ghost) {
+      background-color: #c15700;
+      color: #fff;
+    }
+
+    &.e-badge-info:not(.e-badge-ghost):not([href]),
+    &.e-badge-info[href]:not(.e-badge-ghost) {
+      background-color: #0378d5;
+      color: #fff;
+    }
+
+    &.e-badge-light:not(.e-badge-ghost):not([href]),
+    &.e-badge-light[href]:not(.e-badge-ghost) {
+      background-color: #fafafa;
+      color: #212529;
+    }
+
+    &.e-badge-dark:not(.e-badge-ghost):not([href]),
+    &.e-badge-dark[href]:not(.e-badge-ghost) {
+      background-color: #343a40;
+      color: #fff;
+    }
+
+    &.e-badge-primary[href]:not(.e-badge-ghost) {
+      &:hover {
+        background-color: #e6326f;
+      }
+    }
+
+    &.e-badge-secondary[href]:not(.e-badge-ghost) {
+      &:hover {
+        background-color: #4a5157;
+      }
+    }
+
+    &.e-badge-success[href]:not(.e-badge-ghost) {
+      &:hover {
+        background-color: #386115;
+      }
+    }
+
+    &.e-badge-danger[href]:not(.e-badge-ghost) {
+      &:hover {
+        background-color: #bc3f18;
+      }
+    }
+
+    &.e-badge-warning[href]:not(.e-badge-ghost) {
+      &:hover {
+        background-color: #a35311;
+      }
+    }
+
+    &.e-badge-info[href]:not(.e-badge-ghost) {
+      &:hover {
+        background-color: #005fab;
+      }
+    }
+
+    &.e-badge-light[href]:not(.e-badge-ghost) {
+      &:hover {
+        background-color: rgba(226, 226, 226, .9844);
+      }
+    }
+
+    &.e-badge-dark[href]:not(.e-badge-ghost) {
+      &:hover {
+        background-color: #696b6d;
+      }
+    }
+
+    &.e-badge-primary[href].e-badge-ghost {
+      &:hover {
+        border-color: #e6326f;
+        color: #e6326f;
+      }
+    }
+
+    &.e-badge-secondary[href].e-badge-ghost {
+      &:hover {
+        border-color: #4a5157;
+        color: #4a5157;
+      }
+    }
+
+    &.e-badge-success[href].e-badge-ghost {
+      &:hover {
+        border-color: #386115;
+        color: #386115;
+      }
+    }
+
+    &.e-badge-danger[href].e-badge-ghost {
+      &:hover {
+        border-color: #bc3f18;
+        color: #bc3f18;
+      }
+    }
+
+    &.e-badge-warning[href].e-badge-ghost {
+      &:hover {
+        border-color: #a35311;
+        color: #a35311;
+      }
+    }
+
+    &.e-badge-info[href].e-badge-ghost {
+      &:hover {
+        border-color: #005fab;
+        color: #005fab;
+      }
+    }
+
+    &.e-badge-light[href].e-badge-ghost {
+      &:hover {
+        border-color: rgba(226, 226, 226, .9844);
+        color: rgba(226, 226, 226, .9844);
+      }
+    }
+
+    &.e-badge-dark[href].e-badge-ghost {
+      &:hover {
+        border-color: #696b6d;
+        color: #696b6d;
+      }
+    }
+
+    &.e-badge-ghost {
+      &.e-badge-primary {
+        background-color: transparent;
+        border: 1px solid #ff4081;
+        color: #ff4081;
+      }
+
+      &.e-badge-secondary {
+        background-color: transparent;
+        border: 1px solid #6c757d;
+        color: #6c757d;
+      }
+
+      &.e-badge-success {
+        background-color: transparent;
+        border: 1px solid #4d841d;
+        color: #4d841d;
+      }
+
+      &.e-badge-danger {
+        background-color: transparent;
+        border: 1px solid #d64113;
+        color: #d64113;
+      }
+
+      &.e-badge-warning {
+        background-color: transparent;
+        border: 1px solid #c15700;
+        color: #c15700;
+      }
+
+      &.e-badge-info {
+        background-color: transparent;
+        border: 1px solid #0378d5;
+        color: #0378d5;
+      }
+
+      &.e-badge-light {
+        background-color: transparent;
+        border: 1px solid #fafafa;
+        color: #fafafa;
+      }
+
+      &.e-badge-dark {
+        background-color: transparent;
+        border: 1px solid #343a40;
+        color: #343a40;
+      }
+    }
+  }
+}

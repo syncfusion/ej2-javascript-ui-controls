@@ -371,7 +371,7 @@ describe('Schedule event tooltip module', () => {
             let tooltipEle: HTMLElement = document.querySelector('.e-schedule-event-tooltip') as HTMLElement;
             expect(isVisible(tooltipEle)).toBe(true);
             expect([].slice.call(tooltipEle.querySelectorAll('.resname')).length).toEqual(1);
-            expect(tooltipEle.innerHTML).toEqual('<div class="e-tip-content"><div class="resname">Name: ROOM 1</div></div>');
+            expect(tooltipEle.innerHTML).toEqual('<div class="e-tip-content"><div><div class="resname">Name: ROOM 1</div></div></div>');
             triggerMouseEvent(target, 'mouseleave');
             expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
         });

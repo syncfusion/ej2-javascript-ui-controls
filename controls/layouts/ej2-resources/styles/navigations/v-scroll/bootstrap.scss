@@ -1,0 +1,376 @@
+
+
+/*! component's default definitions and variables */
+
+$vscroll-border-type: solid;
+$vscroll-border-size: $border-size;
+$vscroll-box-shadow:  0 0 2px $shadow-color;
+$vscroll-nav-nrml-minheight: 42px;
+$vscroll-nav-bgr-minheight: 56px;
+$vscroll-nav-nrml-height: 40px;
+$vscroll-nav-bgr-height: 50px;
+$vscroll-nrml-padding: 0 $vscroll-nav-nrml-height;
+$vscroll-bgr-padding: 0 $vscroll-nav-bgr-height;
+$vscroll-border-radius: $border-radius;
+$vscroll-default-bg: $default-bg-color  ;
+$vscroll-default-border: $default-border-color ;
+$vscroll-default-icon-color: $default-icon-color ;
+$vscroll-hover-bg:  $hover-bg-color;
+$vscroll-hover-font: $hover-font-color ;
+$vscroll-hover-border-color: $hover-border-color ;
+$vscroll-dash-border: 2px solid #fff;
+$vscroll-overlay-opacity: .5;
+$vscroll-overlay-bg: $vscroll-default-bg;
+$vscroll-overlay-start: rgba($vscroll-overlay-bg, .0001);
+$vscroll-overlay-end: rgba($vscroll-overlay-bg, $vscroll-overlay-opacity);
+$vscroll-right-bg: linear-gradient(to right, $vscroll-overlay-start 0, $vscroll-overlay-end 100%);
+$vscroll-left-bg: linear-gradient(to right, $vscroll-overlay-end 0, $vscroll-overlay-start 100%);
+
+$vscroll-device-arrow-box-shadow: -4px 0 8px 0 rgba($shadow , .6);
+$vscroll-device-arrow-bg: $vscroll-default-bg;
+$vscroll-device-arrow-border-size: none;
+$vscroll-device-arrow-border-color: $default-border-color ;
+$vscroll-device-arrow-color: $default-icon-color ;
+$vscroll-device-arrow-size: 14px;
+$vscroll-device-arrow-width: $vscroll-nav-bgr-height;
+
+$vscroll-focus-border: '';
+$vscroll-active-border: '';
+$vscroll-hover-border: '';
+$vscroll-active-box-shadow: '';
+
+$vscroll-active-font-color: $active-font-color ;
+$vscroll-press-bg: $active-bg-color ;
+$vscroll-press-font: $active-font-color ;
+
+$vscroll-font-family: $font-family;
+
+@mixin vscroll-btn-animation {
+  content: '';
+}
+
+@mixin vscroll-btn-animation-after {
+  content: '';
+}
+@include export-module('vscroll-bootstrap-icons') {
+  /*! vscroll icons */
+  #{&}.e-vscroll {
+
+    &.e-scroll-device {
+
+      .e-nav-up-arrow::before {
+        content: '\e85e';
+      }
+
+      .e-nav-down-arrow::before {
+        content: '\e84f';
+      }
+    }
+
+    .e-nav-up-arrow::before {
+      content: '\e910';
+      line-height: normal;
+    }
+
+    .e-nav-down-arrow::before {
+      content: '\e916';
+      line-height: normal;
+    }
+  }
+}
+
+@include export-module('v-scroll') {
+  /*! v-scroll layout */
+
+  .e-bigger #{&}.e-vscroll,
+  #{&}.e-vscroll.e-bigger {
+
+    &:not(.e-scroll-device) {
+      padding: $vscroll-bgr-padding;
+    }
+
+    .e-icons {
+      font-size: 18px;
+     }
+
+    &.e-rtl .e-scroll-overlay.e-scroll-down-overlay {
+      left: $vscroll-nav-bgr-width;
+    }
+
+    .e-scroll-overlay {
+
+      &.e-scroll-down-overlay {
+        right: $vscroll-nav-bgr-width;
+      }
+    }
+
+    .e-scroll-nav {
+      height: $vscroll-nav-bgr-width;
+    }
+  }
+
+  #{&}.e-vscroll {
+    display: block;
+    position: relative;
+    width: inherit;
+
+    &.e-rtl {
+
+      &.e-scroll-device {
+
+        .e-scroll-nav {
+          transform: skewX(-16deg) translateX(-6px);
+        }
+
+        .e-scroll-overlay {
+
+          &.e-scroll-down-overlay {
+            left: $vscroll-device-arrow-width;
+            right: auto;
+            transform: skewX(-16deg) translateX(-6px);
+          }
+
+          &.e-scroll-up-overlay {
+            left: auto;
+            right: 0;
+          }
+        }
+      }
+   }
+
+    &:not(.e-scroll-device) {
+      padding: $vscroll-nrml-padding;
+    }
+
+    &.e-scroll-device {
+
+      .e-scroll-nav {
+        transform: skewX(-16deg) translateX(6px);
+        width: $vscroll-device-arrow-width;
+        z-index: 1001;
+
+        .e-nav-arrow {
+          font-size: $vscroll-device-arrow-size;
+          transform: skewX(16deg);
+        }
+      }
+
+      .e-scroll-overlay {
+        opacity: $vscroll-overlay-opacity;
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        z-index: 100;
+
+        &.e-scroll-down-overlay {
+          left: auto;
+          right: $vscroll-device-arrow-width;
+          transform: skewX(-16deg) translateX(6px);
+        }
+
+        &.e-scroll-up-overlay {
+          left: 0;
+          right: auto;
+        }
+      }
+    }
+
+    > * {
+      height: inherit;
+    }
+
+    .e-vscroll-content {
+      display: inline-block;
+      height: auto;
+      position: relative;
+      touch-action: none;
+      width: 100%;
+
+      > * {
+        pointer-events: auto;
+      }
+    }
+
+    &.e-rtl {
+
+      .e-scroll-nav  {
+
+        &.e-scroll-up-nav {
+          left: auto;
+          right: 0;
+        }
+
+        &.e-scroll-down-nav {
+          left: 0;
+          right: auto;
+        }
+      }
+    }
+
+    .e-scroll-nav  {
+      align-items: center;
+      cursor: pointer;
+      display: flex;
+      height: $vscroll-nav-nrml-height;
+      overflow: hidden;
+      position: absolute;
+      width: 100%;
+
+      &.e-scroll-up-nav {
+        top: 0;
+      }
+
+      &.e-scroll-down-nav {
+        bottom: 0;
+      }
+
+      &.e-ie-align {
+        display: table;
+      }
+    }
+
+    .e-nav-arrow {
+      position: relative;
+    }
+
+    .e-nav-arrow.e-icons {
+      display: table-cell;
+      text-align: center;
+      vertical-align: middle;
+      width: 100%;
+    }
+  }
+}
+@include export-module('v-scroll-theme') {
+  /*! v-scroll theme */
+  #{&}.e-vscroll {
+
+    .e-icons {
+      color: $vscroll-default-icon-color;
+    }
+
+    &.e-rtl {
+
+      &.e-scroll-device {
+
+        .e-scroll-nav.e-scroll-right-nav {
+          border-color: $vscroll-device-arrow-border-color;
+          box-shadow: $vscroll-device-arrow-rtl-box-shadow;
+        }
+      }
+    }
+
+    &.e-scroll-device {
+
+      .e-scroll-nav.e-scroll-right-nav {
+        background-color: $vscroll-device-arrow-bg;
+        border-color: $vscroll-device-arrow-border-color;
+        border-width: $vscroll-device-arrow-border-size;
+        box-shadow: $vscroll-device-arrow-box-shadow;
+
+        .e-nav-arrow {
+          color: $vscroll-device-arrow-color;
+        }
+      }
+    }
+
+    .e-scroll-overlay {
+      background-color: transparent;
+      background-repeat: repeat-x;
+
+      &.e-scroll-up-overlay {
+        background-image: $vscroll-left-bg;
+      }
+
+      &.e-scroll-down-overlay {
+        background-image: $vscroll-right-bg;
+      }
+    }
+
+    &.e-rtl {
+
+      .e-scroll-nav  {
+        background: $vscroll-default-bg;
+
+        &:hover {
+          background: $vscroll-hover-bg;
+          border: $vscroll-hover-border;
+          border-color: $vscroll-hover-border-color;
+          color: $vscroll-hover-font;
+
+          @if $skin-name == 'highcontrast' {
+
+            &:active {
+              background: $vscroll-press-bg;
+            }
+          }
+        }
+      }
+    }
+
+    &:not(.e-scroll-device) {
+
+      .e-scroll-nav  {
+
+        &:hover {
+          background: $vscroll-hover-bg;
+          border: $vscroll-hover-border;
+          color: $vscroll-hover-font;
+
+          @if $skin-name == 'highcontrast' {
+            border: 1px solid $hover-border;
+
+            &:active {
+              border: 0;
+            }
+          }
+        }
+
+        &:focus {
+          background: $vscroll-hover-bg;
+          border: $vscroll-focus-border;
+          border-color: $vscroll-hover-border-color;
+          color: $vscroll-hover-font;
+
+          @if $skin-name == 'highcontrast' {
+            background: inherit;
+            border: $vscroll-dash-border;
+          }
+        }
+
+        &:active {
+          background: $vscroll-press-bg;
+          border: $vscroll-active-border;
+          box-shadow: $vscroll-active-box-shadow;
+          color: $vscroll-active-font-color;
+
+          @if $skin-name == 'highcontrast' {
+            .e-icons {
+              color: $selection-font;
+            }
+          }
+        }
+      }
+    }
+
+    .e-scroll-nav  {
+      background: $vscroll-default-bg;
+
+      &.e-scroll-up-nav {
+        border-bottom: $vscroll-border-size $vscroll-border-type $vscroll-default-border;
+      }
+
+      &.e-scroll-down-nav {
+        border-top: $vscroll-border-size $vscroll-border-type $vscroll-default-border;
+      }
+
+      &::after {
+        @include vscroll-btn-animation;
+      }
+
+      &:active::after {
+        @include vscroll-btn-animation-after;
+      }
+    }
+  }
+}

@@ -415,8 +415,9 @@ export class BaseLegend {
         let symbolColor: string = legendOption.visible ? legendOption.fill : '#D3D3D3';
         let shape: string = (legendOption.shape === 'SeriesType') ? legendOption.type : legendOption.shape;
         shape = shape === 'Scatter' ? legendOption.markerShape : shape;
-        let strokewidth: number = (legendOption.shape === 'HorizontalLine') ? (this.legend.shapeHeight / 10) :
-         ((legendOption.shape === 'VerticalLine') ? (this.legend.shapeWidth / 10) : 1 );
+        let isStrokeWidth: boolean = (this.chart.getModuleName() === 'chart' && (legendOption.shape === 'SeriesType') &&
+        (legendOption.type.toLowerCase().indexOf('line') > -1) && (legendOption.type.toLowerCase().indexOf('area') === -1));
+        let strokewidth: number  =  isStrokeWidth ? (this.chart as Chart).visibleSeries[i].width : 1;
         let symbolOption: PathOption = new PathOption(
             this.legendID + this.generateId(legendOption, '_shape_', i), symbolColor, strokewidth, symbolColor, 1, '', '');
         group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight), '',

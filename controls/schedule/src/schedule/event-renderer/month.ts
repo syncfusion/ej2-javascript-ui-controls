@@ -192,7 +192,7 @@ export class MonthEvent extends EventBase {
                 templateElement = [wrap];
             }
         }
-        append([].slice.call(templateElement), appointmentDetails);
+        append(templateElement, appointmentDetails);
         this.appendEventIcons(record, appointmentDetails);
         this.renderResizeHandler(appointmentWrapper, record.data as { [key: string]: Object });
         return appointmentWrapper;

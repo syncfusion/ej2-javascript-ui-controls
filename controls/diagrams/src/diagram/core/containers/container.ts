@@ -35,6 +35,7 @@ export class Container extends DiagramElement {
         return false;
     }
 
+    /**   @private  */
     public prevRotateAngle: number = 0;
 
     /**

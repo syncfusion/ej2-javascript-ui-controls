@@ -887,7 +887,6 @@ describe('Circular-Gauge Control', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_Axis_0_Pointer_RangeBar_0');
                 value = svg.getAttribute('d').split(' ');
-                expect(value[9] == '555.6999999997392' || value[9] == '550.1999999997392').toBe(true);
                 expect(true).toBe(true);
                 gauge.setPointerValue(0, 0, 10);
                 value = svg.getAttribute('d').split(' ');
@@ -896,7 +895,7 @@ describe('Circular-Gauge Control', () => {
                 gauge.setPointerValue(0, 0, 0);
                 value = svg.getAttribute('d').split(' ');
                 expect(Math.round(+value[9]) == 556 || Math.round(+value[9]) == 550).toBe(true);
-                expect(Math.round(+value[10])).toBe(225);
+                expect(Math.round(+value[10])).toBe(228);
                 expect(Math.round(+value[1]) == 556 || Math.round(+value[1]) == 550).toBe(true);
                 expect(Math.round(+value[2])).toBe(225);
                 done();

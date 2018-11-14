@@ -109,7 +109,7 @@ export class ViewBase {
         }
     }
     public addAttributes(td: TdData, element: Element): void {
-        if (td.text) { element.innerHTML = td.text; }
+        if (td.template) { append(td.template, element); }
         if (td.colSpan) { element.setAttribute('colspan', td.colSpan.toString()); }
         if (td.className) { addClass([element], td.className); }
     }
@@ -327,15 +327,11 @@ export class ViewBase {
     }
     public setResourceHeaderContent(tdElement: Element, tdData: TdData, className: string = 'e-text-ellipsis'): void {
         if (this.parent.activeViewOptions.resourceHeaderTemplate) {
-            let cntEle: HTMLCollection;
             let data: ResourceDetails = {
                 resource: tdData.resource,
                 resourceData: tdData.resourceData
             };
-            cntEle = this.parent.getResourceHeaderTemplate()(data);
-            if (cntEle && cntEle.length) {
-                append([].slice.call(cntEle), tdElement);
-            }
+            append(this.parent.getResourceHeaderTemplate()(data), tdElement);
         } else {
             tdElement.appendChild(createElement('div', {
                 className: className, innerHTML: tdData.resourceData[tdData.resource.textField] as string

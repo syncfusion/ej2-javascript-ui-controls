@@ -1,0 +1,22 @@
+@import 'definition.scss';
+
+$progress-color: rgba($grey-black, .87);
+$progress-bgcolor: rgba($grey-black, .2);
+$progress-bgcolor-normal: rgba($grey-black, .2);
+$circle-opacity: 0;
+
+$spinner-padding: 12px;
+$spinner-padding-small: 10px;
+$spinner-padding-bigger: 14px;
+$spinner-padding-bigger-small: 12px;
+
+$spin-btn-padding: 16px;
+$small-spin-btn-padding: 14px;
+$bigger-spin-btn-padding: 20px;
+$bigger-small-spin-btn-padding: 16px;
+
+$btn-flat-primary-progress-color: $accent;
+$btn-flat-success-progress-color: #4d841d;
+$btn-flat-info-progress-color: #0378d5;
+$btn-flat-warning-progress-color: #c15700;
+$btn-flat-danger-progress-color: #d64113;

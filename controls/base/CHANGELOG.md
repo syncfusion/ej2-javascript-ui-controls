@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 16.3.32 (2018-11-13)
+
+### Common
+
+#### Bug Fixes
+
+- Fixed `exporting issue` while complex field value is null.
+- Fixed default locale text returned on assigning empty string value for locale property.
+
+## 16.3.29 (2018-10-31)
+
 ### Common
 
 #### New Features

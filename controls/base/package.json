@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-base",
-	"version": "16.3.24",
+	"version": "16.3.32",
 	"description": "A common package of Essential JS 2 base libraries, methods and class definitions",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -31,7 +31,7 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/syncfusion/ej2-base.git"
+		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls.git"
 	},
 	"homepage": "https://www.syncfusion.com/products/javascript",
 	"main": "./dist/ej2-base.umd.min.js",

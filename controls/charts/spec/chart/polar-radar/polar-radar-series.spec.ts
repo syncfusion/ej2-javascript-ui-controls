@@ -1,4 +1,3 @@
-
 /**
  * Specifies the  Scatter series spec.
  */
@@ -461,6 +460,17 @@ describe('Chart Control', () => {
                 expect(ele !== null).toBe(true);
                 ele = document.getElementById('chartContainer_Series_0_Point_0_Text_0');
                 expect(ele.textContent === '70').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].dataSource = tool1;
+            chartObj.series[0].drawType = 'Area';
+            chartObj.refresh();
+        });
+        it('Checking with area as draw type', function (done) {
+            loaded = function (args) {
+                ele = document.getElementById('chartContainer_Series_0');
+                expect(ele.getAttribute('d').indexOf('Z') > 0 ).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

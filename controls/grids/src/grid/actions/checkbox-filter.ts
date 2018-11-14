@@ -535,7 +535,7 @@ export class CheckBoxFilter {
     }
 
     private getAllData(): void {
-        let query: Query = this.parent.query.clone();
+        let query: Query = this.parent.getQuery().clone();
         query.requiresCount(); //consider take query
         this.addDistinct(query);
         let args: {

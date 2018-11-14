@@ -47,23 +47,23 @@ export class DialogEditRender {
     }
 
     private createDialog(elements: Element[], args: { primaryKeyValue?: string[], rowData?: Object,
-        dialog?: DialogModel }): void {
+        dialog?: DialogModel, target?: HTMLElement }): void {
         let gObj: IGrid = this.parent;
         this.dialog = this.parent.createElement('div', { id: gObj.element.id + '_dialogEdit_wrapper', styles: 'width: auto' });
         gObj.element.appendChild(this.dialog);
         this.setLocaleObj();
-        let position: PositionDataModel = this.parent.element.getBoundingClientRect().height < 400 ?
-            { X: 'center', Y: 'top' } : { X: 'center', Y: 'center' };
+        // let position: PositionDataModel = this.parent.element.getBoundingClientRect().height < 400 ?
+        //     { X: 'center', Y: 'top' } : { X: 'center', Y: 'center' };
         this.dialogObj = args.dialog = new Dialog({
             header: this.isEdit ? this.l10n.getConstant('EditFormTitle') + args.primaryKeyValue[0] :
                 this.l10n.getConstant('AddFormTitle'), isModal: true, visible: true, cssClass: 'e-edit-dialog',
             content: this.getEditElement(elements, args) as HTMLElement,
             showCloseIcon: true,
             allowDragging: true,
-            position: position,
+            // position: position,
             close: this.dialogClose.bind(this),
             closeOnEscape: true, width: gObj.editSettings.template ? 'auto' : '330px',
-            target: gObj.element, animationSettings: { effect: 'None' },
+            target: args.target ? args.target : document.body, animationSettings: { effect: 'None' },
             buttons: [{
                 click: this.btnClick.bind(this),
                 buttonModel: { content: this.l10n.getConstant('SaveButton'), cssClass: 'e-primary', isPrimary: true }

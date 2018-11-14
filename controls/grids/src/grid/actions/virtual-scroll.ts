@@ -33,7 +33,9 @@ export class VirtualScroll implements IAction {
 
     public ensurePageSize(): void {
         let rowHeight: number = this.parent.getRowHeight();
-        this.blockSize = ~~(<number>this.parent.height / rowHeight);
+        let vHeight: string | number = this.parent.height.toString().indexOf('%') < 0 ? this.parent.height :
+        this.parent.element.getBoundingClientRect().height;
+        this.blockSize = ~~(<number>vHeight / rowHeight);
         let height: number =  this.blockSize * 2;
         let size: number = this.parent.pageSettings.pageSize;
         this.parent.setProperties({ pageSettings: { pageSize: size < height ? height : size }}, true);

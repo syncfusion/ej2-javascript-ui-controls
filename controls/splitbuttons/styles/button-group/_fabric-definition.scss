@@ -1,0 +1,45 @@
+@import 'definition.scss';
+
+$skin-name: 'fabric';
+$btn-margin: -1px;
+$btn-margin-left: 0;
+$wrapper-border: 0;
+$btn-round-radius: 20px;
+$icon-font-size: 14px;
+$icon-font-size-bigger: 16px;
+
+//Normal Outline GroupButton
+$outline-hover-border-color: $neutral-quintenary;
+$outline-focus-border-color: $neutral-quintenary;
+$outline-active-border-color: $neutral-quintenary;
+$outline-focus-color: $neutral-secondary-alt;
+
+//Outline Primary
+$outline-primary-hover-border-color: $theme-primary;
+$outline-primary-focus-border-color: transparent;
+$outline-primary-active-border-color: $theme-primary;
+$outline-focus-primary-color: $theme-primary-font;
+
+//Outline Success
+$outline-success-hover-border-color: #004b1c;
+$outline-success-focus-border-color: transparent;
+$outline-success-active-border-color: #107c10;
+$outline-focus-success-color: #fff;
+
+//Outline Info
+$outline-info-hover-border-color: #065fa6;
+$outline-info-focus-border-color: transparent;
+$outline-info-active-border-color: #0378d5;
+$outline-focus-info-color: #fff;
+
+//Outline warning
+$outline-warning-hover-border-color: #a22c01;
+$outline-warning-focus-border-color: transparent;
+$outline-warning-active-border-color: #d83b01;
+$outline-focus-warning-color: #fff;
+
+//Outline danger
+$outline-danger-hover-border-color: #7e0000;
+$outline-danger-focus-border-color:  transparent;
+$outline-danger-active-border-color: #a80000;
+$outline-focus-danger-color: #fff;

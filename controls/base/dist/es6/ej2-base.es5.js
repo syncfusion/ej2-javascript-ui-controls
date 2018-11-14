@@ -48,7 +48,7 @@ function getValue(nameSpace, obj) {
     /* tslint:disable no-any */
     var value = obj;
     var splits = nameSpace.replace(/\[/g, '.').replace(/\]/g, '').split('.');
-    for (var i = 0; i < splits.length && !isUndefined(value); i++) {
+    for (var i = 0; i < splits.length && !isNullOrUndefined(value); i++) {
         value = value[splits[i]];
     }
     return value;
@@ -5320,7 +5320,8 @@ var Component = /** @__PURE__ @class */ (function (_super) {
             window.localStorage.setItem(this.getModuleName() + this.element.id, this.getPersistData());
         }
     };
-    Component.prototype.clearTemplate = function (templateName) {
+    //tslint:disable-next-line
+    Component.prototype.clearTemplate = function (templateName, index) {
         //No Code
     };
     Component.prototype.getUniqueID = function (definedName) {
@@ -6402,7 +6403,12 @@ var L10n = /** @__PURE__ @class */ (function () {
      */
     L10n.prototype.getConstant = function (prop) {
         /* tslint:disable no-any */
-        return this.currentLocale[prop] || this.localeStrings[prop] || '';
+        var returnString = this.currentLocale[prop];
+        if (isNullOrUndefined(returnString)) {
+            /* tslint:disable no-any */
+            returnString = this.localeStrings[prop] || '';
+        }
+        return returnString;
     };
     /**
      * Returns the control constant object for current object and the locale specified.

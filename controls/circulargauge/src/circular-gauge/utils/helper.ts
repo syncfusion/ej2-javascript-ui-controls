@@ -411,6 +411,23 @@ export function getTemplateFunction(template: string): Function {
     return templateFn;
 }
 
+export function getElementSize(template: string, gauge: CircularGauge, parent: HTMLElement): Size {
+    let elementSize: Size; let element: HTMLElement;
+    let templateFn: Function = getTemplateFunction(template);
+    if (templateFn && templateFn(gauge).length) {
+        element = gauge.createElement('div', { id: gauge.element.id + '_Measure_Element' });
+        gauge.element.appendChild(element);
+        let templateElement: HTMLCollection = templateFn(gauge);
+        while (templateElement.length > 0) {
+            element.appendChild(templateElement[0]);
+        }
+        parent.appendChild(element);
+        elementSize = new Size(parent.getBoundingClientRect().width, parent.getBoundingClientRect().height);
+        remove(element);
+    }
+    return elementSize;
+}
+
 /**
  * Function to remove the element from id.
  * @private
@@ -435,6 +452,25 @@ export function getPointer(targetId: string, gauge: CircularGauge): IVisiblePoin
         pointerIndex: +tempString[tempString.length - 1]
     };
 }
+
+
+/**
+ * Function to get the mouse position
+ * @param pageX 
+ * @param pageY 
+ * @param element 
+ */
+export function getMousePosition(pageX: number, pageY: number, element: Element): GaugeLocation {
+    let elementRect: ClientRect = element.getBoundingClientRect();
+    let pageXOffset: number = element.ownerDocument.defaultView.pageXOffset;
+    let pageYOffset: number = element.ownerDocument.defaultView.pageYOffset;
+    let clientTop: number = element.ownerDocument.documentElement.clientTop;
+    let clientLeft: number = element.ownerDocument.documentElement.clientLeft;
+    let positionX: number = elementRect.left + pageXOffset - clientLeft;
+    let positionY: number = elementRect.top + pageYOffset - clientTop;
+    return new GaugeLocation((pageX - positionX), (pageY - positionY));
+}
+
 
 /**
  * Function to convert the label using formar for cirular gauge.

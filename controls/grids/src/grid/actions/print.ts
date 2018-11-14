@@ -81,6 +81,8 @@ export class Print {
             }
         }
         let printGrid: IGrid = new Grid(printGridModel);
+        printGrid.query = gObj.getQuery().clone();
+        gObj.notify(events.printGridInit, { element: element, printgrid: printGrid });
         printGrid.appendTo(element as HTMLElement);
         printGrid.registeredTemplate = this.parent.registeredTemplate;
         printGrid[this.printing] = true;

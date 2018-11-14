@@ -49,6 +49,7 @@ import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';
 export class DiagramEventHandler {
     private currentAction: Actions = 'None';
 
+    /**   @private  */
     public focus: boolean = false;
 
     private get action(): Actions {
@@ -276,6 +277,7 @@ export class DiagramEventHandler {
         return false;
     }
 
+    /**   @private  */
     public mouseDown(evt: PointerEvent): void {
         this.focus = true;
         let touches: TouchList;
@@ -364,6 +366,7 @@ export class DiagramEventHandler {
         }
     }
 
+    /**   @private  */
     public mouseMoveExtend(e: PointerEvent | TouchEvent, obj: IElement): void {
         if (this.tool instanceof PolygonDrawingTool || this.tool instanceof PolyLineDrawingTool) {
             this.tool.mouseMove(this.eventArgs);

@@ -783,6 +783,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * Refresh the whole Toolbar component without re-rendering.
+     * - It is used to manually refresh the Toolbar overflow modes such as scrollable, popup, multi row, and extended.
+     * - It will refresh the Toolbar component after loading items dynamically.
      * @returns void.
      */
     public refreshOverflow(): void {

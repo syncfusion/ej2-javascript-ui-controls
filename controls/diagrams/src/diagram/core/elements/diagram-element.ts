@@ -138,6 +138,10 @@ export class DiagramElement {
      * Sets the style of the element
      */
     public style: ShapeStyleModel = { fill: 'white', strokeColor: 'black', opacity: 1, strokeWidth: 1 };
+
+    /**
+     * Gets the parent id for the element
+     */
     public parentId: string;
     /**
      * Gets the minimum size that is required by the element
@@ -154,7 +158,11 @@ export class DiagramElement {
      */
     public parentTransform: number = 0;
 
+    /**
+     * Gets/Set the boolean value for the element
+     */
     public isSvgRender: boolean = false;
+
     /**
      * Gets/Sets the boundary of the element
      */
@@ -180,6 +188,9 @@ export class DiagramElement {
      */
     public staticSize: boolean = false;
 
+    /**
+     * check whether the element is rect or not
+     */
     public isRectElement: boolean = false;
 
     public constructor() {
@@ -216,11 +227,17 @@ export class DiagramElement {
     //private variables
     private position: PointModel = undefined;
     private unitMode: UnitMode = undefined;
+    /**   @private  */
     public float: boolean = false;
+    /**   @private  */
     public get outerBounds(): Rect {
         return this.floatingBounds || this.bounds;
     }
 
+    /**
+     * used to set the outer bounds value
+     * @private
+     */
     public set outerBounds(bounds: Rect) {
         this.floatingBounds = bounds;
     }

@@ -4,6 +4,34 @@
 
 ## [Unreleased]
 
+## 16.3.32 (2018-11-15)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- Tooltip is rendering properly without flickering, while the circular gauge is rendered in small space.
+
+## 16.3.30 (2018-11-01)
+
+### CircularGauge
+
+#### New Features
+
+- Provided the support to tooltip rendering at mouse position for range bar pointer.
+
+## 16.3.30 (2018-11-01)
+
+### CircularGauge
+
+#### New Features
+
+- Provided support to calculate the radius of the gauge, based on the start and end angles.
+
+#### Bug Fixes
+
+- The range bar pointer is rendering properly now, when the axis minimum and pointer values are same.
+
 ## 16.3.17 (2018-09-12)
 
 ### CircularGauge

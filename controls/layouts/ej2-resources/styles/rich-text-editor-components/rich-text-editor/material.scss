@@ -1,0 +1,194 @@
+
+
+$rte-border-color: rgba($grey-black, .12);
+$rte-full-screen-bg: #fff;
+
+/*! component's theme wise override definitions and variables */
+
+@include export-module('richtexteditor-icons') {
+  /*! richtexteditor icons */
+
+  .e-toolbar {
+
+    .e-back::before {
+      content: '\e839';
+    }
+
+    .e-undo::before {
+      content: '\e76e';
+    }
+
+    .e-redo::before {
+      content: '\e726';
+    }
+
+    .e-bold::before {
+      content: '\e71c';
+    }
+
+    .e-italic::before {
+      content: '\e777';
+    }
+
+    .e-underline::before {
+      content: '\e70b';
+    }
+
+    .e-strikethrough::before {
+      content: '\e719';
+    }
+
+    .e-justifyleft::before {
+      content: '\e78a';
+    }
+
+    .e-justifycenter::before {
+      content: '\e749';
+    }
+
+    .e-justifyright::before {
+      content: '\e713';
+    }
+
+    .e-justifyfull::before {
+      content: '\e74c';
+    }
+
+    .e-orderedlist::before {
+      content: '\e727';
+    }
+
+    .e-unorderedlist::before {
+      content: '\e754';
+    }
+
+    .e-outdent::before {
+      content: '\e746';
+    }
+
+    .e-indent::before {
+      content: '\e742';
+    }
+
+    .e-createlink::before {
+      content: '\e774';
+    }
+
+    .e-removelink::before {
+      content: '\e762';
+    }
+
+    .e-image::before {
+      content: '\e7b3';
+    }
+
+    .e-video::before {
+      content: '\e7f3';
+    }
+
+    .e-createtable::before {
+      content: '\e705';
+    }
+
+    .e-maximize::before {
+      content: '\e734';
+    }
+
+    .e-minimize::before {
+      content: '\e79c';
+    }
+
+    .e-cut::before {
+      content: '\e759';
+    }
+
+    .e-copy::before {
+      content: '\e70a';
+    }
+
+    .e-paste::before {
+      content: '\e77e';
+    }
+
+    .e-sourcecode::before {
+      content: '\e873';
+    }
+  }
+}
+@include export-module('richtexteditor-layout') {
+  /*! tab layout */
+
+  #{&}.e-richtexteditor {
+    position: relative;
+
+    &.e-rte-full-screen {
+      bottom: 0;
+      height: 100%;
+      left: 0;
+      position: fixed;
+      right: 0;
+      top: 0;
+      width: 100%;
+      z-index: 10001;
+    }
+
+    .e-toolbar {
+
+      &.e-control[class*='e-toolbar'] {
+        box-sizing: border-box;
+      }
+
+      &.e-rte-tb-fixed {
+        bottom: 0;
+        display: none;
+        left: 0;
+        position: fixed;
+        right: 0;
+
+        &.e-show {
+          display: block;
+        }
+      }
+
+      &.e-rte-tb-float {
+        position: fixed;
+        top: 0;
+      }
+
+      &.e-rte-tb-inline {
+        visibility: hidden;
+
+        &.e-show {
+          visibility: visible;
+        }
+      }
+    }
+
+    .e-rte-content {
+      overflow: auto;
+      width: 100%;
+
+      .e-content {
+        height: 100%;
+      }
+    }
+  }
+}
+@include export-module('richtexteditor-theme') {
+  /*! tab layout */
+
+  #{&}.e-richtexteditor {
+
+    &.e-rte-full-screen {
+      background: $rte-full-screen-bg;
+    }
+
+    .e-toolbar {
+      border: 1px solid $rte-border-color;
+    }
+
+    .e-rte-content {
+      border: 1px solid $rte-border-color;
+    }
+  }
+}

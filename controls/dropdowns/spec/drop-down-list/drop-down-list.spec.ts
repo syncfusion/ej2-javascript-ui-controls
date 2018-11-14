@@ -140,11 +140,13 @@ describe('DDList', () => {
         { id: 'list2', text: 'Phython', htmlAttributes: { class: 'e-disabled', title: 'Phython' }}, 
         { id: 'list5', text: 'Oracle' }];
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        element.setAttribute('data-required', 'name');
         beforeAll(() => {
             document.body.appendChild(element);
             listObj = new DropDownList({
                     dataSource: localData,
-                    fields: { value: 'id', text: 'HTML', htmlAttributes : 'htmlAttributes'}
+                    fields: { value: 'id', text: 'HTML', htmlAttributes : 'htmlAttributes'},
+                    htmlAttributes: {'data-msg-container-id':'msgid'}
                  });
             listObj.appendTo(element);
         });
@@ -158,8 +160,13 @@ describe('DDList', () => {
                 done();
             };
             listObj.index = 0;
-            
         });
+        it('check data attribute', () => {
+            expect(listObj.hiddenElement.getAttribute('data-msg-container-id')).not.toBeNull();
+            expect(listObj.hiddenElement.getAttribute('data-required')).toBe('name');
+            expect(listObj.htmlAttributes['data-required']).toBe('name');
+         });
+ 
         afterAll(() => {
             if (element) {
                 element.remove();

@@ -50,6 +50,7 @@ export class MindMap {
         return 'MindMapChart';
     }
 
+    /**   @private  */
     public updateLayout(
         nodes: INode[], nameTable: Object, layoutProp: Layout, viewPort: PointModel, uniqueId: string, root?: string): void {
         let isRoot: string;

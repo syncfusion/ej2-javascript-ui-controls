@@ -37,8 +37,8 @@ export class CommandColumn {
             return;
         }
         let buttonObj: ButtonModel = (<EJ2Intance>target).ej2_instances[0];
-        let type: string = (<{commandType?: string}> buttonObj).commandType;
-        if (buttonObj.disabled) {
+        let type: string = (<{ commandType?: string }>buttonObj).commandType;
+        if (buttonObj.disabled || !gObj.editModule) {
             return;
         }
         switch (type) {

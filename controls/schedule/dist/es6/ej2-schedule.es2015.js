@@ -108,7 +108,7 @@ function setTime(date, time) {
     let tzOffsetBefore = date.getTimezoneOffset();
     let d = new Date(date.getTime() + time);
     let tzOffsetDiff = d.getTimezoneOffset() - tzOffsetBefore;
-    date.setTime(d.getTime() + tzOffsetDiff * MS_PER_DAY);
+    date.setTime(d.getTime() + tzOffsetDiff * MS_PER_MINUTE);
     return date;
 }
 function resetTime(date) {
@@ -2076,9 +2076,11 @@ class Timezone {
     removeLocalOffset(date) {
         return new Date(+date - (date.getTimezoneOffset() * 60000));
     }
+    getLocalTimezoneName() {
+        return window.Intl ?
+            Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC' : 'UTC';
+    }
 }
-let localTimezoneName = window.Intl ?
-    Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC' : 'UTC';
 let timezoneData = [
     { Value: 'Pacific/Niue', Text: '(UTC-11:00) Niue' },
     { Value: 'Pacific/Pago_Pago', Text: '(UTC-11:00) Pago Pago' },
@@ -4900,7 +4902,7 @@ class QuickPopups {
 }
 
 /**
- * Tooltip on appointments in Schedule
+ * Tooltip for Schedule
  */
 class EventTooltip {
     constructor(parent) {
@@ -4932,7 +4934,6 @@ class EventTooltip {
         if (!isNullOrUndefined(args.target.getAttribute('data-tooltip-id'))) {
             return;
         }
-        let content = '';
         if (args.target.classList.contains(RESOURCE_CELLS_CLASS) && this.parent.activeViewOptions.group.resources.length > 0) {
             let resCollection;
             if (this.parent.activeView.isTimelineView()) {
@@ -4948,17 +4949,16 @@ class EventTooltip {
                 resource: resCollection.resource,
                 resourceData: resCollection.resourceData
             };
-            let ele = createElement('div');
-            append([].slice.call(this.parent.getHeaderTooltipTemplate()(data)), ele);
-            content = ele.innerHTML;
-            this.tooltipObj.content = content;
+            let contentContainer = createElement('div');
+            append(this.parent.getHeaderTooltipTemplate()(data), contentContainer);
+            this.tooltipObj.content = contentContainer;
             return;
         }
         let record = this.parent.eventBase.getEventByGuid(args.target.getAttribute('data-guid'));
         if (!isNullOrUndefined(this.parent.eventSettings.tooltipTemplate)) {
-            let ele = createElement('div');
-            append([].slice.call(this.parent.getEventTooltipTemplate()(record)), ele);
-            content = ele.innerHTML;
+            let contentContainer = createElement('div');
+            append(this.parent.getEventTooltipTemplate()(record), contentContainer);
+            this.tooltipObj.content = contentContainer;
         }
         else {
             let globalize = this.parent.globalize;
@@ -4985,12 +4985,11 @@ class EventTooltip {
             }
             let tooltipTime = (record[fields.isAllDay]) ? this.parent.localeObj.getConstant('allDay') :
                 (startTime + ' - ' + endTime);
-            content = '<div><div class="e-subject">' + tooltipSubject + '</div>' +
+            this.tooltipObj.content = '<div><div class="e-subject">' + tooltipSubject + '</div>' +
                 '<div class="e-location">' + tooltipLocation + '</div>' +
                 '<div class="e-details">' + tooltipDetails + '</div>' +
                 '<div class="e-all-day">' + tooltipTime + '</div></div>';
         }
-        this.tooltipObj.content = content;
     }
     close() {
         this.tooltipObj.close();
@@ -6034,6 +6033,8 @@ class EventWindow {
         this.l10n = this.parent.localeObj;
         this.fields = this.parent.eventFields;
         this.fieldValidator = new FieldValidator();
+        let timezone = new Timezone();
+        this.localTimezoneName = timezone.getLocalTimezoneName();
         this.renderEventWindow();
     }
     renderEventWindow() {
@@ -6157,8 +6158,7 @@ class EventWindow {
             attrs: { onsubmit: 'return false;' }
         });
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
-            let templeteEle = this.parent.getEditorTemplate()();
-            append([].slice.call(templeteEle), form);
+            append(this.parent.getEditorTemplate()(), form);
         }
         else {
             let content = this.getDefaultEventWindowContent();
@@ -6878,17 +6878,17 @@ class EventWindow {
             let endTimezoneObj = this.getInstance(EVENT_WINDOW_END_TZ_CLASS);
             let timezone = startTimezoneObj.dataSource;
             if (!startTimezoneObj.value || !this.parent.timezone) {
-                let found = timezone.some((tz) => { return tz.Value === localTimezoneName; });
+                let found = timezone.some((tz) => { return tz.Value === this.localTimezoneName; });
                 if (!found) {
-                    timezone.push({ Value: localTimezoneName, Text: localTimezoneName });
+                    timezone.push({ Value: this.localTimezoneName, Text: this.localTimezoneName });
                     startTimezoneObj.dataSource = timezone;
                     endTimezoneObj.dataSource = timezone;
                     startTimezoneObj.dataBind();
                     endTimezoneObj.dataBind();
                 }
             }
-            startTimezoneObj.value = startTimezoneObj.value || this.parent.timezone || localTimezoneName;
-            endTimezoneObj.value = endTimezoneObj.value || this.parent.timezone || localTimezoneName;
+            startTimezoneObj.value = startTimezoneObj.value || this.parent.timezone || this.localTimezoneName;
+            endTimezoneObj.value = endTimezoneObj.value || this.parent.timezone || this.localTimezoneName;
             startTimezoneObj.dataBind();
             endTimezoneObj.dataBind();
         }
@@ -11234,8 +11234,8 @@ class ViewBase {
         }
     }
     addAttributes(td, element) {
-        if (td.text) {
-            element.innerHTML = td.text;
+        if (td.template) {
+            append(td.template, element);
         }
         if (td.colSpan) {
             element.setAttribute('colspan', td.colSpan.toString());
@@ -11471,15 +11471,11 @@ class ViewBase {
     }
     setResourceHeaderContent(tdElement, tdData, className = 'e-text-ellipsis') {
         if (this.parent.activeViewOptions.resourceHeaderTemplate) {
-            let cntEle;
             let data = {
                 resource: tdData.resource,
                 resourceData: tdData.resourceData
             };
-            cntEle = this.parent.getResourceHeaderTemplate()(data);
-            if (cntEle && cntEle.length) {
-                append([].slice.call(cntEle), tdElement);
-            }
+            append(this.parent.getResourceHeaderTemplate()(data), tdElement);
         }
         else {
             tdElement.appendChild(createElement('div', {
@@ -12299,7 +12295,7 @@ class MonthEvent extends EventBase {
                 templateElement = [wrap];
             }
         }
-        append([].slice.call(templateElement), appointmentDetails);
+        append(templateElement, appointmentDetails);
         this.appendEventIcons(record, appointmentDetails);
         this.renderResizeHandler(appointmentWrapper, record.data);
         return appointmentWrapper;
@@ -12816,7 +12812,10 @@ class VerticalView extends ViewBase {
             if (this.parent.activeViewOptions.showWeekNumber && data.className.indexOf(HEADER_CELLS_CLASS) !== -1) {
                 data.className.push(WEEK_NUMBER_CLASS);
                 let weekNo = getWeekNumber(this.renderDates.slice(-1)[0]);
-                data.text = '<span title="' + this.parent.localeObj.getConstant('week') + ' ' + weekNo + '">' + weekNo + '</span>';
+                data.template = [createElement('span', {
+                        innerHTML: '' + weekNo,
+                        attrs: { title: this.parent.localeObj.getConstant('week') + ' ' + weekNo }
+                    })];
             }
             ntr.appendChild(this.createTd(data));
             tbl.querySelector('tbody').appendChild(ntr);
@@ -13811,7 +13810,7 @@ class AgendaBase {
                                 dateObj = {
                                     rowSpan: 1, type: 'dateColumn', resource: resColl[resColl.length - 1],
                                     groupOrder: resData[res].groupOrder, resourceData: resData[res].resourceData,
-                                    date: agendaDate, text: ''
+                                    date: agendaDate
                                 };
                                 if (!lastLevelInfo[tempIndex]) {
                                     lastLevelInfo[tempIndex] = [];
@@ -13823,7 +13822,7 @@ class AgendaBase {
                             agendaDate = addDays(agendaDate, 1);
                             if (agendaDate.getTime() >= agendaLastDate.getTime() || this.parent.activeViewOptions.group.byDate
                                 || this.parent.currentView === 'MonthAgenda') {
-                                lastLevelInfo[lastLevelInfo.length - 1][1].text = 'lastRow';
+                                lastLevelInfo[lastLevelInfo.length - 1][1].cssClass = AGENDA_DAY_BORDER_CLASS;
                                 let tempObj = {
                                     rowSpan: data.length, type: 'resourceColumn', resource: resColl[resColl.length - 1],
                                     groupOrder: resData[res].groupOrder.slice(0, -1), resourceData: resData[res].resourceData,
@@ -13904,8 +13903,8 @@ class AgendaBase {
                     ntd.setAttribute('data-date', data.date.getTime().toString());
                     ntd.appendChild(this.createDateHeaderElement(data.date));
                     let className = [AGENDA_CELLS_CLASS, AGENDA_DATE_CLASS];
-                    if (data.text === 'lastRow') {
-                        className.push(AGENDA_DAY_BORDER_CLASS);
+                    if (data.cssClass) {
+                        className.push(data.cssClass);
                     }
                     addClass([ntd], className);
                     ntr.appendChild(ntd);
@@ -14871,8 +14870,6 @@ class TimelineHeaderRow {
         let keys = Object.keys(data);
         for (let i = 0; i < keys.length; i++) {
             let dates = data[keys[i]];
-            let content;
-            let ele = createElement('div');
             let htmlCol;
             if (!tempFn) {
                 htmlCol = compile(template, customHelper)({ date: dates[0] });
@@ -14881,10 +14878,8 @@ class TimelineHeaderRow {
                 let args = { date: dates[0], type: type };
                 htmlCol = tempFn(args);
             }
-            append([].slice.call(htmlCol), ele);
-            content = ele.innerHTML;
             tdDatas.push({
-                date: dates[0], type: type, className: [cls], colSpan: dates.length * colspan, text: content
+                date: dates[0], type: type, className: [cls], colSpan: dates.length * colspan, template: htmlCol
             });
         }
         return tdDatas;
@@ -15282,5 +15277,5 @@ class TimelineMonth extends Month {
  * Export Schedule components
  */
 
-export { Schedule, cellClick, cellDoubleClick, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, contentReady, scroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, tapHoldReady, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getWeekFirstDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, Resize, DragAndDrop, HeaderRenderer, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, Timezone, localTimezoneName, timezoneData, RecurrenceEditor };
+export { Schedule, cellClick, cellDoubleClick, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, contentReady, scroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, tapHoldReady, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getWeekFirstDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, Resize, DragAndDrop, HeaderRenderer, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, Timezone, timezoneData, RecurrenceEditor };
 //# sourceMappingURL=ej2-schedule.es2015.js.map

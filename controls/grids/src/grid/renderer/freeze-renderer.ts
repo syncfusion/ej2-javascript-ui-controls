@@ -134,9 +134,9 @@ export class FreezeRender extends HeaderRender implements IRenderer {
     private addMovableFirstCls(): void {
         if (this.parent.getVisibleFrozenColumns()) {
             let movablefirstcell: NodeListOf<Element> =
-            this.parent.element.querySelector('.e-movableheader').querySelector('thead').querySelectorAll('.e-columnheader');
+                this.parent.element.querySelector('.e-movableheader').querySelector('thead').querySelectorAll('.e-columnheader');
             let len: number =
-            this.parent.element.querySelector('.e-movableheader').querySelector('thead').querySelectorAll('.e-columnheader').length;
+                this.parent.element.querySelector('.e-movableheader').querySelector('thead').querySelectorAll('.e-columnheader').length;
             for (let i: number = 0; i < len; i++) {
                 let cells: string = 'cells';
                 let element: Element = movablefirstcell[i][cells][0];
@@ -219,11 +219,11 @@ export class FreezeRender extends HeaderRender implements IRenderer {
             fRowHgt = height[i];
             mRowHgt = width[i];
             if (fRows[i].childElementCount && ((isWrap && fRowHgt < mRowHgt) || (!isWrap && fRowHgt > mRowHgt) ||
-            (this.parent.allowResizing && !this.parent.resizeModule.isFrozenColResized))) {
+                (this.parent.allowResizing && this.parent.resizeModule && !this.parent.resizeModule.isFrozenColResized))) {
                 fRows[i].style.height = mRowHgt + 'px';
             }
             if (mRows[i].childElementCount && ((isWrap && fRowHgt > mRowHgt) || (!isWrap && fRowHgt < mRowHgt) ||
-            (this.parent.allowResizing && this.parent.resizeModule.isFrozenColResized))) {
+                (this.parent.allowResizing && this.parent.resizeModule && this.parent.resizeModule.isFrozenColResized))) {
                 mRows[i].style.height = fRowHgt + 'px';
             }
         }
@@ -279,7 +279,7 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         let height: number = 0;
         for (let i: number = 0; i < maxRowSpan; i++) {
             height += (rows[idx + i] as HTMLElement).style.height ?
-            parseInt((rows[idx + i] as HTMLElement).style.height, 10) : (rows[idx + i] as HTMLElement).offsetHeight;
+                parseInt((rows[idx + i] as HTMLElement).style.height, 10) : (rows[idx + i] as HTMLElement).offsetHeight;
         }
         (row as HTMLElement).style.height = height + 'px';
     }

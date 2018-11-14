@@ -114,6 +114,9 @@ let Toast = class Toast extends Component {
     preRender() {
         //There is no event handler
         this.isDevice = Browser.isDevice;
+        if (this.width === '300px') {
+            this.width = (this.isDevice && screen.width < 768) ? '100%' : '300px';
+        }
         if (this.enableRtl) {
             this.element.classList.add(RTL);
         }
@@ -571,7 +574,7 @@ let Toast = class Toast extends Component {
     }
 };
 __decorate([
-    Property((Browser.isDevice && screen.width < 768) ? '100%' : '300px')
+    Property('300px')
 ], Toast.prototype, "width", void 0);
 __decorate([
     Property('auto')

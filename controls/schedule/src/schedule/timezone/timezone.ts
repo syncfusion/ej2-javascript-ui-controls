@@ -35,10 +35,11 @@ export class Timezone {
     public removeLocalOffset(date: Date): Date {
         return new Date(+date - (date.getTimezoneOffset() * 60000));
     }
+    public getLocalTimezoneName(): string {
+        return (<{ [key: string]: Object } & Window>window).Intl ?
+            Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC' : 'UTC';
+    }
 }
-
-export let localTimezoneName: string = (<{ [key: string]: Object } & Window>window).Intl ?
-    Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC' : 'UTC';
 
 export let timezoneData: { [key: string]: Object }[] = [
     { Value: 'Pacific/Niue', Text: '(UTC-11:00) Niue' },

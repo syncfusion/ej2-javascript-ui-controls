@@ -8,6 +8,15 @@
 
 ## [Unreleased]
 
+## 16.3.32 (2018-11-15)
+
+### Maps
+
+#### Bug Fixes
+
+- Now map is rendering properly in universal applications
+- Now panning works properly without freezing
+
 ## 16.3.22 (2018-09-25)
 
 ### Maps

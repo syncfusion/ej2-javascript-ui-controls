@@ -1,0 +1,780 @@
+
+
+// uploader definition styles
+$zero-value: 0;
+$upload-element-opacity: $zero-value;
+$upload-element-width: $zero-value;
+$select-file-margin: $zero-value;
+$select-file-padding: $zero-value;
+$upload-font-family: $font-family;
+$header-padding: 10px 0 10px 12px;
+$drop-area-font-size: 13px;
+$drop-area-padding-left: 10px;
+$list-items-font-size: 15px;
+$list-item-height: 35px;
+$list-item-margin-right: 90px;
+$list-item-name-width: 75%;
+$list-item-status-font-size: 14px;
+$progress-bar-wrapper-height: 5px;
+$progress-bar-wrapper-width: 98%;
+$progress-bar-height: 90%;
+$progress-bar-text-top: 10px;
+$progress-bar-text-right: 1%;
+$remove-icon-font-size: 11px;
+$delete-icon-font-size: 13px;
+$abort-icon-font-size: 18px;
+$remove-icon-margin: 10px;
+$delete-icon-opacity: 1;
+$remove-icon-right: 5px;
+$remove-icon-top: 8px;
+$float-right: right;
+$float-left: left;
+$margin-rtl: 14px;
+$right: 100%;
+$left: 17px;
+$file-status-rtl-top-margin: 7%;
+$drop-zone-margin: 3px;
+$list-item-margin-left: 8px;
+$remove-icon-height: 20px;
+$remove-icon-width: 20px;
+$remove-icon-before: 4px;
+$list-items-height: 50px;
+$file-container-left: 5px;
+$file-size-top: $zero-value;
+$action-buttons-margin: 10px;
+$file-status-rtl: 30px;
+$progress-inner-wrap-height: 5px;
+$progress-inner-wrap-top: 3px;
+$progress-bar-wrap-top: 34px;
+$rtl-progress-top: -2px;
+$file-status-top-bigger: 35px;
+$file-drop-rtl-smaller: -10px;
+$file-drop-rtl-bigger: -10px;
+$footer-height: 50px;
+$footer-height-smaller: 30px;
+$footer-buttons-height: 30px;
+$footer-buttons-height-bigger: 40px;
+$footer-buttons-margin: 16px;
+$file-name-font-size: 10px;
+$progress-bar-top-paddding: 10px;
+$progress-bar-bottom-paddding: 9px;
+$inner-wrap-radius: 1px;
+$progress-bar-radius: 1px;
+$file-name-top: $zero-value;
+$file-container-top-bigger: $zero-value;
+$remove-icon-rtl: 20px;
+$reload-btn-right: 36px;
+$icons-small-ie-padding: 18px 13px 18px 23px;
+$icons-bigger-ie-padding: 20px 17px 20px 26px;
+
+// Smaller values
+$drop-area-font-size-smaller: 14px;
+$drop-area-padding-left-smaller: 10px;
+$list-items-font-size-smaller: 14px;
+$list-items-height-smaller: 60px;
+$list-item-margin-left-smaller: 12px;
+$list-item-status-font-size-smaller: 12px;
+$list-item-status-margin-smaller: 8px;
+$progress-bar-height-smaller: 3px;
+$progress-inner-wrap-height-smaller: 5px;
+$progress-bar-top-smaller: $zero-value;
+$progress-bar-wrapper-height-smaller: 10px;
+$progress-bar-text-right-smaller: -20px;
+$progress-bar-text-top-smaller: -10px;
+$remove-icon-font-size-smaller: 12px;
+$remove-icon-margin-smaller: 16px;
+$delete-icon-font-size-smaller: 11px;
+$file-container-top: -5px;
+$file-status-top-smaller: 19px;
+$action-buttons-margin-smaller: 8px;
+$file-name-font-size-smaller: 13px;
+$list-item-status-top-smaller: 10px;
+$file-size-top-smaller: 10px;
+$file-size-left-smaller: 10px;
+$file-type-top-smaller: $zero-value;
+$file-size-rtl-right: 10px;
+$list-item-size-top: 30px;
+$header-padding-bigger: 10px;
+$file-name-padding-top: 4px;
+$file-size-padding: 4px 0;
+$file-name-padding-top-smaller: 1px;
+$file-size-padding-smaller: 3px 0;
+$file-container-height: 100%;
+$li-min-height: 72px;
+$progress-bar-paddding: 6px 6px;
+$delete-icon-padding: 1px;
+$delete-icon-padding-smaller: $zero-value;
+$remove-icon-before-bigger: 15px;
+$progress-bar-wrapper-width-bigger: 90%;
+$header-padding-rtl-bigger: 20px 15px 30px 10px;
+$margin-rtl-header: $zero-value;
+$remove-icon-rtl-bigger: $zero-value;
+$header-padding-rtl-smaller: 10px;
+$margin-rtl-header-smaller: 10;
+$file-name-font-family: $upload-font-family;
+
+// Smaller RTL values
+$margin-rtl-smaller: 12px;
+$file-status-rtl-smaller: 21px;
+$progress-bar-wrap-top-smaller: 23px;
+$rtl-progress-left-smaller: -23px;
+$remove-icon-rtl-top-smaller: 2px;
+$remove-icon-top-bigger: 10px;
+$remove-icon-top-smaller: 1px;
+$progress-bar-width-rtl: 80%;
+$rtl-progress-top: -15px;
+$file-container-top: $zero-value;
+
+// themes files
+$progress-bar-transition: width 2s;
+$clear-icon-font-content: '\e932';
+$delete-icon-font-content: '\e82d';
+$pause-icon-font-content: '\e753';
+$play-icon-font-content: '\e798';
+$remove-icon-margin-top-smaller: -10px;
+$remove-icon-margin-top: -14px;
+$remove-icon-disabled-color:  $zero-value;
+$remove-icon-padding-smaller: $zero-value;
+$progress-text-rtl-smaller: 0;
+$pause-play-button-right-value: 36px;
+$pause-play-button-right-value-bigger: 45px;
+$pause-play-button-right-value-bigger-rtl: 41px;
+$file-container-left: 60px;
+$ie-icons-position-value: 10px;
+$ie-abort-icon-position-value: 12px;
+
+// icon styles
+@include export-module('uploader-icons') {
+  .e-upload .e-upload-files .e-file-remove-btn.e-icons::before {
+    content: $clear-icon-font-content;
+  }
+
+  .e-upload .e-upload-files .e-icons.e-file-pause-btn::before {
+    content: $pause-icon-font-content;
+  }
+
+  .e-upload .e-upload-files .e-icons.e-file-reload-btn::before {
+    content: $reload-icon-font-content;
+  }
+
+  .e-upload .e-upload-files .e-icons.e-file-play-btn::before {
+    content: $play-icon-font-content;
+  }
+
+  .e-upload .e-upload-files .e-file-delete-btn.e-icons::before {
+    content: $delete-icon-font-content;
+  }
+
+  .e-upload .e-upload-files .e-file-abort-btn.e-icons::before {
+    content: $abort-icon-font-content;
+  }
+
+  .e-upload .e-upload-files .e-icons.e-msie::before {
+    position: relative;
+    right: $ie-icons-position-value;
+  }
+
+  .e-upload .e-upload-files .e-icons.e-file-abort-icon.e-msie::before {
+    right: $ie-abort-icon-position-value;
+  }
+}
+// uploader layout styles
+@include export-module('uploader-layout') {
+  // For bigger class UI
+  .e-bigger {
+    .e-upload {
+      width: 100%;
+
+      .e-file-select-wrap {
+        padding: $header-padding-bigger;
+
+        & .e-file-drop {
+          font-size: $drop-area-font-size;
+          margin-left: $drop-area-padding-left;
+      }
+    }
+
+      & .e-upload-files {
+
+        .e-upload-file-list {
+          font-size: $list-items-font-size;
+          line-height: $list-line-height;
+          min-height: $list-items-height;
+
+          .e-file-container {
+            margin-left: $list-item-margin-left;
+            top: $file-container-top-bigger;
+          }
+
+          .e-file-container .e-file-name {
+            font-size: $file-name-font-size;
+            padding-top: $file-name-padding-top;
+          }
+
+          .e-file-container .e-file-size {
+            font-size: $list-item-status-font-size;
+            padding: $file-size-padding;
+          }
+
+          .e-file-container .e-file-type {
+            font-size: $file-name-font-size;
+            padding-top: $file-name-padding-top;
+            top: initial;
+          }
+
+          .e-file-container .e-file-status {
+            font-size: $list-item-status-font-size;
+            padding-bottom: $file-name-padding-top;
+          }
+
+          .e-file-container .e-upload-progress-wrap {
+            height: $progress-bar-wrapper-height;
+
+            & .e-progress-inner-wrap {
+              height: $progress-inner-wrap-height;
+              width: $progress-bar-wrapper-width;
+
+              & .e-upload-progress-bar {
+                height: $progress-bar-height;
+              }
+            }
+
+            & .e-progress-bar-text {
+              font-size: $list-item-status-font-size-smaller;
+              right: $progress-bar-text-right;
+              top: $progress-bar-text-top;
+            }
+          }
+        }
+
+        & .e-file-remove-btn.e-icons,
+        & .e-file-delete-btn.e-icons,
+        & .e-file-abort-btn.e-icons,
+        & .e-file-reload-btn.e-icons,
+        & .e-file-play-btn.e-icons,
+        & .e-file-pause-btn.e-icons {
+          font-size: $remove-icon-font-size;
+          margin: $remove-icon-margin;
+          margin-top: $remove-icon-margin-top;
+          padding: $delete-icon-padding;
+          top: $remove-icon-top-smaller;
+        }
+
+        & .e-file-remove-btn.e-msie.e-icons,
+        & .e-file-delete-btn.e-msie.e-icons,
+        & .e-file-abort-btn.e-msie.e-icons,
+        & .e-file-reload-btn.e-msie.e-icons,
+        & .e-file-play-btn.e-msie.e-icons,
+        & .e-file-pause-btn.e-msie.e-icons {
+          padding: $icons-bigger-ie-padding;
+        }
+
+        & .e-file-play-btn.e-icons,
+        & .e-file-reload-btn.e-icons,
+        & .e-file-pause-btn.e-icons {
+          right: $pause-play-button-right-value-bigger;
+        }
+
+        & .e-file-delete-btn.e-icons {
+          font-size: $delete-icon-font-size;
+        }
+
+        & .e-file-abort-btn.e-icons {
+          font-size: $abort-icon-font-size;
+        }
+    }
+
+      & .e-upload-actions .e-btn {
+        margin-left: $list-item-margin-left;
+      }
+
+      & .e-upload-actions {
+
+        .e-file-upload-btn,
+        .e-file-clear-btn {
+          margin: $footer-buttons-margin;
+        }
+      }
+
+      &.e-rtl {
+        & .e-file-select-wrap {
+          padding: $header-padding-rtl-bigger;
+
+          & .e-control {
+            &.e-btn {
+              margin-right: $margin-rtl-header;
+            }
+          }
+
+          & .e-file-drop {
+            margin-right: $drop-area-padding-left;
+          }
+        }
+
+        & .e-upload-files {
+          & .e-upload-file-list {
+            & .e-file-container {
+              margin-left: $file-container-left;
+              margin-right: $margin-rtl;
+
+
+              & .e-file-status {
+                top: $file-status-rtl;
+              }
+
+              & .e-upload-progress-wrap {
+
+                & .e-progress-bar-text {
+                  left: $progress-bar-text-right;
+                  right: initial;
+                }
+              }
+            }
+
+            & .e-file-remove-btn.e-icons,
+            & .e-file-delete-btn.e-icons,
+            & .e-file-abort-btn.e-icons,
+            & .e-file-reload-btn.e-icons,
+            & .e-file-play-btn.e-icons,
+            & .e-file-pause-btn.e-icons {
+              left: $remove-icon-rtl-bigger;
+              margin-left: $margin-rtl;
+              margin-right: $margin-rtl;
+              padding: $delete-icon-padding;
+              top: $remove-icon-top;
+            }
+
+            & .e-file-remove-btn.e-msie.e-icons,
+            & .e-file-delete-btn.e-msie.e-icons,
+            & .e-file-abort-btn.e-msie.e-icons,
+            & .e-file-reload-btn.e-msie.e-icons,
+            & .e-file-play-btn.e-msie.e-icons,
+            & .e-file-pause-btn.e-msie.e-icons {
+              padding: $icons-bigger-ie-padding;
+            }
+
+            & .e-file-play-btn,
+            & .e-file-reload-btn,
+            & .e-file-pause-btn, {
+              &.e-icons {
+                left: $pause-play-button-right-value-bigger-rtl;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // For Desktop view
+
+  .e-upload {
+    width: 100%;
+
+    .e-file-select-wrap {
+      padding: $header-padding;
+
+      .e-file-select,
+      .e-file-select .e-uploader {
+        display: inline-block;
+        width: $upload-element-width;
+      }
+
+      .e-file-select .e-uploader {
+        opacity: $upload-element-opacity;
+      }
+
+      & .e-file-drop {
+        font-family: $upload-font-family;
+        font-size: $drop-area-font-size-smaller;
+        margin-left: $drop-area-padding-left-smaller;
+    }
+  }
+
+    & .e-upload-files {
+      list-style-type: none;
+      margin: $select-file-margin;
+      padding: $select-file-padding;
+
+      .e-upload-file-list {
+        font-family: $upload-font-family;
+        font-size: $list-items-font-size-smaller;
+        height: 100%;
+        line-height: $list-line-height;
+        min-height: $li-min-height;
+        position: relative;
+
+        .e-file-container {
+          display: block;
+          height: 100%;
+          margin-left: $list-item-margin-left-smaller;
+          margin-right: $list-item-margin-right;
+          min-height: $list-item-height;
+          position: relative;
+          top: $file-container-top;
+
+          .e-file-name {
+            float: left;
+            font-family: $file-name-font-family;
+            font-size: $file-name-font-size-smaller;
+            max-width: $list-item-name-width;
+            overflow: hidden;
+            padding-top: $file-name-padding-top-smaller;
+            position: relative;
+            text-overflow: ellipsis;
+            top: $file-name-top;
+            white-space: nowrap;
+          }
+
+          .e-file-name::before {
+            content: attr(data-tail);
+            float: right;
+          }
+
+          & .e-file-type {
+            display: block;
+            font-family: $file-name-font-family;
+            font-size: $file-name-font-size-smaller;
+            padding-top: $file-name-padding-top-smaller;
+          }
+
+          & .e-file-size {
+            display: block;
+            font-size: $list-item-status-font-size-smaller;
+            padding: $file-size-padding-smaller;
+          }
+
+          & .e-file-status {
+            display: block;
+            font-family: $upload-font-family;
+            font-size: $list-item-status-font-size-smaller;
+            padding-bottom: $file-name-padding-top-smaller;
+
+            &.e-upload-progress {
+              display: none;
+            }
+        }
+
+          & .e-upload-progress-wrap {
+            display: block;
+            height: $progress-bar-wrapper-height-smaller;
+            padding-bottom: $progress-bar-bottom-paddding;
+            padding-top: $progress-bar-top-paddding;
+            position: absolute;
+            width: $progress-bar-wrapper-width;
+
+            & .e-progress-inner-wrap {
+              border-radius: $inner-wrap-radius;
+              display: block;
+              height: $progress-inner-wrap-height-smaller;
+              width: 100%;
+
+              & .e-upload-progress-bar {
+                border-radius: $progress-bar-radius;
+                display: inherit;
+                height: $progress-bar-height-smaller;
+              }
+            }
+
+            & .e-progress-bar-text {
+              float: right;
+              font-family: $upload-font-family;
+              font-size: $list-item-status-font-size-smaller;
+              position: relative;
+              right: $progress-bar-text-right-smaller;
+              top: $progress-bar-text-top-smaller;
+            }
+          }
+        }
+      }
+
+      & .e-file-remove-btn.e-icons,
+      & .e-file-delete-btn.e-icons,
+      & .e-file-abort-btn.e-icons,
+      & .e-file-pause-btn.e-icons,
+      & .e-file-play-btn.e-icons,
+      & .e-file-reload-btn.e-icons {
+        align-items: center;
+        cursor: pointer;
+        display: inline-flex;
+        font-size: $remove-icon-font-size-smaller;
+        height: $remove-icon-height;
+        justify-content: center;
+        margin: $remove-icon-margin-smaller;
+        margin-top: $remove-icon-margin-top-smaller;
+        padding: $remove-icon-padding-smaller;
+        position: absolute;
+        right: $remove-icon-right;
+        top: $remove-icon-top-smaller;
+        vertical-align: middle;
+        width: $remove-icon-width;
+
+        &.e-upload-progress {
+          cursor: default;
+        }
+      }
+
+      & .e-file-remove-btn.e-msie.e-icons,
+      & .e-file-delete-btn.e-msie.e-icons,
+      & .e-file-abort-btn.e-msie.e-icons,
+      & .e-file-pause-btn.e-msie.e-icons,
+      & .e-file-play-btn.e-msie.e-icons,
+      & .e-file-reload-btn.e-msie.e-icons {
+        padding: $icons-small-ie-padding;
+      }
+
+      & .e-file-pause-btn.e-icons,
+      & .e-file-play-btn.e-icons,
+      & .e-file-reload-btn.e-icons {
+        right: $pause-play-button-right-value;
+      }
+
+      & .e-file-remove-btn.e-icons:not(.e-upload-progress):hover,
+      & .e-file-delete-btn.e-icons:not(.e-upload-progress):hover,
+      & .e-file-pause-btn.e-icons:not(.e-upload-progress):hover,
+      & .e-file-play-btn.e-icons:not(.e-upload-progress):hover,
+      & .e-file-reload-btn.e-icons:hover,
+      & .e-file-abort-btn.e-icons:not(.e-disabled):hover,
+      & .e-clear-icon-focus {
+        background-color: $clear-icon-focus-color;
+        border-color: transparent;
+        border-radius: 50%;
+        box-shadow: 0 0 0 transparent;
+      }
+
+      & .e-file-delete-btn.e-icons {
+        font-size: $delete-icon-font-size-smaller;
+        opacity: $delete-icon-opacity;
+      }
+
+      & .e-file-abort-btn.e-icons {
+        font-size: $abort-icon-font-size-smaller;
+        opacity: $delete-icon-opacity;
+      }
+    }
+
+    & .e-file-select-wrap .e-btn,
+    & .e-upload-actions .e-btn {
+      font-family: $upload-font-family;
+    }
+
+    & .e-upload-actions {
+      position: relative;
+      text-align: right;
+
+      .e-file-upload-btn,
+      .e-file-clear-btn {
+        margin: $action-buttons-margin-smaller;
+      }
+    }
+
+    &.e-rtl {
+      & .e-file-select-wrap {
+        padding: $header-padding-rtl-smaller;
+
+        & .e-control {
+          &.e-btn {
+            margin-right: $margin-rtl-header-smaller;
+          }
+        }
+
+        & .e-file-drop {
+          margin-left: $file-container-left;
+          margin-right: $drop-area-padding-left-smaller;
+          position: relative;
+        }
+      }
+
+      & .e-upload-actions {
+        text-align: $float-left;
+      }
+
+      & .e-upload-files {
+        & .e-upload-file-list {
+          & .e-file-container {
+            height: $file-container-height;
+            margin-left: $file-container-left;
+            margin-right: $margin-rtl-smaller;
+            position: relative;
+
+            & .e-rtl-container {
+              direction: ltr;
+              float: $float-right;
+              width: $file-container-height;
+            }
+
+            & .e-file-type {
+              float: $float-right;
+            }
+
+            & .e-file-name {
+              float: $float-right;
+            }
+
+            & .e-file-size {
+              direction: ltr;
+              float: $float-right;
+              position: relative;
+              text-align: right;
+              width: $file-container-height;
+            }
+
+            & .e-upload-progress-wrap {
+              float: $float-right;
+              position: initial;
+              top: $progress-bar-wrap-top-smaller;
+              width: $progress-bar-width-rtl;
+
+              & .e-progress-bar-text {
+                float: $float-left;
+                right: $progress-text-rtl-smaller;
+                top: $rtl-progress-top;
+              }
+            }
+          }
+
+          & .e-file-remove-btn,
+          & .e-file-delete-btn,
+          & .e-file-abort-btn,
+          & .e-file-reload-btn,
+          & .e-file-pause-btn,
+          & .e-file-play-btn, {
+            &.e-icons {
+              left: $left;
+              margin-left: $margin-rtl-smaller;
+              margin-right: $margin-rtl-smaller;
+              right: auto;
+              top: $remove-icon-rtl-top-smaller;
+            }
+          }
+
+          & .e-file-reload-btn {
+            &.e-icons {
+              left: $reload-btn-right;
+              right: auto;
+            }
+          }
+
+          & .e-file-play-btn,
+          & .e-file-reload-btn,
+          & .e-file-pause-btn, {
+            &.e-icons {
+              left: $pause-play-button-right-value;
+            }
+          }
+        }
+      }
+    }
+
+    &.e-disabled {
+      & .e-file-drop {
+        color: $disabled-state;
+      }
+
+      & .e-upload-files {
+        .e-upload-file-list {
+          & .e-file-container .e-file-name,
+          & .e-file-container .e-file-type,
+          & .e-file-container .e-file-size,
+          & .e-file-container .e-file-status {
+            color: $disabled-state;
+          }
+        }
+      }
+    }
+  }
+}
+// uploader theme file
+// uploader layout styles
+@include export-module('uploader-theme') {
+
+  .e-upload {
+    border: $upload-border;
+
+    & .e-file-drop {
+      color: $drop-text-color;
+    }
+
+    & .e-upload-files {
+      border-top: $list-bottom-border;
+
+      .e-upload-file-list {
+        border-bottom: $list-bottom-border;
+
+        .e-file-container {
+
+          .e-file-name {
+            color: $drop-text-color;
+          }
+
+          .e-file-type {
+            color: $drop-text-color;
+          }
+
+          .e-file-size {
+            color: $file-size-color;
+          }
+
+          .e-file-status {
+            color: $drop-text-color;
+          }
+
+          .e-file-status.e-upload-success {
+            color: $upload-success-color;
+          }
+
+          .e-file-status.e-upload-fails {
+            color: $upload-failure-color;
+          }
+
+          .e-file-status.e-validation-fails {
+            color: $upload-failure-color;
+          }
+
+          & .e-progress-inner-wrap {
+            background-color: $progress-background-color;
+
+            & .e-upload-progress-bar {
+
+              &.e-upload-progress {
+                background: $upload-in-progress-color;
+              }
+
+              &.e-upload-success {
+                background: $upload-success-color;
+              }
+
+              &.e-upload-failed {
+                background: $upload-failure-color;
+              }
+
+            }
+
+          }
+
+          & .e-progress-bar-text {
+            color: $drop-text-color;
+          }
+        }
+      }
+
+      & .e-file-remove-btn.e-icons,
+      & .e-file-delete-btn.e-icons,
+      & .e-file-reload-btn.e-icons,
+      & .e-file-abort-btn.e-icons,
+      & .e-file-pause-btn.e-icons,
+      & .e-file-play-btn.e-icons {
+        color: $remove-icon-color;
+
+        &:hover {
+          color: $hover-icon-color;
+        }
+      }
+    }
+  }
+
+  .e-upload-drag-hover {
+    outline: $drag-hover-border;
+  }
+
+}

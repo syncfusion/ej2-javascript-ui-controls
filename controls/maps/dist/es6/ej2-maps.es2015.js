@@ -3484,7 +3484,7 @@ let Maps = class Maps extends Component {
         /** @private */
         this.baseTileTranslatePoint = new Point(0, 0);
         /** @private */
-        this.isDevice = Browser.isDevice;
+        this.isDevice = false;
     }
     /**
      * Gets the localized label by locale keyword.
@@ -3498,6 +3498,7 @@ let Maps = class Maps extends Component {
      * Initializing pre-required values.
      */
     preRender() {
+        this.isDevice = Browser.isDevice;
         this.initPrivateVariable();
         this.trigger(load, { maps: this });
         this.themeEffect();
@@ -7080,6 +7081,14 @@ class Zoom {
                 ((layerRect.top + layerRect.height) >= (elementRect.top + elementRect.height) + map.mapAreaRect.y + map.margin.top)));
             if (panningXDirection && panningYDirection) {
                 map.translatePoint = new Point(x, y);
+                this.applyTransform();
+            }
+            else if (panningXDirection) {
+                map.translatePoint = new Point(x, map.translatePoint.y);
+                this.applyTransform();
+            }
+            else if (panningYDirection) {
+                map.translatePoint = new Point(map.translatePoint.x, y);
                 this.applyTransform();
             }
         }

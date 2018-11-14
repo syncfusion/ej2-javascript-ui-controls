@@ -1,0 +1,73 @@
+{
+	"name": "@syncfusion/ej2-splitbuttons",
+	"version": "16.3.30",
+	"description": "A package of feature-rich Essential JS 2 components such as DropDownButton, SplitButton, ProgressButton and ButtonGroup.",
+	"author": "Syncfusion Inc.",
+	"license": "SEE LICENSE IN license",
+	"main": "./dist/ej2-splitbuttons.umd.min.js",
+	"module": "./index.js",
+	"es2015": "./dist/es6/ej2-splitbuttons.es2015.js",
+	"dependencies": {
+		"@syncfusion/ej2-base": "*",
+		"@syncfusion/ej2-popups": "*"
+	},
+	"devDependencies": {
+		"@types/chai": "^3.4.28",
+		"@types/jasmine": "2.8.9",
+		"@types/jasmine-ajax": "^3.1.27",
+		"@types/requirejs": "^2.1.26",
+		"es6-promise": "^3.2.1",
+		"gulp": "^3.9.1",
+		"gulp-sass": "^3.1.0",
+		"gulp-typescript": "^3.1.6",
+		"requirejs": "^2.3.3",
+		"typescript": "2.3.4",
+		"canteen": "^1.0.5",
+		"jasmine-ajax": "^3.3.1",
+		"jasmine-core": "^2.6.1",
+		"karma": "^1.7.0",
+		"karma-chrome-launcher": "^2.2.0",
+		"karma-generic-preprocessor": "^1.1.0",
+		"karma-htmlfile-reporter": "^0.3.5",
+		"karma-jasmine": "^1.1.0",
+		"karma-jasmine-ajax": "^0.1.13",
+		"karma-requirejs": "^1.1.0",
+		"nedb": "^1.8.0",
+		"simple-odata-server": "^0.3.1"
+	},
+	"scripts": {
+		"build": "gulp build",
+		"test": "gulp test"
+	},
+	"keywords": [
+		"ej2",
+		"syncfusion",
+		"ej2-splitbuttons",
+		"ej2 splitbutton",
+		"ej2 dropdownbutton",
+		"ej2 buttongroup",
+		"ej2 progress button",
+		"JavaScript",
+		"TypeScript",
+		"split button",
+		"splitbutton",
+		"dropdown",
+		"dropdown button",
+		"drop-down button",
+		"dropdownbutton",
+		"dropdown popup",
+		"button group",
+		"buttongroup",
+		"group button",
+		"progress",
+		"spinner",
+		"progress button",
+		"progress indicator",
+		"spinbutton",
+		"spin button"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/syncfusion/ej2-splitbuttons.git"
+	}
+}

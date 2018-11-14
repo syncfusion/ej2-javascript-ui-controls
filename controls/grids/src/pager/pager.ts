@@ -292,7 +292,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
                     this.refresh();
                     break;
                 case 'pageSizes':
-                    if (this.checkpagesizes()) {
+                    if (this.checkpagesizes() && this.pagerdropdownModule) {
                         this.pagerdropdownModule.destroy();
                         this.pagerdropdownModule.render();
                     }

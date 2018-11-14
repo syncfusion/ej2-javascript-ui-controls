@@ -178,7 +178,6 @@ export interface TdData {
     colSpan?: number;
     rowSpan?: number;
     type: string;
-    text?: string;
     resourceLevelIndex?: number;
     resource?: ResourcesModel;
     resourceData?: { [key: string]: Object };
@@ -186,6 +185,7 @@ export interface TdData {
     endHour?: Date;
     workDays?: number[];
     cssClass?: string;
+    template?: NodeList | Element[];
 }
 
 /** @hidden */

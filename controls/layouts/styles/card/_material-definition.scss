@@ -1,0 +1,126 @@
+@import 'definition.scss';
+
+/*! component's theme wise override material-definitions and variables */
+$skin-name: 'material';
+$card-img-brdr-radious: 50%;
+$card-brdr-radious: 2px;
+$card-action-btn-txt-transform: uppercase;
+
+// Font
+
+$card-header-font: 15px;
+$card-title-font: 18px;
+$card-action-btn-icon-font: 14px;
+$card-action-btn-font: 14px;
+$card-content-font-size: 14px;
+$card-header-title-font: 15px;
+$card-header-sub-title-font: 14px;
+
+// Mouse
+$card-nrml-lheight: 36px;
+$card-nrml-mheight: 36px;
+$card-header-padding: 12px;
+$card-header-lheight: normal;
+$card-title-nrml-padding: 18px 12px 12px;
+$card-title-nrml-lheight: normal;
+$card-hor-image-margin: 2px;
+$card-sep-margin: 12px 0;
+$card-header-minheight: 22.5px;
+$card-header-nrml-padding: 12px;
+$card-header-txt-nrml-padding: 0 0 0 12px;
+$card-header-txt-title-lheight: normal;
+$card-header-txt-title-nrml-padding: 6px 0 0;
+$card-header-txt-subtitle-lheight: normal;
+$card-header-image-width: 30px;
+$card-header-image-height: 30px;
+$card-image-mheight: 112.5px;
+$card-image-title-lheight: 30px;
+$card-image-title-mheight: 30px;
+$card-image-title-nrml-padding: 0 12px;
+$card-action-nrml-padding: 12px 6px 6px 6px;
+$card-action-nrml-vertical-padding: 12px 6px 6px 6px;
+$card-action-nrml-btn-vertical-margin: 0 0 6px 0;
+$card-action-btn-nrml-height: 27px;
+$card-action-btn-nrml-margin: 0 0 0 6px;
+$card-action-btn-nrml-padding: 0 6px;
+$card-nrml-content-padding: 12px;
+$card-header-txt-nrml-title-font: 13px;
+$card-header-txt-nrml-subtitle-font: 12px;
+$card-image-title-font: 18px;
+$card-action-btn-icon-width: 24px;
+$card-action-btn-icon-height: 24px;
+
+// Touch
+
+$card-bigger-lheight: 48px;
+$card-bigger-mheight: 48px;
+$card-header-bigger-padding: 16px;
+$card-header-bigger-lheight: normal;
+$card-title-bigger-margin: 24px 16px 16px;
+$card-title-bigger-lheight: normal;
+$card-hor-image-bigger-margin: 2px;
+$card-sep-bigger-margin: 16px 0;
+$card-header-bigger-minheight: 30px;
+$card-header-bigger-padding: 16px;
+$card-header-txt-bigger-padding: 0 0 0 16px;
+$card-header-txt-title-bigger-lheight: normal;
+$card-header-txt-title-bigger-padding: 8px 0 0;
+$card-header-txt-subtitle-bigger-lheight: normal;
+$card-header-image-bigger-width: 40px;
+$card-header-image-bigger-height: 40px;
+$card-image-bigger-mheight: 150px;
+$card-image-title-bigger-lheight: 40px;
+$card-image-title-bigger-mheight: 40px;
+$card-img-title-bigger-padding: 0 16px;
+$card-action-bigger-padding: 16px 8px 8px 8px;
+$card-action-bigger-vertical-padding: 16px 8px 8px 8px;
+$card-action-bigger-btn-vertical-margin: 0 0 8px 0;
+$card-action-btn-bigger-height: 36px;
+$card-action-btn-bigger-margin: 0 0 0 8px;
+$card-action-btn-bigger-padding: 0 6px;
+$card-bigger-content-padding: 16px;
+$card-header-txt-bigger-title-font: 15px;
+$card-header-txt-bigger-subtitle-font: 14px;
+$card-image-title-bigger-font: 24px;
+$card-action-btn-bigger-icon-width: 24px;
+$card-action-btn-bigger-icon-height: 24px;
+
+
+// color
+
+$card-bg-color: $grey-white;
+$card-focus-bg-color: $grey-white;
+$card-hover-bg-color: $grey-white;
+$card-active-bg-color: $grey-white;
+$card-focus-brdr-color: $default-border-color;
+$card-hover-brdr-color: $default-border-color;
+$card-active-brdr-color: $default-border-color;
+$card-brdr-size: 1px ;
+$card-brdr-type: none;
+$card-brdr-color: $default-border-color;
+$card-sep-brdr-size: 1px ;
+$card-sep-brdr-type: solid;
+$card-sep-brdr-color: rgba($grey-light-font, .12);
+$card-image-title-color: $grey-dark-font;
+$card-image-title-bg: rgba($grey-black, .35);
+$card-action-btn-bg-color: $grey-white;
+$card-action-btn-font-color: $accent;
+$card-action-btn-border: 0;
+$card-action-btn-hover-bg: rgba($grey-black, .12);
+$card-action-btn-hover-border: 0;
+$card-action-btn-hover-font: $accent;
+$card-action-btn-focus-bg: rgba($grey-black, .12);
+$card-action-btn-focus-border: 0;
+$card-action-btn-focus-font: $accent ;
+$card-action-btn-pressed-bg: rgba($grey-black, .12);
+$card-action-btn-pressed-border: 0;
+$card-action-btn-pressed-font: $accent ;
+$card-font-color: rgba($grey-light-font, .87);
+$card-header-txt-title-color: rgba($grey-light-font, .87);
+$card-header-txt-subtitle-color: rgba($grey-light-font, .54);
+$card-content-font-color: $card-header-txt-subtitle-color;
+$card-box-shadow: 0 2px 3px 0 rgba($grey-black, .16);
+$card-action-btn-icon-color: rgba($grey-light-font, .54);
+
+// only for Material Theme
+$card-hover-box-shadow: 0 4px 8px 0 rgba($grey-black, .22);

@@ -435,6 +435,12 @@ export class Zoom {
             if (panningXDirection && panningYDirection) {
                 map.translatePoint = new Point(x, y);
                 this.applyTransform();
+            } else if (panningXDirection) {
+                map.translatePoint = new Point(x, map.translatePoint.y);
+                this.applyTransform();
+            } else if (panningYDirection) {
+                map.translatePoint = new Point(map.translatePoint.x, y);
+                this.applyTransform();
             }
         } else if (this.maps.tileZoomLevel > 1) {
             x = map.tileTranslatePoint.x - (down.x - move.x);

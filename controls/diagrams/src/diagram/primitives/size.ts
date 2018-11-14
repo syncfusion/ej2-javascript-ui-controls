@@ -20,6 +20,7 @@ export class Size {
         this.height = height;
     }
 
+    /**   @private  */
     public isEmpty(): boolean {
         return this.height === 0 && this.width === 0;
     }
@@ -41,6 +42,7 @@ export class Size {
     //     size.height = Math.max(size.height, this.height);
     // }
 
+    /**   @private  */
     public clone(): Size {
         return new Size(this.width, this.height);
     }

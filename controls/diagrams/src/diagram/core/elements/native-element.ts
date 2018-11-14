@@ -18,14 +18,23 @@ export class DiagramNativeElement extends DiagramElement {
         this.nodeId = nodeId;
     }
      private data: string | SVGElement = '';
-     public nodeId: string = '';
-     public diagramId: string = '';
+
     /**
-     * Gets or sets the geometry of the native element
+     * set the node id
      */
+    public nodeId: string = '';
+    /**
+     * set the diagram id
+     */
+    public diagramId: string = '';
+
+    /**   @private  */
     public get content(): string | SVGElement {
         return this.data;
     }
+    /**
+     * sets the geometry of the native element
+     */
     public set content(value: string | SVGElement) {
         this.data = value;
         this.template = getContent(this, false) as SVGElement;

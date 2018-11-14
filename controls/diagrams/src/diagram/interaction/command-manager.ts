@@ -54,9 +54,11 @@ import { PointPort } from '../objects/port';
  */
 
 export class CommandHandler {
-
+    /**   @private  */
     public clipboardData: ClipBoardObject = {};
+    /**   @private  */
     public connectorsTable: Object[] = [];
+    /**   @private  */
     public processTable: {} = {};
 
     private state: TransactionState;
@@ -67,10 +69,12 @@ export class CommandHandler {
 
     private parentTable: {} = {};
 
+    /**   @private  */
     public get snappingModule(): Snapping {
         return this.diagram.snappingModule;
     }
 
+    /**   @private  */
     public get layoutAnimateModule(): LayoutAnimation {
         return this.diagram.layoutAnimateModule;
     }
@@ -1512,6 +1516,7 @@ export class CommandHandler {
         }
     }
 
+    /**   @private  */
     public updateNativeNodeIndex(nodeId: string, targetID?: string): void {
         let nodes: NodeModel[] = this.diagram.selectedItems.nodes;
         for (let i: number = 0; i < this.diagram.views.length; i++) {
@@ -1527,6 +1532,7 @@ export class CommandHandler {
         }
     }
 
+    /**   @private  */
     public initSelectorWrapper(): void {
         let selectorModel: SelectorModel = this.diagram.selectedItems;
         (selectorModel as Selector).init(this.diagram);
@@ -1595,6 +1601,7 @@ export class CommandHandler {
         }
     }
 
+    /**   @private  */
     public getSelectedObject(): (NodeModel | ConnectorModel)[] {
         let selectormodel: SelectorModel = this.diagram.selectedItems;
         return (selectormodel.nodes).concat(selectormodel.connectors as Object);
@@ -1676,6 +1683,7 @@ export class CommandHandler {
         }
     }
 
+    /**   @private  */
     public connectorSegmentChange(actualObject: Node, existingInnerBounds: Rect, isRotate: boolean): void {
         let tx: number; let ty: number; let segmentChange: boolean = true;
         if (existingInnerBounds.equals(existingInnerBounds, actualObject.wrapper.bounds) === false) {
@@ -2203,6 +2211,7 @@ export class CommandHandler {
 
     }
 
+    /**   @private  */
     public snapAngle(angle: number): number {
         if ((this.diagram.snapSettings.constraints & SnapConstraints.SnapToLines)
             && this.snappingModule) {
@@ -2212,6 +2221,7 @@ export class CommandHandler {
         }
     }
 
+    /**   @private  */
     public rotatePoints(conn: Connector, angle: number, pivot: PointModel): void {
         if (!conn.sourceWrapper || !conn.targetWrapper) {
             let matrix: Matrix = identityMatrix();
@@ -2301,6 +2311,7 @@ export class CommandHandler {
         return (innerParent) ? parentNodes : nodes;
     }
 
+    /**   @private  */
     public getChildren(node: NodeModel, nodes: (NodeModel | ConnectorModel)[]): (NodeModel | ConnectorModel)[] {
         let temp: NodeModel = node;
         if (node.children) {
@@ -2690,6 +2701,7 @@ export class CommandHandler {
         return selector;
     }
 
+    /**   @private  */
     public checkBoundaryConstraints(tx: number, ty: number, nodeBounds?: Rect): boolean {
         let pageSettings: PageSettings = this.diagram.pageSettings as PageSettings;
         let boundaryConstraints: BoundaryConstraints = (this.diagram.pageSettings as PageSettings).boundaryConstraints;

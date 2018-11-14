@@ -1,0 +1,134 @@
+
+$btn-border-radius: 2px;
+$btn-focus-border-color: transparent;
+$btn-focus-bgcolor: #e0e0e0;
+$btn-hover-bgcolor: #e0e0e0;
+$btn-pressed-bgcolor: #bdbdbd;
+$btn-pressed-color: rgba(0, 0, 0, .87);
+$btn-seperator-border: 1px solid;
+$btn-seperator-border-color: rgba(0, 0, 0, .12);
+$btn-seperator-default-border-color: transparent;
+$btn-padding-bottom: 0;
+$btn-padding-top: 0;
+$btn-bigger-padding-bottom: 0;
+$btn-bigger-padding-top: 0;
+$btn-small-padding-top: 0;
+$btn-border-radius: 2px;
+$btn-focus-border-color: transparent;
+$btn-focus-bgcolor: $grey-300;
+$btn-hover-bgcolor: $grey-300;
+$btn-pressed-bgcolor: $grey-400;
+$btn-pressed-color: rgba($grey-black, .87);
+$btn-seperator-border: 1px solid;
+$btn-seperator-border-color: rgba(0, 0, 0, .12);
+$btn-seperator-default-border-color: transparent;
+$btn-padding-bottom: 0;
+$btn-padding-top: 0;
+$btn-bigger-padding-bottom: 0;
+$btn-bigger-padding-top: 0;
+$btn-small-padding-top: 0;
+
+@include export-module('split-button-layout') {
+  /*! splitbutton layout */
+  #{&}.e-group-btn {
+    white-space: nowrap;
+
+    &.e-split-btn {
+      .e-primary-btn {
+        border-bottom-right-radius: 0;
+        border-top-right-radius: 0;
+      }
+
+      .e-dropdown-btn {
+        border-bottom-left-radius: 0;
+        border-top-left-radius: 0;
+        padding-bottom: $btn-padding-bottom;
+        padding-top: $btn-padding-top;
+
+        &.e-small {
+          padding-top: $btn-small-padding-top;
+        }
+      }
+
+      &.e-vertical {
+        display: inline-block;
+
+        .e-primary-btn,
+        .e-dropdown-btn {
+          display: block;
+          width: 100%;
+        }
+
+        .e-primary-btn {
+          border-bottom-left-radius: 0;
+          border-top-right-radius: $btn-border-radius;
+        }
+
+        .e-dropdown-btn {
+          border-bottom-left-radius: $btn-border-radius;
+          border-top-right-radius: 0;
+          height: auto;
+          line-height: normal;
+          padding-bottom: 0;
+          padding-top: 0;
+
+          .e-btn-icon {
+            height: auto;
+            line-height: normal;
+          }
+        }
+      }
+    }
+  }
+
+  .e-bigger #{&}.e-group-btn,
+  .e-bigger#{&}.e-group-btn {
+    &.e-split-btn {
+      .e-dropdown-btn {
+        padding-bottom: $btn-bigger-padding-bottom;
+        padding-top: $btn-bigger-padding-top;
+      }
+    }
+  }
+}
+@include export-module('split-button-theme') {
+  /*! splitbutton layout */
+  #{&}.e-group-btn {
+    button:not(:last-child) {
+      border-right-color: $btn-seperator-border-color;
+    }
+
+    &.e-split-btn {
+      .e-primary-btn,
+      .e-dropdown-btn {
+        &:hover {
+          background-color: $btn-hover-bgcolor;
+        }
+
+        &:focus {
+          background-color: $btn-focus-bgcolor;
+          border-color: $btn-focus-border-color;
+        }
+
+        &:active {
+          background-color: $btn-pressed-bgcolor;
+          color: $btn-pressed-color;
+        }
+      }
+
+      &.e-vertical {
+        button:not(:last-child) {
+          border-bottom-color: $btn-seperator-border-color;
+          border-right-color: $btn-seperator-default-border-color;
+        }
+
+        .e-primary-btn,
+        .e-dropdown-btn {
+          &:focus {
+            border-color: $btn-focus-border-color;
+          }
+        }
+      }
+    }
+  }
+}

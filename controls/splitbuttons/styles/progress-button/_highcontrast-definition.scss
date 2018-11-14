@@ -1,0 +1,23 @@
+@import 'definition.scss';
+
+$progress-color: $content-font;
+$progress-bgcolor: rgba($bg-base-0, .3);
+$progress-bgcolor-normal: rgba($bg-base-100, .3);
+
+$transition: all .3s linear;
+
+$spinner-padding: 12px;
+$spinner-padding-small: 10px;
+$spinner-padding-bigger: 14px;
+$spinner-padding-bigger-small: 12px;
+
+$spin-btn-padding: 20px;
+$small-spin-btn-padding: 16px;
+$bigger-spin-btn-padding: 24px;
+$bigger-small-spin-btn-padding: 22px;
+
+$btn-flat-primary-progress-color: $bg-base-0;
+$btn-flat-success-progress-color: $bg-base-0;
+$btn-flat-info-progress-color: $bg-base-0;
+$btn-flat-warning-progress-color: $bg-base-0;
+$btn-flat-danger-progress-color: $bg-base-0;

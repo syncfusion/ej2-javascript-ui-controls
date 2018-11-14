@@ -1,4 +1,4 @@
-import { PivotFieldList } from '../../src/field-list/base/field-list';
+import { PivotFieldList } from '../../src/pivotfieldlist/base/field-list';
 import { createElement, remove, isNullOrUndefined, EmitType, closest, extend, getInstance } from '@syncfusion/ej2-base';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { pivot_dataset } from '../base/datasource.spec';

@@ -52,6 +52,7 @@ export class HierarchicalTree {
         return 'OrganizationalChart';
     }
 
+    /**   @private  */
     public updateLayout(
         nodes: INode[], nameTable: Object, layoutProp: Layout, viewport: PointModel, uniqueId: string): ILayout {
         let layout: ILayout = {

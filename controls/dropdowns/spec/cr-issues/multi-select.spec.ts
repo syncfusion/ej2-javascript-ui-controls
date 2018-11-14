@@ -800,4 +800,110 @@ describe('MultiSelect', () => {
             }, 400);
         });
     });
+    describe('focus event', () => {
+        let listObj: any;
+        let popupObj: any;
+        let data: string[] = ['JAVA', 'C#']
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: data,
+                focus: function (e) {
+                    expect((e as any).isInteracted).toBe(true);
+                }
+            });
+            listObj.appendTo(element);
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        it('focus the multiselect', () => {
+            expect(listObj.componentWrapper).not.toBe(null);
+            mouseEventArgs.target = listObj.componentWrapper;
+            listObj.wrapperClick(mouseEventArgs);
+        });
+    });
+
+    describe('EJ2-18072: multiselect popup width set to 0, when set value initial loading.', () => {
+        let element: HTMLInputElement;
+        let data: { [key: string]: Object }[] = [
+            { id: 'list1', text: 'JAVA', icon: 'icon' },
+            { id: 'list2', text: 'C#' },
+            { id: 'list3', text: 'C++' },
+            { id: 'list4', text: '.NET', icon: 'icon' },
+            { id: 'list5', text: 'Oracle' }
+        ];
+        let listObj: MultiSelect;
+        let divContainer: HTMLElement;
+        beforeAll(() => {
+            divContainer = createElement('dvi', { id: 'container-ele', styles: "display:none" });
+            element = <HTMLInputElement>createElement('input', { id: 'multiSelect1' });
+            divContainer.appendChild(element);
+            document.body.appendChild(divContainer);
+            listObj = new MultiSelect({
+                dataSource: data,
+                fields: { text: "text", value: "id" },
+                value: ['list1'],
+                hideSelectedItem: true
+            });
+            listObj.appendTo('#multiSelect1');
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+        });
+
+        it(' popup width and component width same', (done) => {
+            divContainer.style.display = 'block';
+            (<any>listObj).focusIn();
+            listObj.showPopup();
+            setTimeout(() => {
+                expect((listObj as any).overAllWrapper.offsetWidth === (listObj as any).popupObj.element.offsetWidth).toBe(true);
+                done();
+            }, 400);
+        });
+    });
+    describe(' EJ2-18283 - selectAll eventArgs', () => {
+        let listObj: any;
+        let popupObj: any;
+        let data: string[] = ['JAVA', 'C#']
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        let selectEle: HTMLElement;
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: data,
+                selectedAll: (e: any) => {
+                    selectEle = e.event.target;
+                },
+                mode: 'CheckBox', fields: { text: "text", value: "text" }, value: ["JAVA"], showSelectAll: true
+            });
+            listObj.appendTo(element);
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+
+        it(' click on selectAll element', (done) => {
+            let wrapper: HTMLElement = (<any>listObj).inputElement.parentElement.parentElement;
+            listObj.showPopup();
+            setTimeout(() => {
+                expect(listObj.checkBoxSelectionModule.checkAllParent.classList.contains('e-selectall-parent')).toBe(true);
+                expect(listObj.checkBoxSelectionModule.checkAllParent.classList.contains('e-selectall-parent')).toBe(true);
+                expect(listObj.checkBoxSelectionModule.checkAllParent.innerText === "Select All").toBe(true);
+                expect(listObj.checkBoxSelectionModule.checkAllParent.lastElementChild.classList.contains('e-all-text')).toBe(true);
+                listObj.dispatchEvent(listObj.checkBoxSelectionModule.checkAllParent, "mousedown");
+                expect(!isNullOrUndefined(selectEle)).toBe(true);
+                done();
+            }, 400);
+        });
+    });
 });

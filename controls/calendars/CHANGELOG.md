@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 16.3.32 (2018-11-15)
+
+### DatePicker
+
+#### Bug Fixes
+
+- Fixed the form rest issue on IE browser.
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- Fixed the form rest issue on IE browser.
+
 ## 16.3.29 (2018-10-31)
 
 ### DatePicker

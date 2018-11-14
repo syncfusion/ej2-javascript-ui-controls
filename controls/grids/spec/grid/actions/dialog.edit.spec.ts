@@ -69,10 +69,10 @@ describe('Dialog Editing module', () => {
         it('Edit start', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'beginEdit') {
-                    expect(gridObj.element.querySelectorAll('.e-editedrow').length).toBe(1);
-                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
-                    expect(gridObj.element.querySelectorAll('form').length).toBe(1);
-                    let cells = gridObj.element.querySelector('.e-editedrow').querySelectorAll('.e-rowcell');
+                    expect(document.querySelectorAll('.e-editedrow').length).toBe(1);
+                    expect(document.querySelectorAll('.e-gridform').length).toBe(1);
+                    expect(document.querySelectorAll('form').length).toBe(1);
+                    let cells = document.querySelector('.e-editedrow').querySelectorAll('.e-rowcell');
                     expect(cells.length).toBe(gridObj.getVisibleColumns().length);
                     //primary key check
                     expect(cells[0].querySelectorAll('input.e-disabled').length).toBe(1);
@@ -122,23 +122,23 @@ describe('Dialog Editing module', () => {
             };
             gridObj.actionComplete = actionComplete;
             gridObj.actionBegin = actionBegin;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
-            (gridObj.element.querySelector('#'+gridObj.element.id+'_dialogEdit_wrapper').querySelectorAll('button') as any)[1].click();
+            (document.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
+            (document.querySelector('#'+gridObj.element.id+'_dialogEdit_wrapper').querySelectorAll('button') as any)[1].click();
         });
 
         it('Add start', (done: Function) => {
             //last action check
-            expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(0);
+            expect(document.querySelectorAll('.e-gridform').length).toBe(0);
             //form destroy check
             expect(gridObj.editModule.formObj.isDestroyed).toBeTruthy();
-            expect(gridObj.element.querySelectorAll('form').length).toBe(0);
+            expect(document.querySelectorAll('form').length).toBe(0);
 
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'add') {
-                    expect(gridObj.element.querySelectorAll('.e-insertedrow').length).toBe(1);
-                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
-                    expect(gridObj.element.querySelectorAll('form').length).toBe(1);
-                    let cells = gridObj.element.querySelector('.e-insertedrow').querySelectorAll('.e-rowcell');
+                    expect(document.querySelectorAll('.e-insertedrow').length).toBe(1);
+                    expect(document.querySelectorAll('.e-gridform').length).toBe(1);
+                    expect(document.querySelectorAll('form').length).toBe(1);
+                    let cells = document.querySelector('.e-insertedrow').querySelectorAll('.e-rowcell');
                     expect(cells.length).toBe(gridObj.getVisibleColumns().length);
                     //primary key check
                     expect(cells[0].querySelectorAll('input.e-disabled').length).toBe(0);
@@ -164,7 +164,7 @@ describe('Dialog Editing module', () => {
             //toolbar status check for last action
             expect(gridObj.element.querySelectorAll('.e-toolbar-item.e-overlay').length).toBe(2);
             //edited class check for last action
-            expect(gridObj.element.querySelectorAll('.e-editedrow').length).toBe(0);
+            expect(document.querySelectorAll('.e-editedrow').length).toBe(0);
             gridObj.clearSelection();
             gridObj.selectRow(0, true);
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
@@ -173,8 +173,8 @@ describe('Dialog Editing module', () => {
         it('Add complete', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'save') {
-                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(0);
-                    expect(gridObj.element.querySelectorAll('form').length).toBe(0);
+                    expect(document.querySelectorAll('.e-gridform').length).toBe(0);
+                    expect(document.querySelectorAll('form').length).toBe(0);
 
                     //form destroy check
                     expect(gridObj.editModule.formObj.isDestroyed).toBeTruthy();
@@ -197,9 +197,9 @@ describe('Dialog Editing module', () => {
             };
             gridObj.actionComplete = actionComplete;
             gridObj.actionBegin = actionBegin;
-            (gridObj.element.querySelector('#'+ gridObj.element.id +'OrderID') as any).value = 10247;
-            (gridObj.element.querySelector('#'+ gridObj.element.id +'CustomerID') as any).value = 'updated';
-            (gridObj.element.querySelector('#'+ gridObj.element.id +'_dialogEdit_wrapper').querySelectorAll('button') as any)[1].click();
+            (document.querySelector('#'+ gridObj.element.id +'OrderID') as any).value = 10247;
+            (document.querySelector('#'+ gridObj.element.id +'CustomerID') as any).value = 'updated';
+            (document.querySelector('#'+ gridObj.element.id +'_dialogEdit_wrapper').querySelectorAll('button') as any)[1].click();
         });
 
 
@@ -226,7 +226,7 @@ describe('Dialog Editing module', () => {
             //toolbar status check for last action
             expect(gridObj.element.querySelectorAll('.e-toolbar-item.e-overlay').length).toBe(2);
             //added class check for last action
-            expect(gridObj.element.querySelectorAll('.e-insertedrow').length).toBe(0);
+            expect(document.querySelectorAll('.e-insertedrow').length).toBe(0);
             gridObj.clearSelection();
             gridObj.selectRow(0, true);
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_delete' } });
@@ -235,7 +235,7 @@ describe('Dialog Editing module', () => {
         it('Edit-cancel start', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'beginEdit') {
-                    expect(gridObj.element.querySelectorAll('.e-editedrow').length).toBe(1);
+                    expect(document.querySelectorAll('.e-editedrow').length).toBe(1);
                     expect(gridObj.isEdit).toBeTruthy();
                     done();
                 }
@@ -279,8 +279,8 @@ describe('Dialog Editing module', () => {
             gridObj.actionBegin = actionBegin;
             //toolbar status check
             expect(gridObj.element.querySelectorAll('.e-toolbar-item.e-overlay').length).toBe(3);
-            (gridObj.element.querySelector('#'+ gridObj.element.id +'CustomerID') as any).value = 'updatednew';
-            (gridObj.element.querySelector('#'+ gridObj.element.id +'_dialogEdit_wrapper').querySelectorAll('button') as any)[2].click();
+            (document.querySelector('#'+ gridObj.element.id +'CustomerID') as any).value = 'updatednew';
+            (document.querySelector('#'+ gridObj.element.id +'_dialogEdit_wrapper').querySelectorAll('button') as any)[2].click();
         });
 
         it('Add-cancel start', (done: Function) => {
@@ -289,7 +289,7 @@ describe('Dialog Editing module', () => {
             expect(gridObj.element.querySelectorAll('form').length).toBe(0);
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'add') {
-                    expect(gridObj.element.querySelectorAll('.e-insertedrow').length).toBe(1);
+                    expect(document.querySelectorAll('.e-insertedrow').length).toBe(1);
                     expect(gridObj.isEdit).toBeTruthy();
                     done();
                 }
@@ -335,22 +335,22 @@ describe('Dialog Editing module', () => {
             gridObj.actionBegin = actionBegin;
             //toolbar status check
             expect(gridObj.element.querySelectorAll('.e-toolbar-item.e-overlay').length).toBe(3);
-            (gridObj.element.querySelector('#'+ gridObj.element.id +'OrderID') as any).value = 10247;
-            (gridObj.element.querySelector('#'+ gridObj.element.id +'CustomerID') as any).value = 'updatednew';
-            (gridObj.element.querySelector('#'+ gridObj.element.id +'_dialogEdit_wrapper').querySelectorAll('button') as any)[2].click();
+            (document.querySelector('#'+ gridObj.element.id +'OrderID') as any).value = 10247;
+            (document.querySelector('#'+ gridObj.element.id +'CustomerID') as any).value = 'updatednew';
+            (document.querySelector('#'+ gridObj.element.id +'_dialogEdit_wrapper').querySelectorAll('button') as any)[2].click();
         });
 
         it('toolbar status check', () => {
-            expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(0);
-            expect(gridObj.element.querySelectorAll('form').length).toBe(0);
+            expect(document.querySelectorAll('.e-gridform').length).toBe(0);
+            expect(document.querySelectorAll('form').length).toBe(0);
             expect(gridObj.element.querySelectorAll('.e-toolbar-item.e-overlay').length).toBe(2);
         });
 
         it('dbl edit start', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'beginEdit') {
-                    expect(gridObj.element.querySelectorAll('.e-editedrow').length).toBe(1);
-                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
+                    expect(document.querySelectorAll('.e-editedrow').length).toBe(1);
+                    expect(document.querySelectorAll('.e-gridform').length).toBe(1);
                     expect(gridObj.isEdit).toBeTruthy();
                     done();
                 }
@@ -370,16 +370,16 @@ describe('Dialog Editing module', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;
-            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
-            (gridObj.element.querySelector('#'+ gridObj.element.id +'_dialogEdit_wrapper').querySelectorAll('button') as any)[1].click();
+            (document.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
+            (document.querySelector('#'+ gridObj.element.id +'_dialogEdit_wrapper').querySelectorAll('button') as any)[1].click();
         });
 
         it('check row selection on dialog close by esc and close icon', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'beginEdit') {
-                    let td = (gridObj.element.querySelector('#' + gridObj.element.id + '_dialogEdit_wrapper').querySelectorAll('td.e-rowcell') as any)[0];
+                    let td = (document.querySelector('#' + gridObj.element.id + '_dialogEdit_wrapper').querySelectorAll('td.e-rowcell') as any)[0];
                     expect((td as HTMLElement).style.textAlign === 'left').toBe(true);
-                    (gridObj.element.querySelector('#' + gridObj.element.id + '_dialogEdit_wrapper').querySelectorAll('.e-dlg-closeicon-btn') as any)[0].click();
+                    (document.querySelector('#' + gridObj.element.id + '_dialogEdit_wrapper').querySelectorAll('.e-dlg-closeicon-btn') as any)[0].click();
                 }
                 if (args.requestType === 'cancel') {
                     expect(gridObj.getSelectedRecords().length).toBe(1);
@@ -393,7 +393,7 @@ describe('Dialog Editing module', () => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'beginEdit') {
                     expect(gridObj.getSelectedRecords().length).toBe(1);
-                    (gridObj.element.querySelector('#' + gridObj.element.id + '_dialogEdit_wrapper').querySelectorAll('.e-dlg-closeicon-btn') as any)[0].click();
+                    (document.querySelector('#' + gridObj.element.id + '_dialogEdit_wrapper').querySelectorAll('.e-dlg-closeicon-btn') as any)[0].click();
                     done();
                 }
             };
@@ -403,7 +403,7 @@ describe('Dialog Editing module', () => {
         it('enableRtl alignment check', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'beginEdit') {
-                    let td = (gridObj.element.querySelector('#' + gridObj.element.id + '_dialogEdit_wrapper').querySelectorAll('td.e-rowcell') as any)[0];
+                    let td = (document.querySelector('#' + gridObj.element.id + '_dialogEdit_wrapper').querySelectorAll('td.e-rowcell') as any)[0];
                     expect((td as HTMLElement).style.textAlign === 'right').toBe(true);
                     done();
                 }               

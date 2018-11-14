@@ -58,6 +58,7 @@ export interface ContextMenuClassList {
 export class DiagramContextMenu {
     //internal variables
     private element: HTMLUListElement;
+    /**   @private  */
     public contextMenu: Menu;
     private defaultItems: { [key: string]: ContextMenuItemModel } = {};
     /**

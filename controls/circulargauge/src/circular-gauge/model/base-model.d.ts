@@ -141,4 +141,10 @@ export interface TooltipSettingsModel {
      */
     border?: BorderModel;
 
+    /**
+     * Options to show the tooltip position on pointer
+     * @default false
+     */
+    showAtMousePosition?: boolean;
+
 }

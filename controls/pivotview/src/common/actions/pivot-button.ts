@@ -2,7 +2,7 @@ import { createElement, Draggable, DragEventArgs, remove, extend } from '@syncfu
 import { EventHandler, MouseEventArgs } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, addClass, removeClass, closest, Browser } from '@syncfusion/ej2-base';
 import { PivotView } from '../../pivotview/base/pivotview';
-import { PivotFieldList } from '../../field-list/base/field-list';
+import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
 import { IAction, PivotButtonArgs } from '../../common/base/interface';

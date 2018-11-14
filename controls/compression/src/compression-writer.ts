@@ -2,10 +2,11 @@ import { Encoding } from '@syncfusion/ej2-file-utils';
 /**
  * array literal codes
  */
-const arrLiteralCodes: Int16Array = new Int16Array(286);
-const arrLiteralLengths: Uint8Array = new Uint8Array(286);
-const arrDistanceCodes: Int16Array = new Int16Array(30);
-const arrDistanceLengths: Uint8Array = new Uint8Array(30);
+const ARR_LITERAL_CODES: Int16Array = new Int16Array(286);
+const ARR_LITERAL_LENGTHS: Uint8Array = new Uint8Array(286);
+const ARR_DISTANCE_CODES: Int16Array = new Int16Array(30);
+const ARR_DISTANCE_LENGTHS: Uint8Array = new Uint8Array(30);
+
 /**
  * represent compression stream writer
  * ```typescript
@@ -16,6 +17,7 @@ const arrDistanceLengths: Uint8Array = new Uint8Array(30);
  * ```
  */
 export class CompressedStreamWriter {
+    private static isHuffmanTreeInitiated: boolean = false;
     private stream: Uint8Array[];
     private pendingBuffer: Uint8Array = new Uint8Array(1 << 16);
     private pendingBufLength: number = 0;
@@ -71,6 +73,10 @@ export class CompressedStreamWriter {
      * @param {boolean} noWrap - optional if true, ZLib header and checksum will not be written.
      */
     constructor(noWrap?: boolean) {
+        if (!CompressedStreamWriter.isHuffmanTreeInitiated) {
+            CompressedStreamWriter.initHuffmanTree();
+            CompressedStreamWriter.isHuffmanTreeInitiated = true;
+        }
         this.treeLiteral = new CompressorHuffmanTree(this, 286, 257, 15);
         this.treeDistances = new CompressorHuffmanTree(this, 30, 1, 15);
         this.treeCodeLengths = new CompressorHuffmanTree(this, 19, 4, 7);
@@ -359,10 +365,10 @@ export class CompressedStreamWriter {
             this.treeLiteral.getEncodedLength() + this.treeDistances.getEncodedLength() + this.extraBits;
         let static_len: number = this.extraBits;
         for (let i: number = 0; i < 286; i++) {
-            static_len += this.treeLiteral.codeFrequencies[i] * arrLiteralLengths[i];
+            static_len += this.treeLiteral.codeFrequencies[i] * ARR_LITERAL_LENGTHS[i];
         }
         for (let i = 0; i < 30; i++) {
-            static_len += this.treeDistances.codeFrequencies[i] * arrDistanceLengths[i];
+            static_len += this.treeDistances.codeFrequencies[i] * ARR_DISTANCE_LENGTHS[i];
         }
         if (opt_len >= static_len) {
             // Force static trees.
@@ -373,8 +379,8 @@ export class CompressedStreamWriter {
         } else if (opt_len == static_len) {
             // Encode with static tree.
             this.pendingBufferWriteBits((1 << 1) + (lastBlock ? 1 : 0), 3);
-            this.treeLiteral.setStaticCodes(arrLiteralCodes, arrLiteralLengths);
-            this.treeDistances.setStaticCodes(arrDistanceCodes, arrDistanceLengths);
+            this.treeLiteral.setStaticCodes(ARR_LITERAL_CODES, ARR_LITERAL_LENGTHS);
+            this.treeDistances.setStaticCodes(ARR_DISTANCE_CODES, ARR_DISTANCE_LENGTHS);
             this.huffmanCompressBlock();
             this.huffmanReset();
         } else {
@@ -502,6 +508,33 @@ export class CompressedStreamWriter {
         }
         this.pendingBufCache = 0;
         this.pendingBufBitsInCache = 0;
+    }
+    /**
+     * Huffman Tree literal calculation
+     * @private
+     */
+    public static initHuffmanTree(): void {
+        let i: number = 0;
+        while (i < 144) {
+            ARR_LITERAL_CODES[i] = CompressorHuffmanTree.bitReverse((0x030 + i) << 8);
+            ARR_LITERAL_LENGTHS[i++] = 8;
+        }
+        while (i < 256) {
+            ARR_LITERAL_CODES[i] = CompressorHuffmanTree.bitReverse((0x190 - 144 + i) << 7);
+            ARR_LITERAL_LENGTHS[i++] = 9;
+        }
+        while (i < 280) {
+            ARR_LITERAL_CODES[i] = CompressorHuffmanTree.bitReverse((0x000 - 256 + i) << 9);
+            ARR_LITERAL_LENGTHS[i++] = 7;
+        }
+        while (i < 286) {
+            ARR_LITERAL_CODES[i] = CompressorHuffmanTree.bitReverse((0x0c0 - 280 + i) << 8);
+            ARR_LITERAL_LENGTHS[i++] = 8;
+        }
+        for (i = 0; i < 30; i++) {
+            ARR_DISTANCE_CODES[i] = CompressorHuffmanTree.bitReverse(i << 11);
+            ARR_DISTANCE_LENGTHS[i] = 5;
+        }
     }
     /**
      * close the stream and write all pending buffer in to stream
@@ -947,30 +980,3 @@ export class ChecksumCalculator {
         return checksum_uint;
     }
 }
-
-/**
- * Huffman Tree literal calculation
- */
-((): void => {
-    let i: number = 0;
-    while (i < 144) {
-        arrLiteralCodes[i] = CompressorHuffmanTree.bitReverse((0x030 + i) << 8);
-        arrLiteralLengths[i++] = 8;
-    }
-    while (i < 256) {
-        arrLiteralCodes[i] = CompressorHuffmanTree.bitReverse((0x190 - 144 + i) << 7);
-        arrLiteralLengths[i++] = 9;
-    }
-    while (i < 280) {
-        arrLiteralCodes[i] = CompressorHuffmanTree.bitReverse((0x000 - 256 + i) << 9);
-        arrLiteralLengths[i++] = 7;
-    }
-    while (i < 286) {
-        arrLiteralCodes[i] = CompressorHuffmanTree.bitReverse((0x0c0 - 280 + i) << 8);
-        arrLiteralLengths[i++] = 8;
-    }
-    for (i = 0; i < 30; i++) {
-        arrDistanceCodes[i] = CompressorHuffmanTree.bitReverse(i << 11);
-        arrDistanceLengths[i] = 5;
-    }
-})();

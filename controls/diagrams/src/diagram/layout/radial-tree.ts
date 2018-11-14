@@ -44,6 +44,7 @@ export class RadialTree {
     }
 
 
+    /**   @private  */
     public updateLayout(nodes: INode[], nameTable: Object, layoutProp: Layout, viewport: PointModel): void {
         let layout: IRadialLayout = {
             type: layoutProp.type,

@@ -1,6 +1,6 @@
 import { CircularGauge } from '../circular-gauge';
-import { createElement } from '@syncfusion/ej2-base';
-import { calculateSum, VisibleLabels, measureText } from '../utils/helper';
+import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { calculateSum, VisibleLabels, measureText, isCompleteAngle, GaugeLocation, getLocationFromAngle } from '../utils/helper';
 import { Size, Rect, stringToNumber, getLabelFormat } from '../utils/helper';
 import { Axis, Range, Label, Pointer } from './axis';
 import { IAxisLabelRenderEventArgs } from '../model/interface';
@@ -49,6 +49,8 @@ export class AxisLayoutPanel {
         let totalRadius: number;
         let currentRadius: number;
         let rangeMaximumRadius: number = 0;
+        let xMarginDiff: number = this.gauge.margin.left + this.gauge.margin.right;
+        let yMarginDiff: number = this.gauge.margin.top + this.gauge.margin.bottom;
         for (let axis of <Axis[]>this.gauge.axes) {
             totalRadius = (Math.min(axis.rect.width, axis.rect.height) / 2);
             currentRadius = axis.radius != null ? stringToNumber(axis.radius, totalRadius) : totalRadius;
@@ -59,6 +61,69 @@ export class AxisLayoutPanel {
             currentRadius = (rangeMaximumRadius > 100 && axis.radius == null) ?
                 (currentRadius * 100) / rangeMaximumRadius : currentRadius;
             axis.currentRadius = currentRadius - axis.nearSize;
+            if (this.gauge.moveToCenter && this.gauge.axes.length === 1 &&
+                isNullOrUndefined(this.gauge.centerX) && isNullOrUndefined(this.gauge.centerY)) {
+                let startAngle: number; let endAngle: number;
+                startAngle = axis.startAngle;
+                startAngle = !isCompleteAngle(startAngle, axis.endAngle) ? startAngle : [0, endAngle = 360][0];
+                let startPoint: GaugeLocation = getLocationFromAngle(startAngle - 90, currentRadius, this.gauge.midPoint);
+                endAngle = axis.endAngle;
+                endAngle -= isCompleteAngle(startAngle, endAngle) ? 0.0001 : 0;
+                let endPoint: GaugeLocation = getLocationFromAngle(endAngle - 90, currentRadius, this.gauge.midPoint);
+                let xDiff: number; let yDiff: number; let startXDiff: number; let endXDiff: number;
+                let startYDiff: number; let endYDiff: number; let newPoint: GaugeLocation;
+                if ((startAngle >= 270 && startAngle <= 360) && ((endAngle > 270 && endAngle <= 360) ||
+                    (endAngle >= 0 && endAngle <= 180))) {
+                    startXDiff = Math.abs(this.gauge.gaugeRect.x - Math.abs(startPoint.x - this.gauge.gaugeRect.x));
+                    newPoint = (endAngle <= 360 && endAngle >= 270) ? this.gauge.midPoint : (endAngle <= 90) ? endPoint :
+                        getLocationFromAngle(90 - 90, currentRadius, this.gauge.midPoint);
+                    endXDiff = Math.abs(newPoint.x - this.gauge.gaugeRect.width);
+                    startPoint = (endAngle <= 360 && endAngle >= 270) ? endPoint :
+                        getLocationFromAngle(360 - 90, currentRadius, this.gauge.midPoint);
+                    startYDiff = Math.abs(startPoint.y - this.gauge.gaugeRect.y);
+                    endPoint = (endAngle <= 360 && endAngle >= 270 || (endAngle >= 0 && endAngle < 90)) ?
+                        this.gauge.midPoint : (endAngle >= 90 && endAngle <= 180) ? endPoint :
+                            getLocationFromAngle(180 - 90, currentRadius, this.gauge.midPoint);
+                    endYDiff = Math.abs(endPoint.y - (this.gauge.gaugeRect.y + this.gauge.gaugeRect.height));
+                } else if ((startAngle >= 0 && startAngle < 90) && (endAngle >= 0 && endAngle <= 270)) {
+                    startYDiff = Math.abs(startPoint.y - this.gauge.gaugeRect.y);
+                    newPoint = (endAngle >= 180) ? getLocationFromAngle(180 - 90, currentRadius, this.gauge.midPoint) :
+                        endPoint;
+                    endYDiff = Math.abs(newPoint.y - (this.gauge.gaugeRect.y + this.gauge.gaugeRect.height));
+                    startPoint = (endAngle >= 180) ? endPoint : this.gauge.midPoint;
+                    startXDiff = Math.abs(this.gauge.gaugeRect.x - Math.abs(startPoint.x - this.gauge.gaugeRect.x));
+                    endPoint = (endAngle >= 90) ? getLocationFromAngle(90 - 90, currentRadius, this.gauge.midPoint) : endPoint;
+                    endXDiff = Math.abs(endPoint.x - this.gauge.gaugeRect.width);
+                } else if ((startAngle >= 90 && startAngle < 180) && (endAngle > 90 && endAngle <= 360)) {
+                    newPoint = (endAngle <= 180) ? this.gauge.midPoint : (endAngle >= 270) ?
+                        getLocationFromAngle(270 - 90, currentRadius, this.gauge.midPoint) : endPoint;
+                    startXDiff = Math.abs(newPoint.x - this.gauge.gaugeRect.x);
+                    endXDiff = Math.abs(startPoint.x - this.gauge.gaugeRect.width);
+                    startPoint = (endAngle > 270) ? getLocationFromAngle(endAngle - 90, currentRadius, this.gauge.midPoint) :
+                        this.gauge.midPoint;
+                    startYDiff = Math.abs(this.gauge.gaugeRect.y - startPoint.y);
+                    endPoint = (endAngle >= 180) ? getLocationFromAngle(180 - 90, currentRadius, this.gauge.midPoint) : endPoint;
+                    endYDiff = Math.abs(endPoint.y - (this.gauge.gaugeRect.y + this.gauge.gaugeRect.height));
+                } else if ((startAngle >= 180 && startAngle <= 270) && ((endAngle <= 360 && endAngle >= 270) ||
+                    (endAngle <= 90 && endAngle >= 0))) {
+                    newPoint = (endAngle > 180 && endAngle < 270) ? endPoint :
+                        getLocationFromAngle(270 - 90, currentRadius, this.gauge.midPoint);
+                    startXDiff = Math.abs(this.gauge.gaugeRect.x - Math.abs(newPoint.x - this.gauge.gaugeRect.x));
+                    newPoint = (endAngle >= 180 && endAngle <= 360) ? this.gauge.midPoint : endPoint;
+                    endXDiff = Math.abs(newPoint.x - this.gauge.gaugeRect.width);
+                    newPoint = (endAngle > 180 && endAngle < 270) ? this.gauge.midPoint : (endAngle >= 270 && endAngle <= 360) ? endPoint :
+                        getLocationFromAngle(360 - 90, currentRadius, this.gauge.midPoint);
+                    startYDiff = Math.abs(newPoint.y - this.gauge.gaugeRect.y);
+                    endYDiff = Math.abs(startPoint.y - (this.gauge.gaugeRect.y + this.gauge.gaugeRect.height));
+                }
+                xDiff = Math.abs((startXDiff + endXDiff) - xMarginDiff);
+                yDiff = Math.abs((startYDiff + endYDiff) - yMarginDiff);
+                this.gauge.midPoint.x = this.gauge.midPoint.x - (startXDiff / 2) + (endXDiff / 2);
+                this.gauge.midPoint.y = this.gauge.midPoint.y - (startYDiff / 2) + (endYDiff / 2);
+                totalRadius = (Math.min(this.gauge.gaugeRect.width, this.gauge.gaugeRect.height) / 2) +
+                    (Math.min(xDiff, yDiff) / 2);
+                axis.currentRadius = (axis.radius != null ? stringToNumber(axis.radius, totalRadius) : totalRadius) - axis.nearSize;
+            }
             axis.visibleRange.interval = this.calculateNumericInterval(axis, axis.rect);
             this.calculateVisibleLabels(axis);
         }

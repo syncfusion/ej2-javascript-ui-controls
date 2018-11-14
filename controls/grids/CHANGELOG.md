@@ -2,6 +2,46 @@
 
 ## [Unreleased]
 
+## 16.3.32 (2018-11-13)
+
+### Grid
+
+#### Bug Fixes
+
+- Refreshing a template in column Grid after edit and update displays no records in IE is fixed.
+- Unable to use `captionTemplate` in angular grid is resolved.
+
+## 16.3.31 (2018-11-07)
+
+### Grid
+
+#### Bug Fixes
+
+- `aggregateModule` is made public from grid class.
+- `Tooltip` throw script error when hover grid cell faster with `EllipsisWithTooltip` is fixed.
+- `excelexport` failed when complex property has null as value is resolved.
+- Script error throws while deleting the records after adding new records in `batch-editing` mode is resolved.
+
+#### New Features
+
+- Provided dialog settings to customize dialog-editing.
+
+#### Breaking Changes
+
+- For dialog editing, the dialog overlay will be displayed to entire document, Previously the overlay will be displayed only on the grid element.
+
+## 16.3.30 (2018-11-01)
+
+### Grid
+
+#### Bug Fixes
+
+- `extend` like method to keep getters in the data is added.
+- `Tab-key` press and update the data in `command-column` causes multiple posts at server side is resolved.
+- Added `target` to the arguments of the `rowDeselecting` event of Grid.
+- Cell edit template read function does not called when column type as `boolean` is resolved.
+- Script error thrown in production mode when using `hideColumns` method to hide a column.
+
 ## 16.3.27 (2018-10-23)
 
 ### Grid

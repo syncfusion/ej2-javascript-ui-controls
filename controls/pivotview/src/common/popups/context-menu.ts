@@ -1,7 +1,7 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { addClass, removeClass } from '@syncfusion/ej2-base';
 import { PivotView } from '../../pivotview/base/pivotview';
-import { PivotFieldList } from '../../field-list/base/field-list';
+import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
 import * as cls from '../../common/base/css-constant';
 import { ContextMenu, MenuItemModel, ContextMenuModel, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { SummaryTypes } from '../../base/types';

@@ -12787,14 +12787,15 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             this.valueContainer = this.element;
             this.valueContainer.classList.remove('e-control', 'e-richtexteditor');
             this.valueContainer.id = this.getID() + '-value';
+            this.valueContainer.name = this.element.hasAttribute('name') ? this.element.getAttribute('name') : this.getID();
             this.element = rteOutterWrapper;
         }
         else {
             this.valueContainer = this.createElement('textarea', {
                 id: this.getID() + '-value'
             });
+            this.valueContainer.name = this.getID();
         }
-        this.valueContainer.name = this.getID();
         this.valueContainer.style.display = 'none';
         if (this.value !== null) {
             this.valueContainer.value = this.value;
@@ -13025,6 +13026,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             else {
                 this.valueContainer.value = '';
             }
+            this.element = this.valueContainer;
         }
         else {
             if (this.originalElement.innerHTML.trim() !== '') {

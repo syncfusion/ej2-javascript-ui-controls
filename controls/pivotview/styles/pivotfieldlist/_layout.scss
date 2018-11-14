@@ -1,0 +1,816 @@
+@include export-module('pivotfieldlist-layout') {
+
+  /*! field-list theme */
+
+  #{&}.e-pivotfieldlist {
+    .e-disable {
+      display: none;
+    }
+
+    .e-hide {
+      visibility: hidden;
+    }
+  }
+
+  #{&}.e-pivot-formatting-dialog {
+    // sass-lint:disable-all
+    max-height: 480px !important;
+    min-width: $format-dialog-width !important;
+    width: $format-dialog-width !important;
+    // sass-lint:enable-all
+    .e-format-table tr:nth-child(odd) {
+      td {
+        padding-bottom: 10px;
+      }
+    }
+
+    .e-format-delete-icon {
+      font-weight: normal;
+
+      &:hover {
+        font-weight: 600;
+      }
+    }
+
+    .e-format-table tr:nth-child(even) {
+      td {
+        padding-bottom: 14px;
+        padding-right: 18px;
+      }
+    }
+
+    .e-format-value-span {
+      vertical-align: bottom;
+    }
+
+    .e-format-value1,
+    .e-format-value2,
+    .e-format-value-span {
+      margin-right: 10px;
+    }
+
+    .e-format-color-picker {
+      margin-right: 18px;
+    }
+
+    .e-format-inner-div {
+      padding-left: 14px;
+      padding-top: 14px;
+    }
+
+    .e-format-outer-div {
+      background-color: $format-outer-fill-color;
+      border: 1px solid $format-outer-border-color;
+      border-radius: $format-outer-border-radius;
+      margin-bottom: 14px;
+    }
+
+    .e-format-condition-button {
+      float: left;
+    }
+
+    .e-format-delete-button {
+      background-color: transparent;
+      border-color: transparent;
+      float: right;
+      padding-right: 12px;
+      padding-top: 12px;
+    }
+
+    .e-format-delete-button:hover,
+    .e-format-delete-button:focus,
+    .e-format-delete-button:active {
+      background-color: transparent;
+      border-color: transparent;
+      box-shadow: 0 0 0 transparent;
+    }
+
+    .e-format-delete-icon {
+      font-size: 10px;
+    }
+
+    .e-format-label,
+    .e-format-value-label {
+      color: $format-label-font-color;
+      font-size: $format-label-font-size;
+      font-weight: $format-label-font-weight;
+      opacity: $format-label-font-opacity;
+    }
+
+    .e-format-value-preview {
+      border: 1px solid $format-preview-border-color;
+      height: $format-preview-height;
+      // sass-lint:disable-all
+      margin: 0 !important;
+      // sass-lint:enable-all
+      padding-left: 6px;
+      padding-top: 6px;
+      width: $format-preview-width;
+    }
+
+    .e-colorpicker-wrapper .e-split-btn-wrapper .e-split-btn .e-selected-color {
+      background: none;
+      margin: 0 2px;
+      width: 14px;
+    }
+
+    .e-split-preview,
+    .e-tip-transparent {
+      border: 1px solid $format-preview-border-color;
+      // sass-lint:disable-all
+      border-radius: 0 !important;
+      // sass-lint:enable-all
+      height: 40%;
+      left: -3px;
+      position: absolute;
+      top: 16px;
+      width: 150%;
+    }
+
+    &.e-device {
+      // sass-lint:disable-all
+      min-width: 320px !important;
+      width: 100%  !important;
+      // sass-lint:enable-all
+
+      .e-format-color-picker {
+        width: 33%;
+      }
+
+      .e-format-delete-button {
+        font-size: 12px;
+        padding-right: 16px;
+        padding-top: 16px;
+      }
+    }
+
+    &.e-rtl {
+      .e-format-condition-button {
+        float: right;
+
+        .e-add-icon {
+          margin-left: auto;
+        }
+      }
+
+      .e-format-inner-div {
+        padding-left: 0;
+        padding-right: 14px;
+      }
+
+      .e-format-delete-button {
+        float: left;
+        padding-left: 12px;
+      }
+    }
+  }
+
+  .e-bigger#{&}.e-pivot-formatting-dialog,
+  .e-bigger#{&} .e-pivot-formatting-dialog,
+  .e-bigger.e-pivot-formatting-dialog,
+  .e-bigger .e-pivot-formatting-dialog {
+    // sass-lint:disable-all
+    min-width: $format-dialog-bigger-width !important;
+    width: $format-dialog-bigger-width !important;
+    // sass-lint:enable-all
+
+    .e-format-label,
+    .e-format-value-label {
+      font-size: $format-label-bigger-font-size;
+    }
+
+    // sass-lint:disable-all
+    .e-format-value1, .e-format-value2 {
+        margin-bottom: 3px !important;
+    }
+    // sass-lint:enable-all
+
+    .e-format-inner-div {
+      padding-left: 16px;
+      padding-top: 16px;
+    }
+
+    .e-format-outer-div {
+      margin-bottom: 16px;
+    }
+
+    .e-format-table tr:nth-child(odd) td {
+      padding-bottom: 12px;
+    }
+
+    .e-format-table tr:nth-child(even) td {
+      padding-bottom: 16px;
+      padding-right: 20px;
+    }
+
+    .e-format-color-picker {
+      margin-right: 20px;
+    }
+
+    &.e-device {
+      // sass-lint:disable-all
+      min-width: 320px !important;
+      width: 100%  !important;
+      // sass-lint:enable-all
+
+      .e-format-color-picker {
+        width: 33%;
+      }
+
+      .e-format-delete-button {
+        font-size: 12px;
+        padding-right: 16px;
+        padding-top: 16px;
+      }
+    }
+  }
+
+  #{&}.e-pivot-calc-dialog-div {
+    min-width: 290px;
+
+    // sass-lint:disable-all
+    &.e-dialog {
+      max-height: 500px !important;
+    }
+    // sass-lint:enable-all
+
+    .e-dlg-header-content,
+    .e-footer-content {
+      border: 0;
+    }
+
+    .e-dlg-content {
+      padding-bottom: $pivot-dialog-content-padding;
+    }
+
+    .e-pivot-all-field-title,
+    .e-pivot-formula-title {
+      color: $field-list-default-header-font-color;
+      font-size: $field-list-header-font-size;
+      margin-top: 15px;
+      padding: $pivot-calculated-header-padding;
+      padding-bottom: 0;
+    }
+
+    .e-treeview {
+      .e-sibling {
+        display: none;
+      }
+    }
+
+    .e-treeview ul {
+      overflow: hidden;
+
+      li {
+        padding: 0;
+      }
+
+      .e-fullrow {
+        cursor: default;
+      }
+
+      .e-list-item .e-text-content {
+        height: 36px;
+        margin-left: -10px;
+        padding: 0;
+      }
+    }
+
+    .e-treeview .e-list-item div.e-icons {
+      cursor: pointer;
+      font-size: 12px;
+      height: 24px;
+      opacity: $pivot-calculated-icon-opacity;
+      padding: 2px 4px 4px;
+      pointer-events: auto;
+      width: 24px;
+    }
+
+    .e-treeview .e-list-item span.e-icons {
+      color: $field-list-drag-icon-color;
+      cursor: move;
+      display: inline-block;
+      font-size: $field-list-icon-size;
+      height: 24px;
+      margin-right: 4px;
+      margin-top: 4px;
+      padding: 5px;
+      pointer-events: auto;
+      width: 24px;
+    }
+
+    .e-dlg-header {
+      font-size: 18px;
+      font-weight: 500;
+      opacity: $pivot-calculated-header-opacity;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 74%;
+    }
+
+    .e-contextmenu {
+      background-color: $pivot-formula-background;
+      border-radius: 4px;
+    }
+
+    .e-contextmenu .e-menu-item {
+      color: $pivot-text-area-background;
+      font-size: 14x;
+      height: 48px;
+      opacity: .87;
+    }
+
+    &.e-rtl {
+      .e-treeview .e-list-item div.e-icons {
+        font-size: 14px;
+        height: 24px;
+        padding: 5px;
+        width: 24px;
+      }
+    }
+
+    // sass-lint:disable-all
+    .e-pivot-calc-input.e-empty-field::-webkit-input-placeholder {
+      color: $error-font-color !important;
+      font-weight: 600 !important;
+    }
+
+    .e-pivot-calc-input.e-empty-field:-moz-placeholder {
+        color: $error-font-color !important;
+        font-weight: 600 !important;
+    }
+
+    .e-pivot-calc-input.e-empty-field::-moz-placeholder {
+        color: $error-font-color !important;
+        font-weight: 600 !important;
+    }
+
+    .e-pivot-calc-input.e-empty-field:-ms-input-placeholder {
+        color: $error-font-color !important;
+        font-weight: 600 !important;
+    }
+    // sass-lint:enable-all
+
+    .e-pivot-formula {
+      background-color: $pivot-formula-background;
+      border: 1px solid $pivot-formula-border;
+      border-radius: 4px;
+      color: $field-list-default-font-color;
+      font-size: $field-list-calc-formula-font-size;
+      height: 70px;
+      margin-top: 5px;
+      // opacity: .38;
+      padding: $pivot-calculated-formula-font-padding;
+      resize: none;
+      width: 100%;
+    }
+
+    .e-list-parent .e-list-text {
+      margin-bottom: 8px;
+      min-width: 100px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 75%;
+    }
+
+    .e-pivot-treeview-outer {
+      background-color: $pivot-formula-background;
+      border: 1px solid $pivot-formula-border;
+      border-radius: 4px;
+      height: 120px;
+      margin-top: 5px;
+      overflow: auto;
+    }
+  }
+
+  .e-bigger#{&}.e-pivot-calc-dialog-div,
+  .e-bigger#{&} .e-pivot-calc-dialog-div,
+  .e-bigger.e-pivot-calc-dialog-div,
+  .e-bigger .e-pivot-calc-dialog-div {
+    min-width: 310px;
+
+    .e-pivot-all-field-title,
+    .e-pivot-formula-title {
+      font-size: $field-list-bigger-header-font-size;
+      padding: $pivot-calculated-bigger-header-padding;
+      padding-bottom: 0;
+    }
+
+    .e-treeview ul {
+      li {
+        padding: 2px 0;
+      }
+    }
+
+    .e-treeview .e-list-item span.e-icons {
+      font-size: $field-list-bigger-icon-size;
+    }
+
+    .e-pivot-formula {
+      font-size: $field-list-calc-bigger-formula-font-size;
+    }
+
+    .e-footer-content {
+      padding-right: $pivot-dialog-footer-paddingright;
+      padding-top: $pivot-dialog-footer-padding;
+    }
+  }
+
+  #{&}.e-pivotfieldlist-wrapper {
+    .e-adaptive-field-list-dialog,
+    .e-member-editor-dialog {
+      border-radius: $field-list-default-border-radius;
+      width: auto;
+
+      .e-dlg-header-content,
+      .e-footer-content {
+        border-radius: $field-list-default-border-radius;
+      }
+
+      .e-dlg-header-content {
+        border: 0;
+        font-weight: normal;
+      }
+
+      .e-footer-content {
+        border-top: $field-list-border-size $field-list-border-type $field-list-default-border-color;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        padding-top: $field-list-editor-dialog-footer-padding;
+
+        .e-clear-filter-button {
+          float: left;
+
+          &.e-disable {
+            display: none;
+          }
+        }
+      }
+
+      .e-dlg-content {
+        overflow: hidden;
+        padding: 0;
+
+        .e-member-editor-wrapper {
+          .e-editor-search-wrapper {
+            padding: 0 $field-list-editor-search-padding-size 10px;
+          }
+
+          .e-member-prompt {
+            padding: 25px $field-list-editor-search-padding-size;
+            text-align: center;
+            width: 100%;
+          }
+
+          .e-member-editor-container {
+            height: $field-list-member-filter-list-height;
+            max-width: 400px;
+            overflow: auto;
+            overflow-x: hidden;
+          }
+
+          .e-select-all-wrapper ul,
+          .e-member-editor-container ul {
+            margin-left: $field-list-member-filter-list-padding-size;
+            overflow: hidden;
+          }
+
+          .e-disable {
+            display: none;
+          }
+        }
+
+        // sass-lint:disable-all
+        .e-filter-tab-wrapper {
+          border: none;
+          // sass-lint:enable-all
+
+          .e-tab-header {
+            .e-toolbar-item .e-icon-left + .e-tab-text {
+              margin: 0 0 0 6px;
+            }
+
+            .e-text-wrap {
+              .e-tab-icon {
+                height: 14px;
+                min-width: 14px;
+                width: 14px;
+
+                &::before {
+                  font-size: 14px;
+                }
+              }
+            }
+          }
+
+          &.e-rtl {
+            .e-tab-header {
+              .e-toolbar-item .e-icon-left + .e-tab-text {
+                margin: 0 6px 0 0;
+              }
+            }
+          }
+        }
+
+        .e-excelfilter {
+          padding-top: 20px;
+
+          .e-member-editor-container {
+            height: $field-list-excel-member-filter-height;
+          }
+        }
+
+        .e-label-filter,
+        .e-value-filter {
+          height: $field-list-excel-filter-height;
+          overflow: auto;
+          padding: 20px;
+          padding-bottom: 0;
+
+          .e-filter-text-div {
+            font-size: 13px;
+            font-weight: 500;
+          }
+
+          .e-filter-option-wrapper-1,
+          .e-filter-option-wrapper-2,
+          .e-separator-div {
+            padding-top: 20px;
+          }
+
+          .e-between-text-div {
+            padding: 8px 0;
+          }
+
+          .e-disable {
+            display: none;
+          }
+        }
+      }
+
+      &.e-excel-filter {
+        min-width: 280px;
+      }
+
+      &.e-rtl {
+        .e-member-editor-wrapper {
+          ul {
+            margin-left: 0;
+            margin-right: $field-list-member-filter-list-padding-size;
+          }
+        }
+
+        .e-footer-content {
+          .e-clear-filter-button {
+            float: right;
+          }
+        }
+      }
+    }
+
+    .e-member-editor-dialog {
+      max-width: 400px;
+    }
+
+    .e-adaptive-field-list-dialog {
+      .e-dlg-content {
+        .e-member-editor-wrapper {
+          .e-member-editor-container {
+            height: $field-list-member-field-list-height;
+          }
+        }
+      }
+    }
+  }
+
+  #{&}.e-field-list-tree.e-drag-item.e-treeview,
+  #{&}.e-pivot-calc.e-drag-item.e-treeview {
+    background-color: $field-list-drag-clone-bg-color;
+    border: $field-list-border-size $field-list-border-type $field-list-default-border-color;
+    border-radius: $field-list-drag-clone-border-radius;
+    box-shadow: $field-list-drag-clone-shadow-color;
+    height: 28px;
+    min-width: 100px;
+    padding: 5px 10px;
+
+    .e-text-content {
+      padding: 0;
+      text-align: center;
+      width: 100%;
+
+      .e-list-text {
+        color: $field-list-drag-clone-text-color;
+        font-size: $field-list-drag-clone-font-size;
+        line-height: 1em;
+        width: 100%;
+      }
+    }
+
+    .e-text-content>.e-icons,
+    .e-checkbox-wrapper {
+      display: none;
+    }
+
+    &.e-rtl {
+      .e-text-content {
+        padding-right: 0;
+      }
+    }
+  }
+
+  // sass-lint:disable-all
+  #{&}.e-filtermenu-options {
+    ul {
+      z-index: 1000000 !important;
+
+      .e-emptyicon {
+        opacity: 0;
+      }
+
+      .e-separator {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+      }
+    }
+  }
+
+  #{&}.e-label-filter,
+  #{&}.e-value-filter {
+    max-height: 300px !important;
+    width: auto;
+
+    .e-filter-div-content {
+      .e-filter-option-wrapper-1,
+      .e-filter-option-wrapper-2 {
+        display: flex;
+        padding-top: 20px;
+
+        .e-disable {
+          display: none;
+        }
+      }
+
+      .e-filter-option-wrapper-1 {
+        .e-separator-div {
+          width: 20px;
+        }
+
+        .e-filter-operator {
+          flex: auto;
+        }
+      }
+
+      .e-filter-option-wrapper-2 {
+        .e-filter-input-div-1,
+        .e-filter-input-div-2 {
+          width: 100%;
+        }
+
+        .e-between-text-div {
+          padding: 0 10px;
+        }
+      }
+    }
+  }
+  // sass-lint:enable-all
+
+  .e-bigger #{&}.e-field-list-tree.e-drag-item.e-treeview,
+  .e-bigger #{&}.e-pivot-calc.e-drag-item.e-treeview,
+  .e-bigger#{&}.e-field-list-tree.e-drag-item.e-treeview,
+  .e-bigger#{&}.e-pivot-calc.e-drag-item.e-treeview,
+  .e-bigger .e-field-list-tree.e-drag-item.e-treeview,
+  .e-bigger .e-pivot-calc.e-drag-item.e-treeview,
+  .e-bigger.e-field-list-tree.e-drag-item.e-treeview
+  .e-bigger.e-pivot-calc.e-drag-item.e-treeview {
+    height: $field-list-bigger-button-height;
+    padding: 6px 12px;
+
+    .e-text-content {
+      .e-list-text {
+        line-height: 1.5em;
+      }
+    }
+  }
+
+  // sass-lint:disable-all
+  #{&}.e-button-drag-clone {
+    background-color: $field-list-drag-clone-bg-color !important;
+    border: $field-list-border-size $field-list-border-type $field-list-default-border-color;
+    border-radius: $field-list-drag-clone-border-radius;
+    box-shadow: $field-list-drag-clone-shadow-color;
+    color: $field-list-drag-clone-text-color;
+    font-size: $field-list-drag-clone-font-size;
+    height: 28px;
+    line-height: 1.0em;
+    min-width: 100px;
+    overflow: hidden;
+    padding: 5px 10px;
+    text-align: center;
+    width: auto;
+    z-index: 100000;
+
+    .e-text-content {
+      width: 100%
+    }
+  }
+
+  .e-bigger #{&}.e-button-drag-clone,
+  .e-bigger#{&}.e-button-drag-clone,
+  .e-bigger .e-button-drag-clone,
+  .e-bigger.e-button-drag-clone {
+    height: $field-list-bigger-button-height !important;
+    line-height: 1.5em;
+    padding: 6px 12px;
+  }
+
+  // sass-lint:enable-all
+  #{&}.e-pivot-error-dialog {
+    max-width: 400px;
+    width: auto;
+
+    .e-dlg-header-content,
+    .e-footer-content {
+      border: 0;
+    }
+
+    .e-dlg-header {
+      font-weight: $pivot-dialog-font-weight;
+      opacity: $pivot-calculated-header-opacity;
+    }
+
+    .e-dlg-content {
+      font-weight: normal;
+      opacity: $pivot-dialog-content-opacity;
+    }
+  }
+
+  .e-bigger #{&}.e-pivotfieldlist-wrapper,
+  .e-bigger#{&}.e-pivotfieldlist-wrapper,
+  .e-bigger .e-pivotfieldlist-wrapper,
+  .e-bigger.e-pivotfieldlist-wrapper {
+    .e-adaptive-field-list-dialog .e-dlg-content .e-member-editor-wrapper .e-member-editor-container ,
+    .e-member-editor-dialog .e-dlg-content .e-member-editor-wrapper .e-member-editor-container {
+      height: $field-list-member-filter-list-bigger-height;
+    }
+
+    .e-adaptive-field-list-dialog,
+    .e-member-editor-dialog {
+      .e-dlg-header-content {
+        .e-clear-filter-button.e-small {
+          font-size: 14px;
+          top: 0;
+        }
+      }
+
+      .e-dlg-content {
+        .e-filter-tab-wrapper {
+          .e-tab-header {
+            .e-toolbar-item .e-icon-left + .e-tab-text {
+              margin: 0 0 0 6px;
+            }
+          }
+
+          &.e-rtl {
+            .e-tab-header {
+              .e-toolbar-item .e-icon-left + .e-tab-text {
+                margin: 0 6px 0 0;
+              }
+            }
+          }
+        }
+
+        .e-excelfilter {
+          .e-member-editor-container {
+            height: $field-list-excel-member-filter-bigger-height;
+          }
+        }
+
+        .e-label-filter,
+        .e-value-filter {
+          height: $field-list-excel-filter-bigger-height;
+
+          .e-filter-text-div {
+            font-size: 14px;
+          }
+
+          .e-filter-option-wrapper-1,
+          .e-filter-option-wrapper-2,
+          .e-separator-div {
+            padding-top: 24px;
+          }
+
+          .e-between-text-div {
+            padding: 10px 0;
+          }
+        }
+      }
+
+      &.e-excel-filter {
+        min-width: $field-list-bigger-excel-dialog-min-width;
+      }
+    }
+  }
+}
+  

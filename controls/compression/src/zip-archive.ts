@@ -1,6 +1,6 @@
 import { CompressedStreamWriter } from './compression-writer';
 import { Save } from '@syncfusion/ej2-file-utils';
-const crc32Table: number[] = [];
+const CRC32TABLE: number[] = [];
 
 /**
  * class provide compression library
@@ -42,6 +42,9 @@ export class ZipArchive {
      * constructor for creating ZipArchive instance
      */
     constructor() {
+        if (CRC32TABLE.length === 0) {
+            ZipArchive.initCrc32Table();
+        }
         this.files = [];
         this.level = 'Normal';
         Save.isMicrosoftBrowser = !(!navigator.msSaveBlob);
@@ -188,7 +191,7 @@ export class ZipArchive {
                         isDirectory: false
                     };
                     if (zipArchive.level === 'Normal') {
-                        zipArchive.compressData(input, data, crc32Table);
+                        zipArchive.compressData(input, data, CRC32TABLE);
                         let length: number = 0;
                         for (let i: number = 0; i < data.compressedData.length; i++) {
                             length += data.compressedData[i].length;
@@ -197,7 +200,7 @@ export class ZipArchive {
                         data.compressionType = '\x08\x00'; //Deflated = 8
                     } else {
                         data.compressedSize = input.length;
-                        data.crc32Value = zipArchive.calculateCrc32Value(0, input, crc32Table);
+                        data.crc32Value = zipArchive.calculateCrc32Value(0, input, CRC32TABLE);
                         data.compressionType = '\x00\x00'; // Stored = 0
                         (data.compressedData as Uint8Array[]).push(input);
                     }
@@ -332,6 +335,20 @@ export class ZipArchive {
         }
         return (crc32Value ^ (-1));
     }
+    /**
+     * construct cyclic redundancy code table
+     * @private
+     */
+    public static initCrc32Table(): void {
+        let i: number;
+        for (let j: number = 0; j < 256; j++) {
+            i = j;
+            for (let k: number = 0; k < 8; k++) {
+                i = ((i & 1) ? (0xEDB88320 ^ (i >>> 1)) : (i >>> 1));
+            }
+            CRC32TABLE[j] = i;
+        }
+    }
 }
 /**
  * Class represent unique ZipArchive item
@@ -405,18 +422,3 @@ export type CompressionLevel =
     'NoCompression' |
     /* Use normal compression, middle between speed and size*/
     'Normal';
-
-
-/**
- * construct cyclic redundancy code table
- */
-((): void => {
-    let i: number;
-    for (let j: number = 0; j < 256; j++) {
-        i = j;
-        for (let k: number = 0; k < 8; k++) {
-            i = ((i & 1) ? (0xEDB88320 ^ (i >>> 1)) : (i >>> 1));
-        }
-        crc32Table[j] = i;
-    }
-})();

@@ -41,12 +41,12 @@ The toast is a small container, in which user can show a single or multiple info
 
 `Notification` component is also offered in following list of frameworks.
 
-1. [Angular](https://www.npmjs.com/package/@syncfusion/ej2-ng-notifications?utm_source=npm&utm_campaign=notification)
-2. [React](https://www.npmjs.com/package/@syncfusion/ej2-react-notifications?utm_source=npm&utm_campaign=notification)
-3. [VueJS](https://www.npmjs.com/package/@syncfusion/ej2-vue-notifications?utm_source=npm&utm_campaign=notification)
-4. [ASP.NET Core](https://www.syncfusion.com/products/aspnetcore/badge)
-5. [ASP.NET MVC](https://www.syncfusion.com/products/aspnetmvc/badge)
-6. [JavaScript (ES5)](https://www.syncfusion.com/products/javascript/badge)
+1. [Angular](https://github.com/syncfusion/ej2-angular-ui-components?utm_source=github&utm_medium=listing)
+2. [React](https://github.com/syncfusion/ej2-react-ui-components?utm_source=github&utm_medium=listing)
+3. [VueJS](https://github.com/syncfusion/ej2-vue-ui-components?utm_source=github&utm_medium=listing)
+4. [ASP.NET Core](https://www.syncfusion.com/aspnet-core-ui-controls?utm_source=github&utm_medium=listing)
+5. [ASP.NET MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_source=github&utm_medium=listing)
+6. [JavaScript (ES5)](https://www.syncfusion.com/javascript-ui-controls?utm_source=github&utm_medium=listing)
 
 ## Key Features
 
@@ -70,15 +70,15 @@ The toast is a small container, in which user can show a single or multiple info
 Product support is available for through following mediums.
 
 * Creating incident in Syncfusion [Direct-trac](https://www.syncfusion.com/support/directtrac/incidents?utm_source=npm&utm_campaign=notification) support system or [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_campaign=notification).
-* New [GitHub issue](https://github.com/syncfusion/ej2-notifications/issues/new).
+* New [GitHub issue](https://github.com/syncfusion/ej2-javascript-ui-controls/issues/new).
 * Ask your query in [Stack Overflow](https://stackoverflow.com/?utm_source=npm&utm_campaign=notification) with tag `syncfusion` and `ej2`.
 
 ## License
 
-Check the license detail [here](https://github.com/syncfusion/ej2-notifications/blob/master/license?utm_source=npm&utm_campaign=notification).
+Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/LICENSE?utm_source=npm&utm_campaign=notification).
 
 ## Changelog
 
-Check the changelog [here](https://github.com/syncfusion/ej2-notifications/blob/master/CHANGELOG.md?utm_source=npm&utm_campaign=notification)
+Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/notifications/CHANGELOG.md?utm_source=npm&utm_campaign=notification).
 
 © Copyright 2018 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.
