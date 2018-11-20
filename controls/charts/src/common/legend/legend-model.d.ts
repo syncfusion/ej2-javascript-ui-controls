@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';import { Chart } from '../../chart';import { Font, Border } from '../model/base';import { Theme } from '../model/theme';import { FontModel, BorderModel } from '../model/base-model';import { Size, Rect, subtractThickness, Thickness, drawSymbol, measureText, ChartLocation, PathOption } from '../utils/helper';import { RectOption, TextOption, textElement, stringToNumber } from '../utils/helper';import { removeElement, showTooltip, getElement, appendChildElement } from '../utils/helper';import { LegendPosition, LegendShape, ChartSeriesType, ChartShape } from '../../chart/utils/enum';import { Legend } from '../../chart/legend/legend';import { AccumulationType } from '../../accumulation-chart/model/enum';import { AccumulationChart } from '../../accumulation-chart/accumulation';import { AccumulationLegend } from '../../accumulation-chart/renderer/legend';import { Alignment } from '../utils/enum';
+import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';import { Chart } from '../../chart';import { Font, Border, Margin } from '../model/base';import { Theme } from '../model/theme';import { MarginModel, FontModel, BorderModel } from '../model/base-model';import { Size, Rect, subtractThickness, Thickness, drawSymbol, measureText, ChartLocation, PathOption } from '../utils/helper';import { RectOption, TextOption, textElement, stringToNumber } from '../utils/helper';import { removeElement, showTooltip, getElement, appendChildElement } from '../utils/helper';import { LegendPosition, LegendShape, ChartSeriesType, ChartShape } from '../../chart/utils/enum';import { Legend } from '../../chart/legend/legend';import { AccumulationType } from '../../accumulation-chart/model/enum';import { AccumulationChart } from '../../accumulation-chart/accumulation';import { AccumulationLegend } from '../../accumulation-chart/renderer/legend';import { Alignment } from '../utils/enum';
 
 /**
  * Interface for a class Location
@@ -111,6 +111,12 @@ export interface LegendSettingsModel {
      * Options to customize the border of the legend.
      */
     border?: BorderModel;
+
+    /**
+     *  Options to customize left, right, top and bottom margins of the chart.
+     */
+
+    margin?: MarginModel;
 
     /**
      * Padding between the legend shape and text.

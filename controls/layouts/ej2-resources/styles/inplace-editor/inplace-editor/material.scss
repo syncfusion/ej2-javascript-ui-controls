@@ -1,0 +1,224 @@
+
+
+/*! Inplace-editor default definitions and variables */
+@include export-module('inplace-editor-material-icons') {
+
+  /*! inplace-editor icons */
+  #{&}.e-inplace-editor,
+  .e-inplace-editor-tip {
+
+    .e-save-icon::before {
+      content: '\e933';
+    }
+
+    .e-cancel-icon::before {
+      content: '\e932';
+    }
+
+    .e-editable-overlay-icon::before {
+      content: '\e891';
+    }
+  }
+}
+
+@include export-module('inplace-editor-layout') {
+  /*! inplace-editor layout */
+
+  .e-bigger #{&}.e-inplace-editor,
+  #{&}.e-inplace-editor.e-bigger {
+
+    .e-editable-value {
+      font-size: $editor-big-value-text-font-size;
+      padding: $editor-big-value-container-padding;
+
+      .e-editable-overlay-icon {
+        height: $editor-big-overlay-icon-container-size;
+        margin: $editor-big-overlay-icon-margin;
+        width: $editor-big-overlay-icon-container-size;
+
+        &::before {
+          font-size: $editor-big-overlay-icon-size;
+        }
+      }
+    }
+  }
+
+  #{&}.e-inplace-editor {
+    display: inline-block;
+    position: relative;
+    width: auto;
+
+    .e-editable-value {
+      display: inline-block;
+      font-family: $font-family;
+      font-size: $editor-nrml-value-text-font-size;
+      padding: $editor-nrml-value-container-padding;
+      width: auto;
+
+      .e-editable-overlay-icon {
+        cursor: pointer;
+        display: inline-block;
+        height: $editor-nrml-overlay-icon-container-size;
+        margin: $editor-nrml-overlay-icon-margin;
+        visibility: hidden;
+        width: $editor-nrml-overlay-icon-container-size;
+
+        &::before {
+          font-size: $editor-nrml-overlay-icon-size;
+        }
+      }
+
+      &.e-hide {
+        display: none;
+      }
+
+      &:hover {
+
+        .e-editable-overlay-icon {
+          visibility: visible;
+        }
+
+        &.e-editable-open {
+
+          .e-editable-overlay-icon {
+            visibility: hidden;
+          }
+        }
+      }
+    }
+
+    .e-editable-action-buttons {
+      margin-top: $editor-buttons-top-margin;
+      position: absolute;
+      right: 0;
+    }
+  }
+
+  .e-bigger #{&}.e-inplace-editor,
+  #{&}.e-inplace-editor.e-bigger,
+  .e-bigger .e-inplace-editor-tip,
+  .e-inplace-editor-tip.e-bigger {
+    width: auto;
+  }
+
+  #{&}.e-inplace-editor,
+  .e-inplace-editor-tip {
+
+    .e-component-group {
+      margin-bottom: $editor-component-bottom-margin;
+    }
+
+    .e-editable-action-buttons {
+
+      .e-btn-save {
+        margin: $editor-btn-save-margin;
+
+        .e-btn-icon.e-icons {
+          font-size: $editor-btn-save-icon-size;
+        }
+      }
+
+      .e-btn-cancel {
+        margin: $editor-btn-cancel-margin;
+
+        .e-btn-icon.e-icons {
+          font-size: $editor-btn-cancel-icon-size;
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-inplace-editor-tip,
+  .e-inplace-editor-tip.e-bigger {
+
+    .e-editable-title {
+      font-size: $editor-big-tip-title-font-size;
+      min-height: $editor-big-tip-title-container-size;
+      padding: $editor-big-tip-title-padding;
+    }
+  }
+
+  .e-inplace-editor-tip {
+    width: auto;
+
+    &.e-tooltip-wrap .e-tip-content {
+      padding: 0;
+
+      .e-editable-title {
+        align-content: center;
+        display: flex;
+        flex-direction: column;
+        font-family: $font-family;
+        font-size: $editor-nrml-tip-title-font-size;
+        font-weight: $editor-tip-title-font-weight;
+        justify-content: center;
+        min-height: $editor-nrml-tip-title-container-size;
+        padding: $editor-nrml-tip-title-padding;
+      }
+
+      .e-editable-wrapper {
+        display: flex;
+        padding: $editor-tip-wrapper-padding;
+
+        .e-editable-action-buttons {
+          float: right;
+          margin-top: $editor-buttons-top-margin;
+          position: relative;
+          right: auto;
+          top: auto;
+        }
+      }
+    }
+  }
+}
+@include export-module('inplace-editor-theme') {
+  /*! inplace-editor theme */
+
+  #{&}.e-inplace-editor {
+
+    .e-editable-value {
+
+      .e-editable-overlay-icon {
+        color: $editor-overlay-icon-color;
+      }
+
+      &:hover {
+        background: $editor-value-hover-bg;
+      }
+    }
+  }
+
+  #{&}.e-inplace-editor,
+  .e-inplace-editor-tip {
+
+    .e-editable-action-buttons {
+
+      .e-btn-save,
+      .e-btn-cancel {
+        box-shadow: $editor-btn-box-shadow;
+
+        .e-btn-icon.e-icons {
+          color: $editor-btn-icon-color;
+        }
+      }
+    }
+  }
+
+  .e-inplace-editor-tip {
+
+    &.e-tooltip-wrap {
+      background: $editor-tip-bg;
+      box-shadow: $editor-tip-box-shadow;
+
+      &.e-popup {
+        border: $editor-tip-border;
+      }
+
+      .e-editable-title {
+        background: $editor-tip-title-bg;
+        border-bottom: $editor-tio-title-border-bottom;
+        color: $editor-tip-title-color;
+      }
+    }
+  }
+}

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.3.33 (2018-11-15)
+
+### ListView
+
+#### Bug Fixes
+
+- Fixed focus out event not triggered properly while interact `ListView` with keyboard navigation keys.
+
 ## 16.3.30 (2018-11-01)
 
 ### ListView

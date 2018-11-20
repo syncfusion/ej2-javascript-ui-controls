@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.3.33 (2018-11-15)
+
+### Document Editor
+
+#### Bug Fixes
+
+- Updated Readme and GitHub URL.
+
 ## 16.3.29 (2018-10-31)
 
 ### Document Editor

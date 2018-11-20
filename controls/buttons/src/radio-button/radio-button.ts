@@ -264,7 +264,9 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
                     if (oldProp.cssClass) {
                         removeClass([label], oldProp.cssClass.split(' '));
                     }
-                    addClass([label], newProp.cssClass.split(' '));
+                    if (newProp.cssClass) {
+                        addClass([label], newProp.cssClass.split(' '));
+                    }
                     break;
                 case 'enableRtl':
                     if (newProp.enableRtl) {

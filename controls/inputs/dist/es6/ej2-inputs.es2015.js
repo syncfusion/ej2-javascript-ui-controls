@@ -6319,7 +6319,8 @@ let FormValidator = FormValidator_1 = class FormValidator extends Base {
     getErrorElement(name) {
         this.infoElement = select(this.errorElement + '.' + this.errorClass, this.inputElement.parentElement);
         if (!this.infoElement) {
-            this.infoElement = select(this.errorElement + '.' + this.errorClass + '[for="' + name + '"]', this.element);
+            this.infoElement = (select(this.errorElement + '.' + this.errorClass + '[for="' + name + '"]', this.element) ||
+                select(this.errorElement + '.' + this.errorClass + '[for="' + name + '"]'));
         }
         return this.infoElement;
     }
@@ -6418,8 +6419,14 @@ FormValidator.checkValidator = {
             // Minimum rule validation for number
             return +option.value >= option.param;
         }
-        // Minimum rule validation for date
-        return new Date(option.value).getTime() >= new Date(JSON.parse(JSON.stringify(option.param))).getTime();
+        else if ((option.value).indexOf(',') !== -1) {
+            let uNum = (option.value).replace(/,/g, '');
+            return parseFloat(uNum) >= option.param;
+        }
+        else {
+            // Minimum rule validation for date
+            return new Date(option.value).getTime() >= new Date(JSON.parse(JSON.stringify(option.param))).getTime();
+        }
     },
     regex: (option) => {
         return new RegExp(option.param).test(option.value);

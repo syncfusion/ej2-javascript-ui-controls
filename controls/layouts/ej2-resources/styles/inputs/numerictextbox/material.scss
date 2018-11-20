@@ -221,22 +221,18 @@ $input-clear-icon-font: '\e932';
 $skin-name: 'default';
 $numeric-spin-up-icon: '\e834';
 $numeric-spin-down-icon: '\e83d';
-
-@include export-module('numerictextbox-icons') {
-  /*! component icons */
+@include export-module('numerictextbox-material-icons') {
   .e-input-group-icon.e-spin-up::before {
-    content: $numeric-spin-up-icon;
+    content: '\e834';
+    font-family: 'e-icons';
   }
 
   .e-input-group-icon.e-spin-down::before {
-    content: $numeric-spin-down-icon;
-  }
-
-  .e-input-group-icon.e-spin-up::before,
-  .e-input-group-icon.e-spin-down::before {
+    content: '\e83d';
     font-family: 'e-icons';
   }
 }
+
 .e-numeric-container {
   width: 100%;
 }

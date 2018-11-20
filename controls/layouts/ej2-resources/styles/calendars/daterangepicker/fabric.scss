@@ -164,8 +164,7 @@ $range-calendar-today-start-color: none;
 $range-calendar-other-normal-border: none;
 $range-calendar-bigger-max: 292px;
 $range-active-font-color: $header-font-color;
-
-@include export-module('daterangepicker-icons') {
+@include export-module('daterangepicker-fabric-icons') {
   /*! component icons */
   .e-input-group-icon.e-range-icon,
   &.e-control-wrapper .e-input-group-icon.e-range-icon {
@@ -176,7 +175,7 @@ $range-active-font-color: $header-font-color;
     outline: none;
 
     &::before {
-      content: $range-icon;
+      content: '\e244';
       font-family: 'e-icons';
   }
 
@@ -188,17 +187,17 @@ $range-active-font-color: $header-font-color;
 
   .e-daterangepicker {
     & .e-calendar .e-header .e-date-icon-next::before {
-      content: $range-icon-next;
+      content: '\e85c';
     }& .e-calendar .e-header .e-date-icon-prev::before {
-      content: $range-icon-prev;
+      content: '\e98f';
     }& .e-change-icon::before {
-      content: $range-change-icon;
+      content: '\e85f';
     }& .e-calendar.e-rtl .e-header .e-date-icon-next::before {
-      content: $range-rtl-icon-next;
+      content: '\e98f';
     }& .e-calendar.e-rtl .e-header .e-date-icon-prev::before {
-      content: $range-rtl-icon-prev;
+      content: '\e85c';
     }&.e-rtl .e-start-end .e-change-icon::before {
-      content: $range-rtl-icon-change;
+      content: '\e85b';
     }
   }
 
@@ -214,6 +213,7 @@ $range-active-font-color: $header-font-color;
     }
   }
 }
+
 @include export-module('daterangepicker-layout') {
   /*! daterangepicker layout */
 

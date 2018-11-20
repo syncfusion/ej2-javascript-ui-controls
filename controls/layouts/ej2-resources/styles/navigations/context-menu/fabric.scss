@@ -1,6 +1,5 @@
 
 
-$back-icon: '\e977';
 $back-icon-margin: 16px;
 $bigger-caret-font-size: 12px;
 $bigger-font-size: 15px;
@@ -12,8 +11,6 @@ $blank-icon-bigger: 42px;
 $caret-blank-icon: 16px;
 $caret-font-size: 10px;
 $caret-color: rgba(0, 0, 0, .54);
-$caret-icon: '\e977';
-$caret-icon-rtl: '\e937';
 $caret-li-padding: 36px;
 $caret-right: 8px;
 $color: rgba(0, 0, 0, .87);
@@ -52,10 +49,39 @@ $menu-hover-icon-color: $menu-icon-color;
 $li-hover-outline-offset: 0;
 $li-selected-outline: 0 solid $li-selection-bgcolor;
 $li-selected-outline-offset: 0;
+@include export-module('context-menu-fabric-icons') {
+  /*! contextmenu layout */
+  .e-contextmenu-wrapper {
+    @at-root {
+      & ul {
+        & .e-menu-item  {
+          & .e-previous {
+            &::before {
+              content: '\e962';
+            }
+          }
+
+          & .e-caret {
+            &::before {
+              content: '\e219';
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .e-rtl.e-contextmenu-wrapper .e-menu-item {
+    & .e-caret {
+      &::before {
+        content: '\e98f';
+      }
+    }
+  }
+}
 
 
 @mixin ul-layout {
-  border-radius: $ul-border-radius;
   font-weight: $font-weight;
   list-style-image: none;
   list-style-position: outside;
@@ -66,8 +92,6 @@ $li-selected-outline-offset: 0;
 }
 
 @mixin ul-size {
-  border: $ul-border;
-  box-shadow: $sub-ul-box-shadow;
   font-size: $font-size;
   padding: $ul-padding;
 }
@@ -123,10 +147,6 @@ $li-selected-outline-offset: 0;
     margin-right: 0;
     position: absolute;
     right: $caret-right;
-
-    &::before {
-      content: $caret-icon;
-    }
   }
 
   &.e-menu-caret-icon {
@@ -173,10 +193,6 @@ $li-selected-outline-offset: 0;
 
   & .e-caret {
     left: $caret-right;
-
-    &::before {
-      content: $caret-icon-rtl;
-    }
   }
 
   &.e-menu-caret-icon {
@@ -196,7 +212,6 @@ $li-selected-outline-offset: 0;
 
 
 @mixin bigger-ul-size {
-  box-shadow: $parent-ul-box-shadow;
   font-size: $bigger-font-size;
   padding: $ul-bigger-padding;
   white-space: nowrap;

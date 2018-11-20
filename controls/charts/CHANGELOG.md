@@ -8,6 +8,19 @@
 
 ## [Unreleased]
 
+## 16.3.33 (2018-11-15)
+
+### Chart
+
+#### New Features
+
+- Margin options are added to legend.
+
+#### Bug Fixes
+
+- Series DataSource change chart refresh issue fixed.
+- Axis label is now rendering properly, when we have the interval in decimals.
+
 ## 16.3.32 (2018-11-13)
 
 ### Chart

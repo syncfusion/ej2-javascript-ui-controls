@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged , NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';import { EmitType, Event, EventHandler, KeyboardEvents } from '@syncfusion/ej2-base';import { addClass, detach, getUniqueID, isRippleEnabled, removeClass, rippleEffect } from '@syncfusion/ej2-base';import { wrapperInitialize, rippleMouseHandler, ChangeEventArgs } from './../common/common';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';import { EmitType, Event, EventHandler, KeyboardEvents } from '@syncfusion/ej2-base';import { addClass, detach, getUniqueID, isRippleEnabled, removeClass, rippleEffect } from '@syncfusion/ej2-base';import { wrapperInitialize, rippleMouseHandler, ChangeEventArgs } from './../common/common';
 import {LabelPosition} from "./check-box";
 import {ComponentModel} from '@syncfusion/ej2-base';
 

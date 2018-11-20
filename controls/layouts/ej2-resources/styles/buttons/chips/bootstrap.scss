@@ -1,0 +1,571 @@
+
+
+$chip-font-family: $font-family;
+#{&}.e-chip-list {
+  .e-chip-delete {
+    &.e-dlt-btn::before {
+      content: '\e842';
+    }
+  }
+
+  &.e-multi-selection .e-chip {
+    &::before {
+      content: '\e7ff';
+    }
+  }
+}
+
+// sass-lint:disable no-vendor-prefixes
+@include export-module('chip-layout') {
+  #{&}.e-chip-list {
+    display: flex;
+    padding: $chip-list-padding;
+
+    &.e-chip,
+    .e-chip {
+      -webkit-tap-highlight-color: transparent;
+      align-items: center;
+      border: $chip-border-size solid;
+      border-radius: $chip-border-radius;
+      box-shadow: $chip-box-shadow;
+      cursor: pointer;
+      display: inline-flex;
+      font-family: $chip-font-family;
+      font-size: $chip-font-size;
+      font-weight: $chip-font-weight;
+      height: $chip-height;
+      justify-content: center;
+      margin: $chip-margin;
+      overflow: $chip-overflow;
+      padding: $chip-padding;
+      position: relative;
+      user-select: none;
+
+      .e-chip-avatar {
+        align-items: center;
+        background-color: $chip-avatar-bg-color;
+        background-size: cover;
+        border-radius: $chip-avatar-border-radius;
+        display: flex;
+        font-size: $chip-leading-icon-font-size;
+        height: $chip-avatar-size;
+        justify-content: center;
+        margin: $chip-avatar-margin;
+        overflow: hidden;
+        width: $chip-avatar-size;
+      }
+
+      .e-chip-avatar-wrap,
+      &.e-chip-avatar-wrap {
+        border-radius: $chip-avatar-wrapper-border-radius;
+      }
+
+      .e-chip-icon {
+        align-items: center;
+        background-size: cover;
+        border-radius: $chip-leading-icon-border-radius;
+        display: flex;
+        font-size: $chip-leading-icon-font-size;
+        height: $chip-leading-icon-size;
+        justify-content: center;
+        margin: $chip-leading-icon-margin;
+        overflow: hidden;
+        width: $chip-leading-icon-size;
+      }
+
+      .e-chip-text {
+        margin-top: $chip-text-margin-top;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .e-chip-delete {
+        align-items: center;
+        background-size: cover;
+        border-radius: $chip-delete-icon-border-radius;
+        display: flex;
+        font-size: $chip-delete-icon-font-size;
+        height: $chip-delete-icon-size;
+        justify-content: center;
+        margin: $chip-delete-icon-margin;
+        overflow: hidden;
+        width: $chip-delete-icon-size;
+
+        &.e-dlt-btn::before {
+          font-family: 'e-icons';
+        }
+      }
+    }
+
+    &:not(.e-chip) {
+      flex-wrap: wrap;
+    }
+
+    &.e-multi-selection .e-chip {
+      &::before {
+        align-items: center;
+        display: flex;
+        font-family: 'e-icons';
+        height: $chip-leading-icon-size;
+        justify-content: center;
+        margin: $chip-leading-icon-margin;
+        margin-top: $chip-multiselection-icon-margin-top;
+        overflow: hidden;
+        transition: width 300ms cubic-bezier(.4, 0, .2, 1);
+        width: $chip-leading-icon-size;
+      }
+
+      &:not(.e-chip-icon-wrap):not(.e-chip-avatar-wrap) {
+        &::before {
+          width: 0;
+        }
+      }
+
+      &.e-chip-icon-wrap,
+      &.e-chip-avatar-wrap {
+        &::before {
+          display: none;
+        }
+      }
+
+      &.e-chip-avatar-wrap {
+        &::before {
+          height: $chip-avatar-size;
+          margin: $chip-avatar-margin;
+          margin-top: $chip-multiselection-icon-margin-top;
+          width: $chip-avatar-size;
+        }
+      }
+
+      &.e-active {
+        & .e-chip-icon,
+        & .e-chip-avatar {
+          display: none;
+        }
+
+        &.e-chip-icon-wrap,
+        &.e-chip-avatar-wrap {
+          &::before {
+            display: flex;
+          }
+        }
+
+        &:not(.e-chip-icon-wrap):not(.e-chip-avatar-wrap) {
+          &::before {
+            width: $chip-leading-icon-size;
+          }
+        }
+      }
+    }
+
+    &.e-rtl {
+      &.e-chip,
+      & .e-chip {
+        .e-chip-avatar {
+          margin: $chip-rtl-avatar-margin;
+        }
+
+        .e-chip-icon {
+          margin: $chip-rtl-leading-icon-margin;
+        }
+
+        .e-chip-delete {
+          margin: $chip-rtl-delete-icon-margin;
+        }
+
+        .e-chip-avatar-wrap,
+        &.e-chip-avatar-wrap {
+          border-radius: $chip-rtl-avatar-wrapper-border-radius;
+        }
+      }
+
+      &.e-multi-selection .e-chip {
+        &::before {
+          margin: $chip-rtl-leading-icon-margin;
+          margin-top: $chip-multiselection-icon-margin-top;
+        }
+
+        &.e-chip-avatar-wrap {
+          &::before {
+            margin: $chip-rtl-avatar-margin;
+            margin-top: $chip-multiselection-icon-margin-top;
+          }
+        }
+      }
+    }
+  }
+
+  .e-bigger #{&}.e-chip-list,
+  .e-bigger#{&}.e-chip-list {
+    &.e-chip,
+    & .e-chip {
+      border-radius: $chip-touch-border-radius;
+      font-size: $chip-touch-font-size;
+      height: $chip-touch-height;
+      padding: $chip-touch-padding;
+    }
+
+    .e-chip-avatar {
+      font-size: $chip-touch-leading-icon-font-size;
+      height: $chip-touch-avatar-size;
+      margin: $chip-touch-avatar-margin;
+      width: $chip-touch-avatar-size;
+    }
+
+    .e-chip-avatar-wrap,
+    &.e-chip-avatar-wrap {
+      border-radius: $chip-touch-avatar-wrapper-border-radius;
+    }
+
+    .e-chip-icon {
+      font-size: $chip-touch-leading-icon-font-size;
+      height: $chip-touch-leading-icon-size;
+      margin: $chip-touch-leading-icon-margin;
+      width: $chip-touch-leading-icon-size;
+    }
+
+    .e-chip-delete {
+      font-size: $chip-touch-delete-icon-font-size;
+      height: $chip-touch-delete-icon-size;
+      width: $chip-touch-delete-icon-size;
+    }
+
+    &.e-multi-selection .e-chip {
+      &::before {
+        height: $chip-touch-leading-icon-size;
+        margin: $chip-touch-leading-icon-margin;
+        margin-top: $chip-multiselection-icon-margin-top;
+        width: $chip-touch-leading-icon-size;
+      }
+
+      &.e-chip-avatar-wrap {
+        &::before {
+          height: $chip-touch-avatar-size;
+          margin: $chip-touch-avatar-margin;
+          margin-top: $chip-multiselection-icon-margin-top;
+          width: $chip-touch-avatar-size;
+        }
+      }
+
+      &.e-active {
+        &:not(.e-chip-icon-wrap):not(.e-chip-avatar-wrap) {
+          &::before {
+            width: $chip-touch-leading-icon-size;
+          }
+        }
+      }
+    }
+
+    &.e-rtl {
+      &.e-chip,
+      & .e-chip {
+        .e-chip-avatar {
+          margin: $chip-touch-rtl-avatar-margin;
+        }
+
+        .e-chip-icon {
+          margin: $chip-touch-rtl-leading-icon-margin;
+        }
+
+        .e-chip-delete {
+          margin: $chip-rtl-delete-icon-margin;
+        }
+
+        .e-chip-avatar-wrap,
+        &.e-chip-avatar-wrap {
+          border-radius: $chip-touch-rtl-avatar-wrapper-border-radius;
+        }
+      }
+
+      &.e-multi-selection .e-chip {
+        &::before {
+          margin: $chip-touch-rtl-leading-icon-margin;
+          margin-top: $chip-multiselection-icon-margin-top;
+        }
+
+        &.e-chip-avatar-wrap {
+          &::before {
+            margin: $chip-touch-rtl-avatar-margin;
+            margin-top: $chip-multiselection-icon-margin-top;
+          }
+        }
+      }
+    }
+  }
+}
+@mixin chip-color($bg-color, $border-color, $color, $icon-color) {
+  background-color: $bg-color;
+  border-color: $border-color;
+  color: $color;
+
+  .e-chip-avatar,
+  .e-chip-icon,
+  .e-chip-delete {
+    color: $icon-color;
+  }
+}
+
+@include export-module('chip-theme') {
+  #{&}.e-chip-list {
+    &.e-chip,
+    & .e-chip {
+      @include chip-color($chip-bg-color, $chip-border-color, $chip-font-color, $chip-icon-font-color);
+
+      &:hover {
+        @include chip-color($chip-hover-bg-color, $chip-hover-border-color, $chip-hover-font-color, $chip-icon-hover-font-color);
+      }
+
+      &.e-focused,
+      &.e-active {
+        @include chip-color($chip-focus-bg-color, $chip-focus-border-color, $chip-focus-font-color, $chip-icon-focus-font-color);
+        box-shadow: $chip-focus-box-shadow;
+      }
+
+      &.e-disabled {
+        @include chip-color($chip-disabled-bg-color, $chip-disabled-border-color, $chip-disabled-font-color, $chip-disabled-font-color);
+        opacity: 1;
+        pointer-events: none;
+      }
+
+      &.e-outline {
+        @include chip-color(transparent, $chip-outline-border-color, $chip-outline-font-color, $chip-outline-icon-font-color);
+        border-width: $chip-outline-border-size;
+
+        &:hover {
+          @include chip-color($chip-outline-hover-bg-color, $chip-outline-hover-border-color, $chip-outline-hover-font-color, $chip-outline-icon-hover-font-color);
+        }
+
+        &.e-focused,
+        &.e-active {
+          @include chip-color($chip-outline-focus-bg-color, $chip-outline-focus-border-color, $chip-outline-focus-font-color, $chip-outline-icon-focus-font-color);
+        }
+
+        &.e-disabled {
+          @include chip-color($chip-outline-disabled-bg-color, $chip-outline-disabled-border-color, $chip-disabled-font-color, $chip-disabled-font-color);
+        }
+      }
+    }
+
+    &:not(.e-multi-selection) .e-chip {
+      &.e-active {
+        @include chip-color($chip-active-bg-color, $chip-active-border-color, $chip-active-font-color, $chip-icon-active-font-color);
+
+        &.e-disabled {
+          @include chip-color($chip-disabled-bg-color, $chip-disabled-border-color, $chip-disabled-font-color, $chip-disabled-font-color);
+        }
+
+        &.e-outline {
+          @include chip-color($chip-outline-active-bg-color, $chip-outline-active-border-color, $chip-outline-active-font-color, $chip-outline-icon-active-font-color);
+
+          &.e-disabled {
+            @include chip-color($chip-outline-disabled-bg-color, $chip-outline-disabled-border-color, $chip-disabled-font-color, $chip-disabled-font-color);
+          }
+        }
+      }
+    }
+
+    &.e-chip,
+    & .e-chip {
+      &.e-primary {
+        @include chip-color($chip-primary-bg-color, $chip-primary-border-color, $chip-primary-font-color, $chip-primary-font-color);
+
+        &:hover {
+          @include chip-color($chip-primary-hover-bg-color, $chip-primary-hover-border-color, $chip-primary-hover-font-color, $chip-primary-hover-font-color);
+        }
+
+        &.e-focused {
+          @include chip-color($chip-primary-focus-bg-color, $chip-primary-focus-border-color, $chip-primary-focus-font-color, $chip-primary-focus-font-color);
+        }
+
+        &.e-active {
+          @include chip-color($chip-primary-active-bg-color, $chip-primary-active-border-color, $chip-primary-active-font-color, $chip-primary-active-font-color);
+        }
+
+        &.e-disabled {
+          @include chip-color($chip-primary-disabled-bg-color, $chip-primary-disabled-border-color, $chip-primary-disabled-font-color, $chip-primary-disabled-font-color);
+        }
+
+        &.e-outline {
+          @include chip-color($chip-outline-primary-bg-color, $chip-outline-primary-border-color, $chip-outline-primary-font-color, $chip-outline-primary-font-color);
+
+          &:hover {
+            @include chip-color($chip-outline-primary-hover-bg-color, $chip-outline-primary-hover-border-color, $chip-outline-primary-hover-font-color, $chip-outline-primary-hover-font-color);
+          }
+
+          &.e-focused {
+            @include chip-color($chip-outline-primary-focus-bg-color, $chip-outline-primary-focus-border-color, $chip-outline-primary-focus-font-color, $chip-outline-primary-focus-font-color);
+          }
+
+          &.e-active {
+            @include chip-color($chip-outline-primary-active-bg-color, $chip-outline-primary-active-border-color, $chip-outline-primary-active-font-color, $chip-outline-primary-active-font-color);
+          }
+
+          &.e-disabled {
+            @include chip-color($chip-outline-primary-disabled-bg-color, $chip-outline-primary-disabled-border-color, $chip-outline-primary-disabled-font-color, $chip-outline-primary-disabled-font-color);
+          }
+        }
+      }
+
+      &.e-success {
+        @include chip-color($chip-success-bg-color, $chip-success-border-color, $chip-success-font-color, $chip-success-font-color);
+
+        &:hover {
+          @include chip-color($chip-success-hover-bg-color, $chip-success-hover-border-color, $chip-success-hover-font-color, $chip-success-hover-font-color);
+        }
+
+        &.e-focused {
+          @include chip-color($chip-success-focus-bg-color, $chip-success-focus-border-color, $chip-success-focus-font-color, $chip-success-focus-font-color);
+        }
+
+        &.e-active {
+          @include chip-color($chip-success-active-bg-color, $chip-success-active-border-color, $chip-success-active-font-color, $chip-success-active-font-color);
+        }
+
+        &.e-disabled {
+          @include chip-color($chip-success-disabled-bg-color, $chip-success-disabled-border-color, $chip-success-disabled-font-color, $chip-success-disabled-font-color);
+        }
+
+        &.e-outline {
+          @include chip-color($chip-outline-success-bg-color, $chip-outline-success-border-color, $chip-outline-success-font-color, $chip-outline-success-font-color);
+
+          &:hover {
+            @include chip-color($chip-outline-success-hover-bg-color, $chip-outline-success-hover-border-color, $chip-outline-success-hover-font-color, $chip-outline-success-hover-font-color);
+          }
+
+          &.e-focused {
+            @include chip-color($chip-outline-success-focus-bg-color, $chip-outline-success-focus-border-color, $chip-outline-success-focus-font-color, $chip-outline-success-focus-font-color);
+          }
+
+          &.e-active {
+            @include chip-color($chip-outline-success-active-bg-color, $chip-outline-success-active-border-color, $chip-outline-success-active-font-color, $chip-outline-success-active-font-color);
+          }
+
+          &.e-disabled {
+            @include chip-color($chip-outline-success-disabled-bg-color, $chip-outline-success-disabled-border-color, $chip-outline-success-disabled-font-color, $chip-outline-success-disabled-font-color);
+          }
+        }
+      }
+
+      &.e-info {
+        @include chip-color($chip-info-bg-color, $chip-info-border-color, $chip-info-font-color, $chip-info-font-color);
+
+        &:hover {
+          @include chip-color($chip-info-hover-bg-color, $chip-info-hover-border-color, $chip-info-hover-font-color, $chip-info-hover-font-color);
+        }
+
+        &.e-focused {
+          @include chip-color($chip-info-focus-bg-color, $chip-info-focus-border-color, $chip-info-focus-font-color, $chip-info-focus-font-color);
+        }
+
+        &.e-active {
+          @include chip-color($chip-info-active-bg-color, $chip-info-active-border-color, $chip-info-active-font-color, $chip-info-active-font-color);
+        }
+
+        &.e-disabled {
+          @include chip-color($chip-info-disabled-bg-color, $chip-info-disabled-border-color, $chip-info-disabled-font-color, $chip-info-disabled-font-color);
+        }
+
+        &.e-outline {
+          @include chip-color($chip-outline-info-bg-color, $chip-outline-info-border-color, $chip-outline-info-font-color, $chip-outline-info-font-color);
+
+          &:hover {
+            @include chip-color($chip-outline-info-hover-bg-color, $chip-outline-info-hover-border-color, $chip-outline-info-hover-font-color, $chip-outline-info-hover-font-color);
+          }
+
+          &.e-focused {
+            @include chip-color($chip-outline-info-focus-bg-color, $chip-outline-info-focus-border-color, $chip-outline-info-focus-font-color, $chip-outline-info-focus-font-color);
+          }
+
+          &.e-active {
+            @include chip-color($chip-outline-info-active-bg-color, $chip-outline-info-active-border-color, $chip-outline-info-active-font-color, $chip-outline-info-active-font-color);
+          }
+
+          &.e-disabled {
+            @include chip-color($chip-outline-info-disabled-bg-color, $chip-outline-info-disabled-border-color, $chip-outline-info-disabled-font-color, $chip-outline-info-disabled-font-color);
+          }
+        }
+      }
+
+      &.e-warning {
+        @include chip-color($chip-warning-bg-color, $chip-warning-border-color, $chip-warning-font-color, $chip-warning-font-color);
+
+        &:hover {
+          @include chip-color($chip-warning-hover-bg-color, $chip-warning-hover-border-color, $chip-warning-hover-font-color, $chip-warning-hover-font-color);
+        }
+
+        &.e-focused {
+          @include chip-color($chip-warning-focus-bg-color, $chip-warning-focus-border-color, $chip-warning-focus-font-color, $chip-warning-focus-font-color);
+        }
+
+        &.e-active {
+          @include chip-color($chip-warning-active-bg-color, $chip-warning-active-border-color, $chip-warning-active-font-color, $chip-warning-active-font-color);
+        }
+
+        &.e-disabled {
+          @include chip-color($chip-warning-disabled-bg-color, $chip-warning-disabled-border-color, $chip-warning-disabled-font-color, $chip-warning-disabled-font-color);
+        }
+
+        &.e-outline {
+          @include chip-color($chip-outline-warning-bg-color, $chip-outline-warning-border-color, $chip-outline-warning-font-color, $chip-outline-warning-font-color);
+
+          &:hover {
+            @include chip-color($chip-outline-warning-hover-bg-color, $chip-outline-warning-hover-border-color, $chip-outline-warning-hover-font-color, $chip-outline-warning-hover-font-color);
+          }
+
+          &.e-focused {
+            @include chip-color($chip-outline-warning-focus-bg-color, $chip-outline-warning-focus-border-color, $chip-outline-warning-focus-font-color, $chip-outline-warning-focus-font-color);
+          }
+
+          &.e-active {
+            @include chip-color($chip-outline-warning-active-bg-color, $chip-outline-warning-active-border-color, $chip-outline-warning-active-font-color, $chip-outline-warning-active-font-color);
+          }
+
+          &.e-disabled {
+            @include chip-color($chip-outline-warning-disabled-bg-color, $chip-outline-warning-disabled-border-color, $chip-outline-warning-disabled-font-color, $chip-outline-warning-disabled-font-color);
+          }
+        }
+      }
+
+      &.e-danger {
+        @include chip-color($chip-danger-bg-color, $chip-danger-border-color, $chip-danger-font-color, $chip-danger-font-color);
+
+        &:hover {
+          @include chip-color($chip-danger-hover-bg-color, $chip-danger-hover-border-color, $chip-danger-hover-font-color, $chip-danger-hover-font-color);
+        }
+
+        &.e-focused {
+          @include chip-color($chip-danger-focus-bg-color, $chip-danger-focus-border-color, $chip-danger-focus-font-color, $chip-danger-focus-font-color);
+        }
+
+        &.e-active {
+          @include chip-color($chip-danger-active-bg-color, $chip-danger-active-border-color, $chip-danger-active-font-color, $chip-danger-active-font-color);
+        }
+
+        &.e-disabled {
+          @include chip-color($chip-danger-disabled-bg-color, $chip-danger-disabled-border-color, $chip-danger-disabled-font-color, $chip-danger-disabled-font-color);
+        }
+
+        &.e-outline {
+          @include chip-color($chip-outline-danger-bg-color, $chip-outline-danger-border-color, $chip-outline-danger-font-color, $chip-outline-danger-font-color);
+
+          &:hover {
+            @include chip-color($chip-outline-danger-hover-bg-color, $chip-outline-danger-hover-border-color, $chip-outline-danger-hover-font-color, $chip-outline-danger-hover-font-color);
+          }
+
+          &.e-focused {
+            @include chip-color($chip-outline-danger-focus-bg-color, $chip-outline-danger-focus-border-color, $chip-outline-danger-focus-font-color, $chip-outline-danger-focus-font-color);
+          }
+
+          &.e-active {
+            @include chip-color($chip-outline-danger-active-bg-color, $chip-outline-danger-active-border-color, $chip-outline-danger-active-font-color, $chip-outline-danger-active-font-color);
+          }
+
+          &.e-disabled {
+            @include chip-color($chip-outline-danger-disabled-bg-color, $chip-outline-danger-disabled-border-color, $chip-outline-danger-disabled-font-color, $chip-outline-danger-disabled-font-color);
+          }
+        }
+      }
+    }
+  }
+}

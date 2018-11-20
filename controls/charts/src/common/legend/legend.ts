@@ -1,9 +1,9 @@
 import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';
 import { Chart } from '../../chart';
 import { LegendSettingsModel, LocationModel } from './legend-model';
-import { Font, Border } from '../model/base';
+import { Font, Border, Margin } from '../model/base';
 import { Theme } from '../model/theme';
-import { FontModel, BorderModel } from '../model/base-model';
+import { MarginModel, FontModel, BorderModel } from '../model/base-model';
 import { Size, Rect, subtractThickness, Thickness, drawSymbol, measureText, ChartLocation, PathOption } from '../utils/helper';
 import { RectOption, TextOption, textElement, stringToNumber } from '../utils/helper';
 import { removeElement, showTooltip, getElement, appendChildElement } from '../utils/helper';
@@ -31,6 +31,7 @@ export class Location extends ChildProperty<Location>  {
     @Property(0)
     public y: number;
 }
+
 /**
  * Configures the legends in charts.
  */
@@ -134,6 +135,13 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
      */
     @Complex<BorderModel>({}, Border)
     public border: BorderModel;
+
+    /**
+     *  Options to customize left, right, top and bottom margins of the chart.
+     */
+
+    @Complex<MarginModel>({left: 0, right: 0, top: 0, bottom: 0}, Margin)
+    public margin: MarginModel;
 
     /**
      * Padding between the legend shape and text.
@@ -276,24 +284,25 @@ export class BaseLegend {
      * To find legend location based on position, alignment for chart and accumulation chart 
      */
     private getLocation(position: LegendPosition, alignment: Alignment, legendBounds: Rect, rect: Rect, availableSize: Size): void {
-        let padding: number = this.legend.border.width;
-        let legendHeight: number = legendBounds.height + padding;
-        let legendWidth: number = legendBounds.width + padding;
+        let padding: number = this.legend.border.width ;
+        let legendHeight: number = legendBounds.height + padding + this.legend.margin.top + this.legend.margin.bottom ;
+        let legendWidth: number = legendBounds.width + padding + this.legend.margin.left + this.legend.margin.right ;
         let marginBottom: number = this.chart.margin.bottom;
         if (position === 'Bottom') {
             legendBounds.x = this.alignLegend(legendBounds.x, availableSize.width, legendBounds.width, alignment);
-            legendBounds.y = rect.y + (rect.height - legendHeight) + padding;
+            legendBounds.y = rect.y + (rect.height - legendHeight) + padding + this.legend.margin.top;
             subtractThickness(rect, new Thickness(0, 0, 0, legendHeight));
         } else if (position === 'Top') {
             legendBounds.x = this.alignLegend(legendBounds.x, availableSize.width, legendBounds.width, alignment);
-            legendBounds.y = rect.y + padding;
+            legendBounds.y = rect.y + padding + this.legend.margin.top;
             subtractThickness(rect, new Thickness(0, 0, legendHeight, 0));
         } else if (position === 'Right') {
-            legendBounds.x = rect.x + (rect.width - legendBounds.width);
+            legendBounds.x = rect.x + (rect.width - legendBounds.width) - this.legend.margin.right;
             legendBounds.y = rect.y + this.alignLegend(0, availableSize.height - (rect.y + marginBottom),
                                                        legendBounds.height, alignment);
             subtractThickness(rect, new Thickness(0, legendWidth, 0, 0));
         } else if (position === 'Left') {
+            legendBounds.x = legendBounds.x + this.legend.margin.left;
             legendBounds.y = rect.y + this.alignLegend(0, availableSize.height - (rect.y + marginBottom),
                                                        legendBounds.height, alignment);
             subtractThickness(rect, new Thickness(legendWidth, 0, 0, 0));

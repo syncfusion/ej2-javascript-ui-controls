@@ -91,14 +91,14 @@ Input component is also offered in following list of frameworks.
 - [**Multiline**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=textbox#/material/textbox/default.html) – handles multiline input with placeholder text
 
 ### 3. MaskedTextBox
-- [**Custom Characters**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=maskedtextbox#/material/maskedtextbox/custommask.html) - allows you to use your own characters as the mask elements.
+- [**Custom Characters**](https://ej2.syncfusion.com/demos/?lang=typescript&utm_source=npm&utm_campaign=maskedtextbox/#/material/maskedtextbox/custom-mask.html) - allows you to use your own characters as the mask elements.
 - [**Regular Expression**](https://ej2.syncfusion.com/documentation/maskedtextbox/mask-configuration#regular-expression?lang=typescript&utm_source=npm&utm_campaign=maskedtextbox#regular-expression) - can be used as a mask element for each character of the MaskedTextBox.
 - [**Accessibility**](https://ej2.syncfusion.com/documentation/maskedtextbox/accessibility?lang=typescript&utm_source=npm&utm_campaign=maskedtextbox) - provides built-in accessibility support which helps to access all the MaskedTextBox component features through keyboard, on-screen readers, or other assistive technology devices.
 
 ### 4. NumericTextBox
-- [**Range Validation**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=numerictextbox#/material/numerictextbox/range.html) - allows to set the minimum and maximum range of values in the NumericTextBox.
-- [**Number Formats**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=numerictextbox#/material/numerictextbox/format.html) - supports the number display formatting with MSDN standard and custom number formats.
-- [**Precision Of Numbers**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=numerictextbox#/material/numerictextbox/restrict.html) - allows to restrict the number precision when enters the value.
+- [**Range Validation**](https://ej2.syncfusion.com/demos?utm_source=npm&utm_campaign=numerictextbox/#/material/numerictextbox/range-validation.html) - allows to set the minimum and maximum range of values in the NumericTextBox.
+- [**Number Formats**](https://ej2.syncfusion.com/demos?utm_source=npm&utm_campaign=numerictextbox/#/material/numerictextbox/custom-format.html) - supports the number display formatting with MSDN standard and custom number formats.
+- [**Precision Of Numbers**](https://ej2.syncfusion.com/demos?utm_source=npm&utm_campaign=numerictextbox/#/material/numerictextbox/restrict-decimals.html) - allows to restrict the number precision when enters the value.
 - [**Keyboard Interaction**](https://ej2.syncfusion.com/documentation/numerictextbox/accessibility#keyboard-interaction?lang=typescript&utm_source=npm&utm_campaign=numerictextbox#keyboard-interaction) - allows users to interact with the NumericTextBox using the keyboard.
 - [**Accessibility**](https://ej2.syncfusion.com/documentation/numerictextbox/accessibility?lang=typescript&utm_source=npm&utm_campaign=numerictextbox) - provides built-in accessibility support which helps to access all the NumericTextBox component features through keyboard, on-screen readers or other assistive technology devices.
 - [**Internationalization**](https://ej2.syncfusion.com/documentation/numerictextbox/globalization#internationalization?lang=typescript&utm_source=npm&utm_campaign=numerictextbox) - library provides support for formatting and parsing number using the official Unicode CLDR JSON data.
@@ -117,11 +117,11 @@ Input component is also offered in following list of frameworks.
 
 ### 6. Upload
 - [**Chunk Upload**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=uploader#/material/uploader/chunk-upload.html) – used to upload large files as chunks
-- [**Drag-and-drop**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=uploader#/material/uploader/drop-area.html) – drag the files and drop into component to upload them.
-- [**Template**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=uploader#/material/uploader/custom-template.html) – the file list and buttons can be customize using template
-- [**Validation**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=uploader#/material/uploader/validation.html) – validate extension and size of upload file
+- [**Drag-and-drop**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=uploader/#/material/uploader/custom-drop-area.html) – drag the files and drop into component to upload them.
+- [**Template**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=uploader/#/material/uploader/custom-file-list.html) – the file list and buttons can be customize using template
+- [**Validation**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=uploader/#/material/uploader/file-validation.html) – validate extension and size of upload file
 - [**Auto Upload**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=uploader#/material/uploader/default.html) – Process the file to upload without interaction.
-- [**Preload Files**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=uploader#/material/uploader/preloadfiles.html) – View and manipulate previously uploaded files
+- [**Preload Files**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=uploader/#/material/uploader/preload-files.html) – View and manipulate previously uploaded files
 
 ## Support
 

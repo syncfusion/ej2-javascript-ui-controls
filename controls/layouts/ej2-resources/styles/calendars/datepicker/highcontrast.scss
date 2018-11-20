@@ -11,8 +11,7 @@ $date-icon-hover-color: $hover-bg-color;
 $date-icon-border-radius: 100%;
 $popup-border-radius: 0;
 $box-sizing: border-box;
-
-@include export-module('datepicker-icons') {
+@include export-module('datepicker-highcontrast-icons') {
   /*! component icons */
   .e-input-group-icon.e-date-icon,
   &.e-control-wrapper .e-input-group-icon.e-date-icon {
@@ -23,7 +22,7 @@ $box-sizing: border-box;
     outline: none;
 
     &::before {
-      content: $datepicker-icon;
+      content: '\e93a';
       font-family: 'e-icons';
   }
 
@@ -42,7 +41,7 @@ $box-sizing: border-box;
     min-width: $date-bigger-icon-container-min-width;
 
     &::before {
-      content: $datepicker-icon;
+      content: '\e93a';
       font-family: 'e-icons';
   }
 
@@ -52,6 +51,7 @@ $box-sizing: border-box;
 	}
 }
 }
+
 @include export-module('datepicker-layout') {
   .e-date-wrapper {
     & .e-date-icon.e-icons {

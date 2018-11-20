@@ -33,6 +33,8 @@ $tbar-btn-nrml-height: calc(100% - 8px);
 $tbar-btn-icon-bgr-width: 27px;
 $tbar-btn-icon-nrml-width: 24px;
 $tbar-separator-nrml-mrgn: 7.5px 3px ;
+$tbar-separator-vertical-bgr-mrgn: 5px 10px ;
+$tbar-separator-vertical-nrml-mrgn: 3px 7.5px ;
 $tbar-separator-bgr-mrgn: 10px 5px ;
 $tbar-separator-nrml-height: calc(100% - 15px);
 $tbar-separator-bgr-height: calc(100% - 20px);
@@ -68,6 +70,12 @@ $tbar-default-bg: $default-bg-color  ;
 $tbar-default-border: $default-border-color ;
 $tbar-default-font: $default-font-color ;
 $tbar-separator-size: $border-size ;
+$tba-horizontal-separator: 0 $tbar-separator-size 0 0;
+$tba-vertical-separator: 0 0 $tbar-separator-size 0;
+$tbar-popup-border-width: 0 0 0 $border-size;
+$tbar-popup-rtl-border-width: 0 $border-size 0 0;
+$tbar-popup-vertical-border-width: $border-size 0 0 0;
+$tbar-popup-vertical-rtl-border-width: 0 0 $border-size 0;
 $tbar-separator-border: $default-border-color ;
 $tbar-default-icon-color: $default-icon-color ;
 $tbar-default-icon-overlay: $default-icon-color ;
@@ -111,9 +119,6 @@ $tbar-nav-hover-border: '';
 $tbar-nav-focus-border: '';
 $tbar-nav-pressed-box-shadow: '';
 
-$tbar-popup-down-icon: '\e916';
-$tbar-popup-up-icon: '\e910';
-
 @mixin tbar-btn-animation {
   content: '';
 }
@@ -121,28 +126,22 @@ $tbar-popup-up-icon: '\e910';
 @mixin tbar-btn-animation-after {
   content: '';
 }
-
-@include export-module('toolbar-icons') {
+@include export-module('toolbar-material-icons') {
   /*! toolbar icons */
   #{&}.e-toolbar {
 
     .e-popup-down-icon::before {
-      content: $tbar-popup-down-icon;
+      content: '\e916';
       line-height: normal;
-      @if $skin-name == 'highcontrast' {
-        content: '\e84f';
-      }
     }
 
     .e-popup-up-icon::before {
-      content: $tbar-popup-up-icon;
+      content: '\e910';
       line-height: normal;
-      @if $skin-name == 'highcontrast' {
-        content: '\e85e';
-      }
     }
   }
 }
+
 @include export-module('toolbar-layout') {
   /*! toolbar layout */
   // sass-lint:disable no-vendor-prefixes
@@ -578,6 +577,45 @@ $tbar-popup-up-icon: '\e910';
           margin-left: 0;
         }
 
+      }
+    }
+
+    &.e-vertical {
+
+      .e-toolbar-items {
+
+        .e-toolbar-item {
+
+          &:not(.e-separator) {
+            min-height: 38px;
+          }
+
+          &.e-separator {
+            height: auto;
+            margin: $tbar-separator-vertical-bgr-mrgn;
+            min-height: auto;
+          }
+
+          .e-tbar-btn.e-btn {
+            margin: $tbar-v-btn-bgr-mrgn;
+          }
+        }
+
+        &:not(.e-tbar-pos) .e-toolbar-item {
+
+          &:first-child {
+            margin-left: 0;
+          }
+
+          &:last-child {
+            margin-right: 0;
+          }
+        }
+      }
+
+      .e-hor-nav {
+        min-height: 40px;
+        min-width: 50px;
       }
     }
   }
@@ -1428,6 +1466,89 @@ $tbar-popup-up-icon: '\e910';
         width: auto;
        }
     }
+
+    &.e-vertical {
+      display: flex;
+      flex-direction: column;
+
+      &.e-rtl.e-tbar-pos {
+
+        .e-toolbar-left {
+          bottom: 0;
+          top: auto;
+        }
+
+        .e-toolbar-right {
+          bottom: auto;
+          top: 0;
+        }
+      }
+
+      .e-toolbar-items {
+
+        &.e-tbar-pos {
+
+          .e-toolbar-left,
+          .e-toolbar-center,
+          .e-toolbar-right {
+            height: auto;
+          }
+
+          .e-toolbar-left {
+            left: auto;
+            right: auto;
+            top: 0;
+          }
+
+          .e-toolbar-right {
+            bottom: 0;
+            left: auto;
+            right: auto;
+          }
+        }
+
+        &:not(.e-tbar-pos) .e-toolbar-item {
+
+          &:first-child {
+            margin-left: 0;
+          }
+
+          &:last-child {
+            margin-right: 0;
+          }
+        }
+
+        .e-toolbar-item {
+          display: flex;
+          height: auto;
+
+          &:not(.e-separator) {
+            min-width: 33px;
+          }
+
+          &.e-separator {
+            height: auto;
+            margin: $tbar-separator-vertical-nrml-mrgn;
+            min-height: auto;
+          }
+
+          .e-tbar-btn.e-btn {
+            margin: $tbar-v-btn-nrml-mrgn;
+          }
+        }
+      }
+
+      .e-hor-nav {
+        bottom: 0;
+        height: auto;
+        left: 0;
+        min-height: 40px;
+        min-width: 50px;
+        right: auto;
+        top: auto;
+        width: auto;
+      }
+    }
   }
 }
 @include export-module('toolbar-theme') {
@@ -1439,6 +1560,28 @@ $tbar-popup-up-icon: '\e910';
     border: $tbar-border-size $tbar-border-type $tbar-default-border;
     box-shadow: $tbar-box-shadow;
 
+    &.e-vertical {
+
+      .e-hor-nav {
+        border: $tbar-border-nav-type $tbar-default-border;
+        border-width: $tbar-popup-vertical-border-width;
+      }
+
+      &.e-rtl .e-hor-nav {
+        border: $tbar-border-nav-type $tbar-default-border;
+        border-width: $tbar-popup-vertical-rtl-border-width;
+      }
+
+
+      .e-toolbar-items .e-toolbar-item {
+
+        &.e-separator {
+          border-width: $tba-vertical-separator;
+        }
+
+      }
+    }
+
     &.e-extended-toolbar {
 
       .e-toolbar-extended {
@@ -1448,7 +1591,8 @@ $tbar-popup-up-icon: '\e910';
         }
 
         .e-toolbar-item.e-separator {
-          border-right: $tbar-separator-size $tbar-separator-border-type $tbar-separator-border;
+          border: $tbar-separator-border-type $tbar-separator-border;
+          border-width: $tba-horizontal-separator;
         }
 
         .e-toolbar-item .e-tbar-btn .e-icons {
@@ -1683,15 +1827,17 @@ $tbar-popup-up-icon: '\e910';
         }
 
         &.e-separator {
-          border-right: $tbar-separator-size $tbar-separator-border-type $tbar-separator-border;
+          border: $tbar-separator-border-type $tbar-separator-border;
+          border-width: $tba-horizontal-separator;
         }
       }
     }
 
     &.e-rtl .e-hor-nav {
       background: $tbar-default-bg;
+      border: $tbar-border-nav-type $tbar-default-border;
       border-left: 0;
-      border-right: $border-size $tbar-border-nav-type $tbar-default-border;
+      border-width: $tbar-popup-rtl-border-width;
 
       &:not(.e-hor-nav.e-nav-active):hover {
         background: $tbar-hover-bg;
@@ -1701,7 +1847,8 @@ $tbar-popup-up-icon: '\e910';
 
     .e-hor-nav {
       background: $tbar-default-bg;
-      border-left: $border-size $tbar-border-nav-type $tbar-default-border;
+      border: $tbar-border-nav-type $tbar-default-border;
+      border-width: $tbar-popup-border-width;
     }
 
     .e-hor-nav:not(.e-expended-nav)  {

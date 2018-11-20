@@ -78,13 +78,13 @@ $box-shadow: 0 0 2.5em rgba(85, 85, 85, .5);
 
     &.e-left.e-close.e-dock {
       transform: translateX(0%);
-      transition: transform ease;
+      transition: width .5s ease, visibility 500ms;
       visibility: visible;
     }
 
     &.e-right.e-close.e-dock {
       transform: translateX(0%);
-      transition: transform ease;
+      transition: width .5s ease, visibility 500ms;
       visibility: visible;
     }
 

@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged , NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';
 import { EmitType, Event, EventHandler, KeyboardEvents } from '@syncfusion/ej2-base';
 import { addClass, detach, getUniqueID, isRippleEnabled, removeClass, rippleEffect } from '@syncfusion/ej2-base';
 import { CheckBoxModel } from './check-box-model';
@@ -273,7 +273,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
             let rippleSpan: HTMLElement = this.createElement('span', { className: RIPPLE });
             if (this.labelPosition === 'Before') {
                 label.appendChild(rippleSpan);
-            }else {
+            } else {
                 label.insertBefore(rippleSpan, frameSpan);
             }
             rippleEffect(rippleSpan, { duration: 400, isCenterRipple: true });
@@ -330,9 +330,11 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                     break;
                 case 'cssClass':
                     if (oldProp.cssClass) {
-                        wrapper.classList.remove(oldProp.cssClass);
+                        removeClass([wrapper], oldProp.cssClass.split(' '));
                     }
-                    wrapper.classList.add(newProp.cssClass);
+                    if (newProp.cssClass) {
+                        addClass([wrapper], newProp.cssClass.split(' '));
+                    }
                     break;
                 case 'enableRtl':
                     if (newProp.enableRtl) {

@@ -53,15 +53,15 @@ Circular gauge component is also offered in following list of frameworks.
 Product support is available for through following mediums.
 
 * Creating incident in Syncfusion [Direct-trac](https://www.syncfusion.com/support/directtrac/incidents?utm_source=npm&utm_campaign=circulargauge) support system or [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_campaign=circulargauge).
-* New [GitHub issues](https://github.com/syncfusion/ej2-circulargauge/issues).
+* New [GitHub issues](https://github.com/syncfusion/ej2-javascript-ui-controls/issues).
 * Ask your query in Stack Overflow with tag `syncfusion`, `ej2`.
 
 ## License
 
-Check the license detail [here](https://github.com/syncfusion/ej2/blob/master/license?utm_source=npm&utm_campaign=circulargauge).
+Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license?utm_source=npm&utm_campaign=circulargauge).
 
 ## Changelog
 
-Check the changelog [here](https://github.com/syncfusion/ej2-circulargauge/blob/master/CHANGELOG.md?utm_source=npm&utm_campaign=circulargauge)
+Check the changelog [here]https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/circulargauge/CHANGELOG.md?utm_source=npm&utm_campaign=circulargauge)
 
 © Copyright 2018 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

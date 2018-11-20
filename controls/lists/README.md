@@ -66,7 +66,7 @@ Product support is available for through following mediums.
 
 ## License
 
-Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/LICENSE?utm_source=npm&utm_campaign=listview).
+Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license?utm_source=npm&utm_campaign=listview).
 
 ## Changelog
 

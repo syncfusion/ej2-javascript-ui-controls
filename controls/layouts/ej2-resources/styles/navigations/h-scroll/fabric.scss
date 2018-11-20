@@ -57,8 +57,7 @@ $hscroll-device-right-arrow-icon: '\e904';
 @mixin hscroll-btn-animation-after {
   content: '';
 }
-
-@include export-module('hscroll-icons') {
+@include export-module('hscroll-fabric-icons') {
   /*! hscroll icons */
   #{&}.e-hscroll {
 
@@ -67,46 +66,47 @@ $hscroll-device-right-arrow-icon: '\e904';
       &.e-scroll-device {
 
         .e-nav-right-arrow::before {
-          content: $hscroll-device-right-arrow-icon;
+          content: '\e904';
         }
 
         .e-nav-left-arrow::before {
-          content: $hscroll-device-left-arrow-icon;
+          content: '\e913';
         }
 
       }
 
       .e-nav-left-arrow::before {
-        content: $hscroll-left-arrow-icon;
+        content: '\e830';
          }
 
       .e-nav-right-arrow::before {
-        content: $hscroll-right-arrow-icon;
+        content: '\e829';
         }
     }
 
     &.e-scroll-device {
 
       .e-nav-right-arrow::before {
-        content: $hscroll-device-left-arrow-icon;
+        content: '\e913';
       }
 
       .e-nav-left-arrow::before {
-        content: $hscroll-device-right-arrow-icon;
+        content: '\e904';
       }
     }
 
     .e-nav-left-arrow::before {
-      content: $hscroll-right-arrow-icon;
+      content: '\e829';
       line-height: normal;
     }
 
     .e-nav-right-arrow::before {
-      content: $hscroll-left-arrow-icon;
+      content: '\e830';
       line-height: normal;
     }
+  }
 }
-}
+
 @include export-module('h-scroll') {
   /*! h-scroll layout */
 
@@ -241,6 +241,7 @@ $hscroll-device-right-arrow-icon: '\e904';
       > * {
         pointer-events: auto;
       }
+
  }
 
     &.e-rtl {
@@ -294,7 +295,17 @@ $hscroll-device-right-arrow-icon: '\e904';
       vertical-align: middle;
       width: 100%;
       }
-   }
+
+    .e-hscroll-bar {
+
+      .e-hscroll-content {
+
+        .e-overlay {
+          pointer-events: none;
+          }
+        }
+      }
+  }
 }
 @include export-module('h-scroll-theme') {
   /*! h-scroll theme */

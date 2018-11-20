@@ -57,15 +57,15 @@ TreeMap component is also offered in following list of frameworks.
 Product support is available for through following mediums.
 
 * Creating incident in Syncfusion [Direct-trac](https://www.syncfusion.com/support/directtrac/incidents?utm_source=npm&utm_campaign=treemap) support system or [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_campaign=treemap).
-* New [GitHub issues](https://github.com/syncfusion/ej2-treemap/issues).
+* New [GitHub issues](https://github.com/syncfusion/ej2-javascript-ui-controls/issues).
 * Ask your query in Stack Overflow with tag `syncfusion`, `ej2`.
 
 ## License
 
-Check the license detail [here](https://github.com/syncfusion/ej2/blob/master/license?utm_source=npm&utm_campaign=treemap).
+Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/treemap/license?utm_source=npm&utm_campaign=treemap).
 
 ## Changelog
 
-Check the changelog [here](https://github.com/syncfusion/ej2-treemap/blob/master/CHANGELOG.md?utm_source=npm&utm_campaign=treemap)
+Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/treemap/CHANGELOG.md?utm_source=npm&utm_campaign=treemap)
 
 © Copyright 2018 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

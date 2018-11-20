@@ -142,31 +142,29 @@ $pause-play-button-right-value-bigger-rtl: 41px;
 $file-container-left: 60px;
 $ie-icons-position-value: 10px;
 $ie-abort-icon-position-value: 12px;
-
-// icon styles
-@include export-module('uploader-icons') {
+@include export-module('uploader-fabric-icons') {
   .e-upload .e-upload-files .e-file-remove-btn.e-icons::before {
-    content: $clear-icon-font-content;
+    content: '\e953';
   }
 
   .e-upload .e-upload-files .e-icons.e-file-pause-btn::before {
-    content: $pause-icon-font-content;
+    content: '\e325';
   }
 
   .e-upload .e-upload-files .e-icons.e-file-reload-btn::before {
-    content: $reload-icon-font-content;
+    content: '\e218';
   }
 
   .e-upload .e-upload-files .e-icons.e-file-play-btn::before {
-    content: $play-icon-font-content;
+    content: '\e327';
   }
 
   .e-upload .e-upload-files .e-file-delete-btn.e-icons::before {
-    content: $delete-icon-font-content;
+    content: '\e965';
   }
 
   .e-upload .e-upload-files .e-file-abort-btn.e-icons::before {
-    content: $abort-icon-font-content;
+    content: '\e202';
   }
 
   .e-upload .e-upload-files .e-icons.e-msie::before {
@@ -178,6 +176,7 @@ $ie-abort-icon-position-value: 12px;
     right: $ie-abort-icon-position-value;
   }
 }
+
 // uploader layout styles
 @include export-module('uploader-layout') {
   // For bigger class UI

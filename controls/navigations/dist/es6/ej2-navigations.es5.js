@@ -10028,8 +10028,14 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
      * Hide the Sidebar component, if it is in an open state.
      * @returns void
      */
-    Sidebar.prototype.hide = function () {
-        var closeArguments = { model: this, element: this.element, cancel: false };
+    Sidebar.prototype.hide = function (e) {
+        var closeArguments = {
+            model: this,
+            element: this.element,
+            cancel: false,
+            isInteracted: !isNullOrUndefined(e),
+            event: (e || null)
+        };
         this.trigger('close', closeArguments);
         if (!closeArguments.cancel) {
             if (this.element.classList.contains(CLOSE)) {
@@ -10064,8 +10070,14 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
      * Shows the Sidebar component, if it is in closed state.
      * @returns void
      */
-    Sidebar.prototype.show = function () {
-        var openArguments = { model: this, element: this.element, cancel: false };
+    Sidebar.prototype.show = function (e) {
+        var openArguments = {
+            model: this,
+            element: this.element,
+            cancel: false,
+            isInteracted: !isNullOrUndefined(e),
+            event: (e || null)
+        };
         this.trigger('open', openArguments);
         if (!openArguments.cancel) {
             removeClass([this.element], VISIBILITY);
@@ -10167,7 +10179,7 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
         if (closest(e.target, '.' + CONTROL$1 + '' + '.' + ROOT$1)) {
             return;
         }
-        this.hide();
+        this.hide(e);
     };
     Sidebar.prototype.enableGestureHandler = function (args) {
         if (this.position === 'Left' && args.swipeDirection === 'Right' &&

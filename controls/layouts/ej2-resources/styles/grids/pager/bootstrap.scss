@@ -87,6 +87,47 @@ $pager-bigger-current-item-hover-padding: $pager-bigger-current-item-padding;
 $pager-numeric-icon-hover-padding: $pager-numeric-icon-padding;
 $pager-bigger-rtl-activeitem-hover-padding:  $pager-bigger-rtl-activeitem-padding;
 $pager-activeitem-hover-padding: $pager-activeitem-padding;
+@include export-module('pager-icons') {
+  /*! component icons */
+
+  #{&}.e-pager,
+  .e-grid-menu {
+
+    .e-icon-last::before {
+      content: '\e235';
+    }
+
+    .e-icon-first::before {
+      content: '\e238';
+    }
+
+    .e-icon-prev::before {
+      content: '\e237';
+    }
+
+    .e-icon-next::before {
+      content: '\e236';
+    }&.e-rtl {
+      & .e-icon-last.e-lastpage::before,
+      & .e-icon-last.e-lastpage:hover,
+      & .e-icon-last.e-lastpagedisabled::before {
+        content: '\e238';
+    }& .e-icon-first.e-firstpage::before,
+      & .e-icon-first.e-firstpage:hover,
+      & .e-icon-first.e-firstpagedisabled::before {
+        content: '\e235';
+    }& .e-icon-prev.e-prevpage::before,
+      & .e-icon-prev.e-prevpage:hover,
+      & .e-icon-prev.e-prevpagedisabled::before {
+        content: '\e236';
+    }& .e-icon-next.e-nextpage::before,
+      & .e-icon-next.e-nextpage:hover,
+      & .e-icon-next.e-nextpagedisabled::before {
+        content: '\e237';
+}
+     }
+  }
+}
 
 @include export-module('pager-icons') {
   /*! component icons */

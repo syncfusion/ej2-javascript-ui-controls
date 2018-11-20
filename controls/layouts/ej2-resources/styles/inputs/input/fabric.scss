@@ -217,13 +217,11 @@ $input-clear-icon-font: '\e932';
 @mixin input-ripple-animation {
   content: '';
 }
-
-@include export-module('input-icons') {
-
+@include export-module('input-fabric-icons') {
   .e-float-input,
   .e-float-input.e-control-wrapper {
     .e-clear-icon::before {
-      content: $input-clear-icon-font;
+      content: '\e953';
       font-family: 'e-icons';
     }
   }
@@ -231,11 +229,12 @@ $input-clear-icon-font: '\e932';
   .e-input-group,
   .e-input-group.e-control-wrapper {
     .e-clear-icon::before {
-      content: $input-clear-icon-font;
+      content: '\e953';
       font-family: 'e-icons';
     }
   }
 }
+
 @include export-module('input-layout') {
   /*! input layout */
   .e-input-group,

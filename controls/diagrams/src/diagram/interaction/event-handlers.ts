@@ -548,7 +548,7 @@ export class DiagramEventHandler {
             if (this.tool && (!(this.tool instanceof PolygonDrawingTool || this.tool instanceof PolyLineDrawingTool) ||
                 ((this.tool instanceof PolygonDrawingTool || this.tool instanceof PolyLineDrawingTool)
                     && evt.detail === 2))) {
-                if (!this.isForeignObject(evt.target as HTMLElement)) {
+                if (!this.isForeignObject(evt.target as HTMLElement) && this.isMouseDown) {
                     document.getElementById(this.diagram.element.id + 'content').focus();
                 }
                 if (!this.inAction && evt.which !== 3) {

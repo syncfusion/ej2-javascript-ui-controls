@@ -768,4 +768,75 @@ describe('Chart Control Legend Checking', () => {
         chartObj.legendSettings.width = null;
         chartObj.refresh();
     });
+    it('Bottom Position with margin', function (done) {
+        loaded = function (args) {
+            chartObj.loaded = null;
+            legendElement = document.getElementById(legendId + '_element');
+            expect(parseInt(legendElement.getAttribute('y'), 10) == 306 || parseInt(legendElement.getAttribute('y'), 10) == 310);
+            done();
+        };
+        chartObj.legendSettings = {
+            position: 'Bottom', alignment: 'Center',
+            width: '240', margin: { top: 20, bottom: 30, right: 20, left: 40 }
+        };
+        chartObj.loaded = loaded;
+        chartObj.refresh();
+    });
+    it('Left Position with margin', function (done) {
+        loaded = function (args) {
+            chartObj.loaded = null;
+            legendElement = document.getElementById(legendId + '_element');
+            expect(parseInt(legendElement.getAttribute('x'), 10) == 50);
+            done();
+        };
+        chartObj.legendSettings = {
+            position: 'Left', alignment: 'Center',
+            width: '240', margin: { top: 20, bottom: 30, right: 20, left: 40 }
+        };
+        chartObj.loaded = loaded;
+        chartObj.refresh();
+    });
+    it('Right Position with margin', function (done) {
+        loaded = function (args) {
+            chartObj.loaded = null;
+            legendElement = document.getElementById(legendId + '_element');
+            expect(parseInt(legendElement.getAttribute('x'), 10) == 530);
+            done();
+        };
+        chartObj.legendSettings = {
+            position: 'Right', alignment: 'Center',
+            width: '240', margin: { top: 20, bottom: 30, right: 20, left: 40 }
+        };
+        chartObj.loaded = loaded;
+        chartObj.refresh();
+    });
+    it('Top Position with margin', function (done) {
+        loaded = function (args) {
+            chartObj.loaded = null;
+            legendElement = document.getElementById(legendId + '_element');
+            expect(parseInt(legendElement.getAttribute('y'), 10) == 66 );
+            done();
+        };
+        chartObj.legendSettings = {
+            position: 'Top', alignment: 'Center',
+            width: '240', margin: { top: 20, bottom: 30, right: 20, left: 40 }
+        };
+        chartObj.loaded = loaded;
+        chartObj.refresh();
+    });
+    it('Top Position with margin', function (done) {
+        loaded = function (args) {
+            chartObj.loaded = null;
+            legendElement = document.getElementById(legendId + '_element');
+            expect(parseInt(legendElement.getAttribute('y'), 10) == 20 );
+            expect(parseInt(legendElement.getAttribute('x'), 10) == 200 );
+            done();
+        };
+        chartObj.legendSettings = {
+            position: 'Custom', location: { x: 200, y: 20 },
+            width: '240', margin: { top: 20, bottom: 30, right: 20, left: 40 }
+        };
+        chartObj.loaded = loaded;
+        chartObj.refresh();
+    });
 });

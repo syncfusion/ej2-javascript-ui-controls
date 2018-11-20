@@ -658,9 +658,11 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'cssClass':
                     if (oldProp.cssClass) {
-                        wrapper.classList.remove(oldProp.cssClass);
+                        removeClass([wrapper], oldProp.cssClass.split(' '));
                     }
-                    wrapper.classList.add(newProp.cssClass);
+                    if (newProp.cssClass) {
+                        addClass([wrapper], newProp.cssClass.split(' '));
+                    }
                     break;
                 case 'enableRtl':
                     if (newProp.enableRtl) {
@@ -1008,7 +1010,9 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
                     if (oldProp.cssClass) {
                         removeClass([label], oldProp.cssClass.split(' '));
                     }
-                    addClass([label], newProp.cssClass.split(' '));
+                    if (newProp.cssClass) {
+                        addClass([label], newProp.cssClass.split(' '));
+                    }
                     break;
                 case 'enableRtl':
                     if (newProp.enableRtl) {
@@ -1358,9 +1362,11 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'cssClass':
                     if (oldProp.cssClass) {
-                        wrapper.classList.remove(oldProp.cssClass);
+                        removeClass([wrapper], oldProp.cssClass.split(' '));
                     }
-                    wrapper.classList.add(newProp.cssClass);
+                    if (newProp.cssClass) {
+                        addClass([wrapper], newProp.cssClass.split(' '));
+                    }
                     break;
             }
         }

@@ -156,52 +156,6 @@ $schedule-popup-overlay-bg-color: #383838;
 $schedule-val-error-color: #f44336;
 $schedule-val-error-bg-color: #fcdbe4;
 
-$schedule-menu-icon: '\e99a';
-$schedule-prev-icon: '\e937';
-$schedule-next-icon: '\e956';
-$schedule-add-icon: '\e963';
-$schedule-today-icon: '\e322';
-$schedule-down-arrow-icon: '\e969';
-$schedule-day-icon: '\e31b';
-$schedule-week-icon: '\e315';
-$schedule-work-week-icon: '\e314';
-$schedule-month-icon: '\e93c';
-$schedule-agenda-icon: '\e31d';
-$schedule-month-agenda-icon: '\e313';
-$schedule-popup-down-icon: '\e984';
-$schedule-popup-up-icon: '\e984';
-$schedule-rtl-prev-icon: '\e956';
-$schedule-rtl-next-icon: '\e937';
-$schedule-close-icon: '\e7fc';
-$schedule-recurrence-icon: '\e308';
-$schedule-recurrence-edit-icon: '\e30a';
-$schedule-event-up-icon: '\e306';
-$schedule-event-down-icon: '\e304';
-$schedule-event-left-icon: '\e302';
-$schedule-event-right-icon: '\e300';
-$schedule-all-day-event-icon: '\e916';
-$schedule-select-event-popup-edit-icon: '\e891';
-$schedule-select-event-popup-delete-icon: '\e94a';
-$schedule-select-event-popup-close-icon: '\e7fc';
-$schedule-select-event-popup-date-time-icon: '\e20c';
-$schedule-select-event-popup-calendar-icon: '\e30c';
-$schedule-select-event-popup-event-zone-icon: '\e30e';
-$schedule-select-event-popup-event-note-icon: '\e30d';
-$schedule-rtl-event-left-icon: '\e300';
-$schedule-rtl-event-right-icon: '\e302';
-$schedule-tooltip-close-icon: '\e7fc';
-$schedule-dialog-back-icon: '\e977';
-$schedule-dialog-save-icon: '\e98e';
-$schedule-dialog-recurrence-edit-icon: '\e944';
-$schedule-dialog-rtl-back-icon: '\e85f';
-$schedule-select-event-popup-resource-icon: '\e424';
-$schedule-quick-popup-date-time-icon: '\e421';
-$schedule-tree-icon: '\e22f';
-$schedule-timeline-day-icon: '\ea85';
-$schedule-timeline-week-icon: '\ea88';
-$schedule-timeline-work-week-icon: '\ea8b';
-$schedule-timeline-month-icon: '\ea8e';
-
 @mixin tbar-btn-animation {
   content: '';
 }
@@ -209,169 +163,166 @@ $schedule-timeline-month-icon: '\ea8e';
 @mixin tbar-btn-animation-after {
   content: '';
 }
-
-@include export-module('schedule-icons') {
-  /*! schedule component icons */
+@include export-module('schedule-bootstrap-icons') {
   .e-schedule {
     .e-schedule-toolbar {
       & .e-icon-prev::before {
-        content: $schedule-prev-icon;
-        }
+        content: '\e990';
+      }
 
       & .e-icon-next::before {
-        content: $schedule-next-icon;
-        }
+        content: '\e207';
+      }
 
       & .e-icon-add::before {
-        content: $schedule-add-icon;
-        }
+        content: '\e95c';
+      }
 
       & .e-icon-today::before {
-        content: $schedule-today-icon;
-        }
+        content: '\e312';
+      }
 
       & .e-icon-down-arrow::before {
-        content: $schedule-down-arrow-icon;
-        }
+        content: '\e968';
+      }
 
       & .e-icon-day::before {
-        content: $schedule-day-icon;
-        }
+        content: '\e318';
+      }
 
       & .e-icon-week::before {
-        content: $schedule-week-icon;
-        }
+        content: '\e320';
+      }
 
       & .e-icon-workweek::before {
-        content: $schedule-work-week-icon;
-        }
+        content: '\e319';
+      }
 
       & .e-icon-month::before {
-        content: $schedule-month-icon;
-        }
+        content: '\e960';
+      }
 
       & .e-icon-month-agenda::before {
-        content: $schedule-month-agenda-icon;
-        }
+        content: '\e31c';
+      }
 
       & .e-icon-agenda::before {
-        content: $schedule-agenda-icon;
-        }
+        content: '\e31a';
+      }
 
       & .e-icon-timeline-day::before {
-        content: $schedule-timeline-day-icon;
-        }
+        content: '\ea87';
+      }
 
       & .e-icon-timeline-week::before {
-        content: $schedule-timeline-week-icon;
-        }
+        content: '\ea8a';
+      }
 
       & .e-icon-timeline-workweek::before {
-        content: $schedule-timeline-work-week-icon;
-        }
+        content: '\ea8d';
+      }
 
       & .e-icon-timeline-month::before {
-        content: $schedule-timeline-month-icon;
-        }
+        content: '\ea8f';
+      }
 
-      /*! toolbar icons */
       &.e-toolbar {
         .e-popup-down-icon::before {
-          content: $schedule-popup-down-icon;
+          content: '\e936';
         }
 
         .e-popup-up-icon::before {
-          content: $schedule-popup-up-icon;
+          content: '\e936';
         }
       }
 
       &.e-rtl {
         & .e-icon-prev::before {
-          content: $schedule-rtl-prev-icon;
-          }
+          content: '\e207';
+        }
 
         & .e-icon-next::before {
-          content: $schedule-rtl-next-icon;
-          }
+          content: '\e990';
+        }
       }
     }
 
     .e-schedule-resource-toolbar {
       & .e-icon-menu::before {
-        content: $schedule-menu-icon;
+        content: '\e941';
       }
 
       & .e-icon-next::before {
-        content: $schedule-next-icon;
+        content: '\e207';
       }
     }
 
     .e-close-icon::before {
-      content: $schedule-close-icon;
+      content: '\e96c';
     }
 
     .e-appointment {
       .e-recurrence-icon::before {
-        content: $schedule-recurrence-icon;
+        content: '\e308';
       }
 
       .e-recurrence-edit-icon::before {
-        content: $schedule-recurrence-edit-icon;
+        content: '\e30a';
       }
 
       .e-up-icon::before {
-        content: $schedule-event-up-icon;
+        content: '\e306';
       }
 
       .e-down-icon::before {
-        content: $schedule-event-down-icon;
+        content: '\e304';
       }
 
       .e-left-icon::before {
-        content: $schedule-event-left-icon;
+        content: '\e302';
       }
 
       .e-right-icon::before {
-        content: $schedule-event-right-icon;
+        content: '\e300';
       }
     }
 
     .e-vertical-view .e-all-day-cells {
       .e-all-day-appointment-section::before {
-        content: $schedule-all-day-event-icon;
+        content: '\e95d';
       }
     }
 
     &.e-rtl {
       .e-appointment {
         & .e-left-icon::before {
-          content: $schedule-rtl-event-left-icon;
+          content: '\e300';
         }
 
         & .e-right-icon::before {
-          content: $schedule-rtl-event-right-icon;
+          content: '\e302';
         }
       }
     }
 
     .e-resource-tree-icon::before {
-      content: $schedule-tree-icon;
+      content: '\e230';
     }
   }
 
   .e-schedule-dialog.e-device {
     .e-back-icon::before {
-      content: $schedule-dialog-back-icon;
+      content: '\e828';
     }
 
     .e-save-icon::before {
-      content: $schedule-dialog-save-icon;
+      content: '\e964';
     }
 
     .e-recurrence-container {
       .e-recurrence-edit-button {
         .e-recurrence-edit.e-icons::before {
-          content: $schedule-dialog-recurrence-edit-icon;
+          content: '\e944';
         }
       }
     }
@@ -379,48 +330,49 @@ $schedule-timeline-month-icon: '\ea8e';
 
   .e-schedule-dialog.e-device.e-rtl {
     .e-back-icon::before {
-      content: $schedule-dialog-rtl-back-icon;
+      content: '\e84d';
     }
   }
 
   .e-quick-popup-wrapper {
     .e-edit-icon::before {
-      content: $schedule-select-event-popup-edit-icon;
+      content: '\e944';
     }
 
     .e-delete-icon::before {
-      content: $schedule-select-event-popup-delete-icon;
+      content: '\e94a';
     }
 
     .e-close-icon::before {
-      content: $schedule-close-icon;
+      content: '\e96c';
     }
 
     .e-time-icon::before {
-      content: $schedule-select-event-popup-date-time-icon;
+      content: '\e93e';
     }
 
     .e-location-icon::before {
-      content: $schedule-select-event-popup-calendar-icon;
+      content: '\e30c';
     }
 
     .e-time-zone-icon::before {
-      content: $schedule-select-event-popup-event-zone-icon;
+      content: '\e30e';
     }
 
     .e-description-icon::before {
-      content: $schedule-select-event-popup-event-note-icon;
+      content: '\e30d';
     }
 
     .e-resource-icon::before {
-      content: $schedule-select-event-popup-resource-icon;
+      content: '\e426';
     }
 
     .e-date-time-icon::before {
-      content: $schedule-quick-popup-date-time-icon;
+      content: '\e423';
     }
   }
 }
+
 @include export-module('schedule-layout') {
   /*! schedule component layout */
 
@@ -951,6 +903,10 @@ $schedule-timeline-month-icon: '\ea8e';
       &.e-event-action {
         opacity: .4;
       }
+    }
+
+    .e-read-only {
+      opacity: .8;
     }
 
     &.e-event-action .e-appointment:not(.e-schedule-event-clone) {
@@ -1972,6 +1928,13 @@ $schedule-timeline-month-icon: '\ea8e';
       }
     }
 
+    .e-virtual-scroll {
+      .e-content-table {
+        position: absolute;
+        transform: translateY(0);
+      }
+    }
+
     &.e-rtl {
       .e-timeline-view,
       .e-timeline-month-view {
@@ -2003,6 +1966,11 @@ $schedule-timeline-month-icon: '\ea8e';
       .e-timeline-month-view {
         .e-date-header-wrap {
           font-size: $schedule-date-header-wrap-device-font-size;
+        }
+
+        .e-date-header-wrap td {
+          border-left-width: 0;
+          border-right-width: 0;
         }
 
         .e-content-wrap {
@@ -2648,6 +2616,10 @@ $schedule-timeline-month-icon: '\ea8e';
       display: none;
     }
 
+    .e-icon-disable {
+      opacity: .5;
+    }
+
     .e-dlg-header-content {
       padding-bottom: 8px;
     }
@@ -3215,7 +3187,6 @@ $schedule-timeline-month-icon: '\ea8e';
           .e-delete-icon,
           .e-close-icon {
             font-size: 11px;
-            line-height: 0;
           }
 
           .e-delete:disabled {
@@ -3408,12 +3379,6 @@ $schedule-timeline-month-icon: '\ea8e';
           }
         }
 
-        .e-header-icon-wrapper .e-close {
-          .e-close-icon {
-            font-size: 12px;
-          }
-        }
-
         .e-header-icon-wrapper .e-edit,
         .e-header-icon-wrapper .e-delete,
         .e-header-icon-wrapper .e-close {
@@ -3513,10 +3478,10 @@ $schedule-timeline-month-icon: '\ea8e';
 
     &.e-device {
       .e-event-popup .e-popup-header {
-        .e-header-icon-wrapper .e-close {
-          .e-close-icon {
-            font-size: 14px;
-          }
+        .e-close-icon,
+        .e-edit-icon,
+        .e-delete-icon {
+          font-size: 14px;
         }
       }
 

@@ -38,9 +38,9 @@ Following list of components are available in the package
 
 These components are available in following list of:
 
-1.	[Angular](https://github.com/syncfusion/ej2-ng-popups?utm_source=npm&utm_campaign=popup)
-2.	[React](https://github.com/syncfusion/ej2-react-popups?utm_source=npm&utm_campaign=popup)
-3.	[Vue](https://github.com/syncfusion/ej2-vue-popups?utm_source=npm&utm_campaign=popup)
+1.	[Angular](https://github.com/syncfusion/ej2-angular-ui-components?utm_source=npm&utm_campaign=popup)
+2.	[React](https://github.com/syncfusion/ej2-react-ui-components?utm_source=npm&utm_campaign=popup)
+3.	[Vue](https://github.com/syncfusion/ej2-vue-ui-components?utm_source=npm&utm_campaign=popup)
 4.	[ASP.NET Core](https://www.syncfusion.com/aspnet-core-ui-controls/)
 5.	[ASP.NET MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls/)
 6.	[JavaScript (ES5)](https://www.syncfusion.com/javascript-ui-controls/)
@@ -57,19 +57,19 @@ These components are available in following list of:
 ## Key Features
 
 ## Dialog
-*	[Modal](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=dialog#/material/dialog/modal.html) - Displays the important information to users.
+*	[Modal](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=dialog/#/material/dialog/modal-dialog.html) - Displays the important information to users.
 *	[Positioning](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=dialog#/material/dialog/position.html) - Supports to customize its display position.
 *	[Animation](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=dialog#/material/dialog/animation.html) - Offers to set animation effects on open and close the dialog.
 *	[Template](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=dialog#/material/dialog/template.html) - Provides an option to customize its header and footer.
-*	[Built-in buttons](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=dialog#/material/dialog/basic.html) - Provides a built-in support to add buttons to its properties.
+*	[Built-in buttons](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=dialog#/material/dialog/default.html) - Provides a built-in support to add buttons to its properties.
 
 ## Tooltip
 
 *	[Positions](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=tooltip#/material/tooltip/default.html) - Allows you to display the tooltip in 12 different positions.
 *	[Animation](https://ej2.syncfusion.com/products/typescript/tooltip/animation/?utm_source=npm&utm_campaign=tooltip) - Supports animation effects while showing/hiding the tooltip.
-*	[Content](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=tooltip#/material/tooltip/ajaxcontent.html) - Assigns with static text, template, or loaded dynamically via AJAX.
+*	[Content](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=tooltip/#/material/tooltip/ajax-content.html) - Assigns with static text, template, or loaded dynamically via AJAX.
 *	[Opening modes](https://ej2.syncfusion.com/products/typescript/tooltip/show-hide/?utm_source=npm&utm_campaign=tooltip) - Supports four opening modes such as hover, click, focus, and custom.
-*	[Smart positioning](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=tooltip#/material/tooltip/smartposition.html) - Supports auto tip positioning.
+*	[Smart positioning](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=tooltip/#/material/tooltip/smart-position.html) - Supports auto tip positioning.
 *	[Mouse trail](https://ej2.syncfusion.com/products/typescript/tooltip/customization/?utm_source=npm&utm_campaign=tooltip) - Moves along with mouse pointer using the mouse trailing option.
 *	[Sticky mode](https://ej2.syncfusion.com/products/typescript/tooltip/show-hide/?utm_source=npm&utm_campaign=tooltip) - Opens in sticky mode, and allows you to close/hide the Tooltip manually.
 

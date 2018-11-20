@@ -153,28 +153,28 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
      * @event
      */
     @Event()
-    public change: ChangedEventArgs;
+    public change: EmitType<ChangedEventArgs>;
 
     /**
      * Triggers when the TextBox has focus-out.
      * @event
      */
     @Event()
-    public blur: FocusOutEventArgs;
+    public blur: EmitType<FocusOutEventArgs>;
 
     /**
      * Triggers when the TextBox gets focus.
      * @event
      */
     @Event()
-    public focus: FocusInEventArgs;
+    public focus: EmitType<FocusInEventArgs>;
 
     /**
      * Triggers each time when the value of TextBox has changed.
      * @event
      */
     @Event()
-    public input: InputEventArgs;
+    public input: EmitType<InputEventArgs>;
 
     constructor(options?: TextBoxModel, element?: string | HTMLInputElement) {
         super(options, <HTMLInputElement | string>element);

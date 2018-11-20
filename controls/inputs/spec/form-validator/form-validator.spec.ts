@@ -1627,6 +1627,21 @@ describe('FormValidator # ', () => {
                 expect(formObj.validate('minElement')).toEqual(true);
             });
 
+            it('testing for valid min value-case 3 # ', () => {
+                setInputValue(formObj, 'minElement', '1,000');
+                expect(formObj.validate('minElement')).toEqual(true);
+            });
+
+            it('testing for valid min value-case 4 # ', () => {
+                setInputValue(formObj, 'minElement', '1,000.00');
+                expect(formObj.validate('minElement')).toEqual(true);
+            });
+
+            it('testing for valid min value-case 5 # ', () => {
+                setInputValue(formObj, 'minElement', '1,000,2345,23452.00');
+                expect(formObj.validate('minElement')).toEqual(true);
+            });
+
             it('testing for invalid max value # ', () => {
                 setInputValue(formObj, 'maxElement', '6');
                 expect(formObj.validate('maxElement')).toEqual(false);

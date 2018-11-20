@@ -437,6 +437,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             (this.palettes[index] as Palette).isInteraction = true;
         };
         this.element.appendChild(accordionDiv);
+        let measureElement: string = 'measureElement';
+        if (window[measureElement]) {
+            window[measureElement] = null;
+        }
         createMeasureElements();
         this.unWireEvents();
         this.wireEvents();

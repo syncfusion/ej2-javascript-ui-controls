@@ -16759,7 +16759,7 @@ class DiagramEventHandler {
             if (this.tool && (!(this.tool instanceof PolygonDrawingTool || this.tool instanceof PolyLineDrawingTool) ||
                 ((this.tool instanceof PolygonDrawingTool || this.tool instanceof PolyLineDrawingTool)
                     && evt.detail === 2))) {
-                if (!this.isForeignObject(evt.target)) {
+                if (!this.isForeignObject(evt.target) && this.isMouseDown) {
                     document.getElementById(this.diagram.element.id + 'content').focus();
                 }
                 if (!this.inAction && evt.which !== 3) {
@@ -20360,7 +20360,7 @@ class CommandHandler {
         this.expandCollapse(node, expand, this.diagram);
         node.isExpanded = expand;
         this.diagram.layout.fixedNode = node.id;
-        if (this.diagram.layoutAnimateModule && this.diagram.layout.enableAnimation) {
+        if (this.diagram.layoutAnimateModule && this.diagram.layout.enableAnimation && this.diagram.organizationalChartModule) {
             this.diagram.organizationalChartModule.isAnimation = true;
         }
         this.diagram.preventNodesUpdate = true;
@@ -20368,10 +20368,23 @@ class CommandHandler {
         objects = this.diagram.doLayout();
         this.diagram.preventNodesUpdate = false;
         this.diagram.preventConnectorsUpdate = false;
-        if (this.diagram.layoutAnimateModule && this.diagram.layout.enableAnimation) {
+        if (this.diagram.layoutAnimateModule && this.diagram.layout.enableAnimation && this.diagram.organizationalChartModule) {
             this.layoutAnimateModule.expand(this.diagram.organizationalChartModule.isAnimation, objects, node, this.diagram);
         }
         return objects;
+    }
+    getparentexpand(target, diagram, visibility, connector) {
+        for (let i = 0; i < target.inEdges.length; i++) {
+            let newConnector = diagram.nameTable[target.inEdges[i]];
+            let previousNode = diagram.nameTable[newConnector.sourceID];
+            if (previousNode.isExpanded && !visibility && previousNode.id !== connector.sourceID && newConnector.visible) {
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
+        return true;
     }
     /**
      * Setinterval and Clear interval for layout animation
@@ -20381,22 +20394,25 @@ class CommandHandler {
         for (let i = 0; i < source.outEdges.length; i++) {
             let connector = diagram.nameTable[source.outEdges[i]];
             let target = diagram.nameTable[connector.targetID];
+            let value = this.getparentexpand(target, diagram, visibility, connector);
             connector.visible = visibility;
-            if (target.isExpanded) {
-                this.expandCollapse(target, visibility, diagram);
-            }
             let oldValues = {
                 visible: target.visible,
                 style: { opacity: target.style.opacity }
             };
-            target.visible = visibility;
-            target.style.opacity = (this.diagram.layoutAnimateModule &&
-                this.diagram.layout.enableAnimation && visibility) ? 0.1 : target.style.opacity;
             let newValues = {
                 visible: target.visible,
                 style: { opacity: target.style.opacity }
             };
-            diagram.nodePropertyChange(target, oldValues, newValues);
+            if (value) {
+                if (target.isExpanded) {
+                    this.expandCollapse(target, visibility, diagram);
+                }
+                target.visible = visibility;
+                target.style.opacity = (this.diagram.layoutAnimateModule &&
+                    this.diagram.layout.enableAnimation && visibility) ? 0.1 : target.style.opacity;
+                diagram.nodePropertyChange(target, oldValues, newValues);
+            }
             diagram.connectorPropertyChange(connector, oldValues, newValues);
         }
     }
@@ -22129,6 +22145,10 @@ class Diagram extends Component {
         this.serviceLocator = new ServiceLocator;
         this.initializeServices();
         this.setCulture();
+        let measureElement = 'measureElement';
+        if (window[measureElement]) {
+            window[measureElement] = null;
+        }
         this.initDiagram();
         this.initViews();
         this.unWireEvents();
@@ -37094,7 +37114,9 @@ class CrossReduction {
                     let rank = model.ranks[j];
                     for (let k = 0; k < rank.length; k++) {
                         let cell = rank[k];
-                        this.nestedBestRanks[j][cell.temp[0]] = cell;
+                        if (this.nestedBestRanks[j][cell.temp[0]]) {
+                            this.nestedBestRanks[j][cell.temp[0]] = cell;
+                        }
                     }
                 }
             }
@@ -37512,6 +37534,10 @@ class SymbolPalette extends Component {
             this.palettes[index].isInteraction = true;
         };
         this.element.appendChild(accordionDiv);
+        let measureElement = 'measureElement';
+        if (window[measureElement]) {
+            window[measureElement] = null;
+        }
         createMeasureElements();
         this.unWireEvents();
         this.wireEvents();

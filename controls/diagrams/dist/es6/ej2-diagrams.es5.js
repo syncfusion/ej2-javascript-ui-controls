@@ -17568,7 +17568,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
             if (this.tool && (!(this.tool instanceof PolygonDrawingTool || this.tool instanceof PolyLineDrawingTool) ||
                 ((this.tool instanceof PolygonDrawingTool || this.tool instanceof PolyLineDrawingTool)
                     && evt.detail === 2))) {
-                if (!this.isForeignObject(evt.target)) {
+                if (!this.isForeignObject(evt.target) && this.isMouseDown) {
                     document.getElementById(this.diagram.element.id + 'content').focus();
                 }
                 if (!this.inAction && evt.which !== 3) {
@@ -21221,7 +21221,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         this.expandCollapse(node, expand, this.diagram);
         node.isExpanded = expand;
         this.diagram.layout.fixedNode = node.id;
-        if (this.diagram.layoutAnimateModule && this.diagram.layout.enableAnimation) {
+        if (this.diagram.layoutAnimateModule && this.diagram.layout.enableAnimation && this.diagram.organizationalChartModule) {
             this.diagram.organizationalChartModule.isAnimation = true;
         }
         this.diagram.preventNodesUpdate = true;
@@ -21229,10 +21229,23 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         objects = this.diagram.doLayout();
         this.diagram.preventNodesUpdate = false;
         this.diagram.preventConnectorsUpdate = false;
-        if (this.diagram.layoutAnimateModule && this.diagram.layout.enableAnimation) {
+        if (this.diagram.layoutAnimateModule && this.diagram.layout.enableAnimation && this.diagram.organizationalChartModule) {
             this.layoutAnimateModule.expand(this.diagram.organizationalChartModule.isAnimation, objects, node, this.diagram);
         }
         return objects;
+    };
+    CommandHandler.prototype.getparentexpand = function (target, diagram, visibility, connector) {
+        for (var i = 0; i < target.inEdges.length; i++) {
+            var newConnector = diagram.nameTable[target.inEdges[i]];
+            var previousNode = diagram.nameTable[newConnector.sourceID];
+            if (previousNode.isExpanded && !visibility && previousNode.id !== connector.sourceID && newConnector.visible) {
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
+        return true;
     };
     /**
      * Setinterval and Clear interval for layout animation
@@ -21242,22 +21255,25 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         for (var i = 0; i < source.outEdges.length; i++) {
             var connector = diagram.nameTable[source.outEdges[i]];
             var target = diagram.nameTable[connector.targetID];
+            var value = this.getparentexpand(target, diagram, visibility, connector);
             connector.visible = visibility;
-            if (target.isExpanded) {
-                this.expandCollapse(target, visibility, diagram);
-            }
             var oldValues = {
                 visible: target.visible,
                 style: { opacity: target.style.opacity }
             };
-            target.visible = visibility;
-            target.style.opacity = (this.diagram.layoutAnimateModule &&
-                this.diagram.layout.enableAnimation && visibility) ? 0.1 : target.style.opacity;
             var newValues = {
                 visible: target.visible,
                 style: { opacity: target.style.opacity }
             };
-            diagram.nodePropertyChange(target, oldValues, newValues);
+            if (value) {
+                if (target.isExpanded) {
+                    this.expandCollapse(target, visibility, diagram);
+                }
+                target.visible = visibility;
+                target.style.opacity = (this.diagram.layoutAnimateModule &&
+                    this.diagram.layout.enableAnimation && visibility) ? 0.1 : target.style.opacity;
+                diagram.nodePropertyChange(target, oldValues, newValues);
+            }
             diagram.connectorPropertyChange(connector, oldValues, newValues);
         }
     };
@@ -23074,6 +23090,10 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         this.serviceLocator = new ServiceLocator;
         this.initializeServices();
         this.setCulture();
+        var measureElement = 'measureElement';
+        if (window[measureElement]) {
+            window[measureElement] = null;
+        }
         this.initDiagram();
         this.initViews();
         this.unWireEvents();
@@ -38182,7 +38202,9 @@ var CrossReduction = /** @__PURE__ @class */ (function () {
                     var rank = model.ranks[j];
                     for (var k = 0; k < rank.length; k++) {
                         var cell = rank[k];
-                        this.nestedBestRanks[j][cell.temp[0]] = cell;
+                        if (this.nestedBestRanks[j][cell.temp[0]]) {
+                            this.nestedBestRanks[j][cell.temp[0]] = cell;
+                        }
                     }
                 }
             }
@@ -38630,6 +38652,10 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
             _this.palettes[index].isInteraction = true;
         };
         this.element.appendChild(accordionDiv);
+        var measureElement = 'measureElement';
+        if (window[measureElement]) {
+            window[measureElement] = null;
+        }
         createMeasureElements();
         this.unWireEvents();
         this.wireEvents();

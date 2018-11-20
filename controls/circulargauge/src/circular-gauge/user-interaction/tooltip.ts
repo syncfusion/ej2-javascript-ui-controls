@@ -113,21 +113,21 @@ export class GaugeTooltip {
                     let pointerRect: ClientRect = target.getBoundingClientRect();
                     let size: Size = getElementSize(this.tooltip.template, this.gauge, this.tooltipEle);
                     let width: number = Math.abs(svgRect.width - pointerRect.width) - Math.abs(pointerRect.left - svgRect.left);
-                    if (size.height > Math.abs(svgRect.height - location.y) - 20) {
-                        location.y += size.height / 2;
+                    if (size.height > Math.abs(svgRect.height - tooltipArgs.location.y) - 20) {
+                        tooltipArgs.location.y += size.height / 2;
                     }
                     if (size.width > width) {
-                        location.x -= Math.abs((svgRect.left + svgRect.width) - (location.x + size.width));
+                        tooltipArgs.location.x -= Math.abs((svgRect.left + svgRect.width) - (tooltipArgs.location.x + size.width));
                         this.tooltipRect = rect;
                     } else {
                         this.tooltipRect = rect;
-                        this.findPosition(rect, angle, content, location);
+                        this.findPosition(rect, angle, content, tooltipArgs.location);
                     }
                 } else {
-                    this.findPosition(rect, angle, content, location);
+                    this.findPosition(rect, angle, content, tooltipArgs.location);
                 }
             } else {
-                location = getMousePosition(pageX, pageY, this.gauge.svgObject);
+                tooltipArgs.location = getMousePosition(pageX, pageY, this.gauge.svgObject);
                 this.tooltipRect = rect;
             }
             if (!tooltipArgs.cancel && !samePointerEle) {
@@ -147,7 +147,9 @@ export class GaugeTooltip {
                     theme: this.gauge.theme
                 });
                 this.svgTooltip.appendTo(this.tooltipEle);
-                this.pointerEle = target;
+                if (template && Math.abs(pageY - this.tooltipEle.getBoundingClientRect().top) <= 0) {
+                    this.tooltipEle.style.top = (parseFloat(this.tooltipEle.style.top) + 20) + 'px';
+                }
             }
         } else {
             this.removeTooltip();
@@ -253,7 +255,7 @@ export class GaugeTooltip {
         return 'Tooltip';
     }
     /**
-     * To destroy the tooltip. 
+     * To destroy the tooltip.
      * @return {void}
      * @private
      */

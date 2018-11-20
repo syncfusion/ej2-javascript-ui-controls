@@ -23,9 +23,9 @@ Following list of components are available in the package
 * Accordion - Vertically collapsible content panel that displays one or more panels at a time within the available space.
 
   * [Getting Started](https://ej2.syncfusion.com/documentation/accordion/getting-started.html?lang=typescript&utm_source=npm&utm_campaign=accordion)
-  * [API References](https://ej2.syncfusion.com/documentation/accordion/api-accordion.html?utm_source=npm&utm_campaign=accordion)
+  * [API References](https://ej2.syncfusion.com/documentation/api/accordion?utm_source=npm&utm_campaign=accordion)
   * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=accordion#/material/accordion/default.html)
-  * [Product Page](https://www.syncfusion.com/products/javascript/accordion)
+  * [Product Page](https://www.syncfusion.com/javascript-ui-controls/accordion)
 
 * ContextMenu - Graphical user interface that appears on the user right click/touch hold action. It has the support to provide nested level menu items.
 
@@ -44,23 +44,23 @@ Following list of components are available in the package
 * Tab - Content panel to show multiple contents in a specific space, one at a time.
 
   * [Getting Started](https://ej2.syncfusion.com/documentation/tab/getting-started.html?lang=typescript&utm_source=npm&utm_campaign=tab)
-  * [API References](https://ej2.syncfusion.com/documentation/tab/api-tab.html?utm_source=npm&utm_campaign=tab)
+  * [API References](https://ej2.syncfusion.com/documentation/api/tab?utm_source=npm&utm_campaign=tab)
   * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=tab#/material/tab/default.html)
-  * [Product Page](https://www.syncfusion.com/products/javascript/tab)
+  * [Product Page](https://www.syncfusion.com/javascript-ui-controls/tabs)
 
 * Toolbar - Displays a group of command buttons arranged horizontally.
 
   * [Getting Started](https://ej2.syncfusion.com/documentation/toolbar/getting-started.html?lang=typescript&utm_source=npm&utm_campaign=toolbar)
-  * [API References](https://ej2.syncfusion.com/documentation/toolbar/api-toolbar.html?utm_source=npm&utm_campaign=toolbar)
+  * [API References](https://ej2.syncfusion.com/documentation/api/toolbar?utm_source=npm&utm_campaign=toolbar)
   * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=toolbar#/material/toolbar/default.html)
-  * [Product Page](https://www.syncfusion.com/products/javascript/toolbar)
+  * [Product Page](https://www.syncfusion.com/javascript-ui-controls/toolbar)
 
 * TreeView - Represent hierarchical data in a tree like structure with advanced functions to edit, drag and drop, select with CheckBox and more.
 
   * [Getting Started](https://ej2.syncfusion.com/documentation/treeview/getting-started.html?lang=typescript&utm_source=npm&utm_campaign=treeview)
-  * [API References](https://ej2.syncfusion.com/documentation/treeview/api.html?lang=typescript&utm_source=npm&utm_campaign=treeview)
+  * [API References](https://ej2.syncfusion.com/documentation/api/treeview?lang=typescript&utm_source=npm&utm_campaign=treeview)
   * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=treeview#/material/treeview/default.html)
-  * [Product Page](https://www.syncfusion.com/products/javascript/treeview)
+  * [Product Page](https://www.syncfusion.com/javascript-ui-controls/treeview)
 
 * Menu - Graphical user interface that serves as navigation header for your application or site. It has the support to provide nested level menu items that can be populated from a data source such as an array of JavaScript objects.
 

@@ -56,7 +56,7 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/syncfusion/ej2-diagrams.git"
+		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls"
 	},
 	"homepage": "https://www.syncfusion.com/products/javascript/diagram",
 	"scripts": {

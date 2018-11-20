@@ -261,9 +261,11 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
                     break;
                 case 'cssClass':
                     if (oldProp.cssClass) {
-                        wrapper.classList.remove(oldProp.cssClass);
+                        removeClass([wrapper], oldProp.cssClass.split(' '));
                     }
-                    wrapper.classList.add(newProp.cssClass);
+                    if (newProp.cssClass) {
+                        addClass([wrapper], newProp.cssClass.split(' '));
+                    }
                     break;
             }
         }

@@ -89,24 +89,24 @@ export interface TextBoxModel extends ComponentModel{
      * Triggers when the content of TextBox has changed and gets focus-out.
      * @event
      */
-    change?: ChangedEventArgs;
+    change?: EmitType<ChangedEventArgs>;
 
     /**
      * Triggers when the TextBox has focus-out.
      * @event
      */
-    blur?: FocusOutEventArgs;
+    blur?: EmitType<FocusOutEventArgs>;
 
     /**
      * Triggers when the TextBox gets focus.
      * @event
      */
-    focus?: FocusInEventArgs;
+    focus?: EmitType<FocusInEventArgs>;
 
     /**
      * Triggers each time when the value of TextBox has changed.
      * @event
      */
-    input?: InputEventArgs;
+    input?: EmitType<InputEventArgs>;
 
 }

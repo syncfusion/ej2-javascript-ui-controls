@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.3.33 (2018-11-15)
+
+### CheckBox
+
+#### Bug Fixes
+
+- Add multiple classes dynamically to `cssClass` property issue fixed.
+
 ## 16.2.49 (2018-08-21)
 
 ### Common

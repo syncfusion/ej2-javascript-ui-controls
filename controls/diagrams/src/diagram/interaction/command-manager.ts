@@ -2788,7 +2788,7 @@ export class CommandHandler {
         this.expandCollapse(node, expand, this.diagram);
         node.isExpanded = expand;
         this.diagram.layout.fixedNode = node.id;
-        if (this.diagram.layoutAnimateModule && this.diagram.layout.enableAnimation) {
+        if (this.diagram.layoutAnimateModule && this.diagram.layout.enableAnimation && this.diagram.organizationalChartModule) {
             this.diagram.organizationalChartModule.isAnimation = true;
         }
         this.diagram.preventNodesUpdate = true;
@@ -2797,35 +2797,52 @@ export class CommandHandler {
         this.diagram.preventNodesUpdate = false;
         this.diagram.preventConnectorsUpdate = false;
 
-        if (this.diagram.layoutAnimateModule && this.diagram.layout.enableAnimation) {
+        if (this.diagram.layoutAnimateModule && this.diagram.layout.enableAnimation && this.diagram.organizationalChartModule) {
             this.layoutAnimateModule.expand(this.diagram.organizationalChartModule.isAnimation, objects, node, this.diagram);
         }
         return objects;
     }
+    private getparentexpand(target: Node, diagram: Diagram, visibility: boolean, connector: ConnectorModel): boolean {
+        for (let i: number = 0; i < target.inEdges.length; i++) {
+            let newConnector: ConnectorModel = diagram.nameTable[target.inEdges[i]];
+            let previousNode: NodeModel = diagram.nameTable[newConnector.sourceID];
+            if (previousNode.isExpanded && !visibility && previousNode.id !== connector.sourceID && newConnector.visible) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+        return true;
+    }
     /**
-     * Setinterval and Clear interval for layout animation 
+     * Setinterval and Clear interval for layout animation
      */
     /** @private */
     public expandCollapse(source: Node, visibility: boolean, diagram: Diagram): void {
         for (let i: number = 0; i < source.outEdges.length; i++) {
             let connector: ConnectorModel = diagram.nameTable[source.outEdges[i]];
             let target: Node = diagram.nameTable[connector.targetID];
+            let value: boolean = this.getparentexpand(target, diagram, visibility, connector);
             connector.visible = visibility;
-            if (target.isExpanded) {
-                this.expandCollapse(target, visibility, diagram);
-            }
             let oldValues: (NodeModel | ConnectorModel) = {
                 visible: target.visible,
                 style: { opacity: target.style.opacity }
             };
-            target.visible = visibility;
-            target.style.opacity = (this.diagram.layoutAnimateModule &&
-                this.diagram.layout.enableAnimation && visibility) ? 0.1 : target.style.opacity;
             let newValues: (NodeModel | ConnectorModel) = {
                 visible: target.visible,
                 style: { opacity: target.style.opacity }
             };
-            diagram.nodePropertyChange(target as Node, oldValues as Node, newValues as Node);
+            if (value) {
+                if (target.isExpanded) {
+                    this.expandCollapse(target, visibility, diagram);
+                }
+
+                target.visible = visibility;
+                target.style.opacity = (this.diagram.layoutAnimateModule &&
+                    this.diagram.layout.enableAnimation && visibility) ? 0.1 : target.style.opacity;
+
+                diagram.nodePropertyChange(target as Node, oldValues as Node, newValues as Node);
+            }
             diagram.connectorPropertyChange(connector as Connector, oldValues as Connector, newValues as Connector);
         }
     }

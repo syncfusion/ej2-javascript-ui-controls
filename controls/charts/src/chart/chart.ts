@@ -2566,6 +2566,17 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         return true;
     }
     /**
+     * Get visible series by index
+     */
+    private getVisibleSeries(visibleSeries: Series[], index: number): Series {
+        for (let series of visibleSeries) {
+            if (index === series.index) {
+                return series;
+            }
+        }
+        return null;
+    }
+    /**
      * Called internally if any of the property value changed.
      * @private
      */
@@ -2645,6 +2656,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                             series = newProp.series[i];
                             if (series && (series.dataSource || series.xName || series.yName || series.size ||
                                 series.high || series.low || series.open || series.close)) {
+                                extend(this.getVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }
                         }

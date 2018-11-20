@@ -374,6 +374,8 @@ describe('column menu module', () => {
                 {
                     dataSource: data,
                     allowPaging: true,
+                    allowGrouping:true,
+                    allowSorting:true,
                     pageSettings: {
                         pageSize: 10
                     },
@@ -381,7 +383,8 @@ describe('column menu module', () => {
                     showColumnMenu: true,
                     columnMenuItems: ['ColumnChooser'],
                     columns: [
-                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Left', width: 125, isPrimaryKey: true },
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Left', width: 125, isPrimaryKey: true,
+                          allowGrouping: false, allowSorting: false, allowFiltering: false },
                         { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
                         { field: 'ShipName', headerText: 'Ship Name', width: 120, showColumnMenu: false },
                         { field: 'ShipCity', headerText: 'Ship City', width: 170, showInColumnChooser: false },
@@ -395,18 +398,24 @@ describe('column menu module', () => {
         });
         it('default', () => {
             let colMenu = gridObj.columnMenuModule as any;
-            expect(colMenu.getDefault().length).toBe(3);
+            expect(colMenu.getDefault().length).toBe(7);
          });
          it('disabled status', () => {
             let colMenu = gridObj.columnMenuModule as any;
-            expect(colMenu.ensureDisabledStatus('Group')).toBe(true);
-            expect(colMenu.ensureDisabledStatus('SortAscending')).toBe(true);
+            expect(colMenu.ensureDisabledStatus('Group')).toBe(false);
+            expect(colMenu.ensureDisabledStatus('SortAscending')).toBe(false);
          });
          it('filter - null- check', () => {
             let colMenu = gridObj.columnMenuModule as any;
             expect(colMenu.appendFilter()).toBe(undefined);
          });
-
+         it('disabled status properties', () => {
+            let colMenu = gridObj.columnMenuModule as any;
+            (gridObj.columnMenuModule as any).targetColumn = (gridObj as any).columnModel[0];
+            expect(colMenu.ensureDisabledStatus('Group')).toBe(true);
+            expect(colMenu.ensureDisabledStatus('SortAscending')).toBe(true);
+            expect(colMenu.ensureDisabledStatus('Filter')).toBe(true);
+         });
         afterAll(() => {
             destroy(gridObj);
         });

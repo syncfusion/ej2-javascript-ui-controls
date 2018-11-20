@@ -254,7 +254,8 @@ export class ColumnMenu implements IAction {
         switch (item) {
             case 'Group':
                 if (!this.parent.allowGrouping || (this.parent.ensureModuleInjected(Group) && this.targetColumn
-                    && this.parent.groupSettings.columns.indexOf(this.targetColumn.field) >= 0)) {
+                    && this.parent.groupSettings.columns.indexOf(this.targetColumn.field) >= 0 ||
+                    this.targetColumn && !this.targetColumn.allowGrouping)) {
                     status = true;
                 }
                 break;
@@ -271,24 +272,29 @@ export class ColumnMenu implements IAction {
             case 'SortDescending':
             case 'SortAscending':
                 if (this.parent.allowSorting && this.parent.ensureModuleInjected(Sort)
-                    && this.parent.sortSettings.columns.length > 0 && this.targetColumn) {
+                    && this.parent.sortSettings.columns.length > 0 && this.targetColumn && this.targetColumn.allowSorting) {
                     this.parent.sortSettings.columns.forEach((ele: SortDescriptorModel) => {
                         if (ele.field === this.targetColumn.field
                             && ele.direction.toLocaleLowerCase() === item.toLocaleLowerCase().replace('sort', '')) {
                             status = true;
                         }
                     });
-                } else if (!this.parent.allowSorting || !this.parent.ensureModuleInjected(Sort)) {
+                } else if (!this.parent.allowSorting || !this.parent.ensureModuleInjected(Sort) ||
+                this.parent.allowSorting && this.targetColumn && !this.targetColumn.allowSorting) {
                     status = true;
                 }
                 break;
             case 'Filter':
-                status = !(this.parent.allowFiltering && (this.parent.filterSettings.type !== 'FilterBar')
-                    && this.parent.ensureModuleInjected(Filter));
+                if (this.parent.allowFiltering && (this.parent.filterSettings.type !== 'FilterBar')
+                && this.parent.ensureModuleInjected(Filter) && this.targetColumn && this.targetColumn.allowFiltering) {
+                    status = false;
+                } else if (this.parent.ensureModuleInjected(Filter) && this.parent.allowFiltering
+                && this.targetColumn && !this.targetColumn.allowFiltering) {
+                    status = true;
+                }
         }
         return status;
     }
-
     private columnMenuItemClick(args: ColumnMenuClickEventArgs): void {
         let item: string = this.isChooserItem(args.item) ? 'ColumnChooser' : this.getKeyFromId(args.item.id);
         switch (item) {

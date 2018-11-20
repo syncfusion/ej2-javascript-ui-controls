@@ -768,15 +768,30 @@ var Double = /** @__PURE__ @class */ (function () {
         }
         var format = this.getFormat(axis);
         var isCustom = format.match('{value}') !== null;
+        var intervalDigits = 0;
+        var formatDigits = 0;
+        if (axis.labelFormat && axis.labelFormat.indexOf('n') > -1) {
+            formatDigits = parseInt(axis.labelFormat.substring(1, axis.labelFormat.length), 10);
+        }
         axis.format = chart.intl.getNumberFormat({
             format: isCustom ? '' : format,
             useGrouping: chart.useGroupingSeparator
         });
         axis.startLabel = axis.format(axis.visibleRange.min);
         axis.endLabel = axis.format(axis.visibleRange.max);
+        if (axis.visibleRange.interval && (axis.visibleRange.interval + '').indexOf('.') >= 0) {
+            intervalDigits = (axis.visibleRange.interval + '').split('.')[1].length;
+        }
+        labelStyle = (extend({}, getValue('properties', axis.labelStyle), null, true));
         for (; tempInterval <= axis.visibleRange.max; tempInterval += axis.visibleRange.interval) {
-            labelStyle = (extend({}, getValue('properties', axis.labelStyle), null, true));
             if (withIn(tempInterval, axis.visibleRange)) {
+                triggerLabelRender(chart, tempInterval, this.formatValue(axis, isCustom, format, tempInterval), labelStyle, axis);
+            }
+        }
+        if (tempInterval && (tempInterval + '').indexOf('.') >= 0 && (tempInterval + '').split('.')[1].length > 10) {
+            tempInterval = (tempInterval + '').split('.')[1].length > (formatDigits || intervalDigits) ?
+                +tempInterval.toFixed(formatDigits || intervalDigits) : tempInterval;
+            if (tempInterval <= axis.visibleRange.max) {
                 triggerLabelRender(chart, tempInterval, this.formatValue(axis, isCustom, format, tempInterval), labelStyle, axis);
             }
         }
@@ -6186,6 +6201,9 @@ var LegendSettings = /** @__PURE__ @class */ (function (_super) {
         Complex({}, Border)
     ], LegendSettings.prototype, "border", void 0);
     __decorate$5([
+        Complex({ left: 0, right: 0, top: 0, bottom: 0 }, Margin)
+    ], LegendSettings.prototype, "margin", void 0);
+    __decorate$5([
         Property(5)
     ], LegendSettings.prototype, "shapePadding", void 0);
     __decorate$5([
@@ -6280,25 +6298,26 @@ var BaseLegend = /** @__PURE__ @class */ (function () {
      */
     BaseLegend.prototype.getLocation = function (position, alignment, legendBounds, rect, availableSize) {
         var padding = this.legend.border.width;
-        var legendHeight = legendBounds.height + padding;
-        var legendWidth = legendBounds.width + padding;
+        var legendHeight = legendBounds.height + padding + this.legend.margin.top + this.legend.margin.bottom;
+        var legendWidth = legendBounds.width + padding + this.legend.margin.left + this.legend.margin.right;
         var marginBottom = this.chart.margin.bottom;
         if (position === 'Bottom') {
             legendBounds.x = this.alignLegend(legendBounds.x, availableSize.width, legendBounds.width, alignment);
-            legendBounds.y = rect.y + (rect.height - legendHeight) + padding;
+            legendBounds.y = rect.y + (rect.height - legendHeight) + padding + this.legend.margin.top;
             subtractThickness(rect, new Thickness(0, 0, 0, legendHeight));
         }
         else if (position === 'Top') {
             legendBounds.x = this.alignLegend(legendBounds.x, availableSize.width, legendBounds.width, alignment);
-            legendBounds.y = rect.y + padding;
+            legendBounds.y = rect.y + padding + this.legend.margin.top;
             subtractThickness(rect, new Thickness(0, 0, legendHeight, 0));
         }
         else if (position === 'Right') {
-            legendBounds.x = rect.x + (rect.width - legendBounds.width);
+            legendBounds.x = rect.x + (rect.width - legendBounds.width) - this.legend.margin.right;
             legendBounds.y = rect.y + this.alignLegend(0, availableSize.height - (rect.y + marginBottom), legendBounds.height, alignment);
             subtractThickness(rect, new Thickness(0, legendWidth, 0, 0));
         }
         else if (position === 'Left') {
+            legendBounds.x = legendBounds.x + this.legend.margin.left;
             legendBounds.y = rect.y + this.alignLegend(0, availableSize.height - (rect.y + marginBottom), legendBounds.height, alignment);
             subtractThickness(rect, new Thickness(legendWidth, 0, 0, 0));
         }
@@ -8285,6 +8304,18 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         return true;
     };
     /**
+     * Get visible series by index
+     */
+    Chart.prototype.getVisibleSeries = function (visibleSeries, index) {
+        for (var _i = 0, visibleSeries_1 = visibleSeries; _i < visibleSeries_1.length; _i++) {
+            var series = visibleSeries_1[_i];
+            if (index === series.index) {
+                return series;
+            }
+        }
+        return null;
+    };
+    /**
      * Called internally if any of the property value changed.
      * @private
      */
@@ -8368,6 +8399,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
                             series = newProp.series[i];
                             if (series && (series.dataSource || series.xName || series.yName || series.size ||
                                 series.high || series.low || series.open || series.close)) {
+                                extend(this.getVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }
                         }

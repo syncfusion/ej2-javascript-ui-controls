@@ -662,7 +662,8 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
     private getErrorElement(name: string): HTMLElement {
         this.infoElement = <HTMLElement>select(this.errorElement + '.' + this.errorClass, this.inputElement.parentElement);
         if (!this.infoElement) {
-            this.infoElement = <HTMLElement>select(this.errorElement + '.' + this.errorClass + '[for="' + name + '"]', this.element);
+            this.infoElement = (<HTMLElement>select(this.errorElement + '.' + this.errorClass + '[for="' + name + '"]', this.element) ||
+                <HTMLElement>select(this.errorElement + '.' + this.errorClass + '[for="' + name + '"]'));
         }
         return this.infoElement;
     }
@@ -759,9 +760,13 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
             if (!isNaN(Number(option.value))) {
                 // Minimum rule validation for number
                 return +option.value >= option.param;
+            } else if ((option.value).indexOf(',') !== -1) {
+                let uNum: string = (option.value).replace(/,/g, '');
+                return parseFloat(uNum) >= option.param;
+            } else {
+                // Minimum rule validation for date
+                return new Date(option.value).getTime() >= new Date(JSON.parse(JSON.stringify(option.param))).getTime();
             }
-            // Minimum rule validation for date
-            return new Date(option.value).getTime() >= new Date(JSON.parse(JSON.stringify(option.param))).getTime();
         },
         regex: (option: ValidArgs): boolean => {
             return new RegExp(<string>option.param).test(option.value);

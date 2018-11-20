@@ -6724,7 +6724,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         var selectedRow = gObj.getRowByIndex(index);
         var selectedMovableRow = this.getSelectedMovableRow(index);
         var selectData = this.getCurrentBatchRecordChanges()[index];
-        if (gObj.enableVirtualization && gObj.allowGrouping && gObj.groupSettings.columns.length && selectedRow) {
+        if (gObj.enableVirtualization && selectedRow) {
             selectData = gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid')).data;
         }
         if (!this.isRowType() || !selectedRow || this.isEditing()) {
@@ -26946,7 +26946,8 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
         switch (item) {
             case 'Group':
                 if (!this.parent.allowGrouping || (this.parent.ensureModuleInjected(Group) && this.targetColumn
-                    && this.parent.groupSettings.columns.indexOf(this.targetColumn.field) >= 0)) {
+                    && this.parent.groupSettings.columns.indexOf(this.targetColumn.field) >= 0 ||
+                    this.targetColumn && !this.targetColumn.allowGrouping)) {
                     status = true;
                 }
                 break;
@@ -26963,7 +26964,7 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
             case 'SortDescending':
             case 'SortAscending':
                 if (this.parent.allowSorting && this.parent.ensureModuleInjected(Sort)
-                    && this.parent.sortSettings.columns.length > 0 && this.targetColumn) {
+                    && this.parent.sortSettings.columns.length > 0 && this.targetColumn && this.targetColumn.allowSorting) {
                     this.parent.sortSettings.columns.forEach(function (ele) {
                         if (ele.field === _this.targetColumn.field
                             && ele.direction.toLocaleLowerCase() === item.toLocaleLowerCase().replace('sort', '')) {
@@ -26971,13 +26972,20 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
                         }
                     });
                 }
-                else if (!this.parent.allowSorting || !this.parent.ensureModuleInjected(Sort)) {
+                else if (!this.parent.allowSorting || !this.parent.ensureModuleInjected(Sort) ||
+                    this.parent.allowSorting && this.targetColumn && !this.targetColumn.allowSorting) {
                     status = true;
                 }
                 break;
             case 'Filter':
-                status = !(this.parent.allowFiltering && (this.parent.filterSettings.type !== 'FilterBar')
-                    && this.parent.ensureModuleInjected(Filter));
+                if (this.parent.allowFiltering && (this.parent.filterSettings.type !== 'FilterBar')
+                    && this.parent.ensureModuleInjected(Filter) && this.targetColumn && this.targetColumn.allowFiltering) {
+                    status = false;
+                }
+                else if (this.parent.ensureModuleInjected(Filter) && this.parent.allowFiltering
+                    && this.targetColumn && !this.targetColumn.allowFiltering) {
+                    status = true;
+                }
         }
         return status;
     };

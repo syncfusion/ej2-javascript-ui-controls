@@ -61,15 +61,15 @@ Maps component is also offered in following list of frameworks.
 Product support is available for through following mediums.
 
 * Creating incident in Syncfusion [Direct-trac](https://www.syncfusion.com/support/directtrac/incidents?utm_source=npm&utm_campaign=maps) support system or [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_campaign=maps).
-* New [GitHub issues](https://github.com/syncfusion/ej2-maps/issues).
+* New [GitHub issues](https://github.com/syncfusion/ej2-javascript-ui-controls/issues).
 * Ask your query in Stack Overflow with tag `syncfusion`, `ej2`.
 
 ## License
 
-Check the license detail [here](https://github.com/syncfusion/ej2/blob/master/license?utm_source=npm&utm_campaign=maps).
+Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license?utm_source=npm&utm_campaign=maps).
 
 ## Changelog
 
-Check the changelog [here](https://github.com/syncfusion/ej2-maps/blob/master/CHANGELOG.md?utm_source=npm&utm_campaign=maps)
+Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/maps/CHANGELOG.md?utm_source=npm&utm_campaign=maps)
 
 © Copyright 2018 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

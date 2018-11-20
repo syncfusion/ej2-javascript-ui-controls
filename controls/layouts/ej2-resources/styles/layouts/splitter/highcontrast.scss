@@ -1,0 +1,306 @@
+
+
+
+// sass-lint:disable-all
+@include export-module('splitter-highcontrast-icons') {
+    .e-split-arrow-right:before {
+        content: "\e848";
+        font-family: 'e-icons';
+        font-size: 8px;
+        left: 3px;
+        position: absolute;
+    }
+    
+    .e-split-arrow-left:before {
+        content: "\e84b";
+        font-family: 'e-icons';
+        font-size: 8px;
+        left: 1px;
+        position: absolute;
+    }
+    
+    .e-split-arrow-up:before {
+        content: "\e834";
+        font-family: 'e-icons';
+        font-size: 8px;
+        left: 2px;
+        position: absolute;
+        top: -1px;
+    }
+    
+    .e-split-arrow-down:before {
+        content: "\e83d";
+        font-family: 'e-icons';
+        font-size: 8px;
+        left: 2px;
+        position: absolute;
+    }
+}
+
+// sass-lint:disable-all
+@include export-module('splitter-layout') {
+  .e-splitter {
+    &.e-splitter-horizontal,
+    &.e-splitter-vertical {
+      display: flex;
+      border-width: 1px;
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+
+      &.e-pane {
+        &.e-scrollable {
+          overflow: hidden;
+        }
+      }
+
+      .e-pane {
+        font-family: $splitpane-font-family;
+        font-size: $splitpane-font-size;
+        font-weight: $splitpane-font-weight;
+        line-height: $splitpane-line-height;
+        &.e-scrollable {
+          overflow: auto;
+        }
+        flex: 1 1 auto;
+        &.e-static-pane {
+          flex-grow: 0;
+          flex-shrink: 0;
+        }
+
+        &.e-pane-horizontal {
+          overflow: auto;
+        }
+
+        &.e-pane-horizontal.e-pane-hidden {
+          flex-basis: 0px !important;
+          display: block !important;
+          overflow: hidden !important;
+          flex: 0 0;
+        }
+      }
+    }
+
+    &.e-splitter-horizontal {
+      &.e-pane {
+        &.e-scrollable {
+          overflow: hidden;
+        }
+      }
+    }
+
+    &.e-splitter-vertical {
+      &.e-pane {
+        &.e-scrollable {
+          overflow: hidden;
+        }
+      }
+    }
+  
+    &.e-splitter-vertical {
+      .e-pane-vertical.e-pane-hidden {
+        flex-basis: 0px !important;
+        display: block !important;
+        overflow: hidden !important;
+        flex: 0 0;
+      }
+
+      .e-pane-vertical {
+        overflow: auto;
+      }
+    }
+  
+    .e-split-bar.e-split-bar-horizontal {
+      border: none;
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+
+      &.e-resizable-split-bar{
+        cursor: e-resize;
+      }
+
+      .e-split-line {
+        height: 100%;
+        position: absolute;
+        width: 1px;
+      }
+
+      .e-resize-handler {
+        height: $splitbar-icon-gap;
+        width: 2px;
+        align-items: center;
+        justify-content: center;
+        position: static;
+
+        &.e-hide-handler {
+          display: none;
+        }
+      }
+
+      .e-split-arrow-left,
+      .e-split-arrow-right {
+        border: 1px solid;
+        border-radius: $collapse-icon-border-radius;
+        cursor: pointer;
+        font-size: $splitbar-icon-size;
+        height: $collapse-icon-height;
+        line-height: $collapse-icon-line-height;
+        margin: 0;
+        position: relative;
+        width: $collapse-icon-width;
+      }
+      
+    }
+    .e-split-bar.e-split-bar-vertical {
+      border: none;
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &.e-resizable-split-bar {
+        cursor: n-resize;
+      }
+
+      .e-split-line {
+        height: 1px;
+        position: absolute;
+        width: 100%;
+      }
+
+      .e-resize-handler {
+        height: 3px;
+        margin-left: 4px;
+        margin-right: 3px;
+        width: $splitbar-icon-gap;
+      }
+
+      .e-split-arrow-up,
+      .e-split-arrow-down {
+        border: 1px solid;
+        border-radius: $collapse-icon-border-radius;
+        cursor: pointer;
+        font-size: $splitbar-icon-size;
+        height: $collapse-icon-height;
+        line-height: $collapse-icon-line-height;
+        margin: 0;
+        position: relative;
+        width: $collapse-icon-width;
+      }
+
+    }
+    &.e-splitter-horizontal {
+      flex-direction: row;
+    }
+    &.e-splitter-vertical {
+      flex-direction: column;
+    }
+    .e-pane {
+      &.e-pane-horizontal{
+        &.e-expanded {
+          flex : 1 1 auto;
+        }
+      }
+      &.e-pane-vertical{
+        &.e-expanded {
+          flex : 1 1 auto;
+        }
+      }
+    }
+  }
+}
+// sass-lint:disable-all
+@include export-module('splitter-theme') {
+    .e-splitter {
+        &.e-splitter-horizontal, &.e-splitter-vertical {
+          border: solid 1px $splitter-border-color;
+          .e-pane {
+            color: $splitpane-font-color;
+          }
+          .e-pane.e-control.e-splitter {
+            &.e-splitter-horizontal {
+              border: transparent;
+            }
+            &.e-splitter-vertical {
+              border: transparent;
+            }
+          }
+        }
+        .e-split-bar.e-split-bar-horizontal {
+          .e-hidden {
+            display: none;
+          }
+
+          .e-resize-handler {            
+            background: $splitbar-resize-color;
+          }
+
+          &.e-split-bar-hover {
+            .e-split-line {
+              background-color: $splitbar-hover-border-color;
+            }
+
+            .e-split-arrow-left,
+            .e-split-arrow-right {
+              color: $collapse-icon-hover-color;
+            }
+          }
+
+          .e-split-line {
+            background-color: $splitbar-border-color;
+          }
+
+          .e-split-arrow-left,
+          .e-split-arrow-right {
+            background-color: $collapse-icon-bg-color;
+            border-color: $collapse-icon-border-color;
+            color: $splitbar-icon-color;
+
+            &:hover {
+              border-color: $collapse-icon-hover-border-color;
+              box-shadow: $collapse-icon-box-shadow;
+            }
+          }
+        }
+        .e-split-bar.e-split-bar-vertical {
+          .e-hidden {
+            display: none;
+          }
+
+          .e-resize-handler {   
+            background: $splitbar-resize-color;
+          }
+
+          &.e-split-bar-hover {
+            .e-split-line {
+              background-color: $splitbar-hover-border-color;
+            }
+
+            .e-split-arrow-left,
+            .e-split-arrow-right {
+              color: $collapse-icon-hover-color;
+            }
+          }
+
+          .e-split-line {
+            background-color: $splitbar-border-color;
+          }
+
+          .e-split-arrow-up,
+          .e-split-arrow-down {
+            background-color: $collapse-icon-bg-color;
+            border-color: $collapse-icon-border-color;
+            color: $splitbar-icon-color;
+
+            &:hover {
+              border-color: $collapse-icon-hover-border-color;
+              box-shadow: $collapse-icon-box-shadow;
+            }
+          }
+        }
+    }
+}
+// sass-lint:disable-all

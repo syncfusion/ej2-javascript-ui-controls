@@ -60,6 +60,6 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/syncfusion/ej2-documenteditor.git"
+		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls.git"
 	}
 }

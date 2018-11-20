@@ -29,6 +29,18 @@ $normal-min-height: 20px;
 $normal-min-width: 20px;
 $bigger-min-height: 22px;
 $bigger-min-width: 22px;
+@include export-module('timepicker-bootstrap-icons') {
+  /*! component icons */
+
+  .e-time-wrapper,
+  &.e-control-wrapper.e-time-wrapper {
+
+    & .e-time-icon.e-icons::before {
+      content: '\e93e';
+    }
+
+  }
+}
 
 @include export-module('timepicker-layout') {
   //   timepicker layout
@@ -41,10 +53,6 @@ $bigger-min-width: 22px;
       font-size: $icon-normal-font-size;
       min-height: $normal-min-height;
       min-width: $normal-min-width;
-    }
-
-    & .e-time-icon.e-icons::before {
-      content: $time-font-icon;
     }
 
     & .e-time-icon.e-icons.e-disabled {

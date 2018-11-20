@@ -4,7 +4,15 @@
 
 ## [Unreleased]
 
-## 16.3.32 (2018-11-15)
+## 16.3.33 (2018-11-15)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- Issue with range bar pointer tooltip is resolved now.
+
+## 16.3.32 (2018-11-13)
 
 ### CircularGauge
 

@@ -9742,8 +9742,14 @@ let Sidebar = class Sidebar extends Component {
      * Hide the Sidebar component, if it is in an open state.
      * @returns void
      */
-    hide() {
-        let closeArguments = { model: this, element: this.element, cancel: false };
+    hide(e) {
+        let closeArguments = {
+            model: this,
+            element: this.element,
+            cancel: false,
+            isInteracted: !isNullOrUndefined(e),
+            event: (e || null)
+        };
         this.trigger('close', closeArguments);
         if (!closeArguments.cancel) {
             if (this.element.classList.contains(CLOSE)) {
@@ -9778,8 +9784,14 @@ let Sidebar = class Sidebar extends Component {
      * Shows the Sidebar component, if it is in closed state.
      * @returns void
      */
-    show() {
-        let openArguments = { model: this, element: this.element, cancel: false };
+    show(e) {
+        let openArguments = {
+            model: this,
+            element: this.element,
+            cancel: false,
+            isInteracted: !isNullOrUndefined(e),
+            event: (e || null)
+        };
         this.trigger('open', openArguments);
         if (!openArguments.cancel) {
             removeClass([this.element], VISIBILITY);
@@ -9881,7 +9893,7 @@ let Sidebar = class Sidebar extends Component {
         if (closest(e.target, '.' + CONTROL$1 + '' + '.' + ROOT$1)) {
             return;
         }
-        this.hide();
+        this.hide(e);
     }
     enableGestureHandler(args) {
         if (this.position === 'Left' && args.swipeDirection === 'Right' &&

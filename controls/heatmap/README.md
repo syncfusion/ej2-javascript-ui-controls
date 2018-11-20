@@ -28,9 +28,9 @@ npm install @syncfusion/ej2-heatmap
 
 Heat map component is also offered in following list of frameworks.
 
-1. [Angular](https://github.com/syncfusion/ej2-ng-heatmap)
-2. [React](https://github.com/syncfusion/ej2-react-heatmap)
-3. [VueJS](https://github.com/syncfusion/ej2-vue-heatmap)
+1. [Angular](https://github.com/syncfusion/ej2-angular-ui-components/tree/master/components/heatmap?utm_source=npm&utm_campaign=heatmap)
+2. [React](https://github.com/syncfusion/ej2-react-ui-components/tree/master/components/heatmap?utm_source=npm&utm_campaign=heatmap)
+3. [VueJS](https://github.com/syncfusion/ej2-vue-ui-components/tree/master/components/heatmap?utm_source=npm&utm_campaign=heatmap)
 4. [ASP.NET Core](https://www.syncfusion.com/products/aspnetcore/heatmap)
 5. [ASP.NET MVC](https://www.syncfusion.com/products/aspnetmvc/heatmap)
 6. [JavaScript (ES5)](https://www.syncfusion.com/products/javascript/heatmap)
@@ -57,7 +57,7 @@ Heat map component is also offered in following list of frameworks.
 Product support is available for through following mediums.
 
 * Creating incident in Syncfusion [Direct-trac](https://www.syncfusion.com/support/directtrac/incidents?utm_source=npm&utm_campaign=heatmap) support system or [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_campaign=heatmap).
-* New [GitHub issue](https://github.com/syncfusion/ej2-heatmap/issues/new).
+* New [GitHub issue](https://github.com/syncfusion/ej2-javascript-ui-controls/issues/new).
 * Ask your query in Stack Overflow with tag `syncfusion`, `ej2`.
 
 ## License
@@ -66,6 +66,6 @@ Check the license detail [here](https://github.com/syncfusion/ej2/blob/master/li
 
 ## Changelog
 
-Check the changelog [here](https://github.com/syncfusion/ej2-heatmap/blob/master/CHANGELOG.md?utm_source=npm&utm_campaign=heatmap)
+Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/heatmap/CHANGELOG.md)
 
 © Copyright 2018 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

@@ -272,18 +272,30 @@ export class Double {
         }
         let format: string = this.getFormat(axis);
         let isCustom: boolean = format.match('{value}') !== null;
-
+        let intervalDigits: number = 0;
+        let formatDigits: number = 0;
+        if (axis.labelFormat && axis.labelFormat.indexOf('n') > -1 ) {
+            formatDigits = parseInt(axis.labelFormat.substring(1, axis.labelFormat.length), 10);
+        }
         axis.format = chart.intl.getNumberFormat({
             format: isCustom ? '' : format,
             useGrouping: chart.useGroupingSeparator
         });
-
         axis.startLabel = axis.format(axis.visibleRange.min);
         axis.endLabel = axis.format(axis.visibleRange.max);
-
+        if (axis.visibleRange.interval && (axis.visibleRange.interval + '').indexOf('.') >= 0) {
+            intervalDigits = (axis.visibleRange.interval + '').split('.')[1].length;
+        }
+        labelStyle = <Font>(extend({}, getValue('properties', axis.labelStyle), null, true));
         for (; tempInterval <= axis.visibleRange.max; tempInterval += axis.visibleRange.interval) {
-            labelStyle = <Font>(extend({}, getValue('properties', axis.labelStyle), null, true));
             if (withIn(tempInterval, axis.visibleRange)) {
+                triggerLabelRender(chart, tempInterval, this.formatValue(axis, isCustom, format, tempInterval), labelStyle, axis);
+            }
+        }
+        if (tempInterval && (tempInterval + '').indexOf('.') >= 0 && (tempInterval + '').split('.')[1].length > 10) {
+            tempInterval = (tempInterval + '').split('.')[1].length > (formatDigits || intervalDigits) ?
+                           +tempInterval.toFixed(formatDigits || intervalDigits) : tempInterval;
+            if (tempInterval <= axis.visibleRange.max) {
                 triggerLabelRender(chart, tempInterval, this.formatValue(axis, isCustom, format, tempInterval), labelStyle, axis);
             }
         }

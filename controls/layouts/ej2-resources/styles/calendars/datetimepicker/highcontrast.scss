@@ -25,17 +25,17 @@ $list-padding: 0;
 $time-font-icon: '\e744';
 $icon-normal-font-size: 16px;
 $icon-bigger-font-size: 20px;
-
-@include export-module('datetimepicker-icons') {
+@include export-module('datetimepicker-highcontrast-icons') {
   /*! component icons */
   .e-datetime-wrapper {
 
     & .e-time-icon.e-icons::before {
-      content: $time-font-icon;
+      content: '\e97f';
       font-family: 'e-icons';
     }
   }
 }
+
 @include export-module('datetimepicker-layout') {
   //   datetimepicker layout
   .e-datetime-wrapper {

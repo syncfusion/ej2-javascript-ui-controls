@@ -43,8 +43,8 @@ Drop-down components also supports the following frameworks:
 1.	[Angular](https://ej2.syncfusion.com/angular/demos/#/material)
 2.	[React](https://ej2.syncfusion.com/react/demos/#/material)
 3.	[Vue.js](https://ej2.syncfusion.com/vue/demos/#/material)
-4.	[ASP.NET Core](https://aspdotnetcore.syncfusion.com)
-5.	[ASP.NET MVC](http://aspnetmvc.syncfusion.com)
+4.	[ASP.NET Core](https://ej2.syncfusion.com/aspnetcore/)
+5.	[ASP.NET MVC](https://ej2.syncfusion.com/aspnetmvc/)
 6.	[JavaScript (ES5)](https://ej2.syncfusion.com/javascript/demos/#/material)
 
 ## 4. Use-case samples / Showcase samples
@@ -58,45 +58,45 @@ Drop-down components also supports the following frameworks:
 * DropDownList
     * [Data binding](https://ej2.syncfusion.com/demos/#/material/drop-down-list/data-binding.html): Binds and accesses the list of items from the local or server-side data source.
     * [Grouping](https://ej2.syncfusion.com/demos/#/material/drop-down-list/grouping-icon.html): Groups the logically related items under a single or specific category.
-    * [Sorting](https://ej2.syncfusion.com/documentation/drop-down-list/api-dropDownList.html?lang=typescript#sortorder): Sorts the list items in alphabetical order (either ascending or descending).
+    * [Sorting](https://ej2.syncfusion.com/documentation/api/drop-down-list#sortorder): Sorts the list items in alphabetical order (either ascending or descending).
     * [Filtering](https://ej2.syncfusion.com/demos/#/material/drop-down-list/filtering.html): Filters the list items based on a character typed in the search box.
     * [Templates](https://ej2.syncfusion.com/demos/#/material/drop-down-list/template.html): Customizes the list items, selected value, header, footer, category group header, and no records content.
-    * [Accessibility](https://ej2.syncfusion.com/documentation/drop-down-list/accessibility.html?lang=typescript): Provided with built-in accessibility support used to access all the DropDownList component features using keyboard, screen readers, or other assistive technology devices.
+    * [Accessibility](https://ej2.syncfusion.com/documentation/drop-down-list/accessibility): Provided with built-in accessibility support used to access all the DropDownList component features using keyboard, screen readers, or other assistive technology devices.
 
 
 * ComboBox
-    * [Data binding](https://ej2.syncfusion.com/demos/#/material/combo-box/databinding.html): Binds and accesses the list of items from local or server-side data source.
+    * [Data binding](https://ej2.syncfusion.com/demos/#/material/combo-box/data-binding.html): Binds and accesses the list of items from local or server-side data source.
     * [Custom values](https://ej2.syncfusion.com/demos/#/material/combo-box/custom-value.html): Sets user-defined values that is not in the pop-up list.
     * [Grouping](https://ej2.syncfusion.com/demos/#/material/combo-box/grouping-icon.html): Groups the logically related items under a single or specific category.
-    * [Sorting](https://ej2.syncfusion.com/documentation/combo-box/api-comboBox.html?lang=typescript#sortorder): Sorts the list items in alphabetical order (either ascending or descending).
+    * [Sorting](https://ej2.syncfusion.com/documentation/api/combo-box#sortorder): Sorts the list items in alphabetical order (either ascending or descending).
     * [Filtering](https://ej2.syncfusion.com/demos/#/material/combo-box/filtering.html): Filters the list items based on a character typed in the component.
     * [Templates](https://ej2.syncfusion.com/demos/#/material/combo-box/template.html): Customizes the list items, selected value, header, footer, category group header, and no records content.
-    * [Accessibility](https://ej2.syncfusion.com/documentation/combo-box/accessibility.html?lang=typescript): Provided with built-in accessibility support that helps to access all the ComboBox component features using the keyboard, screen readers, or other assistive technology devices.
+    * [Accessibility](https://ej2.syncfusion.com/documentation/combo-box/accessibility): Provided with built-in accessibility support that helps to access all the ComboBox component features using the keyboard, screen readers, or other assistive technology devices.
 
 
 * AutoComplete
-    * [Data binding](https://ej2.syncfusion.com/demos/#/material/auto-complete/databinding.html): Binds and accesses the list of items from local or server-side data source.
+    * [Data binding](https://ej2.syncfusion.com/demos/#/material/auto-complete/data-binding.html): Binds and accesses the list of items from local or server-side data source.
     * [Grouping](https://ej2.syncfusion.com/demos/#/material/auto-complete/grouping-icon.html): Groups the logically related items under a single or specific category.
-    * [Sorting](https://ej2.syncfusion.com/documentation/auto-complete/api-autoComplete.html?lang=typescript#sortorder): Sorts the list items in alphabetical order (either ascending or descending).
+    * [Sorting](https://ej2.syncfusion.com/documentation/api/auto-complete#sortorder): Sorts the list items in alphabetical order (either ascending or descending).
     * [Highlight search](https://ej2.syncfusion.com/demos/#/material/auto-complete/highlight.html): Highlights the typed text in the suggestion list.
     * [Templates](https://ej2.syncfusion.com/demos/#/material/auto-complete/template.html): Customizes the list item, header, footer, category group header, no records, and action failure content.
-    * [Accessibility](https://ej2.syncfusion.com/documentation/auto-complete/accessibility.html?lang=typescript): Provided with built-in accessibility support that helps to access all the AutoComplete component features using keyboard, on-screen readers, or other assistive technology devices.
+    * [Accessibility](https://ej2.syncfusion.com/documentation/auto-complete/accessibility): Provided with built-in accessibility support that helps to access all the AutoComplete component features using keyboard, on-screen readers, or other assistive technology devices.
 
 
 * MultiSelect
     * [Data binding](https://ej2.syncfusion.com/demos/#/material/multi-select/data-binding.html): Binds and accesses the list of items from local or server-side data source.
     * [Grouping](https://ej2.syncfusion.com/demos/#/material/multi-select/grouping-icon.html): Groups the logically related items under a single or specific category.
     * [Templates](https://ej2.syncfusion.com/demos/#/material/multi-select/template.html): Customizes the list items, selected value, header, footer, category group header, and     no records content.
-    * [Sorting](https://ej2.syncfusion.com/documentation/multi-select/api-multiSelect.html?lang=typescript#sortorder): Sorts the list items in alphabetical order (either ascending or descending).
+    * [Sorting](https://ej2.syncfusion.com/documentation/api/multi-select#sortorder): Sorts the list items in alphabetical order (either ascending or descending).
     * [Filtering](https://ej2.syncfusion.com/demos/#/material/multi-select/filtering.html): Filters the list items based on a character typed in the search box.
     * [Custom value](https://ej2.syncfusion.com/demos/#/material/multi-select/custom-value.html): Allows users to select a new custom value.
-    * [Accessibility](https://ej2.syncfusion.com/documentation/multi-select/accessibility.html?lang=typescript): Provided with built-in accessibility support that helps to access all the      DropDownList component features using the keyboard, screen readers, or other assistive technology devices.
+    * [Accessibility](https://ej2.syncfusion.com/documentation/multi-select/accessibility): Provided with built-in accessibility support that helps to access all the      DropDownList component features using the keyboard, screen readers, or other assistive technology devices.
 
 
 ## 6. Support
 Product support can be obtained through the following mediums:
 * Creating incident in Syncfusion [Direct-trac](https://www.syncfusion.com/support/directtrac/incidents?utm_source=npm&utm_campaign=dropdwon) support system or [Community forum.](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_campaign=dropdwon)
-* New [GitHub issue.](https://github.com/syncfusion/ej2-dropdowns/issues/new)
+* New [GitHub issue.](https://github.com/syncfusion/ej2-javascript-ui-controls/issues/new)
 * Ask your query in Stack Overflow with tag ‘syncfusion’, ‘ej2’.
 
  
@@ -104,6 +104,6 @@ Product support can be obtained through the following mediums:
 Check the license details [here.](https://github.com/syncfusion/ej2/blob/master/license?utm_source=npm&utm_campaign=dropdown)
 
 ## 8. Change log 
- Check the changelog [here](https://github.com/syncfusion/ej2-dropdowns/blob/master/CHANGELOG.md)
+ Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/dropdowns/CHANGELOG.md)
  
 © Copyright 2018 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

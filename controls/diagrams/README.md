@@ -63,7 +63,7 @@ Diagram component is also offered in following list of frameworks.
 Product support is available for through following mediums.
 
 * Creating incident in Syncfusion [Direct-trac](https://www.syncfusion.com/support/directtrac/incidents?utm_source=npm&utm_campaign=diagram) support system or [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_campaign=diagram).
-* New [GitHub issue](https://github.com/syncfusion/ej2-diagrams/issues/new).
+* New [GitHub issue](https://github.com/syncfusion/ej2-javascript-ui-controls/issues/new).
 * Ask your query in Stack Overflow with tag `syncfusion`, `ej2`.
 
 ## License
@@ -72,6 +72,6 @@ Check the license detail [here](https://github.com/syncfusion/ej2/blob/master/li
 
 ## Changelog
 
-Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/src/diagrams/CHANGELOG.md?utm_source=npm&utm_campaign=diagram)
+Check the changelog [here](https://ej2.syncfusion.com/javascript/documentation/release-notes/index)
 
 © Copyright 2018 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

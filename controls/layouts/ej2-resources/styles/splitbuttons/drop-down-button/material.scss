@@ -1,6 +1,5 @@
 
 
-$drop-down-arrow-content: '\e969';
 $vertical-btn-padding: 12px 12px;
 $vertical-bigger-btn-padding: 16px 16px;
 $bigger-font-size: 15px;
@@ -44,6 +43,16 @@ $icon-font-size: 14px;
 $icon-font-size-bigger: 16px;
 $caret-icon-font-size: 8px;
 $caret-icon-font-size-bigger: 10px;
+@include export-module('drop-down-button-material-icons') {
+  #{&}.e-dropdown-btn,
+  #{&}.e-dropdown-btn.e-btn {
+    .e-caret {
+      &::before {
+        content: '\e969';
+      }
+    }
+  }
+}
 
 @include export-module('drop-down-button-layout') {
   /*! drop-down button layout */
@@ -68,10 +77,6 @@ $caret-icon-font-size-bigger: 10px;
 
     .e-caret {
       font-size: $caret-icon-font-size;
-
-      &::before {
-        content: $drop-down-arrow-content;
-      }
     }
 
     &.e-vertical {

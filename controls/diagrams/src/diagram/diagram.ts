@@ -1285,6 +1285,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.serviceLocator = new ServiceLocator;
         this.initializeServices();
         this.setCulture();
+        let measureElement: string = 'measureElement';
+        if (window[measureElement]) {
+            window[measureElement] = null;
+        }
         this.initDiagram();
         this.initViews();
         this.unWireEvents();

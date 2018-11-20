@@ -862,6 +862,8 @@ describe("Sidebar DOM class Testing ", () => {
         sidebar = new Sidebar({
             type: "Push", open: function (args: any) {
                 expect(args.name).toBe("open");
+                expect(args.isInteracted).toBe(false);
+                expect(args.event).toBe(null);
             }
         }, ele);
         sidebar.show();
@@ -873,6 +875,8 @@ describe("Sidebar DOM class Testing ", () => {
         sidebar = new Sidebar({
             type: "Push", close: function (args: any) {
                 expect(args.name).toBe("close");
+                expect(args.isInteracted).toBe(false);
+                expect(args.event).toBe(null);
             }
         }, ele);
         sidebar.hide();

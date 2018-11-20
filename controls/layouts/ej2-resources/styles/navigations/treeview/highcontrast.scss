@@ -47,15 +47,14 @@ $ripple-width: 32px;
   }
 }
 // sass-lint:enable no-vendor-prefixes
-
-@include export-module('treeview-icons') {
+@include export-module('treeview-highcontrast-icons') {
   /*! TreeView icons */
   #{&}.e-treeview {
 
     .e-list-item {
 
       div.e-icons::before {
-        content: $treeview-expand-icon-content;
+        content: '\e22e';
       }
     }
 
@@ -90,6 +89,7 @@ $ripple-width: 32px;
     }
   }
 }
+
 // sass-lint:disable no-vendor-prefixes
 @mixin user-select {
   -moz-user-select: none;
@@ -223,6 +223,7 @@ $ripple-width: 32px;
     white-space: nowrap;
 
     & > .e-ul {
+      -webkit-overflow-scrolling: touch;
       overflow: auto;
     }
 

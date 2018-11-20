@@ -33,9 +33,9 @@ Badges can be used to alert users about new or unread messages, notifications, a
 The toast is a small container, in which user can show a single or multiple informative lines with actions.
 
 * [Getting Started](https://ej2.syncfusion.com/documentation/toast/getting-started.html?lang=typescript&utm_source=npm&utm_campaign=toast)
-* [API References](https://ej2.syncfusion.com/documentation/toast/api-toast.html?utm_source=npm&utm_campaign=toast)
+* [API References](https://ej2.syncfusion.com/documentation/api/toast?utm_source=npm&utm_campaign=toast)
 * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=toast#/material/toast/default.html)
-* [Product Page](https://www.syncfusion.com/products/javascript/toast)
+* [Product Page](https://www.syncfusion.com/javascript-ui-controls/toast)
 
 ## Supported Frameworks
 
@@ -75,10 +75,10 @@ Product support is available for through following mediums.
 
 ## License
 
-Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/LICENSE?utm_source=npm&utm_campaign=notification).
+Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license?utm_source=npm&utm_campaign=notification).
 
 ## Changelog
 
-Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/notifications/CHANGELOG.md?utm_source=npm&utm_campaign=notification).
+Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/notifications/CHANGELOG.md?utm_source=npm&utm_campaign=notification)
 
 © Copyright 2018 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

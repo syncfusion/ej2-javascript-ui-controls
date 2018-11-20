@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 16.3.33 (2018-11-15)
+
+### Sidebar
+
+#### Bug Fixes
+
+- Added the `event` and `isInteracted` event arguments in open and close events of Sidebar.
+
+### TreeView
+
+#### Bug Fixes
+
+- In TreeView, scrolling is not working smoothly for iPad device issue is resolved
+
 ## 16.3.29 (2018-10-31)
 
 ### TreeView

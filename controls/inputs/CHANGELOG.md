@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 16.3.33 (2018-11-15)
+
+### FormValidator
+
+#### Bug Fixes
+
+- Form validator `email` and `min` validation issues has been fixed.
+
+### TextBox
+
+#### Bug Fixes
+
+- The issue with receiving event arguments of TextBox events have been fixed.
+
 ## 16.3.29 (2018-10-31)
 
 ### MaskedTextBox

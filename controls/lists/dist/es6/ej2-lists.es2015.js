@@ -1430,7 +1430,9 @@ let ListView = class ListView extends Component {
         }
     }
     keyActionHandler(e) {
-        e.preventDefault();
+        if (e.keyCode !== 9) {
+            e.preventDefault();
+        }
         switch (e.keyCode) {
             case 36:
                 this.homeKeyHandler(e);
@@ -1473,9 +1475,9 @@ let ListView = class ListView extends Component {
         if (Object.keys(this.dataSource).length && this.curUL) {
             let focusedElement = this.curUL.querySelector('.' + classNames.focused);
             let activeElement = this.curUL.querySelector('[aria-selected = true]');
-            if (focusedElement && !this.showCheckBox) {
+            if (focusedElement) {
                 focusedElement.classList.remove(classNames.focused);
-                if (activeElement) {
+                if (activeElement && !this.showCheckBox) {
                     activeElement.classList.add(classNames.selected);
                 }
             }
@@ -1502,10 +1504,18 @@ let ListView = class ListView extends Component {
         this.touchModule.destroy();
     }
     tabFocus(e) {
+        if (this.curUL && ((!this.curUL.querySelector('.' + classNames.focused) && this.showCheckBox) ||
+            (!this.curUL.querySelector('.' + classNames.selected) && !this.showCheckBox &&
+                !this.curUL.querySelector('.' + classNames.hasChild)) ||
+            (this.curUL.querySelector('.' + classNames.hasChild) &&
+                !this.curUL.querySelector('.' + classNames.focused) &&
+                !this.curUL.querySelector('.' + classNames.selected)))) {
+            e.preventDefault();
+        }
         if (Object.keys(this.dataSource).length && this.curUL) {
             let selectedList = this.curUL.querySelector('.' + classNames.selected);
             if ((!selectedList && this.curUL) || this.showCheckBox) {
-                let li = this.curUL.querySelector('.' + classNames.listItem);
+                let li = selectedList || this.curUL.querySelector('.' + classNames.listItem);
                 if (li.classList.contains(classNames.hasChild) || this.showCheckBox) {
                     let focusedElement = this.curUL.querySelector('.' + classNames.focused);
                     if (isNullOrUndefined(focusedElement)) {

@@ -1457,7 +1457,9 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     ListView.prototype.keyActionHandler = function (e) {
-        e.preventDefault();
+        if (e.keyCode !== 9) {
+            e.preventDefault();
+        }
         switch (e.keyCode) {
             case 36:
                 this.homeKeyHandler(e);
@@ -1500,9 +1502,9 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         if (Object.keys(this.dataSource).length && this.curUL) {
             var focusedElement = this.curUL.querySelector('.' + classNames.focused);
             var activeElement = this.curUL.querySelector('[aria-selected = true]');
-            if (focusedElement && !this.showCheckBox) {
+            if (focusedElement) {
                 focusedElement.classList.remove(classNames.focused);
-                if (activeElement) {
+                if (activeElement && !this.showCheckBox) {
                     activeElement.classList.add(classNames.selected);
                 }
             }
@@ -1529,10 +1531,18 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         this.touchModule.destroy();
     };
     ListView.prototype.tabFocus = function (e) {
+        if (this.curUL && ((!this.curUL.querySelector('.' + classNames.focused) && this.showCheckBox) ||
+            (!this.curUL.querySelector('.' + classNames.selected) && !this.showCheckBox &&
+                !this.curUL.querySelector('.' + classNames.hasChild)) ||
+            (this.curUL.querySelector('.' + classNames.hasChild) &&
+                !this.curUL.querySelector('.' + classNames.focused) &&
+                !this.curUL.querySelector('.' + classNames.selected)))) {
+            e.preventDefault();
+        }
         if (Object.keys(this.dataSource).length && this.curUL) {
             var selectedList = this.curUL.querySelector('.' + classNames.selected);
             if ((!selectedList && this.curUL) || this.showCheckBox) {
-                var li = this.curUL.querySelector('.' + classNames.listItem);
+                var li = selectedList || this.curUL.querySelector('.' + classNames.listItem);
                 if (li.classList.contains(classNames.hasChild) || this.showCheckBox) {
                     var focusedElement = this.curUL.querySelector('.' + classNames.focused);
                     if (isNullOrUndefined(focusedElement)) {

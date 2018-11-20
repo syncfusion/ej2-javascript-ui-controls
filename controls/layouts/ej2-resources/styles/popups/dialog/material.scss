@@ -17,13 +17,14 @@ $dialog-btn-bg-bgcolor: transparent;
 $dialog-btn-box-shadow: none;
 $dialog-closeicon-btn-hover-color: transparent;
 $dialog-closeicon-btn-active-color: transparent;
-
-@include export-module('dialog-icons') {
-  /*! component icons */
+$dialog-resize-handler-width: 15px;
+$dialog-resize-handler-height: 15px;
+$dialog-resize-handler-position: 0;
+$resize-hanlder-bottom-rtl: 2px;
+@include export-module('dialog-bootstrap-icons') {
   #{&}.e-dialog {
-
     .e-icon-dlg-close::before {
-      content: $dialog-close-icon-content;
+      content: '\e7fc';
       position: relative;
     }
 
@@ -38,8 +39,14 @@ $dialog-closeicon-btn-active-color: transparent;
     .e-icon-dlg-close:hover {
       opacity: $dialog-close-icon-active-opacity;
     }
+
+    .e-south-east::before,
+    .e-south-west::before {
+      content: '\eb05';
+    }
   }
 }
+
 @include export-module('dialog-layout') {
   /*! dialog layout */
   // sass-lint:disable no-vendor-prefixes
@@ -52,6 +59,10 @@ $dialog-closeicon-btn-active-color: transparent;
 
     &.e-popup {
       width: 100%;
+    }
+
+    &.e-dlg-resizable {
+      touch-action: none;
     }
 
     .e-dlg-header-content {
@@ -78,7 +89,7 @@ $dialog-closeicon-btn-active-color: transparent;
       user-select: none;
       vertical-align: top;
       white-space: nowrap;
-      width: 83%;
+      width: 80%;
     }
 
     .e-dlg-modal {
@@ -115,6 +126,17 @@ $dialog-closeicon-btn-active-color: transparent;
       text-align: right;
     }
 
+    .e-resize-handle {
+      height: $dialog-resize-handler-height;
+      position: absolute;
+      width: $dialog-resize-handler-width;
+
+      &.e-south-east {
+        bottom: $dialog-resize-handler-position;
+        cursor: nwse-resize;
+        right: $dialog-resize-handler-position;
+      }
+    }
   }
 
   //Bigger Style 
@@ -221,6 +243,21 @@ $dialog-closeicon-btn-active-color: transparent;
     left: $dialog-close-button-left;
     position: relative;
     width: $dialog-close-button-width;
+  }
+
+  .e-rtl {
+
+    &.e-dialog {
+
+      .e-resize-handle {
+        &.e-south-west {
+          bottom: $resize-hanlder-bottom-rtl;
+          cursor: sw-resize;
+          left: 0;
+          transform: rotate(90deg);
+        }
+      }
+    }
   }
 
 
@@ -419,5 +456,8 @@ $dialog-closeicon-btn-active-color: transparent;
     background-color: $dialog-closeicon-btn-active-color;
   }
 
-
+  .e-south-east,
+  .e-south-west {
+    color: $dialog-icon-color;
+  }
 }

@@ -22,18 +22,18 @@ npm install @syncfusion/ej2-grids
 
 * [Getting Started](https://ej2.syncfusion.com/documentation/grid/getting-started.html?lang=typescript&utm_source=npm&utm_campaign=grid)
 * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=grid#/material/grid/default.html)
-* [Product Page](https://www.syncfusion.com/products/javascript/data-grid)
+* [Product Page](https://www.syncfusion.com/javascript-ui-controls/grid)
 
 ## Supported Frameworks
 
 Grid component is also offered in following list of frameworks.
 
-1. [Angular](https://github.com/syncfusion/ej2-angular-grids)
-2. [React](https://github.com/syncfusion/ej2-react-grids)
-3. [VueJS](https://github.com/syncfusion/ej2-vue-grids)
-4. [ASP.NET Core](https://www.syncfusion.com/products/aspnetcore/data-grid)
-5. [ASP.NET MVC](https://www.syncfusion.com/products/aspnetmvc/data-grid)
-6. [JavaScript (ES5)](https://www.syncfusion.com/products/javascript/data-grid)
+1. [Angular](https://github.com/syncfusion/ej2-angular-ui-components/tree/master/components/grids)
+2. [React](https://github.com/syncfusion/ej2-react-ui-components/tree/master/components/grids)
+3. [VueJS](https://github.com/syncfusion/ej2-vue-ui-components/tree/master/components/grids)
+4. [ASP.NET Core](https://www.syncfusion.com/aspnet-core-ui-controls/grid)
+5. [ASP.NET MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls/grid)
+6. [JavaScript (ES5)](https://www.syncfusion.com/javascript-ui-controls/grid)
 
 ## Showcase samples
 
@@ -69,16 +69,16 @@ Grid component is also offered in following list of frameworks.
 Product support is available for through following mediums.
 
 * Creating incident in Syncfusion [Direct-trac](https://www.syncfusion.com/support/directtrac/incidents?utm_source=npm&utm_campaign=grid) support system or [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_campaign=grid).
-* New [GitHub issue](https://github.com/syncfusion/ej2-grids/issues/new).
+* New [GitHub issue](https://github.com/syncfusion/ej2-javascript-ui-controls/issues/new).
 * Ask your query in Stack Overflow with tag `syncfusion`, `ej2`.
 
 ## License
 
-Check the license detail [here](https://github.com/syncfusion/ej2/blob/master/license?utm_source=npm&utm_campaign=grid).
+Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license?utm_source=npm&utm_campaign=grid).
 
 ## Changelog
 
-Check the changelog [here](https://github.com/syncfusion/ej2-grids/blob/master/CHANGELOG.md?utm_source=npm&utm_campaign=grid)
+Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/grids/CHANGELOG.md?utm_source=npm&utm_campaign=grid)
 
 
 &copy; Copyright 2018 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

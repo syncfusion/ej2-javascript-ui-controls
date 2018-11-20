@@ -104,7 +104,7 @@ $skin-name: 'default';
           width: 100%;
 
           &.e-material-tooltip-show {
-            color: $slider-material-tooltip-content-color;
+            color: $grey-white;
           }
 
           &.e-material-tooltip-hide {
@@ -203,7 +203,7 @@ $skin-name: 'default';
           width: 100%;
 
           &.e-material-tooltip-show {
-            color: $slider-material-tooltip-content-color;
+            color: $grey-white;
           }
 
           &.e-material-tooltip-hide {
@@ -436,7 +436,7 @@ $skin-name: 'default';
               -ms-transform: scale(0);
               -webkit-transform: scale(0);
               background: transparent;
-              border: 7px solid $slider-material-tooltip-content-color;
+              border: 7px solid $grey-white;
               border-radius: 50%;
               box-sizing: border-box;
               content: '';

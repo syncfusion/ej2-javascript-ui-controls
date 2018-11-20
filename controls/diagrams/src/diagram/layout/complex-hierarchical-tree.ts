@@ -1414,7 +1414,9 @@ class CrossReduction {
                     let rank: (IVertex | IEdge)[] = model.ranks[j];
                     for (let k: number = 0; k < rank.length; k++) {
                         let cell: IVertex | IEdge = rank[k];
-                        this.nestedBestRanks[j][cell.temp[0]] = cell;
+                        if (this.nestedBestRanks[j][cell.temp[0]]) {
+                            this.nestedBestRanks[j][cell.temp[0]] = cell;
+                        }
                     }
                 }
             } else {

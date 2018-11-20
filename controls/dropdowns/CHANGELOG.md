@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 16.3.32 (2018-11-15)
+## 16.3.33 (2018-11-15)
+
+### DropDownList
+
+#### Bug Fixes
+
+- DropDownList locale added in `config Json` file.
+
+## 16.3.32 (2018-11-13)
 
 ### DropDownList
 

@@ -623,9 +623,11 @@ let CheckBox = class CheckBox extends Component {
                     break;
                 case 'cssClass':
                     if (oldProp.cssClass) {
-                        wrapper.classList.remove(oldProp.cssClass);
+                        removeClass([wrapper], oldProp.cssClass.split(' '));
                     }
-                    wrapper.classList.add(newProp.cssClass);
+                    if (newProp.cssClass) {
+                        addClass([wrapper], newProp.cssClass.split(' '));
+                    }
                     break;
                 case 'enableRtl':
                     if (newProp.enableRtl) {
@@ -955,7 +957,9 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
                     if (oldProp.cssClass) {
                         removeClass([label], oldProp.cssClass.split(' '));
                     }
-                    addClass([label], newProp.cssClass.split(' '));
+                    if (newProp.cssClass) {
+                        addClass([label], newProp.cssClass.split(' '));
+                    }
                     break;
                 case 'enableRtl':
                     if (newProp.enableRtl) {
@@ -1287,9 +1291,11 @@ let Switch = class Switch extends Component {
                     break;
                 case 'cssClass':
                     if (oldProp.cssClass) {
-                        wrapper.classList.remove(oldProp.cssClass);
+                        removeClass([wrapper], oldProp.cssClass.split(' '));
                     }
-                    wrapper.classList.add(newProp.cssClass);
+                    if (newProp.cssClass) {
+                        addClass([wrapper], newProp.cssClass.split(' '));
+                    }
                     break;
             }
         }

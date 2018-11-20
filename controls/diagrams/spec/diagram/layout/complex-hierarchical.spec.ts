@@ -156,3 +156,176 @@ describe('Diagram Control', () => {
         });
     });
 });
+
+describe('Diagram Control', () => {
+    describe('Complex Hierarchical sample issue fix', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let items1: DataManager = new DataManager(complexData as JSON[], new Query().take(3));
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'Node1', width: 50, height: 50, annotations: [{ content: 'Node1' }],
+                    expandIcon: {
+                        shape: 'Minus',
+                        width: 10,
+                        height: 10
+                    },
+                    collapseIcon: {
+                        shape: 'Plus',
+                        width: 10,
+                        height: 10
+                    },
+                }, {
+                    id: 'Node2', width: 50, height: 50, annotations: [{ content: 'Node2' }],
+                    expandIcon: {
+                        shape: 'Minus',
+                        width: 10,
+                        height: 10
+                    },
+                    collapseIcon: {
+                        shape: 'Plus',
+                        width: 10,
+                        height: 10
+                    },
+                }, {
+                    id: 'Node3', width: 50, height: 50, annotations: [{ content: 'Node3' }],
+                },
+                {
+                    id: 'Node4', width: 50, height: 50, annotations: [{ content: 'Node4' }],
+                    expandIcon: {
+                        shape: 'Minus',
+                        width: 10,
+                        height: 10
+                    },
+                    collapseIcon: {
+                        shape: 'Plus',
+                        width: 10,
+                        height: 10
+                    },
+                },
+                {
+                    id: 'Node5', width: 50, height: 50, annotations: [{ content: 'Node5' }],
+                },
+                {
+                    id: 'Node6', width: 50, height: 50, annotations: [{ content: 'Node6' }]
+                },
+                {
+                    id: 'Node7', width: 50, height: 50, annotations: [{ content: 'Node7' }]
+                },
+                {
+                    id: 'Node8', width: 50, height: 50, annotations: [{ content: 'Node8' }],
+                    expandIcon: {
+                        shape: 'Minus',
+                        width: 10,
+                        height: 10
+                    },
+                    collapseIcon: {
+                        shape: 'Plus',
+                        width: 10,
+                        height: 10
+                    },
+                },
+                {
+                    id: 'Node9', width: 50, height: 50, annotations: [{ content: 'Node9' }],
+                    expandIcon: {
+                        shape: 'Minus',
+                        width: 10,
+                        height: 10
+                    },
+                    collapseIcon: {
+                        shape: 'Plus',
+                        width: 10,
+                        height: 10
+                    },
+                },
+                {
+                    id: 'newnode', width: 50, height: 50, annotations: [{ content: 'newnode' }],
+                    expandIcon: {
+                        shape: 'Minus',
+                        width: 10,
+                        height: 10
+                    },
+                    collapseIcon: {
+                        shape: 'Plus',
+                        width: 10,
+                        height: 10
+                    },
+                },
+            
+            ];
+            let connector: ConnectorModel[] = [
+                {
+                    id: 'node1_2', sourceID: 'Node1', targetID: 'Node2',
+                }, {
+                    id: 'node2_3', sourceID: 'Node2', targetID: 'Node3',
+                },
+                {
+                    id: 'node2_4', sourceID: 'Node2', targetID: 'Node4',
+                },
+                {
+                    id: 'node2_5', sourceID: 'Node2', targetID: 'Node5',
+                },
+                {
+                    id: 'node2_6', sourceID: 'Node2', targetID: 'Node6',
+                },
+                {
+                    id: 'node2_7', sourceID: 'Node2', targetID: 'Node7',
+                },
+                {
+                    id: 'node2_8', sourceID: 'Node2', targetID: 'Node8',
+                },
+                {
+                    id: 'node8_9', sourceID: 'Node8', targetID: 'Node9',
+                },
+                {
+                    id: 'node9_4', sourceID: 'Node9', targetID: 'Node4',
+                },
+               
+                {
+                    id: 'node9_5', sourceID: 'Node9', targetID: 'Node5',
+                },
+                {
+                    id: 'node9_6', sourceID: 'Node9', targetID: 'Node6',
+                }
+
+
+            ];
+            diagram = new Diagram({
+                width: '1000px',
+                height: '800px', nodes: nodes, connectors: connector, layout: { type: 'ComplexHierarchicalTree' },
+
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('checking the node which have multiple parent', (done: Function) => {
+            let node = diagram.nodes[8];
+            node.isExpanded = false;
+            setTimeout(() => {
+                var node = diagram.nodes[4];
+                expect(node.visible).toBe(true);
+                done();
+
+            },
+                0);
+        });
+
+        it('checking icon click', (done: Function) => {
+            let node = diagram.nodes[0];
+            node.isExpanded = false;
+            setTimeout(() => {
+                var node = diagram.nodes[8];
+                expect(!node.visible).toBe(true)
+                done();
+            },
+                0);
+        });
+    });
+});
