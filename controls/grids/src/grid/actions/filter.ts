@@ -94,10 +94,14 @@ export class Filter implements IAction {
                 row = this.generateRow();
                 row.data = this.values;
                 this.parent.getHeaderContent().querySelector('thead').appendChild(rowRenderer.element);
+                let rowdrag: Element = this.parent.element.querySelector('.e-rowdragheader');
                 this.element = rowRenderer.render(row, <Column[]>gObj.getColumns(), null, null, rowRenderer.element);
                 let detail: Element = this.element.querySelector('.e-detailheadercell');
                 if (detail) {
                     detail.className = 'e-filterbarcell e-mastercell';
+                }
+                if (rowdrag) {
+                    rowdrag.className = 'e-dragheadercell e-mastercell';
                 }
                 let gCells: Element[] = [].slice.call(this.element.querySelectorAll('.e-grouptopleftcell'));
                 if (gCells.length) {
@@ -120,7 +124,10 @@ export class Filter implements IAction {
         if (this.filterModule) {
             this.filterModule.destroy();
         }
-        this.filterSettings.columns = [];
+        // tslint:disable-next-line:no-any
+        if (!(<any>this.parent).refreshing) {
+            this.filterSettings.columns = [];
+        }
         this.updateFilterMsg();
         this.removeEventListener();
         this.unWireEvents();
@@ -150,6 +157,9 @@ export class Filter implements IAction {
         }
         if (this.parent.detailTemplate || this.parent.childGrid) {
             cells.push(this.generateCell({} as Column, CellType.DetailHeader));
+        }
+        if (this.parent.isRowDragable()) {
+            cells.push(this.generateCell({} as Column, CellType.RowDragHIcon));
         }
         for (let dummy of this.parent.getColumns() as Column[]) {
             cells.push(this.generateCell(dummy));
@@ -962,7 +972,11 @@ export class Filter implements IAction {
 
     private addFilteredClass(fieldName: string): void {
         let filterIconElement: Element;
-        filterIconElement = this.parent.getColumnHeaderByField(fieldName).querySelector('.e-icon-filter');
+        if (this.parent.showColumnMenu) {
+            filterIconElement = this.parent.getColumnHeaderByField(fieldName).querySelector('.e-columnmenu');
+        } else {
+            filterIconElement = this.parent.getColumnHeaderByField(fieldName).querySelector('.e-icon-filter');
+        }
         if (filterIconElement) {
             filterIconElement.classList.add('e-filtered');
         }

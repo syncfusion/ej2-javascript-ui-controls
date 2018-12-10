@@ -46,7 +46,7 @@ describe('Chart Control', () => {
         });
         it('Checking with empty options', () => {
             let className: string = document.getElementById('container').className;
-            expect(className).toEqual('e-control e-chart e-touch');
+            expect(className).toEqual('e-control e-chart e-lib e-touch');
         });
         it('Checking module name', () => {
             expect(chart.getModuleName()).toBe('chart');

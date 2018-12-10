@@ -2,7 +2,18 @@
 
 ## [Unreleased]
 
-## 16.3.33 (2018-11-15)
+## 16.4.40-beta (2018-12-10)
+
+### Chips
+
+The Chip control contains a small block of essential information that triggers an event on click action. It also contains the primary text, image, or both, and is mostly used in mails, contacts, or filter tags.
+
+- `Input chip` - Basic chip with delete icon that represents a person or entity and enables  removal of chips from the chip list collection.
+- `Choice chip` - Used to select a choice from the available options.
+- `Filter chip` - Used to select multiple choices from the available options.
+- `Action chip` - Used to trigger actions for primary content.
+
+## 16.3.33 (2018-11-20)
 
 ### CheckBox
 

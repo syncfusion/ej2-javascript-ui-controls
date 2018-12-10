@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty, Collection, extend } from '@syncfusion/ej2-base';import { FontModel, BorderModel } from '../../common/model/base-model';import { Font, Border } from '../../common/model/base';import { Orientation, ChartRangePadding, SkeletonType, AxisPosition } from '../utils/enum';import { EdgeLabelPlacement, ValueType, IntervalType, LabelPlacement, LabelIntersectAction } from '../utils/enum';import { Size, Rect, measureText, rotateTextSize, firstToLowerCase, valueToCoefficient, inside } from '../../common/utils/helper';import { DoubleRange } from '../utils/double-range';import { Chart } from '../chart';import { Series } from '../series/chart-series';import { Double } from '../axis/double-axis';import { DateTime } from '../axis/date-time-axis';import { Category } from '../axis/category-axis';import { DateTimeCategory } from '../axis/date-time-category-axis';import { Theme } from '../../common/model/theme';import { IAxisRangeCalculatedEventArgs } from '../../common/model/interface';import { axisRangeCalculated } from '../../common/model/constants';import { StripLineSettings, MultiLevelLabels, LabelBorder } from '../model/chart-base';import { StripLineSettingsModel, MultiLevelLabelsModel, LabelBorderModel } from '../model/chart-base-model';import { textWrap } from '../../common/utils/helper';import { ScrollBar } from '../../common/scrollbar/scrollbar';
+import { Property, Complex, ChildProperty, Collection, extend } from '@syncfusion/ej2-base';import { FontModel, BorderModel } from '../../common/model/base-model';import { Font, Border } from '../../common/model/base';import { Orientation, ChartRangePadding, SkeletonType, AxisPosition } from '../utils/enum';import { EdgeLabelPlacement, ValueType, IntervalType, LabelPlacement, LabelIntersectAction } from '../utils/enum';import { Size, Rect, measureText, rotateTextSize, firstToLowerCase, valueToCoefficient, inside } from '../../common/utils/helper';import { DoubleRange } from '../utils/double-range';import { Chart } from '../chart';import { Series } from '../series/chart-series';import { Double } from '../axis/double-axis';import { DateTime } from '../axis/date-time-axis';import { Category } from '../axis/category-axis';import { DateTimeCategory } from '../axis/date-time-category-axis';import { Theme } from '../../common/model/theme';import { IAxisRangeCalculatedEventArgs } from '../../common/model/interface';import { axisRangeCalculated } from '../../common/model/constants';import { StripLineSettings, MultiLevelLabels, LabelBorder, ScrollbarSettings } from '../model/chart-base';import { StripLineSettingsModel, MultiLevelLabelsModel, LabelBorderModel, ScrollbarSettingsModel  } from '../model/chart-base-model';import { textWrap } from '../../common/utils/helper';import { ScrollBar } from '../../common/scrollbar/scrollbar';
 
 /**
  * Interface for a class Row
@@ -284,7 +284,7 @@ export interface AxisModel {
     /**
      * Specifies the index of the column where the axis is associated,
      * when the chart area is divided into multiple plot areas by using `columns`.
-     * ```html 
+     * ```html
      * <div id='Chart'></div>
      * ```
      * ```typescript
@@ -296,7 +296,7 @@ export interface AxisModel {
      *                name: 'xAxis 1',
      *                columnIndex: 1,
      *     }],
-     * ... 
+     * ...
      * });
      * chart.appendTo('#Chart');
      * ```
@@ -307,7 +307,7 @@ export interface AxisModel {
 
     /**
      * Specifies the index of the row where the axis is associated, when the chart area is divided into multiple plot areas by using `rows`.
-     * ```html 
+     * ```html
      * <div id='Chart'></div>
      * ```
      * ```typescript
@@ -621,6 +621,11 @@ export interface AxisModel {
      * Border of the multi level labels.
      */
     border?: LabelBorderModel;
+
+    /**
+     * Option to customize scrollbar with lazy loading
+     */
+    scrollbarSettings?: ScrollbarSettingsModel;
 
 }
 

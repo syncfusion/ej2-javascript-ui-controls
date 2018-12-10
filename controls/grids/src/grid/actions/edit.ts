@@ -595,10 +595,10 @@ export class Edit implements IAction {
         if (gObj.editSettings.template) {
             this.parent.destroyTemplate(['editSettingsTemplate']);
         }
-        if ((<{columnModel?: Column[]}>gObj).columnModel.some((column: Column) => !isNullOrUndefined(column.editTemplate))) {
+        cols = cols ? cols : this.parent.getColumns() as Column[];
+        if (cols.some((column: Column) => !isNullOrUndefined(column.editTemplate))) {
             this.parent.destroyTemplate(['editTemplate']);
         }
-        cols = cols ? cols : this.parent.getColumns() as Column[];
         for (let col of cols) {
             let temp: Function = col.edit.destroy as Function;
             if (col.edit.destroy) {
@@ -813,9 +813,16 @@ export class Edit implements IAction {
 
         let content: Element = this.parent.createElement('div', { className: 'e-tip-content' });
         content.appendChild(error);
-        let arrow: Element = this.parent.createElement('div', { className: 'e-arrow-tip e-tip-top' });
-        arrow.appendChild(this.parent.createElement('div', { className: 'e-arrow-tip-outer e-tip-top' }));
-        arrow.appendChild(this.parent.createElement('div', { className: 'e-arrow-tip-inner e-tip-top' }));
+        let arrow: Element;
+        if (this.parent.editSettings.newRowPosition === 'Bottom' && this.editModule.args.requestType === 'add') {
+            arrow = this.parent.createElement('div', { className: 'e-arrow-tip e-tip-bottom' });
+            arrow.appendChild(this.parent.createElement('div', { className: 'e-arrow-tip-outer e-tip-bottom' }));
+            arrow.appendChild(this.parent.createElement('div', { className: 'e-arrow-tip-inner e-tip-bottom' }));
+        } else {
+            arrow = this.parent.createElement('div', { className: 'e-arrow-tip e-tip-top' });
+            arrow.appendChild(this.parent.createElement('div', { className: 'e-arrow-tip-outer e-tip-top' }));
+            arrow.appendChild(this.parent.createElement('div', { className: 'e-arrow-tip-inner e-tip-top' }));
+        }
         div.appendChild(content);
         div.appendChild(arrow);
         table.appendChild(div);
@@ -832,6 +839,10 @@ export class Edit implements IAction {
             gcontent.style.position = 'static';
             let pos: OffsetPosition = calculateRelativeBasedPosition(input, div);
             div.style.top = pos.top + inputClient.height + 9 + 'px';
+        }
+        if (this.parent.editSettings.newRowPosition === 'Bottom' && this.editModule.args.requestType === 'add') {
+            div.style.bottom = inputClient.height + 9  + 'px';
+            div.style.top = null;
         }
     }
 

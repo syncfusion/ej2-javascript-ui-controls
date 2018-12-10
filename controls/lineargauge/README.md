@@ -20,7 +20,7 @@ npm install @syncfusion/ej2-lineargauge
 
 * [Getting Started](https://ej2.syncfusion.com/documentation/linear-gauge/getting-started.html?lang=typescript)
 * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=lineargauge#/material/lineargauge/default.html)
-* [Product Page](https://www.syncfusion.com/javascript-ui-controls/gauge-charts)
+* [Product Page](https://www.syncfusion.com/products/javascript/lineargauge)
 
 ## Supported Frameworks
 
@@ -31,7 +31,7 @@ Linear gauge component is also offered in following list of frameworks.
 3. [Vue.js](https://www.npmjs.com/package/@syncfusion/ej2-vue-lineargauge?utm_source=npm&utm_campaign=lineargauge)
 4. [ASP.NET Core](https://aspdotnetcore.syncfusion.com/LinearGauge/Default#/material)
 5. [ASP.NET MVC](https://aspnetmvc.syncfusion.com/LinearGauge/DefaultFunctionalities#/material) 
-6. [JavaScript (ES5)](https://www.syncfusion.com/javascript-ui-controls/gauge-charts)
+6. [JavaScript (ES5)](https://www.syncfusion.com/products/javascript/lineargauge)
 
 ## Use case samples
 
@@ -53,15 +53,15 @@ Linear gauge component is also offered in following list of frameworks.
 Product support is available for through following mediums.
 
 * Creating incident in Syncfusion [Direct-trac](https://www.syncfusion.com/support/directtrac/incidents?utm_source=npm&utm_campaign=lineargauge) support system or [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_campaign=lineargauge).
-* New [GitHub issues](https://github.com/syncfusion/ej2-lineargauge/issues).
+* New [GitHub issues](https://github.com/syncfusion/ej2-javascript-ui-controls/issues).
 * Ask your query in Stack Overflow with tag `syncfusion`, `ej2`.
 
 ## License
 
-Check the license detail [here](https://github.com/syncfusion/ej2/blob/master/license?utm_source=npm&utm_campaign=lineargauge).
+Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/lineargauge/license?utm_source=npm&utm_campaign=lineargauge).
 
 ## Changelog
 
-Check the changelog [here](https://github.com/syncfusion/ej2-lineargauge/blob/master/CHANGELOG.md?utm_source=npm&utm_campaign=lineargauge)
+Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/lineargauge/CHANGELOG.md?utm_source=npm&utm_campaign=lineargauge)
 
 © Copyright 2018 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

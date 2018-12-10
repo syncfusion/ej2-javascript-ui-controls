@@ -2,11 +2,13 @@
  * HeatMap Axis-Helper file
  */
 import { HeatMap } from '../heatmap';
-import { Rect, Size, measureText, TextOption, rotateTextSize, textTrim, CanvasTooltip } from '../utils/helper';
+import { Rect, Size, measureText, TextOption, rotateTextSize, textTrim, CanvasTooltip, PathOption, textWrap } from '../utils/helper';
 import { Axis } from './axis';
-import { sum, titlePositionX, LineOption, Line, DrawSvgCanvas, TextBasic, titlePositionY } from '../utils/helper';
+import { sum, titlePositionX, LineOption, Line, DrawSvgCanvas, TextBasic, titlePositionY, MultiLevelPosition } from '../utils/helper';
 import { extend, Browser } from '@syncfusion/ej2-base';
 import { TitleModel } from '../model/base-model';
+import { DataModel } from '../datasource/adaptor-model';
+import { MultiLevelLabels, MultiLevelCategories } from '../model/base';
 export class AxisHelper {
     private heatMap: HeatMap;
     private initialClipRect: Rect;
@@ -48,6 +50,9 @@ export class AxisHelper {
                 this.drawYAxisTitle(axis, element, axis.rect);
                 this.drawYAxisLabels(axis, element, axis.rect);
             }
+            if (axis.multiLevelLabels.length > 0) {
+                this.drawMultiLevels(element, axis);
+            }
             if (!heatMap.enableCanvasRendering) {
                 axisElement.appendChild(element);
             }
@@ -75,8 +80,8 @@ export class AxisHelper {
         this.drawSvgCanvas.drawLine(line, parent);
     }
     private drawXAxisTitle(axis: Axis, parent: Element, rect: Rect): void {
-        let y: number = rect.y + (!axis.opposedPosition ?
-            (axis.maxLabelSize.height + this.padding) : - (axis.maxLabelSize.height + this.padding));
+        let y: number = rect.y + (!axis.opposedPosition ? (axis.maxLabelSize.height + this.padding +
+            sum(axis.xAxisMultiLabelHeight)) : - (axis.maxLabelSize.height + this.padding + sum(axis.xAxisMultiLabelHeight)));
         if (axis.title.text) {
             let heatMap: HeatMap = this.heatMap;
             let title: TitleModel = axis.title;
@@ -104,7 +109,8 @@ export class AxisHelper {
                 title.textStyle.textAlignment === 'Far' ? 'end' : 'middle';
             let padding: number = 10;
             padding = axis.opposedPosition ? padding : -padding;
-            let x: number = rect.x + padding + ((axis.opposedPosition) ? axis.maxLabelSize.width : -axis.maxLabelSize.width);
+            let x: number = rect.x + padding + ((axis.opposedPosition) ? axis.maxLabelSize.width + sum(axis.yAxisMultiLabelHeight) :
+                -(axis.maxLabelSize.width + sum(axis.yAxisMultiLabelHeight)));
             let y: number = rect.y + titlePositionY(rect, 0, 0, title.textStyle) + (axis.opposedPosition ? this.padding : -this.padding);
             let options: TextOption = new TextOption(
                 heatMap.element.id + '_YAxisTitle',
@@ -128,17 +134,18 @@ export class AxisHelper {
         let heatmap: HeatMap = this.heatMap;
         let axis: Axis;
         let axisCollection: Axis[] = heatmap.axisCollections;
+        let data: DataModel = this.heatMap.dataSource;
+        let processLabels: boolean = !(data && data.isJsonData && data.adaptorType === 'Cell');
         for (let i: number = 0, len: number = axisCollection.length; i < len; i++) {
             axis = axisCollection[i];
-            axis.axisLabels = [];
-            axis.tooltipLabels = [];
-            axis.dateTimeAxisLabelInterval = [];
-            axis.labelValue = [];
-            if (axis.valueType === 'Numeric') {
+            if (axis.valueType === 'Numeric' && processLabels) {
+                axis.clearAxisLabel();
                 axis.calculateNumericAxisLabels(this.heatMap);
-            } else if (axis.valueType === 'DateTime') {
+            } else if (axis.valueType === 'DateTime' && processLabels) {
+                axis.clearAxisLabel();
                 axis.calculateDateTimeAxisLabel(this.heatMap);
-            } else {
+            } else if (axis.valueType === 'Category') {
+                axis.clearAxisLabel();
                 axis.calculateCategoryAxisLabels();
             }
             axis.tooltipLabels = axis.isInversed ? axis.tooltipLabels.reverse() : axis.tooltipLabels;
@@ -159,7 +166,7 @@ export class AxisHelper {
             let padding: number = axis.textStyle.size === '0px' ? 0 : this.padding;
             axis.nearSizes = [];
             axis.farSizes = [];
-            axis.computeSize(axis, heatmap);
+            axis.computeSize(axis, heatmap, rect);
             if (!axis.opposedPosition) {
                 if (axis.orientation === 'Horizontal') {
                     rect.height -= (sum(axis.nearSizes) + padding);
@@ -199,14 +206,17 @@ export class AxisHelper {
                 axis.rect.x = rect.x + rect.width;
                 axis.rect.width = 0;
             }
+            axis.multiLevelPosition = [];
+            for (let i: number = 0; i < axis.multiLevelLabels.length; i++) {
+                let multiPosition: MultiLevelPosition = axis.multiPosition(axis, i);
+                axis.multiLevelPosition.push(multiPosition);
+            }
         }
     }
 
     private drawXAxisLabels(axis: Axis, parent: Element, rect: Rect): void {
-        let heatMap: HeatMap = this.heatMap;
-        let labels: string[] = axis.axisLabels;
-        let interval: number = rect.width / axis.axisLabelSize;
-        let compactInterval: number = 0;
+        let heatMap: HeatMap = this.heatMap; let labels: string[] = axis.axisLabels;
+        let interval: number = rect.width / axis.axisLabelSize; let compactInterval: number = 0;
         let axisInterval: number = axis.interval ? axis.interval : 1;
         let tempintervel: number = rect.width / (axis.axisLabelSize / axis.axisLabelInterval);
         let temp: number = axis.axisLabelInterval;
@@ -223,15 +233,15 @@ export class AxisHelper {
             labels = axis.tooltipLabels;
             axisInterval = temp;
         }
-        let padding: number = 10;
+        let padding: number = 10; let labelPadding: number;
         let lableStrtX: number = rect.x + (!axis.isInversed ? 0 : rect.width);
-        let labelPadding: number;
-        let angle: number = axis.angle;
-        padding = this.padding;
+        let angle: number = axis.angle; padding = this.padding;
         let anglePadding: number = ((angle === 90 || angle === -90)) ? -2 : 0;
-        let labelElement: Element;
+        let labelElement: Element; let borderElement: Element;
+        anglePadding = ((angle % 360 === 180 || angle % 360 === -180)) ? -3 : 0;
         if (!heatMap.enableCanvasRendering) {
             labelElement = this.heatMap.renderer.createGroup({ id: heatMap.element.id + 'XAxisLabels' });
+            borderElement = this.heatMap.renderer.createGroup({ id: heatMap.element.id + 'XAxisLabelBorder' });
         }
         for (let i: number = 0, len: number = labels.length; i < len; i++) {
             let lableRect: Rect = new Rect(lableStrtX, rect.y, interval, rect.height);
@@ -242,7 +252,7 @@ export class AxisHelper {
             let transform: string;
             labelPadding = (axis.opposedPosition) ?
                 -(padding)
-                : padding + (3 * (elementSize.height / 4));
+                : (padding + ((angle % 360) === 0 ? (elementSize.height / 2) : 0));
             let x: number = lableRect.x + ((!axis.isInversed) ?
                 (lableRect.width / 2) - (elementSize.width / 2) : -((lableRect.width / 2) + (elementSize.width / 2)));
             if (axis.labelIntersectAction === 'Trim') {
@@ -252,15 +262,22 @@ export class AxisHelper {
                 x = ((x + elementSize.width) > (rect.x + rect.width)) ? (rect.x + rect.width - elementSize.width) : x;
             }
             let y: number = rect.y + labelPadding;
+            this.drawXAxisBorder(axis, borderElement, axis.rect, x, elementSize.width, i);
             if (angle % 360 !== 0) {
                 angle = (angle > 360) ? angle % 360 : angle;
                 let rotateSize: Size = rotateTextSize(axis.textStyle, <string>label, angle);
                 let diffHeight: number = axis.maxLabelSize.height - Math.ceil(rotateSize.height - elementSize.height);
                 let yLocation: number = axis.opposedPosition ? diffHeight / 2 : - diffHeight / 2;
                 x = lableRect.x + (axis.isInversed ? -(lableRect.width / 2) : (lableRect.width / 2));
-                y = y + (axis.opposedPosition ? -(rotateSize.height / 2) : ((rotateSize.height - elementSize.height) / 2));
+                y = y + (axis.opposedPosition ? -(rotateSize.height / 2) : (((angle % 360) === 180 ||
+                    (angle % 360) === -180) ? 0 : (rotateSize.height) / 2));
                 transform = 'rotate(' + angle + ',' + x + ','
                     + y + ')';
+                let calculateAngle : number = angle % 360;
+                calculateAngle = angle <= 180 ? angle : (360 - angle);
+                if (!axis.opposedPosition) {
+                    y = y - (((calculateAngle / 180) / 2) * rotateSize.height) + anglePadding;
+                }
             }
             let options: TextOption = new TextOption(
                 heatMap.element.id + '_XAxis_Label' + i,
@@ -282,7 +299,7 @@ export class AxisHelper {
             } else {
                 lableStrtX = lableStrtX + (!axis.isInversed ? (compactInterval * interval) : -(compactInterval * interval));
             }
-            if (label.indexOf('...') !== -1 && this.heatMap.enableCanvasRendering) {
+            if (label.indexOf('...') !== -1) {
                 this.heatMap.tooltipCollection.push(
                     new CanvasTooltip(
                         labels[i],
@@ -294,6 +311,7 @@ export class AxisHelper {
         }
         if (!heatMap.enableCanvasRendering) {
             parent.appendChild(labelElement);
+            parent.appendChild(borderElement);
         }
     }
     private drawYAxisLabels(axis: Axis, parent: Element, rect: Rect): void {
@@ -319,9 +337,10 @@ export class AxisHelper {
         let lableStartY: number = rect.y + (axis.isInversed ? 0 : rect.height);
         let anchor: string = axis.opposedPosition ? 'start' : 'end';
         padding = axis.opposedPosition ? padding : -padding;
-        let labelElement: Element;
+        let labelElement: Element; let borderElement: Element;
         if (!heatMap.enableCanvasRendering) {
             labelElement = this.heatMap.renderer.createGroup({ id: heatMap.element.id + 'YAxisLabels' });
+            borderElement = this.heatMap.renderer.createGroup({ id: heatMap.element.id + 'YAxisLabelBorder' });
         }
         for (let i: number = 0, len: number = labels.length; i < len; i++) {
             let labelRect: Rect = new Rect(rect.x, lableStartY, rect.width, interval);
@@ -345,9 +364,506 @@ export class AxisHelper {
                 lableStartY = lableStartY + (axis.isInversed ? (compactInterval * interval) : -(compactInterval * interval));
                 i = i + (compactInterval - 1);
             }
+            let elementSize: Size = measureText(labels[i], axis.textStyle);
+            this.drawYAxisBorder(axis, borderElement, axis.rect, y, elementSize.height, i);
         }
         if (!heatMap.enableCanvasRendering) {
             parent.appendChild(labelElement);
+            parent.appendChild(borderElement);
         }
+    }
+
+    private drawXAxisBorder(axis: Axis, parent: Element, rect: Rect, lableX: number, width: number, index: number): void {
+        let interval: number = rect.width / axis.axisLabelSize;
+        let path: string = ''; let padding: number = 10;
+        let axisInterval: number = axis.interval ? axis.interval : 1;
+        let startX: number = axis.isInversed ? rect.x + rect.width - (interval * index * axisInterval) :
+            rect.x + (interval * index * axisInterval);
+        let startY: number = rect.y;
+        let endX: number; let endY: number;
+        endY = startY + (axis.opposedPosition ? -(axis.maxLabelSize.height + padding) : axis.maxLabelSize.height + padding);
+        endX = axis.isInversed ? startX - interval : startX + interval;
+        switch (axis.border.type) {
+            case 'Rectangle':
+                path = ('M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
+                    'L' + ' ' + endX + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + startY);
+                break;
+            case 'WithoutTopBorder':
+                path = 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
+                    'L' + ' ' + endX + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ';
+                break;
+            case 'WithoutBottomBorder':
+                path = 'M' + ' ' + startX + ' ' + endY + ' ' + 'L' + ' ' + startX + ' ' + startY + ' ' +
+                    'L' + ' ' + endX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ';
+                break;
+            case 'WithoutTopandBottomBorder':
+                path = 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
+                    'M' + ' ' + endX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ';
+                break;
+            case 'Brace':
+                let padding: number = 3;
+                endY = startY + ((endY - startY) / 2) + (axis.opposedPosition ? 0 : 5);
+                let endY1: number = axis.isInversed ? (lableX + width + padding) : (lableX - padding);
+                let endY2: number = axis.isInversed ? (lableX - padding) : (lableX + width + padding);
+                path = 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
+                    'L' + ' ' + endY1 + ' ' + endY + ' ' + 'M' + ' ' + endY2 +
+                    ' ' + endY + ' ' + 'L' +
+                    ' ' + endX + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ';
+                break;
+        }
+        if (axis.border.width > 0 && axis.border.type !== 'WithoutBorder') {
+            this.createAxisBorderElement(axis, path, parent, index);
+        }
+    }
+
+    private drawYAxisBorder(axis: Axis, parent: Element, rect: Rect, lableY: number, height: number, index: number): void {
+        let interval: number = rect.height / axis.axisLabelSize;
+        let path: string = ''; let padding: number = 20;
+        let axisInterval: number = axis.interval ? axis.interval : 1;
+        let startX: number = rect.x;
+        let startY: number = axis.isInversed ? rect.y + (interval * index * axisInterval) :
+            rect.y + rect.height - (interval * index * axisInterval);
+        let endX: number; let endY: number;
+        endX = startX + (!axis.opposedPosition ? -(axis.maxLabelSize.width + padding) : axis.maxLabelSize.width + padding);
+        endY = axis.isInversed ? startY + interval : startY - interval;
+        switch (axis.border.type) {
+            case 'Rectangle':
+                path = 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
+                    'L' + ' ' + endX + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + startY;
+                break;
+            case 'WithoutTopBorder':
+                path = 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ' +
+                    'L' + ' ' + endX + ' ' + endY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ';
+                break;
+            case 'WithoutBottomBorder':
+                path = 'M' + ' ' + endX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + startY + ' ' +
+                    'L' + ' ' + startX + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ';
+                break;
+            case 'WithoutTopandBottomBorder':
+                path = 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ' +
+                    'M' + ' ' + endX + ' ' + endY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ';
+                break;
+            case 'Brace':
+                endX = startX - (startX - endX) / 2;
+                let endY1: number = axis.isInversed ? lableY - height / 2 : lableY + height / 2;
+                let endY2: number = axis.isInversed ? lableY + height / 2 : lableY - height / 2;
+                path = 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ' +
+                    'L' + ' ' + endX + ' ' + endY1 + ' ' + 'M' + ' ' +
+                    endX + ' ' + endY2 + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ' +
+                    'L' + ' ' + startX + ' ' + endY;
+                break;
+
+        }
+        if (axis.border.width > 0 && axis.border.type !== 'WithoutBorder') {
+            this.createAxisBorderElement(axis, path, parent, index);
+        }
+    }
+
+    /**
+     * To create border element for axis.
+     * @return {void}
+     * @private
+     */
+    private createAxisBorderElement(axis: Axis, labelBorder: string, parent: Element, index: number): void {
+        let canvasTranslate: Int32Array;
+        let id: string = axis.orientation === 'Horizontal' ? '_XAxis_Label_Border' : '_YAxis_Label_Border';
+        let pathOptions: PathOption = new PathOption(
+            this.heatMap.element.id + id + index, 'transparent', axis.border.width, axis.border.color, 1, 'none', labelBorder);
+        if (!this.heatMap.enableCanvasRendering) {
+            let borderElement: Element = this.heatMap.renderer.drawPath(pathOptions);
+            parent.appendChild(borderElement);
+        } else {
+            this.heatMap.canvasRenderer.drawPath(pathOptions, canvasTranslate);
+        }
+    }
+
+    private drawMultiLevels(parent: Element, axis: Axis): void {
+        let element: Element;
+        if (!this.heatMap.enableCanvasRendering) {
+            element = this.heatMap.renderer.createGroup({ id: this.heatMap.element.id + '_' + axis.orientation + '_MultiLevelLabel' });
+        }
+        axis.orientation === 'Horizontal' ? this.renderXAxisMultiLevelLabels(axis, element, axis.rect) :
+            this.renderYAxisMultiLevelLabels(axis, element, axis.rect);
+        if (!this.heatMap.enableCanvasRendering) {
+            parent.appendChild(element);
+        }
+    }
+
+    /**
+     * render x axis multi level labels
+     * @private
+     * @return {void}
+     */
+    public renderXAxisMultiLevelLabels(axis: Axis, parent: Element, rect: Rect): void {
+        let x: number = 0; let y: number; let padding: number = 10;
+        let startX: number; let startY: number;
+        let endX: number = 0; let tooltip: boolean;
+        let start: number | Date; let end: number | Date;
+        let labelSize: Size; let anchor: string; let isInversed: boolean = axis.isInversed;
+        let labelElement: Element; let opposedPosition: boolean = axis.opposedPosition;
+        let pathRect: string = ''; let gap: number;
+        let width: number; let textLength: number;
+        let position: number = (isInversed ? axis.rect.width : 0) + axis.rect.x;
+        axis.multiLevelLabels.map((multiLevel: MultiLevelLabels, level: number) => {
+            labelElement = this.heatMap.renderer.createGroup({ id: this.heatMap.element.id + '_XAxisMultiLevelLabel' + level });
+            multiLevel.categories.map((categoryLabel: MultiLevelCategories, i: number) => {
+                tooltip = false;
+                start = typeof categoryLabel.start === 'number' ? categoryLabel.start : Number(new Date(<string>categoryLabel.start));
+                end = typeof categoryLabel.end === 'number' ? categoryLabel.end : Number(new Date(<string>categoryLabel.end));
+                startX = position + this.calculateLeftPosition(axis, start, categoryLabel.start, axis.rect);
+                startY = axis.multiLevelPosition[level].y;
+                endX = position + this.calculateWidth(axis, categoryLabel.end, end, axis.rect);
+                labelSize = measureText(categoryLabel.text, multiLevel.textStyle);
+                gap = ((categoryLabel.maximumTextWidth === null) ? Math.abs(endX - startX) : categoryLabel.maximumTextWidth) - padding;
+                y = startY + (opposedPosition ? -((axis.xAxisMultiLabelHeight[level] - labelSize.height)) : labelSize.height);
+                width = categoryLabel.maximumTextWidth ? categoryLabel.maximumTextWidth : labelSize.width;
+                x = !isInversed ? startX + padding : startX - gap;
+                if (multiLevel.alignment === 'Center') {
+                    x = ((endX - startX) / 2) + startX;
+                    x -= (labelSize.width > gap ? gap : labelSize.width) / 2;
+                } else if (multiLevel.alignment === 'Far') {
+                    x = !isInversed ? endX - padding : startX - padding;
+                    x -= (labelSize.width > gap ? gap : labelSize.width);
+                } else {
+                    x = !isInversed ? startX + padding : endX + padding;
+                }
+                if (multiLevel.overflow === 'None' && labelSize.width > Math.abs(endX - startX)) {
+                    x = !isInversed ? startX + padding : startX - labelSize.width - padding;
+                    anchor = 'start';
+                }
+                let textBasic: TextBasic = new TextBasic(
+                    x, y, anchor, categoryLabel.text, 0,
+                    'translate(0,0)');
+
+                let options: TextOption = new TextOption(
+                    this.heatMap.element.id + '_XAxis_MultiLevel' + level + '_Text' + i, textBasic, multiLevel.textStyle,
+                    multiLevel.textStyle.color || this.heatMap.themeStyle.axisLabel);
+                if (multiLevel.overflow === 'Wrap') {
+                    options.text = textWrap(categoryLabel.text, gap, multiLevel.textStyle);
+                    textLength = options.text.length;
+                } else if (multiLevel.overflow === 'Trim') {
+                    options.text = textTrim(gap, categoryLabel.text, multiLevel.textStyle);
+                    textLength = 1;
+                }
+                if (multiLevel.overflow === 'Wrap' && options.text.length > 1) {
+                    this.drawSvgCanvas.createWrapText(options, multiLevel.textStyle, labelElement);
+                    for (let i: number = 0; i < options.text.length; i++) {
+                        if (options.text[i].indexOf('...') !== -1) {
+                            tooltip = true;
+                            break;
+                        }
+                    }
+                } else {
+                    this.drawSvgCanvas.createText(options, labelElement, options.text);
+                }
+                if (!this.heatMap.enableCanvasRendering) {
+                    parent.appendChild(labelElement);
+                }
+                if (options.text.indexOf('...') !== -1 || options.text[0].indexOf('...') !== -1 || tooltip) {
+                    this.heatMap.tooltipCollection.push(
+                        new CanvasTooltip(
+                            categoryLabel.text,
+                            new Rect(x, y - labelSize.height, gap, labelSize.height * textLength)));
+                }
+                if (multiLevel.border.width > 0 && multiLevel.border.type !== 'WithoutBorder') {
+                    pathRect = this.renderXAxisLabelBorder(
+                        level, axis, startX, startY, endX, pathRect, level, labelSize, gap, x
+                    );
+                }
+            });
+            if (pathRect !== '') {
+                this.createBorderElement(level, axis, pathRect, parent);
+                pathRect = '';
+            }
+        });
+        if (!this.heatMap.enableCanvasRendering) {
+            parent.appendChild(labelElement);
+        }
+    }
+
+    /**
+     * render x axis multi level labels border
+     * @private
+     * @return {void}
+     */
+    private renderXAxisLabelBorder(
+        labelIndex: number, axis: Axis, startX: number, startY: number, endX: number,
+        path: string, level: number, labelSize: Size, gap: number, x: number): string {
+        let path1: number; let path2: number;
+        let endY: number = startY + (axis.opposedPosition ? - (axis.xAxisMultiLabelHeight[labelIndex]) :
+            axis.xAxisMultiLabelHeight[labelIndex]);
+        switch (axis.multiLevelLabels[level].border.type) {
+            case 'Rectangle':
+                path += 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
+                    'L' + ' ' + endX + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + startY + ' ';
+                break;
+            case 'WithoutTopBorder':
+                path += 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
+                    'L' + ' ' + endX + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ';
+                break;
+            case 'WithoutBottomBorder':
+                path += 'M' + ' ' + startX + ' ' + endY + ' ' + 'L' + ' ' + startX + ' ' + startY + ' ' +
+                    'L' + ' ' + endX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ';
+                break;
+            case 'WithoutTopandBottomBorder':
+                path += 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
+                    'M' + ' ' + endX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ';
+                break;
+            case 'Brace':
+                let padding: number = 3;
+                path1 = axis.isInversed ? (labelSize.width > gap ? gap : labelSize.width) + x + padding : x - padding;
+                path2 = axis.isInversed ? x - padding : (labelSize.width > gap ? gap : labelSize.width) + x + padding;
+                path += 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + (startY + (endY - startY) / 2) + ' ' +
+                    'L' + ' ' + path1 + ' ' + (startY + (endY - startY) / 2) + ' ' + 'M' + ' ' + path2 + ' ' + (startY +
+                        (endY - startY) / 2) + ' ' + 'L' + ' ' + endX + ' ' + (startY + (endY - startY) / 2) +
+                    ' ' + 'L' + ' ' + endX + ' ' + startY + ' ';
+                break;
+        }
+        return path;
+    }
+
+    /**
+     * render y axis multi level labels
+     * @private
+     * @return {void}
+     */
+    public renderYAxisMultiLevelLabels(axis: Axis, parent: Element, rect: Rect): void {
+        let x: number = 0; let y: number; let padding: number = 10;
+        let startX: number;
+        let startY: number;
+        let startY2: number;
+        let endY: number;
+        let start: number | Date; let end: number | Date;
+        let labelSize: Size; let anchor: string; let isInversed: boolean = axis.isInversed;
+        let labelElement: Element; let opposedPosition: boolean = axis.opposedPosition;
+        let pathRect: string = ''; let gap: number;
+        let interval: number = (axis.rect.height / axis.axisLabelSize) / axis.increment;
+        let text: string | string[];
+        let position: number = (!isInversed ? axis.rect.height : 0) + axis.rect.y;
+        axis.multiLevelLabels.map((multiLevel: MultiLevelLabels, level: number) => {
+            startY2 = axis.multiLevelPosition[level].y;
+            labelElement = this.heatMap.renderer.createGroup({ id: this.heatMap.element.id + '_YAxisMultiLevelLabel' + level });
+
+            multiLevel.categories.map((categoryLabel: MultiLevelCategories, i: number) => {
+                start = typeof categoryLabel.start === 'number' ? categoryLabel.start : Number(new Date(<string>categoryLabel.start));
+                end = typeof categoryLabel.end === 'number' ? categoryLabel.end : Number(new Date(<string>categoryLabel.end));
+                startY = position + this.calculateLeftPosition(axis, start, categoryLabel.start, axis.rect);
+                startX = axis.multiLevelPosition[level].x;
+                endY = position + this.calculateWidth(axis, categoryLabel.start, end, axis.rect);
+                labelSize = measureText(categoryLabel.text, multiLevel.textStyle);
+                gap = ((categoryLabel.maximumTextWidth === null) ? Math.abs(startX) : categoryLabel.maximumTextWidth) - padding;
+                let maxWidth: number = Math.abs(startX - (startX - axis.multiLevelSize[level].width - 2 * padding)) / 2 -
+                    (labelSize.width / 2);
+                x = (axis.opposedPosition ? startX : startX - axis.multiLevelSize[level].width - 2 * padding) + maxWidth;
+                y = startY + padding;
+                if (multiLevel.overflow !== 'None') {
+                    if (multiLevel.overflow === 'Wrap') {
+                        text = textWrap(categoryLabel.text, gap, multiLevel.textStyle);
+                    } else {
+                        text = textTrim(gap, categoryLabel.text, multiLevel.textStyle);
+                    }
+                }
+                if (multiLevel.alignment === 'Center') {
+                    y += ((endY - startY) / 2 - (text.length * labelSize.height) / 2);
+
+                } else if (multiLevel.alignment === 'Far') {
+                    y = isInversed ? endY - labelSize.height / 2 : y - labelSize.height;
+                } else {
+                    y = isInversed ? y + labelSize.height / 2 : endY + labelSize.height;
+                }
+                if (multiLevel.border.width > 0 && multiLevel.border.type !== 'WithoutBorder') {
+                    pathRect = this.renderYAxisLabelBorder(level, axis, startX, startY, endY, pathRect, level, labelSize, gap, y);
+                }
+                let textBasic: TextBasic = new TextBasic(
+                    x, y, 'start', categoryLabel.text, 0,
+                    'translate(0,0)');
+                let options: TextOption = new TextOption(
+                    this.heatMap.element.id + '_YAxis_MultiLevel' + level + '_Text' + i, textBasic, multiLevel.textStyle,
+                    multiLevel.textStyle.color || this.heatMap.themeStyle.axisLabel);
+                options.text = text;
+                this.drawSvgCanvas.createText(options, labelElement, options.text);
+                if (options.text.indexOf('...') !== -1) {
+                    this.heatMap.tooltipCollection.push(
+                        new CanvasTooltip(
+                            categoryLabel.text,
+                            new Rect(x, y - labelSize.height, gap, labelSize.height)));
+                }
+                if (!this.heatMap.enableCanvasRendering) {
+                    parent.appendChild(labelElement);
+                }
+            });
+            if (pathRect !== '') {
+                this.createBorderElement(level, axis, pathRect, parent);
+                pathRect = '';
+            }
+        });
+        if (!this.heatMap.enableCanvasRendering) {
+            parent.appendChild(labelElement);
+        }
+    }
+
+    /**
+     * render x axis multi level labels border
+     * @private
+     * @return {void}
+     */
+    private renderYAxisLabelBorder(
+        labelIndex: number, axis: Axis, startX: number, startY: number, endY: number,
+        path: string, level: number, labelSize: Size, gap: number, y: number): string {
+        let padding: number = 20; let path1: number; let path2: number;
+        let endX: number = startX - (axis.opposedPosition ? -(axis.multiLevelSize[labelIndex].width + padding) :
+            (axis.multiLevelSize[labelIndex].width + padding));
+        switch (axis.multiLevelLabels[level].border.type) {
+            case 'Rectangle':
+                path += 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ' +
+                    'L' + ' ' + endX + ' ' + endY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' + 'L' + ' ' + startX + ' ' + startY + ' ';
+                break;
+            case 'WithoutTopBorder':
+                path += 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ' +
+                    'L' + ' ' + endX + ' ' + endY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ';
+                break;
+            case 'WithoutBottomBorder':
+                path += 'M' + ' ' + endX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + startY + ' ' +
+                    'L' + ' ' + startX + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ';
+                break;
+            case 'WithoutTopandBottomBorder':
+                path += 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ' +
+                    'M' + ' ' + startX + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ';
+                break;
+            case 'Brace':
+                let padding: number = 10;
+                path1 = axis.isInversed ? (y - padding - 5) : (y + (labelSize.height) - padding);
+                path2 = axis.isInversed ? (y + (labelSize.height) - padding) : (y - padding - 5);
+                path += 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + (startX + (endX - startX) / 2) + ' ' + startY + ' ' +
+                    'L' + ' ' + (startX + (endX - startX) / 2) + ' ' + path1 + ' ' + 'M' + ' ' + (startX + (endX - startX) / 2) +
+                    ' ' + path2 + ' ' + 'L' + ' ' + (startX + (endX - startX) / 2) + ' ' +
+                    endY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ';
+                break;
+        }
+        return path;
+    }
+
+    /**
+     * create borer element
+     * @return {void}
+     * @private
+     */
+
+    public createBorderElement(borderIndex: number, axis: Axis, path: string, parent: Element): void {
+        let canvasTranslate: Int32Array;
+        let id: string = axis.orientation === 'Horizontal' ? 'XAxis' : 'YAxis';
+        let pathOptions: PathOption = new PathOption(
+            this.heatMap.element.id + '_' + id + '_MultiLevel_Rect_' + borderIndex, 'Transparent',
+            axis.multiLevelLabels[borderIndex].border.width, axis.multiLevelLabels[borderIndex].border.color,
+            1, '', path
+        );
+        let borderElement: Element = this.heatMap.renderer.drawPath(pathOptions) as HTMLElement;
+        if (!this.heatMap.enableCanvasRendering) {
+            parent.appendChild(borderElement);
+        } else {
+            this.heatMap.canvasRenderer.drawPath(pathOptions, canvasTranslate);
+        }
+    }
+
+    /**
+     * calculate left position of border element
+     * @private
+     */
+    public calculateLeftPosition(axis: Axis, start: number, label: number | Date | string, rect: Rect): number {
+        let value: number;
+        let interval: number;
+        if (typeof label === 'number') {
+            if (axis.valueType === 'Numeric' && (axis.minimum || axis.maximum)) {
+                let min: number = axis.minimum ? <number>axis.minimum : 0;
+                start -= min;
+            }
+            let size: number = axis.orientation === 'Horizontal' ? rect.width : rect.height;
+            interval = size / (axis.axisLabelSize * axis.increment);
+            value = (axis.isInversed ? -1 : 1) * start * interval;
+            value = axis.orientation === 'Horizontal' ? value : -value;
+        } else {
+            interval = this.calculateNumberOfDays(start, axis, true, rect);
+            value = axis.isInversed ? -interval : interval;
+            value = axis.orientation === 'Horizontal' ? value : -value;
+        }
+        return value;
+    }
+
+    /**
+     * calculate width of border element
+     * @private
+     */
+    public calculateWidth(axis: Axis, label: number | Date | string, end: number, rect: Rect): number {
+        let interval: number;
+        let value: number;
+        if (typeof label === 'number') {
+            if (axis.valueType === 'Numeric' && (axis.minimum || axis.maximum)) {
+                let min: number = axis.minimum ? <number>axis.minimum : 0;
+                end -= min;
+            }
+            let size: number = axis.orientation === 'Horizontal' ? rect.width : rect.height;
+            interval = size / (axis.axisLabelSize * axis.increment);
+            value = (axis.isInversed ? -1 : 1) * (end + 1) * interval;
+            value = axis.orientation === 'Horizontal' ? value : -value;
+        } else {
+            interval = this.calculateNumberOfDays(end, axis, false, rect);
+            value = interval;
+            value = axis.isInversed ? -value : value;
+            value = axis.orientation === 'Horizontal' ? value : -value;
+        }
+        return value;
+    }
+
+    private calculateNumberOfDays(date: number, axis: Axis, start: boolean, rect: Rect): number {
+        let oneDay: number = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
+        let oneMinute: number = 60 * 1000;
+        let oneHour: number = 60 * 60 * 1000;
+        let firstDate: Date;
+        let secondDate: Date;
+        let labels: (string | number | Date)[] = axis.labelValue;
+        let position: number;
+        let interval: number = (axis.orientation === 'Horizontal' ? rect.width : rect.height) / axis.axisLabelSize;
+        let givenDate: Date = new Date(Number(date));
+
+        let days: number = 0;
+        for (let index: number = 0; index < axis.axisLabelSize; index++) {
+            firstDate = new Date(Number(labels[index]));
+            secondDate = axis.isInversed ? new Date(Number(labels[index - 1])) : new Date(Number(labels[index + 1]));
+            if (index === (axis.isInversed ? 0 : axis.axisLabelSize - 1)) {
+                secondDate = new Date(Number(labels[index]));
+                if (axis.intervalType === 'Hours') {
+                    secondDate = new Date(Number(secondDate.setHours(secondDate.getHours() + 1)));
+                } else if ((axis.intervalType === 'Minutes')) {
+                    secondDate = new Date(Number(secondDate.setMinutes(secondDate.getMinutes() + 1)));
+                } else if ((axis.intervalType === 'Days')) {
+                    secondDate = new Date(Number(secondDate.setDate(secondDate.getDate() + 1)));
+                } else {
+                    let numberOfDays: number = axis.intervalType === 'Months' ?
+                        new Date(secondDate.getFullYear(), secondDate.getMonth() + 1, 0).getDate() :
+                        secondDate.getFullYear() % 4 === 0 ? 366 : 365;
+                    secondDate = new Date(Number(secondDate.setDate(secondDate.getDate() + numberOfDays)));
+                }
+            }
+            if (Number(firstDate) <= date && Number(secondDate) >= date) {
+                if (axis.intervalType === 'Minutes' || axis.intervalType === 'Hours') {
+                    let totalMinutes: number = Math.round(Math.abs((firstDate.getTime() - secondDate.getTime()) / (oneMinute)));
+                    let minutesInHours: number = Math.abs((firstDate.getTime() - givenDate.getTime()) / (oneMinute));
+                    days = (interval / totalMinutes) * minutesInHours;
+                    index = axis.isInversed ? axis.axisLabelSize - 1 - index : index;
+                    position = index * interval + days;
+                    break;
+                } else {
+                    let numberOfDays: number = Math.round(Math.abs((firstDate.getTime() - secondDate.getTime()) / (oneDay)));
+                    start ? givenDate.getDate() : givenDate.setDate(givenDate.getDate() + 1);
+                    if (numberOfDays !== 0) {
+                        days = (interval / numberOfDays) * (Math.abs((firstDate.getTime() - givenDate.getTime()) / (oneDay)));
+                    }
+                    index = axis.isInversed ? axis.axisLabelSize - 1 - index : index;
+                    position = index * interval + days;
+                    break;
+                }
+            }
+        }
+        return position;
     }
 }

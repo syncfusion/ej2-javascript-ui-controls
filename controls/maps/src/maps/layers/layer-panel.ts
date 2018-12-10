@@ -74,7 +74,7 @@ export class LayerPanel {
         });
     }
 
-    protected renderTileLayer(panel: LayerPanel, layer: LayerSettings, layerIndex: number, bing?: BingMap) : void {
+    protected renderTileLayer(panel: LayerPanel, layer: LayerSettings, layerIndex: number, bing?: BingMap): void {
         let center: Point = new Point(panel.mapObject.centerPosition.longitude, panel.mapObject.centerPosition.latitude);
         panel.currentFactor = panel.calculateFactor(layer);
         if (isNullOrUndefined(panel.mapObject.tileZoomLevel)) {
@@ -85,7 +85,7 @@ export class LayerPanel {
         );
         panel.generateTiles(panel.mapObject.tileZoomLevel, panel.mapObject.tileTranslatePoint, bing);
         if (panel.mapObject.markerModule) {
-            panel.mapObject.markerModule.markerRender(panel.layerObject, layerIndex, panel.mapObject.tileZoomLevel);
+            panel.mapObject.markerModule.markerRender(panel.layerObject, layerIndex, panel.mapObject.tileZoomLevel, null);
         }
         if (panel.mapObject.navigationLineModule) {
             panel.layerObject.appendChild(
@@ -115,7 +115,7 @@ export class LayerPanel {
                     let bing: BingMap = new BingMap(this.mapObject);
                     let url: string = 'http://dev.virtualearth.net/REST/V1/Imagery/Metadata/' + layer.bingMapType;
                     let ajax: Ajax = new Ajax({
-                        url:  url + '?output=json&include=ImageryProviders&key=' + layer.key
+                        url: url + '?output=json&include=ImageryProviders&key=' + layer.key
                     });
                     ajax.onSuccess = (json: string) => {
                         let jsonObject: object = JSON.parse(json);
@@ -232,8 +232,9 @@ export class LayerPanel {
             let currentShapeData: Object[] = <Object[]>this.currentLayer.layerData[i];
             let pathOptions: PathOption; let polyLineOptions: PolylineOption;
             let circleOptions: CircleOption; let groupElement: Element; let drawObject: Element;
-            let path: string = ''; let points: string = '';
+            let path: string = ''; let points: string = ''; let getShapeColor: Object;
             let fill: string = (shapeSettings.autofill) ? colors[i % colors.length] : shapeSettings.fill;
+            let opacity: number;
             if (shapeSettings.colorValuePath !== null && !isNullOrUndefined(currentShapeData['property'])) {
                 k = checkShapeDataFields(
                     <Object[]>this.currentLayer.dataSource, currentShapeData['property'],
@@ -247,7 +248,11 @@ export class LayerPanel {
                 }
             }
             let shapeID: string = this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_ShapeIndex_' + i + '_dataIndex_' + k;
-            fill = this.getShapeColorMapping(this.currentLayer, currentShapeData['property'], fill);
+            getShapeColor = this.getShapeColorMapping(this.currentLayer, currentShapeData['property'], fill);
+            fill = Object.prototype.toString.call(getShapeColor) === '[object Object]' && !isNullOrUndefined(getShapeColor['fill'])
+                ? getShapeColor['fill'] : fill;
+            opacity = (Object.prototype.toString.call(getShapeColor) === '[object Object]'
+                && !isNullOrUndefined(getShapeColor['opacity'])) ? getShapeColor['opacity'] : shapeSettings.opacity;
             let eventArgs: IShapeRenderingEventArgs = {
                 cancel: false, name: shapeRendering, index: i,
                 data: this.currentLayer.dataSource ? this.currentLayer.dataSource[k] : null, maps: this.mapObject,
@@ -293,7 +298,7 @@ export class LayerPanel {
                     if (path.length > 3) {
                         pathOptions = new PathOption(
                             shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color,
-                            shapeSettings.opacity, shapeSettings.dashArray, path);
+                            opacity, shapeSettings.dashArray, path);
                         pathEle = this.mapObject.renderer.drawPath(pathOptions) as SVGPathElement;
                     }
                     break;
@@ -303,13 +308,13 @@ export class LayerPanel {
                     });
                     polyLineOptions = new PolylineOption(
                         shapeID, points, eventArgs.fill, eventArgs.border.width, eventArgs.border.color,
-                        shapeSettings.opacity, shapeSettings.dashArray);
+                        opacity, shapeSettings.dashArray);
                     pathEle = this.mapObject.renderer.drawPolyline(polyLineOptions) as SVGPolylineElement;
                     break;
                 case 'Point':
                     let pointData: Object = <Object>currentShapeData['point'];
                     circleOptions = new CircleOption(
-                        shapeID, eventArgs.fill, eventArgs.border, shapeSettings.opacity, pointData['x'],
+                        shapeID, eventArgs.fill, eventArgs.border, opacity, pointData['x'],
                         pointData['y'], shapeSettings.circleRadius, null
                     );
                     pathEle = this.mapObject.renderer.drawCircle(circleOptions) as SVGCircleElement;
@@ -317,14 +322,24 @@ export class LayerPanel {
                 case 'Path':
                     path = <string>currentShapeData['point'];
                     pathOptions = new PathOption(
-                        shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, shapeSettings.opacity,
+                        shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, opacity,
                         shapeSettings.dashArray, path);
                     pathEle = this.mapObject.renderer.drawPath(pathOptions) as SVGPathElement;
                     break;
             }
             if (!isNullOrUndefined(pathEle)) {
+                let property: string[] = (Object.prototype.toString.call(this.currentLayer.shapePropertyPath) === '[object Array]' ?
+                    this.currentLayer.shapePropertyPath : [this.currentLayer.shapePropertyPath]) as string[];
+                // tslint:disable-next-line:align
+                let properties: string;
+                for (let j: number = 0; j < property.length; j++) {
+                    if (!isNullOrUndefined(currentShapeData['property'])) {
+                        properties = property[j];
+                        break;
+                    }
+                }
                 pathEle.setAttribute('aria-label', ((!isNullOrUndefined(currentShapeData['property'])) ?
-                    (currentShapeData['property'][this.currentLayer.shapePropertyPath]) : ''));
+                    (currentShapeData['property'][properties]) : ''));
                 pathEle.setAttribute('tabindex', (this.mapObject.tabIndex + i + 2).toString());
                 groupElement.appendChild(pathEle);
             }
@@ -364,7 +379,7 @@ export class LayerPanel {
             this.layerObject.appendChild(element);
         });
         if (this.mapObject.markerModule) {
-            this.mapObject.markerModule.markerRender(this.layerObject, layerIndex, this.currentFactor);
+            this.mapObject.markerModule.markerRender(this.layerObject, layerIndex, this.currentFactor, null);
         }
         this.translateLayerElements(this.layerObject, layerIndex);
         this.layerGroup.appendChild(this.layerObject);
@@ -410,12 +425,12 @@ export class LayerPanel {
         this.mapObject.bubbleModule.id = this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_BubbleIndex_' +
             bubbleIndex + '_dataIndex_' + dataIndex;
         this.mapObject.bubbleModule.renderBubble(
-            bubbleSettings, bubbleData, color, range, bubbleIndex, dataIndex, layerIndex, layer, group, );
+            bubbleSettings, bubbleData, color, range, bubbleIndex, dataIndex, layerIndex, layer, group);
     }
     /**
      * To get the shape color from color mapping module
      */
-    private getShapeColorMapping(layer: LayerSettingsModel, shape: object, color: string): string {
+    private getShapeColorMapping(layer: LayerSettingsModel, shape: object, color: string): Object {
         color = color ? color : layer.shapeSettings.fill;
         if (layer.shapeSettings.colorMapping.length === 0 && isNullOrUndefined(layer.dataSource)) {
             return color;

@@ -53,6 +53,10 @@ export interface ExpandEventArgs extends BaseEventArgs {
   isExpanded?: boolean;
   /** Defines the prevent action. */
   cancel?: boolean;
+  /** Defines the Accordion Item Index */
+  index?: number;
+  /** Defines the Accordion Item Content */
+  content?: HTMLElement;
 }
 
 export class AccordionActionSettings extends ChildProperty<AccordionActionSettings> {
@@ -295,8 +299,9 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       if (this.trgtEle) {
         while (this.ctrlTem.firstChild) {
           ele.appendChild(this.ctrlTem.firstChild); } }
+      ele.classList.remove(CLS_ACRDN_ROOT);
       ele.removeAttribute('style');
-      ['aria-disabled', 'aria-multiselectable', 'role'].forEach((attrb: string): void => {
+      ['aria-disabled', 'aria-multiselectable', 'role', 'data-ripple'].forEach((attrb: string): void => {
         this.element.removeAttribute(attrb);
     });
     }
@@ -674,6 +679,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       let icon: HTEle = <HTEle>select('.' + CLS_TOOGLEICN, trgtItemEle).firstElementChild;
       eventArgs = { element: trgtItemEle,
                     item: this.items[this.getIndexByItem(trgtItemEle)],
+                    index: this.getIndexByItem(trgtItemEle),
+                    content: trgtItemEle.querySelector('.' + CLS_CONTENT),
                     isExpanded: true };
       let eff: string = animation.name;
       this.trigger('expanding', eventArgs);
@@ -756,6 +763,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       let icon: HTEle = <HTEle>select('.' + CLS_TOOGLEICN, trgtItemEle).firstElementChild;
       eventArgs = { element: trgtItemEle,
                     item: this.items[this.getIndexByItem(trgtItemEle)],
+                    index: this.getIndexByItem(trgtItemEle),
+                    content: trgtItemEle.querySelector('.' + CLS_CONTENT),
                     isExpanded: false };
       let eff: string = animation.name;
       this.trigger('expanding' , eventArgs);
@@ -1016,7 +1025,10 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 let item: HTEle = <HTEle> selectAll('.' + CLS_ITEM, this.element)[index];
                 let oldVal: Str = Object(oldProp.items[index])[property];
                 let newVal: Str = Object(newProp.items[index])[property];
-                if (property === 'header' || property === 'iconCss' || property === 'expanded') { this.updateItem(item, index); }
+                let temp : Str = property;
+                if (temp === 'header' || temp === 'iconCss' || temp === 'expanded' || ((temp === 'content') && (oldVal === ''))) {
+                  this.updateItem(item, index);
+                }
                 if (property === 'cssClass' && !isNOU(item)) {
                   item.classList.remove(oldVal);
                   item.classList.add(newVal);

@@ -385,6 +385,7 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
         event.preventDefault();
         if (!(this.textboxWrapper.clearButton.classList.contains(HIDE_CLEAR))) {
             Input.setValue('', this.element, this.floatLabelType, this.showClearButton);
+            this.value = '';
         }
     }
 

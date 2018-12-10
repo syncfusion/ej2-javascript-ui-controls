@@ -9,9 +9,9 @@ import {
     Rect, measureText, CircleOption, PathOption, textTrim,
     removeClass, createStyle, querySelector, getTemplateFunction
 } from '../utils/helper';
-import { RectOption, Size, TextOption, Point, renderTextElement, drawSymbol } from '../utils/helper';
+import { RectOption, Size, TextOption, Point, renderTextElement, drawSymbol, checkPropertyPath } from '../utils/helper';
 import { isNullOrUndefined, SvgRenderer, Browser, EventHandler, remove } from '@syncfusion/ej2-base';
-
+import { LayerSettingsModel, HighlightSettingsModel, SelectionSettingsModel } from '../model/base-model';
 /**
  * Legend module is used to render legend for the maps
  */
@@ -35,6 +35,18 @@ export class Legend {
     private legendGroup: Element;
     private previousId: string;
     private areaRect: Rect = new Rect(0, 0, 0, 0);
+    private shapeHighlightCollection: object[] = [];
+    private shapeSelectionCollection: object[] = [];
+    public legendHighlightCollection: object[] = [];
+    public legendSelectionCollection: object[] = [];
+    private legendLinearGradient: Element;
+    private legendInteractiveGradient: Element[] = [];
+    private defsElement: Element;
+    public legendElement: Element = null;
+    private shapeElement: Element = null;
+    public oldShapeElement: Element;
+    public shapeSelection: boolean = true;
+    public legendSelection: boolean = true;
     constructor(maps: Maps) {
         this.maps = maps;
         this.addEventListener();
@@ -43,6 +55,8 @@ export class Legend {
      * To calculate legend bounds and draw the legend shape and text.
      */
     public renderLegend(): void {
+        this.defsElement = this.maps.renderer.createDefs();
+        this.maps.svgObject.appendChild(this.defsElement);
         this.calculateLegendBounds();
         this.drawLegend();
     }
@@ -59,7 +73,7 @@ export class Legend {
             if (!isNullOrUndefined(layer.shapeData)) {
                 let layerData: Object[] = layer.shapeData['features'];
                 let dataPath: string = layer.shapeDataPath;
-                let propertyPath: string = layer.shapePropertyPath;
+                let propertyPath: string | string[] = layer.shapePropertyPath;
                 let dataSource: Object[] = layer.dataSource as Object[];
                 let colorValuePath: string;
                 let colorMapping: ColorMappingSettings[];
@@ -271,7 +285,7 @@ export class Legend {
      */
     private getLegends(
         layerIndex: number, layerData: object[], colorMapping: ColorMappingSettings[], dataSource: object[],
-        dataPath: string, colorValuePath: string, propertyPath: string
+        dataPath: string, colorValuePath: string, propertyPath: string | string[]
     ): void {
         this.getRangeLegendCollection(layerIndex, layerData, colorMapping, dataSource, dataPath, colorValuePath, propertyPath);
         this.getEqualLegendCollection(layerIndex, layerData, colorMapping, dataSource, dataPath, colorValuePath, propertyPath);
@@ -307,7 +321,7 @@ export class Legend {
                 let textLocation: Point = new Point(item['textX'], item['textY']);
                 eventArgs.fill = item['fill'];
                 map.trigger(legendRendering, eventArgs);
-                let rectOptions: RectOption = new RectOption(itemId, eventArgs.fill, eventArgs.shapeBorder, 1, bounds);
+                let rectOptions: RectOption = new RectOption(itemId, eventArgs.fill, eventArgs.shapeBorder, legend.opacity, bounds);
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'middle', item['text'], '', '');
                 renderTextElement(textOptions, textFont, textFont.color, this.legendGroup);
                 this.legendGroup.appendChild(render.drawRectangle(rectOptions));
@@ -320,13 +334,10 @@ export class Legend {
 
     private drawLegendItem(page: number): void {
         let map: Maps = this.maps;
-        let legend: LegendSettingsModel = <LegendSettingsModel>map.legendSettings;
-        let spacing: number = 10;
+        let legend: LegendSettingsModel = <LegendSettingsModel>map.legendSettings; let spacing: number = 10;
         let shapeSize: Size = new Size(legend.shapeWidth, legend.shapeHeight);
-        let textOptions: TextOption;
-        let renderOptions: CircleOption | PathOption | RectOption;
-        let render: SvgRenderer = map.renderer;
-        let shapeBorder: BorderModel = legend.shapeBorder;
+        let textOptions: TextOption; let renderOptions: CircleOption | PathOption | RectOption;
+        let render: SvgRenderer = map.renderer; let shapeBorder: BorderModel = legend.shapeBorder;
         let eventArgs: ILegendRenderingEventArgs = {
             name: legendRendering, cancel: false, fill: '', shape: legend.shape
         };
@@ -354,7 +365,7 @@ export class Legend {
                 let textLocation: Point = collection['Text'];
                 let imageUrl: string = ((isNullOrUndefined(collection['ImageSrc'])) ? legend.shape : collection['ImageSrc']);
                 let renderOptions: PathOption = new PathOption(
-                    shapeId, eventArgs.fill, eventArgs.shapeBorder.width, eventArgs.shapeBorder.color, 1, ''
+                    shapeId, eventArgs.fill, eventArgs.shapeBorder.width, eventArgs.shapeBorder.color, legend.opacity, ''
                 );
                 legendElement.appendChild(drawSymbol(shapeLocation, eventArgs.shape, shapeSize, collection['ImageSrc'], renderOptions));
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
@@ -420,6 +431,311 @@ export class Legend {
         }
     }
 
+    // tslint:disable-next-line:max-func-body-length
+    public legendHighLightAndSelection(targetElement: Element, value: string): void {
+        let shapeIndex: number;
+        let layerIndex: number;
+        let dataIndex: number;
+        let textEle: Element;
+        let legend: LegendSettingsModel = this.maps.legendSettings;
+        textEle = legend.mode === 'Default' ? document.getElementById(targetElement.id.replace('Shape', 'Text')) :
+            document.getElementById(targetElement.id + '_Text');
+        let collection: object[] = this.maps.legendModule.legendCollection;
+        let length: number;
+        let selectLength: number = 0;
+        let interactProcess: boolean = true;
+        if (value === 'selection') {
+            this.shapeHighlightCollection = [];
+            if (this.legendSelectionCollection.length > 0) {
+                for (let k: number = 0; k < this.legendSelectionCollection.length; k++) {
+                    if (targetElement === this.legendSelectionCollection[k]['legendElement']) {
+                        interactProcess = false;
+                        this.removeLegendSelectionCollection();
+                        this.legendSelectionCollection.splice(k, 1);
+                        break;
+                    } else {
+                        this.removeLegendSelectionCollection();
+                        this.legendSelectionCollection.splice(k, 1);
+                    }
+                }
+            }
+        } else {
+            if (this.legendSelectionCollection.length > 0) {
+                for (let k: number = 0; k < this.legendSelectionCollection.length; k++) {
+                    if ((targetElement.id.indexOf('_Legend_Shape') > -1 || targetElement.id.indexOf('_Legend_Index')) && targetElement ===
+                        this.legendSelectionCollection[k]['legendElement']) {
+                        interactProcess = false;
+                        break;
+                    } else {
+                        this.removeLegendHighlightCollection();
+                    }
+                }
+            }
+            this.removeLegendHighlightCollection();
+        }
+        if (interactProcess) {
+            for (let i: number = 0; i < collection.length; i++) {
+                if (textEle.textContent === collection[i]['text'] && collection[i]['data'].length > 0) {
+                    let layer: LayerSettingsModel = this.maps.layers[collection[i]['data'][0]['layerIndex']];
+                    let enable: boolean = (value === 'selection') ? layer.selectionSettings.enable : layer.highlightSettings.enable;
+                    let module: HighlightSettingsModel | SelectionSettingsModel;
+                    module = (value === 'selection') ? layer.selectionSettings : layer.highlightSettings;
+                    let data: object[] = collection[i]['data'];
+                    if (enable) {
+                        for (let j: number = 0; j < data.length; j++) {
+                            shapeIndex = data[j]['shapeIndex'];
+                            layerIndex = data[j]['layerIndex'];
+                            dataIndex = data[j]['dataIndex'];
+                            let shapeEle: Element = document.getElementById(this.maps.element.id + '_LayerIndex_' +
+                                layerIndex + '_ShapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
+                            if (shapeEle !== null) {
+                                if (value === 'highlight' && this.shapeElement !== targetElement) {
+                                    this.setColor(
+                                        shapeEle, module.fill, module.opacity.toString(), module.border.color,
+                                        module.border.width.toString());
+                                    this.setColor(
+                                        targetElement, module.fill, module.opacity.toString(), module.border.color,
+                                        module.border.width.toString());
+                                    if (j === 0) {
+                                        this.legendHighlightCollection = [];
+                                        this.pushCollection(targetElement, this.legendHighlightCollection, collection[i]);
+                                    }
+                                    length = this.legendHighlightCollection.length;
+                                    this.legendHighlightCollection[length - 1]['MapShapeCollection']['Elements'].push(shapeEle);
+                                } else if (value === 'selection' && this.shapeSelection) {
+                                    this.setColor(
+                                        targetElement, module.fill, module.opacity.toString(), module.border.color,
+                                        module.border.width.toString());
+                                    this.setColor(
+                                        shapeEle, module.fill, module.opacity.toString(), module.border.color,
+                                        module.border.width.toString());
+                                    this.legendHighlightCollection = [];
+                                    if (j === 0) {
+                                        this.pushCollection(targetElement, this.legendSelectionCollection, collection[i]);
+                                    }
+                                    selectLength = this.legendSelectionCollection.length;
+                                    this.legendSelectionCollection[selectLength - 1]['MapShapeCollection']['Elements'].push(shapeEle);
+                                    this.legendElement = targetElement;
+                                    if (j === data.length - 1) { this.legendSelection = false; }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private setColor(element: Element, fill: string, opacity: string, borderColor: string, borderWidth: string): void {
+        element.setAttribute('fill', fill);
+        element.setAttribute('opacity', opacity);
+        element.setAttribute('stroke', borderColor);
+        element.setAttribute('stroke-width', borderWidth);
+    }
+
+    private pushCollection(targetElement: Element, collection: object[], oldElement: object): void {
+        collection.push({
+            legendElement: targetElement, legendOldFill: oldElement['fill'], legendOldOpacity: oldElement['opacity'],
+            legendOldBorderColor: oldElement['borderColor'], legendOldBorderWidth: oldElement['borderWidth']
+        });
+        length = collection.length;
+        collection[length - 1]['MapShapeCollection'] = { Elements: [] };
+    }
+
+    private removeLegend(collection: object[]): void {
+        for (let i: number = 0; i < collection.length; i++) {
+            let item: object = collection[i];
+            this.setColor(
+                item['legendElement'], item['legendOldFill'], item['legendOldOpacity'],
+                item['legendOldBorderColor'], item['legendOldBorderWidth']);
+            let dataCount: number = item['MapShapeCollection']['Elements'].length;
+            for (let j: number = 0; j < dataCount; j++) {
+                this.setColor(
+                    item['MapShapeCollection']['Elements'][j], item['legendOldFill'], item['legendOldOpacity'],
+                    item['legendOldBorderColor'], item['legendOldBorderWidth']);
+            }
+        }
+    }
+
+    public removeLegendHighlightCollection(): void {
+        if (this.legendHighlightCollection.length > 0) {
+            this.removeLegend(this.legendHighlightCollection);
+        }
+    }
+
+    public removeLegendSelectionCollection(): void {
+        if (this.legendSelectionCollection.length > 0) {
+            this.removeLegend(this.legendSelectionCollection);
+            this.legendElement = null;
+            this.legendSelection = true;
+        }
+    }
+
+    public removeShapeHighlightCollection(): void {
+        if (this.shapeHighlightCollection.length > 0) {
+            for (let i: number = 0; i < this.shapeHighlightCollection.length; i++) {
+                let item: object = this.shapeHighlightCollection[i];
+                let removeFill: boolean = true;
+                for (let j: number = 0; j < this.shapeSelectionCollection.length; j++) {
+                    if (this.shapeSelectionCollection[j]['legendElement'] === item['legendElement']) {
+                        removeFill = false;
+                    }
+                }
+                if (removeFill) {
+                    this.setColor(
+                        item['legendElement'], item['legendOldFill'], item['legendOldOpacity'],
+                        item['legendOldBorderColor'], item['legendOldBorderWidth']);
+                }
+            }
+        }
+    }
+
+    public shapeHighLightAndSelection(
+        targetElement: Element, data: object, module: SelectionSettingsModel | HighlightSettingsModel,
+        getValue: string, layerIndex: number): void {
+        if (data !== undefined) {
+            let collection: object[] = this.maps.legendModule.legendCollection;
+            let index: number = this.legendIndexOnShape(data, layerIndex);
+            let text: string = collection[index]['text'];
+            let content: string; let legendShape: Element;
+            if (this.maps.legendSettings.mode === 'Default') {
+                content = document.getElementById(this.maps.element.id + '_Legend_Text_Index_' + index).textContent;
+                legendShape = document.getElementById(this.maps.element.id + '_Legend_Shape_Index_' + index);
+            } else {
+                content = document.getElementById(this.maps.element.id + '_Legend_Index_' + index + '_Text').textContent;
+                legendShape = document.getElementById(this.maps.element.id + '_Legend_Index_' + index);
+            }
+            let shapeElement: object = this.shapeDataOnLegend(targetElement);
+            this.oldShapeElement = shapeElement['LegendEle'];
+            let length: number = this.shapeSelectionCollection.length;
+            if (text === content) {
+                if (getValue === 'highlight' && shapeElement['LegendEle'] !== this.legendElement) {
+                    let selectionEle: object = this.isTargetSelected(shapeElement, this.shapeHighlightCollection);
+                    if (selectionEle === undefined || (selectionEle && !selectionEle['IsSelected'])) {
+                        this.pushCollection(legendShape, this.shapeHighlightCollection, collection[index]);
+                    }
+                    if (length > 0) {
+                        for (let j: number = 0; j < length; j++) {
+                            if (shapeElement['LegendEle'] === this.shapeSelectionCollection[j]['legendElement']) {
+                                break;
+                            } else if (j === length - 1) {
+                                this.removeShapeHighlightCollection();
+                                this.setColor(
+                                    legendShape, module.fill, module.opacity.toString(), module.border.color,
+                                    module.border.width.toString());
+                            }
+                        }
+                    } else {
+                        this.removeShapeHighlightCollection();
+                        this.setColor(
+                            legendShape, module.fill, module.opacity.toString(), module.border.color,
+                            module.border.width.toString());
+                    }
+                } else if (getValue === 'selection') {
+                    let selectionEle: object = this.isTargetSelected(shapeElement, this.shapeSelectionCollection);
+                    if (length > 0) {
+                        for (let j: number = 0; j < length; j++) {
+                            if (shapeElement['LegendEle'] !== this.shapeSelectionCollection[j]['legendElement']) {
+                                let element: object = this.shapeSelectionCollection[j];
+                                this.setColor(
+                                    element['legendElement'], element['legendOldFill'], element['legendOldOpacity'],
+                                    element['legendOldBorderColor'], element['legendOldBorderWidth']);
+                                this.shapeSelection = true;
+                                this.shapeElement = null;
+                            }
+                        }
+                    }
+                    if (selectionEle && (
+                        selectionEle['IsSelected'] && targetElement.getAttribute('class') === 'ShapeselectionMapStyle')) {
+                        let element: object = this.shapeSelectionCollection[selectionEle['SelectionIndex']];
+                        this.setColor(
+                            shapeElement['LegendEle'], element['legendOldFill'], element['legendOldOpacity'],
+                            element['legendOldBorderColor'], element['legendOldBorderWidth']);
+                        this.shapeSelectionCollection.splice(selectionEle['SelectionIndex'], 1);
+                        this.shapeSelection = true;
+                        this.shapeElement = null;
+                    }
+                    if (targetElement.getAttribute('class') !== 'ShapeselectionMapStyle' && this.legendSelection) {
+                        if (selectionEle === undefined || (selectionEle && !selectionEle['IsSelected'])) {
+                            this.pushCollection(legendShape, this.shapeSelectionCollection, collection[index]);
+                        }
+                        this.setColor(
+                            legendShape, module.fill, module.opacity.toString(), module.border.color,
+                            module.border.width.toString());
+                        this.shapeElement = shapeElement['LegendEle'];
+                        this.shapeSelection = false;
+                    }
+                } else if (document.getElementsByClassName('highlightMapStyle').length > 0) {
+                    this.removeShapeHighlightCollection();
+                    removeClass(document.getElementsByClassName('highlightMapStyle')[0]);
+                }
+            }
+        } else {
+            this.removeShapeHighlightCollection();
+        }
+    }
+
+    private isTargetSelected(target: object, collection: object[]): object {
+        let selectEle: object;
+        for (let i: number = 0; i < collection.length; i++) {
+            if (target['LegendEle'] === collection[i]['legendElement']) {
+                selectEle = { IsSelected: true, SelectionIndex: i };
+            }
+        }
+        return selectEle;
+    }
+
+    private legendIndexOnShape(data: object, index: number): number {
+        let legendIndex: number;
+        let path: string = this.maps.layers[index].shapeDataPath;
+        let value: object = data[path];
+        let collection: object[] = this.maps.legendModule.legendCollection;
+        for (let i: number = 0; i < collection.length; i++) {
+            let dataValue: object[] = collection[i]['data'];
+            for (let j: number = 0; j < dataValue.length; j++) {
+                if (value === dataValue[j]['name']) {
+                    legendIndex = i;
+                }
+            }
+        }
+        return legendIndex;
+    }
+
+    private shapeDataOnLegend(targetElement: Element): object {
+        let shapeIndex: number;
+        let layerIndex: number;
+        let dataIndex: number;
+        let collection: object[] = this.maps.legendModule.legendCollection;
+        let legend: LegendSettingsModel = this.maps.legendSettings;
+        for (let i: number = 0; i < collection.length; i++) {
+            let data: object[] = collection[i]['data'];
+            let process: boolean = false;
+            let elements: object[] = [];
+            let currentElement: object = { Elements: [] };
+            for (let j: number = 0; j < data.length; j++) {
+                shapeIndex = data[j]['shapeIndex'];
+                layerIndex = data[j]['layerIndex'];
+                dataIndex = data[j]['dataIndex'];
+                let shapeEle: Element = document.getElementById(this.maps.element.id + '_LayerIndex_' +
+                    layerIndex + '_ShapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
+                if (targetElement === shapeEle) {
+                    process = true;
+                }
+                elements.push(shapeEle);
+            }
+            if (process) {
+                if (isNullOrUndefined(currentElement['LegendEle'])) {
+                    currentElement['LegendEle'] = legend.mode === 'Default' ?
+                        document.getElementById(this.maps.element.id + '_Legend_Shape_Index_' + i) :
+                        document.getElementById(this.maps.element.id + '_Legend_Index_' + i);
+                }
+                currentElement['Elements'] = elements;
+                return currentElement;
+            }
+        }
+        return null;
+    }
+
     private renderLegendBorder(): void {
         let map: Maps = this.maps;
         let legend: LegendSettingsModel = <LegendSettingsModel>map.legendSettings;
@@ -440,7 +756,7 @@ export class Legend {
             textOptions = new TextOption(
                 map.element.id + '_LegendTitle',
                 (this.legendItemRect.x) + (this.legendItemRect.width / 2),
-                this.legendItemRect.y - (textSize.height / 2),
+                this.legendItemRect.y - (textSize.height / 2) - spacing / 2,
                 'middle', trimTitle, '');
             renderTextElement(textOptions, textStyle, textStyle.color, this.legendGroup);
         }
@@ -510,9 +826,12 @@ export class Legend {
             let dataSource: Object[] = marker.dataSource;
             let field: string = marker.legendText;
             let templateFn: Function;
+            let isDuplicate: boolean;
             dataSource.forEach((data: Object, dataIndex: number) => {
                 let imageSrc: string = null;
-                if (marker.visible && (!isNullOrUndefined(data['latitude'])) && (!isNullOrUndefined(data['longitude']))) {
+                let showLegend: boolean = isNullOrUndefined(data[this.maps.legendSettings.showLegendPath]) ? true :
+                    data[this.maps.legendSettings.showLegendPath];
+                if (marker.visible && showLegend && (!isNullOrUndefined(data['latitude'])) && (!isNullOrUndefined(data['longitude']))) {
                     if (marker.template) {
                         templateFn = getTemplateFunction(marker.template);
                         let templateElement: Element = templateFn(this.maps);
@@ -521,10 +840,14 @@ export class Legend {
                         imageSrc = markerEle.querySelector('img').src;
                     }
                     let text: string = isNullOrUndefined(data[field]) ? '' : data[field];
-                    this.legendCollection.push({
-                        layerIndex: layerIndex, markerIndex: markerIndex, dataIndex: dataIndex,
-                        fill: marker.fill, text: text, imageSrc: imageSrc
-                    });
+                    isDuplicate = this.maps.legendSettings.removeDuplicateLegend ?
+                        this.removeDuplicates(this.legendCollection, text) : false;
+                    if (!isDuplicate) {
+                        this.legendCollection.push({
+                            layerIndex: layerIndex, markerIndex: markerIndex, dataIndex: dataIndex,
+                            fill: marker.fill, text: text, imageSrc: imageSrc
+                        });
+                    }
                 }
             });
         });
@@ -532,14 +855,14 @@ export class Legend {
 
     private getRangeLegendCollection(
         layerIndex: number, layerData: Object[], colorMapping: ColorMappingSettings[], dataSource: Object[],
-        dataPath: string, colorValuePath: string, propertyPath: string
+        dataPath: string, colorValuePath: string, propertyPath: string | string[]
     ): void {
-        let legendText: string;
-        let fill: string = this.maps.legendSettings.fill;
+        let legendText: string; let legendIndex: number = 0;
+        let fill: string = this.maps.legendSettings.fill; let rangeData: Object[] = [];
         for (let colorMap of colorMapping) {
             if (!isNullOrUndefined(colorMap.from) && !isNullOrUndefined(colorMap.to)) {
                 legendText = !isNullOrUndefined(colorMap.label) ? colorMap.label : colorMap.from + ' - ' + colorMap.to;
-                let rangeData: Object[] = [];
+                rangeData = [];
                 let colorMapProcess: boolean = false;
                 dataSource.forEach((data: Object, dataIndex: number) => {
                     let colorValue: number = parseFloat(data[colorValuePath]);
@@ -554,15 +877,19 @@ export class Legend {
                         name: null, value: null
                     });
                 }
-                let legendFill: string = (isNullOrUndefined(fill)) ? colorMap.color : fill;
-                this.getOverallLegendItemsCollection(legendText, legendFill, rangeData);
+                let legendFill: string = (isNullOrUndefined(fill)) ? Object.prototype.toString.call(colorMap.color) === '[object Array]' ?
+                    !isNullOrUndefined(colorMap.value) ? colorMap.color[0] : this.legendGradientColor(colorMap, legendIndex) :
+                    <string>colorMap.color : fill;
+                legendIndex++;
+                this.getOverallLegendItemsCollection(legendText, legendFill, rangeData, colorMap.showLegend);
             }
         }
     }
 
-    private getOverallLegendItemsCollection(legendText: string, legendFill: string, legendData: Object[]): void {
+    private getOverallLegendItemsCollection(legendText: string, legendFill: string, legendData: Object[], showLegend: boolean): void {
         let newColllection: Object[] = [];
-        if (legendData.length > 0) {
+        let legend: LegendSettingsModel = this.maps.legendSettings;
+        if (legendData.length > 0 && showLegend) {
             for (let i: number = 0; i < legendData.length; i++) {
                 let collection: Object[] = <Object[]>legendData[i];
                 if (collection.length > 0) {
@@ -574,56 +901,133 @@ export class Legend {
                 }
                 newColllection['_isVisible'] = true;
             }
-            this.legendCollection.push({ text: legendText, fill: legendFill, data: newColllection });
+            let isDuplicate: boolean = this.maps.legendSettings.removeDuplicateLegend ?
+                this.removeDuplicates(this.legendCollection, legendText) : false;
+            if (!isDuplicate) {
+                this.legendCollection.push({
+                    text: legendText, fill: legendFill, data: newColllection, opacity: legend.opacity,
+                    borderColor: legend.border.color, borderWidth: legend.border.width
+                });
+            }
         }
+    }
+
+    private removeDuplicates(legendCollection: Object[], text: string): boolean {
+        let isDuplicate: boolean = false;
+        for (let i: number = 0; i < legendCollection.length; i++) {
+            if (legendCollection[i]['text'] === text) {
+                isDuplicate = true;
+                break;
+            } else {
+                continue;
+            }
+        }
+        return isDuplicate;
     }
 
     private getEqualLegendCollection(
         layerIndex: number, layerData: Object[], colorMapping: ColorMappingSettings[], dataSource: Object[],
-        dataPath: string, colorValuePath: string, propertyPath: string
+        dataPath: string, colorValuePath: string, propertyPath: string | string[]
     ): void {
-        let fill: string = this.maps.legendSettings.fill;
-        let legendText: string;
+        let fill: string = this.maps.legendSettings.fill; let equalValues: Object[] = [];
+        let legendText: string; let legendIndex: number = 0; let equalData: Object[] = [];
+        let outOfRangeValues: Object[] = []; let outOfRange: Object[] = [];
         for (let colorMap of colorMapping) {
             if (!isNullOrUndefined(colorMap.value)) {
                 legendText = !isNullOrUndefined(colorMap.label) ? colorMap.label : colorMap.value;
-                let equalData: Object[] = [];
+                equalData = [];
                 let eqaulColorProcess: boolean = false;
                 dataSource.forEach((data: Object, dataIndex: number) => {
                     let equalValue: string = data[colorValuePath];
                     if (equalValue === colorMap.value) {
                         eqaulColorProcess = true;
+                        if (equalValues.indexOf(equalValue) === -1) {
+                            equalValues.push(equalValue);
+                        }
                         equalData.push(this.getLegendData(layerIndex, dataIndex, data, dataPath, layerData, propertyPath, equalValue));
+                    } else {
+                        if (outOfRangeValues.indexOf(equalValue) === -1) {
+                            outOfRangeValues.push(equalValue);
+                        }
                     }
                 });
+                for (let x: number = 0; x < equalValues.length; x++) {
+                    for (let y: number = 0; y < outOfRangeValues.length; y++) {
+                        if (equalValues[x] === outOfRangeValues[y]) {
+                            let equalIndex: number = outOfRangeValues.indexOf(equalValues[x]);
+                            outOfRangeValues.splice(equalIndex, 1);
+                        }
+                    }
+                }
                 if (!eqaulColorProcess) {
                     equalData.push({
                         layerIndex: layerIndex, shapeIndex: null, dataIndex: null,
                         name: null, value: null
                     });
                 }
-                let legendFill: string = (isNullOrUndefined(fill)) ? colorMap.color : fill;
-                this.getOverallLegendItemsCollection(legendText, legendFill, equalData);
+                let legendFill: string = (isNullOrUndefined(fill)) ? Object.prototype.toString.call(colorMap.color) === '[object Array]'
+                    ? colorMap.color[0] : <string>colorMap.color : fill;
+                legendIndex++;
+                this.getOverallLegendItemsCollection(legendText, legendFill, equalData, colorMap.showLegend);
+            } else if (isNullOrUndefined(colorMap.minOpacity) && isNullOrUndefined(colorMap.maxOpacity) && isNullOrUndefined(colorMap.value)
+                && isNullOrUndefined(colorMap.from) && isNullOrUndefined(colorMap.to) && !isNullOrUndefined(colorMap.color)) {
+                dataSource.forEach((data: Object, dataIndex: number) => {
+                    let equalValue: string = data[colorValuePath];
+                    for (let k: number = 0; k < outOfRangeValues.length; k++) {
+                        if (equalValue === outOfRangeValues[k]) {
+                            outOfRange.push(
+                                this.getLegendData(layerIndex, dataIndex, data, dataPath, layerData, propertyPath, equalValue));
+                        }
+                    }
+                });
+                if (outOfRangeValues.length === 0) {
+                    let range: boolean = false; let outRange: Object[] = [];
+                    dataSource.forEach((data: Object, dataIndex: number) => {
+                        range = false;
+                        let rangeValue: number = data[colorValuePath];
+                        for (let z: number = 0; z < colorMapping.length; z++) {
+                            if (!isNullOrUndefined(rangeValue) && rangeValue !== 0) {
+                                if (rangeValue >= colorMapping[z].from && rangeValue <= colorMapping[z].to) {
+                                    range = true;
+                                }
+                            } else if (!range) {
+                                range = false;
+                            }
+                        }
+                        if (!range) {
+                            outOfRange.push(this.getLegendData(layerIndex, dataIndex, data, dataPath, layerData, propertyPath, rangeValue));
+                        }
+                    });
+                }
+                legendText = !isNullOrUndefined(colorMap.label) ? colorMap.label : 'Others';
+                let outfill: string = ((Object.prototype.toString.call(colorMap.color) === '[object Array]'))
+                    ? colorMap.color[0] : <string>colorMap.color;
+                let legendOutFill: string = outfill;
+                legendIndex++;
+                this.getOverallLegendItemsCollection(legendText, legendOutFill, outOfRange, colorMap.showLegend);
             }
         }
     }
 
     private getDataLegendCollection(
         layerIndex: number, layerData: Object[], colorMapping: ColorMappingSettings[], dataSource: Object[],
-        dataPath: string, colorValuePath: string, propertyPath: string
+        dataPath: string, colorValuePath: string, propertyPath: string | string[]
     ): void {
         let legendText: string;
         let fill: string = this.maps.legendSettings.fill;
-        if (!isNullOrUndefined(colorValuePath)) {
+        let valuePath: string = this.maps.legendSettings.valuePath;
+        if (!isNullOrUndefined(colorValuePath) && !isNullOrUndefined(dataSource)) {
             dataSource.forEach((data: Object, dataIndex: number) => {
+                let showLegend: boolean = isNullOrUndefined(data[this.maps.legendSettings.showLegendPath]) ?
+                    true : data[this.maps.legendSettings.showLegendPath];
                 let dataValue: string = data[colorValuePath];
                 let newData: Object[] = [];
                 let legendFill: string = (isNullOrUndefined(fill)) ? dataValue : fill;
                 if (!isNullOrUndefined(dataValue) && colorMapping.length === 0) {
-                    legendText = data[dataPath];
+                    legendText = !isNullOrUndefined(data[valuePath]) ? data[valuePath] : data[dataPath];
                     newData.push(this.getLegendData(layerIndex, dataIndex, data, dataPath, layerData, propertyPath, dataValue));
                 }
-                this.getOverallLegendItemsCollection(legendText, legendFill, newData);
+                this.getOverallLegendItemsCollection(legendText, legendFill, newData, showLegend);
             });
         }
     }
@@ -724,7 +1128,6 @@ export class Legend {
         }
         this.maps.on(Browser.touchMoveEvent, this.interactiveHandler, this);
         this.maps.on(Browser.touchEndEvent, this.interactiveHandler, this);
-
         // this.maps.on(click, this.legendClick, this);
     }
 
@@ -827,13 +1230,14 @@ export class Legend {
 
     private getLegendData(
         layerIndex: number, dataIndex: number, data: Object, dataPath: string,
-        layerData: Object[], shapePropertyPath: string, value: string | number
+        layerData: Object[], shapePropertyPath: string | string[], value: string | number
     ): Object[] {
         let legendData: Object[] = [];
         if (Object.prototype.toString.call(layerData) === '[object Array]') {
             for (let i: number = 0; i < layerData.length; i++) {
                 let shapeData: Object = layerData[i];
-                if (shapeData['properties'][shapePropertyPath] === data[dataPath]) {
+                let shapePath: string = checkPropertyPath(data[dataPath], shapePropertyPath, shapeData['properties']);
+                if (shapeData['properties'][shapePath] === data[dataPath]) {
                     legendData.push({
                         layerIndex: layerIndex, shapeIndex: i, dataIndex: dataIndex,
                         name: data[dataPath], value: value
@@ -842,6 +1246,36 @@ export class Legend {
             }
         }
         return legendData;
+    }
+
+    public legendGradientColor(colorMap: ColorMappingSettings, legendIndex: number): string {
+        let legendFillColor: string;
+        let xmlns: string = 'http://www.w3.org/2000/svg';
+        if (!isNullOrUndefined(colorMap.color) && typeof (colorMap.color) === 'object') {
+            let linerGradientEle: Element = document.createElementNS(xmlns, 'linearGradient');
+            let opacity: number = 1; let position: LegendPosition = this.maps.legendSettings.position;
+            let x2: string; let y2: string;
+            x2 = position === 'Top' || position === 'Bottom' ? '100' : '0';
+            y2 = position === 'Top' || position === 'Bottom' ? '0' : '100';
+            linerGradientEle.setAttribute('id', 'linear_' + legendIndex);
+            linerGradientEle.setAttribute('x1', 0 + '%');
+            linerGradientEle.setAttribute('y1', 0 + '%');
+            linerGradientEle.setAttribute('x2', x2 + '%');
+            linerGradientEle.setAttribute('y2', y2 + '%');
+            for (let b: number = 0; b < colorMap.color.length; b++) {
+                let offsetColor: number = 100 / (colorMap.color.length - 1);
+                let stopEle: Element = document.createElementNS(xmlns, 'stop');
+                stopEle.setAttribute('offset', b * offsetColor + '%');
+                stopEle.setAttribute('stop-color', colorMap.color[b]);
+                stopEle.setAttribute('stop-opacity', opacity.toString());
+                linerGradientEle.appendChild(stopEle);
+            }
+            this.legendLinearGradient = linerGradientEle;
+            let color: string = 'url(' + '#linear_' + legendIndex + ')';
+            this.defsElement.appendChild(linerGradientEle);
+            legendFillColor = color;
+        }
+        return legendFillColor;
     }
 
 

@@ -101,11 +101,15 @@ export class DataSourceUpdate {
         let values: IFieldOptions[] = this.parent.dataSource.values;
         let filters: IFieldOptions[] = this.parent.dataSource.filters;
         let fields: IFieldOptions[][] = [rows, columns, values, filters];
+        let field: IField = this.parent.engineModule.fieldList[fieldName];
         for (let len: number = 0, lnt: number = fields.length; len < lnt; len++) {
             if (!isDataSource && fields[len]) {
                 for (let i: number = 0, n: number = fields[len].length; i < n; i++) {
                     if (fields[len][i].name === fieldName) {
-                        dataSourceItem = fields[len][i];
+                        dataSourceItem = (<{ [key: string]: IFieldOptions }>fields[len][i]).properties ?
+                            (<{ [key: string]: IFieldOptions }>fields[len][i]).properties : fields[len][i];
+                        dataSourceItem.type = field.type === 'number' ? dataSourceItem.type :
+                            'Count' as SummaryTypes;
                         fields[len].splice(i, 1);
                         isDataSource = true;
                         break;
@@ -128,8 +132,11 @@ export class DataSourceUpdate {
         let newField: IFieldOptions = {
             name: fieldName,
             caption: field.caption,
-            type: field.aggregateType as SummaryTypes,
-            showNoDataItems: field.showNoDataItems
+            type: field.aggregateType as SummaryTypes === undefined ? field.type === 'number' ? 'Sum' as SummaryTypes :
+                'Count' as SummaryTypes : field.aggregateType as SummaryTypes,
+            showNoDataItems: field.showNoDataItems,
+            baseField: field.baseField,
+            baseItem: field.baseItem,
         };
         return newField;
     }

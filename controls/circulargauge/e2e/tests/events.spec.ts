@@ -4,6 +4,7 @@ if(browser.isDesktop===true){
     browser.driver.manage().window().setSize(1900, 1200);
 }
 describe('CircularGuage Event samples test spec', () => {
+    let tooltipElement;
     it('Event testing spec 1', (done: Function) => {
         browser.load("/demos/testing/event-1.html");
         if(browser.browserName === 'internet explorer') {
@@ -50,6 +51,57 @@ describe('CircularGuage Event samples test spec', () => {
             browser.executeScript('window.onload.call(this);');
         }
         browser.compareScreen(element(By.id("static-gauge")), "LoadedEvent-Public-PointerValue");
+        done();
+    });
+    it('Event testing spec 7', (done: Function) => {
+        browser.load("/demos/events/axistext.html");
+        if(browser.browserName === 'internet explorer') {
+            browser.executeScript('window.onload.call(this);');
+        }
+        browser.compareScreen(element(By.id("static-gauge")), "AxisLabelRenderEvent-Text");
+        done();
+    });
+    it('Event testing spec 8', (done: Function) => {
+        browser.load("/demos/events/annotationText.html");
+        if(browser.browserName === 'internet explorer') {
+            browser.executeScript('window.onload.call(this);');
+        }
+        browser.compareScreen(element(By.id("static-gauge")), "AnnotationRenderEvent-Text");
+        done();
+    });
+    it('Event testing spec 9', (done: Function) => {
+        browser.load("/demos/events/tooltipEvent-1.html");
+        tooltipElement = element(by.id('static-gauge_Axis_0_Pointer_NeedleRect_0'));
+        browser.actions().click(tooltipElement).perform();
+        browser.compareScreen(element(By.id("static-gauge")), "TooltipRenderEvent-Content");
+        done();
+    });
+    it('Event testing spec 10', (done: Function) => {
+        browser.load("/demos/events/tooltipEvent-2.html");
+        tooltipElement = element(by.id('static-gauge_Axis_0_Pointer_NeedleRect_0'));
+        browser.actions().click(tooltipElement).perform();
+        browser.compareScreen(element(By.id("static-gauge")), "TooltipRenderEvent-TextStyle");
+        done();
+    });
+    it('Event testing spec 11', (done: Function) => {
+        browser.load("/demos/events/tooltipEvent-3.html");
+        tooltipElement = element(by.id('static-gauge_Axis_0_Pointer_NeedleRect_0'));
+        browser.actions().click(tooltipElement).perform();
+        browser.compareScreen(element(By.id("static-gauge")), "TooltipRenderEvent-Template");
+        done();
+    });
+    it('Event testing spec 12', (done: Function) => {
+        browser.load("/demos/events/tooltipEvent-4.html");
+        tooltipElement = element(by.id('static-gauge_Axis_0_Pointer_NeedleRect_0'));
+        browser.actions().click(tooltipElement).perform();
+        browser.compareScreen(element(By.id("static-gauge")), "TooltipRenderEvent-Location");
+        done();
+    });
+    it('Event testing spec 13', (done: Function) => {
+        browser.load("/demos/events/tooltipEvent-5.html");
+        tooltipElement = element(by.id('static-gauge_Axis_0_Pointer_NeedleRect_0'));
+        browser.actions().click(tooltipElement).perform();
+        browser.compareScreen(element(By.id("static-gauge")), "TooltipRenderEvent-ShowAtMousePosition");
         done();
     });
 });

@@ -51,7 +51,7 @@ describe('Chart Control', () =>{
                 let axis: HTMLElement = document.getElementById('chartContainerAxisInsideCollection');
                 expect(axis.childNodes.length == 3).toBe(true);
                 axis = document.getElementById('chartContainerAxisLine_1');
-                expect(parseFloat(axis.getAttribute('y2')) - parseFloat(axis.getAttribute('y1')) == 300).toBe(true);
+                expect(parseFloat(axis.getAttribute('d').split(' ')[5]) - parseFloat(axis.getAttribute('d').split(' ')[2]) == 300).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -65,7 +65,7 @@ describe('Chart Control', () =>{
                 let axis: HTMLElement = document.getElementById('chartContainerAxisInsideCollection');
                 expect(axis.childNodes.length == 3).toBe(true);
                 axis = document.getElementById('chartContainerAxisLine_0');
-                expect(parseFloat(axis.getAttribute('x2')) - parseFloat(axis.getAttribute('x1')) == 350).toBe(true);
+                expect(parseFloat(axis.getAttribute('d').split(' ')[4]) - parseFloat(axis.getAttribute('d').split(' ')[1]) == 350).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -90,8 +90,8 @@ describe('Chart Control', () =>{
             loaded = (args: Object): void => {
                 let area: HTMLElement = document.getElementById('chartContainer_ChartAreaBorder');
                 let axisLine: HTMLElement = document.getElementById('chartContainerAxisLine_1');
-                expect(area.getAttribute('x') == document.getElementById('chartContainerAxisLine_0').getAttribute('x1')).toBe(true);
-                expect(parseFloat(area.getAttribute('height')) == parseFloat(axisLine.getAttribute('y2')) - parseFloat(axisLine.getAttribute('y1'))).toBe(true);
+                expect(area.getAttribute('x') == document.getElementById('chartContainerAxisLine_0').getAttribute('d').split(' ')[1]).toBe(true);
+                expect(parseFloat(area.getAttribute('height')) == parseFloat(axisLine.getAttribute('d').split(' ')[5]) - parseFloat(axisLine.getAttribute('d').split(' ')[2])).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -104,8 +104,8 @@ describe('Chart Control', () =>{
 
             let area: HTMLElement = document.getElementById('chartContainer_ChartAreaBorder');
             let axisLine: HTMLElement = document.getElementById('chartContainerAxisLine_1');
-            expect(area.getAttribute('x') == document.getElementById('chartContainerAxisLine_0').getAttribute('x1')).toBe(true);
-            expect(parseFloat(area.getAttribute('height')) == parseFloat(axisLine.getAttribute('y2')) - parseFloat(axisLine.getAttribute('y1'))).toBe(true);
+            expect(area.getAttribute('x') == document.getElementById('chartContainerAxisLine_0').getAttribute('d').split(' ')[1]).toBe(true);
+            expect(parseFloat(area.getAttribute('height')) == parseFloat(axisLine.getAttribute('d').split(' ')[5]) - parseFloat(axisLine.getAttribute('d').split(' ')[2])).toBe(true);
 
         });
         it('Checking Axis Line', () => {
@@ -128,19 +128,19 @@ describe('Chart Control', () =>{
             chartObj.primaryYAxis.majorTickLines = { color: '#C2C924', width: 1.5, height: 20 };
             chartObj.dataBind();
 
-            svg = document.getElementById('chartContainer_MajorGridLine_0');
+            svg = document.getElementById('chartContainer_MajorGridLine_0_1');
             expect(svg.getAttribute('stroke') == '#C2C924').toBe(true);
             expect(svg.getAttribute('stroke-width') == '2').toBe(true);
 
-            svg = document.getElementById('chartContainer_MajorTickLine_0');
+            svg = document.getElementById('chartContainer_MajorTickLine_0_0');
             expect(svg.getAttribute('stroke') == '#0AA368').toBe(true);
             expect(svg.getAttribute('stroke-width') == '1.5').toBe(true);
 
-            svg = document.getElementById('chartContainer_MajorGridLine_1');
+            svg = document.getElementById('chartContainer_MajorGridLine_1_1');
             expect(svg.getAttribute('stroke') == '#B4D072').toBe(true);
             expect(svg.getAttribute('stroke-width') == '2').toBe(true);
 
-            svg = document.getElementById('chartContainer_MajorTickLine_1');
+            svg = document.getElementById('chartContainer_MajorTickLine_1_0');
             expect(svg.getAttribute('stroke') == '#C2C924').toBe(true);
             expect(svg.getAttribute('stroke-width') == '1.5').toBe(true);
         });
@@ -154,13 +154,13 @@ describe('Chart Control', () =>{
             chartObj.primaryXAxis.tickPosition = 'Inside';
             chartObj.dataBind();
 
-            svg = document.getElementById('chartContainer_MajorTickLine_0');
+            svg = document.getElementById('chartContainer_MajorTickLine_0_0');
             Position = svg.getAttribute('d').split(' ');
             let value1 = parseInt(Position[5]);
             let value2 = parseInt(Position[11]);
             expect(svg.getAttribute('value1') === svg.getAttribute('value2')).toBe(true);
 
-            svg = document.getElementById('chartContainer_MajorTickLine_1');
+            svg = document.getElementById('chartContainer_MajorTickLine_1_0');
             Position = svg.getAttribute('d').split(' ');
             let value11 = parseInt(Position[8]);
             let value12 = parseInt(Position[11]);
@@ -262,19 +262,19 @@ describe('Chart Control', () =>{
             };
             chartObj.dataBind();
 
-            svg = document.getElementById('chartContainer_MinorGridLine_0');
+            svg = document.getElementById('chartContainer_MinorGridLine_0_0');
             expect(svg.getAttribute('stroke') == '#C2C924').toBe(true);
             expect(svg.getAttribute('stroke-width') == '1').toBe(true);
 
-            svg = document.getElementById('chartContainer_MinorTickLine_0');
+            svg = document.getElementById('chartContainer_MinorTickLine_0_0');
             expect(svg.getAttribute('stroke') == '#0AA368').toBe(true);
             expect(svg.getAttribute('stroke-width') == '1').toBe(true);
 
-            svg = document.getElementById('chartContainer_MinorGridLine_1');
+            svg = document.getElementById('chartContainer_MinorGridLine_1_0');
             expect(svg.getAttribute('stroke') == '#B4D072').toBe(true);
             expect(svg.getAttribute('stroke-width') == '1').toBe(true);
 
-            svg = document.getElementById('chartContainer_MinorTickLine_1');
+            svg = document.getElementById('chartContainer_MinorTickLine_1_0');
             expect(svg.getAttribute('stroke') == '#C2C924').toBe(true);
             expect(svg.getAttribute('stroke-width') == '1').toBe(true);
         });
@@ -284,11 +284,11 @@ describe('Chart Control', () =>{
             chartObj.primaryYAxis.opposedPosition = true;
             chartObj.dataBind();
 
-            svg = document.getElementById('chartContainer_MinorTickLine_0');
+            svg = document.getElementById('chartContainer_MinorTickLine_0_0');
             expect(svg.getAttribute('stroke') == '#0AA368').toBe(true);
             expect(svg.getAttribute('stroke-width') == '1').toBe(true);
 
-            svg = document.getElementById('chartContainer_MinorTickLine_1');
+            svg = document.getElementById('chartContainer_MinorTickLine_1_0');
             expect(svg.getAttribute('stroke') == '#C2C924').toBe(true);
             expect(svg.getAttribute('stroke-width') == '1').toBe(true);
         });
@@ -313,8 +313,8 @@ describe('Chart Control', () =>{
         it('Checking the zoomFactor and zoomPosition with inversed', () => {
             loaded = (args: object) => {
                 text = document.getElementById('chartContainer0_AxisLabel_0');
-                expect(text.textContent == '4000').toBe(true);
-        };
+                expect(text.textContent == '3000').toBe(true);
+            };
             chartObj.loaded = loaded;
             chartObj.primaryXAxis = { isInversed: true, minimum: 1000, maximum: 10000, interval: 1000, zoomFactor: 0.5, zoomPosition: 0.3 };
             chartObj.primaryYAxis = { minimum: 0, maximum: 50, enableAutoIntervalOnZooming: false, zoomFactor: 0.3, zoomPosition: 0.6 };
@@ -361,9 +361,9 @@ describe('Chart Control', () =>{
             chart.primaryXAxis.valueType = 'Category';
             chart.refresh();
         });
-        it('checking minor ticklines', (done: Function) => {
+        it('checking minor gridlines', (done: Function) => {
             chart.loaded = (args: Object): void => {
-                let tick: Element = document.getElementById('chartContainer_MinorGridLine_0');
+                let tick: Element = document.getElementById('chartContainer_MinorGridLine_0_0');
                 let border: Element = document.getElementById('chartContainer_ChartAreaBorder');
                 expect(tick.getBoundingClientRect().top == border.getBoundingClientRect().top).toBe(true);
                 done();
@@ -651,7 +651,7 @@ describe('Chart Control', () =>{
                 expect(text.childNodes.length == 3).toBe(true);
                 expect(text.childNodes[1].textContent.indexOf('...') > -1).toBe(true);
                 let axis: any = document.getElementById('chartContainerAxisLine_0');
-                expect(+text.children[1].getAttribute('y') < +axis.getAttribute('y1')).toBe(true);
+                expect(+text.children[1].getAttribute('y') < +axis.getAttribute('d').split(' ')[2]).toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -958,9 +958,9 @@ describe('Chart Control', () =>{
                 
                 expect(insideGroup.childElementCount).toBe(3);
                 expect(outsideGroup.childElementCount).toBe(1);
-                expect(xAxisInside.childElementCount).toBe(5);
+                expect(xAxisInside.childElementCount).toBe(12);
               
-                expect((parseInt(xLine.getAttribute('y1')) - 1 === parseInt(chartArea.getAttribute('y')) + parseInt(chartArea.getAttribute('height')))).toBe(true);
+                expect((parseInt(xLine.getAttribute('d').split(' ')[2]) - 1 === parseInt(chartArea.getAttribute('y')) + parseInt(chartArea.getAttribute('height')))).toBe(true);
                 done();
             };
             chartEle.axisLabelRender = (args: IAxisLabelRenderEventArgs) => {
@@ -982,8 +982,8 @@ describe('Chart Control', () =>{
                 
                 expect(insideGroup.childElementCount).toBe(3);
                 expect(outsideGroup.childElementCount).toBe(2);
-                expect(yAxisInside.childElementCount).toBe(5);
-                expect((yLine.getAttribute('x1') === chartArea.getAttribute('x'))).toBe(true);
+                expect(yAxisInside.childElementCount).toBe(13);
+                expect((yLine.getAttribute('d').split(' ')[1] === chartArea.getAttribute('x'))).toBe(true);
                 done();
             };
             chartEle.loaded = loaded;
@@ -1002,11 +1002,11 @@ describe('Chart Control', () =>{
                 let yLine: Element = yAxisInside.children[0];
                 
                 expect(outsideGroup.childElementCount).toBe(2);
-                expect(xAxisInside.childElementCount).toBe(5);
-                expect(yAxisInside.childElementCount).toBe(5);
-                expect((xLine.getAttribute('y1') === '249') && (xLine.getAttribute('y2') === '249' )).toBe(true);
+                expect(xAxisInside.childElementCount).toBe(12);
+                expect(yAxisInside.childElementCount).toBe(13);
+                expect((xLine.getAttribute('d').split(' ')[2] === '249') && (xLine.getAttribute('d').split(' ')[5] === '249' )).toBe(true);
 
-                 expect((yLine.getAttribute('x1') === '400' ) && (yLine.getAttribute('x2') === '400')).toBe(true);
+                 expect((yLine.getAttribute('d').split(' ')[1] === '400' ) && (yLine.getAttribute('d').split(' ')[4] === '400')).toBe(true);
                 done();
             };
            
@@ -1071,8 +1071,8 @@ describe('Chart Control', () =>{
         it('By Specifying Cross value in Numeric', (done: Function) => {
             loaded = (args: Object): void => {
                 let yLine: HTMLElement = document.getElementById('chartContainerAxisLine_1');
-                expect((yLine.getAttribute('x1') === '402.5' || yLine.getAttribute('x1') === '400') && (yLine.getAttribute('x2') ===
-                 '402.5') || yLine.getAttribute('x2') === '400').toBe(true);
+                expect((yLine.getAttribute('d').split(' ')[1] === '402.5' || yLine.getAttribute('d').split(' ')[1] === '400') && (yLine.getAttribute('d').split(' ')[4] ===
+                 '402.5') || yLine.getAttribute('d').split(' ')[4] === '400').toBe(true);
                 done();
             };
             chartEle.loaded = loaded;
@@ -1082,8 +1082,8 @@ describe('Chart Control', () =>{
         it('By Specifying Cross value in String Value not in the Data Source', (done: Function) => {
             loaded = (args: Object): void => {
                 let yLine: HTMLElement = document.getElementById('chartContainerAxisLine_1');
-                expect((yLine.getAttribute('x1') === '33.5' || yLine.getAttribute('x1') === '32.5') &&
-                 (yLine.getAttribute('x2') === '33.5' || yLine.getAttribute('x2') === '32.5')).toBe(true);
+                expect((yLine.getAttribute('d').split(' ')[1] === '33.5' || yLine.getAttribute('d').split(' ')[1] === '32.5') &&
+                 (yLine.getAttribute('d').split(' ')[4] === '33.5' || yLine.getAttribute('d').split(' ')[4] === '32.5')).toBe(true);
                 done();
             };
             chartEle.loaded = loaded;
@@ -1124,7 +1124,7 @@ describe('Chart Control', () =>{
         it('With DateTime', (done: Function) => {
             loaded = (args: Object): void => {
                 let yLine: HTMLElement = document.getElementById('chartContainerAxisLine_1');
-                expect(yLine.getAttribute('x1') === '400' && yLine.getAttribute('x2') === '400').toBe(true);
+                expect(yLine.getAttribute('d').split(' ')[1] === '400' && yLine.getAttribute('d').split(' ')[4] === '400').toBe(true);
                 done();
             };
             chartEle.loaded = loaded;
@@ -1164,7 +1164,7 @@ describe('Chart Control', () =>{
         it('With Log values', (done: Function) => {
             loaded = (args: Object): void => {
                 let yLine: HTMLElement = document.getElementById('chartContainerAxisLine_1');
-                expect(yLine.getAttribute('x1') === '394.0515262271122' && yLine.getAttribute('x2') === '394.0515262271122').toBe(true);
+                expect(yLine.getAttribute('d').split(' ')[1] === '394.0515262271122' && yLine.getAttribute('d').split(' ')[4] === '394.0515262271122').toBe(true);
                 done();
             };
             chartEle.loaded = loaded;
@@ -1174,7 +1174,7 @@ describe('Chart Control', () =>{
         it('With Minor Tick Lines for X-Axis', (done: Function) => {
             loaded = (args: Object): void => {
                 let xLine: HTMLElement = document.getElementById('chartContainerAxisLine_0');
-                expect(xLine.getAttribute('y1') === '311.07500000000005' && xLine.getAttribute('y2') === '311.07500000000005').toBe(true);
+                expect(xLine.getAttribute('d').split(' ')[2] === '311.07500000000005' && xLine.getAttribute('d').split(' ')[5] === '311.07500000000005').toBe(true);
                 done();
             };
             chartEle.loaded = loaded;
@@ -1185,7 +1185,7 @@ describe('Chart Control', () =>{
         it('With Minor Tick Lines for Y-Axis', (done: Function) => {
             loaded = (args: Object): void => {
                 let yLine: HTMLElement = document.getElementById('chartContainerAxisLine_1');
-                expect(yLine.getAttribute('x1') === '394.0515262271122' && yLine.getAttribute('x2') === '394.0515262271122').toBe(true);
+                expect(yLine.getAttribute('d').split(' ')[1] === '394.0515262271122' && yLine.getAttribute('d').split(' ')[4] === '394.0515262271122').toBe(true);
                 done();
             };
             chartEle.loaded = loaded;
@@ -1196,9 +1196,9 @@ describe('Chart Control', () =>{
         it('Minor Tick with Opposed Position for X-Axis', (done: Function) => {
             loaded = (args: Object): void => {
                 let xLine: HTMLElement = document.getElementById('chartContainerAxisLine_0');
-                let majorTickX: HTMLElement = document.getElementById('chartContainer_MajorTickLine_0');
-                let minorTickX: HTMLElement = document.getElementById('chartContainer_MinorTickLine_0');
-                expect(xLine.getAttribute('y1') === '182.15000000000003' && xLine.getAttribute('y2') === '182.15000000000003').toBe(true);
+                let majorTickX: HTMLElement = document.getElementById('chartContainer_MajorTickLine_0_0');
+                let minorTickX: HTMLElement = document.getElementById('chartContainer_MinorTickLine_0_1');
+                expect(xLine.getAttribute('d').split(' ')[2] === '182.15000000000003' && xLine.getAttribute('d').split(' ')[5] === '182.15000000000003').toBe(true);
                 expect(majorTickX.getAttribute('d').split(' ')[1] === '10' && majorTickX.getAttribute('d').split(' ')[2] === '181.65000000000003').
                     toBe(true);
                 expect(minorTickX.getAttribute('d').split(' ')[1] === '89' && minorTickX.getAttribute('d').split(' ')[2] === '182.15000000000003L').
@@ -1214,9 +1214,9 @@ describe('Chart Control', () =>{
         it('Minor Tick with Opposed Position for Y-Axis', (done: Function) => {
             loaded = (args: Object): void => {
                 let yLine: HTMLElement = document.getElementById('chartContainerAxisLine_1');
-                let majorTickY: HTMLElement = document.getElementById('chartContainer_MajorTickLine_1');
-                let minorTickY: HTMLElement = document.getElementById('chartContainer_MinorTickLine_1');
-                expect(yLine.getAttribute('x1') === '394.0515262271122' && yLine.getAttribute('x2') === '394.0515262271122').toBe(true);
+                let majorTickY: HTMLElement = document.getElementById('chartContainer_MajorTickLine_1_0');
+                let minorTickY: HTMLElement = document.getElementById('chartContainer_MinorTickLine_1_0');
+                expect(yLine.getAttribute('d').split(' ')[1] === '394.0515262271122' && yLine.getAttribute('d').split(' ')[4] === '394.0515262271122').toBe(true);
                 expect(majorTickY.getAttribute('d').split(' ')[1] === '394.5515262271122' && majorTickY.getAttribute('d').split(' ')[2] ===
                     '440').toBe(true);
                 expect(minorTickY.getAttribute('d').split(' ')[1] === '394.0515262271122' && minorTickY.getAttribute('d').split(' ')[2] ===
@@ -1267,10 +1267,10 @@ describe('Chart Control', () =>{
                 let yLine2: HTMLElement = document.getElementById('chartContainerAxisLine_2');
                 let chartArea: HTMLElement = document.getElementById('chartContainer_ChartAreaBorder');
 
-                expect((parseInt(yLine1.getAttribute('x1')) === parseInt(chartArea.getAttribute('x')) + parseInt(chartArea.getAttribute('width')))).toBe(true);
-                expect((parseInt(yLine2.getAttribute('x1')) === parseInt(chartArea.getAttribute('x')))).toBe(true);
-                expect((xLine1.getAttribute('y1') === '183.390625' || xLine1.getAttribute('y1') === '183.828125') &&
-                 (xLine1.getAttribute('y2') === '183.390625' || xLine1.getAttribute('y2') === '183.828125')).toBe(true);
+                expect((parseInt(yLine1.getAttribute('d').split(' ')[1]) === parseInt(chartArea.getAttribute('x')) + parseInt(chartArea.getAttribute('width')))).toBe(true);
+                expect((parseInt(yLine2.getAttribute('d').split(' ')[1]) === parseInt(chartArea.getAttribute('x')))).toBe(true);
+                expect((xLine1.getAttribute('d').split(' ')[2] === '183.390625' || xLine1.getAttribute('d').split(' ')[2] === '183.828125') &&
+                 (xLine1.getAttribute('d').split(' ')[5] === '183.390625' || xLine1.getAttribute('d').split(' ')[5] === '183.828125')).toBe(true);
                 done();
             };
             chartEle.loaded = loaded;
@@ -1315,9 +1315,9 @@ describe('Chart Control', () =>{
                 let line2: HTMLElement = document.getElementById('chartContainerAxisLine_2');
                 let chartArea: HTMLElement = document.getElementById('chartContainer_ChartAreaBorder');
                 
-                expect((parseInt(line0.getAttribute('y1')) - 1 === parseInt(chartArea.getAttribute('y')) + parseInt(chartArea.getAttribute('height')))).toBe(true);
-                expect(line1.getAttribute('x1') === '400' && line1.getAttribute('x2') === '400').toBe(true);
-                expect((line2.getAttribute('y1') === '254.975' || line2.getAttribute('y1') === '259.655')).toBe(true);
+                expect((parseInt(line0.getAttribute('d').split(' ')[2]) - 1 === parseInt(chartArea.getAttribute('y')) + parseInt(chartArea.getAttribute('height')))).toBe(true);
+                expect(line1.getAttribute('d').split(' ')[1] === '400' && line1.getAttribute('d').split(' ')[4] === '400').toBe(true);
+                expect((line2.getAttribute('d').split(' ')[2] === '254.975' || line2.getAttribute('d').split(' ')[2] === '259.655')).toBe(true);
                 done();
             };
             chartEle.loaded = loaded;

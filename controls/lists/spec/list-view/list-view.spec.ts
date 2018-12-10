@@ -268,7 +268,7 @@ describe('ListView', () => {
             it('Call Destroy method', () => {
                 treeObj.destroy();
                 treeObj.dataBind();
-                expect(ele.classList.contains('e-control')).toBe(false);
+                expect(ele.classList.contains('e-lib')).toBe(false);
                 expect(ele.classList.contains('e-listview')).toBe(false);
             });
             afterAll(() => {

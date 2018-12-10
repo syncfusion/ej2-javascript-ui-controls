@@ -47,12 +47,13 @@
  'End' |
  /** Define the Sparkline marker | datalabel Visbile Negative type */
  'Negative';
-/** 
+/**
  * Defines Theme of the sparkline. They are
  * * Material - Render a sparkline with Material theme.
  * * Fabric - Render a sparkline with Fabric theme
  * * Bootstrap - Render a sparkline with Bootstrap theme
  * * HighContrast - Render a sparkline with HighContrast theme
+ * * Dark - Render a sparkline with Dark theme
  */
 export type SparklineTheme =
     /**  Render a sparkline with Material theme. */
@@ -61,8 +62,16 @@ export type SparklineTheme =
     'Fabric' |
     /**  Render a sparkline with Bootstrap theme. */
     'Bootstrap' |
-    /**  Render a sparkline with HighContrast theme. */
-    'Highcontrast';
+    /**  Render a sparkline with HighContrast Light theme. */
+    'HighcontrastLight' |
+    /**  Render a sparkline with Material Dark theme. */
+    'MaterialDark'|
+    /**  Render a sparkline with Fabric Dark theme. */
+    'FabricDark'|
+    /**  Render a sparkline with Highcontrast theme. */
+    'Highcontrast'|
+    /**  Render a sparkline with Bootstrap Dark theme. */
+    'BootstrapDark';
 
 /**
  * Defines edge data label placement for datalabel, if exceeds the sparkline area horizontally.

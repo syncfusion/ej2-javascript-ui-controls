@@ -35,11 +35,16 @@ export class Data implements IDataProcessor {
         this.initDataManager();
         if (this.parent.isDestroyed || this.getModuleName() === 'foreignKey') { return; }
         this.parent.on(events.rowsAdded, this.addRows, this);
+        this.parent.on(events.rowPositionChanged, this.reorderRows, this);
         this.parent.on(events.rowsRemoved, this.removeRows, this);
         this.parent.on(events.dataSourceModified, this.initDataManager, this);
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.updateData, this.crudActions, this);
         this.parent.on(events.addDeleteAction, this.getData, this);
+    }
+
+    private reorderRows(e: { fromIndex: number, toIndex: number }): void {
+        this.dataManager.dataSource.json.splice(e.toIndex, 0, this.dataManager.dataSource.json.splice(e.fromIndex, 1)[0]);
     }
 
     protected getModuleName(): string {
@@ -106,6 +111,7 @@ export class Data implements IDataProcessor {
 
     protected pageQuery(query: Query, skipPage?: boolean): Query {
         let gObj: IGrid = this.parent;
+        let fName: string = 'fn';
         if ((gObj.allowPaging || gObj.enableVirtualization) && skipPage !== true) {
             gObj.pageSettings.currentPage = Math.max(1, gObj.pageSettings.currentPage);
             if (gObj.pageSettings.pageCount <= 0) {
@@ -113,6 +119,13 @@ export class Data implements IDataProcessor {
             }
             if (gObj.pageSettings.pageSize <= 0) {
                 gObj.pageSettings.pageSize = 12;
+            }
+            if (query.queries.length) {
+                for (let i: number = 0; i < query.queries.length; i++) {
+                    if (query.queries[i][fName] === 'onPage') {
+                        query.queries.splice(i, 1);
+                    }
+                }
             }
             query.page(gObj.pageSettings.currentPage, gObj.pageSettings.pageSize);
         }

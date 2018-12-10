@@ -11,21 +11,21 @@ let menuItems: MenuItemModel[] = [
     },
     {
         text: 'Share',
-        iconCss: 'e-icons e-share',
+        iconCss: 'e-cm-icons e-share',
         items: [
             {
                 text: 'Facebook',
-                iconCss: 'e-icons e-share',
+                iconCss: 'e-cm-icons e-share',
             },
             {
                 text: 'Whatsapp',
-                iconCss: 'e-icons e-share',
+                iconCss: 'e-cm-icons e-share',
             }
         ]
     },
     {
         text: 'Get Link',
-        iconCss: 'e-icons e-link'
+        iconCss: 'e-cm-icons e-link'
     },
     {
         separator: true
@@ -39,7 +39,7 @@ let menuItems: MenuItemModel[] = [
     },
     {
         text: 'Remove',
-        iconCss: 'e-icons e-cut'
+        iconCss: 'e-cm-icons e-cut'
     }];
 
 let menuOptions: { [key: string]: Object } = {

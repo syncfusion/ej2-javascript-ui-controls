@@ -178,7 +178,7 @@ describe('Range navigator', () => {
                 }
             };
             range.enableRtl = false;
-            range.theme = 'Highcontrast';
+            range.theme = 'HighcontrastLight';
             range.refresh();
         });
         it('checking with right slider moving in side of selected area', (done: Function) => {
@@ -248,46 +248,6 @@ describe('Range navigator', () => {
         afterAll((): void => {
             range.destroy();
             rangeElement.remove();
-        });
-        it('checking with  first level label click', (done: Function) => {
-            range.loaded = (args: Object): void => {
-                isCheck = true;
-                let element: Element = <Element>document.getElementById('container_AxisLabels').firstChild.childNodes[1];
-                let pageX: number = +element.getAttribute('x');
-                let pageY: number = +element.getAttribute('y');
-                range.rangeOnMouseDown(<PointerEvent>trigger.onTouchStart(element, null, null, null, null, pageX, pageY));
-                range.mouseEnd(<PointerEvent>trigger.onTouchEnd(element, null, null, null, null, pageX, pageY));
-            };
-            range.changed = (args: IChangedEventArgs) => {
-                if (isCheck) {
-                    expect(new Date(+args.start).getDate()).toEqual(1);
-                    expect(new Date(+args.end).getDate()).toEqual(1);
-                    isCheck = false;
-                    done()
-                };
-            };
-            range.animationDuration = 0;
-            range.navigatorStyleSettings.selectedRegionColor = 'green';
-            range.refresh();
-        });
-        it('checking with second level label click', (done: Function) => {
-            range.loaded = (args: Object): void => {
-                isCheck = true;
-                let element: Element = <Element>document.getElementById('container_AxisLabels').firstChild.firstChild;
-                let pageX: number = +element.getAttribute('x');
-                let pageY: number = +element.getAttribute('y');
-                range.rangeOnMouseDown(<PointerEvent>trigger.onTouchStart(element, null, null, null, null, pageX, pageY));
-                range.mouseEnd(<PointerEvent>trigger.onTouchEnd(element, null, null, null, null, pageX, pageY));
-            };
-            range.changed = (args: IChangedEventArgs) => {
-                if (isCheck) {
-                    expect(new Date(+args.start).getMonth()).toEqual(0);
-                    expect(new Date(+args.end).getMonth() > new Date(+args.start).getMonth()).toBe(true);
-                    isCheck = false;
-                    done();
-                }
-            };
-            range.refresh();
         });
         it('checking resize event', (done: Function) => {
             range.loaded = (args: Object): void => {

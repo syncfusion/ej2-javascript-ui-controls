@@ -1,6 +1,9 @@
 @import 'ej2-base/styles/material.scss';
+
+// Dependent component styles
+@import 'ej2-buttons/styles/button/material.scss';
+@import 'ej2-popups/styles/popup/material.scss';
 @import '../../../styles/h-scroll/material.scss';
-@import 'ej2-buttons/styles/material.scss';
-@import '../../../styles/toolbar/definition.scss';
-@import 'material-definition.scss';
-@import '../../../styles/toolbar/all.scss';
+
+// Component styles from current repository
+@import '../../../styles/toolbar/material.scss';

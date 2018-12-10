@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title> Typescript Components</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Typescript UI Controls" />
+    <meta name="author" content="Syncfusion" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" />
+    <link id="theme" href="../../theme-files/bootstrap.css" rel="stylesheet" />
+    <script>
+        window.require = {
+            config: function (json) {
+                window.rsConfig = json;
+                window.rsConfig.baseUrl = "";
+            }
+        };
+    </script>
+    <script src="./../../demo-config.js"></script>
+    <script src="./../../../node_modules/requirejs/require.js" data-main="./default"></script>
+    <script>
+        require.config(window.rsConfig);
+    </script>
+    <style>
+        .querybuilder-main {
+            margin: 4% 24%;
+        }
+
+        #getrules {
+            padding: 0;
+            height: 14px;
+        }
+
+        .e-display-icon::before {
+            content: "\e34f";
+        }
+
+        #displayrule {
+            float: right;
+        }
+
+        td {
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <table>
+                <tbody>
+                    <tr>
+                        <td> <button id="material" class="e-control e-primary e-btn e-small" >Material</button> </td>
+                        <td> <button id="fabric" class="e-control e-primary e-btn e-small" >Fabric</button> </td>
+                        <td> <button id="bootstrap" class="e-control e-primary e-btn e-small">Bootstrap</button> </td>
+                        <td> <button id="highcontrast" class="e-control e-primary e-btn e-small">High Contrast</button> </td>
+                        <td> <button id="materialdark" class="e-control e-primary e-btn e-small">Material Dark</button> </td>
+                        <td> <button id="fabricdark" class="e-control e-primary e-btn e-small">Fabric Dark</button> </td>
+                        <td> <button id="bootstrapdark" class="e-control e-primary e-btn e-small">Bootstrap Dark</button> </td>
+                        <td> <button id="highcontrastlight" class="e-control e-primary e-btn e-small">Highcontrast Light</button> </td>
+                    </tr>
+                    <tr>
+                            <td> <button id="materialtouch" class="e-control e-primary e-btn e-small" >Material touch</button> </td>
+                            <td> <button id="fabrictouch" class="e-control e-primary e-btn e-small" >Fabric touch</button> </td>
+                            <td> <button id="bootstraptouch" class="e-control e-primary e-btn e-small">Bootstrap touch</button> </td>
+                            <td> <button id="highcontrasttouch" class="e-control e-primary e-btn e-small">High Contrast touch</button> </td>
+                            <td> <button id="materialdarktouch" class="e-control e-primary e-btn e-small">Material Dark touch</button> </td>
+                            <td> <button id="fabricdarktouch" class="e-control e-primary e-btn e-small">Fabric Dark touch</button> </td>
+                            <td> <button id="bootstrapdarktouch" class="e-control e-primary e-btn e-small">Bootstrap Dark touch</button>
+                            </td>
+                            <td> <button id="highcontrastlighttouch" class="e-control e-primary e-btn e-small">Highcontrast Light touch
+                            </button> </td>
+                        </tr>
+                </tbody>
+            </table>
+        </div>
+    <div class="col-lg-8 control-section">
+        <form id="formId" class="form-horizontal" novalidate="">
+            <div class="querybuilder-main">
+                <div id="querybuilder" class="row ">
+                    <div id="displayrule"> </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>

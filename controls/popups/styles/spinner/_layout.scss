@@ -14,7 +14,7 @@
     z-index: 1000;
 
     &::after {
-      content: $skin;
+      content: $theme;
       display: none;
     }
 

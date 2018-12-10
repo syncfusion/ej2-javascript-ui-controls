@@ -11,7 +11,8 @@ export class CommonKeyboardInteraction {
     private keyConfigs: { [key: string]: string } = {
         shiftF: 'shift+F',
         shiftS: 'shift+S',
-        delete: 'delete'
+        delete: 'delete',
+        enter: 'enter'
     };
     private keyboardModule: KeyboardEvents;
     /**
@@ -37,6 +38,19 @@ export class CommonKeyboardInteraction {
             case 'delete':
                 this.processDelete(e);
                 break;
+            case 'enter':
+                this.processOpenContextMenu(e);
+                break;
+
+        }
+    }
+    private processOpenContextMenu(e: Event): void {
+        let target: Element = e.target as Element;
+        if (target && closest(target, '.' + cls.PIVOT_BUTTON_CLASS) &&
+            closest(target, '.' + cls.VALUE_AXIS_CLASS)) {
+            (target.querySelector('.' + cls.AXISFIELD_ICON_CLASS) as HTMLElement).click();
+            e.preventDefault();
+            return;
         }
     }
     private processSort(e: Event): void {

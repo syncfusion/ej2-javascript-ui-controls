@@ -76,7 +76,9 @@ export type ExportType =
     /** Used to export a file as svg format */
     'SVG' |
     /** Used to export a file as pdf format */
-    'PDF';
+    'PDF' |
+    /** Used to print the chart */
+    'Print';
 
 /**
  * Defines the Text overflow.
@@ -91,3 +93,45 @@ export type TextOverflow =
     'Wrap' |
     /** Used to show the chart title with Trim */
     'Trim';
+
+/** 
+ * Defines the interval type of datetime axis. They are
+ * * auto - Define the interval of the axis based on data.
+ * * quarter - Define the interval of the axis based on data.
+ * * years - Define the interval of the axis in years.
+ * * months - Define the interval of the axis in months.
+ * * weeks - Define the interval of the axis in weeks
+ * * days - Define the interval of the axis in days.
+ * * hours - Define the interval of the axis in hours.
+ * * minutes - Define the interval of the axis in minutes.
+ */
+export type RangeIntervalType =
+    /** Define the interval of the axis based on data. */
+    'Auto' |
+    /** Define the interval of the axis in years. */
+    'Years' |
+    /** Define the interval of the axis based on quarter */
+    'Quarter' |
+    /** Define the interval of the axis in months. */
+    'Months' |
+    /** Define the intervl of the axis in weeks */
+    'Weeks' |
+    /** Define the interval of the axis in days. */
+    'Days' |
+    /** Define the interval of the axis in hours. */
+    'Hours' |
+    /** Define the interval of the axis in minutes. */
+    'Minutes' |
+    /** Define the interval of the axis in seconds. */
+    'Seconds';
+
+/**
+ * Period selector position
+ * *Top
+ * *Bottom
+ */
+export type PeriodSelectorPosition =
+    /** Top position */
+    'Top' |
+    /** Bottom position */
+    'Bottom';

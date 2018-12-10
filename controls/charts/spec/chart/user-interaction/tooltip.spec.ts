@@ -500,43 +500,5 @@ describe('Chart Control', () => {
             chartObj.series[0].type = 'Line';
             chartObj.refresh();
         });
-        it('checking with tooltipRender event with headerText', (done: Function) => {
-            loaded = (args: Object): void => {
-                let target: HTMLElement = document.getElementById('container_Series_0_Point_6_Symbol');
-                let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
-                y = parseFloat(target.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
-                x = parseFloat(target.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
-                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
-
-                let tooltip: HTMLElement = document.getElementById('container_tooltip_text');
-                expect(tooltip.firstElementChild.innerHTML).toEqual('${point.x}');
-                done();
-            };
-            chartObj.loaded = loaded;
-            chartObj.tooltipRender = (args: ITooltipRenderEventArgs) => {
-                args.headerText = '${point.x}';
-            };
-            chartObj.tooltip = { enable: true };
-            chartObj.refresh();
-        });
-        it('checking with headerText without header', (done: Function) => {
-            loaded = (args: Object): void => {
-                let target: HTMLElement = document.getElementById('container_Series_0_Point_6_Symbol');
-                let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
-                y = parseFloat(target.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
-                x = parseFloat(target.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
-                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
-
-                let tooltip: HTMLElement = document.getElementById('container_tooltip_text');
-                expect(tooltip.firstElementChild.innerHTML).toEqual('${point.x}');
-                done();
-            };
-            chartObj.loaded = loaded;
-            chartObj.tooltipRender = (args: ITooltipRenderEventArgs) => {
-                args.headerText = '${point.x}';
-            };
-            chartObj.tooltip.header = '';
-            chartObj.refresh();
-        });
     });
 });

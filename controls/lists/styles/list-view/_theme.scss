@@ -8,12 +8,7 @@
         background-color: $listview-header-bg;
         border-color: $listview-header-border;
         color: $listview-header-text-color;
-        display: block;
         font-size: $listview-header-font-size;
-      }
-
-      & .e-list-header > * {
-        display: table-cell;
       }
 
       & .e-icons {
@@ -70,6 +65,7 @@
     &.e-list-template {
 
       .e-list-wrapper {
+        height: inherit;
         position: relative;
 
         &:not(.e-list-multi-line) {

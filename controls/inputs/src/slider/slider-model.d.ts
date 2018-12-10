@@ -142,7 +142,7 @@ export interface SliderModel extends ComponentModel{
     /**
      * It is used to denote the current value of the Slider.
      * The value should be specified in array of number when render Slider type as range.
-     * 
+     *
      * {% codeBlock src="slider/value-api/index.ts" %}{% endcodeBlock %}
      * @default null
      */
@@ -160,7 +160,7 @@ export interface SliderModel extends ComponentModel{
      *  when increase / decrease button is clicked or press arrow keys or drag the thumb.
      *  Refer the documentation [here](./ticks.html#step)
      *  to know more about this property with demo.
-     * 
+     *
      * {% codeBlock src="slider/step-api/index.ts" %}{% endcodeBlock %}
      * @default 1
      */
@@ -168,7 +168,7 @@ export interface SliderModel extends ComponentModel{
 
     /**
      * It sets the minimum value of Slider Component
-     * 
+     *
      * {% codeBlock src="slider/min-max-api/index.ts" %}{% endcodeBlock %}
      * @default 0
      */
@@ -176,7 +176,7 @@ export interface SliderModel extends ComponentModel{
 
     /**
      * It sets the maximum value of Slider Component
-     * 
+     *
      * {% codeBlock src="slider/min-max-api/index.ts" %}{% endcodeBlock %}
      * @default 100
      */
@@ -202,7 +202,7 @@ export interface SliderModel extends ComponentModel{
      * It is used to render the slider ticks options such as placement and step values.
      * Refer the documentation [here](./ticks.html)
      *  to know more about this property with demo.
-     * 
+     *
      * {% codeBlock src="slider/ticks-api/index.ts" %}{% endcodeBlock %}
      * @default { placement: 'before' }
      */
@@ -212,7 +212,7 @@ export interface SliderModel extends ComponentModel{
      * It is used to limit the slider movement within certain limits.
      * Refer the documentation [here](./limits.html)
      *  to know more about this property with demo
-     * 
+     *
      * {% codeBlock src="slider/limits-api/index.ts" %}{% endcodeBlock %}
      * @default { enabled: false }
      */
@@ -232,7 +232,7 @@ export interface SliderModel extends ComponentModel{
 
     /**
      * It is used to denote the slider tooltip and it's position.
-     * 
+     *
      * {% codeBlock src="slider/tooltip-api/index.ts" %}{% endcodeBlock %}
      * @default { placement: 'Before', isVisible: false, showOn: 'Focus', format: null }
      */
@@ -243,7 +243,7 @@ export interface SliderModel extends ComponentModel{
      *  which is used to change the slider value.
      * Refer the documentation [here](./getting-started.html#buttons)
      *  to know more about this property with demo.
-     * 
+     *
      * {% codeBlock src="slider/showButtons-api/index.ts" %}{% endcodeBlock %}
      * @default false
      */

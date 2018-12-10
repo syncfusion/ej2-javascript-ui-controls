@@ -1,4 +1,3 @@
-
 import { Smithchart, SmithchartLegend, ISmithchartLoadedEventArgs, ISmithchartAnimationCompleteEventArgs } from '../../../src/smithchart/index';
 import { createElement, remove } from '@syncfusion/ej2-base';
 
@@ -233,8 +232,35 @@ describe('Smithchart Series properties tesing', () => {
                 let color: string = element.getAttribute('stroke');
                 expect(color).toEqual('red');
             };
-             smithchart.theme = 'Highcontrast';
+            smithchart.theme = 'HighcontrastLight';
              smithchart.refresh();
+        });
+        it('Checking with Dark theme', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+               let element: Element = document.getElementById(smithchart.element.id + '_series0_points');
+               let color: string = element.getAttribute('stroke');
+               expect(color).toEqual('red');
+           };
+            smithchart.theme = 'Highcontrast';
+            smithchart.refresh();
+        }); 
+        it('Checking with Dark theme', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_series0_points');
+                let color: string = element.getAttribute('stroke');
+                expect(color).toEqual('red');
+            };
+            smithchart.theme = 'HighcontrastLight';
+            smithchart.refresh();
+        });
+        it('Checking with Dark theme', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_series0_points');
+                let color: string = element.getAttribute('stroke');
+                expect(color).toEqual('red');
+            };
+            smithchart.theme = 'FabricDark';
+            smithchart.refresh();
         });
         it('Checking with persist data', () => {
              smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {

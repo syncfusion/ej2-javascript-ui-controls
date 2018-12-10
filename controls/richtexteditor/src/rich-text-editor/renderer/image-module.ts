@@ -973,7 +973,7 @@ export class Image {
         let imglinkCancel: string = this.i10n.getConstant('dialogCancel');
         let imgHeader: string = this.i10n.getConstant('imageHeader');
         let selection: NodeSelection = e.selection;
-        let selectObj: IImageNotifyArgs = { selfImage: this, selection: e.selection, args: e.args };
+        let selectObj: IImageNotifyArgs = { selfImage: this, selection: e.selection, args: e.args, selectParent: e.selectParent };
         this.dialogObj = new Dialog({
             header: imgHeader,
             cssClass: classes.CLS_RTE_ELEMENTS,

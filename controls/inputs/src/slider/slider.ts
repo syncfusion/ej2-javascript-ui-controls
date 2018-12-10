@@ -387,7 +387,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     /**
      * It is used to denote the current value of the Slider.
      * The value should be specified in array of number when render Slider type as range.
-     * 
+     *
      * {% codeBlock src="slider/value-api/index.ts" %}{% endcodeBlock %}
      * @default null
      */
@@ -407,7 +407,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
      *  when increase / decrease button is clicked or press arrow keys or drag the thumb.
      *  Refer the documentation [here](./ticks.html#step)
      *  to know more about this property with demo.
-     * 
+     *
      * {% codeBlock src="slider/step-api/index.ts" %}{% endcodeBlock %}
      * @default 1
      */
@@ -416,7 +416,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * It sets the minimum value of Slider Component
-     * 
+     *
      * {% codeBlock src="slider/min-max-api/index.ts" %}{% endcodeBlock %}
      * @default 0
      */
@@ -425,7 +425,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * It sets the maximum value of Slider Component
-     * 
+     *
      * {% codeBlock src="slider/min-max-api/index.ts" %}{% endcodeBlock %}
      * @default 100
      */
@@ -454,7 +454,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
      * It is used to render the slider ticks options such as placement and step values.
      * Refer the documentation [here](./ticks.html)
      *  to know more about this property with demo.
-     * 
+     *
      * {% codeBlock src="slider/ticks-api/index.ts" %}{% endcodeBlock %}
      * @default { placement: 'before' }
      */
@@ -465,7 +465,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
      * It is used to limit the slider movement within certain limits.
      * Refer the documentation [here](./limits.html)
      *  to know more about this property with demo
-     * 
+     *
      * {% codeBlock src="slider/limits-api/index.ts" %}{% endcodeBlock %}
      * @default { enabled: false }
      */
@@ -489,7 +489,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * It is used to denote the slider tooltip and it's position.
-     * 
+     *
      * {% codeBlock src="slider/tooltip-api/index.ts" %}{% endcodeBlock %}
      * @default { placement: 'Before', isVisible: false, showOn: 'Focus', format: null }
      */
@@ -501,7 +501,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
      *  which is used to change the slider value.
      * Refer the documentation [here](./getting-started.html#buttons)
      *  to know more about this property with demo.
-     * 
+     *
      * {% codeBlock src="slider/showButtons-api/index.ts" %}{% endcodeBlock %}
      * @default false
      */
@@ -904,12 +904,14 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         let tooltipElement: HTMLElement = this.activeHandle === 1 ? this.firstTooltipElement : this.secondTooltipElement;
         if (pos === 0 && this.type !== 'Range') {
             this.getHandle().classList.add(classNames.sliderHandleStart);
-            if (this.isMaterial && this.tooltip.isVisible) {
+            if (this.isMaterial && this.tooltip.isVisible && this.firstMaterialHandle) {
                 this.firstMaterialHandle.classList.add(classNames.sliderHandleStart);
                 if (tooltipElement) {
                     tooltipElement.classList.add(classNames.sliderTooltipStart);
                 }
             }
+        } else {
+            this.getHandle().classList.remove(classNames.sliderHandleStart);
         }
     }
 
@@ -2166,8 +2168,11 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         return value;
     }
 
-
-    private onResize(): void {
+    /**
+     * It is used to reposition slider.
+     * @returns void
+     */
+    public reposition(): void {
         this.firstHandle.style.transition = 'none';
         if (this.type !== 'Default') {
             this.rangeBar.style.transition = 'none';
@@ -2224,6 +2229,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             this.removeElement(this.ul);
             this.renderScale();
         }
+        this.handleStart();
         if (!this.tooltip.isVisible) {
             setTimeout(() => {
                 this.firstHandle.style.transition = this.scaleTransform;
@@ -2783,7 +2789,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private wireEvents(): void {
-        this.onresize = this.onResize.bind(this);
+        this.onresize = this.reposition.bind(this);
         window.addEventListener('resize', this.onresize);
         if (this.enabled && !this.readonly) {
             EventHandler.add(this.element, 'mousedown touchstart', this.sliderDown, this);
@@ -3145,7 +3151,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 case 'showButtons':
                     if (newProp.showButtons) {
                         this.setButtons();
-                        this.onResize();
+                        this.reposition();
                         if (this.enabled && !this.readonly) {
                             this.wireButtonEvt(false);
                         }
@@ -3166,7 +3172,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                     break;
                 case 'customValue':
                     this.setValue();
-                    this.onResize();
+                    this.reposition();
                     break;
             }
         }

@@ -183,6 +183,12 @@ export class WUniqueFormat {
         if (property === 'preferredWidthType') {
             return 9;
         }
+        if (property === 'bidi') {
+            return 10;
+        }
+        if (property === 'allowAutoFit') {
+            return 11;
+        }
         return 0;
     }
     private static getListLevelType(property: string): number {
@@ -298,6 +304,24 @@ export class WUniqueFormat {
         if (property === 'highlightColor') {
             return 9;
         }
+        if (property === 'bidi') {
+            return 10;
+        }
+        if (property === 'bdo') {
+            return 11;
+        }
+        if (property === 'boldBidi') {
+            return 12;
+        }
+        if (property === 'italicBidi') {
+            return 13;
+        }
+        if (property === 'fontFamilyBidi') {
+            return 14;
+        }
+        if (property === 'fontSizeBidi') {
+            return 15;
+        }
         return 0;
     }
     private static getParaFormatPropertyType(property: string): number {
@@ -327,6 +351,9 @@ export class WUniqueFormat {
         }
         if (property === 'outlineLevel') {
             return 9;
+        }
+        if (property === 'bidi') {
+            return 10;
         }
         return 0;
     }
@@ -360,6 +387,9 @@ export class WUniqueFormat {
         }
         if (property === 'bottomMargin') {
             return 10;
+        }
+        if (property === 'bidi') {
+            return 11;
         }
         return 0;
     }
@@ -418,6 +448,27 @@ export class WUniqueFormat {
         if (this.isNotEqual('highlightColor', source, modifiedProperty, modifiedValue, 2)) {
             return false;
         }
+        if (this.isNotEqual('bidi', source, modifiedProperty, modifiedValue, 2)) {
+            return false;
+        }
+        if (this.isNotEqual('bdo', source, modifiedProperty, modifiedValue, 2)) {
+            return false;
+        }
+        if (this.isNotEqual('fontColor', source, modifiedProperty, modifiedValue, 2)) {
+            return false;
+        }
+        if (this.isNotEqual('fontFamilyBidi', source, modifiedProperty, modifiedValue, 2)) {
+            return false;
+        }
+        if (this.isNotEqual('fontSizeBidi', source, modifiedProperty, modifiedValue, 2)) {
+            return false;
+        }
+        if (this.isNotEqual('boldBidi', source, modifiedProperty, modifiedValue, 2)) {
+            return false;
+        }
+        if (this.isNotEqual('italicBidi', source, modifiedProperty, modifiedValue, 2)) {
+            return false;
+        }
         return true;
 
     }
@@ -447,6 +498,9 @@ export class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('outlineLevel', source, modifiedProperty, modifiedValue, 3)) {
+            return false;
+        }
+        if (this.isNotEqual('bidi', source, modifiedProperty, modifiedValue, 3)) {
             return false;
         }
         return true;
@@ -581,6 +635,12 @@ export class WUniqueFormat {
         if (this.isNotEqual('preferredWidthType', source, modifiedProperty, modifiedValue, 8)) {
             return false;
         }
+        if (this.isNotEqual('bidi', source, modifiedProperty, modifiedValue, 8)) {
+            return false;
+        }
+        if (this.isNotEqual('allowAutoFit', source, modifiedProperty, modifiedValue, 8)) {
+            return false;
+        }
         return true;
     }
     /**
@@ -636,6 +696,9 @@ export class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('bottomMargin', source, modifiedProperty, modifiedValue, 10)) {
+            return false;
+        }
+        if (this.isNotEqual('bidi', source, modifiedProperty, modifiedValue, 10)) {
             return false;
         }
         return true;

@@ -15,7 +15,7 @@ import { Diagram } from '../../diagram/diagram';
 import { MarginModel } from '../core/appearance-model';
 import { Margin } from '../core/appearance';
 import { ShapeAnnotationModel, PathAnnotationModel } from '../objects/annotation-model';
-import { DiagramElement } from '..';
+import { DiagramElement } from '../core/elements/diagram-element';
 
 /** 
  * A collection of frequently used commands that will be added around the selector

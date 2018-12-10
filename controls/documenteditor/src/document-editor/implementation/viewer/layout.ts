@@ -11,7 +11,7 @@ import {
     Page, LineWidget, Rect, Widget, Margin, ParagraphWidget, BodyWidget,
     TextElementBox, ElementBox, ListTextElementBox, IWidget, TableCellWidget,
     TableRowWidget, TableWidget, FieldElementBox, BlockWidget, HeaderFooterWidget, BlockContainer,
-    BookmarkElementBox, FieldTextElementBox, TabElementBox
+    BookmarkElementBox, FieldTextElementBox, TabElementBox, ImageElementBox
 } from './page';
 import {
     SubWidthInfo, LineElementInfo, HelperMethods,
@@ -39,6 +39,11 @@ export class Layout {
     private maxBaseline: number = 0;
     private maxTextBaseline: number = 0;
     private isFieldCode: boolean = false;
+    private isRTLLayout: boolean = false;
+    /**
+     * @private
+     */
+    public isBidiReLayout: boolean = false;
 
     /**
      * viewer definition
@@ -413,7 +418,12 @@ export class Layout {
         while (element instanceof ElementBox) {
             this.layoutElement(element, paragraph);
             line = element.line;
-            element = element.nextElement;
+            if (!this.isRTLLayout) {
+                element = element.nextElement;
+            } else {
+                element = undefined;
+                this.isRTLLayout = false;
+            }
         }
         return line;
     }
@@ -579,6 +589,9 @@ export class Layout {
         if (line !== element.line || element.line === line && isNullOrUndefined(element.nextElement)
             && !element.line.isLastLine()) {
             this.moveToNextLine(line);
+            if (line !== element.line) {
+                this.isRTLLayout = false;
+            }
         }
         if (element.line !== line && this.viewer instanceof PageLayoutViewer
             && this.viewer.clientActiveArea.height < element.height &&
@@ -1131,6 +1144,12 @@ export class Layout {
         if (isParagraphEnd) {
             afterSpacing = HelperMethods.convertPointToPixel(paraFormat.afterSpacing);
         }
+
+        if (!this.isBidiReLayout && (paraFormat.bidi || this.isContainsRtl(line))) {
+            this.reArrangeElementsForRtl(line, paraFormat.bidi);
+            this.isRTLLayout = true;
+        }
+
         if (isNaN(this.maxTextHeight)) {
             //Calculate line height and descent based on formatting defined in paragraph.
             let measurement: TextSizeInfo = this.viewer.textHelper.measureText('a', paragraph.characterFormat);
@@ -1149,10 +1168,13 @@ export class Layout {
         let subWidth: number = 0;
         let whiteSpaceCount: number = 0;
         let textAlignment: TextAlignment = paraFormat.textAlignment;
-        //Calculates the sub width, for text alignments - Center, Right, Justify.
-        if (textAlignment !== 'Left' && this.viewer.textWrap && !(textAlignment === 'Justify' && isParagraphEnd)) {
+        // calculates the sub width, for text alignments - Center, Right, Justify.
+        // if the element is paragraph end and para bidi is true and text alignment is justify
+        // we need to calculate subwidth and add it to the left margin of the element.
+        if (textAlignment !== 'Left' && this.viewer.textWrap && (!(textAlignment === 'Justify' && isParagraphEnd)
+            || (textAlignment === 'Justify' && paraFormat.bidi))) {
             // tslint:disable-next-line:max-line-length
-            let getWidthAndSpace: SubWidthInfo = this.getSubWidth(line, textAlignment === 'Justify', whiteSpaceCount, firstLineIndent);
+            let getWidthAndSpace: SubWidthInfo = this.getSubWidth(line, textAlignment === 'Justify', whiteSpaceCount, firstLineIndent, isParagraphEnd);
             subWidth = getWidthAndSpace.subWidth;
             whiteSpaceCount = getWidthAndSpace.spaceCount;
         }
@@ -1185,8 +1207,8 @@ export class Layout {
             bottomMargin += afterSpacing;
             if (i === 0) {
                 line.height = topMargin + elementBox.height + bottomMargin;
-                if (textAlignment === 'Right') {
-                    //Aligns the text as right justified.
+                if (textAlignment === 'Right' || (textAlignment === 'Justify' && paraFormat.bidi && isParagraphEnd)) {
+                    //Aligns the text as right justified and consider subwidth for bidirectional paragrph with justify.
                     leftMargin = subWidth;
                 } else if (textAlignment === 'Center') {
                     //Aligns the text as center justified.
@@ -1461,6 +1483,13 @@ export class Layout {
         let line: LineWidget = paragraph.childWidgets[0] as LineWidget;
         if (isNullOrUndefined(line.children)) {
             return;
+        }
+        for (let i: number = line.children.length - 1; i > 0; i--) {
+            if (line.children[i] instanceof ListTextElementBox) {
+                line.children.splice(i, 1);
+            } else {
+                break;
+            }
         }
         for (let i: number = 0; i < line.children.length; i++) {
             if (line.children[i] instanceof ListTextElementBox) {
@@ -1886,7 +1915,8 @@ export class Layout {
      * @param spaceCount 
      * @param firstLineIndent 
      */
-    private getSubWidth(lineWidget: LineWidget, justify: boolean, spaceCount: number, firstLineIndent: number): SubWidthInfo {
+    // tslint:disable-next-line:max-line-length
+    private getSubWidth(lineWidget: LineWidget, justify: boolean, spaceCount: number, firstLineIndent: number, isParagraphEnd: boolean): SubWidthInfo {
         let width: number = 0;
         let trimSpace: boolean = true;
         let lineText: string = '';
@@ -1917,11 +1947,18 @@ export class Layout {
         lineText = lineText.trim();
         spaceCount = lineText.length - HelperMethods.removeSpace(lineText).length;
         let subWidth: number = (this.viewer.clientArea.width - firstLineIndent - width);
-        if (subWidth <= 0 || (spaceCount === 0 && justify)) {
+        if (subWidth <= 0 || (spaceCount === 0 && justify && !lineWidget.paragraph.paragraphFormat.bidi)) {
             spaceCount = 0;
             subWidth = 0;
         } else if (justify) {
-            subWidth = subWidth / spaceCount;
+            // For justify alignment, element width will be updated based space count value.
+            // So when the element is paragraph end, need to set space count to zero.
+            if (!isParagraphEnd && spaceCount > 0) {
+                subWidth = subWidth / spaceCount;
+            } else {
+                spaceCount = 0;
+            }
+
         }
         return { 'subWidth': subWidth, 'spaceCount': spaceCount };
     }
@@ -2088,15 +2125,21 @@ export class Layout {
                 cell.width -= cellspace;
             }
         }
+        let leftBorderWidth: number = HelperMethods.convertPointToPixel(TableCellWidget.getCellLeftBorder(cell).getLineWidth());
+        let rightBorderWidth: number = HelperMethods.convertPointToPixel(TableCellWidget.getCellRightBorder(cell).getLineWidth());
         // update the margins values respect to layouting of borders.
-        // tslint:disable-next-line:max-line-length
-        //For normal table cells only left border is rendred. for last cell left and right border is rendred. this border widths are not included in margins.
-        cell.leftBorderWidth = HelperMethods.convertPointToPixel(TableCellWidget.getCellLeftBorder(cell).getLineWidth());
+        // for normal table cells only left border is rendred. for last cell left and right border is rendred.
+        // this border widths are not included in margins.
+        cell.leftBorderWidth = !cell.ownerTable.isBidiTable ? leftBorderWidth : rightBorderWidth;
         cell.x += cell.leftBorderWidth;
         cell.width -= cell.leftBorderWidth;
+        let lastCell: boolean = !cell.ownerTable.isBidiTable ? cell.cellIndex === cell.ownerRow.childWidgets.length - 1
+            : cell.cellIndex === 0;
         if (cellspace > 0 || cell.cellIndex === cell.ownerRow.childWidgets.length - 1) {
-            cell.rightBorderWidth = TableCellWidget.getCellRightBorder(cell).getLineWidth();
-            cell.width -= cell.rightBorderWidth;
+            cell.rightBorderWidth = !cell.ownerTable.isBidiTable ? rightBorderWidth : leftBorderWidth;
+            if (!cell.ownerTable.tableFormat.allowAutoFit) {
+                cell.width -= cell.rightBorderWidth;
+            }
         }
         //Add the border widths to respective margin side.
         cell.margin.left = cell.margin.left + cell.leftBorderWidth;
@@ -2154,6 +2197,10 @@ export class Layout {
         }
         row.containerWidget = tableWidget;
         tableWidget.height = tableWidget.height + row.height;
+        // Shift the widgets for Right to left directed table.
+        if (tableWidget.isBidiTable) {
+            row.shiftWidgetForRtlTable(this.viewer.clientArea, tableWidget, row);
+        }
         if (!isNullOrUndefined(tableWidget.containerWidget)
             && tableWidget.containerWidget.childWidgets.indexOf(tableWidget) >= 0 &&
             !(tableWidget.containerWidget instanceof HeaderFooterWidget)) {
@@ -2390,7 +2437,7 @@ export class Layout {
                 if (viewer.splittedCellWidgets.length > 0 && tableRowWidget.y + tableRowWidget.height <= viewer.clientArea.bottom) {
                     let isRowSpanEnd: boolean = this.isRowSpanEnd(row, viewer);
                     if (!isRowSpanEnd) {
-                        if (this.isVerticalMergedCellContinue(row) && tableRowWidget.y == viewer.clientArea.y) {
+                        if (this.isVerticalMergedCellContinue(row) && tableRowWidget.y === viewer.clientArea.y) {
                             this.insertSplittedCellWidgets(viewer, tableWidgets, tableRowWidget, tableRowWidget.indexInOwner - 1);
                         }
                         this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget);
@@ -2441,7 +2488,7 @@ export class Layout {
                     let isInsertSplittedWidgets: boolean = false;
                     // Splitting handled for the merged cell with allowRowBreakAcross pages. 
                     if (this.isVerticalMergedCellContinue(row) && (isAllowBreakAcrossPages ||
-                        (isInsertSplittedWidgets = tableRowWidget.y == viewer.clientArea.y))) {
+                        (isInsertSplittedWidgets = tableRowWidget.y === viewer.clientArea.y))) {
                         if (isInsertSplittedWidgets) {
                             this.insertSplittedCellWidgets(viewer, tableWidgets, splittedWidget, tableRowWidget.indexInOwner - 1);
                         } else {
@@ -3603,15 +3650,18 @@ export class Layout {
     /**
      * @private
      */
-    public reLayoutParagraph(paragraphWidget: ParagraphWidget, lineIndex: number, elementBoxIndex: number): void {
+    public reLayoutParagraph(paragraphWidget: ParagraphWidget, lineIndex: number, elementBoxIndex: number, isBidi?: boolean): void {
+        isBidi = isNullOrUndefined(isBidi) ? false : isBidi;
         if (this.viewer.blockToShift === paragraphWidget) {
             this.layoutBodyWidgetCollection(paragraphWidget.index, paragraphWidget.containerWidget, paragraphWidget, false);
         }
         // let isElementMoved: boolean = elementBoxIndex > 0;
         if (paragraphWidget.isInsideTable) {
+            this.isBidiReLayout = true;
             this.reLayoutTable(paragraphWidget);
+            this.isBidiReLayout = false;
         } else {
-            this.reLayoutLine(paragraphWidget, lineIndex);
+            this.reLayoutLine(paragraphWidget, lineIndex, isBidi);
         }
         if (paragraphWidget.bodyWidget instanceof HeaderFooterWidget &&
             paragraphWidget.bodyWidget.headerFooterType.indexOf('Footer') !== -1) {
@@ -3626,12 +3676,7 @@ export class Layout {
         //Get Top level owner of block
         let table: TableWidget = this.getParentTable(block);
         //Combine splitted table in to single table
-        // this.combineTableWidgets(this.viewer, table, undefined);
-        //Get Parent table
         let currentTable: TableWidget = table.combineWidget(this.viewer) as TableWidget;
-        currentTable.isGridUpdated = false;
-        currentTable.buildTableColumns();
-        currentTable.isGridUpdated = true;
         let bodyWidget: BodyWidget = (currentTable.containerWidget as BodyWidget);
         if (this.viewer.owner.enableHeaderAndFooter || block.isInHeaderFooter) {
             bodyWidget.height -= currentTable.height;
@@ -3651,7 +3696,7 @@ export class Layout {
         currentTable.y -= currentTable.topBorderWidth;
         //Update Client area for current position
         this.viewer.cutFromTop(currentTable.y);
-        this.clearTableWidget(currentTable, true, true);
+        this.clearTableWidget(currentTable, true, true, true);
         this.layoutBlock(currentTable, 0, true);
         this.viewer.updateClientAreaForBlock(currentTable, false);
         this.layoutNextItemsBlock(currentTable, this.viewer);
@@ -3659,21 +3704,24 @@ export class Layout {
     /**
      * @private
      */
-    public clearTableWidget(table: TableWidget, clearPosition: boolean, clearHeight: boolean): void {
+    public clearTableWidget(table: TableWidget, clearPosition: boolean, clearHeight: boolean, clearGrid?: boolean): void {
         table.height = 0;
+        if (clearGrid) {
+            table.isGridUpdated = false;
+        }
         if (clearPosition) {
             table.y = 0;
             table.x = 0;
         }
         for (let i: number = 0; i < table.childWidgets.length; i++) {
             let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
-            this.clearRowWidget(row, clearPosition, clearHeight);
+            this.clearRowWidget(row, clearPosition, clearHeight, clearGrid);
         }
     }
     /**
      * @private
      */
-    public clearRowWidget(row: TableRowWidget, clearPosition: boolean, clearHeight: boolean): void {
+    public clearRowWidget(row: TableRowWidget, clearPosition: boolean, clearHeight: boolean, clearGrid: boolean): void {
         row.height = 0;
         if (clearPosition) {
             row.y = 0;
@@ -3681,13 +3729,13 @@ export class Layout {
         }
         for (let i: number = 0; i < row.childWidgets.length; i++) {
             let cell: TableCellWidget = row.childWidgets[i] as TableCellWidget;
-            this.clearCellWidget(cell, clearPosition, clearHeight);
+            this.clearCellWidget(cell, clearPosition, clearHeight, clearGrid);
         }
     }
     /**
      * @private
      */
-    public clearCellWidget(cell: TableCellWidget, clearPosition: boolean, clearHeight: boolean): void {
+    public clearCellWidget(cell: TableCellWidget, clearPosition: boolean, clearHeight: boolean, clearGrid: boolean): void {
         cell.height = 0;
         if (clearPosition) {
             cell.y = 0;
@@ -3700,7 +3748,7 @@ export class Layout {
                     block.height = 0;
                 }
             } else {
-                this.clearTableWidget(block as TableWidget, clearPosition, clearHeight);
+                this.clearTableWidget(block as TableWidget, clearPosition, clearHeight, clearGrid);
             }
         }
     }
@@ -3797,6 +3845,7 @@ export class Layout {
      * @private
      */
     public layoutTable(table: TableWidget, startIndex: number): BlockWidget {
+        table.isBidiTable = table.bidi;
         if (!table.isGridUpdated) {
             table.buildTableColumns();
             table.isGridUpdated = true;
@@ -3836,9 +3885,16 @@ export class Layout {
         //Update the table height of tableWidget when cell spacing has been defined. 
         if (tableWidget.tableFormat.cellSpacing > 0) {
             tableWidget.height = tableWidget.height + HelperMethods.convertPointToPixel(tableWidget.tableFormat.cellSpacing);
-            // tslint:disable-next-line:max-line-length
-            tableWidget.leftBorderWidth = HelperMethods.convertPointToPixel(this.getTableLeftBorder(tableWidget.tableFormat.borders).getLineWidth());
-            tableWidget.rightBorderWidth = HelperMethods.convertPointToPixel(this.getTableRightBorder(tableWidget.tableFormat.borders).getLineWidth());
+            if (!tableWidget.isBidiTable) {
+                // tslint:disable-next-line:max-line-length
+                tableWidget.leftBorderWidth = HelperMethods.convertPointToPixel(this.getTableLeftBorder(tableWidget.tableFormat.borders).getLineWidth());
+                tableWidget.rightBorderWidth = HelperMethods.convertPointToPixel(this.getTableRightBorder(tableWidget.tableFormat.borders).getLineWidth());
+            } else { // Right to left direction table.
+                // tslint:disable-next-line:max-line-length
+                tableWidget.leftBorderWidth = HelperMethods.convertPointToPixel(this.getTableRightBorder(tableWidget.tableFormat.borders).getLineWidth());
+                tableWidget.rightBorderWidth = HelperMethods.convertPointToPixel(this.getTableLeftBorder(tableWidget.tableFormat.borders).getLineWidth());
+            }
+
             // tslint:disable-next-line:max-line-length
             tableWidget.topBorderWidth = HelperMethods.convertPointToPixel(this.getTableTopBorder(tableWidget.tableFormat.borders).getLineWidth());
             tableWidget.bottomBorderWidth = HelperMethods.convertPointToPixel(this.getTableBottomBorder(tableWidget.tableFormat.borders).getLineWidth());
@@ -4311,7 +4367,7 @@ export class Layout {
         if (table.isInHeaderFooter) {
             table.containerWidget.height -= table.height;
         }
-        table.y = this.viewer.clientActiveArea.y;
+        this.viewer.updateClientAreaForBlock(table, true);
         this.updateVerticalPositionToTop(table, true);
         let isPageLayout: boolean = viewer instanceof PageLayoutViewer;
         let combinedTable: TableWidget = table.combineWidget(this.viewer) as TableWidget;
@@ -4610,7 +4666,7 @@ export class Layout {
      * @param lineIndex start line index to reLayout
      * @private
      */
-    public reLayoutLine(paragraph: ParagraphWidget, lineIndex: number): void {
+    public reLayoutLine(paragraph: ParagraphWidget, lineIndex: number, isBidi: boolean): void {
         if (this.viewer.owner.isDocumentLoaded && this.viewer.owner.editorModule) {
             this.viewer.owner.editorModule.updateWholeListItems(paragraph);
         }
@@ -4619,6 +4675,17 @@ export class Layout {
             lineWidget = paragraph.getSplitWidgets()[0].firstChild as LineWidget;
         } else {
             lineWidget = paragraph.childWidgets[lineIndex] as LineWidget;
+        }
+        if (!this.isBidiReLayout && (paragraph.paragraphFormat.bidi || this.isContainsRtl(lineWidget))) {
+            let newLineIndex: number = lineIndex <= 0 ? 0 : lineIndex - 1;
+            for (let i: number = newLineIndex; i < paragraph.childWidgets.length; i++) {
+                if (isBidi || !(paragraph.paragraphFormat.bidi && this.isContainsRtl(lineWidget))) {
+                    if (i === lineIndex) {
+                        continue;
+                    }
+                }
+                this.reArrangeElementsForRtl(paragraph.childWidgets[i] as LineWidget, paragraph.paragraphFormat.bidi);
+            }
         }
         let lineToLayout: LineWidget = lineWidget.previousLine;
         if (isNullOrUndefined(lineToLayout)) {
@@ -4655,4 +4722,113 @@ export class Layout {
         this.layoutNextItemsBlock(paragraph, this.viewer);
     }
     //#endregion
+    //RTL Feature layout start
+    public isContainsRtl(lineWidget: LineWidget): boolean {
+        let isContainsRTL: boolean = false;
+        for (let i: number = 0; i < lineWidget.children.length; i++) {
+            if (lineWidget.children[i] instanceof TextElementBox) {
+                isContainsRTL = lineWidget.children[i].characterFormat.bidi || lineWidget.children[i].characterFormat.bdo === 'RTL'
+                    || this.viewer.textHelper.isRTLText((lineWidget.children[i] as TextElementBox).text);
+                if (isContainsRTL) {
+                    break;
+                }
+            }
+        }
+        return isContainsRTL;
+    }
+    // Re arranges the elements for Right to left layotuing.        
+    public reArrangeElementsForRtl(line: LineWidget, isParaBidi: boolean): void {
+        if (line.children.length === 0) {
+            return;
+        }
+        let lastAddedElementIsRtl: boolean = false;
+        let lastAddedRtlElementIndex: number = -1;
+        let tempElements: ElementBox[] = [];
+        for (let i: number = 0; i < line.children.length; i++) {
+            let element: ElementBox = line.children[i];
+            let elementCharacterFormat: WCharacterFormat = undefined;
+            if (element.characterFormat) {
+                elementCharacterFormat = element.characterFormat;
+            }
+            let isRtl: boolean = false;
+            let text: string = '';
+            if (element instanceof BookmarkElementBox) {
+                tempElements.push(element);
+                continue;
+            }
+            if (element instanceof TextElementBox) {
+                text = (element as TextElementBox).text;
+            }
+            // The list element box shold be added in the last position in line widget for the RTL paragraph 
+            // and first in the line widget for LTR paragrph.
+            if (element instanceof ListTextElementBox) {
+                isRtl = isParaBidi;
+            } else { // For Text element box we need to check the character format and unicode of text to detect the RTL text. 
+                isRtl = this.viewer.textHelper.isRTLText(text) || elementCharacterFormat.bidi
+                    || elementCharacterFormat.bdo === 'RTL';
+            }
+
+            // If the text element box contains only whitespaces, then need to check the previous and next elements.
+            if (!isRtl && !isNullOrUndefined(text) && text !== '' && text.trim() === '') {
+                let elements: ElementBox[] = line.children;
+                //Checks whether the langugae is RTL.
+                if (elementCharacterFormat.bidi) {
+                    // If the last added element is rtl then current text element box also considered as RTL for WhiteSpaces.
+                    if (lastAddedElementIsRtl) {
+                        isRtl = true;
+                        // Else, Check for next element.
+                    } else if (i + 1 < line.children.length && line.children[i + 1] instanceof TextElementBox) {
+                        text = (elements[i + 1] as TextElementBox).text;
+                        isRtl = this.viewer.textHelper.isRTLText(text) || elements[i + 1].characterFormat.bidi
+                            || elements[i + 1].characterFormat.bdo === 'RTL';
+                    }// If the last added element is rtl then current text element box also considered as RTL for WhiteSpaces.
+                } else if (lastAddedElementIsRtl) {
+                    isRtl = true;
+                }
+
+            }
+
+            // Preserve the isRTL value, to reuse it for navigation and selection.
+            element.isRightToLeft = isRtl;
+
+            //Adds the text element to the line
+            if (isRtl && elementCharacterFormat.bdo !== 'LTR') {
+                if (lastAddedElementIsRtl) {
+                    tempElements.splice(lastAddedRtlElementIndex, 0, element);
+                } else {
+                    if (!isParaBidi) {
+                        tempElements.push(element);
+                    } else {
+                        tempElements.splice(0, 0, element);
+                    }
+                    lastAddedElementIsRtl = true;
+                    lastAddedRtlElementIndex = tempElements.indexOf(element);
+                }
+            } else {
+                if (lastAddedElementIsRtl && element instanceof ImageElementBox) {
+                    if (elementCharacterFormat.bidi) {
+                        tempElements.splice(lastAddedRtlElementIndex + 1, 0, element);
+                    } else {
+                        tempElements.splice(lastAddedRtlElementIndex, 0, element);
+                    }
+                } else {
+                    if (!isParaBidi) {
+                        tempElements.push(element);
+                    } else {
+                        if (lastAddedElementIsRtl) {
+                            tempElements.splice(0, 0, element);
+                        } else {
+                            tempElements.splice(lastAddedRtlElementIndex + 1, 0, element);
+                        }
+                        lastAddedRtlElementIndex = tempElements.indexOf(element);
+                    }
+                    lastAddedElementIsRtl = false;
+                }
+            }
+        }
+        // Clear the elemnts and reassign the arranged elements.
+        line.children = [];
+        line.children = tempElements;
+    }
+    //RTL feature layout end
 }

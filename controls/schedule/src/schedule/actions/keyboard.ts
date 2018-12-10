@@ -3,7 +3,7 @@ import { isNullOrUndefined, addClass } from '@syncfusion/ej2-base';
 import { View } from '../base/type';
 import { Schedule } from '../base/schedule';
 import * as event from '../base/constant';
-import { CellClickEventArgs, KeyEventArgs } from '../base/interface';
+import { CellClickEventArgs, KeyEventArgs, ResizeEdges } from '../base/interface';
 import * as util from '../base/util';
 import * as cls from '../base/css-constant';
 
@@ -129,18 +129,32 @@ export class KeyboardInteraction {
             EventHandler.add(allDayRow, 'mouseup', this.onMoveup, this);
         }
     }
-    public onMouseSelection(e: Event): void {
+
+    public onMouseSelection(e: MouseEvent): void {
+        let selectionEdges: ResizeEdges = this.parent.boundaryValidation(e.pageY, e.pageX);
+        if (selectionEdges.bottom || selectionEdges.top || selectionEdges.left || selectionEdges.right) {
+            let parent: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+            let yInBounds: boolean = parent.offsetHeight <= parent.scrollHeight && parent.scrollTop >= 0 &&
+                parent.scrollTop + parent.offsetHeight <= parent.scrollHeight;
+            let xInBounds: boolean = parent.offsetWidth <= parent.scrollWidth && parent.scrollLeft >= 0 &&
+             parent.scrollLeft + parent.offsetWidth <= parent.scrollWidth;
+            if (yInBounds && (selectionEdges.top || selectionEdges.bottom)) {
+                parent.scrollTop += selectionEdges.top ?
+                    -(e.target as HTMLElement).offsetHeight : (e.target as HTMLElement).offsetHeight;
+            }
+            if (xInBounds && (selectionEdges.left || selectionEdges.right)) {
+                parent.scrollLeft += selectionEdges.left ?
+                    -(e.target as HTMLElement).offsetWidth : (e.target as HTMLElement).offsetWidth;
+            }
+        }
         let target: HTMLTableCellElement = this.getClosestCell(e);
         if (target) {
             this.selectCells(true, target);
         }
     }
+
     private getClosestCell(e: Event): HTMLTableCellElement {
         return closest(<Element>e.target, '.' + cls.WORK_CELLS_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS) as HTMLTableCellElement;
-    }
-    public onAppointmentSelection(e: Event): void {
-        let target: Element = closest(<Element>e.target, '.' + cls.APPOINTMENT_CLASS) as Element;
-        this.parent.eventBase.getSelectedEventElements(target);
     }
     private onMoveup(e: Event): void {
         if ((e.target as HTMLElement).classList.contains(cls.WORK_CELLS_CLASS)) {

@@ -43,7 +43,8 @@ export class Count {
     }
 
     private appendCount(): void {
-        let htmlText: string = (this.editPanel as HTMLElement).textContent.trim();
+        let htmlText: string = this.parent.editorMode === 'Markdown' ? (this.editPanel as HTMLTextAreaElement).value.trim() :
+            (this.editPanel as HTMLElement).textContent.trim();
         this.htmlLength = htmlText.length;
         let string: string | number = this.parent.maxLength === -1 ? this.htmlLength : this.htmlLength + ' / ' + this.parent.maxLength;
         this.element.innerHTML = string as string;

@@ -81,7 +81,6 @@
       .e-scroll-nav {
         transform: skewX(-16deg) translateX(6px);
         width: $hscroll-device-arrow-width;
-        z-index: 1001;
 
         .e-nav-arrow {
           font-size: $hscroll-device-arrow-size;
@@ -132,7 +131,7 @@
       > * {
         pointer-events: auto;
       }
- }
+  }
 
     &.e-rtl {
 
@@ -185,5 +184,15 @@
       vertical-align: middle;
       width: 100%;
       }
-   }
+
+    .e-hscroll-bar {
+
+      .e-hscroll-content {
+
+        .e-overlay {
+          pointer-events: none;
+          }
+        }
+      }
+  }
 }

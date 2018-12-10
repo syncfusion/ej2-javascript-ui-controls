@@ -7,6 +7,28 @@
     border: $tbar-border-size $tbar-border-type $tbar-default-border;
     box-shadow: $tbar-box-shadow;
 
+    &.e-vertical {
+
+      .e-hor-nav {
+        border: $tbar-border-nav-type $tbar-default-border;
+        border-width: $tbar-popup-vertical-border-width;
+      }
+
+      &.e-rtl .e-hor-nav {
+        border: $tbar-border-nav-type $tbar-default-border;
+        border-width: $tbar-popup-vertical-rtl-border-width;
+      }
+
+
+      .e-toolbar-items .e-toolbar-item {
+
+        &.e-separator {
+          border-width: $tba-vertical-separator;
+        }
+
+      }
+    }
+
     &.e-extended-toolbar {
 
       .e-toolbar-extended {
@@ -16,7 +38,8 @@
         }
 
         .e-toolbar-item.e-separator {
-          border-right: $tbar-separator-size $tbar-separator-border-type $tbar-separator-border;
+          border: $tbar-separator-border-type $tbar-separator-border;
+          border-width: $tba-horizontal-separator;
         }
 
         .e-toolbar-item .e-tbar-btn .e-icons {
@@ -251,15 +274,17 @@
         }
 
         &.e-separator {
-          border-right: $tbar-separator-size $tbar-separator-border-type $tbar-separator-border;
+          border: $tbar-separator-border-type $tbar-separator-border;
+          border-width: $tba-horizontal-separator;
         }
       }
     }
 
     &.e-rtl .e-hor-nav {
       background: $tbar-default-bg;
+      border: $tbar-border-nav-type $tbar-default-border;
       border-left: 0;
-      border-right: $border-size $tbar-border-nav-type $tbar-default-border;
+      border-width: $tbar-popup-rtl-border-width;
 
       &:not(.e-hor-nav.e-nav-active):hover {
         background: $tbar-hover-bg;
@@ -269,7 +294,8 @@
 
     .e-hor-nav {
       background: $tbar-default-bg;
-      border-left: $border-size $tbar-border-nav-type $tbar-default-border;
+      border: $tbar-border-nav-type $tbar-default-border;
+      border-width: $tbar-popup-border-width;
     }
 
     .e-hor-nav:not(.e-expended-nav)  {

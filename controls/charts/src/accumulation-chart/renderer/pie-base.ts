@@ -6,8 +6,9 @@ import { AccumulationChart } from '../accumulation';
 import { stringToNumber, ChartLocation, degreeToLocation, Rect, getAnimationFunction, getElement } from '../../common/utils/helper';
 import { animationComplete } from '../../common/model/constants';
 import { AccumulationLabelPosition } from '../model/enum';
-import { AccumulationSeries } from '../model/acc-base';
+import { AccumulationSeries, AccPoints } from '../model/acc-base';
 import { AccumulationBase } from './accumulation-base';
+import { AccumulationSeriesModel } from '../model/acc-base-model';
 
 /**
  * PieBase class used to do pie base calculations.
@@ -20,6 +21,10 @@ export class PieBase extends AccumulationBase {
     public center: ChartLocation;
     public radius: number;
     public labelRadius: number;
+    public isRadiusMapped: boolean;
+    public seriesRadius: number;
+    public size: number;
+
 
     /**
      * To initialize the property values.
@@ -27,17 +32,55 @@ export class PieBase extends AccumulationBase {
      */
     public initProperties(chart: AccumulationChart, series: AccumulationSeries): void {
         this.accumulation = chart;
-        let size: number = Math.min(chart.initialClipRect.width, chart.initialClipRect.height);
+        this.size = Math.min(chart.initialClipRect.width, chart.initialClipRect.height);
         this.initAngles(series);
-        this.radius = stringToNumber(series.radius, size / 2);
-        this.innerRadius = stringToNumber(series.innerRadius, this.radius);
-        this.labelRadius = series.dataLabel.position === 'Inside' ? (((this.radius - this.innerRadius) / 2) + this.innerRadius) :
-            (this.radius + stringToNumber(series.dataLabel.connectorStyle.length || '4%', size / 2));
+        let r: number = parseInt(series.radius, 10);
+
+        if ((series.radius.indexOf('%') !== -1 || typeof r === 'number') && !isNaN(r)) {
+            this.isRadiusMapped = false;
+            this.radius = stringToNumber(series.radius, this.size / 2);
+            this.innerRadius = stringToNumber(series.innerRadius, this.radius);
+            this.labelRadius = series.dataLabel.position === 'Inside' ? (((this.radius - this.innerRadius) / 2) + this.innerRadius) :
+                (this.radius + stringToNumber(series.dataLabel.connectorStyle.length || '4%', this.size / 2));
+        } else {
+            let radiusCollection: number[] = [];
+            this.isRadiusMapped = true;
+            for (let i: number = 0; i < Object.keys(series.points).length; i++) {
+                if (series.points[i].sliceRadius.indexOf('%') !== -1) {
+                    radiusCollection[i] = stringToNumber(series.points[i].sliceRadius, this.size / 2);
+                } else {
+                    radiusCollection[i] = parseInt(series.points[i].sliceRadius, 10);
+                }
+            }
+            let minRadius: number = Math.min.apply(null, radiusCollection);
+            let maxRadius: number = Math.max.apply(null, radiusCollection);
+            this.radius = this.seriesRadius = maxRadius;
+            this.innerRadius = stringToNumber(series.innerRadius, this.seriesRadius);
+            this.innerRadius = this.innerRadius > minRadius ? (this.innerRadius / 2) : this.innerRadius;
+        }
+
+        // this.radius = stringToNumber(series.radius, size / 2);
+        // this.innerRadius = stringToNumber(series.innerRadius, this.radius);
+        // this.labelRadius = series.dataLabel.position === 'Inside' ? (((this.radius - this.innerRadius) / 2) + this.innerRadius) :
+        //     (this.radius + stringToNumber(series.dataLabel.connectorStyle.length || '4%', size / 2));
         chart.explodeDistance = series.explode ? stringToNumber(series.explodeOffset, this.radius) : 0;
         this.findCenter(chart, series);
         this.defaultLabelBound(series, series.dataLabel.visible, series.dataLabel.position);
         this.totalAngle -= 0.001;
     }
+    /*
+     * To get label radius of the pie.
+     * @private
+     */
+    public getLabelRadius(series: AccumulationSeriesModel, point: AccPoints): number {
+
+        return series.dataLabel.position === 'Inside' ?
+            ((((stringToNumber(point.sliceRadius, this.radius) - this.innerRadius)) / 2) + this.innerRadius) :
+            (stringToNumber(point.sliceRadius, this.seriesRadius) + stringToNumber(
+                series.dataLabel.connectorStyle.length || '4%', this.size / 2));
+
+    }
+
     /**
      * To find the center of the accumulation.
      * @private
@@ -45,15 +88,15 @@ export class PieBase extends AccumulationBase {
     public findCenter(accumulation: AccumulationChart, series: AccumulationSeries): void {
         this.accumulation = accumulation;
         this.center = {
-            x: stringToNumber('50%', accumulation.initialClipRect.width) + (accumulation.initialClipRect.x),
-            y: stringToNumber('50%', accumulation.initialClipRect.height) + (accumulation.initialClipRect.y)
+            x: stringToNumber(accumulation.center.x, accumulation.initialClipRect.width) + (accumulation.initialClipRect.x),
+            y: stringToNumber(accumulation.center.y, accumulation.initialClipRect.height) + (accumulation.initialClipRect.y)
         };
         let accumulationRect: Rect = this.getSeriesBound(series);
         let accumulationRectCenter: ChartLocation = new ChartLocation(
             accumulationRect.x + accumulationRect.width / 2, accumulationRect.y + accumulationRect.height / 2);
         this.center.x += (this.center.x - accumulationRectCenter.x);
         this.center.y += (this.center.y - accumulationRectCenter.y);
-        this.accumulation.center = this.center;
+        this.accumulation.origin = this.center;
     }
 
     /**

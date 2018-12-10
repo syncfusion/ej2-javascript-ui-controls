@@ -1,9 +1,18 @@
-import { print as printWindow, createElement, detach } from '@syncfusion/ej2-base';
+import { print as printWindow, createElement, detach, classList } from '@syncfusion/ej2-base';
 import { IGrid, PrintEventArgs } from '../base/interface';
-import { removeElement, getActualProperties, getActualPropFromColl } from '../base/util';
+import { getPrintGridModel } from '../base/util';
 import { Scroll } from '../actions/scroll';
 import { Grid } from '../base/grid';
 import * as events from '../base/constant';
+import { Deferred } from '@syncfusion/ej2-data';
+
+export function getCloneProperties(): string[] {
+    return ['aggregates', 'allowGrouping', 'allowFiltering', 'allowMultiSorting', 'allowReordering', 'allowSorting',
+        'allowTextWrap', 'childGrid', 'columns', 'currentViewData', 'dataSource', 'detailTemplate', 'enableAltRow',
+        'enableColumnVirtualization', 'filterSettings', 'gridLines',
+        'groupSettings', 'height', 'locale', 'pageSettings', 'printMode', 'query', 'queryString', 'enableRtl',
+        'rowHeight', 'rowTemplate', 'sortSettings', 'textWrapSettings', 'allowPaging', 'hierarchyPrintMode', 'searchSettings'];
+}
 
 /**
  * 
@@ -16,16 +25,9 @@ export class Print {
     private printWind: Window;
     private scrollModule: Scroll;
     private isAsyncPrint: boolean = false;
-    private printing: string = 'isPrinting';
-    private static printGridProp: string[] = [
-        'aggregates', 'allowGrouping', 'allowFiltering', 'allowMultiSorting', 'allowReordering', 'allowSorting',
-        'allowTextWrap', 'childGrid', 'columns', 'currentViewData', 'dataSource', 'detailTemplate', 'enableAltRow',
-        'enableColumnVirtualization', 'filterSettings', 'gridLines',
-        'groupSettings', 'height', 'locale', 'pageSettings', 'printMode', 'query', 'queryString',
-        'rowHeight', 'rowTemplate', 'sortSettings', 'textWrapSettings', 'allowPaging',
-        events.beforePrint, events.printComplete
-    ];
+    public static printGridProp: string[] = [...getCloneProperties(), events.beforePrint, events.printComplete];
 
+    private defered: Deferred = new Deferred();
 
     /**
      * Constructor for the Grid print module
@@ -34,10 +36,33 @@ export class Print {
     constructor(parent?: IGrid, scrollModule?: Scroll) {
         this.parent = parent;
         if (this.parent.isDestroyed) { return; }
-        this.parent.on(events.contentReady, this.contentReady.bind(this));
+        this.parent.on(events.contentReady, this.isContentReady(), this);
         this.parent.addEventListener(events.actionBegin, this.actionBegin.bind(this));
         this.parent.on(events.onEmpty, this.onEmpty.bind(this));
+        this.parent.on(events.hierarchyPrint, this.hierarchyPrint, this);
         this.scrollModule = scrollModule;
+    }
+
+    private isContentReady(): Function {
+        if (this.isPrintGrid() && (this.parent.hierarchyPrintMode === 'None' || !this.parent.childGrid) ) {
+            return this.contentReady;
+        }
+        return () => {
+            this.defered.promise.then(() => {
+                this.contentReady();
+            });
+            if (this.isPrintGrid()) {
+                this.hierarchyPrint();
+            }
+        };
+    }
+
+    private hierarchyPrint(): void {
+        this.removeColGroup(this.parent);
+        let printGridObj: IGrid = (<{printGridObj?: IGrid}>window).printGridObj;
+        if (printGridObj && !printGridObj.element.querySelector('[aria-busy=true')) {
+            printGridObj.printModule.defered.resolve();
+        }
     }
 
     /**
@@ -65,27 +90,22 @@ export class Print {
     }
     private renderPrintGrid(): void {
         let gObj: IGrid = this.parent;
-        let elem: string = 'element';
-        let printGridModel: { [key: string]: object | boolean } = {};
         let element: HTMLElement = createElement('div', {
             id: this.parent.element.id + '_print', className: gObj.element.className + ' e-print-grid'
         });
         document.body.appendChild(element);
-        for (let key of Print.printGridProp) {
-            if (key === 'columns') {
-                printGridModel[key] = getActualPropFromColl(gObj[key]);
-            } else if (key === 'allowPaging') {
-                printGridModel[key] = this.parent.printMode === 'CurrentPage';
-            } else {
-                printGridModel[key] = getActualProperties(gObj[key]);
-            }
-        }
-        let printGrid: IGrid = new Grid(printGridModel);
+        let printGrid: IGrid = new Grid(getPrintGridModel(gObj, gObj.hierarchyPrintMode) as Object);
         printGrid.query = gObj.getQuery().clone();
+        (<{printGridObj?: IGrid}>window).printGridObj = printGrid;
+        printGrid.isPrinting = true;
+        let modules: Function[] = printGrid.getInjectedModules();
+        let injectedModues: Function[] = gObj.getInjectedModules();
+        if (!modules || modules.length !== injectedModues.length) {
+            (printGrid as Grid).setInjectedModules(injectedModues);
+        }
         gObj.notify(events.printGridInit, { element: element, printgrid: printGrid });
         printGrid.appendTo(element as HTMLElement);
         printGrid.registeredTemplate = this.parent.registeredTemplate;
-        printGrid[this.printing] = true;
         printGrid.trigger = gObj.trigger;
     }
 
@@ -100,7 +120,8 @@ export class Print {
                 requestType: 'print',
                 element: gObj.element,
                 selectedRows: gObj.getContentTable().querySelectorAll('tr[aria-selected="true"]'),
-                cancel: false
+                cancel: false,
+                hierarchyPrintMode: gObj.hierarchyPrintMode
             };
             if (!this.isAsyncPrint) {
                 gObj.trigger(events.beforePrint, args);
@@ -108,7 +129,8 @@ export class Print {
             if (args.cancel) {
                 detach(gObj.element);
                 return;
-            } else if (!this.isAsyncPrint) {
+            }
+            if (!this.isAsyncPrint) {
                 this.printGrid();
             }
         }
@@ -116,10 +138,6 @@ export class Print {
 
     private printGrid(): void {
         let gObj: IGrid = this.parent;
-        // Pager eleement process based on primt mode
-        if (gObj.allowPaging && gObj.printMode === 'CurrentPage') {
-            (gObj.element.querySelector('.e-gridpager') as HTMLElement).style.display = 'none';
-        }
         // Height adjustment on print grid
         if (gObj.height !== 'auto') { // if scroller enabled
             let cssProps: {
@@ -138,44 +156,48 @@ export class Print {
             if (!gObj.groupSettings.columns.length) {
                 (gObj.element.querySelector('.e-groupdroparea') as HTMLElement).style.display = 'none';
             } else {
-                this.removeColGroup(gObj.groupSettings.columns.length, gObj.element);
-                removeElement(gObj.element, '.e-grouptopleftcell');
-                removeElement(gObj.element, '.e-recordpluscollapse');
-                removeElement(gObj.element, '.e-indentcell');
-                removeElement(gObj.element, '.e-recordplusexpand');
+                this.removeColGroup(gObj);
             }
         }
         // hide horizontal scroll
-        (gObj.element.querySelector('.e-content') as HTMLElement).style.overflowX = 'hidden';
-        //hide filter bar in print grid
-        if (gObj.allowFiltering && gObj.filterSettings.type === 'FilterBar') {
-            (gObj.element.querySelector('.e-filterbar') as HTMLElement).style.display = 'none';
+        for (let element of [].slice.call(gObj.element.querySelectorAll('.e-content'))) {
+            element.style.overflowX = 'hidden';
         }
         // Hide the waiting popup
         let waitingPop: NodeListOf<Element> = gObj.element.querySelectorAll('.e-spin-show');
-        if (waitingPop.length > 0) {
-            waitingPop[0].classList.add('e-spin-hide');
-            waitingPop[0].classList.remove('e-spin-show');
+        for (let element of [].slice.call(waitingPop)) {
+            classList(element, ['e-spin-hide'], ['e-spin-show']);
         }
-        if (gObj[this.printing]) {
-            detach(gObj.element);
-        }
-        gObj.element.classList.remove('e-print-grid');
-        this.printWind = printWindow(gObj.element, this.printWind);
-        gObj[this.printing] = false;
+        this.printGridElement(gObj);
+        gObj.isPrinting = false;
+        delete (<{printGridObj?: IGrid}>window).printGridObj;
         let args: PrintEventArgs = {
             element: gObj.element
         };
         gObj.trigger(events.printComplete, args);
     }
 
-    private removeColGroup(depth: number, element: HTMLElement): void {
-        let groupCaption: NodeList = element.querySelectorAll('.e-groupcaption');
+    private printGridElement(gObj: IGrid): void {
+        classList(gObj.element, ['e-print-grid-layout'], ['e-print-grid']);
+        if (gObj.isPrinting) {
+            detach(gObj.element);
+        }
+        this.printWind = printWindow(gObj.element, this.printWind);
+    }
+
+    private removeColGroup(gObj: IGrid) : void {
+        let depth: number = gObj.groupSettings.columns.length;
+        let element: HTMLElement = gObj.element;
+        let id: string = '#' + gObj.element.id;
+        if (!depth) {
+            return;
+        }
+        let groupCaption: NodeList = element.querySelectorAll(`${id}captioncell.e-groupcaption`);
         let colSpan: string = (<HTMLElement>groupCaption[depth - 1]).getAttribute('colspan');
         for (let i: number = 0; i < groupCaption.length; i++) {
             (<HTMLElement>groupCaption[i]).setAttribute('colspan', colSpan);
         }
-        let colGroups: NodeList = element.querySelectorAll('colgroup');
+        let colGroups: NodeList = element.querySelectorAll(`colgroup${id}colGroup`);
         for (let i: number = 0; i < colGroups.length; i++) {
             for (let j: number = 0; j < depth; j++) {
                 (<HTMLElement>colGroups[i].childNodes[j]).style.display = 'none';
@@ -184,7 +206,7 @@ export class Print {
     }
 
     private isPrintGrid(): boolean {
-        return this.parent.element.id.indexOf('_print') > 0 && this.parent[this.printing];
+        return this.parent.element.id.indexOf('_print') > 0 && this.parent.isPrinting;
     }
 
     /**
@@ -197,6 +219,7 @@ export class Print {
         this.parent.off(events.contentReady, this.contentReady.bind(this));
         this.parent.removeEventListener(events.actionBegin, this.actionBegin.bind(this));
         this.parent.off(events.onEmpty, this.onEmpty.bind(this));
+        this.parent.off(events.hierarchyPrint, this.hierarchyPrint);
     }
 
     /**
@@ -208,4 +231,3 @@ export class Print {
     }
 
 }
-

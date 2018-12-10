@@ -1,5 +1,5 @@
 import { addClass, removeClass, Touch, remove, EventHandler, TapEventArgs, Browser } from '@syncfusion/ej2-base';
-import { closest, isNullOrUndefined, ScrollEventArgs, SwipeEventArgs, TouchEventArgs, MouseEventArgs } from '@syncfusion/ej2-base';
+import { closest, isNullOrUndefined, ScrollEventArgs, SwipeEventArgs } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { ActionEventArgs, NavigatingEventArgs, LayoutData } from '../base/interface';
 import * as events from '../base/constant';
@@ -112,20 +112,8 @@ export class ScheduleTouch {
 
     private tapHoldHandler(e: TapEventArgs): void {
         let target: Element = closest((e.originalEvent.target as Element), '.' + cls.APPOINTMENT_CLASS);
-        if (!isNullOrUndefined(target)) {
-            if (this.parent.isAdaptive) {
-                let event: TouchEventArgs | MouseEventArgs = e.originalEvent;
-                this.parent.notify(events.tapHoldReady, { event });
-            }
-            return;
-        }
-        target = closest((e.originalEvent.target as Element), '.' + cls.WORK_CELLS_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS + ',.'
-            + cls.HEADER_CELLS_CLASS);
-        if (!isNullOrUndefined(target)) {
-            this.parent.activeCellsData = this.parent.getCellDetails(target);
-            if (!this.parent.activeViewOptions.readonly) {
-                this.parent.eventWindow.openEditor(this.parent.activeCellsData, 'Add');
-            }
+        if (!isNullOrUndefined(target) && this.parent.isAdaptive) {
+            this.parent.quickPopup.tapHoldEventPopup(e.originalEvent);
             return;
         }
     }

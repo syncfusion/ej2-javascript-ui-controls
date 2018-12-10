@@ -476,6 +476,9 @@ export class SfdtReader {
     }
     private parseTableFormat(sourceFormat: any, tableFormat: WTableFormat): void {
         this.parseBorders(sourceFormat.borders, tableFormat.borders);
+        if (!isNullOrUndefined(sourceFormat.allowAutoFit)) {
+            tableFormat.allowAutoFit = sourceFormat.allowAutoFit;
+        }
         if (!isNullOrUndefined(sourceFormat.cellSpacing)) {
             tableFormat.cellSpacing = sourceFormat.cellSpacing;
         }
@@ -503,6 +506,9 @@ export class SfdtReader {
         }
         if (!isNullOrUndefined(sourceFormat.preferredWidthType)) {
             tableFormat.preferredWidthType = sourceFormat.preferredWidthType;
+        }
+        if (!isNullOrUndefined(sourceFormat.bidi)) {
+            tableFormat.bidi = sourceFormat.bidi;
         }
     }
     private parseCellFormat(sourceFormat: any, cellFormat: WCellFormat): void {
@@ -639,6 +645,24 @@ export class SfdtReader {
             if (!isNullOrUndefined(sourceFormat.fontColor)) {
                 characterFormat.fontColor = this.getColor(sourceFormat.fontColor);
             }
+            if (!isNullOrUndefined(sourceFormat.bidi)) {
+                characterFormat.bidi = sourceFormat.bidi;
+            }
+            if (!isNullOrUndefined(sourceFormat.bdo)) {
+                characterFormat.bdo = sourceFormat.bdo;
+            }
+            if (!isNullOrUndefined(sourceFormat.fontSizeBidi)) {
+                characterFormat.fontSizeBidi = sourceFormat.fontSizeBidi;
+            }
+            if (!isNullOrUndefined(sourceFormat.fontFamilyBidi)) {
+                characterFormat.fontFamilyBidi = sourceFormat.fontFamilyBidi;
+            }
+            if (!isNullOrUndefined(sourceFormat.boldBidi)) {
+                characterFormat.boldBidi = sourceFormat.boldBidi;
+            }
+            if (!isNullOrUndefined(sourceFormat.italicBidi)) {
+                characterFormat.italicBidi = sourceFormat.italicBidi;
+            }
         }
     }
     private getColor(color: string): string {
@@ -647,6 +671,9 @@ export class SfdtReader {
     }
     private parseParagraphFormat(sourceFormat: any, paragraphFormat: WParagraphFormat): void {
         if (!isNullOrUndefined(sourceFormat)) {
+            if (!isNullOrUndefined(sourceFormat.bidi)) {
+                paragraphFormat.bidi = sourceFormat.bidi;
+            }
             if (!isNullOrUndefined(sourceFormat.leftIndent)) {
                 paragraphFormat.leftIndent = sourceFormat.leftIndent;
             }
@@ -724,6 +751,9 @@ export class SfdtReader {
         }
         if (!isNullOrUndefined(data.differentOddAndEvenPages)) {
             sectionFormat.differentOddAndEvenPages = data.differentOddAndEvenPages;
+        }
+        if (!isNullOrUndefined(data.bidi)) {
+            sectionFormat.bidi = data.bidi;
         }
     }
 

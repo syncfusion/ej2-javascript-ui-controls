@@ -8,6 +8,7 @@ import { MouseEvents } from './mouseevents.spec';
 import { PortConstraints } from '../../../src/diagram/enum/enum';
 import { Node } from '../../../src/diagram/objects/node';
 import { PortVisibility, DiagramTools } from '../../../src/diagram/index';
+import { NodeConstraints } from '../../../src/index';
 
 /**
 * Test cases for port constraints
@@ -152,5 +153,116 @@ describe('Diagram Control', () => {
 
 
 
-    })
+    });
+    describe('Ports with constraints undo redo ', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram4' });
+            document.body.appendChild(ele);
+            let node1: NodeModel = {
+                id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 150, annotations: [{ content: 'Node1' }],
+                shape: { type: 'Basic', shape: 'Rectangle' }, constraints: NodeConstraints.Default & ~NodeConstraints.InConnect,
+                ports: [
+                             { id: 'node1In', height: 10, width: 10, offset: { x: 1, y: 0.5 }, constraints: PortConstraints.InConnect },
+                  ]
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 100, height: 100, offsetX: 400, offsetY: 150, annotations: [{ content: 'Node2' }],
+                shape: { type: 'Basic', shape: 'Rectangle' }, constraints: NodeConstraints.Default & ~NodeConstraints.OutConnect,
+                ports: [
+                             { id: 'node2Out', height: 10, width: 10, offset: { x: 0, y: 0.5 }, constraints: PortConstraints.OutConnect },
+                  ]
+            };
+            let node3: NodeModel = {
+                id: 'node3', width: 100, height: 100, offsetX: 100, offsetY: 300, annotations: [{ content: 'Node3' }],
+                shape: { type: 'Basic', shape: 'Rectangle' }, constraints: NodeConstraints.Default & ~NodeConstraints.InConnect,
+                ports: [
+                             { id: 'node3In', height: 10, width: 10, offset: { x: 1, y: 0.5 }, constraints: PortConstraints.InConnect },
+                  ]
+            };
+            let node4: NodeModel = {
+                id: 'node4', width: 100, height: 100, offsetX: 400, offsetY: 300, annotations: [{ content: 'Node4' }],
+                shape: { type: 'Basic', shape: 'Rectangle' }, constraints: NodeConstraints.Default & ~NodeConstraints.OutConnect,
+                ports: [
+                             { id: 'node4Out', height: 10, width: 10, offset: { x: 0, y: 0.5 }, constraints: PortConstraints.OutConnect },
+                  ]
+            };
+            let connectors: ConnectorModel[] = [
+                {
+                    id: 'connector1', sourcePoint: { x: 300, y: 150}, targetPoint: { x: 200, y: 150},
+                    type: 'Orthogonal', segments: [{ type: 'Orthogonal'}], targetDecorator: { height: 10, width: 10}
+                },
+                {
+                    id: 'connector2', sourcePoint: { x: 300, y: 300}, targetPoint: { x: 200, y: 300},
+                    type: 'Orthogonal', segments: [{ type: 'Orthogonal'}], targetDecorator: { height: 10, width: 10}
+                },
+            ];
+            diagram = new Diagram({
+
+                width: '500px', height: '500px', nodes: [node1, node2, node3, node4],
+                connectors: connectors
+            });
+
+            diagram.appendTo('#diagram4');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Port with Inconnect', (done: Function) => {
+            let mouseEvents: MouseEvents = new MouseEvents();
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 210, 150);
+            mouseEvents.mouseDownEvent(diagramCanvas, 200, 150);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 153, 155);
+            mouseEvents.mouseLeaveEvent(diagramCanvas);
+            expect(diagram.connectors[0].targetID).toBe('node1');
+            expect(diagram.connectors[0].targetPortID).toBe('node1In');
+            diagram.clearSelection();
+            done();
+        });
+        it('Port with OutConnect', (done: Function) => {
+            let mouseEvents: MouseEvents = new MouseEvents();
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 300, 150);
+            mouseEvents.mouseDownEvent(diagramCanvas, 300, 150);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 358, 155);
+            mouseEvents.mouseLeaveEvent(diagramCanvas);
+            expect(diagram.connectors[0].sourceID).toBe('node2');
+            expect(diagram.connectors[0].sourcePortID).toBe('node2Out');
+            diagram.clearSelection();
+            done();
+        });
+        it('Port with OutConnect not connect on Node', (done: Function) => {
+            let mouseEvents: MouseEvents = new MouseEvents();
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 300, 300);
+            mouseEvents.mouseDownEvent(diagramCanvas, 300, 300);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 380, 300);
+            mouseEvents.mouseLeaveEvent(diagramCanvas);
+            expect(diagram.connectors[1].sourceID).toBe('');
+            expect(diagram.connectors[1].sourcePortID).toBe('');
+            diagram.clearSelection();
+            done();
+        });
+        it('Port with Inconnect not connect on Node', (done: Function) => {
+            let mouseEvents: MouseEvents = new MouseEvents();
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 210, 300);
+            mouseEvents.mouseDownEvent(diagramCanvas, 200, 300);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 120, 300);
+            mouseEvents.mouseLeaveEvent(diagramCanvas);
+            expect(diagram.connectors[1].targetID).toBe('');
+            expect(diagram.connectors[1].targetPortID).toBe('');
+            diagram.undo();
+            diagram.clearSelection();
+            done();
+        });
+    });
 });

@@ -51,7 +51,7 @@ export class AgendaBase {
                         'data-guid': listData[li].Guid as string,
                         'role': 'button',
                         'tabindex': '0',
-                        'aria-readonly': 'false',
+                        'aria-readonly': this.parent.eventBase.getReadonlyAttribute(listData[li]),
                         'aria-selected': 'false',
                         'aria-grabbed': 'true',
                         'aria-label': (listData[li][this.parent.eventFields.subject]

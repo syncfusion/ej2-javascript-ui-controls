@@ -14,7 +14,10 @@ import { data } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy } from '../base/specutil.spec';
 
-Grid.Inject(Page, Sort, Selection);
+Grid.Inject(Page, Sort, Selection, RowDD);
+
+let helperElement: any;
+let dragTarget: any;
 
 function copyObject(source: Object, destiation: Object): Object {
     for (let prop in source) {
@@ -95,20 +98,22 @@ describe('Reorder row functionalities', () => {
     });
 
     it('drag and drop selected row in second grid with out module inject', () => {
+        Grid.Inject(RowDD);
         gridObj.selectRows([3, 4, 5]);
         rows = gridObj.getRows();
-        let mouseDown: any = getEventObject('MouseEvents', 'mousedown', rows[4].firstChild, 50, 195);
-        EventHandler.trigger(gridObj.getContent() as HTMLElement, 'mousedown', mouseDown);
+        
+        // let mouseDown: any = getEventObject('MouseEvents', 'mousedown', rows[4].firstChild, 50, 195);
+        // EventHandler.trigger(gridObj.getContent() as HTMLElement, 'mousedown', mouseDown);
 
-        let mousemove: any = getEventObject('MouseEvents', 'mousemove', rows[5].firstChild, 80, 218);
-        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-        mousemove.srcElement = mousemove.target = mousemove.toElement = document.querySelector('#Grid1');
-        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-        mousemove.srcElement = mousemove.target = mousemove.toElement = gridObj.getContent().querySelectorAll('tr')[0];
-        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        // let mousemove: any = getEventObject('MouseEvents', 'mousemove', rows[5].firstChild, 80, 218);
+        // EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        // mousemove.srcElement = mousemove.target = mousemove.toElement = document.querySelector('#Grid1');
+        // EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        // mousemove.srcElement = mousemove.target = mousemove.toElement = gridObj.getContent().querySelectorAll('tr')[0];
+        // EventHandler.trigger(<any>(document), 'mousemove', mousemove);
 
-        let mouseup: any = getEventObject('MouseEvents', 'mouseup', gridObj.getContent().querySelectorAll('tr')[0], 30, 200);
-        EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+        // let mouseup: any = getEventObject('MouseEvents', 'mouseup', gridObj.getContent().querySelectorAll('tr')[0], 30, 200);
+        // EventHandler.trigger(<any>(document), 'mouseup', mouseup);
     });
 
     it('inject row drag and drop module', () => {
@@ -964,5 +969,61 @@ describe('Row Drag and Drop module', () => {
             destroy(gridObj1);
         });
     });
+
+    describe('Reorder row functionalities within grid', () => {
+        let gridObj: Grid;
+        let rows: any;
+        window['browserDetails'].isIE = false;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: JSON.parse(JSON.stringify(<any>data)),
+                    allowRowDragAndDrop: true,
+                    rowDropSettings: { targetID: undefined },
+                    allowSelection: true,
+                    selectionSettings: { type: 'Multiple', mode: 'Row' },
+                    columns: [{ field: 'OrderID' }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight' },
+                    { field: 'ShipCity' }],
+                    allowSorting: true,
+                    allowPaging: true,
+                    pageSettings: { pageSize: 6, currentPage: 1 },
+                }, done);
+        });
+
+        // it('Trigger drag and drop helper', () => {
+        //     gridObj.selectRow(3);
+        //     let target: any = (<any>gridObj).getRows()[0].querySelector('td').firstElementChild;
+        //     let sender: object = {};
+        //     let eve: any = { sender: { target } };
+        //     helperElement = (<any>gridObj).rowDragAndDropModule.helper(eve);
+        //     dragTarget = eve;
+        //     expect(eve.sender.target.classList.contains('e-icon-rowdragicon')).toBe(true);
+        // });
+
+        // it('Trigger the rowDrag event', () => {
+        //     (<any>gridObj).rowDragAndDropModule.dragStart((dragTarget as any).sender);
+        // });
+    
+    // it('Trigger the rowDrag event', () => {    
+    //     let targetRow: any = (<any>gridObj).getRows()[0].querySelector('td').firstElementChild;
+    //     let rows:any = gridObj.getRows();
+    //     let mousemove: any = getEventObject('MouseEvents', 'mousemove',
+    //         rows[3].firstChild, (<HTMLElement>rows[3].firstChild).offsetLeft + 20, (<HTMLElement>rows[5].firstChild).offsetTop + 20);
+    //     let e: any = { target: targetRow, element: gridObj.getContent(), name: 'drag', event: mousemove };
+    //     (<any>gridObj).rowDragAndDropModule.drag(e);
+    // });
+    
+    // it('Trigger the dragStop event', () => {    
+    //     let rows:any = gridObj.getRows();
+    //     let mouseDown: any = getEventObject('MouseEvents', 'mousedown', rows[1].firstChild, (<HTMLElement>rows[1].firstChild).offsetLeft + 20, (<HTMLElement>rows[4].firstChild).offsetTop + 20);
+    //     let e: any = { element: gridObj.getContent(), name: 'dragStop', helper:helperElement, event:mouseDown };
+    //     (<any>gridObj).rowDragAndDropModule.dragStop(e);
+    // });
+    
+    afterAll(() => {
+        destroy(gridObj);
+    });
+    })
+    
 
 });

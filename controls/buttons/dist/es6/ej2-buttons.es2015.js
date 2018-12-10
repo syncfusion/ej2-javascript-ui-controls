@@ -1,4 +1,4 @@
-import { Component, Event, EventHandler, NotifyPropertyChanges, Property, addClass, attributes, deleteObject, detach, getInstance, getUniqueID, getValue, isRippleEnabled, removeClass, rippleEffect, setValue } from '@syncfusion/ej2-base';
+import { Component, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, attributes, closest, deleteObject, detach, getInstance, getUniqueID, getValue, isNullOrUndefined, isRippleEnabled, removeClass, rippleEffect, setValue } from '@syncfusion/ej2-base';
 
 /**
  * Initialize wrapper element for angular.
@@ -1382,11 +1382,13 @@ let Switch = class Switch extends Component {
     wireEvents() {
         let wrapper = this.getWrapper();
         let handle = wrapper.querySelector('.e-switch-handle');
+        this.delegateMouseUpHandler = this.switchMouseUp.bind(this);
+        this.delegateKeyDownHandler = this.switchFocusHandler.bind(this);
         EventHandler.add(wrapper, 'click', this.clickHandler, this);
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
-        EventHandler.add(document, 'mouseup', this.switchMouseUp, this);
-        EventHandler.add(document, 'keydown', this.switchFocusHandler, this);
+        EventHandler.add(document, 'mouseup', this.delegateMouseUpHandler, this);
+        EventHandler.add(document, 'keydown', this.delegateKeyDownHandler, this);
         EventHandler.add(wrapper, 'mousedown mouseup', this.rippleHandler, this);
         EventHandler.add(wrapper, 'touchstart touchmove touchend', this.switchMouseUp, this);
     }
@@ -1396,8 +1398,8 @@ let Switch = class Switch extends Component {
         EventHandler.remove(wrapper, 'click', this.clickHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
-        EventHandler.remove(document, 'mouseup', this.switchMouseUp);
-        EventHandler.remove(document, 'keydown', this.switchFocusHandler);
+        EventHandler.remove(document, 'mouseup', this.delegateMouseUpHandler);
+        EventHandler.remove(document, 'keydown', this.delegateKeyDownHandler);
         EventHandler.remove(wrapper, 'mousedown mouseup', this.rippleHandler);
         EventHandler.remove(wrapper, 'touchstart touchmove touchend', this.switchMouseUp);
     }
@@ -1437,9 +1439,484 @@ Switch = __decorate$3([
  * Switch modules
  */
 
+var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+const classNames = {
+    chipSet: 'e-chip-set',
+    chip: 'e-chip',
+    avatar: 'e-chip-avatar',
+    text: 'e-chip-text',
+    icon: 'e-chip-icon',
+    delete: 'e-chip-delete',
+    deleteIcon: 'e-dlt-btn',
+    multiSelection: 'e-multi-selection',
+    singleSelection: 'e-selection',
+    active: 'e-active',
+    chipWrapper: 'e-chip-avatar-wrap',
+    iconWrapper: 'e-chip-icon-wrap',
+    focused: 'e-focused',
+    disabled: 'e-disabled',
+    rtl: 'e-rtl',
+};
+/**
+ * A chip component is a small block of essential information, mostly used on contacts or filter tags.
+ * ```html
+ * <div id="chip"></div>
+ * ```
+ * ```typescript
+ * <script>
+ * var chipObj = new ChipList();
+ * chipObj.appendTo("#chip");
+ * </script>
+ * ```
+ */
+let ChipList = class ChipList extends Component {
+    constructor(options, element) {
+        super(options, element);
+    }
+    preRender() {
+        //prerender
+    }
+    render() {
+        this.type = this.chips.length ? 'chipset' : (this.text || this.element.innerText ? 'chip' : 'chipset');
+        this.setAttributes();
+        this.createChip();
+        this.setRtl();
+        this.wireEvent(false);
+        this.select(this.selectedChips);
+        this.rippleFunctin = rippleEffect(this.element, {
+            selector: '.e-chip'
+        });
+    }
+    createChip() {
+        this.innerText = this.element.innerText.trim();
+        this.element.innerHTML = '';
+        this.chipCreation(this.type === 'chip' ? [this.innerText ? this.innerText : this.text] : this.chips);
+    }
+    setAttributes() {
+        if (this.type === 'chip') {
+            this.element.tabIndex = 0;
+            this.element.setAttribute('role', 'option');
+        }
+        else {
+            this.element.classList.add(classNames.chipSet);
+            this.element.setAttribute('role', 'listbox');
+            if (this.selection === 'Multiple') {
+                this.element.classList.add(classNames.multiSelection);
+                this.element.setAttribute('aria-multiselectable', 'true');
+            }
+            else if (this.selection === 'Single') {
+                this.element.classList.add(classNames.singleSelection);
+                this.element.setAttribute('aria-multiselectable', 'false');
+            }
+            else {
+                this.element.setAttribute('aria-multiselectable', 'false');
+            }
+        }
+    }
+    setRtl() {
+        this.element.classList[this.enableRtl ? 'add' : 'remove'](classNames.rtl);
+    }
+    chipCreation(data) {
+        let chipListArray = [];
+        for (let i = 0; i < data.length; i++) {
+            let fieldsData = this.getFieldValues(data[i]);
+            let chipArray = this.elementCreation(fieldsData);
+            let className = (classNames.chip + ' ' + (fieldsData.enabled ? ' ' : classNames.disabled) + ' ' +
+                (fieldsData.avatarIconCss || fieldsData.avatarText ? classNames.chipWrapper : (fieldsData.leadingIconCss ?
+                    classNames.iconWrapper : ' ')) + ' ' + fieldsData.cssClass).split(' ').filter((css) => css);
+            if (this.type === 'chip') {
+                chipListArray = chipArray;
+                addClass([this.element], className);
+                this.element.setAttribute('aria-label', fieldsData.text);
+            }
+            else {
+                let wrapper = this.createElement('DIV', {
+                    className: className.join(' '), attrs: {
+                        tabIndex: '0', role: 'option',
+                        'aria-label': fieldsData.text, 'aria-selected': 'false'
+                    }
+                });
+                append(chipArray, wrapper);
+                chipListArray.push(wrapper);
+            }
+        }
+        append(chipListArray, this.element);
+    }
+    getFieldValues(data) {
+        let chipEnabled = this.enabled.toString() === 'false' ? false : true;
+        let fields = {
+            text: typeof data === 'object' ? (data.text ? data.text.toString() : this.text.toString()) :
+                (this.type === 'chip' ? (this.innerText ? this.innerText : this.text.toString()) : data.toString()),
+            cssClass: typeof data === 'object' ? (data.cssClass ? data.cssClass.toString() : this.cssClass.toString()) :
+                (this.cssClass.toString()),
+            leadingIconCss: typeof data === 'object' ? (data.leadingIconCss ? data.leadingIconCss.toString() :
+                this.leadingIconCss.toString()) : (this.leadingIconCss.toString()),
+            avatarIconCss: typeof data === 'object' ? (data.avatarIconCss ? data.avatarIconCss.toString() :
+                this.avatarIconCss.toString()) : (this.avatarIconCss.toString()),
+            avatarText: typeof data === 'object' ? (data.avatarText ? data.avatarText.toString() : this.avatarText.toString()) :
+                (this.avatarText.toString()),
+            trailingIconCss: typeof data === 'object' ? (data.trailingIconCss ? data.trailingIconCss.toString() :
+                this.trailingIconCss.toString()) : (this.trailingIconCss.toString()),
+            enabled: typeof data === 'object' ? (!isNullOrUndefined(data.enabled) ? (data.enabled.toString() === 'false' ? false : true) :
+                chipEnabled) : (chipEnabled)
+        };
+        return fields;
+    }
+    elementCreation(fields) {
+        let chipArray = [];
+        if (fields.avatarText || fields.avatarIconCss) {
+            let className = (classNames.avatar + ' ' + fields.avatarIconCss).trim();
+            let chipAvatarElement = this.createElement('span', { className: className });
+            chipAvatarElement.innerText = fields.avatarText;
+            chipArray.push(chipAvatarElement);
+        }
+        else if (fields.leadingIconCss) {
+            let className = (classNames.icon + ' ' + fields.leadingIconCss).trim();
+            let chipIconElement = this.createElement('span', { className: className });
+            chipArray.push(chipIconElement);
+        }
+        let chipTextElement = this.createElement('span', { className: classNames.text });
+        chipTextElement.innerText = fields.text;
+        chipArray.push(chipTextElement);
+        if (fields.trailingIconCss || (this.type !== 'chip' && this.enableDelete)) {
+            let className = (classNames.delete + ' ' +
+                (fields.trailingIconCss ? fields.trailingIconCss : classNames.deleteIcon)).trim();
+            let chipdeleteElement = this.createElement('span', { className: className });
+            chipArray.push(chipdeleteElement);
+        }
+        return chipArray;
+    }
+    /**
+     * A function that finds chip based on given input.
+     * @param  {number | HTMLElement } fields - We can pass index number or element of chip.
+     */
+    find(fields) {
+        let chipData;
+        let chipElement = fields instanceof HTMLElement ?
+            fields : this.element.querySelectorAll('.' + classNames.chip)[fields];
+        if (chipElement && this.type !== 'chip') {
+            chipData = { text: undefined, index: undefined, element: undefined, data: undefined };
+            chipData.index = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.chip)).indexOf(chipElement);
+            chipData.text = typeof this.chips[chipData.index] === 'object' ?
+                (this.chips[chipData.index].text ?
+                    this.chips[chipData.index].text.toString() : '') :
+                this.chips[chipData.index].toString();
+            chipData.data = this.chips[chipData.index];
+            chipData.element = chipElement;
+        }
+        return chipData;
+    }
+    /**
+     * A function that adds chip items based on given input.
+     * @param  {string[] | number[] | ChipModel[] | string | number | ChipModel} chipsData - We can pass array of string or
+     *  array of number or array of chip model or string data or number data or chip model.
+     */
+    add(chipsData) {
+        if (this.type !== 'chip') {
+            let fieldData = chipsData instanceof Array ?
+                chipsData : [chipsData];
+            this.chips.push(...fieldData);
+            this.chipCreation(fieldData);
+        }
+    }
+    /**
+     * A function that selects chip items based on given input.
+     * @param  {number | number[] | HTMLElement | HTMLElement[]} fields - We can pass number or array of number
+     *  or chip element or array of chip element.
+     */
+    select(fields) {
+        if (this.type !== 'chip' && this.selection !== 'None') {
+            let fieldData = fields instanceof Array ? fields : [fields];
+            for (let i = 0; i < fieldData.length; i++) {
+                let chipElement = fieldData[i] instanceof HTMLElement ? fieldData[i]
+                    : this.element.querySelectorAll('.' + classNames.chip)[fieldData[i]];
+                if (chipElement instanceof HTMLElement) {
+                    this.selectionHandler(chipElement);
+                }
+            }
+        }
+    }
+    /**
+     * A function that removes chip items based on given input.
+     * @param  {number | number[] | HTMLElement | HTMLElement[]} fields - We can pass number or array of number
+     *  or chip element or array of chip element.
+     */
+    remove(fields) {
+        if (this.type !== 'chip') {
+            let fieldData = fields instanceof Array ? fields : [fields];
+            let chipElements = [];
+            let chipCollection = this.element.querySelectorAll('.' + classNames.chip);
+            fieldData.forEach((data) => {
+                let chipElement = data instanceof HTMLElement ? data
+                    : chipCollection[data];
+                if (chipElement instanceof HTMLElement) {
+                    chipElements.push(chipElement);
+                }
+            });
+            chipElements.forEach((element) => {
+                let chips = this.element.querySelectorAll('.' + classNames.chip);
+                let index = Array.prototype.slice.call(chips).indexOf(element);
+                this.deleteHandler(element, index);
+            });
+        }
+    }
+    /**
+     * A function that returns selected chips data.
+     */
+    getSelectedChips() {
+        let slectedChips;
+        if (this.type !== 'chip' && this.selection !== 'None') {
+            let selectedItems = { texts: [], Indexes: [], data: [], elements: [] };
+            this.element.querySelectorAll('.' + classNames.active).forEach((chip) => {
+                selectedItems.elements.push(chip);
+                let index = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.chip)).indexOf(chip);
+                selectedItems.Indexes.push(index);
+                selectedItems.data.push(this.chips[index]);
+                let text = typeof this.chips[index] === 'object' ?
+                    this.chips[index].text.toString() : this.chips[index].toString();
+                selectedItems.texts.push(text);
+            });
+            let selectedItem = {
+                text: selectedItems.texts[0], index: selectedItems.Indexes[0],
+                data: selectedItems.data[0], element: selectedItems.elements[0]
+            };
+            slectedChips = !isNullOrUndefined(selectedItem.index) ?
+                (this.selection === 'Multiple' ? selectedItems : selectedItem) : undefined;
+        }
+        return slectedChips;
+    }
+    wireEvent(unWireEvent) {
+        if (!unWireEvent) {
+            EventHandler.add(this.element, 'click', this.clickHandler, this);
+            EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
+            EventHandler.add(this.element, 'keydown', this.keyHandler, this);
+            EventHandler.add(this.element, 'keyup', this.keyHandler, this);
+        }
+        else {
+            EventHandler.remove(this.element, 'click', this.clickHandler);
+            EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
+            EventHandler.remove(this.element, 'keydown', this.keyHandler);
+            EventHandler.remove(this.element, 'keyup', this.keyHandler);
+        }
+    }
+    keyHandler(e) {
+        if (e.target.classList.contains(classNames.chip)) {
+            if (e.type === 'keydown') {
+                if (e.keyCode === 13) {
+                    this.clickHandler(e);
+                }
+                else if (e.keyCode === 46 && this.enableDelete) {
+                    this.clickHandler(e, true);
+                }
+            }
+            else if (e.keyCode === 9) {
+                this.focusInHandler(e.target);
+            }
+        }
+    }
+    focusInHandler(chipWrapper) {
+        if (!chipWrapper.classList.contains(classNames.focused)) {
+            chipWrapper.classList.add(classNames.focused);
+        }
+    }
+    focusOutHandler(e) {
+        let chipWrapper = closest(e.target, '.' + classNames.chip);
+        let focusedElement = this.type === 'chip' ? (this.element.classList.contains(classNames.focused) ?
+            this.element : null) : this.element.querySelector('.' + classNames.focused);
+        if (chipWrapper && focusedElement) {
+            focusedElement.classList.remove(classNames.focused);
+        }
+    }
+    clickHandler(e, del = false) {
+        let chipWrapper = closest(e.target, '.' + classNames.chip);
+        if (chipWrapper) {
+            if (this.type !== 'chip') {
+                let chipData = this.find(chipWrapper);
+                chipData.event = e;
+                let deleteElement = e.target.classList.contains(classNames.delete) ?
+                    e.target : (del ? chipWrapper.querySelector('.' + classNames.delete) : undefined);
+                if (deleteElement && this.enableDelete) {
+                    chipData.cancel = false;
+                    let deletedItemArgs = chipData;
+                    this.trigger('delete', deletedItemArgs);
+                    if (!deletedItemArgs.cancel) {
+                        this.deleteHandler(chipData.element, chipData.index);
+                    }
+                }
+                else if (this.selection !== 'None') {
+                    this.selectionHandler(chipWrapper);
+                    chipData.selected = chipWrapper.classList.contains(classNames.active);
+                    let selectedItemArgs = chipData;
+                    this.trigger('click', selectedItemArgs);
+                }
+                else {
+                    this.focusInHandler(chipWrapper);
+                    let clickedItemArgs = chipData;
+                    this.trigger('click', clickedItemArgs);
+                }
+            }
+            else {
+                this.focusInHandler(chipWrapper);
+                let clickedItemArgs = {
+                    text: this.innerText ? this.innerText : this.text,
+                    element: chipWrapper, data: this.text, event: e
+                };
+                this.trigger('click', clickedItemArgs);
+            }
+        }
+    }
+    selectionHandler(chipWrapper) {
+        if (this.selection === 'Single') {
+            let activeElement = this.element.querySelector('.' + classNames.active);
+            if (activeElement && activeElement !== chipWrapper) {
+                activeElement.classList.remove(classNames.active);
+                chipWrapper.setAttribute('aria-selected', 'false');
+            }
+        }
+        if (chipWrapper.classList.contains(classNames.active)) {
+            chipWrapper.classList.remove(classNames.active);
+            chipWrapper.setAttribute('aria-selected', 'false');
+        }
+        else {
+            chipWrapper.classList.add(classNames.active);
+            chipWrapper.setAttribute('aria-selected', 'true');
+        }
+    }
+    deleteHandler(chipWrapper, index) {
+        this.chips.splice(index, 1);
+        detach(chipWrapper);
+    }
+    /**
+     * It is used to destroy the ChipList component.
+     */
+    destroy() {
+        super.destroy();
+        removeClass([this.element], [classNames.chipSet, classNames.chip, classNames.rtl,
+            classNames.multiSelection, classNames.singleSelection, classNames.disabled, classNames.chipWrapper, classNames.iconWrapper,
+            classNames.active, classNames.focused].concat(this.cssClass.toString().split(' ').filter((css) => css)));
+        this.removeMultipleAttributes(['tabindex', 'role', 'aria-label', 'aria-multiselectable'], this.element);
+        this.wireEvent(true);
+        this.rippleFunctin();
+        this.element.innerHTML = '';
+        this.element.innerText = this.innerText;
+    }
+    removeMultipleAttributes(attributes$$1, element) {
+        attributes$$1.forEach((attr) => {
+            element.removeAttribute(attr);
+        });
+    }
+    getPersistData() {
+        return this.addOnPersist([]);
+    }
+    getModuleName() {
+        return 'chip-list';
+    }
+    onPropertyChanged(newProp, oldProp) {
+        for (let prop of Object.keys(newProp)) {
+            switch (prop) {
+                case 'chips':
+                case 'text':
+                case 'avatarText':
+                case 'avatarIconCss':
+                case 'leadingIconCss':
+                case 'trailingIconCss':
+                case 'selection':
+                case 'enableDelete':
+                case 'enabled':
+                    this.refresh();
+                    break;
+                case 'cssClass':
+                    if (this.type === 'chip') {
+                        removeClass([this.element], oldProp.cssClass.toString().split(' ').filter((css) => css));
+                        addClass([this.element], newProp.cssClass.toString().split(' ').filter((css) => css));
+                    }
+                    else {
+                        this.refresh();
+                    }
+                    break;
+                case 'selectedChips':
+                    this.select(newProp.selectedChips);
+                    break;
+                case 'enableRtl':
+                    this.setRtl();
+                    break;
+            }
+        }
+    }
+};
+__decorate$4([
+    Property([])
+], ChipList.prototype, "chips", void 0);
+__decorate$4([
+    Property('')
+], ChipList.prototype, "text", void 0);
+__decorate$4([
+    Property('')
+], ChipList.prototype, "avatarText", void 0);
+__decorate$4([
+    Property('')
+], ChipList.prototype, "avatarIconCss", void 0);
+__decorate$4([
+    Property('')
+], ChipList.prototype, "leadingIconCss", void 0);
+__decorate$4([
+    Property('')
+], ChipList.prototype, "trailingIconCss", void 0);
+__decorate$4([
+    Property('')
+], ChipList.prototype, "cssClass", void 0);
+__decorate$4([
+    Property(true)
+], ChipList.prototype, "enabled", void 0);
+__decorate$4([
+    Property([])
+], ChipList.prototype, "selectedChips", void 0);
+__decorate$4([
+    Property('None')
+], ChipList.prototype, "selection", void 0);
+__decorate$4([
+    Property(false)
+], ChipList.prototype, "enableDelete", void 0);
+__decorate$4([
+    Event()
+], ChipList.prototype, "created", void 0);
+__decorate$4([
+    Event()
+], ChipList.prototype, "click", void 0);
+__decorate$4([
+    Event()
+], ChipList.prototype, "delete", void 0);
+ChipList = __decorate$4([
+    NotifyPropertyChanges
+], ChipList);
+
+/**
+ * A chip component is a small block of essential information, mostly used on contacts or filter tags.
+ * ```html
+ * <div id="chip"></div>
+ * ```
+ * ```typescript
+ * <script>
+ * var chipObj = new ChipList();
+ * chipObj.appendTo("#chip");
+ * </script>
+ * ```
+ */
+class Chip {
+}
+
+/**
+ * Chip modules
+ */
+
 /**
  * Button all modules
  */
 
-export { wrapperInitialize, getTextNode, destroy, preRender, createCheckBox, rippleMouseHandler, Button, CheckBox, RadioButton, Switch };
+export { wrapperInitialize, getTextNode, destroy, preRender, createCheckBox, rippleMouseHandler, Button, CheckBox, RadioButton, Switch, classNames, ChipList, Chip };
 //# sourceMappingURL=ej2-buttons.es2015.js.map

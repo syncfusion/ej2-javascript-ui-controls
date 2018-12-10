@@ -4,13 +4,13 @@ import { Event, EmitType } from '@syncfusion/ej2-base';
 import { RangeNavigatorModel } from './range-navigator-model';
 import { createSvg, Size, Rect, measureText, removeElement } from '../common/utils/helper';
 import { RangeTooltip } from '../range-navigator/user-interaction/tooltip';
-import { Border, Margin } from '../common/model/base';
-import { BorderModel, MarginModel } from '../common/model/base-model';
+import { Border, Margin, PeriodSelectorSettings } from '../common/model/base';
+import { BorderModel, MarginModel, PeriodSelectorSettingsModel } from '../common/model/base-model';
 import { RangeSeries } from './renderer/chart-render';
 import { RangeNavigatorAxis } from './renderer/range-axis';
-import { RangeNavigatorSeries, StyleSettings, RangeTooltipSettings, PeriodSelectorSettings } from './model/range-base';
+import { RangeNavigatorSeries, StyleSettings, RangeTooltipSettings } from './model/range-base';
 import { RangeNavigatorSeriesModel, StyleSettingsModel } from './model/range-base-model';
-import { ThumbSettingsModel, RangeTooltipSettingsModel, PeriodSelectorSettingsModel } from './model/range-base-model';
+import { ThumbSettingsModel, RangeTooltipSettingsModel } from './model/range-base-model';
 import { RangeSlider } from './renderer/slider';
 import { AxisPosition, StepLineSeries, ExportType, IPrintEventArgs, RectOption } from '../chart/index';
 import { Chart, getElement, ChartTheme, LineSeries, AreaSeries } from '../chart/index';
@@ -18,7 +18,7 @@ import { DateTime, Logarithmic, IResizeRangeNavigatorEventArgs } from '../chart/
 import { ILabelRenderEventsArgs, IRangeTooltipRenderEventArgs } from './model/range-navigator-interface';
 import { IRangeLoadedEventArgs, IRangeStyle, IChangedEventArgs } from './model/range-navigator-interface';
 import { getRangeThemeColor } from './utils/theme';
-import { RangeValueType, LabelAlignment, RangeIntervalType, RangeLabelIntersectAction } from './utils/enum';
+import { RangeValueType, LabelAlignment, RangeLabelIntersectAction } from './utils/enum';
 import { Font } from '../common/model/base';
 import { FontModel } from '../common/model/base-model';
 import { MajorGridLines, MajorTickLines, VisibleRangeModel } from '../chart/axis/axis';
@@ -29,10 +29,12 @@ import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Double } from '../chart/axis/double-axis';
 import { Data } from '../common/model/data';
 import { ExportUtils } from '../common/utils/export';
+import { RangeIntervalType } from '../common/utils/enum';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
-import { PeriodSelector } from './renderer/period-selector';
+import { PeriodSelector } from '../common/period-selector/period-selector';
 import { AccumulationChart } from '../accumulation-chart/index';
-import { IRangeSelectorRenderEventArgs } from './model/range-navigator-interface';
+import { IRangeSelectorRenderEventArgs } from '../common/model/interface';
+import { StockChart } from '../stock-chart/stock-chart';
 
 /**
  * Range Navigator
@@ -438,8 +440,9 @@ export class RangeNavigator extends Component<HTMLElement> {
     public animateSeries: boolean = true;
     /** @private */
     public format: Function;
-    private chartid : number = 57725;
-
+    private chartid: number = 57725;
+    /** @private */
+    public stockChart: StockChart;
     /**
      * Constructor for creating the widget
      * @hidden
@@ -571,11 +574,14 @@ export class RangeNavigator extends Component<HTMLElement> {
         this.chartSeries.renderSeries(this);
         this.rangeAxis.renderGridLines();
         this.rangeAxis.renderAxisLabels();
+        this.chartSeries.appendSeriesElements(this);
         this.createSecondaryElement();
         this.setSliderValue();
         this.renderPeriodSelector();
         this.renderSlider();
-        this.element.appendChild(this.svgObject);
+        if (!this.stockChart) {
+            this.element.appendChild(this.svgObject);
+        }
         this.trigger('loaded', { rangeNavigator: this });
         this.rangeSlider.setSlider(
             this.startValue, this.endValue, false,
@@ -628,7 +634,7 @@ export class RangeNavigator extends Component<HTMLElement> {
             while (this.svgObject.childNodes.length > removeLength) {
                 this.svgObject.removeChild(this.svgObject.firstChild);
             }
-            if (!this.svgObject.hasChildNodes() && this.svgObject.parentNode) {
+            if (!this.svgObject.hasChildNodes() && this.svgObject.parentNode && !this.stockChart) {
                 remove(this.svgObject);
             }
         }
@@ -710,6 +716,14 @@ export class RangeNavigator extends Component<HTMLElement> {
                 if (this.isDestroyed) {
                     clearTimeout(this.resizeTo);
                     return;
+                }
+                if (this.stockChart) {
+                    for (let i: number = 0; i < arg.rangeNavigator.series.length; i++) {
+                        arg.rangeNavigator.series[i].dataSource = this.stockChart.tempDataSource[i];
+                    }
+                    if (this.stockChart.dataSource) {
+                        arg.rangeNavigator.dataSource = this.stockChart.tempDataSource[0];
+                    }
                 }
                 this.createRangeSvg();
                 arg.currentSize = this.availableSize;
@@ -819,7 +833,8 @@ export class RangeNavigator extends Component<HTMLElement> {
         let pageX: number = e.type.indexOf('touch') > -1 ?
             (<TouchEvent & PointerEvent>e).changedTouches[0].clientX : e.clientX;
         let rect: ClientRect = this.element.getBoundingClientRect();
-        let svgRect: ClientRect = getElement(this.element.id + '_svg').getBoundingClientRect();
+        let svgRect: ClientRect = !this.stockChart ? getElement(this.element.id + '_svg').getBoundingClientRect() :
+                                    getElement(this.element.id).getBoundingClientRect();
         return (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
     }
 

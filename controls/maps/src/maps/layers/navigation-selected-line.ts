@@ -114,11 +114,13 @@ export class NavigationLine {
                         defElement.appendChild(markerEle);
                         navigationGroup.appendChild(defElement);
                     }
+                    angle = Math.abs(angle);
                     d = (angle === 0) ? 'M ' + point[j]['x'] + ',' + point[j]['y'] + 'L ' + point[j + 1]['x']
-                        + ',' + point[j + 1]['y'] + '' :
-                        'M ' + point[j]['x'] + ',' + point[j]['y'] + ' A ' + (angle * radius) + ' ' +
-                        (angle * radius) + ' ' + 0 + ',' + 0 + ',' + direction + ' , ' + point[j + 1]['x'] + ',' + point[j + 1]['y'] + ' ';
-                    pathOption = new PathOption(arcId, 'none', 2, color, 1, dashArray, d);
+                            + ',' + point[j + 1]['y'] + ' ' :
+                            'M ' + point[j]['x'] + ',' + point[j]['y'] + ' A ' + (radius / 2 + (1 - angle) * radius / (angle * 10)) +
+                            ' ' + (radius / 2 + (1 - angle) * radius / (angle * 10)) + ' ' + 0 + ',' + 0 + ','
+                            + direction + ' , ' + point[j + 1]['x'] + ',' + point[j + 1]['y'] + ' ';
+                    pathOption = new PathOption(arcId, 'none', width, color, 1, dashArray, d);
                     navigationEle = this.maps.renderer.drawPath(pathOption) as SVGLineElement;
                     if (!isNullOrUndefined(arrowPosition)) {
                         (arrowPosition === 'Start') ? navigationEle.setAttribute('marker-start', startArrow)

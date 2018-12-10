@@ -2,7 +2,43 @@
 
 ## [Unreleased]
 
-## 16.3.33 (2018-11-15)
+## 16.4.40-beta (2018-12-10)
+
+### Tab
+
+#### New Features
+
+- Tab vertical orientation support was provided.
+
+### ContextMenu
+
+#### Breaking Changes
+
+- The `animationSettings` property type changed from `AnimationSettings` to `AnimationSettingsModel`
+
+### Menu
+
+#### New Features
+
+- Provided scrollable option in Menu for rendering large menus and submenus in an adaptive way.
+
+#### Breaking Changes
+
+- Type changes done for the following property.
+
+Property Name | Old Type | New Type
+-----|-----|-----
+`animationSettings` | AnimationSettings | AnimationSettingsModel
+`fields` | FieldSettings | FieldSettingsModel
+
+### TreeView
+
+#### New Features
+
+- Provided an option to disable child nodes when load-on-demand support is enabled.
+- Provided an option to disable the load-on-demand support in TreeView control.
+
+## 16.3.33 (2018-11-20)
 
 ### Sidebar
 

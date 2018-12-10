@@ -104,9 +104,9 @@ describe('Diagram Control', () => {
         });
         it('Checking different labels margin with different values in SVG rendering Mode', (done: Function) => {
             expect(((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width === 79.359375
-                && (diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.height === 48 &&
+                && (diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.height === 57.599999999999994 &&
                 (diagram.nodes[0] as NodeModel).wrapper.children[1].offsetX === 104.6796875 &&
-                (diagram.nodes[0] as NodeModel).wrapper.children[1].offsetY === 84)).toBe(true);
+                (diagram.nodes[0] as NodeModel).wrapper.children[1].offsetY === 88.8)).toBe(true);
 
             done();
         });

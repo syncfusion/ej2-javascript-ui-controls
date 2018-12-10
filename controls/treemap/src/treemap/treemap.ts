@@ -17,7 +17,8 @@ import { ILoadEventArgs, ILoadedEventArgs, IPrintEventArgs, IItemRenderingEventA
 import { IItemClickEventArgs, IItemMoveEventArgs, IClickEventArgs, IMouseMoveEventArgs } from '../treemap/model/interface';
 import { IDrillStartEventArgs, IItemSelectedEventArgs, ITreeMapTooltipRenderEventArgs } from '../treemap/model/interface';
 import { IItemHighlightEventArgs, IDrillEndEventArgs } from '../treemap/model/interface';
-import { Size, stringToNumber, RectOption, Rect, textTrim, measureText, findChildren, removeClassNames } from '../treemap/utils/helper';
+import { Size, stringToNumber, RectOption, Rect, textTrim, measureText, findChildren } from '../treemap/utils/helper';
+import { removeClassNames, removeShape } from '../treemap/utils/helper';
 import { findPosition, Location, TextOption, renderTextElement, isContainsData, TreeMapAjax } from '../treemap/utils/helper';
 import { load, loaded, itemSelected, drillStart, drillEnd } from '../treemap/model/constants';
 import { itemClick, itemMove, click, mouseMove, resize } from '../treemap/model/constants';
@@ -128,6 +129,11 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     @Property('')
     public equalColorValuePath: string;
+    /**
+     * Specifies the colorValuePath from dataSource
+     */
+    @Property(null)
+    public colorValuePath: string;
     /**
      * Specifies the palette colors.
      */
@@ -308,6 +314,11 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      * Stores the area bounds.
      */
     public areaRect: Rect;
+    /**
+     * @private
+     * Stores the legend bounds.
+     */
+    public totalRect: Rect;
     /** @private */
     public levelsOfData: Object[];
     /** @private */
@@ -316,6 +327,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     public orientation: string = 'Horizontal';
     /** @private */
     public drilledItems: Object[] = [];
+    /** @private */
+    public drilledLegendItems: Object;
     /** @private */
     public isHierarchicalData: boolean = false;
     /** @private */
@@ -447,22 +460,29 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      * To change font styles of map based on themes
      */
     private themeEffect(): void {
-        switch (this.theme) {
-            case 'Material':
-            case 'Bootstrap':
-            case 'Fabric':
-                this.setTextStyle('#424242');
+        let theme: string = this.theme.toLowerCase();
+        switch (theme) {
+            case 'material':
+            case 'bootstrap':
+            case 'fabric':
+            case 'highcontrastlight':
+                this.setTextStyle('#424242', null);
                 break;
-            case 'Highcontrast':
-                this.setTextStyle('#FFFFFF');
+            case 'highcontrast':
+                this.setTextStyle('#FFFFFF', null);
+                break;
+            case 'materialdark':
+            case 'bootstrapdark':
+            case 'fabricdark':
+                this.setTextStyle('#FFFFFF', '#DADADA');
                 break;
         }
     }
 
-    private setTextStyle(color: string): void {
+    private setTextStyle(color: string, darkColor: string): void {
         this.titleSettings.textStyle.color = this.titleSettings.textStyle.color || color;
         this.titleSettings.subtitleSettings.textStyle.color = this.titleSettings.subtitleSettings.textStyle.color || color;
-        this.legendSettings.textStyle.color = this.legendSettings.textStyle.color || color;
+        this.legendSettings.textStyle.color = this.legendSettings.textStyle.color || !isNullOrUndefined(darkColor) ? darkColor : color;
         this.legendSettings.titleStyle.color = this.legendSettings.titleStyle.color || color;
     }
 
@@ -492,9 +512,10 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     private renderBorder(): void {
         let width: number = this.border.width;
-        let color: string = this.theme === 'Highcontrast' ? '#000000' : '#FFFFFF';
+        let themes: string = this.theme.toLowerCase();
+        let color: string = (themes.indexOf('dark')) > -1 || themes === 'highcontrast' ? '#000000' : '#FFFFFF';
         this.background = this.background ? this.background : color;
-        let borderElement: Element = document.getElementById(this.element.id + '_TreeMap_Border');
+        let borderElement: Element = this.svgObject.querySelector('#' + this.element.id + '_TreeMap_Border');
         if (isNullOrUndefined(borderElement)) {
             let borderRect: RectOption = new RectOption(
                 this.element.id + '_TreeMap_Border', this.background, this.border, 1,
@@ -860,6 +881,10 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         let index: number; let newDrillItem: Object = new Object();
         let item: Object; let process: boolean = true;
         let layoutID: string = this.element.id + '_TreeMap_' + this.layoutType + '_Layout';
+        let templateID: string = this.element.id + '_Label_Template_Group';
+        if (document.getElementById(templateID)) {
+            document.getElementById(templateID).remove();
+        }
         if (targetId.indexOf('_Item_Index') > -1 && this.enableDrillDown) {
             e.preventDefault();
             index = parseFloat(targetId.split('_')[6]);
@@ -901,6 +926,17 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                         document.getElementById(layoutID).remove();
                     }
                     totalRect = extend({}, this.areaRect, totalRect, true) as Rect;
+                    if (this.legendSettings.visible && !isNullOrUndefined(this.treeMapLegendModule)) {
+                        if (!isNullOrUndefined(newDrillItem)) {
+                            this.treeMapLegendModule.legendGroup.textContent = '';
+                            this.treeMapLegendModule.legendGroup = null;
+                            this.treeMapLegendModule.widthIncrement = 0;
+                            this.treeMapLegendModule.heightIncrement = 0;
+                            this.drilledLegendItems = { name: item['levelOrderName'], data: item };
+                            this.treeMapLegendModule.renderLegend();
+                        }
+                        totalRect = !isNullOrUndefined(this.totalRect) ? this.totalRect : totalRect;
+                    }
                     this.layout.calculateLayoutItems(newDrillItem, totalRect);
                     this.layout.renderLayoutItems(newDrillItem);
                 }
@@ -945,6 +981,10 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
             this.treeMapLegendModule.removeInteractivePointer();
         }
         removeClassNames(document.getElementsByClassName('treeMapHighLight'), 'treeMapHighLight', this);
+        if (this.treeMapHighlightModule) {
+            removeShape(this.treeMapHighlightModule.shapeHighlightCollection, 'highlight');
+            this.treeMapHighlightModule.highLightId = '';
+        }
     }
 
     /**

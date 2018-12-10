@@ -787,7 +787,7 @@ describe('Waterfall Series', () => {
                 let axisLabel: Element = document.getElementById('container0_AxisLabel_0');
                 expect(axisLabel.textContent == 'income').toBe(true);
                 let axisStart: Element = document.getElementById('containerAxisLine_0');
-                expect(parseInt(axisLabel.getAttribute('x')) < parseInt(axisStart.getAttribute('x1'))).toBe(true);
+                expect(parseInt(axisLabel.getAttribute('x')) < parseInt(axisStart.getAttribute('d').split(' ')[1])).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -804,7 +804,7 @@ describe('Waterfall Series', () => {
                 let axisLabel: Element = document.getElementById('container0_AxisLabel_0');
                 expect(axisLabel.textContent == 'income').toBe(true);
                 let axisStart = document.getElementById('containerAxisLine_0');
-                expect(parseInt(axisLabel.getAttribute('x')) > parseInt(axisStart.getAttribute('x1'))).toBe(true);
+                expect(parseInt(axisLabel.getAttribute('x')) > parseInt(axisStart.getAttribute('d').split(' ')[1])).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -879,7 +879,7 @@ describe('Waterfall Series', () => {
                 expect(svg.getAttribute('transform') == 'translate(77.5,79.25)' ||
                         svg.getAttribute('transform') == 'translate(73.5,75.25)' ).toBe(true);
                 svg = document.getElementById('containerAxisLine_2');
-                expect(svg.getAttribute('y1') == '79.25' || svg.getAttribute('y1') == '75.25').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '79.25' || svg.getAttribute('d').split(' ')[2] == '75.25').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -921,7 +921,7 @@ describe('Waterfall Series', () => {
                 svg = document.getElementById('container_AxisBottom_Column0');
                 expect(svg.getAttribute('stroke') == 'red').toBe(true);
                 svg = document.getElementById('containerAxisLine_2');
-                expect(svg.getAttribute('x1') == '477.5' || svg.getAttribute('x1') == '478.5' || svg.getAttribute('x1') == '473.5').toBe(true);               
+                expect(svg.getAttribute('d').split(' ')[1] == '477.5' || svg.getAttribute('d').split(' ')[1] == '478.5' || svg.getAttribute('d').split(' ')[1] == '473.5').toBe(true);               
                 svg = document.getElementById('container_AxisBottom_Column1');
                 expect(svg.getAttribute('stroke') == 'blue').toBe(true);
                 done();

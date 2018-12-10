@@ -341,9 +341,21 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     }
 
     private themeEffect(): void {
-        if (this.theme === 'Highcontrast') {
+        let theme : string = this.theme.toLowerCase();
+        if (theme === 'highcontrast-dark') {
             this.titleStyle.color = this.titleStyle.color || '#FFFFFF';
             this.setThemeColors('#FFFFFF', '#FFFFFF');
+        } else if (theme.indexOf('dark') > -1) {
+            for (let axis of this.axes) {
+                axis.line.color = axis.line.color || '#C8C8C8';
+                axis.labelStyle.font.color = axis.labelStyle.font.color || '#DADADA';
+                axis.majorTicks.color = axis.majorTicks.color || '#C8C8C8';
+                axis.minorTicks.color = axis.minorTicks.color || '#9A9A9A';
+                for (let pointer of axis.pointers) {
+                    pointer.color = pointer.color || '#9A9A9A';
+                }
+            }
+            this.background = '#333232';
         } else {
             this.titleStyle.color = this.titleStyle.color || '#424242';
             this.setThemeColors('#686868', '#a6a6a6');

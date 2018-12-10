@@ -37,6 +37,13 @@ export class Cell<T> {
 
     public cellSpan: number;
 
+    public isRowSpanned: boolean = false;
+
+    public rowSpanRange: number;
+
+    public colSpanRange: number;
+
+
     public spanText: string | number | boolean | Date;
 
     public commands: CommandModel[];

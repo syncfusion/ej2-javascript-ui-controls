@@ -97,6 +97,18 @@ export class AxisSet extends ChildProperty<AxisSet> implements IAxisSet {
      */
     @Property()
     public isSum: boolean;
+
+    /**
+     * Specifies the column header of a value cell.
+     */
+    @Property()
+    public columnHeaders: string | number | Date;
+
+    /**
+     * Specifies the row header of a value cell.
+     */
+    @Property()
+    public rowHeaders: string | number | Date;
 }
 
 /**

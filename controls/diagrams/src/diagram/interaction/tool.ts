@@ -12,7 +12,7 @@ import { CommandHandler } from './command-manager';
 import { rotatePoint, cloneObject } from '../utility/base-util';
 import { Rect } from '../primitives/rect';
 import { getPolygonPath } from '../utility/path-util';
-import { canOutConnect, canInConnect, canAllowDrop } from '../utility/constraints-util';
+import { canOutConnect, canInConnect, canAllowDrop, canPortInConnect, canPortOutConnect } from '../utility/constraints-util';
 import { HistoryEntry } from '../diagram/history';
 import { Matrix, transformPointByMatrix, rotateMatrix, identityMatrix } from '../primitives/matrix';
 import { Snap } from './../objects/snapping';
@@ -28,6 +28,7 @@ import { contains, Actions } from './actions';
 import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';
 import { Selector } from './selector';
 import { DiagramElement } from '../core/elements/diagram-element';
+import { getInOutConnectPorts } from '../utility/diagram-util';
 /**
  * Defines the interactive tools
  */
@@ -144,7 +145,9 @@ export class ToolBase {
         this.mouseUp(args);
     }
     protected updateSize(
-        shape: SelectorModel, startPoint: PointModel, endPoint: PointModel, corner: string, initialBounds: Rect, angle?: number): Rect {
+        shape: SelectorModel | NodeModel, startPoint: PointModel,
+        endPoint: PointModel, corner: string, initialBounds: Rect, angle?: number): Rect {
+        shape = this.commandHandler.renderContainerHelper(shape) as NodeModel || shape;
         let horizontalsnap: Snap = { snapped: false, offset: 0, left: false, right: false };
         let verticalsnap: Snap = { snapped: false, offset: 0, top: false, bottom: false };
         let difx: number = this.currentPosition.x - this.startPosition.x;
@@ -168,14 +171,15 @@ export class ToolBase {
                 diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
                 deltaHeight = 1;
                 difx = snapEnabled ? this.commandHandler.snappingModule.snapLeft(
-                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape, endPoint === startPoint, initialBounds) : difx;
+                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
+                    difx;
                 dify = 0; deltaWidth = (initialBounds.width - difx) / width; break;
             case 'ResizeEast':
                 diff = transformPointByMatrix(matrix, ({ x: difx, y: dify }));
                 difx = diff.x;
                 dify = diff.y;
                 difx = snapEnabled ? this.commandHandler.snappingModule.snapRight(
-                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape, endPoint === startPoint, initialBounds) :
+                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
                     difx;
                 dify = 0;
                 deltaWidth = (initialBounds.width + difx) / width;
@@ -185,48 +189,50 @@ export class ToolBase {
                 deltaWidth = 1;
                 diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
                 dify = snapEnabled ? this.commandHandler.snappingModule.snapTop(
-                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape, endPoint === startPoint, initialBounds) :
+                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
                     dify;
                 deltaHeight = (initialBounds.height - dify) / height; break;
             case 'ResizeSouth':
                 deltaWidth = 1;
                 diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
                 dify = snapEnabled ? this.commandHandler.snappingModule.snapBottom(
-                    horizontalsnap, verticalsnap, snapLine, diff.x, diff.y, shape, endPoint === startPoint, initialBounds) :
+                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
                     dify;
                 deltaHeight = (initialBounds.height + dify) / height; break;
             case 'ResizeNorthEast':
                 diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
                 difx = snapEnabled ? this.commandHandler.snappingModule.snapRight(
-                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape, endPoint === startPoint, initialBounds) :
+                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
                     difx;
                 dify = snapEnabled ? this.commandHandler.snappingModule.snapTop(
-                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape, endPoint === startPoint, initialBounds) :
+                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
                     dify;
                 deltaWidth = (initialBounds.width + difx) / width; deltaHeight = (initialBounds.height - dify) / height;
                 break;
             case 'ResizeNorthWest':
                 diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
                 dify = !snapEnabled ? dify : this.commandHandler.snappingModule.snapTop(
-                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape, endPoint === startPoint, initialBounds);
+                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds);
                 difx = !snapEnabled ? difx : this.commandHandler.snappingModule.snapLeft(
-                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape, endPoint === startPoint, initialBounds);
+                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds);
                 deltaWidth = (initialBounds.width - difx) / width; deltaHeight = (initialBounds.height - dify) / height;
                 break;
             case 'ResizeSouthEast':
                 diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
                 dify = !snapEnabled ? dify : this.commandHandler.snappingModule.snapBottom(
-                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape, endPoint === startPoint, initialBounds);
+                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds);
                 difx = !snapEnabled ? difx : this.commandHandler.snappingModule.snapRight(
-                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape, endPoint === startPoint, initialBounds);
+                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds);
                 deltaHeight = (initialBounds.height + dify) / height; deltaWidth = (initialBounds.width + difx) / width;
                 break;
             case 'ResizeSouthWest':
                 diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
                 dify = snapEnabled ? this.commandHandler.snappingModule.snapBottom(
-                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape, endPoint === startPoint, initialBounds) : dify;
+                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel,
+                    endPoint === startPoint, initialBounds) : dify;
                 difx = snapEnabled ? this.commandHandler.snappingModule.snapLeft(
-                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape, endPoint === startPoint, initialBounds) : difx;
+                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel,
+                    endPoint === startPoint, initialBounds) : difx;
                 deltaWidth = (initialBounds.width - difx) / width; deltaHeight = (initialBounds.height + dify) / height; break;
         }
         return { width: deltaWidth, height: deltaHeight } as Rect;
@@ -431,14 +437,12 @@ export class ConnectTool extends ToolBase {
             Point.equals((args.source as SelectorModel).connectors[0].sourcePoint, this.undoElement.connectors[0].sourcePoint)) ||
             (this.endPoint === 'ConnectorTargetEnd' &&
                 Point.equals((args.source as SelectorModel).connectors[0].targetPoint, this.undoElement.connectors[0].targetPoint)))) {
-            let oldValue: PointModel;
-            let connectors: ConnectorModel;
+            let oldValue: PointModel; let connectors: ConnectorModel;
             if (args.source && (args.source as SelectorModel).connectors) {
                 oldValue = { x: this.prevPosition.x, y: this.prevPosition.y };
                 connectors = (args.source as SelectorModel).connectors[0];
             }
-            let targetPort: string;
-            let targetNode: string;
+            let targetPort: string; let targetNode: string;
             if (args.target) {
                 targetNode = (args.target as NodeModel).id;
                 let target: NodeModel | PointPortModel = this.commandHandler.findTarget(
@@ -457,10 +461,10 @@ export class ConnectTool extends ToolBase {
         if (this.currentPosition && this.prevPosition) {
             let diffX: number = this.currentPosition.x - this.prevPosition.x;
             let diffY: number = this.currentPosition.y - this.prevPosition.y;
-            let newValue: PointModel;
-            let oldValue: PointModel;
-            this.currentPosition = this.commandHandler.snapConnectorEnd(this.currentPosition);
-            let connector: ConnectorModel;
+            let newValue: PointModel; let oldValue: PointModel;
+            let inPort: PointPortModel;
+            let outPort: PointPortModel;
+            this.currentPosition = this.commandHandler.snapConnectorEnd(this.currentPosition); let connector: ConnectorModel;
             if (args.source && (args.source as SelectorModel).connectors) {
                 newValue = {
                     x: this.currentPosition.x, y: this.currentPosition.y,
@@ -470,8 +474,7 @@ export class ConnectTool extends ToolBase {
                 };
                 connector = (args.source as SelectorModel).connectors[0];
             }
-            let targetPortId: string;
-            let targetNodeId: string;
+            let targetPortId: string; let targetNodeId: string;
             if (args.target) {
                 let target: NodeModel | PointPortModel = this.commandHandler.findTarget(
                     args.targetWrapper, args.target, this.endPoint === 'ConnectorSourceEnd', true) as NodeModel | PointPortModel;
@@ -486,16 +489,32 @@ export class ConnectTool extends ToolBase {
                     DiagramEvent.sourcePointChange : DiagramEvent.targetPointChange;
                 this.commandHandler.triggerEvent(trigger, arg);
             }
+            if (args.target) {
+                inPort = getInOutConnectPorts((args.target as Node), true);
+                outPort = getInOutConnectPorts((args.target as Node), false);
+            }
             if (!arg.cancel && this.inAction && this.endPoint !== undefined && diffX !== 0 || diffY !== 0) {
                 this.blocked = !this.commandHandler.dragConnectorEnds(
                     this.endPoint, args.source, this.currentPosition, this.selectedSegment, args.target, targetPortId);
                 this.commandHandler.updateSelector();
-                if (args.target && ((this.endPoint === 'ConnectorSourceEnd' && canOutConnect(args.target))
-                    || (this.endPoint === 'ConnectorTargetEnd' && canInConnect(args.target)))) {
+                if (args.target && ((this.endPoint === 'ConnectorSourceEnd' && (canOutConnect(args.target) || canPortOutConnect(outPort)))
+                    || (this.endPoint === 'ConnectorTargetEnd' && (canInConnect(args.target) || canPortInConnect(inPort))))) {
                     if (this.commandHandler.canDisconnect(this.endPoint, args, targetPortId, targetNodeId)) {
                         this.commandHandler.disConnect(args.source, this.endPoint);
                     }
-                    this.commandHandler.connect(this.endPoint, args);
+                    let target: NodeModel | PointPortModel = this.commandHandler.findTarget(
+                        args.targetWrapper, args.target, this.endPoint === 'ConnectorSourceEnd', true) as (NodeModel | PointPortModel);
+                    if (target instanceof Node) {
+                        if ((canInConnect(target) && this.endPoint === 'ConnectorTargetEnd')
+                            || (canOutConnect(target) && this.endPoint === 'ConnectorSourceEnd')) {
+                            this.commandHandler.connect(this.endPoint, args);
+                        }
+                    } else {
+                        let isConnect: boolean = this.checkConnect(target as PointPortModel);
+                        if (isConnect) {
+                            this.commandHandler.connect(this.endPoint, args);
+                        }
+                    }
                 } else if (this.endPoint.indexOf('Bezier') === -1) {
                     this.commandHandler.disConnect(args.source, this.endPoint);
                     this.commandHandler.updateSelector();
@@ -517,6 +536,17 @@ export class ConnectTool extends ToolBase {
 
     private getTooltipContent(position: PointModel): string {
         return 'X:' + Math.round(position.x) + ' ' + 'Y:' + Math.round(position.y);
+    }
+
+    private checkConnect(target: PointPortModel): boolean {
+        if (canPortInConnect(target) && this.endPoint === 'ConnectorTargetEnd') {
+            return true;
+        } else if (canPortOutConnect(target) && this.endPoint === 'ConnectorSourceEnd') {
+            return true;
+        } else if (!canPortInConnect(target) && !canPortOutConnect(target)) {
+            return true;
+        }
+        return false;
     }
 
     /**   @private  */
@@ -577,7 +607,7 @@ export class MoveTool extends ToolBase {
 
     /**   @private  */
     public mouseUp(args: MouseEventArgs): void {
-        let obj: SelectorModel; let historyAdded: boolean = false;
+        let obj: SelectorModel; let historyAdded: boolean = false; let object: SelectorModel | Node;
         let redoObject: SelectorModel = { nodes: [], connectors: [] };
         if (this.objectType !== 'Port') {
             if (args.source instanceof Node || args.source instanceof Connector) {
@@ -594,7 +624,8 @@ export class MoveTool extends ToolBase {
             } else {
                 obj = cloneObject(args.source);
             }
-            if (obj.offsetX !== this.undoElement.offsetX || obj.offsetY !== this.undoElement.offsetY) {
+            object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Selector;
+            if (object.offsetX !== this.undoElement.offsetX || object.offsetY !== this.undoElement.offsetY) {
                 let oldValues: SelectorModel; let newValues: SelectorModel;
                 if (args.source) {
                     newValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
@@ -632,6 +663,11 @@ export class MoveTool extends ToolBase {
                     element: args.source, target: this.currentTarget, position: this.currentPosition, cancel: false
                 };
                 this.commandHandler.triggerEvent(DiagramEvent.drop, arg);
+                if (!arg.cancel && args.source && this.commandHandler.isParentAsContainer(this.currentTarget)) {
+                    let node: NodeModel = (args.source instanceof Selector) ? args.source.nodes[0] : args.source;
+                    this.commandHandler.dropChildToContainer(this.currentTarget, node);
+                    this.commandHandler.renderContainerHelper(node as NodeModel);
+                }
             }
             if (args.source && this.currentTarget) {
                 this.commandHandler.dropAnnotation(args.source, this.currentTarget);
@@ -644,7 +680,7 @@ export class MoveTool extends ToolBase {
             redoObject.nodes.push(cloneObject(args.source) as Node);
             obj = cloneObject(redoObject);
             let entry: HistoryEntry = {
-                type: 'PortPositionChanged', changeObjectId: this.portId,
+                type: 'PortPositionChanged', objectId: this.portId,
                 redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement), category: 'Internal'
             };
             this.commandHandler.addHistoryEntry(entry);
@@ -656,30 +692,33 @@ export class MoveTool extends ToolBase {
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
         let isSame: boolean = false;
-        if (args.source instanceof Node || args.source instanceof Connector) {
-            if (args.source instanceof Node) {
-                if (args.source.offsetX === this.undoElement.nodes[0].offsetX &&
-                    args.source.offsetY === this.undoElement.nodes[0].offsetY) {
+        let object: NodeModel | ConnectorModel | SelectorModel;
+        object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) ||
+            args.source as Node | Connector | Selector;
+        if (object instanceof Node || object instanceof Connector) {
+            if (object instanceof Node) {
+                if (object.offsetX === this.undoElement.nodes[0].offsetX &&
+                    object.offsetY === this.undoElement.nodes[0].offsetY) {
                     isSame = true;
                 }
             } else {
-                if (Point.equals(args.source.sourcePoint, this.undoElement.connectors[0].sourcePoint) &&
-                    Point.equals(args.source.targetPoint, this.undoElement.connectors[0].targetPoint)) {
+                if (Point.equals(object.sourcePoint, this.undoElement.connectors[0].sourcePoint) &&
+                    Point.equals(object.targetPoint, this.undoElement.connectors[0].targetPoint)) {
                     isSame = true;
                 }
             }
         } else {
-            if (args.source.wrapper.offsetX === this.undoElement.wrapper.offsetX &&
-                args.source.wrapper.offsetY === this.undoElement.wrapper.offsetY) {
+            if (object.wrapper.offsetX === this.undoElement.wrapper.offsetX &&
+                object.wrapper.offsetY === this.undoElement.wrapper.offsetY) {
                 isSame = true;
             }
         }
         let oldValues: SelectorModel;
-        if (args.source) {
-            oldValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
+        if (object) {
+            oldValues = { offsetX: object.wrapper.offsetX, offsetY: object.wrapper.offsetY };
         }
         let arg: IDraggingEventArgs = {
-            source: args.source, state: 'Start', oldValue: oldValues, newValue: oldValues,
+            source: object as SelectorModel, state: 'Start', oldValue: oldValues, newValue: oldValues,
             target: args.target, targetPosition: args.position, allowDrop: true, cancel: false
         };
         if (isSame) {
@@ -702,11 +741,11 @@ export class MoveTool extends ToolBase {
                 this.prevPosition, this.currentPosition, diffX, diffY);
             this.initialOffset.x = diffX - snappedPoint.x;
             this.initialOffset.y = diffY - snappedPoint.y;
-            if (args.source) {
-                oldValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
+            if (object) {
+                oldValues = { offsetX: object.wrapper.offsetX, offsetY: object.wrapper.offsetY };
                 newValues = {
-                    offsetX: args.source.wrapper.offsetX + snappedPoint.x,
-                    offsetY: args.source.wrapper.offsetY + snappedPoint.y
+                    offsetX: object.wrapper.offsetX + snappedPoint.x,
+                    offsetY: object.wrapper.offsetY + snappedPoint.y
                 };
             }
             if (this.currentTarget && args.target !== this.currentTarget) {
@@ -714,7 +753,7 @@ export class MoveTool extends ToolBase {
             }
             this.currentTarget = args.target;
             let arg: IDraggingEventArgs = {
-                source: args.source, state: 'Progress', oldValue: oldValues, newValue: newValues,
+                source: object as SelectorModel, state: 'Progress', oldValue: oldValues, newValue: newValues,
                 target: args.target, targetPosition: args.position, allowDrop: true, cancel: false
             };
             this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg);
@@ -723,9 +762,14 @@ export class MoveTool extends ToolBase {
                 let blocked: boolean = !(this.commandHandler.mouseOver(this.currentElement, this.currentTarget, this.currentPosition));
                 this.blocked = this.blocked || blocked;
             }
+            this.commandHandler.removeStackHighlighter();
+            this.commandHandler.renderStackHighlighter(args);
             if (this.currentTarget && (args.source !== this.currentTarget) &&
-                this.commandHandler.isDroppable(args.source, this.currentTarget)) {
-                this.commandHandler.drawHighlighter(this.currentTarget as IElement);
+                this.commandHandler.isDroppable(args.source, this.currentTarget) && (args.source as Node).id !== 'helper') {
+                if (!this.commandHandler.isParentAsContainer(
+                    (args.source instanceof Selector) ? args.source.nodes[0] : args.source, true)) {
+                    this.commandHandler.drawHighlighter(this.currentTarget as IElement);
+                }
             } else {
                 this.commandHandler.removeHighlighter();
             }
@@ -787,8 +831,10 @@ export class RotateTool extends ToolBase {
 
     /**   @private  */
     public mouseUp(args: MouseEventArgs): void {
-        if (this.undoElement.rotateAngle !== args.source.wrapper.rotateAngle) {
-            let oldValue: SelectorModel = { rotateAngle: args.source.wrapper.rotateAngle };
+        let object: NodeModel | SelectorModel;
+        object = (this.commandHandler.renderContainerHelper(args.source) as Node) || args.source as Node | Selector;
+        if (this.undoElement.rotateAngle !== object.wrapper.rotateAngle) {
+            let oldValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
             let arg: IRotationEventArgs = {
                 source: args.source, state: 'Completed', oldValue: oldValue,
                 newValue: oldValue, cancel: false
@@ -809,8 +855,10 @@ export class RotateTool extends ToolBase {
     /**   @private  */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
-        if (this.undoElement.rotateAngle === args.source.wrapper.rotateAngle) {
-            let oldValue: SelectorModel = { rotateAngle: args.source.wrapper.rotateAngle };
+        let object: NodeModel | SelectorModel;
+        object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Node | Selector;
+        if (this.undoElement.rotateAngle === object.wrapper.rotateAngle) {
+            let oldValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
 
             let arg: IRotationEventArgs = {
                 source: args.source, state: 'Start', oldValue: oldValue, newValue: oldValue, cancel: false
@@ -819,12 +867,12 @@ export class RotateTool extends ToolBase {
         }
 
         this.currentPosition = args.position;
-        let refPoint: PointModel = { x: this.currentElement.wrapper.offsetX, y: this.currentElement.wrapper.offsetY };
+        let refPoint: PointModel = { x: object.wrapper.offsetX, y: object.wrapper.offsetY };
         let angle: number = Point.findAngle(refPoint, this.currentPosition) + 90;
         let snapAngle: number = this.commandHandler.snapAngle(angle);
         angle = snapAngle !== 0 ? snapAngle : angle;
         angle = (angle + 360) % 360;
-        let oldValue: SelectorModel = { rotateAngle: args.source.wrapper.rotateAngle };
+        let oldValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
         let newValue: SelectorModel = { rotateAngle: angle };
         let arg: IRotationEventArgs = {
             source: args.source, state: 'Progress', oldValue: oldValue,
@@ -833,7 +881,7 @@ export class RotateTool extends ToolBase {
 
         this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg);
         if (!arg.cancel) {
-            this.blocked = !(this.commandHandler.rotateSelectedItems(angle - this.currentElement.wrapper.rotateAngle));
+            this.blocked = !(this.commandHandler.rotateSelectedItems(angle - object.wrapper.rotateAngle));
         }
         if (this.commandHandler.canEnableDefaultTooltip()) {
             let content: string = this.getTooltipContent(args.source as SelectorModel);
@@ -895,6 +943,7 @@ export class ResizeTool extends ToolBase {
                 this.childTable[nodes[i].id] = cloneObject(node);
             }
         }
+        this.commandHandler.checkSelection((args.source as Selector), this.corner);
         super.mouseDown(args);
         this.initialBounds.x = args.source.wrapper.offsetX;
         this.initialBounds.y = args.source.wrapper.offsetY;
@@ -906,10 +955,12 @@ export class ResizeTool extends ToolBase {
     /**   @private  */
     public mouseUp(args: MouseEventArgs): boolean {
         this.commandHandler.removeSnap();
-        if (this.undoElement.offsetX !== args.source.wrapper.offsetX || this.undoElement.offsetY !== args.source.wrapper.offsetY) {
+        let object: NodeModel | SelectorModel;
+        object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Node | Selector;
+        if (this.undoElement.offsetX !== object.wrapper.offsetX || this.undoElement.offsetY !== object.wrapper.offsetY) {
             let deltaValues: Rect = this.updateSize(args.source, this.currentPosition, this.prevPosition, this.corner, this.initialBounds);
             this.blocked = this.scaleObjects(
-                deltaValues.width, deltaValues.height, this.corner, this.currentPosition, this.prevPosition, args.source);
+                deltaValues.width, deltaValues.height, this.corner, this.currentPosition, this.prevPosition, object);
             let oldValue: SelectorModel = {
                 offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY,
                 width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height
@@ -942,7 +993,9 @@ export class ResizeTool extends ToolBase {
     /**   @private  */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
-        if (this.undoElement.offsetX === args.source.wrapper.offsetX && this.undoElement.offsetY === args.source.wrapper.offsetY) {
+        let object: NodeModel | SelectorModel;
+        object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Node | Selector;
+        if (this.undoElement.offsetX === object.wrapper.offsetX && this.undoElement.offsetY === object.wrapper.offsetY) {
             let oldValue: SelectorModel = {
                 offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY,
                 width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height
@@ -964,7 +1017,7 @@ export class ResizeTool extends ToolBase {
         this.commandHandler.removeSnap();
         let deltaValues: Rect = this.updateSize(args.source, this.startPosition, this.currentPosition, this.corner, this.initialBounds);
         this.blocked = !(this.scaleObjects(
-            deltaValues.width, deltaValues.height, this.corner, this.startPosition, this.currentPosition, args.source));
+            deltaValues.width, deltaValues.height, this.corner, this.startPosition, this.currentPosition, object));
         if (this.commandHandler.canEnableDefaultTooltip()) {
             let content: string = this.getTooltipContent(args.source as SelectorModel);
             this.commandHandler.showTooltip(args.source, args.position, content, 'ResizeTool', this.isTooltipVisible);
@@ -1011,9 +1064,9 @@ export class ResizeTool extends ToolBase {
      */
     private scaleObjects(
         deltaWidth: number, deltaHeight: number, corner: string, startPoint: PointModel, endPoint: PointModel,
-        source?: SelectorModel)
+        source?: SelectorModel | NodeModel)
         : boolean {
-        if (source.nodes.length === 1 && source.nodes[0].constraints & NodeConstraints.AspectRatio) {
+        if (source instanceof Selector && source.nodes.length === 1 && source.nodes[0].constraints & NodeConstraints.AspectRatio) {
             if (corner === 'ResizeWest' || corner === 'ResizeEast' || corner === 'ResizeNorth' || corner === 'ResizeSouth') {
                 if (!(deltaHeight === 1 && deltaWidth === 1)) {
                     deltaHeight = deltaWidth = Math.max(deltaHeight === 1 ? 0 : deltaHeight, deltaWidth === 1 ? 0 : deltaWidth);
@@ -1033,7 +1086,8 @@ export class ResizeTool extends ToolBase {
             offsetX: source.offsetX, offsetY: source.offsetY,
             width: source.width, height: source.height
         };
-        let arg: ISizeChangeEventArgs = { source: source, state: 'Progress', oldValue: oldValue, newValue: newValue, cancel: false };
+        let arg: ISizeChangeEventArgs;
+        arg = { source: source as Selector, state: 'Progress', oldValue: oldValue, newValue: newValue, cancel: false };
         this.commandHandler.triggerEvent(DiagramEvent.sizeChange, arg);
         if (arg.cancel) {
             this.commandHandler.scaleSelectedItems(1 / deltaWidth, 1 / deltaHeight, this.getPivot(this.corner));
@@ -1520,7 +1574,7 @@ export class LabelDragTool extends ToolBase {
         this.inAction = false;
         let entryValue: HistoryEntry = {
             type: 'AnnotationPropertyChanged',
-            changeObjectId: this.annotationId, undoObject: cloneObject(this.undoElement),
+            objectId: this.annotationId, undoObject: cloneObject(this.undoElement),
             category: 'Internal', redoObject: cloneObject(redoValue)
         };
         this.commandHandler.addHistoryEntry(entryValue);
@@ -1569,7 +1623,7 @@ export class LabelResizeTool extends ToolBase {
             (args.source as Selector).nodes[0] : (args.source as Selector).connectors[0];
         this.inAction = false;
         let entry: HistoryEntry = {
-            type: 'AnnotationPropertyChanged', changeObjectId: this.annotationId,
+            type: 'AnnotationPropertyChanged', objectId: this.annotationId,
             redoObject: cloneObject(redoObject), undoObject: cloneObject(this.undoElement), category: 'Internal'
         };
         this.commandHandler.addHistoryEntry(entry);
@@ -1644,7 +1698,7 @@ export class LabelRotateTool extends ToolBase {
         let redoEntry: NodeModel | ConnectorModel = ((args.source as Selector).nodes.length) ?
             (args.source as Selector).nodes[0] : (args.source as Selector).connectors[0];
         let entryObject: HistoryEntry = {
-            type: 'AnnotationPropertyChanged', changeObjectId: this.annotationId,
+            type: 'AnnotationPropertyChanged', objectId: this.annotationId,
             redoObject: cloneObject(redoEntry),
             undoObject: cloneObject(this.undoElement), category: 'Internal'
         };

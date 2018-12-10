@@ -1,0 +1,53 @@
+@include export-module('querybuilder-theme') {
+  .e-query-builder {
+    background-color: $qrybldr-bg-color;
+    border-color: $qrybldr-brdr-color;
+
+    & .e-group-header .e-btn-group {
+      border-color: $qrybldr-brdr-color;
+    }
+
+    & .e-group-container {
+      border-color: $groupborder-color;
+    }
+
+    & .e-rule-container {
+      background-color: $groupfill-color;
+      border-color: $groupborder-color;
+    }
+
+    & .e-rule-list .e-group-container {
+      background-color: $qrybldr-bg-color;
+    }
+
+    & .e-rule-list>::after,
+    & .e-rule-list>::before {
+      border-color: $qrybldr-rule-list-border-color;
+    }
+
+    & .e-vertical-mode .e-removerule.e-rule-delete {
+      background-color: $qrybldr-delete-bgcolor;
+      color: $qrybldr-delete-color;
+    }
+
+    &.e-device .e-removerule.e-rule-delete,
+    & .e-edit-rule {
+      background-color: $qrybldr-delete-bgcolor;
+      color: $qrybldr-delete-color;
+      }
+
+    & .e-btn-group input:checked + label.e-btn {
+      background: $qrybldr-btngroup-active-bgcolor;
+      border-color: $qrybldr-btngroup-active-bgcolor;
+      color: $qrybldr-btngroup-active-color;
+        }
+    }
+
+  & .e-removerule.e-btn.e-round {
+    background-color: $groupfill-color;
+    }
+
+  & .e-summary-content textarea {
+    background-color: inherit;
+    }
+}

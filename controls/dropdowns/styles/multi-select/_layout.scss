@@ -1,8 +1,8 @@
 .e-multi-select-wrapper {
   cursor: text;
   line-height: normal;
-  min-height: $control-height;
-  padding: $control-placholder-padding;
+  min-height: $ddl-control-height;
+  padding: $ddl-control-placholder-padding;
   position: relative;
   user-select: none;
   width: 100%;
@@ -22,16 +22,16 @@
   }
 
   .e-chips.e-mob-chip.e-chip-selected .e-chips-close::before {
-    color: $chip-mobile-font;
-    font-size: $chip-close-font;
-    left: $sel-chip-close-mobile-left;
-    top: $sel-chip-close-mobile-top;
+    color: $ddl-chip-mobile-font;
+    font-size: $ddl-chip-close-font;
+    left: $ddl-sel-chip-close-mobile-left;
+    top: $ddl-sel-chip-close-mobile-top;
   }
 
   .e-chips.e-mob-chip.e-chip-selected .e-chipcontent {
-    background-color: $chip-mobile-bg;
-    color: $chip-mobile-font;
-    padding: $chip-selected-padding;
+    background-color: $ddl-chip-mobile-bg;
+    color: $ddl-chip-mobile-font;
+    padding: $ddl-chip-selected-padding;
   }
 
   .e-searcher.e-zero-size {
@@ -50,7 +50,7 @@
 }
 
 .e-bigger .e-multi-select-wrapper {
-  min-height: $control-bigger-height;
+  min-height: $ddl-control-bigger-height;
 }
 
 .e-multi-select-wrapper.e-close-icon-hide {
@@ -73,22 +73,22 @@
   align-items: center;
   display: inline-flex;
   float: left;
-  margin: $chip-margin;
+  margin: $ddl-chip-margin;
   max-width: 100%;
   overflow: hidden;
-  padding: $chip-padding;
+  padding: $ddl-chip-padding;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .e-bigger .e-multi-select-wrapper .e-chips {
-  margin: $chip-margin-bigger;
+  margin: $ddl-chip-margin-bigger;
 }
 
 .e-multi-select-wrapper .e-chips>.e-chipcontent {
   max-width: 100%;
   overflow: hidden;
-  padding: $chip-content-padding;
+  padding: $ddl-chip-content-padding;
   text-indent: 0;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -103,12 +103,12 @@
 
 .e-multi-select-wrapper .e-mob-chip.e-chips>.e-chipcontent,
 .e-bigger .e-multi-select-wrapper .e-chips>.e-chipcontent {
-  padding: $chip-mobile-content-padding;
+  padding: $ddl-chip-mobile-content-padding;
 }
 
 #{&}.e-multiselect.e-rtl .e-multi-select-wrapper .e-mob-chip.e-chips>.e-chipcontent,
 .e-bigger #{&}.e-multiselect.e-rtl .e-multi-select-wrapper .e-chips>.e-chipcontent {
-  padding: $rtl-chip-mobile-content-padding;
+  padding: $ddl-rtl-chip-mobile-content-padding;
 }
 
 .e-multi-select-wrapper .e-chips-close {
@@ -116,62 +116,62 @@
   display: flex;
   float: right;
   font-family: 'e-icons';
-  height: $chip-close-square;
-  margin: $chip-close-margin;
-  width: $chip-close-square;
+  height: $ddl-chip-close-square;
+  margin: $ddl-chip-close-margin;
+  width: $ddl-chip-close-square;
 }
 
 .e-multi-select-wrapper .e-mob-chip.e-chips .e-chips-close {
-  margin: $chip-mobile-close-margin;
+  margin: $ddl-chip-mobile-close-margin;
 }
 
 .e-multi-select-wrapper .e-chips-close.e-close-hooker {
   cursor: default;
-  font-size: $closer-hooker-font;
-  height: $chip-hooker-square;
-  margin-top: $closer-margin-top;
+  font-size: $ddl-closer-hooker-font;
+  height: $ddl-chip-hooker-square;
+  margin-top: $ddl-closer-margin-top;
   position: absolute;
-  right: $chip-hooker-right;
-  top: $closer-hooker-top;
-  width: $chip-hooker-square;
+  right: $ddl-chip-hooker-right;
+  top: $ddl-closer-hooker-top;
+  width: $ddl-chip-hooker-square;
 }
 
 .e-multiselect .e-down-icon .e-chips-close.e-close-hooker {
-  right: $close-icon-left;
+  right: $ddl-close-icon-left;
 }
 
 .e-bigger .e-multiselect .e-down-icon .e-chips-close.e-close-hooker {
-  @if $multiselect-skin-name == 'Fabric' or $multiselect-skin-name == 'highcontrast' {
+  @if $ddl-multiselect-skin-name == 'Fabric' or $ddl-multiselect-skin-name == 'highcontrast' {
     right: 38px;
   }
 }
 
 .e-bigger .e-multi-select-wrapper .e-chips-close.e-close-hooker {
-  margin-top: $closer-margin-top-bigger;
+  margin-top: $ddl-closer-margin-top-bigger;
 }
 
 .e-multi-select-wrapper input[type='text'] {
   background: none;
   border: 0;
-  font-family: $chip-font-family;
-  font-size: $chip-font-size;
+  font-family: $ddl-chip-font-family;
+  font-size: $ddl-chip-font-size;
   font-weight: 400;
-  height: $input-height;
-  min-height: $input-height;
+  height: $ddl-input-height;
+  min-height: $ddl-input-height;
   outline: none;
   padding: 0;
-  text-indent: $input-text-indent;
+  text-indent: $ddl-input-text-indent;
 }
 
 .e-bigger .e-multi-select-wrapper input[type='text'],
 .e-multi-select-wrapper.e-mob-wrapper input[type='text'] {
-  height: $input-height;
-  min-height: $input-height;
+  height: $ddl-input-height;
+  min-height: $ddl-input-height;
 }
 
 .e-bigger .e-multi-select-wrapper input[type='text'] {
-  height: $input-bigger-height;
-  min-height: $input-bigger-height;
+  height: $ddl-input-bigger-height;
+  min-height: $ddl-input-bigger-height;
 }
 
 // sass-lint:disable no-vendor-prefixes
@@ -186,17 +186,17 @@
 }
 
 .e-multi-select-wrapper .e-delim-values {
-  font-family: $chip-font-family;
-  font-size: $delim-font-size;
-  line-height: $delimviewheight;
+  font-family: $ddl-chip-font-family;
+  font-size: $ddl-delim-font-size;
+  line-height: $ddl-delimviewheight;
   max-width: 100%;
-  padding-left: $delim-text-indent;
-  padding-right: $delim-text-padding-right;
+  padding-left: $ddl-delim-text-indent;
+  padding-right: $ddl-delim-text-padding-right;
   vertical-align: middle;
 }
 
 .e-bigger .e-multi-select-wrapper .e-delim-values {
-  line-height: $delimviewheight-bigger;
+  line-height: $ddl-delimviewheight-bigger;
 }
 
 .e-multi-select-list-wrapper .e-hide-listitem {
@@ -204,11 +204,11 @@
 }
 
 .e-multi-select-wrapper .e-delim-values .e-remain {
-  color: $remains-font-color;
+  color: $ddl-remains-font-color;
   cursor: pointer;
   display: inline-block;
-  font-size: $chip-font-size;
-  padding-left: $remains-padding-left;
+  font-size: $ddl-chip-font-size;
+  padding-left: $ddl-remains-padding-left;
 }
 
 #{&}.e-multiselect.e-disabled .e-multi-select-wrapper,
@@ -217,19 +217,19 @@
 }
 
 .e-multi-select-wrapper .e-chips.e-mob-chip.e-chip-selected .e-chips-close {
-  height: $chip-sel-mobile-height;
-  left: $chip-mob-left;
-  margin: $chip-sel-mobile-close-margin;
+  height: $ddl-chip-sel-mobile-height;
+  left: $ddl-chip-mob-left;
+  margin: $ddl-chip-sel-mobile-close-margin;
   position: relative;
-  top: $chip-close-mob-top;
-  width: $chip-sel-mobile-height;
+  top: $ddl-chip-close-mob-top;
+  width: $ddl-chip-sel-mobile-height;
 }
 
 .e-multi-select-wrapper .e-chips.e-mob-chip.e-chip-selected {
   align-self: center;
-  box-shadow: $popup-shadow-value;
+  box-shadow: $ddl-popup-shadow-value;
   display: inline-flex;
-  padding: $chip-mob-padding;
+  padding: $ddl-chip-mob-padding;
   width: 92%;
 }
 
@@ -249,10 +249,10 @@
   }
 
   .e-multi-select-wrapper {
-    padding: $rtl-wrapper;
+    padding: $ddl-rtl-wrapper;
 
     .e-chips.e-mob-chip.e-chip-selected .e-chips-close::before {
-      left: $rtl-chip-sel-close-left;
+      left: $ddl-rtl-chip-sel-close-left;
     }
 
     .e-chips.e-mob-chip.e-chip-selected .e-chips-close {
@@ -265,11 +265,11 @@
 
     .e-chips {
       float: right;
-      margin: $rtl-mob-chip-content-margin;
-      padding: $rtl-chip-padding;
+      margin: $ddl-rtl-mob-chip-content-margin;
+      padding: $ddl-rtl-chip-padding;
 
       .e-chipcontent {
-        padding: $rtl-chip-content-padding;
+        padding: $ddl-rtl-chip-content-padding;
       }
 
       .e-chips-close {
@@ -277,54 +277,54 @@
       }
 
       .e-chips-close::before {
-        left: $rtl-chip-close-left;
+        left: $ddl-rtl-chip-close-left;
       }
     }
 
     .e-chips.e-mob-chip {
-      padding: $rtl-mob-chip-padding;
+      padding: $ddl-rtl-mob-chip-padding;
 
       .e-chipcontent {
-        padding: $rtl-mob-chip-content-padding;
+        padding: $ddl-rtl-mob-chip-content-padding;
       }
     }
 
     .e-chips.e-mob-chip.e-chip-selected {
-      padding: $rtl-mob-sel-chip-padding;
+      padding: $ddl-rtl-mob-sel-chip-padding;
 
       .e-chipcontent {
-        padding: $rtl-mob-sel-chip-content-padding;
+        padding: $ddl-rtl-mob-sel-chip-content-padding;
       }
   }
 
     .e-chips-close.e-close-hooker {
-      left: $close-icon-left;
+      left: $ddl-close-icon-left;
       position: absolute;
       right: auto;
   }
 
     .e-close-hooker::before {
-      left: $rtl-hooker-left;
+      left: $ddl-rtl-hooker-left;
   }
 
     .e-delim-values .e-remain {
-      padding-right: $remains-padding-left;
+      padding-right: $ddl-remains-padding-left;
     }
 
   }
 }
 
 .e-multiselect.e-rtl .e-down-icon .e-chips-close.e-icon.e-close-hooker {
-  left: $close-rtl-icon-left;
+  left: $ddl-close-rtl-icon-left;
 }
 
 .e-multiselect.e-rtl .e-multi-select-wrapper.e-down-icon .e-close-hooker::before {
-  left: $chip-close-rtl-left;
+  left: $ddl-chip-close-rtl-left;
 }
 
 .e-popup.e-multi-select-list-wrapper .e-list-item .e-checkbox-wrapper {
   bottom: 1px;
-  margin-right: $check-right-margin;
+  margin-right: $ddl-check-right-margin;
   position: relative;
   text-indent: 0;
   vertical-align: middle;
@@ -332,7 +332,7 @@
 
 .e-bigger .e-popup.e-multi-select-list-wrapper .e-list-item .e-checkbox-wrapper {
   bottom: 1px;
-  margin-right: $bigger-check-right-margin;
+  margin-right: $ddl-bigger-check-right-margin;
 }
 
 .e-popup.e-multi-select-list-wrapper.e-rtl .e-list-item .e-checkbox-wrapper {
@@ -345,35 +345,35 @@
 }
 
 .e-popup.e-multi-select-list-wrapper.e-rtl .e-dropdownbase.e-rtl.e-dd-group .e-list-item {
-  padding-right: $list-rtl-padding-right;
+  padding-right: $ddl-list-rtl-padding-right;
 }
 
 .e-multi-select-list-wrapper .e-selectall-parent {
   cursor: pointer;
   display: block;
-  line-height: $select-all-height;
+  line-height: $ddl-select-all-height;
   overflow: hidden;
   position: relative;
-  text-indent: $check-right;
+  text-indent: $ddl-check-right;
   white-space: nowrap;
   width: 100%;
 }
 
 .e-multi-select-list-wrapper .e-selectall-parent .e-all-text {
-  color: $multi-list-default-font-color;
-  font-family: $chip-font-family;
-  font-size: $selectall-font-size;
+  color: $ddl-multi-list-default-font-color;
+  font-family: $ddl-chip-font-family;
+  font-size: $ddl-selectall-font-size;
 }
 
 .e-bigger .e-multi-select-list-wrapper .e-selectall-parent {
-  font-size: $chip-font-size;
-  line-height: $bigger-select-all-height;
-  text-indent: $bigger-check-right;
+  font-size: $ddl-chip-font-size;
+  line-height: $ddl-bigger-select-all-height;
+  text-indent: $ddl-bigger-check-right;
 }
 
 .e-multi-select-list-wrapper .e-selectall-parent .e-checkbox-wrapper {
   bottom: 1px;
-  margin-right: $check-right-margin;
+  margin-right: $ddl-check-right-margin;
   position: relative;
   text-indent: 0;
   vertical-align: middle;
@@ -381,18 +381,18 @@
 
 .e-bigger .e-multi-select-list-wrapper .e-selectall-parent .e-checkbox-wrapper {
   bottom: 1px;
-  margin-right: $bigger-check-right-margin;
+  margin-right: $ddl-bigger-check-right-margin;
 }
 
 .e-multi-select-list-wrapper.e-rtl .e-selectall-parent .e-checkbox-wrapper {
-  margin-left: $check-left;
+  margin-left: $ddl-check-left;
   margin-right: 0;
 }
 
 .e-multiselect .e-input-group-icon.e-ddl-icon {
   float: right;
   margin-top: $ddl-check-icon-top;
-  @if $multiselect-skin-name == 'bootstrap' {
+  @if $ddl-multiselect-skin-name == 'bootstrap' {
     height: 36px;
     width: 36px;
   }
@@ -403,14 +403,14 @@
 }
 
 .e-multiselect .e-ddl-icon::before {
-  @if $multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' {
     transform: rotate(0deg);
     transition: transform 300ms ease;
   }
 }
 
 .e-multiselect.e-icon-anim .e-ddl-icon::before {
-  @if $multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' {
     transform: rotate(180deg);
     transition: transform 300ms ease;
   }
@@ -418,19 +418,19 @@
 
 .e-multiselect.e-checkbox .e-multi-select-wrapper {
   padding: 2px 0 0;
-  @if $multiselect-skin-name != 'material' {
+  @if $ddl-multiselect-skin-name != 'material' {
     padding: 0;
   }
 }
 
 .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-input-filter,
 .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-input-group.e-input-focus .e-input-filter {
-  padding: $filterbar-padding;
+  padding: $ddl-filterbar-padding;
 }
 
 .e-bigger .e-ddl.e-popup.e-multi-select-list-wrappe .e-filter-parent .e-input-filter,
 .e-bigger .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-input-group.e-input-focus {
-  padding: $bigger-filterbar-padding;
+  padding: $ddl-bigger-filterbar-padding;
 }
 
 .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-clear-icon,
@@ -439,14 +439,14 @@
 }
 
 .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-back-icon {
-  margin: $back-icon-margin;
-  padding: $back-icon-padding;
+  margin: $ddl-back-icon-margin;
+  padding: $ddl-back-icon-padding;
   position: absolute;
 }
 
 .e-bigger .e-checkbox .e-multi-select-wrapper .e-delim-values {
-  @if $multiselect-skin-name != 'highcontrast' {
-    line-height: $delimviewheight-check-bigger;
+  @if $ddl-multiselect-skin-name != 'highcontrast' {
+    line-height: $ddl-delimviewheight-check-bigger;
   }
 }
 

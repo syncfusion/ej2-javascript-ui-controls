@@ -2,7 +2,7 @@
   .e-container {
     & .e-value-switch-btn {
       &::before {
-        content: $right-icon-content;
+        content: $cpicker-right-icon-content;
       }
     }
   }

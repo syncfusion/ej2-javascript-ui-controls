@@ -110,7 +110,7 @@ export class FieldSettings extends ChildProperty<FieldSettings> {
     public iconCss: string;
     /**
      * This property used for nested navigation of list-items.
-     * Refer the documentation [here](./nested-list.html)
+     * Refer the documentation [here](./listview/nested-list)
      *  to know more about this property with demo.
      */
     @Property('child')
@@ -123,7 +123,7 @@ export class FieldSettings extends ChildProperty<FieldSettings> {
 
     /**
      * It wraps the list view element into a group based on the value of groupBy property.
-     * Refer the documentation [here](./grouping.html)
+     * Refer the documentation [here](./listview/grouping)
      *  to know more about this property with demo.
      */
     @Property('groupBy')
@@ -143,7 +143,7 @@ export class FieldSettings extends ChildProperty<FieldSettings> {
     /**
      * It is used to fetch a specified named table data while using serviceUrl of DataManager
      *  in dataSource property.
-     * Refer the documentation [here](https://ej2.syncfusion.com/documentation/data/getting-started.html?lang=typescript)
+     * Refer the documentation [here](https://ej2.syncfusion.com/documentation/data/getting-started?lang=typescript)
      *  to know more about this property with demo.
      */
     @Property('tableName')
@@ -255,7 +255,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * It provides the data to render the ListView component which is mapped
      *  with the fields of ListView.
      *
-     * {% codeBlock src="list-view/datasource-api/index.ts" %}{% endcodeBlock %}
+     * {% codeBlock src="listview/datasource-api/index.ts" %}{% endcodeBlock %}
      * @default []
      */
     @Property([])
@@ -264,10 +264,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * It is used to fetch the specific data from dataSource by using where, select key words.
      * Refer the documentation [here]
-     * (./data-binding.html#bind-to-remote-data)
+     * (./data-binding#bind-to-remote-data)
      *  to know more about this property with demo.
      *
-     * {% codeBlock src="list-view/query-api/index.ts" %}{% endcodeBlock %}
+     * {% codeBlock src="listview/query-api/index.ts" %}{% endcodeBlock %}
      * @default null
      */
     @Property()
@@ -277,7 +277,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * It is used to map keys from the dataSource which extracts the appropriate data from the dataSource
      *  with specified mapped with the column fields to render the ListView.
      *
-     * {% codeBlock src="list-view/fields-api/index.ts" %}{% endcodeBlock %}
+     * {% codeBlock src="listview/fields-api/index.ts" %}{% endcodeBlock %}
      * @default ListBase.defaultMappedFields
      */
     @Complex<FieldSettingsModel>(ListBase.defaultMappedFields, FieldSettings)
@@ -293,7 +293,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * It is used to enable the sorting of list items to be ascending or descending.
      *
-     * {% codeBlock src="list-view/sortorder-api/index.ts" %}{% endcodeBlock %}
+     * {% codeBlock src="listview/sortorder-api/index.ts" %}{% endcodeBlock %}
      * @default 'None'
      */
     @Property<SortOrder>('None')
@@ -302,7 +302,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Using this property, we can show or hide the icon of list item.
      *
-     * {% codeBlock src="list-view/showicon-api/index.ts" %}{% endcodeBlock %}
+     * {% codeBlock src="listview/showicon-api/index.ts" %}{% endcodeBlock %}
      * @default false
      */
     @Property<boolean>(false)
@@ -311,7 +311,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Using this property, we can show or hide the `checkbox`.
      *
-     * {% codeBlock src="list-view/showcheckbox-api/index.ts" %}{% endcodeBlock %}
+     * {% codeBlock src="listview/showcheckbox-api/index.ts" %}{% endcodeBlock %}
      * @default false
      */
     @Property<boolean>(false)
@@ -327,7 +327,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * It is used to set the title of ListView component.
      *
-     * {% codeBlock src="list-view/fields-api/index.ts" %}{% endcodeBlock %}
+     * {% codeBlock src="listview/fields-api/index.ts" %}{% endcodeBlock %}
      * @default ""
      */
     @Property<string>('')
@@ -336,7 +336,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Using this property, we can show or hide the header of ListView component.
      *
-     * {% codeBlock src="list-view/fields-api/index.ts" %}{% endcodeBlock %}
+     * {% codeBlock src="listview/fields-api/index.ts" %}{% endcodeBlock %}
      * @default false
      */
     @Property<boolean>(false)
@@ -358,10 +358,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * The ListView supports to customize the content of each list items with the help of template property.
-     * Refer the documentation [here](./customizing-templates.html)
+     * Refer the documentation [here](./listview/customizing-templates)
      *  to know more about this property with demo.
      *
-     * {% codeBlock src="list-view/template-api/index.ts" %}{% endcodeBlock %}
+     * {% codeBlock src="listview/template-api/index.ts" %}{% endcodeBlock %}
      * @default null
      */
     @Property(null)
@@ -370,10 +370,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * The ListView has an option to custom design the ListView header title with the help of headerTemplate property.
      * Refer the documentation [here]
-     * (./customizing-templates.html#header-template)
+     * (./listview/customizing-templates#header-template)
      *  to know more about this property with demo.
      *
-     * {% codeBlock src="list-view/headertemplate-api/index.ts" %}{% endcodeBlock %}
+     * {% codeBlock src="listview/headertemplate-api/index.ts" %}{% endcodeBlock %}
      * @default null
      */
     @Property(null)
@@ -382,10 +382,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * The ListView has an option to custom design the group header title with the help of groupTemplate property.
      * Refer the documentation [here]
-     * (./customizing-templates.html#group-template)
+     * (./listview/customizing-templates#group-template)
      *  to know more about this property with demo.
      *
-     * {% codeBlock src="list-view/grouptemplate-api/index.ts" %}{% endcodeBlock %}
+     * {% codeBlock src="listview/grouptemplate-api/index.ts" %}{% endcodeBlock %}
      * @default null
      */
     @Property(null)
@@ -1475,7 +1475,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     public destroy(): void {
         this.unWireEvents();
         let classAr: string[] = [classNames.root, classNames.disable, 'e-rtl',
-            'e-has-header', 'e-control'].concat(this.cssClass.split(' ').filter((css: string) => css));
+            'e-has-header', 'e-lib'].concat(this.cssClass.split(' ').filter((css: string) => css));
         removeClass([this.element], classAr);
         this.rippleFn();
         this.element.removeAttribute('role');
@@ -1603,7 +1603,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * It is used to get the currently [here](./api-selectedItem.html)
+     * It is used to get the currently [here](./api-selectedItem)
      *  item details from the list items.
      */
     public getSelectedItems(): SelectedItem | SelectedCollection | UISelectedItem | NestedListData {

@@ -182,49 +182,49 @@ describe('getStyles API', () => {
         let styles: any[] = editor.getStyles('Paragraph');
         
         expect(styles[0].name).toBe('Normal');
-        expect(styles[0].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000"}}');
+        expect(styles[0].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[1].name).toBe('Heading 1');
-        expect(styles[1].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":16,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496"}}');
+        expect(styles[1].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":16,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[2].name).toBe('Heading 2');
-        expect(styles[2].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":13,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496"}}');
+        expect(styles[2].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":13,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[3].name).toBe('Heading 3');
-        expect(styles[3].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":12,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#1F3763"}}');
+        expect(styles[3].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":12,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#1F3763","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[4].name).toBe('Heading 4');
-        expect(styles[4].style).toBe('{"characterFormat":{"bold":false,"italic":true,"fontSize":11,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496"}}');
+        expect(styles[4].style).toBe('{"characterFormat":{"bold":false,"italic":true,"fontSize":11,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[5].name).toBe('Heading 5');
-        expect(styles[5].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496"}}');
+        expect(styles[5].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[6].name).toBe('Heading 6');
-        expect(styles[6].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#1F3763"}}');
+        expect(styles[6].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#1F3763","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
 
         styles = editor.getStyles('Character');
 
         expect(styles[0].name).toBe('Heading 1 Char');
-        expect(styles[0].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":16,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496"}}');
+        expect(styles[0].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":16,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[1].name).toBe('Default Paragraph Font');
-        expect(styles[1].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000"}}');
+        expect(styles[1].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[2].name).toBe('Heading 2 Char');
-        expect(styles[2].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":13,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496"}}');
+        expect(styles[2].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":13,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[3].name).toBe('Heading 3 Char');
-        expect(styles[3].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":12,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#1F3763"}}');
+        expect(styles[3].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":12,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#1F3763","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[4].name).toBe('Heading 4 Char');
-        expect(styles[4].style).toBe('{"characterFormat":{"bold":false,"italic":true,"fontSize":11,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496"}}');
+        expect(styles[4].style).toBe('{"characterFormat":{"bold":false,"italic":true,"fontSize":11,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[5].name).toBe('Heading 5 Char');
-        expect(styles[5].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496"}}');
+        expect(styles[5].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[6].name).toBe('Heading 6 Char');
-        expect(styles[6].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#1F3763"}}');
+        expect(styles[6].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#1F3763","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
     });
     it('GetStyles Validation-Opened Document', () => {
@@ -233,108 +233,108 @@ describe('getStyles API', () => {
 
         let styles: any[] = editor.getStyles('Paragraph');
         expect(styles[0].name).toBe('Normal');
-        expect(styles[0].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000"}}');
+        expect(styles[0].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[1].name).toBe('BoldStyle');
-        expect(styles[1].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000"}}');
+        expect(styles[1].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[2].name).toBe('Bold');
-        expect(styles[2].style).toBe('{"characterFormat":{"bold":true,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000"}}');
+        expect(styles[2].style).toBe('{"characterFormat":{"bold":true,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[3].name).toBe('Italic');
-        expect(styles[3].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000"}}');
+        expect(styles[3].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[4].name).toBe('Style1');
-        expect(styles[4].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":11,"fontFamily":"Calibri","underline":"Single","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000"}}');
+        expect(styles[4].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":11,"fontFamily":"Calibri","underline":"Single","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[5].name).toBe('fontfamily');
-        expect(styles[5].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":11,"fontFamily":"Algerian","underline":"Single","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000"}}');
+        expect(styles[5].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":11,"fontFamily":"Algerian","underline":"Single","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[6].name).toBe('fontsize');
-        expect(styles[6].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":24,"fontFamily":"Algerian","underline":"Single","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000"}}');
+        expect(styles[6].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":24,"fontFamily":"Algerian","underline":"Single","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[7].name).toBe('FontColor');
-        expect(styles[7].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":24,"fontFamily":"Algerian","underline":"Single","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#FF0000FF"}}');
+        expect(styles[7].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":24,"fontFamily":"Algerian","underline":"Single","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#FF0000FF","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[8].name).toBe('Style2');
-        expect(styles[8].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":24,"fontFamily":"Algerian","underline":"Single","strikethrough":"None","baselineAlignment":"Superscript","highlightColor":"NoColor","fontColor":"#FF0000FF"}}');
+        expect(styles[8].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":24,"fontFamily":"Algerian","underline":"Single","strikethrough":"None","baselineAlignment":"Superscript","highlightColor":"NoColor","fontColor":"#FF0000FF","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[9].name).toBe('Style3');
-        expect(styles[9].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":24,"fontFamily":"Algerian","underline":"Single","strikethrough":"None","baselineAlignment":"Subscript","highlightColor":"NoColor","fontColor":"#FF0000FF"}}');
+        expect(styles[9].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":24,"fontFamily":"Algerian","underline":"Single","strikethrough":"None","baselineAlignment":"Subscript","highlightColor":"NoColor","fontColor":"#FF0000FF","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[10].name).toBe('Strike');
-        expect(styles[10].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":11,"fontFamily":"Calibri","underline":"Single","strikethrough":"SingleStrike","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000"}}');
+        expect(styles[10].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":11,"fontFamily":"Calibri","underline":"Single","strikethrough":"SingleStrike","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[11].name).toBe('Heading 1');
-        expect(styles[11].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":16,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496"}}');
+        expect(styles[11].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":16,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[12].name).toBe('Heading 2');
-        expect(styles[12].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":13,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496"}}');
+        expect(styles[12].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":13,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[13].name).toBe('Heading 3');
-        expect(styles[13].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":12,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#1F3763"}}');
+        expect(styles[13].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":12,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#1F3763","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[14].name).toBe('Heading 4');
-        expect(styles[14].style).toBe('{"characterFormat":{"bold":false,"italic":true,"fontSize":11,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496"}}');
+        expect(styles[14].style).toBe('{"characterFormat":{"bold":false,"italic":true,"fontSize":11,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[15].name).toBe('Heading 5');
-        expect(styles[15].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496"}}');
+        expect(styles[15].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[16].name).toBe('Heading 6');
-        expect(styles[16].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#1F3763"}}');
+        expect(styles[16].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#1F3763","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         styles = editor.getStyles('Character');
 
         expect(styles[0].name).toBe('Default Paragraph Font');
-        expect(styles[0].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000"}}');
+        expect(styles[0].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[1].name).toBe('BoldStyle Char');
-        expect(styles[1].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000"}}');
+        expect(styles[1].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[2].name).toBe('Bold Char');
-        expect(styles[2].style).toBe('{"characterFormat":{"bold":true,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000"}}');
+        expect(styles[2].style).toBe('{"characterFormat":{"bold":true,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[3].name).toBe('Italic Char');
-        expect(styles[3].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000"}}');
+        expect(styles[3].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[4].name).toBe('Style1 Char');
-        expect(styles[4].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":11,"fontFamily":"Calibri","underline":"Single","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000"}}');
+        expect(styles[4].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":11,"fontFamily":"Calibri","underline":"Single","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[5].name).toBe('fontfamily Char');
-        expect(styles[5].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":11,"fontFamily":"Algerian","underline":"Single","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000"}}');
+        expect(styles[5].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":11,"fontFamily":"Algerian","underline":"Single","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[6].name).toBe('fontsize Char');
-        expect(styles[6].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":24,"fontFamily":"Algerian","underline":"Single","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000"}}');
+        expect(styles[6].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":24,"fontFamily":"Algerian","underline":"Single","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[7].name).toBe('FontColor Char');
-        expect(styles[7].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":24,"fontFamily":"Algerian","underline":"Single","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#FF0000FF"}}');
+        expect(styles[7].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":24,"fontFamily":"Algerian","underline":"Single","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#FF0000FF","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[8].name).toBe('Style2 Char');
-        expect(styles[8].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":24,"fontFamily":"Algerian","underline":"Single","strikethrough":"None","baselineAlignment":"Superscript","highlightColor":"NoColor","fontColor":"#FF0000FF"}}');
+        expect(styles[8].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":24,"fontFamily":"Algerian","underline":"Single","strikethrough":"None","baselineAlignment":"Superscript","highlightColor":"NoColor","fontColor":"#FF0000FF","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[9].name).toBe('Style3 Char');
-        expect(styles[9].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":24,"fontFamily":"Algerian","underline":"Single","strikethrough":"None","baselineAlignment":"Subscript","highlightColor":"NoColor","fontColor":"#FF0000FF"}}');
+        expect(styles[9].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":24,"fontFamily":"Algerian","underline":"Single","strikethrough":"None","baselineAlignment":"Subscript","highlightColor":"NoColor","fontColor":"#FF0000FF","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[10].name).toBe('Strike Char');
-        expect(styles[10].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":11,"fontFamily":"Calibri","underline":"Single","strikethrough":"SingleStrike","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000"}}');
+        expect(styles[10].style).toBe('{"characterFormat":{"bold":true,"italic":true,"fontSize":11,"fontFamily":"Calibri","underline":"Single","strikethrough":"SingleStrike","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[11].name).toBe('Heading 1 Char');
-        expect(styles[11].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":16,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496"}}');
+        expect(styles[11].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":16,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[12].name).toBe('Heading 2 Char');
-        expect(styles[12].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":13,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496"}}');
+        expect(styles[12].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":13,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[13].name).toBe('Heading 3 Char');
-        expect(styles[13].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":12,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#1F3763"}}');
+        expect(styles[13].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":12,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#1F3763","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[14].name).toBe('Heading 4 Char');
-        expect(styles[14].style).toBe('{"characterFormat":{"bold":false,"italic":true,"fontSize":11,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496"}}');
+        expect(styles[14].style).toBe('{"characterFormat":{"bold":false,"italic":true,"fontSize":11,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[15].name).toBe('Heading 5 Char');
-        expect(styles[15].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496"}}');
+        expect(styles[15].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#2F5496","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
         expect(styles[16].name).toBe('Heading 6 Char');
-        expect(styles[16].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#1F3763"}}');
+        expect(styles[16].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri Light","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#1F3763","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
     });
 });

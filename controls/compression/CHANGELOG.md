@@ -2,22 +2,6 @@
 
 ## [Unreleased]
 
-## 16.3.33 (2018-11-15)
-
-### Compression
-
-#### Bug Fixes
-
-- Updated Readme and GitHub URL.
-
-## 16.3.32 (2018-11-13)
-
-### Compression
-
-#### Bug Fixes
-
-- Files are compressed properly in Angular production mode.
-
 ## 15.4.26-preview (2018-01-23)
 
 ### Compression

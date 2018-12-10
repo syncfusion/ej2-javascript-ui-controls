@@ -1,4 +1,4 @@
-@include export-module('pivotfieldlist-layout') {
+@include export-module('field-list-layout') {
 
   /*! field-list theme */
 
@@ -356,7 +356,7 @@
       background-color: $pivot-formula-background;
       border: 1px solid $pivot-formula-border;
       border-radius: 4px;
-      color: $field-list-default-font-color;
+      color: $field-list-default-formula-font-color;
       font-size: $field-list-calc-formula-font-size;
       height: 70px;
       margin-top: 5px;
@@ -420,7 +420,8 @@
 
   #{&}.e-pivotfieldlist-wrapper {
     .e-adaptive-field-list-dialog,
-    .e-member-editor-dialog {
+    .e-member-editor-dialog,
+    .e-value-field-settings {
       border-radius: $field-list-default-border-radius;
       width: auto;
 
@@ -452,6 +453,64 @@
       .e-dlg-content {
         overflow: hidden;
         padding: 0;
+
+        .e-editor-label-wrapper {
+          background-color: $field-list-editor-label-fill;
+          padding: $field-list-editor-label-padding-size;
+          width: 240px;
+
+          .e-editor-label {
+            color: $field-list-editor-label-color;
+            font: $field-list-editor-label-font;
+            opacity: $field-list-editor-label-opacity;
+          }
+        }
+
+        // sass-lint:disable-all
+        .e-value-field-div-content {
+            padding: 0 $field-list-editor-search-padding-size 10px;          
+
+          .e-field-option-wrapper {
+            .e-field-name-text-wrapper {
+              display: flex;
+
+              .e-field-name-title,
+              .e-field-name-content {
+                font-size: 13px;
+                font-weight: 500;
+              }
+
+              .e-field-name-title {
+                flex: none;
+              }
+
+              .e-field-name-content {
+                flex: auto;
+                width: 100%;
+              }
+            }
+
+            .e-caption-input-wrapper,
+            .e-type-option-wrapper,
+            .e-base-field-option-wrapper,
+            .e-base-item-option-wrapper {
+              padding-top: $field-list-editor-search-padding-size;
+
+              .e-base-field-option-text,
+              .e-base-item-option-text,
+              .e-type-option-text, {
+                font-size: 13px;
+                font-weight: 500;
+                width: 100%;
+              }
+
+              .e-caption-input-text {
+                font-size: 13px;
+              }
+            }
+          }
+        }
+        // sass-lint:enable-all
 
         .e-member-editor-wrapper {
           .e-editor-search-wrapper {
@@ -552,6 +611,11 @@
 
       &.e-excel-filter {
         min-width: 280px;
+
+        .e-editor-label-wrapper {
+          padding: $field-list-editor-label-excel-padding-size;
+          width: $field-list-editor-label-excel-width;
+        }
       }
 
       &.e-rtl {
@@ -572,6 +636,15 @@
 
     .e-member-editor-dialog {
       max-width: 400px;
+    }
+
+    .e-value-field-settings {
+      max-width: 400px;
+      min-width: 300px;
+
+      .e-dlg-content {
+        overflow: auto;
+      }
     }
 
     .e-adaptive-field-list-dialog {
@@ -620,62 +693,6 @@
     }
   }
 
-  // sass-lint:disable-all
-  #{&}.e-filtermenu-options {
-    ul {
-      z-index: 1000000 !important;
-
-      .e-emptyicon {
-        opacity: 0;
-      }
-
-      .e-separator {
-        margin-top: 0 !important;
-        margin-bottom: 0 !important;
-      }
-    }
-  }
-
-  #{&}.e-label-filter,
-  #{&}.e-value-filter {
-    max-height: 300px !important;
-    width: auto;
-
-    .e-filter-div-content {
-      .e-filter-option-wrapper-1,
-      .e-filter-option-wrapper-2 {
-        display: flex;
-        padding-top: 20px;
-
-        .e-disable {
-          display: none;
-        }
-      }
-
-      .e-filter-option-wrapper-1 {
-        .e-separator-div {
-          width: 20px;
-        }
-
-        .e-filter-operator {
-          flex: auto;
-        }
-      }
-
-      .e-filter-option-wrapper-2 {
-        .e-filter-input-div-1,
-        .e-filter-input-div-2 {
-          width: 100%;
-        }
-
-        .e-between-text-div {
-          padding: 0 10px;
-        }
-      }
-    }
-  }
-  // sass-lint:enable-all
-
   .e-bigger #{&}.e-field-list-tree.e-drag-item.e-treeview,
   .e-bigger #{&}.e-pivot-calc.e-drag-item.e-treeview,
   .e-bigger#{&}.e-field-list-tree.e-drag-item.e-treeview,
@@ -697,7 +714,7 @@
   // sass-lint:disable-all
   #{&}.e-button-drag-clone {
     background-color: $field-list-drag-clone-bg-color !important;
-    border: $field-list-border-size $field-list-border-type $field-list-default-border-color;
+    border: $field-list-border-size $field-list-border-type $field-list-drag-default-border-color;
     border-radius: $field-list-drag-clone-border-radius;
     box-shadow: $field-list-drag-clone-shadow-color;
     color: $field-list-drag-clone-text-color;
@@ -756,7 +773,8 @@
     }
 
     .e-adaptive-field-list-dialog,
-    .e-member-editor-dialog {
+    .e-member-editor-dialog,
+    .e-value-field-settings {
       .e-dlg-header-content {
         .e-clear-filter-button.e-small {
           font-size: 14px;
@@ -811,6 +829,39 @@
         min-width: $field-list-bigger-excel-dialog-min-width;
       }
     }
+
+    // sass-lint:disable-all
+    .e-value-field-settings {
+      .e-value-field-div-content {
+        padding: 0 $field-list-editor-search-padding-size 10px;
+
+        .e-field-option-wrapper {
+          .e-field-name-text-wrapper {
+            display: flex;
+
+            .e-field-name-title,
+            .e-field-name-content {
+              font-size: 14px;
+            }
+          }
+
+          .e-caption-input-wrapper,
+          .e-type-option-wrapper,
+          .e-base-field-option-wrapper,
+          .e-base-item-option-wrapper {
+            padding-top: 24px;
+
+            .e-base-field-option-text,
+            .e-base-item-option-text,
+            .e-type-option-text,
+            .e-caption-input-text {
+              font-size: 14px;
+            }
+          }
+        }
+      }
+    }
+    // sass-lint:enable-all
   }
 }
   

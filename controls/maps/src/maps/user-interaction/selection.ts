@@ -75,8 +75,18 @@ export class Selection {
                 this.selectionType = 'navigationline';
             }
             if (this.selectionsettings.enable) {
-                this.selectMap(targetEle, shapeData, data);
+                if (this.maps.legendSettings.visible) {
+                    this.maps.legendModule.shapeHighLightAndSelection(
+                        targetEle, data, this.selectionsettings, 'selection', layerIndex);
+                }
+                if (this.maps.legendSettings.visible ? this.maps.legendModule.legendSelection : true) {
+                    this.selectMap(targetEle, shapeData, data);
+                }
             }
+        } else if (!isNullOrUndefined(targetEle.id) && (targetEle.id.indexOf(this.maps.element.id + '_Legend_Shape_Index') > -1 ||
+            targetEle.id.indexOf(this.maps.element.id + '_Legend_Index') !== -1) && this.maps.legendSettings.visible &&
+            targetEle.id.indexOf('_Text') === -1) {
+            this.maps.legendModule.legendHighLightAndSelection(targetEle, 'selection');
         }
     }
     /**

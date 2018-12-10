@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-splitbuttons",
-	"version": "16.3.30",
+	"version": "16.3.22",
 	"description": "A package of feature-rich Essential JS 2 components such as DropDownButton, SplitButton, ProgressButton and ButtonGroup.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -68,6 +68,6 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/syncfusion/ej2-splitbuttons.git"
+		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls.git"
 	}
 }

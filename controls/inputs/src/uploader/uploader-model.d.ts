@@ -1,5 +1,5 @@
 import { Component, Property, Event, EmitType, EventHandler, classList, L10n, compile, isNullOrUndefined } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, detach, append, Animation } from '@syncfusion/ej2-base';import { addClass, removeClass, KeyboardEvents, KeyboardEventArgs, setValue, getValue, ChildProperty } from '@syncfusion/ej2-base';import { Collection, Complex, Browser, Ajax, BeforeSendEventArgs, getUniqueID } from '@syncfusion/ej2-base';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
-import {SelectedEventArgs,RemovingEventArgs,ClearingEventArgs} from "./uploader";
+import {SelectedEventArgs,UploadingEventArgs,RemovingEventArgs,ClearingEventArgs,CancelEventArgs,PauseResumeEventArgs} from "./uploader";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -109,6 +109,13 @@ export interface UploaderModel extends ComponentModel{
      * @default { saveUrl: '', removeUrl: '' }
      */
     asyncSettings?: AsyncSettingsModel;
+
+    /**
+     * By default, the file uploader component is processing the multiple files simultaneously.
+     * If sequentialUpload property is enabled, the file upload component performs the upload one after the other.
+     * @default false
+     */
+    sequentialUpload?: boolean;
 
     /**
      * When this property is enabled, the uploader component elements are aligned from right-to-left direction to support locales.
@@ -235,16 +242,64 @@ export interface UploaderModel extends ComponentModel{
      * Triggers when the upload process gets started. This event is used to add additional parameter with upload request.
      * @event
      */
-    uploading?: EmitType<Object>;
+    uploading?: EmitType<UploadingEventArgs>;
 
     /**
      * Triggers when the AJAX request gets success on uploading files or removing files.
+     *  
+     * <table>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Event arguments<br/></td><td colSpan=1 rowSpan=1>
+     * Description<br/></td></tr> 
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * event<br/></td><td colSpan=1 rowSpan=1>
+     * Ajax progress event arguments.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * file<br/></td><td colSpan=1 rowSpan=1>
+     * File information which is uploaded/removed.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * name<br/></td><td colSpan=1 rowSpan=1>
+     * Name of the event<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * operation<br/></td><td colSpan=1 rowSpan=1>
+     * It indicates the success of the operation whether its uploaded or removed<br/></td></tr>
+     * </table>
+     * 
      * @event
      */
     success?: EmitType<Object>;
 
     /**
      * Triggers when the AJAX request fails on uploading or removing files.
+     *  
+     * <table>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Event arguments<br/></td><td colSpan=1 rowSpan=1>
+     * Description<br/></td></tr> 
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * event<br/></td><td colSpan=1 rowSpan=1>
+     * Ajax progress event arguments.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * file<br/></td><td colSpan=1 rowSpan=1>
+     * File information which is failed from upload/remove.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * name<br/></td><td colSpan=1 rowSpan=1>
+     * Name of the event<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * operation<br/></td><td colSpan=1 rowSpan=1>
+     * It indicates the failure of the operation whether its upload or remove<br/></td></tr>
+     * </table>
+     * 
      * @event
      */
     failure?: EmitType<Object>;
@@ -263,44 +318,142 @@ export interface UploaderModel extends ComponentModel{
 
     /**
      * Triggers when uploading a file to the server using the AJAX request.
+     *  
+     * <table>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Event arguments<br/></td><td colSpan=1 rowSpan=1>
+     * Description<br/></td></tr> 
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * event<br/></td><td colSpan=1 rowSpan=1>
+     * Ajax progress event arguments.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * file<br/></td><td colSpan=1 rowSpan=1>
+     * File information which is uploading to server.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * name<br/></td><td colSpan=1 rowSpan=1>
+     * Name of the event<br/></td></tr>
+     * </table>
+     * 
      * @event
      */
     progress?: EmitType<Object>;
 
     /**
      * Triggers when changes occur in uploaded file list by selecting or dropping files.
+     *  
+     * <table>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Event arguments<br/></td><td colSpan=1 rowSpan=1>
+     * Description<br/></td></tr> 
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * file<br/></td><td colSpan=1 rowSpan=1>
+     * File information which is successfully uploaded to server or removed in server.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * name<br/></td><td colSpan=1 rowSpan=1>
+     * Name of the event<br/></td></tr>
+     * </table>
+     * 
      * @event
      */
     change?: EmitType<Object>;
 
     /**
      * Fires when the chunk file uploaded successfully.
+     *  
+     * <table>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Event arguments<br/></td><td colSpan=1 rowSpan=1>
+     * Description<br/></td></tr> 
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * chunkIndex<br/></td><td colSpan=1 rowSpan=1>
+     * Returns current chunk index.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * chunkSize<br/></td><td colSpan=1 rowSpan=1>
+     * Returns the size of the chunk file.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * file<br/></td><td colSpan=1 rowSpan=1>
+     * File information which is uploading to server.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * name<br/></td><td colSpan=1 rowSpan=1>
+     * Name of the event<br/></td></tr>
+     * </table>
+     * 
      * @event
      */
     chunkSuccess?: EmitType<Object>;
 
     /**
      * Fires if the chunk file failed to upload.
+     *  
+     * <table>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Event arguments<br/></td><td colSpan=1 rowSpan=1>
+     * Description<br/></td></tr> 
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * chunkIndex<br/></td><td colSpan=1 rowSpan=1>
+     * Returns current chunk index.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * chunkSize<br/></td><td colSpan=1 rowSpan=1>
+     * Returns the size of the chunk file.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * file<br/></td><td colSpan=1 rowSpan=1>
+     * File information which is uploading to server.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * name<br/></td><td colSpan=1 rowSpan=1>
+     * Name of the event<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * totalChunk<br/></td><td colSpan=1 rowSpan=1>
+     * Returns the total chunk count<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * cancel<br/></td><td colSpan=1 rowSpan=1>
+     * Prevent triggering of failure event when we pass true to this attribute<br/></td></tr>
+     * </table>
+     * 
      * @event
      */
     chunkFailure?: EmitType<Object>;
 
     /**
+     * Fires when every chunk upload process gets started. This event is used to add additional parameter with upload request.
+     * @event
+     */
+    chunkUploading?: EmitType<UploadingEventArgs>;
+
+    /**
      * Fires if cancel the chunk file uploading.
      * @event
      */
-    canceling?: EmitType<Object>;
+    canceling?: EmitType<CancelEventArgs>;
 
     /**
      * Fires if pause the chunk file uploading.
      * @event
      */
-    pausing?: EmitType<Object>;
+    pausing?: EmitType<PauseResumeEventArgs>;
 
     /**
      * Fires if resume the paused chunk file upload.
      * @event
      */
-    resuming?: EmitType<Object>;
+    resuming?: EmitType<PauseResumeEventArgs>;
 
 }

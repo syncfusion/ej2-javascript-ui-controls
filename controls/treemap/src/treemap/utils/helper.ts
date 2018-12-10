@@ -457,22 +457,43 @@ export function colorMap(
         return null;
     }
     for (let i: number = 0; i < colorMapping.length; i++) {
-        let color: string = null;
-        if (colorMapping[i].from && colorMapping[i].to && colorMapping[i].value) {
+        let isEqualColor: boolean = false; let dataValue: number = <number>value;
+        if (!isNullOrUndefined(colorMapping[i].from) && !isNullOrUndefined(colorMapping[i].to)
+            && !isNullOrUndefined(colorMapping[i].value)) {
             if ((value >= colorMapping[i].from && colorMapping[i].to >= value) && (colorMapping[i].value === equalValue)) {
-                color = colorMapping[i].color;
+                isEqualColor = true;
+                if (Object.prototype.toString.call(colorMapping[i].color) === '[object Array]') {
+                    fill = !isEqualColor ? colorCollections(colorMapping[i], dataValue) : colorMapping[i].color[0];
+                } else {
+                    fill = <string>colorMapping[i].color;
+                }
             }
-        } else if ((colorMapping[i].from && colorMapping[i].to) || (colorMapping[i].value)) {
+        } else if ((!isNullOrUndefined(colorMapping[i].from) && !isNullOrUndefined(colorMapping[i].to))
+            || !isNullOrUndefined((colorMapping[i].value))) {
             colorMapping[i].value = !isNullOrUndefined(colorMapping[i].value) ? colorMapping[i].value.toString() : colorMapping[i].value;
             if ((value >= colorMapping[i].from && colorMapping[i].to >= value) || (colorMapping[i].value === equalValue)) {
-                color = colorMapping[i].color;
+                if (colorMapping[i].value === equalValue) {
+                    isEqualColor = true;
+                }
+                if (Object.prototype.toString.call(colorMapping[i].color) === '[object Array]') {
+                    fill = !isEqualColor ? colorCollections(colorMapping[i], dataValue) : colorMapping[i].color[0];
+                } else {
+                    fill = <string>colorMapping[i].color;
+                }
             }
         }
-        if (colorMapping[i].minOpacity && colorMapping[i].maxOpacity && color) {
-            opacity = deSaturationColor(weightValuePath, colorMapping[i], color, value as number);
+        if (((value >= colorMapping[i].from && value <= colorMapping[i].to) || (colorMapping[i].value === equalValue))
+            && !isNullOrUndefined(colorMapping[i].minOpacity) && !isNullOrUndefined(colorMapping[i].maxOpacity) && fill) {
+            opacity = deSaturationColor(weightValuePath, colorMapping[i], fill, value as number);
         }
-        fill = color;
-        opacity = (colorMapping[i].minOpacity) ? opacity : '1';
+        if ((fill === '' || isNullOrUndefined(fill))
+            && isNullOrUndefined(colorMapping[i].from) && isNullOrUndefined(colorMapping[i].to)
+            && isNullOrUndefined(colorMapping[i].minOpacity) && isNullOrUndefined(colorMapping[i].maxOpacity)
+            && isNullOrUndefined(colorMapping[i].value)) {
+            fill = (Object.prototype.toString.call(colorMapping[i].color) === '[object Array]') ?
+                <string>colorMapping[i].color[0] : <string>colorMapping[i].color;
+        }
+        opacity = !isNullOrUndefined(opacity) ? opacity : '1';
         paths.push(fill);
     }
     for (let j: number = paths.length - 1; j >= 0; j--) {
@@ -485,12 +506,103 @@ export function colorMap(
 
 export function deSaturationColor(
     weightValuePath: number, colorMapping: ColorMappingModel, color: string, rangeValue: number): string {
-    let opacity: number = 0;
+    let opacity: number = 1;
     if ((rangeValue >= colorMapping.from && rangeValue <= colorMapping.to)) {
         let ratio: number = (rangeValue - colorMapping.from) / (colorMapping.to - colorMapping.from);
         opacity = (ratio * (colorMapping.maxOpacity - colorMapping.minOpacity)) + colorMapping.minOpacity;
     }
     return opacity.toString();
+}
+
+export function colorCollections(colorMap: ColorMappingModel, value: number): string {
+    let gradientFill: string = getColorByValue(colorMap, value);
+    return gradientFill;
+}
+
+export function rgbToHex(r: number, g: number, b: number): string {
+    return '#' + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+
+export function getColorByValue(colorMap: ColorMappingModel, value: number): string {
+    let color: string = '';
+    let rbg: ColorValue;
+    if (Number(value) === colorMap.from) {
+        color = colorMap.color[0];
+    } else if (Number(value) === colorMap.to) {
+        color = colorMap.color[colorMap.color.length - 1];
+    } else {
+        rbg = getGradientColor(Number(value), colorMap);
+        color = rgbToHex(rbg.r, rbg.g, rbg.b);
+    }
+    return color;
+}
+
+/* tslint:disable-next-line:max-func-body-length */
+export function getGradientColor(value: number, colorMap: ColorMappingModel): ColorValue {
+    let previousOffset: number = colorMap.from;
+    let nextOffset: number = colorMap.to;
+    let percent: number = 0; let prev1: string;
+    let full: number = nextOffset - previousOffset; let midColor: string; let midreturn: ColorValue;
+    percent = (value - previousOffset) / full; let previousColor: string; let nextColor: string;
+    if (colorMap.color.length <= 2) {
+        previousColor = colorMap.color[0].charAt(0) === '#' ? colorMap.color[0] : colorNameToHex(colorMap.color[0]);
+        nextColor = colorMap.color[colorMap.color.length - 1].charAt(0) === '#' ?
+            colorMap.color[colorMap.color.length - 1] : colorNameToHex(colorMap.color[colorMap.color.length - 1]);
+    } else {
+        previousColor = colorMap.color[0].charAt(0) === '#' ? colorMap.color[0] : colorNameToHex(colorMap.color[0]);
+        nextColor = colorMap.color[colorMap.color.length - 1].charAt(0) === '#' ?
+            colorMap.color[colorMap.color.length - 1] : colorNameToHex(colorMap.color[colorMap.color.length - 1]);
+        let a: number = full / (colorMap.color.length - 1); let b: number; let c: number;
+
+        let length: number = colorMap.color.length - 1;
+        let splitColorValueOffset: Object[] = []; let splitColor: Object = {};
+        for (let j: number = 1; j < length; j++) {
+            c = j * a;
+            b = previousOffset + c;
+            splitColor = { b: b, color: colorMap.color[j] };
+            splitColorValueOffset.push(splitColor);
+        }
+        for (let i: number = 0; i < splitColorValueOffset.length; i++) {
+            if (previousOffset <= value && value <= splitColorValueOffset[i]['b'] && i === 0) {
+                midColor = splitColorValueOffset[i]['color'].charAt(0) === '#' ?
+                    splitColorValueOffset[i]['color'] : colorNameToHex(splitColorValueOffset[i]['color']);
+                nextColor = midColor;
+                percent = value < splitColorValueOffset[i]['b'] ? 1 - Math.abs((value - splitColorValueOffset[i]['b']) / a)
+                    : (value - splitColorValueOffset[i]['b']) / a;
+            } else if (splitColorValueOffset[i]['b'] <= value && value <= nextOffset && i === (splitColorValueOffset.length - 1)) {
+                midColor = splitColorValueOffset[i]['color'].charAt(0) === '#' ?
+                    splitColorValueOffset[i]['color'] : colorNameToHex(splitColorValueOffset[i]['color']);
+                previousColor = midColor;
+                percent = value < splitColorValueOffset[i]['b'] ?
+                    1 - Math.abs((value - splitColorValueOffset[i]['b']) / a) : (value - splitColorValueOffset[i]['b']) / a;
+            }
+            if (i !== splitColorValueOffset.length - 1 && i < splitColorValueOffset.length) {
+                if (splitColorValueOffset[i]['b'] <= value && value <= splitColorValueOffset[i + 1]['b']) {
+                    midColor = splitColorValueOffset[i]['color'].charAt(0) === '#' ?
+                        splitColorValueOffset[i]['color'] : colorNameToHex(splitColorValueOffset[i]['color']);
+                    previousColor = midColor;
+                    nextColor = splitColorValueOffset[i + 1]['color'].charAt(0) === '#' ?
+                        splitColorValueOffset[i + 1]['color'] : colorNameToHex(splitColorValueOffset[i + 1]['color']);
+                    percent = Math.abs((value - splitColorValueOffset[i + 1]['b'])) / a;
+                }
+            }
+        }
+    }
+    return getPercentageColor(percent, previousColor, nextColor);
+}
+
+export function getPercentageColor(percent: number, previous: string, next: string): ColorValue {
+    let nextColor: string = next.split('#')[1];
+    let prevColor: string = previous.split('#')[1];
+    let r: number = getPercentage(percent, parseInt(prevColor.substr(0, 2), 16), parseInt(nextColor.substr(0, 2), 16));
+    let g: number = getPercentage(percent, parseInt(prevColor.substr(2, 2), 16), parseInt(nextColor.substr(2, 2), 16));
+    let b: number = getPercentage(percent, parseInt(prevColor.substr(4, 2), 16), parseInt(nextColor.substr(4, 2), 16));
+    return new ColorValue(r, g, b);
+}
+
+export function getPercentage(percent: number, previous: number, next: number): number {
+    let full: number = next - previous;
+    return Math.round((previous + (full * percent)));
 }
 
 export function wordWrap(maximumWidth: number, dataLabel: string, font: FontModel): string[] {
@@ -777,4 +889,69 @@ export class TreeMapAjax {
         this.contentType = contentType;
         this.sendData = sendData;
     }
+}
+
+export function removeShape(collection: object[], value: string): void {
+    if (collection.length > 0) {
+        for (let i: number = 0; i < collection.length; i++) {
+            let item: object = collection[i];
+            setColor(item['legendEle'], item['oldFill'], item['oldOpacity'], item['oldBorderColor'], item['oldBorderWidth']);
+        }
+    }
+}
+
+export function removeLegend(collection: object[], value: string): void {
+    if (collection.length > 0) {
+        for (let j: number = 0; j < collection.length; j++) {
+            let item: object = collection[j];
+            setColor(item['legendEle'], item['oldFill'], item['oldOpacity'], item['oldBorderColor'], item['oldBorderWidth']);
+            let dataCount: number = item['ShapeCollection']['Elements'].length;
+            for (let k: number = 0; k < dataCount; k++) {
+                setColor(
+                    item['ShapeCollection']['Elements'][k], item['shapeOldFill'], item['shapeOldOpacity'],
+                    item['shapeOldBorderColor'], item['shapeOldBorderWidth']);
+            }
+        }
+    }
+}
+
+export function setColor(element: Element, fill: string, opacity: string, borderColor: string, borderWidth: string): void {
+    element.setAttribute('fill', fill);
+    element.setAttribute('opacity', opacity);
+    element.setAttribute('stroke', borderColor);
+    element.setAttribute('stroke-width', borderWidth);
+}
+
+export function removeSelectionWithHighlight(collection: object[], element: object[], treemap: TreeMap): void {
+    removeShape(collection, 'highlight');
+    element = [];
+    removeClassNames(document.getElementsByClassName('treeMapHighLight'), 'treeMapHighLight', treemap);
+}
+
+export function getLegendIndex(length: number, item: object, treemap: TreeMap): number {
+    let index: number;
+    for (let i: number = 0; i < length; i++) {
+        let dataLength: number = treemap.treeMapLegendModule.legendCollections[i]['legendData'].length;
+        for (let j: number = 0; j < dataLength; j++) {
+            if (treemap.treeMapLegendModule.legendCollections[i]['legendData'][j]['levelOrderName'] === item['levelOrderName']) {
+                index = i;
+                break;
+            }
+        }
+    }
+    return index;
+}
+
+export function pushCollection(
+    collection: object[], index: number, number: number, legendElement: Element, shapeElement: Element,
+    renderItems: object[], legendCollection: object[]): void {
+    collection.push({
+        legendEle: legendElement, oldFill: legendCollection[index]['legendFill'],
+        oldOpacity: legendCollection[index]['opacity'], oldBorderColor: legendCollection[index]['borderColor'],
+        oldBorderWidth: legendCollection[index]['borderWidth'],
+        shapeElement: shapeElement, shapeOldFill: renderItems[number]['options']['fill'],
+        shapeOldOpacity: renderItems[number]['options']['opacity'],
+        shapeOldBorderColor: renderItems[number]['options']['border']['color'],
+        shapeOldBorderWidth: renderItems[number]['options']['border']['width']
+    });
 }

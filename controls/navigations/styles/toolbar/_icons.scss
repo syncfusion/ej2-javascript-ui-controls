@@ -18,5 +18,18 @@
         content: '\e85e';
       }
     }
+
+    &.e-vertical {
+
+      .e-popup-down-icon::before {
+        content: $tbar-v-popup-down-icon;
+        line-height: normal;
+      }
+
+      .e-popup-up-icon::before {
+        content: $tbar-v-popup-up-icon;
+        line-height: normal;
+      }
+    }
   }
 }

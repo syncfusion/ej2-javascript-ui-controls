@@ -4,7 +4,8 @@ import { Dialog, Popup, isCollide } from '@syncfusion/ej2-popups';
 import { Button } from '@syncfusion/ej2-buttons';
 import { Input, FormValidator } from '@syncfusion/ej2-inputs';
 import { Schedule } from '../base/schedule';
-import { RecurrenceEditor } from '../../recurrence-editor/index';
+import { ResourcesModel } from '../models/models';
+import { generateSummary } from '../../recurrence-editor/date-generator';
 import {
     CellClickEventArgs, EventClickArgs, EventFieldsMapping, PopupOpenEventArgs, EventRenderedArgs, EJ2Instance, TdData
 } from '../base/interface';
@@ -14,7 +15,6 @@ import { FieldValidator } from './form-validator';
 import * as event from '../base/constant';
 import * as cls from '../base/css-constant';
 import * as util from '../base/util';
-import { ResourcesModel } from '../models/models';
 
 const EVENT_FIELD: string = 'e-field';
 
@@ -30,6 +30,7 @@ export class QuickPopups {
     public quickPopup: Popup;
     public morePopup: Popup;
     private fieldValidator: FieldValidator;
+    public newEventClone: Element;
 
     /**
      * Constructor for QuickPopups
@@ -68,7 +69,7 @@ export class QuickPopups {
             collision: (this.parent.isAdaptive ? { X: 'fit', Y: 'fit' } : { X: 'none', Y: 'fit' }),
             position: (this.parent.isAdaptive ? { X: 'left', Y: 'top' } : { X: 'right', Y: 'top' }),
             viewPortElement: (this.parent.isAdaptive ? document.body : this.parent.element),
-            zIndex: (this.parent.isAdaptive ? 1000 : 1)
+            zIndex: (this.parent.isAdaptive ? 1000 : 3)
         });
     }
 
@@ -91,7 +92,7 @@ export class QuickPopups {
             close: this.morePopupClose.bind(this),
             collision: { X: 'flip', Y: 'flip' },
             viewPortElement: this.parent.element.querySelector('.' + cls.TABLE_CONTAINER_CLASS) as HTMLElement,
-            zIndex: 0
+            zIndex: 2
         });
         let closeButton: HTMLButtonElement = this.morePopup.element.querySelector('.' + cls.MORE_EVENT_CLOSE_CLASS) as HTMLButtonElement;
         this.renderButton('e-round', cls.ICON + ' ' + cls.CLOSE_ICON_CLASS, false, closeButton, this.closeClick);
@@ -130,7 +131,13 @@ export class QuickPopups {
     }
 
     private renderButton(className: string, iconName: string, isDisabled: boolean, element: HTMLButtonElement, clickEvent: Function): void {
-        new Button({ cssClass: className, disabled: isDisabled, enableRtl: this.parent.enableRtl, iconCss: iconName }, element);
+        let buttonObj: Button = new Button({
+            cssClass: className,
+            disabled: isDisabled,
+            enableRtl: this.parent.enableRtl,
+            iconCss: iconName
+        });
+        buttonObj.appendTo(element);
         EventHandler.add(element, 'click', clickEvent, this);
     }
 
@@ -279,7 +286,8 @@ export class QuickPopups {
                     className: cls.APPOINTMENT_CLASS,
                     attrs: {
                         'data-id': '' + eventData[fields.id],
-                        'data-guid': eventData.Guid as string, 'role': 'button', 'tabindex': '0', 'aria-readonly': 'false',
+                        'data-guid': eventData.Guid as string, 'role': 'button', 'tabindex': '0',
+                        'aria-readonly': this.parent.eventBase.getReadonlyAttribute(eventData),
                         'aria-selected': 'false', 'aria-grabbed': 'true', 'aria-label': eventText
                     }
                 });
@@ -305,8 +313,8 @@ export class QuickPopups {
         return moreEventContentEle;
     }
 
-    private tapHoldEventPopup(args: { [key: string]: Object }): void {
-        let target: Element = closest(<HTMLElement>(<{ [key: string]: Object }>args.event).target, '.' + cls.APPOINTMENT_CLASS);
+    public tapHoldEventPopup(e: Event): void {
+        let target: Element = closest(<HTMLElement>e.target, '.' + cls.APPOINTMENT_CLASS);
         this.isMultipleEventSelect = false;
         this.parent.selectedElements = [];
         this.isMultipleEventSelect = true;
@@ -331,8 +339,22 @@ export class QuickPopups {
     }
 
     private cellClick(args: CellClickEventArgs): void {
-        if (!this.parent.showQuickInfo || this.parent.currentView === 'MonthAgenda' || this.parent.isAdaptive) {
+        if (!this.parent.showQuickInfo || this.parent.currentView === 'MonthAgenda') {
             this.quickPopupHide();
+            return;
+        }
+        if (this.parent.isAdaptive) {
+            this.quickPopupHide();
+            if (isNullOrUndefined(this.newEventClone)) {
+                this.newEventClone = createElement('div', {
+                    className: cls.NEW_EVENT_CLASS,
+                    innerHTML: '<div class="e-title"> + </div>'
+                });
+            }
+            if ((args.event.target as Element).classList.contains(cls.WORK_CELLS_CLASS) ||
+                (args.event.target as Element).classList.contains(cls.ALLDAY_CELLS_CLASS)) {
+                (args.event.target as Element).appendChild(this.newEventClone);
+            }
             return;
         }
         let target: Element = closest((args.event.target as Element), '.' + cls.WORK_CELLS_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS + ',.' +
@@ -503,10 +525,10 @@ export class QuickPopups {
                 });
                 quickEventPopup.appendChild(footerTemplate);
             }
-            let readonly: boolean = this.parent.activeViewOptions.readonly;
+            let readonly: boolean = this.parent.activeViewOptions.readonly || eventData[this.parent.eventFields.isReadonly] as boolean;
             let editIcon: HTMLButtonElement = quickEventPopup.querySelector('.' + cls.EDIT_CLASS) as HTMLButtonElement;
             if (editIcon) {
-                this.renderButton('e-flat e-round e-small', cls.ICON + ' ' + cls.EDIT_ICON_CLASS, false, editIcon, this.editClick);
+                this.renderButton('e-flat e-round e-small', cls.ICON + ' ' + cls.EDIT_ICON_CLASS, readonly, editIcon, this.editClick);
             }
             let deleteIcon: HTMLButtonElement = quickEventPopup.querySelector('.' + cls.DELETE_CLASS) as HTMLButtonElement;
             if (deleteIcon) {
@@ -518,7 +540,7 @@ export class QuickPopups {
             }
             let editButton: HTMLButtonElement = quickEventPopup.querySelector('.' + cls.EDIT_EVENT_CLASS) as HTMLButtonElement;
             if (editButton) {
-                this.renderButton('e-flat e-primary', '', false, editButton, this.editClick);
+                this.renderButton('e-flat e-primary', '', readonly, editButton, this.editClick);
             }
             let deleteButton: HTMLButtonElement = quickEventPopup.querySelector('.' + cls.DELETE_EVENT_CLASS) as HTMLButtonElement;
             if (deleteButton) {
@@ -632,9 +654,14 @@ export class QuickPopups {
         }
         if (this.parent.currentView.indexOf('Timeline') !== -1) {
             let gIndex: string = target.getAttribute('data-group-index');
-            let index: number = (isNullOrUndefined(gIndex)) ? 0 : parseInt(gIndex, 10);
-            this.morePopup.relateTo = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS +
-                ' tbody tr:nth-child(' + (index + 1) + ') td[data-date="' + target.getAttribute('data-start-date') + '"]') as HTMLElement;
+            let startDate: string = target.getAttribute('data-start-date');
+            if (isNullOrUndefined(gIndex)) {
+                this.morePopup.relateTo = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS +
+                    ' tbody tr td[data-date="' + startDate + '"]') as HTMLElement;
+            } else {
+                this.morePopup.relateTo = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS +
+                    ' tbody tr td[data-group-index="' + gIndex + '"][data-date="' + startDate + '"]') as HTMLElement;
+            }
         } else {
             this.morePopup.relateTo = closest(<Element>target, '.' + cls.WORK_CELLS_CLASS) as HTMLElement;
         }
@@ -790,8 +817,8 @@ export class QuickPopups {
     }
 
     private getRecurrenceSummary(event: { [key: string]: Object; }): string {
-        let recurrenceEditor: RecurrenceEditor = this.parent.eventWindow.getRecurrenceEditorInstance();
-        let ruleSummary: string = recurrenceEditor.getRuleSummary(<string>event[this.parent.eventFields.recurrenceRule]);
+        let recurrenceRule: string = event[this.parent.eventFields.recurrenceRule] as string;
+        let ruleSummary: string = generateSummary(recurrenceRule, this.parent.localeObj, this.parent.locale);
         return ruleSummary.charAt(0).toUpperCase() + ruleSummary.slice(1);
     }
 
@@ -849,6 +876,12 @@ export class QuickPopups {
                     this.quickPopup.offsetX = -(this.quickPopup.element.offsetWidth / 2);
                     this.quickPopup.dataBind();
                 }
+            }
+            if (this.parent.virtualScrollModule && (collide.indexOf('top') > -1 || collide.indexOf('bottom') > -1)) {
+                let element: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table');
+                let translateY: number = util.getTranslateY(element);
+                this.quickPopup.offsetY = translateY;
+                this.quickPopup.dataBind();
             }
         }
         if (isEventPopup) {
@@ -913,7 +946,7 @@ export class QuickPopups {
     private morePopupClose(): void {
         let moreWrapper: Element = this.parent.element.querySelector('.' + cls.MORE_EVENT_WRAPPER_CLASS);
         if (moreWrapper) {
-            moreWrapper.remove();
+            remove(moreWrapper);
         }
     }
 
@@ -947,8 +980,12 @@ export class QuickPopups {
         let target: Element = e.event.target as Element;
         let classNames: string = '.' + cls.POPUP_WRAPPER_CLASS + ',.' + cls.HEADER_CELLS_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS +
             ',.' + cls.WORK_CELLS_CLASS + ',.' + cls.APPOINTMENT_CLASS;
+        if (closest(target, '.' + cls.APPOINTMENT_CLASS + ',.' + cls.HEADER_CELLS_CLASS)) {
+            this.parent.removeNewEventElement();
+        }
         if (!closest(target, classNames)) {
             this.quickPopupHide();
+            this.parent.removeNewEventElement();
         }
         if (!closest(target, '.' + cls.MORE_POPUP_WRAPPER_CLASS) && !target.classList.contains(cls.MORE_INDICATOR_CLASS)
             && (!closest(target, '.' + cls.POPUP_OPEN))) {
@@ -966,7 +1003,6 @@ export class QuickPopups {
         this.parent.on(event.eventClick, this.eventClick, this);
         this.parent.on(event.documentClick, this.documentClick, this);
         this.parent.on(event.dataReady, this.updateMoreEventContent, this);
-        this.parent.on(event.tapHoldReady, this.tapHoldEventPopup, this);
     }
 
     private removeEventListner(): void {
@@ -974,7 +1010,6 @@ export class QuickPopups {
         this.parent.off(event.eventClick, this.eventClick);
         this.parent.off(event.documentClick, this.documentClick);
         this.parent.off(event.dataReady, this.updateMoreEventContent);
-        this.parent.off(event.tapHoldReady, this.tapHoldEventPopup);
     }
 
     private destroyButtons(): void {

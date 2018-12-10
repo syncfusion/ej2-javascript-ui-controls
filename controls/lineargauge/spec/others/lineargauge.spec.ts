@@ -111,4 +111,86 @@ describe('Linear gauge control', () => {
             gauge.refresh();
         });
     });
+
+
+    describe('Checking HighContrast theme support', () => {
+        let gauge: LinearGauge;
+        let element: HTMLElement;
+        let svg: HTMLElement;
+        let timeout: number;       
+        beforeAll((): void => {   
+            timeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;        
+            element = createElement('div', { id: 'container' });
+            document.body.appendChild(element);
+            gauge = new LinearGauge({
+                theme : 'HighcontrastDark'
+            });
+            gauge.appendTo('#container');
+        });
+        afterAll((): void => {
+           // timeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;           
+            element.remove();
+        });
+
+        it('gauge theme support - highcontrast', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                debugger
+                svg = document.getElementById('container_LinearGaugeTitle');
+                //expect(svg.textContent == 'linear gauge').toBe(true);
+                svg = document.getElementById('container_MinorTicksLine_0');
+                //expect(svg.getAttribute('fill')).toEqual('#FFFFFF');
+                svg = document.getElementById('container_MinorTicksLine_0');
+                //expect(svg.getAttribute('fill')).toEqual('#FFFFFF');                
+                svg = document.getElementById('container_AxisLine_0');
+                //expect(svg.getAttribute('fill')).toEqual('#FFFFFF');                
+                done();
+            };            
+            gauge.title = 'linear gauge';           
+            gauge.axes[0].line.width = 2;
+            gauge.axes[0].majorTicks.width = 5;
+            gauge.axes[0].minorTicks.width = 2;
+            gauge.refresh();            
+        });
+        
+    });
+
+    describe('Checking Dark theme support', () => {
+        let gauge: LinearGauge;
+        let element: HTMLElement;
+        let svg: HTMLElement;
+        let timeout: number;       
+        beforeAll((): void => {   
+            timeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;        
+            element = createElement('div', { id: 'container' });
+            document.body.appendChild(element);
+            gauge = new LinearGauge({
+                theme : 'FabricDark'
+            });
+            gauge.appendTo('#container');
+        });
+        afterAll((): void => {
+           // timeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;           
+            element.remove();
+        });
+
+        it('gauge theme support - dark', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_LinearGaugeTitle');
+                expect(svg.textContent == 'linear gauge').toBe(true);
+                svg = document.getElementById('container_MinorTicksLine_0');
+                expect(svg.getAttribute('fill')).toEqual('#9A9A9A');
+                svg = document.getElementById('container_MajorTicksLine_0');
+                expect(svg.getAttribute('fill')).toEqual('#C8C8C8');
+                svg = document.getElementById('container_AxisLine_0');
+                expect(svg.getAttribute('fill')).toEqual('#C8C8C8');                
+                done();
+            }; 
+            gauge.title = 'linear gauge';            
+            gauge.axes[0].line.width = 2;
+            gauge.axes[0].majorTicks.width = 5;
+            gauge.axes[0].minorTicks.width = 2;           
+            gauge.refresh();
+        });
+
+    });
 });

@@ -2,16 +2,17 @@
 @include export-module('menu-theme') {
   /*! menu theme */
   .e-menu-wrapper {
+    background-color: $menu-ul-bgcolor;
+
     @at-root {
       & ul {
-        background-color: $menu-ul-bgcolor;
-        border-color: $menu-li-border-color;
+        background-color: inherit;
         color: $menu-color;
 
         &.e-menu {
           &:not(.e-vertical) {
             & .e-separator {
-              border-right-color: $seperator-border-color;
+              border-right-color: $menu-seperator-border-color;
             }
           }
         }
@@ -40,7 +41,7 @@
           }
 
           &.e-separator {
-            border-bottom-color: $seperator-border-color;
+            border-bottom-color: $menu-seperator-border-color;
           }
         }
 
@@ -48,12 +49,12 @@
       }
 
       & .e-ul {
-        background-color: $ul-bgcolor;
-        color: $color;
+        background-color: inherit;
+        color: $cmenu-color;
 
         & .e-menu-item {
           & .e-menu-url {
-            color: $color;
+            color: $cmenu-color;
           }
 
           &.e-focused {
@@ -65,9 +66,48 @@
           }
 
           &.e-separator {
-            border-bottom-color: $li-border-color;
+            border-bottom-color: $cmenu-li-border-color;
           }
         }
+      }
+    }
+
+    &.e-menu-popup {
+      background-color: $cmenu-ul-bgcolor;
+    }
+
+    & .e-menu-hscroll.e-hscroll .e-scroll-nav {
+      background: $menu-ul-bgcolor;
+
+      & .e-nav-arrow.e-icons {
+        color: $cmenu-caret-color;
+      }
+
+      &:hover,
+      &:focus {
+        background: $menu-li-bgcolor;
+      }
+
+      &:active {
+        background: $menu-li-selection-bgcolor;
+      }
+    }
+
+    &.e-menu-popup .e-menu-vscroll.e-vscroll .e-scroll-nav {
+      background: $cmenu-ul-bgcolor;
+      border-color: $menu-seperator-border-color;
+
+      & .e-icons {
+        color: $cmenu-color;
+      }
+
+      &:hover,
+      &:focus {
+        background: $cmenu-li-bgcolor;
+      }
+
+      &:active {
+        background: $cmenu-li-selection-bgcolor;
       }
     }
   }

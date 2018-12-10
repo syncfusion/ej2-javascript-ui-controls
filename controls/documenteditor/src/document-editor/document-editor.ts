@@ -1,5 +1,5 @@
 import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, L10n, setCulture, EmitType, Browser } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
 import { Save } from '@syncfusion/ej2-file-utils';
 import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle } from './index';
 import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs } from './index';
@@ -375,7 +375,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     @Event()
     public searchResultsChange: EmitType<SearchResultsChangeEventArgs>;
     /**
-     * Triggers when the component is created.
+     * Triggers when the component is created
      * @event
      */
     @Event()
@@ -386,6 +386,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Event()
     public destroyed: EmitType<Object>;
+
     /**
      * Gets or Sets a value indicating whether tab key can be accepted as input or not.
      * @default false
@@ -394,7 +395,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Gets or Sets a value indicating whether holding Ctrl key is required to follow hyperlink on click. The default value is true.
      */
-    public useCtrlClickToFollowHyperlink​​​: boolean = true;
+    public useCtrlClickToFollowHyperlink: boolean = true;
     /**
      * Gets or sets the page outline color.
      */
@@ -567,7 +568,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (this.locale !== '') {
             let l10n: L10n = new L10n('documenteditor', this.defaultLocale);
             l10n.setLocale(this.locale);
-            setCulture(this.locale);
             if (this.optionsPaneModule) {
                 this.optionsPaneModule.initOptionsPane(l10n);
             }
@@ -1033,6 +1033,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Available styles': 'Available styles',
         'TOC level': 'TOC level',
         'Heading': 'Heading',
+        'Heading 1': 'Heading 1',
+        'Heading 2': 'Heading 2',
+        'Heading 3': 'Heading 3',
+        'Heading 4': 'Heading 4',
+        'Heading 5': 'Heading 5',
+        'Heading 6': 'Heading 6',
         'List Paragraph': 'List Paragraph',
         'Normal': 'Normal',
         'Outline levels': 'Outline levels',
@@ -1119,6 +1125,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Copy Hyperlink': 'Copy Hyperlink',
         'Remove Hyperlink': 'Remove Hyperlink',
         'Paragraph': 'Paragraph',
+        'Linked(Paragraph and Character)': 'Linked(Paragraph and Character)',
+        'Character': 'Character',
         'Merge Cells': 'Merge Cells',
         'Insert Above': 'Insert Above',
         'Insert Below': 'Insert Below',
@@ -1172,7 +1180,33 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'New': 'New',
         'Bullets': 'Bullets',
         'Use bookmarks': 'Use bookmarks',
-        'Table of Contents': 'Table of Contents'
+        'Table of Contents': 'Table of Contents',
+        'AutoFit': 'AutoFit',
+        'AutoFit to Contents': 'AutoFit to Contents',
+        'AutoFit to Window': 'AutoFit to Window',
+        'Fixed Column Width': 'Fixed Column Width',
+        'Reset': 'Reset',
+        'Match case': 'Match case',
+        'Whole words': 'Whole words',
+        'Add': 'Add',
+        'Go To': 'Go To',
+        'Search for': 'Search for',
+        'Replace with': 'Replace with',
+        'TOC 1': 'TOC 1',
+        'TOC 2': 'TOC 2',
+        'TOC 3': 'TOC 3',
+        'TOC 4': 'TOC 4',
+        'TOC 5': 'TOC 5',
+        'TOC 6': 'TOC 6',
+        'TOC 7': 'TOC 7',
+        'TOC 8': 'TOC 8',
+        'TOC 9': 'TOC 9',
+        'Right-to-left': 'Right-to-left',
+        'Left-to-right': 'Left-to-right',
+        'Direction': 'Direction',
+        'Table direction': 'Table direction',
+        'Indent from right': 'Indent from right'
+
     };
     // Public Implementation Starts
     /**

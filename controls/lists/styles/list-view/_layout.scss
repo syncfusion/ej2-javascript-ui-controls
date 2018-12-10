@@ -12,6 +12,7 @@
     &:not(.e-list-template) .e-list-item {
       height: $listview-touch-item-height;
       line-height: $listview-touch-item-line-height;
+      position: relative;
     }
 
     .e-text-content {
@@ -24,13 +25,10 @@
     }
 
     .e-list-header {
-      display: block;
+      align-items: center;
+      display: flex;
       font-weight: $listview-touch-header-font-weight;
       height: $listview-touch-header-height;
-    }
-
-    .e-list-header > * {
-      display: table-cell;
     }
 
     .e-list-header .e-text.header {
@@ -43,19 +41,6 @@
 
     .e-list-header .e-text {
       font-size: $listview-touch-header-font-size;
-      line-height: $listview-touch-header-line-height;
-    }
-
-    .e-icons {
-      margin-top: $listview-touch-header-icon-margin-top;
-    }
-
-    .e-but-back {
-      padding-top: $listview-touch-back-icon-padding;
-    }
-
-    .e-icon-collapsible {
-      line-height: inherit;
     }
   }
 
@@ -71,6 +56,7 @@
       height: $listview-item-height;
       line-height: $listview-item-line-height;
       padding: $listview-item-padding;
+      position: relative;
     }
 
     @at-root {
@@ -87,33 +73,30 @@
         display: none;
       }
 
+      & .e-icon-back {
+        margin-top: $listview-icon-back-margin;
+      }
+
       & .e-list-header .e-headertemplate-text.nested-header {
         display: none;
       }
 
       & .e-list-header {
+        align-items: center;
         border-bottom: 1px solid;
-        display: block;
+        display: flex;
         font-weight: $listview-header-font-weight;
         height: $listview-header-height;
-        padding: $listview-header-text-padding;
+        padding: 0 $listview-header-text-padding;
       }
 
-      & .e-has-header>.e-view {
+      & .e-has-header > .e-view {
         top: 45px;
-      }
-
-      & .e-icons {
-        margin-top: 2px;
       }
 
       & .e-but-back {
         cursor: pointer;
-        line-height: $listview-back-icon-height;
-        padding-bottom: $listview-header-padding-bottom;
         padding-right: $listview-back-padding-right;
-        vertical-align: middle;
-        width: 20px;
       }
 
       & .e-list-group-item:first-child {
@@ -132,9 +115,11 @@
 
       & .e-icon-collapsible {
         cursor: pointer;
-        float: right;
         font-size: 12px;
-        line-height: $listview-icon-line-height;
+        position: absolute;
+        right: 0%;
+        top: 50%;
+        transform: translateY(-50%);
       }
 
       & .e-text-content {
@@ -186,7 +171,7 @@
         width: 100%;
       }
 
-      & .e-list-icon+.e-list-text {
+      & .e-list-icon + .e-list-text {
         width: calc(100% - 60px);
       }
 
@@ -211,29 +196,39 @@
 
       & .e-list-header .e-text {
         cursor: pointer;
-        line-height: $listview-header-line-height;
         text-indent: 0;
       }
 
       & .e-text .e-headertext {
         display: inline-block;
+        line-height: $listview-header-line-height;
       }
 
       &.e-rtl {
+        direction: rtl;
+
         & .e-list-icon {
           margin-left: 16px;
           margin-right: 0;
         }
 
         & .e-icon-collapsible {
-          float: left;
-          margin-left: auto;
-          margin-right: auto;
+          left: 0%;
+          right: initial;
+          top: 50%;
+          transform: translateY(-50%) rotate(180deg);
+        }
+
+        & .e-list-header .e-text {
+          cursor: pointer;
         }
 
         & .e-but-back {
-          padding-left: $listview-back-padding-right;
-          padding-right: 0;
+          transform: rotate(180deg);
+        }
+
+        & .e-icon-back {
+          margin-top: $listview-rtl-icon-back-margin;
         }
 
         & .e-checkbox .e-checkbox-left {

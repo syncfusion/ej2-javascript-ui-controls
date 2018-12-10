@@ -1,4 +1,4 @@
-import { IPivotValues, IDataOptions, PivotEngine, IFieldListOptions, IFieldOptions, IAxisSet } from '../../base/engine';
+import { IPivotValues, IDataOptions, PivotEngine, IFieldListOptions, IFieldOptions, IAxisSet, IDataSet } from '../../base/engine';
 import { Mode } from '../base/enum';
 import { L10n } from '@syncfusion/ej2-base';
 import { ExcelStyle } from '@syncfusion/ej2-grids';
@@ -48,6 +48,48 @@ export interface CellClickEventArgs {
     currentCell: Element;
     data: Object;
 }
+
+export interface HyperCellClickEventArgs {
+    currentCell: Element;
+    data: Object;
+    cancel: boolean;
+}
+
+export interface DrillThroughEventArgs {
+    currentTarget: Element;
+    currentCell: IAxisSet;
+    rawData: IDataSet[];
+    rowHeaders: string;
+    columnHeaders: string;
+    value: string;
+}
+
+export interface CellSelectedObject {
+    currentCell: IAxisSet;
+    value: number | string;
+    rowHeaders: string | number | Date;
+    columnHeaders: string | number | Date;
+    measure: string;
+}
+
+export interface PivotCellSelectedEventArgs {
+    /** Defines the selected cells objects. */
+    selectedCellsInfo?: CellSelectedObject[];
+    pivotValues?: IPivotValues;
+}
+
+export interface PivotColumn {
+    allowReordering: boolean;
+    allowResizing: boolean;
+    headerText: string;
+    width: string | number;
+}
+
+export interface BeforeColumnRenderEventArgs {
+    columns: PivotColumn[];
+    dataSource: IDataOptions;
+}
+
 /**
  * @hidden
  */
@@ -78,7 +120,7 @@ export interface IAction {
     updateModel?(): void;
     onActionBegin?(args?: Object, type?: string): void;
     onActionComplete?(args?: Object, type?: string): void;
-    addEventListener?() : void;
+    addEventListener?(): void;
     removeEventListener?(): void;
 }
 

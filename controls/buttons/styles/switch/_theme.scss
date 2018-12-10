@@ -10,40 +10,40 @@
     }
 
     & .e-switch-handle {
-      background-color: $handle-bg-color;
-      box-shadow: $handle-shadow;
+      background-color: $switch-handle-bg-color;
+      box-shadow: $switch-handle-shadow;
     }
 
     & .e-switch-on {
       background-color: $switch-on-bg-color;
-      color: $inner-on-font-color;
+      color: $switch-inner-on-font-color;
     }
 
     & .e-switch-handle.e-switch-active {
-      background-color: $active-handle-bg;
+      background-color: $switch-active-handle-bg;
     }
 
     & .e-switch-inner.e-switch-active {
-      background-color: $inner-active-bg;
-      border-color: $inner-active-border-color;
+      background-color: $switch-inner-active-bg;
+      border-color: $switch-inner-active-border-color;
     }
 
     & .e-switch-inner {
-      background-color: $inner-bg;
+      background-color: $switch-inner-bg;
     }
 
     & .e-ripple-element {
-      background-color: $checked-ripple-bg-color;
+      background-color: $switch-checked-ripple-bg-color;
     }
 
     & .e-ripple-check .e-ripple-element {
-      background-color: $ripple-bg-color;
+      background-color: $switch-ripple-bg-color;
     }
 
     &.e-switch-disabled {
       & .e-switch-handle {
         background-color: $switch-handle-disabled-bg-color;
-        box-shadow: $handle-shadow-disabled;
+        box-shadow: $switch-handle-shadow-disabled;
       }
 
       & .e-switch-inner .e-switch-on,
@@ -98,7 +98,7 @@
 
       & .e-switch-inner.e-switch-active .e-switch-on {
         background-color: $switch-on-hover-bg-color;
-        color: $inner-hover-on-font-color;
+        color: $switch-inner-hover-on-font-color;
       }
 
       & .e-switch-handle.e-switch-active {
@@ -110,23 +110,23 @@
       & .e-switch-inner {
         background-color: $switch-inner-focus-off-bg;
         border-color: $switch-inner-focus-border;
-        box-shadow: $focus-inner-box-shadow;
-        outline: $focused-outline;
-        outline-offset: $focused-outline-offset;
+        box-shadow: $switch-focus-inner-box-shadow;
+        outline: $switch-focused-outline;
+        outline-offset: $switch-focused-outline-offset;
       }
 
       & .e-switch-inner.e-switch-active {
         background-color: $switch-inner-focus-bg-color;
-        border-color: $focus-border-color-active;
-        outline: $focused-outline-active;
+        border-color: $switch-focus-border-color-active;
+        outline: $switch-focused-outline-active;
       }
 
       & .e-ripple-container {
-        background-color: $checked-ripple-bg-color;
+        background-color: $switch-checked-ripple-bg-color;
       }
 
       & .e-ripple-check.e-ripple-container {
-        background-color: $ripple-bg-color;
+        background-color: $switch-ripple-bg-color;
       }
       }
 
@@ -139,8 +139,8 @@
 
         & .e-switch-inner.e-switch-active {
           background-color: $switch-inner-focus-bg-color;
-          border-color: $focus-border-color-active;
-          outline: $focused-outline-active;
+          border-color: $switch-focus-border-color-active;
+          outline: $switch-focused-outline-active;
         }
       }
 
@@ -149,8 +149,8 @@
       }
 
       & .e-switch-handle {
-        background-color: $handle-bg-color;
-        box-shadow: $handle-shadow;
+        background-color: $switch-handle-bg-color;
+        box-shadow: $switch-handle-shadow;
       }
 
       & .e-switch-inner.e-switch-active .e-switch-off {
@@ -158,12 +158,12 @@
       }
 
       & .e-switch-handle.e-switch-active {
-        background-color: $active-handle-bg;
+        background-color: $switch-active-handle-bg;
       }
 
       & .e-switch-inner.e-switch-active {
-        background-color: $inner-active-bg;
-        border-color: $inner-active-border-color;
+        background-color: $switch-inner-active-bg;
+        border-color: $switch-inner-active-border-color;
       }
 
       &:hover {
@@ -188,7 +188,7 @@
       &.e-switch-disabled {
         & .e-switch-handle {
           background-color: $switch-handle-disabled-bg-color;
-          box-shadow: $handle-shadow-disabled;
+          box-shadow: $switch-handle-shadow-disabled;
         }
 
         & .e-switch-inner .e-switch-on,
@@ -231,7 +231,7 @@
       &.e-rtl.e-switch-disabled {
         &:hover {
           & .e-switch-inner.e-switch-active {
-            background-color: $small-disabled-rtl-active-bg-color;
+            background-color: $switch-small-disabled-rtl-active-bg-color;
           }
          }
         }

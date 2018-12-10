@@ -4,7 +4,16 @@
 
 ## [Unreleased]
 
-## 16.3.33 (2018-11-15)
+## 16.4.40-beta (2018-12-10)
+
+### CircularGauge
+
+#### New Features
+
+- Support has been added to set gap between the ranges.
+- Support has been added to calculate the radius of the gauge based on the start and end angles.
+
+## 16.3.33 (2018-11-20)
 
 ### CircularGauge
 

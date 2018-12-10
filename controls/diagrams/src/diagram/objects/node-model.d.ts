@@ -1,4 +1,4 @@
-import { Property, Complex, Collection, ChildProperty, ComplexFactory } from '@syncfusion/ej2-base';import { ShapeStyle, Margin, TextStyle, Shadow } from '../core/appearance';import { ShapeStyleModel, TextStyleModel, ShadowModel, } from '../core/appearance-model';import { Point } from '../primitives/point';import { Size } from '../primitives/size';import { PointModel } from '../primitives/point-model';import { Shapes, BasicShapes, FlowShapes, Scale, ImageAlignment } from '../enum/enum';import { IElement } from './interface/IElement';import { Container } from '../core/containers/container';import { Canvas } from '../core/containers/canvas';import { getBasicShape } from './dictionary/basic-shapes';import { DiagramElement } from '../core/elements/diagram-element';import { PathElement } from '../core/elements/path-element';import { TextElement } from '../core/elements/text-element';import { ImageElement } from '../core/elements/image-element';import { DiagramNativeElement } from '../core/elements/native-element';import { Port, PointPort } from './port';import { PointPortModel } from './port-model';import { Annotation, ShapeAnnotation } from './annotation';import { ShapeAnnotationModel, HyperlinkModel } from './annotation-model';import { getPortShape, getIconShape } from './dictionary/common';import { getFlowShape } from './dictionary/flow-shapes';import { HorizontalAlignment, VerticalAlignment, BpmnShapes, BpmnEvents, BpmnTriggers, BpmnGateways, NodeConstraints } from '../enum/enum';import { BpmnDataObjects, BpmnTasks, BpmnSubProcessTypes, BpmnLoops } from '../enum/enum';import { BpmnBoundary, BpmnActivities } from '../enum/enum';import { MarginModel } from '../core/appearance-model';import { LayoutModel } from '../layout/layout-base-model';import { checkPortRestriction } from './../utility/diagram-util';import { randomId, getFunction } from './../utility/base-util';import { NodeBase } from './node-base';import { canShadow } from './../utility/constraints-util';import { PortVisibility, Stretch } from '../enum/enum';import { IconShapeModel } from './icon-model';import { IconShape } from './icon';import { measurePath } from './../utility/dom-util';import { Rect } from '../primitives/rect';import { getPolygonPath } from './../utility/path-util';import { DiagramHtmlElement } from '../core/elements/html-element';
+import { Property, Complex, Collection, ChildProperty, ComplexFactory } from '@syncfusion/ej2-base';import { ShapeStyle, Margin, TextStyle, Shadow } from '../core/appearance';import { ShapeStyleModel, TextStyleModel, ShadowModel, } from '../core/appearance-model';import { Point } from '../primitives/point';import { Size } from '../primitives/size';import { PointModel } from '../primitives/point-model';import { Shapes, BasicShapes, FlowShapes, UmlActivityShapes, Scale, ImageAlignment, Status } from '../enum/enum';import { IElement } from './interface/IElement';import { Container } from '../core/containers/container';import { Canvas } from '../core/containers/canvas';import { getBasicShape } from './dictionary/basic-shapes';import { DiagramElement } from '../core/elements/diagram-element';import { PathElement } from '../core/elements/path-element';import { TextElement } from '../core/elements/text-element';import { ImageElement } from '../core/elements/image-element';import { DiagramNativeElement } from '../core/elements/native-element';import { Port, PointPort } from './port';import { PointPortModel } from './port-model';import { Annotation, ShapeAnnotation } from './annotation';import { ShapeAnnotationModel, HyperlinkModel } from './annotation-model';import { getPortShape, getIconShape } from './dictionary/common';import { getFlowShape } from './dictionary/flow-shapes';import { HorizontalAlignment, VerticalAlignment, BpmnShapes, BpmnEvents, BpmnTriggers, BpmnGateways, NodeConstraints } from '../enum/enum';import { BpmnDataObjects, BpmnTasks, BpmnSubProcessTypes, BpmnLoops } from '../enum/enum';import { BpmnBoundary, BpmnActivities, UmlScope } from '../enum/enum';import { MarginModel } from '../core/appearance-model';import { LayoutModel } from '../layout/layout-base-model';import { checkPortRestriction, setUMLActivityDefaults, getUMLActivityShapes } from './../utility/diagram-util';import { randomId, getFunction } from './../utility/base-util';import { NodeBase } from './node-base';import { canShadow } from './../utility/constraints-util';import { PortVisibility, Stretch } from '../enum/enum';import { IconShapeModel } from './icon-model';import { IconShape } from './icon';import { measurePath } from './../utility/dom-util';import { Rect } from '../primitives/rect';import { getPolygonPath } from './../utility/path-util';import { DiagramHtmlElement } from '../core/elements/html-element';import { StackPanel } from '../core/containers/stack-panel';import { GridPanel, RowDefinition, ColumnDefinition } from '../core/containers/grid';import { Orientation, ContainerTypes, ClassifierShape } from '../enum/enum';import { getULMClassifierShapes } from '../utility/uml-util';import { initSwimLane } from '../interaction/container-interaction';import { AnnotationModel } from './annotation-model';
 import {NodeBaseModel} from "./node-base-model";
 
 /**
@@ -16,6 +16,7 @@ export interface ShapeModel {
      * * Bpmn - Sets the type of the node as Bpmn
      * * Native - Sets the type of the node as Native
      * * HTML - Sets the type of the node as HTML
+     * * UMLActivity - Sets the type of the node as UMLActivity
      * @default 'Basic'
      */
     type?: Shapes;
@@ -78,7 +79,7 @@ export interface NativeModel extends ShapeModel{
      * let nodes: NodeModel[] = [{
      * id: 'node1', width: 100, height: 100,
      * shape: { scale: 'Stretch', 
-     *   type: 'Native', content: '<g><path d="M90,43.841c0,24.213-19.779,43.841-44.182,43.841c-7.747,0-15.025-1.98-21.357-5.455'+
+     *   type: 'Native', content: '<g><path d='M90,43.841c0,24.213-19.779,43.841-44.182,43.841c-7.747,0-15.025-1.98-21.357-5.455'+
      * 'L0,90l7.975-23.522' +
      * 'c-4.023-6.606-6.34-14.354-6.34-22.637C1.635,19.628,21.416,0,45.818,0C70.223,0,90,19.628,90,43.841z M45.818,6.982' +
      * 'c-20.484,0-37.146,16.535-37.146,36.859c0,8.065,2.629,15.534,7.076,21.61L11.107,79.14l14.275-4.537' +
@@ -89,7 +90,7 @@ export interface NativeModel extends ShapeModel{
      * 'c0.543-0.628,0.723-1.075,1.082-1.793c0.363-0.717,0.182-1.344-0.09-1.883c-0.27-0.537-2.438-5.825-3.34-7.977' +
      * 'c-0.902-2.15-1.803-1.792-2.436-1.792c-0.631,0-1.354-0.09-2.076-0.09c-0.722,0-1.896,0.269-2.889,1.344' +
      * 'c-0.992,1.076-3.789,3.676-3.789,8.963c0,5.288,3.879,10.397,4.422,11.113c0.541,0.716,7.49,11.92,18.5,16.223' +
-     * 'C58.2,65.771,58.2,64.336,60.186,64.156c1.984-0.179,6.406-2.599,7.312-5.107C68.398,56.537,68.398,54.386,68.129,53.938z">'+
+     * 'C58.2,65.771,58.2,64.336,60.186,64.156c1.984-0.179,6.406-2.599,7.312-5.107C68.398,56.537,68.398,54.386,68.129,53.938z'>'+
      * '</path></g>',
      *        }
      * }];
@@ -136,7 +137,7 @@ export interface HtmlModel extends ShapeModel{
      * let nodes: NodeModel[] = [{
      * id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 100,
      * shape: { type: 'HTML', 
-     * content: '<div style="background:red;height:100%;width:100%;"><input type="button" value="{{:value}}" /></div>' }
+     * content: '<div style='background:red;height:100%;width:100%;'><input type='button' value='{{:value}}' /></div>' }
      * }];
      * let diagram: Diagram = new Diagram({
      * ...
@@ -989,6 +990,283 @@ export interface BpmnShapeModel extends ShapeModel{
 }
 
 /**
+ * Interface for a class UmlActivityShape
+ */
+export interface UmlActivityShapeModel extends ShapeModel{
+
+    /**
+     * Defines the type of node shape
+     * ```html
+     * <div id='diagram'></div>
+     * ```
+     * ```typescript
+     * let shape: UmlActivityShapeModel = { type: 'UMLActivity', shape: 'Action' };
+     * let nodes: NodeModel[] = [{
+     * id: 'node', width: 100, height: 100, offsetX: 100, offsetY: 100, shape: shape
+     * }];
+     * let diagram: Diagram = new Diagram({
+     * ...
+     * nodes : nodes,
+     * ...
+     * });
+     * diagram.appendTo('#diagram');
+     * ```
+     * @default 'Basic'
+     */
+    type?: Shapes;
+
+    /**
+     * Defines the type of the UMLActivity shape
+     * * Action - Sets the type of the UMLActivity Shape as Action
+     * * Decision - Sets the type of the UMLActivity Shape as Decision
+     * * MergeNode - Sets the type of the UMLActivity Shape as MergeNode
+     * * InitialNode - Sets the type of the UMLActivity Shape as InitialNode
+     * * FinalNode - Sets the type of the UMLActivity Shape as FinalNode
+     * * ForkNode - Sets the type of the UMLActivity Shape as ForkNode
+     * * JoinNode - Sets the type of the UMLActivity Shape as JoinNode
+     * * TimeEvent - Sets the type of the UMLActivity Shape as TimeEvent
+     * * AcceptingEvent - Sets the type of the UMLActivity Shape as AcceptingEvent
+     * * SendSignal - Sets the type of the UMLActivity Shape as SendSignal
+     * * ReceiveSignal - Sets the type of the UMLActivity Shape as ReceiveSignal
+     * * StructuredNode - Sets the type of the UMLActivity Shape as StructuredNode
+     * * Note - Sets the type of the UMLActivity Shape as Note
+     * @default 'Rectangle'
+     * @IgnoreSingular
+     */
+    shape?: UmlActivityShapes;
+
+}
+
+/**
+ * Interface for a class MethodArguments
+ */
+export interface MethodArgumentsModel {
+
+    /**
+     * Defines the name of the attributes
+     * @default ''
+     * @IgnoreSingular
+     */
+    name?: string;
+
+    /**
+     * Defines the type of the attributes
+     * @default ''
+     * @IgnoreSingular
+     */
+    type?: string;
+
+    /**
+     * Sets the shape style of the node
+     * @default new ShapeStyle()
+     * @aspType object
+     */
+    style?: ShapeStyleModel | TextStyleModel;
+
+}
+
+/**
+ * Interface for a class UmlClassAttribute
+ */
+export interface UmlClassAttributeModel extends MethodArgumentsModel{
+
+    /**
+     * Defines the type of the attributes
+     * @default ''
+     * @IgnoreSingular
+     */
+    scope?: UmlScope;
+
+    /**
+     * Defines the separator of the attributes
+     * @default ''
+     * @IgnoreSingular
+     */
+    isSeparator?: boolean;
+
+}
+
+/**
+ * Interface for a class UmlClassMethod
+ */
+export interface UmlClassMethodModel extends UmlClassAttributeModel{
+
+    /**
+     * Defines the type of the arguments
+     * @default ''
+     * @IgnoreSingular
+     */
+
+    parameters?: MethodArgumentsModel[];
+
+}
+
+/**
+ * Interface for a class UmlClass
+ */
+export interface UmlClassModel {
+
+    /**
+     * Defines the name of the attributes
+     * @default ''
+     * @IgnoreSingular
+     */
+    name?: string;
+
+    /**
+     * Defines the text of the bpmn annotation collection
+     * @default 'None'
+     */
+
+    attributes?: UmlClassAttributeModel[];
+
+    /**
+     * Defines the text of the bpmn annotation collection
+     * @default 'None'
+     */
+
+    methods?: UmlClassMethodModel[];
+
+    /**
+     * Sets the shape style of the node
+     * @default new ShapeStyle()
+     * @aspType object
+     */
+    style?: TextStyleModel;
+
+}
+
+/**
+ * Interface for a class UmlInterface
+ */
+export interface UmlInterfaceModel extends UmlClassModel{
+
+    /**
+     * Defines the separator of the attributes
+     * @default ''
+     * @IgnoreSingular
+     */
+    isSeparator?: boolean;
+
+}
+
+/**
+ * Interface for a class UmlEnumerationMember
+ */
+export interface UmlEnumerationMemberModel {
+
+    /**
+     * Defines the value of the member
+     * @default ''
+     * @IgnoreSingular
+     */
+    name?: string;
+
+    /**
+     * Defines the value of the member
+     * @default ''
+     * @IgnoreSingular
+     */
+    value?: string;
+
+    /**
+     * Defines the separator of the attributes
+     * @default ''
+     * @IgnoreSingular
+     */
+    isSeparator?: boolean;
+
+    /**
+     * Sets the shape style of the node
+     * @default new ShapeStyle()
+     * @aspType object
+     */
+    style?: ShapeStyleModel | TextStyleModel;
+
+}
+
+/**
+ * Interface for a class UmlEnumeration
+ */
+export interface UmlEnumerationModel {
+
+    /**
+     * Defines the name of the attributes
+     * @default ''
+     * @IgnoreSingular
+     */
+    name?: string;
+
+    /**
+     * Defines the text of the bpmn annotation collection
+     * @default 'None'
+     */
+
+    members?: UmlEnumerationMemberModel[];
+
+    /**
+     * Sets the shape style of the node
+     * @default new ShapeStyle()
+     * @aspType object
+     */
+    style?: ShapeStyleModel | TextStyleModel;
+
+}
+
+/**
+ * Interface for a class UmlClassifierShape
+ */
+export interface UmlClassifierShapeModel extends ShapeModel{
+
+    /**
+     * Defines the type of node shape
+     * ```html
+     * <div id='diagram'></div>
+     * ```
+     * ```typescript
+     * let shape: UmlActivityShapeModel = { type: 'UMLActivity', shape: 'Action' };
+     * let nodes: NodeModel[] = [{
+     * id: 'node', width: 100, height: 100, offsetX: 100, offsetY: 100, shape: shape
+     * }];
+     * let diagram: Diagram = new Diagram({
+     * ...
+     * nodes : nodes,
+     * ...
+     * });
+     * diagram.appendTo('#diagram');
+     * ```
+     * @default 'Basic'
+     */
+    type?: Shapes;
+
+    /**
+     * Defines the text of the bpmn annotation collection
+     * @default 'None'
+     */
+    class?: UmlClassModel;
+
+    /**
+     * Defines the text of the bpmn annotation collection
+     * @default 'None'
+     */
+    interface?: UmlInterfaceModel;
+
+    /**
+     * Defines the text of the bpmn annotation collection
+     * @default 'None'
+     */
+    enumeration?: UmlEnumerationModel;
+
+    /**
+     * Defines the type of classifier
+     * @default 'Class'
+     * @IgnoreSingular
+     */
+    classifier?: ClassifierShape;
+
+}
+
+/**
  * Interface for a class Node
  */
 export interface NodeModel extends NodeBaseModel{
@@ -1101,7 +1379,7 @@ export interface NodeModel extends NodeBaseModel{
      * @default Basic Shape
      * @aspType object
      */
-    shape?: ShapeModel | FlowShapeModel | BasicShapeModel | ImageModel | PathModel | TextModel | BpmnShapeModel | NativeModel | HtmlModel;
+    shape?: ShapeModel | FlowShapeModel | BasicShapeModel | ImageModel | PathModel | TextModel | BpmnShapeModel | NativeModel | HtmlModel | UmlActivityShapeModel | UmlClassifierShapeModel | SwimLaneModel;
 
     /**
      * Sets or gets the UI of a node
@@ -1155,5 +1433,277 @@ export interface NodeModel extends NodeBaseModel{
      * @default undefined
      */
     children?: string[];
+
+    /**
+     * Defines the type of the container
+     * @aspDefaultValueIgnore
+     * @default null
+     */
+
+    container?: ChildContainerModel;
+
+    /**
+     * Sets the horizontalAlignment of the node
+     * @default 'Stretch'
+     */
+    horizontalAlignment?: HorizontalAlignment;
+
+    /**
+     * Sets the verticalAlignment of the node
+     * @default 'Stretch'
+     */
+    verticalAlignment?: VerticalAlignment;
+
+    /**
+     * Used to define the rows for the grid container
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+
+    rows?: RowDefinition[];
+
+    /**
+     * Used to define the column for the grid container
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+
+    columns?: ColumnDefinition[];
+
+    /**
+     * Used to define a index of row in the grid
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+
+    rowIndex?: number;
+
+    /**
+     * Used to define a index of column in the grid
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+
+    columnIndex?: number;
+
+    /**
+     * Merge the row use the property in the grid container
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+    rowSpan?: number;
+
+    /**
+     * Merge the column use the property in the grid container
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+    columnSpan?: number;
+
+}
+
+/**
+ * Interface for a class Header
+ */
+export interface HeaderModel {
+
+    /**
+     * Sets the id of the header
+     * @default ''
+     */
+    id?: string;
+
+    /**
+     * Sets the content of the header
+     * @default ''
+     */
+    content?: Annotation;
+
+    /**
+     * Sets the style of the header
+     * @default ''
+     */
+    style?: TextStyleModel;
+
+    /**
+     * Sets the height of the header
+     * @default 25
+     */
+    height?: number;
+
+    /**
+     * Sets the width of the header
+     * @default 25
+     */
+    width?: number;
+
+}
+
+/**
+ * Interface for a class Lane
+ */
+export interface LaneModel {
+
+    /**
+     * Sets the id of the lane
+     * @default ''
+     */
+    id?: string;
+
+    /**
+     * Sets style of the lane
+     * @default ''
+     */
+    style?: ShapeStyleModel;
+
+    /**
+     * Defines the collection of child nodes
+     * @default []
+     */
+    childNodes?: NodeModel[];
+
+    /**
+     * Defines the height of the phase
+     * @default 25
+     */
+    height?: number;
+
+    /**
+     * Defines the height of the phase
+     * @default 25
+     */
+    width?: number;
+
+    /**
+     * Defines the collection of header in the phase.
+     * @default undefined
+     */
+    header?: HeaderModel;
+
+}
+
+/**
+ * Interface for a class Phase
+ */
+export interface PhaseModel {
+
+    /**
+     * Sets the id of the phase
+     * @default ''
+     */
+    id?: string;
+
+    /**
+     * Sets the style of the lane
+     * @default ''
+     */
+    style?: ShapeStyleModel;
+
+    /**
+     * Sets the header collection of the phase
+     * @default 'undefined'
+     */
+    header?: HeaderModel;
+
+    /**
+     * Sets the height of the lane
+     * @default 30
+     */
+    height?: number;
+
+    /**
+     * Sets the width of the lane
+     * @default 30
+     */
+    width?: number;
+
+    /**
+     * Sets the offset of the lane
+     * @default 100
+     */
+    offset?: number;
+
+}
+
+/**
+ * Interface for a class SwimLane
+ */
+export interface SwimLaneModel extends ShapeModel{
+
+    /**
+     * Defines the type of node shape.
+     * @default 'Basic'
+     */
+    type?: Shapes;
+
+    /**
+     * Defines the size of phase.
+     * @default '10'
+     */
+    phaseSize?: number;
+
+    /**
+     * Defines the collection of phases.
+     * @default undefined
+     */
+    phases?: PhaseModel[];
+
+    /**
+     * Defines the orientation of the swimLane
+     * @default 'Horizontal'
+     */
+    orientation?: Orientation;
+
+    /**
+     * Defines the collection of lanes
+     * @default undefined
+     */
+    lanes?: LaneModel[];
+
+    /**
+     * Defines the collection of header
+     * @default undefined
+     */
+    header?: HeaderModel;
+
+    /**
+     * Defines the style of shape
+     * @default ''
+     */
+    lineStyle?: ShapeStyleModel | TextStyleModel;
+
+    /**
+     * Defines the whether the shape is a lane or not
+     * @default false
+     */
+    isLane?: boolean;
+
+    /**
+     * Defines the whether the shape is a phase or not
+     * @default false
+     */
+    isPhase?: boolean;
+
+}
+
+/**
+ * Interface for a class ChildContainer
+ * @private
+ */
+export interface ChildContainerModel {
+
+    /**
+     * Defines the type of the container
+     * @aspDefaultValueIgnore
+     * @default Canvas
+     */
+    type?: ContainerTypes;
+
+    /**
+     * Defines the type of the swimLane orientation.
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+    orientation?: Orientation;
 
 }

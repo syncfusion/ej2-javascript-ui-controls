@@ -281,7 +281,7 @@ export class Link {
         if ((this as NotifyArgs).selfLink.parent.editorMode === 'HTML') {
             linkTitle = (linkEle.querySelector('.e-rte-linkTitle') as HTMLInputElement).value;
         }
-        let target: string = ((this as NotifyArgs).selfLink.checkBoxObj.checked) ? '_blank' : '';
+        let target: string = ((this as NotifyArgs).selfLink.checkBoxObj.checked) ? '_blank' : null;
         if (linkUrl === '') { (this as NotifyArgs).selfLink.checkUrl(true); return; }
         if (!(this as NotifyArgs).selfLink.isUrl(linkUrl)) {
             linkText = (linkText === '') ? linkUrl : linkText;

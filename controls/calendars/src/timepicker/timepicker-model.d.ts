@@ -24,7 +24,7 @@ export interface TimePickerModel extends ComponentModel{
      * Specifies the component to act as strict so that, it allows to enter only a valid time value within a specified range or else 
      * resets to previous value. By default, strictMode is in false.
      * > For more details refer to 
-     * [`Strict Mode`] (https://ej2.syncfusion.com/documentation/timepicker/strict-mode.html?lang=typescript) documentation.
+     * [`Strict Mode`](https://ej2.syncfusion.com/documentation/timepicker/strict-mode?lang=typescript) documentation.
      * @default false
      */
     strictMode?: boolean;
@@ -33,7 +33,7 @@ export interface TimePickerModel extends ComponentModel{
      * Specifies the format of value that is to be displayed in component. By default, the format is
      * based on the culture. 
      * > For more details refer to 
-     * [`Format`](./getting-started.html#setting-the-time-format) documentation.
+     * [`Format`](../timepicker/getting-started#setting-the-time-format) documentation.
      * @default null
      */
     format?: string;
@@ -91,7 +91,7 @@ export interface TimePickerModel extends ComponentModel{
     /**
      * Specifies the time interval between the two adjacent time values in the popup list. 
      * > For more details refer to 
-     * [`Format`](./getting-started.html#setting-the-time-format)documentation.
+     * [`Format`](../timepicker/getting-started#setting-the-time-format)documentation.
      * @default 30
      * 
      */
@@ -115,7 +115,7 @@ export interface TimePickerModel extends ComponentModel{
     /**
      * Gets or sets the minimum time value that can be allowed to select in TimePicker.
      * > For more details refer to 
-     * [`Time Range`](https://ej2.syncfusion.com/documentation/timepicker/time-range.html?lang=typescript) documentation.
+     * [`Time Range`](https://ej2.syncfusion.com/documentation/timepicker/time-range?lang=typescript) documentation.
      * @default 00:00
      */
     min?: Date;
@@ -123,7 +123,7 @@ export interface TimePickerModel extends ComponentModel{
     /**
      * Gets or sets the maximum time value that can be allowed to select in TimePicker.
      * > For more details refer to 
-     * [`Time Range`](https://ej2.syncfusion.com/documentation/timepicker/time-range.html?lang=typescript) documentation.
+     * [`Time Range`](https://ej2.syncfusion.com/documentation/timepicker/time-range?lang=typescript) documentation.
      * @default 00:00
      */
     max?: Date;

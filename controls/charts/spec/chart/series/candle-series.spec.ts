@@ -422,7 +422,7 @@ describe('Candle Series ', () => {
                 let axisLabel: Element = document.getElementById('container0_AxisLabel_0');
                 expect(axisLabel.textContent == 'USA').toBe(true);
                 let axisStart = document.getElementById('containerAxisLine_0');
-                expect(parseInt(axisLabel.getAttribute('x')) > parseInt(axisStart.getAttribute('x1'))).toBe(true);
+                expect(parseInt(axisLabel.getAttribute('x')) > parseInt(axisStart.getAttribute('d').split(' ')[1])).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -455,7 +455,7 @@ describe('Candle Series ', () => {
                 let axisLabel: Element = document.getElementById('container0_AxisLabel_0');
                 expect(axisLabel.textContent == 'USA').toBe(true);
                 let axisStart: Element = document.getElementById('containerAxisLine_0');
-                expect(parseInt(axisLabel.getAttribute('x')) < parseInt(axisStart.getAttribute('x1'))).toBe(true);
+                expect(parseInt(axisLabel.getAttribute('x')) < parseInt(axisStart.getAttribute('d').split(' ')[1])).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -994,9 +994,9 @@ describe('Candle Series ', () => {
         it('Checking with category axis with multiple panes- rows', (done: Function) => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('containerAxisLine_0');
-                expect(svg.getAttribute('y1') == '389.5' || svg.getAttribute('y1') == '393.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '389.5' || svg.getAttribute('d').split(' ')[2] == '393.5').toBe(true);
                 svg = document.getElementById('containerAxisLine_1');
-                expect(svg.getAttribute('y1') == '234.375').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '234.375').toBe(true);
 
                 done();
             };

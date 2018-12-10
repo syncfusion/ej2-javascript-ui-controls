@@ -460,3 +460,59 @@ export interface IAnnotationRenderingEventArgs extends IMapsEventArgs {
      */
     annotation?: Annotation;
 }
+
+/**
+ * Specifies pan event arguments for maps.
+ */
+export interface IMapPanEventArgs extends IMapsEventArgs {
+    /**
+     * maps instance event argument.
+     */
+    maps?: Maps;
+    /**
+     * tile translate point.
+     */
+    tileTranslatePoint?: Object;
+    /**
+     * Geometry translate point.
+     */
+    translatePoint?: Object;
+    /**
+     * Tile zoom level.
+     */
+    tileZoomLevel?: number;
+    /**
+     * geometry layer scale.
+     */
+    scale?: number;
+}
+
+/**
+ * Specifies zoom event arguments for maps.
+ */
+export interface IMapZoomEventArgs extends IMapsEventArgs {
+    /**
+     * maps instance event argument.
+     */
+    maps?: Maps;
+    /**
+     * Type of zoom interaction
+     */
+    type: string;
+    /**
+     * tile translate point.
+     */
+    tileTranslatePoint?: Object;
+    /**
+     * Geometry translate point.
+     */
+    translatePoint?: Object;
+    /**
+     * Tile zoom level.
+     */
+    tileZoomLevel?: Object;
+    /**
+     * geometry layer scale.
+     */
+    scale?: Object;
+}

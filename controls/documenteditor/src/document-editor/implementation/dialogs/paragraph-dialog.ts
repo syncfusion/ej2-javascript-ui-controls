@@ -1,12 +1,13 @@
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { LayoutViewer } from '../index';
-import { createElement, L10n, setCulture } from '@syncfusion/ej2-base';
+import { createElement, L10n } from '@syncfusion/ej2-base';
 import { SelectionParagraphFormat } from '../index';
 import { Selection } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { WParagraphFormat } from '../index';
 import { TextAlignment, LineSpacingType } from '../../base/types';
+import { RadioButton, ChangeArgs } from '@syncfusion/ej2-buttons';
 
 /**
  * The Paragraph dialog is used to modify formatting of selected paragraphs.
@@ -26,6 +27,9 @@ export class ParagraphDialog {
     private beforeSpacingIn: NumericTextBox;
     private afterSpacingIn: NumericTextBox;
     private atIn: NumericTextBox;
+    private rtlButton: RadioButton;
+    private ltrButton: RadioButton;
+
     //paragraph Format properties
 
     private leftIndent: number = undefined;
@@ -37,6 +41,7 @@ export class ParagraphDialog {
     private lineSpacingIn: number = undefined;
     private lineSpacingType: LineSpacingType = undefined;
     private paragraphFormat: WParagraphFormat = undefined;
+    private bidi: boolean = undefined;
     /**
      * @private
      */
@@ -60,7 +65,7 @@ export class ParagraphDialog {
         this.target = createElement('div', { id: id, className: 'e-de-para-dlg-container' });
         // tslint:disable-next-line:max-line-length
         let div: HTMLDivElement = createElement('div', { id: 'property_div', styles: 'width:400px;' }) as HTMLDivElement;
-        let generalDiv: HTMLDivElement = createElement('div', { id: 'genral_div', styles: 'width:200px;height:85px;', className: 'e-de-para-dlg-sub-container' }) as HTMLDivElement;
+        let generalDiv: HTMLDivElement = createElement('div', { id: 'genral_div', className: 'e-de-para-dlg-sub-container' }) as HTMLDivElement;
         // tslint:disable-next-line:max-line-length
         let genLabel: HTMLElement = createElement('div', { id: ownerId + '_genLabel', className: 'e-de-para-dlg-heading', innerHTML: locale.getConstant('General') });
         let alignLabel: HTMLElement = createElement('div', { id: ownerId + '_AlignLabel', className: 'e-de-dlg-sub-header', innerHTML: locale.getConstant('Alignment') });
@@ -74,8 +79,37 @@ export class ParagraphDialog {
         generalDiv.appendChild(genLabel);
         generalDiv.appendChild(alignLabel);
         generalDiv.appendChild(alignment);
+        let dirLabel: HTMLElement = createElement('div', {
+            id: ownerId + '_DirLabel',
+            className: 'e-de-dlg-sub-header', innerHTML: locale.getConstant('Direction')
+        });
+        let dirDiv: HTMLElement = createElement('div', { id: ownerId + '_DirDiv', styles: 'display:flex' });
+        let rtlDiv: HTMLElement = createElement('div', { id: ownerId + '_DirDiv', className: 'e-de-rtl-btn-div' });
+        let rtlInputELe: HTMLElement = createElement('input', { id: ownerId + '_rtlEle' });
+        rtlDiv.appendChild(rtlInputELe);
+        dirDiv.appendChild(rtlDiv)
+        let isRtl: boolean = this.owner.owner.enableRtl;
+        if (isRtl) {
+            rtlDiv.classList.add('e-de-rtl');
+        }
+        let ltrDiv: HTMLElement = createElement('div', { id: ownerId + '_DirDiv', className: 'e-de-ltr-btn-div' });
+        let ltrInputELe: HTMLElement = createElement('input', { id: ownerId + '_ltrEle' });
+        ltrDiv.appendChild(ltrInputELe);
+        dirDiv.appendChild(ltrDiv)
+        generalDiv.appendChild(dirLabel);
+        generalDiv.appendChild(dirDiv);
+        this.rtlButton = new RadioButton({
+            label: locale.getConstant('Right-to-left'), enableRtl: isRtl,
+            value: 'rtl', cssClass: 'e-small', change: this.changeBidirectional
+        });
+        this.rtlButton.appendTo(rtlInputELe);
+        this.ltrButton = new RadioButton({
+            label: locale.getConstant('Left-to-right'), enableRtl: isRtl,
+            value: 'ltr', cssClass: 'e-small', change: this.changeBidirectional
+        });
+        this.ltrButton.appendTo(ltrInputELe);
         // tslint:disable-next-line:max-line-length
-        let indentionDiv: HTMLDivElement = createElement('div', { id: 'indention_div', styles: 'width: 400px;height: 150px;', className: 'e-de-para-dlg-sub-container' }) as HTMLDivElement;
+        let indentionDiv: HTMLDivElement = createElement('div', { id: 'indention_div', styles: 'width: 400px;', className: 'e-de-para-dlg-sub-container e-para-dlg-sub-height' }) as HTMLDivElement;
         let leftIndentionDiv: HTMLDivElement = createElement('div', { id: 'left_indention', styles: 'float:left;position:relative;' }) as HTMLDivElement;
         indentionDiv.appendChild(leftIndentionDiv);
         // tslint:disable-next-line:max-line-length
@@ -179,11 +213,11 @@ export class ParagraphDialog {
         this.atIn = new NumericTextBox({
             format: 'n1', value: 0, min: 1, max: 1584, width: 180, step: 0.5, enablePersistence: false, change: this.changeLineSpacingValue
         });
-        this.special = new DropDownList({ change: this.changeByValue, width: 180 });
+        this.special = new DropDownList({ change: this.changeByValue, width: 180, enableRtl: isRtl });
         this.special.appendTo(special);
-        this.lineSpacing = new DropDownList({ change: this.changeBySpacing, width: '180px' });
+        this.lineSpacing = new DropDownList({ change: this.changeBySpacing, width: '180px', enableRtl: isRtl });
         this.lineSpacing.appendTo(lineSpacing);
-        this.alignment = new DropDownList({ width: 180, change: this.changeByTextAlignment });
+        this.alignment = new DropDownList({ width: 180, change: this.changeByTextAlignment, enableRtl: isRtl });
         this.alignment.appendTo(alignment);
         this.atIn.appendTo(lineSpacingAt);
         this.target.addEventListener('keyup', instance.keyUpParagraphSettings);
@@ -216,6 +250,33 @@ export class ParagraphDialog {
     }
     private changeByTextAlignment = (args: any) => {
         this.textAlignment = args.value;
+    }
+    private changeBidirectional = (event: ChangeArgs): void => {
+        if (event.value === 'ltr') {
+            this.rtlButton.checked = !this.ltrButton.checked;
+            this.bidi = false;
+
+        } else {
+            this.ltrButton.checked = !this.rtlButton.checked;
+            this.bidi = true;
+        }
+        this.changeAlignmentByBidi();
+    };
+    private changeAlignmentByBidi(): void {
+        if (this.textAlignment === 'Left') {
+            this.textAlignment = 'Right';
+        } else if (this.textAlignment === 'Right') {
+            this.textAlignment = 'Left';
+        }
+        if (!isNullOrUndefined(this.textAlignment)) {
+            this.alignment.index = this.getAlignmentValue(this.textAlignment);
+        } else {
+            if (this.alignment.index === 0) {
+                this.textAlignment = 'Center';
+            } else {
+                this.textAlignment = 'Justify';
+            }
+        }
     }
     /**
      * @private
@@ -277,16 +338,7 @@ export class ParagraphDialog {
         } else {
             selectionFormat = this.owner.selection.paragraphFormat;
         }
-        let alignValue: number = this.alignment.index;
-        if (selectionFormat.textAlignment === 'Center') {
-            alignValue = 0;
-        } else if (selectionFormat.textAlignment === 'Left') {
-            alignValue = 1;
-        } else if (selectionFormat.textAlignment === 'Right') {
-            alignValue = 2;
-        } else {
-            alignValue = 3;
-        }
+        let alignValue: number = this.getAlignmentValue(selectionFormat.textAlignment);
         this.alignment.index = alignValue;
         this.beforeSpacingIn.value = selectionFormat.beforeSpacing;
         this.afterSpacingIn.value = selectionFormat.afterSpacing;
@@ -306,6 +358,27 @@ export class ParagraphDialog {
         if (this.owner.selection.caret.style.display !== 'none') {
             this.owner.selection.caret.style.display = 'none';
         }
+        if (selectionFormat.bidi) {
+            this.rtlButton.checked = true;
+            this.ltrButton.checked = false;
+        } else {
+            this.ltrButton.checked = true;
+            this.rtlButton.checked = false;
+        }
+    }
+
+    private getAlignmentValue(textAlignment: TextAlignment): number {
+        let alignValue: number;
+        if (textAlignment === 'Center') {
+            alignValue = 0;
+        } else if (textAlignment === 'Left') {
+            alignValue = 1;
+        } else if (textAlignment === 'Right') {
+            alignValue = 2;
+        } else {
+            alignValue = 3;
+        }
+        return alignValue;
     }
 
     /**
@@ -342,6 +415,9 @@ export class ParagraphDialog {
         if (!isNullOrUndefined(this.firstLineIndent)) {
             paraFormat.firstLineIndent = this.firstLineIndent;
         }
+        if (!isNullOrUndefined(this.bidi)) {
+            paraFormat.bidi = this.bidi;
+        }
         if (!isNullOrUndefined(this.textAlignment)) {
             paraFormat.textAlignment = this.textAlignment;
         }
@@ -359,6 +435,7 @@ export class ParagraphDialog {
      * @private
      */
     public onParagraphFormat(paragraphFormat: WParagraphFormat): void {
+        this.owner.layout.isBidiReLayout = true;
         this.owner.owner.editorModule.initHistory('ParagraphFormat');
         let selection: Selection = this.owner.selection;
         this.owner.owner.isShiftingEnabled = true;
@@ -369,6 +446,7 @@ export class ParagraphDialog {
             this.owner.owner.editorModule.updateSelectionParagraphFormatting('ParagraphFormat', paragraphFormat, false);
         }
         this.owner.owner.editorModule.reLayout(selection);
+        this.owner.layout.isBidiReLayout = false;
     }
     /**
      * @private
@@ -395,12 +473,11 @@ export class ParagraphDialog {
         }
         let local: L10n = new L10n('documenteditor', this.owner.owner.defaultLocale);
         local.setLocale(this.owner.owner.locale);
-        setCulture(this.owner.owner.locale);
         if (!this.target) {
             this.initParagraphDialog(local);
         }
         this.loadParagraphDialog();
-        this.owner.dialog.header = 'Paragraph';
+        this.owner.dialog.header = local.getConstant('Paragraph');
         this.owner.dialog.content = this.target;
         this.owner.dialog.height = 'auto';
         this.owner.dialog.width = 'auto';

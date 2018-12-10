@@ -51,6 +51,25 @@ export class FieldOptions extends ChildProperty<FieldOptions> implements IFieldO
      */
     @Property(false)
     public showNoDataItems: boolean;
+
+    /**
+     * It allows to set the base field to aggregate the values.
+     */
+    @Property()
+    public baseField: string;
+
+    /**
+     * It allows to set the base item to aggregate the values.
+     */
+    @Property()
+    public baseItem: string;
+
+    /**
+     * It allows to disable or enable sub totals in row/column axis.
+     * @default true
+     */
+    @Property(true)
+    public showSubTotals: boolean;
 }
 
 export class FieldListFieldOptions extends FieldOptions { }
@@ -424,6 +443,49 @@ export class DataSource extends ChildProperty<DataSource> implements IDataOption
      */
     @Property(false)
     public allowValueFilter: boolean;
+
+    /**
+     * It allows enable/disable sub total in pivot table.
+     * @default true
+     */
+    @Property(true)
+    public showSubTotals: boolean;
+
+    /**
+     * It allows enable/disable row sub total in pivot table.
+     * @default true
+     */
+    @Property(true)
+    public showRowSubTotals: boolean;
+
+    /**
+     * It allows enable/disable column sub total in pivot table.
+     * @default true
+     */
+    @Property(true)
+    public showColumnSubTotals: boolean;
+
+    /**
+     * It allows enable/disable grand total in pivot table.
+     * @default true
+     */
+    @Property(true)
+    public showGrandTotals: boolean;
+
+    /**
+     * It allows enable/disable row grand total in pivot table.
+     * @default true
+     */
+    @Property(true)
+    public showRowGrandTotals: boolean;
+
+    /**
+     * It allows enable/disable column grand total in pivot table.
+     * @default true
+     */
+    @Property(true)
+    public showColumnGrandTotals: boolean;
+
     /**
      * It allows to set the settings of number formatting.
      * @default []

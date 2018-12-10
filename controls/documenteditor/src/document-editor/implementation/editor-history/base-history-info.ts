@@ -313,6 +313,15 @@ export class BaseHistoryInfo {
             case 'SectionBreak':
                 editor.insertSection(this.owner.selection, true);
                 break;
+            case 'TableAutoFitToContents':
+                editor.autoFitTable('FitToContents');
+                break;
+            case 'TableAutoFitToWindow':
+                editor.autoFitTable('FitToWindow');
+                break;
+            case 'TableFixedColumnWidth':
+                editor.autoFitTable('FixedColumnWidth');
+                break;
         }
     }
     /**
@@ -326,7 +335,8 @@ export class BaseHistoryInfo {
         if (isRedoAction && (this.action === 'BackSpace' || this.action === 'Delete' || this.action === 'DeleteTable'
             || this.action === 'DeleteColumn' || this.action === 'DeleteRow' || this.action === 'InsertRowAbove' ||
             this.action === 'InsertRowBelow' || this.action === 'InsertColumnLeft' || this.action === 'InsertColumnRight'
-            || this.action === 'MergeCells' || this.action === 'SectionBreak')) {
+            || this.action === 'MergeCells' || this.action === 'SectionBreak' || this.action === 'TableAutoFitToContents' ||
+            this.action === 'TableAutoFitToWindow' || this.action === 'TableFixedColumnWidth')) {
             this.redoAction();
             if (this.action === 'SectionBreak') {
                 return;
@@ -336,7 +346,9 @@ export class BaseHistoryInfo {
             if ((this.editorHistory.isUndoing && (this.action === 'DeleteCells' || this.action === 'DeleteColumn'
                 || this.action === 'DeleteRow' || this.action === 'MergeCells'))
                 || (this.action === 'InsertRowAbove' || this.action === 'InsertRowBelow' || this.action === 'InsertColumnLeft'
-                    || this.action === 'ClearCells' || this.action === 'InsertColumnRight' || this.action === 'Borders')) {
+                    || this.action === 'ClearCells' || this.action === 'InsertColumnRight' || this.action === 'Borders' ||
+                    this.action === 'TableAutoFitToContents' || this.action === 'TableAutoFitToWindow' ||
+                    this.action === 'TableFixedColumnWidth')) {
                 let insertIndex: string = this.selectionStart;
                 let block: BlockWidget = this.owner.editorModule.getBlock({ index: insertIndex }).node as BlockWidget;
                 let lastNode: IWidget = deletedNodes[deletedNodes.length - 1];
@@ -780,7 +792,9 @@ export class BaseHistoryInfo {
                 this.owner.editorModule.updateSelectionParagraphFormatting(property, (this.modifiedProperties[0] as WParagraphFormat).baseStyle, false);
                 return;
             }
+            this.owner.viewer.layout.isBidiReLayout = true;
             this.owner.editorModule.updateSelectionParagraphFormatting(property, undefined, false);
+            this.owner.viewer.layout.isBidiReLayout = false;
         } else if (this.modifiedProperties[0] instanceof WSectionFormat) {
             this.owner.editorModule.updateSectionFormat(property, undefined);
         } else if (this.action === 'RestartNumbering') {
@@ -962,6 +976,9 @@ export class BaseHistoryInfo {
                 return 'shading';
             case 'StyleName':
                 return 'styleName';
+            case 'ParagraphBidi':
+            case 'TableBidi':
+                return 'bidi';
         }
         return undefined;
     }

@@ -1,10 +1,10 @@
 import { L10n } from '@syncfusion/ej2-base';
 import { remove } from '@syncfusion/ej2-base';
-import { ContextMenu as Menu, MenuItemModel } from '@syncfusion/ej2-navigations';
+import { ContextMenu as Menu, MenuItemModel, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { ServiceLocator } from './service';
 import { BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { Diagram } from '../diagram';
-import { contextMenuClick, contextMenuOpen } from '../enum/enum';
+import { contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender } from '../enum/enum';
 import { ContextMenuItemModel, DiagramMenuEventArgs } from './interface/interfaces';
 import { DiagramBeforeMenuOpenEventArgs } from '../../diagram/objects/interface/interfaces';
 import { createHtmlElement } from '../../diagram/utility/dom-util';
@@ -119,6 +119,7 @@ export class DiagramContextMenu {
             select: this.contextMenuItemClick.bind(this),
             beforeOpen: this.contextMenuBeforeOpen.bind(this),
             onOpen: this.contextMenuOpen.bind(this),
+            beforeItemRender: this.BeforeItemRender.bind(this),
             onClose: this.contextMenuOnClose.bind(this),
             cssClass: 'e-diagram-menu'
         });
@@ -163,11 +164,14 @@ export class DiagramContextMenu {
         return menuItems;
     }
 
-
-
     private contextMenuOpen(): void {
         this.isOpen = true;
     }
+
+    private BeforeItemRender(args: MenuEventArgs): void {
+        this.parent.trigger(contextMenuBeforeItemRender, args);
+    }
+
     private contextMenuItemClick(args: DiagramMenuEventArgs): void {
         document.getElementById(this.parent.element.id + 'content').focus();
         this.parent.trigger(contextMenuClick, args);

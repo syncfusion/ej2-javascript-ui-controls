@@ -306,7 +306,7 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 let yLine: HTMLElement = document.getElementById('chartContainerAxisLine_1');
                 let area: HTMLElement = document.getElementById('chartContainer_ChartAreaBorder');                
-                expect((parseInt(yLine.getAttribute('x1')) === parseInt(area.getAttribute('x')) + parseInt(area.getAttribute('width')))).toBe(true);
+                expect((parseInt(yLine.getAttribute('d').split(' ')[1]) === parseInt(area.getAttribute('x')) + parseInt(area.getAttribute('width')))).toBe(true);
                 done();
             };
             chartEle.loaded = loaded;
@@ -316,7 +316,7 @@ describe('Chart Control', () => {
         it('Checking the Axis Size for far with Opposed Position and Axis Crossing ', (done: Function) => {
             loaded = (args: Object): void => {
                 let yLine: HTMLElement = document.getElementById('chartContainerAxisLine_1');
-                expect((yLine.getAttribute('x1') === '390.75' || yLine.getAttribute('x1') === '391.25' )).toBe(true);
+                expect((yLine.getAttribute('d').split(' ')[1] === '390.75' || yLine.getAttribute('d').split(' ')[1] === '391.25' )).toBe(true);
                 done();
             };
             chartEle.loaded = loaded;

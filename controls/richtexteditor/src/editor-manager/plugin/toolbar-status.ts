@@ -103,7 +103,8 @@ export class ToolbarStatus {
         formatNode?: string[],
         fontSize?: string[],
         fontName?: string[]): IToolbarStatus {
-        if (targetNode.contains(node)) {
+        if (targetNode.contains(node) ||
+        (node.nodeType === 3 && targetNode.nodeType !== 3 && targetNode.contains(node.parentNode) ) ) {
             do {
                 formatCollection = this.isFormattedNode(docElement, formatCollection, node, formatNode, fontSize, fontName);
                 node = node.parentNode;

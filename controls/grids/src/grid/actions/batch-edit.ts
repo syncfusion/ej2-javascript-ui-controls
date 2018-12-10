@@ -198,15 +198,19 @@ export class BatchEdit {
                     movObj.isDirty = true;
                 }
                 tr = gObj.getContentTable().querySelector('[data-uid=' + rows[i].uid + ']') as HTMLElement;
-                if (gObj.frozenRows) {
+                if (gObj.frozenRows && !tr) {
                     tr = gObj.getHeaderContent().querySelector('[data-uid=' + rows[i].uid + ']') as HTMLElement;
                 }
                 if (gObj.frozenColumns) {
                     if (gObj.frozenRows) {
                         mTr = gObj.getHeaderContent().querySelector('.e-movableheader')
                             .querySelector('[data-uid=' + rows[i].uid + ']') as HTMLElement;
+                        if (!mTr) {
+                            mTr = gObj.getContent().querySelector('.e-movablecontent')
+                                 .querySelector('[data-uid=' + rows[i].uid + ']') as HTMLElement;
+                        }
                     } else {
-                        mTr = gObj.getContent().querySelector('.e-movablecontent')
+                         mTr = gObj.getContent().querySelector('.e-movablecontent')
                             .querySelector('[data-uid=' + rows[i].uid + ']') as HTMLElement;
                     }
                 }
@@ -295,12 +299,20 @@ export class BatchEdit {
     public batchSave(): void {
         let gObj: IGrid = this.parent;
         let deletedRecords: string = 'deletedRecords';
+        if (gObj.isCheckBoxSelection) {
+            let checkAllBox: Element = gObj.element.querySelector('.e-checkselectall').parentElement;
+            if (checkAllBox.classList.contains('e-checkbox-disabled') &&
+                gObj.pageSettings.totalRecordsCount > gObj.currentViewData.length) {
+                removeClass([checkAllBox], ['e-checkbox-disabled']);
+            }
+        }
         this.saveCell();
         if (gObj.isEdit || this.editNextValCell() || gObj.isEdit) {
             return;
         }
         let changes: Object = this.getBatchChanges();
         if (this.parent.selectionSettings.type === 'Multiple' && changes[deletedRecords].length) {
+            gObj.clearSelection();
             changes[deletedRecords] = changes[deletedRecords].concat(this.parent.getSelectedRecords());
         }
         let original: Object = {
@@ -382,7 +394,8 @@ export class BatchEdit {
      * @hidden   
      */
     public addRowObject(row: Row<Column>): void {
-        this.parent.getRowsObject().unshift(row);
+        this.parent.editSettings.newRowPosition === 'Top' ? this.parent.getRowsObject().unshift(row) :
+            this.parent.getRowsObject().push(row);
     }
 
 
@@ -415,13 +428,13 @@ export class BatchEdit {
                 classList(args.row as HTMLTableRowElement, ['e-hiddenrow', 'e-updatedtd'], []);
                 if (gObj.getFrozenColumns()) {
                     classList(data ? gObj.getMovableRows()[index] : selectedRows[1], ['e-hiddenrow', 'e-updatedtd'], []);
-                    if (gObj.frozenRows && index < gObj.frozenRows) {
+                    if (gObj.frozenRows && index < gObj.frozenRows && gObj.getMovableDataRows().length >= gObj.frozenRows) {
                         gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody')
                             .appendChild(gObj.getMovableRowByIndex(gObj.frozenRows - 1));
                         gObj.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody')
                             .appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
                     }
-                } else if (gObj.frozenRows && index < gObj.frozenRows) {
+                } else if (gObj.frozenRows && index < gObj.frozenRows && gObj.getDataRows().length >= gObj.frozenRows) {
                     gObj.getHeaderContent().querySelector('tbody').appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
                 }
             }
@@ -540,7 +553,7 @@ export class BatchEdit {
             } else {
                 mTbody = gObj.getContent().querySelector('.e-movablecontent').querySelector('tbody');
             }
-            mTbody.insertBefore(mTr, mTbody.firstChild);
+            this.parent.editSettings.newRowPosition === 'Top' ? mTbody.insertBefore(mTr, mTbody.firstChild) : mTbody.appendChild(mTr);
             addClass(mTr.querySelectorAll('.e-rowcell'), ['e-updatedtd']);
             if (this.parent.height === 'auto') {
                 this.parent.notify(events.frozenHeight, {});
@@ -549,7 +562,7 @@ export class BatchEdit {
         if (gObj.frozenRows) {
             tbody = gObj.getHeaderContent().querySelector('tbody');
         }
-        tbody.insertBefore(tr, tbody.firstChild);
+        this.parent.editSettings.newRowPosition === 'Top' ? tbody.insertBefore(tr, tbody.firstChild) : tbody.appendChild(tr);
         addClass(tr.querySelectorAll('.e-rowcell'), ['e-updatedtd']);
         modelData[0].isDirty = true;
         modelData[0].changes = extend({}, {}, modelData[0].data, true);
@@ -558,11 +571,15 @@ export class BatchEdit {
         this.refreshRowIdx();
         this.focus.forgetPrevious();
         gObj.notify(events.batchAdd, { rows: this.parent.getRowsObject() });
-        gObj.selectRow(0);
+        let changes: Object = this.getBatchChanges();
+        let addedRecords: string = 'addedRecords';
+        this.parent.editSettings.newRowPosition === 'Top' ? gObj.selectRow(0) :
+            gObj.selectRow(this.parent.getCurrentViewRecords().length + changes[addedRecords].length - 1);
         if (!data) {
             index = this.findNextEditableCell(0, true);
             col = (gObj.getColumns()[index] as Column);
-            this.editCell(0, col.field, true);
+            this.parent.editSettings.newRowPosition === 'Top' ? this.editCell(0, col.field, true) :
+                this.editCell(this.parent.getCurrentViewRecords().length + changes[addedRecords].length - 1, col.field, true);
         }
         if (this.parent.aggregates.length > 0 && data) {
             this.parent.notify(events.refreshFooterRenderer, {});
@@ -699,8 +716,16 @@ export class BatchEdit {
 
     public updateCell(rowIndex: number, field: string, value: string | number | boolean | Date): void {
         let col: Column = this.parent.getColumnByField(field);
+        let index: number = this.parent.getColumnIndexByField(field);
         if (col && !col.isPrimaryKey) {
-            let td: Element = (this.parent.getDataRows()[rowIndex] as HTMLTableRowElement).cells[this.parent.getColumnIndexByField(field)];
+            let td: Element = (this.parent.getDataRows()[rowIndex] as HTMLTableRowElement).querySelectorAll('.e-rowcell')[
+                index];
+            if (this.parent.getFrozenColumns()) {
+                let cells: HTMLElement = [].slice.call(
+                    (this.parent.getDataRows()[rowIndex] as HTMLTableRowElement).querySelectorAll('.e-rowcell')).concat([].slice.call((
+                        this.parent.getMovableDataRows()[rowIndex] as HTMLTableRowElement).querySelectorAll('.e-rowcell')));
+                td = cells[index];
+            }
             let rowObj: Row<Column> = this.parent.getRowObjectFromUID(td.parentElement.getAttribute('data-uid'));
             this.refreshTD(td, col, rowObj, value);
             this.parent.trigger(events.queryCellInfo, {

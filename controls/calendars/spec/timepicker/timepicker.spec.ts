@@ -1360,6 +1360,7 @@ describe('TimePicker', () => {
     describe('Keyboard Navigation in input testing', () => {
         let KeyboardEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
+            stopPropagation: (): void => { /** No Code */},
             action: '',
             altKey: false,
             keyCode: ''
@@ -1591,6 +1592,7 @@ describe('TimePicker', () => {
     describe('Keyboard Navigation in popup testing', () => {
         let KeyboardEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
+            stopPropagation: (): void => { /** NO Code */ },
             action: '',
             altKey: false,
             keyCode: ''
@@ -1772,6 +1774,7 @@ describe('TimePicker', () => {
         let ele: HTMLElement;
         let KeyboardEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
+            stopPropagation: (): void => { /** NO Code */ },
             action: '',
             altKey: false,
             keyCode: ''
@@ -1846,6 +1849,7 @@ describe('TimePicker', () => {
         let ele: HTMLElement;
         let KeyboardEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
+            stopPropagation: (): void => { /** NO Code */ },
             action: '',
             altKey: false,
             keyCode: ''
@@ -2091,6 +2095,7 @@ describe('TimePicker', () => {
     describe('document layout testing', () => {
         let clickEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
+            stopPropagation: (): void => { /** NO Code */ },
             currentTarget: '',
             target: ''
         };
@@ -2128,6 +2133,7 @@ describe('TimePicker', () => {
     describe('document click testing', () => {
         let clickEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
+            stopPropagation: (): void => { /** NO Code */ },
             currentTarget: '',
             target: ''
         };
@@ -2159,6 +2165,7 @@ describe('TimePicker', () => {
     describe('document click testing', () => {
         let clickEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
+            stopPropagation: (): void => { /** NO Code */ },
             currentTarget: '',
             target: ''
         };
@@ -2194,6 +2201,7 @@ describe('TimePicker', () => {
     describe('document click testing', () => {
         let clickEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
+            stopPropagation: (): void => { /** NO Code */ },
             currentTarget: '',
             target: ''
         };
@@ -2261,6 +2269,7 @@ describe('TimePicker', () => {
         let element: any;
         let KeyboardEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
+            stopPropagation: (): void => { /** NO Code */ },
             action: '',
             altKey: false,
             keyCode: ''
@@ -2448,11 +2457,13 @@ describe('TimePicker', () => {
     describe('before item render event', () => {
         let ItemEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
+            stopPropagation: (): void => { /** NO Code */ },
             currentTarget: '',
             target: ''
         };
         let KeyboardEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
+            stopPropagation: (): void => { /** NO Code */ },
             action: '',
             altKey: false,
             keyCode: ''

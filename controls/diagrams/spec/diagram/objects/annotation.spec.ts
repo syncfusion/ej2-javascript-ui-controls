@@ -1,9 +1,9 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
-import { AnnotationModel, HyperlinkModel } from '../../../src/diagram/objects/annotation-model';
+import { AnnotationModel, HyperlinkModel, ShapeAnnotationModel } from '../../../src/diagram/objects/annotation-model';
 import { Node } from '../../../src/diagram/objects/node';
-import { HorizontalAlignment, VerticalAlignment } from '../../../src/diagram/enum/enum';
+import { HorizontalAlignment, VerticalAlignment, AnnotationConstraints } from '../../../src/diagram/enum/enum';
 import { MouseEvents } from './../interaction/mouseevents.spec';
 import { ConnectorModel, PathModel, BasicShapeModel } from '../../../src';
 
@@ -340,12 +340,12 @@ describe('Diagram Control', () => {
             function getAttributeY(i: number): string {
                 return (textElement.childNodes[i] as HTMLElement).getAttribute('y');
             }
-            expect(getAttributeX(0) === '0' && getAttributeY(0) === '3.6000000000000085').toBe(true);
-            expect(getAttributeX(1) === '3' && getAttributeY(1) === '18.000000000000007').toBe(true);
-            expect(getAttributeX(2) === '3' && getAttributeY(2) === '32.400000000000006').toBe(true);
-            expect(getAttributeX(3) === '3' && getAttributeY(3) === '46.800000000000004').toBe(true);
-            expect(getAttributeX(4) === '3' && getAttributeY(4) === '61.2').toBe(true);
-            expect(getAttributeX(5) === '0' && getAttributeY(5) === '75.6').toBe(true);
+            expect(getAttributeX(0) === '0' && getAttributeY(0) === '10.800000000000004').toBe(true);
+                expect(getAttributeX(1) === '3' && getAttributeY(1) === '25.200000000000003').toBe(true);
+                expect(getAttributeX(2) === '3' && getAttributeY(2) === '39.6').toBe(true);
+                expect(getAttributeX(3) === '3' && getAttributeY(3) === '54').toBe(true);
+                expect(getAttributeX(4) === '3' && getAttributeY(4) === '68.4').toBe(true);
+                expect(getAttributeX(5) === '0' && getAttributeY(5) === '82.80000000000001').toBe(true);
             done();
         });
     });
@@ -386,8 +386,192 @@ describe('Diagram Control', () => {
         it('Testing label style in SVG mode', (done: Function) => {
             let transform: string = document.getElementById('node1_label1_text').getAttribute("transform");
             let transform2: string = document.getElementById('node2_label1_text').getAttribute("transform");
-            expect(transform === 'rotate(0,100.5,136.5)translate(73.484375,130.5)' || transform == 'rotate(0,100.5,136.5)translate(73.3203125,130.5)').toBe(true);
-            expect(transform2 === 'rotate(0,100.5,136.5)translate(82.828125,130.5)' || transform2 == 'rotate(0,100.5,136.5)translate(82.6640625,130.5)').toBe(true); done();
+            expect(transform === 'rotate(0,100.5,136.5)translate(73.484375,130.5)' || transform == 'rotate(0,100.5,136.5)translate(73.3203125,130.5)' || transform == 'rotate(0,100.5,137.7)translate(73.3203125,130.5)').toBe(true);
+            expect(transform2 === 'rotate(0,100.5,136.5)translate(82.828125,130.5)' || transform2 == 'rotate(0,100.5,136.5)translate(82.6640625,130.5)' || transform2 == 'rotate(0,100.5,137.7)translate(82.6640625,130.5)').toBe(true);
+            done();
+        });
+    });
+
+    describe('Annotation Template', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let htmlElement: HTMLElement;
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramAnnotationTemplate' });
+            document.body.appendChild(ele);
+            
+            htmlElement = createElement('div', { id: 'element', className: 'domelement', styles: 'background:red; height:100%;width:100%;' });
+            document.body.appendChild(htmlElement);
+
+            let shape: BasicShapeModel = { type: 'Basic', shape: 'Rectangle', cornerRadius: 10 };
+            let node1: NodeModel = {
+                id: 'node1', offsetX: 100, offsetY: 100, width: 40, height: 40,
+                annotations: [{
+                    id: 'label1', template: '<div style="background:red; height:100%;width:100%;"><div/>'
+                }],
+                shape: shape
+            };
+            let shape2: BasicShapeModel = { type: 'Basic', shape: 'Ellipse' };
+            let node2: NodeModel = {
+                id: 'node2', offsetX: 300, offsetY: 100, shape: shape2, width: 40, height: 40,
+                annotations: [{
+                    content: 'Ellipse', id: 'label1',
+                }],
+            };
+            let node3: NodeModel = {
+                id: 'node3', offsetX: 100, offsetY: 300, width: 40, height: 40,
+                annotations: [{
+                    id: 'label1', template: '<div style="background:red; height:100%;width:100%;"><div/>'
+                }],
+                shape: shape
+            };
+            let node4: NodeModel = {
+                id: 'node4', offsetX: 100, offsetY: 500, width: 150, height: 150,
+                annotations: [{
+                    id: 'label1', height: 100, width: 100, template: htmlElement
+                }],
+                shape: shape
+            };
+            let node5: NodeModel = {
+                id: 'node5', offsetX: 300, offsetY: 300, width: 150, height: 150,
+                annotations: [{
+                    id: 'label1', height: 100, width: 100, template: '<style>th {border: 5px solid #c1dad7}td {border: 5px solid #c1dad7}.c1 { background: #4b8c74 } .c2 { background: #74c476 }  .c3 { background: #a4e56d } .c4 { background: #cffc83 } </style> <table> <tbody> <tr> <th class="c1">ID</th> <th class="c2">X</th> <th class="c3">Y</th> </tr> <tr> <td id=${id}_id class="c1">${id}</td> <td id=${id}_offsetX class="c2">${offset.x}</td> <td id=${id}_offsetY class="c3">${offset.y}</td>  </tr> </tbody> </table>'
+                }],
+                shape: shape
+            };
+            let connector1: ConnectorModel = {
+                id: 'connector1', sourcePoint: {x: 800, y: 100}, targetPoint: {x: 600, y: 300},
+                annotations: [{
+                    id: 'label1', height: 100, width: 100, template: '<div style="background:red; height:100%;width:100%;"><div/>'
+                }],
+            };
+            diagram = new Diagram({ width: 1000, height: 1000, nodes: [node1, node2, node3, node4, node5], connectors: [connector1], mode: 'SVG' });
+            diagram.appendTo('#diagramAnnotationTemplate');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Label temlpate rendering', function (done) {
+            let html: HTMLElement = document.getElementById('node1_label1_html_element');
+            let background = (html.children[0].children[0] as HTMLElement).style.background;
+            expect(html && background === 'red').toBe(true);
+            done();
+        });
+        it('Changing Label template to another template at runtime', function (done) {
+            let annotation: AnnotationModel = diagram.nodes[0].annotations[0];
+            annotation.template = '<div style="background:green; height:100%;width:100%;"><div/>';
+            diagram.dataBind();
+            let html: HTMLElement = document.getElementById('node1_label1_html_element');
+            let background = (html.children[0].children[0] as HTMLElement).style.background;
+            expect(html && background === 'green').toBe(true);
+            done();
+        });
+        it('Delete Label with template', function (done) {
+            let obj: Node = diagram.nodes[0] as Node;
+            let annotation: AnnotationModel[] = diagram.nodes[0].annotations;
+            diagram.removeLabels(obj, annotation);
+            let html: HTMLElement = document.getElementById('node1_label1_html_element');
+            expect(!html).toBe(true);
+            done();
+        });
+        it('Checking undo-redo for Label with template', function (done) {
+            diagram.undo();
+            let html: HTMLElement = document.getElementById('node1_label1_html_element');
+            let background = (html.children[0].children[0] as HTMLElement).style.background;
+            expect(html && background === 'green').toBe(true);
+            diagram.redo();
+            html = document.getElementById('node1_label1_html_element');
+            expect(!html).toBe(true);
+            done();
+        });
+        it('Delete Label with template', function (done) {
+            let obj: Node = diagram.nodes[0] as Node;
+            let annotation: AnnotationModel[] = diagram.nodes[0].annotations;
+            diagram.removeLabels(obj, annotation);
+            let html: HTMLElement = document.getElementById('node1_label1_html_element');
+            expect(!html).toBe(true);
+            done();
+        });
+        it('Changing Label text to template at runtime', function (done) {
+            let annotation: AnnotationModel = diagram.nodes[1].annotations[0];
+            annotation.template = '<div style="background:green; height:100%;width:100%;"><div/>';
+            diagram.dataBind();
+            let text: HTMLElement = document.getElementById('node2_label1_text');
+            let html: HTMLElement = document.getElementById('node2_label1_html_element');
+            expect(html && !text).toBe(true);
+            done();
+        });
+        it('Changing Label template to text at runtime', function (done) {
+            let annotation: AnnotationModel = diagram.nodes[2].annotations[0];
+            annotation.content = 'Rectangle';
+            annotation.template = undefined;
+            diagram.dataBind();
+            let text: HTMLElement = document.getElementById('node3_label1_text');
+            let html: HTMLElement = document.getElementById('node3_label1_html_element');
+            expect(text && !html).toBe(true);
+            done();
+        });
+        it('checking Label with template as dom element', function (done) {
+            let html: HTMLElement = document.getElementById('node4_label1_html_element');
+            let child: HTMLElement = (html.children[0].children[0] as HTMLElement);
+            expect(html && child && child.id === 'element').toBe(true);
+            done();
+        });
+        it('Label temlpate rendering connector', function (done) {
+            let html: HTMLElement = document.getElementById('connector1_label1_html_element');
+            let background = (html.children[0].children[0] as HTMLElement).style.background;
+            expect(html && background === 'red').toBe(true);
+            done();
+        });
+    });
+    describe('Annotation Template dragging support ', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram4' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1', width: 300, height: 160, offsetX: 250, offsetY: 180,
+                    annotations: [
+                        {
+                            id: 'node_label', height: 60, width: 200,
+                            constraints: AnnotationConstraints.Interaction,
+                            content: 'node1'
+                        }
+                    ]
+                }
+            ];
+            diagram = new Diagram({
+
+                width: '1000px', height: '1000px', nodes: nodes,
+            });
+
+            diagram.appendTo('#diagram4');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Annotation template change during run time', (done: Function) => {
+            diagram.nodes[0].annotations[0].template = '<div style="background:red; height:100%;width:100%;"><div/>';
+            diagram.dataBind();
+            let mouseEvents: MouseEvents = new MouseEvents();
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.mouseDownEvent(diagramCanvas, 250, 180);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 300, 250);
+            mouseEvents.mouseLeaveEvent(diagramCanvas);
+            expect(diagram.nodes[0].annotations[0].offset.x !== 0.5 && diagram.nodes[0].annotations[0].offset.y !== 0.5).toBe(true);
+            diagram.clearSelection();
+            done();
         });
     });
 });

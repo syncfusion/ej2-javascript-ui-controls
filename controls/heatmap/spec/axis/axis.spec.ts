@@ -9,7 +9,7 @@ describe('Heatmap Control', () => {
         let heatmap: HeatMap;
         let ele: HTMLElement;
         let text: HTMLElement;
-        let created: EmitType<ILoadedEventArgs>;
+        let created: EmitType<Object>;
         let trigger: MouseEvents = new MouseEvents();
         let data: number[][]=[
             [1,2,3,4,5],
@@ -175,7 +175,7 @@ describe('Heatmap Control', () => {
             heatmap.refresh();
             text = document.getElementById('container_XAxis_Label1');
             expect(text.textContent == 'test1').toBe(true);
-            expect((text.getAttribute('x') == '215.5' || text.getAttribute('x') == '217.29999999999998') && (text.getAttribute('y') == '402.7861557006836' || text.getAttribute('y') == '405.7900581359863')).toBe(true);
+            expect((text.getAttribute('x') == '215.5' || text.getAttribute('x') == '217.29999999999998') && (text.getAttribute('y') == '399.07660722732544' || text.getAttribute('y') == '398.8000726699829')).toBe(true);
         });
         it('Checking x-axis with minimum and maximum', () => {
             heatmap.xAxis.interval = 1;
@@ -449,9 +449,226 @@ describe('Heatmap Control', () => {
             heatmap.margin.right = 0;
             heatmap.refresh();
             let Element: HTMLElement = document.getElementById('container_XAxis_Label8');
-            trigger.mousemoveEvent(Element, 5, 5, 236, 560);
+            let region: ClientRect = Element.getBoundingClientRect();
+            trigger.mousemoveEvent(Element, 0, 0, region.left + 5, region.top + 5);
             let tooltip: HTMLElement = document.getElementById('container_axis_Tooltip');
-            expect(tooltip.style.top === '357px' || tooltip.style.top === '359px' ).toBe(true);
+            expect(tooltip.style.top === '344px' || tooltip.style.top === '347px' ).toBe(true);
+        });
+        it('Checking x-axis border type -brace ', function () {
+            heatmap.width = '400px';
+            heatmap.xAxis.border.width = 1;
+            heatmap.xAxis.border.type = 'Brace';
+            heatmap.refresh();
+            expect(document.getElementById('containerXAxisLabelBorder') !== null).toBe(true);
+        });
+        it('Checking x-axis border type - WithoutTopBorder', function () {
+            heatmap.xAxis.border.type = 'WithoutTopBorder';
+            heatmap.renderingMode = 'Canvas';
+            heatmap.xAxis.multiLevelLabels= [
+                {
+                    border: { color: '#b5b5b5', type: 'WithoutTopBorder'},
+                    categories: [
+                        { start: 0, end: 8, text: 'Testing 3', },
+                    ]
+                }
+            ];
+            heatmap.refresh();
+        });
+        it('Checking x-axis border type - WithoutBottomBorder', function () {
+            heatmap.renderingMode = 'SVG';
+            heatmap.xAxis.border.type = 'WithoutBottomBorder';
+            heatmap.refresh();
+            expect(document.getElementById('containerXAxisLabelBorder') !== null).toBe(true);
+        });
+        it('Checking x-axis border type - WithoutTopandBottomBorder', function () {
+            heatmap.xAxis.border.type = 'WithoutTopandBottomBorder';
+            heatmap.refresh();
+            expect(document.getElementById('containerXAxisLabelBorder') !== null).toBe(true);
+        });
+        it('Checking y-axis border type -brace ', function () {
+             heatmap.yAxis.border.type = 'Brace';
+             heatmap.yAxis.border.width = 1;
+            heatmap.refresh();
+            expect(document.getElementById('containerYAxisLabelBorder') !== null).toBe(true);
+        });
+        it('Checking y-axis border type - WithoutTopBorder', function () {
+            heatmap.yAxis.border.type = 'WithoutTopBorder';
+            heatmap.refresh();
+            expect(document.getElementById('containerYAxisLabelBorder') !== null).toBe(true);
+        });
+        it('Checking y-axis border type - WithoutBottomBorder', function () {
+            heatmap.yAxis.border.type = 'WithoutBottomBorder';
+            heatmap.refresh();
+            expect(document.getElementById('containerYAxisLabelBorder') !== null).toBe(true);
+        });
+        it('Checking y-axis border type - WithoutTopandBottomBorder', function () {
+            heatmap.yAxis.border.type = 'WithoutTopandBottomBorder';
+            heatmap.refresh();
+            expect(document.getElementById('containerYAxisLabelBorder') !== null).toBe(true);
+        });
+        it('Checking x-axis grouping ', function () {
+            heatmap.width = '400px';
+            heatmap.renderingMode = 'SVG';
+            heatmap.xAxis.multiLevelLabels= [
+                {
+                    alignment: 'Near',
+                    overflow: 'None',
+                    border: { color: '#b5b5b5', type: 'WithoutBottomBorder' },
+                    categories: [
+                        { start: 0, end: 4, text: 'Testing 1 Testing 1 Testing 1 Testing 1'},
+                        { start: 5, end: 8, text: 'Testing 2', },
+                    ]
+                },
+                {
+                    border: { color: '#b5b5b5', type: 'WithoutTopBorder'},
+                    categories: [
+                        { start: 0, end: 8, text: 'Testing 3', },
+                    ]
+                },
+                {
+                    alignment: 'Far',
+                    border: { color: '#b5b5b5', type: 'WithoutTopandBottomBorder' },
+                    categories: [
+                        { start: 0, end: 4, text: 'Testing 4', },
+                    ]
+                },
+                
+            ];
+            heatmap.refresh();
+            text = document.getElementById('container_XAxis_MultiLevel1_Text0');
+            expect(text.textContent == "Testing 3").toBe(true);
+        });
+        it('Checking x-axis grouping with trimmed label', function () {
+            heatmap.xAxis.valueType = 'Numeric',
+            heatmap.xAxis.minimum = 1,
+            heatmap.xAxis.multiLevelLabels= [
+                {
+                    overflow: 'Trim',
+                    border: { color: '#b5b5b5', type: 'WithoutBottomBorder' },
+                    categories: [
+                        { start: 1, end: 4, text: 'Testing 1 Testing 1 Testing 1 Testing 1', maximumTextWidth: 30},
+                        { start: 5, end: 8, text: 'Testing 2', },
+                    ]
+                }
+            ];
+            heatmap.dataBind();
+            text = document.getElementById('container_XAxis_MultiLevel0_Text0');
+            expect(text.textContent == "Te..." || text.textContent == 'T...').toBe(true);
+        });
+        it('Checking x-axis grouping with inversed axis and opposed position', function () {
+            heatmap.xAxis.isInversed = true;
+            heatmap.xAxis.valueType = 'DateTime',
+            heatmap.xAxis.minimum = new Date(2018,0,1);
+            heatmap.xAxis.opposedPosition = true;
+            heatmap.xAxis.border.width = 1;
+            heatmap.xAxis.multiLevelLabels= [
+                {
+                    overflow:'Trim',
+                    border: { color: '#b5b5b5' },
+                    categories: [
+                        { start:'1/1/2017', end: '1/5/2017',  text: 'Testing 1 Testing 1 Testing 1 Testing 1', maximumTextWidth: 30},
+                        { start: 6, end: 8, text: 'Testing 2', },
+                    ]
+                },
+                {
+                    alignment:'Far',
+                    border: { color: '#b5b5b5', type: 'Brace' },
+                    categories: [
+                        { start: 0, end: 8, text: 'Testing 3', },
+                    ]
+                },
+                {
+                    alignment:'Near',
+                    border: { color: '#b5b5b5' },
+                    categories: [
+                        { start: 0, end: 4, text: 'Testing 4', },
+                    ]
+                }
+            ];
+            heatmap.refresh();
+            text = document.getElementById('container_XAxis_MultiLevel0_Text0');
+            expect(text.textContent == "Te..." || text.textContent == 'T...').toBe(true);
+        });
+        it('Checking y-axis grouping with opposed position', function () {
+            heatmap.yAxis.opposedPosition = true;
+            heatmap.yAxis.showLabelOn = 'None';
+            heatmap.yAxis.multiLevelLabels= [
+                {
+                    alignment: 'Near',
+                    border: { width: 1, type: 'WithoutTopandBottomBorder' },
+                    categories: [
+                        { start: 0, end: 6,  text: 'Testing 1'},
+                        { start: 7, end: 11, text: 'Testing 2', },
+                    ]
+                },
+                {
+                    border: { color: '#b5b5b5', type: 'WithoutBottomBorder'},
+                    categories: [
+                        { start: 0, end: 11, text: 'Testing 3', },
+                    ]
+                },
+                {
+                    alignment: 'Far',
+                    border: { color: '#b5b5b5', type: 'WithoutTopBorder' },
+                    categories: [
+                        { start: 0, end: 4, text: 'Testing 4', },
+                    ]
+                }
+            ];
+            heatmap.refresh();
+            text = document.getElementById('container_YAxis_MultiLevel0_Text0');
+            expect(text.textContent == "Testing 1").toBe(true);
+        });
+        it('Checking y-axis grouping with inversed axis', function () {
+            heatmap.yAxis.isInversed = false;
+            heatmap.yAxis.opposedPosition = false;
+            heatmap.yAxis.intervalType = 'Minutes';
+            heatmap.yAxis.multiLevelLabels= [
+                {
+                    overflow: 'Trim',
+                    border: { color: '#b5b5b5' },
+                    categories: [
+                        { start: 0, end: 6, text: 'Testing 1', maximumTextWidth: 30},
+                        { start: 7, end: 11, text: 'Testing 2', },
+                    ]
+                },
+                {
+                    alignment: 'Far',
+                    border: { color: '#b5b5b5', type: 'Brace' },
+                    categories: [
+                        { start: new Date(2017, 0, 1), end: new Date(2017, 0, 11), text: 'Testing 3', },
+                    ]
+                },
+                {
+                    alignment: 'Near',
+                    border: { color: '#b5b5b5' },
+                    categories: [
+                        { start: new Date(2017, 0, 1, 12, 0), end: new Date(2017, 0, 5, 12, 9), text: 'Testing 3', },
+                    ]
+                }
+            ];
+            heatmap.refresh();
+            text = document.getElementById('container_YAxis_MultiLevel1_Text0');
+            expect(text.textContent == "Testing 3").toBe(true);
+        });
+        it('Checking y-axis grouping with interval type hours', function () {
+            heatmap.yAxis.intervalType = 'Hours';
+            heatmap.refresh();
+            text = document.getElementById('container_YAxis_MultiLevel1_Text0');
+            expect(text.textContent == "Testing 3").toBe(true);
+        });
+        it('Checking y-axis grouping with interval type years', function () {
+            heatmap.yAxis.intervalType = 'Years';
+            heatmap.yAxis.multiLevelLabels= [
+                {
+                    categories: [
+                        { start: new Date(2017, 3, 1), end: new Date(2018, 5, 5), text: 'Testing 3', },
+                    ]
+                }
+            ];
+            heatmap.refresh();
+            text = document.getElementById('container_YAxis_MultiLevel0_Text0');
+            expect(text.textContent == "Testing 3").toBe(true);
         });
     });
 });

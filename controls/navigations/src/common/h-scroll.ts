@@ -1,4 +1,4 @@
-import { Touch, ScrollEventArgs, TouchEventArgs, Component, EventHandler, selectAll, getUniqueID, remove } from '@syncfusion/ej2-base';
+import { Touch, ScrollEventArgs, TouchEventArgs, Component, EventHandler, selectAll, getUniqueID } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, Property, Browser, detach } from '@syncfusion/ej2-base';
 import { classList, SwipeEventArgs, isNullOrUndefined} from '@syncfusion/ej2-base';
 import { HScrollModel } from './h-scroll-model';
@@ -82,7 +82,7 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
     /**
-     * To Initialize the control rendering
+     * To Initialize the horizontal scroll  rendering
      * @private
      */
     protected render(): void {
@@ -145,7 +145,7 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
         ele.classList.remove(CLS_DEVICE);
         let nav: HTEle[] =  selectAll('.e-' + ele.id + '_nav.' + CLS_HSCROLLNAV, ele);
         let overlay: HTEle[] = selectAll('.' + CLS_OVERLAY, ele);
-        overlay.forEach((ele: HTEle) => {
+        [].slice.call(overlay).forEach((ele: HTEle) => {
             detach(ele);
         });
         for (let elem of [].slice.call(this.scrollItems.children)) {
@@ -171,7 +171,7 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
     public disable(value: boolean): void {
       let navEles: HTMLElement[] = selectAll('.e-scroll-nav:not(.' + CLS_DISABLE + ')', this.element );
       value ? this.element.classList.add(CLS_DISABLE) : this.element.classList.remove(CLS_DISABLE);
-      navEles.forEach((el: HTMLElement) => {
+      [].slice.call(navEles).forEach((el: HTMLElement) => {
         el.setAttribute('tabindex', !value ? '0' : '-1');
       });
     }
@@ -231,7 +231,7 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
         clearTimeout(this.keyTimer);
     }
     private eventBinding(ele: HTEle[]): void {
-     ele.forEach((el: HTEle) => {
+     [].slice.call(ele).forEach((el: HTEle) => {
         new Touch(el, {tapHold: this.tabHoldHandler.bind(this), tapHoldThreshold: 500 });
         el.addEventListener('keydown' , this.onKeyPress.bind(this));
         el.addEventListener('keyup', this.onKeyUp.bind(this));
@@ -330,7 +330,7 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
         return;
       }
       if (!this.customStep) {
-      selectAll('.' + CLS_OVERLAY, this.element).forEach((el: HTMLElement) => {
+      [].slice.call(selectAll('.' + CLS_OVERLAY, this.element)).forEach((el: HTMLElement) => {
           scrollVal -= el.offsetWidth; }); }
       let animate: Function = () => {
        if (scrollVal < step) {

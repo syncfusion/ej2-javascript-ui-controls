@@ -1,39 +1,31 @@
-@import 'definition.scss';
-
-$skin-name: 'material';
-$btn-margin: -1px;
-$btn-margin-left: 0;
-$wrapper-border: 2px;
-$btn-round-radius: 20px;
-$icon-font-size: 14px;
-$icon-font-size-bigger: 16px;
+$skin-name: 'material' !default;
+$btn-grp-margin: -1px !default;
+$btn-grp-margin-left: 0 !default;
+$btn-grp-wrapper-border: 2px !default;
+$btn-grp-round-radius: 20px !default;
+$btn-grp-icon-font-size: 14px !default;
+$btn-grp-icon-font-size-bigger: 16px !default;
 
 //Normal Outline GroupButton
-$outline-hover-border-color: transparent;
-$outline-focus-border-color: transparent;
-$outline-active-border-color: transparent;
+$btn-grp-outline-focus-border-color: transparent !default;
+$btn-grp-outline-focus-color: none !default;
 
 //Outline Primary
-$outline-primary-hover-border-color: transparent;
-$outline-primary-focus-border-color: transparent;
-$outline-primary-active-border-color: transparent;
+$btn-grp-outline-primary-focus-border-color: transparent !default;
+$btn-grp-outline-focus-primary-color: none !default;
 
 //Outline Success
-$outline-success-hover-border-color: transparent;
-$outline-success-focus-border-color: transparent;
-$outline-success-active-border-color: transparent;
+$btn-grp-outline-success-focus-border-color: transparent !default;
+$btn-grp-outline-focus-success-color: none !default;
 
 //Outline Info
-$outline-info-hover-border-color: transparent;
-$outline-info-focus-border-color: transparent;
-$outline-info-active-border-color: transparent;
+$btn-grp-outline-info-focus-border-color: transparent !default;
+$btn-grp-outline-focus-info-color: none !default;
 
 //Outline warning
-$outline-warning-hover-border-color: transparent;
-$outline-warning-focus-border-color: transparent;
-$outline-warning-active-border-color: transparent;
+$btn-grp-outline-warning-focus-border-color: transparent !default;
+$btn-grp-outline-focus-warning-color: none !default;
 
 //Outline danger
-$outline-danger-hover-border-color: transparent;
-$outline-danger-focus-border-color: transparent;
-$outline-danger-active-border-color: transparent;
+$btn-grp-outline-danger-focus-border-color: transparent !default;
+$btn-grp-outline-focus-danger-color: none !default;

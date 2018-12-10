@@ -1,0 +1,116 @@
+@include export-module('pdfviewer-material-icons') {
+  .e-pdfviewer {
+    .e-pv-icon::before {
+      font-family: 'e-icons';
+    }
+
+    .e-pv-icon-search::before {
+      font-family: 'e-icons';
+      font-size: 12px;
+    }
+
+    .e-pv-open-document-icon::before {
+      content: '\ec04';
+    }
+
+    .e-pv-download-document-icon::before {
+      content: '\ec0b';
+    }
+
+    .e-pv-print-document-icon::before {
+      content: '\ec20';
+    }
+
+    .e-pv-first-page-navigation-icon::before {
+      content: '\ec05';
+    }
+
+    .e-pv-previous-page-navigation-icon::before,
+    .e-pv-prev-search-icon::before {
+      content: '\ec06';
+    }
+
+    .e-pv-next-page-navigation-icon::before,
+    .e-pv-next-search-icon::before {
+      content: '\ec07';
+    }
+
+    .e-pv-last-page-navigation-icon::before {
+      content: '\ec08';
+    }
+
+    .e-pv-zoom-out-icon::before {
+      content: '\ec09';
+    }
+
+    .e-pv-zoom-in-icon::before {
+      content: '\ec0a';
+    }
+
+    .e-pv-thumbnail-view-icon::before {
+      content: '\ec27';
+    }
+
+    .e-pv-thumbnail-view-disable-icon::before {
+      color: $pv-thumbnail-icon-disable-color;
+      content: '\ec27';
+    }
+
+    .e-pv-thumbnail-view-selection-icon::before {
+      color: $pv-thumbnail-icon-selection-color;
+      content: '\ec27';
+    }
+
+    .e-pv-bookmark-icon::before {
+      content: '\ec0c';
+    }
+
+    .e-pv-bookmark-disable-icon::before {
+      color: $pv-thumbnail-icon-disable-color;
+      content: '\ec0c';
+    }
+
+    .e-pv-bookmark-selection-icon::before {
+      color: $pv-thumbnail-icon-selection-color;
+      content: '\ec0c';
+    }
+
+    .e-pv-title-close-icon::before {
+      content: '\ec0f';
+    }
+
+    .e-pv-resize-icon::before {
+      content: '\e84b';
+      font-size: 10px;
+    }
+
+    .e-pv-text-select-tool-icon::before {
+      content: '\ec1d';
+    }
+
+    .e-pv-pan-tool-icon::before {
+      content: '\ec1a';
+    }
+
+    .e-pv-text-search-icon::before {
+      content: '\ec0d';
+    }
+
+    .e-pv-search-icon::before {
+      content: '\ec0d';
+      font-family: 'e-icons';
+    }
+
+    .e-pv-search-close::before {
+      content: '\ec0f';
+      font-family: 'e-icons';
+    }
+
+    .e-pv-notification-icon {
+      background-image: $pv-corrupted-notification-background-image;
+      background-repeat: $pv-corrupted-notification-background-repeat;
+      background-size: $pv-corrupted-notification-background-size;
+      height: $pv-corrupted-notification-height;
+    }
+  }
+}

@@ -1,5 +1,5 @@
-import { Component, Property, ChildProperty, NotifyPropertyChanges, INotifyPropertyChanged } from '@syncfusion/ej2-base';import { Event, EventHandler, EmitType, BaseEventArgs, KeyboardEvents, KeyboardEventArgs, Touch, TapEventArgs } from '@syncfusion/ej2-base';import { attributes, Animation, AnimationOptions, TouchEventArgs, MouseEventArgs } from '@syncfusion/ej2-base';import { Browser, Collection, setValue, getValue, getUniqueID, getInstance, isNullOrUndefined } from '@syncfusion/ej2-base';import { select, selectAll, closest, detach, append, rippleEffect, isVisible, Complex, addClass, removeClass } from '@syncfusion/ej2-base';import { ListBase, ListBaseOptions } from '@syncfusion/ej2-lists';import { getZindexPartial, calculatePosition, OffsetPosition, isCollide, fit } from '@syncfusion/ej2-popups';import {  getScrollableParent } from '@syncfusion/ej2-popups';
-import {MenuEventArgs,BeforeOpenCloseMenuEventArgs,OpenCloseMenuEventArgs,MenuAnimationSettings} from "./menu-base";
+import { Component, Property, ChildProperty, NotifyPropertyChanges, INotifyPropertyChanged, AnimationModel } from '@syncfusion/ej2-base';import { Event, EventHandler, EmitType, BaseEventArgs, KeyboardEvents, KeyboardEventArgs, Touch, TapEventArgs } from '@syncfusion/ej2-base';import { attributes, Animation, AnimationOptions, TouchEventArgs, MouseEventArgs } from '@syncfusion/ej2-base';import { Browser, Collection, setValue, getValue, getUniqueID, getInstance, isNullOrUndefined } from '@syncfusion/ej2-base';import { select, selectAll, closest, detach, append, rippleEffect, isVisible, Complex, addClass, removeClass } from '@syncfusion/ej2-base';import { ListBase, ListBaseOptions } from '@syncfusion/ej2-lists';import { getZindexPartial, calculatePosition, OffsetPosition, isCollide, flip, fit, Popup } from '@syncfusion/ej2-popups';import { getScrollableParent } from '@syncfusion/ej2-popups';import { HScroll } from '../common/h-scroll';import { VScroll } from '../common/v-scroll';
+import {MenuEffect,MenuEventArgs,BeforeOpenCloseMenuEventArgs,OpenCloseMenuEventArgs} from "./menu-base";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -96,6 +96,38 @@ export interface MenuItemModel {
 }
 
 /**
+ * Interface for a class MenuAnimationSettings
+ */
+export interface MenuAnimationSettingsModel {
+
+    /**
+     * Specifies the effect that shown in the sub menu transform.
+     * The possible effects are:
+     * * None: Specifies the sub menu transform with no animation effect.
+     * * SlideDown: Specifies the sub menu transform with slide down effect.
+     * * ZoomIn: Specifies the sub menu transform with zoom in effect.
+     * * FadeIn: Specifies the sub menu transform with fade in effect.
+     * @default 'SlideDown'
+     * @aspType Syncfusion.EJ2.Navigations.MenuEffect
+     * @isEnumeration true
+     */
+    effect?: MenuEffect;
+
+    /**
+     * Specifies the time duration to transform object.
+     * @default 400
+     */
+    duration?: number;
+
+    /**
+     * Specifies the easing effect applied while transform.
+     * @default 'ease'
+     */
+    easing?: string;
+
+}
+
+/**
  * Interface for a class MenuBase
  * @private
  */
@@ -181,6 +213,14 @@ export interface MenuBaseModel extends ComponentModel{
     template?: string;
 
     /**
+     * Specifies whether to enable / disable the scrollable option in Menu.
+     * Not applicable to ContextMenu component.
+     * @default false
+     * @private
+     */
+    enableScrolling?: boolean;
+
+    /**
      * Specifies mapping fields from the dataSource.
      * Not applicable to ContextMenu component.
      * @default { itemId: "id", text: "text", parentId: "parentId", iconCss: "iconCss", url: "url", separator: "separator",
@@ -199,6 +239,6 @@ export interface MenuBaseModel extends ComponentModel{
      * Specifies the animation settings for the sub menu open.
      * @default { duration: 400, easing: 'ease', effect: 'SlideDown' }
      */
-    animationSettings?: MenuAnimationSettings;
+    animationSettings?: MenuAnimationSettingsModel;
 
 }

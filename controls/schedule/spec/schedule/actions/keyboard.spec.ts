@@ -1658,6 +1658,47 @@ describe('Keyboard interaction', () => {
             schObj.dataBind();
         });
     });
+    describe('Auto Scroll on moving via mouse', () => {
+        let schObj: Schedule;
+        // tslint:disable-next-line:no-any
+        let keyModule: any;
+        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        beforeAll((done: Function) => {
+            let dataBound: EmitType<Object> = () => {
+                keyModule = schObj.keyboardInteractionModule;
+                done();
+            };
+            document.body.appendChild(elem);
+            schObj = new Schedule({
+                width: '600px',
+                height: '550px',
+                views: ['Day', 'Week'],
+                currentView: 'Week',
+                selectedDate: new Date(2017, 9, 4),
+                dataBound: dataBound
+            });
+            schObj.appendTo('#Schedule');
+        });
+        afterAll(() => {
+            if (schObj) {
+                schObj.destroy();
+            }
+            remove(elem);
+        });
+        it('mouse up', () => {
+            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            triggerMouseEvent(workCells[17], 'mousedown');
+            triggerMouseEvent(workCells[2], 'mousemove', 280, 137);
+            triggerMouseEvent(workCells[2], 'mouseup');
+            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.classList).toContain('e-work-cells');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(focuesdEle.cellIndex).toEqual(2);
+            expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
+            keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
+        });
+    });
     describe('Delete action', () => {
         let schObj: Schedule;
         // tslint:disable-next-line:no-any

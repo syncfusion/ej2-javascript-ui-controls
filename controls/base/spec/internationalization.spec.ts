@@ -16,6 +16,11 @@ describe('Internationalization', () => {
             let dateformatter: Function = dateIntl.getDateFormat({ skeleton: 'long', type: 'date' });
             expect(dateformatter(date)).toBe('November 17, 2016');
         });
+        it('Internationalization with isalmaic calendar formatting', () => {
+            let tIntl = new Internationalization('en');
+            let iFormatter: string = tIntl.formatDate(new Date('1/1/2015'), { skeleton: 'short', calendar: 'islamic' });
+            expect(iFormatter).toBe('3/10/1436 AH');
+        });
         it('datefromatting using the formatDate', () => {
             let result: string = dateIntl.formatDate(date, { skeleton: 'Gy' });
             expect(result).toBe('2016 AD');
@@ -91,6 +96,11 @@ describe('Internationalization', () => {
             result.setDate(parseDate.getDate());
             expect(monthDayMatch(result, parseDate)).toBeTruthy;
         });
+        it('Internationalization with isalmaic calendar parsing', () => {
+            let tIntl = new Internationalization('en');
+            let iFormatter: Date = tIntl.parseDate('Tuesday, Safar 19, 1437 AH', { skeleton: 'full', calendar: 'islamic' });
+            expect(tIntl.formatDate(iFormatter, { format: 'd/M/y' })).toBe('1/12/2015');
+        });
         it('using parse date and default value', () => {
             let ip: string = dParseIntl.formatDate(parseDate, { type: 'date', skeleton: 'short' })
             let result: Date = dParseIntl.parseDate(ip);
@@ -138,10 +148,10 @@ describe('Internationalization', () => {
     describe('getDateTimePattern', () => {
         let intl: Internationalization = new Internationalization();
         it('short date', () => {
-            expect(intl.getDatePattern({ skeleton: 'short', type: 'date'})).toBe('M/d/yy');
+            expect(intl.getDatePattern({ skeleton: 'short', type: 'date' })).toBe('M/d/yy');
         });
         it('long date', () => {
-            expect(intl.getDatePattern({ skeleton: 'long', type: 'date'})).toBe('MMMM d, y');
+            expect(intl.getDatePattern({ skeleton: 'long', type: 'date' })).toBe('MMMM d, y');
         });
         it('full date', () => {
             expect(intl.getDatePattern({ skeleton: 'full', type: 'date' })).toBe('EEEE, MMMM d, y');
@@ -162,20 +172,20 @@ describe('Internationalization', () => {
             expect(intl.getDatePattern({ skeleton: 'long', type: 'date' }, true)).toBe('mmmm d, yyyy');
         });
         it('full date xls format', () => {
-            expect(intl.getDatePattern({ skeleton: 'full', type: 'date'}, true)).toBe('dddd, mmmm d, yyyy');
+            expect(intl.getDatePattern({ skeleton: 'full', type: 'date' }, true)).toBe('dddd, mmmm d, yyyy');
         });
         it('short time xls format', () => {
-            expect(intl.getDatePattern({ skeleton: 'short', type: 'time'}, true)).toBe('h:mm AM/PM');
+            expect(intl.getDatePattern({ skeleton: 'short', type: 'time' }, true)).toBe('h:mm AM/PM');
         });
         it('medium time xls format', () => {
-            expect(intl.getDatePattern({ skeleton: 'medium', type: 'time'}, true)).toBe('h:mm:ss AM/PM');
+            expect(intl.getDatePattern({ skeleton: 'medium', type: 'time' }, true)).toBe('h:mm:ss AM/PM');
         });
         it('long time xls format', () => {
-            expect(intl.getDatePattern({ skeleton: 'long', type: 'time'}, true)).
+            expect(intl.getDatePattern({ skeleton: 'long', type: 'time' }, true)).
                 toBe('h:mm:ss AM/PM "GMT' + getTimeZoneString(new Date(), true) + '"');
         });
         it('full time xls format', () => {
-            expect(intl.getDatePattern({ skeleton: 'full', type: 'time'}, true)).
+            expect(intl.getDatePattern({ skeleton: 'full', type: 'time' }, true)).
                 toBe('h:mm:ss AM/PM "GMT' + getTimeZoneString(new Date()) + '"');
         });
         it('short dateTime xls format', () => {
@@ -323,14 +333,14 @@ describe('Internationalization', () => {
         let intl: Internationalization = new Internationalization();
         let weekData: Object = {
             "supplemental": {
-              "weekData": {
-                "firstDay": {
-                    "AD": "mon",
-                    "AE": "sat",
-                    "GB-alt-variant": "sun",
-                    "ZW": "sun"
+                "weekData": {
+                    "firstDay": {
+                        "AD": "mon",
+                        "AE": "sat",
+                        "GB-alt-variant": "sun",
+                        "ZW": "sun"
+                    }
                 }
-              }
             }
         };
         loadCldr(weekData);
@@ -538,10 +548,10 @@ describe('Internationalization', () => {
             }));
         });
     });
-    describe('Cr-EJ2-10356 - Date parser returns invalid output instead of null value',() => {
-        it('Without special characters',()=>{
+    describe('Cr-EJ2-10356 - Date parser returns invalid output instead of null value', () => {
+        it('Without special characters', () => {
             let intl: Internationalization = new Internationalization();
-            let res: Date = intl.parseDate('12122015',{skeleton:'yMd'});
+            let res: Date = intl.parseDate('12122015', { skeleton: 'yMd' });
             expect(res).toBe(null);
         });
         it('Wit special characters', () => {

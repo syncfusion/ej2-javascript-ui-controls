@@ -35,7 +35,7 @@ export class InlineEditRender {
         if (tbody.querySelector('.e-emptyrow')) {
             tbody.querySelector('.e-emptyrow').classList.add('e-hide');
         }
-        tbody.insertBefore(args.row, tbody.firstChild);
+        this.parent.editSettings.newRowPosition === 'Top' ? tbody.insertBefore(args.row, tbody.firstChild) : tbody.appendChild(args.row);
         args.row.appendChild(this.getEditElement(elements, false, undefined, args, true));
         if (this.parent.getFrozenColumns()) {
             let mEle: Element = this.renderMovableform(args.row, args);
@@ -44,7 +44,7 @@ export class InlineEditRender {
             } else {
                 mTbody = this.parent.getContent().querySelector('.e-movablecontent').querySelector('tbody');
             }
-            mTbody.insertBefore(mEle, mTbody.firstChild);
+            this.parent.editSettings.newRowPosition === 'Top' ? mTbody.insertBefore(mEle, mTbody.firstChild) : mTbody.appendChild(mEle);
             args.row.querySelector('.e-normaledit').setAttribute('colspan', this.parent.getVisibleFrozenColumns() + '');
             mEle.setAttribute('colspan', '' + (this.parent.getVisibleColumns().length - this.parent.getVisibleFrozenColumns()));
             if (this.parent.height === 'auto') {

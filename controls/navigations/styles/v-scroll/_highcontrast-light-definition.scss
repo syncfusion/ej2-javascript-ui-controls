@@ -1,0 +1,52 @@
+//default 
+$skin-name: 'highcontrast';
+$vscroll-dash-border: 2px solid #fff;
+$vscroll-nav-nrml-height: 40px;
+$vscroll-hover-font: $hover-font-color ;
+$vscroll-active-font-color: $active-font-color ;
+$vscroll-border-size: $border-size;
+$vscroll-border-type: solid;
+
+$vscroll-default-bg: $bg-base-0;
+$vscroll-press-bg: $selection-bg;
+$vscroll-active-bg: $selection-bg;
+$vscroll-nav-nrml-minheight: 40px;
+$vscroll-nav-bgr-minheight: 50px;
+$vscroll-nav-nrml-width: 40px;
+$vscroll-nav-bgr-width: 50px;
+$vscroll-nrml-padding: 0 $vscroll-nav-nrml-width;
+$vscroll-bgr-padding: $vscroll-nav-bgr-width 0;
+$vscroll-border-size: 1px;
+$vscroll-default-border: $border-fg;
+$vscroll-box-shadow: none;
+$vscroll-hover-bg: $hover-bg;
+$vscroll-hover-border-color: '';
+$vscroll-focus-border: '';
+$vscroll-active-border: '';
+$vscroll-hover-border: '';
+$vscroll-active-box-shadow: '';
+$vscroll-default-icon-color: $selection-bg;
+$vscroll-overlay-opacity: .5;
+$vscroll-overlay-bg: $bg-base-10;
+$vscroll-overlay-start: rgba($vscroll-overlay-bg, 0);
+$vscroll-overlay-end: rgba($vscroll-overlay-bg, 1);
+$vscroll-right-bg: linear-gradient(-270deg, $vscroll-overlay-start 0%, $vscroll-overlay-end 100%);
+$vscroll-left-bg:  linear-gradient(-270deg, $vscroll-overlay-end 0%, $vscroll-overlay-start 100%);
+
+$vscroll-device-arrow-box-shadow: -4px 0 8px 0 rgba($shadow , .06);
+$vscroll-device-arrow-rtl-box-shadow: 4px 0 8px 0 rgba($shadow , .06);
+$vscroll-device-arrow-bg: $bg-base-15;
+$vscroll-device-arrow-border-size: 1px;
+$vscroll-device-arrow-border-color: $border-fg;
+$vscroll-device-arrow-color: $selection-bg;
+$vscroll-device-arrow-size: 14px;
+$vscroll-device-arrow-width: 52px;
+
+@mixin vscroll-btn-animation {
+  content: '';
+}
+
+@mixin vscroll-btn-animation-after {
+  content: '';
+}
+//enddefault

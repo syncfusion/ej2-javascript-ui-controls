@@ -2,7 +2,25 @@
 
 ## [Unreleased]
 
-## 16.3.33 (2018-11-15)
+## 16.4.40-beta (2018-12-10)
+
+### Uploader
+
+#### New Features
+
+- Enabled sequential upload support to file upload component that upload the selected files one after the other to the server.
+
+- New event provided "chunkUploading" which trigger on every chunk to be upload in file upload.
+
+- Provided the option to get additional data back from a server to client on file upload.
+
+### FormValidator
+
+#### New Features
+
+- **Localization** - Supports to localize error message for the "FormValidator" to different cultures.
+
+## 16.3.33 (2018-11-20)
 
 ### FormValidator
 

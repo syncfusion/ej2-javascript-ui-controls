@@ -722,7 +722,8 @@ export class Group implements IAction {
     public destroy(): void {
         let gridElement: Element = this.parent.element;
         if (!gridElement || (!gridElement.querySelector('.e-gridheader') && !gridElement.querySelector('.e-gridcontent'))) { return; }
-        if (!this.parent.isDestroyed) {
+        // tslint:disable-next-line:no-any
+        if (!this.parent.isDestroyed && !(<any>this.parent).refreshing) {
             this.clearGrouping();
         }
         this.removeEventListener();
@@ -739,6 +740,9 @@ export class Group implements IAction {
         let cols: string[] = JSON.parse(JSON.stringify(this.groupSettings.columns));
         this.contentRefresh = false;
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
+            if (i === (len - 1)) {
+                this.contentRefresh = true;
+            }
             this.ungroupColumn(cols[i]);
         }
         this.contentRefresh = true;

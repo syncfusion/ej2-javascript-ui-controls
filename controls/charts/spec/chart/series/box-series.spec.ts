@@ -701,7 +701,7 @@ describe('Chart Control - Box and Whisker Series', () => {
                 expect(path.localName == 'path').toBe(true);
                 expect(path.getAttribute('d') != '' || ' ').toBe(true);
                 expect(group.childNodes.length == 4).toBe(true);
-                expect(text1.textContent == 'DevelopmentMaximum : 38Q1 : 33Median : 28Q3 : 25Minimum : 22').toBe(true);
+                expect(text1.textContent == 'DevelopmentMaximum : 38Q3 : 33Median : 28Q1 : 25Minimum : 22').toBe(true);
                 done();
             };
             chartObj.tooltip.enable = true;
@@ -723,7 +723,7 @@ describe('Chart Control - Box and Whisker Series', () => {
                 expect(path.localName == 'path').toBe(true);
                 expect(path.getAttribute('d') != '' || ' ').toBe(true);
                 expect(group.childNodes.length == 4).toBe(true);
-                expect(text1.textContent == 'FinanceMaximum : 45Q1 : 37Median : 34Q3 : 28Minimum : 26').toBe(true);
+                expect(text1.textContent == 'FinanceMaximum : 45Q3 : 37Median : 34Q1 : 28Minimum : 26').toBe(true);
                 done();
             };
             chartObj.refresh(); unbindResizeEvents(chartObj);
@@ -747,7 +747,7 @@ describe('Chart Control - Box and Whisker Series', () => {
                 expect(path.localName == 'path').toBe(true);
                 expect(path.getAttribute('d') != '' || ' ').toBe(true);
                 expect(group.childNodes.length == 4).toBe(true);
-                expect(text1.textContent == 'FinanceMaximum : 45Q1 : 37Median : 34Q3 : 28Minimum : 26').toBe(true);
+                expect(text1.textContent == 'FinanceMaximum : 45Q3 : 37Median : 34Q1 : 28Minimum : 26').toBe(true);
                 done();
             };
             chartObj.crosshair.enable = true;

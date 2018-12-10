@@ -1,4 +1,4 @@
-/** 
+/**
  * Defines Theme of the smithchart. They are
  * * Material - Render a smithchart with Material theme.
  * * Fabric - Render a smithchart with Fabric theme
@@ -10,8 +10,16 @@ export type SmithchartTheme =
     'Fabric' |
     /**  Render a smithchart with Bootstrap theme. */
     'Bootstrap' |
+    /**  Render a smithchart with Highcontrast Light theme. */
+    'HighcontrastLight' |
+    /**  Render a smithchart with Material Dark theme. */
+    'MaterialDark'|
+    /**  Render a smithchart with Fabric Dark theme. */
+    'FabricDark'|
     /**  Render a smithchart with Highcontrast theme. */
-    'Highcontrast';
+    'Highcontrast'|
+    /**  Render a smithchart with Bootstrap Dark theme. */
+    'BootstrapDark';
 
 /**
  * Defines render type of smithchart. They are
@@ -38,12 +46,12 @@ export type SmithchartLabelIntersectAction =
     /**  Render the overlapped axis label */
     'None';
 
-/** 
+/**
  * Defines the Alignment. They are
  * * near - Align the element to the left.
  * * center - Align the element to the center.
  * * far - Align the element to the right.
- * * 
+ * *
  */
 
 export type SmithchartAlignment =
@@ -67,4 +75,4 @@ export type SmithchartExportType =
  * Specifies TreeMap beforePrint event name.
  * @private
  */
-export const smithchartBeforePrint : string = 'beforePrint';    
+export const smithchartBeforePrint : string = 'beforePrint';

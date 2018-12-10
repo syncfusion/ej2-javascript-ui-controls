@@ -4,14 +4,14 @@
   .e-contextmenu-wrapper {
     @at-root {
       & ul {
-        background-color: $ul-bgcolor;
-        color: $color;
+        background-color: $cmenu-ul-bgcolor;
+        color: $cmenu-color;
 
         & .e-menu-item  {
           @include icon-color;
 
           & .e-menu-url {
-            color: $color;
+            color: $cmenu-color;
           }
 
           &.e-focused {
@@ -28,7 +28,7 @@
         @include disabled-color;
 
         & .e-separator {
-          border-bottom-color: $li-border-color;
+          border-bottom-color: $cmenu-li-border-color;
         }
       }
     }

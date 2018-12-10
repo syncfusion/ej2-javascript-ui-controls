@@ -862,4 +862,56 @@ describe('Resize module', () => {
         });
     });
 
+    describe('Resize functionalities for stacked columns', () => {
+        let gridObj: Grid;
+        let headers: any;
+        let columns: Column[];
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                   
+                    allowResizing: true,
+                    dataSource: data,
+                    columns: [{ field: 'OrderID', headerText: 'OrderID', width: 150 },
+                        {headerText: 'details', columns: [
+                            { field: 'CustomerID', headerText: 'CustomerID' },
+                            { field: 'EmployeeID', headerText: 'EmployeeID' },
+                            { field: 'Freight', headerText: 'Freight', width: 200, allowResizing: false },
+                            { field: 'ShipCity', headerText: 'ShipCity' }
+                        ]},
+                    ],
+                }, done);
+        });
+        it ('check stacked header resize handler', () => {
+            expect(gridObj.getHeaderContent().querySelectorAll('.e-stackedheadercell .e-rhandler.e-rcursor').length).toBe(1);
+        });
+
+        it ('check auto fit', () => {
+            expect((gridObj.resizeModule as any).callAutoFit({target: gridObj.getHeaderContent().querySelector('.e-stackedheadercell')})).toBeUndefined();
+            expect((gridObj.resizeModule as any).callAutoFit({target: gridObj.getHeaderContent().querySelector('.e-stackedheadercell .e-rhandler')})).toBeUndefined();
+            (gridObj.resizeModule as any).column = undefined;
+            expect((gridObj.resizeModule as any).resizing()).toBeUndefined();
+            expect((gridObj.resizeModule as any).resizeStart({target: gridObj.getHeaderContent().querySelector('.e-stackedheadercell')})).toBeUndefined();
+        });
+
+        it ('calculate column width', () => {
+            let columns = (gridObj.resizeModule as any).getSubColumns(gridObj.columns[1], []);
+            expect(columns.length).toBe(3);
+            columns = (gridObj.resizeModule as any).calulateColumnsWidth(columns, false, 4);
+            expect(columns.length).toBe(3);
+            (gridObj.resizeModule as any).calulateColumnsWidth(columns, true, 4);
+            expect(columns.length).toBe(3);
+            expect((gridObj.resizeModule as any).refreshColumnWidth().length).toBe(5);
+        });
+
+        it ('destroyed check', () => {
+            gridObj.isDestroyed = true;
+            expect((gridObj.resizeModule as any).resizeEnd()).toBeUndefined();
+            expect((gridObj.resizeModule as any).addEventListener()).toBeUndefined();
+        })
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
 });

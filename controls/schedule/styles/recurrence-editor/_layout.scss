@@ -130,8 +130,8 @@
 
     .e-days {
       .e-week-expander-label {
-        font-size: $recurrence-week-expander-label-font-size;
-        font-weight: $recurrence-end-font-weight;
+        font-size: $recurrence-label-font-size;
+        font-weight: $recurrence-label-font-weight;
         margin-bottom: 8px;
       }
 
@@ -173,8 +173,8 @@
 
         .e-end-on-label {
           float: none;
-          font-size: $recurrence-end-font-size;
-          font-weight: $recurrence-end-font-weight;
+          font-size: $recurrence-label-font-size;
+          font-weight: $recurrence-label-font-weight;
           margin-bottom: $recurrence-month-label-bottom;
           padding-right: 16px;
         }
@@ -190,8 +190,8 @@
       }
 
       &.e-non-week > .e-month-expander-label {
-        font-size: $recurrence-month-expander-label-font-size;
-        font-weight: $recurrence-end-font-weight;
+        font-size: $recurrence-label-font-size;
+        font-weight: $recurrence-label-font-weight;
         margin-bottom: $recurrence-month-label-bottom;
         padding-right: 16px;
       }
@@ -382,7 +382,7 @@
         .e-end-on-label {
           float: none;
           font-size: 12px;
-          font-weight: $recurrence-end-font-weight;
+          font-weight: $recurrence-label-font-weight;
           margin-bottom: $recurrence-label-bottom;
         }
 

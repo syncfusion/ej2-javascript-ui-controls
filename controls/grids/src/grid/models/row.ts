@@ -1,5 +1,6 @@
 import { merge } from '@syncfusion/ej2-base';
 import { Cell } from './cell';
+import { IGrid } from '../base/interface';
 
 /**
  * Row
@@ -46,6 +47,10 @@ export class Row<T> {
     public cssClass: string;
 
     public foreignKeyData: Object;
+
+    public isDetailRow: boolean;
+
+    public childGrid: IGrid;
 
     constructor(options: { [x: string]: Object }) {
         merge(this, options);

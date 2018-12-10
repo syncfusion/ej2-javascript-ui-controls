@@ -771,7 +771,7 @@ describe('context menu module', () => {
                 items: gridObj.contextMenuModule.contextMenu.items
             };
             (gridObj.contextMenuModule as any).contextMenuBeforeOpen(e);
-            expect(gridObj.getSelectedRecords().length).toBe(0);
+            expect(gridObj.getSelectedRecords().length).toBe(1);
             gridObj.element.focus();
             gridObj.clearSelection();
             gridObj.selectRows([1,2,3]);
@@ -781,7 +781,7 @@ describe('context menu module', () => {
                 items: gridObj.contextMenuModule.contextMenu.items
             };
             (gridObj.contextMenuModule as any).contextMenuBeforeOpen(e);
-            expect(gridObj.getSelectedRecords().length).toBe(3);
+            expect(gridObj.getSelectedRecords().length).toBe(1);
         });
         afterAll(() => {
             destroy(gridObj);

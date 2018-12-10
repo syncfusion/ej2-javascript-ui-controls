@@ -131,7 +131,7 @@ export class Resize implements IAction {
         if (result === false) {
             (gObj.getColumns() as Column[]).forEach((element: Column) => {
                 if (element.visible) {
-                    tWidth = tWidth + parseInt(element.width as string, 10);
+                    tWidth = tWidth + parseFloat(element.width as string);
                 }
             });
         }
@@ -279,6 +279,9 @@ export class Resize implements IAction {
     private callAutoFit(e: PointerEvent | TouchEvent): void {
         if ((e.target as HTMLElement).classList.contains('e-rhandler')) {
             let col: Column = this.getTargetColumn(e);
+            if (col.columns) {
+                return;
+            }
             this.resizeColumn(col.field, this.parent.getNormalizedColumnIndex(col.uid), col.uid);
             let header: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, resizeClassList.header);
             header.classList.add('e-resized');
@@ -315,11 +318,11 @@ export class Resize implements IAction {
                 this.column = this.getTargetColumn(e);
                 this.pageX = this.getPointX(e);
                 if (this.parent.enableRtl) {
-                    this.minMove = parseInt(this.column.width.toString(), 10)
-                        - (this.column.minWidth ? parseInt(this.column.minWidth.toString(), 10) : 0);
+                    this.minMove = parseFloat(this.column.width.toString())
+                        - (this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0);
                 } else {
-                    this.minMove = (this.column.minWidth ? parseInt(this.column.minWidth.toString(), 10) : 0)
-                        - parseInt(this.column.width.toString(), 10);
+                    this.minMove = (this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0)
+                        - parseFloat(this.column.width.toString());
                 }
                 this.minMove += this.pageX;
             }
@@ -368,24 +371,31 @@ export class Resize implements IAction {
         }
     }
 
+    private getColData(column: Column, mousemove: number): { [key: string]: number } {
+       return {
+            width: parseFloat(this.widthService.getWidth(column).toString()) + mousemove,
+            minWidth: column.minWidth ? parseFloat(column.minWidth.toString()) : null,
+            maxWidth: column.maxWidth ? parseFloat(column.maxWidth.toString()) : null
+        };
+    }
+
     private resizing(e: PointerEvent | TouchEvent): void {
+        if (isNullOrUndefined(this.column)) {
+            return;
+        }
         if (this.parent.allowTextWrap) {
             this.element.style.height = this.element.parentElement.offsetHeight + 'px';
             this.setHelperHeight();
         }
         let pageX: number = this.getPointX(e);
         let mousemove: number = this.parent.enableRtl ? -(pageX - this.pageX) : (pageX - this.pageX);
-        let colData: { [key: string]: number } = {
-            width: parseInt(this.widthService.getWidth(this.column).toString(), 10) + mousemove,
-            minWidth: this.column.minWidth ? parseInt(this.column.minWidth.toString(), 10) : null,
-            maxWidth: this.column.maxWidth ? parseInt(this.column.maxWidth.toString(), 10) : null
-        };
+        let colData: { [key: string]: number } = this.getColData(this.column, mousemove);
         let width: number = this.getWidth(colData.width, colData.minWidth, colData.maxWidth);
         if ((!this.parent.enableRtl && this.minMove >= pageX) || (this.parent.enableRtl && this.minMove <= pageX)) {
-            width = this.column.minWidth ? parseInt(this.column.minWidth.toString(), 10) : 0;
+            width = this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0;
             this.pageX = pageX = this.minMove;
         }
-        if (width !== parseInt(this.column.width.toString(), 10)) {
+        if (width !== parseFloat(this.column.width.toString())) {
             this.pageX = pageX;
             this.column.width = formatUnit(width);
             let args: ResizeArgs = {
@@ -397,10 +407,51 @@ export class Resize implements IAction {
                 this.cancelResizeAction(true);
                 return;
             }
-            this.widthService.setColumnWidth(this.column, null, 'resize');
+            let columns: Column[] = [this.column];
+            let finalColumns: Column[] = [this.column];
+            if (this.column.columns) {
+                columns = this.getSubColumns(this.column, []);
+                columns = this.calulateColumnsWidth(columns, false, mousemove);
+                finalColumns = this.calulateColumnsWidth(columns, true, mousemove);
+            }
+            for (const col of finalColumns) {
+                this.widthService.setColumnWidth(col, null, 'resize');
+            }
             this.updateHelper();
         }
         this.isDblClk = false;
+    }
+
+    private calulateColumnsWidth(columns: Column[], isUpdate: boolean, mousemove: number): Column[] {
+        let finalColumns: Column[] = [];
+        for (const col of columns) {
+            let totalWidth: number = 0;
+            columns.forEach((col: Column) => {
+                totalWidth += parseFloat(col.width.toString());
+            });
+            let colData: { [key: string]: number } = this.getColData(col, (parseFloat(col.width as string)) * mousemove / totalWidth);
+            let colWidth: number = this.getWidth(colData.width, colData.minWidth, colData.maxWidth);
+            if ((colWidth !== parseFloat(col.width.toString()))) {
+                if (isUpdate) {
+                    col.width = formatUnit(colWidth < 1 ? 1 : colWidth);
+                }
+                finalColumns.push(col);
+            }
+        }
+        return finalColumns;
+    }
+
+    private getSubColumns(column: Column, subColumns: Column[]): Column[] {
+        for (const col of column.columns as Column[]) {
+            if (col.visible !== false && col.allowResizing) {
+                if (col.columns) {
+                    this.getSubColumns(col, subColumns);
+                } else {
+                    subColumns.push(col);
+                }
+            }
+        }
+        return subColumns;
     }
 
     private resizeEnd(e: PointerEvent): void {
@@ -447,12 +498,29 @@ export class Resize implements IAction {
                 }
             }
         }
+        for (const stackedColumn of this.parent.getStackedColumns(this.parent.columns as Column[])) {
+            stackedColumn.width = this.getStackedWidth(stackedColumn, 0);
+        }
         return columns;
+    }
+
+    private getStackedWidth(column: Column, width: number): number {
+        for (const col of column.columns as Column[]) {
+            if (col.visible !== false) {
+                if (col.columns) {
+                   this.getStackedWidth(col, width);
+                } else {
+                    width += col.width as number;
+                }
+            }
+        }
+        return width;
     }
 
     private getTargetColumn(e: PointerEvent | TouchEvent): Column {
         let cell: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, resizeClassList.header);
-        let uid: string = cell.querySelector('.e-headercelldiv').getAttribute('e-mappinguid');
+        cell = cell.querySelector('.e-headercelldiv') || cell.querySelector('.e-stackedheadercelldiv');
+        let uid: string = cell.getAttribute('e-mappinguid');
         return this.parent.getColumnByUid(uid);
     }
 

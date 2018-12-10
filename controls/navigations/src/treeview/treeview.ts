@@ -511,13 +511,15 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private dragParent: Element;
     private checkedElement: string[] = [];
     private ele: number;
+    private disableNode: string[] = [];
+    private onLoaded: boolean;
 
     /**
      * Indicates whether the TreeView allows drag and drop of nodes. To drag and drop a node in
      * desktop, hold the mouse on the node, drag it to the target node and drop the node by releasing
      * the mouse. For touch devices, drag and drop operation is performed by touch, touch move
      * and touch end. For more information on drag and drop nodes concept, refer to 
-     * [Drag and Drop](./drag-and-drop.html).
+     * [Drag and Drop](../treeview/drag-and-drop/).
      * @default false
      */
     @Property(false)
@@ -527,7 +529,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * Enables or disables editing of the text in the TreeView node. When `allowEditing` property is set 
      * to true, the TreeView allows you to edit the node by double clicking the node or by navigating to
      * the node and pressing **F2** key. For more information on node editing, refer
-     * to [Node Editing](./node-editing.html).
+     * to [Node Editing](../treeview/node-editing/).
      * @default false
      */
     @Property(false)
@@ -540,7 +542,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * and click the last node to select.
      * 
      * For more information on multi-selection, refer to 
-     * [Multi-Selection](./multi-selection.html).
+     * [Multi-Selection](../treeview/multiple-selection/).
      * @default false
      */
     @Property(false)
@@ -559,7 +561,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * get the ID of nodes that are currently checked in the TreeView component.
      * The `checkedNodes` property depends upon the value of `showCheckBox` property.
      * For more information on checkedNodes, refer to
-     * [checkedNodes](./checkbox.html#checked-nodes).
+     * [checkedNodes](../treeview/check-box#checked-nodes).
      * @default []
      */
     @Property()
@@ -623,18 +625,25 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * On enabling this property, the entire row of the TreeView node gets selected by clicking a node. 
      * When disabled only the corresponding node's text gets selected.
      * For more information on Fields concept, refer to
-     * [Fields](./data-binding.html#local-data).
+     * [Fields](../treeview/data-binding#local-data).
      * @default true
      */
     @Property(true)
     public fullRowSelect: boolean;
 
     /**
+     * By default, load on demand is set as true. On disabling this property, all nodes are rendered at the beginning itself.
+     * @default true
+     */
+    @Property(true)
+    public loadOnDemand: boolean;
+
+    /**
      * Specifies a template to render customized content for all the nodes. If the `nodeTemplate` property 
      * is set, the template content overrides the displayed node text. The property accepts template string
      * [template string](http://ej2.syncfusion.com/documentation/base/template-engine.html) 
      * or HTML element ID holding the content. For more information on template concept, refer to
-     * [Template](./template.html).
+     * [Template](../treeview/template/).
      * @default null
      */
     @Property()
@@ -646,7 +655,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * On enabling `allowMultiSelection` property we can select multiple nodes and on disabling 
      * it we can select only a single node.
      * For more information on selectedNodes, refer to 
-     * [selectedNodes](./multi-selection.html#selected-nodes).
+     * [selectedNodes](../treeview/multiple-selection#selected-nodes).
      * @default []
      */
     @Property()
@@ -666,7 +675,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Indicates that the nodes will display CheckBoxes in the TreeView.
      * The CheckBox will be displayed next to the expand/collapse icon of the node. For more information on CheckBoxes, refer to
-     * [CheckBox](./checkbox.html).
+     * [CheckBox](../treeview/check-box/).
      * @default false
      */
     @Property(false)
@@ -1077,7 +1086,16 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.ulElement = ListBase.createList(this.createElement, isSorted ? this.rootData : this.getSortedData(this.rootData),
                                              this.listBaseOption);
         this.element.appendChild(this.ulElement);
-        this.finalizeNode(this.element);
+        if (this.loadOnDemand === false) {
+            let rootNodes: NodeListOf<Element> = this.ulElement.querySelectorAll('.e-list-item');
+            let i: number = 0;
+            while (i < rootNodes.length) {
+                this.renderChildNodes(rootNodes[i], true, null, true);
+                i++;
+            }
+        } else {
+            this.finalizeNode(this.element);
+        }
     }
 
     private beforeNodeCreate(e: ItemCreatedArgs): void {
@@ -1545,45 +1563,47 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.trigger('nodeClicked', eventArgs);
     }
 
-    private expandNode(currLi: Element, icon: Element): void {
+    private expandNode(currLi: Element, icon: Element, loaded?: boolean): void {
         if (icon.classList.contains(LOAD)) {
             this.hideSpinner(icon as HTMLElement);
         }
         if (!this.initialRender) {
             icon.classList.add('interaction');
         }
-        if (this.preventExpand !== true) {
-        removeClass([icon], EXPANDABLE);
-        addClass([icon], COLLAPSIBLE);
-        let start: number = 0;
-        let end: number = 0;
-        let proxy: TreeView = this;
-        let ul: HTMLElement = <HTMLElement>select('.' + PARENTITEM, currLi);
-        let liEle: HTMLElement = <HTMLElement>currLi;
-        this.setHeight(liEle, ul);
-        if (this.isAnimate) {
-            this.aniObj.animate(ul, {
-                name: this.animation.expand.effect,
-                duration: this.animation.expand.duration,
-                timingFunction: this.animation.expand.easing,
-                begin: (args: AnimationOptions): void => {
-                    liEle.style.overflow = 'hidden';
-                    start = liEle.offsetHeight;
-                    end = (<HTMLElement>select('.' + TEXTWRAP, currLi)).offsetHeight;
-                },
-                progress: (args: AnimationOptions): void => {
-                    args.element.style.display = 'block';
-                    proxy.animateHeight(args, start, end);
-                },
-                end: (args: AnimationOptions): void => {
-                    args.element.style.display = 'block';
+        if (loaded !== true || (loaded === true && currLi.classList.contains('e-expanded'))) {
+            if (this.preventExpand !== true) {
+                removeClass([icon], EXPANDABLE);
+                addClass([icon], COLLAPSIBLE);
+                let start: number = 0;
+                let end: number = 0;
+                let proxy: TreeView = this;
+                let ul: HTMLElement = <HTMLElement>select('.' + PARENTITEM, currLi);
+                let liEle: HTMLElement = <HTMLElement>currLi;
+                this.setHeight(liEle, ul);
+                if (this.isAnimate) {
+                    this.aniObj.animate(ul, {
+                        name: this.animation.expand.effect,
+                        duration: this.animation.expand.duration,
+                        timingFunction: this.animation.expand.easing,
+                        begin: (args: AnimationOptions): void => {
+                            liEle.style.overflow = 'hidden';
+                            start = liEle.offsetHeight;
+                            end = (<HTMLElement>select('.' + TEXTWRAP, currLi)).offsetHeight;
+                        },
+                        progress: (args: AnimationOptions): void => {
+                            args.element.style.display = 'block';
+                            proxy.animateHeight(args, start, end);
+                        },
+                        end: (args: AnimationOptions): void => {
+                            args.element.style.display = 'block';
+                            this.expandedNode(liEle, ul, icon);
+                        }
+                    });
+                } else {
                     this.expandedNode(liEle, ul, icon);
                 }
-            });
+            }
         } else {
-            this.expandedNode(liEle, ul, icon);
-        }
-    } else {
         let ul: HTMLElement = <HTMLElement>select('.' + PARENTITEM, currLi);
         ul.style.display = 'none';
         if (this.fields.dataSource instanceof DataManager === true) {
@@ -1704,7 +1724,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         args.element.parentElement.style.height = currentHeight + 'px';
     }
 
-    private renderChildNodes(parentLi: Element, expandChild?: boolean, callback?: Function): void {
+    private renderChildNodes(parentLi: Element, expandChild?: boolean, callback?: Function, loaded?: boolean): void {
         let eicon: Element = select('div.' + ICON, parentLi);
         if (isNOU(eicon)) {
             return;
@@ -1723,13 +1743,13 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             if (this.fields.dataSource instanceof DataManager && (this.fields.dataSource.dataSource.offline)) {
                        this.treeList.pop();
                        childItems = this.getChildNodes(this.treeData, parentLi.getAttribute('data-uid'));
-                       this.loadChild(childItems, mapper, eicon, parentLi, expandChild, callback);
+                       this.loadChild(childItems, mapper, eicon, parentLi, expandChild, callback, loaded);
             } else {
                     (mapper.dataSource as DataManager).executeQuery(this.getQuery(mapper,
                                                                                   parentLi.getAttribute('data-uid'))).then((e: Object) => {
                     this.treeList.pop();
                     childItems = (e as ResultData).result;
-                    this.loadChild(childItems, mapper, eicon, parentLi, expandChild, callback);
+                    this.loadChild(childItems, mapper, eicon, parentLi, expandChild, callback, loaded);
                 });
             }
         } else {
@@ -1742,16 +1762,17 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             } else {
                 this.listBaseOption.ariaAttributes.level = parseFloat(parentLi.getAttribute('aria-level')) + 1;
                 parentLi.appendChild(ListBase.createList(this.createElement, this.getSortedData(childItems), this.listBaseOption));
-                this.expandNode(parentLi, eicon);
+                this.expandNode(parentLi, eicon, loaded);
                 this.ensureCheckNode(parentLi);
                 this.finalizeNode(parentLi);
-                this.renderSubChild(parentLi, expandChild);
+                this.disableTreeNodes(childItems);
+                this.renderSubChild(parentLi, expandChild, loaded);
             }
         }
     }
 
     private loadChild(childItems: { [key: string]: Object }[], mapper: FieldsSettingsModel, eicon: Element, parentLi: Element,
-                      expandChild?: boolean, callback?: Function): void {
+                      expandChild?: boolean, callback?: Function , loaded?: boolean): void {
             this.currentLoadData = childItems;
             if (isNOU(childItems) || childItems.length === 0) {
                     detach(eicon);
@@ -1765,10 +1786,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     }
                 this.listBaseOption.ariaAttributes.level = parseFloat(parentLi.getAttribute('aria-level')) + 1;
                 parentLi.appendChild(ListBase.createList(this.createElement, childItems, this.listBaseOption));
-                this.expandNode(parentLi, eicon);
+                this.expandNode(parentLi, eicon, loaded);
                 this.ensureCheckNode(parentLi);
                 this.finalizeNode(parentLi);
-                this.renderSubChild(parentLi, expandChild);
+                this.disableTreeNodes(childItems);
+                this.renderSubChild(parentLi, expandChild, loaded);
                 }
             if (callback) {
                 callback();
@@ -1777,6 +1799,18 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 this.finalize();
             }
     }
+
+    private disableTreeNodes(childItems: { [key: string]: Object }[]): void {
+                let i : number = 0;
+                while (i < childItems.length) {
+                    let id: string = childItems[i][this.fields.id].toString();
+                    if (this.disableNode !== undefined && this.disableNode.indexOf(id) !== -1) {
+                        this.doDisableAction([id]);
+                    }
+                    i++;
+                }
+    }
+
     private ensureCheckNode(element: Element): void {
         if (this.showCheckBox) {
             this.ele = (this.checkedElement) ? this.checkedElement.indexOf(element.getAttribute('data-uid')) : null;
@@ -1852,15 +1886,19 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         return childNodes;
     }
 
-    private renderSubChild(element: Element, expandChild?: boolean): void {
+    private renderSubChild(element: Element, expandChild?: boolean, loaded?: boolean): void {
         if (expandChild) {
             let cIcons: HTMLElement[] = selectAll('.' + EXPANDABLE, element);
             for (let i: number = 0, len: number = cIcons.length; i < len; i++) {
                 let icon: Element = cIcons[i];
-                let curLi: Element = closest(icon, '.' + LISTITEM);
-                this.expandArgs = this.getExpandEvent(curLi, null);
-                this.trigger('nodeExpanding', this.expandArgs);
-                this.renderChildNodes(curLi, expandChild);
+                if (element.querySelector('.e-icons') !== cIcons[i]) {
+                    let curLi: Element = closest(icon, '.' + LISTITEM);
+                    this.expandArgs = this.getExpandEvent(curLi, null);
+                    if (loaded !== true) {
+                        this.trigger('nodeExpanding', this.expandArgs);
+                    }
+                    this.renderChildNodes(curLi, expandChild, null, loaded);
+                }
             }
         }
     }
@@ -2416,7 +2454,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     };
 
     private getNodeData(currLi: Element, fromDS?: boolean): { [key: string]: Object } {
-        if (!isNOU(currLi) && currLi.classList.contains(LISTITEM) && closest(currLi, '.' + CONTROL).classList.contains(ROOT)) {
+        if (!isNOU(currLi) && currLi.classList.contains(LISTITEM) &&
+            !isNOU(closest(currLi, '.' + CONTROL)) && closest(currLi, '.' + CONTROL).classList.contains(ROOT)) {
             let id: string = currLi.getAttribute('data-uid');
             let text: string = this.getText(currLi, fromDS);
             let pNode: Element = closest(currLi.parentNode, '.' + LISTITEM);
@@ -2940,15 +2979,27 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             this.renderChildNodes(dropLi);
         }
         dropUl = select('.' + PARENTITEM, dropLi);
+        if (!isNOU(dropUl) && this.preventExpand === true) {
+            (dropUl as HTMLElement).style.display = 'none';
+        }
+        if (!isNOU(dropUl) && this.preventExpand === false) {
+            (dropUl as HTMLElement).style.display = 'block';
+        }
         if (isNOU(dropUl) && this.preventExpand === true) {
             if (isNOU(dropIcon)) {
                 ListBase.generateIcon(this.createElement, dropLi as HTMLElement, EXPANDABLE, this.listBaseOption);
             }
             let icon: Element = select('div.' + ICON, dropLi);
+            if (icon) {
             icon.classList.add('e-icon-expandable');
+            }
             dropUl = ListBase.generateUL(this.createElement, [], null,  this.listBaseOption);
             dropLi.appendChild(dropUl);
+            if (icon) {
             removeClass([icon], COLLAPSIBLE);
+            } else {
+            ListBase.generateIcon(this.createElement, dropLi as HTMLElement, EXPANDABLE, this.listBaseOption);
+            }
             dropLi.setAttribute('aria-expanded', 'false');
             (dropUl as HTMLElement).style.display = 'none';
         }
@@ -2958,7 +3009,13 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             ListBase.generateIcon(this.createElement, dropLi as HTMLElement, COLLAPSIBLE, this.listBaseOption);
             }
             let icon: Element = select('div.' + ICON, dropLi);
+            if (icon) {
             removeClass([icon], EXPANDABLE);
+            } else {
+            ListBase.generateIcon(this.createElement, dropLi as HTMLElement, COLLAPSIBLE, this.listBaseOption);
+            icon = select('div.' + ICON, dropLi);
+            removeClass([icon], EXPANDABLE);
+            }
             dropUl = ListBase.generateUL(this.createElement, [], null, this.listBaseOption);
             dropLi.appendChild(dropUl);
             this.addExpand(dropLi);
@@ -3276,6 +3333,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private addGivenNodes(nodes: { [key: string]: Object }[], dropLi: Element, index: number, isRemote?: boolean, dropEle?: Element): void {
+        if (nodes.length === 0) {
+            return;
+        }
         let sNodes: { [key: string]: Object }[] = this.getSortedData(nodes);
         let level: number = dropLi ? parseFloat(dropLi.getAttribute('aria-level')) + 1 : 1;
         if (isRemote) {
@@ -3395,6 +3455,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         for (let i: number = 0, len: number = nodes.length; i < len; i++) {
             let liEle: Element = this.getElement(nodes[i]);
             if (isNOU(liEle)) {
+                let id: string;
+                id = (nodes[i]) ? nodes[i].toString() : null;
+                if (id && this.disableNode.indexOf(nodes[i].toString()) === -1) {
+                    this.disableNode.push(nodes[i].toString());
+                }
                 continue;
             }
             liEle.setAttribute('aria-disabled', 'true');
@@ -3406,6 +3471,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         for (let i: number = 0, len: number = nodes.length; i < len; i++) {
             let liEle: Element = this.getElement(nodes[i]);
             if (isNOU(liEle)) {
+                let id: string = (nodes[i]) ? nodes[i].toString() : null;
+                if (id && this.disableNode.indexOf(id) !== -1) {
+                    this.disableNode.splice(this.disableNode.indexOf(id), 1);
+                }
                 continue;
             }
             liEle.removeAttribute('aria-disabled');
@@ -3746,6 +3815,17 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     this.setFullRow(this.fullRowSelect);
                     this.addFullRow(this.fullRowSelect);
                     break;
+                case 'loadOnDemand':
+                    if (this.loadOnDemand === false  && !this.onLoaded) {
+                        let nodes: NodeListOf<Element> = this.element.querySelectorAll('li');
+                        let i: number = 0;
+                        while (i < nodes.length) {
+                            this.renderChildNodes(nodes[i], true, null, true);
+                            i++;
+                        }
+                        this.onLoaded = true;
+                    }
+                    break;
                 case 'nodeTemplate':
                     this.nodeTemplateFn = this.templateComplier(this.nodeTemplate);
                     this.reRenderNodes();
@@ -4045,6 +4125,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     continue;
                 }
                 this.removeNode(liEle);
+            }
+            if (this.dataType === 1) {
+                this.groupedData = this.getGroupedData(this.treeData, this.fields.parentID);
             }
             this.triggerEvent();
         }

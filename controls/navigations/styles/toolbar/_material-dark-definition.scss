@@ -1,0 +1,179 @@
+//default 
+$skin-name: 'material';
+$tbar-zero-value: 0;
+$tbar-pop-icon-bgr-padding: 0;
+$tbar-pop-btn-txt-bgr-pad: 0;
+$tbar-btn-bgr-minheight: 0;
+$tbar-btn-icn-bgr-padding: 0;
+$tbar-icons-bgr-font-size: 14px;
+$tbar-btn-icn-right-bgr-padding: 0;
+$tbar-btn-nrml-minheight: 0;
+$tbar-pop-icon-nrml-padding: 0;
+$tbar-pop-btn-txt-nrml-pad: 0;
+$tbar-btn-icn-nrml-padding: 0;
+$tbar-btn-icn-right-nrml-padding: 0;
+$tbar-icons-bgr-font-size: 18px;
+
+$tbar-separator-bgr-mrgn: 6px 6px;
+$tbar-radius: 4px;
+$tbar-separator-nrml-mrgn: 7.5px 3px;
+$tbar-pop-radius: 4px;
+$tbar-border-size: $border-size;
+$tbar-separator-border-type: $border-type;
+$tbar-pop-box-shadow: 0 2px 2px 1px rgba(0, 0, 0, .21);
+$tbar-hover-border-color: $hover-border-color;
+$tbar-pressed-border: $tbar-hover-border-color;
+$tbar-pop-btn-bgr-padding: $tbar-zero-value 4px;
+$tbar-pop-btn-nrml-padding: $tbar-zero-value 4px;
+$tbar-btn-bgr-minwidth: '';
+$tbar-separator-vertical-bgr-mrgn: 5px 10px;
+$tbar-v-btn-bgr-mrgn: 5.5px auto;
+$tbar-btn-nrml-minwidth: 0;
+$tbar-border-radius: $border-radius;
+$tbar-separator-nrml-height: calc(100% - 15px);
+$tbar-separator-vertical-nrml-mrgn: 3px 7.5px;
+$tbar-v-btn-nrml-mrgn: 0;
+$tbar-tab-highlight-color:  rgba(0, 0, 0, 0);
+$tbar-border-nav-type: solid;
+$tbar-popup-vertical-border-width: $border-size 0 0 0;
+$tbar-popup-vertical-rtl-border-width: 0 0 $border-size 0;
+$tbar-separator-size: $border-size;
+$tba-horizontal-separator: 0 $tbar-separator-size 0 0;
+$tba-vertical-separator: 0 0 $tbar-separator-size 0;
+$tbar-btn-box-shadow: none;
+$tbar-hover-font: $hover-font-color;
+$tbar-press-font: $active-font-color;
+$tbar-active-font-color: $active-font-color;
+$tbar-default-font-overlay: $default-font-color;
+$tbar-default-icon-overlay: $default-icon-color;
+$tbar-popup-rtl-border-width: 0 $border-size 0 0;
+$tbar-popup-border-width: 0 0 0 $border-size;
+$tbar-default-bg: $grey-900;
+$tbar-press-bg: $grey-700;
+$tbar-press-border-color: $grey-700;
+$tbar-active-bg: rgba($grey-white, .22);
+
+$tbar-nrml-size: 42px;
+$tbar-bgr-size: 56px;
+$tbar-nrml-items-size: 42px;
+$tbar-bgr-items-size: 56px;
+$tbar-nrml-item-size: 42px;
+$tbar-bgr-item-size: 48px;
+$tbar-item-nrml-minwidth: 34px;
+$tbar-btn-pop-nrml-minheight: 24px;
+$tbar-btn-pop-bgr-minheight: 30px;
+$tbar-item-nrml-mrgn: 3px;
+$tbar-item-bgr-mrgn: 3px;
+$tbar-nav-nrml-width: 32px;
+$tbar-nav-bgr-width: 40px;
+$tbar-popup-padding: 0;
+$tbar-btn-border-radius: '';
+$tbar-btn-pressed-box-shadow: '';
+
+$tbar-item-bgr-padding: 5px;
+$tbar-item-nrml-padding: 3.5px;
+$btn-txt-nrml-padding: 0 2px 0 2px;
+$btn-txt-bgr-padding: 0 2.5px 0 2.5px;
+$tbar-item-pop-nrml-padding: 0;
+$tbar-item-pop-bgr-padding: 0;
+$tbar-multirow-items-mrgn-bigger: 24px;
+$tbar-multirow-items-mrgn-small: 18px;
+$tbar-multirow-item-mrgn: 0;
+
+$tbar-btn-bgr-mrgn: 5.5px 0;
+$tbar-btn-bgr-height: calc(100% - 11px);
+$tbar-btn-nrml-height: calc(100% - 10px);
+$tbar-btn-nrml-mrgn: 4px 0;
+$tbar-separator-nrml-mrgn: 7.5px 3px ;
+$tbar-separator-bgr-mrgn: 10px 5px ;
+$tbar-separator-nrml-height: calc(100% - 15px);
+$tbar-separator-bgr-height: calc(100% - 20px);
+$tbar-separator-nrml-minheight: 27px;
+$tbar-separator-bgr-minheight: 36px;
+$tbar-btn-icon-bgr-width: 27px;
+$tbar-btn-icon-bgr-height: 34px;
+$tbar-btn-bgr-line-height: 35px;
+$tbar-btn-nrml-line-height: 25px;
+$tbar-btn-icon-bgr-line-height: 34px;
+$tbar-btn-txt-line-height: inherit;
+$tbar-btn-icon-nrml-width: 24px;
+$tbar-btn-icon-nrml-height: 25px;
+$tbar-btn-icon-nrml-line-height: 25px;
+$tbar-left-item-line-height: 35px;
+$tbar-right-item-line-height: 24px;
+$tbar-btn-bgr-padding: $tbar-zero-value 6px ;
+$tbar-btn-nrml-padding: $tbar-zero-value 1.5px ;
+$tbar-pop-btn-bgr-padding: $tbar-zero-value 16px;
+$tbar-pop-btn-nrml-padding: $tbar-zero-value 16px;
+
+$tbar-nav-press-border: '';
+$tbar-nav-hover-border: '';
+$tbar-nav-focus-border: '';
+$tbar-nav-pressed-box-shadow: '';
+$tbar-border-nav-active-type: '';
+$tbar-border-size: 1px;
+$tbar-border-type: solid;
+$tbar-box-shadow: none;
+$tbar-separator-size: .5px;
+$tbar-btn-weight: 400;
+$tbar-btn-family: 'Roboto', 'Segoe UI', 'GeezaPro', 'DejaVu Serif';;
+$tbar-btn-font-size: 14px;
+$tbar-btn-txt-font-size: $tbar-btn-font-size;
+$tbar-hover-bg: rgba($grey-white, .1);
+$tbar-hover-border-color: rgba($grey-white, .1);
+$tbar-focus-border-color: $tbar-hover-border-color;
+$tbar-focus-bg: $tbar-hover-bg;
+$tbar-default-icon-color: $grey-dark-font;
+$tbar-default-font: $grey-dark-font;
+$tbar-hover-font: $tbar-default-font;
+$tbar-active-font-color: $tbar-default-font;
+$tbar-press-font: $tbar-default-font;
+
+$tbar-pressed-bg: $tbar-hover-bg;
+$tbar-pressed-border: $tbar-hover-border-color;
+$tbar-pressed-font: $tbar-hover-font;
+$tbar-select-font: $tbar-hover-font;
+
+
+$tbar-default-icon-overlay: rgba($grey-dark-font, .26);
+$tbar-default-font-overlay: rgba($grey-dark-font, .38);
+$tbar-separator-border: rgba($grey-white, .24);
+$tbar-default-border: $grey-700;
+
+
+
+
+//enddefault
+//dimensions
+$tbar-ribble-animation-border-frame: rgba(255, 255, 255, .5);
+$tbar-ribble-animation-shadow-frame: 0 0 0 0 $tbar-ribble-animation-border-frame;
+$tbar-ribble-animation-shadow-frame-end: 0 0 0 200px rgba(255, 255, 255, .12);
+@mixin tbar-btn-animation {
+  background-color: transparent;
+  border-radius: 50%;
+  border-width: 1px;
+  box-sizing: border-box;
+  content: '' ;
+  height: 1px;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  visibility: hidden;
+  width: 1px;
+}
+
+@mixin tbar-btn-animation-after {
+  animation: tbar-popup-shadow .6s ease-out 0ms;
+  visibility: visible;
+}
+
+@keyframes tbar-popup-shadow {
+  0% {
+    border-color: $tbar-ribble-animation-border-frame;
+    box-shadow: $tbar-ribble-animation-shadow-frame;
+    }
+
+  100% {
+    box-shadow: $tbar-ribble-animation-shadow-frame-end;
+    }
+ }

@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-grids",
-	"version": "16.3.32",
+	"version": "16.2.41",
 	"description": "Feature-rich JavaScript datagrid (datatable) control with built-in support for editing, filtering, grouping, paging, sorting, and exporting to Excel.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -61,7 +61,7 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/syncfusion/ej2-grids.git"
+		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls/tree/master/controls/grids"
 	},
 	"scripts": {
 		"build": "gulp build",

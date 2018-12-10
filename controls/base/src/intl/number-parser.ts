@@ -3,7 +3,7 @@ import { extend, isNullOrUndefined } from '../util';
 import { ParserBase as parser, NumericOptions } from './parser-base';
 import { IntlBase as base } from './intl-base';
 const formatRegex: RegExp = /(^[ncpa]{1})([0-1]?[0-9]|20)?$/i;
-const parseRegex: RegExp =  /^([^0-9]*)(([0-9,]*[0-9]+)(\.[0-9]+)?)([Ee][+-]?[0-9]+)?([^0-9]*)$/;
+const parseRegex: RegExp = /^([^0-9]*)(([0-9,]*[0-9]+)(\.[0-9]+)?)([Ee][+-]?[0-9]+)?([^0-9]*)$/;
 const groupRegex: RegExp = /,/g;
 const latnDecimalRegex: RegExp = /^[0-9]*(\.[0-9]+)?$/;
 
@@ -43,7 +43,7 @@ export class NumberParser {
      * @return Function.  
      */
     public static numberParser(culture: string, option: NumberFormatOptions, cldr: Object): Function {
-        let dependable: base.Dependables = base.getDependables(cldr, culture, true);
+        let dependable: base.Dependables = base.getDependables(cldr, culture, '', true);
         let parseOptions: NumericParts = { custom: true };
         let numOptions: NumericOptions;
         if ((base.formatRegex.test(option.format)) || !(option.format)) {

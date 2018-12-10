@@ -266,6 +266,278 @@ export let defaultData: Object[] = [
     }
 ];
 
+export let blockData: Object[] = [
+    {
+        Id: 1,
+        Subject: 'Meeting with CEO',
+        StartTime: new Date(2017, 9, 30, 10, 0),
+        EndTime: new Date(2017, 9, 30, 11, 30),
+        IsAllDay: false,
+        IsBlock: true,
+        HallId: 1,
+        RoomId: 1,
+        OwnerId: 1
+    }, {
+        Id: 2,
+        Subject: 'Holiday',
+        StartTime: new Date(2017, 10, 1),
+        EndTime: new Date(2017, 10, 2),
+        IsAllDay: false,
+        IsBlock: true,
+        HallId: 1,
+        RoomId: 1,
+        OwnerId: 1
+    }, {
+        Id: 3,
+        Subject: 'Vacation',
+        StartTime: new Date(2017, 9, 22, 11, 0),
+        EndTime: new Date(2017, 9, 24, 10, 0),
+        IsAllDay: false,
+        IsBlock: true,
+        HallId: 1,
+        RoomId: 1,
+        OwnerId: 1
+    }, {
+        Id: 4,
+        Subject: 'Server Refreshing',
+        StartTime: new Date(2017, 10, 4, 11, 0),
+        EndTime: new Date(2017, 10, 6, 10, 0),
+        IsAllDay: true,
+        IsBlock: true,
+        HallId: 1,
+        RoomId: 1,
+        OwnerId: 1
+    }, {
+        Id: 5,
+        Subject: 'Infrastructure Work',
+        StartTime: new Date(2017, 9, 27, 11, 0),
+        EndTime: new Date(2017, 9, 29, 9, 0),
+        IsAllDay: false,
+        IsBlock: true,
+        HallId: 1,
+        RoomId: 1,
+        OwnerId: 1
+    }, {
+        Id: 6,
+        Subject: 'Holiday-Trip',
+        StartTime: new Date(2017, 10, 8),
+        EndTime: new Date(2017, 10, 11),
+        IsAllDay: false,
+        IsBlock: true,
+        HallId: 1,
+        RoomId: 1,
+        OwnerId: 1
+    }, {
+        Id: 7,
+        Subject: 'Refreshment',
+        StartTime: new Date(2017, 10, 13, 10, 0),
+        EndTime: new Date(2017, 10, 13, 12, 0),
+        RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5',
+        IsAllDay: false,
+        IsBlock: true,
+        HallId: 1,
+        RoomId: 1,
+        OwnerId: 1
+    }, {
+        Id: 8,
+        Subject: 'General Meeting',
+        StartTime: new Date(2017, 9, 31, 9, 30),
+        EndTime: new Date(2017, 9, 31, 11, 30),
+        IsAllDay: false,
+        HallId: 1,
+        RoomId: 1,
+        OwnerId: 1
+    }, {
+        Id: 9,
+        Subject: 'Client Meeting',
+        StartTime: new Date(2017, 10, 3, 8, 0),
+        EndTime: new Date(2017, 10, 3, 10, 30),
+        IsAllDay: false,
+        HallId: 1,
+        RoomId: 1,
+        OwnerId: 1
+    }, {
+        Id: 10,
+        Subject: 'Conference',
+        StartTime: new Date(2017, 10, 2, 13, 30),
+        EndTime: new Date(2017, 10, 2, 14, 45),
+        IsAllDay: false,
+        HallId: 1,
+        RoomId: 1,
+        OwnerId: 1
+    }, {
+        Id: 11,
+        Subject: 'Review',
+        StartTime: new Date(2017, 9, 25, 11, 15),
+        EndTime: new Date(2017, 9, 25, 13, 45),
+        IsAllDay: false,
+        HallId: 1,
+        RoomId: 1,
+        OwnerId: 1
+    }, {
+        Id: 12,
+        Subject: 'Shopping',
+        StartTime: new Date(2017, 9, 26, 8, 30),
+        EndTime: new Date(2017, 9, 26, 10, 45),
+        IsAllDay: false,
+        HallId: 1,
+        RoomId: 1,
+        OwnerId: 1
+    }, {
+        Id: 13,
+        Subject: 'Review-2',
+        StartTime: new Date(2017, 10, 7, 11, 15),
+        EndTime: new Date(2017, 10, 7, 13, 45),
+        IsAllDay: false,
+        HallId: 1,
+        RoomId: 1,
+        OwnerId: 1
+    }, {
+        Id: 14,
+        Subject: 'Greetings',
+        StartTime: new Date(2017, 10, 7, 8, 30),
+        EndTime: new Date(2017, 10, 7, 10, 45),
+        IsAllDay: false,
+        HallId: 1,
+        RoomId: 1,
+        OwnerId: 1
+    }, {
+        Id: 15,
+        Subject: 'Vacation',
+        StartTime: new Date(2017, 9, 29, 11, 0),
+        EndTime: new Date(2017, 9, 31, 10, 0),
+        IsAllDay: false,
+        IsBlock: true,
+        HallId: 1,
+        RoomId: 1,
+        OwnerId: 3
+    }, {
+        Id: 16,
+        Subject: 'Holiday-Trip',
+        StartTime: new Date(2017, 10, 2),
+        EndTime: new Date(2017, 10, 5),
+        IsAllDay: false,
+        IsBlock: true,
+        HallId: 1,
+        RoomId: 1,
+        OwnerId: 3
+    }, {
+        Id: 17,
+        Subject: 'Refreshment',
+        StartTime: new Date(2017, 9, 30, 10, 0),
+        EndTime: new Date(2017, 9, 30, 12, 0),
+        RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5',
+        IsAllDay: false,
+        IsBlock: true,
+        HallId: 1,
+        RoomId: 2,
+        OwnerId: 2
+    }, {
+        Id: 18,
+        Subject: 'Review',
+        StartTime: new Date(2017, 9, 31, 11, 15),
+        EndTime: new Date(2017, 9, 31, 13, 45),
+        IsAllDay: false,
+        HallId: 1,
+        RoomId: 1,
+        OwnerId: 3
+    }, {
+        Id: 19,
+        Subject: 'Shopping',
+        StartTime: new Date(2017, 9, 29, 8, 30),
+        EndTime: new Date(2017, 9, 29, 10, 45),
+        IsAllDay: false,
+        HallId: 1,
+        RoomId: 1,
+        OwnerId: 3
+    }, {
+        Id: 20,
+        Subject: 'Review-2',
+        StartTime: new Date(2017, 10, 1, 12, 0),
+        EndTime: new Date(2017, 10, 1, 13, 45),
+        IsAllDay: false,
+        HallId: 1,
+        RoomId: 2,
+        OwnerId: 2
+    }, {
+        Id: 21,
+        Subject: 'Greetings',
+        StartTime: new Date(2017, 10, 2, 8, 30),
+        EndTime: new Date(2017, 10, 2, 10, 0),
+        IsAllDay: false,
+        HallId: 1,
+        RoomId: 2,
+        OwnerId: 2
+    }
+];
+
+let msPerDay: number = 86400000;
+let msPerHour: number = 3600000;
+let currentTime: number = new Date().setMinutes(0, 0, 0);
+export let readonlyEventsData: Object[] = [
+    {
+        Id: 1,
+        Subject: 'Project Workflow Analysis',
+        StartTime: new Date(currentTime + msPerDay * -2 + msPerHour * 2),
+        EndTime: new Date(currentTime + msPerDay * -2 + msPerHour * 4),
+        IsReadonly: true
+    }, {
+        Id: 2,
+        Subject: 'Project Requirement Planning',
+        StartTime: new Date(currentTime + msPerDay * -1 + msPerHour * 2),
+        EndTime: new Date(currentTime + msPerDay * -1 + msPerHour * 4),
+        IsReadonly: true
+    }, {
+        Id: 3,
+        Subject: 'Meeting with Developers',
+        StartTime: new Date(currentTime + msPerDay * -1 + msPerHour * -3),
+        EndTime: new Date(currentTime + msPerDay * -1 + msPerHour * -1),
+        IsReadonly: true
+    }, {
+        Id: 4,
+        Subject: 'Team Fun Activities',
+        StartTime: new Date(currentTime + msPerHour * -4),
+        EndTime: new Date(currentTime + msPerHour * -2),
+        IsReadonly: true
+    }, {
+        Id: 5,
+        Subject: 'Quality Analysis',
+        StartTime: new Date(currentTime + msPerHour * 1),
+        EndTime: new Date(currentTime + msPerHour * 3),
+        IsReadonly: true
+    }, {
+        Id: 6,
+        Subject: 'Customer meeting – John Mackenzie',
+        StartTime: new Date(currentTime + msPerHour * 5),
+        EndTime: new Date(currentTime + msPerHour * 6),
+        IsReadonly: false
+    }, {
+        Id: 7,
+        Subject: 'Meeting with Core team',
+        StartTime: new Date(currentTime + msPerHour * 9),
+        EndTime: new Date(currentTime + msPerHour * 10),
+        IsReadonly: false
+    }, {
+        Id: 8,
+        Subject: 'Project Review',
+        StartTime: new Date(currentTime + msPerDay * 1 + msPerHour * 3),
+        EndTime: new Date(currentTime + msPerDay * 1 + msPerHour * 5),
+        IsReadonly: false
+    }, {
+        Id: 9,
+        Subject: 'Project demo meeting with Andrew',
+        StartTime: new Date(currentTime + msPerDay * 1 + msPerHour * -4),
+        EndTime: new Date(currentTime + msPerDay * 1 + msPerHour * -3),
+        IsReadonly: false
+    }, {
+        Id: 10,
+        Subject: 'Online Hosting of Project',
+        StartTime: new Date(currentTime + msPerDay * 2 + msPerHour * 4),
+        EndTime: new Date(currentTime + msPerDay * 2 + msPerHour * 6),
+        IsReadonly: false
+    }
+];
+
 export let dragResizeData: Object[] = [
     {
         Id: 1,

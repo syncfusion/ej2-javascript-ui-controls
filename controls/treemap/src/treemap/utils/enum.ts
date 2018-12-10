@@ -190,7 +190,15 @@ export type TreeMapTheme =
     'Material' |
     /**  Render a treemap with Fabric theme. */
     'Fabric' |
+    /**  Render a treemap with HighContrast Dark theme. */
+    'HighcontrastLight' |
+    /**  Render a treemap with Bootstrap theme. */
+    'Bootstrap' |
+    /**  Render a treemap with Material Dark theme. */
+    'MaterialDark' |
+    /**  Render a treemap with Fabric Dark theme. */
+    'FabricDark' |
     /**  Render a treemap with HighContrast theme. */
     'Highcontrast' |
-    /**  Render a treemap with Bootstrap theme. */
-    'Bootstrap';
+    /**  Render a treemap with Bootstrap Dark theme. */
+    'BootstrapDark' ;

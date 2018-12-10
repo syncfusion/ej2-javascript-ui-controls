@@ -290,26 +290,26 @@ export class GeoLocation {
  * @private
  */
 export function measureText(text: string, font: FontModel): Size {
-    let htmlObject: HTMLElement = document.getElementById('mapsmeasuretext');
+    let measureObject: HTMLElement = document.getElementById('mapsmeasuretext');
 
-    if (htmlObject === null) {
-        htmlObject = createElement('text', { id: 'mapsmeasuretext' });
-        document.body.appendChild(htmlObject);
+    if (measureObject === null) {
+        measureObject = createElement('text', { id: 'mapsmeasuretext' });
+        document.body.appendChild(measureObject);
     }
 
-    htmlObject.innerHTML = text;
-    htmlObject.style.position = 'absolute';
-    htmlObject.style.fontSize = font.size;
-    htmlObject.style.fontWeight = font.fontWeight;
-    htmlObject.style.fontStyle = font.fontStyle;
-    htmlObject.style.fontFamily = font.fontFamily;
-    htmlObject.style.visibility = 'hidden';
-    htmlObject.style.top = '-100';
-    htmlObject.style.left = '0';
-    htmlObject.style.whiteSpace = 'nowrap';
+    measureObject.innerHTML = text;
+    measureObject.style.position = 'absolute';
+    measureObject.style.fontSize = font.size;
+    measureObject.style.fontWeight = font.fontWeight;
+    measureObject.style.fontStyle = font.fontStyle;
+    measureObject.style.fontFamily = font.fontFamily;
+    measureObject.style.visibility = 'hidden';
+    measureObject.style.top = '-100';
+    measureObject.style.left = '0';
+    measureObject.style.whiteSpace = 'nowrap';
     // For bootstrap line height issue
-    htmlObject.style.lineHeight = 'normal';
-    return new Size(htmlObject.clientWidth, htmlObject.clientHeight);
+    measureObject.style.lineHeight = 'normal';
+    return new Size(measureObject.clientWidth, measureObject.clientHeight);
 }
 
 /**
@@ -317,21 +317,21 @@ export function measureText(text: string, font: FontModel): Size {
  * @private
  */
 export class TextOption {
-    public id: string;
     public anchor: string;
-    public text: string | string[];
+    public id: string;
     public transform: string = '';
     public x: number;
     public y: number;
+    public text: string | string[];
     public baseLine: string = 'auto';
 
     constructor(id?: string, x?: number, y?: number, anchor?: string, text?: string | string[], transform: string = '', baseLine?: string) {
         this.id = id;
-        this.x = x;
-        this.y = y;
-        this.anchor = anchor;
         this.text = text;
         this.transform = transform;
+        this.anchor = anchor;
+        this.x = x;
+        this.y = y;
         this.baseLine = baseLine;
     }
 }
@@ -358,6 +358,17 @@ export class PathOption {
         this['stroke-width'] = width;
         this['stroke-dasharray'] = dashArray;
         this.d = d;
+    }
+}
+/** @private */
+export class ColorValue {
+    public r: number;
+    public g: number;
+    public b: number;
+    constructor(r?: number, g?: number, b?: number) {
+        this.r = r;
+        this.g = g;
+        this.b = b;
     }
 }
 /**
@@ -533,23 +544,23 @@ export class PatternOptions {
  * @private
  */
 export function renderTextElement(
-    options: TextOption, font: FontModel, color: string, parent: HTMLElement | Element, isMinus: boolean = false
+    option: TextOption, style: FontModel, color: string, parent: HTMLElement | Element, isMinus: boolean = false
 ): Element {
     let renderOptions: Object = {
-        'id': options.id,
-        'x': options.x,
-        'y': options.y,
+        'id': option.id,
+        'x': option.x,
+        'y': option.y,
         'fill': color,
-        'font-size': font.size,
-        'font-style': font.fontStyle,
-        'font-family': font.fontFamily,
-        'font-weight': font.fontWeight,
-        'text-anchor': options.anchor,
-        'transform': options.transform,
-        'opacity': font.opacity,
-        'dominant-baseline': options.baseLine
+        'font-size': style.size,
+        'font-style': style.fontStyle,
+        'font-family': style.fontFamily,
+        'font-weight': style.fontWeight,
+        'text-anchor': option.anchor,
+        'transform': option.transform,
+        'opacity': style.opacity,
+        'dominant-baseline': option.baseLine
     };
-    let text: string = typeof options.text === 'string' ? options.text : isMinus ? options.text[options.text.length - 1] : options.text[0];
+    let text: string = typeof option.text === 'string' ? option.text : isMinus ? option.text[option.text.length - 1] : option.text[0];
     let tspanElement: Element;
     let renderer: SvgRenderer = new SvgRenderer('');
     let height: number;
@@ -561,15 +572,15 @@ export function renderTextElement(
     htmlObject.style['-khtml-user-select'] = 'none';
     htmlObject.style['-ms-user-select'] = 'none';
     htmlObject.style['-o-user-select'] = 'none';
-    if (typeof options.text !== 'string' && options.text.length > 1) {
-        for (let i: number = 1, len: number = options.text.length; i < len; i++) {
-            height = (measureText(options.text[i], font).height);
+    if (typeof option.text !== 'string' && option.text.length > 1) {
+        for (let i: number = 1, len: number = option.text.length; i < len; i++) {
+            height = (measureText(option.text[i], style).height);
             tspanElement = renderer.createTSpan(
                 {
-                    'x': options.x, 'id': options.id,
-                    'y': (options.y) + ((isMinus) ? -(i * height) : (i * height))
+                    'x': option.x, 'id': option.id,
+                    'y': (option.y) + ((isMinus) ? -(i * height) : (i * height))
                 },
-                isMinus ? options.text[options.text.length - (i + 1)] : options.text[i]
+                isMinus ? option.text[option.text.length - (i + 1)] : option.text[i]
             );
             htmlObject.appendChild(tspanElement);
         }
@@ -817,11 +828,27 @@ export function getFieldData(dataSource: object[], fields: string[]): object[] {
  * To find the index of dataSource from shape properties
  */
 // tslint:disable:no-string-literal
-export function checkShapeDataFields(dataSource: object[], properties: object, dataPath: string, propertyPath: string): number {
+export function checkShapeDataFields(dataSource: object[], properties: object, dataPath: string, propertyPath: string | string[]): number {
     if (!(isNullOrUndefined(properties))) {
         for (let i: number = 0; i < dataSource.length; i++) {
-            if (dataSource[i][dataPath] === properties[propertyPath]) {
+            let shapePath: string = checkPropertyPath(dataSource[i][dataPath], propertyPath, properties);
+            if (dataSource[i][dataPath] === properties[shapePath]) {
                 return i;
+            }
+        }
+    }
+    return null;
+}
+export function checkPropertyPath(shapeData: string, shapePropertyPath: string | string[], shape: object): string {
+    if (!isNullOrUndefined(shapeData) && !isNullOrUndefined(shape)) {
+        if (!isNullOrUndefined(shapePropertyPath)) {
+            let length: number;
+            let properties: string[] = (Object.prototype.toString.call(shapePropertyPath) === '[object Array]' ?
+            shapePropertyPath : [shapePropertyPath]) as string[];
+            for (let i: number = 0; i < properties.length; i++) {
+                if (shapeData === shape[properties[i]]) {
+                    return properties[i];
+                }
             }
         }
     }
@@ -1003,7 +1030,6 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
     let mapHeight: number = Math.abs(min['y'] - max['y']);
     let factor: number = animate ? 1 : mapObject.zoomSettings.zoomFactor;
     let scaleFactor: number;
-    let scaleX: number; let scaleY: number;
     let center: { latitude: number, longitude: number } = mapObject.centerPosition;
     if (!isNullOrUndefined(center.longitude) && !isNullOrUndefined(center.latitude)) {
         let leftPosition: number = ((mapWidth + Math.abs(mapObject.mapAreaRect.width - mapWidth)) / 2) / factor;
@@ -1316,103 +1342,99 @@ export function createTooltip(id: string, text: string, top: number, left: numbe
 export function drawSymbol(location: Point, shape: string, size: Size, url: string, options: PathOption): Element {
     let functionName: string = 'Path';
     let renderer: SvgRenderer = new SvgRenderer('');
-    let temp: IShapes = calculateLegendShapes(location, size, shape, options, url);
+    let temp: IShapes = renderLegendShape(location, size, shape, options, url);
     let htmlObject: Element = renderer['draw' + temp.functionName](temp.renderOption);
     return htmlObject;
 }
 
 
 /** @private */
-export function calculateLegendShapes(location: Point, size: Size, shape: string, options: PathOption, url: string): IShapes {
-    let path: string;
+export function renderLegendShape(location: MapLocation, size: Size, shape: string, options: PathOption, url: string): IShapes {
+    let renderPath: string;
     let functionName: string = 'Path';
-    let width: number = size.width;
-    let height: number = size.height;
-    let locX: number = location.x;
-    let locY: number = location.y;
-    let x: number = location.x + (-width / 2);
-    let y: number = location.y + (-height / 2);
+    let shapeWidth: number = size.width;
+    let shapeHeight: number = size.height;
+    let shapeX: number = location.x;
+    let shapeY: number = location.y;
+    let x: number = location.x + (-shapeWidth / 2);
+    let y: number = location.y + (-shapeHeight / 2);
     switch (shape) {
         case 'Circle':
         case 'Bubble':
             functionName = 'Ellipse';
-            merge(options, { 'rx': width / 2, 'ry': height / 2, 'cx': locX, 'cy': locY });
-            break;
-        case 'Star':
-            path = 'M ' + (location.x + size.width / 3) + ' ' + (location.y - size.height / 2) + ' L ' + (location.x - size.width / 2)
-                + ' ' + (location.y + size.height / 6) + ' L ' + (location.x + size.width / 2) + ' ' + (location.y + size.height / 6)
-                + ' L ' + (location.x - size.width / 3) + ' ' + (location.y - size.height / 2) + ' L ' + location.x + ' ' +
-                (location.y + size.height / 2) + ' L ' + (location.x + size.width / 3) + ' ' + (location.y - size.height / 2) + ' Z';
-            merge(options, { 'd': path });
-            break;
-        case 'Cross':
-            path = 'M' + ' ' + x + ' ' + locY + ' ' + 'L' + ' ' + (locX + (width / 2)) + ' ' + locY + ' ' +
-                'M' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + locX + ' ' +
-                (locY + (-height / 2));
-            merge(options, { 'd': path });
-            break;
-        case 'HorizontalLine':
-            path = 'M' + ' ' + x + ' ' + locY + ' ' + 'L' + ' ' + (locX + (width / 2)) + ' ' + locY;
-            merge(options, { 'd': path });
+            merge(options, { 'rx': shapeWidth / 2, 'ry': shapeHeight / 2, 'cx': shapeX, 'cy': shapeY });
             break;
         case 'VerticalLine':
-            path = 'M' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + locX + ' ' + (locY + (-height / 2));
-            merge(options, { 'd': path });
+            renderPath = 'M' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' + 'L' + ' ' + shapeX + ' '
+                + (shapeY + (-shapeHeight / 2));
+            merge(options, { 'd': renderPath });
             break;
         case 'Diamond':
-            path = 'M' + ' ' + x + ' ' + locY + ' ' +
-                'L' + ' ' + locX + ' ' + (locY + (-height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + locY + ' ' +
-                'L' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + locY + ' z';
-            merge(options, { 'd': path });
+            renderPath = 'M' + ' ' + x + ' ' + shapeY + ' ' +
+                'L' + ' ' + shapeX + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
+                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + shapeY + ' ' +
+                'L' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+                'L' + ' ' + x + ' ' + shapeY + ' z';
+            merge(options, { 'd': renderPath });
             break;
         case 'Rectangle':
-            path = 'M' + ' ' + x + ' ' + (locY + (-height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (-height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + (locY + (-height / 2)) + ' z';
-            merge(options, { 'd': path });
+            renderPath = 'M' + ' ' + x + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
+                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
+                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+                'L' + ' ' + x + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+                'L' + ' ' + x + ' ' + (shapeY + (-shapeHeight / 2)) + ' z';
+            merge(options, { 'd': renderPath });
             break;
         case 'Triangle':
-            path = 'M' + ' ' + x + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + locX + ' ' + (locY + (-height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + (locY + (height / 2)) + ' z';
-            merge(options, { 'd': path });
+            renderPath = 'M' + ' ' + x + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+                'L' + ' ' + shapeX + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
+                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+                'L' + ' ' + x + ' ' + (shapeY + (shapeHeight / 2)) + ' z';
+            merge(options, { 'd': renderPath });
             break;
         case 'InvertedTriangle':
-            path = 'M' + ' ' + (locX + (width / 2)) + ' ' + (locY - (height / 2)) + ' ' +
-                'L' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + (locX - (width / 2)) + ' ' + (locY - (height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY - (height / 2)) + ' z';
-            merge(options, { 'd': path });
+            renderPath = 'M' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY - (shapeHeight / 2)) + ' ' +
+                'L' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+                'L' + ' ' + (shapeX - (shapeWidth / 2)) + ' ' + (shapeY - (shapeHeight / 2)) + ' ' +
+                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY - (shapeHeight / 2)) + ' z';
+            merge(options, { 'd': renderPath });
             break;
         case 'Pentagon':
             let eq: number = 72;
             let xValue: number;
             let yValue: number;
             for (let i: number = 0; i <= 5; i++) {
-                xValue = (width / 2) * Math.cos((Math.PI / 180) * (i * eq));
-                yValue = (height / 2) * Math.sin((Math.PI / 180) * (i * eq));
+                xValue = (shapeWidth / 2) * Math.cos((Math.PI / 180) * (i * eq));
+                yValue = (shapeWidth / 2) * Math.sin((Math.PI / 180) * (i * eq));
                 if (i === 0) {
-                    path = 'M' + ' ' + (locX + xValue) + ' ' + (locY + yValue) + ' ';
+                    renderPath = 'M' + ' ' + (shapeX + xValue) + ' ' + (shapeY + yValue) + ' ';
                 } else {
-                    path = path.concat('L' + ' ' + (locX + xValue) + ' ' + (locY + yValue) + ' ');
+                    renderPath = renderPath.concat('L' + ' ' + (shapeX + xValue) + ' ' + (shapeY + yValue) + ' ');
                 }
             }
-            path = path.concat('Z');
-            merge(options, { 'd': path });
+            renderPath = renderPath.concat('Z');
+            merge(options, { 'd': renderPath });
+            break;
+        case 'Star':
+            renderPath = 'M ' + (location.x + size.width / 3) + ' ' + (location.y - size.height / 2) + ' L ' + (location.x - size.width / 2)
+                + ' ' + (location.y + size.height / 6) + ' L ' + (location.x + size.width / 2) + ' ' + (location.y + size.height / 6)
+                + ' L ' + (location.x - size.width / 3) + ' ' + (location.y - size.height / 2) + ' L ' + location.x + ' ' +
+                (location.y + size.height / 2) + ' L ' + (location.x + size.width / 3) + ' ' + (location.y - size.height / 2) + ' Z';
+            merge(options, { 'd': renderPath });
+            break;
+        case 'Cross':
+            renderPath = 'M' + ' ' + x + ' ' + shapeY + ' ' + 'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + shapeY + ' ' +
+                'M' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' + 'L' + ' ' + shapeX + ' ' +
+                (shapeY + (-shapeHeight / 2));
+            merge(options, { 'd': renderPath });
             break;
         case 'Image':
             functionName = 'Image';
-            merge(options, { 'href': url, 'height': height, 'width': width, x: x, y: y });
+            merge(options, { 'href': url, 'height': shapeHeight, 'width': shapeWidth, x: x, y: y });
             break;
     }
     return { renderOption: options, functionName: functionName };
 }
-
 /**
  * Animation Effect Calculation End
  * @private

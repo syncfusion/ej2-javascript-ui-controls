@@ -2048,7 +2048,8 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
                 template = template[Object.keys(template)[0]];
             }
             if (!args.cancel) {
-                args['tooltip']['properties']['textStyle']['color'] = (this.gauge.theme === 'Highcontrast') ? '#00000' : '#FFFFFF';
+                args['tooltip']['properties']['textStyle']['color'] =
+                    (this.gauge.theme.toLowerCase().indexOf('dark') > -1) ? '#00000' : '#FFFFFF';
                 this.svgTooltip = new Tooltip({
                     enable: true,
                     header: '',
@@ -2060,7 +2061,7 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
                     palette: [],
                     inverted: !(args.gauge.orientation === 'Horizontal'),
                     enableAnimation: args.tooltip.enableAnimation,
-                    fill: (this.gauge.theme === 'Highcontrast') ? '#FFFFFF' : args.tooltip.fill,
+                    fill: (this.gauge.theme.toLowerCase().indexOf('dark') > -1) ? '#FFFFFF' : args.tooltip.fill,
                     areaBounds: new Rect(areaRect.left, tooltipPos === 'Bottom' ? location_1.y : areaRect.top, tooltipPos === 'Right' ? Math.abs(areaRect.left - location_1.x) : areaRect.width, areaRect.height),
                     textStyle: args.tooltip.textStyle,
                     border: args.tooltip.border,
@@ -2233,9 +2234,24 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
         this.wireEvents();
     };
     LinearGauge.prototype.themeEffect = function () {
-        if (this.theme === 'Highcontrast') {
+        var theme = this.theme.toLowerCase();
+        if (theme === 'highcontrast-dark') {
             this.titleStyle.color = this.titleStyle.color || '#FFFFFF';
             this.setThemeColors('#FFFFFF', '#FFFFFF');
+        }
+        else if (theme.indexOf('dark') > -1) {
+            for (var _i = 0, _a = this.axes; _i < _a.length; _i++) {
+                var axis = _a[_i];
+                axis.line.color = axis.line.color || '#C8C8C8';
+                axis.labelStyle.font.color = axis.labelStyle.font.color || '#DADADA';
+                axis.majorTicks.color = axis.majorTicks.color || '#C8C8C8';
+                axis.minorTicks.color = axis.minorTicks.color || '#9A9A9A';
+                for (var _b = 0, _c = axis.pointers; _b < _c.length; _b++) {
+                    var pointer = _c[_b];
+                    pointer.color = pointer.color || '#9A9A9A';
+                }
+            }
+            this.background = '#333232';
         }
         else {
             this.titleStyle.color = this.titleStyle.color || '#424242';

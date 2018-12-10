@@ -9,12 +9,13 @@ import { ConnectorModel } from '../objects/connector-model';
 import { DiagramAction } from '../enum/enum';
 import { removeItem, getObjectType } from '../utility/diagram-util';
 import { cloneObject } from '../utility/base-util';
-import { IElement } from '../objects/interface/IElement';
+import { IElement, StackEntryObject } from '../objects/interface/IElement';
 import { ShapeAnnotationModel, PathAnnotationModel } from '../objects/annotation-model';
 import { PointPortModel } from '../objects/port-model';
 import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';
 import { findAnnotation, findPort } from '../utility/diagram-util';
 import { PointPort } from './port';
+import { Size } from '../index';
 
 /**
  * Undo redo function used for revert and restore the changes
@@ -203,6 +204,12 @@ export class UndoRedo {
             case 'AnnotationPropertyChanged':
                 this.recordAnnotationChanged(entry, diagram, false);
                 break;
+            case 'ChildCollectionChanged':
+                this.recordChildCollectionChanged(entry, diagram, false);
+                break;
+            case 'StackChildPositionChanged':
+                this.recordStackPositionChanged(entry, diagram, false);
+                break;
         }
         diagram.diagramActions &= ~DiagramAction.UndoRedo;
         diagram.protectPropertyChange(false);
@@ -242,11 +249,11 @@ export class UndoRedo {
     private recordAnnotationChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
         let entryObject: NodeModel | ConnectorModel = ((isRedo) ? entry.redoObject : entry.undoObject) as NodeModel | ConnectorModel;
         let oldElement: ShapeAnnotation | PathAnnotation = findAnnotation(
-            entryObject, entry.changeObjectId) as ShapeAnnotation | PathAnnotation;
+            entryObject, entry.objectId) as ShapeAnnotation | PathAnnotation;
         let undoChanges: Object = diagram.commandHandler.getAnnotationChanges(diagram.nameTable[entryObject.id], oldElement);
         let currentObject: NodeModel | ConnectorModel = diagram.nameTable[entryObject.id];
         let currentElement: ShapeAnnotation | PathAnnotation = findAnnotation(
-            currentObject, entry.changeObjectId) as ShapeAnnotation | PathAnnotation;
+            currentObject, entry.objectId) as ShapeAnnotation | PathAnnotation;
         currentElement.offset = oldElement.offset; currentElement.margin = oldElement.margin;
         currentElement.width = oldElement.width;
         currentElement.height = oldElement.height;
@@ -258,13 +265,63 @@ export class UndoRedo {
         }
     }
 
+    private recordChildCollectionChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
+        let entryObject: NodeModel | ConnectorModel = ((isRedo) ? entry.redoObject : entry.undoObject) as NodeModel | ConnectorModel;
+        let parentNode: NodeModel;
+        let actualObject: Node = diagram.nameTable[(entryObject as Node).id];
+        if (actualObject.parentId) {
+            parentNode = diagram.nameTable[actualObject.parentId];
+            parentNode.children.splice(parentNode.children.indexOf(actualObject.id), 1);
+            parentNode.wrapper.children.splice(parentNode.wrapper.children.indexOf(actualObject.wrapper), 1);
+        }
+        if ((entryObject as Node).parentId !== '') {
+            parentNode = diagram.nameTable[(entryObject as Node).parentId];
+            parentNode.children.push((entryObject as Node).id);
+            parentNode.wrapper.children.push(actualObject.wrapper);
+        }
+        actualObject.parentId = (entryObject as Node).parentId;
+        diagram.updateDiagramObject(actualObject);
+    }
+
+    private recordStackPositionChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
+        let entryObject: StackEntryObject = ((isRedo) ? entry.redoObject : entry.undoObject) as StackEntryObject;
+        if (entryObject.source) {
+            let parent: Node = diagram.nameTable[(entryObject.source as Node).parentId];
+            if (parent) {
+                if (entryObject.target) {
+                    parent.wrapper.children.splice(entryObject.targetIndex, 1);
+                    parent.wrapper.children.splice(entryObject.sourceIndex, 0, entryObject.source.wrapper);
+                } else {
+                    if (entryObject.sourceIndex !== undefined) {
+                        if (!diagram.nameTable[entryObject.source.id]) {
+                            diagram.add(entryObject.source);
+                        }
+                        parent.wrapper.children.splice(entryObject.sourceIndex, 0, diagram.nameTable[entryObject.source.id].wrapper);
+                        diagram.nameTable[entryObject.source.id].parentId = parent.id;
+                    } else {
+                        parent.wrapper.children.splice(
+                            parent.wrapper.children.indexOf(diagram.nameTable[entryObject.source.id].wrapper), 1);
+                        diagram.nameTable[entryObject.source.id].parentId = '';
+                    }
+                }
+                if (isRedo && parent.shape.type === 'UmlClassifier') {
+                    diagram.remove(entryObject.source);
+                }
+                parent.wrapper.measure(new Size());
+                parent.wrapper.arrange(parent.wrapper.desiredSize);
+                diagram.updateDiagramObject(parent);
+                diagram.updateSelector();
+            }
+        }
+    }
+
     private recordPortChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
         let entryObject: NodeModel = ((isRedo) ? (entry.redoObject as SelectorModel).nodes[0] :
             (entry.undoObject as SelectorModel).nodes[0]);
-        let oldElement: PointPort = findPort(entryObject, entry.changeObjectId) as PointPort;
+        let oldElement: PointPort = findPort(entryObject, entry.objectId) as PointPort;
         let undoChanges: Object = diagram.commandHandler.getPortChanges(diagram.nameTable[entryObject.id], oldElement);
         let currentObject: NodeModel | ConnectorModel = diagram.nameTable[entryObject.id];
-        let currentElement: PointPort = findPort(currentObject, entry.changeObjectId) as PointPort;
+        let currentElement: PointPort = findPort(currentObject, entry.objectId) as PointPort;
         currentElement.offset = oldElement.offset;
         diagram.nodePropertyChange(currentObject as Node, {} as Node, undoChanges as Node);
     }
@@ -342,7 +399,7 @@ export class UndoRedo {
         if (obj && obj.nodes && obj.nodes.length > 0) {
             for (i = 0; i < obj.nodes.length; i++) {
                 node = obj.nodes[i];
-                if (node.children) {
+                if (node.children && !node.container) {
                     let elements: (NodeModel | ConnectorModel)[] = [];
                     let nodes: (NodeModel | ConnectorModel)[] = diagram.commandHandler.getAllDescendants(node, elements);
                     for (let i: number = 0; i < nodes.length; i++) {
@@ -654,6 +711,12 @@ export class UndoRedo {
                 break;
             case 'AnnotationPropertyChanged':
                 this.recordAnnotationChanged(historyEntry, diagram, true);
+                break;
+            case 'ChildCollectionChanged':
+                this.recordChildCollectionChanged(historyEntry, diagram, true);
+                break;
+            case 'StackChildPositionChanged':
+                this.recordStackPositionChanged(historyEntry, diagram, true);
                 break;
         }
         diagram.protectPropertyChange(false);

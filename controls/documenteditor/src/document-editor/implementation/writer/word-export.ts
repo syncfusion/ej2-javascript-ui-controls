@@ -535,7 +535,7 @@ export class WordExport {
         // if (IsNeedToSerializeSectionFootNoteProperties(section))
         //     SerializeFootnoteProperties(section);
         // if (IsNeedToSerializeSectionEndNoteProperties(section))
-        //     SerializeEndnoteProperties(section);
+        //     SerializeEndnoteProperties(section);      
         this.serializeSectionType(writer, 'nextPage');
         this.serializePageSetup(writer, section.sectionFormat);
         this.serializeColumns(writer, section);
@@ -569,10 +569,10 @@ export class WordExport {
 
         // SerializeTextDirection(section);
 
-        // if (section.PageSetup.Bidi) {
-        //     writer.WriteStartElement('bidi', this.wNamespace);
-        //     writer.WriteEndElement();
-        // }
+        if (!isNullOrUndefined(section.sectionFormat) && section.sectionFormat.bidi) {
+            writer.writeStartElement(undefined, 'bidi', this.wNamespace);
+            writer.writeEndElement();
+        }
         //rtlGutter
         // SerializeDocGrid(section);
         //printerSettings
@@ -830,8 +830,21 @@ export class WordExport {
     // Serialize the paragraph items
     private serializeParagraphItems(writer: XmlWriter, paraItems: any): void {
         let previousNode: any = undefined;
+        let isContinueOverride: boolean = false;
         for (let i: number = 0; i < paraItems.length; i++) {
             let item: any = paraItems[i];
+            let isBdo: boolean = false;
+            if (item.characterFormat) {
+                isBdo = !isNullOrUndefined(item.characterFormat.bdo) && item.characterFormat.bdo !== 'None';
+                if (isBdo && !isContinueOverride) {
+                    this.serializeBiDirectionalOverride(writer, item.characterFormat);
+                    isContinueOverride = true;
+                }
+            }
+            if (isContinueOverride && !isBdo) {
+                writer.writeEndElement();
+                isContinueOverride = false;
+            }
             if (item.hasOwnProperty('fieldType')) {
                 this.serializeFieldCharacter(writer, item);
             } else if (item.hasOwnProperty('imageString')) {
@@ -843,6 +856,14 @@ export class WordExport {
             }
             previousNode = item;
         }
+        if (isContinueOverride) {
+            writer.writeEndElement();
+        }
+    }
+
+    private serializeBiDirectionalOverride(writer: any, characterFormat: any): void {
+        writer.writeStartElement(undefined, 'bdo', this.wNamespace);
+        writer.writeAttributeString(undefined, 'val', this.wNamespace, characterFormat.bdo.toLowerCase());
     }
     // Serialize the book mark
     private serializeBookMark(writer: XmlWriter, bookmark: any): void {
@@ -1513,19 +1534,18 @@ export class WordExport {
         //             m_writer.WriteEndElement();
         //         }
         //     }
-        //     if (format.Bidi)
-        //     {
-        //         m_writer.WriteStartElement('bidiVisual', W_namespace);
-        //         m_writer.WriteEndElement();
-        //     }
         //     SerializeDocxProps(tempDocxProps, 'tblStyleRowBandSize');
-        //     SerializeDocxProps(tempDocxProps, 'tblStyleColBandSize');
+        //     SerializeDocxProps(tempDocxProps, 'tblStyleColBandSize');       
         this.serializeTableWidth(writer, table);
         this.serializeTableAlignment(writer, table.tableFormat);
         this.serializeCellSpacing(writer, table.tableFormat);
         this.serializeTableIndentation(writer, table.tableFormat);
         this.serializeTableBorders(writer, table.tableFormat);
         this.serializeShading(writer, table.tableFormat.shading);
+        if (table.tableFormat.bidi) {
+            writer.writeStartElement(undefined, 'bidiVisual', this.wNamespace);
+            writer.writeEndElement();
+        }
         this.serializeTblLayout(writer, table.tableFormat);
         // this.serializeTableCellMargin(writer, table.tableFormat);
         //     SerializeTableLook(table);
@@ -1898,13 +1918,18 @@ export class WordExport {
         } else {
             this.serializeListFormat(writer, paragraphFormat.listFormat);
         }
+        if (paragraphFormat.bidi) {
+            writer.writeStartElement(undefined, 'bidi', this.wNamespace);
+            writer.writeEndElement();
+        }
         this.serializeParagraphSpacing(writer, paragraphFormat);
         this.serializeIndentation(writer, paragraphFormat);
-        this.serializeParagraphAlignment(writer, paragraphFormat.textAlignment);
+        this.serializeParagraphAlignment(writer, paragraphFormat.textAlignment, paragraphFormat.bidi);
         if (!isNullOrUndefined(paragraphFormat.tabs) && paragraphFormat.tabs.length > 0) {
             this.serializeTabs(writer, paragraphFormat.tabs);
         }
     }
+
     // Serialize Tabs
     private serializeTabs(writer: XmlWriter, tabStops: WTabStop[]): void {
         writer.writeStartElement('w', 'tabs', this.wNamespace);
@@ -2037,7 +2062,14 @@ export class WordExport {
 
     //     writer.writeEndElement();
     // }
-    private serializeParagraphAlignment(writer: XmlWriter, txtAlignment: any): void {
+    private serializeParagraphAlignment(writer: XmlWriter, txtAlignment: any, isBidi: boolean): void {
+        if (isBidi) {
+            if (txtAlignment === 'Right') {
+                txtAlignment = 'Left';
+            } else if (txtAlignment === 'Left') {
+                txtAlignment = 'Right';
+            }
+        }
         if (!isNullOrUndefined(txtAlignment)) {
             writer.writeStartElement(undefined, 'jc', this.wNamespace);
             let alignment: string;
@@ -2307,14 +2339,24 @@ export class WordExport {
             writer.writeAttributeString(undefined, 'ascii', this.wNamespace, characterFormat.fontFamily);
             writer.writeAttributeString(undefined, 'hAnsi', this.wNamespace, characterFormat.fontFamily);
             writer.writeAttributeString(undefined, 'eastAsia', this.wNamespace, characterFormat.fontFamily);
-            writer.writeAttributeString(undefined, 'cs', this.wNamespace, characterFormat.fontFamily);
+            writer.writeAttributeString(undefined, 'cs', this.wNamespace, characterFormat.fontFamilyBidi);
             writer.writeEndElement(); //end         
         }
         if (!isNullOrUndefined(characterFormat.bold)) {
             this.serializeBoolProperty(writer, 'b', characterFormat.bold);
         }
+        if (characterFormat.boldBidi) {
+            this.serializeBoolProperty(writer, 'bCs', characterFormat.boldBidi);
+        }
         if (!isNullOrUndefined(characterFormat.italic)) {
             this.serializeBoolProperty(writer, 'i', characterFormat.italic);
+        }
+        if (!isNullOrUndefined(characterFormat.italicBidi)) {
+            this.serializeBoolProperty(writer, 'iCs', characterFormat.italicBidi);
+        }
+        if (characterFormat.bidi) {
+            writer.writeStartElement(undefined, 'rtl', this.wNamespace);
+            writer.writeEndElement();
         }
         if (!isNullOrUndefined(characterFormat.strikethrough)) {
             switch (characterFormat.strikethrough) {
@@ -2340,6 +2382,12 @@ export class WordExport {
             writer.writeStartElement(undefined, 'sz', this.wNamespace);
             // tslint:disable-next-line:max-line-length
             writer.writeAttributeString('w', 'val', this.wNamespace, this.roundToTwoDecimal(characterFormat.fontSize * 2).toString());
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(characterFormat.fontSizeBidi)) {
+            writer.writeStartElement(undefined, 'szCs', this.wNamespace);
+            // tslint:disable-next-line:max-line-length
+            writer.writeAttributeString('w', 'val', this.wNamespace, this.roundToTwoDecimal(characterFormat.fontSizeBidi * 2).toString());
             writer.writeEndElement();
         }
         if (!isNullOrUndefined(characterFormat.highlightColor) && characterFormat.highlightColor !== 'NoColor') {

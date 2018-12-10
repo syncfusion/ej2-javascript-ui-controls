@@ -1,4 +1,4 @@
-import { ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { RangeNavigatorType, ThumbType, RangeIntervalType, PeriodSelectorPosition } from '../utils/enum';import { Border, Animation, Font } from '../../common/model/base';import { BorderModel, AnimationModel, FontModel } from '../../common/model/base-model';import { Axis, Rect, TooltipDisplayMode } from '../../index';import { RangeNavigator, DataPoint } from '../index';import { RangeNavigatorTheme  } from '../utils/theme';
+import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { RangeNavigatorType, ThumbType } from '../utils/enum';import { Border, Animation, Font } from '../../common/model/base';import { BorderModel, AnimationModel, FontModel } from '../../common/model/base-model';import { Axis, Rect, TooltipDisplayMode } from '../../index';import { RangeNavigator, DataPoint } from '../index';import { RangeNavigatorTheme  } from '../utils/theme';
 
 /**
  * Interface for a class RangeNavigatorSeries
@@ -130,61 +130,6 @@ export interface StyleSettingsModel {
      * @default null
      */
     unselectedRegionColor?: string;
-
-}
-
-/**
- * Interface for a class Periods
- */
-export interface PeriodsModel {
-
-    /**
-     * IntervalType of button
-     * @default 'Years'
-     */
-    intervalType?: RangeIntervalType;
-
-    /**
-     * Count value for the button
-     * @default 1
-     */
-    interval?: number;
-
-    /**
-     * Text to be displayed on the button
-     * @default null
-     */
-    text?: string;
-
-    /**
-     * To select the default period
-     * @default false
-     */
-    selected?: boolean;
-
-}
-
-/**
- * Interface for a class PeriodSelectorSettings
- */
-export interface PeriodSelectorSettingsModel {
-
-    /**
-     * Height for the period selector
-     * @default 43
-     */
-    height?: number;
-
-    /**
-     * vertical position of the period selector
-     * @default 'Bottom'
-     */
-    position?: PeriodSelectorPosition;
-
-    /**
-     * Buttons
-     */
-    periods?: PeriodsModel[];
 
 }
 

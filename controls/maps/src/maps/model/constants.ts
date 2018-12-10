@@ -131,4 +131,16 @@ export const itemHighlight: string = 'itemHighlight';
 /**
  * Specifies maps beforePrint event name
  */
-export const beforePrint : string = 'beforePrint';
+export const beforePrint: string = 'beforePrint';
+/**
+ * Specifies the map zoom in event name
+ */
+export const zoomIn: string = 'zoomIn';
+/**
+ * Specifies the map zoom out event name
+ */
+export const zoomOut: string = 'zoomOut';
+/**
+ * Specifies the map pan event name
+ */
+export const pan: string = 'pan';

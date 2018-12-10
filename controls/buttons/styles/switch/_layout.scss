@@ -22,7 +22,7 @@
         // sass-lint:disable no-vendor-prefixes
         -ms-transition: $switch-inner-transition;
         -webkit-transition: $switch-inner-transition;
-        border: $inner-border-style;
+        border: $switch-inner-border-style;
         border-radius: $switch-border-radius;
         box-sizing: border-box;
         height: $switch-inner-height;
@@ -79,8 +79,8 @@
       }
 
       & .e-switch-inner.e-switch-active .e-switch-on {
-        left: $active-on-position-left;
-        opacity: $active-on-opacity;
+        left: $switch-active-on-position-left;
+        opacity: $switch-active-on-opacity;
       }
 
       & .e-switch-inner.e-switch-active .e-switch-off {
@@ -143,73 +143,73 @@
     }
 
       &.e-small {
-        height: $small-wrapper-height;
-        width: $small-wrapper-width;
+        height: $switch-small-wrapper-height;
+        width: $switch-small-wrapper-width;
 
         & .e-switch-handle {
-          height: $small-handle-height;
-          width: $small-handle-width;
+          height: $switch-small-handle-height;
+          width: $switch-small-handle-width;
         }
 
         & .e-ripple-container {
           border-radius: 50%;
-          height: $small-ripple-height;
-          left: $small-ripple-left;
+          height: $switch-small-ripple-height;
+          left: $switch-small-ripple-left;
           pointer-events: none;
           position: absolute;
-          top: $small-ripple-top;
-          width: $small-ripple-width;
+          top: $switch-small-ripple-top;
+          width: $switch-small-ripple-width;
           z-index: 1;
         }
 
         & .e-switch-handle.e-switch-active {
-          left: $small-switch-handle-active-left;
+          left: $switch-small-handle-active-left;
           margin-left: $switch-small-handle-margin-left;
         }
 
         & .e-switch-on,
         & .e-switch-off {
-          font-size: $small-switch-font-size;
+          font-size: $switch-small-font-size;
         }
 
         & .e-switch-on {
-          text-indent: $small-switch-on-text-indent;
+          text-indent: $switch-small-on-text-indent;
         }
 
         & .e-switch-off {
-          text-indent: $small-switch-off-text-indent;
+          text-indent: $switch-small-off-text-indent;
         }
 
         &.e-rtl {
           & .e-switch-handle {
-            left: $small-switch-handle-active-left;
+            left: $switch-small-handle-active-left;
             margin-left: $switch-small-handle-margin-left;
           }
 
           & .e-switch-handle {
-            height: $small-handle-height;
-            width: $small-handle-width;
+            height: $switch-small-handle-height;
+            width: $switch-small-handle-width;
           }
 
           & .e-switch-on {
-            left: $small-switch-on-rtl;
-            opacity: $active-on-opacity;
+            left: $switch-small-on-rtl;
+            opacity: $switch-active-on-opacity;
           }
 
           & .e-switch-off {
-            left: $small-switch-off-rtl;
+            left: $switch-small-off-rtl;
           }
 
           & .e-switch-inner.e-switch-active .e-switch-on {
-            left: $small-switch-on-position-left-rtl;
+            left: $switch-small-on-position-left-rtl;
           }
 
           & .e-switch-inner.e-switch-active .e-switch-off {
-            left: $small-switch-off-position-left-rtl;
+            left: $switch-small-off-position-left-rtl;
           }
 
           & .e-switch-handle.e-switch-active {
-            left: $small-switch-handle-active-left-rtl;
+            left: $switch-small-handle-active-left-rtl;
            }
         }
     }
@@ -220,142 +220,142 @@
   &.e-bigger.e-switch-wrapper,
   &.e-bigger .e-css.e-switch-wrapper,
   &.e-bigger.e-css.e-switch-wrapper {
-    height: $bigger-wrapper-height;
-    width: $bigger-wrapper-width;
+    height: $switch-bigger-wrapper-height;
+    width: $switch-bigger-wrapper-width;
 
     & .e-switch-handle {
-      height: $bigger-handle-height;
-      left: $bigger-handle-left;
-      top: $bigger-handle-top;
-      width: $bigger-handle-width;
+      height: $switch-bigger-handle-height;
+      left: $switch-bigger-handle-left;
+      top: $switch-bigger-handle-top;
+      width: $switch-bigger-handle-width;
     }
 
     & .e-switch-handle.e-switch-active {
-      left: $bigger-switch-handle-active-left;
+      left: $switch-bigger-handle-active-left;
       margin-left: $switch-bigger-handle-margin-left;
     }
 
     & .e-switch-on,
     & .e-switch-off {
-      font-size: $bigger-switch-font-size;
+      font-size: $switch-bigger-font-size;
     }
 
     & .e-switch-on {
-      text-indent: $bigger-switch-on-text-indent;
+      text-indent: $switch-bigger-on-text-indent;
     }
 
     & .e-switch-off {
-      text-indent: $bigger-switch-off-text-indent;
+      text-indent: $switch-bigger-off-text-indent;
     }
 
     & .e-ripple-container {
-      height: $bigger-ripple-height;
-      left: $bigger-ripple-left;
-      top: $bigger-ripple-top;
-      width: $bigger-ripple-width;
+      height: $switch-bigger-ripple-height;
+      left: $switch-bigger-ripple-left;
+      top: $switch-bigger-ripple-top;
+      width: $switch-bigger-ripple-width;
     }
 
     &.e-rtl {
       & .e-switch-handle {
-        height: $bigger-handle-height;
-        left: $bigger-switch-handle-active-left;
+        height: $switch-bigger-handle-height;
+        left: $switch-bigger-handle-active-left;
         margin-left: $switch-bigger-handle-margin-left;
-        top: $bigger-handle-top;
-        width: $bigger-handle-width;
+        top: $switch-bigger-handle-top;
+        width: $switch-bigger-handle-width;
         }
 
       & .e-switch-on {
-        left: $bigger-switch-on-rtl;
-        opacity: $active-on-opacity;
+        left: $switch-bigger-on-rtl;
+        opacity: $switch-active-on-opacity;
         }
 
       & .e-switch-off {
-        left: $bigger-switch-off-rtl;
+        left: $switch-bigger-off-rtl;
         }
 
       & .e-switch-inner.e-switch-active .e-switch-on {
-        left: $bigger-switch-on-position-left-rtl;
+        left: $switch-bigger-on-position-left-rtl;
       }
 
       & .e-switch-inner.e-switch-active .e-switch-off {
-        left: $bigger-switch-off-position-left-rtl;
+        left: $switch-bigger-off-position-left-rtl;
       }
 
       & .e-switch-handle.e-switch-active {
-        left: $bigger-switch-handle-active-left-rtl;
+        left: $switch-bigger-handle-active-left-rtl;
       }
     }
 
     &.e-small {
-      height: $bigger-small-wrapper-height;
-      width: $bigger-small-wrapper-width;
+      height: $switch-bigger-small-wrapper-height;
+      width: $switch-bigger-small-wrapper-width;
 
       & .e-switch-handle {
-        height: $bigger-small-handle-height;
-        left: $bigger-small-handle-left;
-        top: $bigger-small-handle-top;
-        width: $bigger-small-handle-width;
+        height: $switch-bigger-small-handle-height;
+        left: $switch-bigger-small-handle-left;
+        top: $switch-bigger-small-handle-to;
+        width: $switch-bigger-small-handle-width;
       }
 
       & .e-ripple-container {
         border-radius: 50%;
-        height: $bigger-small-ripple-height;
-        left: $bigger-small-ripple-left;
+        height: $switch-bigger-small-ripple-height;
+        left: $switch-bigger-small-ripple-height;
         pointer-events: none;
         position: absolute;
-        top: $bigger-small-ripple-top;
-        width: $bigger-small-ripple-width;
+        top: $switch-bigger-small-ripple-top;
+        width: $switch-bigger-small-ripple-width;
         z-index: 1;
       }
 
       & .e-switch-handle.e-switch-active {
-        left: $bigger-small-switch-handle-active-left;
+        left: switch-bigger-small-handle-active-left;
         margin-left: $switch-bigger-small-handle-margin-left;
       }
 
       & .e-switch-on,
       & .e-switch-off {
-        font-size: $bigger-small-switch-font-size;
+        font-size: $switch-bigger-small-font-size;
       }
 
       & .e-switch-on {
-        text-indent: $bigger-small-switch-on-text-indent;
+        text-indent: $switch-bigger-small-on-text-indent;
       }
 
       & .e-switch-off {
-        text-indent: $bigger-small-switch-off-text-indent;
+        text-indent: $switch-bigger-small-off-text-indent;
       }
 
       &.e-rtl {
         & .e-switch-handle {
-          left: $bigger-small-switch-handle-active-left;
+          left: switch-bigger-small-handle-active-left;
           margin-left: $switch-bigger-small-handle-margin-left;
           }
 
         & .e-switch-handle {
-          height: $bigger-small-handle-height;
-          width: $bigger-small-handle-width;
+          height: $switch-bigger-small-handle-height;
+          width: $switch-bigger-small-handle-width;
           }
 
         & .e-switch-on {
-          left: $bigger-small-switch-on-rtl;
-          opacity: $active-on-opacity;
+          left: $switch-bigger-small-on-rtl;
+          opacity: $switch-active-on-opacity;
          }
 
         & .e-switch-off {
-          left: $bigger-small-switch-off-rtl;
+          left: $switch-bigger-small-off-rtl;
         }
 
         & .e-switch-inner.e-switch-active .e-switch-on {
-          left: $bigger-small-switch-on-position-left-rtl;
+          left: $switch-bigger-small-on-position-left-rtl;
         }
 
         & .e-switch-inner.e-switch-active .e-switch-off {
-          left: $bigger-small-switch-off-position-left-rtl;
+          left: $switch-bigger-small-off-position-left-rtl;
         }
 
         & .e-switch-handle.e-switch-active {
-          left: $bigger-small-switch-handle-active-left-rtl;
+          left: $switch-bigger-small-handle-active-left-rtl;
           }
         }
       }

@@ -12,7 +12,7 @@ enableRipple(true);
 let menuItems: MenuItemModel[] = [
     {
         text: 'Home',
-        iconCss: 'e-icons e-home'
+        iconCss: 'e-menu-icons e-home'
     },
     {
         text: 'Book Categories',
@@ -20,55 +20,55 @@ let menuItems: MenuItemModel[] = [
         items: [
             {
                 text: 'Cookbooks',
-                iconCss: 'e-icons e-share',
+                iconCss: 'e-menu-icons e-share',
                 items: [
                     {
                         text: 'Desserts',
-                        iconCss: 'e-icons e-share',
+                        iconCss: 'e-menu-icons e-share',
                     },
                     {
                         text: 'South Indian Cooks',
-                        iconCss: 'e-icons e-share',
+                        iconCss: 'e-menu-icons e-share',
                     },
                     {
                         text: 'Cooking tips',
-                        iconCss: 'e-icons e-share',
+                        iconCss: 'e-menu-icons e-share',
                     }
                 ]
             },
             {
                 text: 'Children',
-                iconCss: 'e-icons e-share',
+                iconCss: 'e-menu-icons e-share',
                 items: [
                     {
                         text: 'Tales',
-                        iconCss: 'e-icons e-share',
+                        iconCss: 'e-menu-icons e-share',
                     },
                     {
                         text: 'Animals',
-                        iconCss: 'e-icons e-share',
+                        iconCss: 'e-menu-icons e-share',
                     },
                     {
                         text: 'Dreams',
-                        iconCss: 'e-icons e-share',
+                        iconCss: 'e-menu-icons e-share',
                     }
                 ]
             },
             {
                 text: 'technologies',
-                iconCss: 'e-icons e-share',
+                iconCss: 'e-menu-icons e-share',
                 items: [
                     {
                         text: 'Programming Languages',
-                        iconCss: 'e-icons e-share',
+                        iconCss: 'e-menu-icons e-share',
                     },
                     {
                         text: 'Wifi Hacking',
-                        iconCss: 'e-icons e-share',
+                        iconCss: 'e-menu-icons e-share',
                     },
                     {
                         text: 'Upcoming Tech',
-                        iconCss: 'e-icons e-share',
+                        iconCss: 'e-menu-icons e-share',
                     }
                 ]
             }
@@ -76,11 +76,11 @@ let menuItems: MenuItemModel[] = [
     },
     {
         text: 'Purchase',
-        iconCss: 'e-icons e-purchase'
+        iconCss: 'e-menu-icons e-purchase'
     },
     {
         text: 'Contact Us',
-        iconCss: 'e-icons e-contact'
+        iconCss: 'e-menu-icons e-contact'
     },
     {
         separator: true,

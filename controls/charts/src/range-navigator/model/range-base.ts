@@ -1,9 +1,9 @@
-import { ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';
+import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
-import { RangeNavigatorType, ThumbType, RangeIntervalType, PeriodSelectorPosition } from '../utils/enum';
+import { RangeNavigatorType, ThumbType } from '../utils/enum';
 import { Border, Animation, Font } from '../../common/model/base';
 import { BorderModel, AnimationModel, FontModel } from '../../common/model/base-model';
-import { ThumbSettingsModel, PeriodsModel } from './range-base-model';
+import { ThumbSettingsModel } from './range-base-model';
 import { Axis, Rect, TooltipDisplayMode } from '../../index';
 import { RangeNavigator, DataPoint } from '../index';
 import { RangeNavigatorTheme  } from '../utils/theme';
@@ -173,64 +173,6 @@ export class StyleSettings extends ChildProperty<StyleSettings> {
 
 }
 
-/**
- * button settings in period selector
- */
-export class Periods extends ChildProperty<Periods> {
-    /**
-     * IntervalType of button
-     * @default 'Years'
-     */
-    @Property('Years')
-    public intervalType: RangeIntervalType;
-
-    /**
-     * Count value for the button
-     * @default 1
-     */
-    @Property(1)
-    public interval: number;
-
-    /**
-     * Text to be displayed on the button
-     * @default null
-     */
-    @Property(null)
-    public text: string;
-
-    /**
-     * To select the default period
-     * @default false
-     */
-    @Property(false)
-    public selected: boolean;
-}
-
-/**
- * Period Selector Settings
- */
-export class PeriodSelectorSettings extends ChildProperty<PeriodSelectorSettings> {
-
-    /**
-     * Height for the period selector
-     * @default 43
-     */
-    @Property(43)
-    public height: number;
-
-    /**
-     * vertical position of the period selector
-     * @default 'Bottom'
-     */
-    @Property('Bottom')
-    public position: PeriodSelectorPosition;
-
-    /**
-     * Buttons
-     */
-    @Collection<PeriodsModel>([], Periods)
-    public periods: PeriodsModel[];
-}
 /*
  * Configures the ToolTips in the chart.
  */

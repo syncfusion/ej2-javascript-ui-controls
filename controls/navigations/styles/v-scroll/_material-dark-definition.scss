@@ -1,0 +1,78 @@
+//default 
+$skin-name: 'material';
+$vscroll-nav-nrml-height: 40px;
+$vscroll-hover-font: $hover-font-color ;
+$vscroll-active-font-color: $active-font-color ;
+$vscroll-border-size: $border-size;
+$vscroll-border-type: solid;
+
+$vscroll-default-bg: $grey-50;
+$vscroll-press-bg: $grey-400;
+$vscroll-active-bg: $grey-400;
+$vscroll-border-size: 1px;
+$vscroll-nav-nrml-minheight: 16px;
+$vscroll-nav-bgr-minheight: 24px;
+$vscroll-nav-nrml-width: 16px;
+$vscroll-nav-bgr-width: 24px;
+$vscroll-nrml-padding: 0 $vscroll-nav-nrml-width;
+$vscroll-bgr-padding: $vscroll-nav-bgr-width 0;
+$vscroll-border-type: $border-type;
+$vscroll-box-shadow: none;
+$vscroll-hover-bg: rgba($grey-black, .12);
+$vscroll-hover-border-color: rgba($grey-black, .12);
+$vscroll-default-icon-color: rgba($grey-light-font, .54);
+$vscroll-focus-border: '';
+$vscroll-active-border: '';
+$vscroll-hover-border: '';
+$vscroll-active-box-shadow: '';
+$vscroll-overlay-opacity: .5;
+$vscroll-overlay-bg: $grey-50;
+$vscroll-overlay-start: rgba($vscroll-overlay-bg, 0);
+$vscroll-overlay-end: rgba($vscroll-overlay-bg, 1);
+$vscroll-right-bg: linear-gradient(-270deg, $vscroll-overlay-start 0%, $vscroll-overlay-end 100%);
+$vscroll-left-bg:  linear-gradient(-270deg, $vscroll-overlay-end 0%, $vscroll-overlay-start 100%);
+
+$vscroll-device-arrow-box-shadow: -4px 0 8px 0 rgba($shadow , .06);
+$vscroll-device-arrow-rtl-box-shadow: 4px 0 8px 0 rgba($shadow , .06);
+$vscroll-device-arrow-bg: $grey-50;
+$vscroll-device-arrow-border-size: 1px;
+$vscroll-device-arrow-border-color: rgba($grey-black, .12);
+$vscroll-device-arrow-color: $accent;
+$vscroll-device-arrow-size: 14px;
+$vscroll-device-arrow-width: 56px;
+
+$vscroll-default-border: $vscroll-hover-border-color;
+$vscroll-ribble-animation-border-frame: rgba(255, 255, 255, .5);
+$vscroll-ribble-animation-shadow-frame: 0 0 0 0 $vscroll-ribble-animation-border-frame;
+$vscroll-ribble-animation-shadow-frame-end: 0 0 0 200px rgba(255, 255, 255, .12);
+
+@mixin vscroll-btn-animation {
+  background-color: transparent;
+  border-radius: 50%;
+  border-width: 1px;
+  box-sizing: border-box;
+  content: '' ;
+  height: 1px;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  visibility: hidden;
+  width: 1px;
+}
+
+@mixin vscroll-btn-animation-after {
+  animation: vscroll-popup-shadow .6s ease-out 0ms;
+  visibility: visible;
+}
+
+@keyframes vscroll-popup-shadow {
+  0% {
+    border-color: $vscroll-ribble-animation-border-frame;
+    box-shadow: $vscroll-ribble-animation-shadow-frame;
+  }
+
+  100% {
+    box-shadow: $vscroll-ribble-animation-shadow-frame-end;
+  }
+}
+//enddefault

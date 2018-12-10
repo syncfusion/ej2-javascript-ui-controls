@@ -36,10 +36,20 @@ export class Virtualization {
     private activeIndex: number;
     private uiIndices: { [key: string]: number[] };
     private listDiff: number;
+
+    /**
+     * For internal use only.
+     * @private
+     */
     public isNgTemplate(): boolean {
         return !isNullOrUndefined(this.listViewInstance.templateRef) && typeof this.listViewInstance.templateRef !== 'string'
             && isNullOrUndefined(this.listViewInstance.fields.groupBy);
     }
+
+    /**
+     * For internal use only.
+     * @private
+     */
     public uiVirtualization(): void {
         let curViewDS: { [key: string]: Object; }[] = this.listViewInstance.curViewDS as { [key: string]: Object; }[];
         let firstDs: { [key: string]: Object; }[] = curViewDS.slice(0, 1);
@@ -72,7 +82,7 @@ export class Virtualization {
         this.uiIndicesInitialization();
     }
 
-    public wireScrollEvent(destroy: boolean): void {
+    private wireScrollEvent(destroy: boolean): void {
         if (!destroy) {
             if (this.listViewInstance.isWindow) {
                 this.onVirtualScroll = this.onVirtualUiScroll.bind(this);

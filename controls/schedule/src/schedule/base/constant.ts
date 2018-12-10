@@ -52,6 +52,8 @@ export const contentReady: string = 'content-ready';
 /** @hidden */
 export const scroll: string = 'scroll';
 /** @hidden */
+export const virtualScroll: string = 'virtual-scroll';
+/** @hidden */
 export const scrollUiUpdate: string = 'scroll-ui-update';
 /** @hidden */
 export const uiUpdate: string = 'ui-update';
@@ -59,5 +61,3 @@ export const uiUpdate: string = 'ui-update';
 export const documentClick: string = 'document-click';
 /** @hidden */
 export const cellMouseDown: string = 'cell-mouse-down';
-/** @hidden */
-export const tapHoldReady: string = 'tap-hold-ready';

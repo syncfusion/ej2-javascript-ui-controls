@@ -5,7 +5,7 @@ import {
     findChildren, Location, Rect, Size, measureText,
     TextOption, PathOption, RectOption, drawSymbol, orderByArea
 } from '../utils/helper';
-import { Browser, isNullOrUndefined, SvgRenderer, EventHandler, GradientColor, LinearGradient } from '@syncfusion/ej2-base';
+import { Browser, isNullOrUndefined, SvgRenderer, EventHandler, GradientColor, LinearGradient, extend } from '@syncfusion/ej2-base';
 import { renderTextElement, textTrim } from '../utils/helper';
 import { ILegendItemRenderingEventArgs } from '../model/interface';
 import { LegendMode, LegendPosition, LegendOrientation, LabelPlacement, LabelIntersectAction } from '../utils/enum';
@@ -20,21 +20,24 @@ export class TreeMapLegend {
     public legendRenderingCollections: Object[];
     /** collection of legends */
     public legendCollections: Object[];
+    public outOfRangeLegend: Object;
     private legendHeight: number;
     private legendWidth: number;
     private totalPages: Object[];
     private page: number = 0;
     private translate: Location;
-    private legendBorderRect: Rect = new Rect(0, 0, 0, 0);
+    public legendBorderRect: Rect = new Rect(0, 0, 0, 0);
     private currentPage: number = 0;
-    private heightIncrement: number = 0;
-    private widthIncrement: number = 0;
+    public heightIncrement: number = 0;
+    public widthIncrement: number = 0;
     private textMaxWidth: number = 0;
     /** group of legend */
     public legendGroup: Element;
     private legendNames: string[];
     private defsElement: Element;
     private gradientCount: number;
+    private legendLinearGradient: Element;
+    private legendInteractiveGradient: Element[] = [];
     private clearTimeout: number;
     private legendItemRect: Rect = new Rect(0, 0, 0, 0);
     constructor(treemap: TreeMap) {
@@ -54,7 +57,9 @@ export class TreeMapLegend {
         this.defsElement = this.treemap.renderer.createDefs();
         this.treemap.svgObject.appendChild(this.defsElement);
         this.calculateLegendBounds();
-        this.drawLegend();
+        if (this.legendCollections.length > 0) {
+            this.drawLegend();
+        }
     }
     /* tslint:disable:no-string-literal */
     /* tslint:disable-next-line:max-func-body-length */
@@ -62,7 +67,8 @@ export class TreeMapLegend {
         let treemap: TreeMap = this.treemap;
         let legend: LegendSettingsModel = treemap.legendSettings;
         this.findColorMappingLegendItems(treemap.levelsOfData[0]);
-        if (this.treemap.palette.length > 0 && this.legendCollections.length === 0) {
+        if ((this.treemap.palette.length > 0 || !isNullOrUndefined(this.treemap.colorValuePath))
+        && this.legendCollections.length === 0) {
             this.findPaletteLegendItems(this.treemap.levelsOfData[0], 'Parent');
         }
         if (this.legendCollections.length > 0) {
@@ -146,7 +152,7 @@ export class TreeMapLegend {
                     shapeLocation.push({ x: shapeX, y: shapeY });
                     textLocation.push({ x: textX, y: textY, width: legendTextSize.width, height: (legendTextSize.height / 2) });
                     (<Object[]>this.totalPages[this.page]['Collection']).push({
-                        DisplayText: legendItem['legendName'],
+                        DisplayText: legendItem['legendName'], element: legendItem['gradientElement'],
                         Shape: { x: shapeX, y: shapeY },
                         Text: { x: textX, y: textY },
                         Fill: legendItem['legendFill'],
@@ -264,23 +270,49 @@ export class TreeMapLegend {
     }
 
     private findPaletteLegendItems(data: Object, type: string): void {
-        let child: Object[] = findChildren(data)['values'];
+        let child: Object[];
+        if (this.treemap.enableDrillDown && !isNullOrUndefined(this.treemap.drilledLegendItems)) {
+            let childElement: Object = this.treemap.drilledLegendItems;
+            if (childElement['data']['isDrilled']) {
+                child = findChildren(childElement['data'])['values'];
+            } else {
+                let parentElement: Object = childElement['data']['parent'];
+                child = findChildren(parentElement)['values'];
+            }
+        } else {
+            child = findChildren(data)['values'];
+        }
+        let isDuplicate: boolean;
+        let legendName: string;
         if (child && child.length > 0) {
             for (let i: number = 0; i < child.length; i++) {
-                this.legendCollections.push({
-                    legendName: child[i]['name'],
-                    legendFill: this.treemap.palette[i % this.treemap.palette.length],
-                    legendData: [],
-                    itemArea: child[i]['weight']
-                });
+                if (isNullOrUndefined(child[i]['data'][this.treemap.legendSettings.showLegendPath]) ||
+                child[i]['data'][this.treemap.legendSettings.showLegendPath]) {
+                    legendName = child[i]['data'][this.treemap.legendSettings.valuePath] ?
+                    child[i]['data'][this.treemap.legendSettings.valuePath] : child[i]['name'];
+                    isDuplicate = this.treemap.legendSettings.removeDuplicateLegend ?
+                     this.removeDuplicates(this.legendCollections, legendName) : false;
+                    if (!isDuplicate) {
+                        this.legendCollections.push({
+                            legendName: legendName,
+                            legendFill: this.treemap.palette.length > 0 ? this.treemap.palette[i % this.treemap.palette.length] :
+                             child[i]['data'][this.treemap.colorValuePath],
+                            legendData: [],
+                            itemArea: child[i]['weight']
+                        });
+                    }
+                }
             }
             this.legendCollections.sort(orderByArea);
-            for (let j: number = 0; j < this.legendCollections.length; j++) {
-                this.legendCollections[j]['legendFill'] = this.treemap.palette[j % this.treemap.palette.length];
+            if (this.treemap.palette.length > 0) {
+                for (let j: number = 0; j < this.legendCollections.length; j++) {
+                    this.legendCollections[j]['legendFill'] = this.treemap.palette[j % this.treemap.palette.length];
+                }
             }
         }
     }
 
+    /* tslint:disable-next-line:max-func-body-length */
     private calculateLegendItems(data: Object[]): void {
         let isAddData: Object; let fill: string; let rangeValue: number;
         let currentData: Object; let legendText: string; let itemValue: number;
@@ -289,58 +321,123 @@ export class TreeMapLegend {
         let leaf: LeafItemSettingsModel = this.treemap.leafItemSettings;
         let levels: LevelSettingsModel[] = this.treemap.levels; let equalValue: string;
         let position: LegendPosition = this.treemap.legendSettings.position;
-        let gradientElement: Element; let x2: string; let y2: string;
+        let gradientElement: Element; let x2: string; let y2: string; let actualValue: string;
+        let isDuplicate: boolean; let isEqualColor: boolean; let isRange: boolean; let isDesaturation: boolean = false;
+        let legendIndex: number = 0; let outfill: string; let labelLegend: string; let otherIndex: number;
+        this.outOfRangeLegend = null;
         for (let i: number = 0; i < data.length; i++) {
+            fill = ''; isEqualColor = false; isRange = false; isDesaturation = false;
             currentData = data[i]['data'];
             groupIndex = data[i]['groupIndex'];
             isLeafItem = (this.treemap.levels.length === 0 || groupIndex === this.treemap.levels.length);
             colorMapping = isLeafItem ? leaf.colorMapping : levels[groupIndex].colorMapping;
             for (let colorMap of colorMapping) {
+                gradientElement = null;
                 rangeValue = Number(currentData[this.treemap.rangeColorValuePath]);
                 equalValue = currentData[this.treemap.equalColorValuePath];
                 colorMap.value = !isNullOrUndefined(colorMap.value) ? colorMap.value.toString() : colorMap.value;
                 if (!isNullOrUndefined(colorMap.from) && !isNullOrUndefined(colorMap.to) &&
-                    rangeValue >= colorMap.from && rangeValue <= colorMap.to) {
-                    colorMapProcess = true;
+                    rangeValue >= colorMap.from && rangeValue <= colorMap.to && colorMap.showLegend) {
+                    colorMapProcess = true; isRange = true;
+                    actualValue = colorMap.from + ' - ' + colorMap.to;
                     legendText = !isNullOrUndefined(colorMap.label) ? colorMap.label : colorMap.from + ' - ' + colorMap.to;
-                    fill = isNullOrUndefined(colorMap.color) ? fill : colorMap.color;
-                    isAddData = this.isAddNewLegendData(legendText);
-                } else if (!isNullOrUndefined(colorMap.value) && equalValue === colorMap.value) {
-                    colorMapProcess = true;
+                    fill = isNullOrUndefined(colorMap.color) ? fill : <string>colorMap.color;
+                    isAddData = this.isAddNewLegendData(actualValue);
+                } else if (!isNullOrUndefined(colorMap.value) && equalValue === colorMap.value && colorMap.showLegend) {
+                    colorMapProcess = true; isEqualColor = true;
+                    actualValue = colorMap.value.toString();
                     legendText = !isNullOrUndefined(colorMap.label) ? colorMap.label : colorMap.value.toString();
-                    fill = isNullOrUndefined(colorMap.color) ? fill : colorMap.color;
-                    isAddData = this.isAddNewLegendData(legendText);
+                    fill = isNullOrUndefined(colorMap.color) ? fill :
+                        Object.prototype.toString.call(colorMap.color) === '[object Array]' ? colorMap.color[0] : <string>colorMap.color;
+                    isAddData = this.isAddNewLegendData(actualValue);
                 }
-                if (colorMapProcess && colorMap.maxOpacity && colorMap.minOpacity && this.treemap.legendSettings.mode === 'Interactive') {
-                    let colors: GradientColor[] = []; let gradient: LinearGradient;
-                    let stop1Color: GradientColor = { colorStop: '0%', color: fill };
-                    let stop2Color: GradientColor = { colorStop: '100%', color: fill };
+                if (colorMapProcess && isNullOrUndefined(colorMap.value) && colorMap.maxOpacity && colorMap.minOpacity
+                    && this.treemap.legendSettings.mode === 'Interactive') {
+                    let colors: GradientColor[] = []; let gradient: LinearGradient; isDesaturation = true;
+                    if (Object.prototype.toString.call(colorMap.color) === '[object Array]') {
+                        for (let q: number = 0; q < colorMap.color.length; q++) {
+                            let offsetColor: number = 100 / (colorMap.color.length - 1);
+                            let offsetValue: string = q * offsetColor + '%';
+                            let stop1Color: GradientColor = { colorStop: offsetValue.toString(), color: colorMap.color[q] };
+                            colors.push(stop1Color);
+                        }
+                    } else {
+                        let stop1Color: GradientColor = { colorStop: '0%', color: fill };
+                        let stop2Color: GradientColor = { colorStop: '100%', color: fill };
+                        colors.push(stop1Color);
+                        colors.push(stop2Color);
+                    }
                     x2 = position === 'Top' || position === 'Bottom' ? '100%' : '0%';
                     y2 = position === 'Top' || position === 'Bottom' ? '0%' : '100%';
-                    colors.push(stop1Color);
-                    colors.push(stop2Color);
                     gradient = {
                         id: 'groupIndex_' + groupIndex + '_colorIndex_' + this.gradientCount, x1: '0%', y1: '0%', x2: x2, y2: y2
                     };
                     gradientElement = this.treemap.renderer.drawGradient('linearGradient', gradient, colors).childNodes[0] as Element;
-                    (gradientElement.childNodes[0] as Element).setAttribute('stop-opacity', colorMap.minOpacity.toString());
-                    (gradientElement.childNodes[1] as Element).setAttribute('stop-opacity', colorMap.maxOpacity.toString());
+                    if (Object.prototype.toString.call(colorMap.color) !== '[object Array]') {
+                        (gradientElement.childNodes[0] as Element).setAttribute('stop-opacity', colorMap.minOpacity.toString());
+                        (gradientElement.childNodes[1] as Element).setAttribute('stop-opacity', colorMap.maxOpacity.toString());
+                    }
                     this.defsElement.appendChild(gradientElement);
                     this.gradientCount++;
                 }
-                if (isAddData && isAddData['process'] && colorMapProcess) {
+                isDuplicate = this.treemap.legendSettings.removeDuplicateLegend ?
+                this.removeDuplicates(this.legendCollections, legendText) : false;
+                if (isAddData && isAddData['process'] && colorMapProcess && !isDuplicate) {
                     colorMapProcess = false;
+                    fill = ((Object.prototype.toString.call(colorMap.color) === '[object Array]')) && isNullOrUndefined(gradientElement)
+                        && isNullOrUndefined(colorMap.value) ? this.legendGradientColor(colorMap, legendIndex) : fill;
                     this.legendCollections.push({
-                        legendName: legendText, legendFill: fill, legendData: [], gradientElement: gradientElement
+                        actualValue: actualValue,
+                        legendName: legendText, legendFill: fill, legendData: [],
+                        gradientElement: !isNullOrUndefined(gradientElement) ? gradientElement : isNullOrUndefined(colorMap.value)
+                            ? this.legendLinearGradient : null, name: data[i]['name'],
+                        opacity: this.treemap.legendSettings.opacity, borderColor: this.treemap.legendSettings.border.color,
+                        borderWidth: this.treemap.legendSettings.border.width
                     });
                     (<Object[]>this.legendCollections[this.legendCollections.length - 1]['legendData']).push(data[i]);
-                } else if (colorMapProcess) {
+                    legendIndex++;
+                } else if (colorMapProcess && !isDuplicate) {
                     colorMapProcess = false;
                     (<Object[]>this.legendCollections[isAddData['value']]['legendData']).push(data[i]);
+                }
+                if (!isRange && !isDesaturation && !isEqualColor) {
+                    if (isNullOrUndefined(colorMap.from) && isNullOrUndefined(colorMap.to)
+                        && isNullOrUndefined(colorMap.minOpacity) &&
+                        isNullOrUndefined(colorMap.maxOpacity) && isNullOrUndefined(colorMap.value) &&
+                        !isNullOrUndefined(colorMap.color)) {
+                        outfill = ((Object.prototype.toString.call(colorMap.color) === '[object Array]'))
+                            ? colorMap.color[0] : <string>colorMap.color;
+                        labelLegend = !isNullOrUndefined(colorMap.label) ? colorMap.label : 'Others';
+                        if (isNullOrUndefined(this.outOfRangeLegend)) {
+                            this.legendCollections.push({
+                                actualValue: labelLegend, legendData: [],
+                                legendName: labelLegend, legendFill: outfill
+                            });
+                            otherIndex = this.legendCollections.length;
+                            this.outOfRangeLegend = this.legendCollections[otherIndex - 1];
+                            legendIndex++;
+
+                        }
+                        (<Object[]>this.legendCollections[otherIndex - 1]['legendData']).push(data[i]);
+                    }
                 }
             }
         }
     }
+
+    private removeDuplicates(legendCollection: Object[], text: string): boolean {
+        let isDuplicate: boolean = false;
+        for (let i: number = 0; i < legendCollection.length; i++) {
+            if (legendCollection[i]['legendName'] === text) {
+                isDuplicate = true;
+                break;
+            } else {
+                continue;
+            }
+        }
+        return isDuplicate;
+    }
+
 
     private isAddNewLegendData(legendText: string): Object {
         let newDataProcess: boolean; let itemValue: number;
@@ -348,7 +445,7 @@ export class TreeMapLegend {
             newDataProcess = true;
         } else {
             for (let j: number = 0; j < this.legendCollections.length; j++) {
-                if (legendText === this.legendCollections[j]['legendName']) {
+                if (legendText === this.legendCollections[j]['actualValue']) {
                     newDataProcess = false;
                     itemValue = j;
                     break;
@@ -359,6 +456,7 @@ export class TreeMapLegend {
         }
         return { process: newDataProcess, value: itemValue };
     }
+    /* tslint:disable-next-line:max-func-body-length */
     /**
      * To draw the legend
      */
@@ -382,7 +480,7 @@ export class TreeMapLegend {
                 fill = gradientElement ? 'url(#' + gradientElement.id + ')' : item['fill'];
                 let bounds: Rect = new Rect(item['x'], item['y'], item['width'], item['height']);
                 let textLocation: Location = new Location(item['textX'], item['textY']);
-                let rectOptions: RectOption = new RectOption(itemId, fill, legend.shapeBorder, 1, bounds);
+                let rectOptions: RectOption = new RectOption(itemId, fill, legend.shapeBorder, legend.opacity, bounds);
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'middle', item['text'], '', '');
                 renderTextElement(textOptions, textFont, textFont.color, this.legendGroup);
                 this.legendGroup.appendChild(render.drawRectangle(rectOptions));
@@ -420,7 +518,7 @@ export class TreeMapLegend {
                     shape: legend.shape, imageUrl: legend.imageUrl
                 };
                 let renderOptions: PathOption = new PathOption(
-                    shapeId, eventArgs.fill, strokeWidth, isLineShape ? collection['Fill'] : strokeColor, 1, ''
+                    shapeId, eventArgs.fill, strokeWidth, isLineShape ? collection['Fill'] : strokeColor, legend.opacity, ''
                 );
                 legendElement.appendChild(
                     drawSymbol(shapeLocation, eventArgs.shape, shapeSize, eventArgs.imageUrl, renderOptions, legendText)
@@ -527,7 +625,7 @@ export class TreeMapLegend {
             textOptions = new TextOption(
                 treemap.element.id + '_LegendTitle',
                 (this.legendItemRect.x) + (this.legendItemRect.width / 2),
-                this.legendItemRect.y - (textSize.height / 2),
+                this.legendItemRect.y - (textSize.height / 2) - (spacing / 2),
                 'middle', trimTitle, '');
             renderTextElement(textOptions, textStyle, textStyle.color, this.legendGroup);
         }
@@ -612,11 +710,12 @@ export class TreeMapLegend {
 
     private getLegendAlignment(treemap: TreeMap, width: number, height: number, legend: LegendSettingsModel): void {
         let x: number; let y: number;
-        let spacing: number = 10;
-        let areaX: number = treemap.areaRect.x;
-        let areaY: number = treemap.areaRect.y;
-        let areaHeight: number = treemap.areaRect.height;
-        let areaWidth: number = treemap.areaRect.width;
+        let spacing: number = 10; let totalRect: Rect;
+        totalRect = extend({}, treemap.areaRect, totalRect, true) as Rect;
+        let areaX: number = totalRect.x;
+        let areaY: number = totalRect.y;
+        let areaHeight: number = totalRect.height;
+        let areaWidth: number = totalRect.width;
         let totalWidth: number = treemap.availableSize.width;
         let totalHeight: number = treemap.availableSize.height;
         if (legend.position === 'Float') {
@@ -625,25 +724,25 @@ export class TreeMapLegend {
             switch (legend.position) {
                 case 'Top':
                 case 'Bottom':
-                    treemap.areaRect.height = (areaHeight - height);
+                    totalRect.height = (areaHeight - height);
                     x = (totalWidth / 2) - (width / 2);
-                    y = (legend.position === 'Top') ? areaY : (areaY + treemap.areaRect.height);
-                    treemap.areaRect.y = (legend.position === 'Top') ? areaY + height + spacing : areaY;
+                    y = (legend.position === 'Top') ? areaY : (areaY + totalRect.height);
+                    totalRect.y = (legend.position === 'Top') ? areaY + height + spacing : areaY;
                     break;
                 case 'Left':
                 case 'Right':
-                    treemap.areaRect.width = (areaWidth - width);
-                    x = (legend.position === 'Left') ? areaX : areaX + treemap.areaRect.width;
+                    totalRect.width = (areaWidth - width);
+                    x = (legend.position === 'Left') ? areaX : areaX + totalRect.width;
                     y = (totalHeight / 2) - (height / 2);
-                    treemap.areaRect.x = (legend.position === 'Left') ? areaX + width : areaX;
+                    totalRect.x = (legend.position === 'Left') ? areaX + width : areaX;
                     break;
             }
             switch (legend.alignment) {
                 case 'Near':
                     if (legend.position === 'Top' || legend.position === 'Bottom') {
-                        x = treemap.areaRect.x;
+                        x = totalRect.x;
                     } else {
-                        y = treemap.areaRect.y;
+                        y = totalRect.y;
                     }
                     break;
                 case 'Far':
@@ -654,6 +753,7 @@ export class TreeMapLegend {
                     }
                     break;
             }
+            this.treemap.totalRect = totalRect;
             this.translate = new Location(x, y);
         }
     }
@@ -722,5 +822,40 @@ export class TreeMapLegend {
          * Destroy method performed here
          */
         this.removeEventListener();
+    }
+    /**
+     * Get the gradient color for interactive legend.
+     */
+    public legendGradientColor(colorMap: ColorMappingModel, legendIndex: number): string {
+        let legendFillColor: string;
+        let xmlns: string = 'http://www.w3.org/2000/svg';
+        if (!isNullOrUndefined(colorMap.color) && Object.prototype.toString.call(colorMap.color) === '[object Array]') {
+            let defElement: Element = this.treemap.renderer.createDefs();
+            let linerGradientEle: Element = document.createElementNS(xmlns, 'linearGradient');
+            let opacity: number = 1; let position: LegendPosition = this.treemap.legendSettings.position;
+            let x2: string; let y2: string;
+            x2 = position === 'Top' || position === 'Bottom' ? '100' : '0';
+            y2 = position === 'Top' || position === 'Bottom' ? '0' : '100';
+            linerGradientEle.setAttribute('id', 'linear_' + legendIndex);
+            linerGradientEle.setAttribute('x1', 0 + '%');
+            linerGradientEle.setAttribute('y1', 0 + '%');
+            linerGradientEle.setAttribute('x2', x2 + '%');
+            linerGradientEle.setAttribute('y2', y2 + '%');
+            for (let b: number = 0; b < colorMap.color.length; b++) {
+                let offsetColor: number = 100 / (colorMap.color.length - 1);
+                let stopEle: Element = document.createElementNS(xmlns, 'stop');
+                stopEle.setAttribute('offset', b * offsetColor + '%');
+                stopEle.setAttribute('stop-color', colorMap.color[b]);
+                stopEle.setAttribute('stop-opacity', opacity.toString());
+                linerGradientEle.appendChild(stopEle);
+            }
+            defElement.appendChild(linerGradientEle);
+            this.legendLinearGradient = linerGradientEle;
+            let color: string = 'url(' + '#linear_' + legendIndex + ')';
+            this.defsElement.appendChild(linerGradientEle);
+            legendFillColor = color;
+        }
+
+        return legendFillColor;
     }
 }

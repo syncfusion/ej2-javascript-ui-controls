@@ -1223,7 +1223,7 @@ describe('MultiSelect', () => {
             (<any>listObj).onInput();
             (<any>listObj).KeyUp(keyboardEventArgs);
             let elem: HTMLElement[] = (<any>listObj).list.querySelectorAll('li.' + dropDownBaseClasses.focus);
-            expect(elem.length === 0).toBe(true);
+            expect(elem.length).toBe(0);
             listObj.destroy();
 
         });

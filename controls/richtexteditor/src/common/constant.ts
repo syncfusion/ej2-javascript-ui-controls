@@ -37,3 +37,13 @@ export const KEY_UP_HANDLER: string = 'keyup-handler';
  */
 export const KEY_UP: string = 'keyup';
 
+/* Model changed plugin event trigger
+ * @hidden
+ */
+export const MODEL_CHANGED_PLUGIN: string = 'model_changed_plugin';
+
+/* Model changed event trigger
+ * @hidden
+ */
+export const MODEL_CHANGED: string = 'model_changed';
+

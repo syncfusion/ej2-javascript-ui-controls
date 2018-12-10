@@ -296,6 +296,14 @@ describe('DropDownList', () => {
         let query1 = new Query().from('Customers').select('ContactName').take(3);
         beforeEach(() => {
             document.body.appendChild(element);
+        });
+        afterEach(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        it('when "no records" template is added to the dropdownlist', (done) => {
             listObj = new DropDownList({
                 dataSource: dataSource,
                 query: query,
@@ -305,14 +313,6 @@ describe('DropDownList', () => {
                 }
             });
             listObj.appendTo(element);
-        });
-        afterEach(() => {
-            if (element) {
-                element.remove();
-                document.body.innerHTML = '';
-            }
-        });
-        it('when "no records" template is added to the dropdownlist', (done) => {
             listObj.showPopup();
             setTimeout(() => {
                 expect(listObj.list.classList.contains('e-nodata')).toBe(true);
@@ -484,6 +484,35 @@ describe('DropDownList', () => {
             }, 400);
         });
     });
+    describe('focus event', () => {
+        let listObj: any;
+        let popupObj: any;
+        let data: string[] = ['JAVA', 'C#']
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new DropDownList({
+                dataSource: data,
+                focus: function (e) {
+                    expect((e as any).isInteracted).toBe(true);
+                }
+            });
+            listObj.appendTo(element);
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        it('focus the dropdown', () => {
+            expect(listObj.inputWrapper.container).not.toBe(null);
+            mouseEventArgs.target = listObj.inputWrapper.container;
+            listObj.dropDownClick(mouseEventArgs);
+        });
+    });
+
     describe(' dynamic datasource changes', () => {
         let element: HTMLInputElement;
         let listObj: DropDownList;
@@ -538,80 +567,6 @@ describe('DropDownList', () => {
                 element.remove();
                 document.body.innerHTML = '';
             }
-        });
-    });
-    describe(' add item with Template', () => {
-        let element: HTMLInputElement;
-        let listObj: DropDownList;
-        let popup: HTMLElement;
-        let liEle: HTMLElement;
-        let divNode: HTMLDivElement;
-        let textContent: string;
-        beforeAll(() => {
-            element = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
-            document.body.appendChild(element);
-            listObj = new DropDownList({
-                dataSource: templateDataSource,
-                fields: { text: 'Name', value: 'Eimg' },
-                popupHeight: "200px",
-                // set the template content for list items
-                itemTemplate: '<div class ="ename" style="color:red;"> ${Name}</div>',
-            });
-            listObj.appendTo(element);
-        });
-        it("item template with add item values", function (done) {
-            expect((listObj.dataSource as string[]).length === templateDataSource.length).toBe(true);
-            listObj.addItem({ Name: 'dropdown', Eimg: 100 });
-            listObj.open = function (args) {
-                popup = document.getElementById('dropdownlist_popup');
-                divNode = popup.querySelectorAll("li div.ename")[templateDataSource.length] as HTMLDivElement;
-                textContent = divNode.innerText;
-                expect(textContent).toEqual('dropdown');
-                expect((listObj as any).listData.length === 10).toBe(true);
-                listObj.hidePopup();
-                listObj.open = null;
-            };
-            listObj.close = function (args) {
-                done();
-                listObj.close = null;
-            };
-            listObj.showPopup();
-
-        });
-        afterAll(() => {
-            if (element) {
-                element.remove();
-                document.body.innerHTML = '';
-            }
-        });
-    });
-
-    describe('focus event', () => {
-        let listObj: any;
-        let popupObj: any;
-        let data: string[] = ['JAVA', 'C#']
-        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
-        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
-        beforeAll(() => {
-            document.body.appendChild(element);
-            listObj = new DropDownList({
-                dataSource: data,
-                focus: function (e) {
-                    expect((e as any).isInteracted).toBe(true);
-                }
-            });
-            listObj.appendTo(element);
-        });
-        afterAll(() => {
-            if (element) {
-                element.remove();
-                document.body.innerHTML = '';
-            }
-        });
-        it('focus the dropdown', () => {
-            expect(listObj.inputWrapper.container).not.toBe(null);
-            mouseEventArgs.target = listObj.inputWrapper.container;
-            listObj.dropDownClick(mouseEventArgs);
         });
     });
     describe('EJ2-18309 - Maximum call stack error while emptying dataSource with filtering and remote data', () => {

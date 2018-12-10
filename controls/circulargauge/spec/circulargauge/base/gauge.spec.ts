@@ -26,7 +26,7 @@ describe('Circular-Gauge Control', () => {
         });
         it('Checking with empty options', () => {
             let className: string = document.getElementById('container').className;
-            expect(className).toEqual('e-control e-circulargauge');
+            expect(className.indexOf('e-control') > -1).toBe(true);
         });
         it('Checking gauge instance creation', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
@@ -46,7 +46,7 @@ describe('Circular-Gauge Control', () => {
         it('Checking the height of the gauge', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_svg');
-               expect(svg.getAttribute('height')).toEqual('250');
+                expect(svg.getAttribute('height')).toEqual('250');
                 done();
             };
             gauge.height = '250';
@@ -74,7 +74,7 @@ describe('Circular-Gauge Control', () => {
         it('Checking the null width of the gauge', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_svg');
-               // expect(svg.getAttribute('width')).toEqual('600');
+                // expect(svg.getAttribute('width')).toEqual('600');
                 done();
             };
             gauge.width = null;
@@ -84,7 +84,7 @@ describe('Circular-Gauge Control', () => {
         it('Checking the width of the gauge with percentage', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_svg');
-               // expect(svg.getAttribute('width')).toEqual('200');
+                // expect(svg.getAttribute('width')).toEqual('200');
                 done();
             };
             ele.style.width = '400px';
@@ -123,7 +123,7 @@ describe('Circular-Gauge Control', () => {
                 svg = document.getElementById('container_CircularGaugeBorder');
                 expect(svg.getAttribute('stroke-width') == '2').toBe(true);
                 expect(svg.getAttribute('stroke') == 'red').toBe(true);
-                 expect(svg.getAttribute('fill') == 'transparent').toBe(true);
+                expect(svg.getAttribute('fill') == 'transparent').toBe(true);
                 gauge.load = null;
                 done();
             };
@@ -149,7 +149,7 @@ describe('Circular-Gauge Control', () => {
                 svg = document.getElementById('container_CircularGaugeTitle');
                 expect(svg != null).toBe(true);
                 expect(svg.textContent == 'This is circular-gauge').toBe(true);
-                 expect(svg.getAttribute('aria-label')).toBe('This is circular-gauge');
+                expect(svg.getAttribute('aria-label')).toBe('This is circular-gauge');
                 done();
             };
             gauge.title = 'This is circular-gauge';
@@ -161,7 +161,7 @@ describe('Circular-Gauge Control', () => {
                 svg = document.getElementById('container_CircularGaugeTitle');
                 expect(svg != null).toBe(true);
                 expect(svg.textContent == 'circular-gauge').toBe(true);
-                 expect(svg.getAttribute('aria-label')).toBe('this is title');
+                expect(svg.getAttribute('aria-label')).toBe('this is title');
                 done();
             };
             gauge.description = 'this is title';
@@ -289,6 +289,50 @@ describe('Circular-Gauge Control', () => {
                 done();
             };
             gauge.gaugeResize(<Event>{});
+        });
+    });
+    describe('Checking theme support', () => {
+        let gauge: CircularGauge;
+        let element: HTMLElement;
+        let svg: HTMLElement;              
+        beforeAll((): void => {                      
+            element = createElement('div', { id: 'container' });
+            document.body.appendChild(element);
+            gauge = new CircularGauge();
+            gauge.appendTo('#container');
+        });
+        afterAll((): void => {
+           // timeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;           
+            element.remove();
+        });
+
+        it('gauge theme support - highcontrast', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                debugger
+                svg = document.getElementById('container_CircularGaugeTitle');
+                expect(svg != null).toBe(true);                               
+                svg = document.getElementById('container_Axis_Major_TickLine_0_20');
+                expect(svg.getAttribute('stroke')).toEqual('#757575');                
+                done();
+            };
+            gauge.theme = 'Highcontrast';
+            gauge.title = 'circular gauge';
+            gauge.axes[0].majorTicks.width = 5;            
+            gauge.refresh();            
+        });
+
+        it('gauge theme support - Dark', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_CircularGaugeTitle');
+                expect(svg != null).toBe(true);                           
+                svg = document.getElementById('container_Axis_Major_TickLine_0_20');
+                expect(svg.getAttribute('stroke')).toEqual('#757575');                
+                done();
+            }; 
+            gauge.theme = 'FabricDark';
+            gauge.title = 'Circular gauge';
+            gauge.axes[0].majorTicks.width = 5;                      
+            gauge.refresh();
         });
     });
 });

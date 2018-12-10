@@ -39,6 +39,7 @@ const ICON_FOCUSED : string = 'e-clear-icon-focus';
 const PROGRESS_INNER_WRAPPER: string = 'e-progress-inner-wrap';
 const PAUSE_UPLOAD: string = 'e-file-pause-btn';
 const RESUME_UPLOAD: string = 'e-file-play-btn';
+const RESTRICT_SEQUENTIAL: string = 'e-restrict-sequential';
 
 export class FilesProp extends ChildProperty<FilesProp> {
     /**
@@ -270,6 +271,10 @@ export interface UploadingEventArgs {
      */
     chunkSize?: number;
     /**
+     * Returns the index of current chunk if the chunk upload is enabled. 
+     */
+    currentChunkIndex?: number;
+    /**
      * Returns the XMLHttpRequest instance that is associated with upload action.
      */
     currentRequest?: XMLHttpRequest;
@@ -365,12 +370,21 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private pausedData: MetaData[] = [];
     private uploadMetaData: MetaData[] = [];
     private tabIndex: string = '0';
+    private count: number = -1;
     /**
      * Configures the save and remove URL to perform the upload operations in the server asynchronously.
      * @default { saveUrl: '', removeUrl: '' }
      */
     @Complex<AsyncSettingsModel>({ saveUrl: '', removeUrl: '' }, AsyncSettings)
     public asyncSettings: AsyncSettingsModel;
+
+    /**
+     * By default, the file uploader component is processing the multiple files simultaneously.
+     * If sequentialUpload property is enabled, the file upload component performs the upload one after the other.
+     * @default false
+     */
+    @Property(false)
+    public sequentialUpload: boolean;
 
     /**
      * When this property is enabled, the uploader component elements are aligned from right-to-left direction to support locales.
@@ -513,10 +527,34 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * @event
      */
     @Event()
-    public uploading: EmitType<Object>;
+    public uploading: EmitType<UploadingEventArgs>;
 
     /**
      * Triggers when the AJAX request gets success on uploading files or removing files.
+     *  
+     * <table>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Event arguments<br/></td><td colSpan=1 rowSpan=1>
+     * Description<br/></td></tr> 
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * event<br/></td><td colSpan=1 rowSpan=1>
+     * Ajax progress event arguments.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * file<br/></td><td colSpan=1 rowSpan=1>
+     * File information which is uploaded/removed.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * name<br/></td><td colSpan=1 rowSpan=1>
+     * Name of the event<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * operation<br/></td><td colSpan=1 rowSpan=1>
+     * It indicates the success of the operation whether its uploaded or removed<br/></td></tr>
+     * </table>
+     * 
      * @event
      */
     @Event()
@@ -524,6 +562,30 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
 
     /**
      * Triggers when the AJAX request fails on uploading or removing files.
+     *  
+     * <table>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Event arguments<br/></td><td colSpan=1 rowSpan=1>
+     * Description<br/></td></tr> 
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * event<br/></td><td colSpan=1 rowSpan=1>
+     * Ajax progress event arguments.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * file<br/></td><td colSpan=1 rowSpan=1>
+     * File information which is failed from upload/remove.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * name<br/></td><td colSpan=1 rowSpan=1>
+     * Name of the event<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * operation<br/></td><td colSpan=1 rowSpan=1>
+     * It indicates the failure of the operation whether its upload or remove<br/></td></tr>
+     * </table>
+     * 
      * @event
      */
     @Event()
@@ -545,6 +607,26 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
 
     /**
      * Triggers when uploading a file to the server using the AJAX request.
+     *  
+     * <table>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Event arguments<br/></td><td colSpan=1 rowSpan=1>
+     * Description<br/></td></tr> 
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * event<br/></td><td colSpan=1 rowSpan=1>
+     * Ajax progress event arguments.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * file<br/></td><td colSpan=1 rowSpan=1>
+     * File information which is uploading to server.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * name<br/></td><td colSpan=1 rowSpan=1>
+     * Name of the event<br/></td></tr>
+     * </table>
+     * 
      * @event
      */
     @Event()
@@ -552,6 +634,22 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
 
     /**
      * Triggers when changes occur in uploaded file list by selecting or dropping files.
+     *  
+     * <table>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Event arguments<br/></td><td colSpan=1 rowSpan=1>
+     * Description<br/></td></tr> 
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * file<br/></td><td colSpan=1 rowSpan=1>
+     * File information which is successfully uploaded to server or removed in server.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * name<br/></td><td colSpan=1 rowSpan=1>
+     * Name of the event<br/></td></tr>
+     * </table>
+     * 
      * @event
      */
     @Event()
@@ -559,6 +657,30 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
 
     /**
      * Fires when the chunk file uploaded successfully.
+     *  
+     * <table>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Event arguments<br/></td><td colSpan=1 rowSpan=1>
+     * Description<br/></td></tr> 
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * chunkIndex<br/></td><td colSpan=1 rowSpan=1>
+     * Returns current chunk index.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * chunkSize<br/></td><td colSpan=1 rowSpan=1>
+     * Returns the size of the chunk file.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * file<br/></td><td colSpan=1 rowSpan=1>
+     * File information which is uploading to server.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * name<br/></td><td colSpan=1 rowSpan=1>
+     * Name of the event<br/></td></tr>
+     * </table>
+     * 
      * @event
      */
     @Event()
@@ -566,31 +688,70 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
 
     /**
      * Fires if the chunk file failed to upload.
+     *  
+     * <table>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Event arguments<br/></td><td colSpan=1 rowSpan=1>
+     * Description<br/></td></tr> 
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * chunkIndex<br/></td><td colSpan=1 rowSpan=1>
+     * Returns current chunk index.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * chunkSize<br/></td><td colSpan=1 rowSpan=1>
+     * Returns the size of the chunk file.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * file<br/></td><td colSpan=1 rowSpan=1>
+     * File information which is uploading to server.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * name<br/></td><td colSpan=1 rowSpan=1>
+     * Name of the event<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * totalChunk<br/></td><td colSpan=1 rowSpan=1>
+     * Returns the total chunk count<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * cancel<br/></td><td colSpan=1 rowSpan=1>
+     * Prevent triggering of failure event when we pass true to this attribute<br/></td></tr>
+     * </table>
+     * 
      * @event
      */
     @Event()
     public chunkFailure: EmitType<Object>;
 
     /**
+     * Fires when every chunk upload process gets started. This event is used to add additional parameter with upload request.
+     * @event
+     */
+    @Event()
+    public chunkUploading: EmitType<UploadingEventArgs>;
+
+    /**
      * Fires if cancel the chunk file uploading.
      * @event
      */
     @Event()
-    public canceling: EmitType<Object>;
+    public canceling: EmitType<CancelEventArgs>;
 
     /**
      * Fires if pause the chunk file uploading.
      * @event
      */
     @Event()
-    public pausing: EmitType<Object>;
+    public pausing: EmitType<PauseResumeEventArgs>;
 
     /**
      * Fires if resume the paused chunk file upload.
      * @event
      */
     @Event()
-    public resuming: EmitType<Object>;
+    public resuming: EmitType<PauseResumeEventArgs>;
     /**
      * Triggers when change the Uploader value.
      */
@@ -639,6 +800,13 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 case 'maxFileSize':
                 case 'template':
                 case 'autoUpload':
+                    if (this.sequentialUpload) {
+                        this.count = -1;
+                    }
+                    this.clearAll();
+                    break;
+                case 'sequentialUpload':
+                    this.count = -1;
                     this.clearAll();
                     break;
                 case 'locale':
@@ -1002,12 +1170,33 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
 
     private checkAutoUpload(fileData: FileInfo[]): void {
         if (this.autoUpload) {
-            this.upload(fileData);
+            if (this.sequentialUpload) {
+                /* istanbul ignore next */
+                this.sequenceUpload(fileData);
+            } else {
+                this.upload(fileData);
+            }
             this.removeActionButtons();
         } else if (!this.actionButtons) {
             this.renderActionButtons();
         }
         this.checkActionButtonStatus();
+    }
+
+    private sequenceUpload(fileData: FileInfo[]): void {
+        if ( this.filesData.length - fileData.length === 0 ||
+            this.filesData[(this.filesData.length - fileData.length - 1)].statusCode !== '1' ) {
+            ++this.count;
+            let isFileListCreated: boolean =  this.showFileList ? false : true;
+            if (typeof this.filesData[this.count] === 'object') {
+                this.upload(this.filesData[this.count], isFileListCreated);
+                if (this.filesData[this.count].statusCode === '0') {
+                    this.sequenceUpload(fileData);
+                }
+            } else {
+                --this.count;
+            }
+        }
     }
 
     private wireEvents(): void {
@@ -1169,11 +1358,19 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private uploadButtonClick(): void {
-        this.upload(this.filesData);
+        if (this.sequentialUpload) {
+            this.sequenceUpload(this.filesData);
+        } else {
+            this.upload(this.filesData);
+        }
     }
 
     private clearButtonClick(): void {
         this.clearAll();
+        /* istanbul ignore next */
+        if (this.sequentialUpload) {
+            this.count = -1;
+        }
     }
 
     private bindDropEvents(): void {
@@ -1234,6 +1431,10 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 createSpinner({ target: spinnerTarget , width: '20px' });
                 showSpinner(spinnerTarget);
             }
+            if (this.sequentialUpload) {
+                /* istanbul ignore next */
+                this.uploadSequential();
+            }
         } else {
             this.remove(fileData, false, false, args);
         }
@@ -1260,6 +1461,12 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             detach(this.listParent);
             this.listParent = null;
             this.removeActionButtons();
+        }
+        if (this.sequentialUpload) {
+            /* istanbul ignore next */
+            if (index <= this.count) {
+                --this.count;
+            }
         }
     }
 
@@ -1311,8 +1518,10 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private removeCompleted(e: Event, files:  FileInfo, customTemplate: boolean): void {
+        let response: Object = e && e.currentTarget ? this.getResponse(e) : null;
         let args : Object = {
-            e, operation: 'remove', file: this.updateStatus(files, this.localizedTexts('removedSuccessMessage'), '2') };
+            e, response: response, operation: 'remove', file: this.updateStatus(files, this.localizedTexts('removedSuccessMessage'), '2')
+        };
         this.trigger('success', args);
         this.removeFilesData(files, customTemplate);
         let index: number = this.uploadedFilesData.indexOf(files);
@@ -1321,8 +1530,10 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private removeFailed(e: Event, files:  FileInfo, customTemplate: boolean): void {
+        let response: Object = e && e.currentTarget ? this.getResponse(e) : null;
         let args : Object = {
-            e, operation: 'remove', file: this.updateStatus(files, this.localizedTexts('removedFailedMessage'), '0') };
+            e, response: response, operation: 'remove', file: this.updateStatus(files, this.localizedTexts('removedFailedMessage'), '0')
+        };
         if (!customTemplate) {
             let index: number = this.filesData.indexOf(files);
             let rootElement: HTMLElement = this.fileList[index];
@@ -1337,6 +1548,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         }
         this.trigger('failure', args);
         let liElement: HTMLElement = this.getLiElement(files);
+        /* istanbul ignore next */
         if (!isNullOrUndefined(liElement) && !isNullOrUndefined(liElement.querySelector('.' + DELETE_ICON))) {
             let spinnerTarget: HTMLElement = liElement.querySelector('.' + DELETE_ICON) as HTMLElement;
             hideSpinner(spinnerTarget);
@@ -1437,6 +1649,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             progressInterval: '',
             isCanceled: false
         };
+        /* istanbul ignore next */
         if (targetFiles.length < 1) {
             eventArgs.isCanceled = true;
             this.trigger('selected', eventArgs);
@@ -1829,7 +2042,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             hideSpinner(spinnerTarget);
             detach(liElement.querySelector('.e-spinner-pane'));
         }
-        let args: Object = { event: e, operation: 'cancel', file: file };
+        let requestResponse: Object = e && e.currentTarget ? this.getResponse(e) : null;
+        let args: Object = { event: e, response: requestResponse, operation: 'cancel', file: file };
         this.trigger('success', args);
     }
 
@@ -1862,6 +2076,10 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             }
             this.pauseButton = null;
         }
+        if (this.sequentialUpload) {
+            /* istanbul ignore next */
+            liElement.classList.add(RESTRICT_SEQUENTIAL);
+        }
         this.upload([file]);
     }
 
@@ -1888,20 +2106,59 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         }
     }
 
+    private getResponse(e: Event): Object {
+        // tslint:disable-next-line
+        let target: any = e.currentTarget;
+        let response: Object = {
+            readyState: target.readyState,
+            statusCode: target.status,
+            statusText: target.statusText,
+            headers: target.getAllResponseHeaders(),
+            withCredentials: target.withCredentials
+        };
+        return response;
+    }
+
     private raiseSuccessEvent(e: Event, file: FileInfo): void {
-        let args: object = {e, operation: 'upload', file: this.updateStatus(file, this.localizedTexts('uploadSuccessMessage'), '2')};
+        let response: Object = e && e.currentTarget ? this.getResponse(e) : null;
+        let args: object = {
+            e, response: response, operation: 'upload', file: this.updateStatus(file, this.localizedTexts('uploadSuccessMessage'), '2')
+        };
         this.trigger('success', args );
         this.uploadedFilesData.push(file);
         this.trigger('change', { file: this.uploadedFilesData });
         this.checkActionButtonStatus();
+        if (this.sequentialUpload && this.fileList.length > 0) {
+            if ((!(this.getLiElement(file)).classList.contains(RESTRICT_SEQUENTIAL))) {
+                this.uploadSequential();
+            } else {
+                /* istanbul ignore next */
+                (this.getLiElement(file)).classList.remove(RESTRICT_SEQUENTIAL);
+            }
+        }
     }
 
     private uploadFailed(e: Event, file : FileInfo) : void {
         let li : HTMLElement = this.getLiElement(file);
-        let args : object = {e , operation: 'upload', file: this.updateStatus(file, this.localizedTexts('uploadFailedMessage'), '0') };
+        let response: Object = e && e.currentTarget ? this.getResponse(e) : null;
+        let args : object = {
+            e, response: response, operation: 'upload', file: this.updateStatus(file, this.localizedTexts('uploadFailedMessage'), '0')
+        };
         if (!isNullOrUndefined(li)) { this.renderFailureState(e, file, li); }
         this.trigger('failure', args);
         this.checkActionButtonStatus();
+        this.uploadSequential();
+    }
+
+    private uploadSequential() : void {
+        if (this.sequentialUpload) {
+            if (this.autoUpload) {
+                /* istanbul ignore next */
+                this.checkAutoUpload(this.filesData);
+            } else {
+                this.uploadButtonClick();
+            }
+        }
     }
 
     private updateProgressBarClasses (li : HTMLElement, className : string) : void {
@@ -2040,9 +2297,13 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             chunkSize: this.asyncSettings.chunkSize === 0 ? null : this.asyncSettings.chunkSize
         };
         ajax.beforeSend = (e: BeforeSendEventArgs) => {
-            if (metaData.chunkIndex !== 0) { return; }
             eventArgs.currentRequest = ajax.httpRequest;
-            this.trigger('uploading', eventArgs);
+            eventArgs.currentChunkIndex = metaData.chunkIndex;
+            if (eventArgs.currentChunkIndex === 0) {
+                // This event is currently not required but to avoid breaking changes for previous customer, we have included.
+                this.trigger('uploading', eventArgs);
+            }
+            this.trigger('chunkUploading', eventArgs);
             if (eventArgs.cancel) {
                 this.eventCancelByArgs(e, eventArgs, file);
             } else {
@@ -2079,13 +2340,15 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         let response : XMLHttpRequest = e.target as XMLHttpRequest;
         let liElement: HTMLElement;
         if (response.readyState === 4 && response.status >= 200 && response.status < 300) {
+            let requestResponse: Object = e && e.currentTarget ? this.getResponse(e) : null;
             let totalChunk: number = Math.max(Math.ceil(metaData.file.size / this.asyncSettings.chunkSize), 1);
             let eventArgs: Object = {
                 event: e,
                 file: metaData.file,
                 chunkIndex: metaData.chunkIndex,
                 totalChunk: totalChunk,
-                chunkSize: this.asyncSettings.chunkSize
+                chunkSize: this.asyncSettings.chunkSize,
+                response: requestResponse
             };
             this.trigger('chunkSuccess', eventArgs);
             if (isNullOrUndefined(custom) || !custom) { liElement = this.getLiElement(metaData.file); }
@@ -2270,23 +2533,20 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         if (isNullOrUndefined(this.template) && (isNullOrUndefined(custom) || !custom)) {
             liElement = this.getLiElement(metaData.file);
         }
+        let requestResponse: Object = e && e.currentTarget ? this.getResponse(e) : null;
         let eventArgs: Object = {
             event: e,
             file: metaData.file,
             chunkIndex: metaData.chunkIndex,
             totalChunk: chunkCount,
             chunkSize: this.asyncSettings.chunkSize,
-            cancel: false
+            cancel: false,
+            response: requestResponse
         };
         this.trigger('chunkFailure', eventArgs);
-        /* tslint:disable */
-        let eventArgsData: { [key: string]: Object } = eventArgs as any;
-        let values: any = Object.keys(eventArgsData).map(function(e) {
-            return eventArgsData[e];
-        });
-        /* tslint:enable */
         // To prevent triggering of failure event
-        if (!values[values.length - 2]) {
+        // tslint:disable-next-line
+        if (!(<any>eventArgs).cancel) {
         if (metaData.retryCount < this.asyncSettings.retryCount) {
             setTimeout(() => { this.retryRequest(liElement, metaData, custom); }, this.asyncSettings.retryAfterDelay);
         } else {
@@ -2315,8 +2575,13 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             }
             metaData.retryCount = 0;
             let file: FileInfo = metaData.file;
-            let args: Object = {e, operation: 'upload', file: this.updateStatus(file, this.localizedTexts('uploadFailedMessage'), '0') };
+            let args: Object = {
+                e, response: requestResponse,
+                operation: 'upload',
+                file: this.updateStatus(file, this.localizedTexts('uploadFailedMessage'), '0')
+            };
             this.trigger('failure', args);
+            this.uploadSequential();
         }
     }
     }
@@ -2357,6 +2622,10 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             metaData.file.statusCode = '1';
             metaData.file.status = this.localizedTexts('readyToUploadMessage');
             this.chunkUpload(metaData.file);
+        }
+        if (this.sequentialUpload) {
+            /* istanbul ignore next */
+            (this.getLiElement(metaData.file)).classList.add(RESTRICT_SEQUENTIAL);
         }
     }
 

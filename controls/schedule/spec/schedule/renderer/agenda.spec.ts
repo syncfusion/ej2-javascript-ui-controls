@@ -16,7 +16,10 @@ describe('Agenda View', () => {
         beforeAll((done: Function) => {
             let dataBound: EmitType<Object> = () => { done(); };
             document.body.appendChild(elem);
-            schObj = new Schedule({ height: '500px', currentView: 'Agenda', dataBound: dataBound });
+            schObj = new Schedule({
+                height: '500px', currentView: 'Agenda', views: [{ option: 'Agenda', allowVirtualScrolling: true }],
+                dataBound: dataBound
+            });
             schObj.appendTo('#Schedule');
         });
         afterAll(() => {
@@ -28,10 +31,6 @@ describe('Agenda View', () => {
 
         it('Checking view class name in container', () => {
             expect(schObj.element.querySelector('.e-agenda-view')).toBeTruthy();
-        });
-
-        it('Checking active view class on toolbar views', () => {
-            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-agenda');
         });
 
         it('Checking hideEmptyAgendaDays default value', () => {
@@ -74,6 +73,7 @@ describe('Agenda View', () => {
             schObj = new Schedule({
                 height: '500px',
                 currentView: 'Agenda',
+                views: [{ option: 'Agenda', allowVirtualScrolling: true }],
                 selectedDate: new Date(2017, 10, 1),
                 dataBound: dataBound
             });
@@ -168,6 +168,7 @@ describe('Agenda View', () => {
             schObj = new Schedule({
                 height: '500px',
                 currentView: 'Agenda',
+                views: [{ option: 'Day' }, { option: 'Agenda', allowVirtualScrolling: true }],
                 selectedDate: new Date(2017, 9, 30),
                 eventSettings: { dataSource: generateObject() },
                 dataBound: dataBound

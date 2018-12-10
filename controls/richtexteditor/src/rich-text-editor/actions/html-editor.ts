@@ -1,10 +1,11 @@
 import * as events from '../base/constant';
 import { IRichTextEditor, IToolbarItemModel, IColorPickerRenderArgs, IRenderer, NotifyArgs, IToolbarOptions } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
-import { isNullOrUndefined, closest, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, closest, KeyboardEventArgs, attributes, removeClass, addClass } from '@syncfusion/ej2-base';
 import { HTMLFormatter } from '../formatter/html-formatter';
 import { RendererFactory } from '../services/renderer-factory';
 import { RenderType } from '../base/enum';
+import * as classes from '../base/classes';
 import { HtmlToolbarStatus } from './html-toolbar-status';
 import { IframeContentRender } from '../renderer/iframe-content-renderer';
 import { ContentRender } from '../renderer/content-renderer';
@@ -58,6 +59,16 @@ export class HtmlEditor {
         this.parent.on(events.getSelectedHtml, this.getSelectedHtml, this);
         this.parent.on(events.selectionSave, this.onSelectionSave, this);
         this.parent.on(events.selectionRestore, this.onSelectionRestore, this);
+        this.parent.on(events.readOnlyMode, this.updateReadOnly, this);
+    }
+    private updateReadOnly(): void {
+        if (this.parent.readonly) {
+            attributes(this.parent.contentModule.getEditPanel(), { contenteditable: 'false' });
+            addClass([this.parent.element], classes.CLS_RTE_READONLY);
+        } else {
+            attributes(this.parent.contentModule.getEditPanel(), { contenteditable: 'true' });
+            removeClass([this.parent.element], classes.CLS_RTE_READONLY);
+        }
     }
     private onSelectionSave(): void {
         let currentDocument: Document = this.contentRenderer.getDocument();
@@ -232,6 +243,7 @@ export class HtmlEditor {
         this.parent.off(events.getSelectedHtml, this.getSelectedHtml);
         this.parent.off(events.selectionSave, this.onSelectionSave);
         this.parent.off(events.selectionRestore, this.onSelectionRestore);
+        this.parent.off(events.readOnlyMode, this.updateReadOnly);
     }
 
     private render(): void {
@@ -273,12 +285,8 @@ export class HtmlEditor {
      * @private
      */
     private selectAll(): void {
-        this.parent.formatter.editorManager.nodeSelection.setSelectionText(
-            this.parent.contentModule.getDocument(),
-            this.parent.contentModule.getEditPanel(),
-            this.parent.contentModule.getEditPanel(),
-            0,
-            this.parent.contentModule.getEditPanel().childNodes.length);
+        (this.parent.contentModule.getEditPanel() as HTMLElement).focus();
+        this.parent.contentModule.getDocument().execCommand('selectAll', false, null);
     }
 
     /**

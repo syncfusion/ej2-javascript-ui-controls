@@ -340,3 +340,44 @@ describe('handle Context menu item validation-2 for editing', () => {
         expect(value).toBe(false);
     });
 });
+
+describe('Apply table auto fit types', () => {
+    let editor: DocumentEditor;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(ContextMenu, Editor, EditorHistory, Selection, SfdtExport);
+        editor = new DocumentEditor({ enableContextMenu: true, enableEditor: true, enableSelection: true, isReadOnly: false });
+        editor.enableEditorHistory = true;
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        editor.contextMenuModule;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        editor = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Apply auto fit type fit to contents', () => {
+        editor.editorModule.insertTable(2, 2);
+        editor.selection.selectTable();
+        editor.contextMenu.handleContextMenuItem('container_contextmenu_auto_fit_contents');
+        expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.allowAutoFit).toBe(true);
+    });
+    it('Apply auto fit type fit to window', () => {
+        editor.contextMenu.handleContextMenuItem('container_contextmenu_auto_fit_window');
+        expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.preferredWidthType).toBe('Percent');
+    });
+    it('Apply auto fit type fit to contents', () => {
+        editor.contextMenu.handleContextMenuItem('container_contextmenu_fixed_column_width');
+        expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.allowAutoFit).toBe(false);
+        expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.preferredWidthType).toBe('Auto');
+        expect(editor.selection.start.paragraph.associatedCell.cellFormat.preferredWidthType).toBe('Point');
+    });
+});

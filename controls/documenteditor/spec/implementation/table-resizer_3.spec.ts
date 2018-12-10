@@ -42,7 +42,7 @@ describe('Table Cell Resizing With Final Cell Selection testing', () => {
         document.body.removeChild(document.getElementById('container'));
         setTimeout(function () {
             done();
-        }, 2000);
+        }, 1000);
     });
     it('Resize Table Cell in Final Row Drag Value Testing ', () => {
         editor.editor.insertTable(2, 3);
@@ -107,7 +107,7 @@ describe('Cell Width Restricting on cell Resizing testing', () => {
         document.body.removeChild(document.getElementById('container'));
         setTimeout(function () {
             done();
-        }, 2000);
+        }, 1000);
     });
     it('Resize Table Without Selection on Zero index Testing', () => {
         editor.editor.insertTable(2, 3);
@@ -166,7 +166,7 @@ describe('Cell Width Restricting on cell Resizing With Selection testing', () =>
         document.body.removeChild(document.getElementById('container'));
         setTimeout(function () {
             done();
-        }, 2000);
+        }, 1000);
     });
     it('Resize Table With Selection on Zero index Testing', () => {
         editor.editor.insertTable(2, 3);
@@ -865,7 +865,7 @@ describe('Table Cell resizing testing at cell resizer position at 0 with selecti
         document.body.removeChild(document.getElementById('container'));
         setTimeout(function () {
             done();
-        }, 2000);
+        }, 1000);
     });
     it('Table with leftindent > 0 and selection in first column test resizer at position 0', () => {
         editor.open(getJson());

@@ -8,7 +8,7 @@ import { PointModel } from '../primitives/point-model';
 import { MouseEventArgs } from './event-handlers';
 import { PointPortModel } from '../objects/port-model';
 import { ConnectorModel, StraightSegmentModel, OrthogonalSegmentModel, BezierSegmentModel } from '../objects/connector-model';
-import { NodeModel, BpmnTransactionSubProcessModel, BpmnAnnotationModel } from '../objects/node-model';
+import { NodeModel, BpmnTransactionSubProcessModel, BpmnAnnotationModel, SwimLaneModel } from '../objects/node-model';
 import { OrthogonalSegment } from '../objects/connector';
 import { Rect } from '../primitives/rect';
 import { Diagram } from '../../diagram/diagram';
@@ -33,7 +33,7 @@ import { Canvas } from '../core/containers/canvas';
 import { getDiagramElement, getAdornerLayerSvg, getHTMLLayer, getAdornerLayer } from '../utility/dom-util';
 import { Point } from '../primitives/point';
 import { Size } from '../primitives/size';
-import { getObjectType, getPoint } from './../utility/diagram-util';
+import { getObjectType, getPoint, intersect2, getOffsetOfConnector } from './../utility/diagram-util';
 import { LayerModel } from '../diagram/layer-model';
 import { Layer } from '../diagram/layer';
 import { SelectorConstraints, Direction } from '../enum/enum';
@@ -48,12 +48,17 @@ import { ShapeAnnotationModel, PathAnnotationModel } from '../objects/annotation
 import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';
 import { SegmentInfo } from '../rendering/canvas-interface';
 import { PointPort } from '../objects/port';
-
+import { MarginModel } from '../core/appearance-model';
+import { renderContainerHelper, findBounds } from './container-interaction';
+import { checkChildNodeInContainer, checkParentAsContainer, addChildToContainer } from './container-interaction';
+import { renderStackHighlighter } from './container-interaction';
+import { GridPanel } from '../core/containers/grid';
 /**
  * Defines the behavior of commands
  */
 
 export class CommandHandler {
+
     /**   @private  */
     public clipboardData: ClipBoardObject = {};
     /**   @private  */
@@ -309,7 +314,7 @@ export class CommandHandler {
                 }
             }
         }
-        if (!connection && element instanceof TextElement) {
+        if (!connection) {
             let annotation: ShapeAnnotationModel | PathAnnotationModel;
             for (let i: number = 0; i < (argsTarget as NodeModel | ConnectorModel).annotations.length; i++) {
                 annotation = (argsTarget as NodeModel | ConnectorModel).annotations[i];
@@ -411,7 +416,6 @@ export class CommandHandler {
             newChanges[nodeEndId] = connector[nodeEndId] as Connector;
             oldChanges[portEndId] = connector[portEndId];
             this.connectionEventChange(connector, oldChanges, newChanges, endPoint);
-
         } else {
             oldNodeId = connector[nodeEndId];
             oldPortId = connector[portEndId];
@@ -822,7 +826,7 @@ export class CommandHandler {
         return newConnector as ConnectorModel;
     }
 
-    private cloneNode(node: NodeModel, multiSelect: boolean, children?: string[]): NodeModel {
+    private cloneNode(node: NodeModel, multiSelect: boolean, children?: string[], groupnodeID?: string): NodeModel {
         let newNode: NodeModel;
         let connectorsTable: {} = {};
         let cloneObject: Object = clone(node);
@@ -858,7 +862,7 @@ export class CommandHandler {
                 }
             }
         } else {
-            this.translateObject(cloneObject as Node);
+            this.translateObject(cloneObject as Node, groupnodeID);
             (cloneObject as Node).zIndex = -1;
             if (children) { (cloneObject as Node).children = children; }
             newNode = this.diagram.add(cloneObject) as Node;
@@ -934,28 +938,57 @@ export class CommandHandler {
         let value: NodeModel;
         let newChildren: string[] = [];
         let children: string[] = [];
+        let connectorObj: ConnectorModel[] = [];
+        let newObj: NodeModel | ConnectorModel;
+        let oldID: string[] = [];
         children = children.concat(obj.children);
-        if (this.clipboardData.childTable) {
+        let id: string = randomId();
+        if (this.clipboardData.childTable || obj.children.length > 0) {
             for (let i: number = 0; i < children.length; i++) {
-                let childObj: NodeModel | ConnectorModel = this.clipboardData.childTable[children[i]];
+                let childObj: NodeModel | ConnectorModel;
+                if (this.clipboardData.childTable) {
+                    childObj = this.clipboardData.childTable[children[i]];
+                } else {
+                    childObj = this.diagram.nameTable[children[i]];
+                }
+                (childObj as Node).parentId = '';
+
                 if (childObj) {
-                    let newObj: NodeModel | ConnectorModel;
                     if (getObjectType(childObj) === Connector) {
-                        newObj = this.cloneConnector(childObj as ConnectorModel, multiSelect);
+                        connectorObj.push(childObj as ConnectorModel);
                     } else {
-                        newObj = this.cloneNode(childObj as NodeModel, multiSelect);
+                        newObj = this.cloneNode(childObj as NodeModel, multiSelect, undefined, id);
+                        oldID.push(childObj.id);
+                        newChildren.push(newObj.id);
                     }
-                    newChildren.push(newObj.id);
                 }
             }
         }
+        for (let k: number = 0; k < connectorObj.length; k++) {
+            if (connectorObj[k].sourceID || connectorObj[k].targetID) {
+                for (let j: number = 0; j < oldID.length; j++) {
+                    if (connectorObj[k].sourceID === (oldID[j])) {
+                        connectorObj[k].sourceID += id;
+                    }
+                    if (connectorObj[k].targetID === (oldID[j])) {
+                        connectorObj[k].targetID += id;
+                    }
+                }
+            }
+            newObj = this.cloneConnector(connectorObj[k], multiSelect);
+            newChildren.push(newObj.id);
+        }
         let parentObj: NodeModel = this.cloneNode(obj, multiSelect, newChildren);
+        if (parentObj && parentObj.container && parentObj.shape && parentObj.shape.type === 'UmlClassifier') {
+            this.diagram.updateDiagramObject(parentObj);
+            parentObj.wrapper.measure(new Size());
+        }
         return parentObj;
     }
 
     /** @private */
-    public translateObject(obj: Node | Connector): void {
-        obj.id += randomId();
+    public translateObject(obj: Node | Connector, groupnodeID?: string): void {
+        obj.id += groupnodeID || randomId();
         let diff: number = this.clipboardData.pasteIndex * 10;
         if (getObjectType(obj) === Connector) {
             (obj as Connector).sourcePoint = {
@@ -1198,6 +1231,32 @@ export class CommandHandler {
             if (!multipleSelection) {
                 (selectorModel as Selector).init(this.diagram);
                 if (selectorModel.nodes.length === 1 && selectorModel.connectors.length === 0) {
+                    if (checkParentAsContainer(this.diagram, selectorModel.nodes[0], true)) {
+                        let parentNode: NodeModel = this.diagram.nameTable[(selectorModel.nodes[0] as Node).parentId];
+                        if (parentNode && parentNode.container.type === 'Grid') {
+                            let canvas: Canvas = new Canvas();
+                            canvas.children = [];
+                            let element: DiagramElement = new DiagramElement();
+                            if (selectorModel.nodes[0].rowIndex && selectorModel.nodes[0].rowIndex > 0) {
+                                if ((parentNode.container.orientation === 'Horizontal' && selectorModel.nodes[0].rowIndex === 1) ||
+                                    (parentNode.container.orientation === 'Vertical' &&
+                                        selectorModel.nodes[0].rowIndex > 0 && selectorModel.nodes[0].columnIndex > 0)) {
+                                    let bounds: Rect = findBounds(parentNode, selectorModel.nodes[0].columnIndex, true);
+                                    canvas.offsetX = bounds.center.x; canvas.offsetY = bounds.center.y;
+                                    element.width = bounds.width; element.height = bounds.height;
+                                } else {
+                                    canvas.offsetX = parentNode.offsetX;
+                                    canvas.offsetY = selectorModel.nodes[0].wrapper.offsetY;
+                                    element.width = parentNode.wrapper.actualSize.width;
+                                    element.height = selectorModel.nodes[0].wrapper.actualSize.height;
+                                }
+                            }
+                            canvas.children.push(element);
+                            canvas.measure(new Size());
+                            canvas.arrange(canvas.desiredSize);
+                            selectorModel.wrapper.children[0] = canvas;
+                        }
+                    }
                     selectorModel.rotateAngle = selectorModel.nodes[0].rotateAngle;
                     selectorModel.wrapper.rotateAngle = selectorModel.nodes[0].rotateAngle;
                     selectorModel.wrapper.pivot = selectorModel.nodes[0].pivot;
@@ -1642,6 +1701,36 @@ export class CommandHandler {
         }
     }
 
+    /**
+     * @private
+     */
+    public removeStackHighlighter(): void {
+        let adornerSvg: SVGElement = getAdornerLayerSvg(this.diagram.element.id);
+        let highlighter: SVGElement =
+            (adornerSvg as SVGSVGElement).getElementById(adornerSvg.id + '_stack_highlighter') as SVGElement;
+        if (highlighter) {
+            highlighter.parentNode.removeChild(highlighter);
+        }
+    }
+
+    /**
+     * @private
+     */
+    public renderStackHighlighter(args: MouseEventArgs, target?: IElement): void {
+        let source: Node = this.diagram.selectedItems.nodes[0] as Node;
+        if (!target) {
+            let objects: IElement[] = this.diagram.findObjectsUnderMouse(args.position);
+            target = this.diagram.findObjectUnderMouse(objects, 'Drag', true);
+        }
+        if (source && target && source.parentId && (target as Node).parentId && (source.parentId === (target as Node).parentId)
+            && (source.id !== (target as Node).id) && (this.diagram.nameTable[(target as Node).parentId].container &&
+                this.diagram.nameTable[(target as Node).parentId].container.type === 'Stack')) {
+            let isVertical: boolean = this.diagram.nameTable[(target as Node).parentId].container.orientation === 'Vertical';
+            renderStackHighlighter(
+                target.wrapper, isVertical, args.position, this.diagram);
+        }
+    }
+
     /** @private */
     public drag(obj: NodeModel | ConnectorModel, tx: number, ty: number): void {
         let tempNode: NodeModel | ConnectorModel;
@@ -1651,7 +1740,7 @@ export class CommandHandler {
                 let oldValues: NodeModel = { offsetX: obj.offsetX, offsetY: obj.offsetY };
                 obj.offsetX += tx;
                 obj.offsetY += ty;
-                if (obj.children) {
+                if (obj.children && !(obj.container)) {
                     let nodes: (NodeModel | ConnectorModel)[] = this.getAllDescendants(obj, elements);
                     for (let i: number = 0; i < nodes.length; i++) {
                         tempNode = (this.diagram.nameTable[nodes[i].id]);
@@ -1659,7 +1748,11 @@ export class CommandHandler {
                     }
                     this.updateInnerParentProperties(obj);
                 }
-                this.diagram.nodePropertyChange(obj as Node, oldValues as Node, { offsetX: obj.offsetX, offsetY: obj.offsetY } as Node);
+                if (checkParentAsContainer(this.diagram, obj, true)) {
+                    checkChildNodeInContainer(this.diagram, obj);
+                } else {
+                    this.diagram.nodePropertyChange(obj as Node, oldValues as Node, { offsetX: obj.offsetX, offsetY: obj.offsetY } as Node);
+                }
             } else {
                 let connector: Connector = obj as Connector;
                 let update: boolean = connector.type === 'Bezier' ? true : false;
@@ -2189,7 +2282,7 @@ export class CommandHandler {
                         let bound: Rect = this.diagram.bpmnModule.getChildrenBound(parent, obj.id, this.diagram);
                         this.diagram.bpmnModule.updateSubProcessess(bound, obj, this.diagram);
                     }
-                    if (obj.children && obj.children.length) {
+                    if (obj.children && obj.children.length && !obj.container) {
                         this.getChildren(obj, objects);
                     }
                 }
@@ -2263,7 +2356,7 @@ export class CommandHandler {
             x, y, refWrapper.actualSize.width, refWrapper.actualSize.height,
             refWrapper.rotateAngle, refWrapper.offsetX, refWrapper.offsetY, pivot);
         if (element.actualSize.width !== undefined && element.actualSize.height !== undefined && canPageEditable(this.diagram)) {
-            if (tempNode.children) {
+            if (tempNode.children && !(tempNode.container)) {
                 let nodes: (NodeModel | ConnectorModel)[] = this.getAllDescendants(tempNode, elements);
                 for (let temp of nodes) {
                     this.scaleObject(sw, sh, refPoint, temp as IElement, element, refObject);
@@ -2404,10 +2497,14 @@ export class CommandHandler {
                         margin: { top: node.margin.top, left: node.margin.left }
                     } as Node);
                 } else {
-                    this.diagram.nodePropertyChange(obj as Node, {} as Node, {
-                        width: node.width, height: node.height, offsetX: node.offsetX,
-                        offsetY: node.offsetY, margin: { top: node.margin.top + (top - oldtop), left: node.margin.left + (left - oldleft) }
-                    } as Node);
+                    if (checkParentAsContainer(this.diagram, obj, true)) {
+                        checkChildNodeInContainer(this.diagram, obj);
+                    } else {
+                        this.diagram.nodePropertyChange(obj as Node, {} as Node, {
+                            width: node.width, height: node.height, offsetX: node.offsetX, offsetY: node.offsetY,
+                            margin: { top: node.margin.top + (top - oldtop), left: node.margin.left + (left - oldleft) }
+                        } as Node);
+                    }
                 }
             } else {
                 let connector: Connector = obj as Connector;
@@ -2483,8 +2580,21 @@ export class CommandHandler {
         let newOffset: PointModel = intermediatePoints[intermediatePoints.length - 1];
         totalLength = Point.getLengthFromListOfPoints(intermediatePoints);
         if (intersetingPts.length > 0) {
-            intersectingOffset = intersetingPts[intersetingPts.length - 1];
-            newOffset = intersectingOffset;
+            if (label.dragLimit.top || label.dragLimit.bottom || label.dragLimit.left || label.dragLimit.right) {
+                let minDistance: Distance = { minDistance: null };
+                newOffset = this.getRelativeOffset(currentPosition, intermediatePoints, minDistance);
+                let distance: Distance = { minDistance: null };
+                intersectingOffset = this.getRelativeOffset(currentPosition, intersetingPts, distance);
+                if (minDistance != null && (distance as Distance).minDistance < (minDistance as Distance).minDistance) {
+                    newOffset = intersectingOffset;
+                } else {
+                    let connectorOffset: SegmentInfo = getOffsetOfConnector(object.intermediatePoints, label, object.wrapper.bounds);
+                    newOffset = connectorOffset.point;
+                }
+            } else {
+                intersectingOffset = intersetingPts[intersetingPts.length - 1];
+                newOffset = intersectingOffset;
+            }
             if (newOffset) {
                 let p: number; let bounds: Rect;
                 for (p = 0; p < intermediatePoints.length; p++) {
@@ -2493,26 +2603,90 @@ export class CommandHandler {
                         if (bounds.containsPoint(newOffset)) {
                             pointLength += Point.findLength(prev, newOffset);
                             break;
+                        } else {
+                            pointLength += Point.findLength(prev, intermediatePoints[p]);
                         }
                     }
                     prev = intermediatePoints[p];
                 }
                 offset = { x: pointLength / totalLength, y: 0 };
             }
-            this.updateLabelMargin(object, label, offset, currentPosition, size);
+            this.updateLabelMargin(object, label, offset, currentPosition, size, tx, ty);
         } else {
-            this.updateLabelMargin(object, label, null, currentPosition, size);
+            this.updateLabelMargin(object, label, null, currentPosition, size, tx, ty);
         }
     }
 
+    private getRelativeOffset(currentPosition: PointModel, points: PointModel[], minDistance: Distance): PointModel {
+        let newOffset: PointModel; let distance: number; let pt: PointModel; let i: number;
+        for (i = 0; i < points.length; i++) {
+            pt = points[i];
+            distance = Math.round(Math.sqrt(Math.pow((currentPosition.x - pt.x), 2) +
+                Math.pow((currentPosition.y - pt.y), 2)));
+            if ((minDistance as Distance).minDistance === null ||
+                Math.min(Math.abs((minDistance as Distance).minDistance), Math.abs(distance)) === Math.abs(distance)) {
+                newOffset = pt;
+                (minDistance as Distance).minDistance = distance;
+            }
+        }
+        return newOffset;
+    };
 
-    private updateLabelMargin(node: Connector, label: PathAnnotation, offset: PointModel, tempPt: PointModel, size?: Size): void {
+    private dragLimitValue(label: PathAnnotation, point: PointModel, tempPt: PointModel, contentDimension: Rect): IsDragArea {
+        let x: boolean = false; let y: boolean = false;
+        if ((tempPt.x >= (point.x - label.dragLimit.left - (contentDimension.width / 2))) &&
+            (tempPt.x <= point.x + label.dragLimit.right + (contentDimension.width / 2))) {
+            x = true;
+        }
+        if ((tempPt.y >= (point.y - label.dragLimit.top - (contentDimension.height / 2))) &&
+            (tempPt.y <= point.y + label.dragLimit.bottom + (contentDimension.height / 2))) {
+            y = true;
+        }
+        return { x: x, y: y };
+    };
+
+    private updateLabelMargin(
+        node: Connector, label: PathAnnotation, offset: PointModel, tempPt: PointModel, size?: Size, tx?: number, ty?: number): void {
         offset = offset ? offset : { x: label.offset, y: 0 };
         if (label && offset && offset.x > 0 && offset.x < 1) {
             let point: PointModel;
             let length: number = Point.getLengthFromListOfPoints(node.intermediatePoints);
             point = this.getPointAtLength(length * offset.x, node.intermediatePoints, 0);
-            label.margin = { left: tempPt.x - point.x, top: tempPt.y - point.y, right: 0, bottom: 0 };
+            let curZoomfactor: number = this.diagram.scrollSettings.currentZoom;
+            let dragLimit: MarginModel = label.dragLimit;
+            if (dragLimit.top || dragLimit.bottom || dragLimit.left || dragLimit.right) {
+                let labelBounds: DiagramElement = this.diagram.getWrapper(node.wrapper, label.id);
+                let contentDimension: Rect = new Rect(0, 0, 0, 0);
+                let annotationWrtapper: DiagramElement = this.diagram.getWrapper(node.wrapper, label.id);
+                contentDimension.x = ((annotationWrtapper).offsetX / curZoomfactor) + tx;
+                contentDimension.y = (annotationWrtapper.offsetY / curZoomfactor) + ty;
+                contentDimension.width = annotationWrtapper.bounds.width / curZoomfactor;
+                contentDimension.height = annotationWrtapper.bounds.height / curZoomfactor;
+                let draggableBounds: Rect = new Rect(
+                    point.x - (dragLimit.left || 0) - contentDimension.width / 2,
+                    point.y - (dragLimit.top || 0) - contentDimension.height / 2,
+                    (dragLimit.left || 0) + (dragLimit.right || 0) + contentDimension.width,
+                    (dragLimit.top || 0) + (dragLimit.bottom || 0) + contentDimension.height
+                );
+                if (draggableBounds.containsPoint(tempPt)) {
+                    tempPt = tempPt;
+                } else {
+                    let lineIntersects: PointModel[];
+                    let line1: PointModel[] = [point, tempPt];
+                    lineIntersects = this.boundsInterSects(line1, draggableBounds, false);
+                    for (let i of lineIntersects) {
+                        let ptt: PointModel = i;
+                        tempPt = ptt;
+                    }
+                }
+                let cursorLimit: IsDragArea = this.dragLimitValue(label, point, tempPt, contentDimension as Rect);
+                label.margin = {
+                    left: cursorLimit.x ? tempPt.x - point.x : label.margin.left,
+                    top: cursorLimit.y ? tempPt.y - point.y : label.margin.top, right: 0, bottom: 0
+                };
+            } else {
+                label.margin = { left: tempPt.x - point.x, top: tempPt.y - point.y, right: 0, bottom: 0 };
+            }
             label.offset = offset.x;
             if (size) {
                 label.width = size.width;
@@ -2520,6 +2694,35 @@ export class CommandHandler {
             }
         }
     }
+
+    private boundsInterSects(polyLine: PointModel[], bounds: Rect, self: boolean): PointModel[] {
+        let intersects: PointModel[];
+        if (bounds) {
+            let polyLine2: PointModel[] = [
+                { x: bounds.x, y: bounds.y },
+                { x: bounds.x + bounds.width, y: bounds.y },
+                { x: bounds.x + bounds.width, y: bounds.y + bounds.height },
+                { x: bounds.x, y: bounds.y + bounds.height },
+                { x: bounds.x, y: bounds.y }
+            ];
+            intersects = this.intersect(polyLine, polyLine2, self);
+        }
+        return intersects;
+    };
+
+    private intersect(polyLine1: PointModel[], polyLine2: PointModel[], self: boolean): PointModel[] {
+        let intersect: PointModel[] = [];
+        for (let i: number = 0; i < polyLine1.length - 1; i++) {
+            for (let j: number = 0; j < polyLine2.length - 1; j++) {
+                let p: PointModel = intersect2(polyLine1[i], polyLine1[i + 1], polyLine2[j], polyLine2[j + 1]);
+                if (p.x !== 0 && p.y !== 0) {
+                    intersect.push(p);
+                }
+            }
+        }
+        return intersect;
+    };
+
     private getPointAtLength(length: number, points: PointModel[], angle: number): PointModel {
         angle = 0;
         let run: number = 0; let pre: PointModel; let found: PointModel = { x: 0, y: 0 };
@@ -2724,15 +2927,19 @@ export class CommandHandler {
         return true;
     }
 
+
+
+
     //interfaces
     /** @private */
     public dragSelectedObjects(tx: number, ty: number): boolean {
-        let obj: SelectorModel = this.diagram.selectedItems;
+        let obj: SelectorModel | NodeModel | ConnectorModel = this.diagram.selectedItems;
         if (this.state && !this.state.backup) {
             this.state.backup = {};
             this.state.backup.offsetX = obj.offsetX;
             this.state.backup.offsetY = obj.offsetY;
         }
+        obj = renderContainerHelper(this.diagram, obj) || obj;
         if (this.checkBoundaryConstraints(tx, ty)) {
             this.diagram.drag(obj, tx, ty);
             return true;
@@ -2741,7 +2948,7 @@ export class CommandHandler {
     }
     /** @private */
     public scaleSelectedItems(sx: number, sy: number, pivot: PointModel): boolean {
-        let obj: SelectorModel = this.diagram.selectedItems;
+        let obj: SelectorModel | NodeModel | ConnectorModel = this.diagram.selectedItems;
         if (this.state && !this.state.backup) {
             this.state.backup = {};
             this.state.backup.offsetX = obj.offsetX;
@@ -2750,15 +2957,17 @@ export class CommandHandler {
             this.state.backup.height = obj.height;
             this.state.backup.pivot = pivot;
         }
+        obj = renderContainerHelper(this.diagram, obj) || obj;
         return this.diagram.scale(obj, sx, sy, pivot);
     }
     /** @private */
     public rotateSelectedItems(angle: number): boolean {
-        let obj: SelectorModel = this.diagram.selectedItems;
+        let obj: SelectorModel | NodeModel | ConnectorModel = this.diagram.selectedItems;
         if (this.state && !this.state.backup) {
             this.state.backup = {};
             this.state.backup.angle = obj.rotateAngle;
         }
+        obj = renderContainerHelper(this.diagram, obj) || obj;
         return this.diagram.rotate(obj, angle);
     }
     /** @private */
@@ -2802,17 +3011,19 @@ export class CommandHandler {
         }
         return objects;
     }
+
     private getparentexpand(target: Node, diagram: Diagram, visibility: boolean, connector: ConnectorModel): boolean {
+        let boolean: boolean;
         for (let i: number = 0; i < target.inEdges.length; i++) {
             let newConnector: ConnectorModel = diagram.nameTable[target.inEdges[i]];
             let previousNode: NodeModel = diagram.nameTable[newConnector.sourceID];
             if (previousNode.isExpanded && !visibility && previousNode.id !== connector.sourceID && newConnector.visible) {
                 return false;
             } else {
-                return true;
+                boolean = true;
             }
         }
-        return true;
+        return boolean;
     }
     /**
      * Setinterval and Clear interval for layout animation
@@ -2855,6 +3066,7 @@ export class CommandHandler {
             obj.offsetY = rect.y + rect.height / 2;
             obj.width = rect.width;
             obj.height = rect.height;
+            (obj.wrapper.children[0] as PathElement).canMeasurePath = true;
             this.diagram.nodePropertyChange(obj as Node, {} as Node, {
                 width: rect.width, height: rect.height, offsetX: obj.offsetX,
                 offsetY: obj.offsetY
@@ -2935,6 +3147,7 @@ export class CommandHandler {
         }
         return true;
     }
+
     /**
      * @private
      */
@@ -3197,6 +3410,96 @@ export class CommandHandler {
         this.diagram.clearHighlighter();
     }
 
+    /**
+     * @private
+     */
+    public renderContainerHelper(node: NodeModel | SelectorModel): NodeModel | ConnectorModel {
+        return renderContainerHelper(this.diagram, node);
+    }
+
+    /**
+     * @private
+     */
+    public isParentAsContainer(node: NodeModel, isChild?: boolean): boolean {
+        return checkParentAsContainer(this.diagram, node, isChild);
+    }
+
+
+    /**
+     * @private
+     */
+    public dropChildToContainer(parent: NodeModel, node: NodeModel): void {
+        addChildToContainer(this.diagram, parent, node);
+    }
+
+    /** @private */
+    public checkSelection(selector: SelectorModel, corner: string): void {
+        let node: NodeModel;
+        if (selector.nodes.length === 1 && selector.connectors.length === 0) {
+            if (checkParentAsContainer(this.diagram, selector.nodes[0], true)) {
+                node = (selector.nodes[0].shape === 'SwimLane') ? selector.nodes[0] :
+                    this.diagram.nameTable[(selector.nodes[0] as Node).parentId];
+                let child: NodeModel = selector.nodes[0];
+                if (node.container.type === 'Grid') {
+                    if (((node.container.orientation === 'Horizontal' && child.rowIndex === 1) ||
+                        (node.container.orientation === 'Vertical' && child.rowIndex > 0 && child.columnIndex > 0))) {
+                        if (corner === 'ResizeSouth') {
+                            if (node.shape.type === 'SwimLane') {
+                                let wrapper: GridPanel = node.wrapper.children[0] as GridPanel;
+                                let child: Container = wrapper.rows[wrapper.rows.length - 1].cells[0];
+                                this.select(this.diagram.nameTable[(child.children[0] as Container).children[0].id]);
+                            } else {
+                                for (let i: number = 0; i < this.diagram.nodes.length; i++) {
+                                    let obj: NodeModel = this.diagram.nodes[i];
+                                    if (obj.rowIndex === node.rows.length - 1 && obj.columnIndex === 0) {
+                                        this.select(obj);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        if (corner === 'ResizeEast') {
+                            if (node.shape.type === 'SwimLane') {
+                                let wrapper: GridPanel; let child: Container;
+                                wrapper = node.wrapper.children[0] as GridPanel;
+                                child = wrapper.rows[wrapper.rows.length - 1].cells[wrapper.rows[wrapper.rows.length - 1].cells.length - 1];
+                                this.select(this.diagram.nameTable[child.children[0].id]);
+                            } else {
+                                for (let i: number = 0; i < this.diagram.nodes.length; i++) {
+                                    let obj: NodeModel = this.diagram.nodes[i];
+                                    if (obj.rowIndex === 1 && obj.columnIndex === node.columns.length - 1) {
+                                        this.select(obj);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                if (selector.nodes[0].shape.type === 'SwimLane') {
+                    node = selector.nodes[0];
+                    let wrapper: GridPanel; let child: Container; let index: number;
+                    if ((corner === 'ResizeSouth' && (selector.nodes[0].shape as SwimLaneModel).orientation === 'Vertical')) {
+                        wrapper = node.wrapper.children[0] as GridPanel;
+                        child = wrapper.rows[wrapper.rows.length - 1].cells[0];
+                        this.select(this.diagram.nameTable[child.children[0].id]);
+                    } else if (corner === 'ResizeEast') {
+                        wrapper = node.wrapper.children[0] as GridPanel;
+                        index = ((selector.nodes[0].shape as SwimLaneModel).header) ? 1 : 0;
+                        child = wrapper.rows[index].cells[wrapper.rows[index].cells.length - 1];
+                        this.select(this.diagram.nameTable[child.children[0].id]);
+                    } else if ((corner === 'ResizeSouth' && (selector.nodes[0].shape as SwimLaneModel).orientation === 'Horizontal')) {
+                        wrapper = node.wrapper.children[0] as GridPanel; index = wrapper.rows.length - 1;
+                        child = wrapper.rows[index].cells[wrapper.rows[index].cells.length - 1];
+                        this.select(this.diagram.nameTable[child.children[0].id]);
+                    }
+                }
+            }
+        }
+    }
+
     /** @private */
     public zoom(scale: number, scrollX: number, scrollY: number, focusPoint?: PointModel): void {
         this.diagram.scroller.zoom(
@@ -3224,4 +3527,13 @@ export interface ObjectState {
     height?: number;
     pivot?: PointModel;
     angle?: number;
+}
+/** @private */
+export interface Distance {
+    minDistance?: number;
+}
+/** @private */
+export interface IsDragArea {
+    x?: boolean;
+    y?: boolean;
 }

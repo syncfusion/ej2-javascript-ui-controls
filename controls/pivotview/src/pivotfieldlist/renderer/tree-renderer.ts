@@ -5,7 +5,7 @@ import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
 import { IAction } from '../../common/base/interface';
 import { TreeView, NodeCheckEventArgs, DragAndDropEventArgs } from '@syncfusion/ej2-navigations';
-import { IFieldOptions, IField, IFieldListOptions } from '../../base/engine';
+import { IFieldOptions, IField, IFieldListOptions, IDataOptions } from '../../base/engine';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { MaskedTextBox, MaskChangeEventArgs } from '@syncfusion/ej2-inputs';
 
@@ -138,7 +138,7 @@ export class TreeViewRenderer implements IAction {
             enableRtl: this.parent.enableRtl,
             cssClass: cls.EDITOR_SEARCH_CLASS,
             change: (e: MaskChangeEventArgs) => {
-                this.parent.pivotCommon.eventBase.searchTreeNodes(e, this.fieldTable);
+                this.parent.pivotCommon.eventBase.searchTreeNodes(e, this.fieldTable, true);
             }
         });
         this.editorSearch.appendTo(editorSearch);
@@ -185,7 +185,11 @@ export class TreeViewRenderer implements IAction {
         this.parent.pivotCommon.dataSourceUpdate.control = this.parent.getModuleName() === 'pivotview' ? this.parent :
             ((this.parent as PivotFieldList).pivotGridModule ? (this.parent as PivotFieldList).pivotGridModule : this.parent);
         if (this.parent.pivotCommon.nodeStateModified.onStateModified(args, fieldName)) {
-            this.parent.updateDataSource();
+            if (this.parent.allowDeferLayoutUpdate) {
+                this.updateDataSource();
+            } else {
+                this.parent.updateDataSource();
+            }
             this.parent.axisFieldModule.render();
         }
     }
@@ -248,8 +252,28 @@ export class TreeViewRenderer implements IAction {
             removeClass([node.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
             this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport(args.data[0].id.toString());
         }
-        this.parent.updateDataSource(true);
+        if (!this.parent.allowDeferLayoutUpdate) {
+            this.parent.updateDataSource(true);
+        } else {
+            if (args.action === 'check') {
+                selectedNode.isSelected = true;
+            } else {
+                selectedNode.isSelected = false;
+            }
+            this.updateDataSource();
+        }
         this.parent.axisFieldModule.render();
+    }
+
+    private updateDataSource(): void {
+        if (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).renderMode === 'Popup') {
+            (this.parent as PivotFieldList).pivotGridModule.engineModule = (this.parent as PivotFieldList).engineModule;
+            (this.parent as PivotFieldList).pivotGridModule.
+        setProperties({ dataSource: (<{ [key: string]: Object }>this.parent.dataSource).properties as IDataOptions }, true);
+            (this.parent as PivotFieldList).pivotGridModule.notify(events.uiUpdate, this);
+        } else {
+            this.parent.triggerPopulateEvent();
+        }
     }
 
     private addNode(args: NodeCheckEventArgs): void {
@@ -288,9 +312,11 @@ export class TreeViewRenderer implements IAction {
     }
 
     private refreshTreeView(): void {
-        this.fieldTable.fields = { dataSource: this.getTreeData(), id: 'id', text: 'caption', isChecked: 'isSelected' };
-        this.fieldTable.dataBind();
-        this.getTreeUpdate();
+        if (this.fieldTable) {
+            this.fieldTable.fields = { dataSource: this.getTreeData(), id: 'id', text: 'caption', isChecked: 'isSelected' };
+            this.fieldTable.dataBind();
+            this.getTreeUpdate();
+        }
     }
 
     private getTreeData(axis?: number): { [key: string]: Object }[] {

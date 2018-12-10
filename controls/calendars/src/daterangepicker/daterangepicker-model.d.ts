@@ -71,7 +71,7 @@ export interface DateRangePickerModel extends CalendarBaseModel{
     /**
      * Gets or sets the Calendar's first day of the week. By default, the first day of the week will be based on the current culture.
      * > For more details about firstDayOfWeek refer to 
-     * [`First day of week`](./how-to.html#change-the-first-day-of-the-week) documentation.
+     * [`First day of week`](../daterangepicker/customization#first-day-of-week) documentation.
      * @default null
      */
     firstDayOfWeek?: number;
@@ -80,7 +80,7 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * Determines whether the week number of the Calendar is to be displayed or not.
      * The week number is displayed in every week row.
      * > For more details about weekNumber refer to 
-     * [`Calendar with week number`](./how-to.html#render-the-calendar-with-week-numbers)documentation.
+     * [`Calendar with week number`](../calendar/how-to/week-number#render-the-calendar-with-week-numbers)documentation.
      * @default false
      */
     weekNumber?: boolean;
@@ -130,7 +130,7 @@ export interface DateRangePickerModel extends CalendarBaseModel{
     /**
      * Set the predefined ranges which let the user pick required range easily in a component.
      * > For more details refer to 
-     * [`Preset Ranges`](./customization.html#preset-ranges) documentation.
+     * [`Preset Ranges`](../daterangepicker/customization#preset-ranges) documentation.
      * @default null
      */
     presets?: PresetsModel[];
@@ -192,7 +192,7 @@ export interface DateRangePickerModel extends CalendarBaseModel{
     /**
      *  Specifies the minimum span of days that can be allowed in date range selection.
      * > For more details refer to 
-     * [`Range Span`] (./range-restriction.html#range-span) documentation.
+     * [`Range Span`] (../daterangepicker/range-restriction#range-span) documentation.
      * @default null    
      */
     minDays?: number;
@@ -200,7 +200,7 @@ export interface DateRangePickerModel extends CalendarBaseModel{
     /**
      *  Specifies the maximum span of days that can be allowed in a date range selection.
      * > For more details refer to 
-     * [`Range Span`](./range-restriction.html#range-span) documentation.
+     * [`Range Span`](../daterangepicker/range-restriction#range-span) documentation.
      * @default null
      */
     maxDays?: number;
@@ -208,7 +208,7 @@ export interface DateRangePickerModel extends CalendarBaseModel{
     /**
      * Specifies the component to act as strict which allows entering only a valid date range in a DateRangePicker.
      * > For more details refer to 
-     * [`Strict Mode`](./range-restriction.html#strict-mode)documentation.
+     * [`Strict Mode`](../daterangepicker/range-restriction#strict-mode)documentation.
      * @default false
      */
     strictMode?: boolean;

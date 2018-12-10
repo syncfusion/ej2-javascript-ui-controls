@@ -952,4 +952,19 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
     | 'CellTopMargin' | 'CellBottomMargin' | 'RowHeight' | 'RowHeightType' | 'RowHeader' | 'AllowBreakAcrossPages' | 'PageHeight' |
     'PageWidth' | 'LeftMargin' | 'RightMargin' | 'TopMargin' | 'BottomMargin' | 'DefaultCellSpacing'
     | 'ListCharacterFormat' | 'ContinueNumbering' | 'RestartNumbering' | 'ListSelect' | 'Shading' | 'Borders' | 'TOC' | 'StyleName'
-    | 'ApplyStyle' | 'SectionBreak' | 'PageBreak' | 'IMEInput';
+    | 'ApplyStyle' | 'SectionBreak' | 'PageBreak' | 'IMEInput' | 'TableAutoFitToContents' | 'TableAutoFitToWindow' | 'TableFixedColumnWidth'
+    | 'ParagraphBidi'|'TableBidi';
+export type BiDirectionalOverride =
+    'None' |
+    //Left to Right
+    'LTR' |
+    // Right to left
+    'RTL';
+
+export type AutoFitType =
+    /// Fit the contents respect to contents.
+    'FitToContents' |
+    /// Fit the contents respect to window/pageWidth.
+    'FitToWindow' |
+    /// Fit the contents respect to fixed column width.
+    'FixedColumnWidth';

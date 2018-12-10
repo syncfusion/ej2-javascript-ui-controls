@@ -3,7 +3,7 @@ import { TreeMap } from '../../../src/treemap/treemap';
 import { TreeMapLegend } from '../../../src/treemap/layout/legend';
 import { ILoadedEventArgs } from '../../../src/treemap/model/interface';
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { jobData, sportsData, hierarchicalData, Country_Population } from '../base/data.spec';
+import { jobData, sportsData, hierarchicalData, Country_Population, CarSales, Metals } from '../base/data.spec';
 TreeMap.Inject(TreeMapLegend);
 
 let jobDataSource: Object[] = jobData;
@@ -307,6 +307,243 @@ describe('TreeMap Component Base Spec', () => {
             treemap.legendSettings.width = '200px';
             treemap.refresh();
         });
+    });
+
+    describe('TreeMap with multi colors spec', () => {
+        let element: Element;
+        let treemap: TreeMap;
+        let id: string = 'default-container';
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '600px';
+            (element as HTMLDivElement).style.height = '400px';
+            document.body.appendChild(element);
+            treemap = new TreeMap({
+                border: {
+                    color: 'red',
+                    width: 2
+                },
+                titleSettings: {
+                    text: 'Tree Map control',
+                },
+                dataSource: jobData,
+                highlightSettings: {
+                    enable: false
+                },
+                selectionSettings: {
+                    enable: false
+                },
+                legendSettings: {
+                    visible: true,
+                    title: {
+                        text: 'Legend'
+                    },
+                    border: {
+                        color: 'black',
+                        width: 2
+                    }
+                },
+                weightValuePath: 'EmployeesCount',
+                rangeColorValuePath: 'EmployeesCount',
+                leafItemSettings: {
+                    labelPath: 'JobGroup',
+                    colorMapping: [{
+                        from: 10,
+                        to: 35,                        
+                        color: ['red','green','blue'],
+                    },                                       
+                    {
+                        from: 70,
+                        to: 80,
+                        minOpacity:0.75,
+                        maxOpacity:1,
+                        color: ['#A52A2A','#FFFF00'],
+                    },
+                    {
+                        from: 90,
+                        to: 150,                        
+                        color: ['#FFA500','#800080','Orange','#79443b','#dcb68a'],
+                    },
+                 ]
+                },            
+            }, '#' + id);
+        });
+        afterAll(() => {
+            treemap.destroy();
+            document.getElementById(id).remove();
+        });
+        
+
+        it('Range color mappping testing spec with multi colors', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                debugger
+                element = document.getElementById(id + '_Level_Index_0_Item_Index_0_RectPath');                                                
+                expect(element.getAttribute('fill')).toBe('#00525c');                 
+                let element1  : Element = document.getElementById(id + '_Level_Index_0_Item_Index_2_RectPath');                
+                expect(element1.getAttribute('fill')).toBe('#A52A2A');
+                expect(element1.getAttribute('opacity')).toBe('0.75');                               
+            };                    
+        });
+
+    });
+
+    describe('TreeMap Interactive legend with multi colors spec', () => {
+        let element: Element;
+        let treemap: TreeMap;
+        let id: string = 'interactive-container';
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '600px';
+            (element as HTMLDivElement).style.height = '400px';
+            document.body.appendChild(element);
+            treemap = new TreeMap({
+                border: {
+                    color: 'red',
+                    width: 2
+                },
+                titleSettings: {
+                    text: 'Tree Map control',
+                },
+                dataSource: jobData,
+                highlightSettings: {
+                    enable: false
+                },
+                selectionSettings: {
+                    enable: false
+                },
+                legendSettings: {
+                    visible: true,
+                    title: {
+                        text: 'Legend'
+                    },
+                    border: {
+                        color: 'black',
+                        width: 2
+                    }
+                },
+                weightValuePath: 'EmployeesCount',
+                rangeColorValuePath: 'EmployeesCount',
+                leafItemSettings: {
+                    labelPath: 'JobGroup',
+                    colorMapping: [{
+                        from: 10,
+                        to: 35,
+                        color: ['red','green'],
+                    },                   
+                    {
+                        from: 70,
+                        to: 80,
+                        color: ['#A52A2A','#FFFF00','blue','#3d2b1f'],
+                    },
+                    {
+                        from: 90,
+                        to: 150,
+                        color: ['#FFA500','#800080','Orange','#79443b','#dcb68a'],
+                    },
+                 ]
+                },            
+            }, '#' + id);
+        });
+        afterAll(() => {
+            treemap.destroy();
+            document.getElementById(id).remove();
+        });
+                		
+        it('Checking with interactive legend with multi colors ', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('interactive-container_Legend_Index_0');
+                expect(element.getAttribute('fill')).toBe('url(#linear_0)');                
+            };
+            treemap.legendSettings.mode = 'Interactive';
+            treemap.refresh();
+        });
+    
+    });
+
+    describe('TreeMap legend with outofrange spec', () => {
+        let element: Element;
+        let treemap: TreeMap;
+        let id: string = 'interactive-container';
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '600px';
+            (element as HTMLDivElement).style.height = '400px';
+            document.body.appendChild(element);
+            treemap = new TreeMap({
+                border: {
+                    color: 'red',
+                    width: 2
+                },
+                titleSettings: {
+                    text: 'Tree Map control',
+                },
+                dataSource: jobData,
+                highlightSettings: {
+                    enable: false
+                },
+                selectionSettings: {
+                    enable: false
+                },
+                legendSettings: {
+                    visible: true,
+                    title: {
+                        text: 'Legend'
+                    },
+                    border: {
+                        color: 'black',
+                        width: 2
+                    }
+                },
+                weightValuePath: 'EmployeesCount',
+                rangeColorValuePath: 'EmployeesCount',
+                leafItemSettings: {
+                    labelPath: 'JobGroup',
+                    colorMapping: [{
+                        from: 10,
+                        to: 20,
+                        color: ['red','green'],
+                    },
+                    {
+                        from: 20,
+                        to: 30,
+                        color: '#ff9900',
+                    },
+                    {
+                        from: 30,
+                        to: 40,
+                        color: ['pink','white','aqua'],
+                    },
+                    {
+                        from: 40,
+                        to: 50,
+                        color: ['#A52A2A','#FFFF00','#9f8170','#3d2b1f'],
+                    },
+                    {
+                        from: 50,
+                        to: 60,
+                        color: ['#FFA500','#800080','#DE5D83','#79443b','#dcb68a'],
+                    },
+                    {
+                        color:'skyblue',
+                    }
+                 ]
+                },            
+            }, '#' + id);
+        });
+        afterAll(() => {
+            treemap.destroy();
+            document.getElementById(id).remove();
+        });
+
+        it('Checking the legend with outofrange ', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('interactive-container_Legend_Index_0');
+                expect(element.getAttribute('fill')).toBe('url(#linear_0)');                
+            };
+            treemap.legendSettings.mode = 'Interactive';
+            treemap.refresh();
+        });        
+
     });
 
     describe('TreeMap Interactive legend spec', () => {
@@ -1120,6 +1357,110 @@ describe('TreeMap Component Base Spec', () => {
                 expect(document.getElementById('legend_Palette_container_Legend_Group').childElementCount).toBeGreaterThan(1);
             };
             treemap.palette = ['#f44336', '#29b6f6', '#ab47bc', '#ffc107', '#5c6bc0', '#009688'];
+            treemap.refresh();
+        });
+    });
+    describe('TreeMap Default legend spec', () => {
+        let element: Element;
+        let treemap: TreeMap;
+        let id: string = 'container';
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '600px';
+            (element as HTMLDivElement).style.height = '400px';
+            document.body.appendChild(element);
+            treemap = new TreeMap({
+                titleSettings: {
+                    text: 'Car Sales by Country - 2017',
+                    textStyle: { size: '15px' }
+                },
+                format: 'n',
+                useGroupingSeparator: true,
+                dataSource: CarSales,
+                colorValuePath: 'color',
+                legendSettings: {
+                    visible: true,
+                    position: 'Top',
+                    shape: 'Rectangle',
+                },
+                tooltipSettings: {
+                    visible: true
+                },
+                weightValuePath: 'Sales',
+                leafItemSettings: {
+                    labelPath: 'Company',
+                    border: { color: 'white', width: 0.5 }
+                },
+                levels: [
+                    {
+                        groupPath: 'Continent', border: { color: 'white', width: 0.5 },
+                    }
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            treemap.destroy();
+            document.getElementById(id).remove();
+        });
+        it('Checking color mapping from datasource', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_Level_Index_0_Item_Index_0_RectPath');
+                expect(element.getAttribute('fill')).toBe('#5F9EA0');
+            };
+            treemap.refresh();
+        });
+    });
+    describe('TreeMap Legend customization spec', () => {
+        let element: Element;
+        let treemap: TreeMap;
+        let id: string = 'container';
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '600px';
+            (element as HTMLDivElement).style.height = '400px';
+            document.body.appendChild(element);
+            treemap = new TreeMap({
+                // To config Title for treemap 
+                titleSettings: {
+                    text: 'US Gold medal categories in Summer Olympics - 2016',
+                    textStyle: {size: '15px'}
+                },
+                legendSettings: {
+                    visible: true,
+                    position: 'Top',
+                    shape: 'Rectangle',
+                    valuePath: 'valuePath',
+                    removeDuplicateLegend: true,
+                    showLegendPath: 'legendVisibility'
+                },
+                //enableDrillDown: true,
+                dataSource: Metals,
+                weightValuePath: 'Gold',
+                colorValuePath: 'fill',
+                // To config tooltip for treemap 
+                tooltipSettings: {
+                    visible: true,
+                    format: '${Sport} : ${Gold}'
+                },
+                // To config leaf items for treemap
+                leafItemSettings: {
+                    labelPath: 'Sport',
+                    fill: '#993399',
+                    templatePosition: 'Center',
+                    border: { color: 'black', width: 0.5 },
+                    labelFormat: ' ${Sport} - ${Gold}'
+                }
+            }, '#' + id);
+        });
+        afterAll(() => {
+            treemap.destroy();
+            document.getElementById(id).remove();
+        });
+        it('Checking color mapping from datasource', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById("container_Legend_Group");
+                expect(element.childNodes.length).toBe(7);
+            };
             treemap.refresh();
         });
     });

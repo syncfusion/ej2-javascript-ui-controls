@@ -12,6 +12,10 @@
       width: 100%;
     }
 
+    &.e-dlg-resizable {
+      touch-action: none;
+    }
+
     .e-dlg-header-content {
       border-radius: $header-content-border-radius;
       line-height: $dialog-header-line-height;
@@ -36,7 +40,7 @@
       user-select: none;
       vertical-align: top;
       white-space: nowrap;
-      width: 83%;
+      width: 80%;
     }
 
     .e-dlg-modal {
@@ -73,6 +77,17 @@
       text-align: right;
     }
 
+    .e-resize-handle {
+      height: $dialog-resize-handler-height;
+      position: absolute;
+      width: $dialog-resize-handler-width;
+
+      &.e-south-east {
+        bottom: $dialog-resize-handler-position;
+        cursor: nwse-resize;
+        right: $dialog-resize-handler-position;
+      }
+    }
   }
 
   //Bigger Style 
@@ -179,6 +194,21 @@
     left: $dialog-close-button-left;
     position: relative;
     width: $dialog-close-button-width;
+  }
+
+  .e-rtl {
+
+    &.e-dialog {
+
+      .e-resize-handle {
+        &.e-south-west {
+          bottom: $resize-hanlder-bottom-rtl;
+          cursor: sw-resize;
+          left: 0;
+          transform: rotate(90deg);
+        }
+      }
+    }
   }
 
 

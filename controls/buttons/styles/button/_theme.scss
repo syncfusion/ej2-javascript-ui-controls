@@ -60,8 +60,8 @@
           border-color: $btn-focus-border-color;
           box-shadow: $btn-box-shadow;
           color: $btn-round-focus-color;
-          outline: $focus-outline-round;
-          outline-offset: $focus-outline-offset;
+          outline: $btn-focus-outline-round;
+          outline-offset: $btn-focus-outline-offset;
         }
 
         &:active {
@@ -69,8 +69,8 @@
           border-color: $btn-active-border-color;
           box-shadow: $btn-active-box-shadow;
           color: $btn-round-active-color;
-          outline: $active-outline;
-          outline-offset: $active-outline-offset;
+          outline: $btn-active-outline;
+          outline-offset: $btn-active-outline-offset;
         }
 
         &:disabled {
@@ -82,31 +82,31 @@
 
         &.e-primary {
           &:focus {
-            outline: $focus-outline-round;
+            outline: $btn-focus-outline-round;
           }
         }
 
         &.e-success {
           &:focus {
-            outline: $focus-outline-round;
+            outline: $btn-focus-outline-round;
           }
         }
 
         &.e-info {
           &:focus {
-            outline: $focus-outline-round;
+            outline: $btn-focus-outline-round;
           }
         }
 
         &.e-warning {
           &:focus {
-            outline: $focus-outline-round;
+            outline: $btn-focus-outline-round;
            }
         }
 
         &.e-danger {
           &:focus {
-            outline: $focus-outline-round;
+            outline: $btn-focus-outline-round;
           }
         }
       }

@@ -11,13 +11,14 @@ L10n.load({
     },
     'de': {
         'textbox' : {
-            "placeholder" : "culture changed"
+            "placeholder" : "Indtast et navn"
         }
     }
 });
 let inputObj: TextBox = new TextBox({
        // placeholder: 'Enter a name',
-        locale: 'fr-CH'
+       floatLabelType: 'Auto',
+       locale: 'fr-CH'
 });
 inputObj.appendTo('#default');
 

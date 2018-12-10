@@ -9,13 +9,11 @@ export interface PositionDataModel {
 
     /**
      * specify the offset left value
-     * @asptype object
      */
     X?: string | number;
 
     /**
      * specify the offset top value.
-     * @asptype object
      */
     Y?: string | number;
 

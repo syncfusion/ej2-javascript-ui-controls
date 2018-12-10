@@ -21,19 +21,19 @@ npm install @syncfusion/ej2-richtexteditor
 
 ## 2. Components included
 
-    * [GettingStarted](https://ej2.syncfusion.com/documentation/rich-text-editor/getting-started.html)
-    * [View Online Demos](https://ej2.syncfusion.com/javascript/demos/#/material/rich-text-editor/tools.html)
-    * [Product Page](https://www.syncfusion.com/products/javascript/rich-text-editor)
+* [GettingStarted](https://ej2.syncfusion.com/documentation/rich-text-editor/getting-started.html)
+* [View Online Demos](https://ej2.syncfusion.com/javascript/demos/#/material/rich-text-editor/tools.html)
+* [Product Page](https://www.syncfusion.com/products/javascript/rich-text-editor)
 
 ## 3. Supported frameworks
 
 Rich text editor component also supports the following frameworks:
-1.	[Angular](https://ej2.syncfusion.com/angular/demos/#/material)
-2.	[React](https://ej2.syncfusion.com/react/demos/#/material)
-3.	[Vue.js](https://ej2.syncfusion.com/vue/demos/#/material)
-4.	[ASP.NET Core](https://aspdotnetcore.syncfusion.com)
-5.	[ASP.NET MVC](http://aspnetmvc.syncfusion.com)
-6.	[JavaScript (ES5)](https://ej2.syncfusion.com/javascript/demos/#/material)
+1.	[Angular](https://ej2.syncfusion.com/angular/demos/#/material/rich-text-editor/tools)
+2.	[React](https://ej2.syncfusion.com/react/demos/#/material/rich-text-editor/tools)
+3.	[Vue.js](https://ej2.syncfusion.com/vue/demos/#/material/rich-text-editor/tools.html)
+4.	[ASP.NET Core](https://ej2.syncfusion.com/aspnetcore/RichTextEditor/Overview#/material)
+5.	[ASP.NET MVC](https://ej2.syncfusion.com/aspnetmvc/RichTextEditor/Overview#/material)
+6.	[JavaScript (ES5)](https://ej2.syncfusion.com/javascript/demos/#/material/rich-text-editor/tools.html)
 
 ## 4. Use-case samples / Showcase samples
 
@@ -44,7 +44,7 @@ Rich text editor component also supports the following frameworks:
 
 ## 5. Key features
 
-* [Mode](https://ej2.syncfusion.com/demos/#/material/rich-text-editor/iframe.html): Provides <IFRAME> and <DIV> mode.
+* [Mode](https://ej2.syncfusion.com/demos/#/material/rich-text-editor/iframe.html): Provides &lt;IFRAME&gt; and &lt;DIV&gt; mode.
 * [Markdown](https://ej2.syncfusion.com/demos/#/material/rich-text-editor/markdown-editor-preview.html): Handles markdown editing.
 * [Module](https://ej2.syncfusion.com/documentation/rich-text-editor/getting-started.html?lang=typescript#module-injection): Contains a modular library to load the necessary functionality on demand.
 * [Toolbar](https://ej2.syncfusion.com/demos/#/material/rich-text-editor/types.html): Provides a fully customizable toolbar.
@@ -57,14 +57,14 @@ Rich text editor component also supports the following frameworks:
 ## 6. Support
 
 Product support can be obtained through the following mediums:
-•	Creating incident in Syncfusion [Direct-trac](https://www.syncfusion.com/support/directtrac/incidents?utm_source=npm&utm_campaign=richtexteditor) support system or [Community forum.](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_campaign=richtexteditor)
-•	New [GitHub issue](https://github.com/syncfusion/ej2-richtexteditor/issues/new).
-•	Ask your query in Stack Overflow with tag ‘syncfusion’, ‘ej2’.
+* Creating incident in Syncfusion [Direct-trac](https://www.syncfusion.com/support/directtrac/incidents?utm_source=npm&utm_campaign=richtexteditor) support system or [Community forum.](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_campaign=richtexteditor)
+* New [GitHub issue](https://github.com/syncfusion/ej2-javascript-ui-controls/issues/new).
+* Ask your query in Stack Overflow with tag ‘syncfusion’, ‘ej2’.
  
 ## 7. License 
 Check the license details [here](https://github.com/syncfusion/ej2/blob/master/license?utm_source=npm&utm_campaign=dropdown)
 
 ## 8. Change log 
- Check the changelog [here](https://github.com/syncfusion/ej2-richtexteditor/blob/master/CHANGELOG.md)
+ Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/richtexteditor/CHANGELOG.md)
 
 © Copyright 2018 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

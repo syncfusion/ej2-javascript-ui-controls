@@ -290,23 +290,4 @@ describe('Tooltip checking for the pie series', () => {
         accumulation.series[0].innerRadius = '20%';
         accumulation.refresh();
     });
-    // it('tooltip header text', (done: Function) => {
-    //     let tooltip: HTMLElement;
-    //     remove(document.getElementById('ej2container_tooltip'));
-    //     accumulation.loaded = (args: Object): void => {
-    //         segement = getElement(sliceid + 2);
-    //         accumulation.isTouch = false;
-    //         trigger.mousemoveEvent(segement, 0, 0, 400, 100);
-    //         trigger.mousemovetEvent(segement, 200, 200);
-    //         tooltip = document.getElementById('ej2container_tooltip_text');
-    //         expect(tooltip.firstElementChild.innerHTML).toEqual('headerText');
-    //         trigger.mouseleavetEvent(ele, 1000, 1000);
-    //         done();
-    //     };
-    //     accumulation.tooltip.header = '${point.x}';
-    //     accumulation.tooltipRender = (args: ITooltipRenderEventArgs) => {
-    //         args.headerText = 'headerText';
-    //     };
-    //     accumulation.refresh();
-    // });
 });

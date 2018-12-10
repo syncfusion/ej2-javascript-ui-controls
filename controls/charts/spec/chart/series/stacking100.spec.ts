@@ -268,7 +268,7 @@ describe('Chart Control', () => {
                 let axisLabel = document.getElementById('container0_AxisLabel_0');
                 expect(axisLabel.textContent === 'Jan').toBe(true);
                 let axisStart = document.getElementById('containerAxisLine_0');
-                expect(parseInt(axisLabel.getAttribute('x')) < parseInt(axisStart.getAttribute('x1'))).toBe(true);
+                expect(parseInt(axisLabel.getAttribute('x')) < parseInt(axisStart.getAttribute('d').split(' ')[1])).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -704,7 +704,7 @@ describe('Chart Control', () => {
                 let axisLabel = document.getElementById('container0_AxisLabel_0');
                 expect(axisLabel.textContent === 'Jan').toBe(true);
                 let axisStart = document.getElementById('containerAxisLine_0');
-                expect(parseInt(axisLabel.getAttribute('x')) < parseInt(axisStart.getAttribute('x1'))).toBe(true);
+                expect(parseInt(axisLabel.getAttribute('x')) < parseInt(axisStart.getAttribute('d').split(' ')[1])).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

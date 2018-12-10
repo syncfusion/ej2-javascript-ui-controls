@@ -21,6 +21,7 @@ import { PointPortModel } from './../objects/port-model';
 import { PointPort } from './../objects/port';
 import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';
 import { ShapeAnnotationModel, PathAnnotationModel } from '../objects/annotation-model';
+import { checkParentAsContainer } from '../interaction/container-interaction';
 /**
  * Finds the action to be taken for the object under mouse
  * 
@@ -97,7 +98,7 @@ export function findToolToActivate(
             }
             paddedBounds.Inflate(ten);
             if (paddedBounds.containsPoint(position)) {
-                let action: Actions = checkForResizeHandles(diagram, element, position, matrix, x, y);
+                let action: Actions = checkResizeHandles(diagram, element, position, matrix, x, y);
                 if (action) { return action; }
             }
         }
@@ -130,6 +131,20 @@ export function findToolToActivate(
         } else { return 'Select'; }
     }
     return 'Select';
+}
+
+function checkResizeHandles(
+    diagram: Diagram, element: DiagramElement, position: PointModel, matrix: Matrix, x: number, y: number): Actions {
+    let action: Actions;
+    if ((diagram.selectedItems.nodes.length === 1 && diagram.selectedItems.connectors.length === 0)
+        && diagram.selectedItems.nodes[0].container) {
+        action = checkResizeHandleForContainer(diagram, element, position, x, y);
+    }
+    if (!action) {
+        action = checkForResizeHandles(diagram, element, position, matrix, x, y);
+    }
+    if (action) { return action; }
+    return null;
 }
 
 function checkForConnectorSegment(conn: Connector, handle: SelectorModel, position: PointModel, diagram: Diagram): Actions {
@@ -201,6 +216,46 @@ export function findPortToolToActivate(
     return 'None';
 }
 
+/**
+ * Resize handle for container and also object.
+ * @private
+ */
+
+function checkResizeHandleForContainer(diagram: Diagram, element: DiagramElement, position: PointModel, x: number, y: number): Actions {
+    let ten: number = 10 / diagram.scroller.currentZoom;
+    let forty: number = 40 / diagram.scroller.currentZoom;
+    let selectedItems: Selector = diagram.selectedItems as Selector;
+    let width: number = element.actualSize.width; let height: number = element.actualSize.height;
+    let left: Rect = new Rect(x, y + 20, element.style.strokeWidth, height - 40);
+    let right: Rect = new Rect(x + width, y + 20, element.style.strokeWidth, height - 40);
+    let top: Rect = new Rect(x + 20, y, width - 40, element.style.strokeWidth);
+    let bottom: Rect = new Rect(x + 20, y + height, width - 40, element.style.strokeWidth);
+    let container: NodeModel = checkParentAsContainer(diagram, diagram.selectedItems.nodes[0], true) ?
+        diagram.nameTable[(diagram.selectedItems.nodes[0] as Node).parentId] : diagram.selectedItems.nodes[0];
+
+    if (width >= forty && height >= forty) {
+        if (canResizeCorner(selectedItems.constraints, 'ResizeEast', selectedItems.thumbsConstraints, selectedItems) &&
+            right.containsPoint(position, ten)) {
+            return 'ResizeEast';
+        }
+
+        if (canResizeCorner(selectedItems.constraints, 'ResizeSouth', selectedItems.thumbsConstraints, selectedItems) &&
+            bottom.containsPoint(position, ten)) {
+            return 'ResizeSouth';
+        }
+        if (container.container.type !== 'Grid') {
+            if (canResizeCorner(selectedItems.constraints, 'ResizeWest', selectedItems.thumbsConstraints, selectedItems) &&
+                left.containsPoint(position, ten)) {
+                return 'ResizeWest';
+            }
+            if (canResizeCorner(selectedItems.constraints, 'ResizeNorth', selectedItems.thumbsConstraints, selectedItems) &&
+                top.containsPoint(position, ten)) {
+                return 'ResizeNorth';
+            }
+        }
+    }
+    return null;
+}
 
 function checkForResizeHandles(
     diagram: Diagram, element: DiagramElement, position: PointModel, matrix: Matrix, x: number, y: number): Actions {

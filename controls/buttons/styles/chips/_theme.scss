@@ -1,0 +1,424 @@
+@mixin chip-color($bg-color, $border-color, $color, $icon-color, $avatar-bg-color) {
+  background-color: $bg-color;
+  border-color: $border-color;
+  color: $color;
+
+  .e-chip-avatar,
+  .e-chip-icon,
+  .e-chip-delete {
+    color: $icon-color;
+  }
+
+  .e-chip-avatar {
+    background-color: $avatar-bg-color;
+  }
+}
+
+@include export-module('chip-theme') {
+  #{&}.e-chip-list {
+    &.e-chip,
+    & .e-chip {
+      @include chip-color($chip-bg-color, $chip-border-color, $chip-font-color, $chip-icon-font-color, darken($chip-bg-color, 12%));
+
+      &:hover {
+        @include chip-color($chip-hover-bg-color, $chip-hover-border-color, $chip-hover-font-color, $chip-icon-hover-font-color, darken($chip-hover-bg-color, 12%));
+      }
+
+      &.e-focused {
+        @include chip-color($chip-focus-bg-color, $chip-focus-border-color, $chip-focus-font-color, $chip-icon-focus-font-color, darken($chip-focus-bg-color, 12%));
+        box-shadow: $chip-focus-box-shadow;
+      }
+
+      &.e-active {
+        @include chip-color($chip-active-bg-color, $chip-active-border-color, $chip-focus-font-color, $chip-icon-focus-font-color, darken($chip-active-bg-color, 12%));
+        box-shadow: none;
+      }
+
+      &.e-focused.e-active {
+        @include chip-color($chip-focus-active-bg-color, $chip-focus-active-border-color, $chip-focus-active-font-color, $chip-icon-focus-active-font-color, darken($chip-focus-active-bg-color, 12%));
+        box-shadow: $chip-focus-box-shadow;
+      }
+
+      &:active {
+        @include chip-color($chip-pressed-bg-color, $chip-pressed-border-color, $chip-pressed-font-color, $chip-icon-pressed-font-color, darken($chip-pressed-bg-color, 12%));
+        box-shadow: $chip-pressed-box-shadow;
+      }
+
+      &.e-disabled {
+        @include chip-color($chip-disabled-bg-color, $chip-disabled-border-color, $chip-disabled-font-color, $chip-disabled-font-color, darken($chip-disabled-bg-color, 12%));
+        opacity: 1;
+        pointer-events: none;
+      }
+
+      &.e-outline {
+        @include chip-color(transparent, $chip-outline-border-color, $chip-outline-font-color, $chip-outline-icon-font-color, $chip-outline-border-color);
+        border-width: $chip-outline-border-size;
+
+        .e-chip-avatar {
+          color: $chip-outline-focus-font-color;
+        }
+
+        &:hover {
+          @include chip-color($chip-outline-hover-bg-color, $chip-outline-hover-border-color, $chip-outline-hover-font-color, $chip-outline-icon-hover-font-color, darken($chip-outline-hover-bg-color, 12%));
+        }
+
+        &.e-focused {
+          @include chip-color($chip-outline-focus-bg-color, $chip-outline-focus-border-color, $chip-outline-focus-font-color, $chip-outline-icon-focus-font-color, darken($chip-outline-focus-bg-color, 12%));
+        }
+
+        &.e-active {
+          @include chip-color($chip-outline-active-bg-color, $chip-outline-active-border-color, $chip-outline-focus-font-color, $chip-outline-icon-focus-font-color, darken($chip-outline-active-bg-color, 12%));
+        }
+
+        &.e-focused.e-active {
+          @include chip-color($chip-outline-focus-active-bg-color, $chip-outline-focus-active-border-color, $chip-outline-focus-active-font-color, $chip-outline-icon-focus-active-font-color, darken($chip-outline-focus-active-bg-color, 12%));
+        }
+
+        &:active {
+          @include chip-color($chip-outline-pressed-bg-color, $chip-outline-pressed-border-color, $chip-outline-pressed-font-color, $chip-outline-icon-pressed-font-color, darken($chip-outline-pressed-bg-color, 12%));
+        }
+
+        &.e-disabled {
+          @include chip-color($chip-outline-disabled-bg-color, $chip-outline-disabled-border-color, $chip-disabled-font-color, $chip-disabled-font-color, darken($chip-outline-disabled-bg-color, 12%));
+        }
+      }
+    }
+
+    &.e-selection .e-chip {
+      &.e-active {
+        @include chip-color($chip-choice-active-bg-color, $chip-choice-active-border-color, $chip-choice-active-font-color, $chip-choice-active-font-color, darken($chip-choice-active-bg-color, 12%));
+
+        &.e-focused {
+          @include chip-color($chip-choice-focus-active-bg-color, $chip-choice-focus-active-border-color, $chip-choice-focus-active-font-color, $chip-choice-icon-focus-active-font-color, darken($chip-choice-focus-active-bg-color, 12%));
+        }
+
+        &.e-disabled {
+          @include chip-color($chip-disabled-bg-color, $chip-disabled-border-color, $chip-disabled-font-color, $chip-disabled-font-color, darken($chip-disabled-bg-color, 12%));
+        }
+
+        &.e-outline {
+          @include chip-color($chip-outline-choice-active-bg-color, $chip-outline-choice-active-border-color, $chip-outline-choice-active-font-color, $chip-outline-choice-active-font-color, darken($chip-outline-choice-active-bg-color, 12%));
+
+          &.e-focused {
+            @include chip-color($chip-outline-choice-focus-active-bg-color, $chip-outline-choice-focus-active-border-color, $chip-outline-choice-focus-active-font-color, $chip-outline-choice-icon-focus-active-font-color, darken($chip-outline-choice-focus-active-bg-color, 12%));
+          }
+
+          &.e-disabled {
+            @include chip-color($chip-outline-disabled-bg-color, $chip-outline-disabled-border-color, $chip-disabled-font-color, $chip-disabled-font-color, darken($chip-outline-disabled-bg-color, 12%));
+          }
+        }
+      }
+
+      &:active {
+        @include chip-color($chip-pressed-active-bg-color, $chip-pressed-border-color, $chip-pressed-font-color, $chip-icon-pressed-font-color, darken($chip-pressed-active-bg-color, 12%));
+
+        &.e-outline {
+          @include chip-color($chip-outline-pressed-active-bg-color, $chip-outline-pressed-border-color, $chip-outline-pressed-font-color, $chip-outline-icon-pressed-font-color, darken($chip-outline-pressed-active-bg-color, 12%));
+        }
+      }
+    }
+
+    &.e-chip,
+    & .e-chip {
+      &.e-primary {
+        @include chip-color($chip-primary-bg-color, $chip-primary-border-color, $chip-primary-font-color, $chip-primary-font-color, darken($chip-primary-bg-color, 12%));
+
+        &:hover {
+          @include chip-color($chip-primary-hover-bg-color, $chip-primary-hover-border-color, $chip-primary-hover-font-color, $chip-primary-hover-font-color, darken($chip-primary-hover-bg-color, 12%));
+        }
+
+        &.e-focused {
+          @include chip-color($chip-primary-focus-bg-color, $chip-primary-focus-border-color, $chip-primary-focus-font-color, $chip-primary-focus-font-color, darken($chip-primary-focus-bg-color, 12%));
+        }
+
+        &.e-active {
+          @include chip-color($chip-primary-active-bg-color, $chip-primary-active-border-color, $chip-primary-active-font-color, $chip-primary-active-font-color, darken($chip-primary-active-bg-color, 12%));
+        }
+
+        &.e-focused.e-active {
+          @include chip-color($chip-primary-focus-active-bg-color, $chip-primary-focus-active-border-color, $chip-primary-focus-active-font-color, $chip-primary-focus-active-font-color, darken($chip-primary-focus-active-bg-color, 12%));
+        }
+
+        &:active {
+          @include chip-color($chip-primary-pressed-bg-color, $chip-primary-pressed-border-color, $chip-primary-pressed-font-color, $chip-primary-pressed-font-color, darken($chip-primary-pressed-bg-color, 12%));
+        }
+
+        &.e-disabled {
+          @include chip-color($chip-primary-disabled-bg-color, $chip-primary-disabled-border-color, $chip-primary-disabled-font-color, $chip-primary-disabled-font-color, darken($chip-primary-disabled-bg-color, 12%));
+        }
+
+        &.e-outline {
+          @include chip-color($chip-outline-primary-bg-color, $chip-outline-primary-border-color, $chip-outline-primary-font-color, $chip-outline-primary-font-color, $chip-outline-primary-border-color);
+
+          .e-chip-avatar {
+            color: $chip-outline-primary-focus-font-color;
+          }
+
+          &:hover {
+            @include chip-color($chip-outline-primary-hover-bg-color, $chip-outline-primary-hover-border-color, $chip-outline-primary-hover-font-color, $chip-outline-primary-hover-font-color, darken($chip-outline-primary-hover-bg-color, 12%));
+          }
+
+          &.e-focused {
+            @include chip-color($chip-outline-primary-focus-bg-color, $chip-outline-primary-focus-border-color, $chip-outline-primary-focus-font-color, $chip-outline-primary-focus-font-color, darken($chip-outline-primary-focus-bg-color, 12%));
+          }
+
+          &.e-active {
+            @include chip-color($chip-outline-primary-active-bg-color, $chip-outline-primary-active-border-color, $chip-outline-primary-active-font-color, $chip-outline-primary-active-font-color, darken($chip-outline-primary-active-bg-color, 12%));
+          }
+
+          &.e-focused.e-active {
+            @include chip-color($chip-outline-primary-focus-active-bg-color, $chip-outline-primary-focus-active-border-color, $chip-outline-primary-focus-active-font-color, $chip-outline-primary-focus-active-font-color, darken($chip-outline-primary-focus-active-bg-color, 12%));
+          }
+
+          &:active {
+            @include chip-color($chip-outline-primary-pressed-bg-color, $chip-outline-primary-pressed-border-color, $chip-outline-primary-pressed-font-color, $chip-outline-primary-pressed-font-color, darken($chip-outline-primary-pressed-bg-color, 12%));
+          }
+
+          &.e-disabled {
+            @include chip-color($chip-outline-primary-disabled-bg-color, $chip-outline-primary-disabled-border-color, $chip-outline-primary-disabled-font-color, $chip-outline-primary-disabled-font-color, darken($chip-primary-disabled-bg-color, 12%));
+          }
+        }
+      }
+
+      &.e-success {
+        @include chip-color($chip-success-bg-color, $chip-success-border-color, $chip-success-font-color, $chip-success-font-color, darken($chip-success-bg-color, 12%));
+
+        &:hover {
+          @include chip-color($chip-success-hover-bg-color, $chip-success-hover-border-color, $chip-success-hover-font-color, $chip-success-hover-font-color, darken($chip-success-hover-bg-color, 12%));
+        }
+
+        &.e-focused {
+          @include chip-color($chip-success-focus-bg-color, $chip-success-focus-border-color, $chip-success-focus-font-color, $chip-success-focus-font-color, darken($chip-success-focus-bg-color, 12%));
+        }
+
+        &.e-active {
+          @include chip-color($chip-success-active-bg-color, $chip-success-active-border-color, $chip-success-active-font-color, $chip-success-active-font-color, darken($chip-success-active-bg-color, 12%));
+        }
+
+        &.e-focused.e-active {
+          @include chip-color($chip-success-focus-active-bg-color, $chip-success-focus-active-border-color, $chip-success-focus-active-font-color, $chip-success-focus-active-font-color, darken($chip-success-focus-active-bg-color, 12%));
+        }
+
+        &:active {
+          @include chip-color($chip-success-pressed-bg-color, $chip-success-pressed-border-color, $chip-success-pressed-font-color, $chip-success-pressed-font-color, darken($chip-success-pressed-bg-color, 12%));
+        }
+
+        &.e-disabled {
+          @include chip-color($chip-success-disabled-bg-color, $chip-success-disabled-border-color, $chip-success-disabled-font-color, $chip-success-disabled-font-color, darken($chip-success-disabled-bg-color, 12%));
+        }
+
+        &.e-outline {
+          @include chip-color($chip-outline-success-bg-color, $chip-outline-success-border-color, $chip-outline-success-font-color, $chip-outline-success-font-color, $chip-outline-success-border-color);
+
+          .e-chip-avatar {
+            color: $chip-outline-success-focus-font-color;
+          }
+
+          &:hover {
+            @include chip-color($chip-outline-success-hover-bg-color, $chip-outline-success-hover-border-color, $chip-outline-success-hover-font-color, $chip-outline-success-hover-font-color, darken($chip-outline-success-hover-bg-color, 12%));
+          }
+
+          &.e-focused {
+            @include chip-color($chip-outline-success-focus-bg-color, $chip-outline-success-focus-border-color, $chip-outline-success-focus-font-color, $chip-outline-success-focus-font-color, darken($chip-outline-success-focus-bg-color, 12%));
+          }
+
+          &.e-active {
+            @include chip-color($chip-outline-success-active-bg-color, $chip-outline-success-active-border-color, $chip-outline-success-active-font-color, $chip-outline-success-active-font-color, darken($chip-outline-success-active-bg-color, 12%));
+          }
+
+          &.e-focused.e-active {
+            @include chip-color($chip-outline-success-focus-active-bg-color, $chip-outline-success-focus-active-border-color, $chip-outline-success-focus-active-font-color, $chip-outline-success-focus-active-font-color, darken($chip-outline-success-focus-active-bg-color, 12%));
+          }
+
+          &:active {
+            @include chip-color($chip-outline-success-pressed-bg-color, $chip-outline-success-pressed-border-color, $chip-outline-success-pressed-font-color, $chip-outline-success-pressed-font-color, darken($chip-outline-success-pressed-bg-color, 12%));
+          }
+
+          &.e-disabled {
+            @include chip-color($chip-outline-success-disabled-bg-color, $chip-outline-success-disabled-border-color, $chip-outline-success-disabled-font-color, $chip-outline-success-disabled-font-color, darken($chip-success-disabled-bg-color, 12%));
+          }
+        }
+      }
+
+      &.e-info {
+        @include chip-color($chip-info-bg-color, $chip-info-border-color, $chip-info-font-color, $chip-info-font-color, darken($chip-info-bg-color, 12%));
+
+        &:hover {
+          @include chip-color($chip-info-hover-bg-color, $chip-info-hover-border-color, $chip-info-hover-font-color, $chip-info-hover-font-color, darken($chip-info-hover-bg-color, 12%));
+        }
+
+        &.e-focused {
+          @include chip-color($chip-info-focus-bg-color, $chip-info-focus-border-color, $chip-info-focus-font-color, $chip-info-focus-font-color, darken($chip-info-focus-bg-color, 12%));
+        }
+
+        &.e-active {
+          @include chip-color($chip-info-active-bg-color, $chip-info-active-border-color, $chip-info-active-font-color, $chip-info-active-font-color, darken($chip-info-active-bg-color, 12%));
+        }
+
+        &.e-focused.e-active {
+          @include chip-color($chip-info-focus-active-bg-color, $chip-info-focus-active-border-color, $chip-info-focus-active-font-color, $chip-info-focus-active-font-color, darken($chip-info-focus-active-bg-color, 12%));
+        }
+
+        &:active {
+          @include chip-color($chip-info-pressed-bg-color, $chip-info-pressed-border-color, $chip-info-pressed-font-color, $chip-info-pressed-font-color, darken($chip-info-pressed-bg-color, 12%));
+        }
+
+        &.e-disabled {
+          @include chip-color($chip-info-disabled-bg-color, $chip-info-disabled-border-color, $chip-info-disabled-font-color, $chip-info-disabled-font-color, darken($chip-info-disabled-bg-color, 12%));
+        }
+
+        &.e-outline {
+          @include chip-color($chip-outline-info-bg-color, $chip-outline-info-border-color, $chip-outline-info-font-color, $chip-outline-info-font-color, $chip-outline-info-border-color);
+
+          .e-chip-avatar {
+            color: $chip-outline-info-focus-font-color;
+          }
+
+          &:hover {
+            @include chip-color($chip-outline-info-hover-bg-color, $chip-outline-info-hover-border-color, $chip-outline-info-hover-font-color, $chip-outline-info-hover-font-color, darken($chip-outline-info-hover-bg-color, 12%));
+          }
+
+          &.e-focused {
+            @include chip-color($chip-outline-info-focus-bg-color, $chip-outline-info-focus-border-color, $chip-outline-info-focus-font-color, $chip-outline-info-focus-font-color, darken($chip-outline-info-focus-bg-color, 12%));
+          }
+
+          &.e-active {
+            @include chip-color($chip-outline-info-active-bg-color, $chip-outline-info-active-border-color, $chip-outline-info-active-font-color, $chip-outline-info-active-font-color, darken($chip-outline-info-active-bg-color, 12%));
+          }
+
+          &.e-focused.e-active {
+            @include chip-color($chip-outline-info-focus-active-bg-color, $chip-outline-info-focus-active-border-color, $chip-outline-info-focus-active-font-color, $chip-outline-info-focus-active-font-color, darken($chip-outline-info-focus-active-bg-color, 12%));
+          }
+
+          &:active {
+            @include chip-color($chip-outline-info-pressed-bg-color, $chip-outline-info-pressed-border-color, $chip-outline-info-pressed-font-color, $chip-outline-info-pressed-font-color, darken($chip-outline-info-pressed-bg-color, 12%));
+          }
+
+          &.e-disabled {
+            @include chip-color($chip-outline-info-disabled-bg-color, $chip-outline-info-disabled-border-color, $chip-outline-info-disabled-font-color, $chip-outline-info-disabled-font-color, darken($chip-info-disabled-bg-color, 12%));
+          }
+        }
+      }
+
+      &.e-warning {
+        @include chip-color($chip-warning-bg-color, $chip-warning-border-color, $chip-warning-font-color, $chip-warning-font-color, darken($chip-warning-bg-color, 12%));
+
+        &:hover {
+          @include chip-color($chip-warning-hover-bg-color, $chip-warning-hover-border-color, $chip-warning-hover-font-color, $chip-warning-hover-font-color, darken($chip-warning-hover-bg-color, 12%));
+        }
+
+        &.e-focused {
+          @include chip-color($chip-warning-focus-bg-color, $chip-warning-focus-border-color, $chip-warning-focus-font-color, $chip-warning-focus-font-color, darken($chip-warning-focus-bg-color, 12%));
+        }
+
+        &.e-active {
+          @include chip-color($chip-warning-active-bg-color, $chip-warning-active-border-color, $chip-warning-active-font-color, $chip-warning-active-font-color, darken($chip-warning-active-bg-color, 12%));
+        }
+
+        &.e-focused.e-active {
+          @include chip-color($chip-warning-focus-active-bg-color, $chip-warning-focus-active-border-color, $chip-warning-focus-active-font-color, $chip-warning-focus-active-font-color, darken($chip-warning-focus-active-bg-color, 12%));
+        }
+
+        &:active {
+          @include chip-color($chip-warning-pressed-bg-color, $chip-warning-pressed-border-color, $chip-warning-pressed-font-color, $chip-warning-pressed-font-color, darken($chip-warning-pressed-bg-color, 12%));
+        }
+
+        &.e-disabled {
+          @include chip-color($chip-warning-disabled-bg-color, $chip-warning-disabled-border-color, $chip-warning-disabled-font-color, $chip-warning-disabled-font-color, darken($chip-warning-disabled-bg-color, 12%));
+        }
+
+        &.e-outline {
+          @include chip-color($chip-outline-warning-bg-color, $chip-outline-warning-border-color, $chip-outline-warning-font-color, $chip-outline-warning-font-color, $chip-outline-warning-border-color);
+
+          .e-chip-avatar {
+            color: $chip-outline-warning-focus-font-color;
+          }
+
+          &:hover {
+            @include chip-color($chip-outline-warning-hover-bg-color, $chip-outline-warning-hover-border-color, $chip-outline-warning-hover-font-color, $chip-outline-warning-hover-font-color, darken($chip-outline-warning-hover-bg-color, 12%));
+          }
+
+          &.e-focused {
+            @include chip-color($chip-outline-warning-focus-bg-color, $chip-outline-warning-focus-border-color, $chip-outline-warning-focus-font-color, $chip-outline-warning-focus-font-color, darken($chip-outline-warning-focus-bg-color, 12%));
+          }
+
+          &.e-active {
+            @include chip-color($chip-outline-warning-active-bg-color, $chip-outline-warning-active-border-color, $chip-outline-warning-active-font-color, $chip-outline-warning-active-font-color, darken($chip-outline-warning-active-bg-color, 12%));
+          }
+
+          &.e-focused.e-active {
+            @include chip-color($chip-outline-warning-focus-active-bg-color, $chip-outline-warning-focus-active-border-color, $chip-outline-warning-focus-active-font-color, $chip-outline-warning-focus-active-font-color, darken($chip-outline-warning-focus-active-bg-color, 12%));
+          }
+
+          &:active {
+            @include chip-color($chip-outline-warning-pressed-bg-color, $chip-outline-warning-pressed-border-color, $chip-outline-warning-pressed-font-color, $chip-outline-warning-pressed-font-color, darken($chip-outline-warning-pressed-bg-color, 12%));
+          }
+
+          &.e-disabled {
+            @include chip-color($chip-outline-warning-disabled-bg-color, $chip-outline-warning-disabled-border-color, $chip-outline-warning-disabled-font-color, $chip-outline-warning-disabled-font-color, darken($chip-warning-disabled-bg-color, 12%));
+          }
+        }
+      }
+
+      &.e-danger {
+        @include chip-color($chip-danger-bg-color, $chip-danger-border-color, $chip-danger-font-color, $chip-danger-font-color, darken($chip-danger-bg-color, 12%));
+
+        &:hover {
+          @include chip-color($chip-danger-hover-bg-color, $chip-danger-hover-border-color, $chip-danger-hover-font-color, $chip-danger-hover-font-color, darken($chip-danger-hover-bg-color, 12%));
+        }
+
+        &.e-focused {
+          @include chip-color($chip-danger-focus-bg-color, $chip-danger-focus-border-color, $chip-danger-focus-font-color, $chip-danger-focus-font-color, darken($chip-danger-focus-bg-color, 12%));
+        }
+
+        &.e-active {
+          @include chip-color($chip-danger-active-bg-color, $chip-danger-active-border-color, $chip-danger-active-font-color, $chip-danger-active-font-color, darken($chip-danger-active-bg-color, 12%));
+        }
+
+        &.e-focused.e-active {
+          @include chip-color($chip-danger-focus-active-bg-color, $chip-danger-focus-active-border-color, $chip-danger-focus-active-font-color, $chip-danger-focus-active-font-color, darken($chip-danger-focus-active-bg-color, 12%));
+        }
+
+        &:active {
+          @include chip-color($chip-danger-pressed-bg-color, $chip-danger-pressed-border-color, $chip-danger-pressed-font-color, $chip-danger-pressed-font-color, darken($chip-danger-pressed-bg-color, 12%));
+        }
+
+        &.e-disabled {
+          @include chip-color($chip-danger-disabled-bg-color, $chip-danger-disabled-border-color, $chip-danger-disabled-font-color, $chip-danger-disabled-font-color, darken($chip-danger-disabled-bg-color, 12%));
+        }
+
+        &.e-outline {
+          @include chip-color($chip-outline-danger-bg-color, $chip-outline-danger-border-color, $chip-outline-danger-font-color, $chip-outline-danger-font-color, $chip-outline-danger-border-color);
+
+          .e-chip-avatar {
+            color: $chip-outline-danger-focus-font-color;
+          }
+
+          &:hover {
+            @include chip-color($chip-outline-danger-hover-bg-color, $chip-outline-danger-hover-border-color, $chip-outline-danger-hover-font-color, $chip-outline-danger-hover-font-color, darken($chip-outline-danger-hover-bg-color, 12%));
+          }
+
+          &.e-focused {
+            @include chip-color($chip-outline-danger-focus-bg-color, $chip-outline-danger-focus-border-color, $chip-outline-danger-focus-font-color, $chip-outline-danger-focus-font-color, darken($chip-outline-danger-focus-bg-color, 12%));
+          }
+
+          &.e-active {
+            @include chip-color($chip-outline-danger-active-bg-color, $chip-outline-danger-active-border-color, $chip-outline-danger-active-font-color, $chip-outline-danger-active-font-color, darken($chip-outline-danger-active-bg-color, 12%));
+          }
+
+          &.e-focused.e-active {
+            @include chip-color($chip-outline-danger-focus-active-bg-color, $chip-outline-danger-focus-active-border-color, $chip-outline-danger-focus-active-font-color, $chip-outline-danger-focus-active-font-color, darken($chip-outline-danger-focus-active-bg-color, 12%));
+          }
+
+          &:active {
+            @include chip-color($chip-outline-danger-pressed-bg-color, $chip-outline-danger-pressed-border-color, $chip-outline-danger-pressed-font-color, $chip-outline-danger-pressed-font-color, darken($chip-outline-danger-pressed-bg-color, 12%));
+          }
+
+          &.e-disabled {
+            @include chip-color($chip-outline-danger-disabled-bg-color, $chip-outline-danger-disabled-border-color, $chip-outline-danger-disabled-font-color, $chip-outline-danger-disabled-font-color, darken($chip-danger-disabled-bg-color, 12%));
+          }
+        }
+      }
+    }
+  }
+}

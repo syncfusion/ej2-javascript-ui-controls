@@ -4,27 +4,27 @@
   #{&}.e-radio {
     +label {
       &::before {
-        background-color: $background-color;
-        border-color: $border-color;
+        background-color: $radio-btn-background-color;
+        border-color: $radio-btn-border-color;
       }
 
       &.e-focus {
         & .e-ripple-container {
-          background-color: $focus-ripple-bgcolor;
+          background-color: $radio-btn-focus-ripple-bgcolor;
         }
       }
 
       & .e-label {
-        color: $font-color;
+        color: $radio-btn-font-color;
       }
 
       & .e-ripple-element {
-        background-color: $checked-ripple-bgcolor;
+        background-color: $radio-btn-checked-ripple-bgcolor;
       }
 
       &:active {
         & .e-ripple-element {
-          background-color: $ripple-bgcolor;
+          background-color: $radio-btn-ripple-bgcolor;
         }
       }
     }
@@ -32,8 +32,8 @@
     &:focus {
       +label {
         &::before {
-          border-color: $hover-border-color;
-          box-shadow: $focussed-box-shadow;
+          border-color: $radio-btn-hover-border-color;
+          box-shadow: $radio-btn-focussed-box-shadow;
         }
       }
     }
@@ -41,7 +41,7 @@
     &:hover {
       +label {
         &::before {
-          border-color: $hover-border-color;
+          border-color: $radio-btn-hover-border-color;
         }
       }
     }
@@ -49,29 +49,29 @@
     &:checked {
       +label {
         &::before {
-          border-color: $checked-border-color;
+          border-color: $radio-btn-checked-border-color;
         }
 
         &::after {
-          background-color: $checked-color;
-          color: $checked-color;
+          background-color: $radio-btn-checked-color;
+          color: $radio-btn-checked-color;
         }
 
         &:active {
           & .e-ripple-element {
-            background-color: $checked-ripple-bgcolor;
+            background-color: $radio-btn-checked-ripple-bgcolor;
           }
         }
       }
 
       +.e-focus {
         & .e-ripple-container {
-          background-color: $checked-ripple-bgcolor;
+          background-color: $radio-btn-checked-ripple-bgcolor;
         }
 
         &::before {
-          outline: $focus-outline;
-          outline-offset: $focus-outline-offset;
+          outline: $radio-btn-focus-outline;
+          outline-offset: $radio-btn-focus-outline-offset;
         }
       }
     }
@@ -80,11 +80,11 @@
       &:focus {
         +label {
           &::before {
-            border-color: $focus-check-border-color;
+            border-color: $radio-btn-focus-check-border-color;
           }
 
           &::after {
-            background-color: $focus-check-bg-color;
+            background-color: $radio-btn-focus-check-bg-color;
           }
         }
       }
@@ -92,11 +92,11 @@
       +label {
         &:hover {
           &::before {
-            border-color: $hover-check-border-color;
+            border-color: $radio-btn-hover-check-border-color;
           }
 
           &::after {
-            background-color: $hover-check-bg-color;
+            background-color: $radio-btn-hover-check-bg-color;
           }
         }
       }
@@ -108,7 +108,7 @@
         pointer-events: none;
 
         &::before {
-          border-color: $disabled-border-color;
+          border-color: $radio-btn-disabled-border-color;
           cursor: default;
         }
 
@@ -122,15 +122,15 @@
         }
 
         & .e-label {
-          color: $disabled-color;
+          color: $radio-btn-disabled-color;
         }
       }
 
       &:checked {
         +label {
           &::after {
-            background-color: $disabled-checked-color;
-            border-color: $disabled-checked-color;
+            background-color: $radio-btn-disabled-checked-color;
+            border-color: $radio-btn-disabled-checked-color;
             cursor: default;
           }
 

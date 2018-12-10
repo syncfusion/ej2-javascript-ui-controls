@@ -1,13 +1,64 @@
 import { Button, IconPosition } from '@syncfusion/ej2-buttons';
 import { EventHandler, Property, INotifyPropertyChanged, NotifyPropertyChanges, Animation, Effect, attributes } from '@syncfusion/ej2-base';
-import { EmitType, Event, BaseEventArgs, remove, removeClass } from '@syncfusion/ej2-base';
+import { EmitType, Event, BaseEventArgs, remove, removeClass, Complex, ChildProperty } from '@syncfusion/ej2-base';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
-import { ProgressButtonModel } from './progress-button-model';
+import { ProgressButtonModel, SpinSettingsModel, AnimationSettingsModel } from './progress-button-model';
 
 const HIDESPINNER: string = 'e-hide-spinner';
 const PROGRESS: string = 'e-progress';
 const PROGRESSACTIVE: string = 'e-progress-active';
 const CONTENTCLS: string = 'e-btn-content';
+
+export class SpinSettings extends ChildProperty<SpinSettings> {
+    /**
+     * Specifies the template content to be displayed in a spinner.
+     * @default null
+     */
+    @Property(null)
+    public template: string;
+    /**
+     * Sets the width of a spinner.
+     * @default 16
+     */
+    @Property(16)
+    public width: string | number;
+    /**
+     * Specifies the position of a spinner in the progress button. The possible values are:
+     * * Left: The spinner will be positioned to the left of the text content.
+     * * Right: The spinner will be positioned to the right of the text content.
+     * * Top: The spinner will be positioned at the top of the text content.
+     * * Bottom: The spinner will be positioned at the bottom of the text content.
+     * * Center: The spinner will be positioned at the center of the progress button.
+     * @default 'Left'
+     * @aspType Syncfusion.EJ2.SplitButtons.SpinPosition
+     * @isEnumeration true
+     */
+    @Property('Left')
+    public position: SpinPosition;
+}
+
+export class AnimationSettings extends ChildProperty<AnimationSettings> {
+    /**
+     * Specifies the duration taken to animate.
+     * @default 400
+     */
+    @Property(400)
+    public duration: number;
+    /**
+     * Specifies the effect of animation.
+     * @default 'None'
+     * @aspType Syncfusion.EJ2.SplitButtons.AnimationEffect
+     * @isEnumeration true
+     */
+    @Property('None')
+    public effect: AnimationEffect;
+    /**
+     * Specifies the animation timing function.
+     * @default 'ease'
+     */
+    @Property('ease')
+    public easing: string;
+}
 
 /**
  * The ProgressButton visualizes the progression of an operation to indicate the user
@@ -102,14 +153,14 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
     /**
      * Specifies a spinner and its related properties.
      */
-    @Property(<SpinSettings>{ template: null, width: 16, position: 'Left' })
-    public spinSettings: SpinSettings;
+    @Complex<SpinSettingsModel>({}, SpinSettings)
+    public spinSettings: SpinSettingsModel;
 
     /**
      * Specifies the animation settings.
      */
-    @Property(<AnimationSettings>{ duration: 400, effect: 'None', easing: 'ease' })
-    public animationSettings: AnimationSettings;
+    @Complex<AnimationSettingsModel>({}, AnimationSettings)
+    public animationSettings: AnimationSettingsModel;
 
     /**
      * Triggers once the component rendering is completed.
@@ -205,17 +256,17 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
      */
     public destroy(): void {
         let classList: string[] = [HIDESPINNER, PROGRESSACTIVE, 'e-round-corner', 'e-' + super.getModuleName(),
-        'e-spin-' + this.spinSettings.position.toLowerCase()];
+            'e-spin-' + this.spinSettings.position.toLowerCase()];
         let css: string[];
         super.destroy();
         this.unWireEvents();
         this.element.innerHTML = '';
         if (this.cssClass) {
-           classList = classList.concat(this.cssClass.split(' '));
+            classList = classList.concat(this.cssClass.split(' '));
         }
         removeClass([this.element], classList);
         css = this.element.getAttribute('class') ? ['aria-label', 'aria-valuemin', 'aria-valuemax', 'aria-valuenow']
-           : ['aria-label', 'aria-valuemin', 'aria-valuemax', 'aria-valuenow', 'class'];
+            : ['aria-label', 'aria-valuemin', 'aria-valuemax', 'aria-valuenow', 'class'];
         css.forEach((key: string) => {
             this.element.removeAttribute(key);
         });
@@ -241,6 +292,14 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
                 target: spinner, width: this.spinSettings.width || 16, template: this.spinSettings.template
             },
             this.createElement);
+    }
+
+    private getSpinner(): HTMLElement {
+        return this.element.getElementsByClassName('e-spinner')[0] as HTMLElement;
+    }
+
+    private getProgress(): HTMLElement {
+        return this.element.getElementsByClassName(PROGRESS)[0] as HTMLElement;
     }
 
     private setSpinPosition(ele: HTMLElement): void {
@@ -276,18 +335,10 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
         clsList.add(PROGRESSACTIVE);
         if (!(clsList.contains(HIDESPINNER))) {
             showSpinner(this.element);
-            if (!this.enableProgress) {
-                setTimeout(() => {
-                    this.hideSpin();
-                    // tslint:disable-next-line
-                }, this.duration);
-            }
         }
-        if (this.enableProgress) {
-            this.startAnimate(
-                Date.now(), progressTime ? progressTime : 0, progressTime ? Date.now() - (this.duration * 1 / 100) : Date.now(),
-                percent ? percent : 0, 0, this.step, 0, isVertical);
-        }
+        this.startAnimate(
+            Date.now(), progressTime ? progressTime : 0, progressTime ? Date.now() - (this.duration * 1 / 100) : Date.now(),
+            percent ? percent : 0, 0, this.step, 0, isVertical);
         this.startContAnimate();
     }
 
@@ -318,8 +369,9 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
             this.step = args.step;
             if ((progressTime - prevProgressTime) % (this.duration * args.step / 100) === 0 || percent === 100) {
                 this.timerId = requestAnimationFrame(() => {
-                    (this.element.getElementsByClassName(PROGRESS)[0] as HTMLElement)
-                        .style[isVertical ? 'height' : 'width'] = percent + '%';
+                    if (this.enableProgress) {
+                        this.getProgress().style[isVertical ? 'height' : 'width'] = percent + '%';
+                    }
                     this.element.setAttribute('aria-valuenow', percent.toString());
                 });
                 prevPercent = percent;
@@ -336,7 +388,9 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
                 } else {
                     setTimeout(() => {
                         this.progressTime = this.percent = 0;
-                        (this.element.getElementsByClassName(PROGRESS)[0] as HTMLElement).style[isVertical ? 'height' : 'width'] = '0%';
+                        if (this.enableProgress) {
+                            this.getProgress().style[isVertical ? 'height' : 'width'] = '0%';
+                        }
                         this.element.setAttribute('aria-valuenow', '0');
                         this.hideSpin();
                         // tslint:disable-next-line
@@ -374,7 +428,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
 
     private setSpinnerSize(): void {
         let ele: HTMLElement = this.element.getElementsByClassName(CONTENTCLS)[0] as HTMLElement;
-        let spinner: HTMLElement = this.element.getElementsByClassName('e-spinner')[0] as HTMLElement;
+        let spinner: HTMLElement = this.getSpinner();
         spinner.style.width = Math.max(spinner.offsetWidth, ele.offsetWidth) + 'px';
         spinner.style.height = Math.max(spinner.offsetHeight, ele.offsetHeight) + 'px';
         ele.classList.add('e-cont-animate');
@@ -390,7 +444,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
             cont.classList.remove('e-animate-end');
         }
         if (this.spinSettings.position === 'Center') {
-            let ele: HTMLElement = this.element.getElementsByClassName('e-spinner')[0] as HTMLElement;
+            let ele: HTMLElement = this.getSpinner();
             cont.classList.remove('e-cont-animate');
             ele.style.width = 'auto';
             ele.style.height = 'auto';
@@ -429,6 +483,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
      * @private
      */
     public onPropertyChanged(newProp: ProgressButton, oldProp: ProgressButton): void {
+        let ele: HTMLButtonElement = this.element;
         super.onPropertyChanged(newProp, oldProp);
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -438,7 +493,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
                     if (this.enableProgress) {
                         this.createProgress();
                     }
-                    this.element.setAttribute('aria-label', this.element.textContent + ' progress');
+                    ele.setAttribute('aria-label', ele.textContent + ' progress');
                     break;
                 case 'iconCss':
                     if (!oldProp.iconCss) {
@@ -452,7 +507,17 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
                     if (newProp.enableProgress) {
                         this.createProgress();
                     } else {
-                        remove(this.element.getElementsByClassName(PROGRESS)[0]);
+                        remove(this.getProgress());
+                    }
+                    break;
+                case 'spinSettings':
+                    if (newProp.spinSettings.position) {
+                        ele.classList.remove('e-spin-' + oldProp.spinSettings.position.toLowerCase());
+                        this.setSpinPosition(this.getSpinner());
+                    }
+                    if (newProp.spinSettings.template || newProp.spinSettings.width) {
+                        ele.removeChild(this.getSpinner());
+                        this.createSpinner();
                     }
                     break;
             }
@@ -478,45 +543,4 @@ export interface ProgressEventArgs extends BaseEventArgs {
      * @default 1
      */
     step: number;
-}
-
-export interface SpinSettings {
-    /**
-     * Specifies the template content to be displayed in a spinner.
-     * @default null
-     */
-    template?: string;
-    /**
-     * Sets the width of a spinner.
-     * @default 16
-     */
-    width?: string | number;
-    /**
-     * Specifies the position of a spinner in the progress button. The possible values are:
-     * * Left: The spinner will be positioned to the left of the text content.
-     * * Right: The spinner will be positioned to the right of the text content.
-     * * Top: The spinner will be positioned at the top of the text content.
-     * * Bottom: The spinner will be positioned at the bottom of the text content.
-     * * Center: The spinner will be positioned at the center of the progress button.
-     * @default 'Left'
-     */
-    position?: SpinPosition;
-}
-
-export interface AnimationSettings {
-    /**
-     * Specifies the duration taken to animate.
-     * @default 400
-     */
-    duration?: number;
-    /**
-     * Specifies the effect of animation.
-     * @default 'None'
-     */
-    effect?: AnimationEffect;
-    /**
-     * Specifies the animation timing function.
-     * @default 'ease'
-     */
-    easing?: string;
 }

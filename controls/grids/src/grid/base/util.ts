@@ -2,14 +2,16 @@ import { ChildProperty, compile as baseTemplateComplier, setValue, International
 import { extend as baseExtend, isNullOrUndefined, getValue, classList, NumberFormatOptions } from '@syncfusion/ej2-base';
 import { setStyleAttribute, addClass, attributes, remove, createElement, DateFormatOptions, removeClass } from '@syncfusion/ej2-base';
 import { isObject, IKeyValue} from '@syncfusion/ej2-base';
-import { IPosition, IGrid, IValueFormatter, IRow, ICell } from './interface';
+import { IPosition, IGrid, IValueFormatter, IRow, ICell, IExpandedRow } from './interface';
 import { ServiceLocator } from '../services/service-locator';
 import { DataUtil, Query, DataManager, Predicate } from '@syncfusion/ej2-data';
 import { Column } from '../models/column';
+import { Row } from '../models/row';
 import { ColumnModel, AggregateColumnModel } from '../models/models';
-import { AggregateType } from './enum';
+import { AggregateType, HierarchyGridPrintMode } from './enum';
 import { Dialog, calculateRelativeBasedPosition, Popup, calculatePosition } from '@syncfusion/ej2-popups';
 import { PredicateModel } from './grid-model';
+import { Print } from '../actions/print';
 
 
 //https://typescript.codeplex.com/discussions/401501
@@ -133,8 +135,8 @@ export function prepareColumns(columns: Column[] | string[] | ColumnModel[], aut
             if (!(columns[c] as Column).columns) {
                 column = new Column(columns[c] as Column);
             } else {
-                column = new Column(columns[c] as Column);
                 (columns[c] as Column).columns = prepareColumns((columns[c] as Column).columns);
+                column = new Column(columns[c] as Column);
             }
         } else {
             column = <Column>columns[c];
@@ -645,6 +647,42 @@ export function getCustomDateFormat(format: string | Object, colType: string): s
     return formatvalue;
 }
 
+export function getExpandedState(gObj: IGrid, hierarchyPrintMode: HierarchyGridPrintMode): {[index: number]: IExpandedRow} {
+    let rows: Row<Column>[] = gObj.getRowsObject();
+    let obj: {[index: number]: IExpandedRow} = {};
+    for (const row of rows) {
+        if (row.isExpand && !row.isDetailRow) {
+            let index: number = gObj.allowPaging && gObj.printMode === 'AllPages'  ? row.index +
+            (gObj.pageSettings.currentPage * gObj.pageSettings.pageSize) - gObj.pageSettings.pageSize : row.index;
+            obj[index] = {};
+            obj[index].isExpand = true;
+            obj[index].gridModel = getPrintGridModel(row.childGrid, hierarchyPrintMode);
+            (<{query: Query}>obj[index].gridModel).query = gObj.childGrid.query;
+        }
+    }
+    return obj;
+}
+
+export function getPrintGridModel(gObj: IGrid, hierarchyPrintMode: HierarchyGridPrintMode = 'Expanded'): IGrid {
+    let printGridModel: IGrid = {} as IGrid;
+    if (!gObj) {
+        return printGridModel;
+    }
+    for (let key of Print.printGridProp) {
+        if (key === 'columns') {
+            printGridModel[key] = getActualPropFromColl(gObj[key]);
+        } else if (key === 'allowPaging') {
+            printGridModel[key] = gObj.printMode === 'CurrentPage';
+        } else {
+            printGridModel[key] = getActualProperties(gObj[key]);
+        }
+    }
+    if (gObj.childGrid && hierarchyPrintMode !== 'None') {
+        (<IGrid>printGridModel).expandedRows = getExpandedState(gObj, hierarchyPrintMode);
+    }
+    return printGridModel;
+}
+
 export function extendObjWithFn(copied: Object, first: Object, second?: Object, deep?: boolean): Object {
     let res: IKeyValue = copied as IKeyValue || {} as IKeyValue;
     let len: number = arguments.length;
@@ -657,7 +695,7 @@ export function extendObjWithFn(copied: Object, first: Object, second?: Object, 
         }
         let obj1: { [key: string]: Object } = arguments[i];
         let keys: string[] = Object.keys(Object.getPrototypeOf(obj1)).length ?
-        Object.keys(obj1).concat(Object.keys(Object.getPrototypeOf(obj1))) : Object.keys(obj1);
+        Object.keys(obj1).concat(getPrototypesOfObj(obj1)) : Object.keys(obj1);
         keys.forEach((key: string) => {
             let source: Object = res[key];
             let cpy: Object = obj1[key];
@@ -676,4 +714,42 @@ export function extendObjWithFn(copied: Object, first: Object, second?: Object, 
         });
     }
     return res;
+}
+
+function getPrototypesOfObj(obj: Object): string[] {
+    let keys: string[] = [];
+    while (Object.keys(Object.getPrototypeOf(obj)).length) {
+        keys = keys.concat(Object.keys(Object.getPrototypeOf(obj)));
+        obj = Object.getPrototypeOf(obj);
+    }
+    return keys;
+}
+
+export function measureColumnDepth(column: Column[]): number {
+    let max: number = 0;
+    for (let i: number = 0; i < column.length; i++) {
+        let depth: number = checkDepth(column[i], 0);
+        if (max < depth) {
+            max = depth;
+        }
+    }
+    return max + 1;
+}
+
+export function checkDepth(col: Column, index: number): number {
+    let max: number = index;
+    let indices: number[] = [];
+    if (col.columns) {
+        index++;
+        for (let i: number = 0; i < col.columns.length; i++) {
+            indices[i] = checkDepth((<Column>col.columns[i]), index);
+        }
+        for (let j: number = 0; j < indices.length; j++) {
+            if (max < indices[j]) {
+                max = indices[j];
+            }
+        }
+        index = max;
+    }
+    return index;
 }

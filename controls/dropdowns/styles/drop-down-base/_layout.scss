@@ -62,20 +62,20 @@
   }
 
   #{&}.e-popup.e-ddl .e-dropdownbase.e-nodata {
-    color: $nodata-font-color;
+    color: $ddl-nodata-font-color;
     cursor: default;
-    font-family: $list-font-family;
+    font-family: $ddl-list-font-family;
     font-size: 14px;
     padding: 14px 16px;
     text-align: center;
   }
 
   .e-rtl .e-dropdownbase.e-dd-group .e-list-item {
-    padding-right: $group-list-padding-left;
+    padding-right: $ddl-group-list-padding-left;
   }
 
   .e-dropdownbase.e-dd-group .e-list-item {
-    padding-left: $group-list-padding-left;
+    padding-left: $ddl-group-list-padding-left;
     text-indent: 0;
   }
 }

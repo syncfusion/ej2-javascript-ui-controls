@@ -29,12 +29,26 @@ export class UndoRedoCommands {
         this.parent.observer.on(EVENTS.KEY_UP_HANDLER, debounceListener, this);
         this.parent.observer.on(EVENTS.KEY_DOWN_HANDLER, this.keyDown, this);
         this.parent.observer.on(EVENTS.ACTION, this.onAction, this);
+        this.parent.observer.on(EVENTS.MODEL_CHANGED_PLUGIN, this.onPropertyChanged, this);
+    }
+    private onPropertyChanged(props: { [key: string]: Object }): void {
+        for (let prop of Object.keys(props.newProp)) {
+            switch (prop) {
+                case 'undoRedoSteps':
+                    this.undoRedoSteps = (props.newProp as { [key: string]: number }).undoRedoSteps;
+                    break;
+                case 'undoRedoTimer':
+                    this.undoRedoTimer = (props.newProp as { [key: string]: number }).undoRedoTimer;
+                    break;
+            }
+        }
     }
     protected removeEventListener(): void {
         let debounceListener: Function = debounce(this.keyUp, 300);
         this.parent.observer.off(EVENTS.KEY_UP_HANDLER, debounceListener);
         this.parent.observer.off(EVENTS.KEY_DOWN_HANDLER, this.keyDown);
         this.parent.observer.off(EVENTS.ACTION, this.onAction);
+        this.parent.observer.off(EVENTS.MODEL_CHANGED_PLUGIN, this.onPropertyChanged);
     }
     /**
      * Destroys the ToolBar.
@@ -92,8 +106,9 @@ export class UndoRedoCommands {
         }
         this.undoRedoStack.push(changEle);
         this.steps = this.undoRedoStack.length - 1;
-        if (this.undoRedoStack.length > this.undoRedoSteps) {
+        if (this.steps > this.undoRedoSteps) {
             this.undoRedoStack.shift();
+            this.steps--;
         }
         if (e && (e as IUndoCallBack).callBack) {
             (e as IUndoCallBack).callBack();

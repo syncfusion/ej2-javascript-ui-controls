@@ -67,6 +67,11 @@ export class EditorManager {
     private wireEvents(): void {
         this.observer.on(EVENTS.KEY_DOWN, this.editorKeyDown, this);
         this.observer.on(EVENTS.KEY_UP, this.editorKeyUp, this);
+        this.observer.on(EVENTS.KEY_UP, this.editorKeyUp, this);
+        this.observer.on(EVENTS.MODEL_CHANGED, this.onPropertyChanged, this);
+    }
+    private onPropertyChanged(props: { [key: string]: Object }): void {
+        this.observer.notify(EVENTS.MODEL_CHANGED_PLUGIN, props);
     }
     private editorKeyDown(e: IHtmlKeyboardEvent): void {
         this.observer.notify(EVENTS.KEY_DOWN_HANDLER, e);

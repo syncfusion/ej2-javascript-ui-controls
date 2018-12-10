@@ -129,15 +129,56 @@ export class CurrentRect {
     public y: number;
     public width: number;
     public height: number;
-    public value: number|BubbleTooltipData[];
+    public value: number | BubbleTooltipData[];
     public id: string;
-    constructor(x: number, y: number, width: number, height: number, value: number|BubbleTooltipData[], id: string) {
+    public xIndex: number;
+    public yIndex: number;
+    public xValue: number;
+    public yValue: number;
+    public visible: boolean;
+    public displayText: string;
+    public textId: string;
+
+    constructor(
+        x: number, y: number, width: number, height: number, value: number | BubbleTooltipData[],
+        id: string, xIndex: number, yIndex: number, xValue: number, yValue: number, visible: boolean, displayText: string, textId: string) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.value = value;
         this.id = id;
+        this.xIndex = xIndex;
+        this.yIndex = yIndex;
+        this.xValue = xValue;
+        this.yValue = yValue;
+        this.visible = visible;
+        this.displayText = displayText;
+        this.textId = textId;
+    }
+}
+
+
+/**
+ * Class to define the details of selected cell.
+ * @private
+ */
+export class SelectedCellDetails {
+    public value: number | BubbleTooltipData[];
+    public xLabel: string;
+    public yLabel: string;
+    public xValue: string | number | Date;
+    public yValue: string | number | Date;
+    public cellElement: Element;
+    constructor(
+        value: number | BubbleTooltipData[], xLabel: string, yLabel: string, xValue: number,
+        yValue: number, cellElement: Element) {
+        this.value = value;
+        this.xLabel = xLabel;
+        this.yLabel = yLabel;
+        this.xValue = xValue;
+        this.yValue = yValue;
+        this.cellElement = cellElement;
     }
 }
 
@@ -450,11 +491,11 @@ export class DrawSvgCanvas {
     }
 
     //Svg & Canvas Text Part
-    public createText(properties: TextOption, parentElement: Element, text: string): void {
+    public createText(properties: TextOption, parentElement: Element, text: string | string[]): void {
         if (!this.heatMap.enableCanvasRendering) {
-            parentElement.appendChild(this.heatMap.renderer.createText(properties, text));
+            parentElement.appendChild(this.heatMap.renderer.createText(properties, <string>text));
         } else {
-            this.canvasDrawText(properties, text);
+            this.canvasDrawText(properties, <string>text);
         }
     }
 
@@ -786,14 +827,14 @@ export function showTooltip(
         tooltip.style.top = (y + 15).toString() + 'px';
         tooltip.style.left = (x + 15).toString() + 'px';
     }
-    if(text === heatmap.titleSettings.text) {
+    if (text === heatmap.titleSettings.text) {
         tooltip.style.width = (x + 15) + size.width + 7 > heatmap.availableSize.width ?
-         ( heatmap.availableSize.width - (x + 15) ).toString() + 'px' : '';
+            (heatmap.availableSize.width - (x + 15)).toString() + 'px' : '';
     } else {
-    tooltip.style.left =  (x + 15) + size.width + 7 > heatmap.availableSize.width ?
-     (heatmap.availableSize.width - (size.width +7)).toString() + 'px' : x.toString() + 'px';
-    tooltip.style.top =  (y + 15) + size.height + 6 > heatmap.availableSize.height ?
-     (initialClip.height + initialClip.y - (size.height + 6) + 5).toString() + 'px': tooltip.style.top; // 6 and 7 are padding and border width
+        tooltip.style.left = (x + 15) + size.width + 7 > heatmap.availableSize.width ?
+            (heatmap.availableSize.width - (size.width + 7)).toString() + 'px' : x.toString() + 'px';
+        tooltip.style.top = (y + 15) + size.height + 6 > heatmap.availableSize.height ?
+            (y - (size.height + 6) - 10).toString() + 'px' : tooltip.style.top; // 6 and 7 are padding and border width
     }
     if (isTouch) {
         setTimeout(() => { removeElement(id); }, 1500);
@@ -871,6 +912,7 @@ export function getTooltipText(tooltipCollection: CanvasTooltip[], xPosition: nu
  */
 export class PaletterColor {
     public isCompact: boolean;
+    public isLabel: boolean;
     public offsets: PaletteCollectionModel[];
 }
 
@@ -916,6 +958,35 @@ export class CurrentLegendRect {
 }
 
 /** @private */
+export class LegendRange {
+    public x: number;
+    public y: number;
+    public width: number;
+    public height: number;
+    public value: number;
+    public visible: boolean;
+    public currentPage: number;
+    constructor(x: number, y: number, width: number, height: number, value: number, visible: boolean, currentPage: number) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.value = value;
+        this.visible = visible;
+        this.currentPage = currentPage;
+    }
+}
+/** @private */
+export class ToggleVisibility {
+    public visible: boolean;
+    public value: number;
+    constructor(visible: boolean, value: number) {
+        this.visible = visible;
+        this.value = value;
+    }
+}
+
+/** @private */
 export function colorNameToHex(color: string): string {
     let element: HTMLElement;
     color = color === 'transparent' ? 'white' : color;
@@ -945,4 +1016,20 @@ export function convertHexToColor(hex: string): RgbColor {
     let result: RegExpExecArray = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? new RgbColor(parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)) :
         new RgbColor(255, 255, 255);
+}
+
+/** @private */
+export function formatValue(isCustom: boolean, format: string, tempInterval: number, formatFun: Function): string {
+    return isCustom ? format.replace('{value}', formatFun(tempInterval))
+        : formatFun(tempInterval);
+}
+
+/** @private */
+export class MultiLevelPosition {
+    public x: number;
+    public y: number
+    constructor(x: number, y: number) {
+        this.x = x;
+        this.y = y;
+    }
 }

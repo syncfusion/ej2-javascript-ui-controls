@@ -1,5 +1,5 @@
 import { PivotEngine, IDataOptions, IDataSet, IAxisSet, IPageSettings } from '../../src/base/engine';
-import { pivot_dataset } from '../base/datasource.spec';
+import { pivot_dataset, excel_data } from '../base/datasource.spec';
 import { PivotUtil } from '../../src/base/util';
 describe('PivotView spec', () => {
     /**
@@ -186,6 +186,365 @@ describe('PivotView spec', () => {
                 expect((pivotEngine.pivotValues[8][2] as IDataSet).value).toBe(1060);
             });
         });
+        describe('Advanced Aggregation', () => {
+            let ds: IDataSet[] = excel_data as IDataSet[];
+            let dataSource: IDataOptions = {
+                expandAll: false,
+                data: ds,
+                rows: [{ name: 'Product' }],
+                columns: [{ name: 'Date' }],
+                values: [{ name: 'Qty 1', type: 'Product' }, { name: 'Qty 2' }],
+                filters: []
+            };
+            let pivotEngine: PivotEngine = new PivotEngine(dataSource);
+            it('Product', () => {
+                expect((pivotEngine.pivotValues[2][19] as IDataSet).value).toBe(776);
+                expect((pivotEngine.pivotValues[6][19] as IDataSet).value).toBe(7740600000000);
+            });
+            it('DistinctCount type', () => {
+                dataSource.values[0].type = 'DistinctCount';
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][19] as IDataSet).value).toBe(2);
+                expect((pivotEngine.pivotValues[6][19] as IDataSet).value).toBe(7);
+            });
+            it('Index type', () => {
+                dataSource.values[0].type = 'Index';
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][19] as IDataSet).value).toBe(1);
+                expect((pivotEngine.pivotValues[6][19] as IDataSet).value).toBe(1);
+            });
+            it('% of Grand Totals of total type', () => {
+                dataSource.values[0].type = 'PercentageOfGrandTotal';
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][19] as IDataSet).value).toBe(0.30701754385964913);
+                expect((pivotEngine.pivotValues[6][19] as IDataSet).value).toBe(1);
+            });
+            it('% of Grand Column Total type', () => {
+                dataSource.values[0].type = 'PercentageOfColumnTotal';
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][19] as IDataSet).value).toBe(0.30701754385964913);
+                expect((pivotEngine.pivotValues[6][19] as IDataSet).value).toBe(1);
+            });
+            it('% of Grand Row Total type', () => {
+                dataSource.values[0].type = 'PercentageOfRowTotal';
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][19] as IDataSet).value).toBe(1);
+                expect((pivotEngine.pivotValues[6][19] as IDataSet).value).toBe(1);
+            });
+            it('% of Parent Row Total type', () => {
+                dataSource.values[0].type = 'PercentageOfParentRowTotal';
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][19] as IDataSet).formattedText).toBe('30.70%');
+                expect((pivotEngine.pivotValues[6][19] as IDataSet).formattedText).toBe('100%');
+            });
+            it('% of Parent Column Total type', () => {
+                dataSource.values[0].type = 'PercentageOfParentColumnTotal';
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][3] as IDataSet).formattedText).toBe('92.38%');
+                expect((pivotEngine.pivotValues[6][3] as IDataSet).formattedText).toBe('28.36%');
+            });
+            it('% of Parent Total type with single level in column type', () => {
+                dataSource.values[0].type = 'PercentageOfParentTotal';
+                dataSource.values[0].baseField = 'Date';
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][3] as IDataSet).formattedText).toBe('100%');
+                expect((pivotEngine.pivotValues[6][3] as IDataSet).formattedText).toBe('100%');
+            });
+            it('% of Parent Total type with single level in row type', () => {
+                dataSource.valueAxis = 'row';
+                dataSource.values[0].type = 'PercentageOfParentTotal';
+                dataSource.values[0].baseField = 'Product';
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][2] as IDataSet).formattedText).toBe('100%');
+                expect((pivotEngine.pivotValues[2][10] as IDataSet).formattedText).toBe('100%');
+            });
+            it('% of Parent Total with multiple level in Column type', () => {
+                dataSource = {
+                    expandAll: true,
+                    data: ds,
+                    rows: [{ name: 'Product' }, { name: 'Qty 2' }, { name: 'Date' }],
+                    values: [{ name: 'Qty 1', type: 'PercentageOfParentTotal' }],
+                    columns: [],
+                    filters: []
+                };
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][1] as IDataSet).formattedText).toBe('7.62%');
+                expect((pivotEngine.pivotValues[21][1] as IDataSet).formattedText).toBe('45.65%');
+            });
+            it('% of Parent Total with multiple level in row type', () => {
+                dataSource = {
+                    expandAll: true,
+                    data: ds,
+                    rows: [{ name: 'Date' }],
+                    values: [{ name: 'Qty 1', type: 'PercentageOfParentTotal' }, { name: 'Qty 2' }],
+                    columns: [{ name: 'Product' }],
+                    filters: [],
+                    valueAxis: 'row'
+                };
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][4] as IDataSet).formattedText).toBe('100%');
+                expect((pivotEngine.pivotValues[29][4] as IDataSet).formattedText).toBe('100%');
+            });
+            it('% of Parent Total with multiple level(innner level selection) in Column type', () => {
+                dataSource = {
+                    expandAll: true,
+                    data: ds,
+                    rows: [{ name: 'Qty 2' }, { name: 'Product' }, { name: 'Date' }],
+                    values: [{ name: 'Qty 1', type: 'PercentageOfParentTotal', baseField: 'Product' }],
+                    columns: [],
+                    filters: []
+                };
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][1] as IDataSet).formattedText).toBe('100%');
+                expect((pivotEngine.pivotValues[16][1] as IDataSet).formattedText).toBe('100%');
+            });
+            it('Standard Deviation of population type', () => {
+                dataSource = {
+                    expandAll: true,
+                    data: ds,
+                    rows: [{ name: 'Product' }],
+                    values: [{ name: 'Qty 1', type: 'PopulationStDev' }, { name: 'Qty 2' }],
+                    columns: [{ name: 'Date' }],
+                    filters: []
+                };
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][19] as IDataSet).value).toBe(44.5);
+                expect((pivotEngine.pivotValues[6][19] as IDataSet).value).toBe(32.34535858855521);
+            });
+            it('Sample Standard Deviation type', () => {
+                dataSource.values[0].type = 'SampleStDev';
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][19] as IDataSet).value).toBe(62.932503525602726);
+                expect((pivotEngine.pivotValues[6][19] as IDataSet).value).toBe(34.307433596816885);
+            });
+            it('Variance of population type', () => {
+                dataSource.values[0].type = 'PopulationVar';
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][19] as IDataSet).value).toBe(1980.25);
+                expect((pivotEngine.pivotValues[6][19] as IDataSet).value).toBe(1046.2222222222222);
+            });
+            it('Sample Variance type', () => {
+                dataSource.values[0].type = 'SampleVar';
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][19] as IDataSet).value).toBe(3960.5);
+                expect((pivotEngine.pivotValues[6][19] as IDataSet).value).toBe(1177);
+            });
+            it('Running Totals with value(one level) in column type', () => {
+                dataSource.values[0].type = 'RunningTotals';
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][19] as IDataSet).formattedText).toBe('105');
+                expect((pivotEngine.pivotValues[6][19] as IDataSet).formattedText).toBe('342');
+            });
+            it('Running Totals with value(multiple level) in column type', () => {
+                dataSource = {
+                    expandAll: true,
+                    data: ds,
+                    rows: [{ name: 'Product' }, { name: 'Date' }],
+                    values: [{ name: 'Qty 1', type: 'RunningTotals' }, { name: 'Qty 2' }],
+                    columns: [],
+                    filters: []
+                };
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[3][1] as IDataSet).formattedText).toBe('105');
+                expect((pivotEngine.pivotValues[11][1] as IDataSet).formattedText).toBe('342');
+            });
+            it('Running Totals with value(one level) in rows type', () => {
+                dataSource = {
+                    expandAll: false,
+                    data: ds,
+                    rows: [{ name: 'Product' }],
+                    values: [{ name: 'Qty 1', type: 'RunningTotals' }, { name: 'Qty 2' }],
+                    columns: [{ name: 'Date' }],
+                    filters: [],
+                    valueAxis: 'row'
+                };
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][10] as IDataSet).formattedText).toBe('105');
+                expect((pivotEngine.pivotValues[14][10] as IDataSet).formattedText).toBe('342');
+            });
+            it('Running Totals with value(multiple level) in row type', () => {
+                dataSource = {
+                    expandAll: true,
+                    data: ds,
+                    rows: [{ name: 'Product' }, { name: 'Date' }],
+                    values: [{ name: 'Qty 1', type: 'RunningTotals' }, { name: 'Qty 2' }],
+                    columns: [],
+                    filters: [],
+                    valueAxis: 'row'
+                };
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][1] as IDataSet).formattedText).toBe('105');
+                expect((pivotEngine.pivotValues[44][1] as IDataSet).formattedText).toBe('342');
+            });
+            it('Difference From with value(one level) in column type without using selected row member', () => {
+                dataSource = {
+                    expandAll: false,
+                    data: ds,
+                    rows: [{ name: 'Product' }],
+                    values: [{ name: 'Qty 1', type: 'DifferenceFrom' }, { name: 'Qty 2' }],
+                    columns: [{ name: 'Date' }],
+                    filters: [],
+                };
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[3][19] as IDataSet).formattedText).toBe('-55');
+                expect((pivotEngine.pivotValues[6][19] as IDataSet).formattedText).toBe('0');
+            });
+            it('Difference From with value(one level) in column type using selected row member', () => {
+                dataSource.values[0].baseField = 'Product';
+                dataSource.values[0].baseItem = 'Staplers';
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][19] as IDataSet).formattedText).toBe('13');
+                expect((pivotEngine.pivotValues[6][19] as IDataSet).formattedText).toBe('0');
+            });
+            it('Difference From with value(one level) in rows type without using selected row member', () => {
+                dataSource.valueAxis = 'row';
+                dataSource.values[0].baseField = undefined;
+                dataSource.values[0].baseItem = undefined;
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][1] as IDataSet).formattedText).toBe('-8');
+                expect((pivotEngine.pivotValues[14][1] as IDataSet).formattedText).toBe('17');
+            });
+            it('Difference From with value(one level) in rows type using selected row member', () => {
+                dataSource.values[0].baseField = 'Product';
+                dataSource.values[0].baseItem = 'Staplers';
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][10] as IDataSet).formattedText).toBe('13');
+                expect((pivotEngine.pivotValues[14][10] as IDataSet).formattedText).toBe('0');
+            });
+            it('Difference From with value(mulitple level) in column type using selected row member', () => {
+                dataSource = {
+                    expandAll: true,
+                    data: ds,
+                    rows: [{ name: 'Product' }, { name: 'Date' }],
+                    values: [{ name: 'Qty 1', type: 'DifferenceFrom', baseField: 'Product', baseItem: 'Staplers' }, { name: 'Qty 2' }],
+                    columns: [],
+                    filters: []
+                };
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[1][1] as IDataSet).formattedText).toBe('13');
+                expect((pivotEngine.pivotValues[5][1] as IDataSet).formattedText).toBe('0');
+            });
+            it('Difference From with value(multiple level) in rows type using selected row member', () => {
+                dataSource.valueAxis = 'row';
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][1] as IDataSet).formattedText).toBe('13');
+                expect((pivotEngine.pivotValues[14][1] as IDataSet).formattedText).toBe('0');
+            });
+            it('% Of Difference From with value(one level) in column type using selected row member', () => {
+                dataSource = {
+                    expandAll: false,
+                    data: ds,
+                    rows: [{ name: 'Product' }],
+                    columns: [{ name: 'Date' }],
+                    values: [{ name: 'Qty 1', type: 'PercentageOfDifferenceFrom', baseField: 'Product', baseItem: 'Staplers' }, { name: 'Qty 2' }],
+                    filters: []
+                };
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][19] as IDataSet).formattedText).toBe('14.13%');
+                expect((pivotEngine.pivotValues[6][19] as IDataSet).formattedText).toBe('0');
+            });
+            it('% Of Difference From with value(one level) in rows type using selected row member', () => {
+                dataSource.valueAxis = 'row';
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][10] as IDataSet).formattedText).toBe('14.13%');
+                expect((pivotEngine.pivotValues[14][10] as IDataSet).formattedText).toBe('0');
+            });
+            it('% Of Difference From with value(mulitple level) in column type using selected row member', () => {
+                dataSource = {
+                    expandAll: true,
+                    data: ds,
+                    rows: [{ name: 'Product' }, { name: 'Date' }],
+                    values: [{ name: 'Qty 1', type: 'PercentageOfDifferenceFrom', baseField: 'Product', baseItem: 'Staplers' }, { name: 'Qty 2' }],
+                    columns: [],
+                    filters: []
+                };
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[1][1] as IDataSet).formattedText).toBe('14.13%');
+                expect((pivotEngine.pivotValues[5][1] as IDataSet).formattedText).toBe('0');
+            });
+            it('% Of Difference From with value(multiple level) in rows type using selected row member', () => {
+                dataSource.valueAxis = 'row';
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][1] as IDataSet).formattedText).toBe('14.13%');
+                expect((pivotEngine.pivotValues[14][1] as IDataSet).formattedText).toBe('0');
+            });
+            it('Difference From with value(one level) in column type using selected column member', () => {
+                dataSource = {
+                    expandAll: false,
+                    data: ds,
+                    columns: [{ name: 'Product' }],
+                    rows: [{ name: 'Date' }],
+                    values: [{ name: 'Qty 1', type: 'DifferenceFrom', baseField: 'Product', baseItem: 'Staplers' }, { name: 'Qty 2' }],
+                    filters: []
+                };
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][1] as IDataSet).formattedText).toBe('-25');
+                expect((pivotEngine.pivotValues[11][1] as IDataSet).formattedText).toBe('13');
+            });
+            it('Difference From with value(one level) in rows type using selected column member', () => {
+                dataSource.valueAxis = 'row';
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][1] as IDataSet).formattedText).toBe('-25');
+                expect((pivotEngine.pivotValues[29][1] as IDataSet).formattedText).toBe('13');
+            });
+            it('Difference From with value(mulitple level) in column type using selected column member', () => {
+                dataSource = {
+                    expandAll: true,
+                    data: ds,
+                    columns: [{ name: 'Product' }, { name: 'Date' }],
+                    values: [{ name: 'Qty 1', type: 'DifferenceFrom', baseField: 'Product', baseItem: 'Staplers' }, { name: 'Qty 2' }],
+                    rows: [],
+                    filters: []
+                };
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[3][9] as IDataSet).formattedText).toBe('-5');
+                expect((pivotEngine.pivotValues[3][13] as IDataSet).formattedText).toBe('-42');
+            });
+            it('Difference From with value(multiple level) in rows type using selected column member', () => {
+                dataSource.valueAxis = 'row';
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[3][3] as IDataSet).formattedText).toBe('13');
+                expect((pivotEngine.pivotValues[3][7] as IDataSet).formattedText).toBe('-42');
+            });
+            it('% Of Difference From with value(one level) in column type using selected column member', () => {
+                dataSource = {
+                    expandAll: false,
+                    data: ds,
+                    columns: [{ name: 'Product' }],
+                    rows: [{ name: 'Date' }],
+                    values: [{ name: 'Qty 1', type: 'PercentageOfDifferenceFrom', baseField: 'Product', baseItem: 'Staplers' }, { name: 'Qty 2' }],
+                    filters: []
+                };
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][1] as IDataSet).formattedText).toBe('-100%');
+                expect((pivotEngine.pivotValues[11][1] as IDataSet).formattedText).toBe('14.13%');
+            });
+            it('% Of Difference From with value(one level) in rows type using selected column member', () => {
+                dataSource.valueAxis = 'row';
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[2][1] as IDataSet).formattedText).toBe('-100%');
+                expect((pivotEngine.pivotValues[29][1] as IDataSet).formattedText).toBe('14.13%');
+            });
+            it('% Of Difference From with value(mulitple level) in column type using selected column member', () => {
+                dataSource = {
+                    expandAll: true,
+                    data: ds,
+                    columns: [{ name: 'Product' }, { name: 'Date' }],
+                    values: [{ name: 'Qty 1', type: 'PercentageOfDifferenceFrom', baseField: 'Product', baseItem: 'Staplers' }, { name: 'Qty 2' }],
+                    rows: [],
+                    filters: []
+                };
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[3][5] as IDataSet).formattedText).toBe('14.13%');
+                expect((pivotEngine.pivotValues[3][19] as IDataSet).formattedText).toBe('3.26%');
+            });
+            it('% Of Difference From with value(multiple level) in rows type using selected column member', () => {
+                dataSource.valueAxis = 'row';
+                pivotEngine = new PivotEngine(dataSource);
+                expect((pivotEngine.pivotValues[3][3] as IDataSet).formattedText).toBe('14.13%');
+                expect((pivotEngine.pivotValues[3][7] as IDataSet).formattedText).toBe('-45.65%');
+            });
+        });
         describe('Number Format on value field', () => {
             let ds: IDataSet[] = pivot_dataset as IDataSet[];
             let dataSource: IDataOptions = {
@@ -351,10 +710,10 @@ describe('PivotView spec', () => {
             };
             let pivotEngine: PivotEngine;
             let pageSettings: IPageSettings = {
-                    columnSize: 2,
-                    rowSize: 2,
-                    columnCurrentPage: 1,
-                    rowCurrentPage: 1
+                columnSize: 2,
+                rowSize: 2,
+                columnCurrentPage: 1,
+                rowCurrentPage: 1
             };
             pivotEngine = new PivotEngine(dataSource, '', undefined, pageSettings);
             it('Ensure the page data', () => {

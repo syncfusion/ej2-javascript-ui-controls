@@ -16,16 +16,16 @@ import { DateTimeCategory } from '../axis/date-time-category-axis';
 import { Theme } from '../../common/model/theme';
 import { IAxisRangeCalculatedEventArgs } from '../../common/model/interface';
 import { axisRangeCalculated } from '../../common/model/constants';
-import { StripLineSettings, MultiLevelLabels, LabelBorder } from '../model/chart-base';
-import { StripLineSettingsModel, MultiLevelLabelsModel, LabelBorderModel } from '../model/chart-base-model';
+import { StripLineSettings, MultiLevelLabels, LabelBorder, ScrollbarSettings } from '../model/chart-base';
+import { StripLineSettingsModel, MultiLevelLabelsModel, LabelBorderModel, ScrollbarSettingsModel  } from '../model/chart-base-model';
 import { textWrap } from '../../common/utils/helper';
 import { ScrollBar } from '../../common/scrollbar/scrollbar';
 
 
 const axisPadding: number = 10;
 
-/**   
- * Configures the `rows` of the chart.    
+/**
+ * Configures the `rows` of the chart.
  */
 
 export class Row extends ChildProperty<Row> {
@@ -76,8 +76,8 @@ export class Row extends ChildProperty<Row> {
     }
 }
 
-/**   
- * Configures the `columns` of the chart.    
+/**
+ * Configures the `columns` of the chart.
  */
 
 export class Column extends ChildProperty<Column> {
@@ -130,8 +130,8 @@ export class Column extends ChildProperty<Column> {
         }
     }
 }
-/**   
- * Configures the major grid lines in the `axis`.    
+/**
+ * Configures the major grid lines in the `axis`.
  */
 export class MajorGridLines extends ChildProperty<MajorGridLines> {
 
@@ -159,8 +159,8 @@ export class MajorGridLines extends ChildProperty<MajorGridLines> {
     @Property(null)
     public color: string;
 }
-/**   
- * Configures the minor grid lines in the `axis`.    
+/**
+ * Configures the minor grid lines in the `axis`.
  */
 export class MinorGridLines extends ChildProperty<MinorGridLines> {
 
@@ -188,8 +188,8 @@ export class MinorGridLines extends ChildProperty<MinorGridLines> {
     @Property(null)
     public color: string;
 }
-/**   
- * Configures the axis line of a chart.    
+/**
+ * Configures the axis line of a chart.
  */
 export class AxisLine extends ChildProperty<AxisLine> {
 
@@ -217,8 +217,8 @@ export class AxisLine extends ChildProperty<AxisLine> {
     @Property(null)
     public color: string;
 }
-/**   
- * Configures the major tick lines.    
+/**
+ * Configures the major tick lines.
  */
 export class MajorTickLines extends ChildProperty<MajorTickLines> {
 
@@ -246,8 +246,8 @@ export class MajorTickLines extends ChildProperty<MajorTickLines> {
     @Property(null)
     public color: string;
 }
-/**   
- * Configures the minor tick lines.    
+/**
+ * Configures the minor tick lines.
  */
 export class MinorTickLines extends ChildProperty<MinorTickLines> {
 
@@ -274,8 +274,8 @@ export class MinorTickLines extends ChildProperty<MinorTickLines> {
     @Property(null)
     public color: string;
 }
-/**   
- * Configures the crosshair ToolTip.    
+/**
+ * Configures the crosshair ToolTip.
  */
 export class CrosshairTooltip extends ChildProperty<CrosshairTooltip> {
 
@@ -389,7 +389,7 @@ export class Axis extends ChildProperty<Axis> {
     /**
      * Specifies the index of the column where the axis is associated,
      * when the chart area is divided into multiple plot areas by using `columns`.
-     * ```html 
+     * ```html
      * <div id='Chart'></div>
      * ```
      * ```typescript
@@ -401,7 +401,7 @@ export class Axis extends ChildProperty<Axis> {
      *                name: 'xAxis 1',
      *                columnIndex: 1,
      *     }],
-     * ... 
+     * ...
      * });
      * chart.appendTo('#Chart');
      * ```
@@ -413,7 +413,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Specifies the index of the row where the axis is associated, when the chart area is divided into multiple plot areas by using `rows`.
-     * ```html 
+     * ```html
      * <div id='Chart'></div>
      * ```
      * ```typescript
@@ -767,7 +767,11 @@ export class Axis extends ChildProperty<Axis> {
     @Complex<LabelBorderModel>({ color: null, width: 0, type: 'Rectangle' }, LabelBorder)
     public border: LabelBorderModel;
 
-
+    /**
+     * Option to customize scrollbar with lazy loading
+     */
+    @Complex<ScrollbarSettingsModel>({}, ScrollbarSettings)
+    public scrollbarSettings: ScrollbarSettingsModel;
 
     /** @private */
     public visibleRange: VisibleRangeModel;
@@ -822,6 +826,8 @@ export class Axis extends ChildProperty<Axis> {
     public scrollBarHeight: number;
     /** @private */
     public isChart: boolean = true;
+    /** @private */
+    public maxPointLength: number;
 
     // tslint:disable-next-line:no-any
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
@@ -928,7 +934,7 @@ export class Axis extends ChildProperty<Axis> {
     /**
      * Calculate visible range for axis.
      * @return {void}
-     * @private 
+     * @private
      */
     public calculateVisibleRange(size: Size): void {
 
@@ -936,8 +942,13 @@ export class Axis extends ChildProperty<Axis> {
             let baseRange: VisibleRangeModel = this.actualRange;
             let start: number;
             let end: number;
-            start = this.actualRange.min + this.zoomPosition * this.actualRange.delta;
-            end = start + this.zoomFactor * this.actualRange.delta;
+            if (!this.isInversed) {
+                start = this.actualRange.min + this.zoomPosition * this.actualRange.delta;
+                end = start + this.zoomFactor * this.actualRange.delta;
+            } else {
+                start = this.actualRange.max - (this.zoomPosition * this.actualRange.delta);
+                end = start - (this.zoomFactor * this.actualRange.delta);
+            }
             if (start < baseRange.min) {
                 end = end + (baseRange.min - start);
                 start = baseRange.min;
@@ -987,14 +998,14 @@ export class Axis extends ChildProperty<Axis> {
         switch (this.orientation) {
             case 'Horizontal':
                 if (chart.requireInvertedAxis) {
-                    padding = (this.isStack100 ? 'Round' : 'Normal');
+                    padding = (this.isStack100 || this.baseModule.chart.stockChart ? 'Round' : 'Normal');
                 } else {
                     padding = 'None';
                 }
                 break;
             case 'Vertical':
                 if (!chart.requireInvertedAxis) {
-                    padding = (this.isStack100 ? 'Round' : 'Normal');
+                    padding = (this.isStack100 || this.baseModule.chart.stockChart ? 'Round' : 'Normal');
                 } else {
                     padding = 'None';
                 }

@@ -4,6 +4,7 @@ import { Orientation } from '../../enum/enum';
 import { Size } from '../../primitives/size';
 import { PointModel as Point } from '../../primitives/point-model';
 import { rotateSize } from '../../utility/base-util';
+import { Canvas } from './canvas';
 
 /**
  * StackPanel module is used to arrange its children in a line
@@ -50,7 +51,7 @@ export class StackPanel extends Container {
             for (let child of this.children) {
                 child.parentTransform = this.rotateAngle + this.parentTransform;
                 //Measure children
-                child.measure(availableSize);
+                child.measure(child.desiredSize);
                 let childSize: Size = child.desiredSize.clone();
                 //Consider Child's margin
                 this.applyChildMargin(child, childSize);
@@ -95,7 +96,7 @@ export class StackPanel extends Container {
 
                 let center: Point = updatePosition(x, y, child, this, desiredSize, rotatedSize);
                 super.findChildOffsetFromCenter(child, center);
-                child.arrange(childSize);
+                (child as Canvas).arrange(childSize, true);
 
                 if (this.orientation === 'Vertical') {
                     y += rotatedSize.height + child.margin.bottom;
@@ -119,7 +120,6 @@ export class StackPanel extends Container {
 
     private arrangeHorizontalStack(x: number, y: number, child: Element, parent: StackPanel, parenBounds: Size, childBounds: Size): Point {
         let centerY: number = 0;
-
         if (child.verticalAlignment === 'Top') {
             centerY = y + child.margin.top + childBounds.height / 2;
         } else if (child.verticalAlignment === 'Bottom') {
@@ -127,8 +127,10 @@ export class StackPanel extends Container {
             centerY = parentBottom - parent.padding.bottom - child.margin.bottom - childBounds.height / 2;
         } else {
             centerY = parent.offsetY - parenBounds.height * parent.pivot.y + parenBounds.height / 2;
+            if (child.margin.top) {
+                centerY = y + child.margin.top + childBounds.height / 2;
+            }
         }
-
         return { x: x + childBounds.width / 2, y: centerY };
     }
 
@@ -142,6 +144,9 @@ export class StackPanel extends Container {
             centerX = parentRight - parent.padding.right - child.margin.right - childSize.width / 2;
         } else {
             centerX = parent.offsetX - parentSize.width * parent.pivot.x + parentSize.width / 2;
+            if (child.margin.left) {
+                centerX = x + child.margin.left + childSize.width / 2;
+            }
         }
         return { x: centerX, y: y + childSize.height / 2 };
     }
@@ -151,11 +156,11 @@ export class StackPanel extends Container {
             for (let child of this.children) {
                 if (this.orientation === 'Vertical') {
                     if (child.horizontalAlignment === 'Stretch') {
-                        child.desiredSize.width = size.width;
+                        child.desiredSize.width = size.width - (child.margin.left + child.margin.right);
                     }
                 } else {
                     if (child.verticalAlignment === 'Stretch') {
-                        child.desiredSize.height = size.height;
+                        child.desiredSize.height = size.height - (child.margin.top + child.margin.bottom);
                     }
                 }
             }

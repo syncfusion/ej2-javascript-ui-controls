@@ -62,22 +62,16 @@
   .e-de-table-left-alignment::before {
     content: '\e517';
     font-size: $de-table-alignment-font-size;
-    position: absolute;
-    top: $de-table-alignment-top;
     }
 
   .e-de-table-center-alignment::before {
     content: '\e518';
     font-size: $de-table-alignment-font-size;
-    position: absolute;
-    top: $de-table-alignment-top;
   }
 
   .e-de-table-right-alignment::before {
     content: '\e515';
     font-size: $de-table-alignment-font-size;
-    position: absolute;
-    top: $de-table-alignment-top;
   }
 
   .e-de-tablecell-top-alignment::before {
@@ -93,10 +87,6 @@
   .e-de-tablecell-bottom-alignment::before {
     content: '\e525';
     font-size: $de-tablecell-alignment-font-size;
-  }
-
-  .e-de-table-alignment-active {
-    border: 1px solid $de-table-align-active-color;
   }
 
   .e-de-table-border-setting {
@@ -332,94 +322,71 @@
   .e-de-bold::before {
     content: '\e339';
     font-family: 'e-icons';
-    font-size: 16px;
-    font-weight: 400;
   }
 
   .e-de-italic::before {
     content: '\e35a';
     font-family: 'e-icons';
-    font-size: 16px;
-    font-weight: 400;
   }
 
   .e-de-underline::before {
     content: '\e343';
     font-family: 'e-icons';
-    font-size: 16px;
-    font-weight: 400;
   }
 
   .e-de-indent::before {
     content: '\e35d';
     font-family: 'e-icons';
-    font-size: 16px;
-    font-weight: 400;
   }
 
   .e-de-outdent::before {
     content: '\e33f';
     font-family: 'e-icons';
-    font-size: 16px;
-    font-weight: 400;
   }
 
   .e-de-align-left::before {
     content: '\e33a';
     font-family: 'e-icons';
-    font-size: 16px;
-    font-weight: 400;
   }
 
   .e-de-align-center::before {
     content: '\e35e';
     font-family: 'e-icons';
-    font-size: 16px;
-    font-weight: 400;
   }
 
   .e-de-align-right::before {
     content: '\e34d';
     font-family: 'e-icons';
-    font-size: 16px;
-    font-weight: 400;
   }
 
   .e-de-justify::before {
     content: '\e334';
     font-family: 'e-icons';
-    font-size: 16px;
-    font-weight: 400;
   }
 
   .e-de-single-spacing::before {
     content: '\e520';
     font-family: 'e-icons';
-    font-size: 16px;
   }
 
   .e-de-double-spacing::before {
     content: '\e521';
     font-family: 'e-icons';
-    font-size: 16px;
   }
 
   .e-de-one-point-five-spacing::before {
     content: '\e522';
     font-family: 'e-icons';
-    font-size: 16px;
   }
 
   .e-de-before-spacing::before {
     content: '\e523';
     font-family: 'e-icons';
-    font-size: 16px;
   }
 
   .e-de-after-spacing::before {
     content: '\e274';
     font-family: 'e-icons';
-    font-size: 16px;
   }
 
   .e-de-icon-bullet-list-dot::before {
@@ -462,6 +429,21 @@
     content: '\e256';
     font-family: 'e-icons';
     font-size: 42px;
+  }
+
+  .e-de-icon-autofit::before {
+    content: '\eba8';
+    font-family: 'e-icons';
+  }
+
+  .e-de-icon-fixed-columnwidth::before {
+    content: '\eba9';
+    font-family: 'e-icons';
+  }
+
+  .e-de-icon-auto-fitwindow::before {
+    content: '\ebaa';
+    font-family: 'e-icons';
   }
 
 }

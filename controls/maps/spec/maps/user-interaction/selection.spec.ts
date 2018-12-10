@@ -2,11 +2,12 @@
  * Selection Testcase
  */
 import { usMap, World_Map, unCountries, randomcountriesData1 } from '../data/data.spec';
+import { Population_Density } from '../data/PopulationDensity.spec';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { MouseEvents } from '../base/events.spec';
 import { getElement } from '../../../src/maps/utils/helper';
-import { ILoadedEventArgs, Selection, Maps, Legend } from '../../../src/maps/index';
-Maps.Inject(Selection);
+import { ILoadedEventArgs, Selection, Maps, Legend, Highlight } from '../../../src/maps/index';
+Maps.Inject(Selection, Legend, Highlight);
 describe('Selection Settings', () => {
     describe('Testing selection is applied or not', () => {
         let id: string = 'container';
@@ -90,8 +91,8 @@ describe('Selection Settings', () => {
         });
         it('Checking with destroyed map', (done: Function) => {
             select.isDestroyed = true;
-            let selection : Selection = new Selection(select);            
-            spec = getElement(id);            
+            let selection : Selection = new Selection(select);
+            spec = getElement(id);
             expect(spec.getAttribute('class')).not.toBe('ShapeselectionMapStyle');
             done();
         });
@@ -355,6 +356,136 @@ describe('Selection Settings', () => {
                 };
                 world.refresh();
             });
+        });
+    });
+});
+describe('Selection Settings', () => {
+    describe('Testing selection is applied or not', () => {
+        let id: string = 'container';
+        let selection: Maps;
+        let trigger: MouseEvents = new MouseEvents();
+        let ele: HTMLDivElement;
+        let spec: Element;
+        let spec1: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            selection = new Maps({
+                titleSettings: {
+                    text: 'WorldMap',
+                },
+                legendSettings: {
+                    visible: true,
+                    position: 'Top',
+                },
+                layers: [{
+                    highlightSettings: {
+                        enable: true,
+                        fill: 'red'
+                    },
+                    selectionSettings: {
+                        enable: true,
+                        fill: 'green'
+                    },
+                    shapeData: World_Map,
+                    shapeDataPath: 'name',
+                    dataSource: Population_Density,
+                    shapeSettings: {
+                        colorValuePath: 'density',
+                        fill: '#E5E5E5',
+                        colorMapping: [
+                            {
+                                from: 0.00001, to: 100, color: 'yellow', label: '<100'
+                            },
+                            {
+                                from: 100, to: 200, color: 'blue', label: '100 - 200'
+                            },
+                            {
+                                from: 200, to: 300, color: 'pink', label: '200 - 300'
+                            },
+                            {
+                                from: 300, to: 500, color: 'violet', label: '300 - 500'
+                            },
+                            {
+                                from: 500, to: 19000, color: 'orange', label: '>500'
+                            }
+                        ]
+                    }
+                }],
+            });
+        });
+        afterAll(() => {
+            remove(ele);
+            selection.destroy();
+        });
+        it('Selection checking for legends on shapes', (done: Function) => {
+            selection.loaded = (args: ILoadedEventArgs) => {
+            spec = getElement('container_LayerIndex_0_ShapeIndex_64_dataIndex_56');
+            trigger.clickEvent(spec);
+            expect(spec.getAttribute('fill')).toBe('yellow');
+            done();
+        };
+            selection.appendTo('#' + id);
+        });
+        it('Selection checking for shapes on legends', (done: Function) => {
+            selection.loaded = (args: ILoadedEventArgs) => {
+            spec = getElement('container_Legend_Shape_Index_2');
+            trigger.clickEvent(spec);
+            expect(spec.getAttribute('fill')).toBe('green');
+            done();
+        };
+            selection.refresh();
+        });
+        it('Dual selection on same legends', (done: Function) => {
+            selection.loaded = (args: ILoadedEventArgs) => {
+            spec = getElement('container_Legend_Shape_Index_1');
+            trigger.clickEvent(spec);
+            trigger.clickEvent(spec);
+            expect(spec.getAttribute('fill')).toBe('blue');
+            done();
+        };
+            selection.refresh();
+        });
+        it('Dual selection on same shapes', (done: Function) => {
+            selection.loaded = (args: ILoadedEventArgs) => {
+            spec = getElement('container_LayerIndex_0_ShapeIndex_92_dataIndex_87');
+            trigger.clickEvent(spec);
+            trigger.clickEvent(spec);
+            expect(spec.getAttribute('fill')).toBe('yellow');
+            done();
+        };
+            selection.refresh();
+        });
+        it('Different shape selection', (done: Function) => {
+            selection.loaded = (args: ILoadedEventArgs) => {
+            spec = getElement('container_LayerIndex_0_ShapeIndex_72_dataIndex_65');
+            trigger.clickEvent(spec);
+            expect(spec.getAttribute('fill')).toBe('violet');
+            spec = getElement('container_LayerIndex_0_ShapeIndex_26_dataIndex_25');
+            trigger.clickEvent(spec);
+            expect(spec.getAttribute('fill')).toBe('yellow');
+            done();
+        };
+            selection.refresh();
+        });
+        it('Different legend selection with intearactive legend along with shape highlight', (done: Function) => {
+            selection.loaded = (args: ILoadedEventArgs) => {
+            spec = getElement('container_Legend_Index_4');
+            trigger.clickEvent(spec);
+            spec = getElement('container_Legend_Index_3');
+            trigger.clickEvent(spec);
+            spec = getElement('container_Legend_Index_4');
+            trigger.mousemoveEvent(spec, 0, 0, 0, 0);
+            spec = getElement('container_Legend_Index_0');
+            trigger.clickEvent(spec);
+            spec = getElement('container_LayerIndex_0_ShapeIndex_29_dataIndex_29');
+            trigger.mousemoveEvent(spec, 0, 0, 0, 0);
+            spec = getElement('container_LayerIndex_0_ShapeIndex_134_dataIndex_125');
+            trigger.mousemoveEvent(spec, 0, 0, 0, 0);
+            done();
+        };
+            selection.legendSettings.mode = 'Interactive';
+            selection.refresh();
         });
     });
 });

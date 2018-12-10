@@ -453,22 +453,5 @@ describe('Chart Trackball', () => {
             chartObj.loaded = loaded;  
             chartObj.refresh();
         });
-        it('Trackball checked with header text', (done: Function) => {
-            loaded = (args: Object): void => {
-                let series: Series = <Series>chartObj.series[0];
-                let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
-                y = series.points[5].symbolLocations[0].y + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
-                x = series.points[5].symbolLocations[0].x + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
-                trigger.mousemovetEvent(elem, Math.ceil(x), Math.ceil(y));
-                let tooltip: HTMLElement = document.getElementById('container_tooltip_text');
-                expect(tooltip.firstElementChild.innerHTML).toEqual('TrackBallTooltip');
-                done();
-            };
-            chartObj.loaded = loaded;
-            chartObj.tooltipRender = (args: ITooltipRenderEventArgs) => {
-                args.headerText = 'TrackBallTooltip';
-            };
-            chartObj.refresh();
-        });
     });
 });

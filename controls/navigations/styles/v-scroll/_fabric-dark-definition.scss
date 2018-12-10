@@ -1,0 +1,51 @@
+//default 
+$skin-name: 'fabric';
+$vscroll-nav-nrml-height: 40px;
+$vscroll-hover-font: $hover-font-color ;
+$vscroll-active-font-color: $active-font-color ;
+$vscroll-border-size: $border-size;
+$vscroll-border-type: solid;
+
+$vscroll-default-bg: $neutral-white;
+$vscroll-press-bg: $theme-lighter;
+$vscroll-active-bg: $neutral-lighter;
+$vscroll-nav-nrml-minheight: 40px;
+$vscroll-nav-bgr-minheight: 50px;
+$vscroll-nav-nrml-width: 40px;
+$vscroll-nav-bgr-width: 50px;
+$vscroll-nrml-padding: 0 $vscroll-nav-nrml-width;
+$vscroll-bgr-padding: $vscroll-nav-bgr-width 0;
+$vscroll-border-size: 1px;
+$vscroll-default-border: $neutral-tertiary;
+$vscroll-box-shadow: none;
+$vscroll-hover-bg: $neutral-lighter;
+$vscroll-hover-border-color: '';
+$vscroll-focus-border: '';
+$vscroll-active-border: '';
+$vscroll-hover-border: '';
+$vscroll-active-box-shadow: '';
+$vscroll-default-icon-color: $theme-light-font;
+$vscroll-overlay-opacity: .5;
+$vscroll-overlay-bg: $neutral-white;
+$vscroll-overlay-start: rgba($vscroll-overlay-bg, 0);
+$vscroll-overlay-end: rgba($vscroll-overlay-bg, 1);
+$vscroll-right-bg: linear-gradient(-270deg, $vscroll-overlay-start 0%, $vscroll-overlay-end 100%);
+$vscroll-left-bg:  linear-gradient(-270deg, $vscroll-overlay-end 0%, $vscroll-overlay-start 100%);
+
+$vscroll-device-arrow-box-shadow: -4px 0 8px 0 rgba($shadow , .06);
+$vscroll-device-arrow-rtl-box-shadow: 4px 0 8px 0 rgba($shadow , .06);
+$vscroll-device-arrow-bg: $neutral-white;
+$vscroll-device-arrow-border-size: 1px;
+$vscroll-device-arrow-border-color: $neutral-quintenaryalt;
+$vscroll-device-arrow-color: $theme-primary;
+$vscroll-device-arrow-size: 14px;
+$vscroll-device-arrow-width: 52px;
+
+@mixin vscroll-btn-animation {
+  content: '';
+}
+
+@mixin vscroll-btn-animation-after {
+  content: '';
+}
+//enddefault

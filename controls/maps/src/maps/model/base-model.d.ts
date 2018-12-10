@@ -234,13 +234,31 @@ export interface ColorMappingSettingsModel {
      * To configure color
      * @default null
      */
-    color?: string;
+    color?: string | string[];
+
+    /**
+     * To configure min opacity
+     * @default null
+     */
+    minOpacity?: number;
+
+    /**
+     * To configure max opacity
+     * @default null
+     */
+    maxOpacity?: number;
 
     /**
      * To configure labels
      * @default null
      */
     label?: string;
+
+    /**
+     * To enable or disable the legend
+     * @default true
+     */
+    showLegend?: boolean;
 
 }
 
@@ -762,10 +780,34 @@ export interface LegendSettingsModel {
     fill?: string;
 
     /**
+     * Specifies the opacity of legend shape color
+     * @default 1
+     */
+    opacity?: number;
+
+    /**
      * Customize the legend mode.
      * @default Default
      */
     mode?: LegendMode;
+
+    /**
+     * Enable or disable the visibility of legend
+     * @default null
+     */
+    showLegendPath?: string;
+
+    /**
+     * Bind the dataSource field for legend
+     * @default null
+     */
+    valuePath?: string;
+
+    /**
+     * Removes the duplicate legend item
+     * @default false
+     */
+    removeDuplicateLegend?: boolean;
 
 }
 
@@ -1091,7 +1133,7 @@ export interface LayerSettingsModel {
      * Specifies the shapePropertyPath for the layer.
      * @default 'name'
      */
-    shapePropertyPath?: string;
+    shapePropertyPath?: string| string[];
 
     /**
      * Specifies the animation duration for the layer.

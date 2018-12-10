@@ -38,20 +38,20 @@ The `calendar` is a graphical user interface component that displays a Gregorian
 
 * [Date range](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=calendar#/material/calendar/date-range.html) - Restricts the range of dates that can be selected by using the `min` and `max` properties.
 * [Customization](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=calendar#/material/calendar/special-dates.html) - Allows complete control over the appearance of the calendar component.
-* [Month or year selection](https://ej2.syncfusion.com/documentation/calendar/calendar-views.html?lang=typescript#calendar-views) - Provides a flexible option to select only a month or year as the date value.
+* [Month or year selection](https://ej2.syncfusion.com/documentation/calendar/calendar-views?lang=typescript#calendar-views) - Provides a flexible option to select only a month or year as the date value.
 * [First day of week](https://ej2.syncfusion.com/documentation/calendar/how-to.html?lang=typescript#change-the-first-day-of-the-week) - Changes the first day of all weeks in every month.
-* [Week number](https://ej2.syncfusion.com/documentation/calendar/how-to.html?lang=typescript#render-the-calendar-with-week-numbers) - Displays the week number of the selected date in the calendar by enabling the week number option.
+* [Week number](https://ej2.syncfusion.com/documentation/calendar/how-to/render-the-calendar-with-week-numbers?lang=typescript#render-the-calendar-with-week-numbers) - Displays the week number of the selected date in the calendar by enabling the week number option.
 * [Disabled dates](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=calendar#/material/calendar/disabled.html) - Disables any date to prevent the user from selecting that date.
-* [Start and depth view](https://ej2.syncfusion.com/documentation/calendar/calendar-views.html?lang=typescript#view-restriction) - Calendar has `month`, `year`, and `decade` views that provide flexibility to select dates.
-* [Highlight weekends](https://ej2.syncfusion.com/documentation/calendar/customization.html?lang=typescript#highlight-weekends) - The calendar supports to highlighting every weekend in a month.
-* [Globalization](https://ej2.syncfusion.com/documentation/calendar/globalization.html?lang=typescript#calendar) - Supports globalization (internationalization and localization) to translate the names of months, days, and the today button text to any supported language.
+* [Start and depth view](https://ej2.syncfusion.com/documentation/calendar/calendar-views?lang=typescript#view-restriction) - Calendar has `month`, `year`, and `decade` views that provide flexibility to select dates.
+* [Highlight weekends](https://ej2.syncfusion.com/documentation/calendar/customization?lang=typescript#highlight-weekends) - The calendar supports to highlighting every weekend in a month.
+* [Globalization](https://ej2.syncfusion.com/documentation/calendar/globalization?lang=typescript#calendar) - Supports globalization (internationalization and localization) to translate the names of months, days, and the today button text to any supported language.
 
 #### Resources
 
-* [Getting started](https://ej2.syncfusion.com/documentation/calendar/getting-started.html?utm_source=npm&utm_campaign=calendar)
-* [API reference](https://ej2.syncfusion.com/documentation/api/calendar?utm_source=npm&utm_campaign=calendar)
+* [Getting started](https://ej2.syncfusion.com/documentation/calendar/getting-started?utm_source=npm&utm_campaign=calendar#getting-started)
+* [API reference](https://ej2.syncfusion.com/documentation/api/calendar?utm_source=npm&utm_campaign=calendar/)
 * [View online demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=calendar#/material/calendar/default)
-* [Product page](https://www.syncfusion.com/javascript-ui-controls/calendar?utm_source=npm&utm_campaign=ej2-calendars)
+* [Product page](https://www.syncfusion.com/products/javascript-ui-controls/calendar)
 
 ### DatePicker
 
@@ -62,14 +62,14 @@ The `date picker` is a graphical user interface component that allows selection 
 The date picker is inherited from the calendar component. So, all the key features of calendar can be accessed in the date picker component. Additionally, it has some specific features such as `date format` and `strict mode`.
 
 * [Date format](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=datepicker#/material/datepicker/date-format.html) - The date picker control’s input value can be custom formatted apart from the default culture’s specific date format.
-* [Strict mode](https://ej2.syncfusion.com/documentation/datepicker/strict-mode.html?utm_source=npm&utm_campaign=datepicker) - The strictMode is an act that allows entry only of valid dates within the specified min or max range in a text box.
+* [Strict mode](https://ej2.syncfusion.com/documentation/datepicker/strict-mode?utm_source=npm&utm_campaign=datepicker) - The strictMode is an act that allows entry only of valid dates within the specified min or max range in a text box.
 
 #### Resources
 
-* [Getting started](https://ej2.syncfusion.com/documentation/datepicker/getting-started.html?utm_source=npm&utm_campaign=datepicker)
-* [API reference](https://ej2.syncfusion.com/documentation/api/datepicker?utm_source=npm&utm_campaign=datepicker)
+* [Getting started](https://ej2.syncfusion.com/documentation/datepicker/getting-started?utm_source=npm&utm_campaign=datepicker#getting-started)
+* [API reference](https://ej2.syncfusion.com/documentation/api/datepicker?utm_source=npm&utm_campaign=datepicker/)
 * [View online demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=datepicker#/material/datepicker/default)
-* [Product page](https://www.syncfusion.com/javascript-ui-controls/datepicker?utm_source=npm&utm_campaign=ej2-calendars)
+* [Product page](https://www.syncfusion.com/products/javascript-ui-controls/datepicker)
 
 ### TimePicker
 
@@ -79,19 +79,19 @@ The date picker is inherited from the calendar component. So, all the key featur
 
 * [Time range](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=timepicker#/material/timepicker/time-range.html) - Restricts the entry or selection of time values within a specific range of time by using `min` and `max` properties.
 * [Time format](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=timepicker#/material/timepicker/time-format.html) - Apart from the default culture specific time format, the time picker control’s input value can also be custom formatted.
-* [Strict mode](https://ej2.syncfusion.com/documentation/timepicker/strict-mode.html?lang=typescript#timepicker) - The strictMode is an act that allows entry of only valid time values within the specified min and max range in a text box.
+* [Strict mode](https://ej2.syncfusion.com/documentation/timepicker/strict-mode?lang=typescript#timepicker) - The strictMode is an act that allows entry of only valid time values within the specified min and max range in a text box.
 * [Disabled time](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=timepicker#/material/timepicker/list-formatting.html) - Any number of time values can be disabled in the popup list items to prevent selection of those times.
 * [Time intervals](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=timepicker#/material/timepicker/list-formatting.html) - Allows populating the time list with intervals between the times in the popup list to enable selection of proper time value.
-* [Customization](https://ej2.syncfusion.com/documentation/timepicker/how-to.html?lang=typescript#css-customization) - The appearance of the time picker can be customized completely.
+* [Customization](https://ej2.syncfusion.com/documentation/timepicker/how-to/css-customization?lang=typescript#css-customization) - The appearance of the time picker can be customized completely.
 * [Time list with duration](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=timepicker#/material/timepicker/list-formatting.html) - Supports customization of the control’s popup list items with time duration.
-* [Globalization](https://ej2.syncfusion.com/documentation/timepicker/globalization.html?lang=typescript#timepicker) - Supports globalization (internationalization and localization) to update time popup list values to match any specified culture.
+* [Globalization](https://ej2.syncfusion.com/documentation/timepicker/globalization?lang=typescript#timepicker) - Supports globalization (internationalization and localization) to update time popup list values to match any specified culture.
 
 #### Resources
 
-* [Getting started](https://ej2.syncfusion.com/documentation/timepicker/getting-started.html?utm_source=npm&utm_campaign=timepicker)
+* [Getting started](https://ej2.syncfusion.com/documentation/timepicker/getting-started?utm_source=npm&utm_campaign=timepicker#getting-started)
 * [API reference](https://ej2.syncfusion.com/documentation/api/timepicker?utm_source=npm&utm_campaign=timepicker)
 * [View online demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=timepicker#/material/timepicker/default)
-* [Product page](https://www.syncfusion.com/javascript-ui-controls/time-picker?utm_source=npm&utm_campaign=ej2-calendars)
+* [Product page](https://www.syncfusion.com/products/javascript-ui-controls/timepicker)
 
 ### DateTimePicker
 
@@ -106,10 +106,10 @@ The date time picker is inherited from the date picker and time picker component
 
 #### Resources
 
-* [Getting started](https://ej2.syncfusion.com/documentation/datetimepicker/getting-started.html?utm_source=npm&utm_campaign=datetimepicker)
+* [Getting started](https://ej2.syncfusion.com/documentation/datetimepicker/getting-started?utm_source=npm&utm_campaign=datetimepicker#getting-started)
 * [API reference](https://ej2.syncfusion.com/documentation/api/datetimepicker?utm_source=npm&utm_campaign=datetimepicker)
 * [View online demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=datetimepicker#/material/datetimepicker/default)
-* [Product page](https://www.syncfusion.com/javascript-ui-controls/datetime-picker?utm_source=npm&utm_campaign=ej2-calendars)
+* [Product page](https://www.syncfusion.com/products/javascript-ui-controls/datetimepicker)
 
 ### DateRangePicker
 
@@ -120,34 +120,35 @@ The `date range picker` is a graphical user interface control that allows an end
 * [Preset ranges](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=daterangepicker#/material/daterangepicker/presets.html) - Defines the preset ranges to select the frequently used date range by the end users.
 * [Range restriction](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=daterangepicker#/material/daterangepicker/date-range.html) - This control restricts the entry or selection of values within a specific range of date by defining the min and max properties.
 * [Limit the selection range](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=daterangepicker#/material/daterangepicker/day-span.html) - Directs the end user to select only the date range with specific minimum and maximum number of days’ count by setting the minDays and maxDays options.
-* [First day of week](https://ej2.syncfusion.com/documentation/daterangepicker/customization.html?lang=typescript#first-day-of-week) - Changes the first day of weeks in every month.
-* [Strict mode](https://ej2.syncfusion.com/documentation/daterangepicker/range-restriction.html?lang=typescript#strict-mode) - The strictMode is an act that allows entry only of a valid date within the specified min and max range in a textbox.
-* [Customization](https://ej2.syncfusion.com/documentation/daterangepicker/customization.html?lang=typescript#daterangepicker) - The appearance of the component can be customized completely.
+* [First day of week](https://ej2.syncfusion.com/documentation/daterangepicker/customization?lang=typescript#first-day-of-week) - Changes the first day of weeks in every month.
+* [Strict mode](https://ej2.syncfusion.com/documentation/daterangepicker/range-restriction?lang=typescript#strict-mode) - The strictMode is an act that allows entry only of a valid date within the specified min and max range in a textbox.
+* [Customization](https://ej2.syncfusion.com/documentation/daterangepicker/customization?lang=typescript#customization) - The appearance of the component can be customized completely.
 * [Format](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=daterangepicker#/material/daterangepicker/date-format.html) - The control’s input value can be custom formatted apart from the default culture’s specific date range format.
-* [Globalization](https://ej2.syncfusion.com/documentation/daterangepicker/globalization.html?lang=typescript#daterangepicker) - Supports globalization (internationalization and localization) to translate the names of months, days, and button text to any supported language.
+* [Globalization](https://ej2.syncfusion.com/documentation/daterangepicker/globalization?lang=typescript#globalization) - Supports globalization (internationalization and localization) to translate the names of months, days, and button text to any supported language.
 
 #### Resources
 
-* [Getting started](https://ej2.syncfusion.com/documentation/daterangepicker/getting-started.html?utm_source=npm&utm_campaign=daterangepicker)
+* [Getting started](https://ej2.syncfusion.com/documentation/daterangepicker/getting-started?utm_source=npm&utm_campaign=daterangepicker#getting-started)
 * [API reference](https://ej2.syncfusion.com/documentation/api/daterangepicker?utm_source=npm&utm_campaign=daterangepicker)
 * [View online demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=daterangepicker#/material/daterangepicker/default)
-* [Product page](https://www.syncfusion.com/javascript-ui-controls/date-range-picker?utm_source=npm&utm_campaign=ej2-calendars)
+* [Product page](https://www.syncfusion.com/products/javascript-ui-controls/daterangepicker)
 
 ## Supported Frameworks
 
 Date time components are also offered in the following list of frameworks.
 
-* [Angular](https://www.syncfusion.com/angular-ui-components?utm_source=npm&utm_campaign=ej2-calendars)
-* [React](https://www.syncfusion.com/react-ui-components?utm_source=npm&utm_campaign=ej2-calendars)
-* [VueJS](https://www.syncfusion.com/vue-ui-components?utm_source=npm&utm_campaign=ej2-calendars)
-* [ASP.NET Core](https://www.syncfusion.com/aspnet-core-ui-controls?utm_source=npm&utm_campaign=ej2-calendars)
-* [ASP.NET MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_source=npm&utm_campaign=ej2-calendars)
+* [Angular](https://github.com/syncfusion/ej2-angular-ui-components/tree/master/components/calendars?utm_source=npm&utm_campaign=calendars)
+* [React](https://github.com/syncfusion/ej2-react-ui-components/tree/master/components/calendars?utm_source=npm&utm_campaign=calendars)
+* [VueJS](https://github.com/syncfusion/ej2-vue-ui-components/tree/master/components/calendars?utm_source=npm&utm_campaign=calendars)
+* [ASP.NET Core](https://www.syncfusion.com/products/aspnet-core-ui-controls/calendar)
+* [ASP.NET MVC](https://www.syncfusion.com/products/aspnet-mvc-ui-controls/calendar)
+* [JavaScript (ES5)](https://www.syncfusion.com/products/javascript-ui-controls/calendar)
 
 ## Showcase samples
 
-1. Expanse tracker ([Source](https://github.com/syncfusion/ej2-showcase-ts-expensetracker), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/expensetracker/#/dashboard?utm_source=npm&utm_campaign=daterangepicker)) - Date range picker component is used in this showcase sample to depict total expenses.
+1. Expanse tracker ([Source](https://github.com/syncfusion/ej2-sample-ts-expensetracker), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/expensetracker/#/dashboard?utm_source=npm&utm_campaign=daterangepicker)) - Date range picker component is used in this showcase sample to depict total expenses.
 
-2. Loan calculator ([Source](https://github.com/syncfusion/ej2-showcase-ts-loancalculator), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/loancalculator/?utm_source=npm&utm_campaign=datepicker#/default)) - Date picker component in this showcase sample displays the balance from monthly payment.
+2. Loan calculator ([Source](https://github.com/syncfusion/ej2-sample-ts-loancalculator), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/loancalculator/?utm_source=npm&utm_campaign=datepicker)) - Date picker component in this showcase sample displays the balance from monthly payment.
 
 ## Support
 

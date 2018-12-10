@@ -61,8 +61,11 @@ export class EventBase {
                 processed.push(event);
             }
         }
-        this.parent.eventsProcessed = this.filterEvents(start, end, processed);
-        return processed;
+        let eventData: Object[] = processed.filter((data: { [key: string]: Object }) => !data[this.parent.eventFields.isBlock]);
+        this.parent.eventsProcessed = this.filterEvents(start, end, eventData);
+        let blockData: Object[] = processed.filter((data: { [key: string]: Object }) => data[this.parent.eventFields.isBlock]);
+        this.parent.blockProcessed = this.filterEvents(start, end, blockData);
+        return eventData;
     }
 
     public timezonePropertyChange(oldTimezone: string): void {
@@ -117,6 +120,17 @@ export class EventBase {
             event[fields.startTime] = this.timezone.add(<Date>event[fields.startTime], this.parent.timezone);
             event[fields.endTime] = this.timezone.add(<Date>event[fields.endTime], this.parent.timezone);
         }
+    }
+
+    public filterBlockEvents(eventObj: { [key: string]: Object }): Object[] {
+        let eStart: Date = eventObj[this.parent.eventFields.startTime] as Date;
+        let eEnd: Date = eventObj[this.parent.eventFields.endTime] as Date;
+        let resourceData: TdData;
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            let data: number = this.getGroupIndexFromEvent(eventObj);
+            resourceData = this.parent.resourceBase.lastResourceLevel[data];
+        }
+        return this.filterEvents(eStart, eEnd, this.parent.blockProcessed, resourceData);
     }
 
     public filterEvents(startDate: Date, endDate: Date, appointments: Object[] = this.parent.eventsProcessed, resourceTdData?: TdData)
@@ -461,10 +475,12 @@ export class EventBase {
         }
     }
 
-    public wireAppointmentEvents(element: HTMLElement, isAllDay: boolean = false): void {
+    public wireAppointmentEvents(element: HTMLElement, isAllDay: boolean = false, isReadOnly: boolean = false): void {
         EventHandler.add(element, 'click', this.eventClick, this);
-        EventHandler.add(element, 'dblclick', this.eventDoubleClick, this);
-        if (!this.parent.activeViewOptions.readonly && ['Agenda', 'MonthAgenda'].indexOf(this.parent.currentView) === -1) {
+        if (!this.parent.isAdaptive && !this.parent.activeViewOptions.readonly && !isReadOnly) {
+            EventHandler.add(element, 'dblclick', this.eventDoubleClick, this);
+        }
+        if (!this.parent.activeViewOptions.readonly && !isReadOnly && ['Agenda', 'MonthAgenda'].indexOf(this.parent.currentView) === -1) {
             if (this.parent.resizeModule) {
                 this.parent.resizeModule.wireResizeEvent(element);
             }
@@ -474,8 +490,8 @@ export class EventBase {
         }
     }
 
-    public renderResizeHandler(element: HTMLElement, spanEvent: { [key: string]: Object }): void {
-        if (!this.parent.resizeModule || !this.parent.allowResizing || this.parent.activeViewOptions.readonly) {
+    public renderResizeHandler(element: HTMLElement, spanEvent: { [key: string]: Object }, isReadOnly: boolean): void {
+        if (!this.parent.resizeModule || !this.parent.allowResizing || this.parent.activeViewOptions.readonly || isReadOnly) {
             return;
         }
         for (let resizeEdge of Object.keys(spanEvent)) {
@@ -518,35 +534,39 @@ export class EventBase {
         if (target.classList.contains(cls.DRAG_CLONE_CLASS) || target.classList.contains(cls.RESIZE_CLONE_CLASS)) {
             return;
         }
+        let raiseClickEvent: Function = (isMultiple: boolean): boolean => {
+            this.activeEventData(eventData, isMultiple);
+            let args: EventClickArgs = <EventClickArgs>extend(this.parent.activeEventData, { cancel: false, originalEvent: eventData });
+            this.parent.trigger(event.eventClick, args);
+            return args.cancel;
+        };
         if (eventData.ctrlKey && eventData.which === 1 && this.parent.keyboardInteractionModule) {
             this.parent.quickPopup.quickPopup.hide();
             this.parent.selectedElements = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_BORDER)) as Element[];
-            this.parent.keyboardInteractionModule.onAppointmentSelection(eventData);
+            let target: Element = closest(<Element>eventData.target, '.' + cls.APPOINTMENT_CLASS) as Element;
+            this.getSelectedEventElements(target);
+            raiseClickEvent(false);
             return;
         }
         this.removeSelectedAppointmentClass();
-        this.activeEventData(eventData);
-        let args: EventClickArgs = <EventClickArgs>extend(this.parent.activeEventData, { cancel: false });
-        this.parent.trigger(event.eventClick, args);
-        if (args.cancel) {
+        if (raiseClickEvent(true)) {
             this.removeSelectedAppointmentClass();
             return;
         }
         if (this.parent.currentView === 'Agenda' || this.parent.currentView === 'MonthAgenda') {
-            addClass([args.element as Element], cls.AGENDA_SELECTED_CELL);
+            addClass([this.parent.activeEventData.element as Element], cls.AGENDA_SELECTED_CELL);
         }
         this.parent.notify(event.eventClick, this.parent.activeEventData);
     }
 
-    public eventDoubleClick(e: Event): void {
+    private eventDoubleClick(e: Event): void {
         this.parent.quickPopup.quickPopupHide(true);
         if (e.type === 'touchstart') {
-            this.activeEventData(e);
+            this.activeEventData(e, true);
         }
         this.removeSelectedAppointmentClass();
-        let fieldMapping: EventFieldsMapping = this.parent.eventFields;
         if (!isNullOrUndefined(this.parent.activeEventData.event) &&
-            isNullOrUndefined((<{ [key: string]: Object }>this.parent.activeEventData.event)[fieldMapping.recurrenceID])) {
+            isNullOrUndefined((<{ [key: string]: Object }>this.parent.activeEventData.event)[this.parent.eventFields.recurrenceID])) {
             this.parent.currentAction = 'Save';
             this.parent.eventWindow.openEditor(this.parent.activeEventData.event, 'Save');
         } else {
@@ -568,11 +588,17 @@ export class EventBase {
     }
 
     public getEventIDType(): string {
-        return typeof ((<{ [key: string]: Object }>this.parent.eventsData[0])[this.parent.eventFields.id]);
+        if (this.parent.eventsData.length !== 0) {
+            return typeof ((<{ [key: string]: Object }>this.parent.eventsData[0])[this.parent.eventFields.id]);
+        }
+        if (this.parent.blockData.length !== 0) {
+            return typeof ((<{ [key: string]: Object }>this.parent.blockData[0])[this.parent.eventFields.id]);
+        }
+        return 'string';
     }
 
     public getEventMaxID(resourceId?: number): number | string {
-        if (this.parent.eventsData.length < 1) {
+        if (this.parent.eventsData.length < 1 && this.parent.blockData.length < 1) {
             return 1;
         }
         let eventId: string | number;
@@ -581,18 +607,21 @@ export class EventBase {
             eventId = uniqueID().toString();
         }
         if (idType === 'number') {
+            let datas: Object[] = this.parent.eventsData.concat(this.parent.blockData);
             let maxId: number =
-                Math.max.apply(Math, this.parent.eventsData.map((event: { [key: string]: Object }) => event[this.parent.eventFields.id]));
+                Math.max.apply(Math, datas.map((event: { [key: string]: Object }) => event[this.parent.eventFields.id]));
             maxId = isNullOrUndefined(resourceId) ? maxId : maxId + resourceId;
             eventId = maxId + 1;
         }
         return eventId;
     }
 
-    private activeEventData(eventData: Event): void {
+    private activeEventData(eventData: Event, isMultiple: boolean): void {
         let target: Element = closest(<Element>eventData.target, '.' + cls.APPOINTMENT_CLASS);
         let guid: string = target.getAttribute('data-guid');
-        this.addSelectedAppointments([].slice.call(this.parent.element.querySelectorAll('div[data-guid="' + guid + '"]')));
+        if (isMultiple) {
+            this.addSelectedAppointments([].slice.call(this.parent.element.querySelectorAll('div[data-guid="' + guid + '"]')));
+        }
         let eventObject: { [key: string]: Object } = this.getEventByGuid(guid) as { [key: string]: Object };
         if (eventObject && eventObject.isSpanned) {
             eventObject = this.parent.eventsData.filter((obj: { [key: string]: Object }) =>
@@ -687,5 +716,42 @@ export class EventBase {
             // tslint:disable-next-line:no-any
             element.style[<any>type] = !isNullOrUndefined(alpha) ? alphaColor(color, alpha) : color;
         }
+    }
+
+    public createBlockAppointmentElement(record: { [key: string]: Object }, resIndex: number): HTMLElement {
+        let eventSubject: string = (record[this.parent.eventFields.subject] || this.parent.eventSettings.fields.subject.default) as string;
+        let appointmentWrapper: HTMLElement = createElement('div', {
+            className: cls.BLOCK_APPOINTMENT_CLASS,
+            attrs: {
+                'data-id': 'Appointment_' + record[this.parent.eventFields.id],
+                'aria-readonly': 'true', 'aria-selected': 'false', 'aria-label': eventSubject
+            }
+        });
+        let templateElement: HTMLElement[];
+        if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
+            templateElement = this.parent.getAppointmentTemplate()(record);
+        } else {
+            let appointmentSubject: HTMLElement = createElement('div', {
+                className: cls.SUBJECT_CLASS, innerHTML: eventSubject
+            });
+            templateElement = [appointmentSubject];
+        }
+        append(templateElement, appointmentWrapper);
+        this.setWrapperAttributes(appointmentWrapper, resIndex);
+        return appointmentWrapper;
+    }
+
+    public setWrapperAttributes(appointmentWrapper: HTMLElement, resIndex: number): void {
+        if (!isNullOrUndefined(this.cssClass)) {
+            addClass([appointmentWrapper], this.cssClass);
+        }
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            appointmentWrapper.setAttribute('data-group-index', resIndex.toString());
+        }
+    }
+
+    public getReadonlyAttribute(event: { [key: string]: Object }): string {
+        return (event[this.parent.eventFields.isReadonly]) ?
+            event[this.parent.eventFields.isReadonly] as string : 'false';
     }
 }

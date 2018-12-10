@@ -1,8 +1,8 @@
-/** 
+/**
  * AccumulationChart series file
  */
 import { AccPoints, AccumulationSeries } from '../model/acc-base';
-import { PathOption, degreeToLocation, getElement, linear } from '../../common/utils/helper';
+import { PathOption, degreeToLocation, getElement, linear, stringToNumber } from '../../common/utils/helper';
 import { PieBase } from '../renderer/pie-base';
 import { AccumulationChart } from '../accumulation';
 import { AnimationModel } from '../../common/model/base-model';
@@ -23,6 +23,7 @@ export class PieSeries extends PieBase {
         let yValue: number = point.visible ? point.y : 0;
         let degree : number  = (sum) ? ((Math.abs(yValue) / sum) * (this.totalAngle)) : null;
         let start : number = Math.PI / 180 * ((90 - (360 - this.startAngle)) - 90);
+        this.radius = this.isRadiusMapped ? stringToNumber(point.sliceRadius , this.seriesRadius) : this.radius;
         option.d = this.getPathOption(point, degree, this.startAngle % 360, yValue);
         point.midAngle = (this.startAngle - (degree / 2)) % 360;
         point.endAngle = this.startAngle % 360;
@@ -69,7 +70,13 @@ export class PieSeries extends PieBase {
         if (!degree) {
             return '';
         }
-        let path: string = this.getPathArc(this.center, startAngle % 360, (startAngle + degree) % 360, this.radius, this.innerRadius);
+        let path: string = this.getPathArc(
+            this.center,
+            startAngle % 360, (startAngle + degree) % 360,
+            this.isRadiusMapped ? stringToNumber(point.sliceRadius, this.seriesRadius) : this.radius,
+            this.innerRadius
+        );
+        //let path: string = this.getPathArc(this.center, startAngle % 360, (startAngle + degree) % 360, this.radius, this.innerRadius);
         this.startAngle += degree;
         return path;
     }

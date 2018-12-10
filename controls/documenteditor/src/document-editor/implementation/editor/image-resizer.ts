@@ -635,7 +635,9 @@ export class ImageResizer {
         this.leftValue = isNullOrUndefined(this.leftValue) ? prevX : this.leftValue;
         this.topValue = isNullOrUndefined(this.topValue) ? prevY : this.topValue;
         let points: LeftTopInfo;
-        switch (this.selectedResizeElement.id.split('_')[1]) {
+        let id: string[] = this.selectedResizeElement.id.split('_');
+        let currentElementId: string = id[id.length - 1];
+        switch (currentElementId) {
             case 'TopRightRectParent':
                 points = this.topRightResizing(touchPoint);
                 prevX = points.left;
@@ -698,10 +700,10 @@ export class ImageResizer {
                 let width: number = this.currentImageElementBox.width + prevX > 10 ? this.currentImageElementBox.width + prevX : 10;
                 // tslint:disable-next-line:max-line-length 
                 let height: number = this.currentImageElementBox.height + prevY > 10 ? this.currentImageElementBox.height + prevY : 10;
-                if (this.selectedResizeElement.id.split('_')[1] === 'BottomRightRectParent'
-                    || this.selectedResizeElement.id.split('_')[1] === 'TopRightRectParent'
-                    || this.selectedResizeElement.id.split('_')[1] === 'BottomLeftRectParent'
-                    || this.selectedResizeElement.id.split('_')[1] === 'TopLeftRectParent') {
+                if (currentElementId === 'BottomRightRectParent'
+                    || currentElementId === 'TopRightRectParent'
+                    || currentElementId === 'BottomLeftRectParent'
+                    || currentElementId === 'TopLeftRectParent') {
                     height = this.currentImageElementBox.height / this.currentImageElementBox.width * width;
                     width = this.currentImageElementBox.width / this.currentImageElementBox.height * height;
                 }

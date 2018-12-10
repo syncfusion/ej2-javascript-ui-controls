@@ -54,6 +54,8 @@ export class NodeStateModified {
                 return nodeDropped;
             }
             droppedPosition = this.getButtonPosition(args.target, droppedClass);
+        } else if (this.parent.engineModule.fieldList[fieldName]) {
+            this.parent.engineModule.fieldList[fieldName].isSelected = false;
         }
         this.parent.dataSourceUpdate.updateDataSource(fieldName, droppedClass, droppedPosition);
         return nodeDropped;

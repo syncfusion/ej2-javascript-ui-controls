@@ -884,6 +884,7 @@ describe('Schedule event window initial load', () => {
             okButton.click();
             let cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
             cancelButton.click();
+            triggerMouseEvent(appointmentElement, 'click');
             triggerMouseEvent(appointmentElement, 'dblclick');
             let editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-edit-series') as HTMLElement;
             editButton.click();
@@ -927,8 +928,8 @@ describe('Schedule event window initial load', () => {
                 let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
                 let saveButton: HTMLElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
                 let deleteButton: HTMLElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_DELETE_BUTTON_CLASS);
-                expect(((saveButton as EJ2Instance).ej2_instances[0] as Button).disabled).toEqual(true);
-                expect(((deleteButton as EJ2Instance).ej2_instances[0] as Button).disabled).toEqual(true);
+                expect(((saveButton as EJ2Instance).ej2_instances[0] as Button).disabled).toBeUndefined();
+                expect(((deleteButton as EJ2Instance).ej2_instances[0] as Button).disabled).toBeUndefined();
                 let cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
                 cancelButton.click();
                 done();
@@ -1141,43 +1142,17 @@ describe('Schedule event window initial load', () => {
                 remove(document.querySelector('#Schedule'));;
             });
 
-            it('dialog checking cell tapHold', () => {
+            it('dialog checking cell click and add event', () => {
                 schObj = new Schedule({
                     height: '500px', currentView: 'Week', views: ['Week'],
                     selectedDate: new Date(2017, 10, 1)
                 });
                 schObj.appendTo(elem);
                 disableScheduleAnimation(schObj);
-                let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-                let e: any = {}; e.originalEvent = {};
-                e.originalEvent.target = firstWorkCell;
-                e.originalEvent.type = 'touchstart';
-                (schObj.scheduleTouchModule as any).tapHoldHandler(e);
-                let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-                let titleElement: HTMLElement = dialogElement.querySelector('.e-title-header') as HTMLElement;
-                let timezoneElement: HTMLElement = <HTMLInputElement>dialogElement.querySelector('.' +
-                    cls.TIME_ZONE_CLASS + ' input');
-                timezoneElement.click();
-                let timezoneDiv: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' +
-                    cls.EVENT_WINDOW_TIME_ZONE_DIV_CLASS);
-                expect(timezoneDiv.classList.contains('e-enable')).toEqual(true);
-                expect(titleElement.children.length).toEqual(3);
-                let backIcon: HTMLElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_BACK_ICON_CLASS);
-                backIcon.click();
-            });
-
-            it('dialog checking cell tapHold - rtl', () => {
-                schObj = new Schedule({
-                    height: '500px', currentView: 'Week', views: ['Week'], enableRtl: true,
-                    selectedDate: new Date(2017, 10, 1)
-                });
-                schObj.appendTo(elem);
-                disableScheduleAnimation(schObj);
-                let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-                let e: any = {}; e.originalEvent = {};
-                e.originalEvent.target = firstWorkCell;
-                e.originalEvent.type = 'touchstart';
-                (schObj.scheduleTouchModule as any).tapHoldHandler(e);
+                let toolbarElement: HTMLElement = schObj.element.querySelector('.e-schedule-toolbar') as HTMLElement;
+                let firstWorkCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
+                firstWorkCell.click();
+                (<HTMLElement>toolbarElement.querySelector('.e-add .e-tbar-btn')).click();
                 let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
                 let titleElement: HTMLElement = dialogElement.querySelector('.e-title-header') as HTMLElement;
                 expect(titleElement.children.length).toEqual(3);
@@ -1192,11 +1167,10 @@ describe('Schedule event window initial load', () => {
                 });
                 schObj.appendTo(elem);
                 disableScheduleAnimation(schObj);
-                let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-                let e: any = {}; e.originalEvent = {};
-                e.originalEvent.target = firstWorkCell;
-                e.originalEvent.type = 'touchstart';
-                (schObj.scheduleTouchModule as any).tapHoldHandler(e);
+                let toolbarElement: HTMLElement = schObj.element.querySelector('.e-schedule-toolbar') as HTMLElement;
+                let firstWorkCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
+                firstWorkCell.click();
+                (<HTMLElement>toolbarElement.querySelector('.e-add .e-tbar-btn')).click();
                 let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
                 let repeatElement: HTMLElement = <HTMLInputElement>dialogElement.querySelector('.' +
                     cls.EVENT_WINDOW_REPEAT_CLASS + ' input');
@@ -1247,25 +1221,11 @@ describe('Schedule event window initial load', () => {
                 let backIcon: HTMLElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_BACK_ICON_CLASS);
                 backIcon.click();
             });
-
-            it('dialog checking header tapHold', () => {
-                let firstEvent: HTMLElement = schObj.element.querySelector('.' + cls.MORE_EVENT_HEADER_DATE_CLASS) as HTMLElement;
-                let e: any = {}; e.originalEvent = {};
-                e.originalEvent.target = firstEvent;
-                e.originalEvent.type = 'touchstart';
-                (schObj.scheduleTouchModule as any).tapHoldHandler(e);
-                expect(schObj.eventWindow.dialogObject.visible).toEqual(true);
-                let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-                let backIcon: HTMLElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_BACK_ICON_CLASS);
-                backIcon.click();
-            });
-
             it('dialog checking header cells tapHold', () => {
                 let headerCell: HTMLElement = schObj.element.querySelectorAll('.' + cls.HEADER_CELLS_CLASS)[1] as HTMLElement;
-                let e: any = {}; e.originalEvent = {};
-                e.originalEvent.target = headerCell;
-                e.originalEvent.type = 'touchstart';
-                (schObj.scheduleTouchModule as any).tapHoldHandler(e);
+                let toolbarElement: HTMLElement = schObj.element.querySelector('.e-schedule-toolbar') as HTMLElement;
+                headerCell.click();
+                (<HTMLElement>toolbarElement.querySelector('.e-add .e-tbar-btn')).click();
                 expect(schObj.eventWindow.dialogObject.visible).toEqual(true);
                 let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
                 let backIcon: HTMLElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_BACK_ICON_CLASS);
@@ -1744,10 +1704,9 @@ describe('Schedule event window initial load', () => {
                 schObj.appendTo(elem);
                 disableScheduleAnimation(schObj);
                 let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-                let e: any = {}; e.originalEvent = {};
-                e.originalEvent.target = firstWorkCell;
-                e.originalEvent.type = 'touchstart';
-                (schObj.scheduleTouchModule as any).tapHoldHandler(e);
+                let toolbarElement: HTMLElement = schObj.element.querySelector('.e-schedule-toolbar') as HTMLElement;
+                firstWorkCell.click();
+                (<HTMLElement>toolbarElement.querySelector('.e-add .e-tbar-btn')).click();
                 (<any>schObj).eventWindow.repeatStatus.element.parentElement.click();
                 (<any>schObj).eventWindow.onRepeatChange(true);
                 (<any>schObj).eventWindow.repeatOpenDialog();

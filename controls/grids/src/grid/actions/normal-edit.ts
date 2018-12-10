@@ -154,7 +154,7 @@ export class NormalEdit {
         let isDlg: Boolean = gObj.editSettings.mode === 'Dialog';
         let dlgWrapper: Element = document.querySelector('#' + gObj.element.id + '_dialogEdit_wrapper');
         let dlgForm: Element = isDlg ? dlgWrapper.querySelector('.e-gridform') : gObj.element.querySelector('.e-gridform');
-        editedData = gObj.editModule.getCurrentEditedData(dlgForm , editedData);
+        editedData = gObj.editModule.getCurrentEditedData(dlgForm, editedData);
         if (gObj.getFrozenColumns() && gObj.editSettings.mode === 'Normal') {
             let mForm: Element = gObj.element.querySelector('.e-movableheader').querySelector('.e-gridform');
             if (gObj.frozenRows && mForm) {
@@ -164,8 +164,7 @@ export class NormalEdit {
                     gObj.element.querySelector('.e-movablecontent').querySelector('.e-gridform'), editedData);
             }
         }
-        if (isDlg ? dlgWrapper.querySelectorAll('.e-editedrow').length :
-        gObj.element.querySelectorAll('.e-editedrow').length) {
+        if (isDlg ? dlgWrapper.querySelectorAll('.e-editedrow').length : gObj.element.querySelectorAll('.e-editedrow').length) {
             args.action = 'edit';
             gObj.trigger(events.actionBegin, args);
             if (args.cancel) {

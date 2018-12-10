@@ -108,7 +108,7 @@ export class DatePicker extends Calendar implements IInput {
      * it allows invalid or out-of-range date value with highlighted error class.
      * @default false
      * > For more details refer to 
-     * [`Strict Mode`](./datepicker/strict-mode.html) documentation.
+     * [`Strict Mode`](../datepicker/strict-mode/) documentation.
      */
     @Property(false)
     public strictMode: boolean;
@@ -124,6 +124,19 @@ export class DatePicker extends Calendar implements IInput {
      */
     @Property(true)
     public enabled: boolean;
+    /**
+     * Gets or sets multiple selected dates of the calendar.
+     * @default null
+     * @private
+     */
+    public values: Date[];
+    /**
+     * Specifies the option to enable the multiple dates selection of the calendar.
+     * @default false
+     * @private
+     */
+    @Property(false)
+    public isMultiSelection: boolean;
     /**
      * Specifies whether to show or hide the clear icon in textbox.
      * @default true
@@ -537,6 +550,7 @@ export class DatePicker extends Calendar implements IInput {
                 if (this.isCalendar()) {
                     e.preventDefault();
                 }
+                e.stopPropagation();
                 break;
             case 'tab':
                 this.strictModeUpdate();

@@ -68,7 +68,7 @@ export class NumberFormat {
         let cOptions: base.GenericFormatOptions = {};
         let dOptions: CommonOptions = {};
         let symbolPattern: string;
-        let dependable: base.Dependables = base.getDependables(cldr, culture, true);
+        let dependable: base.Dependables = base.getDependables(cldr, culture, '', true);
         dOptions.numberMapper = parser.getNumberMapper(dependable.parserObject, parser.getNumberingSystem(cldr), true);
         dOptions.currencySymbol = base.getCurrencySymbol(
             dependable.numericObject, fOptions.currency || defaultCurrencyCode);

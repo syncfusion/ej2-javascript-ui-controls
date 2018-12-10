@@ -21,7 +21,7 @@ export class TwoDimensional {
      */
     public processDataSource(dataSource: Object): void {
         // tslint:disable-next-line:no-any
-        let tempCloneData: any = <Object[][]|Object[][][]>extend([], dataSource, null, true);
+        let tempCloneData: any = <Object[][] | Object[][][]>extend([], dataSource, null, true);
         this.heatMap.clonedDataSource = [];
         this.completeDataSource = [];
         let axis: Axis[] = this.heatMap.axisCollections;

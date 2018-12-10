@@ -1,7 +1,7 @@
 import { Component, ModuleDeclaration, Property, Event, Animation, Collection } from '@syncfusion/ej2-base';
 import { EventHandler, EmitType, Browser, Internationalization, getDefaultDateObject, cldrData, L10n } from '@syncfusion/ej2-base';
 import { getValue, compile, extend, isNullOrUndefined, NotifyPropertyChanges, INotifyPropertyChanged, Complex } from '@syncfusion/ej2-base';
-import { removeClass, addClass, classList } from '@syncfusion/ej2-base';
+import { removeClass, addClass, classList, remove } from '@syncfusion/ej2-base';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { ScheduleModel } from './schedule-model';
 import { HeaderRenderer } from '../renderer/header-renderer';
@@ -30,6 +30,7 @@ import { HeaderRows } from '../models/header-rows';
 import { Crud } from '../actions/crud';
 import { Resize } from '../actions/resize';
 import { DragAndDrop } from '../actions/drag';
+import { VirtualScroll } from '../actions/virtual-scroll';
 import { WorkHoursModel, ViewsModel, EventSettingsModel, GroupModel, ResourcesModel, TimeScaleModel } from '../models/models';
 import { QuickInfoTemplatesModel, HeaderRowsModel } from '../models/models';
 import { EventSettings } from '../models/event-settings';
@@ -37,7 +38,7 @@ import { Group } from '../models/group';
 import { Resources } from '../models/resources';
 import { IRenderer, ActionEventArgs, NavigatingEventArgs, CellClickEventArgs, RenderCellEventArgs, ScrollCss } from '../base/interface';
 import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, DragEventArgs, ResizeEventArgs } from '../base/interface';
-import { EventFieldsMapping, TdData, ResourceDetails } from '../base/interface';
+import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges } from '../base/interface';
 import { ResourceBase } from '../base/resource';
 import * as events from '../base/constant';
 import * as cls from '../base/css-constant';
@@ -68,6 +69,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public renderModule: Render;
     public headerModule: HeaderRenderer;
     public scrollModule: Scroll;
+    public virtualScrollModule: VirtualScroll;
     public crudModule: Crud;
     public scheduleTouchModule: ScheduleTouch;
     public keyboardInteractionModule: KeyboardInteraction;
@@ -107,6 +109,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public editorTitles: EventFieldsMapping;
     public eventsData: Object[];
     public eventsProcessed: Object[];
+    public blockData: Object[];
+    public blockProcessed: Object[];
     public currentAction: CurrentAction;
     public quickPopup: QuickPopups;
     public selectedElements: Element[];
@@ -684,7 +688,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             option: null,
             readonly: this.readonly,
             startHour: this.startHour,
-            allowVirtualScrolling: true,
+            allowVirtualScrolling: false,
             cellTemplate: this.cellTemplate,
             eventTemplate: this.eventSettings.template,
             dateHeaderTemplate: this.dateHeaderTemplate,
@@ -703,6 +707,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     private initializeDataModule(): void {
         this.eventFields = {
             id: this.eventSettings.fields.id,
+            isBlock: this.eventSettings.fields.isBlock,
             subject: this.eventSettings.fields.subject.name,
             startTime: this.eventSettings.fields.startTime.name,
             endTime: this.eventSettings.fields.endTime.name,
@@ -713,7 +718,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             isAllDay: this.eventSettings.fields.isAllDay.name,
             recurrenceID: this.eventSettings.fields.recurrenceID.name,
             recurrenceRule: this.eventSettings.fields.recurrenceRule.name,
-            recurrenceException: this.eventSettings.fields.recurrenceException.name
+            recurrenceException: this.eventSettings.fields.recurrenceException.name,
+            isReadonly: this.eventSettings.fields.isReadonly
         };
         this.editorTitles = {
             subject: this.eventSettings.fields.subject.title || this.localeObj.getConstant('title'),
@@ -870,7 +876,16 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     protected preRender(): void {
         this.isAdaptive = Browser.isDevice;
         this.globalize = new Internationalization(this.locale);
-        this.uiStateValues = { expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false, groupIndex: 0, action: false };
+        this.uiStateValues = {
+            expand: false,
+            isInitial: true,
+            left: 0,
+            top: 0,
+            isGroupAdaptive: false,
+            groupIndex: 0,
+            action: false,
+            isBlock: false
+        };
         this.activeCellsData = { startTime: new Date(), endTime: new Date(), isAllDay: false };
         this.activeEventData = { event: undefined, element: undefined };
         this.defaultLocale = {
@@ -934,6 +949,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             alert: 'Alert',
             startEndError: 'The selected end date occurs before the start date.',
             invalidDateError: 'The entered date value is invalid.',
+            blockAlert: 'Events cannot be scheduled within the blocked time range.',
             ok: 'Ok',
             occurrence: 'Occurrence',
             series: 'Series',
@@ -948,6 +964,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.setCldrTimeFormat();
         this.eventsData = [];
         this.eventsProcessed = [];
+        this.blockData = [];
+        this.blockProcessed = [];
         this.currentAction = null;
         this.selectedElements = [];
         this.setViewOptions();
@@ -1062,6 +1080,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         };
         return cssProps;
     }
+    public removeNewEventElement(): void {
+        let eventClone: HTMLElement = this.element.querySelector('.' + cls.NEW_EVENT_CLASS);
+        if (!isNullOrUndefined(eventClone)) {
+            remove(eventClone);
+        }
+    }
     private onDocumentClick(args: Event): void {
         this.notify(events.documentClick, { event: args });
     }
@@ -1085,6 +1109,30 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
         return undefined;
     }
+
+    public boundaryValidation(pageY: number, pageX: number): ResizeEdges {
+        let autoScrollDistance: number = 30;
+        let scrollEdges: ResizeEdges = { left: false, right: false, top: false, bottom: false };
+        let viewBoundaries: ClientRect = this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS).getBoundingClientRect();
+        if ((pageY < viewBoundaries.top + autoScrollDistance + window.pageYOffset) &&
+            (pageY > viewBoundaries.top + window.pageYOffset)) {
+            scrollEdges.top = true;
+        }
+        if ((pageY > (viewBoundaries.bottom - autoScrollDistance) + window.pageYOffset) &&
+            (pageY < viewBoundaries.bottom + window.pageYOffset)) {
+            scrollEdges.bottom = true;
+        }
+        if ((pageX < viewBoundaries.left + autoScrollDistance + window.pageXOffset) &&
+            (pageX > viewBoundaries.left + window.pageXOffset)) {
+            scrollEdges.left = true;
+        }
+        if ((pageX > (viewBoundaries.right - autoScrollDistance) + window.pageXOffset) &&
+            (pageX < viewBoundaries.right + window.pageXOffset)) {
+            scrollEdges.right = true;
+        }
+        return scrollEdges;
+    }
+
     /**
      * Unbinding events from the element on widget destroy.
      * @hidden
@@ -1179,6 +1227,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                     if (this.headerModule) {
                         this.headerModule.setDayOfWeek(newProp.firstDayOfWeek);
                     }
+                    this.eventWindow.refreshRecurrenceEditor();
                     requireRefresh = true;
                     break;
                 case 'showTimeIndicator':
@@ -1446,7 +1495,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 return undefined;
             }
             let data: TdData = this.resourceBase.lastResourceLevel[index];
-            return { resource: data.resource, resourceData: data.resourceData };
+            let groupData: { [key: string]: Object } = {};
+            this.resourceBase.setResourceValues(groupData, false, index);
+            return { resource: data.resource, resourceData: data.resourceData, groupData: groupData };
         }
         return undefined;
     }
@@ -1597,10 +1648,17 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @param {CurrentAction} action Defines the action for which the editor needs to be opened such as either for new event creation or
      *  for editing of existing events. The applicable action names that can be used here are `Add`, `Save`, `EditOccurrence`
      *  and `EditSeries`.
+     * @param {boolean} isEventData It allows to decide whether the editor needs to be opened with the clicked cell details or with the
+     *  passed event details.
+     * @param {number} repeatType It opens the editor with the recurrence options based on the provided repeat type.
      * @returns {void}
      */
-    public openEditor(data: Object, action: CurrentAction, isEventData?: boolean): void {
-        this.eventWindow.openEditor(data, action, isEventData);
+    public openEditor(data: Object, action: CurrentAction, isEventData?: boolean, repeatType?: number): void {
+        this.currentAction = action;
+        if (action !== 'Add') {
+            this.activeEventData.event = data as { [key: string]: Object };
+        }
+        this.eventWindow.openEditor(data, action, isEventData, repeatType);
     }
 
     /**

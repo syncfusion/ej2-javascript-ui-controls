@@ -31,6 +31,10 @@ export class WorkCellInteraction {
         if (isNullOrUndefined(target)) {
             return;
         }
+        if (!isNullOrUndefined(closest(e.target as Element, '.' + cls.NEW_EVENT_CLASS))) {
+            this.parent.eventWindow.openEditor(this.parent.activeCellsData, 'Add');
+            return;
+        }
         let navigateEle: Element = closest((e.target as Element), '.' + cls.NAVIGATE_CLASS);
         let navigateView: View = this.parent.getNavigateView();
         let sameView: boolean = this.parent.currentView === navigateView;
@@ -40,7 +44,8 @@ export class WorkCellInteraction {
                 this.parent.quickPopup.quickPopupHide();
                 return;
             }
-            let isWorkCell: boolean = target.classList.contains(cls.WORK_CELLS_CLASS) || target.classList.contains(cls.ALLDAY_CELLS_CLASS);
+            let isWorkCell: boolean = target.classList.contains(cls.WORK_CELLS_CLASS) ||
+                target.classList.contains(cls.ALLDAY_CELLS_CLASS);
             if (isWorkCell && e.shiftKey && e.which === 1 && this.parent.keyboardInteractionModule) {
                 this.parent.keyboardInteractionModule.onMouseSelection(e);
                 return;

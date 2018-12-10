@@ -2,15 +2,42 @@
  * HeatMap tool tip file
  */
 
-import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, Property, Complex, ChildProperty, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { HeatMap } from '../heatmap';
 import { CurrentRect } from '../utils/helper';
 import { Tooltip as tool } from '@syncfusion/ej2-svg-base';
+import { TooltipBorderModel, FontModel } from '../model/base-model';
 import { Series } from '../series/series';
 import { ITooltipEventArgs } from '../model/interface';
-import { BubbleTooltipData } from '../model/base';
+import { BubbleTooltipData, TooltipBorder, Font, } from '../model/base';
+import { Theme } from '../model/theme';
 import { DataModel } from '../datasource/adaptor-model';
 
+/**
+ * Configures the color property in Heatmap.
+ */
+export class TooltipSettings extends ChildProperty<TooltipSettings> {
+    /**
+     * Specifies the color collection for heat map cell. 
+     * @default ''
+     */
+    @Property('')
+    public fill: string;
+    /**
+     * Specifies the cell border style. 
+     * @default ''
+     */
+    @Complex<TooltipBorderModel>({}, TooltipBorder)
+    public border: TooltipBorderModel;
+
+    /**
+     * Specifies the cell label style. 
+     * @default ''
+     */
+    @Complex<FontModel>(Theme.tooltipFont, Font)
+    public textStyle: FontModel;
+
+}
 /**
  * 
  * The `Tooltip` module is used to render the tooltip for heatmap series.
@@ -64,7 +91,7 @@ export class Tooltip {
      * @return {void}
      * @private
      */
-    public destroy (heatMap: HeatMap): void {
+    public destroy(heatMap: HeatMap): void {
         /**
          * Destroy method performed here
          */
@@ -88,11 +115,25 @@ export class Tooltip {
                 location: { x: x, y: y },
                 theme: this.heatMap.theme,
                 content: tempTooltipText,
+                fill: this.heatMap.tooltipSettings.fill,
+                border: {
+                    width: this.heatMap.tooltipSettings.border.width,
+                    color: this.heatMap.tooltipSettings.border.color
+                },
+                textStyle: {
+                    size: this.heatMap.tooltipSettings.textStyle.size,
+                    fontWeight: this.heatMap.tooltipSettings.textStyle.fontWeight,
+                    color: this.heatMap.tooltipSettings.textStyle.color,
+                    fontStyle: this.heatMap.tooltipSettings.textStyle.fontStyle,
+                    fontFamily: this.heatMap.tooltipSettings.textStyle.fontFamily
+                },
                 areaBounds:
                     {
                         height: this.heatMap.initialClipRect.height + this.heatMap.initialClipRect.y,
                         width: this.heatMap.initialClipRect.width, x: this.heatMap.initialClipRect.x
-                    }
+            },
+
+
             },
             '#' + this.heatMap.element.id + 'Celltooltipcontainer');
     }
@@ -105,7 +146,7 @@ export class Tooltip {
     public createTooltipDiv(heatMap: HeatMap): void {
         let element2: Element = <HTMLElement>createElement('div', {
             id: this.heatMap.element.id + 'Celltooltipcontainer',
-            styles: 'position:absolute'
+            styles: 'position:absolute; z-index: 3'
         });
         this.heatMap.element.appendChild(
             createElement(
@@ -121,7 +162,7 @@ export class Tooltip {
      * @private
      */
     private getTooltipContent(currentRect: CurrentRect, hetmapSeries: Series): string[] {
-        let value: number|string;
+        let value: number | string;
         let content: string[];
         let heatMap: HeatMap = this.heatMap;
         let adaptData: DataModel = this.heatMap.dataSource;
@@ -152,8 +193,8 @@ export class Tooltip {
      * To render tooltip.
      * @private
      */
-    public renderTooltip(currentRect: CurrentRect) : void {
-        let hetmapSeries : Series = this.heatMap.heatMapSeries;
+    public renderTooltip(currentRect: CurrentRect): void {
+        let hetmapSeries: Series = this.heatMap.heatMapSeries;
         let tempTooltipText: string[] = [''];
         let showTooltip: boolean = this.heatMap.bubbleSizeWithColor ?
             !isNullOrUndefined(currentRect.value) && !isNullOrUndefined((currentRect.value as BubbleTooltipData[])[0].bubbleData)
@@ -207,6 +248,9 @@ export class Tooltip {
             this.isFadeout = (this.isFadeout) ? false : this.isFadeout;
             this.tooltipObject.location.x = currentRect.x + (currentRect.width / 2);
             this.tooltipObject.location.y = currentRect.y + (currentRect.height / 2);
+        }
+        if (!currentRect.visible) {
+            this.showHideTooltip(false, false);
         }
     }
 }

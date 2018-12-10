@@ -59,6 +59,7 @@ export class Common implements IAction {
             this.parent.pivotCommon.renderMode = 'Popup';
             this.parent.pivotCommon.localeObj = this.parent.localeObj;
         }
+        this.parent.pivotCommon.control = this.parent;
     }
 
     /**

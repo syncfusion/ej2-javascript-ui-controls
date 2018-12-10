@@ -1,4 +1,3 @@
-
 import { Component, Complex, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, Browser, ModuleDeclaration} from '@syncfusion/ej2-base';
 import { createElement, remove, Event, EmitType, EventHandler } from '@syncfusion/ej2-base';
@@ -373,7 +372,7 @@ public theme: SmithchartTheme;
       */
     private renderBorder(): void {
         let border: SmithchartBorderModel = this.border;
-        let color: string = this.theme === 'Highcontrast' ? '#000000' : '#FFFFFF';
+        let color: string = this.theme.toLowerCase() === 'highcontrast' ? '#000000' : '#FFFFFF';
         this.background = this.background ? this.background : color;
         let borderRect: RectOption = new RectOption(this.element.id + '_SmithchartBorder', this.background, border, 1,
                                                     new SmithchartRect(

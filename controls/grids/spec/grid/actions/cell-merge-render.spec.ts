@@ -40,11 +40,16 @@ describe('Cell Merge', () => {
                     }        
                     if(args.data.EmployeeID == 3 && args.column.field == 'EmployeeID'){
                         args.colSpan = 3;
+                        args.rowSpan = 2;
                     }
                     if (args.column.field == 'ShipName') {
                         args.colSpan = 2;
                     }
-                }
+                    if (args.data.OrderID == 10248 && args.column.field == 'OrderID') {
+                        args.rowSpan = 2;
+                    }
+                    
+                }                
             }, done);
         });
 
@@ -57,6 +62,7 @@ describe('Cell Merge', () => {
             expect(row3[2].innerHTML).toBe('3');
             expect(row3.length).toBe(4);
             expect(row3[2].getAttribute('colspan')).toBe('3');
+            expect(row3[2].getAttribute('rowspan')).toBe('2');
             expect(Object.getOwnPropertyNames(gridObject.mergeCells).length).toBe(0);
         });
 
@@ -158,8 +164,7 @@ describe('Cell Merge', () => {
                 afterAll(() => {
                     destroy(grid);
                 });
-            });
-        
+            });        
 
 });
 

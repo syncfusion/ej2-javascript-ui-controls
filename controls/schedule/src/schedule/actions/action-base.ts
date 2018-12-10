@@ -239,35 +239,12 @@ export class ActionBase {
     }
 
     public autoScrollValidation(e: MouseEvent & TouchEvent): boolean {
-        if (!this.actionObj.scroll.enable || closest(e.target as HTMLElement, '.' + cls.DATE_HEADER_WRAP_CLASS)) {
+        if (!this.actionObj.scroll.enable) {
             return false;
         }
-        let pages: (MouseEvent & TouchEvent) | Touch = this.getPageCoordinates(e);
-        let allowScroll: boolean = false;
-        let autoScrollDistance: number = 30;
-        this.scrollEdges = { left: false, right: false, top: false, bottom: false };
-        let viewBoundaries: ClientRect = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS).getBoundingClientRect();
-        if ((this.actionObj.pageY < viewBoundaries.top + autoScrollDistance + window.pageYOffset) &&
-            (this.actionObj.pageY > viewBoundaries.top + window.pageYOffset)) {
-            allowScroll = true;
-            this.scrollEdges.top = true;
-        }
-        if ((this.actionObj.pageY > (viewBoundaries.bottom - autoScrollDistance) + window.pageYOffset) &&
-            (this.actionObj.pageY < viewBoundaries.bottom + window.pageYOffset)) {
-            allowScroll = true;
-            this.scrollEdges.bottom = true;
-        }
-        if ((this.actionObj.pageX < viewBoundaries.left + autoScrollDistance + window.pageXOffset) &&
-            (this.actionObj.pageX > viewBoundaries.left + window.pageXOffset)) {
-            allowScroll = true;
-            this.scrollEdges.left = true;
-        }
-        if ((this.actionObj.pageX > (viewBoundaries.right - autoScrollDistance) + window.pageXOffset) &&
-            (this.actionObj.pageX < viewBoundaries.right + window.pageXOffset)) {
-            allowScroll = true;
-            this.scrollEdges.right = true;
-        }
-        return allowScroll;
+        let res: ResizeEdges = this.parent.boundaryValidation(this.actionObj.pageY, this.actionObj.pageX);
+        this.scrollEdges = res;
+        return res.bottom || res.top || res.left || res.right;
     }
 
     public actionClass(type: string): void {

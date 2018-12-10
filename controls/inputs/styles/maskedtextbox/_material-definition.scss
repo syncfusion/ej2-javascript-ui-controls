@@ -1,5 +1,4 @@
-@import 'definition.scss';
-
-$mask-error-color: $error-font;
-$mask-font-size: 12.5px;
-$mask-bigger-font-size: 13px;
+$mask-error-color: $error-font !default;
+$mask-font-size: 12.5px !default;
+$mask-bigger-font-size: 13px !default;
+$mask-font-family: Arial, $font-family !default;

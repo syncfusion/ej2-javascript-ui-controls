@@ -1,6 +1,7 @@
 import { NodeSelection } from './../../selection/index';
 
 import { NodeCutter } from './nodecutter';
+import * as CONSTANT from './../base/constant';
 
 import { InsertMethods } from './insert-methods';
 
@@ -10,7 +11,7 @@ import { InsertMethods } from './insert-methods';
  */
 export class InsertHtml {
 
-    public static Insert(docElement: Document, insertNode: Node | string): void {
+    public static Insert(docElement: Document, insertNode: Node | string, editNode?: Element): void {
         let node: Node;
         if (typeof insertNode === 'string') {
             let divNode: HTMLElement = document.createElement('div');
@@ -24,9 +25,12 @@ export class InsertHtml {
         let range: Range = nodeSelection.getRange(docElement);
         let isCollapsed: boolean = range.collapsed;
         let nodes: Node[] = nodeSelection.getInsertNodeCollection(range);
-        let closestPrantNode: Node = (node.nodeName.toLowerCase() === 'table') ? this.closestEle(nodes[0].parentNode, 'p') : nodes[0];
-        if (!isCollapsed || (node.nodeName.toLowerCase() === 'table' && closestPrantNode)) {
-            let preNode: Node = nodeCutter.GetSpliceNode(range, closestPrantNode as HTMLElement);
+        let closestParentNode: Node = (node.nodeName.toLowerCase() === 'table') ? this.closestEle(nodes[0].parentNode, editNode) : nodes[0];
+        if ((!isCollapsed && !(closestParentNode.nodeType === Node.ELEMENT_NODE &&
+            CONSTANT.TABLE_BLOCK_TAGS.indexOf((closestParentNode as Element).tagName.toLocaleLowerCase()) !== -1))
+            || (node.nodeName.toLowerCase() === 'table' && closestParentNode &&
+                CONSTANT.TABLE_BLOCK_TAGS.indexOf((closestParentNode as Element).tagName.toLocaleLowerCase()) === -1)) {
+            let preNode: Node = nodeCutter.GetSpliceNode(range, closestParentNode as HTMLElement);
             let sibNode: Node = preNode.previousSibling;
             let parentNode: Node = preNode.parentNode;
             if (nodes.length === 1) {
@@ -59,10 +63,11 @@ export class InsertHtml {
                 nodeSelection.setSelectionText(docElement, node, node, 0, node.textContent.length);
             }
         } else {
+            range.deleteContents();
             range.insertNode(node);
             if (node.nodeType !== 3 && node.childNodes.length > 0) {
                 nodeSelection.setSelectionText(docElement, node, node, 1, 1);
-            } else if ( node.nodeType !== 3 ) {
+            } else if (node.nodeType !== 3) {
                 nodeSelection.setSelectionContents(docElement, node);
             } else {
                 nodeSelection.setSelectionText(docElement, node, node, node.textContent.length, node.textContent.length);
@@ -70,22 +75,15 @@ export class InsertHtml {
         }
     }
 
-    private static closestEle(element: Element | Node, selector: string): Element {
+    private static closestEle(element: Element | Node, editNode: Element): Element {
         let el: Element = <Element>element;
         while (el && el.nodeType === 1) {
-            if (this.searchEle(el, selector)) {
+            if (el.parentNode === editNode ||
+                CONSTANT.IGNORE_BLOCK_TAGS.indexOf((el.parentNode as Element).tagName.toLocaleLowerCase()) !== -1) {
                 return el;
             }
             el = <Element>el.parentNode;
         }
         return null;
-    }
-    private static searchEle(element: Element, selector: string): boolean {
-        let matches: Function = element.matches || element.msMatchesSelector || element.webkitMatchesSelector;
-        if (matches) {
-            return matches.call(element, selector);
-        } else {
-            return [].indexOf.call(document.querySelectorAll(selector), element) !== -1;
-        }
     }
 }

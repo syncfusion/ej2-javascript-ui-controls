@@ -15,14 +15,16 @@ import { GridLine, Action, CellType, SortDirection, PrintMode, ToolbarItems, Com
 import { MultipleExportType, ExportType, ExcelHAlign, ExcelVAlign, BorderLineStyle, ToolbarItem } from './enum';
 import { PredicateModel } from './grid-model';
 import { SentinelType, Offsets } from './type';
-import { CheckState, ColumnQueryModeType } from './enum';
+import { CheckState, ColumnQueryModeType, HierarchyGridPrintMode } from './enum';
 import { Edit } from '../actions/edit';
+import { Selection } from '../actions/selection';
 import { Resize } from '../actions/resize';
 import { DropDownListModel } from '@syncfusion/ej2-dropdowns';
 import { NumericTextBoxModel } from '@syncfusion/ej2-inputs';
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import { Data } from '../actions/data';
 import { DatePickerModel } from '@syncfusion/ej2-calendars';
+import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell } from '@syncfusion/ej2-pdf-export';
 import { Matrix } from '../services/focus-strategy';
 import { CheckBoxFilter } from '../actions/checkbox-filter';
 import {
@@ -32,6 +34,9 @@ import {
 import { FlMenuOptrUI } from '../renderer/filter-menu-operator';
 import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
 import { Render } from '../renderer/render';
+import { DetailRow } from '../actions/detail-row';
+import { Print } from '../actions/print';
+import { PdfPaddings } from '@syncfusion/ej2-pdf-export';
 
 /**
  * Specifies grid interfaces.
@@ -83,6 +88,12 @@ export interface IGrid extends Component<HTMLElement> {
      * @default null
      */
     allowPaging?: boolean;
+
+    /**
+     * Specifies the 'enableAutoFill' for Grid.
+     * @default []
+     */
+    enableAutoFill?: boolean;
 
     /**
      * Specifies the pageSettings for Grid.
@@ -324,6 +335,13 @@ export interface IGrid extends Component<HTMLElement> {
     pagerTemplate?: string;
 
     /**
+     * @hidden
+     * It used to indicate initial loading
+     * @default false
+     */
+    isInitialLoad?: boolean;
+
+    /**
      * Defines the frozen rows for the grid content
      * @default 0
      */
@@ -343,6 +361,8 @@ export interface IGrid extends Component<HTMLElement> {
 
     editModule?: Edit;
 
+    selectionModule?: Selection;
+
     resizeModule: Resize;
 
     mergeCells?: { [key: string]: number };
@@ -361,10 +381,23 @@ export interface IGrid extends Component<HTMLElement> {
 
     isPreventScrollEvent?: boolean;
 
+    hierarchyPrintMode?: HierarchyGridPrintMode;
+
+    detailRowModule?: DetailRow;
+
+    printModule?: Print;
+
+    requestTypeAction?: string;
+
+    expandedRows?: { [index: number]: IExpandedRow };
     registeredTemplate?: Object;
+    lockcolPositionCount?: number;
+    isPrinting?: boolean;
+    id?: string;
 
     //public methods
     getHeaderContent?(): Element;
+    isRowDragable(): boolean;
     setGridHeaderContent?(value: Element): void;
     getContentTable?(): Element;
     setGridContentTable?(value: Element): void;
@@ -405,6 +438,7 @@ export interface IGrid extends Component<HTMLElement> {
     updateExternalMessage?(message: string): void;
     getColumns?(isRefresh?: boolean): Column[];
     getStackedHeaderColumnByHeaderText?(stackedHeader: string, col: Column[]): Column;
+    getStackedColumns?(column: Column[]): Column[];
     getRowTemplate?(): Function;
     getDetailTemplate?(): Function;
     getEditTemplate?(): Function;
@@ -466,6 +500,14 @@ export interface IGrid extends Component<HTMLElement> {
 }
 
 /** @hidden */
+
+export interface IExpandedRow {
+    index?: number;
+    gridModel?: Object;
+    isExpand?: boolean;
+}
+
+/** @hidden */
 export interface IRenderer {
     renderPanel(): void;
     renderTable(): void;
@@ -499,7 +541,7 @@ export interface IAction {
     updateModel?(): void;
     onActionBegin?(args?: Object, type?: string): void;
     onActionComplete?(args?: Object, type?: string): void;
-    addEventListener?() : void;
+    addEventListener?(): void;
     removeEventListener?(): void;
 }
 /**
@@ -779,6 +821,8 @@ export interface PrintEventArgs extends ActionEventArgs {
     selectedRows?: NodeListOf<Element>;
     /** Cancel the print action */
     cancel?: boolean;
+    /** Hierarchy Grid print mode */
+    hierarchyPrintMode?: HierarchyGridPrintMode;
 }
 
 export interface DetailDataBoundEventArgs {
@@ -795,8 +839,8 @@ export interface ColumnChooserEventArgs {
     columns?: Column[];
     /** Specifies the instance of column chooser dialog. */
     dialogInstance?: Object;
-   /** Defines the operator for column chooser search request */
-   searchOperator?: string;
+    /** Defines the operator for column chooser search request */
+    searchOperator?: string;
 }
 
 export interface RowDeselectEventArgs {
@@ -915,6 +959,11 @@ export interface QueryCellInfoEventArgs {
     column?: Column;
     /** Defines the no. of columns to be spanned */
     colSpan?: number;
+    /** Defines the no. of rows to be spanned */
+    rowSpan?: number;
+    /** Defines the current action. */
+    requestType?: string;
+
     /** Define the foreignKey row data associated with this column */
     foreignKeyData?: Object;
 }
@@ -923,13 +972,26 @@ export interface PdfQueryCellInfoEventArgs {
     /** Defines the column of the current cell. */
     column?: Column;
     /** Defines the style of the current cell. */
-    /* tslint:disable:no-any */
     style?: PdfStyle;
     /** Defines the value of the current cell. */
-    /* tslint:disable:no-any */
     value?: Date | string | number | boolean;
     /** Defines the no. of columns to be spanned */
     colSpan?: number;
+    /** Defines the data of the cell */
+    data?: Object;
+    /** Defines the current PDF cell */
+    cell?: PdfGridCell;
+}
+
+export interface ExportDetailDataBoundEventArgs {
+    /** Defines the child grid of the current row. */
+    childGrid?: IGrid;
+    /** Defines the row object of the current data. */
+    row?: Row<Column>;
+    /** Defines the PDF grid current cell. */
+    cell?: PdfGridCell;
+    /** Defines the export properties */
+    exportProperties?: PdfExportProperties | ExcelExportProperties;
 }
 
 export interface PdfHeaderQueryCellInfoEventArgs {
@@ -961,6 +1023,8 @@ export interface ExcelHeaderQueryCellInfoEventArgs {
     cell?: Object;
     /** Defines the style of the current cell. */
     style?: ExcelStyle;
+    /** Defines the Grid cell instance */
+    gridCell?: Cell<Column>;
 }
 
 export interface FilterSearchBeginEventArgs {
@@ -996,7 +1060,8 @@ export interface ExcelRow {
     index?: number;
     /**  Defines the cells in a row */
     cells?: ExcelCell[];
-
+    /** Defines the group of rows to expand and collapse */
+    grouping?: Object;
 }
 export interface Border {
     /**  Defines the color of border */
@@ -1029,6 +1094,10 @@ export interface ExcelStyle {
     wrapText?: boolean;
     /** Defines the borders for cell style */
     borders?: Border;
+    /** Defines the format of the cell */
+    numberFormat?: string;
+    /** Defines the type of the cell */
+    type?: string;
 }
 export interface PdfStyle {
     /** Defines the horizontal alignment */
@@ -1059,6 +1128,9 @@ export interface PdfStyle {
     border?: PdfBorder;
     /** Defines the cell indent */
     paragraphIndent?: number;
+    /*Defines the padding of cell */
+    cellPadding?: PdfPaddings;
+
 }
 export interface PdfBorder {
     /** Defines the border color */
@@ -1080,6 +1152,8 @@ export interface ExcelCell {
     hyperlink?: Hyperlink;
     /** Defines the style of the cell */
     style?: ExcelStyle;
+    /** Defines the row span for the cell */
+    rowSpan?: number;
 }
 
 export interface Hyperlink {
@@ -1117,9 +1191,11 @@ export interface ExcelExportProperties {
     /** Indicates whether to show the hidden columns in exported excel */
     includeHiddenColumn?: boolean;
     /** Defines the theme for exported data  */
-    theme?: Theme;
+    theme?: ExcelTheme;
     /** Defines the file name for the exported file  */
     fileName?: string;
+    /** Defines the hierarchy export mode for the pdf grid */
+    hierarchyExportMode?: 'Expanded' | 'All' | 'None';
 }
 
 export interface RowDragEventArgs {
@@ -1133,6 +1209,10 @@ export interface RowDragEventArgs {
     draggableType?: string;
     /** Defines the selected row data. */
     data?: Object[];
+    /** Defines the drag element from index. */
+    fromIndex?: number;
+    /** Defines the target element from index. */
+    dropIndex?: number;
 }
 
 /**
@@ -1333,7 +1413,7 @@ export interface AddEventArgs {
      * Defines the record objects.
      */
     rowData?: Object;
-    /** Define the target for dialog */
+    /** Defines the target for dialog */
     target?: HTMLElement;
 }
 
@@ -1358,7 +1438,7 @@ export interface EditEventArgs extends BeginEditArgs {
     form?: HTMLFormElement;
     /** Define the movable table form element */
     movableForm?: HTMLFormElement;
-    /** Defines the target for dialog */
+    /** Define the target for dialog */
     target?: HTMLElement;
 }
 
@@ -1449,6 +1529,7 @@ export interface IEdit {
     updateRow?(index: number, data: Object): void;
     saveCell?(isForceSave?: boolean): void;
     addCancelWhilePaging?(): void;
+    args?: { requestType?: string };
 }
 
 /**
@@ -1735,25 +1816,36 @@ export interface PdfExportProperties {
     /** Indicates whether to show the hidden columns in exported Pdf */
     includeHiddenColumn?: boolean;
     /** Defines the data source dynamically before exporting */
-    dataSource?: Object | DataManager;
+    dataSource?: Object | DataManager | Object[];
     /** Indicates to export current page or all page */
     exportType?: ExportType;
     /** Defines the theme for exported data  */
-    theme?: Theme;
+    theme?: PdfTheme;
     /** Defines the file name for the exported file  */
     fileName?: string;
+    /** Defines the hierarchy export mode for the pdf grid */
+    hierarchyExportMode?: 'Expanded' | 'All' | 'None';
 }
 
-export interface Theme {
+export interface PdfTheme {
     /** Defines the style of header content. */
-    header?: ThemeStyle;
+    header?: PdfThemeStyle;
     /** Defines the theme style of record content. */
-    record?: ThemeStyle;
+    record?: PdfThemeStyle;
     /** Defines the theme style of caption content. */
-    caption?: ThemeStyle;
+    caption?: PdfThemeStyle;
 }
 
-export interface ThemeStyle {
+export interface ExcelTheme {
+    /** Defines the style of header content. */
+    header?: ExcelStyle;
+    /** Defines the theme style of record content. */
+    record?: ExcelStyle;
+    /** Defines the theme style of caption content. */
+    caption?: ExcelStyle;
+}
+
+export interface PdfThemeStyle {
     /** Defines the font color of theme style. */
     fontColor?: string;
     /** Defines the font name of theme style. */
@@ -1763,7 +1855,15 @@ export interface ThemeStyle {
     /** Defines the bold of theme style. */
     bold?: boolean;
     /** Defines the borders of theme style. */
-    borders?: Border;
+    border?: PdfBorder;
+    /** Defines the font of the theme. */
+    font?: PdfStandardFont | PdfTrueTypeFont;
+    /** Defines the italic of theme style. */
+    italic?: boolean;
+    /** Defines the underline of theme style. */
+    underline?: boolean;
+    /** Defines the strikeout of theme style. */
+    strikeout?: boolean;
 }
 
 export interface PdfHeader {
@@ -1803,6 +1903,8 @@ export interface PdfHeaderFooterContent {
     src?: string;
     /** Defines the value for content */
     value?: any;
+    /** Defines the font for the content */
+    font?: PdfStandardFont | PdfTrueTypeFont;
 }
 
 export interface PdfPosition {

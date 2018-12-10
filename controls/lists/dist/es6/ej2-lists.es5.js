@@ -1917,7 +1917,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
     ListView.prototype.destroy = function () {
         this.unWireEvents();
         var classAr = [classNames.root, classNames.disable, 'e-rtl',
-            'e-has-header', 'e-control'].concat(this.cssClass.split(' ').filter(function (css) { return css; }));
+            'e-has-header', 'e-lib'].concat(this.cssClass.split(' ').filter(function (css) { return css; }));
         removeClass([this.element], classAr);
         this.rippleFn();
         this.element.removeAttribute('role');
@@ -2046,7 +2046,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         return parentId;
     };
     /**
-     * It is used to get the currently [here](./api-selectedItem.html)
+     * It is used to get the currently [here](./api-selectedItem)
      *  item details from the list items.
      */
     ListView.prototype.getSelectedItems = function () {
@@ -2418,10 +2418,18 @@ var Virtualization = /** @__PURE__ @class */ (function () {
     function Virtualization(instance) {
         this.listViewInstance = instance;
     }
+    /**
+     * For internal use only.
+     * @private
+     */
     Virtualization.prototype.isNgTemplate = function () {
         return !isNullOrUndefined(this.listViewInstance.templateRef) && typeof this.listViewInstance.templateRef !== 'string'
             && isNullOrUndefined(this.listViewInstance.fields.groupBy);
     };
+    /**
+     * For internal use only.
+     * @private
+     */
     Virtualization.prototype.uiVirtualization = function () {
         var curViewDS = this.listViewInstance.curViewDS;
         var firstDs = curViewDS.slice(0, 1);

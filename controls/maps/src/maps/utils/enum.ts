@@ -21,16 +21,25 @@ export type Alignment =
  * * Material - Render a maps with Material theme.
  * * Fabric - Render a maps with Fabric theme
  * * Bootstrap - Render a maps with Bootstrap theme
+ * * Dark - Render a maps with Dark theme
  */
 export type MapsTheme =
     /**  Render a maps with Material theme. */
     'Material' |
     /**  Render a maps with Fabric theme. */
     'Fabric' |
-    /**  Render a maps with Highcontrast theme. */
-    'Highcontrast' |
+    /**  Render a maps with Highcontrast Light theme. */
+    'HighcontrastLight' |
     /**  Render a maps with Bootstrap theme. */
-    'Bootstrap';
+    'Bootstrap' |
+    /**  Render a maps with Material Dark theme. */
+    'MaterialDark'|
+    /**  Render a maps with Fabric Dark theme. */
+    'FabricDark'|
+    /**  Render a maps with Highcontrast Dark theme. */
+    'Highcontrast'|
+    /**  Render a maps with Bootstrap Dark theme. */
+    'BootstrapDark';
 
 
 /** 
@@ -216,7 +225,7 @@ export type BingMapType =
     /** CanvasLight - A lighter version of the road maps */
     'CanvasLight' |
     /** CanvasGray - A grayscale version of the road maps */
-    'CanvasGray' ;
+    'CanvasGray';
 
 /**
  * Defines the tool bar orientation
@@ -333,11 +342,26 @@ export type LabelIntersectAction =
  * Export Type
  */
 export type ExportType =
-/** Used to export a image as png format */
-'PNG' |
-/** Used to export a image as jpeg format */
-'JPEG' |
-/** Used to export a file as svg format */
-'SVG'|
-/** Used to export a file as pdf format */
-'PDF';
+    /** Used to export a image as png format */
+    'PNG' |
+    /** Used to export a image as jpeg format */
+    'JPEG' |
+    /** Used to export a file as svg format */
+    'SVG' |
+    /** Used to export a file as pdf format */
+    'PDF';
+
+/**
+ * Pan Direction
+ */
+export type PanDirection =
+    /** Used to pan the left direction */
+    'Left' |
+    /** Used to pan the right direction */
+    'Right' |
+    /** Used to pan the top direction */
+    'Top' |
+    /** Used to pan the bottom direction */
+    'Bottom' |
+    /** Used to pan the map by mouse move */
+    'None';

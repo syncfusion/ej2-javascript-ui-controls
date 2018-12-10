@@ -7,7 +7,7 @@ import { AutoComplete, DropDownList } from '@syncfusion/ej2-dropdowns';
 import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
 import { ContextMenu, Toolbar } from '@syncfusion/ej2-navigations';
 import { Workbook } from '@syncfusion/ej2-excel-export';
-import { PdfBitmap, PdfBorders, PdfColor, PdfCompositeField, PdfDocument, PdfFontFamily, PdfFontStyle, PdfGrid, PdfPageCountField, PdfPageNumberField, PdfPageOrientation, PdfPageSettings, PdfPageTemplateElement, PdfPen, PdfSolidBrush, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfVerticalAlignment, PointF, RectangleF, SizeF } from '@syncfusion/ej2-pdf-export';
+import { PdfBitmap, PdfBorders, PdfColor, PdfCompositeField, PdfDocument, PdfFontFamily, PdfFontStyle, PdfGrid, PdfPaddings, PdfPageCountField, PdfPageNumberField, PdfPageOrientation, PdfPageSettings, PdfPageTemplateElement, PdfPen, PdfSolidBrush, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfVerticalAlignment, PointF, RectangleF, SizeF } from '@syncfusion/ej2-pdf-export';
 
 /**
  * ValueFormatter class to globalize the value.
@@ -152,6 +152,11 @@ var Column = /** @__PURE__ @class */ (function () {
             this.allowFiltering = false;
             this.allowGrouping = false;
             this.allowSorting = false;
+            if (this.columns) {
+                this.allowResizing = this.columns.some(function (col) {
+                    return col.allowResizing;
+                });
+            }
         }
         if (this.commands && !this.textAlign) {
             this.textAlign = 'Right';
@@ -256,6 +261,550 @@ var Column = /** @__PURE__ @class */ (function () {
         return this.disableHtmlEncode ? 'textContent' : 'innerHTML';
     };
     return Column;
+}());
+
+/** @hidden */
+var created = 'create';
+/** @hidden */
+var destroyed = 'destroy';
+/** @hidden */
+var load = 'load';
+/** @hidden */
+var rowDataBound = 'rowDataBound';
+/** @hidden */
+var queryCellInfo = 'queryCellInfo';
+/** @hidden */
+var headerCellInfo = 'headerCellInfo';
+/** @hidden */
+var actionBegin = 'actionBegin';
+/** @hidden */
+var actionComplete = 'actionComplete';
+/** @hidden */
+var actionFailure = 'actionFailure';
+/** @hidden */
+var dataBound = 'dataBound';
+/** @hidden */
+var rowSelecting = 'rowSelecting';
+/** @hidden */
+var rowSelected = 'rowSelected';
+/** @hidden */
+var rowDeselecting = 'rowDeselecting';
+/** @hidden */
+var rowDeselected = 'rowDeselected';
+/** @hidden */
+var cellSelecting = 'cellSelecting';
+/** @hidden */
+var cellSelected = 'cellSelected';
+/** @hidden */
+var cellDeselecting = 'cellDeselecting';
+/** @hidden */
+var cellDeselected = 'cellDeselected';
+/** @hidden */
+var columnDragStart = 'columnDragStart';
+/** @hidden */
+var columnDrag = 'columnDrag';
+/** @hidden */
+var columnDrop = 'columnDrop';
+/** @hidden */
+var rowDragStartHelper = 'rowDragStartHelper';
+/** @hidden */
+var rowDragStart = 'rowDragStart';
+/** @hidden */
+var rowDrag = 'rowDrag';
+/** @hidden */
+var rowDrop = 'rowDrop';
+/** @hidden */
+var beforePrint = 'beforePrint';
+/** @hidden */
+var printComplete = 'printComplete';
+/** @hidden */
+var detailDataBound = 'detailDataBound';
+/** @hidden */
+var toolbarClick = 'toolbarClick';
+/** @hidden */
+var batchAdd = 'batchAdd';
+/** @hidden */
+var batchCancel = 'batchCancel';
+/** @hidden */
+var batchDelete = 'batchDelete';
+/** @hidden */
+var beforeBatchAdd = 'beforeBatchAdd';
+/** @hidden */
+var beforeBatchDelete = 'beforeBatchDelete';
+/** @hidden */
+var beforeBatchSave = 'beforeBatchSave';
+/** @hidden */
+var beginEdit = 'beginEdit';
+/** @hidden */
+var cellEdit = 'cellEdit';
+/** @hidden */
+var cellSave = 'cellSave';
+/** @hidden */
+var cellSaved = 'cellSaved';
+/** @hidden */
+var endAdd = 'endAdd';
+/** @hidden */
+var endDelete = 'endDelete';
+/** @hidden */
+var endEdit = 'endEdit';
+/** @hidden */
+var recordDoubleClick = 'recordDoubleClick';
+/** @hidden */
+var recordClick = 'recordClick';
+/** @hidden */
+var beforeDataBound = 'beforeDataBound';
+/** @hidden */
+var beforeOpenColumnChooser = 'beforeOpenColumnChooser';
+/** @hidden */
+var resizeStart = 'resizeStart';
+/** @hidden */
+var onResize = 'resizing';
+/** @hidden */
+var resizeStop = 'resizeStop';
+/** @hidden */
+var checkBoxChange = 'checkBoxChange';
+/** @hidden */
+var beforeCopy = 'beforeCopy';
+/** @hidden */
+var filterChoiceRequest = 'filterchoicerequest';
+/** @hidden */
+var filterAfterOpen = 'filterafteropen';
+/** @hidden */
+var filterBeforeOpen = 'filterbeforeopen';
+/** @hidden */
+var filterSearchBegin = 'filtersearchbegin';
+/**
+ * Specifies grid internal events
+ */
+/** @hidden */
+var initialLoad = 'initial-load';
+/** @hidden */
+var initialEnd = 'initial-end';
+/** @hidden */
+var dataReady = 'data-ready';
+/** @hidden */
+var contentReady = 'content-ready';
+/** @hidden */
+var uiUpdate = 'ui-update';
+/** @hidden */
+var onEmpty = 'on-empty';
+/** @hidden */
+var inBoundModelChanged = 'inbound-model-changed';
+/** @hidden */
+var modelChanged = 'model-changed';
+/** @hidden */
+var colGroupRefresh = 'colgroup-refresh';
+/** @hidden */
+var headerRefreshed = 'header-refreshed';
+/** @hidden */
+var pageBegin = 'paging-begin';
+/** @hidden */
+var pageComplete = 'paging-complete';
+/** @hidden */
+var sortBegin = 'sorting-begin';
+/** @hidden */
+var sortComplete = 'sorting-complete';
+/** @hidden */
+var filterBegin = 'filtering-begin';
+/** @hidden */
+var filterComplete = 'filtering-complete';
+/** @hidden */
+var searchBegin = 'searching-begin';
+/** @hidden */
+var searchComplete = 'searching-complete';
+/** @hidden */
+var reorderBegin = 'reorder-begin';
+/** @hidden */
+var reorderComplete = 'reorder-complete';
+/** @hidden */
+var rowDragAndDropBegin = 'rowdraganddrop-begin';
+/** @hidden */
+var rowDragAndDropComplete = 'rowdraganddrop-complete';
+/** @hidden */
+var groupBegin = 'grouping-begin';
+/** @hidden */
+var groupComplete = 'grouping-complete';
+/** @hidden */
+var ungroupBegin = 'ungrouping-begin';
+/** @hidden */
+var ungroupComplete = 'ungrouping-complete';
+/** @hidden */
+var groupAggregates = 'group-aggregates';
+/** @hidden */
+var refreshFooterRenderer = 'refresh-footer-rendered';
+/** @hidden */
+var refreshAggregateCell = 'refresh-aggregate-cell';
+/** @hidden */
+var refreshAggregates = 'refresh-aggregates';
+/** @hidden */
+var rowSelectionBegin = 'rowselecting';
+/** @hidden */
+var rowSelectionComplete = 'rowselected';
+/** @hidden */
+var columnSelectionBegin = 'columnselecting';
+/** @hidden */
+var columnSelectionComplete = 'columnselected';
+/** @hidden */
+var cellSelectionBegin = 'cellselecting';
+/** @hidden */
+var cellSelectionComplete = 'cellselected';
+/** @hidden */
+var beforeCellFocused = 'beforecellfocused';
+/** @hidden */
+var cellFocused = 'cellfocused';
+/** @hidden */
+var keyPressed = 'key-pressed';
+/** @hidden */
+var click = 'click';
+/** @hidden */
+var destroy = 'destroy';
+/** @hidden */
+var columnVisibilityChanged = 'column-visible-changed';
+/** @hidden */
+var scroll = 'scroll';
+/** @hidden */
+var columnWidthChanged = 'column-width-changed';
+/** @hidden */
+var columnPositionChanged = 'column-position-changed';
+/** @hidden */
+var rowDragAndDrop = 'row-drag-and-drop';
+/** @hidden */
+var rowsAdded = 'rows-added';
+/** @hidden */
+var rowsRemoved = 'rows-removed';
+/** @hidden */
+var columnDragStop = 'column-drag-stop';
+/** @hidden */
+var headerDrop = 'header-drop';
+/** @hidden */
+var dataSourceModified = 'datasource-modified';
+/** @hidden */
+var refreshComplete = 'refresh-complete';
+/** @hidden */
+var refreshVirtualBlock = 'refresh-virtual-block';
+/** @hidden */
+var dblclick = 'dblclick';
+/** @hidden */
+var toolbarRefresh = 'toolbar-refresh';
+/** @hidden */
+var bulkSave = 'bulk-save';
+/** @hidden */
+var autoCol = 'auto-col';
+/** @hidden */
+var tooltipDestroy = 'tooltip-destroy';
+/** @hidden */
+var updateData = 'update-data';
+/** @hidden */
+var editBegin = 'edit-begin';
+/** @hidden */
+var editComplete = 'edit-complete';
+/** @hidden */
+var addBegin = 'add-begin';
+/** @hidden */
+var addComplete = 'add-complete';
+/** @hidden */
+var saveComplete = 'save-complete';
+/** @hidden */
+var deleteBegin = 'delete-begin';
+/** @hidden */
+var deleteComplete = 'delete-complete';
+/** @hidden */
+var preventBatch = 'prevent-batch';
+/** @hidden */
+var dialogDestroy = 'dialog-destroy';
+/** @hidden */
+var crudAction = 'crud-Action';
+/** @hidden */
+var addDeleteAction = 'add-delete-Action';
+/** @hidden */
+var destroyForm = 'destroy-form';
+/** @hidden */
+var doubleTap = 'double-tap';
+/** @hidden */
+var beforeExcelExport = 'beforeExcelExport';
+/** @hidden */
+var excelExportComplete = 'excelExportComplete';
+/** @hidden */
+var excelQueryCellInfo = 'excelQueryCellInfo';
+/** @hidden */
+var excelHeaderQueryCellInfo = 'excelHeaderQueryCellInfo';
+/** @hidden */
+var exportDetailDataBound = 'exportdetaildatabound';
+/** @hidden */
+var beforePdfExport = 'beforePdfExport';
+/** @hidden */
+var pdfExportComplete = 'pdfExportComplete';
+/** @hidden */
+var pdfQueryCellInfo = 'pdfQueryCellInfo';
+/** @hidden */
+var pdfHeaderQueryCellInfo = 'pdfHeaderQueryCellInfo';
+/** @hidden */
+var accessPredicate = 'access-predicate';
+/** @hidden */
+var contextMenuClick = 'contextMenuClick';
+/** @hidden */
+var freezeRender = 'freezerender';
+/** @hidden */
+var freezeRefresh = 'freezerefresh';
+/** @hidden */
+var contextMenuOpen = 'contextMenuOpen';
+/** @hidden */
+var columnMenuClick = 'columnMenuClick';
+/** @hidden */
+var columnMenuOpen = 'columnMenuOpen';
+/** @hidden */
+var filterOpen = 'filterOpen';
+/** @hidden */
+var filterDialogCreated = 'filterDialogCreated';
+/** @hidden */
+var filterMenuClose = 'filter-menu-close';
+/** @hidden */
+var initForeignKeyColumn = 'initForeignKeyColumn';
+/** @hidden */
+var getForeignKeyData = 'getForeignKeyData';
+/** @hidden */
+var generateQuery = 'generateQuery';
+/** @hidden */
+var showEmptyGrid = 'showEmptyGrid';
+/** @hidden */
+var foreignKeyData = 'foreignKeyData';
+/** @hidden */
+var dataStateChange = 'dataStateChange';
+/** @hidden */
+var dataSourceChanged = 'dataSourceChanged';
+/** @hidden */
+var rtlUpdated = 'rtl-updated';
+/** @hidden */
+var beforeFragAppend = 'beforeFragAppend';
+/** @hidden */
+var frozenHeight = 'frozenHeight';
+/** @hidden */
+var recordAdded = 'recordAdded';
+/** @hidden */
+var cancelBegin = 'cancel-Begin';
+/** @hidden */
+var editNextValCell = 'editNextValCell';
+/** @hidden */
+var hierarchyPrint = 'hierarchyprint';
+/** @hidden */
+var expandChildGrid = 'expandchildgrid';
+/** @hidden */
+var printGridInit = 'printGrid-Init';
+/** @hidden */
+var exportRowDataBound = 'export-RowDataBound';
+/** @hidden */
+var rowPositionChanged = 'row-position-changed';
+
+function getCloneProperties() {
+    return ['aggregates', 'allowGrouping', 'allowFiltering', 'allowMultiSorting', 'allowReordering', 'allowSorting',
+        'allowTextWrap', 'childGrid', 'columns', 'currentViewData', 'dataSource', 'detailTemplate', 'enableAltRow',
+        'enableColumnVirtualization', 'filterSettings', 'gridLines',
+        'groupSettings', 'height', 'locale', 'pageSettings', 'printMode', 'query', 'queryString', 'enableRtl',
+        'rowHeight', 'rowTemplate', 'sortSettings', 'textWrapSettings', 'allowPaging', 'hierarchyPrintMode', 'searchSettings'];
+}
+/**
+ *
+ * The `Print` module is used to handle print action.
+ */
+var Print = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for the Grid print module
+     * @hidden
+     */
+    function Print(parent, scrollModule) {
+        this.isAsyncPrint = false;
+        this.defered = new Deferred();
+        this.parent = parent;
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.on(contentReady, this.isContentReady(), this);
+        this.parent.addEventListener(actionBegin, this.actionBegin.bind(this));
+        this.parent.on(onEmpty, this.onEmpty.bind(this));
+        this.parent.on(hierarchyPrint, this.hierarchyPrint, this);
+        this.scrollModule = scrollModule;
+    }
+    Print.prototype.isContentReady = function () {
+        var _this = this;
+        if (this.isPrintGrid() && (this.parent.hierarchyPrintMode === 'None' || !this.parent.childGrid)) {
+            return this.contentReady;
+        }
+        return function () {
+            _this.defered.promise.then(function () {
+                _this.contentReady();
+            });
+            if (_this.isPrintGrid()) {
+                _this.hierarchyPrint();
+            }
+        };
+    };
+    Print.prototype.hierarchyPrint = function () {
+        this.removeColGroup(this.parent);
+        var printGridObj = window.printGridObj;
+        if (printGridObj && !printGridObj.element.querySelector('[aria-busy=true')) {
+            printGridObj.printModule.defered.resolve();
+        }
+    };
+    /**
+     * By default, prints all the Grid pages and hides the pager.
+     * > You can customize print options using the
+     * [`printMode`](./api-grid.html#printmode-string).
+     * @return {void}
+     */
+    Print.prototype.print = function () {
+        this.renderPrintGrid();
+        this.printWind = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
+        this.printWind.moveTo(0, 0);
+        this.printWind.resizeTo(screen.availWidth, screen.availHeight);
+    };
+    Print.prototype.onEmpty = function () {
+        if (this.isPrintGrid()) {
+            this.contentReady();
+        }
+    };
+    Print.prototype.actionBegin = function () {
+        if (this.isPrintGrid()) {
+            this.isAsyncPrint = true;
+        }
+    };
+    Print.prototype.renderPrintGrid = function () {
+        var gObj = this.parent;
+        var element = createElement('div', {
+            id: this.parent.element.id + '_print', className: gObj.element.className + ' e-print-grid'
+        });
+        document.body.appendChild(element);
+        var printGrid = new Grid(getPrintGridModel(gObj, gObj.hierarchyPrintMode));
+        printGrid.query = gObj.getQuery().clone();
+        window.printGridObj = printGrid;
+        printGrid.isPrinting = true;
+        var modules = printGrid.getInjectedModules();
+        var injectedModues = gObj.getInjectedModules();
+        if (!modules || modules.length !== injectedModues.length) {
+            printGrid.setInjectedModules(injectedModues);
+        }
+        gObj.notify(printGridInit, { element: element, printgrid: printGrid });
+        printGrid.appendTo(element);
+        printGrid.registeredTemplate = this.parent.registeredTemplate;
+        printGrid.trigger = gObj.trigger;
+    };
+    Print.prototype.contentReady = function () {
+        if (this.isPrintGrid()) {
+            var gObj = this.parent;
+            if (this.isAsyncPrint) {
+                this.printGrid();
+                return;
+            }
+            var args = {
+                requestType: 'print',
+                element: gObj.element,
+                selectedRows: gObj.getContentTable().querySelectorAll('tr[aria-selected="true"]'),
+                cancel: false,
+                hierarchyPrintMode: gObj.hierarchyPrintMode
+            };
+            if (!this.isAsyncPrint) {
+                gObj.trigger(beforePrint, args);
+            }
+            if (args.cancel) {
+                detach(gObj.element);
+                return;
+            }
+            if (!this.isAsyncPrint) {
+                this.printGrid();
+            }
+        }
+    };
+    Print.prototype.printGrid = function () {
+        var gObj = this.parent;
+        // Height adjustment on print grid
+        if (gObj.height !== 'auto') { // if scroller enabled
+            var cssProps = this.scrollModule.getCssProperties();
+            var contentDiv = gObj.element.querySelector('.e-content');
+            var headerDiv = gObj.element.querySelector('.e-gridheader');
+            contentDiv.style.height = 'auto';
+            contentDiv.style.overflowY = 'auto';
+            headerDiv.style[cssProps.padding] = '';
+            headerDiv.firstElementChild.style[cssProps.border] = '';
+        }
+        // Grid alignment adjustment on grouping
+        if (gObj.allowGrouping) {
+            if (!gObj.groupSettings.columns.length) {
+                gObj.element.querySelector('.e-groupdroparea').style.display = 'none';
+            }
+            else {
+                this.removeColGroup(gObj);
+            }
+        }
+        // hide horizontal scroll
+        for (var _i = 0, _a = [].slice.call(gObj.element.querySelectorAll('.e-content')); _i < _a.length; _i++) {
+            var element = _a[_i];
+            element.style.overflowX = 'hidden';
+        }
+        // Hide the waiting popup
+        var waitingPop = gObj.element.querySelectorAll('.e-spin-show');
+        for (var _b = 0, _c = [].slice.call(waitingPop); _b < _c.length; _b++) {
+            var element = _c[_b];
+            classList(element, ['e-spin-hide'], ['e-spin-show']);
+        }
+        this.printGridElement(gObj);
+        gObj.isPrinting = false;
+        delete window.printGridObj;
+        var args = {
+            element: gObj.element
+        };
+        gObj.trigger(printComplete, args);
+    };
+    Print.prototype.printGridElement = function (gObj) {
+        classList(gObj.element, ['e-print-grid-layout'], ['e-print-grid']);
+        if (gObj.isPrinting) {
+            detach(gObj.element);
+        }
+        this.printWind = print(gObj.element, this.printWind);
+    };
+    Print.prototype.removeColGroup = function (gObj) {
+        var depth = gObj.groupSettings.columns.length;
+        var element = gObj.element;
+        var id = '#' + gObj.element.id;
+        if (!depth) {
+            return;
+        }
+        var groupCaption = element.querySelectorAll(id + "captioncell.e-groupcaption");
+        var colSpan = groupCaption[depth - 1].getAttribute('colspan');
+        for (var i = 0; i < groupCaption.length; i++) {
+            groupCaption[i].setAttribute('colspan', colSpan);
+        }
+        var colGroups = element.querySelectorAll("colgroup" + id + "colGroup");
+        for (var i = 0; i < colGroups.length; i++) {
+            for (var j = 0; j < depth; j++) {
+                colGroups[i].childNodes[j].style.display = 'none';
+            }
+        }
+    };
+    Print.prototype.isPrintGrid = function () {
+        return this.parent.element.id.indexOf('_print') > 0 && this.parent.isPrinting;
+    };
+    /**
+     * To destroy the print
+     * @return {void}
+     * @hidden
+     */
+    Print.prototype.destroy = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.off(contentReady, this.contentReady.bind(this));
+        this.parent.removeEventListener(actionBegin, this.actionBegin.bind(this));
+        this.parent.off(onEmpty, this.onEmpty.bind(this));
+        this.parent.off(hierarchyPrint, this.hierarchyPrint);
+    };
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    Print.prototype.getModuleName = function () {
+        return 'print';
+    };
+    Print.printGridProp = getCloneProperties().concat([beforePrint, printComplete]);
+    return Print;
 }());
 
 //https://typescript.codeplex.com/discussions/401501
@@ -370,8 +919,8 @@ function prepareColumns(columns, autoWidth) {
                 column = new Column(columns[c]);
             }
             else {
-                column = new Column(columns[c]);
                 columns[c].columns = prepareColumns(columns[c].columns);
+                column = new Column(columns[c]);
             }
         }
         else {
@@ -862,6 +1411,45 @@ function getCustomDateFormat(format, colType) {
     }
     return formatvalue;
 }
+function getExpandedState(gObj, hierarchyPrintMode) {
+    var rows = gObj.getRowsObject();
+    var obj = {};
+    for (var _i = 0, rows_1 = rows; _i < rows_1.length; _i++) {
+        var row = rows_1[_i];
+        if (row.isExpand && !row.isDetailRow) {
+            var index = gObj.allowPaging && gObj.printMode === 'AllPages' ? row.index +
+                (gObj.pageSettings.currentPage * gObj.pageSettings.pageSize) - gObj.pageSettings.pageSize : row.index;
+            obj[index] = {};
+            obj[index].isExpand = true;
+            obj[index].gridModel = getPrintGridModel(row.childGrid, hierarchyPrintMode);
+            obj[index].gridModel.query = gObj.childGrid.query;
+        }
+    }
+    return obj;
+}
+function getPrintGridModel(gObj, hierarchyPrintMode) {
+    if (hierarchyPrintMode === void 0) { hierarchyPrintMode = 'Expanded'; }
+    var printGridModel = {};
+    if (!gObj) {
+        return printGridModel;
+    }
+    for (var _i = 0, _a = Print.printGridProp; _i < _a.length; _i++) {
+        var key = _a[_i];
+        if (key === 'columns') {
+            printGridModel[key] = getActualPropFromColl(gObj[key]);
+        }
+        else if (key === 'allowPaging') {
+            printGridModel[key] = gObj.printMode === 'CurrentPage';
+        }
+        else {
+            printGridModel[key] = getActualProperties(gObj[key]);
+        }
+    }
+    if (gObj.childGrid && hierarchyPrintMode !== 'None') {
+        printGridModel.expandedRows = getExpandedState(gObj, hierarchyPrintMode);
+    }
+    return printGridModel;
+}
 function extendObjWithFn(copied, first, second, deep) {
     var res = copied || {};
     var len = arguments.length;
@@ -874,7 +1462,7 @@ function extendObjWithFn(copied, first, second, deep) {
         }
         var obj1 = arguments_1[i];
         var keys = Object.keys(Object.getPrototypeOf(obj1)).length ?
-            Object.keys(obj1).concat(Object.keys(Object.getPrototypeOf(obj1))) : Object.keys(obj1);
+            Object.keys(obj1).concat(getPrototypesOfObj(obj1)) : Object.keys(obj1);
         keys.forEach(function (key) {
             var source = res[key];
             var cpy = obj1[key];
@@ -900,328 +1488,41 @@ function extendObjWithFn(copied, first, second, deep) {
     }
     return res;
 }
-
-/** @hidden */
-var created = 'create';
-/** @hidden */
-var destroyed = 'destroy';
-/** @hidden */
-var load = 'load';
-/** @hidden */
-var rowDataBound = 'rowDataBound';
-/** @hidden */
-var queryCellInfo = 'queryCellInfo';
-/** @hidden */
-var headerCellInfo = 'headerCellInfo';
-/** @hidden */
-var actionBegin = 'actionBegin';
-/** @hidden */
-var actionComplete = 'actionComplete';
-/** @hidden */
-var actionFailure = 'actionFailure';
-/** @hidden */
-var dataBound = 'dataBound';
-/** @hidden */
-var rowSelecting = 'rowSelecting';
-/** @hidden */
-var rowSelected = 'rowSelected';
-/** @hidden */
-var rowDeselecting = 'rowDeselecting';
-/** @hidden */
-var rowDeselected = 'rowDeselected';
-/** @hidden */
-var cellSelecting = 'cellSelecting';
-/** @hidden */
-var cellSelected = 'cellSelected';
-/** @hidden */
-var cellDeselecting = 'cellDeselecting';
-/** @hidden */
-var cellDeselected = 'cellDeselected';
-/** @hidden */
-var columnDragStart = 'columnDragStart';
-/** @hidden */
-var columnDrag = 'columnDrag';
-/** @hidden */
-var columnDrop = 'columnDrop';
-/** @hidden */
-var rowDragStart = 'rowDragStart';
-/** @hidden */
-var rowDrag = 'rowDrag';
-/** @hidden */
-var rowDrop = 'rowDrop';
-/** @hidden */
-var beforePrint = 'beforePrint';
-/** @hidden */
-var printComplete = 'printComplete';
-/** @hidden */
-var detailDataBound = 'detailDataBound';
-/** @hidden */
-var toolbarClick = 'toolbarClick';
-/** @hidden */
-var batchAdd = 'batchAdd';
-/** @hidden */
-var batchCancel = 'batchCancel';
-/** @hidden */
-var batchDelete = 'batchDelete';
-/** @hidden */
-var beforeBatchAdd = 'beforeBatchAdd';
-/** @hidden */
-var beforeBatchDelete = 'beforeBatchDelete';
-/** @hidden */
-var beforeBatchSave = 'beforeBatchSave';
-/** @hidden */
-var beginEdit = 'beginEdit';
-/** @hidden */
-var cellEdit = 'cellEdit';
-/** @hidden */
-var cellSave = 'cellSave';
-/** @hidden */
-var cellSaved = 'cellSaved';
-/** @hidden */
-var endAdd = 'endAdd';
-/** @hidden */
-var endDelete = 'endDelete';
-/** @hidden */
-var endEdit = 'endEdit';
-/** @hidden */
-var recordDoubleClick = 'recordDoubleClick';
-/** @hidden */
-var recordClick = 'recordClick';
-/** @hidden */
-var beforeDataBound = 'beforeDataBound';
-/** @hidden */
-var beforeOpenColumnChooser = 'beforeOpenColumnChooser';
-/** @hidden */
-var resizeStart = 'resizeStart';
-/** @hidden */
-var onResize = 'resizing';
-/** @hidden */
-var resizeStop = 'resizeStop';
-/** @hidden */
-var checkBoxChange = 'checkBoxChange';
-/** @hidden */
-var beforeCopy = 'beforeCopy';
-/** @hidden */
-var filterChoiceRequest = 'filterchoicerequest';
-/** @hidden */
-var filterAfterOpen = 'filterafteropen';
-/** @hidden */
-var filterBeforeOpen = 'filterbeforeopen';
-/** @hidden */
-var filterSearchBegin = 'filtersearchbegin';
-/**
- * Specifies grid internal events
- */
-/** @hidden */
-var initialLoad = 'initial-load';
-/** @hidden */
-var initialEnd = 'initial-end';
-/** @hidden */
-var dataReady = 'data-ready';
-/** @hidden */
-var contentReady = 'content-ready';
-/** @hidden */
-var uiUpdate = 'ui-update';
-/** @hidden */
-var onEmpty = 'on-empty';
-/** @hidden */
-var inBoundModelChanged = 'inbound-model-changed';
-/** @hidden */
-var modelChanged = 'model-changed';
-/** @hidden */
-var colGroupRefresh = 'colgroup-refresh';
-/** @hidden */
-var headerRefreshed = 'header-refreshed';
-/** @hidden */
-var pageBegin = 'paging-begin';
-/** @hidden */
-var pageComplete = 'paging-complete';
-/** @hidden */
-var sortBegin = 'sorting-begin';
-/** @hidden */
-var sortComplete = 'sorting-complete';
-/** @hidden */
-var filterBegin = 'filtering-begin';
-/** @hidden */
-var filterComplete = 'filtering-complete';
-/** @hidden */
-var searchBegin = 'searching-begin';
-/** @hidden */
-var searchComplete = 'searching-complete';
-/** @hidden */
-var reorderBegin = 'reorder-begin';
-/** @hidden */
-var reorderComplete = 'reorder-complete';
-/** @hidden */
-var rowDragAndDropBegin = 'rowdraganddrop-begin';
-/** @hidden */
-var rowDragAndDropComplete = 'rowdraganddrop-complete';
-/** @hidden */
-var groupBegin = 'grouping-begin';
-/** @hidden */
-var groupComplete = 'grouping-complete';
-/** @hidden */
-var ungroupBegin = 'ungrouping-begin';
-/** @hidden */
-var ungroupComplete = 'ungrouping-complete';
-/** @hidden */
-var groupAggregates = 'group-aggregates';
-/** @hidden */
-var refreshFooterRenderer = 'refresh-footer-rendered';
-/** @hidden */
-var refreshAggregateCell = 'refresh-aggregate-cell';
-/** @hidden */
-var refreshAggregates = 'refresh-aggregates';
-/** @hidden */
-var rowSelectionBegin = 'rowselecting';
-/** @hidden */
-var rowSelectionComplete = 'rowselected';
-/** @hidden */
-var columnSelectionBegin = 'columnselecting';
-/** @hidden */
-var columnSelectionComplete = 'columnselected';
-/** @hidden */
-var cellSelectionBegin = 'cellselecting';
-/** @hidden */
-var cellSelectionComplete = 'cellselected';
-/** @hidden */
-var beforeCellFocused = 'beforecellfocused';
-/** @hidden */
-var cellFocused = 'cellfocused';
-/** @hidden */
-var keyPressed = 'key-pressed';
-/** @hidden */
-var click = 'click';
-/** @hidden */
-var destroy = 'destroy';
-/** @hidden */
-var columnVisibilityChanged = 'column-visible-changed';
-/** @hidden */
-var scroll = 'scroll';
-/** @hidden */
-var columnWidthChanged = 'column-width-changed';
-/** @hidden */
-var columnPositionChanged = 'column-position-changed';
-/** @hidden */
-var rowDragAndDrop = 'row-drag-and-drop';
-/** @hidden */
-var rowsAdded = 'rows-added';
-/** @hidden */
-var rowsRemoved = 'rows-removed';
-/** @hidden */
-var columnDragStop = 'column-drag-stop';
-/** @hidden */
-var headerDrop = 'header-drop';
-/** @hidden */
-var dataSourceModified = 'datasource-modified';
-/** @hidden */
-var refreshComplete = 'refresh-complete';
-/** @hidden */
-var refreshVirtualBlock = 'refresh-virtual-block';
-/** @hidden */
-var dblclick = 'dblclick';
-/** @hidden */
-var toolbarRefresh = 'toolbar-refresh';
-/** @hidden */
-var bulkSave = 'bulk-save';
-/** @hidden */
-var autoCol = 'auto-col';
-/** @hidden */
-var tooltipDestroy = 'tooltip-destroy';
-/** @hidden */
-var updateData = 'update-data';
-/** @hidden */
-var editBegin = 'edit-begin';
-/** @hidden */
-var editComplete = 'edit-complete';
-/** @hidden */
-var addBegin = 'add-begin';
-/** @hidden */
-var addComplete = 'add-complete';
-/** @hidden */
-var saveComplete = 'save-complete';
-/** @hidden */
-var deleteBegin = 'delete-begin';
-/** @hidden */
-var deleteComplete = 'delete-complete';
-/** @hidden */
-var preventBatch = 'prevent-batch';
-/** @hidden */
-var dialogDestroy = 'dialog-destroy';
-/** @hidden */
-var crudAction = 'crud-Action';
-/** @hidden */
-var addDeleteAction = 'add-delete-Action';
-/** @hidden */
-var destroyForm = 'destroy-form';
-/** @hidden */
-var doubleTap = 'double-tap';
-/** @hidden */
-var beforeExcelExport = 'beforeExcelExport';
-/** @hidden */
-var excelExportComplete = 'excelExportComplete';
-/** @hidden */
-var excelQueryCellInfo = 'excelQueryCellInfo';
-/** @hidden */
-var excelHeaderQueryCellInfo = 'excelHeaderQueryCellInfo';
-/** @hidden */
-var beforePdfExport = 'beforePdfExport';
-/** @hidden */
-var pdfExportComplete = 'pdfExportComplete';
-/** @hidden */
-var pdfQueryCellInfo = 'pdfQueryCellInfo';
-/** @hidden */
-var pdfHeaderQueryCellInfo = 'pdfHeaderQueryCellInfo';
-/** @hidden */
-var accessPredicate = 'access-predicate';
-/** @hidden */
-var contextMenuClick = 'contextMenuClick';
-/** @hidden */
-var freezeRender = 'freezerender';
-/** @hidden */
-var freezeRefresh = 'freezerefresh';
-/** @hidden */
-var contextMenuOpen = 'contextMenuOpen';
-/** @hidden */
-var columnMenuClick = 'columnMenuClick';
-/** @hidden */
-var columnMenuOpen = 'columnMenuOpen';
-/** @hidden */
-var filterOpen = 'filterOpen';
-/** @hidden */
-var filterDialogCreated = 'filterDialogCreated';
-/** @hidden */
-var filterMenuClose = 'filter-menu-close';
-/** @hidden */
-var initForeignKeyColumn = 'initForeignKeyColumn';
-/** @hidden */
-var getForeignKeyData = 'getForeignKeyData';
-/** @hidden */
-var generateQuery = 'generateQuery';
-/** @hidden */
-var showEmptyGrid = 'showEmptyGrid';
-/** @hidden */
-var foreignKeyData = 'foreignKeyData';
-/** @hidden */
-var dataStateChange = 'dataStateChange';
-/** @hidden */
-var dataSourceChanged = 'dataSourceChanged';
-/** @hidden */
-var rtlUpdated = 'rtl-updated';
-/** @hidden */
-var beforeFragAppend = 'beforeFragAppend';
-/** @hidden */
-var frozenHeight = 'frozenHeight';
-/** @hidden */
-var recordAdded = 'recordAdded';
-/** @hidden */
-var cancelBegin = 'cancel-Begin';
-/** @hidden */
-var editNextValCell = 'editNextValCell';
-/** @hidden */
-var printGridInit = 'printGrid-Init';
-/** @hidden */
-var exportRowDataBound = 'export-RowDataBound';
+function getPrototypesOfObj(obj) {
+    var keys = [];
+    while (Object.keys(Object.getPrototypeOf(obj)).length) {
+        keys = keys.concat(Object.keys(Object.getPrototypeOf(obj)));
+        obj = Object.getPrototypeOf(obj);
+    }
+    return keys;
+}
+function measureColumnDepth(column) {
+    var max = 0;
+    for (var i = 0; i < column.length; i++) {
+        var depth = checkDepth(column[i], 0);
+        if (max < depth) {
+            max = depth;
+        }
+    }
+    return max + 1;
+}
+function checkDepth(col, index) {
+    var max = index;
+    var indices = [];
+    if (col.columns) {
+        index++;
+        for (var i = 0; i < col.columns.length; i++) {
+            indices[i] = checkDepth(col.columns[i], index);
+        }
+        for (var j = 0; j < indices.length; j++) {
+            if (max < indices[j]) {
+                max = indices[j];
+            }
+        }
+        index = max;
+    }
+    return index;
+}
 
 /**
  * Defines types of Cell
@@ -1259,6 +1560,12 @@ var CellType;
     CellType[CellType["DetailExpand"] = 13] = "DetailExpand";
     /**  Defines CellType as CommandColumn */
     CellType[CellType["CommandColumn"] = 14] = "CommandColumn";
+    /**  Defines CellType as DetailFooterIntent */
+    CellType[CellType["DetailFooterIntent"] = 15] = "DetailFooterIntent";
+    /**  Defines CellType as RowDrag */
+    CellType[CellType["RowDragIcon"] = 16] = "RowDragIcon";
+    /**  Defines CellType as RowDragHeader */
+    CellType[CellType["RowDragHIcon"] = 17] = "RowDragHIcon";
 })(CellType || (CellType = {}));
 /**
  * Defines types of Render
@@ -1547,6 +1854,16 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         if (this.filterState) {
             if (e.target.tagName.toLowerCase() === 'input') {
                 var value = e.target.value;
+                if (this.options.column.type === 'boolean') {
+                    if (value !== undefined &&
+                        this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf(value.toLowerCase()) !== -1) {
+                        value = 'true';
+                    }
+                    else if (value !== undefined &&
+                        this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf(value.toLowerCase()) !== -1) {
+                        value = 'false';
+                    }
+                }
                 var args = {
                     action: 'filtering', filterCollection: {
                         field: this.options.field,
@@ -1604,7 +1921,23 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
                 if (value && !value.toString().length) {
                     fObj.operator = isNotEqual ? 'notequal' : 'equal';
                 }
-                coll.push(fObj);
+                if (value === '' || isNullOrUndefined(value)) {
+                    coll.push({
+                        field: defaults.field, ignoreAccent: defaults.ignoreAccent, matchCase: defaults.matchCase,
+                        operator: defaults.operator, predicate: defaults.predicate, value: ''
+                    });
+                    coll.push({
+                        field: defaults.field,
+                        matchCase: defaults.matchCase, operator: defaults.operator, predicate: defaults.predicate, value: null
+                    });
+                    coll.push({
+                        field: defaults.field, matchCase: defaults.matchCase, operator: defaults.operator,
+                        predicate: defaults.predicate, value: undefined
+                    });
+                }
+                else {
+                    coll.push(fObj);
+                }
                 if (isActionPrevent(this.parent)) {
                     this.parent.notify(preventBatch, {
                         instance: this, handler: this.fltrBtnHandler, arg1: fObj.field, arg2: fObj.predicate, arg3: fObj.operator,
@@ -1643,6 +1976,8 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         var column = this.options.column;
         var query = column.isForeignColumn() ? this.foreignKeyQuery.clone() : this.options.query.clone();
         var foreignQuery = this.options.query.clone();
+        query.queries = [];
+        foreignQuery.queries = [];
         var parsed = (this.options.type !== 'string' && parseFloat(val)) ? parseFloat(val) : val;
         var operator = this.parent.getDataModule().isRemote() ?
             (this.options.type === 'string' ? 'contains' : 'equal') : (this.options.type ? 'startswith' : 'contains');
@@ -1660,7 +1995,6 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
                 this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf(parsed.toLowerCase()) !== -1) {
                 parsed = 'false';
             }
-            parsed = parsed === 'true';
             operator = 'equal';
         }
         this.addDistinct(query);
@@ -1741,14 +2075,6 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         }
         return predicateList.length && Predicate.and(predicateList);
     };
-    CheckBoxFilter.prototype.addDistinct = function (query) {
-        var filteredColumn = DataUtil.distinct(this.parent.filterSettings.columns, 'field');
-        if (filteredColumn.indexOf(this.options.column.field) <= -1) {
-            filteredColumn = filteredColumn.concat(this.options.column.field);
-        }
-        query.distinct(filteredColumn);
-        return query;
-    };
     CheckBoxFilter.prototype.getAllData = function () {
         var query = this.parent.getQuery().clone();
         query.requiresCount(); //consider take query
@@ -1765,6 +2091,14 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         else {
             this.processDataOperation(query, true);
         }
+    };
+    CheckBoxFilter.prototype.addDistinct = function (query) {
+        var filteredColumn = DataUtil.distinct(this.parent.filterSettings.columns, 'field');
+        if (filteredColumn.indexOf(this.options.column.field) <= -1) {
+            filteredColumn = filteredColumn.concat(this.options.column.field);
+        }
+        query.distinct(filteredColumn);
+        return query;
     };
     CheckBoxFilter.prototype.filterEvent = function (args, query) {
         var _this = this;
@@ -1934,7 +2268,14 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         var _a;
         var cBoxes = this.parent.createElement('div');
         var btn = this.dialogObj.btnObj[0];
-        this.itemsCnt = data.length;
+        var nullCounter = -1;
+        for (var i = 0; i < data.length; i++) {
+            var val = getValue('ejValue', data[i]);
+            if (val === '' || isNullOrUndefined(val)) {
+                nullCounter = nullCounter + 1;
+            }
+        }
+        this.itemsCnt = nullCounter !== -1 ? data.length - nullCounter : data.length;
         if (data.length && !this.renderEmpty) {
             var selectAllValue = this.getLocalizedLabel('SelectAll');
             var checkBox = this.createCheckbox(selectAllValue, false, (_a = {}, _a[this.options.field] = selectAllValue, _a));
@@ -1946,10 +2287,17 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
                 predicate = predicate.or('field', 'equal', this.options.foreignKeyValue);
             }
             var isColFiltered = new DataManager(this.options.filteredColumns).executeLocal(new Query().where(predicate)).length;
+            var isRndere = void 0;
             for (var i = 0; i < data.length; i++) {
                 var uid = getUid('cbox');
                 this.values[uid] = getValue('ejValue', data[i]);
                 var value = this.valueFormatter.toView(getValue(this.options.field, data[i]), this.options.formatFn);
+                if ((value === '' || isNullOrUndefined(value))) {
+                    if (isRndere) {
+                        continue;
+                    }
+                    isRndere = true;
+                }
                 var checkbox = this.createCheckbox(value, this.getCheckedState(isColFiltered, this.values[uid]), getValue('dataObj', data[i]));
                 cBoxes.appendChild(createCboxWithWrap(uid, checkbox, 'e-ftrchk'));
             }
@@ -1987,21 +2335,19 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         var isForeignKey = column && column.isForeignColumn();
         while (len--) {
             value = json[len];
-            value = getValue(field, value); //local remote diff, check with mdu           
-            if (!isNullOrUndefined(value)) {
-                if (!(value in lookup)) {
-                    var obj = {};
-                    obj[ejValue] = value;
-                    lookup[value] = true;
-                    if (isForeignKey) {
-                        var foreignDataObj = getForeignData(column, {}, value, foreignKeyData$$1)[0];
-                        setValue(foreignKeyData, foreignDataObj, json[len]);
-                        value = getValue(column.foreignKeyValue, foreignDataObj);
-                    }
-                    setValue(field, isNullOrUndefined(value) ? null : value, obj);
-                    setValue('dataObj', json[len], obj);
-                    result.push(obj);
+            value = getValue(field, value); //local remote diff, check with mdu   
+            if (!(value in lookup)) {
+                var obj = {};
+                obj[ejValue] = value;
+                lookup[value] = true;
+                if (isForeignKey) {
+                    var foreignDataObj = getForeignData(column, {}, value, foreignKeyData$$1)[0];
+                    setValue(foreignKeyData, foreignDataObj, json[len]);
+                    value = getValue(column.foreignKeyValue, foreignDataObj);
                 }
+                setValue(field, isNullOrUndefined(value) ? null : value, obj);
+                setValue('dataObj', json[len], obj);
+                result.push(obj);
             }
         }
         return DataUtil.group(DataUtil.sort(result, field, DataUtil.fnAscending), 'ejValue');
@@ -2096,12 +2442,16 @@ var Data = /** @__PURE__ @class */ (function () {
             return;
         }
         this.parent.on(rowsAdded, this.addRows, this);
+        this.parent.on(rowPositionChanged, this.reorderRows, this);
         this.parent.on(rowsRemoved, this.removeRows, this);
         this.parent.on(dataSourceModified, this.initDataManager, this);
         this.parent.on(destroy, this.destroy, this);
         this.parent.on(updateData, this.crudActions, this);
         this.parent.on(addDeleteAction, this.getData, this);
     }
+    Data.prototype.reorderRows = function (e) {
+        this.dataManager.dataSource.json.splice(e.toIndex, 0, this.dataManager.dataSource.json.splice(e.fromIndex, 1)[0]);
+    };
     Data.prototype.getModuleName = function () {
         return 'data';
     };
@@ -2154,6 +2504,7 @@ var Data = /** @__PURE__ @class */ (function () {
     };
     Data.prototype.pageQuery = function (query, skipPage) {
         var gObj = this.parent;
+        var fName = 'fn';
         if ((gObj.allowPaging || gObj.enableVirtualization) && skipPage !== true) {
             gObj.pageSettings.currentPage = Math.max(1, gObj.pageSettings.currentPage);
             if (gObj.pageSettings.pageCount <= 0) {
@@ -2161,6 +2512,13 @@ var Data = /** @__PURE__ @class */ (function () {
             }
             if (gObj.pageSettings.pageSize <= 0) {
                 gObj.pageSettings.pageSize = 12;
+            }
+            if (query.queries.length) {
+                for (var i = 0; i < query.queries.length; i++) {
+                    if (query.queries[i][fName] === 'onPage') {
+                        query.queries.splice(i, 1);
+                    }
+                }
             }
             query.page(gObj.pageSettings.currentPage, gObj.pageSettings.pageSize);
         }
@@ -2549,6 +2907,7 @@ var Row = /** @__PURE__ @class */ (function () {
 var Cell = /** @__PURE__ @class */ (function () {
     function Cell(options) {
         this.isSpanned = false;
+        this.isRowSpanned = false;
         merge(this, options);
     }
     Cell.prototype.clone = function () {
@@ -2571,10 +2930,22 @@ var CellMergeRender = /** @__PURE__ @class */ (function () {
     CellMergeRender.prototype.render = function (cellArgs, row, i, td) {
         var cellRendererFact = this.serviceLocator.getService('cellRendererFactory');
         var cellRenderer = cellRendererFact.getCellRenderer(row.cells[i].cellType || CellType.Data);
-        var span = row.cells[i].cellSpan ? row.cells[i].cellSpan :
+        var colSpan = row.cells[i].cellSpan ? row.cells[i].cellSpan :
             (cellArgs.colSpan + i) <= row.cells.length ? cellArgs.colSpan : row.cells.length - i;
+        var rowSpan = cellArgs.rowSpan;
         var visible = 0;
-        for (var j = i + 1; j < i + span && j < row.cells.length; j++) {
+        var spannedCell;
+        if (row.index > 0) {
+            var cells = this.parent.groupSettings.columns.length > 0 &&
+                !this.parent.getRowsObject()[row.index - 1].isDataRow ? this.parent.getRowsObject()[row.index].cells :
+                this.parent.getRowsObject()[row.index - 1].cells;
+            var targetCell_1 = row.cells[i];
+            var uid_1 = 'uid';
+            spannedCell = cells.filter(function (cell) { return cell.column.uid === targetCell_1.column[uid_1]; })[0];
+        }
+        var colSpanLen = spannedCell && spannedCell.colSpanRange > 1 && spannedCell.rowSpanRange > 1 ?
+            spannedCell.colSpanRange : colSpan;
+        for (var j = i + 1; j < i + colSpanLen && j < row.cells.length; j++) {
             if (row.cells[j].visible === false) {
                 visible++;
             }
@@ -2583,19 +2954,32 @@ var CellMergeRender = /** @__PURE__ @class */ (function () {
             }
         }
         if (visible > 0) {
-            for (var j = i + span; j < i + span + visible && j < row.cells.length; j++) {
+            for (var j = i + colSpan; j < i + colSpan + visible && j < row.cells.length; j++) {
                 row.cells[j].isSpanned = true;
             }
-            if (i + span + visible >= row.cells.length) {
-                span -= (i + span + visible) - row.cells.length;
+            if (i + colSpan + visible >= row.cells.length) {
+                colSpan -= (i + colSpan + visible) - row.cells.length;
             }
         }
         if (row.cells[i].cellSpan) {
             row.data[cellArgs.column.field] = row.cells[i].spanText;
             td = cellRenderer.render(row.cells[i], row.data, { 'index': !isNullOrUndefined(row.index) ? row.index.toString() : '' });
         }
-        if (span > 1) {
-            attributes(td, { 'colSpan': span.toString(), 'aria-colSpan': span.toString() });
+        if (colSpan > 1) {
+            attributes(td, { 'colSpan': colSpan.toString(), 'aria-colSpan': colSpan.toString() });
+        }
+        if (rowSpan > 1) {
+            attributes(td, { 'rowspan': rowSpan.toString(), 'aria-rowspan': rowSpan.toString() });
+            row.cells[i].isRowSpanned = true;
+            row.cells[i].rowSpanRange = Number(rowSpan);
+            if (colSpan > 1) {
+                row.cells[i].colSpanRange = Number(colSpan);
+            }
+        }
+        if (row.index > 0 && (spannedCell.rowSpanRange > 1)) {
+            row.cells[i].isSpanned = true;
+            row.cells[i].rowSpanRange = Number(spannedCell.rowSpanRange - 1);
+            row.cells[i].colSpanRange = spannedCell.rowSpanRange > 0 ? spannedCell.colSpanRange : 1;
         }
         if (this.parent.enableColumnVirtualization && !row.cells[i].cellSpan &&
             !this.containsKey(cellArgs.column.field, cellArgs.data[cellArgs.column.field])) {
@@ -2661,6 +3045,7 @@ var CellMergeRender = /** @__PURE__ @class */ (function () {
  */
 var RowRenderer = /** @__PURE__ @class */ (function () {
     function RowRenderer(serviceLocator, cellType, parent) {
+        this.isSpan = false;
         this.cellType = cellType;
         this.serviceLocator = serviceLocator;
         this.parent = parent;
@@ -2721,23 +3106,36 @@ var RowRenderer = /** @__PURE__ @class */ (function () {
         attributes(tr, attrCopy);
         setStyleAndAttributes(tr, row.attributes);
         var cellRendererFact = this.serviceLocator.getService('cellRendererFactory');
-        for (var i = 0, len = row.cells.length; i < len; i++) {
+        var _loop_1 = function (i, len) {
             var cell = row.cells[i];
             cell.isSelected = row.isSelected;
             var cellRenderer = cellRendererFact.getCellRenderer(row.cells[i].cellType || CellType.Data);
             var attrs = { 'index': !isNullOrUndefined(row.index) ? row.index.toString() : '' };
             if (row.isExpand && row.cells[i].cellType === CellType.DetailExpand) {
-                attrs['class'] = 'e-detailrowexpand';
+                attrs['class'] = this_1.parent.isPrinting ? 'e-detailrowcollapse' : 'e-detailrowexpand';
             }
             var td = cellRenderer.render(row.cells[i], row.data, attrs);
             if (row.cells[i].cellType !== CellType.Filter) {
                 if (row.cells[i].cellType === CellType.Data || row.cells[i].cellType === CellType.CommandColumn) {
-                    this.parent.trigger(queryCellInfo, extend(cellArgs, {
+                    this_1.parent.trigger(queryCellInfo, extend(cellArgs, {
                         cell: td, column: cell.column, colSpan: 1,
-                        foreignKeyData: row.cells[i].foreignKeyData
+                        rowSpan: 1, foreignKeyData: row.cells[i].foreignKeyData,
+                        requestType: this_1.parent.requestTypeAction
                     }));
-                    if (cellArgs.colSpan > 1 || row.cells[i].cellSpan > 1) {
-                        var cellMerge = new CellMergeRender(this.serviceLocator, this.parent);
+                    var isRowSpanned = false;
+                    if (row.index > 0 && this_1.isSpan) {
+                        var prevRowCells = this_1.parent.groupSettings.columns.length > 0 &&
+                            !this_1.parent.getRowsObject()[row.index - 1].isDataRow ?
+                            this_1.parent.getRowsObject()[row.index].cells : this_1.parent.getRowsObject()[row.index - 1].cells;
+                        var uid_1 = 'uid';
+                        var prevRowCell = prevRowCells.filter(function (cell) {
+                            return cell.column.uid === row.cells[i].column[uid_1];
+                        })[0];
+                        isRowSpanned = prevRowCell.isRowSpanned ? prevRowCell.isRowSpanned : prevRowCell.rowSpanRange > 1;
+                    }
+                    if (cellArgs.colSpan > 1 || row.cells[i].cellSpan > 1 || cellArgs.rowSpan > 1 || isRowSpanned) {
+                        this_1.isSpan = true;
+                        var cellMerge = new CellMergeRender(this_1.serviceLocator, this_1.parent);
                         td = cellMerge.render(cellArgs, row, i, td);
                     }
                 }
@@ -2745,6 +3143,10 @@ var RowRenderer = /** @__PURE__ @class */ (function () {
                     tr.appendChild(td);
                 }
             }
+        };
+        var this_1 = this;
+        for (var i = 0, len = row.cells.length; i < len; i++) {
+            _loop_1(i, len);
         }
         var args = { row: tr, rowHeight: this.parent.rowHeight };
         if (row.isDataRow) {
@@ -2845,6 +3247,9 @@ var RowModelGenerator = /** @__PURE__ @class */ (function () {
         if (this.parent.detailTemplate || this.parent.childGrid) {
             cols.push(this.generateCell({}, null, CellType.DetailExpand));
         }
+        if (this.parent.isRowDragable()) {
+            cols.push(this.generateCell({}, null, CellType.RowDragIcon));
+        }
         return cols;
     };
     RowModelGenerator.prototype.generateRow = function (data, index, cssClass, indent) {
@@ -2856,6 +3261,14 @@ var RowModelGenerator = /** @__PURE__ @class */ (function () {
         options.indent = indent;
         options.isDataRow = true;
         options.isExpand = false;
+        if (this.parent.isPrinting) {
+            if (this.parent.hierarchyPrintMode === 'All') {
+                options.isExpand = true;
+            }
+            else if (this.parent.hierarchyPrintMode === 'Expanded' && this.parent.expandedRows && this.parent.expandedRows[index]) {
+                options.isExpand = this.parent.expandedRows[index].isExpand;
+            }
+        }
         options.cssClass = cssClass;
         options.isAltRow = this.parent.enableAltRow ? index % 2 !== 0 : false;
         options.isSelected = this.parent.getSelectedRowIndexes().indexOf(index) > -1;
@@ -2979,7 +3392,8 @@ var SummaryModelGenerator = /** @__PURE__ @class */ (function () {
         var isDetailGridAlone = !isNullOrUndefined(this.parent.childGrid);
         var indentLength = this.parent.groupSettings.columns.length + (this.parent.detailTemplate ||
             !isNullOrUndefined(this.parent.childGrid) ? 1 : 0);
-        this.getColumns(start, end).forEach(function (value, index) { return tmp.push(_this.getGeneratedCell(value, summaryRow, index >= indentLength ? _this.getCellType() : CellType.Indent, indents[index], isDetailGridAlone)); });
+        this.getColumns(start, end).forEach(function (value, index) { return tmp.push(_this.getGeneratedCell(value, summaryRow, index >= indentLength ? _this.getCellType() :
+            index < _this.parent.groupSettings.columns.length ? CellType.Indent : CellType.DetailFooterIntent, indents[index], isDetailGridAlone)); });
         var row = new Row({ data: data, attributes: { class: 'e-summaryrow' } });
         row.cells = tmp;
         row.uid = getUid('grid-row');
@@ -3140,7 +3554,7 @@ var GroupModelGenerator = /** @__PURE__ @class */ (function (_super) {
         var _a;
         var level = raw;
         if (isNullOrUndefined(data.items)) {
-            if (isNullOrUndefined(data.GroupGuid)) {
+            if (isNullOrUndefined(data.GroupGuid) && (this.parent.columns.length !== this.parent.groupSettings.columns.length)) {
                 this.rows = this.rows.concat(this.generateDataRows(data, index));
             }
             else {
@@ -3204,6 +3618,9 @@ var GroupModelGenerator = /** @__PURE__ @class */ (function (_super) {
             var cellType = !_this.parent.enableColumnVirtualization || tmpFlag ?
                 CellType.GroupCaption : CellType.GroupCaptionEmpty;
             indent = _this.parent.enableColumnVirtualization && cellType === CellType.GroupCaption ? indent + groupedLen : indent;
+            if (gObj.isRowDragable()) {
+                indent++;
+            }
             cells.push(_this.generateCell(column, null, cellType, indent));
         });
         cells.push.apply(cells, visibles);
@@ -3445,6 +3862,7 @@ var ContentRender = /** @__PURE__ @class */ (function () {
             this.tbody = this.getTable().querySelector('tbody');
         }
         for (var i = 0, len = modelData.length; i < len; i++) {
+            this.rows.push(modelData[i]);
             if (!gObj.rowTemplate) {
                 tr = row.render(modelData[i], columns);
                 if (gObj.frozenRows && i < gObj.frozenRows) {
@@ -3452,6 +3870,9 @@ var ContentRender = /** @__PURE__ @class */ (function () {
                 }
                 else {
                     frag.appendChild(tr);
+                }
+                if (modelData[i].isExpand) {
+                    gObj.notify(expandChildGrid, tr.cells[gObj.groupSettings.columns.length]);
                 }
             }
             else {
@@ -3480,7 +3901,6 @@ var ContentRender = /** @__PURE__ @class */ (function () {
                     }
                 }
             }
-            this.rows.push(modelData[i]);
             if (modelData[i].isDataRow) {
                 //detailrowvisible 
                 var td = tr.querySelectorAll('.e-rowcell:not(.e-hide)')[0];
@@ -3748,6 +4168,7 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
     function HeaderRender(parent, serviceLocator) {
         var _this = this;
         this.frzIdx = 0;
+        this.notfrzIdx = 0;
         this.helper = function (e) {
             var gObj = _this.parent;
             var target = e.sender.target;
@@ -3772,6 +4193,9 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
                     col = gObj.getColumnByUid(headercelldiv.getAttribute('e-mappinguid'));
                 }
                 _this.column = col;
+                if (_this.column.lockColumn) {
+                    return false;
+                }
                 visualElement.setAttribute('e-mappinguid', _this.column.uid);
             }
             if (col && !isNullOrUndefined(col.headerTemplate)) {
@@ -3977,7 +4401,7 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
         rowRenderer.element = colHeader;
         var rows = [];
         var headerRow;
-        this.colDepth = this.getObjDepth();
+        this.colDepth = measureColumnDepth(gObj.columns);
         for (var i = 0, len = this.colDepth; i < len; i++) {
             rows[i] = this.generateRow(i);
             rows[i].cells = [];
@@ -4001,17 +4425,22 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
         var cols = this.parent.getColumns();
         var col;
         var indexes = this.parent.getColumnIndexesInView();
+        colGroup.id = this.parent.element.id + 'colGroup';
         if (this.parent.allowGrouping) {
             for (var i = 0, len = this.parent.groupSettings.columns.length; i < len; i++) {
                 if (this.parent.enableColumnVirtualization && indexes.indexOf(i) === -1) {
                     continue;
                 }
-                col = this.parent.createElement('col');
+                col = this.parent.createElement('col', { className: 'e-group-intent' });
                 colGroup.appendChild(col);
             }
         }
         if (this.parent.detailTemplate || this.parent.childGrid) {
-            col = this.parent.createElement('col');
+            col = this.parent.createElement('col', { className: 'e-detail-intent' });
+            colGroup.appendChild(col);
+        }
+        if (this.parent.isRowDragable()) {
+            col = this.parent.createElement('col', { className: 'e-drag-intent' });
             colGroup.appendChild(col);
         }
         for (var i = 0, len = cols.length; i < len; i++) {
@@ -4039,6 +4468,9 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
             if (gObj.detailTemplate || gObj.childGrid) {
                 rows[i].cells.push(this.generateCell({}, CellType.DetailHeader));
             }
+            if (gObj.isRowDragable()) {
+                rows[i].cells.push(this.generateCell({}, CellType.RowDragHIcon));
+            }
         }
         return rows;
     };
@@ -4046,7 +4478,16 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
         var thead = this.parent.getHeaderTable() && this.parent.getHeaderTable().querySelector('thead');
         var cols = this.parent.enableColumnVirtualization ? this.parent.getColumns() : this.parent.columns;
         this.frzIdx = 0;
+        this.notfrzIdx = 0;
+        if (this.parent.lockcolPositionCount) {
+            for (var i = 0; i < cols.length; i++) {
+                this.lockColsRendered = false;
+                rows = this.appendCells(cols[i], rows, 0, i === 0, false, i === (cols.length - 1), thead);
+            }
+        }
         for (var i = 0, len = cols.length; i < len; i++) {
+            this.notfrzIdx = 0;
+            this.lockColsRendered = true;
             rows = this.appendCells(cols[i], rows, 0, i === 0, false, i === (len - 1), thead);
         }
         return rows;
@@ -4055,31 +4496,67 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
         var lastCol = isLastCol ? 'e-lastcell' : '';
         var frzCols = this.parent.getFrozenColumns();
         if (!cols.columns) {
-            if (!frzCols || (frzCols
-                && ((!isMovable && (this.frzIdx < this.parent.frozenColumns || cols.isFrozen))
-                    || (isMovable && this.frzIdx >= this.parent.frozenColumns && !cols.isFrozen)))) {
+            if (!frzCols && (!this.parent.lockcolPositionCount
+                || (cols.lockColumn && !this.lockColsRendered) || (!cols.lockColumn && this.lockColsRendered))
+                || (frzCols && ((!isMovable && (this.frzIdx + this.notfrzIdx < this.parent.frozenColumns || cols.isFrozen) &&
+                    (!this.parent.lockcolPositionCount || (cols.lockColumn && !this.lockColsRendered) ||
+                        (!cols.lockColumn && this.lockColsRendered)))
+                    || (isMovable && (this.frzIdx + this.notfrzIdx >= this.parent.frozenColumns && !cols.isFrozen) &&
+                        (!this.parent.lockcolPositionCount || (cols.lockColumn && !this.lockColsRendered) ||
+                            (!cols.lockColumn && this.lockColsRendered)))))) {
                 rows[index].cells.push(this.generateCell(cols, CellType.Header, this.colDepth - index, (isFirstObj ? '' : (isFirstCol ? 'e-firstcell' : '')) + lastCol, index, this.parent.getColumnIndexByUid(cols.uid)));
             }
-            this.frzIdx++;
+            if (this.parent.lockcolPositionCount) {
+                if ((this.frzIdx + this.notfrzIdx < this.parent.frozenColumns) &&
+                    ((cols.lockColumn && !this.lockColsRendered) || (!cols.lockColumn && this.lockColsRendered))) {
+                    this.frzIdx++;
+                }
+                else {
+                    this.notfrzIdx++;
+                }
+            }
+            else {
+                this.frzIdx++;
+            }
         }
         else {
             var colSpan = this.getCellCnt(cols, 0);
             if (colSpan) {
                 var frzObj = this.refreshFrozenHdr(cols.columns, { isPartial: false, isComp: true, cnt: 0 });
-                if (!frzCols || (frzCols
-                    && ((!isMovable && (this.parent.frozenColumns - this.frzIdx > 0 || (frzObj.isPartial)))
+                var stackedLockColsCount = this.getStackedLockColsCount(cols, 0);
+                if (!frzCols && (!this.parent.lockcolPositionCount
+                    || (!this.lockColsRendered && stackedLockColsCount) || (this.lockColsRendered && (colSpan - stackedLockColsCount)))
+                    || (frzCols && ((!isMovable && (this.parent.frozenColumns - this.frzIdx > 0 || (frzObj.isPartial)))
                         || (isMovable && (colSpan + this.frzIdx > this.parent.frozenColumns && !frzObj.isComp))))) {
                     rows[index].cells.push(new Cell({
                         cellType: CellType.StackedHeader, column: cols,
-                        colSpan: this.getColSpan(colSpan, isMovable, frzObj.cnt)
+                        colSpan: this.getColSpan(colSpan, isMovable, frzObj.cnt, stackedLockColsCount)
                     }));
                 }
             }
-            for (var i = 0, len = cols.columns.length; i < len; i++) {
-                rows = this.appendCells(cols.columns[i], rows, index + 1, isFirstObj, i === 0, i === (len - 1) && isLastCol, isMovable);
+            if (this.parent.lockcolPositionCount && !this.lockColsRendered) {
+                for (var i = 0; i < cols.columns.length; i++) {
+                    rows = this.appendCells(cols.columns[i], rows, index + 1, isFirstObj, i === 0, i === (cols.columns.length - 1) && isLastCol, isMovable);
+                }
+            }
+            if (this.lockColsRendered) {
+                for (var i = 0, len = cols.columns.length; i < len; i++) {
+                    rows = this.appendCells(cols.columns[i], rows, index + 1, isFirstObj, i === 0, i === (len - 1) && isLastCol, isMovable);
+                }
             }
         }
         return rows;
+    };
+    HeaderRender.prototype.getStackedLockColsCount = function (col, lockColsCount) {
+        if (col.columns) {
+            for (var i = 0; i < col.columns.length; i++) {
+                lockColsCount = this.getStackedLockColsCount(col.columns[i], lockColsCount);
+            }
+        }
+        else if (col.lockColumn) {
+            lockColsCount++;
+        }
+        return lockColsCount;
     };
     HeaderRender.prototype.refreshFrozenHdr = function (cols, frzObj) {
         for (var i = 0; i < cols.length; i++) {
@@ -4097,7 +4574,7 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
         }
         return frzObj;
     };
-    HeaderRender.prototype.getColSpan = function (colSpan, isMovable, frozenCnt) {
+    HeaderRender.prototype.getColSpan = function (colSpan, isMovable, frozenCnt, stackedLockColsCount) {
         var frzCol = this.parent.frozenColumns;
         if (this.parent.getFrozenColumns() && this.frzIdx + colSpan > frzCol) {
             if (isMovable) {
@@ -4106,6 +4583,9 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
             else {
                 colSpan = colSpan - (colSpan - (frzCol > this.frzIdx ? frzCol + frozenCnt - this.frzIdx : frozenCnt));
             }
+        }
+        else if (this.parent.lockcolPositionCount) {
+            colSpan = !this.lockColsRendered ? stackedLockColsCount : colSpan - stackedLockColsCount;
         }
         return colSpan;
     };
@@ -4208,34 +4688,6 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
     };
     HeaderRender.prototype.appendContent = function (table) {
         this.getPanel().firstChild.appendChild(table);
-    };
-    HeaderRender.prototype.getObjDepth = function () {
-        var max = 0;
-        var cols = this.parent.columns;
-        for (var i = 0, len = cols.length; i < len; i++) {
-            var depth = this.checkDepth(cols[i], 0);
-            if (max < depth) {
-                max = depth;
-            }
-        }
-        return max + 1;
-    };
-    HeaderRender.prototype.checkDepth = function (col, index) {
-        var max = index;
-        var indices = [];
-        if (col.columns) {
-            index++;
-            for (var i = 0, len = col.columns.length; i < len; i++) {
-                indices[i] = this.checkDepth(col.columns[i], index);
-            }
-            for (var j = 0; j < indices.length; j++) {
-                if (max < indices[j]) {
-                    max = indices[j];
-                }
-            }
-            index = max;
-        }
-        return index;
     };
     HeaderRender.prototype.getCellCnt = function (col, cnt) {
         if (col.columns) {
@@ -4775,7 +5227,10 @@ var StackedHeaderCellRenderer = /** @__PURE__ @class */ (function (_super) {
      */
     StackedHeaderCellRenderer.prototype.render = function (cell, data, attributes$$1) {
         var node = this.element.cloneNode();
-        var div = this.parent.createElement('div', { className: 'e-stackedheadercelldiv' });
+        var div = this.parent.createElement('div', {
+            className: 'e-stackedheadercelldiv',
+            attrs: { 'e-mappinguid': cell.column.uid }
+        });
         node.appendChild(div);
         div.innerHTML = cell.column.headerText;
         if (cell.column.toolTip) {
@@ -4787,6 +5242,11 @@ var StackedHeaderCellRenderer = /** @__PURE__ @class */ (function (_super) {
         node.setAttribute('colspan', cell.colSpan.toString());
         node.setAttribute('aria-colspan', cell.colSpan.toString());
         node.setAttribute('aria-rowspan', '1');
+        if (this.parent.allowResizing) {
+            var handler = this.parent.createElement('div');
+            handler.className = cell.column.allowResizing ? 'e-rhandler e-rcursor' : 'e-rsuppress';
+            node.appendChild(handler);
+        }
         this.parent.trigger(headerCellInfo, { cell: cell, node: node });
         return node;
     };
@@ -4852,7 +5312,8 @@ var GroupCaptionCellRenderer = /** @__PURE__ @class */ (function (_super) {
     function GroupCaptionCellRenderer() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.element = _this.parent
-            .createElement('TD', { className: 'e-groupcaption', attrs: { role: 'gridcell', tabindex: '-1' } });
+            .createElement('TD', { className: 'e-groupcaption',
+            attrs: { id: _this.parent.element.id + 'captioncell', role: 'gridcell', tabindex: '-1' } });
         return _this;
     }
     /**
@@ -5070,6 +5531,83 @@ var DetailExpandCellRenderer = /** @__PURE__ @class */ (function (_super) {
     return DetailExpandCellRenderer;
 }(CellRenderer));
 
+var __extends$11 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * ExpandCellRenderer class which responsible for building group expand cell.
+ * @hidden
+ */
+var RowDragDropRenderer = /** @__PURE__ @class */ (function (_super) {
+    __extends$11(RowDragDropRenderer, _super);
+    function RowDragDropRenderer() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.element = _this.parent.createElement('TD', {
+            className: 'e-rowdragdrop',
+            attrs: { role: 'gridcell', tabindex: '-1' }
+        });
+        return _this;
+    }
+    /**
+     * Function to render the detail expand cell
+     */
+    RowDragDropRenderer.prototype.render = function (cell, data) {
+        var nodeElement = this.element.cloneNode();
+        nodeElement.appendChild(this.parent.createElement('div', {
+            className: 'e-icons e-rowcelldrag e-dtdiagonalright e-icon-rowdragicon'
+        }));
+        return nodeElement;
+    };
+    return RowDragDropRenderer;
+}(CellRenderer));
+
+var __extends$12 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * DetailHeaderIndentCellRenderer class which responsible for building detail header indent cell.
+ * @hidden
+ */
+var RowDragDropHeaderRenderer = /** @__PURE__ @class */ (function (_super) {
+    __extends$12(RowDragDropHeaderRenderer, _super);
+    function RowDragDropHeaderRenderer() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.element = _this.parent.createElement('TH', { className: 'e-rowdragheader' });
+        return _this;
+    }
+    /**
+     * Function to render the detail indent cell
+     * @param  {Cell} cell
+     * @param  {Object} data
+     */
+    RowDragDropHeaderRenderer.prototype.render = function (cell, data) {
+        var node = this.element.cloneNode();
+        node.appendChild(createElement('div', { className: 'e-emptycell' }));
+        return node;
+    };
+    return RowDragDropHeaderRenderer;
+}(CellRenderer));
+
 /**
  * Content module is used to render grid content
  * @hidden
@@ -5250,10 +5788,18 @@ var Render = /** @__PURE__ @class */ (function () {
     Render.prototype.updateColumnType = function (record) {
         var columns = this.parent.getColumns();
         var value;
+        var cFormat = 'customFormat';
+        var equalTo = 'equalTo';
         var data = record && record.items ? record.items[0] : record;
         var fmtr = this.locator.getService('valueFormatter');
         for (var i = 0, len = columns.length; i < len; i++) {
             value = getObject(columns[i].field || '', data);
+            if (!isNullOrUndefined(columns[i][cFormat])) {
+                columns[i].format = columns[i][cFormat];
+            }
+            if (!isNullOrUndefined(columns[i].validationRules) && !isNullOrUndefined(columns[i].validationRules[equalTo])) {
+                columns[i].validationRules[equalTo][0] = this.parent.element.id + columns[i].validationRules[equalTo][0];
+            }
             if (columns[i].isForeignColumn() && columns[i].columnData) {
                 value = getObject(columns[i].foreignKeyValue || '', columns[i].columnData[0]);
             }
@@ -5284,6 +5830,9 @@ var Render = /** @__PURE__ @class */ (function () {
     Render.prototype.dataManagerSuccess = function (e, args) {
         var gObj = this.parent;
         gObj.trigger(beforeDataBound, e);
+        if (e.cancel) {
+            return;
+        }
         var len = Object.keys(e.result).length;
         if (this.parent.isDestroyed) {
             return;
@@ -5308,6 +5857,10 @@ var Render = /** @__PURE__ @class */ (function () {
         if (!this.isColTypeDef && gObj.getCurrentViewRecords()) {
             this.updateColumnType(gObj.getCurrentViewRecords()[0]);
         }
+        if (!this.parent.isInitialLoad && this.parent.groupSettings.disablePageWiseAggregates &&
+            !this.parent.groupSettings.columns.length) {
+            e.result = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.currentViewData;
+        }
         this.parent.notify(dataReady, extend({ count: e.count, result: e.result, aggregates: e.aggregates }, args));
         if (gObj.groupSettings.columns.length || (args && args.requestType === 'ungrouping')) {
             this.headerRenderer.refreshUI();
@@ -5323,6 +5876,7 @@ var Render = /** @__PURE__ @class */ (function () {
             }
             this.contentRenderer.setRowElements([]);
             this.contentRenderer.setRowObjects([]);
+            this.ariaService.setBusy(this.parent.getContent().firstChild, false);
             this.renderEmptyRow();
             if (args) {
                 var action = (args.requestType || '').toLowerCase() + '-complete';
@@ -5378,7 +5932,10 @@ var Render = /** @__PURE__ @class */ (function () {
         cellrender.addCellRenderer(CellType.HeaderIndent, new HeaderIndentCellRenderer(this.parent, this.locator));
         cellrender.addCellRenderer(CellType.StackedHeader, new StackedHeaderCellRenderer(this.parent, this.locator));
         cellrender.addCellRenderer(CellType.DetailHeader, new DetailHeaderIndentCellRenderer(this.parent, this.locator));
+        cellrender.addCellRenderer(CellType.RowDragHIcon, new RowDragDropHeaderRenderer(this.parent, this.locator));
         cellrender.addCellRenderer(CellType.DetailExpand, new DetailExpandCellRenderer(this.parent, this.locator));
+        cellrender.addCellRenderer(CellType.DetailFooterIntent, new IndentCellRenderer(this.parent, this.locator));
+        cellrender.addCellRenderer(CellType.RowDragIcon, new RowDragDropRenderer(this.parent, this.locator));
     };
     Render.prototype.addEventListener = function () {
         var _this = this;
@@ -5386,6 +5943,7 @@ var Render = /** @__PURE__ @class */ (function () {
             return;
         }
         this.parent.on(initialLoad, this.instantiateRenderer, this);
+        this.parent.on('refreshdataSource', this.dataManagerSuccess, this);
         this.parent.on(modelChanged, this.refresh, this);
         this.parent.on(refreshComplete, this.refreshComplete, this);
         this.parent.on(bulkSave, this.sendBulkRequest, this);
@@ -5570,9 +6128,14 @@ var ColumnWidthService = /** @__PURE__ @class */ (function () {
         }
         if (this.parent.detailTemplate || this.parent.childGrid) {
             this.setColumnWidth(new Column({ width: '30px' }), i);
+            i++;
+        }
+        if (this.parent.isRowDragable()) {
+            this.setColumnWidth(new Column({ width: '30px' }), i);
+            i++;
         }
         this.parent.getColumns().forEach(function (column, index) {
-            _this.setColumnWidth(column, wFlag ? undefined : index);
+            _this.setColumnWidth(column, wFlag && _this.parent.enableColumnVirtualization ? undefined : index + i);
         });
     };
     ColumnWidthService.prototype.setColumnWidth = function (column, index, module) {
@@ -5712,7 +6275,7 @@ var ColumnWidthService = /** @__PURE__ @class */ (function () {
     return ColumnWidthService;
 }());
 
-var __extends$11 = (undefined && undefined.__extends) || (function () {
+var __extends$13 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -5939,7 +6502,22 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
             var rows = content ? e.rows.slice(_this.parent.frozenRows) : e.rows;
             var updateRow = content ? e.rows.slice(0, _this.parent.frozenRows) : e.rows;
             var matrix = cFocus.matrix.generate(updateRow, cFocus.selector);
-            cFocus.matrix.generate(rows, cFocus.selector);
+            var frozenColumnsCount = _this.parent.getFrozenColumns();
+            if (e.name === 'batchAdd' && frozenColumnsCount) {
+                var newMovableRows = rows.map(function (row) { return row.clone(); });
+                var newFrozenRows = rows.map(function (row) { return row.clone(); });
+                for (var i = 0; i < rows.length; i++) {
+                    if (rows[i].cells.length > frozenColumnsCount) {
+                        newFrozenRows[i].cells = rows[i].cells.slice(0, frozenColumnsCount);
+                        newMovableRows[i].cells = rows[i].cells.slice(frozenColumnsCount);
+                    }
+                }
+                _this.fContent.matrix.generate(newFrozenRows, _this.fContent.selector);
+                cFocus.matrix.generate(newMovableRows, cFocus.selector);
+            }
+            else {
+                cFocus.matrix.generate(rows, cFocus.selector);
+            }
             cFocus.generateRows(updateRow, { matrix: matrix, handlerInstance: (e.args && e.args.isFrozen) ? _this.fHeader : _this.header });
             if (!Browser.isDevice && !_this.focusByClick && e && e.args && e.args.requestType === 'paging') {
                 _this.skipFocus = false;
@@ -6342,7 +6920,7 @@ var ContentFocus = /** @__PURE__ @class */ (function () {
  * @hidden
  */
 var HeaderFocus = /** @__PURE__ @class */ (function (_super) {
-    __extends$11(HeaderFocus, _super);
+    __extends$13(HeaderFocus, _super);
     function HeaderFocus(parent) {
         return _super.call(this, parent) || this;
     }
@@ -6434,7 +7012,7 @@ var HeaderFocus = /** @__PURE__ @class */ (function (_super) {
     return HeaderFocus;
 }(ContentFocus));
 var FixedContentFocus = /** @__PURE__ @class */ (function (_super) {
-    __extends$11(FixedContentFocus, _super);
+    __extends$13(FixedContentFocus, _super);
     function FixedContentFocus() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -6466,7 +7044,7 @@ var FixedContentFocus = /** @__PURE__ @class */ (function (_super) {
     return FixedContentFocus;
 }(ContentFocus));
 var FixedHeaderFocus = /** @__PURE__ @class */ (function (_super) {
-    __extends$11(FixedHeaderFocus, _super);
+    __extends$13(FixedHeaderFocus, _super);
     function FixedHeaderFocus() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -6523,7 +7101,7 @@ var SearchBox = /** @__PURE__ @class */ (function () {
     return SearchBox;
 }());
 
-var __extends$12 = (undefined && undefined.__extends) || (function () {
+var __extends$14 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -6546,7 +7124,7 @@ var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, 
  * Configures the paging behavior of the Grid.
  */
 var PageSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$12(PageSettings, _super);
+    __extends$14(PageSettings, _super);
     function PageSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -6594,7 +7172,7 @@ var Selection = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     function Selection(parent, selectionSettings, locator) {
-        //Internal variables       
+        //Internal letiables       
         /**
          * @hidden
          */
@@ -6607,6 +7185,9 @@ var Selection = /** @__PURE__ @class */ (function () {
          * @hidden
          */
         this.selectedRecords = [];
+        /**
+         * @hidden
+         */
         this.preventFocus = false;
         this.isMultiShiftRequest = false;
         this.isMultiCtrlRequest = false;
@@ -6675,7 +7256,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         EventHandler.remove(this.parent.getContent(), 'mousedown', this.mouseDownHandler);
     };
     Selection.prototype.isEditing = function () {
-        return (this.parent.editSettings.mode === 'Normal' || (this.parent.editSettings.mode === 'Batch' && this.parent.editModule &&
+        return (this.parent.editSettings.mode === 'Normal' || (this.parent.editSettings.mode === 'Batch' &&
             this.parent.editModule.formObj && !this.parent.editModule.formObj.validate())) &&
             this.parent.isEdit && !this.parent.isPersistSelection;
     };
@@ -6690,7 +7271,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         var gObj = this.parent;
         var added = 'addedRecords';
         var deleted = 'deletedRecords';
-        if (gObj.editSettings.mode === 'Batch' && gObj.editModule) {
+        if (gObj.editSettings.mode === 'Batch') {
             var currentRecords = iterateExtend(this.parent.getCurrentViewRecords());
             currentRecords = this.parent.editModule.getBatchChanges()[added].concat(currentRecords);
             var deletedRecords = this.parent.editModule.getBatchChanges()[deleted];
@@ -7045,7 +7626,9 @@ var Selection = /** @__PURE__ @class */ (function () {
             var target = this.target;
             var currentViewData = this.parent.getCurrentViewRecords();
             for (var i = 0, len = this.selectedRowIndexes.length; i < len; i++) {
-                var currentRow = this.parent.getDataRows()[this.selectedRowIndexes[i]];
+                var currentRow = this.parent.editSettings.mode === 'Batch' ?
+                    this.parent.getRows()[this.selectedRowIndexes[i]]
+                    : this.parent.getDataRows()[this.selectedRowIndexes[i]];
                 var rowObj = this.getRowObj(currentRow);
                 if (rowObj) {
                     data.push(rowObj.data);
@@ -7221,7 +7804,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             endIndex = temp;
         }
         for (var i = startIndex.rowIndex; i <= endIndex.rowIndex; i++) {
-            if (this.selectionSettings.cellSelectionMode !== 'Box') {
+            if (this.selectionSettings.cellSelectionMode.indexOf('Box') < 0) {
                 min = i === startIndex.rowIndex ? (startIndex.cellIndex) : 0;
                 max = i === endIndex.rowIndex ? (endIndex.cellIndex) : this.getLastColIndex(i);
             }
@@ -7332,6 +7915,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (this.isSingleSel() || !this.isCellType() || this.isEditing()) {
             return;
         }
+        this.hideAutoFill();
         var rowObj;
         if (frzCols && cellIndexes[0].cellIndex >= frzCols) {
             rowObj = gObj.getMovableRowsObject()[cellIndexes[0].rowIndex];
@@ -7493,6 +8077,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             var foreignKeyData$$1 = [];
             var currentViewData = this.getCurrentBatchRecordChanges();
             var frzCols = gObj.getFrozenColumns();
+            this.hideAutoFill();
             for (var i = 0, len = rowCell.length; i < len; i++) {
                 data.push(currentViewData[rowCell[i].rowIndex]);
                 var rowObj = this.getRowObj(rowCell[i].rowIndex);
@@ -7572,28 +8157,315 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (target && !e.ctrlKey && !e.shiftKey) {
             var rowIndex = parseInt(target.getAttribute('aria-rowindex'), 10);
             if (!this.isCellDrag) {
-                this.selectRowsByRange(this.startIndex, rowIndex);
+                this.hideAutoFill();
+                this.selectRowsByRange(this.startDIndex, rowIndex);
             }
             else {
                 var td = parentsUntil(e.target, 'e-rowcell');
                 if (td) {
-                    this.selectLikeExcel(rowIndex, parseInt(td.getAttribute('aria-colindex'), 10));
+                    this.startAFCell = this.startCell;
+                    this.endAFCell = parentsUntil(e.target, 'e-rowcell');
+                    this.selectLikeExcel(e, rowIndex, parseInt(td.getAttribute('aria-colindex'), 10));
                 }
             }
         }
     };
-    Selection.prototype.selectLikeExcel = function (rowIndex, cellIndex) {
-        this.clearCellSelection();
-        this.selectCellsByRange({ rowIndex: this.startIndex, cellIndex: this.startCellIndex }, { rowIndex: rowIndex, cellIndex: cellIndex });
+    Selection.prototype.selectLikeExcel = function (e, rowIndex, cellIndex) {
+        if (!this.isAutoFillSel) {
+            this.clearCellSelection();
+            this.selectCellsByRange({ rowIndex: this.startDIndex, cellIndex: this.startDCellIndex }, { rowIndex: rowIndex, cellIndex: cellIndex });
+            this.drawBorders();
+        }
+        else { //Autofill
+            this.showAFBorders();
+            this.selectLikeAutoFill(e);
+        }
+    };
+    Selection.prototype.drawBorders = function () {
+        if (this.selectionSettings.cellSelectionMode === 'BoxWithBorder' && this.selectedRowCellIndexes.length && !this.parent.isEdit) {
+            if (!this.bdrBottom) {
+                this.createBorders();
+            }
+            this.positionBorders();
+        }
+        else {
+            this.hideBorders();
+        }
+    };
+    Selection.prototype.positionBorders = function () {
+        this.updateStartEndCells();
+        if (!this.startCell || !this.bdrLeft || !this.selectedRowCellIndexes.length) {
+            return;
+        }
+        this.showBorders();
+        var stOff = this.startCell.getBoundingClientRect();
+        var endOff = this.endCell.getBoundingClientRect();
+        var parentOff = this.startCell.offsetParent.getBoundingClientRect();
+        this.bdrLeft.style.left = stOff.left - parentOff.left + 'px';
+        this.bdrLeft.style.top = stOff.top - parentOff.top + 'px';
+        this.bdrLeft.style.height = endOff.top - stOff.top > 0 ?
+            (endOff.top - parentOff.top + endOff.height + 1) - (stOff.top - parentOff.top) + 'px' : endOff.height + 'px';
+        this.bdrRight.style.left = endOff.left - parentOff.left + endOff.width + 'px';
+        this.bdrRight.style.top = this.bdrLeft.style.top;
+        this.bdrRight.style.height = this.bdrLeft.style.height;
+        this.bdrTop.style.left = this.bdrLeft.style.left;
+        this.bdrTop.style.top = this.bdrRight.style.top;
+        this.bdrTop.style.width = parseInt(this.bdrRight.style.left, 10) - parseInt(this.bdrLeft.style.left, 10) + 1 + 'px';
+        this.bdrBottom.style.left = this.bdrLeft.style.left;
+        this.bdrBottom.style.top = parseInt(this.bdrLeft.style.top, 10) + parseInt(this.bdrLeft.style.height, 10) + 'px';
+        this.bdrBottom.style.width = this.bdrTop.style.width;
+    };
+    Selection.prototype.createBorders = function () {
+        if (!this.bdrLeft) {
+            this.bdrLeft = this.parent.getContentTable().parentElement.appendChild(createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrleft', styles: 'width: 2px;' }));
+            this.bdrRight = this.parent.getContentTable().parentElement.appendChild(createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrright', styles: 'width: 2px;' }));
+            this.bdrBottom = this.parent.getContentTable().parentElement.appendChild(createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrbottom', styles: 'height: 2px;' }));
+            this.bdrTop = this.parent.getContentTable().parentElement.appendChild(createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrtop', styles: 'height: 2px;' }));
+        }
+    };
+    Selection.prototype.showBorders = function () {
+        if (this.bdrLeft) {
+            this.bdrLeft.style.display = '';
+            this.bdrRight.style.display = '';
+            this.bdrBottom.style.display = '';
+            this.bdrTop.style.display = '';
+        }
+    };
+    Selection.prototype.hideBorders = function () {
+        if (this.bdrLeft) {
+            this.bdrLeft.style.display = 'none';
+            this.bdrRight.style.display = 'none';
+            this.bdrBottom.style.display = 'none';
+            this.bdrTop.style.display = 'none';
+        }
+    };
+    Selection.prototype.drawAFBorders = function () {
+        if (!this.bdrAFBottom) {
+            this.createAFBorders();
+        }
+        this.positionAFBorders();
+    };
+    Selection.prototype.positionAFBorders = function () {
+        if (!this.startCell || !this.bdrAFLeft) {
+            return;
+        }
+        this.showBorders();
+        var stOff = this.startAFCell.getBoundingClientRect();
+        var endOff = this.endAFCell.getBoundingClientRect();
+        var parentOff = this.startAFCell.offsetParent.getBoundingClientRect();
+        this.bdrAFLeft.style.left = stOff.left - parentOff.left + 'px';
+        this.bdrAFLeft.style.top = stOff.top - parentOff.top + 'px';
+        this.bdrAFLeft.style.height = endOff.top - stOff.top > 0 ?
+            (endOff.top - parentOff.top + endOff.height + 1) - (stOff.top - parentOff.top) + 'px' : endOff.height + 'px';
+        this.bdrAFRight.style.left = endOff.left - parentOff.left + endOff.width + 'px';
+        this.bdrAFRight.style.top = this.bdrAFLeft.style.top;
+        this.bdrAFRight.style.height = this.bdrAFLeft.style.height;
+        this.bdrAFTop.style.left = this.bdrAFLeft.style.left;
+        this.bdrAFTop.style.top = this.bdrAFRight.style.top;
+        this.bdrAFTop.style.width = parseInt(this.bdrAFRight.style.left, 10) - parseInt(this.bdrAFLeft.style.left, 10) + 1 + 'px';
+        this.bdrAFBottom.style.left = this.bdrAFLeft.style.left;
+        this.bdrAFBottom.style.top = parseInt(this.bdrAFLeft.style.top, 10) + parseInt(this.bdrAFLeft.style.height, 10) + 'px';
+        this.bdrAFBottom.style.width = this.bdrAFTop.style.width;
+    };
+    Selection.prototype.createAFBorders = function () {
+        if (!this.bdrAFLeft) {
+            this.bdrAFLeft = this.parent.getContentTable().parentElement.appendChild(createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrafleft', styles: 'width: 2px;' }));
+            this.bdrAFRight = this.parent.getContentTable().parentElement.appendChild(createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrafright', styles: 'width: 2px;' }));
+            this.bdrAFBottom = this.parent.getContentTable().parentElement.appendChild(createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrafbottom', styles: 'height: 2px;' }));
+            this.bdrAFTop = this.parent.getContentTable().parentElement.appendChild(createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdraftop', styles: 'height: 2px;' }));
+        }
+    };
+    Selection.prototype.showAFBorders = function () {
+        if (this.bdrAFLeft) {
+            this.bdrAFLeft.style.display = '';
+            this.bdrAFRight.style.display = '';
+            this.bdrAFBottom.style.display = '';
+            this.bdrAFTop.style.display = '';
+        }
+    };
+    Selection.prototype.hideAFBorders = function () {
+        if (this.bdrAFLeft) {
+            this.bdrAFLeft.style.display = 'none';
+            this.bdrAFRight.style.display = 'none';
+            this.bdrAFBottom.style.display = 'none';
+            this.bdrAFTop.style.display = 'none';
+        }
+    };
+    Selection.prototype.updateValue = function (rIdx, cIdx, cell) {
+        var col = this.parent.getColumnByIndex(cIdx);
+        if (this.parent.editModule && cell) {
+            if (col.type === 'number') {
+                this.parent.editModule.updateCell(rIdx, col.field, parseInt(cell.textContent, 10));
+            }
+            else {
+                this.parent.editModule.updateCell(rIdx, col.field, cell.textContent);
+            }
+        }
+    };
+    /* tslint:disable-next-line:max-func-body-length */
+    Selection.prototype.selectLikeAutoFill = function (e, isApply) {
+        var startrowIdx = parseInt(parentsUntil(this.startAFCell, 'e-row').getAttribute('aria-rowindex'), 10);
+        var startCellIdx = parseInt(this.startAFCell.getAttribute('aria-colindex'), 10);
+        var endrowIdx = parseInt(parentsUntil(this.endAFCell, 'e-row').getAttribute('aria-rowindex'), 10);
+        var endCellIdx = parseInt(this.endAFCell.getAttribute('aria-colindex'), 10);
+        var rowLen = this.selectedRowCellIndexes.length - 1;
+        var colLen = this.selectedRowCellIndexes[0].cellIndexes.length - 1;
+        switch (true) { //direction         
+            case !isApply && this.endAFCell.classList.contains('e-cellselectionbackground') &&
+                !!parentsUntil(e.target, 'e-rowcell'):
+                this.startAFCell = this.parent.getCellFromIndex(startrowIdx, startCellIdx);
+                this.endAFCell = this.parent.getCellFromIndex(startrowIdx + rowLen, startCellIdx + colLen);
+                this.drawAFBorders();
+                break;
+            case startCellIdx + colLen < endCellIdx && //right
+                endCellIdx - startCellIdx - colLen + 1 > endrowIdx - startrowIdx - rowLen // right bottom
+                && endCellIdx - startCellIdx - colLen + 1 > startrowIdx - endrowIdx: //right top
+                this.endAFCell = this.parent.getCellFromIndex(startrowIdx + rowLen, endCellIdx);
+                endrowIdx = parseInt(parentsUntil(this.endAFCell, 'e-row').getAttribute('aria-rowindex'), 10);
+                endCellIdx = parseInt(this.endAFCell.getAttribute('aria-colindex'), 10);
+                if (!isApply) {
+                    this.drawAFBorders();
+                }
+                else {
+                    var cellIdx = parseInt(this.endCell.getAttribute('aria-colindex'), 10);
+                    for (var i = startrowIdx; i <= endrowIdx; i++) {
+                        var cells = [].slice.call(this.parent.getDataRows()[i].querySelectorAll('.e-cellselectionbackground'));
+                        var c = 0;
+                        for (var j = cellIdx + 1; j <= endCellIdx; j++) {
+                            if (c > colLen) {
+                                c = 0;
+                            }
+                            this.updateValue(i, j, cells[c]);
+                            c++;
+                        }
+                    }
+                    this.selectCellsByRange({ rowIndex: startrowIdx, cellIndex: this.startCellIndex }, { rowIndex: endrowIdx, cellIndex: endCellIdx });
+                }
+                break;
+            case startCellIdx > endCellIdx && // left
+                startCellIdx - endCellIdx + 1 > endrowIdx - startrowIdx - rowLen && //left top
+                startCellIdx - endCellIdx + 1 > startrowIdx - endrowIdx: // left bottom
+                this.startAFCell = this.parent.getCellFromIndex(startrowIdx, endCellIdx);
+                this.endAFCell = this.endCell;
+                if (!isApply) {
+                    this.drawAFBorders();
+                }
+                else {
+                    for (var i = startrowIdx; i <= startrowIdx + rowLen; i++) {
+                        var cells = [].slice.call(this.parent.getDataRows()[i].querySelectorAll('.e-cellselectionbackground'));
+                        cells.reverse();
+                        var c = 0;
+                        for (var j = this.startCellIndex - 1; j >= endCellIdx; j--) {
+                            if (c > colLen) {
+                                c = 0;
+                            }
+                            this.updateValue(i, j, cells[c]);
+                            c++;
+                        }
+                    }
+                    this.selectCellsByRange({ rowIndex: startrowIdx, cellIndex: endCellIdx }, { rowIndex: startrowIdx + rowLen, cellIndex: this.startCellIndex + colLen });
+                }
+                break;
+            case startrowIdx > endrowIdx: //up
+                this.startAFCell = this.parent.getCellFromIndex(endrowIdx, startCellIdx);
+                this.endAFCell = this.endCell;
+                if (!isApply) {
+                    this.drawAFBorders();
+                }
+                else {
+                    var trIdx = parseInt(this.endCell.parentElement.getAttribute('aria-rowindex'), 10);
+                    var r = trIdx;
+                    for (var i = startrowIdx - 1; i >= endrowIdx; i--) {
+                        if (r === this.startIndex - 1) {
+                            r = trIdx;
+                        }
+                        var cells = [].slice.call(this.parent.getDataRows()[r].querySelectorAll('.e-cellselectionbackground'));
+                        var c = 0;
+                        r--;
+                        for (var j = this.startCellIndex; j <= this.startCellIndex + colLen; j++) {
+                            this.updateValue(i, j, cells[c]);
+                            c++;
+                        }
+                    }
+                    this.selectCellsByRange({ rowIndex: endrowIdx, cellIndex: startCellIdx + colLen }, { rowIndex: startrowIdx + rowLen, cellIndex: startCellIdx });
+                }
+                break;
+            default: //down
+                this.endAFCell = this.parent.getCellFromIndex(endrowIdx, startCellIdx + colLen);
+                if (!isApply) {
+                    this.drawAFBorders();
+                }
+                else {
+                    var trIdx = parseInt(this.endCell.parentElement.getAttribute('aria-rowindex'), 10);
+                    var r = this.startIndex;
+                    for (var i = trIdx + 1; i <= endrowIdx; i++) {
+                        if (r === trIdx + 1) {
+                            r = this.startIndex;
+                        }
+                        var cells = [].slice.call(this.parent.getDataRows()[r].querySelectorAll('.e-cellselectionbackground'));
+                        r++;
+                        var c = 0;
+                        for (var m = this.startCellIndex; m <= this.startCellIndex + colLen; m++) {
+                            this.updateValue(i, m, cells[c]);
+                            c++;
+                        }
+                    }
+                    this.selectCellsByRange({ rowIndex: trIdx - rowLen, cellIndex: startCellIdx }, { rowIndex: endrowIdx, cellIndex: startCellIdx + colLen });
+                }
+                break;
+        }
     };
     Selection.prototype.mouseUpHandler = function (e) {
         document.body.classList.remove('e-disableuserselect');
         if (this.element) {
             remove(this.element);
         }
+        if (this.isDragged && this.selectedRowCellIndexes.length === 1 && this.selectedRowCellIndexes[0].cellIndexes.length === 1) {
+            this.mUPTarget = parentsUntil(e.target, 'e-rowcell');
+        }
+        else {
+            this.mUPTarget = null;
+        }
+        this.isDragged = false;
+        this.updateAutoFillPosition();
+        if (this.isAutoFillSel) {
+            this.startAFCell = this.startCell;
+            this.endAFCell = parentsUntil(e.target, 'e-rowcell');
+            this.updateStartCellsIndex();
+            this.selectLikeAutoFill(e, true);
+            this.updateAutoFillPosition();
+            this.hideAFBorders();
+            this.positionBorders();
+            this.isAutoFillSel = false;
+        }
         EventHandler.remove(this.parent.getContent(), 'mousemove', this.mouseMoveHandler);
         EventHandler.remove(document.body, 'mouseup', this.mouseUpHandler);
-        this.isDragged = false;
+    };
+    Selection.prototype.hideAutoFill = function () {
+        if (this.autofill) {
+            this.autofill.style.display = 'none';
+        }
+    };
+    Selection.prototype.updateAutoFillPosition = function () {
+        if (this.parent.enableAutoFill && !this.parent.isEdit &&
+            this.selectionSettings.cellSelectionMode.indexOf('Box') > -1 && !this.isRowType() && !this.isSingleSel()
+            && this.selectedRowCellIndexes.length) {
+            var cells = [].slice.call(this.parent.getDataRows()[this.selectedRowCellIndexes[this.selectedRowCellIndexes.length - 1].rowIndex].querySelectorAll('.e-cellselectionbackground'));
+            if (!this.parent.element.querySelector('#' + this.parent.element.id + '_autofill')) {
+                this.autofill = this.parent.getContentTable().parentElement.appendChild(createElement('div', { className: 'e-autofill', id: this.parent.element.id + '_autofill' }));
+            }
+            var cell = cells[cells.length - 1];
+            if (cell && cell.offsetParent) {
+                var clientRect = cell.getBoundingClientRect();
+                var parentOff = cell.offsetParent.getBoundingClientRect();
+                this.autofill.style.left = clientRect.left - parentOff.left + clientRect.width - 3 + 'px';
+                this.autofill.style.top = clientRect.top - parentOff.top + clientRect.height - 3 + 'px';
+            }
+            this.autofill.style.display = '';
+        }
+        else {
+            this.hideAutoFill();
+        }
     };
     Selection.prototype.mouseDownHandler = function (e) {
         var target = e.target;
@@ -7607,7 +8479,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             e.preventDefault();
         }
         if (parentsUntil(target, 'e-rowcell') && !e.shiftKey && !e.ctrlKey) {
-            if (gObj.selectionSettings.cellSelectionMode === 'Box' && !this.isRowType() && !this.isSingleSel()) {
+            if (gObj.selectionSettings.cellSelectionMode.indexOf('Box') > -1 && !this.isRowType() && !this.isSingleSel()) {
                 this.isCellDrag = true;
                 isDrag = true;
             }
@@ -7621,18 +8493,45 @@ var Selection = /** @__PURE__ @class */ (function () {
                 gObj.getContent().appendChild(this.element);
             }
             if (isDrag) {
-                var tr = closest(e.target, 'tr');
-                this.startIndex = parseInt(tr.getAttribute('aria-rowindex'), 10);
-                this.startCellIndex = parseInt(parentsUntil(target, 'e-rowcell').getAttribute('aria-colindex'), 10);
-                document.body.classList.add('e-disableuserselect');
-                var gBRect = gObj.element.getBoundingClientRect();
-                var postion = getPosition(e);
-                this.x = postion.x - gBRect.left;
-                this.y = postion.y - gBRect.top;
-                EventHandler.add(gObj.getContent(), 'mousemove', this.mouseMoveHandler, this);
-                EventHandler.add(document.body, 'mouseup', this.mouseUpHandler, this);
+                this.enableDrag(e, true);
             }
         }
+        this.updateStartEndCells();
+        if (target.classList.contains('e-autofill')) {
+            this.isCellDrag = true;
+            this.isAutoFillSel = true;
+            this.enableDrag(e);
+        }
+    };
+    Selection.prototype.updateStartEndCells = function () {
+        var cells = [].slice.call(this.parent.element.querySelectorAll('.e-cellselectionbackground'));
+        this.startCell = cells[0];
+        this.endCell = cells[cells.length - 1];
+        if (this.startCell) {
+            this.startIndex = parseInt(this.startCell.parentElement.getAttribute('aria-rowindex'), 10);
+            this.startCellIndex = parseInt(parentsUntil(this.startCell, 'e-rowcell').getAttribute('aria-colindex'), 10);
+        }
+    };
+    Selection.prototype.updateStartCellsIndex = function () {
+        if (this.startCell) {
+            this.startIndex = parseInt(this.startCell.parentElement.getAttribute('aria-rowindex'), 10);
+            this.startCellIndex = parseInt(parentsUntil(this.startCell, 'e-rowcell').getAttribute('aria-colindex'), 10);
+        }
+    };
+    Selection.prototype.enableDrag = function (e, isUpdate) {
+        var gObj = this.parent;
+        if (isUpdate) {
+            var tr = closest(e.target, 'tr');
+            this.startDIndex = parseInt(tr.getAttribute('aria-rowindex'), 10);
+            this.startDCellIndex = parseInt(parentsUntil(e.target, 'e-rowcell').getAttribute('aria-colindex'), 10);
+        }
+        document.body.classList.add('e-disableuserselect');
+        var gBRect = gObj.element.getBoundingClientRect();
+        var postion = getPosition(e);
+        this.x = postion.x - gBRect.left;
+        this.y = postion.y - gBRect.top;
+        EventHandler.add(gObj.getContent(), 'mousemove', this.mouseMoveHandler, this);
+        EventHandler.add(document.body, 'mouseup', this.mouseUpHandler, this);
     };
     Selection.prototype.clearSelAfterRefresh = function (e) {
         if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection) {
@@ -7742,6 +8641,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (checkboxColumn.length) {
             gObj.isCheckBoxSelection = !(this.selectionSettings.checkboxMode === 'ResetOnRowClick');
         }
+        this.drawBorders();
     };
     Selection.prototype.hidePopUp = function () {
         if (this.parent.element.querySelector('.e-gridpopup').querySelectorAll('.e-rowselect').length) {
@@ -8091,6 +8991,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             checkBox = checkWrap.querySelector('input[type="checkbox"]');
             chkSelect = true;
         }
+        this.drawBorders();
         target = parentsUntil(target, 'e-rowcell');
         if ((target && target.parentElement.classList.contains('e-row') && !this.parent.selectionSettings.checkboxOnly) || chkSelect) {
             if (this.parent.isCheckBoxSelection) {
@@ -8111,7 +9012,9 @@ var Selection = /** @__PURE__ @class */ (function () {
                 if (this.parent.isPersistSelection && this.parent.element.querySelectorAll('.e-addedrow').length > 0) {
                     ++rIndex;
                 }
-                this.rowCellSelectionHandler(rIndex, parseInt(target.getAttribute('aria-colindex'), 10));
+                if (!this.mUPTarget || !this.mUPTarget.isEqualNode(target)) {
+                    this.rowCellSelectionHandler(rIndex, parseInt(target.getAttribute('aria-colindex'), 10));
+                }
                 if (this.parent.isCheckBoxSelection) {
                     this.moveIntoUncheckCollection(closest(target, '.e-row'));
                     this.setCheckAllState();
@@ -8158,6 +9061,10 @@ var Selection = /** @__PURE__ @class */ (function () {
                 this.selectRow(rowIndex, true);
             }
             this.selectCell({ rowIndex: rowIndex, cellIndex: cellIndex }, true);
+            if (this.selectedRowCellIndexes.length) {
+                this.updateAutoFillPosition();
+            }
+            this.drawBorders();
         }
         else if (this.isMultiShiftRequest) {
             if (this.parent.isCheckBoxSelection || (!this.parent.isCheckBoxSelection &&
@@ -8168,10 +9075,13 @@ var Selection = /** @__PURE__ @class */ (function () {
                 this.addRowsToSelection([rowIndex]);
             }
             this.selectCellsByRange(isUndefined(this.prevCIdxs) ? { rowIndex: rowIndex, cellIndex: cellIndex } : this.prevCIdxs, { rowIndex: rowIndex, cellIndex: cellIndex });
+            this.updateAutoFillPosition();
+            this.drawBorders();
         }
         else {
             this.addRowsToSelection([rowIndex]);
             this.addCellsToSelection([{ rowIndex: rowIndex, cellIndex: cellIndex }]);
+            this.hideBorders();
         }
         this.isDragged = false;
     };
@@ -8271,6 +9181,8 @@ var Selection = /** @__PURE__ @class */ (function () {
                 break;
         }
         this.preventFocus = false;
+        this.positionBorders();
+        this.updateAutoFillPosition();
     };
     /**
      * Apply ctrl + A key selection
@@ -8399,7 +9311,8 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
         if (row) {
             var cells = [].slice.call(row.querySelectorAll('.e-rowcell'));
-            var cell = row.querySelector('.e-detailrowcollapse') || row.querySelector('.e-detailrowexpand');
+            var cell = row.querySelector('.e-detailrowcollapse') || row.querySelector('.e-detailrowexpand')
+                || row.querySelector('.e-rowdragdrop');
             if (cell) {
                 cells.push(cell);
             }
@@ -8438,6 +9351,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         return selectedData;
     };
     Selection.prototype.addEventListener_checkbox = function () {
+        var _this = this;
         this.parent.on(dataReady, this.dataReady, this);
         this.onDataBoundFunction = this.onDataBound.bind(this);
         this.parent.addEventListener(dataBound, this.onDataBoundFunction);
@@ -8445,6 +9359,12 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.actionCompleteFunc = this.actionCompleteHandler.bind(this);
         this.parent.addEventListener(actionComplete, this.actionCompleteFunc);
         this.parent.on(click, this.clickHandler, this);
+        this.resizeEndFn = function () {
+            _this.updateAutoFillPosition();
+            _this.drawBorders();
+        };
+        this.resizeEndFn.bind(this);
+        this.parent.addEventListener(resizeStop, this.resizeEndFn);
     };
     Selection.prototype.removeEventListener_checkbox = function () {
         this.parent.off(dataReady, this.dataReady);
@@ -9039,201 +9959,7 @@ var Scroll = /** @__PURE__ @class */ (function () {
     return Scroll;
 }());
 
-/**
- *
- * The `Print` module is used to handle print action.
- */
-var Print = /** @__PURE__ @class */ (function () {
-    /**
-     * Constructor for the Grid print module
-     * @hidden
-     */
-    function Print(parent, scrollModule) {
-        this.isAsyncPrint = false;
-        this.printing = 'isPrinting';
-        this.parent = parent;
-        if (this.parent.isDestroyed) {
-            return;
-        }
-        this.parent.on(contentReady, this.contentReady.bind(this));
-        this.parent.addEventListener(actionBegin, this.actionBegin.bind(this));
-        this.parent.on(onEmpty, this.onEmpty.bind(this));
-        this.scrollModule = scrollModule;
-    }
-    /**
-     * By default, prints all the Grid pages and hides the pager.
-     * > You can customize print options using the
-     * [`printMode`](./api-grid.html#printmode-string).
-     * @return {void}
-     */
-    Print.prototype.print = function () {
-        this.renderPrintGrid();
-        this.printWind = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
-        this.printWind.moveTo(0, 0);
-        this.printWind.resizeTo(screen.availWidth, screen.availHeight);
-    };
-    Print.prototype.onEmpty = function () {
-        if (this.isPrintGrid()) {
-            this.contentReady();
-        }
-    };
-    Print.prototype.actionBegin = function () {
-        if (this.isPrintGrid()) {
-            this.isAsyncPrint = true;
-        }
-    };
-    Print.prototype.renderPrintGrid = function () {
-        var gObj = this.parent;
-        var printGridModel = {};
-        var element = createElement('div', {
-            id: this.parent.element.id + '_print', className: gObj.element.className + ' e-print-grid'
-        });
-        document.body.appendChild(element);
-        for (var _i = 0, _a = Print.printGridProp; _i < _a.length; _i++) {
-            var key = _a[_i];
-            if (key === 'columns') {
-                printGridModel[key] = getActualPropFromColl(gObj[key]);
-            }
-            else if (key === 'allowPaging') {
-                printGridModel[key] = this.parent.printMode === 'CurrentPage';
-            }
-            else {
-                printGridModel[key] = getActualProperties(gObj[key]);
-            }
-        }
-        var printGrid = new Grid(printGridModel);
-        printGrid.query = gObj.getQuery().clone();
-        gObj.notify(printGridInit, { element: element, printgrid: printGrid });
-        printGrid.appendTo(element);
-        printGrid.registeredTemplate = this.parent.registeredTemplate;
-        printGrid[this.printing] = true;
-        printGrid.trigger = gObj.trigger;
-    };
-    Print.prototype.contentReady = function () {
-        if (this.isPrintGrid()) {
-            var gObj = this.parent;
-            if (this.isAsyncPrint) {
-                this.printGrid();
-                return;
-            }
-            var args = {
-                requestType: 'print',
-                element: gObj.element,
-                selectedRows: gObj.getContentTable().querySelectorAll('tr[aria-selected="true"]'),
-                cancel: false
-            };
-            if (!this.isAsyncPrint) {
-                gObj.trigger(beforePrint, args);
-            }
-            if (args.cancel) {
-                detach(gObj.element);
-                return;
-            }
-            else if (!this.isAsyncPrint) {
-                this.printGrid();
-            }
-        }
-    };
-    Print.prototype.printGrid = function () {
-        var gObj = this.parent;
-        // Pager eleement process based on primt mode
-        if (gObj.allowPaging && gObj.printMode === 'CurrentPage') {
-            gObj.element.querySelector('.e-gridpager').style.display = 'none';
-        }
-        // Height adjustment on print grid
-        if (gObj.height !== 'auto') { // if scroller enabled
-            var cssProps = this.scrollModule.getCssProperties();
-            var contentDiv = gObj.element.querySelector('.e-content');
-            var headerDiv = gObj.element.querySelector('.e-gridheader');
-            contentDiv.style.height = 'auto';
-            contentDiv.style.overflowY = 'auto';
-            headerDiv.style[cssProps.padding] = '';
-            headerDiv.firstElementChild.style[cssProps.border] = '';
-        }
-        // Grid alignment adjustment on grouping
-        if (gObj.allowGrouping) {
-            if (!gObj.groupSettings.columns.length) {
-                gObj.element.querySelector('.e-groupdroparea').style.display = 'none';
-            }
-            else {
-                this.removeColGroup(gObj.groupSettings.columns.length, gObj.element);
-                removeElement(gObj.element, '.e-grouptopleftcell');
-                removeElement(gObj.element, '.e-recordpluscollapse');
-                removeElement(gObj.element, '.e-indentcell');
-                removeElement(gObj.element, '.e-recordplusexpand');
-            }
-        }
-        // hide horizontal scroll
-        gObj.element.querySelector('.e-content').style.overflowX = 'hidden';
-        //hide filter bar in print grid
-        if (gObj.allowFiltering && gObj.filterSettings.type === 'FilterBar') {
-            gObj.element.querySelector('.e-filterbar').style.display = 'none';
-        }
-        // Hide the waiting popup
-        var waitingPop = gObj.element.querySelectorAll('.e-spin-show');
-        if (waitingPop.length > 0) {
-            waitingPop[0].classList.add('e-spin-hide');
-            waitingPop[0].classList.remove('e-spin-show');
-        }
-        if (gObj[this.printing]) {
-            detach(gObj.element);
-        }
-        gObj.element.classList.remove('e-print-grid');
-        this.printWind = print(gObj.element, this.printWind);
-        gObj[this.printing] = false;
-        var args = {
-            element: gObj.element
-        };
-        gObj.trigger(printComplete, args);
-    };
-    Print.prototype.removeColGroup = function (depth, element) {
-        var groupCaption = element.querySelectorAll('.e-groupcaption');
-        var colSpan = groupCaption[depth - 1].getAttribute('colspan');
-        for (var i = 0; i < groupCaption.length; i++) {
-            groupCaption[i].setAttribute('colspan', colSpan);
-        }
-        var colGroups = element.querySelectorAll('colgroup');
-        for (var i = 0; i < colGroups.length; i++) {
-            for (var j = 0; j < depth; j++) {
-                colGroups[i].childNodes[j].style.display = 'none';
-            }
-        }
-    };
-    Print.prototype.isPrintGrid = function () {
-        return this.parent.element.id.indexOf('_print') > 0 && this.parent[this.printing];
-    };
-    /**
-     * To destroy the print
-     * @return {void}
-     * @hidden
-     */
-    Print.prototype.destroy = function () {
-        if (this.parent.isDestroyed) {
-            return;
-        }
-        this.parent.off(contentReady, this.contentReady.bind(this));
-        this.parent.removeEventListener(actionBegin, this.actionBegin.bind(this));
-        this.parent.off(onEmpty, this.onEmpty.bind(this));
-    };
-    /**
-     * For internal use only - Get the module name.
-     * @private
-     */
-    Print.prototype.getModuleName = function () {
-        return 'print';
-    };
-    Print.printGridProp = [
-        'aggregates', 'allowGrouping', 'allowFiltering', 'allowMultiSorting', 'allowReordering', 'allowSorting',
-        'allowTextWrap', 'childGrid', 'columns', 'currentViewData', 'dataSource', 'detailTemplate', 'enableAltRow',
-        'enableColumnVirtualization', 'filterSettings', 'gridLines',
-        'groupSettings', 'height', 'locale', 'pageSettings', 'printMode', 'query', 'queryString',
-        'rowHeight', 'rowTemplate', 'sortSettings', 'textWrapSettings', 'allowPaging',
-        beforePrint, printComplete
-    ];
-    return Print;
-}());
-
-var __extends$13 = (undefined && undefined.__extends) || (function () {
+var __extends$15 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -9256,7 +9982,7 @@ var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, 
  * Configures the Grid's aggregate column.
  */
 var AggregateColumn = /** @__PURE__ @class */ (function (_super) {
-    __extends$13(AggregateColumn, _super);
+    __extends$15(AggregateColumn, _super);
     function AggregateColumn() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.templateFn = {};
@@ -9337,7 +10063,7 @@ var AggregateColumn = /** @__PURE__ @class */ (function (_super) {
  * Configures the aggregate rows.
  */
 var AggregateRow = /** @__PURE__ @class */ (function (_super) {
-    __extends$13(AggregateRow, _super);
+    __extends$15(AggregateRow, _super);
     function AggregateRow() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -9370,6 +10096,8 @@ var Clipboard = /** @__PURE__ @class */ (function () {
         }
         this.parent.on(contentReady, this.initialEnd, this);
         this.parent.on(keyPressed, this.keyDownHandler, this);
+        this.parent.on(click, this.clickHandler, this);
+        EventHandler.add(this.parent.element, 'keydown', this.pasteHandler, this);
     };
     /**
      * @hidden
@@ -9379,13 +10107,104 @@ var Clipboard = /** @__PURE__ @class */ (function () {
             return;
         }
         this.parent.off(keyPressed, this.keyDownHandler);
+        this.parent.off(click, this.clickHandler);
+        EventHandler.remove(this.parent.element, 'keydown', this.pasteHandler);
+    };
+    Clipboard.prototype.clickHandler = function (e) {
+        var target = e.target;
+        target = parentsUntil(target, 'e-rowcell');
+    };
+    Clipboard.prototype.pasteHandler = function (e) {
+        var _this = this;
+        if (e.keyCode === 86 && e.ctrlKey && !this.parent.isEdit) {
+            var target_1 = closest(document.activeElement, '.e-rowcell');
+            if (!target_1) {
+                return;
+            }
+            this.activeElement = document.activeElement;
+            this.clipBoardTextArea.value = '';
+            var x_1 = window.scrollX;
+            var y_1 = window.scrollY;
+            this.clipBoardTextArea.focus();
+            setTimeout(function () {
+                _this.activeElement.focus();
+                window.scrollTo(x_1, y_1);
+                _this.paste(_this.clipBoardTextArea.value, parseInt(target_1.parentElement.getAttribute('aria-rowindex'), 10), parseInt(target_1.getAttribute('aria-colindex'), 10));
+            }, 10);
+        }
+    };
+    /**
+     * Paste data from clipboard to selected cells.
+     * @param {boolean} data - Specifies the date for paste.
+     * @param {boolean} rowIndex - Specifies the row index.
+     * @param {boolean} colIndex - Specifies the column index.
+     */
+    Clipboard.prototype.paste = function (data, rowIndex, colIndex) {
+        var grid = this.parent;
+        var cIdx = colIndex;
+        var rIdx = rowIndex;
+        var col;
+        var value;
+        var isAvail;
+        if (!grid.editSettings.allowEditing || grid.editSettings.mode !== 'Batch' ||
+            grid.selectionSettings.mode !== 'Cell' || grid.selectionSettings.cellSelectionMode === 'Flow') {
+            return;
+        }
+        var rows = data.split('\n');
+        var cols;
+        var dataRows = grid.getDataRows();
+        var mRows;
+        var isFrozen = this.parent.getFrozenColumns();
+        if (isFrozen) {
+            mRows = grid.getMovableDataRows();
+        }
+        for (var r = 0; r < rows.length; r++) {
+            cols = rows[r].split('\t');
+            cIdx = colIndex;
+            if ((r === rows.length - 1 && rows[r] === '') || isUndefined(grid.getRowByIndex(rIdx))) {
+                cIdx++;
+                break;
+            }
+            for (var c = 0; c < cols.length; c++) {
+                isAvail = grid.getCellFromIndex(rIdx, cIdx);
+                if (isFrozen) {
+                    var fTr = dataRows[rIdx];
+                    var mTr = mRows[rIdx];
+                    isAvail = !fTr.querySelector('[aria-colindex="' + cIdx + '"]') ?
+                        mTr.querySelector('[aria-colindex="' + cIdx + '"]') : true;
+                }
+                if (!isAvail) {
+                    cIdx++;
+                    break;
+                }
+                col = grid.getColumnByIndex(cIdx);
+                value = col.getParser() ? col.getParser()(cols[c]) : cols[c];
+                if (col.allowEditing && !col.isPrimaryKey && !col.template) {
+                    if (grid.editModule) {
+                        if (col.type === 'number') {
+                            this.parent.editModule.updateCell(rIdx, col.field, parseInt(value, 10));
+                        }
+                        else {
+                            grid.editModule.updateCell(rIdx, col.field, value);
+                        }
+                    }
+                }
+                cIdx++;
+            }
+            rIdx++;
+        }
+        grid.selectionModule.selectCellsByRange({ rowIndex: rowIndex, cellIndex: colIndex }, { rowIndex: rIdx - 1, cellIndex: cIdx - 1 });
+        var cell = this.parent.getCellFromIndex(rIdx - 1, cIdx - 1);
+        if (cell) {
+            classList(cell, ['e-focus', 'e-focused'], []);
+        }
     };
     Clipboard.prototype.initialEnd = function () {
         this.parent.off(contentReady, this.initialEnd);
         this.clipBoardTextArea = this.parent.createElement('textarea', {
             className: 'e-clipboard',
             styles: 'opacity: 0',
-            attrs: { readonly: 'true', tabindex: '-1', 'aria-label': 'clipboard' }
+            attrs: { tabindex: '-1', 'aria-label': 'clipboard' }
         });
         this.parent.element.appendChild(this.clipBoardTextArea);
     };
@@ -9822,6 +10641,9 @@ var EditSettings = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property('')
     ], EditSettings.prototype, "template", void 0);
+    __decorate([
+        Property('Top')
+    ], EditSettings.prototype, "newRowPosition", void 0);
     return EditSettings;
 }(ChildProperty));
 /**
@@ -9849,6 +10671,8 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
          * Gets the currently visible records of the Grid.
          */
         _this.currentViewData = [];
+        /** @hidden */
+        _this.lockcolPositionCount = 0;
         /** @hidden */
         _this.prevPageMoving = false;
         _this.needsID = true;
@@ -10199,6 +11023,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         this.notify(initialLoad, {});
         this.trigger(load);
         prepareColumns(this.columns, this.enableColumnVirtualization);
+        this.checkLockColumns(this.columns);
         this.getColumns();
         this.processModel();
         this.commonQuery = this.query.clone();
@@ -10330,6 +11155,11 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     Grid.prototype.getModuleName = function () {
         return 'grid';
     };
+    Grid.prototype.enableBoxSelection = function () {
+        if (this.enableAutoFill) {
+            this.selectionSettings.cellSelectionMode = 'BoxWithBorder';
+        }
+    };
     /**
      * Called internally if any of the property value changed.
      * @hidden
@@ -10367,10 +11197,6 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                         requireRefresh = true;
                     }
                     break;
-                case 'currencyCode':
-                case 'locale':
-                    _super.prototype.refresh.call(this);
-                    break;
                 case 'allowSorting':
                     this.notify(uiUpdate, { module: 'sort', enable: this.allowSorting });
                     requireRefresh = true;
@@ -10397,6 +11223,12 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'allowSelection':
                     this.notify(uiUpdate, { module: 'selection', enable: this.allowSelection });
+                    break;
+                case 'enableAutoFill':
+                    if (this.selectionModule) {
+                        this.enableBoxSelection();
+                        this.selectionModule.updateAutoFillPosition();
+                    }
                     break;
                 case 'rowTemplate':
                     this.rowTemplateFn = templateCompiler(this.rowTemplate);
@@ -10432,11 +11264,11 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'frozenColumns':
                 case 'frozenRows':
+                case 'enableVirtualization':
+                case 'currencyCode':
+                case 'locale':
                     freezeRefresh$$1 = true;
                     requireGridRefresh = true;
-                    break;
-                case 'enableVirtualization':
-                    _super.prototype.refresh.call(this);
                     break;
                 default:
                     this.extendedPropertyChange(prop, newProp);
@@ -10447,6 +11279,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
         if (requireGridRefresh) {
             if (freezeRefresh$$1 || this.frozenColumns || this.frozenRows) {
+                this.setProperties({ query: this.commonQuery }, true);
                 this.freezeRefresh();
             }
             else {
@@ -10573,6 +11406,10 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Grid.prototype.setProperties = function (prop, muteOnChange) {
+        var query = 'query';
+        if (prop[query]) {
+            this.commonQuery = prop[query].clone();
+        }
         _super.prototype.setProperties.call(this, prop, muteOnChange);
         if (this.filterModule && muteOnChange) {
             this.filterModule.refreshFilter();
@@ -10603,6 +11440,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             }
         }
         this.updateFrozenColumns();
+        this.updateLockableColumns();
     };
     Grid.prototype.updateFrozenColumns = function () {
         var cols = this.columnModel;
@@ -10611,6 +11449,34 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             if (cols[i].isFrozen) {
                 cols.splice(this.frozenColumns + count, 0, cols.splice(i, 1)[0]);
                 count++;
+            }
+        }
+    };
+    Grid.prototype.updateLockableColumns = function () {
+        var cols = this.columnModel;
+        var frozenCount = 0;
+        var movableCount = 0;
+        var frozenColumns = this.getFrozenColumns();
+        for (var i = 0; i < cols.length; i++) {
+            if (cols[i].lockColumn) {
+                if (i < frozenColumns) {
+                    cols.splice(frozenCount, 0, cols.splice(i, 1)[0]);
+                    frozenCount++;
+                }
+                else {
+                    cols.splice(frozenColumns + movableCount, 0, cols.splice(i, 1)[0]);
+                    movableCount++;
+                }
+            }
+        }
+    };
+    Grid.prototype.checkLockColumns = function (cols) {
+        for (var i = 0; i < cols.length; i++) {
+            if (cols[i].columns) {
+                this.checkLockColumns(cols[i].columns);
+            }
+            else if (cols[i].lockColumn) {
+                this.lockcolPositionCount++;
             }
         }
     };
@@ -11103,12 +11969,26 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @return {Column}
      */
     Grid.prototype.getColumnByUid = function (uid) {
-        return iterateArrayOrObject(this.getColumns(), function (item, index) {
+        return iterateArrayOrObject(this.getColumns().concat(this.getStackedColumns(this.columns)), function (item, index) {
             if (item.uid === uid) {
                 return item;
             }
             return undefined;
         })[0];
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.getStackedColumns = function (columns, stackedColumn) {
+        if (stackedColumn === void 0) { stackedColumn = []; }
+        for (var _i = 0, columns_1 = columns; _i < columns_1.length; _i++) {
+            var column = columns_1[_i];
+            if (column.columns) {
+                stackedColumn.push(column);
+                this.getStackedColumns(column.columns, stackedColumn);
+            }
+        }
+        return stackedColumn;
     };
     /**
      * Gets a column index by UID.
@@ -11460,6 +12340,15 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
+     * Selects a range of cells from start and end indexes.
+     * @param  {IIndex} startIndex - Specifies the row and column's start index.
+     * @param  {IIndex} endIndex - Specifies the row and column's end index.
+     * @return {void}
+     */
+    Grid.prototype.selectCellsByRange = function (startIndex, endIndex) {
+        this.selectionModule.selectCellsByRange(startIndex, endIndex);
+    };
+    /**
      * Searches Grid records using the given key.
      * You can customize the default search option by using the
      * [`searchSettings`](./api-searchSettings.html).
@@ -11554,7 +12443,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         if (!this.getHeaderTable().querySelector('.e-emptycell')) {
             return;
         }
-        if ((!this.groupSettings.columns.length && !this.isDetail()) ||
+        if ((!this.groupSettings.columns.length && !this.isDetail() && !this.isRowDragable()) ||
             this.getHeaderTable().querySelector('.e-emptycell').getAttribute('indentRefreshed') ||
             !this.getContentTable()) {
             return;
@@ -11580,8 +12469,20 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             headerCol[i].style.width = indentWidth + 'px';
             contentCol[i].style.width = indentWidth + 'px';
             this.notify(columnWidthChanged, { index: i, width: indentWidth });
+            i++;
+        }
+        if (this.isRowDragable()) {
+            headerCol[i].style.width = indentWidth + 'px';
+            contentCol[i].style.width = indentWidth + 'px';
+            this.notify(columnWidthChanged, { index: i, width: indentWidth });
         }
         this.getHeaderTable().querySelector('.e-emptycell').setAttribute('indentRefreshed', 'true');
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.isRowDragable = function () {
+        return this.allowRowDragAndDrop && !this.rowDropSettings.targetID;
     };
     /**
      * Changes the Grid column positions by field names.
@@ -11592,6 +12493,40 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     Grid.prototype.reorderColumns = function (fromFName, toFName) {
         if (this.reorderModule) {
             this.reorderModule.reorderColumns(fromFName, toFName);
+        }
+    };
+    /**
+     * Changes the Grid Row position with given indexes.
+     * @param  {number} fromIndexes - Defines the origin Indexes.
+     * @param  {number} toIndex - Defines the destination Index.
+     * @return {void}
+     */
+    Grid.prototype.reorderRows = function (fromIndexes, toIndex) {
+        if (this.rowDragAndDropModule) {
+            this.rowDragAndDropModule.reorderRows(fromIndexes, toIndex);
+        }
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.refreshDataSource = function (e, args) {
+        this.notify('refreshdataSource', e);
+    };
+    Grid.prototype.disableRowDD = function (enable) {
+        var headerTable = this.getHeaderTable();
+        var contentTable = this.getContentTable();
+        var headerRows = headerTable.querySelectorAll('th.e-rowdragheader, th.e-mastercell');
+        var rows = this.getRows();
+        var disValue = enable ? 'none' : '';
+        setStyleAttribute(headerTable.querySelector('colgroup').childNodes[0], { 'display': disValue });
+        setStyleAttribute(contentTable.querySelector('colgroup').childNodes[0], { 'display': disValue });
+        for (var i = 0; i < this.getRows().length; i++) {
+            var ele = rows[i].firstElementChild;
+            enable ? addClass([ele], 'e-hide') : removeClass([ele], ['e-hide']);
+        }
+        for (var j = 0; j < headerTable.querySelectorAll('th.e-rowdragheader, th.e-mastercell').length; j++) {
+            var ele = headerRows[j];
+            enable ? addClass([ele], 'e-hide') : removeClass([ele], ['e-hide']);
         }
     };
     /**
@@ -11721,6 +12656,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         this.updateGridLines();
         this.applyTextWrap();
         this.createTooltip(); //for clip mode ellipsis
+        this.enableBoxSelection();
     };
     Grid.prototype.dataReady = function () {
         this.scrollModule.setWidth();
@@ -12009,9 +12945,14 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             filterClear.classList.add('e-hide');
         }
         if ((!e.relatedTarget || !parentsUntil(e.relatedTarget, 'e-grid'))
-            && !this.keyPress && this.editSettings.mode === 'Batch' && this.isEdit && !Browser.isDevice) {
-            this.editModule.saveCell();
-            this.notify(editNextValCell, {});
+            && !this.keyPress && this.isEdit && !Browser.isDevice) {
+            if (this.editSettings.mode === 'Batch') {
+                this.editModule.saveCell();
+                this.notify(editNextValCell, {});
+            }
+            if (this.editSettings.mode === 'Normal') {
+                this.editModule.editFormValidate();
+            }
         }
         this.keyPress = false;
     };
@@ -12228,6 +13169,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         Property(true)
     ], Grid.prototype, "enableHover", void 0);
     __decorate([
+        Property(false)
+    ], Grid.prototype, "enableAutoFill", void 0);
+    __decorate([
         Property(true)
     ], Grid.prototype, "allowKeyboard", void 0);
     __decorate([
@@ -12335,6 +13279,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property('AllPages')
     ], Grid.prototype, "printMode", void 0);
+    __decorate([
+        Property('Expanded')
+    ], Grid.prototype, "hierarchyPrintMode", void 0);
     __decorate([
         Property([])
     ], Grid.prototype, "dataSource", void 0);
@@ -12451,6 +13398,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     ], Grid.prototype, "pdfHeaderQueryCellInfo", void 0);
     __decorate([
         Event()
+    ], Grid.prototype, "exportDetailDataBound", void 0);
+    __decorate([
+        Event()
     ], Grid.prototype, "excelQueryCellInfo", void 0);
     __decorate([
         Event()
@@ -12467,6 +13417,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], Grid.prototype, "pdfExportComplete", void 0);
+    __decorate([
+        Event()
+    ], Grid.prototype, "rowDragStartHelper", void 0);
     __decorate([
         Event()
     ], Grid.prototype, "detailDataBound", void 0);
@@ -12851,7 +13804,10 @@ var Sort = /** @__PURE__ @class */ (function () {
         if (this.parent.element.querySelector('.e-gridpopup').querySelectorAll('.e-sortdirect').length) {
             this.parent.element.querySelector('.e-gridpopup').style.display = 'none';
         }
-        this.clearSorting();
+        // tslint:disable-next-line:no-any
+        if (!this.parent.refreshing) {
+            this.clearSorting();
+        }
         this.isModelChanged = true;
         this.removeEventListener();
     };
@@ -13367,7 +14323,7 @@ var PagerMessage = /** @__PURE__ @class */ (function () {
     return PagerMessage;
 }());
 
-var __extends$14 = (undefined && undefined.__extends) || (function () {
+var __extends$16 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -13399,7 +14355,7 @@ var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, 
  * ```
  */
 var Pager = /** @__PURE__ @class */ (function (_super) {
-    __extends$14(Pager, _super);
+    __extends$16(Pager, _super);
     /**
      * Constructor for creating the component.
      * @hidden
@@ -13947,7 +14903,9 @@ var ExternalMessage = /** @__PURE__ @class */ (function () {
      * Hides the external message of Pager.
      */
     ExternalMessage.prototype.hideMessage = function () {
-        this.element.style.display = 'none';
+        if (!isNullOrUndefined(this.element)) {
+            this.element.style.display = 'none';
+        }
     };
     /**
      * Shows the external message of the Pager.
@@ -14119,6 +15077,7 @@ var Page = /** @__PURE__ @class */ (function () {
             currentPage: e.currentPage,
             type: actionBegin
         });
+        this.parent.requestTypeAction = 'paging';
     };
     Page.prototype.keyPressHandler = function (e) {
         if (e.action in keyActions) {
@@ -14218,7 +15177,7 @@ var keyActions = {
     altPageDown: '.e-np'
 };
 
-var __extends$15 = (undefined && undefined.__extends) || (function () {
+var __extends$17 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -14236,7 +15195,7 @@ var __extends$15 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var FilterCellRenderer = /** @__PURE__ @class */ (function (_super) {
-    __extends$15(FilterCellRenderer, _super);
+    __extends$17(FilterCellRenderer, _super);
     function FilterCellRenderer() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.element = _this.parent.createElement('TH', { className: 'e-filterbarcell' });
@@ -14847,7 +15806,7 @@ var FilterMenuRenderer = /** @__PURE__ @class */ (function () {
     return FilterMenuRenderer;
 }());
 
-var __extends$16 = (undefined && undefined.__extends) || (function () {
+var __extends$18 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -14865,7 +15824,7 @@ var __extends$16 = (undefined && undefined.__extends) || (function () {
  * `ExcelFilter` module is used to handle filtering action.
  */
 var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
-    __extends$16(ExcelFilter, _super);
+    __extends$18(ExcelFilter, _super);
     /**
      * Constructor for excel filtering module
      * @hidden
@@ -15591,10 +16550,14 @@ var Filter = /** @__PURE__ @class */ (function () {
                 row = this.generateRow();
                 row.data = this.values;
                 this.parent.getHeaderContent().querySelector('thead').appendChild(rowRenderer.element);
+                var rowdrag = this.parent.element.querySelector('.e-rowdragheader');
                 this.element = rowRenderer.render(row, gObj.getColumns(), null, null, rowRenderer.element);
                 var detail = this.element.querySelector('.e-detailheadercell');
                 if (detail) {
                     detail.className = 'e-filterbarcell e-mastercell';
+                }
+                if (rowdrag) {
+                    rowdrag.className = 'e-dragheadercell e-mastercell';
                 }
                 var gCells = [].slice.call(this.element.querySelectorAll('.e-grouptopleftcell'));
                 if (gCells.length) {
@@ -15618,7 +16581,10 @@ var Filter = /** @__PURE__ @class */ (function () {
         if (this.filterModule) {
             this.filterModule.destroy();
         }
-        this.filterSettings.columns = [];
+        // tslint:disable-next-line:no-any
+        if (!this.parent.refreshing) {
+            this.filterSettings.columns = [];
+        }
         this.updateFilterMsg();
         this.removeEventListener();
         this.unWireEvents();
@@ -15646,6 +16612,9 @@ var Filter = /** @__PURE__ @class */ (function () {
         }
         if (this.parent.detailTemplate || this.parent.childGrid) {
             cells.push(this.generateCell({}, CellType.DetailHeader));
+        }
+        if (this.parent.isRowDragable()) {
+            cells.push(this.generateCell({}, CellType.RowDragHIcon));
         }
         for (var _i = 0, _a = this.parent.getColumns(); _i < _a.length; _i++) {
             var dummy = _a[_i];
@@ -16415,7 +17384,12 @@ var Filter = /** @__PURE__ @class */ (function () {
     };
     Filter.prototype.addFilteredClass = function (fieldName) {
         var filterIconElement;
-        filterIconElement = this.parent.getColumnHeaderByField(fieldName).querySelector('.e-icon-filter');
+        if (this.parent.showColumnMenu) {
+            filterIconElement = this.parent.getColumnHeaderByField(fieldName).querySelector('.e-columnmenu');
+        }
+        else {
+            filterIconElement = this.parent.getColumnHeaderByField(fieldName).querySelector('.e-icon-filter');
+        }
         if (filterIconElement) {
             filterIconElement.classList.add('e-filtered');
         }
@@ -16524,7 +17498,7 @@ var Resize = /** @__PURE__ @class */ (function () {
         if (result === false) {
             gObj.getColumns().forEach(function (element) {
                 if (element.visible) {
-                    tWidth = tWidth + parseInt(element.width, 10);
+                    tWidth = tWidth + parseFloat(element.width);
                 }
             });
         }
@@ -16669,6 +17643,9 @@ var Resize = /** @__PURE__ @class */ (function () {
     Resize.prototype.callAutoFit = function (e) {
         if (e.target.classList.contains('e-rhandler')) {
             var col = this.getTargetColumn(e);
+            if (col.columns) {
+                return;
+            }
             this.resizeColumn(col.field, this.parent.getNormalizedColumnIndex(col.uid), col.uid);
             var header = closest(e.target, resizeClassList.header);
             header.classList.add('e-resized');
@@ -16706,12 +17683,12 @@ var Resize = /** @__PURE__ @class */ (function () {
                 this.column = this.getTargetColumn(e);
                 this.pageX = this.getPointX(e);
                 if (this.parent.enableRtl) {
-                    this.minMove = parseInt(this.column.width.toString(), 10)
-                        - (this.column.minWidth ? parseInt(this.column.minWidth.toString(), 10) : 0);
+                    this.minMove = parseFloat(this.column.width.toString())
+                        - (this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0);
                 }
                 else {
-                    this.minMove = (this.column.minWidth ? parseInt(this.column.minWidth.toString(), 10) : 0)
-                        - parseInt(this.column.width.toString(), 10);
+                    this.minMove = (this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0)
+                        - parseFloat(this.column.width.toString());
                 }
                 this.minMove += this.pageX;
             }
@@ -16760,24 +17737,30 @@ var Resize = /** @__PURE__ @class */ (function () {
             return width;
         }
     };
+    Resize.prototype.getColData = function (column, mousemove) {
+        return {
+            width: parseFloat(this.widthService.getWidth(column).toString()) + mousemove,
+            minWidth: column.minWidth ? parseFloat(column.minWidth.toString()) : null,
+            maxWidth: column.maxWidth ? parseFloat(column.maxWidth.toString()) : null
+        };
+    };
     Resize.prototype.resizing = function (e) {
+        if (isNullOrUndefined(this.column)) {
+            return;
+        }
         if (this.parent.allowTextWrap) {
             this.element.style.height = this.element.parentElement.offsetHeight + 'px';
             this.setHelperHeight();
         }
         var pageX = this.getPointX(e);
         var mousemove = this.parent.enableRtl ? -(pageX - this.pageX) : (pageX - this.pageX);
-        var colData = {
-            width: parseInt(this.widthService.getWidth(this.column).toString(), 10) + mousemove,
-            minWidth: this.column.minWidth ? parseInt(this.column.minWidth.toString(), 10) : null,
-            maxWidth: this.column.maxWidth ? parseInt(this.column.maxWidth.toString(), 10) : null
-        };
+        var colData = this.getColData(this.column, mousemove);
         var width = this.getWidth(colData.width, colData.minWidth, colData.maxWidth);
         if ((!this.parent.enableRtl && this.minMove >= pageX) || (this.parent.enableRtl && this.minMove <= pageX)) {
-            width = this.column.minWidth ? parseInt(this.column.minWidth.toString(), 10) : 0;
+            width = this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0;
             this.pageX = pageX = this.minMove;
         }
-        if (width !== parseInt(this.column.width.toString(), 10)) {
+        if (width !== parseFloat(this.column.width.toString())) {
             this.pageX = pageX;
             this.column.width = formatUnit(width);
             var args = {
@@ -16789,10 +17772,57 @@ var Resize = /** @__PURE__ @class */ (function () {
                 this.cancelResizeAction(true);
                 return;
             }
-            this.widthService.setColumnWidth(this.column, null, 'resize');
+            var columns = [this.column];
+            var finalColumns = [this.column];
+            if (this.column.columns) {
+                columns = this.getSubColumns(this.column, []);
+                columns = this.calulateColumnsWidth(columns, false, mousemove);
+                finalColumns = this.calulateColumnsWidth(columns, true, mousemove);
+            }
+            for (var _i = 0, finalColumns_1 = finalColumns; _i < finalColumns_1.length; _i++) {
+                var col = finalColumns_1[_i];
+                this.widthService.setColumnWidth(col, null, 'resize');
+            }
             this.updateHelper();
         }
         this.isDblClk = false;
+    };
+    Resize.prototype.calulateColumnsWidth = function (columns, isUpdate, mousemove) {
+        var finalColumns = [];
+        var _loop_1 = function (col) {
+            var totalWidth = 0;
+            columns.forEach(function (col) {
+                totalWidth += parseFloat(col.width.toString());
+            });
+            var colData = this_1.getColData(col, (parseFloat(col.width)) * mousemove / totalWidth);
+            var colWidth = this_1.getWidth(colData.width, colData.minWidth, colData.maxWidth);
+            if ((colWidth !== parseFloat(col.width.toString()))) {
+                if (isUpdate) {
+                    col.width = formatUnit(colWidth < 1 ? 1 : colWidth);
+                }
+                finalColumns.push(col);
+            }
+        };
+        var this_1 = this;
+        for (var _i = 0, columns_1 = columns; _i < columns_1.length; _i++) {
+            var col = columns_1[_i];
+            _loop_1(col);
+        }
+        return finalColumns;
+    };
+    Resize.prototype.getSubColumns = function (column, subColumns) {
+        for (var _i = 0, _a = column.columns; _i < _a.length; _i++) {
+            var col = _a[_i];
+            if (col.visible !== false && col.allowResizing) {
+                if (col.columns) {
+                    this.getSubColumns(col, subColumns);
+                }
+                else {
+                    subColumns.push(col);
+                }
+            }
+        }
+        return subColumns;
     };
     Resize.prototype.resizeEnd = function (e) {
         if (!this.helper || this.parent.isDestroyed) {
@@ -16833,8 +17863,8 @@ var Resize = /** @__PURE__ @class */ (function () {
         var columns = this.parent.getColumns();
         for (var _i = 0, _a = [].slice.apply(this.parent.getHeaderTable().querySelectorAll('th.e-headercell')); _i < _a.length; _i++) {
             var ele = _a[_i];
-            for (var _b = 0, columns_1 = columns; _b < columns_1.length; _b++) {
-                var column = columns_1[_b];
+            for (var _b = 0, columns_2 = columns; _b < columns_2.length; _b++) {
+                var column = columns_2[_b];
                 if (ele.querySelector('[e-mappinguid]') &&
                     ele.querySelector('[e-mappinguid]').getAttribute('e-mappinguid') === column.uid && column.visible) {
                     column.width = ele.getBoundingClientRect().width;
@@ -16842,11 +17872,30 @@ var Resize = /** @__PURE__ @class */ (function () {
                 }
             }
         }
+        for (var _c = 0, _d = this.parent.getStackedColumns(this.parent.columns); _c < _d.length; _c++) {
+            var stackedColumn = _d[_c];
+            stackedColumn.width = this.getStackedWidth(stackedColumn, 0);
+        }
         return columns;
+    };
+    Resize.prototype.getStackedWidth = function (column, width) {
+        for (var _i = 0, _a = column.columns; _i < _a.length; _i++) {
+            var col = _a[_i];
+            if (col.visible !== false) {
+                if (col.columns) {
+                    this.getStackedWidth(col, width);
+                }
+                else {
+                    width += col.width;
+                }
+            }
+        }
+        return width;
     };
     Resize.prototype.getTargetColumn = function (e) {
         var cell = closest(e.target, resizeClassList.header);
-        var uid = cell.querySelector('.e-headercelldiv').getAttribute('e-mappinguid');
+        cell = cell.querySelector('.e-headercelldiv') || cell.querySelector('.e-stackedheadercelldiv');
+        var uid = cell.getAttribute('e-mappinguid');
         return this.parent.getColumnByUid(uid);
     };
     Resize.prototype.updateCursor = function (action) {
@@ -16988,10 +18037,12 @@ var Reorder = /** @__PURE__ @class */ (function () {
         this.parent.on(headerRefreshed, this.createReorderElement, this);
     }
     Reorder.prototype.chkDropPosition = function (srcElem, destElem) {
+        var col = this.parent.getColumnByUid(destElem.firstElementChild.getAttribute('e-mappinguid'));
+        var bool = col ? !col.lockColumn : true;
         return (srcElem.parentElement.isEqualNode(destElem.parentElement) || (this.parent.getFrozenColumns()
             && Array.prototype.indexOf.call(closest(srcElem, 'thead').children, srcElem.parentElement)
                 === Array.prototype.indexOf.call(closest(destElem, 'thead').children, destElem.parentElement)))
-            && this.targetParentContainerIndex(srcElem, destElem) > -1;
+            && this.targetParentContainerIndex(srcElem, destElem) > -1 && bool;
     };
     Reorder.prototype.chkDropAllCols = function (srcElem, destElem) {
         var isFound;
@@ -17041,7 +18092,7 @@ var Reorder = /** @__PURE__ @class */ (function () {
         var dropElement = this.element.querySelector('.e-headercelldiv') || this.element.querySelector('.e-stackedheadercelldiv');
         var uId = dropElement.getAttribute('e-mappinguid');
         var column = gObj.getColumnByUid(uId);
-        if (!closest(e.target, 'th') || (!isNullOrUndefined(column) && column.allowReordering === false)) {
+        if (!closest(e.target, 'th') || (!isNullOrUndefined(column) && (!column.allowReordering || column.lockColumn))) {
             return;
         }
         var destElem = closest(e.target, '.e-headercell');
@@ -17049,7 +18100,7 @@ var Reorder = /** @__PURE__ @class */ (function () {
         var destElemUid = destElemDiv.getAttribute('e-mappinguid');
         if (!isNullOrUndefined(destElemUid)) {
             var destColumn = gObj.getColumnByUid(destElemUid);
-            if (isNullOrUndefined(destColumn) || destColumn.allowReordering === false) {
+            if (isNullOrUndefined(destColumn) || !destColumn.allowReordering || destColumn.lockColumn) {
                 return;
             }
         }
@@ -17073,19 +18124,26 @@ var Reorder = /** @__PURE__ @class */ (function () {
                 }
             }
             else {
-                var headers = this.getHeaderCells();
-                var oldIdx = getElementIndex(this.element, headers);
-                var columns = this.getColumnsModel(this.parent.columns);
-                var column_2 = columns[oldIdx];
                 var newIndex = this.targetParentContainerIndex(this.element, destElem);
-                this.moveColumns(newIndex, column_2);
+                var uid = this.element.firstElementChild.getAttribute('e-mappinguid');
+                this.destElement = destElem;
+                if (uid) {
+                    this.moveColumns(newIndex, this.parent.getColumnByUid(uid));
+                }
+                else {
+                    var headers = this.getHeaderCells();
+                    var oldIdx = getElementIndex(this.element, headers);
+                    var columns = this.getColumnsModel(this.parent.columns);
+                    var column_2 = columns[oldIdx];
+                    this.moveColumns(newIndex, column_2);
+                }
             }
         }
     };
     Reorder.prototype.isActionPrevent = function (gObj) {
         return isActionPrevent(gObj);
     };
-    Reorder.prototype.moveColumns = function (destIndex, column) {
+    Reorder.prototype.moveColumns = function (destIndex, column, reorderByColumn) {
         var gObj = this.parent;
         if (this.isActionPrevent(gObj)) {
             gObj.notify(preventBatch, { instance: this, handler: this.moveColumns, arg1: destIndex, arg2: column });
@@ -17094,6 +18152,30 @@ var Reorder = /** @__PURE__ @class */ (function () {
         var parent = this.getColParent(column, this.parent.columns);
         var cols = parent ? parent.columns : this.parent.columns;
         var srcIdx = inArray(column, cols);
+        if (((this.parent.getFrozenColumns() && parent) || this.parent.lockcolPositionCount) && !reorderByColumn) {
+            for (var i = 0; i < cols.length; i++) {
+                if (cols[i].field === column.field) {
+                    srcIdx = i;
+                    break;
+                }
+            }
+            var col = this.parent.getColumnByUid(this.destElement.firstElementChild.getAttribute('e-mappinguid'));
+            if (col) {
+                for (var i = 0; i < cols.length; i++) {
+                    if (cols[i].field === col.field) {
+                        destIndex = i;
+                        break;
+                    }
+                }
+            }
+            else {
+                for (var i = 0; i < cols.length; i++) {
+                    if (cols[i].headerText === this.destElement.innerText.trim()) {
+                        destIndex = i;
+                    }
+                }
+            }
+        }
         if (!gObj.allowReordering || srcIdx === destIndex || srcIdx === -1 || destIndex === -1) {
             return;
         }
@@ -17113,20 +18195,49 @@ var Reorder = /** @__PURE__ @class */ (function () {
         return inArray(flatColumns[getElementIndex(destElem, headers)], cols);
     };
     Reorder.prototype.getHeaderCells = function () {
-        if (this.parent.getFrozenColumns()) {
+        var frozenColumns = this.parent.getFrozenColumns();
+        if (frozenColumns || this.parent.lockcolPositionCount) {
             var fTh = void 0;
             var mTh = void 0;
             var fHeaders = [];
             var fRows = [].slice.call(this.parent.getHeaderTable().querySelectorAll('.e-columnheader'));
-            var mRows = [].slice.call(this.parent.getHeaderContent()
-                .querySelector('.e-movableheader').querySelectorAll('.e-columnheader'));
-            for (var i = 0; i < fRows.length; i++) {
-                fTh = [].slice.call(fRows[i].getElementsByClassName('e-headercell'));
-                mTh = [].slice.call(mRows[i].getElementsByClassName('e-headercell'));
-                fHeaders = fHeaders.concat(fTh);
-                for (var j = 0; j < mTh.length; j++) {
-                    if (!fTh.length || j !== 0 || fTh[fTh.length - 1].innerText !== mTh[0].innerText) {
+            if (frozenColumns) {
+                var mRows = [].slice.call(this.parent.getHeaderContent()
+                    .querySelector('.e-movableheader').querySelectorAll('.e-columnheader'));
+                for (var i = 0; i < fRows.length; i++) {
+                    fTh = [].slice.call(fRows[i].getElementsByClassName('e-headercell'));
+                    mTh = [].slice.call(mRows[i].getElementsByClassName('e-headercell'));
+                    var isAvail = void 0;
+                    for (var k = 0; k < fTh.length; k++) {
+                        for (var j = 0; j < mTh.length; j++) {
+                            if (mTh[j].innerText === fTh[k].innerText) {
+                                isAvail = true;
+                                break;
+                            }
+                        }
+                        if (!isAvail) {
+                            fHeaders = fHeaders.concat([fTh[k]]);
+                        }
+                    }
+                    for (var j = 0; j < mTh.length; j++) {
                         fHeaders.push(mTh[j]);
+                    }
+                }
+            }
+            else {
+                for (var i = 0; i < fRows.length; i++) {
+                    mTh = [].slice.call(fRows[i].getElementsByClassName('e-headercell'));
+                    for (var k = 0; k < mTh.length; k++) {
+                        var isAvail = void 0;
+                        for (var j = k + 1; j < mTh.length; j++) {
+                            if (mTh[j].innerText === mTh[k].innerText) {
+                                isAvail = true;
+                                break;
+                            }
+                        }
+                        if (!isAvail) {
+                            fHeaders = fHeaders.concat([mTh[k]]);
+                        }
                     }
                 }
             }
@@ -17141,16 +18252,11 @@ var Reorder = /** @__PURE__ @class */ (function () {
         this.findColParent(column, columns, parents$$1);
         return parents$$1[parents$$1.length - 1];
     };
-    /**
-     * Changes the position of the Grid columns by field names.
-     * @param  {string} fromFName - Defines the origin field name.
-     * @param  {string} toFName - Defines the destination field name.
-     * @return {void}
-     */
-    Reorder.prototype.reorderColumns = function (fromFName, toFName) {
+    Reorder.prototype.reorderSingleColumn = function (fromFName, toFName) {
         var fColumn = this.parent.getColumnByField(fromFName);
         var toColumn = this.parent.getColumnByField(toFName);
-        if ((!isNullOrUndefined(fColumn) && !fColumn.allowReordering) || (!isNullOrUndefined(toColumn) && !toColumn.allowReordering)) {
+        if ((!isNullOrUndefined(fColumn) && (!fColumn.allowReordering || fColumn.lockColumn)) ||
+            (!isNullOrUndefined(toColumn) && (!toColumn.allowReordering || fColumn.lockColumn))) {
             return;
         }
         var column = this.parent.getColumnByField(toFName);
@@ -17158,8 +18264,42 @@ var Reorder = /** @__PURE__ @class */ (function () {
         var columns = parent ? parent.columns : this.parent.columns;
         var destIndex = inArray(column, columns);
         if (destIndex > -1) {
-            this.moveColumns(destIndex, this.parent.getColumnByField(fromFName));
+            this.moveColumns(destIndex, this.parent.getColumnByField(fromFName), true);
         }
+    };
+    Reorder.prototype.reorderMultipleColumns = function (fromFNames, toFName) {
+        var toIndex = this.parent.getColumnIndexByField(toFName);
+        var toColumn = this.parent.getColumnByField(toFName);
+        if (toIndex < 0 || (!isNullOrUndefined(toColumn) && (!toColumn.allowReordering || toColumn.lockColumn))) {
+            return;
+        }
+        for (var i = 0; i < fromFNames.length; i++) {
+            var column = this.parent.getColumnByField(fromFNames[i]);
+            if (!isNullOrUndefined(column) && (!column.allowReordering || column.lockColumn)) {
+                return;
+            }
+        }
+        for (var i = 0; i < fromFNames.length; i++) {
+            var column = this.parent.getColumnByIndex(toIndex);
+            var parent_1 = this.getColParent(column, this.parent.columns);
+            var columns = parent_1 ? parent_1.columns : this.parent.columns;
+            var destIndex = inArray(column, columns);
+            if (destIndex > -1) {
+                this.moveColumns(destIndex, this.parent.getColumnByField(fromFNames[i]), true);
+            }
+            if (this.parent.getColumnIndexByField(fromFNames[i + 1]) >= destIndex) {
+                toIndex++; //R to L
+            }
+        }
+    };
+    /**
+     * Changes the position of the Grid columns by field names.
+     * @param  {string | string[]} fromFName - Defines the origin field names.
+     * @param  {string} toFName - Defines the destination field name.
+     * @return {void}
+     */
+    Reorder.prototype.reorderColumns = function (fromFName, toFName) {
+        typeof fromFName === 'string' ? this.reorderSingleColumn(fromFName, toFName) : this.reorderMultipleColumns(fromFName, toFName);
     };
     Reorder.prototype.enableAfterRender = function (e) {
         if (e.module === this.getModuleName() && e.enable) {
@@ -17206,7 +18346,7 @@ var Reorder = /** @__PURE__ @class */ (function () {
     Reorder.prototype.drag = function (e) {
         var gObj = this.parent;
         var target = e.target;
-        if (e.column.allowReordering === false) {
+        if (!e.column.allowReordering || e.column.lockColumn) {
             return;
         }
         var closest$$1 = closest(target, '.e-headercell:not(.e-stackedHeaderCell)');
@@ -17273,7 +18413,7 @@ var Reorder = /** @__PURE__ @class */ (function () {
         var target = e.target;
         this.element = target.classList.contains('e-headercell') ? target :
             parentsUntil(target, 'e-headercell');
-        if (e.column.allowReordering === false) {
+        if (!e.column.allowReordering || e.column.lockColumn) {
             return;
         }
         this.x = getPosition(e.event).x + gObj.getContent().firstElementChild.scrollLeft;
@@ -17316,31 +18456,60 @@ var RowDD = /** @__PURE__ @class */ (function () {
      */
     function RowDD(parent) {
         var _this = this;
-        //Internal variables    
         this.selectedRows = [];
+        this.isOverflowBorder = true;
+        this.selectedRowColls = [];
+        this.isRefresh = true;
+        /* tslint:disable-next-line:max-line-length */
+        // tslint:disable-next-line:max-func-body-length
         this.helper = function (e) {
             var gObj = _this.parent;
-            if (document.getElementsByClassName('e-griddragarea').length ||
-                (!e.sender.target.classList.contains('e-selectionbackground') && gObj.selectionSettings.type !== 'Single')) {
-                return false;
-            }
+            var target = e.sender.target;
             var visualElement = _this.parent.createElement('div', {
                 className: 'e-cloneproperties e-draganddrop e-grid e-dragclone',
                 styles: 'height:"auto", z-index:2, width:' + gObj.element.offsetWidth
             });
             var table = _this.parent.createElement('table', { styles: 'width:' + gObj.element.offsetWidth });
             var tbody = _this.parent.createElement('tbody');
-            if (gObj.selectionSettings.mode === 'Row' && gObj.selectionSettings.type === 'Single') {
-                var index = parseInt(e.sender.target.parentElement.getAttribute('aria-rowindex'), 10);
-                gObj.selectRow(index);
+            if (document.getElementsByClassName('e-griddragarea').length ||
+                (gObj.rowDropSettings.targetID && (!e.sender.target.classList.contains('e-selectionbackground')
+                    && gObj.selectionSettings.type !== 'Single')) ||
+                (!gObj.rowDropSettings.targetID && !parentsUntil(e.sender.target, 'e-rowdragdrop'))) {
+                return false;
             }
+            if (gObj.rowDropSettings.targetID &&
+                gObj.selectionSettings.mode === 'Row' && gObj.selectionSettings.type === 'Single') {
+                gObj.selectRow(parseInt(e.sender.target.parentElement.getAttribute('aria-rowindex'), 10));
+            }
+            var args = {
+                selectedRow: gObj.getSelectedRows(), dragelement: target,
+                cloneElement: visualElement, cancel: false
+            };
             var selectedRows = gObj.getSelectedRows();
-            for (var i = 0, len = selectedRows.length; i < len; i++) {
-                var selectedRow = selectedRows[i].cloneNode(true);
-                removeElement(selectedRow, '.e-indentcell');
-                removeElement(selectedRow, '.e-detailrowcollapse');
-                removeElement(selectedRow, '.e-detailrowexpand');
-                tbody.appendChild(selectedRow);
+            gObj.trigger(rowDragStartHelper, args);
+            var cancel = 'cancel';
+            var cloneElement = 'cloneElement';
+            if (args[cancel]) {
+                visualElement = args[cloneElement];
+                return visualElement;
+            }
+            _this.startedRow = closest(target, 'tr').cloneNode(true);
+            removeElement(_this.startedRow, '.e-indentcell');
+            removeElement(_this.startedRow, '.e-detailrowcollapse');
+            removeElement(_this.startedRow, '.e-detailrowexpand');
+            _this.removeCell(_this.startedRow, 'e-gridchkbox');
+            var exp = new RegExp('e-active', 'g'); //high contrast issue
+            _this.startedRow.innerHTML = _this.startedRow.innerHTML.replace(exp, '');
+            tbody.appendChild(_this.startedRow);
+            if (gObj.getSelectedRows().length > 1) {
+                var dropCountEle = _this.parent.createElement('span', {
+                    className: 'e-dropitemscount', innerHTML: '' + selectedRows.length,
+                });
+                visualElement.appendChild(dropCountEle);
+            }
+            var ele = closest(target, 'tr').querySelector('.e-icon-rowdragicon');
+            if (ele) {
+                ele.classList.add('e-dragstartrow');
             }
             table.appendChild(tbody);
             visualElement.appendChild(table);
@@ -17352,6 +18521,12 @@ var RowDD = /** @__PURE__ @class */ (function () {
             if (document.getElementsByClassName('e-griddragarea').length) {
                 return;
             }
+            var target = e.target;
+            var spanCssEle = _this.parent.element.querySelector('.e-dropitemscount');
+            if (_this.parent.getSelectedRecords().length > 1 && spanCssEle) {
+                spanCssEle.style.left = _this.parent.element.querySelector('.e-cloneproperties table')
+                    .offsetWidth - 5 + 'px';
+            }
             gObj.trigger(rowDragStart, {
                 rows: gObj.getSelectedRows(),
                 target: e.target, draggableType: 'rows', data: gObj.getSelectedRecords()
@@ -17360,21 +18535,67 @@ var RowDD = /** @__PURE__ @class */ (function () {
             if (gObj.rowDropSettings.targetID && dropElem && dropElem.ej2_instances) {
                 dropElem.ej2_instances[0].getContent().classList.add('e-allowRowDrop');
             }
-            _this.isDragStop = false;
         };
         this.drag = function (e) {
             var gObj = _this.parent;
             var cloneElement = _this.parent.element.querySelector('.e-cloneproperties');
             var target = _this.getElementFromPosition(cloneElement, e.event);
-            classList(cloneElement, ['e-defaultcur'], ['e-notallowedcur']);
+            classList(cloneElement, ['e-defaultcur'], ['e-notallowedcur', 'e-movecur']);
+            _this.isOverflowBorder = true;
+            _this.hoverState = gObj.enableHover;
+            var trElement = closest(e.target, 'tr');
+            gObj.enableHover = false;
+            if (!e.target) {
+                return;
+            }
             gObj.trigger(rowDrag, {
                 rows: gObj.getSelectedRows(),
-                target: target, draggableType: 'rows', data: gObj.getSelectedRecords()
+                target: target, draggableType: 'rows', data: gObj.getSelectedRecords(),
             });
+            _this.stopTimer();
             gObj.element.classList.add('e-rowdrag');
-            if (!parentsUntil(target, 'e-gridcontent') ||
-                parentsUntil(cloneElement.parentElement, 'e-grid').id === parentsUntil(target, 'e-grid').id) {
-                classList(cloneElement, ['e-notallowedcur'], ['e-defaultcur']);
+            _this.dragTarget = trElement && parentsUntil(target, 'e-grid').id === cloneElement.parentElement.id ?
+                trElement.rowIndex : parseInt(_this.startedRow.getAttribute('aria-rowindex'), 10);
+            if (gObj.rowDropSettings.targetID) {
+                if (!parentsUntil(target, 'e-gridcontent') ||
+                    parentsUntil(cloneElement.parentElement, 'e-grid').id === parentsUntil(target, 'e-grid').id) {
+                    classList(cloneElement, ['e-notallowedcur'], ['e-defaultcur']);
+                }
+                else {
+                    classList(cloneElement, ['e-defaultcur'], ['e-notallowedcur']);
+                }
+            }
+            else {
+                var elem = parentsUntil(target, 'e-grid');
+                if (elem && elem.id === cloneElement.parentElement.id) {
+                    classList(cloneElement, ['e-movecur'], ['e-defaultcur']);
+                }
+                else {
+                    classList(cloneElement, ['e-notallowedcur'], ['e-movecur']);
+                }
+            }
+            if (!gObj.rowDropSettings.targetID &&
+                (!gObj.groupSettings.columns.length || e.target.classList.contains('e-selectionbackground'))) {
+                if (parentsUntil(target, 'e-grid')) {
+                    _this.updateScrollPostion(e.event, target);
+                }
+                if (_this.isOverflowBorder && parseInt(_this.startedRow.getAttribute('aria-rowindex'), 10) !== _this.dragTarget) {
+                    _this.moveDragRows(e, _this.startedRow, trElement);
+                }
+                else {
+                    if (trElement && _this.parent.getRowByIndex(_this.parent.getRows().length - 1).getAttribute('data-uid') ===
+                        trElement.getAttribute('data-uid')) {
+                        var bottomborder = _this.parent.createElement('div', { className: 'e-lastrow-dragborder' });
+                        var gridcontentEle = _this.parent.getContent();
+                        bottomborder.style.width = _this.parent.element.offsetWidth - _this.getScrollWidth() + 'px';
+                        if (!gridcontentEle.querySelectorAll('.e-lastrow-dragborder').length) {
+                            gridcontentEle.classList.add('e-grid-relative');
+                            gridcontentEle.appendChild(bottomborder);
+                            bottomborder.style.bottom = _this.getScrollWidth() + 'px';
+                        }
+                    }
+                    _this.removeBorder(trElement);
+                }
             }
         };
         this.dragStop = function (e) {
@@ -17382,21 +18603,63 @@ var RowDD = /** @__PURE__ @class */ (function () {
             if (_this.parent.isDestroyed) {
                 return;
             }
-            var target = _this.getElementFromPosition(e.helper, e.event);
+            var targetEle = _this.getElementFromPosition(e.helper, e.event);
+            var target = targetEle ? targetEle : e.target;
+            var cloneElement = _this.parent.element.querySelector('.e-cloneproperties');
             gObj.element.classList.remove('e-rowdrag');
             var dropElem = document.getElementById(gObj.rowDropSettings.targetID);
             if (gObj.rowDropSettings.targetID && dropElem && dropElem.ej2_instances) {
                 dropElem.ej2_instances[0].getContent().classList.remove('e-allowRowDrop');
             }
+            var startRow = gObj.getSelectedRows().length > 0 ? gObj.getSelectedRows() : [_this.startedRow];
+            if (gObj.isRowDragable()) {
+                _this.stopTimer();
+                gObj.enableHover = _this.hoverState;
+                _this.parent.getContent().classList.remove('e-grid-relative');
+                _this.removeBorder(targetEle);
+                var stRow = gObj.element.querySelector('.e-dragstartrow');
+                if (stRow) {
+                    stRow.classList.remove('e-dragstartrow');
+                }
+            }
             var args = {
-                target: target, draggableType: 'rows', cancel: false,
-                rows: gObj.getSelectedRows(), data: gObj.getSelectedRecords()
+                target: target, draggableType: 'rows',
+                cancel: false,
+                fromIndex: _this.startedRowIndex,
+                dropIndex: _this.dragTarget,
+                rows: startRow, data: gObj.getSelectedRecords()
             };
             gObj.trigger(rowDrop, args);
             if (!parentsUntil(target, 'e-gridcontent') || args.cancel) {
+                _this.dragTarget = null;
                 remove(e.helper);
                 return;
             }
+            _this.isRefresh = false;
+            var selectedIndexes = _this.parent.getSelectedRowIndexes();
+            if (gObj.isRowDragable()) {
+                if (!_this.parent.rowDropSettings.targetID &&
+                    _this.startedRow.querySelector('td.e-selectionbackground') && selectedIndexes.length > 1 &&
+                    selectedIndexes.length !== _this.parent.getCurrentViewRecords().length) {
+                    _this.reorderRows(selectedIndexes, args.dropIndex);
+                }
+                else {
+                    _this.reorderRows([parseInt(_this.startedRow.getAttribute('aria-rowindex'), 10)], _this.dragTarget);
+                }
+                _this.dragTarget = null;
+                if (!gObj.rowDropSettings.targetID) {
+                    remove(e.helper);
+                    gObj.refresh();
+                }
+            }
+            _this.isRefresh = true;
+        };
+        this.removeCell = function (targetRow, className) {
+            return [].slice.call(targetRow.querySelectorAll('td')).filter(function (cell) {
+                if (cell.classList.contains(className)) {
+                    targetRow.deleteCell(cell.cellIndex);
+                }
+            });
         };
         this.parent = parent;
         if (this.parent.isDestroyed) {
@@ -17404,20 +18667,162 @@ var RowDD = /** @__PURE__ @class */ (function () {
         }
         this.parent.on(initialEnd, this.initializeDrag, this);
         this.parent.on(columnDrop, this.columnDrop, this);
-        this.parent.on(rowDragAndDropComplete, this.onActionComplete, this);
+        this.onDataBoundFn = this.onDataBound.bind(this);
+        this.parent.addEventListener(dataBound, this.onDataBoundFn);
         this.parent.on(uiUpdate, this.enableAfterRender, this);
     }
+    RowDD.prototype.reorderRows = function (fromIndexes, toIndex) {
+        var selectedIndexes = this.parent.getSelectedRowIndexes();
+        var selectedRecords = [];
+        var draggedRecords = [];
+        var currentViewData = this.parent.renderModule.data.dataManager.dataSource.json;
+        var dropIdx = toIndex;
+        var actualIdx = fromIndexes[0];
+        for (var i = 0, len = fromIndexes.length; i < len; i++) {
+            draggedRecords[i] = currentViewData[fromIndexes[i]];
+        }
+        for (var i = 0, len = selectedIndexes.length; i < len; i++) {
+            selectedRecords[i] = currentViewData[selectedIndexes[i]];
+        }
+        for (var i = 0, len = draggedRecords.length; i < len; i++) {
+            if (i !== 0) {
+                for (var j = 0, len1 = currentViewData.length; j < len1; j++) {
+                    if (JSON.stringify(this.parent.renderModule.data.dataManager.dataSource.json[j]) ===
+                        JSON.stringify(draggedRecords[i])) {
+                        actualIdx = j;
+                        break;
+                    }
+                }
+                for (var j = 0, len1 = currentViewData.length; j < len1; j++) {
+                    if (JSON.stringify(this.parent.renderModule.data.dataManager.dataSource.json[j]) === JSON.stringify(draggedRecords[i - 1])) {
+                        if (actualIdx > j) {
+                            dropIdx = j + 1;
+                        }
+                        break;
+                    }
+                }
+            }
+            this.reorderRow(actualIdx, dropIdx);
+        }
+        if (this.isRefresh) {
+            this.parent.notify(modelChanged, {
+                type: actionBegin, requestType: 'rowdraganddrop'
+            });
+        }
+        for (var i = 0, len = selectedRecords.length; i < len; i++) {
+            for (var j = 0, len1 = currentViewData.length; j < len1; j++) {
+                if (JSON.stringify(this.parent.renderModule.data.dataManager.dataSource.json[j]) === JSON.stringify(selectedRecords[i])) {
+                    selectedIndexes[i] = j;
+                    break;
+                }
+            }
+        }
+        this.selectedRowColls = selectedIndexes;
+    };
+    RowDD.prototype.stopTimer = function () {
+        window.clearInterval(this.timer);
+    };
     RowDD.prototype.initializeDrag = function () {
         var gObj = this.parent;
         var drag;
         drag = new Draggable(gObj.getContent(), {
-            dragTarget: '.e-rowcell',
+            dragTarget: '.e-rowcelldrag, .e-rowdragdrop, .e-rowcell',
             distance: 5,
             helper: this.helper,
             dragStart: this.dragStart,
             drag: this.drag,
             dragStop: this.dragStop
         });
+    };
+    RowDD.prototype.updateScrollPostion = function (e, target) {
+        var _this = this;
+        var frzCols = this.parent.getFrozenColumns();
+        var y = getPosition(e).y;
+        var cliRect = this.parent.getContent().getBoundingClientRect();
+        var rowHeight = this.parent.getRowHeight() - 15;
+        var scrollElem = frzCols ? this.parent.getContent().querySelector('.e-movablecontent')
+            : this.parent.getContent().firstElementChild;
+        if (cliRect.top + rowHeight >= y) {
+            var scrollPixel_1 = -(this.parent.getRowHeight());
+            this.isOverflowBorder = false;
+            this.timer = window.setInterval(function () { _this.setScrollDown(scrollElem, scrollPixel_1, true); }, 200);
+        }
+        else if (cliRect.top + this.parent.getContent().clientHeight - rowHeight - 33 <= y) {
+            var scrollPixel_2 = (this.parent.getRowHeight());
+            this.isOverflowBorder = false;
+            this.timer = window.setInterval(function () { _this.setScrollDown(scrollElem, scrollPixel_2, true); }, 200);
+        }
+    };
+    RowDD.prototype.setScrollDown = function (scrollElem, scrollPixel, isLeft) {
+        scrollElem.scrollTop = scrollElem.scrollTop + scrollPixel;
+    };
+    RowDD.prototype.moveDragRows = function (e, startedRow, targetRow) {
+        var cloneElement = this.parent.element.querySelector('.e-cloneproperties');
+        var element = closest(e.target, 'tr');
+        if (parentsUntil(element, 'e-gridcontent') && parentsUntil(cloneElement.parentElement, 'e-grid').id ===
+            parentsUntil(element, 'e-grid').id) {
+            var targetElement = element ?
+                element : this.startedRow;
+            this.setBorder(targetElement, e.event, startedRow, targetRow);
+        }
+    };
+    RowDD.prototype.setBorder = function (element, event, startedRow, targetRow) {
+        var node = this.parent.element;
+        var cloneElement = this.parent.element.querySelector('.e-cloneproperties');
+        this.removeFirstRowBorder(element);
+        this.removeLastRowBorder(element);
+        if (parentsUntil(element, 'e-gridcontent') && parentsUntil(cloneElement.parentElement, 'e-grid').id ===
+            parentsUntil(element, 'e-grid').id) {
+            removeClass(node.querySelectorAll('.e-rowcell,.e-rowdragdrop'), ['e-dragborder']);
+            var rowElement = [];
+            if (targetRow && targetRow.rowIndex === 0) {
+                var div = this.parent.createElement('div', { className: 'e-firstrow-dragborder' });
+                var gridheaderEle = this.parent.getHeaderContent();
+                gridheaderEle.classList.add('e-grid-relative');
+                div.style.width = node.offsetWidth - this.getScrollWidth() + 'px';
+                if (!gridheaderEle.querySelectorAll('.e-firstrow-dragborder').length) {
+                    gridheaderEle.appendChild(div);
+                }
+            }
+            else if (targetRow && parseInt(startedRow.getAttribute('aria-rowindex'), 10) > targetRow.rowIndex) {
+                element = this.parent.getRowByIndex(targetRow.rowIndex - 1);
+                rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop'));
+            }
+            else {
+                rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop'));
+            }
+            if (rowElement.length > 0) {
+                addRemoveActiveClasses(rowElement, true, 'e-dragborder');
+            }
+        }
+    };
+    RowDD.prototype.getScrollWidth = function () {
+        var scrollElem = this.parent.getContent().firstElementChild;
+        return scrollElem.scrollWidth > scrollElem.offsetWidth ? Scroll.getScrollBarWidth() : 0;
+    };
+    RowDD.prototype.removeFirstRowBorder = function (element) {
+        if (this.parent.element.getElementsByClassName('e-firstrow-dragborder').length > 0 && element &&
+            element.rowIndex !== 0) {
+            this.parent.element.getElementsByClassName('e-firstrow-dragborder')[0].remove();
+        }
+    };
+    RowDD.prototype.removeLastRowBorder = function (element) {
+        var islastRowIndex = element && this.parent.getRowByIndex(this.parent.getRows().length - 1).getAttribute('data-uid') !==
+            element.getAttribute('data-uid');
+        if (this.parent.element.getElementsByClassName('e-lastrow-dragborder').length > 0 && element && islastRowIndex) {
+            this.parent.element.getElementsByClassName('e-lastrow-dragborder')[0].remove();
+        }
+    };
+    RowDD.prototype.removeBorder = function (element) {
+        this.removeFirstRowBorder(element);
+        this.removeLastRowBorder(element);
+        element = this.parent.getRows().filter(function (row) {
+            return row.querySelector('td.e-dragborder');
+        })[0];
+        if (element) {
+            var rowElement = [].slice.call(element.querySelectorAll('.e-dragborder'));
+            addRemoveActiveClasses(rowElement, false, 'e-dragborder');
+        }
     };
     RowDD.prototype.getElementFromPosition = function (element, event) {
         var target;
@@ -17427,27 +18832,41 @@ var RowDD = /** @__PURE__ @class */ (function () {
         element.style.display = '';
         return target;
     };
-    /**
-     * The function used to trigger onActionComplete
-     * @return {void}
-     * @hidden
-     */
-    RowDD.prototype.onActionComplete = function (e) {
-        this.parent.trigger(actionComplete, extend(e, { type: actionComplete }));
+    RowDD.prototype.onDataBound = function (e) {
+        if (this.selectedRowColls.length > 0) {
+            this.parent.selectRows(this.selectedRowColls);
+            this.selectedRowColls = [];
+        }
     };
     RowDD.prototype.getTargetIdx = function (targetRow) {
         return targetRow ? parseInt(targetRow.getAttribute('aria-rowindex'), 10) : 0;
     };
+    RowDD.prototype.singleRowDrop = function (e) {
+        var targetRow = closest(e.target, 'tr');
+        var currentIndex;
+        var srcControl;
+        srcControl = e.droppedElement.parentElement.ej2_instances[0];
+        currentIndex = targetRow ? targetRow.rowIndex : srcControl.currentViewData.length - 1;
+        this.reorderRow(this.startedRowIndex, currentIndex);
+    };
     RowDD.prototype.columnDrop = function (e) {
         var gObj = this.parent;
+        var draggObj = e.droppedElement.parentElement.ej2_instances[0];
         if (e.droppedElement.getAttribute('action') !== 'grouping') {
             var targetRow = closest(e.target, 'tr');
             var srcControl = void 0;
             var currentIndex = void 0;
+            if ((e.droppedElement.querySelector('tr').getAttribute('single-dragrow') !== 'true' &&
+                e.droppedElement.parentElement.id === gObj.element.id)
+                || (e.droppedElement.querySelector('tr').getAttribute('single-dragrow') === 'true' &&
+                    e.droppedElement.parentElement.id !== gObj.element.id)) {
+                return;
+            }
             if (e.droppedElement.parentElement.id !== gObj.element.id) {
                 srcControl = e.droppedElement.parentElement.ej2_instances[0];
             }
-            else {
+            else if (this.isSingleRowDragDrop || e.droppedElement.querySelector('tr').getAttribute('single-dragrow') === 'true') {
+                this.singleRowDrop(e);
                 return;
             }
             if (srcControl.element.id !== gObj.element.id && srcControl.rowDropSettings.targetID !== gObj.element.id) {
@@ -17479,6 +18898,20 @@ var RowDD = /** @__PURE__ @class */ (function () {
             });
         }
     };
+    RowDD.prototype.reorderRow = function (fromIndexes, toIndex) {
+        var gObj = this.parent;
+        if (!gObj.sortSettings.columns.length && !gObj.groupSettings.columns.length && !gObj.filterSettings.columns.length) {
+            //Todo: drag and drop mapper & BatchChanges                 
+            var skip = gObj.allowPaging ?
+                (gObj.pageSettings.currentPage * gObj.pageSettings.pageSize) - gObj.pageSettings.pageSize : 0;
+            toIndex = toIndex + skip;
+            this.selectedRows = gObj.getSelectedRowIndexes();
+            gObj.notify(rowPositionChanged, {
+                fromIndex: fromIndexes + skip,
+                toIndex: toIndex
+            });
+        }
+    };
     RowDD.prototype.enableAfterRender = function (e) {
         if (e.module === this.getModuleName() && e.enable) {
             this.initializeDrag();
@@ -17497,7 +18930,7 @@ var RowDD = /** @__PURE__ @class */ (function () {
         }
         this.parent.off(initialEnd, this.initializeDrag);
         this.parent.off(columnDrop, this.columnDrop);
-        this.parent.off(rowDragAndDropComplete, this.onActionComplete);
+        this.parent.removeEventListener(dataBound, this.onDataBoundFn);
         this.parent.off(uiUpdate, this.enableAfterRender);
         //destory ejdrag and drop
     };
@@ -18194,7 +19627,8 @@ var Group = /** @__PURE__ @class */ (function () {
         if (!gridElement || (!gridElement.querySelector('.e-gridheader') && !gridElement.querySelector('.e-gridcontent'))) {
             return;
         }
-        if (!this.parent.isDestroyed) {
+        // tslint:disable-next-line:no-any
+        if (!this.parent.isDestroyed && !this.parent.refreshing) {
             this.clearGrouping();
         }
         this.removeEventListener();
@@ -18210,6 +19644,9 @@ var Group = /** @__PURE__ @class */ (function () {
         var cols = JSON.parse(JSON.stringify(this.groupSettings.columns));
         this.contentRefresh = false;
         for (var i = 0, len = cols.length; i < len; i++) {
+            if (i === (len - 1)) {
+                this.contentRefresh = true;
+            }
             this.ungroupColumn(cols[i]);
         }
         this.contentRefresh = true;
@@ -18344,89 +19781,134 @@ var DetailRow = /** @__PURE__ @class */ (function () {
         this.parent.on(click, this.clickHandler, this);
         this.parent.on(destroy, this.destroy, this);
         this.parent.on(keyPressed, this.keyPressHandler, this);
+        this.parent.on(expandChildGrid, this.expand, this);
     }
     DetailRow.prototype.clickHandler = function (e) {
         this.toogleExpandcollapse(closest(e.target, 'td'));
     };
+    // tslint:disable-next-line:max-func-body-length
     DetailRow.prototype.toogleExpandcollapse = function (target) {
         var gObj = this.parent;
         var parent = 'parentDetails';
-        if (target && (target.classList.contains('e-detailrowcollapse') || target.classList.contains('e-detailrowexpand'))) {
-            var tr = target.parentElement;
-            var uid_1 = tr.getAttribute('data-uid');
-            var nextRow = this.parent.getContentTable().querySelector('tbody').children[tr.rowIndex + 1];
-            if (target.classList.contains('e-detailrowcollapse')) {
-                var key = 'records';
-                var currentViewData = gObj.allowGrouping && gObj.groupSettings.columns.length ?
-                    gObj.currentViewData[key] : gObj.currentViewData;
-                var data = currentViewData[tr.getAttribute('aria-rowindex')];
-                if (this.isDetailRow(nextRow)) {
-                    nextRow.style.display = '';
+        var childGrid;
+        if (!(target && (target.classList.contains('e-detailrowcollapse') || target.classList.contains('e-detailrowexpand')))) {
+            return;
+        }
+        var tr = target.parentElement;
+        var uid = tr.getAttribute('data-uid');
+        var rowObj = gObj.getRowObjectFromUID(uid);
+        var nextRow = this.parent.getContentTable().querySelector('tbody').children[tr.rowIndex + 1];
+        if (target.classList.contains('e-detailrowcollapse')) {
+            var data = rowObj.data;
+            if (this.isDetailRow(nextRow)) {
+                nextRow.style.display = '';
+            }
+            else if (gObj.getDetailTemplate() || gObj.childGrid) {
+                var rowId = getUid('grid-row');
+                var detailRow = this.parent.createElement('tr', { className: 'e-detailrow', attrs: { 'data-uid': rowId } });
+                var detailCell = this.parent.createElement('td', { className: 'e-detailcell' });
+                detailCell.setAttribute('colspan', this.parent.getVisibleColumns().length.toString());
+                var row = new Row({
+                    isDataRow: true,
+                    isExpand: true,
+                    uid: rowId,
+                    isDetailRow: true,
+                    cells: [new Cell({ cellType: CellType.Indent }), new Cell({ isDataCell: true, visible: true })]
+                });
+                for (var i = 0, len = gObj.groupSettings.columns.length; i < len; i++) {
+                    detailRow.appendChild(this.parent.createElement('td', { className: 'e-indentcell' }));
+                    row.cells.unshift(new Cell({ cellType: CellType.Indent }));
                 }
-                else if (gObj.getDetailTemplate() || gObj.childGrid) {
-                    var detailRow = this.parent.createElement('tr', { className: 'e-detailrow' });
-                    var detailCell = this.parent.createElement('td', { className: 'e-detailcell' });
-                    detailCell.setAttribute('colspan', this.parent.getVisibleColumns().length.toString());
-                    var row = new Row({
-                        isDataRow: true,
-                        isExpand: true,
-                        cells: [new Cell({ cellType: CellType.Indent }), new Cell({ isDataCell: true, visible: true })]
+                detailRow.appendChild(this.parent.createElement('td', { className: 'e-detailindentcell' }));
+                detailRow.appendChild(detailCell);
+                tr.parentNode.insertBefore(detailRow, tr.nextSibling);
+                if (gObj.detailTemplate) {
+                    appendChildren(detailCell, gObj.getDetailTemplate()(data, gObj, 'detailTemplate'));
+                }
+                else {
+                    childGrid = new Grid(this.getGridModel(gObj, rowObj, gObj.printMode));
+                    childGrid[parent] = {
+                        parentID: gObj.element.id,
+                        parentPrimaryKeys: gObj.getPrimaryKeyFieldNames(),
+                        parentKeyField: gObj.childGrid.queryString,
+                        parentKeyFieldValue: data[gObj.childGrid.queryString],
+                        parentRowData: data
+                    };
+                    if (gObj.isPrinting) {
+                        childGrid.isPrinting = true;
+                        childGrid.on(contentReady, this.promiseResolve(childGrid), this);
+                        childGrid.on(onEmpty, this.promiseResolve(childGrid), this);
+                    }
+                    rowObj.childGrid = childGrid;
+                    var modules = childGrid.getInjectedModules();
+                    var injectedModues = gObj.getInjectedModules();
+                    if (!modules || modules.length !== injectedModues.length) {
+                        childGrid.setInjectedModules(injectedModues);
+                    }
+                    var gridElem = this.parent.createElement('div', {
+                        id: 'child' + parents(tr, 'e-grid').length +
+                            '_grid' + tr.rowIndex + getUid('')
                     });
-                    for (var i = 0, len = gObj.groupSettings.columns.length; i < len; i++) {
-                        detailRow.appendChild(this.parent.createElement('td', { className: 'e-indentcell' }));
-                        row.cells.unshift(new Cell({ cellType: CellType.Indent }));
-                    }
-                    detailRow.appendChild(this.parent.createElement('td', { className: 'e-detailindentcell' }));
-                    detailRow.appendChild(detailCell);
-                    tr.parentNode.insertBefore(detailRow, tr.nextSibling);
-                    if (gObj.detailTemplate) {
-                        appendChildren(detailCell, gObj.getDetailTemplate()(data, gObj, 'detailTemplate'));
-                    }
-                    else {
-                        gObj.childGrid[parent] = {
-                            parentID: gObj.element.id,
-                            parentPrimaryKeys: gObj.getPrimaryKeyFieldNames(),
-                            parentKeyField: gObj.childGrid.queryString,
-                            parentKeyFieldValue: data[gObj.childGrid.queryString],
-                            parentRowData: data
-                        };
-                        var grid = new Grid(gObj.childGrid);
-                        var modules = grid.getInjectedModules();
-                        var injectedModues = gObj.getInjectedModules();
-                        if (!modules || modules.length !== injectedModues.length) {
-                            grid.setInjectedModules(injectedModues);
-                        }
-                        var gridElem = this.parent.createElement('div', {
-                            id: 'child' + parents(tr, 'e-grid').length +
-                                '_grid' + tr.rowIndex + getUid('')
-                        });
-                        detailCell.appendChild(gridElem);
-                        grid.appendTo(gridElem);
-                    }
-                    detailRow.appendChild(detailCell);
-                    tr.parentNode.insertBefore(detailRow, tr.nextSibling);
-                    var idx_1;
-                    this.parent.getRowsObject().some(function (r, rIndex) { idx_1 = rIndex; return r.uid === uid_1; });
-                    gObj.getRows().splice(tr.rowIndex + 1, 0, detailRow);
-                    this.parent.getRowsObject().splice(idx_1 + 1, 0, row);
-                    gObj.trigger(detailDataBound, { detailElement: detailCell, data: data });
-                    gObj.notify(detailDataBound, { rows: this.parent.getRowsObject() });
+                    detailCell.appendChild(gridElem);
+                    childGrid.appendTo(gridElem);
                 }
-                classList(target, ['e-detailrowexpand'], ['e-detailrowcollapse']);
-                classList(target.firstElementChild, ['e-dtdiagonaldown', 'e-icon-gdownarrow'], ['e-dtdiagonalright', 'e-icon-grightarrow']);
-                this.parent.getRowsObject()[tr.rowIndex].isExpand = true;
-                this.aria.setExpand(target, true);
+                detailRow.appendChild(detailCell);
+                if (tr.nextSibling) {
+                    tr.parentNode.insertBefore(detailRow, tr.nextSibling);
+                }
+                else {
+                    tr.parentNode.appendChild(detailRow);
+                }
+                gObj.getRows().splice(tr.rowIndex + 1, 0, detailRow);
+                gObj.getRowsObject().splice(rowObj.index + 1, 0, row);
+                gObj.trigger(detailDataBound, { detailElement: detailCell, data: data, childGrid: childGrid });
+                gObj.notify(detailDataBound, { rows: gObj.getRowsObject() });
+            }
+            classList(target, ['e-detailrowexpand'], ['e-detailrowcollapse']);
+            classList(target.firstElementChild, ['e-dtdiagonaldown', 'e-icon-gdownarrow'], ['e-dtdiagonalright', 'e-icon-grightarrow']);
+            rowObj.isExpand = true;
+            this.aria.setExpand(target, true);
+        }
+        else {
+            if (this.isDetailRow(nextRow)) {
+                nextRow.style.display = 'none';
+            }
+            classList(target, ['e-detailrowcollapse'], ['e-detailrowexpand']);
+            classList(target.firstElementChild, ['e-dtdiagonalright', 'e-icon-grightarrow'], ['e-dtdiagonaldown', 'e-icon-gdownarrow']);
+            rowObj.isExpand = false;
+            this.aria.setExpand(target, false);
+        }
+    };
+    /**
+     * @hidden
+     * @param gObj
+     * @param rowObj
+     */
+    DetailRow.prototype.getGridModel = function (gObj, rowObj, printMode) {
+        var gridModel;
+        if (gObj.isPrinting && rowObj.isExpand && gObj.expandedRows &&
+            gObj.expandedRows[rowObj.index] && gObj.expandedRows[rowObj.index].gridModel) {
+            gObj.expandedRows[rowObj.index].gridModel.hierarchyPrintMode = gObj.childGrid.hierarchyPrintMode;
+            gridModel = gObj.expandedRows[rowObj.index].gridModel;
+        }
+        else {
+            if (gObj.isPrinting && gObj.childGrid.allowPaging) {
+                gObj.childGrid.allowPaging = printMode === 'CurrentPage';
+                gridModel = gObj.childGrid;
             }
             else {
-                if (this.isDetailRow(nextRow)) {
-                    nextRow.style.display = 'none';
-                }
-                classList(target, ['e-detailrowcollapse'], ['e-detailrowexpand']);
-                classList(target.firstElementChild, ['e-dtdiagonalright', 'e-icon-grightarrow'], ['e-dtdiagonaldown', 'e-icon-gdownarrow']);
-                this.parent.getRowsObject()[tr.rowIndex].isExpand = false;
-                this.aria.setExpand(target, false);
+                gridModel = gObj.childGrid;
             }
         }
+        return gridModel;
+    };
+    DetailRow.prototype.promiseResolve = function (grid) {
+        var _this = this;
+        return function () {
+            grid.off(contentReady, _this.promiseResolve);
+            grid.off(onEmpty, _this.promiseResolve);
+            grid.notify(hierarchyPrint, {});
+        };
     };
     DetailRow.prototype.isDetailRow = function (row) {
         return row && row.classList.contains('e-detailrow');
@@ -18440,6 +19922,7 @@ var DetailRow = /** @__PURE__ @class */ (function () {
         this.parent.off(click, this.clickHandler);
         this.parent.off(destroy, this.destroy);
         this.parent.off(keyPressed, this.keyPressHandler);
+        this.parent.off(expandChildGrid, this.expand);
     };
     DetailRow.prototype.getTDfromIndex = function (index, className) {
         var tr = this.parent.getDataRows()[index];
@@ -18832,7 +20315,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
     return Toolbar$$1;
 }());
 
-var __extends$17 = (undefined && undefined.__extends) || (function () {
+var __extends$19 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -18850,7 +20333,7 @@ var __extends$17 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var FooterRenderer = /** @__PURE__ @class */ (function (_super) {
-    __extends$17(FooterRenderer, _super);
+    __extends$19(FooterRenderer, _super);
     function FooterRenderer(gridModule, serviceLocator) {
         var _this = _super.call(this, gridModule, serviceLocator) || this;
         _this.aggregates = {};
@@ -19080,7 +20563,7 @@ var FooterRenderer = /** @__PURE__ @class */ (function (_super) {
     return FooterRenderer;
 }(ContentRender));
 
-var __extends$18 = (undefined && undefined.__extends) || (function () {
+var __extends$20 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -19098,7 +20581,7 @@ var __extends$18 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var SummaryCellRenderer = /** @__PURE__ @class */ (function (_super) {
-    __extends$18(SummaryCellRenderer, _super);
+    __extends$20(SummaryCellRenderer, _super);
     function SummaryCellRenderer() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.element = _this.parent
@@ -19523,7 +21006,7 @@ var VirtualRowModelGenerator = /** @__PURE__ @class */ (function () {
     return VirtualRowModelGenerator;
 }());
 
-var __extends$19 = (undefined && undefined.__extends) || (function () {
+var __extends$21 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -19541,7 +21024,7 @@ var __extends$19 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
-    __extends$19(VirtualContentRenderer, _super);
+    __extends$21(VirtualContentRenderer, _super);
     function VirtualContentRenderer(parent, locator) {
         var _this = _super.call(this, parent, locator) || this;
         _this.prevHeight = 0;
@@ -19655,7 +21138,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         if (this.parent.groupSettings.columns.length) {
             this.refreshOffsets();
         }
-        var vHeight = this.parent.height.toString().indexOf('%') < 0 ? this.parent.height :
+        var vHeight = this.parent.height.toString().indexOf('%') < 0 ? this.content.getBoundingClientRect().height :
             this.parent.element.getBoundingClientRect().height;
         var translate = this.getTranslateY(this.content.scrollTop, vHeight, info);
         this.virtualEle.adjustTable(cOffset, translate);
@@ -19850,7 +21333,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
  * @hidden
  */
 var VirtualHeaderRenderer = /** @__PURE__ @class */ (function (_super) {
-    __extends$19(VirtualHeaderRenderer, _super);
+    __extends$21(VirtualHeaderRenderer, _super);
     function VirtualHeaderRenderer(parent, locator) {
         var _this = _super.call(this, parent, locator) || this;
         _this.virtualEle = new VirtualElementHandler();
@@ -19987,7 +21470,7 @@ var InlineEditRender = /** @__PURE__ @class */ (function () {
         if (tbody.querySelector('.e-emptyrow')) {
             tbody.querySelector('.e-emptyrow').classList.add('e-hide');
         }
-        tbody.insertBefore(args.row, tbody.firstChild);
+        this.parent.editSettings.newRowPosition === 'Top' ? tbody.insertBefore(args.row, tbody.firstChild) : tbody.appendChild(args.row);
         args.row.appendChild(this.getEditElement(elements, false, undefined, args, true));
         if (this.parent.getFrozenColumns()) {
             var mEle = this.renderMovableform(args.row, args);
@@ -19997,7 +21480,7 @@ var InlineEditRender = /** @__PURE__ @class */ (function () {
             else {
                 mTbody = this.parent.getContent().querySelector('.e-movablecontent').querySelector('tbody');
             }
-            mTbody.insertBefore(mEle, mTbody.firstChild);
+            this.parent.editSettings.newRowPosition === 'Top' ? mTbody.insertBefore(mEle, mTbody.firstChild) : mTbody.appendChild(mEle);
             args.row.querySelector('.e-normaledit').setAttribute('colspan', this.parent.getVisibleFrozenColumns() + '');
             mEle.setAttribute('colspan', '' + (this.parent.getVisibleColumns().length - this.parent.getVisibleFrozenColumns()));
             if (this.parent.height === 'auto') {
@@ -20867,8 +22350,7 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
                 editedData = gObj.editModule.getCurrentEditedData(gObj.element.querySelector('.e-movablecontent').querySelector('.e-gridform'), editedData);
             }
         }
-        if (isDlg ? dlgWrapper.querySelectorAll('.e-editedrow').length :
-            gObj.element.querySelectorAll('.e-editedrow').length) {
+        if (isDlg ? dlgWrapper.querySelectorAll('.e-editedrow').length : gObj.element.querySelectorAll('.e-editedrow').length) {
             args.action = 'edit';
             gObj.trigger(actionBegin, args);
             if (args.cancel) {
@@ -21122,7 +22604,7 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
     return NormalEdit;
 }());
 
-var __extends$20 = (undefined && undefined.__extends) || (function () {
+var __extends$22 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -21140,7 +22622,7 @@ var __extends$20 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var InlineEdit = /** @__PURE__ @class */ (function (_super) {
-    __extends$20(InlineEdit, _super);
+    __extends$22(InlineEdit, _super);
     function InlineEdit(parent, serviceLocator, renderer) {
         var _this = _super.call(this, parent, serviceLocator) || this;
         _this.parent = parent;
@@ -21324,13 +22806,17 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                     movObj.isDirty = true;
                 }
                 tr = gObj.getContentTable().querySelector('[data-uid=' + rows[i].uid + ']');
-                if (gObj.frozenRows) {
+                if (gObj.frozenRows && !tr) {
                     tr = gObj.getHeaderContent().querySelector('[data-uid=' + rows[i].uid + ']');
                 }
                 if (gObj.frozenColumns) {
                     if (gObj.frozenRows) {
                         mTr = gObj.getHeaderContent().querySelector('.e-movableheader')
                             .querySelector('[data-uid=' + rows[i].uid + ']');
+                        if (!mTr) {
+                            mTr = gObj.getContent().querySelector('.e-movablecontent')
+                                .querySelector('[data-uid=' + rows[i].uid + ']');
+                        }
                     }
                     else {
                         mTr = gObj.getContent().querySelector('.e-movablecontent')
@@ -21418,12 +22904,20 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
     BatchEdit.prototype.batchSave = function () {
         var gObj = this.parent;
         var deletedRecords = 'deletedRecords';
+        if (gObj.isCheckBoxSelection) {
+            var checkAllBox = gObj.element.querySelector('.e-checkselectall').parentElement;
+            if (checkAllBox.classList.contains('e-checkbox-disabled') &&
+                gObj.pageSettings.totalRecordsCount > gObj.currentViewData.length) {
+                removeClass([checkAllBox], ['e-checkbox-disabled']);
+            }
+        }
         this.saveCell();
         if (gObj.isEdit || this.editNextValCell() || gObj.isEdit) {
             return;
         }
         var changes = this.getBatchChanges();
         if (this.parent.selectionSettings.type === 'Multiple' && changes[deletedRecords].length) {
+            gObj.clearSelection();
             changes[deletedRecords] = changes[deletedRecords].concat(this.parent.getSelectedRecords());
         }
         var original = {
@@ -21502,7 +22996,8 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     BatchEdit.prototype.addRowObject = function (row) {
-        this.parent.getRowsObject().unshift(row);
+        this.parent.editSettings.newRowPosition === 'Top' ? this.parent.getRowsObject().unshift(row) :
+            this.parent.getRowsObject().push(row);
     };
     BatchEdit.prototype.bulkDelete = function (fieldname, data) {
         var gObj = this.parent;
@@ -21534,14 +23029,14 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                 classList(args.row, ['e-hiddenrow', 'e-updatedtd'], []);
                 if (gObj.getFrozenColumns()) {
                     classList(data ? gObj.getMovableRows()[index] : selectedRows[1], ['e-hiddenrow', 'e-updatedtd'], []);
-                    if (gObj.frozenRows && index < gObj.frozenRows) {
+                    if (gObj.frozenRows && index < gObj.frozenRows && gObj.getMovableDataRows().length >= gObj.frozenRows) {
                         gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody')
                             .appendChild(gObj.getMovableRowByIndex(gObj.frozenRows - 1));
                         gObj.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody')
                             .appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
                     }
                 }
-                else if (gObj.frozenRows && index < gObj.frozenRows) {
+                else if (gObj.frozenRows && index < gObj.frozenRows && gObj.getDataRows().length >= gObj.frozenRows) {
                     gObj.getHeaderContent().querySelector('tbody').appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
                 }
             }
@@ -21660,7 +23155,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             else {
                 mTbody = gObj.getContent().querySelector('.e-movablecontent').querySelector('tbody');
             }
-            mTbody.insertBefore(mTr, mTbody.firstChild);
+            this.parent.editSettings.newRowPosition === 'Top' ? mTbody.insertBefore(mTr, mTbody.firstChild) : mTbody.appendChild(mTr);
             addClass(mTr.querySelectorAll('.e-rowcell'), ['e-updatedtd']);
             if (this.parent.height === 'auto') {
                 this.parent.notify(frozenHeight, {});
@@ -21669,7 +23164,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         if (gObj.frozenRows) {
             tbody = gObj.getHeaderContent().querySelector('tbody');
         }
-        tbody.insertBefore(tr, tbody.firstChild);
+        this.parent.editSettings.newRowPosition === 'Top' ? tbody.insertBefore(tr, tbody.firstChild) : tbody.appendChild(tr);
         addClass(tr.querySelectorAll('.e-rowcell'), ['e-updatedtd']);
         modelData[0].isDirty = true;
         modelData[0].changes = extend({}, {}, modelData[0].data, true);
@@ -21678,11 +23173,15 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         this.refreshRowIdx();
         this.focus.forgetPrevious();
         gObj.notify(batchAdd, { rows: this.parent.getRowsObject() });
-        gObj.selectRow(0);
+        var changes = this.getBatchChanges();
+        var addedRecords = 'addedRecords';
+        this.parent.editSettings.newRowPosition === 'Top' ? gObj.selectRow(0) :
+            gObj.selectRow(this.parent.getCurrentViewRecords().length + changes[addedRecords].length - 1);
         if (!data) {
             index = this.findNextEditableCell(0, true);
             col = gObj.getColumns()[index];
-            this.editCell(0, col.field, true);
+            this.parent.editSettings.newRowPosition === 'Top' ? this.editCell(0, col.field, true) :
+                this.editCell(this.parent.getCurrentViewRecords().length + changes[addedRecords].length - 1, col.field, true);
         }
         if (this.parent.aggregates.length > 0 && data) {
             this.parent.notify(refreshFooterRenderer, {});
@@ -21817,8 +23316,13 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
     };
     BatchEdit.prototype.updateCell = function (rowIndex, field, value) {
         var col = this.parent.getColumnByField(field);
+        var index = this.parent.getColumnIndexByField(field);
         if (col && !col.isPrimaryKey) {
-            var td = this.parent.getDataRows()[rowIndex].cells[this.parent.getColumnIndexByField(field)];
+            var td = this.parent.getDataRows()[rowIndex].querySelectorAll('.e-rowcell')[index];
+            if (this.parent.getFrozenColumns()) {
+                var cells = [].slice.call(this.parent.getDataRows()[rowIndex].querySelectorAll('.e-rowcell')).concat([].slice.call(this.parent.getMovableDataRows()[rowIndex].querySelectorAll('.e-rowcell')));
+                td = cells[index];
+            }
             var rowObj = this.parent.getRowObjectFromUID(td.parentElement.getAttribute('data-uid'));
             this.refreshTD(td, col, rowObj, value);
             this.parent.trigger(queryCellInfo, {
@@ -21985,7 +23489,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
     return BatchEdit;
 }());
 
-var __extends$21 = (undefined && undefined.__extends) || (function () {
+var __extends$23 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -22003,7 +23507,7 @@ var __extends$21 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var DialogEdit = /** @__PURE__ @class */ (function (_super) {
-    __extends$21(DialogEdit, _super);
+    __extends$23(DialogEdit, _super);
     function DialogEdit(parent, serviceLocator, renderer) {
         var _this = 
         //constructor
@@ -22621,10 +24125,10 @@ var Edit = /** @__PURE__ @class */ (function () {
         if (gObj.editSettings.template) {
             this.parent.destroyTemplate(['editSettingsTemplate']);
         }
-        if (gObj.columnModel.some(function (column) { return !isNullOrUndefined(column.editTemplate); })) {
+        cols = cols ? cols : this.parent.getColumns();
+        if (cols.some(function (column) { return !isNullOrUndefined(column.editTemplate); })) {
             this.parent.destroyTemplate(['editTemplate']);
         }
-        cols = cols ? cols : this.parent.getColumns();
         for (var _i = 0, cols_1 = cols; _i < cols_1.length; _i++) {
             var col = cols_1[_i];
             var temp = col.edit.destroy;
@@ -22834,9 +24338,17 @@ var Edit = /** @__PURE__ @class */ (function () {
         });
         var content = this.parent.createElement('div', { className: 'e-tip-content' });
         content.appendChild(error);
-        var arrow = this.parent.createElement('div', { className: 'e-arrow-tip e-tip-top' });
-        arrow.appendChild(this.parent.createElement('div', { className: 'e-arrow-tip-outer e-tip-top' }));
-        arrow.appendChild(this.parent.createElement('div', { className: 'e-arrow-tip-inner e-tip-top' }));
+        var arrow;
+        if (this.parent.editSettings.newRowPosition === 'Bottom' && this.editModule.args.requestType === 'add') {
+            arrow = this.parent.createElement('div', { className: 'e-arrow-tip e-tip-bottom' });
+            arrow.appendChild(this.parent.createElement('div', { className: 'e-arrow-tip-outer e-tip-bottom' }));
+            arrow.appendChild(this.parent.createElement('div', { className: 'e-arrow-tip-inner e-tip-bottom' }));
+        }
+        else {
+            arrow = this.parent.createElement('div', { className: 'e-arrow-tip e-tip-top' });
+            arrow.appendChild(this.parent.createElement('div', { className: 'e-arrow-tip-outer e-tip-top' }));
+            arrow.appendChild(this.parent.createElement('div', { className: 'e-arrow-tip-inner e-tip-top' }));
+        }
         div.appendChild(content);
         div.appendChild(arrow);
         table.appendChild(div);
@@ -22850,6 +24362,10 @@ var Edit = /** @__PURE__ @class */ (function () {
             gcontent.style.position = 'static';
             var pos = calculateRelativeBasedPosition(input, div);
             div.style.top = pos.top + inputClient.height + 9 + 'px';
+        }
+        if (this.parent.editSettings.newRowPosition === 'Bottom' && this.editModule.args.requestType === 'add') {
+            div.style.bottom = inputClient.height + 9 + 'px';
+            div.style.top = null;
         }
     };
     return Edit;
@@ -23142,8 +24658,10 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
             className: 'e-ccsearch e-cc e-input',
             attrs: { placeholder: this.l10n.getConstant('Search') }
         });
-        var ccsearchicon = this.parent.createElement('span', { className: 'e-ccsearch-icon e-icons e-cc e-input-group-icon',
-            attrs: { title: this.l10n.getConstant('Search') } });
+        var ccsearchicon = this.parent.createElement('span', {
+            className: 'e-ccsearch-icon e-icons e-cc e-input-group-icon',
+            attrs: { title: this.l10n.getConstant('Search') }
+        });
         var conDiv = this.parent.createElement('div', { className: 'e-cc-contentdiv' });
         this.innerDiv = this.parent.createElement('div', { className: 'e-innerdiv e-cc' });
         searchDiv.appendChild(ccsearchele);
@@ -23421,6 +24939,47 @@ var ExportHelper = /** @__PURE__ @class */ (function () {
         var foreignKeyData = getForeignData(column, {}, value, this.foreignKeyData[column.field])[0];
         return foreignKeyData;
     };
+    ExportHelper.prototype.getGridRowModel = function (columns, dataSource, gObj, startIndex) {
+        if (startIndex === void 0) { startIndex = 0; }
+        var rows = [];
+        var length = dataSource.length;
+        if (length) {
+            for (var i = 0; i < length; i++, startIndex++) {
+                var options = { isExpand: false };
+                options.data = dataSource[i];
+                options.index = startIndex;
+                if (gObj.childGrid) {
+                    if (gObj.hierarchyPrintMode === 'All') {
+                        options.isExpand = true;
+                    }
+                    else if (gObj.hierarchyPrintMode === 'Expanded' &&
+                        this.parent.expandedRows && this.parent.expandedRows[startIndex]) {
+                        options.isExpand = gObj.expandedRows[startIndex].isExpand;
+                    }
+                }
+                var row = new Row(options);
+                row.cells = this.generateCells(columns, gObj);
+                rows.push(row);
+            }
+            this.processColumns(rows);
+        }
+        return rows;
+    };
+    ExportHelper.prototype.generateCells = function (columns, gObj) {
+        var cells = [];
+        columns = gObj.enableColumnVirtualization && gObj.getColumns ? gObj.getColumns() : columns;
+        if (gObj.childGridLevel) {
+            var len = gObj.childGridLevel;
+            for (var i = 0; len > i; i++) {
+                cells.push(this.generateCell({}, CellType.Indent));
+            }
+        }
+        for (var _i = 0, columns_1 = columns; _i < columns_1.length; _i++) {
+            var col = columns_1[_i];
+            cells.push(this.generateCell(col, CellType.Data));
+        }
+        return cells;
+    };
     ExportHelper.prototype.getColumnData = function (gridObj) {
         var _this = this;
         var columnPromise = [];
@@ -23439,96 +24998,64 @@ var ExportHelper = /** @__PURE__ @class */ (function () {
         }
         return promise;
     };
-    /* tslint:disable:no-any */
-    ExportHelper.prototype.getHeaders = function (column, isHideColumnInclude) {
+    ExportHelper.prototype.getHeaders = function (columns, isHideColumnInclude) {
         if (isHideColumnInclude) {
             this.hideColumnInclude = true;
         }
         else {
             this.hideColumnInclude = false;
         }
-        var cols = column;
-        this.colDepth = this.measureColumnDepth(cols);
+        this.colDepth = measureColumnDepth(columns);
         var rows = [];
-        var actualColumns = [];
         for (var i = 0; i < this.colDepth; i++) {
             rows[i] = new Row({});
             rows[i].cells = [];
         }
         rows = this.processColumns(rows);
         rows = this.processHeaderCells(rows);
-        for (var _i = 0, rows_1 = rows; _i < rows_1.length; _i++) {
-            var row = rows_1[_i];
-            for (var i = 0; i < row.cells.length; i++) {
-                var cell = row.cells[i];
-                if (cell.visible === undefined && cell.cellType !== CellType.StackedHeader) {
-                    row.cells = this.removeCellFromRow(row.cells, i);
-                    i = i - 1;
-                }
-                if ((!isHideColumnInclude) && cell.visible !== undefined && (!cell.visible)) {
-                    row.cells = this.removeCellFromRow(row.cells, i);
-                    i = i - 1;
-                }
-            }
-        }
-        for (var i = 0; i < cols.length; i++) {
-            this.generateActualColumns(cols[i], actualColumns);
-        }
-        return { rows: rows, columns: actualColumns };
+        return { rows: rows, columns: this.generateActualColumns(columns) };
     };
     ExportHelper.prototype.getConvertedWidth = function (input) {
         var value = parseFloat(input);
-        /* tslint:disable-next-line:max-line-length */
         return (input.indexOf('%') !== -1) ? (this.parent.element.getBoundingClientRect().width * value / 100) : value;
     };
-    ExportHelper.prototype.generateActualColumns = function (column, actualColumns) {
-        if (column.commands) {
-            return;
-        }
-        if (!column.columns) {
-            if (column.visible || this.hideColumnInclude) {
-                actualColumns.push(column);
+    ExportHelper.prototype.generateActualColumns = function (columns, actualColumns) {
+        if (actualColumns === void 0) { actualColumns = []; }
+        for (var _i = 0, columns_2 = columns; _i < columns_2.length; _i++) {
+            var column = columns_2[_i];
+            if (column.commands) {
+                continue;
             }
-        }
-        else {
-            if (column.visible || this.hideColumnInclude) {
-                var colSpan = this.getCellCount(column, 0);
-                if (colSpan !== 0) {
-                    for (var i = 0; i < column.columns.length; i++) {
-                        /* tslint:disable-next-line:max-line-length */
-                        this.generateActualColumns(column.columns[i], actualColumns);
+            if (!column.columns) {
+                if (column.visible || this.hideColumnInclude) {
+                    actualColumns.push(column);
+                }
+            }
+            else {
+                if (column.visible || this.hideColumnInclude) {
+                    var colSpan = this.getCellCount(column, 0);
+                    if (colSpan !== 0) {
+                        this.generateActualColumns(column.columns, actualColumns);
                     }
                 }
             }
         }
-    };
-    ExportHelper.prototype.removeCellFromRow = function (cells, cellIndex) {
-        var resultCells = [];
-        for (var i = 0; i < cellIndex; i++) {
-            resultCells.push(cells[i]);
-        }
-        for (var i = (cellIndex + 1); i < cells.length; i++) {
-            resultCells.push(cells[i]);
-        }
-        return resultCells;
+        return actualColumns;
     };
     ExportHelper.prototype.processHeaderCells = function (rows) {
         var columns = this.parent.enableColumnVirtualization ? this.parent.getColumns() : this.parent.columns;
         for (var i = 0; i < columns.length; i++) {
             if (!columns[i].commands) {
-                rows = this.appendGridCells(columns[i], rows, 0, i === 0, false, i === (columns.length - 1));
+                rows = this.appendGridCells(columns[i], rows, 0);
             }
         }
         return rows;
     };
-    /* tslint:disable */
-    ExportHelper.prototype.appendGridCells = function (cols, gridRows, index, isFirstObj, isFirstColumn, isLastColumn) {
-        /* tslint:enable */
-        var lastCol = isLastColumn ? 'e-lastcell' : '';
-        if (!cols.columns) {
-            gridRows[index].cells.push(this.generateCell(cols, CellType.Header, this.colDepth - index, (isFirstObj ? '' : (isFirstColumn ? 'e-firstcell' : '')) + lastCol, index, this.parent.getColumnIndexByUid(cols.uid)));
+    ExportHelper.prototype.appendGridCells = function (cols, gridRows, index) {
+        if (!cols.columns && (cols.visible !== false || this.hideColumnInclude) && !cols.commands) {
+            gridRows[index].cells.push(this.generateCell(cols, CellType.Header, this.colDepth - index, index));
         }
-        else {
+        else if (cols.columns) {
             var colSpan = this.getCellCount(cols, 0);
             if (colSpan) {
                 gridRows[index].cells.push(new Cell({
@@ -23540,24 +25067,19 @@ var ExportHelper = /** @__PURE__ @class */ (function () {
                 if (cols.columns[i].visible && !isIgnoreFirstCell) {
                     isIgnoreFirstCell = true;
                 }
-                /* tslint:disable-next-line:max-line-length */
-                gridRows = this.appendGridCells(cols.columns[i], gridRows, index + 1, isFirstObj, i === 0, i === (len - 1) && isLastColumn);
+                gridRows = this.appendGridCells(cols.columns[i], gridRows, index + 1);
             }
         }
         return gridRows;
     };
-    ExportHelper.prototype.generateCell = function (gridColumn, cellType, rowSpan, className, rowIndex, columnIndex) {
+    ExportHelper.prototype.generateCell = function (gridColumn, cellType, rowSpan, rowIndex) {
         var option = {
             'visible': gridColumn.visible,
-            'isDataCell': false,
-            'isTemplate': !isNullOrUndefined(gridColumn.headerTemplate),
-            'rowID': '',
+            'isDataCell': cellType === CellType.Data,
             'column': gridColumn,
             'cellType': cellType,
             'rowSpan': rowSpan,
-            'className': className,
-            'index': rowIndex,
-            'colIndex': columnIndex
+            'index': rowIndex
         };
         if (!option.rowSpan || option.rowSpan < 2) {
             delete option.rowSpan;
@@ -23567,23 +25089,22 @@ var ExportHelper = /** @__PURE__ @class */ (function () {
     ExportHelper.prototype.processColumns = function (rows) {
         //TODO: generate dummy column for group, detail, stacked row here; ensureColumns here
         var gridObj = this.parent;
-        var columnIndexes = this.parent.getColumnIndexesInView();
+        var columnIndexes = [];
+        if (gridObj.enableColumnVirtualization) {
+            columnIndexes = gridObj.getColumnIndexesInView();
+        }
         for (var i = 0, len = rows.length; i < len; i++) {
             if (gridObj.allowGrouping) {
                 for (var j = 0, len_1 = gridObj.groupSettings.columns.length; j < len_1; j++) {
-                    if (this.parent.enableColumnVirtualization && columnIndexes.indexOf(j) === -1) {
+                    if (gridObj.enableColumnVirtualization && columnIndexes.indexOf(j) === -1) {
                         continue;
                     }
-                    rows[i].cells.push(this.generateCell({}, CellType.HeaderIndent));
+                    rows[i].cells.splice(0, 0, this.generateCell({}, CellType.HeaderIndent));
                 }
-            }
-            if (gridObj.detailTemplate || gridObj.childGrid) {
-                rows[i].cells.push(this.generateCell({}, CellType.DetailHeader));
             }
         }
         return rows;
     };
-    /* tslint:disable:no-any */
     ExportHelper.prototype.getCellCount = function (column, count) {
         if (column.columns) {
             for (var i = 0; i < column.columns.length; i++) {
@@ -23597,36 +25118,42 @@ var ExportHelper = /** @__PURE__ @class */ (function () {
         }
         return count;
     };
-    /* tslint:disable:no-any */
-    ExportHelper.prototype.measureColumnDepth = function (column) {
-        var max = 0;
-        for (var i = 0; i < column.length; i++) {
-            var depth = this.checkDepth(column[i], 0);
-            if (max < depth) {
-                max = depth;
-            }
+    ExportHelper.prototype.checkAndExport = function (gridPool, globalResolve) {
+        var bool = Object.keys(gridPool).some(function (key) {
+            return !gridPool[key];
+        });
+        if (!bool) {
+            globalResolve();
         }
-        return max + 1;
     };
-    /* tslint:disable:no-any */
-    ExportHelper.prototype.checkDepth = function (col, index) {
-        var max = index;
-        var indices = [];
-        if (col.columns) {
-            index++;
-            for (var i = 0; i < col.columns.length; i++) {
-                indices[i] = this.checkDepth(col.columns[i], index);
-            }
-            for (var j = 0; j < indices.length; j++) {
-                if (max < indices[j]) {
-                    max = indices[j];
-                }
-            }
-            index = max;
-        }
-        return index;
+    ExportHelper.prototype.failureHandler = function (gridPool, childGridObj, resolve) {
+        var _this = this;
+        return function () {
+            gridPool[childGridObj.id] = true;
+            _this.checkAndExport(gridPool, resolve);
+        };
     };
-    
+    // tslint:disable-next-line:no-any
+    ExportHelper.prototype.createChildGrid = function (gObj, row, exportType, gridPool) {
+        var childGridObj = new Grid(this.parent.detailRowModule.getGridModel(gObj, row, exportType));
+        gObj.isPrinting = false;
+        var parent = 'parentDetails';
+        childGridObj[parent] = {
+            parentID: gObj.element.id,
+            parentPrimaryKeys: gObj.getPrimaryKeyFieldNames(),
+            parentKeyField: gObj.childGrid.queryString,
+            parentKeyFieldValue: getValue(childGridObj.queryString, row.data),
+            parentRowData: row.data
+        };
+        var exportId = getUid('child-grid');
+        var element = createElement('div', {
+            id: exportId, styles: 'display: none'
+        });
+        document.body.appendChild(element);
+        childGridObj.id = exportId;
+        gridPool[exportId] = false;
+        return { childGrid: childGridObj, element: element };
+    };
     return ExportHelper;
 }());
 /**
@@ -23718,13 +25245,9 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
     function ExcelExport(parent) {
         /* tslint:disable-next-line:no-any */
         this.book = {};
-        /* tslint:disable-next-line:no-any */
         this.workSheet = [];
-        /* tslint:disable-next-line:no-any */
         this.rows = [];
-        /* tslint:disable-next-line:no-any */
         this.columns = [];
-        /* tslint:disable-next-line:no-any */
         this.styles = [];
         this.rowLength = 1;
         this.expType = 'AppendToSheet';
@@ -23732,6 +25255,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
         this.isCsvExport = false;
         this.isElementIdChanged = false;
         this.foreignKeyData = {};
+        this.gridPool = {};
         this.parent = parent;
         this.helper = new ExportHelper(parent);
     }
@@ -23752,20 +25276,17 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
         }
         this.isExporting = undefined;
         this.book = {};
-        /* tslint:disable-next-line:no-any */
         this.workSheet = [];
-        /* tslint:disable-next-line:no-any */
         this.rows = [];
-        /* tslint:disable-next-line:no-any */
         this.columns = [];
-        /* tslint:disable-next-line:no-any */
         this.styles = [];
         this.rowLength = 1;
-        /* tslint:disable-next-line:no-any */
         this.footer = undefined;
         this.expType = 'AppendToSheet';
         this.includeHiddenColumn = false;
         this.exportValueFormatter = new ExportValueFormatter(gObj.locale);
+        gObj.id = getUid('main-grid');
+        this.gridPool[gObj.id] = false;
     };
     /**
      * Export Grid to Excel file.
@@ -23779,15 +25300,25 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
     /* tslint:disable-next-line:no-any */
     ExcelExport.prototype.Map = function (grid, exportProperties, isMultipleExport, workbook, isCsv, isBlob) {
         var gObj = grid;
+        var cancel = 'cancel';
         var isBlb = 'isBlob';
         var csv = 'isCsv';
         var workbk = 'workbook';
         var isMultiEx = 'isMultipleExport';
+        this.gridPool = {};
+        if (grid.childGrid && !(!isNullOrUndefined(exportProperties) && exportProperties.hierarchyExportMode === 'None')) {
+            grid.expandedRows = getPrintGridModel(grid).expandedRows;
+        }
         var args = {
             requestType: 'beforeExcelExport', gridObject: gObj, cancel: false,
             isMultipleExport: isMultipleExport, workbook: workbook, isCsv: isCsv, isBlob: isBlob
         };
         gObj.trigger(beforeExcelExport, args);
+        if (args[cancel]) {
+            return new Promise(function (resolve, reject) {
+                return resolve();
+            });
+        }
         this.data = new Data(gObj);
         this.isExporting = true;
         this.isBlob = args[isBlb];
@@ -23804,37 +25335,43 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
         var _this = this;
         if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.dataSource) &&
             exportProperties.dataSource instanceof DataManager) {
-            /* tslint:disable-next-line:no-any */
             return new Promise(function (resolve, reject) {
-                /* tslint:disable-next-line:max-line-length */
-                /* tslint:disable-next-line:no-any */
                 var dataManager = exportProperties.dataSource.executeQuery(new Query());
                 dataManager.then(function (r) {
                     _this.init(gObj);
-                    _this.processInnerRecords(gObj, exportProperties, isMultipleExport, workbook, r);
-                    resolve(_this.book);
+                    _this.processInnerRecords(gObj, exportProperties, isMultipleExport, workbook, r).then(function () {
+                        resolve(_this.book);
+                    });
                 });
             });
         }
         else {
-            /* tslint:disable-next-line:no-any */
-            var allPromise = [];
-            allPromise.push(this.data.getData({}, ExportHelper.getQuery(gObj, this.data)));
-            allPromise.push(this.helper.getColumnData(gObj));
-            return Promise.all(allPromise).then(function (e) {
-                _this.init(gObj);
-                _this.processInnerRecords(gObj, exportProperties, isMultipleExport, workbook, e[0]);
-                return _this.book;
-            }).catch(function (e) {
-                _this.parent.trigger(actionFailure, e);
+            var allPromise_1 = [];
+            allPromise_1.push(this.data.getData({}, ExportHelper.getQuery(gObj, this.data)));
+            allPromise_1.push(this.helper.getColumnData(gObj));
+            return new Promise(function (resolve, reject) {
+                Promise.all(allPromise_1).then(function (e) {
+                    _this.init(gObj);
+                    _this.processInnerRecords(gObj, exportProperties, isMultipleExport, workbook, e[0]).then(function () {
+                        _this.isExporting = false;
+                        gObj.trigger(excelExportComplete, _this.isBlob ? { promise: _this.blobPromise } : {});
+                        resolve(_this.book);
+                    });
+                }).catch(function (e) {
+                    reject(_this.book);
+                    _this.parent.trigger(actionFailure, e);
+                });
             });
         }
     };
-    /* tslint:disable-next-line:max-line-length */
+    /* tslint:disable-next-line:max-func-body-length */
+    ExcelExport.prototype.processInnerRecords = function (gObj, exportProperties, 
     /* tslint:disable-next-line:no-any */
-    ExcelExport.prototype.processInnerRecords = function (gObj, exportProperties, isMultipleExport, workbook, r) {
+    isMultipleExport, workbook, r) {
+        var _this = this;
         this.groupedColLength = gObj.groupSettings.columns.length;
         var blankRows = 5;
+        var rows = [];
         if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.multipleExport)) {
             /* tslint:disable-next-line:max-line-length */
             this.expType = (!isNullOrUndefined(exportProperties.multipleExport.type) ? exportProperties.multipleExport.type : 'AppendToSheet');
@@ -23888,37 +25425,114 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
             }
         }
         this.includeHiddenColumn = (!isNullOrUndefined(exportProperties) ? exportProperties.includeHiddenColumn : false);
-        /* tslint:disable-next-line:max-line-length */
-        /* tslint:disable-next-line:no-any */
-        var headerRow = this.helper.getHeaders(gObj.columns, this.includeHiddenColumn);
-        var groupIndent = 0;
-        /* tslint:disable:no-any */
-        if (!isNullOrUndefined((r.result).level)) {
-            groupIndent += (r.result).level;
-            groupIndent += (r.result).childLevels;
+        return new Promise(function (resolve, reject) {
+            gObj.childGridLevel = 0;
+            rows = _this.processGridExport(gObj, exportProperties, r);
+            _this.globalResolve = resolve;
+            _this.gridPool[gObj.id] = true;
+            _this.helper.checkAndExport(_this.gridPool, _this.globalResolve);
+        }).then(function () {
+            var organisedRows = [];
+            _this.organiseRows(rows, rows[0].index, organisedRows);
+            _this.rows = _this.rows.concat(organisedRows);
+            //footer template add
+            if (!isNullOrUndefined(_this.footer)) {
+                if ((_this.expType === 'AppendToSheet' && !isMultipleExport) || (_this.expType === 'NewSheet')) {
+                    _this.processExcelFooter(_this.footer);
+                }
+            }
+            var sheet = {};
+            if (_this.columns.length > 0) {
+                sheet.columns = _this.columns;
+            }
+            /* tslint:disable-next-line:no-any */
+            sheet.rows = _this.rows;
+            _this.workSheet.push(sheet);
+            _this.book.worksheets = _this.workSheet;
+            _this.book.styles = _this.styles;
+            if (!isMultipleExport) {
+                if (_this.isCsvExport) {
+                    var book = new Workbook(_this.book, 'csv', gObj.locale);
+                    if (!_this.isBlob) {
+                        if (!isNullOrUndefined(exportProperties) && exportProperties.fileName) {
+                            book.save(exportProperties.fileName);
+                        }
+                        else {
+                            book.save('Export.csv');
+                        }
+                    }
+                    else {
+                        _this.blobPromise = book.saveAsBlob('text/csv');
+                    }
+                }
+                else {
+                    var book = new Workbook(_this.book, 'xlsx', gObj.locale);
+                    if (!_this.isBlob) {
+                        if (!isNullOrUndefined(exportProperties) && exportProperties.fileName) {
+                            book.save(exportProperties.fileName);
+                        }
+                        else {
+                            book.save('Export.xlsx');
+                        }
+                    }
+                    else {
+                        _this.blobPromise = book.saveAsBlob('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                    }
+                }
+                if (_this.isElementIdChanged) {
+                    gObj.element.id = '';
+                }
+                delete gObj.expandedRows;
+            }
+            return workbook;
+        });
+    };
+    ExcelExport.prototype.organiseRows = function (rows, initialIndex, organisedRows) {
+        if (!rows.length) {
+            return initialIndex;
         }
-        /* tslint:enable:no-any */
-        this.processHeaderContent(gObj, headerRow, exportProperties, groupIndent);
+        for (var i = 0; i < rows.length; i++) {
+            var row = rows[i];
+            var childRows = row.childRows;
+            if (childRows) {
+                row.index = initialIndex++;
+                delete row.childRows;
+                organisedRows.push(row);
+                initialIndex = this.organiseRows(childRows, initialIndex, organisedRows);
+            }
+            else {
+                row.index = initialIndex++;
+                organisedRows.push(row);
+            }
+        }
+        return initialIndex;
+    };
+    ExcelExport.prototype.processGridExport = function (gObj, exportProperties, r) {
+        var excelRows = [];
+        if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.theme)) {
+            this.theme = exportProperties.theme;
+        }
+        if (gObj.childGrid && !isNullOrUndefined(exportProperties)) {
+            gObj.hierarchyPrintMode = exportProperties.hierarchyExportMode || 'Expanded';
+        }
+        var helper = new ExportHelper(gObj);
+        var headerRow = helper.getHeaders(gObj.columns, this.includeHiddenColumn);
+        var groupIndent = gObj.groupSettings.columns.length;
+        excelRows = this.processHeaderContent(gObj, headerRow, groupIndent, excelRows);
         /* tslint:disable-next-line:max-line-length */
         if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.dataSource) && !(exportProperties.dataSource instanceof DataManager)) {
-            this.processRecordContent(gObj, r, headerRow, isMultipleExport, exportProperties, exportProperties.dataSource);
+            excelRows = this.processRecordContent(gObj, r, headerRow, exportProperties, exportProperties.dataSource, excelRows, helper);
         }
         else if (!isNullOrUndefined(exportProperties) && exportProperties.exportType === 'CurrentPage') {
-            this.processRecordContent(gObj, r, headerRow, isMultipleExport, exportProperties, gObj.currentViewData);
+            excelRows = this.processRecordContent(gObj, r, headerRow, exportProperties, gObj.currentViewData, excelRows, helper);
         }
         else {
-            this.processRecordContent(gObj, r, headerRow, isMultipleExport, exportProperties);
+            excelRows = this.processRecordContent(gObj, r, headerRow, exportProperties, undefined, excelRows, helper);
         }
-        this.isExporting = false;
-        gObj.trigger(excelExportComplete, this.isBlob ? { promise: this.blobPromise } : {});
+        return excelRows;
     };
-    /* tslint:disable-next-line:max-line-length */
-    /* tslint:disable-next-line:no-any */
-    ExcelExport.prototype.processRecordContent = function (gObj, returnType, headerRow, isMultipleExport, exportProperties, currentViewRecords) {
-        /* tslint:disable-next-line:no-any */
-        var column = gObj.columns;
-        /* tslint:disable-next-line:no-any */
-        var record = undefined;
+    ExcelExport.prototype.processRecordContent = function (gObj, returnType, headerRow, exportProperties, currentViewRecords, excelRow, helper) {
+        var record;
         if (!isNullOrUndefined(currentViewRecords)) {
             record = currentViewRecords;
         }
@@ -23926,73 +25540,25 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
             record = returnType.result;
         }
         if (!isNullOrUndefined(record.level)) {
-            this.processGroupedRows(gObj, record, headerRow, record.level);
+            this.processGroupedRows(gObj, record, headerRow, record.level, 0, exportProperties, excelRow, helper);
         }
         else {
-            this.processRecordRows(gObj, record, headerRow, 0);
+            this.processRecordRows(gObj, record, headerRow, 0, 0, exportProperties, excelRow, helper);
         }
         if (!isNullOrUndefined(returnType.aggregates)) {
             if (!isNullOrUndefined(currentViewRecords)) {
-                this.processAggregates(gObj, returnType.result, currentViewRecords);
+                this.processAggregates(gObj, returnType.result, excelRow, currentViewRecords);
             }
             else {
-                this.processAggregates(gObj, returnType.result);
+                this.processAggregates(gObj, returnType.result, excelRow);
             }
         }
-        //footer template add
-        if (!isNullOrUndefined(this.footer)) {
-            if ((this.expType === 'AppendToSheet' && !isMultipleExport) || (this.expType === 'NewSheet')) {
-                this.processExcelFooter(this.footer);
-            }
-        }
-        /* tslint:disable-next-line:no-any */
-        var sheet = {};
-        if (this.columns.length > 0) {
-            sheet.columns = this.columns;
-        }
-        sheet.rows = this.rows;
-        this.workSheet.push(sheet);
-        this.book.worksheets = this.workSheet;
-        this.book.styles = this.styles;
-        if (!isMultipleExport) {
-            if (this.isCsvExport) {
-                var book = new Workbook(this.book, 'csv', gObj.locale);
-                if (!this.isBlob) {
-                    if (!isNullOrUndefined(exportProperties) && exportProperties.fileName) {
-                        book.save(exportProperties.fileName);
-                    }
-                    else {
-                        book.save('Export.csv');
-                    }
-                }
-                else {
-                    this.blobPromise = book.saveAsBlob('text/csv');
-                }
-            }
-            else {
-                var book = new Workbook(this.book, 'xlsx', gObj.locale);
-                if (!this.isBlob) {
-                    if (!isNullOrUndefined(exportProperties) && exportProperties.fileName) {
-                        book.save(exportProperties.fileName);
-                    }
-                    else {
-                        book.save('Export.xlsx');
-                    }
-                }
-                else {
-                    this.blobPromise = book.saveAsBlob('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                }
-            }
-            if (this.isElementIdChanged) {
-                gObj.element.id = '';
-            }
-        }
+        return excelRow;
     };
     /* tslint:disable-next-line:no-any */
-    ExcelExport.prototype.processGroupedRows = function (gObj, dataSource, headerRow, level) {
+    ExcelExport.prototype.processGroupedRows = function (gObj, dataSource, headerRow, level, startIndex, excelExportProperties, excelRows, helper) {
         for (var _i = 0, dataSource_1 = dataSource; _i < dataSource_1.length; _i++) {
             var item = dataSource_1[_i];
-            /* tslint:disable-next-line:no-any */
             var cells = [];
             var index = 1;
             /* tslint:disable-next-line:no-any */
@@ -24006,7 +25572,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
                 style: undefined,
                 isForeignKey: col.isForeignColumn(),
             };
-            cell.value = this.parent.getColumnByField(item.field).headerText +
+            cell.value = gObj.getColumnByField(item.field).headerText +
                 ': ' + this.exportValueFormatter.formatCellValue(args) + ' - ';
             if (item.count > 1) {
                 cell.value += item.count + ' items';
@@ -24017,12 +25583,12 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
             cell.style = this.getCaptionThemeStyle(this.theme);
             var captionModelGen = new CaptionSummaryModelGenerator(gObj);
             var groupCaptionSummaryRows = captionModelGen.generateRows(item);
-            this.fillAggregates(gObj, groupCaptionSummaryRows, dataSource.level + dataSource.childLevels, this.rowLength);
+            this.fillAggregates(gObj, groupCaptionSummaryRows, dataSource.level + dataSource.childLevels, excelRows, this.rowLength);
             cells.push(cell);
-            if (this.rows[this.rows.length - 1].cells.length > 0) {
+            if (excelRows[excelRows.length - 1].cells.length > 0) {
                 var lIndex = dataSource.level + dataSource.childLevels + groupCaptionSummaryRows[0].cells.length;
                 var hIndex = 0;
-                for (var _a = 0, _b = this.rows[this.rows.length - 1].cells; _a < _b.length; _a++) {
+                for (var _a = 0, _b = excelRows[excelRows.length - 1].cells; _a < _b.length; _a++) {
                     var tCell = _b[_a];
                     if (tCell.index < lIndex) {
                         lIndex = tCell.index;
@@ -24030,6 +25596,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
                     if (tCell.index > hIndex) {
                         hIndex = tCell.index;
                     }
+                    /* tslint:disable-next-line:no-any */
                     tCell.style = this.getCaptionThemeStyle(this.theme);
                     if (cells[cells.length - 1].index !== tCell.index) {
                         cells.push(tCell);
@@ -24058,50 +25625,54 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
                 }
                 cell.colSpan = (dataSource.childLevels + span);
             }
-            this.rows[this.rows.length - 1].cells = cells;
+            excelRows[excelRows.length - 1].cells = cells;
             this.rowLength++;
             if (this.groupedColLength < 8 && level > 1) {
                 var grouping = { outlineLevel: level - 1, isCollapsed: true };
-                this.rows[this.rows.length - 1].grouping = grouping;
+                excelRows[excelRows.length - 1].grouping = grouping;
             }
             if (!isNullOrUndefined(dataSource.childLevels) && dataSource.childLevels > 0) {
-                this.processGroupedRows(gObj, item.items, headerRow, item.items.level);
+                this.processGroupedRows(gObj, item.items, headerRow, item.items.level, startIndex, excelExportProperties, excelRows, helper);
             }
             else {
-                this.processRecordRows(gObj, item.items, headerRow, (level));
-                this.processAggregates(gObj, item, undefined, (level), true);
+                startIndex = this.processRecordRows(gObj, item.items, headerRow, (level), startIndex, excelExportProperties, excelRows, helper);
+                this.processAggregates(gObj, item, excelRows, undefined, (level), true);
             }
         }
     };
-    /* tslint:disable-next-line:no-any */
-    ExcelExport.prototype.processRecordRows = function (gObj, record, headerRow, level) {
-        var rLen = Object.keys(record).length;
+    ExcelExport.prototype.processRecordRows = function (gObj, record, headerRow, level, startIndex, excelExportProperties, excelRows, helper) {
         var index = 1;
-        /* tslint:disable-next-line:no-any */
         var cells = [];
-        for (var r = 0; r < rLen; r++) {
+        var columns = headerRow.columns;
+        var rows = helper.getGridRowModel(columns, record, gObj, startIndex);
+        for (var _i = 0, rows_1 = rows; _i < rows_1.length; _i++) {
+            var row = rows_1[_i];
             cells = [];
+            startIndex++;
             index = 1;
-            for (var c = 0, len = headerRow.columns.length; c < len; c++) {
-                /* tslint:disable-next-line:no-any */
-                var value = !isNullOrUndefined(headerRow.columns[c].field) ? getValue(headerRow.columns[c].field, record[r]) : '';
-                var column = headerRow.columns[c];
-                var foreignKeyData$$1 = void 0;
-                // tslint:disable-next-line:max-line-length
+            for (var c = 0, len = row.cells.length; c < len; c++) {
+                var gCell = row.cells[c];
+                if (gCell.cellType !== CellType.Data) {
+                    continue;
+                }
+                var column = gCell.column;
+                var field = column.field;
+                var value = (!isNullOrUndefined(field) && getValue(field, row.data)) || '';
+                var fkData = void 0;
                 if (column.isForeignColumn && column.isForeignColumn()) {
-                    foreignKeyData$$1 = this.helper.getFData(value, column);
-                    value = getValue(column.foreignKeyValue, foreignKeyData$$1);
+                    fkData = helper.getFData(value, column);
+                    value = getValue(column.foreignKeyValue, fkData);
                 }
                 if (!isNullOrUndefined(value)) {
-                    /* tslint:disable-next-line:no-any */
-                    var excelCellArgs = { data: record[r], column: headerRow.columns[c], foreignKeyData: foreignKeyData$$1 };
                     var cell = {};
-                    gObj.trigger(excelQueryCellInfo, extend(excelCellArgs, {
-                        column: headerRow.columns[c], data: record[r],
+                    /* tslint:disable-next-line:no-any */
+                    var excelCellArgs = {
+                        data: row.data, column: column, foreignKeyData: fkData,
                         value: value, style: undefined, colSpan: 1, cell: cell
-                    }));
+                    };
+                    gObj.trigger(excelQueryCellInfo, excelCellArgs);
                     cell = excelCellArgs.cell;
-                    cell.index = index + level;
+                    cell.index = index + level + gObj.childGridLevel;
                     cell.value = excelCellArgs.value;
                     if (excelCellArgs.colSpan > 1) {
                         cell.colSpan = excelCellArgs.colSpan;
@@ -24117,20 +25688,54 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
                 }
                 index++;
             }
+            var excelRow = { index: this.rowLength++, cells: cells };
             if (this.groupedColLength < 8 && level > 0) {
-                var grouping = { outlineLevel: level, isCollapsed: true };
-                this.rows.push({ index: this.rowLength++, cells: cells, grouping: grouping });
+                excelRow.grouping = { outlineLevel: level, isCollapsed: true };
+                excelRows.push(excelRow);
             }
             else {
-                this.rows.push({ index: this.rowLength++, cells: cells });
+                excelRows.push(excelRow);
             }
-            gObj.notify(exportRowDataBound, { rowObj: record[r], type: 'excel' });
+            if (!isNullOrUndefined(gObj.childGrid)) {
+                gObj.isPrinting = true;
+                var exportType = (!isNullOrUndefined(excelExportProperties) && excelExportProperties.exportType) ?
+                    excelExportProperties.exportType : 'AllPages';
+                var returnVal = this.helper.createChildGrid(gObj, row, exportType, this.gridPool);
+                var childGridObj = returnVal.childGrid;
+                var element = returnVal.element;
+                childGridObj.actionFailure =
+                    helper.failureHandler(this.gridPool, childGridObj, this.globalResolve);
+                childGridObj.childGridLevel = gObj.childGridLevel + 1;
+                var args = { childGrid: childGridObj, row: row, exportProperties: excelExportProperties };
+                this.parent.trigger(exportDetailDataBound, args);
+                childGridObj.beforeDataBound = this.childGridCell(excelRow, childGridObj, excelExportProperties, row);
+                childGridObj.appendTo(element);
+            }
+            gObj.notify(exportRowDataBound, { rowObj: row, type: 'excel' });
         }
+        return startIndex;
     };
-    /* tslint:disable-next-line:no-any */
-    ExcelExport.prototype.processAggregates = function (gObj, rec, currentViewRecords, indent, byGroup) {
+    ExcelExport.prototype.childGridCell = function (excelRow, childGridObj, excelExportProps, gRow) {
+        var _this = this;
+        return function (result) {
+            childGridObj.beforeDataBound = null;
+            result.cancel = true;
+            excelRow.childRows = _this.processGridExport(childGridObj, excelExportProps, result);
+            var intent = _this.parent.groupSettings.columns.length;
+            excelRow.childRows.forEach(function (row) {
+                row.grouping = { outlineLevel: intent + childGridObj.childGridLevel,
+                    isCollapsed: !gRow.isExpand, isHidden: !gRow.isExpand };
+            });
+            childGridObj.destroy();
+            detach(childGridObj.element);
+            _this.gridPool[childGridObj.id] = true;
+            _this.helper.checkAndExport(_this.gridPool, _this.globalResolve);
+            return excelRow;
+        };
+    };
+    // tslint:disable-next-line:max-line-length
+    ExcelExport.prototype.processAggregates = function (gObj, rec, excelRows, currentViewRecords, indent, byGroup) {
         var summaryModel = new SummaryModelGenerator(gObj);
-        /* tslint:disable-next-line:no-any */
         var data = undefined;
         if (!isNullOrUndefined(currentViewRecords)) {
             data = currentViewRecords;
@@ -24145,32 +25750,35 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
             var groupSummaryModel = new GroupSummaryModelGenerator(gObj);
             var groupSummaryRows = groupSummaryModel.generateRows(data, { level: data.level });
             if (groupSummaryRows.length > 0) {
-                this.fillAggregates(gObj, groupSummaryRows, indent);
+                excelRows = this.fillAggregates(gObj, groupSummaryRows, indent, excelRows);
             }
         }
         else {
             indent = gObj.groupSettings.columns.length > 0 && !byGroup ? gObj.groupSettings.columns.length : indent;
             var sRows = summaryModel.generateRows(data, rec.aggregates);
             if (sRows.length > 0 && !byGroup) {
-                this.fillAggregates(gObj, sRows, indent);
+                excelRows = this.fillAggregates(gObj, sRows, indent, excelRows);
             }
         }
+        return excelRows;
     };
-    /* tslint:disable-next-line:no-any */
-    ExcelExport.prototype.fillAggregates = function (gObj, cells, indent, customIndex) {
-        for (var _i = 0, cells_1 = cells; _i < cells_1.length; _i++) {
-            var row = cells_1[_i];
-            /* tslint:disable-next-line:no-any */
-            var cells_2 = [];
+    // tslint:disable-next-line:max-line-length
+    ExcelExport.prototype.fillAggregates = function (gObj, rows, indent, excelRows, customIndex) {
+        for (var _i = 0, rows_2 = rows; _i < rows_2.length; _i++) {
+            var row = rows_2[_i];
+            var cells = [];
             var index = 0;
             for (var _a = 0, _b = row.cells; _a < _b.length; _a++) {
                 var cell = _b[_a];
                 /* tslint:disable-next-line:no-any */
                 var eCell = {};
+                if (cell.cellType === CellType.DetailFooterIntent) {
+                    continue;
+                }
                 if ((cell.visible || this.includeHiddenColumn)) {
                     index++;
                     if (cell.isDataCell) {
-                        eCell.index = index + indent;
+                        eCell.index = index + indent + gObj.childGridLevel;
                         if (!isNullOrUndefined(cell.column.footerTemplate)) {
                             eCell.value = this.getAggreateValue(CellType.Summary, cell.column.footerTemplate, cell, row);
                         }
@@ -24212,40 +25820,41 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
                             }
                         }
                         eCell.style = this.getCaptionThemeStyle(this.theme); //{ name: gObj.element.id + 'column' + index };
-                        if (cell.attributes.style.textAlign) {
-                            eCell.style.hAlign = cell.attributes.style.textAlign;
+                        var gridCellStyle = cell.attributes.style;
+                        if (gridCellStyle.textAlign) {
+                            eCell.style.hAlign = gridCellStyle.textAlign.toLowerCase();
                         }
-                        cells_2.push(eCell);
+                        cells.push(eCell);
                     }
                     else {
                         if (customIndex === undefined) {
-                            eCell.index = index + indent;
+                            eCell.index = index + indent + gObj.childGridLevel;
                             eCell.style = this.getCaptionThemeStyle(this.theme); //{ name: gObj.element.id + 'column' + index };
-                            cells_2.push(eCell);
+                            cells.push(eCell);
                         }
                     }
                 }
             }
             if (!isNullOrUndefined(customIndex)) {
-                this.rows.push({ index: customIndex, cells: cells_2 });
+                excelRows.push({ index: customIndex, cells: cells });
             }
             else {
                 var row_1 = {};
                 if (this.groupedColLength < 8 && this.groupedColLength > 0) {
                     var dummyOutlineLevel = 'outlineLevel';
                     var dummyGrouping = 'grouping';
-                    var level = this.rows[this.rows.length - 1][dummyGrouping][dummyOutlineLevel];
+                    var level = excelRows[excelRows.length - 1][dummyGrouping][dummyOutlineLevel];
                     var grouping = { outlineLevel: level, isCollapsed: true };
-                    row_1 = { index: this.rowLength++, cells: cells_2, grouping: grouping };
+                    row_1 = { index: this.rowLength++, cells: cells, grouping: grouping };
                 }
                 else {
-                    row_1 = { index: this.rowLength++, cells: cells_2 };
+                    row_1 = { index: this.rowLength++, cells: cells };
                 }
-                this.rows.push(row_1);
+                excelRows.push(row_1);
             }
         }
+        return excelRows;
     };
-    /* tslint:disable-next-line:no-any */
     ExcelExport.prototype.getAggreateValue = function (cellType, template, cell, row) {
         var templateFn = {};
         templateFn[getEnumValue(CellType, cell.cellType)] = compile(template);
@@ -24253,11 +25862,8 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
         var txt = (templateFn[getEnumValue(CellType, cell.cellType)](row.data[cell.column.field ? cell.column.field : cell.column.columnName]));
         return txt[0].textContent;
     };
-    /* tslint:disable-next-line:no-any */
     ExcelExport.prototype.mergeOptions = function (JSON1, JSON2) {
-        /* tslint:disable-next-line:no-any */
         var result = {};
-        /* tslint:disable-next-line:no-any */
         var attrname = Object.keys(JSON1);
         for (var index = 0; index < attrname.length; index++) {
             if (attrname[index] !== 'name') {
@@ -24283,18 +25889,11 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
         }
         return undefined;
     };
-    /* tslint:disable-next-line:no-any */
-    ExcelExport.prototype.processHeaderContent = function (gObj, headerRow, exportProperties, indent) {
-        /* tslint:disable-next-line:no-any */
-        var column = gObj.columns;
+    ExcelExport.prototype.processHeaderContent = function (gObj, headerRow, indent, excelRows) {
         var rowIndex = 1;
-        /* tslint:disable-next-line:no-any */
-        var returnValue = headerRow;
-        /* tslint:enable:no-any */
-        var gridRows = returnValue.rows;
+        var gridRows = headerRow.rows;
         // Column collection with respect to the records in the grid
-        var gridColumns = returnValue.columns;
-        /* tslint:disable-next-line:no-any */
+        var gridColumns = headerRow.columns;
         var spannedCells = [];
         if (indent > 0) {
             var index = 0;
@@ -24305,29 +25904,27 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
         }
         for (var row = 0; row < gridRows.length; row++) {
             var currentCellIndex = 1 + indent;
-            /* tslint:disable-next-line:no-any */
             var cells = [];
-            for (var column_1 = 0; column_1 < gridRows[row].cells.length; column_1++) {
+            for (var column = 0; column < gridRows[row].cells.length; column++) {
                 /* tslint:disable-next-line:no-any */
                 var style = {};
-                /* tslint:disable-next-line:no-any */
                 var cell = {};
-                /* tslint:disable-next-line:no-any */
-                var gridCell = gridRows[row].cells[column_1];
-                /* tslint:disable-next-line:no-any */
+                var gridCell = gridRows[row].cells[column];
+                if (gridCell.cellType === CellType.HeaderIndent || gridCell.cellType === CellType.DetailHeader) {
+                    continue;
+                }
                 var result = { contains: true, index: 1 };
                 while (result.contains) {
                     result = this.getIndex(spannedCells, rowIndex, currentCellIndex);
                     currentCellIndex = result.index;
                     if (!result.contains) {
-                        cell.index = result.index;
+                        cell.index = result.index + gObj.childGridLevel;
                         break;
                     }
                 }
                 if (!isNullOrUndefined(gridCell.rowSpan) && gridCell.rowSpan !== 1) {
                     cell.rowSpan = gridCell.rowSpan;
                     for (var i = rowIndex; i < gridCell.rowSpan + rowIndex; i++) {
-                        /* tslint:disable-next-line:no-any */
                         var spannedCell = { rowIndex: 0, columnIndex: 0 };
                         spannedCell.rowIndex = i;
                         spannedCell.columnIndex = currentCellIndex;
@@ -24339,69 +25936,40 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
                     currentCellIndex = currentCellIndex + cell.colSpan - 1;
                 }
                 cell.value = gridCell.column.headerText;
-                if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.theme)) {
-                    this.theme = exportProperties.theme;
-                }
                 style = this.getHeaderThemeStyle(this.theme);
                 if (!isNullOrUndefined(gridCell.column.textAlign)) {
-                    style.hAlign = gridCell.column.textAlign;
+                    style.hAlign = gridCell.column.textAlign.toLowerCase();
                 }
                 if (!isNullOrUndefined(gridCell.column.headerTextAlign)) {
-                    style.hAlign = gridCell.column.headerTextAlign;
+                    style.hAlign = gridCell.column.headerTextAlign.toLowerCase();
                 }
-                /* tslint:disable-next-line:no-any */
-                var excelHeaderCellArgs = { cell: cell, gridCell: gridCell, setStyle: style };
-                gObj.trigger(excelHeaderQueryCellInfo, extend(excelHeaderCellArgs, {
-                    cell: cell, setStyle: style
-                }));
-                cell.style = style;
+                var excelHeaderCellArgs = { cell: cell, gridCell: gridCell, style: style };
+                gObj.trigger(excelHeaderQueryCellInfo, excelHeaderCellArgs);
+                cell.style = excelHeaderCellArgs.style;
                 cells.push(cell);
                 currentCellIndex++;
             }
-            this.rows.push({ index: this.rowLength++, cells: cells });
+            excelRows.push({ index: this.rowLength++, cells: cells });
         }
         for (var col = 0; col < gridColumns.length; col++) {
             this.parseStyles(gObj, gridColumns[col], this.getRecordThemeStyle(this.theme), indent + col + 1);
         }
+        return excelRows;
     };
-    /* tslint:disable-next-line:no-any */
     ExcelExport.prototype.getHeaderThemeStyle = function (theme) {
-        /* tslint:disable-next-line:no-any */
         var style = {};
         style.fontSize = 12;
         style.borders = { color: '#E0E0E0' };
+        style.bold = true;
         if (!isNullOrUndefined(theme) && !isNullOrUndefined(theme.header)) {
             style = this.updateThemeStyle(theme.header, style);
         }
         return style;
     };
-    /* tslint:disable-next-line:no-any */
     ExcelExport.prototype.updateThemeStyle = function (themestyle, style) {
-        if (!isNullOrUndefined(themestyle.fontColor)) {
-            style.fontColor = themestyle.fontColor;
-        }
-        if (!isNullOrUndefined(themestyle.fontName)) {
-            style.fontName = themestyle.fontName;
-        }
-        if (!isNullOrUndefined(themestyle.fontSize)) {
-            style.fontSize = themestyle.fontSize;
-        }
-        if (!isNullOrUndefined(themestyle.borders)) {
-            if (!isNullOrUndefined(themestyle.borders.color)) {
-                style.borders.color = themestyle.borders.color;
-            }
-            if (!isNullOrUndefined(themestyle.borders.lineStyle)) {
-                style.borders.lineStyle = themestyle.borders.lineStyle;
-            }
-        }
-        if (themestyle.bold !== false) {
-            style.bold = themestyle.bold;
-        }
-        return style;
+        return extend(style, themestyle);
     };
-    /* tslint:disable-next-line:no-any */
     ExcelExport.prototype.getCaptionThemeStyle = function (theme) {
-        /* tslint:disable-next-line:no-any */
         var style = {};
         style.fontSize = 13;
         style.backColor = '#F6F6F6';
@@ -24410,9 +25978,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
         }
         return style;
     };
-    /* tslint:disable-next-line:no-any */
     ExcelExport.prototype.getRecordThemeStyle = function (theme) {
-        /* tslint:disable-next-line:no-any */
         var style = {};
         style.fontSize = 13;
         style.borders = { color: '#E0E0E0' };
@@ -24421,7 +25987,6 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
         }
         return style;
     };
-    /* tslint:disable-next-line:no-any */
     ExcelExport.prototype.processExcelHeader = function (header) {
         if (!isNullOrUndefined(header.rows) && (this.expType === 'NewSheet' || this.rowLength === 1)) {
             var noRows = void 0;
@@ -24439,7 +26004,6 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
             }
             this.rowLength++;
             for (var row = 0; row < noRows; row++) {
-                /* tslint:disable-next-line:no-any */
                 var json = header.rows[row];
                 //Row index
                 if (!(json.index !== null && !isNullOrUndefined(json.index))) {
@@ -24449,11 +26013,9 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
             }
         }
     };
-    /* tslint:disable-next-line:no-any */
     ExcelExport.prototype.updatedCellIndex = function (json) {
         var cellsLength = json.cells.length;
         for (var cellId = 0; cellId < cellsLength; cellId++) {
-            /* tslint:disable-next-line:no-any */
             var jsonCell = json.cells[cellId];
             //cell index
             if (!(jsonCell.index !== null && !isNullOrUndefined(jsonCell.index))) {
@@ -24462,7 +26024,6 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
         }
         this.rows.push(json);
     };
-    /* tslint:disable-next-line:no-any */
     ExcelExport.prototype.processExcelFooter = function (footer) {
         if (!isNullOrUndefined(footer.rows)) {
             var noRows = void 0;
@@ -24479,7 +26040,6 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
                 }
             }
             for (var row = 0; row < noRows; row++) {
-                /* tslint:disable-next-line:no-any */
                 var json = footer.rows[row];
                 //Row index
                 if (json.index === null || json.index === undefined) {
@@ -24492,7 +26052,6 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
             }
         }
     };
-    /* tslint:disable-next-line:no-any */
     ExcelExport.prototype.getIndex = function (spannedCells, rowIndex, columnIndex) {
         for (var _i = 0, spannedCells_1 = spannedCells; _i < spannedCells_1.length; _i++) {
             var spannedCell = spannedCells_1[_i];
@@ -24503,13 +26062,13 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
         }
         return { contains: false, index: columnIndex };
     };
-    /* tslint:disable-next-line:no-any */
     ExcelExport.prototype.parseStyles = function (gObj, col, style, index) {
         if (!isNullOrUndefined(col.format)) {
             if (typeof col.format === 'object') {
-                style.numberFormat = !isNullOrUndefined(col.format.format) ? col.format.format : col.format.skeleton;
-                if (!isNullOrUndefined(col.format.type)) {
-                    style.type = col.format.type;
+                var format = col.format;
+                style.numberFormat = !isNullOrUndefined(format.format) ? format.format : format.skeleton;
+                if (!isNullOrUndefined(format.type)) {
+                    style.type = format.type;
                 }
             }
             else {
@@ -24518,15 +26077,15 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
             }
         }
         if (!isNullOrUndefined(col.textAlign)) {
-            style.hAlign = col.textAlign;
+            style.hAlign = col.textAlign.toLowerCase();
         }
         if (Object.keys(style).length > 0) {
             style.name = gObj.element.id + 'column' + index;
             this.styles.push(style);
         }
         if (!isNullOrUndefined(col.width)) {
-            /* tslint:disable-next-line:max-line-length */
-            this.columns.push({ index: index, width: typeof col.width === 'number' ? col.width : this.helper.getConvertedWidth(col.width) });
+            this.columns.push({ index: index + gObj.childGridLevel, width: typeof col.width === 'number' ?
+                    col.width : this.helper.getConvertedWidth(col.width) });
         }
     };
     /**
@@ -24556,6 +26115,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         this.isGrouping = false;
         this.parent = parent;
         this.helper = new ExportHelper(parent);
+        this.gridPool = {};
     }
     /**
      * For internal use only - Get the module name.
@@ -24569,32 +26129,62 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         this.hideColumnInclude = false;
         this.currentViewData = false;
         this.parent = parent;
-        var gObj = parent;
-        var can = 'cancel';
         this.isGrouping = false;
         this.isExporting = true;
-        var args = {
-            requestType: 'beforePdfExport', gridObject: gObj, cancel: false
-        };
-        gObj.trigger(beforePdfExport, args);
-        if (args[can] === true) {
-            return;
+        parent.id = getUid('main-grid');
+        this.gridPool[parent.id] = false;
+    };
+    PdfExport.prototype.exportWithData = function (parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport) {
+        var _this = this;
+        this.init(parent);
+        if (!isNullOrUndefined(pdfDoc)) {
+            this.pdfDocument = pdfDoc;
         }
+        else {
+            this.pdfDocument = new PdfDocument();
+        }
+        this.processExport(parent, returnType, pdfExportProperties, isMultipleExport).then(function () {
+            _this.isExporting = false;
+            parent.trigger(pdfExportComplete, _this.isBlob ? { promise: _this.blobPromise } : {});
+            resolve(_this.pdfDocument);
+        });
     };
     /**
      * Used to map the input data
      * @return {void}
      */
-    /* tslint:disable-next-line:no-any */
     PdfExport.prototype.Map = function (parent, pdfExportProperties, isMultipleExport, pdfDoc, isBlob) {
         var _this = this;
         this.data = new Data(this.parent);
         this.isBlob = isBlob;
-        /* tslint:disable-next-line:max-line-length */
-        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource) && pdfExportProperties.dataSource instanceof DataManager) {
+        this.gridPool = {};
+        if (parent.childGrid && !(!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.hierarchyExportMode === 'None')) {
+            parent.expandedRows = getPrintGridModel(parent).expandedRows;
+        }
+        var args = {
+            requestType: 'beforePdfExport', gridObject: parent, cancel: false
+        };
+        var can = 'cancel';
+        parent.trigger(beforePdfExport, args);
+        if (args[can] === true) {
             return new Promise(function (resolve, reject) {
-                /* tslint:disable-next-line:no-any */ /* tslint:disable-next-line:max-line-length */
+                return resolve();
+            });
+        }
+        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource)
+            && pdfExportProperties.dataSource instanceof DataManager) {
+            return new Promise(function (resolve, reject) {
                 pdfExportProperties.dataSource.executeQuery(new Query()).then(function (returnType) {
+                    _this.exportWithData(parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport);
+                });
+            });
+        }
+        else {
+            var allPromise_1 = [];
+            allPromise_1.push(this.data.getData({}, ExportHelper.getQuery(parent, this.data)));
+            allPromise_1.push(this.helper.getColumnData(parent));
+            return new Promise(function (resolve, reject) {
+                Promise.all(allPromise_1).then(function (e) {
                     _this.init(parent);
                     if (!isNullOrUndefined(pdfDoc)) {
                         _this.pdfDocument = pdfDoc;
@@ -24602,77 +26192,98 @@ var PdfExport = /** @__PURE__ @class */ (function () {
                     else {
                         _this.pdfDocument = new PdfDocument();
                     }
-                    _this.processExport(parent, returnType, pdfExportProperties, isMultipleExport);
-                    _this.isExporting = false;
-                    parent.trigger(pdfExportComplete, _this.isBlob ? { promise: _this.blobPromise } : {});
-                    resolve(_this.pdfDocument);
+                    _this.processExport(parent, e[0], pdfExportProperties, isMultipleExport).then(function () {
+                        _this.isExporting = false;
+                        parent.trigger(pdfExportComplete, _this.isBlob ? { promise: _this.blobPromise } : {});
+                        resolve(_this.pdfDocument);
+                    });
                 });
             });
         }
-        else {
-            var allPromise = [];
-            allPromise.push(this.data.getData({}, ExportHelper.getQuery(parent, this.data)));
-            allPromise.push(this.helper.getColumnData(parent));
-            return Promise.all(allPromise).then(function (e) {
-                _this.init(parent);
-                if (!isNullOrUndefined(pdfDoc)) {
-                    _this.pdfDocument = pdfDoc;
+    };
+    PdfExport.prototype.processExport = function (gObj, returnType, pdfExportProperties, isMultipleExport) {
+        var _this = this;
+        var section = this.pdfDocument.sections.add();
+        var pdfGrid;
+        this.processSectionExportProperties(section, pdfExportProperties);
+        var pdfPage = section.pages.add();
+        return new Promise(function (resolve, reject) {
+            pdfGrid = _this.processGridExport(gObj, returnType, pdfExportProperties);
+            _this.globalResolve = resolve;
+            _this.gridPool[gObj.id] = true;
+            _this.helper.checkAndExport(_this.gridPool, _this.globalResolve);
+        }).then(function () {
+            // draw the grid
+            pdfGrid.draw(pdfPage, 0, 0);
+            if (!isMultipleExport) {
+                // save the PDF
+                if (!_this.isBlob) {
+                    if (!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.fileName) {
+                        _this.pdfDocument.save(pdfExportProperties.fileName);
+                    }
+                    else {
+                        _this.pdfDocument.save('Export.pdf');
+                    }
                 }
                 else {
-                    _this.pdfDocument = new PdfDocument();
+                    _this.blobPromise = _this.pdfDocument.save();
                 }
-                _this.processExport(parent, e[0], pdfExportProperties, isMultipleExport);
-                _this.isExporting = false;
-                parent.trigger(pdfExportComplete, _this.isBlob ? { promise: _this.blobPromise } : {});
-                return _this.pdfDocument;
-                // tslint:disable-next-line:no-any
-            });
-        }
+                _this.pdfDocument.destroy();
+                delete gObj.expandedRows;
+            }
+            return _this.pdfDocument;
+        });
     };
-    /* tslint:disable:no-any */
-    PdfExport.prototype.processExport = function (gObj, returnType, pdfExportProperties, isMultipleExport) {
+    PdfExport.prototype.processSectionExportProperties = function (section, pdfExportProperties) {
+        if (!isNullOrUndefined(pdfExportProperties) && (!isNullOrUndefined(pdfExportProperties.pageOrientation)
+            || !isNullOrUndefined(pdfExportProperties.pageSize))) {
+            var pdfPageSettings = new PdfPageSettings();
+            pdfPageSettings.orientation = (pdfExportProperties.pageOrientation === 'Landscape') ?
+                PdfPageOrientation.Landscape : PdfPageOrientation.Portrait;
+            pdfPageSettings.size = this.getPageSize(pdfExportProperties.pageSize);
+            section.setPageSettings(pdfPageSettings);
+        }
+        return section;
+    };
+    PdfExport.prototype.processGridExport = function (gObj, returnType, pdfExportProperties) {
         if (!isNullOrUndefined(pdfExportProperties)) {
             this.gridTheme = pdfExportProperties.theme;
         }
-        var columns = gObj.columns;
-        var dataSource = returnType.result;
-        /* tslint:enable:no-any */
-        var section = this.pdfDocument.sections.add();
-        /* tslint:disable-next-line:no-any */
-        var result = this.processExportProperties(pdfExportProperties, dataSource, section);
-        dataSource = result.dataSource;
-        /* tslint:disable-next-line:no-any */
-        if (!isNullOrUndefined(dataSource.GroupGuid)) {
-            this.isGrouping = true;
+        var helper = new ExportHelper(gObj);
+        var dataSource = this.processExportProperties(pdfExportProperties, returnType.result);
+        var columns = gObj.enableColumnVirtualization ? gObj.getColumns() : gObj.columns;
+        var isGrouping = false;
+        if (gObj.groupSettings.columns.length) {
+            isGrouping = true;
         }
-        section = result.section;
-        var pdfPage = section.pages.add();
+        if (gObj.childGrid && !isNullOrUndefined(pdfExportProperties)) {
+            gObj.hierarchyPrintMode = pdfExportProperties.hierarchyExportMode || 'Expanded';
+        }
         // create a grid
         var pdfGrid = new PdfGrid();
         // get header theme style
-        /* tslint:disable-next-line:no-any */
         var headerThemeStyle = this.getHeaderThemeStyle();
         var border = headerThemeStyle.border;
         var headerFont = headerThemeStyle.font;
         var headerBrush = headerThemeStyle.brush;
-        /* tslint:disable-next-line:no-any */
-        var returnValue = this.helper.getHeaders(columns, this.hideColumnInclude);
-        var rows = returnValue.rows;
+        var returnValue = helper.getHeaders(columns, this.hideColumnInclude);
         // Column collection with respect to the records in the grid
         var gridColumns = returnValue.columns;
         // process grid header content
-        pdfGrid = this.processGridHeaders(dataSource.childLevels, pdfGrid, rows, gridColumns, border, headerFont, headerBrush);
+        pdfGrid = this.processGridHeaders(gObj.groupSettings.columns.length, pdfGrid, returnValue.rows, gridColumns, border, headerFont, headerBrush, gObj);
         // set alignment, width and type of the values of the column
-        this.setColumnProperties(gridColumns, pdfGrid);
-        /* tslint:disable-next-line:no-any */
+        this.setColumnProperties(gridColumns, pdfGrid, helper, gObj);
         var captionThemeStyle = this.getSummaryCaptionThemeStyle();
-        if (!isNullOrUndefined(dataSource) && dataSource.length > 0) {
-            if (this.isGrouping) {
-                /* tslint:disable-next-line:max-line-length */
-                this.processGroupedRecords(pdfGrid, dataSource, gridColumns, gObj, border, 0, captionThemeStyle.font, captionThemeStyle.brush, captionThemeStyle.backgroundBrush, returnType);
+        if (!isNullOrUndefined(dataSource) && dataSource.length) {
+            if (isGrouping) {
+                if (!isNullOrUndefined(captionThemeStyle.border)) {
+                    border = captionThemeStyle.border;
+                }
+                this.processGroupedRecords(pdfGrid, dataSource, gridColumns, gObj, border, 0, captionThemeStyle.font, captionThemeStyle.
+                    brush, captionThemeStyle.backgroundBrush, returnType, pdfExportProperties, helper, 0);
             }
             else {
-                this.processRecord(border, gridColumns, gObj, dataSource, pdfGrid);
+                this.processRecord(border, gridColumns, gObj, dataSource, pdfGrid, 0, pdfExportProperties, helper, 0);
             }
             if (!isNullOrUndefined(returnType.aggregates)) {
                 var summaryModel = new SummaryModelGenerator(gObj);
@@ -24683,13 +26294,12 @@ var PdfExport = /** @__PURE__ @class */ (function () {
                 else if (this.currentViewData) {
                     sRows = summaryModel.generateRows(this.parent.getCurrentViewRecords(), returnType.aggregates);
                 }
-                else if (this.isGrouping) {
+                else if (isGrouping) {
                     sRows = summaryModel.generateRows(dataSource.records, returnType.aggregates);
                 }
                 else {
                     sRows = summaryModel.generateRows(returnType.result, returnType.aggregates);
                 }
-                /* tslint:disable-next-line:max-line-length */
                 this.processAggregates(sRows, pdfGrid, border, captionThemeStyle.font, captionThemeStyle.brush, captionThemeStyle.backgroundBrush, false);
             }
         }
@@ -24697,68 +26307,60 @@ var PdfExport = /** @__PURE__ @class */ (function () {
             var row = pdfGrid.rows.addRow();
             row.style.setBorder(border);
         }
-        // draw the grid
-        pdfGrid.draw(pdfPage, 20, 20);
-        if (!isMultipleExport) {
-            // save the PDF
-            if (!this.isBlob) {
-                if (!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.fileName) {
-                    this.pdfDocument.save(pdfExportProperties.fileName);
-                }
-                else {
-                    this.pdfDocument.save('Export.pdf');
-                }
-            }
-            else {
-                this.blobPromise = this.pdfDocument.save();
-            }
-            this.pdfDocument.destroy();
-        }
+        return pdfGrid;
     };
-    /* tslint:disable-next-line:no-any */
     PdfExport.prototype.getSummaryCaptionThemeStyle = function () {
-        if (!isNullOrUndefined(this.gridTheme) && !isNullOrUndefined(this.gridTheme.caption) && this.gridTheme.caption !== null) {
+        if (!isNullOrUndefined(this.gridTheme) && !isNullOrUndefined(this.gridTheme.caption)) {
             var fontSize = !isNullOrUndefined(this.gridTheme.caption.fontSize) ? this.gridTheme.caption.fontSize : 9.75;
-            var pdfColor = new PdfColor();
+            var fontFamily = !isNullOrUndefined(this.gridTheme.caption.fontName) ?
+                this.getFontFamily(this.gridTheme.caption.fontName) : PdfFontFamily.Helvetica;
+            var fontStyle = this.getFontStyle(this.gridTheme.caption);
+            var pdfColor = new PdfColor(0, 0, 0);
             if (!isNullOrUndefined(this.gridTheme.caption.fontColor)) {
                 var penBrushColor = this.hexToRgb(this.gridTheme.caption.fontColor);
                 pdfColor = new PdfColor(penBrushColor.r, penBrushColor.g, penBrushColor.b);
             }
-            /* tslint:disable-next-line:max-line-length */
-            return { font: new PdfStandardFont(PdfFontFamily.Helvetica, 10.5), brush: new PdfSolidBrush(new PdfColor(pdfColor)), backgroundBrush: new PdfSolidBrush(new PdfColor(246, 246, 246)) };
+            var borderCaption = this.gridTheme.caption.border ? this.getBorderStyle(this.gridTheme.caption.border) : null;
+            var font = new PdfStandardFont(fontFamily, fontSize, fontStyle);
+            if (!isNullOrUndefined(this.gridTheme.caption.font)) {
+                font = this.gridTheme.caption.font;
+            }
+            return { font: font, brush: new PdfSolidBrush(pdfColor), backgroundBrush: new PdfSolidBrush(new PdfColor(246, 246, 246)),
+                border: borderCaption };
         }
         else {
             //Material theme
-            /* tslint:disable-next-line:max-line-length */
-            return { font: new PdfStandardFont(PdfFontFamily.Helvetica, 9.75), brush: new PdfSolidBrush(new PdfColor(0, 0, 0)), backgroundBrush: new PdfSolidBrush(new PdfColor(246, 246, 246)) };
+            return { font: new PdfStandardFont(PdfFontFamily.Helvetica, 9.75), brush: new PdfSolidBrush(new PdfColor(0, 0, 0)),
+                backgroundBrush: new PdfSolidBrush(new PdfColor(246, 246, 246)) };
         }
     };
-    /* tslint:disable-next-line:no-any */
     PdfExport.prototype.getHeaderThemeStyle = function () {
         var border = new PdfBorders();
         if (!isNullOrUndefined(this.gridTheme) && !isNullOrUndefined(this.gridTheme.header)) {
-            if (!isNullOrUndefined(this.gridTheme.header.borders) && !isNullOrUndefined(this.gridTheme.header.borders.color)) {
-                var borderColor = this.hexToRgb(this.gridTheme.header.borders.color);
-                border.all = new PdfPen(new PdfColor(borderColor.r, borderColor.g, borderColor.b));
-            }
+            var fontFamily = !isNullOrUndefined(this.gridTheme.header.fontName) ?
+                this.getFontFamily(this.gridTheme.header.fontName) : PdfFontFamily.Helvetica;
+            var fontStyle = this.getFontStyle(this.gridTheme.header);
             var fontSize = !isNullOrUndefined(this.gridTheme.header.fontSize) ? this.gridTheme.header.fontSize : 10.5;
             var pdfColor = new PdfColor();
             if (!isNullOrUndefined(this.gridTheme.header.fontColor)) {
                 var penBrushColor = this.hexToRgb(this.gridTheme.header.fontColor);
                 pdfColor = new PdfColor(penBrushColor.r, penBrushColor.g, penBrushColor.b);
             }
-            /* tslint:disable-next-line:max-line-length */
-            return { border: border, font: new PdfStandardFont(PdfFontFamily.Helvetica, fontSize), brush: new PdfSolidBrush(pdfColor) };
+            var font = new PdfStandardFont(fontFamily, fontSize, fontStyle);
+            if (!isNullOrUndefined(this.gridTheme.header.font)) {
+                font = this.gridTheme.header.font;
+            }
+            return { border: this.getBorderStyle(this.gridTheme.header.border), font: font, brush: new PdfSolidBrush(pdfColor) };
         }
         else {
             //Material theme
             border.all = new PdfPen(new PdfColor(234, 234, 234));
-            /* tslint:disable-next-line:max-line-length */
-            return { border: border, font: new PdfStandardFont(PdfFontFamily.Helvetica, 10.5), brush: new PdfSolidBrush(new PdfColor(102, 102, 102)) };
+            return { border: border, font: new PdfStandardFont(PdfFontFamily.Helvetica, 10.5),
+                brush: new PdfSolidBrush(new PdfColor(102, 102, 102)) };
         }
     };
-    /* tslint:disable-next-line:max-line-length */ /* tslint:disable-next-line:no-any */
-    PdfExport.prototype.processGroupedRecords = function (pdfGrid, dataSource, gridColumns, gObj, border, level, font, brush, backgroundBrush, returnType) {
+    /* tslint:disable-next-line:no-any */
+    PdfExport.prototype.processGroupedRecords = function (pdfGrid, dataSource, gridColumns, gObj, border, level, font, brush, backgroundBrush, returnType, pdfExportProperties, helper, index) {
         var groupIndex = level;
         for (var _i = 0, dataSource_1 = dataSource; _i < dataSource_1.length; _i++) {
             var dataSourceItems = dataSource_1[_i];
@@ -24792,35 +26394,24 @@ var PdfExport = /** @__PURE__ @class */ (function () {
             }
             if (!isNullOrUndefined(dataSource.childLevels) && dataSource.childLevels > 0) {
                 this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, true, row, groupIndex);
-                /* tslint:disable-next-line:max-line-length */
-                this.processGroupedRecords(pdfGrid, dataSourceItems.items, gridColumns, gObj, border, (groupIndex + 1), font, brush, backgroundBrush, returnType);
+                this.processGroupedRecords(pdfGrid, dataSourceItems.items, gridColumns, gObj, border, (groupIndex + 1), font, brush, backgroundBrush, returnType, pdfExportProperties, helper, index);
                 var groupSummaryModel = new GroupSummaryModelGenerator(gObj);
                 sRows = groupSummaryModel.generateRows(dataSourceItems.items.records, dataSourceItems);
                 this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, false);
             }
             else {
                 this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, true, row, groupIndex);
-                this.processRecord(border, gridColumns, gObj, dataSourceItems.items, pdfGrid, (groupIndex + 1));
+                index = this.processRecord(border, gridColumns, gObj, dataSourceItems.items, pdfGrid, (groupIndex + 1), pdfExportProperties, helper, index);
                 var groupSummaryModel = new GroupSummaryModelGenerator(gObj);
                 sRows = groupSummaryModel.generateRows(dataSourceItems.items, dataSourceItems);
                 this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, false);
             }
         }
     };
-    /* tslint:disable-next-line:max-line-length */
-    PdfExport.prototype.processGridHeaders = function (childLevels, pdfGrid, rows, gridColumns, border, headerFont, headerBrush) {
-        var columnCount = gridColumns.length;
-        var gObj = this.parent;
-        if (this.isGrouping) {
-            columnCount += (childLevels + 1);
-        }
+    PdfExport.prototype.processGridHeaders = function (childLevels, pdfGrid, rows, gridColumn, border, headerFont, headerBrush, grid) {
+        var columnCount = gridColumn.length + childLevels;
         // add columns
         pdfGrid.columns.add(columnCount);
-        if (this.isGrouping) {
-            for (var i = 0; i < (childLevels + 1); i++) {
-                pdfGrid.columns.getColumn(i).width = 20;
-            }
-        }
         // add header
         pdfGrid.headers.add(rows.length);
         // set cell values of each rows in the header
@@ -24829,51 +26420,47 @@ var PdfExport = /** @__PURE__ @class */ (function () {
             gridHeader.style.setBorder(border);
             gridHeader.style.setFont(headerFont);
             gridHeader.style.setTextBrush(headerBrush);
-            var cellIndex = this.isGrouping ? (childLevels + 1) : 0;
-            if (rows[i].cells.length === 0) {
-                for (var j = 0; j < gridHeader.cells.count; j++) {
-                    var cell = gridHeader.cells.getCell(j);
-                    cell.value = '';
-                }
-            }
-            else {
-                for (var j = 0; j < cellIndex; j++) {
-                    var cell = gridHeader.cells.getCell(j);
-                    cell.value = '';
-                }
-                for (var j = 0; j < rows[i].cells.length; j++) {
-                    var cell = gridHeader.cells.getCell(cellIndex);
-                    /* tslint:disable-next-line:no-any */
-                    var args = {
-                        cell: cell,
-                        gridCell: rows[i].cells[j],
-                        style: cell.style
-                    };
-                    /* tslint:enable:no-any */
-                    gObj.trigger(pdfHeaderQueryCellInfo, args);
-                    if (cell.value !== null) {
-                        cell.value = rows[i].cells[j].column.headerText;
-                        if (!isNullOrUndefined(rows[i].cells[j].column.headerTextAlign)) {
-                            cell.style.stringFormat = this.getHorizontalAlignment(rows[i].cells[j].column.headerTextAlign);
-                        }
-                        if (!isNullOrUndefined(rows[i].cells[j].rowSpan)) {
-                            cell.rowSpan = rows[i].cells[j].rowSpan;
-                            /* tslint:disable-next-line:max-line-length */
-                            cell.style.stringFormat = this.getVerticalAlignment('Bottom', cell.style.stringFormat, rows[i].cells[j].column.textAlign);
-                            for (var k = 1; k < rows[i].cells[j].rowSpan; k++) {
-                                pdfGrid.headers.getHeader(i + k).cells.getCell(cellIndex).value = null;
+            var colSpan = 0;
+            var cellLength = rows[i].cells.length;
+            for (var j = 0; j < cellLength; j++) {
+                var cell = rows[i].cells[j];
+                var pdfCell = gridHeader.cells.getCell(j + colSpan);
+                switch (cell.cellType) {
+                    case CellType.HeaderIndent:
+                    case CellType.DetailHeader:
+                        pdfCell.value = '';
+                        pdfCell.width = 20;
+                        break;
+                    case CellType.Header:
+                    case CellType.StackedHeader:
+                        if (pdfCell.value !== null) {
+                            if (!isNullOrUndefined(cell.column.headerTextAlign)) {
+                                pdfCell.style.stringFormat = this.getHorizontalAlignment(cell.column.headerTextAlign);
                             }
+                            if (!isNullOrUndefined(cell.rowSpan)) {
+                                pdfCell.rowSpan = cell.rowSpan;
+                                pdfCell.style.stringFormat = this.getVerticalAlignment('Bottom', pdfCell.style.stringFormat, cell.column.textAlign);
+                                for (var k = 1; k < rows[i].cells[j].rowSpan; k++) {
+                                    pdfGrid.headers.getHeader(i + k).cells.getCell(j).value = null;
+                                }
+                            }
+                            if (!isNullOrUndefined(cell.colSpan)) {
+                                pdfCell.columnSpan = cell.colSpan;
+                                colSpan += cell.colSpan - 1;
+                            }
+                            pdfCell.value = cell.column.headerText;
+                            var args = {
+                                cell: pdfCell,
+                                gridCell: cell,
+                                style: pdfCell.style
+                            };
+                            this.parent.trigger(pdfHeaderQueryCellInfo, args);
                         }
-                        if (!isNullOrUndefined(rows[i].cells[j].colSpan)) {
-                            cell.columnSpan = rows[i].cells[j].colSpan;
+                        else {
+                            colSpan += pdfCell.columnSpan;
+                            j = j - 1;
                         }
-                        cellIndex += cell.columnSpan;
-                    }
-                    else {
-                        cell.value = '';
-                        cellIndex += cell.columnSpan;
-                        j = j - 1;
-                    }
+                        break;
                 }
             }
         }
@@ -24882,18 +26469,10 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         }
         return pdfGrid;
     };
-    /* tslint:disable-next-line:no-any */ /* tslint:disable-next-line:max-line-length */
-    PdfExport.prototype.processExportProperties = function (pdfExportProperties, dataSource, section) {
+    PdfExport.prototype.processExportProperties = function (pdfExportProperties, dataSource) {
         if (!isNullOrUndefined(pdfExportProperties)) {
             if (!isNullOrUndefined(pdfExportProperties.theme)) {
                 this.gridTheme = pdfExportProperties.theme;
-            }
-            if (!isNullOrUndefined(pdfExportProperties.pageOrientation) || !isNullOrUndefined(pdfExportProperties.pageSize)) {
-                var pdfPageSettings = new PdfPageSettings();
-                /* tslint:disable-next-line:max-line-length */
-                pdfPageSettings.orientation = (pdfExportProperties.pageOrientation === 'Landscape') ? PdfPageOrientation.Landscape : PdfPageOrientation.Portrait;
-                pdfPageSettings.size = this.getPageSize(pdfExportProperties.pageSize);
-                section.setPageSettings(pdfPageSettings);
             }
             var clientSize = this.pdfDocument.pageSettings.size;
             if (!isNullOrUndefined(pdfExportProperties.header)) {
@@ -24942,9 +26521,8 @@ var PdfExport = /** @__PURE__ @class */ (function () {
             this.currentViewData = false;
             this.customDataSource = false;
         }
-        return { dataSource: dataSource, section: section };
+        return dataSource;
     };
-    /* tslint:disable-next-line:no-any */
     PdfExport.prototype.drawPageTemplate = function (template, element) {
         for (var _i = 0, _a = element.contents; _i < _a.length; _i++) {
             var content = _a[_i];
@@ -24975,7 +26553,6 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         }
         return template;
     };
-    /* tslint:disable-next-line:no-any */
     PdfExport.prototype.processContentValidation = function (content) {
         if (content.type === undefined || content.type === null) {
             throw new Error('please set valid content type...');
@@ -25130,10 +26707,17 @@ var PdfExport = /** @__PURE__ @class */ (function () {
             /* tslint:disable-next-line:no-any */
             var value = [];
             for (var i = 0; i < pdfGrid.columns.count; i++) {
-                /* tslint:disable-next-line:no-any */
                 var cell = row.cells[index];
+                if (cell.cellType === CellType.DetailFooterIntent) {
+                    i--;
+                    index++;
+                    continue;
+                }
                 if (!this.hideColumnInclude) {
                     while (cell.visible === undefined) {
+                        if (cell.cellType === CellType.DetailFooterIntent) {
+                            continue;
+                        }
                         if (!isNullOrUndefined(captionRow)) {
                             if (!isNullOrUndefined(captionRow.cells.getCell(i).value)) {
                                 value.push('');
@@ -25254,19 +26838,22 @@ var PdfExport = /** @__PURE__ @class */ (function () {
             return data.Custom;
         }
     };
-    // Set alignment, width and type of the values of the column
-    /* tslint:disable:no-any */
-    /* tslint:disable-next-line:max-line-length */
-    PdfExport.prototype.setColumnProperties = function (gridColumns, pdfGrid) {
-        var startIndex = this.isGrouping ? (pdfGrid.columns.count - gridColumns.length) : 0;
+    /**
+     * Set alignment, width and type of the values of the column
+     */
+    PdfExport.prototype.setColumnProperties = function (gridColumns, pdfGrid, helper, gObj) {
+        var startIndex = gObj.groupSettings.columns.length;
+        for (var i = 0; i < startIndex; i++) {
+            pdfGrid.columns.getColumn(i).width = 20;
+        }
         for (var i = 0; i < gridColumns.length; i++) {
             if (!isNullOrUndefined(gridColumns[i].textAlign)) {
                 pdfGrid.columns.getColumn(i + startIndex).format = this.getHorizontalAlignment(gridColumns[i].textAlign);
             }
             // Need to add width consideration with % value
             if (pdfGrid.style.allowHorizontalOverflow && !isNullOrUndefined(gridColumns[i].width)) {
-                /* tslint:disable-next-line:max-line-length */
-                pdfGrid.columns.getColumn(i + startIndex).width = typeof gridColumns[i].width === 'number' ? gridColumns[i].width * 0.75 : this.helper.getConvertedWidth(gridColumns[i].width) * 0.75;
+                pdfGrid.columns.getColumn(i + startIndex).width = typeof gridColumns[i].width === 'number' ?
+                    gridColumns[i].width * 0.75 : helper.getConvertedWidth(gridColumns[i].width) * 0.75;
             }
         }
     };
@@ -25275,7 +26862,16 @@ var PdfExport = /** @__PURE__ @class */ (function () {
      * @private
      */
     PdfExport.prototype.setRecordThemeStyle = function (row, border) {
-        if (!isNullOrUndefined(this.gridTheme) && !isNullOrUndefined(this.gridTheme.record) && this.gridTheme.record !== null) {
+        if (!isNullOrUndefined(this.gridTheme) && !isNullOrUndefined(this.gridTheme.record)) {
+            var fontFamily = !isNullOrUndefined(this.gridTheme.record.fontName) ?
+                this.getFontFamily(this.gridTheme.record.fontName) : PdfFontFamily.Helvetica;
+            var fontSize = !isNullOrUndefined(this.gridTheme.record.fontSize) ? this.gridTheme.record.fontSize : 9.75;
+            var fontStyle = this.getFontStyle(this.gridTheme.record);
+            var font = new PdfStandardFont(fontFamily, fontSize, fontStyle);
+            if (!isNullOrUndefined(this.gridTheme.record.font)) {
+                font = this.gridTheme.record.font;
+            }
+            row.style.setFont(font);
             var pdfColor = new PdfColor();
             if (!isNullOrUndefined(this.gridTheme.record.fontColor)) {
                 var penBrushColor = this.hexToRgb(this.gridTheme.record.fontColor);
@@ -25286,69 +26882,109 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         else {
             row.style.setTextBrush(new PdfSolidBrush(new PdfColor(0, 0, 0)));
         }
-        row.style.setBorder(border);
+        var borderRecord = this.gridTheme && this.gridTheme.record &&
+            this.gridTheme.record.border ? this.getBorderStyle(this.gridTheme.record.border) : border;
+        row.style.setBorder(borderRecord);
         return row;
     };
     /**
      * generate the formatted cell values
      * @private
      */
-    /* tslint:disable-next-line:max-line-length */ /* tslint:disable-next-line:no-any */
-    PdfExport.prototype.processRecord = function (border, columns, gObj, dataSource, pdfGrid, groupIndex) {
-        var startIndex = this.isGrouping ? groupIndex : 0;
-        for (var _i = 0, _a = dataSource; _i < _a.length; _i++) {
-            var items = _a[_i];
+    PdfExport.prototype.processRecord = function (border, columns, gObj, dataSource, pdfGrid, startIndex, pdfExportProperties, helper, rowIndex) {
+        var rows = helper.getGridRowModel(columns, dataSource, gObj, rowIndex);
+        for (var _i = 0, rows_1 = rows; _i < rows_1.length; _i++) {
+            var row = rows_1[_i];
+            rowIndex++;
             // create a new row and set default style properties
             var gridRow = this.setRecordThemeStyle(pdfGrid.rows.addRow(), border);
-            for (var j = 0; j < columns.length; j++) {
-                /* tslint:disable:no-any */
-                var value = (!isNullOrUndefined(columns[j].field) && getValue(columns[j].field, items)) || '';
-                var column = columns[j];
+            var cellLength = row.cells.length;
+            for (var j = 0; j < cellLength; j++) {
+                var gridCell = row.cells[j];
+                if (gridCell.cellType !== CellType.Data) {
+                    continue;
+                }
+                var column = gridCell.column;
+                var field = column.field;
+                var value = (!isNullOrUndefined(field) && getValue(field, row.data)) || '';
                 var foreignKeyData$$1 = void 0;
                 if (column.isForeignColumn && column.isForeignColumn()) {
-                    foreignKeyData$$1 = this.helper.getFData(value, column);
+                    foreignKeyData$$1 = helper.getFData(value, column);
                     value = getValue(column.foreignKeyValue, foreignKeyData$$1);
                 }
-                var data = items;
+                var data = row.data;
+                var cell = gridRow.cells.getCell(j);
                 var args = {
                     data: data,
                     value: value,
                     column: column,
                     style: undefined,
-                    colSpan: 1
+                    colSpan: 1,
+                    cell: cell
                 };
                 args.value = this.exportValueFormatter.formatCellValue(args);
-                /* tslint:enable:no-any */
-                gObj.trigger(pdfQueryCellInfo, args);
-                var cell = gridRow.cells.getCell(j + startIndex);
+                this.parent.trigger(pdfQueryCellInfo, args);
                 cell.value = args.value;
                 if (!isNullOrUndefined(args.style)) {
                     this.processCellStyle(cell, args);
                 }
                 if (args.colSpan > 1) {
-                    if ((j + startIndex + 1 + args.colSpan) > gridRow.cells.count) {
-                        args.colSpan = gridRow.cells.count - (j + startIndex + 1);
+                    if ((j + 1 + args.colSpan) > gridRow.cells.count) {
+                        args.colSpan = gridRow.cells.count - (j + 1);
                     }
                     cell.columnSpan = args.colSpan;
                     for (var i = 1; i < cell.columnSpan; i++) {
-                        var spanCell = gridRow.cells.getCell(j + startIndex + i);
+                        var spanCell = gridRow.cells.getCell(j + i);
                         spanCell.value = '';
                     }
                     j += (args.colSpan - 1);
                 }
             }
-            this.parent.notify(exportRowDataBound, { type: 'pdf', rowObj: items });
+            if (row.isExpand) {
+                var gridRow_1 = this.setRecordThemeStyle(pdfGrid.rows.addRow(), border);
+                var cell = gridRow_1.cells.getCell(startIndex);
+                cell.columnSpan = gridRow_1.cells.count - (startIndex);
+                cell.style.cellPadding = new PdfPaddings(10, 10, 10, 10);
+                gObj.isPrinting = true;
+                var exportType = (!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.exportType) ?
+                    pdfExportProperties.exportType : 'AllPages';
+                var returnValue = this.helper.createChildGrid(gObj, row, exportType, this.gridPool);
+                var childGridObj = returnValue.childGrid;
+                var element = returnValue.element;
+                childGridObj.actionFailure =
+                    helper.failureHandler(this.gridPool, childGridObj, this.globalResolve);
+                var args = { childGrid: childGridObj, row: row, cell: cell, exportProperties: pdfExportProperties };
+                this.parent.trigger(exportDetailDataBound, args);
+                childGridObj.beforeDataBound = this.childGridCell(cell, childGridObj, pdfExportProperties);
+                childGridObj.appendTo(element);
+            }
+            this.parent.notify(exportRowDataBound, { type: 'pdf', rowObj: row });
         }
+        return rowIndex;
     };
-    /* tslint:disable-next-line:no-any */
+    PdfExport.prototype.childGridCell = function (cell, childGridObj, pdfExportProperties) {
+        var _this = this;
+        return function (result) {
+            childGridObj.beforeDataBound = null;
+            result.cancel = true;
+            cell.value = _this.processGridExport(childGridObj, result, pdfExportProperties);
+            childGridObj.destroy();
+            detach(childGridObj.element);
+            _this.gridPool[childGridObj.id] = true;
+            _this.helper.checkAndExport(_this.gridPool, _this.globalResolve);
+            return cell;
+        };
+    };
     PdfExport.prototype.processCellStyle = function (cell, args) {
         if (!isNullOrUndefined(args.style.backgroundColor)) {
-            /* tslint:disable-next-line:max-line-length */
             var backColor = this.hexToRgb(args.style.backgroundColor);
             cell.style.backgroundBrush = new PdfSolidBrush(new PdfColor(backColor.r, backColor.g, backColor.b));
         }
         if (!isNullOrUndefined(args.style.textAlignment)) {
             cell.style.stringFormat = this.getHorizontalAlignment(args.style.textAlignment);
+        }
+        if (!isNullOrUndefined(args.style.cellPadding)) {
+            cell.style.cellPadding = args.style.cellPadding;
         }
         if (!isNullOrUndefined(args.style.verticalAlignment)) {
             cell.style.stringFormat = this.getVerticalAlignment(args.style.verticalAlignment, cell.style.stringFormat);
@@ -25361,8 +26997,8 @@ var PdfExport = /** @__PURE__ @class */ (function () {
             var textPenColor = this.hexToRgb(args.style.textPenColor);
             cell.style.textPen = new PdfPen(new PdfColor(textPenColor.r, textPenColor.g, textPenColor.b));
         }
-        /* tslint:disable-next-line:max-line-length */
-        if (!isNullOrUndefined(args.style.fontFamily) || !isNullOrUndefined(args.style.fontSize) || !isNullOrUndefined(args.style.bold) || !isNullOrUndefined(args.style.italic) || !isNullOrUndefined(args.style.underline) || !isNullOrUndefined(args.style.strikeout)) {
+        if (!isNullOrUndefined(args.style.fontFamily) || !isNullOrUndefined(args.style.fontSize) || !isNullOrUndefined(args.style.bold) ||
+            !isNullOrUndefined(args.style.italic) || !isNullOrUndefined(args.style.underline) || !isNullOrUndefined(args.style.strikeout)) {
             cell.style.font = this.getFont(args);
         }
         if (!isNullOrUndefined(args.style.border)) {
@@ -25451,9 +27087,12 @@ var PdfExport = /** @__PURE__ @class */ (function () {
     };
     /* tslint:disable-next-line:no-any */
     PdfExport.prototype.getFont = function (content) {
+        if (content.style.font) {
+            return content.style.font;
+        }
         var fontSize = (!isNullOrUndefined(content.style.fontSize)) ? (content.style.fontSize * 0.75) : 9.75;
-        /* tslint:disable-next-line:max-line-length */
-        var fontFamily = (!isNullOrUndefined(content.style.fontFamily)) ? (this.getFontFamily(content.style.fontFamily)) : PdfFontFamily.Helvetica;
+        var fontFamily = (!isNullOrUndefined(content.style.fontFamily)) ?
+            (this.getFontFamily(content.style.fontFamily)) : PdfFontFamily.TimesRoman;
         var fontStyle = PdfFontStyle.Regular;
         if (!isNullOrUndefined(content.style.bold) && content.style.bold) {
             fontStyle |= PdfFontStyle.Bold;
@@ -25483,7 +27122,6 @@ var PdfExport = /** @__PURE__ @class */ (function () {
                 return 1;
         }
     };
-    /* tslint:disable-next-line:max-line-length */ /* tslint:disable-next-line:no-any */
     PdfExport.prototype.setContentFormat = function (content, format) {
         if (!isNullOrUndefined(content.size)) {
             var width = content.size.width * 0.75;
@@ -25587,7 +27225,6 @@ var PdfExport = /** @__PURE__ @class */ (function () {
                 return 0;
         }
     };
-    /* tslint:disable-next-line:no-any */
     PdfExport.prototype.getPenFromContent = function (content) {
         var pen = new PdfPen(new PdfColor(0, 0, 0));
         if (!isNullOrUndefined(content.style) && content.style !== null && !isNullOrUndefined(content.style.penColor)) {
@@ -25596,7 +27233,6 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         }
         return pen;
     };
-    /* tslint:disable-next-line:no-any */
     PdfExport.prototype.getBrushFromContent = function (content) {
         var brush = null;
         if (!isNullOrUndefined(content.style.textBrushColor)) {
@@ -25617,6 +27253,46 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         var b = bigint & 255;
         return { r: r, g: g, b: b };
     };
+    PdfExport.prototype.getFontStyle = function (theme) {
+        var fontStyle = PdfFontStyle.Regular;
+        if (!isNullOrUndefined(theme) && theme.bold) {
+            fontStyle |= PdfFontStyle.Bold;
+        }
+        if (!isNullOrUndefined(theme) && theme.italic) {
+            fontStyle |= PdfFontStyle.Italic;
+        }
+        if (!isNullOrUndefined(theme) && theme.underline) {
+            fontStyle |= PdfFontStyle.Underline;
+        }
+        if (!isNullOrUndefined(theme) && theme.strikeout) {
+            fontStyle |= PdfFontStyle.Strikeout;
+        }
+        return fontStyle;
+    };
+    PdfExport.prototype.getBorderStyle = function (border) {
+        var borders = new PdfBorders();
+        if (!isNullOrUndefined(border)) {
+            var borderWidth = border.width;
+            // set border width
+            var width = (!isNullOrUndefined(borderWidth) && typeof borderWidth === 'number') ? borderWidth * 0.75 : undefined;
+            // set border color
+            var color = new PdfColor(196, 196, 196);
+            if (!isNullOrUndefined(border.color)) {
+                var borderColor = this.hexToRgb(border.color);
+                color = new PdfColor(borderColor.r, borderColor.g, borderColor.b);
+            }
+            var pen = new PdfPen(color, width);
+            // set border dashStyle 'Solid <default>, Dash, Dot, DashDot, DashDotDot'
+            if (!isNullOrUndefined(border.dashStyle)) {
+                pen.dashStyle = this.getDashStyle(border.dashStyle);
+            }
+            borders.all = pen;
+        }
+        else {
+            borders.all = new PdfPen(new PdfColor(234, 234, 234));
+        }
+        return borders;
+    };
     /**
      * To destroy the pdf export
      * @return {void}
@@ -25628,7 +27304,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
     return PdfExport;
 }());
 
-var __extends$22 = (undefined && undefined.__extends) || (function () {
+var __extends$24 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -25646,7 +27322,7 @@ var __extends$22 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var CommandColumnRenderer = /** @__PURE__ @class */ (function (_super) {
-    __extends$22(CommandColumnRenderer, _super);
+    __extends$24(CommandColumnRenderer, _super);
     function CommandColumnRenderer(parent, locator) {
         var _this = _super.call(this, parent, locator) || this;
         _this.buttonElement = _this.parent.createElement('button', {});
@@ -26053,8 +27729,9 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         }
         else {
             this.targetColumn = this.getColumn(args.event);
-            this.selectRow(args.event, this.parent.selectionSettings.type !== 'Multiple');
-            var hiddenSepItems = [];
+            this.selectRow(args.event, (args.event.target.classList.contains('e-selectionbackground')
+                && this.parent.selectionSettings.type === 'Multiple') ? false : true);
+            var hideSepItems = [];
             var showSepItems = [];
             for (var _i = 0, _a = args.items; _i < _a.length; _i++) {
                 var item = _a[_i];
@@ -26085,7 +27762,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
                 else if (item.target && args.event &&
                     !this.ensureTarget(args.event.target, item.target)) {
                     if (item.separator) {
-                        hiddenSepItems.push(item.id);
+                        hideSepItems.push(item.id);
                     }
                     else {
                         this.hiddenItems.push(item.text);
@@ -26100,8 +27777,8 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
             }
             this.contextMenu.enableItems(this.disableItems, false);
             this.contextMenu.hideItems(this.hiddenItems);
-            if (hiddenSepItems.length > 0) {
-                this.contextMenu.hideItems(hiddenSepItems, true);
+            if (hideSepItems.length > 0) {
+                this.contextMenu.hideItems(hideSepItems, true);
             }
             this.eventArgs = args.event;
             args.column = this.targetColumn;
@@ -26385,7 +28062,7 @@ var FreezeRowModelGenerator = /** @__PURE__ @class */ (function () {
     return FreezeRowModelGenerator;
 }());
 
-var __extends$23 = (undefined && undefined.__extends) || (function () {
+var __extends$25 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -26403,7 +28080,7 @@ var __extends$23 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var FreezeContentRender = /** @__PURE__ @class */ (function (_super) {
-    __extends$23(FreezeContentRender, _super);
+    __extends$25(FreezeContentRender, _super);
     function FreezeContentRender(parent, locator) {
         return _super.call(this, parent, locator) || this;
     }
@@ -26453,7 +28130,7 @@ var FreezeContentRender = /** @__PURE__ @class */ (function (_super) {
     return FreezeContentRender;
 }(ContentRender));
 var FreezeRender = /** @__PURE__ @class */ (function (_super) {
-    __extends$23(FreezeRender, _super);
+    __extends$25(FreezeRender, _super);
     function FreezeRender(parent, locator) {
         var _this = _super.call(this, parent, locator) || this;
         _this.addEventListener();
@@ -26983,7 +28660,7 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
                     status = false;
                 }
                 else if (this.parent.ensureModuleInjected(Filter) && this.parent.allowFiltering
-                    && this.targetColumn && !this.targetColumn.allowFiltering) {
+                    && this.targetColumn && (!this.targetColumn.allowFiltering || this.parent.filterSettings.type === 'FilterBar')) {
                     status = true;
                 }
         }
@@ -27236,7 +28913,7 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
     return ColumnMenu;
 }());
 
-var __extends$24 = (undefined && undefined.__extends) || (function () {
+var __extends$26 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -27253,7 +28930,7 @@ var __extends$24 = (undefined && undefined.__extends) || (function () {
  * `ForeignKey` module is used to handle foreign key column's actions.
  */
 var ForeignKey = /** @__PURE__ @class */ (function (_super) {
-    __extends$24(ForeignKey, _super);
+    __extends$26(ForeignKey, _super);
     function ForeignKey(parent, serviceLocator) {
         var _this = _super.call(this, parent, serviceLocator) || this;
         _this.parent = parent;
@@ -27401,5 +29078,5 @@ var ForeignKey = /** @__PURE__ @class */ (function (_super) {
  * Export Grid components
  */
 
-export { SortDescriptor, SortSettings, Predicate$1 as Predicate, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, getUpdateUsingRaf, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, getObject, getCustomDateFormat, extendObjWithFn, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, recordAdded, cancelBegin, editNextValCell, printGridInit, exportRowDataBound, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, Global, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Column, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, Pager, ExternalMessage, NumericContainer, PagerMessage };
+export { SortDescriptor, SortSettings, Predicate$1 as Predicate, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, getUpdateUsingRaf, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, Global, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Column, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, Pager, ExternalMessage, NumericContainer, PagerMessage };
 //# sourceMappingURL=ej2-grids.es5.js.map

@@ -285,7 +285,8 @@ describe('Selection table format validation-3', () => {
     });
     it('preferred width testing-2', () => {
         editor.editorHistory.undo();
-        expect((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).tableFormat.preferredWidth).toBe(468);
+        expect((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).tableFormat.preferredWidthType).toBe('Percent');
+        expect((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).tableFormat.preferredWidth).toBe(0);
     });
     it('preferred width validation testing-3', () => {
         editor.editorHistory.redo();
@@ -308,7 +309,7 @@ describe('Selection table format validation-3', () => {
             i++;
         }
         editor.editorHistory.undo();
-        expect((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).tableFormat.preferredWidth).toBe(468);
+        expect((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).tableFormat.preferredWidth).toBe(0);
     });
     it('preferred width type validation testing-1', () => {
         editor.selection.tableFormat.preferredWidthType = 'Percent';
@@ -316,7 +317,7 @@ describe('Selection table format validation-3', () => {
     });
     it('preferred width type validation testing-2', () => {
         editor.editorHistory.undo();
-        expect((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).tableFormat.preferredWidthType).toBe('Point');
+        expect((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).tableFormat.preferredWidthType).toBe('Auto');
     });
     it('preferred width type validation testing-3', () => {
         editor.editorHistory.redo();
@@ -339,7 +340,7 @@ describe('Selection table format validation-3', () => {
             i++;
         }
         editor.editorHistory.undo();
-        expect((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).tableFormat.preferredWidthType).toBe('Point');
+        expect((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).tableFormat.preferredWidthType).toBe('Auto');
     });
     it('table alignment validation testing-1', () => {
         editor.selection.tableFormat.tableAlignment = 'Right';

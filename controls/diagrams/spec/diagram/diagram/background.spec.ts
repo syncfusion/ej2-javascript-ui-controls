@@ -5,7 +5,7 @@ import { createElement, L10n } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram'; import { BackgroundModel } from '../../../src/diagram/diagram/page-settings-model';
 import { DiagramModel, ConnectorModel, NodeModel } from '../../../src/diagram/index';
 import { MouseEvents } from '../interaction/mouseevents.spec';
-import { MenuItemModel } from '@syncfusion/ej2-navigations';
+import { MenuItemModel, MenuEventArgs } from '@syncfusion/ej2-navigations';
 ;
 
 
@@ -165,4 +165,67 @@ describe('Diagram Control', () => {
         });
     });
 
+    describe('Diagram checking Context menu template ', () => {
+        let node1: NodeModel = {
+            id: 'NewIdea', width: 100, height: 100, offsetX: 300, offsetY: 60,
+            shape: { type: 'Flow', shape: 'Terminator' },
+            annotations: [{
+                id: 'label1', content: 'New idea identified', offset: { x: 0.5, y: 0.5 }
+            }]
+        };
+
+        let node2: NodeModel = {
+            id: 'Meeting', width: 150, height: 60, offsetX: 300, offsetY: 155,
+            shape: { type: 'Flow', shape: 'Process' },
+            annotations: [{
+                id: 'label2', content: 'Meeting with board', offset: { x: 0.5, y: 0.5 }
+
+            }]
+        };
+        let connector1: ConnectorModel = {
+            id: 'connector1', type: 'Straight', sourceID: 'NewIdea', targetID: 'Meeting'
+        };
+
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramdraw' });
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                width: '1000px', height: '1000px',
+                nodes: [node1, node2],
+                connectors: [connector1],
+                contextMenuSettings: {
+                    show: true, items: [{
+                        text: 'Cut', id: 'Cut', target: '.e-diagramcontent',
+                        iconCss: 'e-Cut'
+                    },
+                    {
+                        text: 'Copy', id: 'Copy', target: '.e-diagramcontent',
+                        iconCss: 'e-Copy'
+                    }],
+                    showCustomMenuOnly: true,
+                },
+                contextMenuBeforeItemRender: (args: MenuEventArgs) => {
+                    // To render template in li.
+                    let shortCutSpan: HTMLElement = createElement('span');
+                    let text: string = args.item.text;
+                    let shortCutText: string = text === 'Cut' ? 'Ctrl + S' : (text === 'Copy' ?
+                        'Ctrl + U' : 'Ctrl + Shift + I');
+                    shortCutSpan.textContent = shortCutText;
+                    args.element.appendChild(shortCutSpan);
+                    shortCutSpan.setAttribute('class', 'shortcut');
+                }
+            });
+            diagram.appendTo('#diagramdraw');
+
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+    });
 });

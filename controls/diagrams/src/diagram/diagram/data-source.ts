@@ -1,5 +1,6 @@
 import { DataManager } from '@syncfusion/ej2-data';
-import { Property, ChildProperty } from '@syncfusion/ej2-base';
+import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';
+import {CrudActionModel, ConnectionDataSourceModel } from './data-source-model';
 
 /**
  * Configures the data source that is to be bound with diagram
@@ -30,6 +31,111 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';
  * diagram.appendTo('#diagram');
  * ```
  */
+
+export class CrudAction extends ChildProperty<CrudAction> {
+    /**
+     * set an URL to get a data from database
+     * @default ''
+     */
+    @Property('')
+    public read: string;
+
+    /**
+     * set an URL to add a data into database
+     * @default ''
+     */
+    @Property('')
+    public create: string;
+
+    /**
+     * set an URL to update the existing data in database
+     * @default ''
+     */
+    @Property('')
+    public update: string;
+
+    /**
+     * set an URL to remove an data in database
+     * @default ''
+     */
+    @Property('')
+    public destroy: string;
+
+    /**
+     * Add custom fields to node
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+    @Property()
+    public customFields: Object[];
+}
+
+export class ConnectionDataSource extends ChildProperty<ConnectionDataSource> {
+    /**
+     * set an id for connector dataSource
+     * @default ''
+     */
+    @Property('')
+    public id: string;
+
+    /**
+     * define sourceID to connect with connector
+     * @default ''
+     */
+    @Property('')
+    public sourceID: string;
+
+    /**
+     * define targetID to connect with connector
+     * @default ''
+     */
+    @Property('')
+    public targetID: string;
+
+    /**
+     * define sourcePoint to render connector startPoint
+     * @default null
+     */
+    @Property(null)
+    public sourcePointX: number;
+
+    /**
+     * define sourcePoint to render connector startPoint
+     * @default null
+     */
+    @Property(null)
+    public sourcePointY: number;
+
+    /**
+     * define targetPoint to render connector targetPoint
+     * @default null
+     */
+    @Property(null)
+    public targetPointX: number;
+
+    /**
+     * define targetPoint to render connector targetPoint
+     * @default null
+     */
+    @Property(null)
+    public targetPointY: number;
+
+    /**
+     * Sets the data source either as a collection of objects or as an URL of DataManager
+     * @default null
+     */
+    @Property(null)
+    public dataManager: DataManager;
+
+    /**
+     * Add CrudAction to connector data source
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+    @Complex<CrudActionModel>({}, CrudAction)
+    public crudAction: CrudActionModel;
+
+}
 
 export class DataSource extends ChildProperty<DataSource> {
     /**
@@ -78,4 +184,21 @@ export class DataSource extends ChildProperty<DataSource> {
     @Property()
     public doBinding: Function | string;
 
+    /**
+     * Add CrudAction to data source
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+    @Complex<CrudActionModel>({}, CrudAction)
+    public crudAction: CrudActionModel;
+
+    /**
+     * define connectorDataSource collection
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+    @Complex<ConnectionDataSourceModel>({}, ConnectionDataSource)
+    public connectionDataSource: ConnectionDataSourceModel;
+
 }
+

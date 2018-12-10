@@ -307,8 +307,9 @@ export class ContextMenu implements IAction {
             args.cancel = true;
         } else {
             this.targetColumn = this.getColumn(args.event);
-            this.selectRow(args.event, this.parent.selectionSettings.type !== 'Multiple');
-            let hiddenSepItems: string[] = [];
+            this.selectRow(args.event, ((args.event.target as Element).classList.contains('e-selectionbackground')
+                && this.parent.selectionSettings.type === 'Multiple') ? false : true);
+            let hideSepItems: string[] = [];
             let showSepItems: string[] = [];
             for (let item of args.items) {
                 let key: string = this.getKeyFromId(item.id);
@@ -334,7 +335,7 @@ export class ContextMenu implements IAction {
                     }
                 } else if ((item as ContextMenuItemModel).target && args.event &&
                     !this.ensureTarget(args.event.target as HTMLElement, (item as ContextMenuItemModel).target)) {
-                    if (item.separator) { hiddenSepItems.push(item.id); } else { this.hiddenItems.push(item.text); }
+                    if (item.separator) { hideSepItems.push(item.id); } else { this.hiddenItems.push(item.text); }
                 } else if (this.ensureTarget(args.event.target as HTMLElement, (item as ContextMenuItemModel).target) && item.separator) {
                     showSepItems.push(item.id);
                 }
@@ -344,8 +345,8 @@ export class ContextMenu implements IAction {
             }
             this.contextMenu.enableItems(this.disableItems, false);
             this.contextMenu.hideItems(this.hiddenItems);
-            if (hiddenSepItems.length > 0) {
-                this.contextMenu.hideItems(hiddenSepItems, true);
+            if (hideSepItems.length > 0) {
+                this.contextMenu.hideItems(hideSepItems, true);
             }
             this.eventArgs = args.event;
             args.column = this.targetColumn;

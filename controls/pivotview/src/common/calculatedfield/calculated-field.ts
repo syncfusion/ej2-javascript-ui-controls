@@ -25,6 +25,12 @@ const AVG: string = 'Avg';
 const MIN: string = 'Min';
 const MAX: string = 'Max';
 const SUM: string = 'Sum';
+const DISTINCTCOUNT: string = 'DistinctCount';
+const PRODUCT: string = 'Product';
+const STDEV: string = 'SampleStDev';
+const STDEVP: string = 'Popultion StDev';
+const VAR: string = 'SampleVar';
+const VARP: string = 'PopulationVar';
 const CALC: string = 'CalculatedField';
 const AGRTYPE: string = 'AggregateType';
 
@@ -194,21 +200,17 @@ export class CalculatedField implements IAction {
      */
     private createMenu(): void {
         let menuItems: MenuItemModel[] = [
-            {
-                text: COUNT,
-            },
-            {
-                text: AVG
-            },
-            {
-                text: MIN
-            },
-            {
-                text: MAX
-            },
-            {
-                text: SUM
-            }];
+            { text: COUNT, },
+            { text: AVG },
+            { text: MIN },
+            { text: MAX },
+            { text: SUM },
+            { text: DISTINCTCOUNT, },
+            { text: PRODUCT },
+            { text: STDEV },
+            { text: STDEVP },
+            { text: VAR },
+            { text: VARP }];
         let menuOptions: ContextMenuModel = {
             cssClass: this.parentID + 'calculatedmenu',
             items: menuItems,
@@ -304,6 +306,9 @@ export class CalculatedField implements IAction {
     private addFormula(report: IDataOptions, field: string): void {
         try {
             this.parent.setProperties({ dataSource: report }, true);
+            if (this.parent.getModuleName() === 'pivotfieldlist' && this.parent.allowDeferLayoutUpdate) {
+                (this.parent as PivotFieldList).isRequiredUpdate = false;
+            }
             this.parent.updateDataSource(false);
             this.isEdit = false;
             if (this.dialog) {
@@ -616,7 +621,7 @@ export class CalculatedField implements IAction {
      */
     private createTypeContainer(key: string): HTMLElement {
         let wrapDiv: HTMLElement = createElement('div', { id: this.parentID + 'control_wrapper', className: cls.TREEVIEWOUTER });
-        let type: string[] = [SUM, COUNT, AVG, MIN, MAX];
+        let type: string[] = [SUM, COUNT, AVG, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
         for (let i: number = 0; i < 5; i++) {
             let input: HTMLInputElement = createElement('input', {
                 id: this.parentID + 'radio' + key + type[i],
@@ -690,7 +695,7 @@ export class CalculatedField implements IAction {
                 expanding: (args: ExpandEventArgs) => {
                     if (args.element.querySelectorAll('.e-radio-wrapper').length === 0) {
                         Object.keys(this.parent.engineModule.fieldList).forEach((key: string) => {
-                            let type: string[] = [SUM, COUNT, AVG, MIN, MAX];
+                            let type: string[] = [SUM, COUNT, AVG, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
                             let radiobutton: RadioButton;
                             if (key === args.element.querySelector('[data-field').getAttribute('data-field')) {
                                 for (let i: number = 0; i < 5; i++) {

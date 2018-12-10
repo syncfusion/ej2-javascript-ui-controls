@@ -4,12 +4,11 @@ import { BridgeDirection } from '../enum/enum';
 import { ConnectorModel } from './connector-model';
 import { Rect } from '../primitives/rect';
 import { Diagram } from '../diagram';
-import { findAngle, Intersection, LengthFraction, BridgeSegment, Bridge } from '../utility/connector';
-import { intersect3 } from '../utility/diagram-util';
+import { findAngle, LengthFraction, BridgeSegment, Bridge } from '../utility/connector';
+import { intersect2 } from '../utility/diagram-util';
 import { ArcSegment } from '../utility/connector';
 import { Connector } from './connector';
 import { canBridge } from '../utility/constraints-util';
-import { Segment } from '../interaction/scroller';
 
 /**
  * ConnectorBridging defines the bridging behavior
@@ -258,7 +257,7 @@ export class ConnectorBridging {
         bridgeDirection: BridgeDirection): PointModel[] {
         let points1: PointModel[] = [];
         for (let i: number = 0; i < pts.length - 1; i++) {
-            let point: PointModel = this.intersect2(startPt, endPt, pts[i], pts[i + 1]);
+            let point: PointModel = intersect2(startPt, endPt, pts[i], pts[i + 1]);
             if (!this.isEmptyPoint(point)) {
                 let angle: number = this.angleCalculation(startPt, endPt);
                 let angle1: number = this.angleCalculation(pts[i], pts[i + 1]);
@@ -295,23 +294,6 @@ export class ConnectorBridging {
             temp = roundedAngle;
         }
         return temp;
-    }
-
-    private intersect2(start1: PointModel, end1: PointModel, start2: PointModel, end2: PointModel): PointModel {
-        let point: PointModel = { x: 0, y: 0 };
-        let lineUtil1: Segment = this.getLineSegment(start1.x, start1.y, end1.x, end1.y);
-        let lineUtil2: Segment = this.getLineSegment(start2.x, start2.y, end2.x, end2.y);
-        let line3: Intersection = intersect3(lineUtil1, lineUtil2);
-        if (line3.enabled) {
-            return line3.intersectPt;
-        } else {
-            return point;
-        }
-
-    }
-    /** @private */
-    public getLineSegment(x1: number, y1: number, x2: number, y2: number): Segment {
-        return { 'x1': Number(x1) || 0, 'y1': Number(y1) || 0, 'x2': Number(x2) || 0, 'y2': Number(y2) || 0 };
     }
 
     private isEmptyPoint(point: PointModel): boolean {

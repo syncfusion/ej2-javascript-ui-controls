@@ -1,6 +1,6 @@
 import { createElement, closest, Draggable, extend, formatUnit, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { addClass, remove, removeClass, setStyleAttribute } from '@syncfusion/ej2-base';
-import { DragEventArgs, EJ2Instance } from '../base/interface';
+import { DragEventArgs } from '../base/interface';
 import { ActionBase } from '../actions/action-base';
 import * as events from '../base/constant';
 import * as util from '../base/util';
@@ -12,7 +12,7 @@ import * as cls from '../base/css-constant';
 
 export class DragAndDrop extends ActionBase {
     public wireDragEvent(element: HTMLElement, isAllDay: boolean): void {
-        let dragAreaTarget: string = isAllDay ? cls.DATE_HEADER_WRAP_CLASS : cls.CONTENT_WRAP_CLASS;
+        let dragAreaTarget: string = cls.CURRENT_PANEL_CLASS;
         new Draggable(element, {
             abort: '.' + cls.EVENT_RESIZE_CLASS,
             clone: true,
@@ -56,24 +56,34 @@ export class DragAndDrop extends ActionBase {
             this.actionObj.interval : this.actionObj.cellWidth;
         let cellHeight: number = (this.actionObj.cellHeight / slotInterval) * this.actionObj.interval;
         let leftOffset: number = this.parent.enableRtl ? parseInt(<string>e.left, 10) : Math.abs(parseInt(<string>e.left, 10));
-        let leftValue: string;
-        if (this.parent.currentView === 'Month' || this.actionObj.clone.classList.contains(cls.ALLDAY_APPOINTMENT_CLASS)) {
+        let leftValue: string = formatUnit(0);
+        if (this.parent.currentView === 'Month') {
             leftValue = e.left as string;
-        } else {
+        }
+        if (this.parent.activeView.isTimelineView()) {
             leftValue = formatUnit(Math.floor(leftOffset / cellWidth) * cellWidth);
         }
         let topValue: string;
         if ((this.parent.activeView.isTimelineView() || !this.parent.timeScale.enable ||
-            this.actionObj.clone.offsetParent.classList.contains(cls.MORE_EVENT_POPUP_CLASS))) {
+            (!isNullOrUndefined(this.actionObj.clone.offsetParent) &&
+                this.actionObj.clone.offsetParent.classList.contains(cls.MORE_EVENT_POPUP_CLASS)))) {
             topValue = formatUnit(this.actionObj.clone.offsetTop);
         } else if (this.parent.currentView === 'Month') {
             topValue = formatUnit(0);
-        } else if (this.actionObj.element.classList.contains(cls.ALLDAY_APPOINTMENT_CLASS) &&
-            !this.actionObj.clone.classList.contains(cls.ALLDAY_APPOINTMENT_CLASS)) {
-            topValue = formatUnit((<HTMLElement>this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS)).scrollTop);
         } else if (this.actionObj.clone.classList.contains(cls.ALLDAY_APPOINTMENT_CLASS)) {
             topValue = formatUnit((<HTMLElement>this.parent.element.querySelector('.' + cls.ALLDAY_ROW_CLASS)).offsetTop);
+            setStyleAttribute(this.actionObj.clone, {
+                width: formatUnit(Math.ceil(this.actionObj.clone.offsetWidth / this.actionObj.cellWidth) * this.actionObj.cellWidth)
+            });
         } else {
+            if (this.actionObj.element.classList.contains(cls.ALLDAY_APPOINTMENT_CLASS) &&
+                !this.actionObj.clone.classList.contains(cls.ALLDAY_APPOINTMENT_CLASS)) {
+                setStyleAttribute(this.actionObj.clone, {
+                    height: formatUnit(this.actionObj.cellHeight),
+                    width: formatUnit(this.actionObj.cellWidth),
+                    pointerEvents: 'none'
+                });
+            }
             topValue = formatUnit(Math.ceil(parseInt(<string>e.top, 10) / cellHeight) * cellHeight);
             let scrollHeight: number = this.parent.element.querySelector('.e-content-wrap').scrollHeight;
             let cloneBottom: number = parseInt(topValue, 10) + this.actionObj.clone.offsetHeight;
@@ -148,6 +158,7 @@ export class DragAndDrop extends ActionBase {
             }
         }
         this.updateScrollPosition(e);
+        this.updateNavigatingPosition(e);
         this.updateDraggingDateTime(e);
         let dragArgs: DragEventArgs = { data: eventObj, event: e, element: this.actionObj.element };
         this.parent.trigger(events.drag, dragArgs);
@@ -173,7 +184,7 @@ export class DragAndDrop extends ActionBase {
         this.saveChangedData(dragArgs);
     }
 
-    public updateDraggingDateTime(e: MouseEvent & TouchEvent): void {
+    public updateNavigatingPosition(e: MouseEvent & TouchEvent): void {
         if (this.actionObj.navigation.enable) {
             let currentDate: Date = new Date();
             if (isNullOrUndefined(this.actionObj.navigationInterval)) {
@@ -187,13 +198,18 @@ export class DragAndDrop extends ActionBase {
                             if (start === end) {
                                 currentDate = new Date();
                                 this.viewNavigation(e);
+                                this.updateDraggingDateTime(e);
                             }
                         }
                     },
                     this.actionObj.navigation.timeDelay);
             }
         }
-        if (this.actionObj.clone.offsetParent.classList.contains(cls.MORE_EVENT_POPUP_CLASS)) {
+    }
+
+    public updateDraggingDateTime(e: MouseEvent & TouchEvent): void {
+        if (!isNullOrUndefined(this.actionObj.clone.offsetParent) &&
+            this.actionObj.clone.offsetParent.classList.contains(cls.MORE_EVENT_POPUP_CLASS)) {
             this.morePopupEventDragging(e);
         } else if (this.parent.activeView.isTimelineView()) {
             if (this.parent.currentView === 'TimelineMonth') {
@@ -308,7 +324,10 @@ export class DragAndDrop extends ActionBase {
     }
 
     private calculateVerticalTime(e: MouseEvent & TouchEvent): void {
-        if (isNullOrUndefined(e.target) || (e.target && isNullOrUndefined(closest((<HTMLTableCellElement>e.target), 'tr')))) {
+        if (isNullOrUndefined(this.actionObj.target) ||
+            (this.actionObj.target && isNullOrUndefined(closest((<HTMLTableCellElement>this.actionObj.target), 'tr'))) ||
+            (!(closest(this.actionObj.target as Element, 'td').classList.contains(cls.WORK_CELLS_CLASS)) &&
+                !(closest(this.actionObj.target as Element, 'td').classList.contains(cls.ALLDAY_CELLS_CLASS)))) {
             return;
         }
         if (this.parent.activeViewOptions.timeScale.enable) {
@@ -319,7 +338,8 @@ export class DragAndDrop extends ActionBase {
         let eventStart: Date = eventObj[this.parent.eventFields.startTime] as Date;
         let eventEnd: Date = eventObj[this.parent.eventFields.endTime] as Date;
         let eventDuration: number = eventEnd.getTime() - eventStart.getTime();
-        let offsetTop: number = Math.floor(this.actionObj.clone.offsetTop / this.actionObj.cellHeight) * this.actionObj.cellHeight;
+        let offsetTop: number = Math.floor(parseInt(this.actionObj.clone.style.top, 0) / this.actionObj.cellHeight)
+            * this.actionObj.cellHeight;
         offsetTop = offsetTop < 0 ? 0 : offsetTop;
         if (this.scrollEdges.top || this.scrollEdges.bottom) {
             offsetTop = this.scrollEdges.top ? dragArea.scrollTop :
@@ -329,7 +349,7 @@ export class DragAndDrop extends ActionBase {
         }
         let rowIndex: number = offsetTop / this.actionObj.cellHeight;
         let heightPerMinute: number = this.actionObj.cellHeight / this.actionObj.slotInterval;
-        let diffInMinutes: number = this.actionObj.clone.offsetTop - offsetTop;
+        let diffInMinutes: number = parseInt(this.actionObj.clone.style.top, 0) - offsetTop;
         let isAllDayDrag: boolean = this.actionObj.clone.classList.contains(cls.ALLDAY_APPOINTMENT_CLASS);
         let tr: HTMLElement;
         if (isAllDayDrag) {
@@ -338,7 +358,11 @@ export class DragAndDrop extends ActionBase {
             let trCollections: NodeListOf<HTMLTableRowElement> = this.parent.getContentTable().querySelectorAll('tr');
             tr = trCollections.item(rowIndex) as HTMLElement;
         }
-        let index: number = (closest((<HTMLTableCellElement>this.actionObj.target), 'td') as HTMLTableCellElement).cellIndex;
+        let index: number;
+        if (closest(this.actionObj.target as Element, 'td').classList.contains(cls.WORK_CELLS_CLASS) ||
+            closest(this.actionObj.target as Element, 'td').classList.contains(cls.ALLDAY_CELLS_CLASS)) {
+            index = (closest((<HTMLTableCellElement>this.actionObj.target), 'td') as HTMLTableCellElement).cellIndex;
+        }
         let colIndex: number = isNullOrUndefined(index) ? (<HTMLTableCellElement>closest(this.actionObj.clone, 'td')).cellIndex : index;
         this.actionObj.index = colIndex;
         let td: HTMLElement = tr.childNodes.item(colIndex) as HTMLElement;
@@ -381,21 +405,12 @@ export class DragAndDrop extends ActionBase {
     }
 
     private swapDragging(e: MouseEvent & TouchEvent): void {
-        let colIndex: number = (closest((<HTMLTableCellElement>e.target), 'td') as HTMLTableCellElement).cellIndex;
-        let setDragArea: Function = (isAllDay: boolean) => {
-            let dragAreaTarget: string = isAllDay ? cls.DATE_HEADER_WRAP_CLASS : cls.CONTENT_WRAP_CLASS;
-            let dragObj: Draggable = (this.actionObj.element as EJ2Instance).ej2_instances[0] as Draggable;
-            dragObj.dragArea = this.parent.eventDragArea ?
-                document.querySelector(this.parent.eventDragArea) as HTMLElement :
-                this.parent.element.querySelector('.' + dragAreaTarget) as HTMLElement;
-            dragObj.dataBind();
-        };
-        if (closest(e.target as Element, '.' + cls.DATE_HEADER_WRAP_CLASS) &&
+        let colIndex: number = (closest((<HTMLTableCellElement>this.actionObj.target), 'td') as HTMLTableCellElement).cellIndex;
+        if (closest(this.actionObj.target as Element, '.' + cls.DATE_HEADER_WRAP_CLASS) &&
             !closest(this.actionObj.clone, '.' + cls.ALLDAY_APPOINTMENT_WRAPPER_CLASS)) {
             addClass([this.actionObj.clone], cls.ALLDAY_APPOINTMENT_CLASS);
             this.appendCloneElement(this.getEventWrapper(colIndex));
             this.actionObj.isAllDay = true;
-            setDragArea(this.actionObj.isAllDay);
             let eventHeight: number = this.getAllDayEventHeight();
             let allDayElement: HTMLElement[] =
                 [].slice.call(this.parent.element.querySelectorAll('.' + cls.ALLDAY_CELLS_CLASS + ':first-child'));
@@ -408,16 +423,14 @@ export class DragAndDrop extends ActionBase {
                 top: formatUnit((<HTMLElement>this.parent.element.querySelector('.' + cls.ALLDAY_ROW_CLASS)).offsetTop)
             });
         }
-        if (closest(e.target as Element, '.' + cls.WORK_CELLS_CLASS) && !closest(this.actionObj.clone, '.' + cls.DAY_WRAPPER_CLASS)) {
+        if (closest(this.actionObj.target as Element, '.' + cls.WORK_CELLS_CLASS) &&
+            !closest(this.actionObj.clone, '.' + cls.DAY_WRAPPER_CLASS)) {
             removeClass([this.actionObj.clone], cls.ALLDAY_APPOINTMENT_CLASS);
             this.appendCloneElement(this.getEventWrapper(colIndex));
             this.actionObj.isAllDay = false;
-            setDragArea(this.actionObj.isAllDay);
-            let cursorElement: HTMLElement = this.getCursorElement(e);
             let height: number = (this.actionObj.element.offsetHeight === 0) ? this.actionObj.height : this.actionObj.element.offsetHeight;
             setStyleAttribute(this.actionObj.clone, {
                 left: formatUnit(0),
-                top: formatUnit(cursorElement.offsetTop),
                 height: formatUnit(height),
                 width: formatUnit(this.actionObj.cellWidth)
             });
@@ -432,7 +445,7 @@ export class DragAndDrop extends ActionBase {
         let eventObj: { [key: string]: Object } = extend({}, this.actionObj.event, null, true) as { [key: string]: Object };
         let eventDuration: number = (<Date>eventObj[this.parent.eventFields.endTime]).getTime() -
             (<Date>eventObj[this.parent.eventFields.startTime]).getTime();
-        let td: HTMLTableCellElement = closest((<HTMLTableCellElement>e.target), 'td') as HTMLTableCellElement;
+        let td: HTMLTableCellElement = closest((<HTMLTableCellElement>this.actionObj.target), 'td') as HTMLTableCellElement;
         let tr: HTMLTableRowElement = td.parentElement as HTMLTableRowElement;
         let colIndex: number = (tr.rowIndex * tr.childNodes.length) + td.cellIndex;
         this.actionObj.index = colIndex;
@@ -456,7 +469,8 @@ export class DragAndDrop extends ActionBase {
         if (!targetWrapper.querySelector('.' + cls.CLONE_ELEMENT_CLASS)) {
             this.appendCloneElement(targetWrapper as HTMLElement);
         }
-        let timeString: string = td.getAttribute('data-date') || (<Date>eventObj[this.parent.eventFields.startTime]).getTime().toString();
+        let timeString: string = outerWrapper.item(colIndex).getAttribute('data-date') ||
+            (<Date>eventObj[this.parent.eventFields.startTime]).getTime().toString();
         let dragStart: Date = new Date(parseInt(timeString, 10));
         let dragEnd: Date = new Date(dragStart.getTime());
         if (this.parent.enableRtl) {
@@ -525,16 +539,28 @@ export class DragAndDrop extends ActionBase {
 
     private calculateTimelineDate(e: MouseEvent & TouchEvent): void {
         let cloneIndex: number = 0;
+        let rightOffset: number; let leftOffset: number;
+        let viewEle: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
         let eventObj: { [key: string]: Object } = extend({}, this.actionObj.event, null, true) as { [key: string]: Object };
         let eventDuration: number = (<Date>eventObj[this.parent.eventFields.endTime]).getTime() -
             (<Date>eventObj[this.parent.eventFields.startTime]).getTime();
         if (this.parent.enableRtl) {
             cloneIndex = (Math.floor(parseInt(this.actionObj.clone.style.right, 10))) / this.actionObj.cellWidth;
-            let rightOffset: number = Math.abs(parseInt(this.actionObj.clone.style.left, 10)) - this.actionObj.clone.offsetWidth;
+            rightOffset = Math.abs(parseInt(this.actionObj.clone.style.left, 10)) - this.actionObj.clone.offsetWidth;
+            if (this.scrollEdges.left || this.scrollEdges.right) {
+                rightOffset = viewEle.scrollWidth - viewEle.scrollLeft - this.actionObj.clone.offsetWidth;
+                if (this.scrollEdges.right) {
+                    rightOffset = rightOffset - viewEle.offsetWidth + this.actionObj.clone.offsetWidth;
+                }
+            }
             this.actionObj.clone.style.right = formatUnit(rightOffset);
         } else {
             cloneIndex = Math.floor(this.actionObj.clone.offsetLeft / this.actionObj.cellWidth);
-            let leftOffset: number = parseInt(this.actionObj.clone.style.left, 10);
+            leftOffset = parseInt(this.actionObj.clone.style.left, 10);
+            if (this.scrollEdges.left || this.scrollEdges.right) {
+                leftOffset = this.scrollEdges.left ? viewEle.scrollLeft :
+                    viewEle.scrollLeft + viewEle.offsetWidth - this.actionObj.clone.offsetWidth;
+            }
             this.actionObj.clone.style.left = formatUnit(leftOffset);
         }
         cloneIndex = this.getIndex(cloneIndex);
@@ -556,7 +582,9 @@ export class DragAndDrop extends ActionBase {
     private calculateResourceGroupingPosition(e: MouseEvent & TouchEvent): void {
         let dragArea: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
         let trCollection: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-content-wrap .e-content-table tr:not(.e-hidden)');
-        let rowIndex: number = Math.floor(Math.floor((this.actionObj.Y + dragArea.scrollTop) -
+        let translateY: number = util.getTranslateY(dragArea.querySelector('table'));
+        translateY = (isNullOrUndefined(translateY)) ? 0 : translateY;
+        let rowIndex: number = Math.floor(Math.floor((this.actionObj.Y + (dragArea.scrollTop - translateY)) -
             dragArea.getBoundingClientRect().top) / this.actionObj.cellHeight);
         rowIndex = (rowIndex < 0) ? 0 : (rowIndex > trCollection.length - 1) ? trCollection.length - 1 : rowIndex;
         this.actionObj.index = rowIndex;

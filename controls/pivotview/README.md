@@ -11,7 +11,7 @@ The pivot grid is a multi-dimensional data visualization component built on top 
 
 ## Setup
 
-To install Pivot Grid and its dependent packages, use the following command
+To install Pivot Grid and its dependent packages, use the following command.
 
 ```sh
 npm install @syncfusion/ej2-pivotview

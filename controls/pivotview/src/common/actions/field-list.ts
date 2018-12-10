@@ -53,6 +53,7 @@ export class FieldList implements IAction {
                 values: [],
                 filters: []
             },
+            allowDeferLayoutUpdate: this.parent.allowDeferLayoutUpdate,
             renderMode: 'Popup',
             allowCalculatedField: this.parent.allowCalculatedField,
             enableRtl: this.parent.enableRtl,
@@ -69,11 +70,12 @@ export class FieldList implements IAction {
                 clearTimeout(this.timeOutObj);
                 this.timeOutObj = setTimeout(() => {
                     if (this.parent.grid && this.parent.grid.element) {
+                        let actWidth: number = this.parent.grid.element.offsetWidth < 400 ? 400 : this.parent.grid.element.offsetWidth;
                         setStyleAttribute(this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement, {
                             left: formatUnit(this.parent.enableRtl ?
-                                -Math.abs((this.parent.isAdaptive ? 500 : this.parent.grid.element.offsetWidth) -
+                                -Math.abs((actWidth) -
                                     (this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth) :
-                                (this.parent.isAdaptive ? 500 : this.parent.grid.element.offsetWidth) -
+                                (actWidth) -
                                 (this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth)
                         });
                         if (this.parent.enableRtl) {

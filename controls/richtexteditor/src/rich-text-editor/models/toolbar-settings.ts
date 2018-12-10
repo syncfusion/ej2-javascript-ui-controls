@@ -7,13 +7,13 @@ export const predefinedItems: string[] = ['Bold', 'Italic', 'Underline', '|', 'F
     'OrderedList', 'UnorderedList', '|', 'CreateLink', 'Image', '|', 'SourceCode', 'Undo', 'Redo'];
 
 export const fontFamily: IDropDownItemModel[] = [
-    { text: 'Segoe UI', value: 'Segoe UI', class: 'e-segoe-ui' },
-    { text: 'Arial', value: 'Arial,Helvetica,sans-serif', class: 'e-arial' },
-    { text: 'Georgia', value: 'Georgia,serif', class: 'e-georgia' },
-    { text: 'Impact', value: 'Impact,Charcoal,sans-serif', class: 'e-impact' },
-    { text: 'Tahoma', value: 'Tahoma,Geneva,sans-serif', class: 'e-tahoma' },
-    { text: 'Times New Roman', value: 'Times New Roman,Times,serif', class: 'e-times-new-roman' },
-    { text: 'Verdana', value: 'Verdana,Geneva,sans-serif', class: 'e-verdana' }
+    { text: 'Segoe UI', value: 'Segoe UI', cssClass: 'e-segoe-ui' },
+    { text: 'Arial', value: 'Arial,Helvetica,sans-serif', cssClass: 'e-arial' },
+    { text: 'Georgia', value: 'Georgia,serif', cssClass: 'e-georgia' },
+    { text: 'Impact', value: 'Impact,Charcoal,sans-serif', cssClass: 'e-impact' },
+    { text: 'Tahoma', value: 'Tahoma,Geneva,sans-serif', cssClass: 'e-tahoma' },
+    { text: 'Times New Roman', value: 'Times New Roman,Times,serif', cssClass: 'e-times-new-roman' },
+    { text: 'Verdana', value: 'Verdana,Geneva,sans-serif', cssClass: 'e-verdana' }
 ];
 
 export const fontSize: IDropDownItemModel[] = [
@@ -27,13 +27,13 @@ export const fontSize: IDropDownItemModel[] = [
 ];
 
 export const formatItems: IDropDownItemModel[] = [
-    { text: 'Paragraph', value: 'P', class: 'e-paragraph' },
-    { text: 'Code', value: 'Pre', class: 'e-code' },
-    { text: 'Quotation', value: 'BlockQuote', class: 'e-quote' },
-    { text: 'Heading 1', value: 'H1', class: 'e-h1' },
-    { text: 'Heading 2', value: 'H2', class: 'e-h2' },
-    { text: 'Heading 3', value: 'H3', class: 'e-h3' },
-    { text: 'Heading 4', value: 'H4', class: 'e-h4' }
+    { text: 'Paragraph', value: 'P', cssClass: 'e-paragraph' },
+    { text: 'Code', value: 'Pre', cssClass: 'e-code' },
+    { text: 'Quotation', value: 'BlockQuote', cssClass: 'e-quote' },
+    { text: 'Heading 1', value: 'H1', cssClass: 'e-h1' },
+    { text: 'Heading 2', value: 'H2', cssClass: 'e-h2' },
+    { text: 'Heading 3', value: 'H3', cssClass: 'e-h3' },
+    { text: 'Heading 4', value: 'H4', cssClass: 'e-h4' }
 ];
 
 export const fontColor: { [key: string]: string[] } = {

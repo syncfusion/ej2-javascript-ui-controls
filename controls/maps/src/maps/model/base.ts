@@ -257,13 +257,31 @@ export class ColorMappingSettings extends ChildProperty<ColorMappingSettings> {
      * @default null
      */
     @Property(null)
-    public color: string;
+    public color: string | string[];
+    /**
+     * To configure min opacity
+     * @default null
+     */
+    @Property(null)
+    public minOpacity: number;
+    /**
+     * To configure max opacity
+     * @default null
+     */
+    @Property(null)
+    public maxOpacity: number;
     /**
      * To configure labels
      * @default null
      */
     @Property(null)
     public label: string;
+    /**
+     * To enable or disable the legend
+     * @default true
+     */
+    @Property(true)
+    public showLegend: boolean;
 }
 /**
  * To configure the selection settings
@@ -798,11 +816,39 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public fill: string;
 
     /**
+     * Specifies the opacity of legend shape color
+     * @default 1
+     */
+    @Property(1)
+    public opacity: number;
+
+    /**
      * Customize the legend mode.
      * @default Default
      */
     @Property('Default')
     public mode: LegendMode;
+
+    /**
+     * Enable or disable the visibility of legend
+     * @default null
+     */
+    @Property(null)
+    public showLegendPath: string;
+
+    /**
+     * Bind the dataSource field for legend
+     * @default null
+     */
+    @Property(null)
+    public valuePath: string;
+
+    /**
+     * Removes the duplicate legend item
+     * @default false
+     */
+    @Property(false)
+    public removeDuplicateLegend: boolean;
 
 }
 /**
@@ -1144,7 +1190,7 @@ export class LayerSettings extends ChildProperty<LayerSettings> {
      * @default 'name'
      */
     @Property('name')
-    public shapePropertyPath: string;
+    public shapePropertyPath: string| string[];
     /**
      * Specifies the animation duration for the layer.
      * @default 0

@@ -1,13 +1,13 @@
 @include export-module('datepicker-theme') {
   #{&}.e-datepicker {
     &.e-popup-wrapper {
-      border: $popup-border;
-      box-shadow: $popup-box-shadow;
+      border: $datepicker-popup-border;
+      box-shadow: $datepicker-popup-box-shadow;
    }
 
     & .e-calendar {
-      background-color: $popup-bg-color;
-      border: $calendar-border-style;
+      background-color: $datepicker-popup-bg-color;
+      border: $datepicker-calendar-border-style;
    }
 
   }

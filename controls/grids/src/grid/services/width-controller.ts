@@ -25,9 +25,14 @@ export class ColumnWidthService {
         }
         if (this.parent.detailTemplate || this.parent.childGrid) {
             this.setColumnWidth(new Column({ width: '30px' }), i);
+            i++;
+        }
+        if (this.parent.isRowDragable()) {
+            this.setColumnWidth(new Column({ width: '30px' }), i);
+            i++;
         }
         (<Column[]>this.parent.getColumns()).forEach((column: Column, index: number) => {
-            this.setColumnWidth(column, wFlag ? undefined : index);
+            this.setColumnWidth(column, wFlag && this.parent.enableColumnVirtualization ? undefined : index + i);
         });
     }
 
@@ -48,7 +53,7 @@ export class ColumnWidthService {
         let webstore: string = 'webstore';
         if (typeof (width) === 'string' && width.indexOf('%') !== -1 &&
             !(Boolean(window[chrome]) && Boolean(window[chrome][webstore])) && this.parent.allowGrouping) {
-            let elementWidth : number = this.parent.element.offsetWidth;
+            let elementWidth: number = this.parent.element.offsetWidth;
             width = parseInt(width, 10) / 100 * (elementWidth);
         }
         let header: Element = this.parent.getHeaderTable();
@@ -144,7 +149,7 @@ export class ColumnWidthService {
         let movableWidth: string = formatUnit(this.getTableWidth(columns));
         if (this.parent.getHeaderContent().querySelector('.e-movableheader').firstElementChild) {
             (this.parent.getHeaderContent().querySelector('.e-movableheader').firstElementChild as HTMLTableElement).style.width
-            = movableWidth;
+                = movableWidth;
         }
         (this.parent.getContent().querySelector('.e-movablecontent').firstElementChild as HTMLTableElement).style.width =
             movableWidth;

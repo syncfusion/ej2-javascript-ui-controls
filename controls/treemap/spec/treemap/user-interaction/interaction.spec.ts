@@ -5,6 +5,7 @@ import { MouseEvents } from '../base/events.spec';
 import { ILoadedEventArgs } from '../../../src/treemap/model/interface';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { jobData, sportsData } from '../base/data.spec';
+import { electionData } from '../base/election.spec';
 TreeMap.Inject(TreeMapHighlight, TreeMapSelection);
 
 let jobDataSource: Object[] = jobData;
@@ -99,6 +100,72 @@ describe('TreeMap component Spec', () => {
             treemap.refresh();
         });
     });
+
+    describe('Checking with drilldown spec to generate Legend in each level', () => {
+        let element: Element;
+        let treemap: TreeMap;
+        let prevent: Function = (): void => { };
+        let trigger: MouseEvents = new MouseEvents();
+        let id: string = 'drill-container';
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '600px';
+            (element as HTMLDivElement).style.height = '400px';
+            document.body.appendChild(element);
+            treemap = new TreeMap({
+                border: {
+                    color: 'red',
+                    width: 2
+                },                
+                dataSource: jobData,
+                enableDrillDown: true,
+                palette: ['green'],
+                weightValuePath: 'EmployeesCount',
+                legendSettings:{
+                    visible : true,
+                    position:'Top',
+                    mode:'Default'
+                },
+                leafItemSettings: {
+                    labelPath: 'JobGroup',
+                    fill: '#6699cc',
+                    labelPosition: 'BottomRight',
+                    border: { color: 'black', width: 2 }
+                },                
+                levels: [
+                    { groupPath: 'Country', fill: '#336699', border: { color: 'black', width: 2 } },
+                    { groupPath: 'JobDescription', fill: '#336699', border: { color: 'black', width: 2 } }
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            treemap.destroy();
+            document.getElementById(id).remove();
+        });
+
+        it('Checking with drilldown to generate legend for each levels ', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                debugger
+                let rectEle: Element = document.getElementById('drill-container_Level_Index_0_Item_Index_0_RectPath');
+                let eventObj: Object = {
+                    target: rectEle,
+                    type: 'mousedown',
+                    preventDefault: prevent,
+                };
+
+                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+                rectEle = document.getElementById('drill-container_Level_Index_1_Item_Index_1_RectPath');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousedown',
+                    preventDefault: prevent,
+                };
+                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+            };            
+            treemap.refresh();
+        });        
+    });
+
 
     describe('TreeMap highlight spec', () => {
         let element: Element;
@@ -294,69 +361,6 @@ describe('TreeMap component Spec', () => {
             treemap.refresh();
         });
 
-        it('Checking with selection - Child mode', () => {
-            treemap.loaded = (args: ILoadedEventArgs) => {
-                let layoutID: string = args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout';
-                let layoutEle: Element = document.getElementById(layoutID);
-                let rectEle: Element; let eventObj: Object = {};
-                rectEle = layoutEle.childNodes[1] as Element;
-                eventObj = {
-                    target: rectEle,
-                    type: 'mousedown',
-                    preventDefault: prevent,
-                    pageX: rectEle.getBoundingClientRect().left,
-                    pageY: (rectEle.getBoundingClientRect().top + 10)
-                };
-                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
-                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
-            };
-            treemap.selectionSettings.enable = true;
-            treemap.selectionSettings.mode = 'Child';
-            treemap.refresh();
-        });
-
-        it('Checking with selection - Parent mode', () => {
-            treemap.loaded = (args: ILoadedEventArgs) => {
-                let layoutID: string = args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout';
-                let layoutEle: Element = document.getElementById(layoutID);
-                let rectEle: Element; let eventObj: Object = {};
-                rectEle = layoutEle.childNodes[2] as Element;
-                eventObj = {
-                    target: rectEle,
-                    type: 'mousedown',
-                    preventDefault: prevent,
-                    pageX: rectEle.getBoundingClientRect().left,
-                    pageY: (rectEle.getBoundingClientRect().top + 10)
-                };
-                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
-                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
-            };
-            treemap.selectionSettings.enable = true;
-            treemap.selectionSettings.mode = 'Parent';
-            treemap.refresh();
-        });
-
-        it('Checking with selection - All mode', () => {
-            treemap.loaded = (args: ILoadedEventArgs) => {
-                let layoutID: string = args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout';
-                let layoutEle: Element = document.getElementById(layoutID);
-                let rectEle: Element; let eventObj: Object = {};
-                rectEle = layoutEle.childNodes[3] as Element;
-                eventObj = {
-                    target: rectEle,
-                    type: 'mousedown',
-                    preventDefault: prevent,
-                    pageX: rectEle.getBoundingClientRect().left,
-                    pageY: (rectEle.getBoundingClientRect().top + 10)
-                };
-                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
-                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
-            };
-            treemap.selectionSettings.enable = true;
-            treemap.selectionSettings.mode = 'All';
-            treemap.refresh();
-        });
-
         it('Checking with highlight and selection together ', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 let layoutID: string = args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout';
@@ -418,6 +422,567 @@ describe('TreeMap component Spec', () => {
                 };
                 treemap.clickOnTreeMap(<PointerEvent>eventObj);
             };
+            treemap.refresh();
+        });
+    });
+
+    describe('TreeMap highlight and selection spec with legendsettings', () => {
+        let element: Element;
+        let treemap: TreeMap;
+        let prevent: Function = (): void => { };
+        let trigger: MouseEvents = new MouseEvents();
+        let id: string = 'container';
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '600px';
+            (element as HTMLDivElement).style.height = '400px';
+            document.body.appendChild(element);
+            treemap = new TreeMap({
+                legendSettings: {
+                    visible: true,
+                    mode: "Default",
+                    position: 'Top',
+                    shape: 'Rectangle',
+                    height: '10'
+                },
+                titleSettings: {
+                    text: 'Tree Map control',
+                },
+                dataSource: electionData,
+                weightValuePath: 'Population',
+                rangeColorValuePath: 'WinPercentage',
+                equalColorValuePath: 'Winner',
+                leafItemSettings: {
+                    labelPath: 'State',
+                    fill: '#6699cc',
+                    border: { color: 'white', width: 0.5 },
+                    colorMapping: [
+                        {
+                            value: 'Trump', color: '#D84444'
+                        },
+                        {
+                            value: 'Clinton', color: '#316DB5'
+                        }
+                    ]
+                },
+                highlightSettings: { fill: 'orange' },
+                selectionSettings: { fill: 'green' }
+            }, '#' + id);
+        });
+        afterAll(() => {
+            treemap.destroy();
+            document.getElementById(id).remove();
+        });
+
+        it('Checking with highlight enable on outside of the node', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let rectEle: Element; let eventObj: Object = {};
+                rectEle = document.getElementById(args.treemap.element.id + '_TreeMap_Border');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseMoveOnTreeMap(<PointerEvent>eventObj);
+            };
+            treemap.highlightSettings.enable = true;
+            treemap.refresh();
+        });
+
+        it('Checking with node highlight enable with default mode', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let layoutID: string = args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout';
+                let layoutEle: Element = document.getElementById(layoutID);
+                let rectEle: Element; let eventObj: Object = {};
+                rectEle = layoutEle.childNodes[0] as Element;
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseMoveOnTreeMap(<PointerEvent>eventObj);
+            };
+            treemap.highlightSettings.enable = true;
+            treemap.refresh();
+        });
+
+        it('Checking with multi node highlight enable with default mode', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let layoutID: string = args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout';
+                let layoutEle: Element = document.getElementById(layoutID);
+                let rectEle: Element; let eventObj: Object = {};
+                rectEle = layoutEle.childNodes[0] as Element;
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseMoveOnTreeMap(<PointerEvent>eventObj);
+                rectEle = document.getElementById('container_Level_Index_0_Item_Index_2_RectPath');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseMoveOnTreeMap(<PointerEvent>eventObj);
+            };
+            treemap.highlightSettings.enable = true;
+            treemap.refresh();
+        });
+
+        it('Checking with node selection enable with default mode', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let layoutID: string = args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout';
+                let layoutEle: Element = document.getElementById(layoutID);
+                let rectEle: Element; let eventObj: Object = {};
+                rectEle = layoutEle.childNodes[0] as Element;
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousedown',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+            };
+            treemap.selectionSettings.enable = true;
+            treemap.refresh();
+        });
+        
+        it('Checking with highlight and selection together in nodes of the treemap', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let layoutID: string = args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout';
+                let layoutEle: Element = document.getElementById(layoutID);
+                let rectEle: Element; let eventObj: Object = {};
+                rectEle = layoutEle.childNodes[0] as Element;
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseMoveOnTreeMap(<PointerEvent>eventObj);
+                rectEle = document.getElementById(args.treemap.element.id + '_TreeMap_Border');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseMoveOnTreeMap(<PointerEvent>eventObj);
+                eventObj['type'] = 'mousedown';
+                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+                rectEle = layoutEle.childNodes[2] as Element;
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseMoveOnTreeMap(<PointerEvent>eventObj);
+            };
+            treemap.highlightSettings.enable = true;
+            treemap.selectionSettings.enable = true;
+            treemap.refresh();
+        });
+        
+        it('', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let rectEle: Element; let eventObj: Object = {};
+                rectEle = document.getElementById(args.treemap.element.id + '_TreeMap_Border');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseMoveOnTreeMap(<PointerEvent>eventObj);
+                rectEle = document.getElementById(args.treemap.element.id + '_Level_Index_0_Item_Index_18_RectPath');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseMoveOnTreeMap(<PointerEvent>eventObj);
+                rectEle = document.getElementById(args.treemap.element.id + '_TreeMap_Border');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseMoveOnTreeMap(<PointerEvent>eventObj);
+            };
+            treemap.highlightSettings.enable = true;
+            treemap.selectionSettings.enable = true;
+            treemap.refresh();
+        });
+        
+        it('Checking with legend highlight enable with default mode', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let rectEle: Element; let eventObj: Object = {};
+                rectEle = document.getElementById(args.treemap.element.id + '_Legend_Shape_Index_1');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseMoveOnTreeMap(<PointerEvent>eventObj);
+            };
+            treemap.highlightSettings.enable = true;
+            treemap.refresh();
+        });
+        
+        
+        it('Checking with multi legend highlight enable with default mode', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let rectEle: Element; let eventObj: Object = {};
+                rectEle = document.getElementById(args.treemap.element.id + '_Legend_Shape_Index_1');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseMoveOnTreeMap(<PointerEvent>eventObj);
+                rectEle = document.getElementById(args.treemap.element.id + '_Legend_Shape_Index_0');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseMoveOnTreeMap(<PointerEvent>eventObj);
+            };
+            treemap.highlightSettings.enable = true;
+            treemap.refresh();
+        });
+        
+        it('Checking with legend highlight enable with intreactive mode', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let rectEle: Element; let eventObj: Object = {};
+                rectEle = document.getElementById(args.treemap.element.id + '_Legend_Index_0');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseMoveOnTreeMap(<PointerEvent>eventObj);
+            };
+            treemap.legendSettings.mode = 'Interactive';
+            treemap.highlightSettings.enable = true;
+            treemap.refresh();
+        });
+
+        it('Checking with legend selection enable with interactive mode', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let rectEle: Element; let eventObj: Object = {};
+                rectEle = document.getElementById(args.treemap.element.id + '_Legend_Index_0');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousedown',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+            };
+            treemap.legendSettings.mode = 'Interactive';
+            treemap.selectionSettings.enable = true;
+            treemap.refresh();
+        });
+
+        it('Checking with legend selection enable with interactive mode', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let rectEle: Element; let eventObj: Object = {};
+                rectEle = document.getElementById(args.treemap.element.id + '_Legend_Index_1');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousedown',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+                rectEle = document.getElementById(args.treemap.element.id + '_Legend_Index_0');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousedown',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+            };
+            treemap.legendSettings.mode = "Interactive";
+            treemap.selectionSettings.enable = true;
+            treemap.refresh();
+        });
+    });
+
+    describe('TreeMap selection spec with legendsettings', () => {
+        let element: Element;
+        let treemap: TreeMap;
+        let prevent: Function = (): void => { };
+        let trigger: MouseEvents = new MouseEvents();
+        let id: string = 'container';
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '600px';
+            (element as HTMLDivElement).style.height = '400px';
+            document.body.appendChild(element);
+            treemap = new TreeMap({
+                legendSettings: {
+                    visible: true,
+                },
+                dataSource: electionData,
+                weightValuePath: 'Population',
+                rangeColorValuePath: 'WinPercentage',
+                equalColorValuePath: 'Winner',
+                leafItemSettings: {
+                    labelPath: 'State',
+                    fill: '#6699cc',
+                    border: { color: 'white', width: 0.5 },
+                    colorMapping: [
+                        {
+                            value: 'Trump', color: '#D84444'
+                        },
+                        {
+                            value: 'Clinton', color: '#316DB5'
+                        }
+                    ]
+                },
+                selectionSettings: { fill: 'green' }
+            }, '#' + id);
+        });
+        afterAll(() => {
+            treemap.destroy();
+            document.getElementById(id).remove();
+        });
+
+        it('Checking with node selection without highlight', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let rectEle: Element; let eventObj: Object = {};
+                rectEle = document.getElementById('container_Level_Index_0_Item_Index_13_RectPath');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+            };
+            treemap.selectionSettings.enable = true;
+            treemap.refresh();
+        });
+
+        it('Checking with legend selection without highlight', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let rectEle: Element; let eventObj: Object = {};
+                rectEle = document.getElementById(args.treemap.element.id + '_Legend_Shape_Index_0');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+            };
+            treemap.selectionSettings.enable = true;
+            treemap.refresh();
+        });
+
+        it('Checking with legend selection without highlight with interactive legend mode', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let rectEle: Element; let eventObj: Object = {};
+                rectEle = document.getElementById(args.treemap.element.id + '_Legend_Index_0');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+            };
+            treemap.legendSettings.mode = 'Interactive';
+            treemap.selectionSettings.enable = true;
+            treemap.refresh();
+        });
+    });
+
+    describe('TreeMap highlight spec with legendsettings', () => {
+        let element: Element;
+        let treemap: TreeMap;
+        let prevent: Function = (): void => { };
+        let trigger: MouseEvents = new MouseEvents();
+        let id: string = 'container';
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '600px';
+            (element as HTMLDivElement).style.height = '400px';
+            document.body.appendChild(element);
+            treemap = new TreeMap({
+                legendSettings: {
+                    visible: true,
+                },
+                dataSource: electionData,
+                weightValuePath: 'Population',
+                rangeColorValuePath: 'WinPercentage',
+                equalColorValuePath: 'Winner',
+                leafItemSettings: {
+                    labelPath: 'State',
+                    fill: '#6699cc',
+                    border: { color: 'white', width: 0.5 },
+                    colorMapping: [
+                        {
+                            value: 'Trump', color: '#D84444'
+                        },
+                        {
+                            value: 'Clinton', color: '#316DB5'
+                        }
+                    ]
+                },
+                highlightSettings: { fill: 'orange' }
+            }, '#' + id);
+        });
+        afterAll(() => {
+            treemap.destroy();
+            document.getElementById(id).remove();
+        });
+
+        it('Checking with legend highlight without selection with interactive legend', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let rectEle: Element; let eventObj: Object = {};
+                rectEle = document.getElementById(args.treemap.element.id + '_Legend_Index_0');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseMoveOnTreeMap(<PointerEvent>eventObj);
+            };
+            treemap.legendSettings.mode = 'Interactive';
+            treemap.highlightSettings.enable = true;
+            treemap.refresh();
+        });
+
+        it('Checking with node highlight without selection with interactive legend', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let rectEle: Element; let eventObj: Object = {};
+                rectEle = document.getElementById(args.treemap.element.id + '_Level_Index_0_Item_Index_7_RectPath');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseMoveOnTreeMap(<PointerEvent>eventObj);
+            };
+            treemap.legendSettings.mode = 'Interactive';
+            treemap.highlightSettings.enable = true;
+            treemap.refresh();
+        }); 
+
+        it('Checking with node selection with highlight', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let rectEle: Element; let eventObj: Object = {};
+                rectEle = document.getElementById(args.treemap.element.id + '_Level_Index_0_Item_Index_7_RectPath');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+                rectEle = document.getElementById(args.treemap.element.id + '_Level_Index_0_Item_Index_10_RectPath');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseMoveOnTreeMap(<PointerEvent>eventObj);
+                rectEle = document.getElementById(args.treemap.element.id + '_Level_Index_0_Item_Index_8_RectPath');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseMoveOnTreeMap(<PointerEvent>eventObj);
+            };
+            treemap.selectionSettings.enable = true;
+            treemap.highlightSettings.enable = true;
+            treemap.refresh();
+        });       
+
+        it('Checking with legend selection with node highlight', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let rectEle: Element; let eventObj: Object = {};
+                rectEle = document.getElementById(args.treemap.element.id + '_Legend_Index_1');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+                rectEle = document.getElementById(args.treemap.element.id + '_Level_Index_0_Item_Index_4_RectPath');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseMoveOnTreeMap(<PointerEvent>eventObj);
+                rectEle = document.getElementById(args.treemap.element.id + '_Level_Index_0_Item_Index_2_RectPath');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseMoveOnTreeMap(<PointerEvent>eventObj);
+            };
+            treemap.legendSettings.mode = 'Interactive';
+            treemap.selectionSettings.enable = true;
+            treemap.highlightSettings.enable = true;
             treemap.refresh();
         });
     });

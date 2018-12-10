@@ -15,18 +15,12 @@ let accordion: Accordion = new Accordion({
     { header: 'Images', content: '<div id="nested_images"></div>' },
   ]
 });
-accordion.appendTo('#element');
+accordion.appendTo('#ej2Accordion');
 document.getElementById('btn_touch').onclick = (e: Event) => {
     (<HTMLElement>document.getElementsByTagName('body')[0]).classList.add('e-bigger');
 };
 document.getElementById('btn_mouse').onclick = (e: Event) => {
     (<HTMLElement>document.getElementsByClassName('e-bigger')[0]).classList.remove('e-bigger');
-};
-document.getElementById('btn_boot').onclick = (e : Event) => {
-        document.getElementsByTagName('link')[0].href = '../../styles/bootstrap.css';
-};
-document.getElementById('btn_fabric').onclick = (e : Event) => {
-        document.getElementsByTagName('link')[0].href = '../../styles/fabric.css';
 };
 function clicked(e: AccordionClickArgs): void {
   let ele: HTMLElement = <HTMLElement>e.originalEvent.target;

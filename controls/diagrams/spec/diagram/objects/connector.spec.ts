@@ -8,7 +8,7 @@ import { Connector } from '../../../src/diagram/objects/connector';
 import { StraightSegmentModel } from '../../../src/diagram/objects/connector-model';
 import { PathElement } from '../../../src/diagram/core/elements/path-element';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
-import { SnapConstraints, PointPort, Annotation, IconShapes, Decorator, TextElement, PathAnnotation, BezierSegment } from '../../../src/diagram/index';
+import { SnapConstraints, PointPort, Annotation, IconShapes, Decorator, TextElement, PathAnnotation, BezierSegment, Rect } from '../../../src/diagram/index';
 import { getDiagramLayerSvg } from '../../../src/diagram/utility/dom-util';
 /**
  * Connector spec
@@ -1391,6 +1391,48 @@ describe('Diagram Control', () => {
                 (diagram.connectors[3] as Connector).intermediatePoints[1].x == 550 && (diagram.connectors[3] as Connector).intermediatePoints[1].y == 170 && (
                     diagram.connectors[3] as Connector).intermediatePoints[2].x == 530 && (diagram.connectors[3] as Connector).intermediatePoints[2].y == 170 &&
                 (diagram.connectors[3] as Connector).intermediatePoints[3].x == 530 && (diagram.connectors[3] as Connector).intermediatePoints[3].y == 250).toBe(true);
+            done();
+        });
+
+    });
+
+    describe('Connectors docking - Arrow shapes', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramDecoratorIssue' });
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                width: 500, height: 500,
+                connectors: [
+                    {
+                        id: 'c1', targetPoint: { x: 400, y: 200 }, sourcePoint: { x: 100, y: 100 },
+                        style:{strokeWidth:2}, type: 'Orthogonal',
+                        sourceDecorator: { shape: 'OpenArrow', height: 10, width: 10 },
+                    }
+                ],
+                getConnectorDefaults: (obj: ConnectorModel) => {
+                    let connector: ConnectorModel = {};
+                    connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
+                    return connector;
+                },
+                snapSettings: { constraints: SnapConstraints.ShowLines }
+            });
+            diagram.appendTo('#diagramDecoratorIssue');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking connector docking - rotated target node', function (done) {
+            diagram.connectors[0].sourceDecorator.shape = 'Circle';
+            diagram.dataBind();
+            let decObj: HTMLElement = document.getElementById('c1_srcDec')
+            let bounds: DOMRect = decObj.getBoundingClientRect() as DOMRect;
+            expect(bounds.x === 110 && bounds.y === 103.5 && bounds.width === 10 && bounds.height === 10).toBe(true);
             done();
         });
 

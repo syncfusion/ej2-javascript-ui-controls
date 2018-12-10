@@ -56,8 +56,16 @@ export type AccumulationTheme =
     'Fabric' |
     /**  Render a accumulation chart with Bootstrap theme. */
     'Bootstrap' |
-    /**  Render a accumulation chart with Highcontrast theme. */
-    'Highcontrast';
+    /**  Render a accumulation chart with Highcontrast Light theme. */
+    'HighcontrastLight'|
+    /**  Render a accumulation chart with MaterialDark theme. */
+    'MaterialDark' |
+    /**  Render a accumulation chart with FabricDark theme. */
+    'FabricDark' |
+    /**  Render a accumulation chart with HighcontrastDark theme. */
+    'Highcontrast'|
+    /**  Render a accumulation chart with BootstrapDark theme. */
+    'BootstrapDark';
 /**
  * Defines the empty point mode of the chart.
  * * Zero - Used to display empty points as zero.

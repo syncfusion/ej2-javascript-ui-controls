@@ -1,13 +1,14 @@
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
-import { createElement } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ParagraphDialog } from '../../../src/document-editor/implementation/dialogs/paragraph-dialog';
-import { SelectionParagraphFormat } from '../../../src/index';
+import { SelectionParagraphFormat, TextElementBox } from '../../../src/index';
 import { TestHelper } from '../../test-helper.spec';
 import { Editor } from '../../../src/index';
 import { Selection } from '../../../src/index';
 import { ContextMenu } from '../../../src/document-editor/implementation/context-menu';
 import { EditorHistory } from '../../../src/document-editor/implementation/editor-history/editor-history';
 import { WParagraphFormat } from '../../../src/document-editor/implementation/format/paragraph-format';
+import { ChangeArgs } from '@syncfusion/ej2-buttons';
 
 /**
  * Paragraph dialog spec
@@ -602,11 +603,11 @@ describe('Paragraph format-before spacing Applying validation via dialog in empt
 
     it('After before spacing via paragraph dialog-Multiple undo and redo validation', function () {
 
-        for(let i:number=0;i<5;i++){
-            editor.editorHistory.undo();         
-            editor.editorHistory.redo();         
-        }        
-        editor.editorHistory.undo();   
+        for (let i: number = 0; i < 5; i++) {
+            editor.editorHistory.undo();
+            editor.editorHistory.redo();
+        }
+        editor.editorHistory.undo();
         expect(editor.selection.start.paragraph.height).toBeLessThan(48);
     });
 
@@ -643,9 +644,9 @@ describe('Paragraph format-before spacing and left Indent Applying validation vi
         let height = editor.selection.start.paragraph.height;
         dialog.show();
         let event = { value: 48, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        (dialog as any).changeBeforeSpacing(event);        
-        event= { value: 48, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        (dialog as any).changeLeftIndent(event);        
+        (dialog as any).changeBeforeSpacing(event);
+        event = { value: 48, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
+        (dialog as any).changeLeftIndent(event);
         dialog.applyParagraphFormat();
         expect(editor.selection.start.paragraph.x).not.toBe(96);
     });
@@ -656,15 +657,15 @@ describe('Paragraph format-before spacing and left Indent Applying validation vi
     });
     it('After left indent via paragraph dialog-Redo validation', function () {
         editor.editorHistory.redo();
-        expect(editor.selection.start.paragraph.x).not.toBe(96);        
+        expect(editor.selection.start.paragraph.x).not.toBe(96);
     });
     it('After left indent via paragraph dialog-Multiple undo and redo validation', function () {
 
-        for(let i:number=0;i<5;i++){
-            editor.editorHistory.undo();         
-            editor.editorHistory.redo();         
-        }    
-        editor.editorHistory.undo();        
+        for (let i: number = 0; i < 5; i++) {
+            editor.editorHistory.undo();
+            editor.editorHistory.redo();
+        }
+        editor.editorHistory.undo();
         expect(editor.selection.start.paragraph.x).toBe(96);
     });
 
@@ -699,13 +700,13 @@ describe('Paragraph format-after spacing and left Indent Applying validation via
     it('after spacing applying validation', function () {
         editor.editor.insertText('Sample', false);
         let height = editor.selection.start.paragraph.height;
-        dialog.show();        
+        dialog.show();
         let event = { value: 48, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        (dialog as any).changeBeforeSpacing(event);        
-        event= { value: 48, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        (dialog as any).changeLeftIndent(event);  
-        event= { value: 20, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        (dialog as any).changeAfterSpacing(event);         
+        (dialog as any).changeBeforeSpacing(event);
+        event = { value: 48, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
+        (dialog as any).changeLeftIndent(event);
+        event = { value: 20, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
+        (dialog as any).changeAfterSpacing(event);
         dialog.applyParagraphFormat();
         expect(editor.selection.start.paragraph.height).toBeGreaterThanOrEqual(48);
     });
@@ -720,12 +721,281 @@ describe('Paragraph format-after spacing and left Indent Applying validation via
     });
     it('After after spacing via paragraph dialog-Multiple undo and redo validation', function () {
 
-        for(let i:number=0;i<5;i++){
-            editor.editorHistory.undo();         
-            editor.editorHistory.redo();         
-        }    
-        editor.editorHistory.undo();        
+        for (let i: number = 0; i < 5; i++) {
+            editor.editorHistory.undo();
+            editor.editorHistory.redo();
+        }
+        editor.editorHistory.undo();
         expect(editor.selection.start.paragraph.height).toBeLessThan(48);
+    });
+
+});
+
+
+describe('Paragraph format using paragraph dialog- right to left changes in empty selection', function () {
+    let editor: DocumentEditor;
+    let dialog: ParagraphDialog;
+    let event: ChangeArgs;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(ParagraphDialog, Selection, Editor, EditorHistory);
+        editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
+        editor.enableParagraphDialog = true;
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        dialog = editor.paragraphDialogModule
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        editor = undefined;
+        dialog = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        setTimeout(function () {
+            done();
+        }, 2000);
+    });
+    it('apply bidi true', function () {
+        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('سشةحمث', false);
+        editor.editor.insertText('سشةحمث', false);
+        expect(editor.selection.paragraphFormat.bidi).toBe(false);
+        dialog.show();
+        if (isNullOrUndefined((dialog as any).textAlignment)) {
+            (dialog as any).textAlignment = editor.selection.paragraphFormat.textAlignment;
+        }
+        event = { value: 'rtl' };
+        (dialog as any).changeBidirectional(event);
+        dialog.applyParagraphFormat();
+        expect(editor.selection.start.paragraph.paragraphFormat.bidi).toBe(true);
+        expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Right');
+        expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('Sample');
+    });
+
+    it('undo after apply bidi', function () {
+        editor.editorHistory.undo();
+        expect(editor.selection.start.paragraph.paragraphFormat.bidi).toBe(false);
+        expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
+        expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('Sample');
+    });
+    it('after apply bidi- Redo validation', function () {
+        editor.editorHistory.redo();
+        expect(editor.selection.start.paragraph.paragraphFormat.bidi).toBe(true);
+        expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Right');
+        expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('Sample');
+    });
+    it('after apply bidi-Multiple undo and redo validation', function () {
+
+        for (let i: number = 0; i < 5; i++) {
+            editor.editorHistory.undo();
+            editor.editorHistory.redo();
+        }
+        editor.editorHistory.undo();
+        expect(editor.selection.start.paragraph.paragraphFormat.bidi).toBe(false);
+        expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
+        expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('Sample');
+    });
+
+});
+describe('Paragraph format using paragraph dialog- right to left changes in empty selection at center', function () {
+    let editor: DocumentEditor;
+    let dialog: ParagraphDialog;
+    let event: ChangeArgs;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(ParagraphDialog, Selection, Editor, EditorHistory);
+        editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
+        editor.enableParagraphDialog = true;
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        dialog = editor.paragraphDialogModule
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        editor = undefined;
+        dialog = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        setTimeout(function () {
+            done();
+        }, 2000);
+    });
+    it('apply bidi true at center alignment', function () {
+        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('سشةحمث', false);
+        editor.editor.insertText('سشةحمث', false);
+        editor.selection.paragraphFormat.textAlignment = 'Center';
+        dialog.show();
+        event = { value: 'rtl' };
+        (dialog as any).changeBidirectional(event);
+        dialog.applyParagraphFormat();
+        expect(editor.selection.start.paragraph.paragraphFormat.bidi).toBe(true);
+        expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Center');
+    });
+
+    it('undo apply bidi true at center alignment', function () {
+        editor.editorHistory.undo();
+        expect(editor.selection.start.paragraph.paragraphFormat.bidi).toBe(false);
+        expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Center');
+    });
+    it('apply bidi true at center alignment- Redo validation', function () {
+        editor.editorHistory.redo();
+        expect(editor.selection.start.paragraph.paragraphFormat.bidi).toBe(true);
+        expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Center');
+    });
+    it('apply bidi true at center alignment-Multiple undo and redo validation', function () {
+
+        for (let i: number = 0; i < 5; i++) {
+            editor.editorHistory.undo();
+            editor.editorHistory.redo();
+        }
+        editor.editorHistory.undo();
+        expect(editor.selection.start.paragraph.paragraphFormat.bidi).toBe(false);
+        expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Center');
+    });
+
+});
+
+describe('Paragraph format using paragraph dialog- right to left changes in non-empty selection', function () {
+    let editor: DocumentEditor;
+    let dialog: ParagraphDialog;
+    let event: ChangeArgs;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(ParagraphDialog, Selection, Editor, EditorHistory);
+        editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
+        editor.enableParagraphDialog = true;
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        dialog = editor.paragraphDialogModule
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        editor = undefined;
+        dialog = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        setTimeout(function () {
+            done();
+        }, 2000);
+    });
+    it('apply bidi true in non-empty selection', function () {
+        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('سشةحمث', false);
+        editor.editor.insertText('سشةحمث', false);
+        editor.editor.onEnter();
+        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('سشةحمث', false);
+        editor.editor.insertText('سشةحمث', false);
+        editor.selection.selectAll();
+        dialog.show();
+        if (isNullOrUndefined((dialog as any).textAlignment)) {
+            (dialog as any).textAlignment = 'Left';
+        }
+        event = { value: 'rtl' };
+        (dialog as any).changeBidirectional(event);
+        dialog.applyParagraphFormat();
+        expect(editor.selection.start.paragraph.paragraphFormat.bidi).toBe(true);
+        expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Right');
+    });
+
+    it('undo apply bidi true in non-empty selection', function () {
+        editor.editorHistory.undo();
+        expect(editor.selection.start.paragraph.paragraphFormat.bidi).toBe(false);
+        expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
+    });
+    it('apply bidi true in non-empty selection- Redo validation', function () {
+        editor.editorHistory.redo();
+        expect(editor.selection.start.paragraph.paragraphFormat.bidi).toBe(true);
+        expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Right');
+    });
+    it('apply bidi true in non-empty selection-Multiple undo and redo validation', function () {
+
+        for (let i: number = 0; i < 5; i++) {
+            editor.editorHistory.undo();
+            editor.editorHistory.redo();
+        }
+        editor.editorHistory.undo();
+        expect(editor.selection.start.paragraph.paragraphFormat.bidi).toBe(false);
+        expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
+    });
+
+});
+
+describe('Paragraph format using paragraph dialog- right to left changes in non-empty selection', function () {
+    let editor: DocumentEditor;
+    let dialog: ParagraphDialog;
+    let event: ChangeArgs;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(ParagraphDialog, Selection, Editor, EditorHistory);
+        editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
+        editor.enableParagraphDialog = true;
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        dialog = editor.paragraphDialogModule
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        editor = undefined;
+        dialog = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        setTimeout(function () {
+            done();
+        }, 2000);
+    });
+    it('apply bidi true in non-empty selection- alignment left', function () {
+        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('سشةحمث', false);
+        editor.editor.insertText('سشةحمث', false);
+        editor.editor.onEnter();
+        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('سشةحمث', false);
+        editor.editor.insertText('سشةحمث', false);
+        editor.selection.selectAll();
+        editor.selection.paragraphFormat.bidi = true;
+        dialog.show();
+        if (isNullOrUndefined((dialog as any).textAlignment)) {
+            (dialog as any).textAlignment = 'Right';
+        }
+        event = { value: 'ltr' };
+        (dialog as any).changeBidirectional(event);
+        dialog.applyParagraphFormat();
+        expect(editor.selection.start.paragraph.paragraphFormat.bidi).toBe(false);
+        expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
+    });
+
+    it('apply bidi true in non-empty selection- aligment justify', function () {
+        editor.openBlank();
+        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('سشةحمث', false);
+        editor.editor.insertText('سشةحمث', false);
+        editor.editor.onEnter();
+        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('سشةحمث', false);
+        editor.editor.insertText('سشةحمث', false);
+        editor.selection.selectAll();
+        editor.selection.paragraphFormat.textAlignment = 'Justify';
+        dialog.show();
+        (dialog as any).textAlignment = 'Justify';
+        event = { value: 'rtl' };
+        (dialog as any).changeBidirectional(event);
+        dialog.applyParagraphFormat();
+        expect(editor.selection.start.paragraph.paragraphFormat.bidi).toBe(true);
+        expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Justify');
     });
 
 });

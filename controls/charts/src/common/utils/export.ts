@@ -7,6 +7,7 @@ import { IPrintEventArgs } from '../model/interface';
 import { beforePrint } from '../model/constants';
 import { PdfPageOrientation, PdfDocument, PdfBitmap, SizeF, PdfMargins } from '@syncfusion/ej2-pdf-export';
 import { RangeNavigator } from '../..';
+import { StockChart } from '../../stock-chart/stock-chart';
 /**
  * Export Functionalities
  */
@@ -17,14 +18,14 @@ interface IControlValue {
     svg: Element;
 }
 export class ExportUtils {
-    private control: Chart | AccumulationChart | RangeNavigator;
+    private control: Chart | AccumulationChart | RangeNavigator | StockChart;
     private printWindow: Window;
 
     /**
      * Constructor for chart and accumulation annotation
      * @param control 
      */
-    constructor(control: Chart | AccumulationChart | RangeNavigator) {
+    constructor(control: Chart | AccumulationChart | RangeNavigator | StockChart) {
         this.control = control;
     }
 
@@ -75,7 +76,7 @@ export class ExportUtils {
     public export(
         type: ExportType, fileName: string,
         orientation?: PdfPageOrientation,
-        controls?: (Chart | AccumulationChart | RangeNavigator)[],
+        controls?: (Chart | AccumulationChart | RangeNavigator | StockChart)[],
         width?: number, height?: number
     ): void {
         let controlValue: IControlValue = this.getControlsValue(controls);
@@ -169,7 +170,7 @@ export class ExportUtils {
      * @param controls 
      * @param name 
      */
-    private getControlsValue(controls: (Chart | RangeNavigator | AccumulationChart)[]): IControlValue {
+    private getControlsValue(controls: (Chart | RangeNavigator | AccumulationChart | StockChart)[]): IControlValue {
         let width: number = 0;
         let height: number = 0;
         let content: string = '';

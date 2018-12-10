@@ -1,0 +1,77 @@
+//default 
+$skin-name: 'material';
+$acrdn-icon-font-size: $font-size;
+$acrdn-header-font-bgr-size: 16px;
+$acrdn-content-font-bgr-size: 14px;
+$acrdn-nest-header-font-size: 14px;
+$acrdn-bgr-icn-minwidth: 30px;
+$acrdn-slct-header-font-weight: normal;
+$acrdn-nrml-icn-minwidth: 24px;
+$acrdn-bg-color: $default-bg-color;
+$acrdn-content-line-height: 1.5;
+$acrdn-tab-highlight-color:  rgba(0, 0, 0, 0);
+$acrdn-nrml-header-minheight: 36px;
+$acrdn-bgr-header-minheight: 48px;
+$acrdn-nrml-header-lineheight: 35px;
+$acrdn-bgr-header-lineheight: 47px;
+$acrdn-nrml-header-paddingpix: 16px;
+$acrdn-bgr-header-paddingpix: 16px;
+// Header, Nested header and RTL mode Padding
+$acrdn-nest-nrml-header-padding: 0 40px 0 32px;
+$acrdn-nest-bgr-header-padding: 0 46px 0 32px;
+$acrdn-nest-second-nrml-header-padding: 0 40px 0 48px;
+$acrdn-nest-second-bgr-header-padding: 0 46px 0 48px;
+$acrdn-nrml-header-padding: 0 40px 0 16px;
+$acrdn-bgr-header-padding: 0 46px 0 16px;
+$acrdn-rtl-nrml-header-padding: 0 16px 0 40px;
+$acrdn-rtl-bgr-header-padding: 0 16px 0 46px;
+$acrdn-rtl-nest-nrml-header-padding: 0 32px 0 40px;
+$acrdn-rtl-nest-bgr-header-padding: 0 32px 0 46px;
+$acrdn-rtl-nest-second-nrml-header-padding: 0 48px 0 40px;
+$acrdn-rtl-nest-second-bgr-header-padding: 0 48px 0 46px;
+
+// Content, Nested content and RTL mode Padding
+$acrdn-nrml-content-padding: 16px;
+$acrdn-bgr-content-padding: 16px;
+$acrdn-nest-nrml-content-padding: 16px 16px 16px 48px;
+$acrdn-nest-bgr-content-padding: 16px 16px 16px 48px;
+$acrdn-nest-second-nrml-content-padding: 16px 16px 16px 64px;
+$acrdn-nest-second-bgr-content-padding: 16px 16px 16px 64px;
+$acrdn-rtl-nest-nrml-content-padding: 16px 48px 16px 16px;
+$acrdn-rtl-nest-bgr-content-padding: 16px 48px 16px 16px;
+$acrdn-rtl-nest-second-nrml-content-padding: 16px 64px 16px 16px;
+$acrdn-rtl-nest-second-bgr-content-padding: 16px 64px 16px 16px;
+
+$acrdn-nrml-header-icon-padding: 8px;
+$acrdn-bgr-header-icon-padding: 14px;
+$acrdn-nrml-icn-minwidth: 24px;
+$acrdn-bgr-icn-minwidth: 30px;
+$acrdn-active-bg: $grey-dark;
+$acrdn-bg-color: $grey-dark;
+$acrdn-selected-header-font-color: $accent;
+$acrdn-selected-header-color: none;
+$acrdn-icon-color: rgba($grey-dark-font, .7);
+$acrdn-selected-icon-color: rgba($grey-dark-font, .7);
+$acrdn-content-color: $grey-dark-font;
+$acrdn-header-font:  $grey-dark-font;
+$acrdn-nested-header-font:  rgba($grey-dark-font, .7);
+$acrdn-header-font-weight: normal;
+$acrdn-header-font-size: 15px;
+$acrdn-nest-header-font-size: 14px;
+$acrdn-content-font-size: 13px;
+$acrdn-header-font-bgr-size: 16px;
+$acrdn-content-font-bgr-size: 14px;
+$acrdn-selected-border-size: $grey-700;
+$acrdn-item-padding-size: '';
+$acrdn-selected-border-type: $border-type;
+$acrdn-selected-border-color: $grey-700;
+$acrdn-default-border: $grey-700;
+$acrdn-header-focus-bg:  rgba($grey-white, .05);
+$acrdn-header-hover-bg: rgba($grey-white, .1);
+$acrdn-header-active-bg: none;
+
+$acrdn-border-type: solid;
+$acrdn-border-size: $border-size;
+
+$acrd-expand-collapse-icon: '\e916';
+//enddefault

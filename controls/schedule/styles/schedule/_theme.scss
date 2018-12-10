@@ -1,6 +1,7 @@
 @include export-module('schedule-theme') {
   /*! schedule component theme */
   .e-schedule {
+    background-color: $schedule-header-bg-color;
     border: $border-size $border-type $schedule-content-border-color;
 
     .e-date-header-wrap {
@@ -120,7 +121,6 @@
 
           &:hover {
             background-color: $schedule-select-bg-color;
-            border: $schedule-hover-border-color;
           }
         }
       }
@@ -204,7 +204,7 @@
         border-radius: 50%;
         color: $schedule-active-color;
         width: 20px;
-        @if ($skin == 'highcontrast') {
+        @if ($schedule-skin == 'highcontrast') {
           color: $schedule-active-font-color;
         }
       }
@@ -214,7 +214,7 @@
         color: $schedule-select-font-color;
 
         .e-date-header {
-          @if ($skin == 'highcontrast') {
+          @if ($schedule-skin == 'highcontrast') {
             color: $schedule-select-font-color;
           }
         }

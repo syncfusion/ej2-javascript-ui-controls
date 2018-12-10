@@ -2680,8 +2680,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     break;
                 case 'htmlAttributes': this.updateHTMLAttribute();
                     break;
-                case 'showClearButton':
-                    this.updateClearButton(newProp.showClearButton);
+                case 'showClearButton': this.updateClearButton(newProp.showClearButton);
                     break;
                 case 'value':
                     if (!this.list) {
@@ -2731,13 +2730,16 @@ export class MultiSelect extends DropDownBase implements IInput {
                     }
                     this.renderPopup();
                     break;
-                case 'showDropDownIcon': this.dropDownIcon();
+                case 'showDropDownIcon':
+                    this.dropDownIcon();
                     break;
-                case 'floatLabelType': this.setFloatLabelType();
+                case 'floatLabelType':
+                    this.setFloatLabelType();
                     break;
                 case 'enableSelectionOrder':
                     break;
-                case 'selectAllText': this.notify('selectAllText', false);
+                case 'selectAllText':
+                    this.notify('selectAllText', false);
                     break;
                 case 'popupHeight':
                 case 'headerTemplate':

@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, CollectionFactory, Complex, ComplexFactory, Component, Draggable, Droppable, Event, EventHandler, L10n, Property, compile, createElement, getValue, remove } from '@syncfusion/ej2-base';
+import { Ajax, Browser, ChildProperty, Collection, CollectionFactory, Complex, ComplexFactory, Component, Draggable, Droppable, Event, EventHandler, L10n, Property, compile, createElement, getValue, remove } from '@syncfusion/ej2-base';
 import { Tooltip } from '@syncfusion/ej2-popups';
 import { DataManager } from '@syncfusion/ej2-data';
 import { Accordion, ContextMenu } from '@syncfusion/ej2-navigations';
@@ -1562,6 +1562,8 @@ var NodeConstraints;
     NodeConstraints[NodeConstraints["Resize"] = 1044480] = "Resize";
     /** Enables the Aspect ratio fo the node */
     NodeConstraints[NodeConstraints["AspectRatio"] = 1048576] = "AspectRatio";
+    /** hide all resize support for node */
+    NodeConstraints[NodeConstraints["HideThumbs"] = 16777216] = "HideThumbs";
     /** Enables or disables tool tip for the Nodes */
     NodeConstraints[NodeConstraints["Tooltip"] = 2097152] = "Tooltip";
     /** Enables or disables tool tip for the Nodes */
@@ -2036,6 +2038,10 @@ var PortConstraints;
     PortConstraints[PortConstraints["Drag"] = 2] = "Drag";
     /** Enables to create the connection when mouse hover on the port  */
     PortConstraints[PortConstraints["Draw"] = 4] = "Draw";
+    /** Enables to only connect the target end of connector */
+    PortConstraints[PortConstraints["InConnect"] = 8] = "InConnect";
+    /** Enables to only connect the source end of connector */
+    PortConstraints[PortConstraints["OutConnect"] = 16] = "OutConnect";
 })(PortConstraints || (PortConstraints = {}));
 /**
  * Defines the context menu click
@@ -2051,6 +2057,13 @@ var contextMenuClick =
 var contextMenuOpen = 
 /** contextMenuOpen - Sets the context menu open as contextMenuOpen */
 'contextMenuOpen';
+/**
+ * Defines the context menu Before Item Render
+ * contextMenuBeforeItemRender - Sets the context menu open as contextMenuBeforeItemRender
+ */
+var contextMenuBeforeItemRender = 
+/** contextMenuBeforeItemRender - Sets the context menu open as contextMenuBeforeItemRender */
+'contextMenuBeforeItemRender';
 
 /**
  * DiagramElement module defines the basic unit of diagram
@@ -2175,6 +2188,8 @@ var DiagramElement = /** @__PURE__ @class */ (function () {
          * Gets the rotate angle that is set to the immediate parent of the element
          */
         this.parentTransform = 0;
+        /** @private */
+        this.preventContainer = false;
         /**
          * Gets/Set the boolean value for the element
          */
@@ -2199,14 +2214,18 @@ var DiagramElement = /** @__PURE__ @class */ (function () {
          * check whether the element is rect or not
          */
         this.isRectElement = false;
+        /** @private */
+        this.isCalculateDesiredSize = true;
         //private variables
         this.position = undefined;
         this.unitMode = undefined;
         /**   @private  */
         this.float = false;
         this.floatingBounds = undefined;
-        this.id = randomId();
     }
+    // public constructor() {
+    //     this.id = randomId();
+    // }
     /**
      * Sets the offset of the element with respect to its parent
      * @param x
@@ -2235,7 +2254,6 @@ var DiagramElement = /** @__PURE__ @class */ (function () {
         return undefined;
     };
     Object.defineProperty(DiagramElement.prototype, "outerBounds", {
-        /**   @private  */
         get: function () {
             return this.floatingBounds || this.bounds;
         },
@@ -2257,7 +2275,9 @@ var DiagramElement = /** @__PURE__ @class */ (function () {
         var width = this.width !== undefined ? this.width : (availableSize.width || 0) - this.margin.left - this.margin.right;
         var height = this.height !== undefined ? this.height : (availableSize.height || 0) - this.margin.top - this.margin.bottom;
         this.desiredSize = new Size(width, height);
-        this.desiredSize = this.validateDesiredSize(this.desiredSize, availableSize);
+        if (this.isCalculateDesiredSize) {
+            this.desiredSize = this.validateDesiredSize(this.desiredSize, availableSize);
+        }
         return this.desiredSize;
     };
     /**
@@ -2334,6 +2354,7 @@ var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+/**   @private  */
 var getGradientType = function (obj) {
     switch (obj.type) {
         case 'Linear':
@@ -2572,7 +2593,7 @@ var ShapeStyle = /** @__PURE__ @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate$2([
-        Property('white')
+        Property('transparent')
     ], ShapeStyle.prototype, "fill", void 0);
     __decorate$2([
         Property('black')
@@ -2721,6 +2742,12 @@ var Container = /** @__PURE__ @class */ (function (_super) {
             //Measuring the children
             for (var i = 0; i < this.children.length; i++) {
                 child = this.children[i];
+                if (child.horizontalAlignment === 'Stretch' && !availableSize.width) {
+                    availableSize.width = child.bounds.width;
+                }
+                if (child.verticalAlignment === 'Stretch' && !availableSize.height) {
+                    availableSize.height = child.bounds.height;
+                }
                 var force = child.horizontalAlignment === 'Stretch' || child.verticalAlignment === 'Stretch';
                 if (this.measureChildren || force || (child instanceof Container && child.measureChildren !== undefined)) {
                     child.measure(availableSize);
@@ -2732,6 +2759,15 @@ var Container = /** @__PURE__ @class */ (function (_super) {
                     }
                     else {
                         this.desiredBounds.uniteRect(childBounds);
+                    }
+                }
+                else if (this.actualSize && !this.actualSize.width && !this.actualSize.height &&
+                    !child.preventContainer && child.horizontalAlignment === 'Stretch' && child.verticalAlignment === 'Stretch') {
+                    if (this.desiredBounds === undefined) {
+                        this.desiredBounds = child.bounds;
+                    }
+                    else {
+                        this.desiredBounds.uniteRect(child.bounds);
                     }
                 }
             }
@@ -2900,6 +2936,8 @@ var PathElement = /** @__PURE__ @class */ (function (_super) {
          * Gets/Sets the equivalent path, that will have the origin as 0,0
          */
         _this.absolutePath = '';
+        /**   @private  */
+        _this.canMeasurePath = false;
         //Private variables
         /**   @private  */
         _this.absoluteBounds = new Rect();
@@ -2945,7 +2983,8 @@ var PathElement = /** @__PURE__ @class */ (function (_super) {
         if (this.staticSize && this.width !== undefined && this.height !== undefined) {
             this.absoluteBounds = new Rect(this.offsetX - this.width * this.pivot.x, this.offsetY - this.height * this.pivot.y, this.width, this.height);
         }
-        else if (this.isDirt && (this.transformPath || (this.width === undefined || this.height === undefined))) {
+        else if (this.isDirt && (this.transformPath || (this.width === undefined || this.height === undefined))
+            && (!this.absoluteBounds || this.absoluteBounds.height === 0) || this.canMeasurePath) {
             //Measure the element only whent the path data is changed/ size is not specified
             this.absoluteBounds = measurePath(this.data ? this.data : '');
         }
@@ -2959,6 +2998,7 @@ var PathElement = /** @__PURE__ @class */ (function (_super) {
             this.desiredSize = new Size(this.width, this.height);
         }
         this.desiredSize = this.validateDesiredSize(this.desiredSize, availableSize);
+        this.canMeasurePath = false;
         return this.desiredSize;
     };
     /**
@@ -3129,6 +3169,8 @@ var TextElement = /** @__PURE__ @class */ (function (_super) {
          * sets or gets the image source
          */
         _this.textContent = '';
+        /** @private */
+        _this.canMeasure = true;
         /**
          * sets the hyperlink color to blue
          */
@@ -3142,7 +3184,7 @@ var TextElement = /** @__PURE__ @class */ (function (_super) {
          * Defines the appearance of the text element
          */
         _this.style = {
-            color: 'black', fill: 'white', strokeColor: 'black',
+            color: 'black', fill: 'transparent', strokeColor: 'black',
             strokeWidth: 1, fontFamily: 'Arial', fontSize: 12, whiteSpace: 'CollapseSpace',
             textWrapping: 'WrapWithOverflow', textAlign: 'Center', italic: false, bold: false,
             textDecoration: 'None', strokeDashArray: '', opacity: 5, gradient: null,
@@ -3214,7 +3256,7 @@ var TextElement = /** @__PURE__ @class */ (function (_super) {
      */
     TextElement.prototype.measure = function (availableSize) {
         var size;
-        if (this.isDirt) {
+        if (this.isDirt && this.canMeasure) {
             size = measureText(this, this.style, this.content, this.width);
         }
         else {
@@ -3372,7 +3414,17 @@ var Canvas = /** @__PURE__ @class */ (function (_super) {
             //Measuring the children
             for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
                 var child = _a[_i];
-                child.measure(availableSize);
+                if (child instanceof TextElement) {
+                    if (child.canMeasure) {
+                        child.measure(availableSize);
+                    }
+                    else {
+                        break;
+                    }
+                }
+                else if (!(child instanceof TextElement)) {
+                    child.measure(availableSize);
+                }
                 var childSize = child.desiredSize.clone();
                 if (child.rotateAngle !== 0) {
                     childSize = rotateSize(childSize, child.rotateAngle);
@@ -3412,7 +3464,7 @@ var Canvas = /** @__PURE__ @class */ (function (_super) {
     /**
      * Arranges the child elements of the canvas
      */
-    Canvas.prototype.arrange = function (desiredSize) {
+    Canvas.prototype.arrange = function (desiredSize, isStack) {
         this.outerBounds = new Rect();
         if (this.hasChildren()) {
             var y = void 0;
@@ -3424,9 +3476,6 @@ var Canvas = /** @__PURE__ @class */ (function (_super) {
                 if ((child.transform & Transform.Parent) !== 0) {
                     child.parentTransform = this.parentTransform + this.rotateAngle;
                     var childSize = child.desiredSize.clone();
-                    if (child.rotateAngle !== 0) {
-                        childSize = rotateSize(childSize, child.rotateAngle);
-                    }
                     var topLeft = void 0;
                     var center = { x: 0, y: 0 };
                     var childX = x;
@@ -3442,13 +3491,24 @@ var Canvas = /** @__PURE__ @class */ (function (_super) {
                         topLeft = this.alignChildBasedOnParent(child, childSize, desiredSize, childX, childY);
                     }
                     else {
-                        topLeft = this.alignChildBasedOnaPoint(child, childX, childY, childSize);
+                        topLeft = this.alignChildBasedOnaPoint(child, childX, childY);
                     }
                     center = { x: topLeft.x + childSize.width / 2, y: topLeft.y + childSize.height / 2 };
                     _super.prototype.findChildOffsetFromCenter.call(this, child, center);
                 }
-                child.arrange(child.desiredSize);
-                this.outerBounds.uniteRect(child.outerBounds);
+                if (isStack && (child.horizontalAlignment === 'Stretch' || child.verticalAlignment === 'Stretch')) {
+                    child.arrange(desiredSize);
+                }
+                else {
+                    if (child instanceof TextElement && child.canMeasure) {
+                        child.arrange(child.desiredSize);
+                        this.outerBounds.uniteRect(child.outerBounds);
+                    }
+                    else if (!(child instanceof TextElement)) {
+                        child.arrange(child.desiredSize);
+                        this.outerBounds.uniteRect(child.outerBounds);
+                    }
+                }
             }
         }
         this.actualSize = desiredSize;
@@ -3499,7 +3559,7 @@ var Canvas = /** @__PURE__ @class */ (function (_super) {
      * @param x
      * @param y
      */
-    Canvas.prototype.alignChildBasedOnaPoint = function (child, x, y, childSize) {
+    Canvas.prototype.alignChildBasedOnaPoint = function (child, x, y) {
         x += child.margin.left - child.margin.right;
         y += child.margin.top - child.margin.bottom;
         switch (child.horizontalAlignment) {
@@ -3509,10 +3569,10 @@ var Canvas = /** @__PURE__ @class */ (function (_super) {
                 break;
             case 'Stretch':
             case 'Center':
-                x -= childSize.width * child.pivot.x;
+                x -= child.desiredSize.width * child.pivot.x;
                 break;
             case 'Right':
-                x -= childSize.width;
+                x -= child.desiredSize.width;
                 break;
         }
         switch (child.verticalAlignment) {
@@ -3522,10 +3582,10 @@ var Canvas = /** @__PURE__ @class */ (function (_super) {
                 break;
             case 'Stretch':
             case 'Center':
-                y -= childSize.height * child.pivot.y;
+                y -= child.desiredSize.height * child.pivot.y;
                 break;
             case 'Bottom':
-                y -= childSize.height;
+                y -= child.desiredSize.height;
                 break;
         }
         return { x: x, y: y };
@@ -3718,6 +3778,9 @@ var Annotation = /** @__PURE__ @class */ (function (_super) {
         Property('')
     ], Annotation.prototype, "content", void 0);
     __decorate$5([
+        Property(undefined)
+    ], Annotation.prototype, "template", void 0);
+    __decorate$5([
         Property(true)
     ], Annotation.prototype, "visibility", void 0);
     __decorate$5([
@@ -3750,6 +3813,9 @@ var Annotation = /** @__PURE__ @class */ (function (_super) {
     __decorate$5([
         Complex({}, Margin)
     ], Annotation.prototype, "margin", void 0);
+    __decorate$5([
+        Complex({ top: undefined, bottom: undefined, left: undefined, right: undefined }, Margin)
+    ], Annotation.prototype, "dragLimit", void 0);
     __decorate$5([
         Property('Shape')
     ], Annotation.prototype, "type", void 0);
@@ -6859,6 +6925,69 @@ function getOppositeDirection(direction) {
     return 'auto';
 }
 
+var __extends$16 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * HTMLElement defines the basic html elements
+ */
+var DiagramHtmlElement = /** @__PURE__ @class */ (function (_super) {
+    __extends$16(DiagramHtmlElement, _super);
+    /**
+     * set the id for each element
+     */
+    function DiagramHtmlElement(nodeId, diagramId, annotationId) {
+        var _this = _super.call(this) || this;
+        _this.data = '';
+        /**
+         * Gets the node id for the element
+         */
+        _this.nodeId = '';
+        /**
+         * defines the id of the annotation on rendering template on label.
+         * @private
+         */
+        _this.annotationId = '';
+        /**
+         * Gets the diagram id for the html element
+         */
+        _this.diagramId = '';
+        _this.diagramId = diagramId;
+        _this.nodeId = nodeId;
+        _this.annotationId = annotationId;
+        return _this;
+    }
+    Object.defineProperty(DiagramHtmlElement.prototype, "content", {
+        /**
+         * Gets or sets the geometry of the html element
+         */
+        get: function () {
+            return this.data;
+        },
+        /**
+         * Gets or sets the value of the html element
+         */
+        set: function (value) {
+            this.data = value;
+            this.template = getContent(this, true);
+            this.isDirt = true;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return DiagramHtmlElement;
+}(DiagramElement));
+
 var __extends$15 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -6883,6 +7012,10 @@ var getConnectorType = function (obj) {
     switch (obj.type) {
         case 'Bpmn':
             return BpmnFlow;
+        case 'UmlActivity':
+            return ActivityFlow;
+        case 'UmlClassifier':
+            return RelationShip;
         default:
             return ConnectorShape;
     }
@@ -6956,6 +7089,22 @@ var ConnectorShape = /** @__PURE__ @class */ (function (_super) {
     ], ConnectorShape.prototype, "type", void 0);
     return ConnectorShape;
 }(ChildProperty));
+/**
+ * Sets the type of the flow in a BPMN Process
+ */
+var ActivityFlow = /** @__PURE__ @class */ (function (_super) {
+    __extends$15(ActivityFlow, _super);
+    function ActivityFlow() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$9([
+        Property('Object')
+    ], ActivityFlow.prototype, "flow", void 0);
+    __decorate$9([
+        Property(30)
+    ], ActivityFlow.prototype, "exceptionFlowHeight", void 0);
+    return ActivityFlow;
+}(ConnectorShape));
 /**
  * Sets the type of the flow in a BPMN Process
  */
@@ -7164,6 +7313,66 @@ function bezierPoints(connector, startPoint, point1, point2, endPoint, i, max) {
     return pt;
 }
 /**
+ * Defines the behavior of the UMLActivity Classifier multiplicity connection defaults
+ */
+var MultiplicityLabel = /** @__PURE__ @class */ (function (_super) {
+    __extends$15(MultiplicityLabel, _super);
+    function MultiplicityLabel() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$9([
+        Property(true)
+    ], MultiplicityLabel.prototype, "optional", void 0);
+    __decorate$9([
+        Property(undefined)
+    ], MultiplicityLabel.prototype, "lowerBounds", void 0);
+    __decorate$9([
+        Property(undefined)
+    ], MultiplicityLabel.prototype, "upperBounds", void 0);
+    return MultiplicityLabel;
+}(ChildProperty));
+/**
+ * Defines the behavior of the UMLActivity Classifier multiplicity connection defaults
+ */
+var ClassifierMultiplicity = /** @__PURE__ @class */ (function (_super) {
+    __extends$15(ClassifierMultiplicity, _super);
+    function ClassifierMultiplicity() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$9([
+        Property('')
+    ], ClassifierMultiplicity.prototype, "type", void 0);
+    __decorate$9([
+        Complex({}, MultiplicityLabel)
+    ], ClassifierMultiplicity.prototype, "target", void 0);
+    __decorate$9([
+        Complex({}, MultiplicityLabel)
+    ], ClassifierMultiplicity.prototype, "source", void 0);
+    return ClassifierMultiplicity;
+}(ChildProperty));
+/**
+ * Defines the behavior of the UMLActivity shape
+ */
+var RelationShip = /** @__PURE__ @class */ (function (_super) {
+    __extends$15(RelationShip, _super);
+    function RelationShip() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$9([
+        Property('UmlClassifier')
+    ], RelationShip.prototype, "type", void 0);
+    __decorate$9([
+        Property('Aggregation')
+    ], RelationShip.prototype, "relationship", void 0);
+    __decorate$9([
+        Property('Directional')
+    ], RelationShip.prototype, "associationType", void 0);
+    __decorate$9([
+        Complex({}, ClassifierMultiplicity)
+    ], RelationShip.prototype, "multiplicity", void 0);
+    return RelationShip;
+}(ConnectorShape));
+/**
  * Connectors are used to create links between nodes
  */
 var Connector = /** @__PURE__ @class */ (function (_super) {
@@ -7175,6 +7384,11 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
         _this.parentId = '';
         /** @private */
         _this.bridges = [];
+        /** @private */
+        _this.status = 'None';
+        if (_this.shape && _this.shape.type === 'UmlActivity') {
+            setUMLActivityDefaults(defaultValue, _this);
+        }
         return _this;
     }
     /** @private */
@@ -7217,6 +7431,19 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
                         break;
                 }
                 break;
+            case 'UmlActivity':
+                switch (this.shape.flow) {
+                    case 'Object':
+                        this.getUMLObjectFlow();
+                        break;
+                    case 'Exception':
+                        this.getUMLExceptionFlow(segment);
+                        break;
+                }
+                break;
+            case 'UmlClassifier':
+                this.getConnectorRelation();
+                break;
         }
         var anglePoints = this.intermediatePoints;
         if (this.type === 'Bezier') {
@@ -7253,10 +7480,108 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
         container.width = segment.width;
         container.height = segment.height;
         for (var i = 0; this.annotations !== undefined, i < this.annotations.length; i++) {
-            container.children.push(this.getAnnotationElement(this.annotations[i], this.intermediatePoints, bounds, getDescription));
+            container.children.push(this.getAnnotationElement(this.annotations[i], this.intermediatePoints, bounds, getDescription, diagram.element.id));
         }
         this.wrapper = container;
         return container;
+    };
+    Connector.prototype.getConnectorRelation = function () {
+        var shape = this.shape;
+        if (shape.relationship === 'Association') {
+            this.segments[0].type = 'Straight';
+            this.sourceDecorator.shape = 'None';
+            this.targetDecorator.shape = 'Arrow';
+            this.style.strokeWidth = 2;
+        }
+        else if (shape.relationship === 'Inheritance') {
+            this.segments[0].type = 'Orthogonal';
+            this.sourceDecorator.shape = 'None';
+            this.targetDecorator.shape = 'Arrow';
+            this.targetDecorator.style.fill = 'white';
+            this.style.strokeWidth = 2;
+            this.style.strokeDashArray = '4 4';
+        }
+        else if (shape.relationship === 'Composition') {
+            this.segments[0].type = 'Orthogonal';
+            this.sourceDecorator.shape = 'Diamond';
+            this.targetDecorator.shape = 'None';
+            this.sourceDecorator.style.fill = 'black';
+            this.style.strokeWidth = 2;
+        }
+        else if (shape.relationship === 'Aggregation') {
+            this.segments[0].type = 'Orthogonal';
+            this.sourceDecorator.shape = 'Diamond';
+            this.targetDecorator.shape = 'None';
+            this.sourceDecorator.style.fill = 'white';
+            this.style.strokeWidth = 2;
+        }
+        else if (shape.relationship === 'Dependency') {
+            this.segments[0].type = 'Orthogonal';
+            this.sourceDecorator.shape = 'None';
+            this.targetDecorator.shape = 'OpenArrow';
+            this.sourceDecorator.style.fill = 'white';
+            this.style.strokeWidth = 2;
+            this.style.strokeDashArray = '4 4';
+        }
+        else if (shape.relationship === 'Realization') {
+            this.segments[0].type = 'Orthogonal';
+            this.sourceDecorator.shape = 'None';
+            this.targetDecorator.shape = 'Arrow';
+            this.sourceDecorator.style.fill = 'white';
+            this.style.strokeWidth = 2;
+        }
+        if (shape.associationType === 'BiDirectional') {
+            this.sourceDecorator.shape = 'None';
+            this.targetDecorator.shape = 'None';
+        }
+        var text1 = '';
+        var lower;
+        var upper;
+        var sourceText = '';
+        var targetText = '';
+        var text = '';
+        if (shape.multiplicity.source) {
+            shape.multiplicity.source.lowerBounds = shape.multiplicity.source.lowerBounds;
+            shape.multiplicity.source.upperBounds = shape.multiplicity.source.upperBounds;
+        }
+        if (shape.multiplicity.target) {
+            shape.multiplicity.target.lowerBounds = shape.multiplicity.target.lowerBounds;
+            shape.multiplicity.target.upperBounds = shape.multiplicity.target.upperBounds;
+        }
+        lower = shape.multiplicity.source;
+        upper = shape.multiplicity.target;
+        text = lower.upperBounds ? lower.lowerBounds + '...' + lower.upperBounds : lower.lowerBounds;
+        text1 = upper.upperBounds ? upper.lowerBounds + '...' + upper.upperBounds : upper.lowerBounds;
+        if (shape.multiplicity.type === 'ManyToOne') {
+            shape.multiplicity.target.optional = false;
+            sourceText = text ? text : '*';
+            targetText = '1';
+        }
+        if (shape.multiplicity.type === 'OneToMany') {
+            shape.multiplicity.source.optional = false;
+            targetText = text1 ? text1 : '*';
+            sourceText = '1';
+        }
+        if (shape.multiplicity.type === 'ManyToOne') {
+            sourceText = text ? text : '*';
+            targetText = text1 ? text1 : '*';
+        }
+        if (shape.multiplicity.type === 'OneToOne') {
+            shape.multiplicity.target.optional = false;
+            shape.multiplicity.source.optional = false;
+            sourceText = '1';
+            targetText = '1';
+        }
+        this.annotations = [
+            {
+                id: this.id + 'sourcelabel', content: sourceText, offset: 0, alignment: 'Before',
+                margin: { right: 5, bottom: 5 }
+            },
+            {
+                id: this.id + 'targetlabel', content: targetText, offset: 1, alignment: 'Before',
+                margin: { right: 5, bottom: 5 }
+            }
+        ];
     };
     Connector.prototype.getBpmnSequenceFlow = function () {
         var segment = new PathElement();
@@ -7291,6 +7616,34 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
             this.sourceDecorator.height = 10;
         }
         return pathseq;
+    };
+    /** @private */
+    Connector.prototype.getUMLObjectFlow = function () {
+        if (this.annotations) {
+            for (var i = 0; i < this.annotations.length; i++) {
+                this.annotations[i].content = '[' + this.annotations[i].content + ']';
+            }
+        }
+    };
+    /** @private */
+    Connector.prototype.getUMLExceptionFlow = function (segment) {
+        this.type = 'Straight';
+        var height = (this.shape.exceptionFlowHeight) / 2;
+        var midPt = { x: (this.targetPoint.x + this.sourcePoint.x) / 2, y: (this.targetPoint.y + this.sourcePoint.y) / 2 };
+        var xDist = midPt.x - this.sourcePoint.x;
+        var yDist = midPt.y - this.sourcePoint.y;
+        var dist = Math.sqrt(xDist * xDist + yDist * yDist);
+        var fractionOfTotal = (height) / dist;
+        var midPt2 = { x: midPt.x - xDist * fractionOfTotal, y: midPt.y - yDist * fractionOfTotal };
+        var midPt1 = { x: midPt.x + xDist * fractionOfTotal, y: midPt.y + yDist * fractionOfTotal };
+        var matrix = identityMatrix();
+        rotateMatrix(matrix, 315, midPt.x, midPt.y);
+        this.segments = [];
+        var segments = new StraightSegment(this, 'segments', { type: 'Straight', point: transformPointByMatrix(matrix, midPt1) }, true);
+        (this.segments).push(segments);
+        segments = new StraightSegment(this, 'segments', { type: 'Straight', point: transformPointByMatrix(matrix, midPt2) }, true);
+        (this.segments).push(segments);
+        segment = this.getSegmentElement(this, segment);
     };
     Connector.prototype.getBpmnAssociationFlow = function () {
         if ((this.shape.association) === 'Default') {
@@ -7349,9 +7702,18 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
         return [path, transferpoint];
     };
     /** @private */
-    Connector.prototype.getAnnotationElement = function (annotation, points, bounds, getDescription) {
+    Connector.prototype.getAnnotationElement = function (annotation, points, bounds, getDescription, diagramId) {
         annotation.id = annotation.id || randomId();
-        var textele = new TextElement();
+        var textele;
+        if (diagramId && annotation.template) {
+            textele = new DiagramHtmlElement(this.id, diagramId, annotation.id);
+            textele.content = annotation.template;
+        }
+        else {
+            textele = new TextElement();
+            textele.content = annotation.content;
+            textele.style.textOverflow = 'Wrap';
+        }
         textele.constraints = annotation.constraints;
         textele.visible = annotation.visibility;
         textele.rotateAngle = annotation.rotateAngle;
@@ -7359,7 +7721,7 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
         textele.verticalAlignment = annotation.verticalAlignment;
         textele.width = annotation.width;
         textele.height = annotation.height;
-        if (bounds.width !== undefined) {
+        if (bounds.width !== undefined && !annotation.template) {
             textele.width = (annotation.width || bounds.width) - annotation.margin.left - annotation.margin.right;
         }
         textele.margin = annotation.margin;
@@ -7370,7 +7732,6 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
         if (bounds.height === 0) {
             bounds.height = this.style.strokeWidth;
         }
-        textele.content = annotation.content;
         textele.style = annotation.style;
         // tslint:disable-next-line:no-any
         var wrapperContent;
@@ -7380,7 +7741,6 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
         }
         textele.description = wrapperContent ? wrapperContent : textele.id;
         this.updateAnnotation(annotation, points, bounds, textele);
-        textele.style.textOverflow = 'Wrap';
         return textele;
     };
     /** @private */
@@ -7392,7 +7752,9 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
         var vAlign;
         var offsetPoint;
         var pivotPoint = { x: 0, y: 0 };
-        textElement.refreshTextElement();
+        if (!(textElement instanceof DiagramHtmlElement)) {
+            textElement.refreshTextElement();
+        }
         textElement.width = (annotation.width || bounds.width);
         getPointloop = getAnnotationPosition(points, annotation, bounds);
         newPoint = getPointloop.point;
@@ -7585,6 +7947,7 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
         element.style = decorator.style;
         element.rotateAngle = angle;
         element.data = getPath;
+        element.canMeasurePath = true;
         element.width = size.width;
         element.height = size.height;
     };
@@ -7733,6 +8096,11 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
                     this.updateShapePosition(connector, element);
                 }
                 break;
+            case 'UmlActivity':
+                if (connector.shape.flow === 'Exception') {
+                    this.getUMLExceptionFlow(connector.wrapper.children[0]);
+                }
+                break;
         }
     };
     /** @private */
@@ -7840,7 +8208,7 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
     return Connector;
 }(NodeBase));
 
-var __extends$16 = (undefined && undefined.__extends) || (function () {
+var __extends$17 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -7899,7 +8267,7 @@ var __decorate$10 = (undefined && undefined.__decorate) || function (decorators,
  * @default {}
  */
 var UserHandle = /** @__PURE__ @class */ (function (_super) {
-    __extends$16(UserHandle, _super);
+    __extends$17(UserHandle, _super);
     function UserHandle() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -7951,7 +8319,7 @@ var UserHandle = /** @__PURE__ @class */ (function (_super) {
  * Defines the size and position of selected items and defines the appearance of selector
  */
 var Selector = /** @__PURE__ @class */ (function (_super) {
-    __extends$16(Selector, _super);
+    __extends$17(Selector, _super);
     function Selector() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -8141,9 +8509,27 @@ function canInConnect(node) {
     return 0;
 }
 /** @private */
+function canPortInConnect(port) {
+    if (port) {
+        if ((port.constraints & PortConstraints.InConnect)) {
+            return port.constraints & PortConstraints.InConnect;
+        }
+    }
+    return 0;
+}
+/** @private */
 function canOutConnect(node) {
     if ((node instanceof Node) && (node.constraints & NodeConstraints.OutConnect)) {
         return node.constraints & NodeConstraints.OutConnect;
+    }
+    return 0;
+}
+/** @private */
+function canPortOutConnect(port) {
+    if (port) {
+        if ((port.constraints & PortConstraints.OutConnect)) {
+            return port.constraints & PortConstraints.OutConnect;
+        }
     }
     return 0;
 }
@@ -8302,7 +8688,7 @@ function canDrag(port, diagram) {
     return port.constraints & PortConstraints.Drag;
 }
 
-var __extends$17 = (undefined && undefined.__extends) || (function () {
+var __extends$18 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -8316,48 +8702,1402 @@ var __extends$17 = (undefined && undefined.__extends) || (function () {
     };
 })();
 /**
- * HTMLElement defines the basic html elements
+ * StackPanel module is used to arrange its children in a line
  */
-var DiagramHtmlElement = /** @__PURE__ @class */ (function (_super) {
-    __extends$17(DiagramHtmlElement, _super);
-    /**
-     * set the id for each element
-     */
-    function DiagramHtmlElement(nodeId, diagramId) {
-        var _this = _super.call(this) || this;
-        _this.data = '';
+var StackPanel = /** @__PURE__ @class */ (function (_super) {
+    __extends$18(StackPanel, _super);
+    function StackPanel() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
         /**
-         * Gets the node id for the element
+         * Gets/Sets the orientation of the stack panel
          */
-        _this.nodeId = '';
+        _this.orientation = 'Vertical';
         /**
-         * Gets the diagram id for the html element
+         * Not applicable for canvas
+         * @private
          */
-        _this.diagramId = '';
-        _this.diagramId = diagramId;
-        _this.nodeId = nodeId;
+        _this.measureChildren = undefined;
         return _this;
     }
-    Object.defineProperty(DiagramHtmlElement.prototype, "content", {
-        /**
-         * Gets or sets the geometry of the html element
-         */
-        get: function () {
-            return this.data;
-        },
-        /**
-         * Gets or sets the value of the html element
-         */
-        set: function (value) {
-            this.data = value;
-            this.template = getContent(this, true);
-            this.isDirt = true;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return DiagramHtmlElement;
+    /**
+     * Measures the minimum space that the panel needs
+     * @param availableSize
+     */
+    StackPanel.prototype.measure = function (availableSize) {
+        var updateSize = this.orientation === 'Horizontal' ? this.updateHorizontalStack : this.updateVerticalStack;
+        this.desiredSize = this.measureStackPanel(availableSize, updateSize);
+        return this.desiredSize;
+    };
+    /**
+     * Arranges the child elements of the stack panel
+     * @param desiredSize
+     */
+    StackPanel.prototype.arrange = function (desiredSize) {
+        var updateSize = this.orientation === 'Horizontal' ? this.arrangeHorizontalStack : this.arrangeVerticalStack;
+        this.actualSize = this.arrangeStackPanel(desiredSize, updateSize);
+        this.updateBounds();
+        return this.actualSize;
+    };
+    /**
+     * Measures the minimum space that the panel needs
+     * @param availableSize
+     */
+    StackPanel.prototype.measureStackPanel = function (availableSize, updateSize) {
+        var desired = undefined;
+        if (this.children !== undefined && this.children.length > 0) {
+            for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
+                var child = _a[_i];
+                child.parentTransform = this.rotateAngle + this.parentTransform;
+                //Measure children
+                child.measure(child.desiredSize);
+                var childSize = child.desiredSize.clone();
+                //Consider Child's margin
+                this.applyChildMargin(child, childSize);
+                //Consider children's rotation
+                if (child.rotateAngle !== 0) {
+                    childSize = rotateSize(childSize, child.rotateAngle);
+                }
+                //Measure stack panel
+                if (desired === undefined) {
+                    desired = childSize;
+                }
+                else {
+                    updateSize(childSize, desired);
+                }
+            }
+        }
+        desired = _super.prototype.validateDesiredSize.call(this, desired, availableSize);
+        this.stretchChildren(desired);
+        //Considering padding values
+        this.applyPadding(desired);
+        return desired;
+    };
+    StackPanel.prototype.arrangeStackPanel = function (desiredSize, updatePosition) {
+        if (this.children !== undefined && this.children.length > 0) {
+            var x = void 0;
+            var y = void 0;
+            x = this.offsetX - desiredSize.width * this.pivot.x + this.padding.left;
+            y = this.offsetY - desiredSize.height * this.pivot.y + this.padding.top;
+            for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
+                var child = _a[_i];
+                var childSize = child.desiredSize.clone();
+                var rotatedSize = childSize;
+                if (this.orientation === 'Vertical') {
+                    y += child.margin.top;
+                }
+                else {
+                    x += child.margin.left;
+                }
+                if (child.rotateAngle !== 0) {
+                    rotatedSize = rotateSize(childSize, child.rotateAngle);
+                }
+                var center = updatePosition(x, y, child, this, desiredSize, rotatedSize);
+                _super.prototype.findChildOffsetFromCenter.call(this, child, center);
+                child.arrange(childSize, true);
+                if (this.orientation === 'Vertical') {
+                    y += rotatedSize.height + child.margin.bottom;
+                }
+                else {
+                    x += rotatedSize.width + child.margin.right;
+                }
+            }
+        }
+        return desiredSize;
+    };
+    StackPanel.prototype.updateHorizontalStack = function (child, parent) {
+        parent.height = Math.max(child.height, parent.height);
+        parent.width += child.width;
+    };
+    StackPanel.prototype.updateVerticalStack = function (child, parent) {
+        parent.width = Math.max(child.width, parent.width);
+        parent.height += child.height;
+    };
+    StackPanel.prototype.arrangeHorizontalStack = function (x, y, child, parent, parenBounds, childBounds) {
+        var centerY = 0;
+        if (child.verticalAlignment === 'Top') {
+            centerY = y + child.margin.top + childBounds.height / 2;
+        }
+        else if (child.verticalAlignment === 'Bottom') {
+            var parentBottom = parent.offsetY + parenBounds.height * (1 - parent.pivot.y);
+            centerY = parentBottom - parent.padding.bottom - child.margin.bottom - childBounds.height / 2;
+        }
+        else {
+            centerY = parent.offsetY - parenBounds.height * parent.pivot.y + parenBounds.height / 2;
+            if (child.margin.top) {
+                centerY = y + child.margin.top + childBounds.height / 2;
+            }
+        }
+        return { x: x + childBounds.width / 2, y: centerY };
+    };
+    StackPanel.prototype.arrangeVerticalStack = function (x, y, child, parent, parentSize, childSize) {
+        var centerX = 0;
+        if (child.horizontalAlignment === 'Left') {
+            centerX = x + child.margin.left + childSize.width / 2;
+        }
+        else if (child.horizontalAlignment === 'Right') {
+            var parentRight = parent.offsetX + parentSize.width * (1 - parent.pivot.x);
+            centerX = parentRight - parent.padding.right - child.margin.right - childSize.width / 2;
+        }
+        else {
+            centerX = parent.offsetX - parentSize.width * parent.pivot.x + parentSize.width / 2;
+            if (child.margin.left) {
+                centerX = x + child.margin.left + childSize.width / 2;
+            }
+        }
+        return { x: centerX, y: y + childSize.height / 2 };
+    };
+    StackPanel.prototype.stretchChildren = function (size) {
+        if (this.children !== undefined && this.children.length > 0) {
+            for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
+                var child = _a[_i];
+                if (this.orientation === 'Vertical') {
+                    if (child.horizontalAlignment === 'Stretch') {
+                        child.desiredSize.width = size.width - (child.margin.left + child.margin.right);
+                    }
+                }
+                else {
+                    if (child.verticalAlignment === 'Stretch') {
+                        child.desiredSize.height = size.height - (child.margin.top + child.margin.bottom);
+                    }
+                }
+            }
+        }
+    };
+    StackPanel.prototype.applyChildMargin = function (child, size) {
+        size.height += child.margin.top + child.margin.bottom;
+        size.width += child.margin.left + child.margin.right;
+    };
+    return StackPanel;
+}(Container));
+
+var __extends$19 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * Grid panel is used to arrange the children in a table like structure
+ */
+var GridPanel = /** @__PURE__ @class */ (function (_super) {
+    __extends$19(GridPanel, _super);
+    function GridPanel() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.childTable = [];
+        _this.cellStyle = {};
+        _this.desiredRowHeight = [];
+        _this.desiredCellWidth = [];
+        return _this;
+    }
+    GridPanel.prototype.columnDefinitions = function () {
+        return this.colDefns;
+    };
+    GridPanel.prototype.addObject = function (obj, rowId, columnId, rowSpan, columnSpan) {
+        //check if exists
+        if (this.rows.length >= rowId) {
+            var row = this.rows[rowId];
+            if (row.cells.length > columnId) {
+                columnSpan = columnSpan || 1;
+                rowSpan = rowSpan || 1;
+                var cell = row.cells[columnId];
+                cell.columnSpan = Math.max(columnSpan, cell.columnSpan);
+                cell.rowSpan = Math.max(rowSpan, cell.rowSpan);
+                var object = new GridCellItem();
+                object = obj;
+                object.rowId = rowId;
+                object.columnId = columnId;
+                object.columnSpan = columnSpan;
+                this.childTable[object.id] = object;
+                this.addObjectToCell(object, cell);
+            }
+        }
+    };
+    // public setCellStyle(rowId: number, columnId: number, cellStyle: ShapeStyleModel): void {
+    //     if (this.rows.length > rowId) {
+    //         let row: GridRow = this.rows[rowId];
+    //         if (row.cells.length > columnId) {
+    //             let cell: GridCell = row.cells[columnId];
+    //             cell.style = cellStyle;
+    //         }
+    //     }
+    // }
+    // public getRowId(obj: DiagramElement): number {
+    //     return (this.childTable[obj.id] as GridCellItem).rowId;
+    // }
+    // public getColumnId(obj: DiagramElement): number {
+    //     return (this.childTable[obj.id] as GridCellItem).columnId;
+    // }
+    // public getRowSpan(obj: DiagramElement): number {
+    //     return (this.childTable[obj.id] as GridCellItem).rowSpan;
+    // }
+    // public getColumnSpan(obj: DiagramElement): number {
+    //     return (this.childTable[obj.id] as GridCellItem).columnSpan;
+    // }
+    GridPanel.prototype.addObjectToCell = function (obj, cell) {
+        if (!cell.children) {
+            cell.children = [];
+        }
+        // obj.minWidth = cell.desiredCellWidth; obj.minHeight = cell.desiredCellHeight;
+        obj.style.strokeColor = 'black';
+        obj.style.strokeWidth = 1;
+        obj.style.fill = 'white';
+        cell.children.push(obj);
+    };
+    /** @private */
+    GridPanel.prototype.updateProperties = function (offsetX, offsetY, width, height) {
+        this.offsetX = offsetX;
+        this.offsetY = offsetY;
+        this.width = width;
+        this.height = height;
+    };
+    /** @private */
+    GridPanel.prototype.setDefinitions = function (rows, columns) {
+        this.rowDefns = rows;
+        this.colDefns = columns;
+        this.children = [];
+        this.rows = this.rows || [];
+        for (var i = 0; i < rows.length; i++) {
+            var rowDefn = rows[i];
+            var row = new GridRow();
+            row.cells = [];
+            var defaultCell = new ColumnDefinition();
+            //replace this 100 with a proper property            
+            defaultCell.width = this.width;
+            var columns_1 = this.colDefns;
+            if (columns_1 === undefined || columns_1.length < 1) {
+                columns_1 = [defaultCell];
+            }
+            this.addCellInRow(columns_1, rowDefn, row);
+            this.rows.push(row);
+        }
+    };
+    /** @private */
+    GridPanel.prototype.addCellInRow = function (columns, rowDefn, row) {
+        for (var j = 0; j < columns.length; j++) {
+            var colDefn = columns[j];
+            var cell = new GridCell();
+            cell.children = [];
+            this.cellStyle.fill = 'none';
+            this.cellStyle.strokeColor = 'none';
+            cell.id = randomId();
+            cell.style = this.cellStyle;
+            cell.desiredCellWidth = cell.minWidth = colDefn.width;
+            cell.desiredCellHeight = cell.minHeight = rowDefn.height;
+            row.cells.push(cell);
+            this.children.push(cell);
+        }
+    };
+    /** @private */
+    GridPanel.prototype.calculateSize = function () {
+        var rows = this.rows || [];
+        var calculateHeight = 0;
+        var calculateWidth = 0;
+        for (var i = 0; i < rows.length; i++) {
+            var row = this.rows[i];
+            calculateWidth = 0;
+            for (var j = 0; j < row.cells.length; j++) {
+                calculateWidth += row.cells[j].desiredCellWidth;
+                if (j === row.cells.length - 1) {
+                    if (this.width && this.width !== calculateWidth) {
+                        row.cells[j].desiredCellWidth += (this.width - calculateWidth);
+                        if (row.cells[j].children && row.cells[j].children.length) {
+                            row.cells[j].children[0].minWidth = row.cells[j].desiredCellWidth;
+                        }
+                    }
+                    calculateHeight += row.cells[j].desiredCellHeight;
+                    if (i === rows.length - 1) {
+                        if (this.height && this.height !== calculateHeight) {
+                            row.cells[j].desiredCellHeight += (this.height - calculateHeight);
+                            if (row.cells[j].children && row.cells[j].children.length) {
+                                row.cells[j].children[0].minHeight = row.cells[j].desiredCellHeight;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    };
+    /** @private */
+    GridPanel.prototype.updateRowHeight = function (rowId, height) {
+        var row = this.rows[rowId];
+        if (this.height !== undefined) {
+            this.height += height - row.cells[0].desiredCellHeight;
+        }
+        for (var i = 0; i < row.cells.length; i++) {
+            row.cells[i].desiredCellHeight = row.cells[i].minHeight = height;
+            if (row.cells[i].children && row.cells[i].children.length) {
+                row.cells[i].children[0].minHeight = height;
+            }
+        }
+        this.desiredRowHeight[rowId] = height;
+        this.measure(new Size(this.width, this.height));
+        this.arrange(this.desiredSize);
+    };
+    /** @private */
+    GridPanel.prototype.updateColumnWidth = function (colId, width) {
+        if (this.width !== undefined) {
+            this.width += width - this.rows[0].cells[colId].desiredCellWidth;
+        }
+        for (var i = 0; i < this.rows.length; i++) {
+            this.rows[i].cells[colId].desiredCellWidth = this.rows[i].cells[colId].minWidth = width;
+            if (this.rows[i].cells[colId].children && this.rows[i].cells[colId].children.length) {
+                this.rows[i].cells[colId].children[0].minWidth = width;
+            }
+        }
+        this.desiredCellWidth[colId] = width;
+        this.measure(new Size(this.width, this.height));
+        this.arrange(this.desiredSize);
+    };
+    /** @private */
+    GridPanel.prototype.addRow = function (rowId, rows) {
+        for (var i = 0; i < rows.length; i++) {
+            var rowDefn = rows[i];
+            this.rowDefns.push(rowDefn);
+            var row = new GridRow();
+            row.cells = [];
+            var defaultCell = new ColumnDefinition();
+            defaultCell.width = this.width;
+            var columns = this.colDefns;
+            this.addCellInRow(columns, rowDefn, row);
+            if (rowId > this.rows.length - 1) {
+                this.rows.push(row);
+            }
+            else {
+                this.rows.splice(rowId, 0, row);
+            }
+        }
+        this.measure(new Size(this.width, this.height));
+        this.arrange(this.desiredSize);
+    };
+    /** @private */
+    GridPanel.prototype.addColumn = function (columnId, columns) {
+        var rows = this.rows;
+        for (var i = 0; i < rows.length; i++) {
+            var row = rows[i];
+            var rowDefn = this.rowDefns[i];
+            for (var j = 0; j < columns.length; j++) {
+                var colDefn = columns[j];
+                var cell = new GridCell();
+                cell.style = this.cellStyle;
+                cell.desiredCellWidth = colDefn.width;
+                cell.desiredCellHeight = rowDefn.height;
+                if (columnId > row.cells.length - 1) {
+                    row.cells.push(cell);
+                }
+                else {
+                    row.cells.splice(columnId, 0, cell);
+                }
+                this.children.push(cell);
+            }
+        }
+        this.measure(new Size(this.width, this.height));
+        this.arrange(this.desiredSize);
+    };
+    /** @private */
+    GridPanel.prototype.removeRow = function (rowId) {
+        var rows = this.rows;
+        var removeRow = rows[rowId];
+        for (var i = 0; i < removeRow.cells.length; i++) {
+            var cell = removeRow.cells[i];
+            this.children.splice(this.children.indexOf(cell), 1);
+            var element = document.getElementById(cell.id + '_groupElement');
+            element.parentElement.removeChild(element);
+        }
+        this.rows.splice(rowId, 1);
+        this.rowDefns.splice(rowId, 1);
+        this.measure(new Size(this.width, this.height));
+        this.arrange(this.desiredSize);
+    };
+    /** @private */
+    GridPanel.prototype.removeColumn = function (columnId) {
+        var rows = this.rows;
+        for (var i = 0; i < rows.length; i++) {
+            var cell = rows[i].cells[columnId];
+            this.children.splice(this.children.indexOf(cell), 1);
+            var element = document.getElementById(cell.id + '_groupElement');
+            element.parentElement.removeChild(element);
+            rows[i].cells.splice(columnId, 1);
+        }
+        this.measure(new Size(this.width, this.height));
+        this.arrange(this.desiredSize);
+    };
+    /** @private */
+    GridPanel.prototype.updateRowIndex = function (currentIndex, newIndex) {
+        var rows = this.rows;
+        var temp = this.rows[currentIndex];
+        this.rows.splice(currentIndex, 1);
+        this.rows.splice(newIndex, 0, temp);
+        this.measure(new Size(this.width, this.height));
+        this.arrange(this.desiredSize);
+    };
+    /** @private */
+    GridPanel.prototype.measure = function (availableSize) {
+        var desired = undefined;
+        if (this.rows !== undefined && this.rows.length > 0) {
+            var i = 0;
+            var j = 0;
+            desired = new Size(0, 0);
+            this.calculateSize();
+            for (var _i = 0, _a = this.rows; _i < _a.length; _i++) {
+                var row = _a[_i];
+                j = 0;
+                for (var _b = 0, _c = row.cells; _b < _c.length; _b++) {
+                    var cell = _c[_b];
+                    var size = cell.measure(new Size(cell.desiredCellWidth, cell.desiredCellHeight));
+                    if (cell.rowSpan === 1) {
+                        if (j === 0 || this.desiredRowHeight[i] === undefined) {
+                            this.desiredRowHeight[i] = size.height;
+                        }
+                        else {
+                            this.desiredRowHeight[i] = Math.max(size.height, this.desiredRowHeight[i]);
+                        }
+                    }
+                    if (cell.columnSpan === 1) {
+                        if (i === 0 || this.desiredCellWidth[j] === undefined) {
+                            this.desiredCellWidth[j] = size.width;
+                        }
+                        else {
+                            this.desiredCellWidth[j] = Math.max(size.width, this.desiredCellWidth[j]);
+                        }
+                        if (i === this.rows.length - 1) {
+                            desired.width += this.desiredCellWidth[j];
+                        }
+                    }
+                    j++;
+                }
+                desired.height += this.desiredRowHeight[i];
+                i++;
+            }
+            //to-do update definitions
+            i = j = 0;
+            var rowIndex = 0;
+            for (var _d = 0, _e = this.rows; _d < _e.length; _d++) {
+                var row = _e[_d];
+                j = 0;
+                var cellIndex = 0;
+                for (var _f = 0, _g = row.cells; _f < _g.length; _f++) {
+                    var cell = _g[_f];
+                    if (cell.columnSpan !== 1) {
+                        cell.desiredSize.width = 0;
+                        for (var start = 0; start < cell.columnSpan; start++) {
+                            if ((start + j) < row.cells.length) {
+                                cell.desiredSize.width += this.desiredCellWidth[start + j];
+                                cell.minWidth = cell.desiredSize.width;
+                                cell.measure(cell.desiredSize);
+                            }
+                        }
+                        j++;
+                    }
+                    else {
+                        cell.desiredSize.width = this.desiredCellWidth[cellIndex];
+                        cell.measure(cell.desiredSize);
+                    }
+                    if (cell.rowSpan !== 1) {
+                        cell.desiredSize.height = 0;
+                        for (var start = 0; start < cell.rowSpan; start++) {
+                            if ((start + rowIndex) < this.rows.length) {
+                                cell.desiredSize.height += this.desiredRowHeight[start + rowIndex];
+                                cell.minHeight = cell.desiredSize.height;
+                                cell.measure(cell.desiredSize);
+                            }
+                        }
+                    }
+                    else {
+                        cell.desiredSize.height = this.desiredRowHeight[rowIndex];
+                        cell.measure(cell.desiredSize);
+                    }
+                    i++;
+                    cellIndex++;
+                }
+                rowIndex++;
+            }
+        }
+        if (desired === undefined) {
+            desired = _super.prototype.validateDesiredSize.call(this, desired, availableSize);
+        }
+        _super.prototype.stretchChildren.call(this, desired);
+        this.desiredSize = desired;
+        return desired;
+    };
+    /** @private */
+    GridPanel.prototype.arrange = function (desiredSize, isChange) {
+        if (this.rows !== undefined && this.rows.length > 0) {
+            var x = this.offsetX - desiredSize.width * this.pivot.x;
+            var y = this.offsetY - desiredSize.height * this.pivot.y;
+            var cellX = x;
+            var j = 0;
+            var i = 0;
+            for (var _i = 0, _a = this.rows; _i < _a.length; _i++) {
+                var row = _a[_i];
+                cellX = x;
+                j = 0;
+                for (var _b = 0, _c = row.cells; _b < _c.length; _b++) {
+                    var cell = _c[_b];
+                    var cellWidth = Math.max(this.desiredCellWidth[j], cell.desiredSize.width);
+                    var cellHeight = Math.max(this.desiredRowHeight[i], cell.desiredSize.height);
+                    cell.offsetX = cellX + cellWidth * cell.pivot.x;
+                    cell.offsetY = y + cellHeight * cell.pivot.y;
+                    cellX += this.desiredCellWidth[j];
+                    cell.arrange(new Size(cellWidth, cellHeight));
+                    j++;
+                }
+                y += this.desiredRowHeight[i];
+                i++;
+            }
+            if (isChange) {
+                // Need to remove the unwanted the child elements in the grid
+                // Used for row span and column span.
+                for (var i_1 = 0; i_1 < this.rows.length; i_1++) {
+                    var row = this.rows[i_1];
+                    for (var j_1 = 0; j_1 < row.cells.length; j_1++) {
+                        var cell = row.cells[j_1];
+                        if (cell.columnSpan > 1) {
+                            // remove a child element when a column span is greater than 1
+                            this.children.splice((this.children.indexOf(cell)) + 1, cell.columnSpan - 1);
+                        }
+                        if (cell.rowSpan > 1) {
+                            var k = void 0;
+                            var z = void 0;
+                            for (k = i_1, z = 0; ((k + cell.rowSpan - 1) < this.rows.length && z < cell.rowSpan - 1); k++, z++) {
+                                var removeCelll = this.rows[k + 1].cells[j_1];
+                                // remove a child element when a row span is greater than 1
+                                this.children.splice(this.children.indexOf(removeCelll), 1);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        this.actualSize = desiredSize;
+        this.updateBounds();
+        return desiredSize;
+    };
+    return GridPanel;
+}(Container));
+/** @private */
+var RowDefinition = /** @__PURE__ @class */ (function () {
+    function RowDefinition() {
+        this.height = undefined;
+    }
+    return RowDefinition;
+}());
+/** @private */
+var ColumnDefinition = /** @__PURE__ @class */ (function () {
+    function ColumnDefinition() {
+        this.width = undefined;
+    }
+    return ColumnDefinition;
+}());
+/** @private */
+var GridRow = /** @__PURE__ @class */ (function () {
+    function GridRow() {
+        this.cells = null;
+    }
+    return GridRow;
+}());
+/** @private */
+var GridCell = /** @__PURE__ @class */ (function (_super) {
+    __extends$19(GridCell, _super);
+    function GridCell() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.columnSpan = 1;
+        _this.rowSpan = 1;
+        return _this;
+    }
+    return GridCell;
+}(Canvas));
+var GridCellItem = /** @__PURE__ @class */ (function (_super) {
+    __extends$19(GridCellItem, _super);
+    function GridCellItem() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.rowId = 0;
+        _this.columnId = 0;
+        _this.rowSpan = 1;
+        _this.columnSpan = 1;
+        return _this;
+    }
+    return GridCellItem;
 }(DiagramElement));
+
+/**
+ * These utility methods help to process the data and to convert it to desired dimensions
+ */
+/** @private */
+function getULMClassifierShapes(content, node, diagram) {
+    var classifier;
+    var textWrap = 'NoWrap';
+    if (node.shape.classifier === 'Class') {
+        classifier = node.shape.class;
+    }
+    else if (node.shape.classifier === 'Enumeration') {
+        classifier = node.shape.enumeration;
+    }
+    else if (node.shape.classifier === 'Interface') {
+        classifier = node.shape.interface;
+    }
+    node.container = { type: 'Stack', orientation: 'Vertical' };
+    node.constraints = (NodeConstraints.Default | NodeConstraints.HideThumbs) &
+        ~(NodeConstraints.Rotate | NodeConstraints.Resize);
+    node.style = {
+        fill: node.style.fill, strokeColor: 'black',
+        strokeWidth: 1.5
+    };
+    node.children = [];
+    if (node.maxWidth) {
+        textWrap = 'Wrap';
+    }
+    var newObj = new Node(diagram, 'nodes', {
+        id: node.id + '_umlClass_header',
+        annotations: [
+            {
+                id: 'name', content: classifier.name,
+                offset: { x: 0.5, y: 0.65 }, margin: { left: 10, right: 10 },
+                style: {
+                    bold: true, fontSize: 14, color: classifier.style.color, fill: classifier.style.fill,
+                    textWrapping: textWrap
+                }
+            }, {
+                content: '<<' + node.shape.classifier + '>>', margin: { left: 10, right: 10 },
+                id: 'class', style: {
+                    fontSize: classifier.style.fontSize,
+                    color: classifier.style.color, fill: classifier.style.fill,
+                    textWrapping: textWrap
+                }, offset: { x: 0.5, y: 0.3 }, constraints: AnnotationConstraints.ReadOnly
+            },
+        ],
+        constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~(NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
+        verticalAlignment: 'Stretch',
+        horizontalAlignment: 'Stretch',
+        style: { fill: node.style.fill, strokeColor: '#ffffff00' }
+    }, true);
+    diagram.initObject(newObj);
+    diagram.nodes.push(newObj);
+    node.children.push(newObj.id);
+    getClassNodes(node, diagram, classifier, textWrap);
+    getClassMembers(node, diagram, classifier, textWrap);
+    node.offsetX = node.offsetX;
+    node.offsetY = node.offsetY;
+    node.style.fill = node.style.fill;
+    node.borderColor = node.borderColor;
+    diagram.initObject(node);
+    return content;
+}
+/** @private */
+function getClassNodes(node, diagram, classifier, textWrap) {
+    if (node.shape.classifier === 'Enumeration') {
+        var member = classifier.members;
+        if (member && member.length) {
+            addSeparator(node, diagram);
+            var memberText = '';
+            for (var i = 0; i < member.length; i++) {
+                var members = member[i];
+                if (members.name !== '') {
+                    memberText += members.name;
+                }
+                if (i !== member.length) {
+                    var style = getStyle(node, members);
+                    var temp = new Node(diagram, 'nodes', {
+                        id: randomId() + '_umlMember',
+                        annotations: [
+                            {
+                                id: 'name', content: memberText, offset: { x: 0, y: 0.5 },
+                                style: {
+                                    bold: true, fontSize: style.fontSize, color: style.color, fill: style.fill,
+                                    textWrapping: textWrap
+                                },
+                                margin: { left: 14, right: 5 }, horizontalAlignment: 'Left'
+                            }
+                        ], verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
+                        style: { fill: node.style.fill, strokeColor: '#ffffff00', textWrapping: textWrap },
+                        constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~(NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
+                        maxHeight: 25, minHeight: 25
+                    }, true);
+                    diagram.initObject(temp);
+                    diagram.nodes.push(temp);
+                    node.children.push(temp.id);
+                    memberText = '';
+                    if (members.isSeparator && (i !== member.length - 1)) {
+                        addSeparator(node, diagram);
+                    }
+                }
+            }
+        }
+    }
+    else {
+        var attributes = classifier.attributes;
+        if (attributes.length) {
+            var attributeText = '';
+            addSeparator(node, diagram);
+            for (var i = 0; i < attributes.length; i++) {
+                var text = void 0;
+                var attribute = attributes[i];
+                if (attribute.scope && (attribute).scope === 'Public') {
+                    text = ' +';
+                }
+                else if (attribute.scope && attribute.scope === 'Private') {
+                    text = '-';
+                }
+                else if (attribute.scope && attribute.scope === 'Protected') {
+                    text = '#';
+                }
+                else {
+                    text = '~';
+                }
+                if (attribute.name !== '') {
+                    if (text) {
+                        attributeText += text + ' ' + attribute.name + ' ' + ': ' + attribute.type;
+                    }
+                }
+                if (i !== attributes.length) {
+                    var style = getStyle(node, attribute);
+                    var temp = new Node(diagram, 'nodes', {
+                        id: randomId() + '_umlProperty', style: { fill: node.style.fill, strokeColor: '#ffffff00' },
+                        annotations: [
+                            {
+                                id: 'name', content: attributeText, offset: { x: 0, y: 0.5 },
+                                style: {
+                                    bold: true, fontSize: style.fontSize, color: style.color, fill: style.fill,
+                                    textWrapping: textWrap
+                                },
+                                margin: { left: 14, right: 5 }, horizontalAlignment: 'Left'
+                            }
+                        ], verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
+                        constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~(NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
+                        maxHeight: 25, minHeight: 25
+                    }, true);
+                    diagram.initObject(temp);
+                    diagram.nodes.push(temp);
+                    node.children.push(temp.id);
+                    attributeText = '';
+                    if (attribute.isSeparator && (i !== attributes.length - 1)) {
+                        addSeparator(node, diagram);
+                    }
+                }
+            }
+        }
+    }
+}
+/** @private */
+function getClassMembers(node, diagram, classifier, textWrap) {
+    if (classifier.methods && classifier.methods.length) {
+        var methods = classifier.methods;
+        addSeparator(node, diagram);
+        var argumentText = '';
+        var methodText = '';
+        var text = void 0;
+        for (var i = 0; i < methods.length; i++) {
+            var method = methods[i];
+            if (method.scope && method.scope === 'Public') {
+                text = ' +';
+            }
+            else if (method.scope && method.scope === 'Private') {
+                text = '-';
+            }
+            else if (method.scope && method.scope === 'Protected') {
+                text = '#';
+            }
+            else {
+                text = '~';
+            }
+            if (method.parameters) {
+                for (var j = 0; j < method.parameters.length; j++) {
+                    if (method.parameters[j].type) {
+                        argumentText += method.parameters[j].name + ':' + method.parameters[j].type;
+                    }
+                    else {
+                        argumentText += method.parameters[j].name;
+                    }
+                    if (j !== method.parameters.length - 1) {
+                        argumentText += ',';
+                    }
+                }
+            }
+            if (method.name !== '') {
+                if (text) {
+                    methodText += text + ' ' + method.name + '(' + argumentText + ')' + ' ' + ':' + ' ' + method.type;
+                }
+            }
+            if (i !== methods.length) {
+                var style = getStyle(node, method);
+                var temp = new Node(diagram, 'nodes', {
+                    id: randomId() + '_umlMethods', verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
+                    annotations: [
+                        {
+                            id: 'name', content: methodText, offset: { x: 0, y: 0.5 },
+                            style: {
+                                bold: true, fontSize: style.fontSize, color: style.color, fill: style.fill,
+                                textWrapping: textWrap
+                            },
+                            margin: { left: 14, right: 5 }, horizontalAlignment: 'Left'
+                        }
+                    ],
+                    style: { fill: node.style.fill, strokeColor: '#ffffff00' }, maxHeight: 25, minHeight: 25,
+                    constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~(NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize)
+                }, true);
+                diagram.initObject(temp);
+                diagram.nodes.push(temp);
+                node.children.push(temp.id);
+                methodText = '';
+                if (method.isSeparator && (i !== methods.length - 1)) {
+                    addSeparator(node, diagram);
+                }
+            }
+        }
+    }
+}
+/** @private */
+function addSeparator(stack, diagram) {
+    var lineObject = new Node(diagram, 'nodes', {
+        id: randomId() + '_path', height: 1, constraints: NodeConstraints.Default & ~(NodeConstraints.Select),
+        verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
+    }, true);
+    diagram.initObject(lineObject);
+    diagram.nodes.push(lineObject);
+    stack.children.push(lineObject.id);
+}
+/** @private */
+function getStyle(stack, node) {
+    var newStyle = {};
+    var style = node.style;
+    newStyle.fill = (style.fill !== 'transparent') ? style.fill : stack.style.fill;
+    newStyle.color = style.color;
+    newStyle.fontSize = (style.fontSize !== 12) ? style.fontSize : stack.style.fontSize;
+    newStyle.strokeColor = (style.strokeColor !== 'black') ? style.strokeColor : stack.style.strokeColor;
+    newStyle.strokeWidth = (style.strokeWidth !== 1) ? style.strokeWidth : stack.style.strokeWidth;
+    return newStyle;
+}
+
+/**
+ * Interaction for Container
+ */
+//#region canvas Container interaction
+/** @private */
+function updateCanvasBounds(diagram, obj, position, isBoundsUpdate) {
+    var container;
+    if (checkParentAsContainer(diagram, obj, true)) {
+        container = diagram.nameTable[obj.parentId];
+        var wrapper = container.wrapper;
+        if (container && container.container.type === 'Canvas') {
+            if ((isBoundsUpdate || (wrapper.bounds.x <= position.x && wrapper.bounds.right >= position.x &&
+                (wrapper.bounds.y <= position.y && wrapper.bounds.bottom >= position.y)))) {
+                if (wrapper.actualSize.width < wrapper.outerBounds.width &&
+                    (!(wrapper.bounds.x > wrapper.outerBounds.x))) {
+                    if (container.rowIndex !== undefined) {
+                        var parent_1 = diagram.nameTable[container.parentId];
+                        if (parent_1.columns.length - 1 === container.columnIndex) {
+                            var x = wrapper.bounds.x;
+                            var y = wrapper.bounds.y;
+                            (wrapper).maxWidth = wrapper.outerBounds.width;
+                            parent_1.wrapper.updateColumnWidth(container.columnIndex, wrapper.outerBounds.width);
+                            diagram.drag(parent_1, x - wrapper.bounds.x, y - wrapper.bounds.y);
+                            diagram.updateDiagramObject(parent_1);
+                        }
+                    }
+                    else {
+                        diagram.scale(container, (1 + ((wrapper.outerBounds.width - wrapper.actualSize.width) / wrapper.actualSize.width)), 1, ((wrapper.outerBounds.x < wrapper.bounds.x) ? { x: 1, y: 0.5 } : { x: 0, y: 0.5 }));
+                    }
+                }
+                if (wrapper.actualSize.height < wrapper.outerBounds.height &&
+                    (!(wrapper.bounds.y > wrapper.outerBounds.y))) {
+                    if (container.rowIndex !== undefined) {
+                        var contai = diagram.nameTable[container.parentId];
+                        var x = wrapper.bounds.x;
+                        var y = wrapper.bounds.y;
+                        (wrapper).maxHeight = wrapper.outerBounds.height;
+                        contai.wrapper.updateRowHeight(container.rowIndex, wrapper.outerBounds.height);
+                        diagram.drag(contai, x - wrapper.bounds.x, y - wrapper.bounds.y);
+                    }
+                    else {
+                        diagram.scale(container, 1, (1 + ((wrapper.outerBounds.height - wrapper.actualSize.height) / wrapper.actualSize.height)), ((wrapper.outerBounds.y < wrapper.bounds.y) ? { x: 0.5, y: 1 } : { x: 0.5, y: 0 }));
+                    }
+                }
+            }
+            else if (container.container.type === 'Canvas') {
+                var undoObj = cloneObject(obj);
+                diagram.clearSelection();
+                diagram.deleteChild(obj);
+                obj.parentId = '';
+                var entry = {
+                    type: 'ChildCollectionChanged', category: 'Internal',
+                    undoObject: undoObj, redoObject: cloneObject(obj)
+                };
+                diagram.addHistoryEntry(entry);
+            }
+            diagram.select([obj]);
+        }
+    }
+}
+/** @private */
+function findBounds(obj, columnIndex, isHeader) {
+    var rect = new Rect();
+    var rows = (obj.shape.type === 'SwimLane') ?
+        obj.wrapper.children[0].rows : obj.wrapper.rows;
+    for (var i = ((isHeader) ? 1 : 0); i < rows.length; i++) {
+        rect.uniteRect(rows[i].cells[columnIndex].bounds);
+    }
+    return rect;
+}
+/** @private */
+function createHelper(diagram, obj) {
+    var newObj;
+    var cloneObject$$1 = {};
+    for (var _i = 0, _a = Object.keys(obj); _i < _a.length; _i++) {
+        var prop = _a[_i];
+        cloneObject$$1[prop] = obj[prop];
+    }
+    if (getObjectType(obj) === Node) {
+        newObj = new Node(diagram, 'nodes', cloneObject$$1, true);
+        newObj.id = obj.id;
+        diagram.initObject(newObj);
+    }
+    diagram.updateDiagramObject(newObj);
+    return newObj;
+}
+/** @private */
+function renderContainerHelper(diagram, obj) {
+    var object;
+    var nodes;
+    if (diagram.selectedObject.helperObject) {
+        nodes = diagram.selectedObject.helperObject;
+    }
+    else {
+        if (obj instanceof Selector && obj.nodes.length + obj.connectors.length === 1) {
+            object = (obj.nodes.length > 0) ? obj.nodes[0] : obj.connectors[0];
+        }
+        else {
+            object = obj;
+        }
+        diagram.selectedObject.actualObject = object;
+        var container = diagram.selectedItems.wrapper.children[0];
+        if (checkParentAsContainer(diagram, object)) {
+            var node = {
+                id: 'helper',
+                rotateAngle: container.rotateAngle,
+                offsetX: container.offsetX, offsetY: container.offsetY,
+                minWidth: container.minWidth, minHeight: container.minHeight,
+                maxWidth: container.maxWidth, maxHeight: container.maxHeight,
+                width: container.actualSize.width,
+                height: container.actualSize.height,
+                style: { strokeDashArray: '2 2', fill: 'transparent', strokeColor: 'red' }
+            };
+            nodes = createHelper(diagram, node);
+            diagram.selectedObject.helperObject = nodes;
+        }
+    }
+    return nodes;
+}
+/** @private */
+function checkParentAsContainer(diagram, obj, isChild) {
+    var parentNode = (isChild) ? diagram.nameTable[obj.parentId] :
+        (diagram.nameTable[obj.parentId] || obj);
+    if (parentNode && parentNode.container) {
+        return true;
+    }
+    return false;
+}
+/** @private */
+function checkChildNodeInContainer(diagram, obj) {
+    var parentNode = diagram.nameTable[obj.parentId];
+    if (parentNode.container.type === 'Canvas') {
+        obj.margin.left = (obj.offsetX - parentNode.wrapper.bounds.x - (obj.width / 2));
+        obj.margin.top = (obj.offsetY - parentNode.wrapper.bounds.y - (obj.height / 2));
+    }
+    diagram.nodePropertyChange(obj, {}, {
+        width: obj.width, height: obj.height,
+        offsetX: obj.offsetX, offsetY: obj.offsetY,
+        margin: {
+            left: obj.margin.left,
+            right: obj.margin.right, top: obj.margin.top,
+            bottom: obj.margin.bottom
+        }, rotateAngle: obj.rotateAngle
+    });
+    parentNode.wrapper.measure(new Size());
+    parentNode.wrapper.arrange(parentNode.wrapper.desiredSize);
+}
+/**
+ * @private
+ */
+function addChildToContainer(diagram, parent, node) {
+    if (!diagram.currentSymbol) {
+        var child = (diagram.nodes.indexOf(node) !== -1) ? node.id : node;
+        if (parent.container.type === 'Canvas') {
+            var left = (node.wrapper.offsetX - node.wrapper.actualSize.width / 2) -
+                (parent.wrapper.offsetX - parent.wrapper.actualSize.width / 2);
+            var top_1 = (node.wrapper.offsetY - node.wrapper.actualSize.height / 2) -
+                (parent.wrapper.offsetY - parent.wrapper.actualSize.height / 2);
+            node.margin.left = left;
+            node.margin.top = top_1;
+        }
+        var container = diagram.nameTable[parent.id];
+        if (!container.children) {
+            container.children = [];
+        }
+        if (container.children.indexOf(node.id) === -1) {
+            if (node.parentId !== '') {
+                diagram.deleteChild(node);
+            }
+            var undoObj = cloneObject(node);
+            diagram.addChild(container, child);
+            var entry = {
+                type: 'ChildCollectionChanged', category: 'Internal',
+                undoObject: undoObj, redoObject: cloneObject(node)
+            };
+            diagram.addHistoryEntry(entry);
+            diagram.updateDiagramObject(container);
+        }
+    }
+}
+//#endregion
+//# reginon stack panel interaction
+/** @private */
+function renderStackHighlighter(element, isVertical, position, diagram, isUml) {
+    var adornerSvg = getAdornerLayerSvg(diagram.element.id);
+    diagram.diagramRenderer.renderStackHighlighter(element, adornerSvg, diagram.scroller.transform, isVertical, position, isUml);
+}
+/** @private */
+function moveChildInStack(sourceNode, target, diagram, action) {
+    var obj = sourceNode;
+    var parent = diagram.nameTable[obj.parentId];
+    var sourceParent = diagram.nameTable[obj.parentId];
+    if (target && sourceParent && sourceParent.container && sourceParent.container.type === 'Stack' &&
+        target.container && target.container.type === 'Stack' && (sourceParent.id !== target.parentId)) {
+        var value = sourceParent.wrapper.children.indexOf(obj.wrapper);
+        if (value > -1) {
+            diagram.nameTable[obj.id].parentId = target.id;
+            sourceParent.wrapper.children.splice(value, 1);
+        }
+    }
+    if (target && target.parentId && obj.parentId && action === 'Drag') {
+        var targetIndex = parent.wrapper.children.indexOf(target.wrapper);
+        var sourceIndex = parent.wrapper.children.indexOf(obj.wrapper);
+        var undoElement = {
+            targetIndex: targetIndex, target: target,
+            sourceIndex: sourceIndex, source: sourceNode
+        };
+        parent.wrapper.children.splice(sourceIndex, 1);
+        parent.wrapper.children.splice(targetIndex, 0, obj.wrapper);
+        var redoElement = {
+            targetIndex: sourceIndex, target: target,
+            sourceIndex: targetIndex, source: sourceNode
+        };
+        var entry = {
+            type: 'StackChildPositionChanged', redoObject: redoElement,
+            undoObject: undoElement, category: 'Internal'
+        };
+        diagram.commandHandler.addHistoryEntry(entry);
+    }
+}
+//#end region
+//# region Swimlane rendering
+/** @private */
+function initSwimLane(grid, diagram, node) {
+    var row = [];
+    var columns = [];
+    var orientation = node.shape.orientation === 'Horizontal' ? true : false;
+    if (node.shape.header) {
+        createRow(row, node.shape.header.height);
+    }
+    initGridRow(row, orientation, node);
+    initGridColumns(columns, orientation, node);
+    grid.setDefinitions(row, columns);
+    var index = 0;
+    if (node.shape.header) {
+        headerDefine(grid, diagram, node);
+        index++;
+    }
+    if (node.shape.phases.length > 0) {
+        phaseDefine(grid, diagram, node, index, orientation);
+        index++;
+    }
+    if (node.shape.lanes.length > 0) {
+        for (var k = 0; k < node.shape.lanes.length; k++) {
+            laneCollection(grid, diagram, node, index, k, orientation);
+            index++;
+        }
+    }
+}
+/** @private */
+function addObjectToGrid(diagram, grid, parent, object, isHeader) {
+    var node = new Node(parent, 'nodes', object);
+    node.parentId = grid.id;
+    if (isHeader) {
+        node.isHeader = true;
+    }
+    diagram.initObject(node);
+    if (node.wrapper.children.length > 0) {
+        for (var i = 0; i < node.wrapper.children.length; i++) {
+            var child = node.wrapper.children[i];
+            if (child instanceof DiagramElement) {
+                child.isCalculateDesiredSize = false;
+            }
+        }
+    }
+    return node.wrapper;
+}
+// /** @private */
+// export function addGridObject(
+//     diagram: Diagram, grid: Grid, object: NodeModel, isHeader?: boolean, rowValue?: number, colValue?: number,
+//     nodeObj?: NodeModel, orientation?: boolean, lanesNo?: number): void {
+//     let node: Node = new Node(object, 'nodes', { container: { type: 'Canvas', orientation: 'Horziontal' } });
+//     diagram.initObject(node as IElement);
+//     node.parentId = grid.id;
+//     if (isHeader) {
+//         (node as Node).isHeader = true;
+//     }
+//     diagram.nodes.push(node);
+//     let canvas: Container = node.wrapper;
+//     node.rowIndex = rowValue; node.columnIndex = colValue;
+//     canvas.children = [];
+//     if (nodeObj) {
+//         if (lanesNo !== undefined) {
+//             orientation ? canvas.verticalAlignment = 'Stretch' : canvas.horizontalAlignment = 'Stretch';
+//             canvas.relativeMode = 'Object';
+//             if (orientation) {
+//                 nodeObj.width = (object.shape as SwimLaneModel).lanes[lanesNo].header.width;
+//             } else {
+//                 nodeObj.height = (object.shape as SwimLaneModel).lanes[lanesNo].header.width;
+//             }
+//         }
+//         let node: Node = new Node(object, 'nodes', nodeObj);
+//         node.parentId = grid.id;
+//         node.rowIndex = rowValue; node.columnIndex = colValue;
+//         if (isHeader) {
+//             (node as Node).isHeader = true;
+//         }
+//         diagram.initObject(node);
+//         if (lanesNo === undefined) {
+//             if (isHeader) {
+//                 node.wrapper.horizontalAlignment = 'Stretch';
+//             } else {
+//                 orientation ? node.wrapper.horizontalAlignment = 'Stretch' : node.wrapper.verticalAlignment = 'Stretch';
+//             }
+//             canvas.horizontalAlignment = node.wrapper.horizontalAlignment;
+//             canvas.verticalAlignment = node.wrapper.verticalAlignment;
+//             canvas.relativeMode = node.wrapper.relativeMode = 'Object';
+//         } else {
+//             orientation ? node.wrapper.verticalAlignment = 'Stretch' : node.wrapper.horizontalAlignment = 'Stretch';
+//             node.wrapper.relativeMode = 'Object';
+//         }
+//         if (node.wrapper.children.length > 0) {
+//             for (let i: number = 0; i < node.wrapper.children.length; i++) {
+//                 let child: DiagramElement = node.wrapper.children[i];
+//                 if (child instanceof DiagramElement) {
+//                     child.isCalculateDesiredSize = false;
+//                 }
+//             }
+//         }
+//         canvas.children.push(node.wrapper);
+//     }
+//     grid.addObject(canvas, rowValue, colValue, 1, (isHeader) ? grid.columnDefinitions().length : 1);
+// }
+/** @private */
+function headerDefine(grid, diagram, object) {
+    var node = {
+        annotations: [{ content: object.shape.header.content.content }],
+        style: object.shape.header.style,
+        rowIndex: 0, columnIndex: 0,
+        container: { type: 'Canvas', orientation: 'Horizontal' }
+    };
+    var wrapper = addObjectToGrid(diagram, grid, object, node, true);
+    grid.addObject(wrapper, 0, 0, 1, grid.columnDefinitions().length);
+}
+/** @private */
+function phaseDefine(grid, diagram, object, indexValue, orientation) {
+    var rowValue = 0;
+    var colValue = 0;
+    for (var k = 0; k < object.shape.phases.length; k++) {
+        if (orientation) {
+            colValue = k;
+            rowValue = indexValue;
+        }
+        else {
+            rowValue = object.shape.header ? k + 1 : k;
+        }
+        var phaseObject = {
+            annotations: [{
+                    content: object.shape.phases[k].header.content.content,
+                    rotateAngle: orientation ? 0 : 270
+                }],
+            style: object.shape.phases[k].style,
+            rowIndex: rowValue, columnIndex: colValue,
+            container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
+        };
+        var wrapper = addObjectToGrid(diagram, grid, object, phaseObject);
+        grid.addObject(wrapper, rowValue, colValue);
+    }
+}
+/** @private */
+function laneCollection(grid, diagram, object, indexValue, laneIndex, orientation) {
+    var value = object.shape.phases.length || 1;
+    var colValue = 0;
+    var rowValue = orientation ? indexValue : 1;
+    var phaseCount = object.shape.phases.length > 0 ? 1 : 0;
+    for (var l = 0; l < value; l++) {
+        colValue = orientation ? l : laneIndex + phaseCount;
+        var canvas = {
+            id: object.shape.lanes[laneIndex].id + l,
+            rowIndex: rowValue, columnIndex: colValue,
+            style: object.shape.lanes[laneIndex].style,
+            constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
+            container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
+        };
+        var parentWrapper = addObjectToGrid(diagram, grid, object, canvas);
+        parentWrapper.children[0].isCalculateDesiredSize = false;
+        if (l === 0) {
+            var laneNode = void 0;
+            laneNode = {
+                id: object.shape.lanes[laneIndex].id + '_header',
+                style: object.shape.lanes[laneIndex].header.style,
+                annotations: [{
+                        content: object.shape.lanes[laneIndex].header.content.content,
+                        rotateAngle: orientation ? 270 : 0
+                    }],
+                rowIndex: rowValue, columnIndex: colValue,
+                container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
+            };
+            (orientation) ? laneNode.width = object.shape.lanes[laneIndex].header.width :
+                laneNode.height = object.shape.lanes[laneIndex].header.width;
+            var childWrapper = addObjectToGrid(diagram, grid, object, laneNode);
+            parentWrapper.children.push(childWrapper);
+        }
+        grid.addObject(parentWrapper, rowValue, colValue);
+        if (!orientation) {
+            rowValue++;
+        }
+        colValue = orientation ? l : laneIndex + 1;
+    }
+}
+// /** @private */
+// export function laneDefine(
+//     grid: Grid, diagram: Diagram, object: NodeModel, indexValue: number, laneIndex: number, orientation: boolean): void {
+//     let value: number = orientation ? grid.columnDefinitions().length : (object.shape as SwimLaneModel).phases.length || 1;
+//     let colValue: number = 0;
+//     let rowValue: number = 0;
+//     let phaseLength: number = (object.shape as SwimLaneModel).phases.length > 0 ? 1 : 0;
+//     rowValue = orientation ? indexValue : 1;
+//     for (let l: number = 0; l < value; l++) {
+//         colValue = orientation ? l : laneIndex + phaseLength;
+//         let node: NodeModel = {
+//             style: (object.shape as SwimLaneModel).lanes[laneIndex].style, width: object.width, height: object.height
+//         };
+//         addGridObject(diagram, grid, object, false, orientation ? rowValue : rowValue, colValue);
+//         if (l === 0) {
+//             let laneNode: NodeModel;
+//             laneNode = {
+//                 id: (object.shape as SwimLaneModel).lanes[laneIndex].id,
+//                 style: (object.shape as SwimLaneModel).lanes[laneIndex].header.style,
+//                 annotations: [{
+//                     content: (object.shape as SwimLaneModel).lanes[laneIndex].header.content.content,
+//                     rotateAngle: orientation ? 270 : 0
+//                 }],
+//                 container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
+//             };
+//             addGridObject(diagram, grid, object, false, rowValue, orientation ? 0 : colValue, laneNode, orientation, laneIndex);
+//         }
+//         if (!orientation) {
+//             rowValue++;
+//         }
+//         colValue = orientation ? l : laneIndex + 1;
+//     }
+// }
+/** @private */
+function createRow(row, height) {
+    var rows = new RowDefinition();
+    rows.height = height;
+    row.push(rows);
+}
+/** @private */
+function createColumn(width) {
+    var cols = new ColumnDefinition();
+    cols.width = width;
+    return cols;
+}
+/** @private */
+function initGridRow(row, orientation, object) {
+    var totalHeight = 0;
+    var height;
+    if (row.length > 0) {
+        for (var i = 0; i < row.length; i++) {
+            totalHeight += row[i].height;
+        }
+    }
+    if (orientation) {
+        if (object.shape.phases.length > 0) {
+            totalHeight += object.shape.phases[0].height;
+            createRow(row, object.shape.phases[0].height);
+        }
+        if (object.shape.lanes.length > 0) {
+            for (var i = 0; i < object.shape.lanes.length; i++) {
+                height = object.shape.lanes[i].height;
+                totalHeight += height;
+                if (i === object.shape.lanes.length - 1 && totalHeight < object.height) {
+                    height += object.height - totalHeight;
+                }
+                createRow(row, height);
+            }
+        }
+    }
+    else {
+        if (object.shape.phases.length > 0) {
+            for (var i = 0; i < object.shape.phases.length; i++) {
+                height = object.shape.phases[i].offset;
+                totalHeight += height;
+                if (i === object.shape.phases.length - 1 && totalHeight < object.height) {
+                    height += object.height - totalHeight;
+                }
+                createRow(row, height);
+            }
+        }
+        else {
+            createRow(row, object.height);
+        }
+    }
+}
+/** @private */
+function initGridColumns(columns, orientation, object) {
+    var totalWidth = 0;
+    if (object.shape.phases.length > 0 && object.shape.orientation === 'Horizontal') {
+        for (var j = 0; j < object.shape.phases.length; j++) {
+            totalWidth += object.shape.phases[j].offset;
+            var cols = createColumn(object.shape.phases[j].offset);
+            if (j === object.shape.phases.length - 1 && totalWidth < object.width) {
+                cols.width += object.width - totalWidth;
+            }
+            columns.push(cols);
+        }
+    }
+    else if (!orientation) {
+        var value = object.shape.phases.length > 0 ? object.shape.lanes.length
+            + 1 : object.shape.lanes.length;
+        for (var j = 0; j < value; j++) {
+            if (j === 0 && object.shape.phases.length > 0) {
+                totalWidth += object.shape.phases[0].height;
+                var cols = createColumn(object.shape.phases[0].height);
+                columns.push(cols);
+            }
+            else {
+                totalWidth += object.shape.lanes[0].height;
+                var cols = createColumn(object.shape.lanes[0].height);
+                if (j === object.shape.lanes.length && totalWidth < object.width) {
+                    cols.width += object.width - totalWidth;
+                }
+                columns.push(cols);
+            }
+        }
+    }
+    else {
+        var cols = createColumn(object.width);
+        columns.push(cols);
+    }
+}
+//#end region
 
 var __extends$8 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -8397,6 +10137,12 @@ var getShapeType = function (obj) {
             return Native;
         case 'HTML':
             return Html;
+        case 'UmlActivity':
+            return UmlActivityShape;
+        case 'UmlClassifier':
+            return UmlClassifierShape;
+        case 'SwimLane':
+            return SwimLane;
         default:
             return BasicShape;
     }
@@ -8793,6 +10539,171 @@ var BpmnShape = /** @__PURE__ @class */ (function (_super) {
     return BpmnShape;
 }(Shape));
 /**
+ * Defines the behavior of the UMLActivity shape
+ */
+var UmlActivityShape = /** @__PURE__ @class */ (function (_super) {
+    __extends$8(UmlActivityShape, _super);
+    function UmlActivityShape() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property('UmlActivity')
+    ], UmlActivityShape.prototype, "type", void 0);
+    __decorate$3([
+        Property('Action')
+    ], UmlActivityShape.prototype, "shape", void 0);
+    return UmlActivityShape;
+}(Shape));
+/**
+ * Defines the behavior of the uml class method
+ */
+var MethodArguments = /** @__PURE__ @class */ (function (_super) {
+    __extends$8(MethodArguments, _super);
+    function MethodArguments() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property('')
+    ], MethodArguments.prototype, "name", void 0);
+    __decorate$3([
+        Property('')
+    ], MethodArguments.prototype, "type", void 0);
+    __decorate$3([
+        Complex({}, TextStyle)
+    ], MethodArguments.prototype, "style", void 0);
+    return MethodArguments;
+}(ChildProperty));
+/**
+ * Defines the behavior of the uml class attributes
+ */
+var UmlClassAttribute = /** @__PURE__ @class */ (function (_super) {
+    __extends$8(UmlClassAttribute, _super);
+    function UmlClassAttribute() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property('Public')
+    ], UmlClassAttribute.prototype, "scope", void 0);
+    __decorate$3([
+        Property(false)
+    ], UmlClassAttribute.prototype, "isSeparator", void 0);
+    return UmlClassAttribute;
+}(MethodArguments));
+/**
+ * Defines the behavior of the uml class method
+ */
+var UmlClassMethod = /** @__PURE__ @class */ (function (_super) {
+    __extends$8(UmlClassMethod, _super);
+    function UmlClassMethod() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Collection([], MethodArguments)
+    ], UmlClassMethod.prototype, "parameters", void 0);
+    return UmlClassMethod;
+}(UmlClassAttribute));
+/**
+ * Defines the behavior of the uml class shapes
+ */
+var UmlClass = /** @__PURE__ @class */ (function (_super) {
+    __extends$8(UmlClass, _super);
+    function UmlClass() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property('')
+    ], UmlClass.prototype, "name", void 0);
+    __decorate$3([
+        Collection([], UmlClassAttribute)
+    ], UmlClass.prototype, "attributes", void 0);
+    __decorate$3([
+        Collection([], UmlClassMethod)
+    ], UmlClass.prototype, "methods", void 0);
+    __decorate$3([
+        Complex({}, TextStyle)
+    ], UmlClass.prototype, "style", void 0);
+    return UmlClass;
+}(ChildProperty));
+/**
+ * Defines the behavior of the uml interface shapes
+ */
+var UmlInterface = /** @__PURE__ @class */ (function (_super) {
+    __extends$8(UmlInterface, _super);
+    function UmlInterface() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(false)
+    ], UmlInterface.prototype, "isSeparator", void 0);
+    return UmlInterface;
+}(UmlClass));
+/**
+ * Defines the behavior of the uml interface shapes
+ */
+var UmlEnumerationMember = /** @__PURE__ @class */ (function (_super) {
+    __extends$8(UmlEnumerationMember, _super);
+    function UmlEnumerationMember() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property('')
+    ], UmlEnumerationMember.prototype, "name", void 0);
+    __decorate$3([
+        Property('')
+    ], UmlEnumerationMember.prototype, "value", void 0);
+    __decorate$3([
+        Property(false)
+    ], UmlEnumerationMember.prototype, "isSeparator", void 0);
+    __decorate$3([
+        Complex({}, TextStyle)
+    ], UmlEnumerationMember.prototype, "style", void 0);
+    return UmlEnumerationMember;
+}(ChildProperty));
+/**
+ * Defines the behavior of the uml interface shapes
+ */
+var UmlEnumeration = /** @__PURE__ @class */ (function (_super) {
+    __extends$8(UmlEnumeration, _super);
+    function UmlEnumeration() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property('')
+    ], UmlEnumeration.prototype, "name", void 0);
+    __decorate$3([
+        Collection([], UmlEnumerationMember)
+    ], UmlEnumeration.prototype, "members", void 0);
+    __decorate$3([
+        Complex({}, TextStyle)
+    ], UmlEnumeration.prototype, "style", void 0);
+    return UmlEnumeration;
+}(ChildProperty));
+/**
+ * Defines the behavior of the UMLActivity shape
+ */
+var UmlClassifierShape = /** @__PURE__ @class */ (function (_super) {
+    __extends$8(UmlClassifierShape, _super);
+    function UmlClassifierShape() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property('UmlClassifier')
+    ], UmlClassifierShape.prototype, "type", void 0);
+    __decorate$3([
+        Complex({}, UmlClass)
+    ], UmlClassifierShape.prototype, "class", void 0);
+    __decorate$3([
+        Complex({}, UmlInterface)
+    ], UmlClassifierShape.prototype, "interface", void 0);
+    __decorate$3([
+        Complex({}, UmlEnumeration)
+    ], UmlClassifierShape.prototype, "enumeration", void 0);
+    __decorate$3([
+        Property('Class')
+    ], UmlClassifierShape.prototype, "classifier", void 0);
+    return UmlClassifierShape;
+}(Shape));
+/**
  * Defines the behavior of nodes
  */
 var Node = /** @__PURE__ @class */ (function (_super) {
@@ -8801,21 +10712,37 @@ var Node = /** @__PURE__ @class */ (function (_super) {
     function Node(parent, propName, defaultValue, isArray) {
         var _this = _super.call(this, parent, propName, defaultValue, isArray) || this;
         /** @private */
+        _this.isCanvasUpdate = false;
+        /** @private */
+        _this.status = 'None';
+        /** @private */
         _this.parentId = '';
         /** @private */
         _this.processId = '';
         /** @private */
+        _this.umlIndex = -1;
+        /** @private */
         _this.outEdges = [];
         /** @private */
         _this.inEdges = [];
+        /** @private */
+        _this.isHeader = false;
+        /** @private */
+        _this.isLane = false;
+        /** @private */
+        _this.isPhase = false;
+        var nodeDefault;
         if (_this.children && _this.children.length > 0) {
-            var nodeDefault = defaultValue;
+            nodeDefault = defaultValue;
             if (!nodeDefault.style || !nodeDefault.style.fill) {
                 _this.style.fill = 'transparent';
             }
             if (!nodeDefault.style || !nodeDefault.style.strokeColor) {
                 _this.style.strokeColor = 'transparent';
             }
+        }
+        if (_this.shape && _this.shape.type === 'UmlActivity') {
+            setUMLActivityDefaults(defaultValue, _this);
         }
         return _this;
     }
@@ -8838,7 +10765,13 @@ var Node = /** @__PURE__ @class */ (function (_super) {
     /** @private */
     /* tslint:disable */
     Node.prototype.init = function (diagram) {
-        var content = new DiagramElement();
+        var content;
+        if (this.shape.type != 'SwimLane') {
+            content = new DiagramElement();
+        }
+        else {
+            content = new GridPanel();
+        }
         var textStyle;
         var changedProperties = 'changedProperties';
         var oldProperties = 'oldProperties';
@@ -8888,6 +10821,10 @@ var Node = /** @__PURE__ @class */ (function (_super) {
                 flowshape.data = flowshapedata;
                 content = flowshape;
                 break;
+            case 'UmlActivity':
+                var umlactivityshape = new PathElement();
+                content = getUMLActivityShapes(umlactivityshape, content, this);
+                break;
             case 'Bpmn':
                 if (diagram.bpmnModule) {
                     content = diagram.bpmnModule.initBPMNContent(content, this, diagram);
@@ -8917,6 +10854,18 @@ var Node = /** @__PURE__ @class */ (function (_super) {
                 var htmlContent = new DiagramHtmlElement(this.id, diagram.element.id);
                 htmlContent.content = this.shape.content;
                 content = htmlContent;
+                break;
+            case 'UmlClassifier':
+                //   let umlClassifierShape: StackPanel = new StackPanel();
+                content = getULMClassifierShapes(content, this, diagram);
+                break;
+            case 'SwimLane':
+                content.cellStyle.fill = "none";
+                content.cellStyle.strokeColor = "none";
+                this.container = { type: 'Grid', orientation: this.shape.orientation };
+                content.id = this.id;
+                this.container.orientation = this.shape.orientation;
+                initSwimLane(content, diagram, this);
                 break;
         }
         content.id = this.id + '_content';
@@ -8952,8 +10901,8 @@ var Node = /** @__PURE__ @class */ (function (_super) {
                 content.shadow = this.shadow;
             }
         }
-        if (this.shape.type !== 'Bpmn' || this.shape.shape === 'Message' ||
-            this.shape.shape === 'DataSource') {
+        if ((this.shape.type !== 'Bpmn' || this.shape.shape === 'Message' ||
+            this.shape.shape === 'DataSource') && ((this.shape.type !== 'UmlActivity' || this.shape.shape !== 'FinalNode'))) {
             if (this.shape.type !== 'Text') {
                 content.style = this.style;
             }
@@ -8967,11 +10916,37 @@ var Node = /** @__PURE__ @class */ (function (_super) {
             this.id = randomId();
         }
         // Creates canvas element
-        var canvas = this.children ? new Container() : new Canvas();
+        var canvas;
+        if (!this.container) {
+            canvas = this.children ? new Container() : new Canvas();
+        }
+        else {
+            switch (this.container.type) {
+                case 'Canvas':
+                    canvas = new Canvas();
+                    break;
+                case 'Stack':
+                    canvas = new StackPanel();
+                    break;
+                case 'Grid':
+                    canvas = new GridPanel();
+                    canvas.setDefinitions(this.rows, this.columns);
+                    break;
+            }
+        }
         canvas.id = this.id;
         canvas.offsetX = this.offsetX;
         canvas.offsetY = this.offsetY;
         canvas.visible = this.visible;
+        canvas.horizontalAlignment = this.horizontalAlignment;
+        canvas.verticalAlignment = this.verticalAlignment;
+        if (this.container) {
+            canvas.width = this.width;
+            canvas.height = this.height;
+            if (this.container.type === 'Stack') {
+                canvas.orientation = this.container.orientation;
+            }
+        }
         canvas.style.fill = this.backgroundColor;
         canvas.style.strokeColor = this.borderColor;
         canvas.style.strokeWidth = this.borderWidth;
@@ -9055,10 +11030,10 @@ var Node = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /** @private */
-    Node.prototype.initAnnotations = function (accessibilityContent, container) {
+    Node.prototype.initAnnotations = function (accessibilityContent, container, diagramId, virtualize) {
         var annotation;
         for (var i = 0; this.annotations !== undefined, i < this.annotations.length; i++) {
-            annotation = this.initAnnotationWrapper(this.annotations[i]);
+            annotation = this.initAnnotationWrapper(this.annotations[i], diagramId, virtualize);
             // tslint:disable-next-line:no-any
             var wrapperContent = void 0;
             var contentAccessibility = getFunction(accessibilityContent);
@@ -9097,31 +11072,41 @@ var Node = /** @__PURE__ @class */ (function (_super) {
         return portContent;
     };
     /** @private */
-    Node.prototype.initAnnotationWrapper = function (annotation) {
+    Node.prototype.initAnnotationWrapper = function (annotation, diagramId, virtualize) {
         annotation.id = annotation.id || randomId();
         var label = annotation;
-        var annotationcontent = new TextElement();
+        var annotationcontent;
+        if (diagramId && annotation.template) {
+            annotationcontent = new DiagramHtmlElement(this.id, diagramId, annotation.id);
+            annotationcontent.content = annotation.template;
+        }
+        else {
+            annotationcontent = new TextElement();
+            annotationcontent.canMeasure = !virtualize;
+            var style = annotation.style;
+            var link = annotation.hyperlink.link ? annotation.hyperlink : undefined;
+            annotationcontent.style = {
+                fill: style.fill, strokeColor: style.strokeColor, strokeWidth: style.strokeWidth,
+                bold: style.bold, textWrapping: style.textWrapping,
+                color: link ? link.color || annotationcontent.hyperlink.color : style.color, whiteSpace: style.whiteSpace,
+                fontFamily: style.fontFamily, fontSize: style.fontSize, italic: style.italic, gradient: null, opacity: style.opacity,
+                strokeDashArray: style.strokeDashArray, textAlign: style.textAlign, textOverflow: annotation.style.textOverflow,
+                textDecoration: link ? link.textDecoration ||
+                    annotationcontent.hyperlink.textDecoration : style.textDecoration,
+            };
+            annotationcontent.hyperlink.link = annotation.hyperlink.link || undefined;
+            annotationcontent.hyperlink.content = annotation.hyperlink.content || undefined;
+            annotationcontent.hyperlink.textDecoration = annotation.hyperlink.textDecoration || undefined;
+            annotationcontent.content = link ? link.content ||
+                annotationcontent.hyperlink.link : annotation.content;
+        }
         annotationcontent.constraints = annotation.constraints;
         annotationcontent.height = annotation.height;
         annotationcontent.width = annotation.width;
         annotationcontent.visible = annotation.visibility;
         annotationcontent.rotateAngle = annotation.rotateAngle;
         annotationcontent.id = this.id + '_' + annotation.id;
-        var style = annotation.style;
-        var link = annotation.hyperlink.link ? annotation.hyperlink : undefined;
-        annotationcontent.style = {
-            fill: style.fill, strokeColor: style.strokeColor, strokeWidth: style.strokeWidth,
-            bold: style.bold, textWrapping: style.textWrapping,
-            color: link ? link.color || annotationcontent.hyperlink.color : style.color, whiteSpace: style.whiteSpace,
-            fontFamily: style.fontFamily, fontSize: style.fontSize, italic: style.italic, gradient: null, opacity: style.opacity,
-            strokeDashArray: style.strokeDashArray, textAlign: style.textAlign, textOverflow: annotation.style.textOverflow,
-            textDecoration: link ? link.textDecoration || annotationcontent.hyperlink.textDecoration : style.textDecoration,
-        };
-        annotationcontent.hyperlink.link = annotation.hyperlink.link || undefined;
-        annotationcontent.hyperlink.content = annotation.hyperlink.content || undefined;
-        annotationcontent.hyperlink.textDecoration = annotation.hyperlink.textDecoration || undefined;
-        annotationcontent.content = link ? link.content || annotationcontent.hyperlink.link : annotation.content;
-        if (this.width !== undefined) {
+        if (this.width !== undefined && !annotation.template) {
             if (annotation.width === undefined || (annotation.width > this.width &&
                 (annotation.style.textWrapping === 'Wrap' || annotation.style.textWrapping === 'WrapWithOverflow'))) {
                 annotationcontent.width = this.width;
@@ -9251,10 +11236,170 @@ var Node = /** @__PURE__ @class */ (function (_super) {
     __decorate$3([
         Property()
     ], Node.prototype, "children", void 0);
+    __decorate$3([
+        Property(null)
+    ], Node.prototype, "container", void 0);
+    __decorate$3([
+        Property('Left')
+    ], Node.prototype, "horizontalAlignment", void 0);
+    __decorate$3([
+        Property('Top')
+    ], Node.prototype, "verticalAlignment", void 0);
+    __decorate$3([
+        Property()
+    ], Node.prototype, "rows", void 0);
+    __decorate$3([
+        Property()
+    ], Node.prototype, "columns", void 0);
+    __decorate$3([
+        Property()
+    ], Node.prototype, "rowIndex", void 0);
+    __decorate$3([
+        Property()
+    ], Node.prototype, "columnIndex", void 0);
+    __decorate$3([
+        Property()
+    ], Node.prototype, "rowSpan", void 0);
+    __decorate$3([
+        Property()
+    ], Node.prototype, "columnSpan", void 0);
     return Node;
 }(NodeBase));
+/**
+ * Defines the behavior of header in swimLane
+ */
+var Header = /** @__PURE__ @class */ (function (_super) {
+    __extends$8(Header, _super);
+    function Header() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property('')
+    ], Header.prototype, "id", void 0);
+    __decorate$3([
+        Complex({}, Annotation)
+    ], Header.prototype, "content", void 0);
+    __decorate$3([
+        Property('')
+    ], Header.prototype, "style", void 0);
+    __decorate$3([
+        Property(25)
+    ], Header.prototype, "height", void 0);
+    __decorate$3([
+        Property(25)
+    ], Header.prototype, "width", void 0);
+    return Header;
+}(ChildProperty));
+/**
+ * Defines the behavior of lane in swimLane
+ */
+var Lane = /** @__PURE__ @class */ (function (_super) {
+    __extends$8(Lane, _super);
+    function Lane() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property('')
+    ], Lane.prototype, "id", void 0);
+    __decorate$3([
+        Property('')
+    ], Lane.prototype, "style", void 0);
+    __decorate$3([
+        Collection([], Node)
+    ], Lane.prototype, "childNodes", void 0);
+    __decorate$3([
+        Property(25)
+    ], Lane.prototype, "height", void 0);
+    __decorate$3([
+        Property(25)
+    ], Lane.prototype, "width", void 0);
+    __decorate$3([
+        Complex({}, Header)
+    ], Lane.prototype, "header", void 0);
+    return Lane;
+}(ChildProperty));
+/**
+ * Defines the behavior of phase in swimLane
+ */
+var Phase = /** @__PURE__ @class */ (function (_super) {
+    __extends$8(Phase, _super);
+    function Phase() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property('')
+    ], Phase.prototype, "id", void 0);
+    __decorate$3([
+        Property('')
+    ], Phase.prototype, "style", void 0);
+    __decorate$3([
+        Complex({}, Header)
+    ], Phase.prototype, "header", void 0);
+    __decorate$3([
+        Property(30)
+    ], Phase.prototype, "height", void 0);
+    __decorate$3([
+        Property(30)
+    ], Phase.prototype, "width", void 0);
+    __decorate$3([
+        Property(100)
+    ], Phase.prototype, "offset", void 0);
+    return Phase;
+}(ChildProperty));
+/**
+ * Defines the behavior of swimLane shape
+ */
+var SwimLane = /** @__PURE__ @class */ (function (_super) {
+    __extends$8(SwimLane, _super);
+    function SwimLane() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property('SwimLane')
+    ], SwimLane.prototype, "type", void 0);
+    __decorate$3([
+        Property('10')
+    ], SwimLane.prototype, "phaseSize", void 0);
+    __decorate$3([
+        Collection([], Phase)
+    ], SwimLane.prototype, "phases", void 0);
+    __decorate$3([
+        Property('Horizontal')
+    ], SwimLane.prototype, "orientation", void 0);
+    __decorate$3([
+        Collection([], Lane)
+    ], SwimLane.prototype, "lanes", void 0);
+    __decorate$3([
+        Complex({}, Header)
+    ], SwimLane.prototype, "header", void 0);
+    __decorate$3([
+        Property('')
+    ], SwimLane.prototype, "lineStyle", void 0);
+    __decorate$3([
+        Property(false)
+    ], SwimLane.prototype, "isLane", void 0);
+    __decorate$3([
+        Property(false)
+    ], SwimLane.prototype, "isPhase", void 0);
+    return SwimLane;
+}(Shape));
+/**
+ * Defines the behavior of container
+ */
+/** @private */
+var ChildContainer = /** @__PURE__ @class */ (function () {
+    function ChildContainer() {
+    }
+    __decorate$3([
+        Property('Canvas')
+    ], ChildContainer.prototype, "type", void 0);
+    __decorate$3([
+        Property('Vertical')
+    ], ChildContainer.prototype, "orientation", void 0);
+    return ChildContainer;
+}());
 
-var __extends$18 = (undefined && undefined.__extends) || (function () {
+var __extends$20 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -9286,7 +11431,7 @@ var __decorate$11 = (undefined && undefined.__decorate) || function (decorators,
  * ```
  */
 var Ruler = /** @__PURE__ @class */ (function (_super) {
-    __extends$18(Ruler, _super);
+    __extends$20(Ruler, _super);
     /**
      * Constructor for creating the Ruler Component
      */
@@ -9814,6 +11959,42 @@ function updateRulerDiv(diagram, rulerGeometry, isHorizontal) {
     }
 }
 
+/**
+ * UMLActivityShapeDictionary defines the shape of the built-in uml activity shapes
+ */
+/** @private */
+function getUMLActivityShape(shape) {
+    return umlActivityShapes[shape.toString()];
+}
+var umlActivityShapes = {
+    // Action,
+    'Action': 'M 90 82.895 C 90 86.819 86.776 90 82.8 90 H 7.2 C 3.224 90 0 86.819 0 82.895' +
+        ' V 7.105 C 0 3.181 3.224 0 7.2 0 h 75.6 C 86.776 0 90 3.181 90 7.105 V 82.895 Z',
+    // Decision,
+    'Decision': 'M10,19.707L0.293,10L10,0.293L19.707,10L10,19.707z',
+    // MergeNode,
+    'MergeNode': 'M10,19.707L0.293,10L10,0.293L19.707,10L10,19.707z',
+    // InitialNode,
+    'InitialNode': 'M10,19.5c-5.238,0-9.5-4.262-9.5-9.5S4.762,0.5,10,0.5s9.5,4.262,9.5,9.5S15.238,19.5,10,19.5z',
+    // ForkNode,
+    'ForkNode': 'm0.75,0.75l636.00002,0l0,290l-636.00002,0l0,-290z',
+    // JoinNode,
+    'JoinNode': 'm0.75,0.75l636.00002,0l0,290l-636.00002,0l0,-290z',
+    // TimeEvent,
+    'TimeEvent': 'M50.001,0.00286865 L25.001,25.0029 L0.000976562,0.00286865 L50.001,0.00286865 z' +
+        ' M0.000976562,50.0029 L25.001,25.0029 L50.001,50.0029 L0.000976562,50.0029 z',
+    // AcceptingEvent,
+    'AcceptingEvent': 'M17.8336 32.164 L29.64 24 L17.32 16 L48.1664 16 L48.5 32 Z',
+    // SendSignal,
+    'SendSignal': 'M48.164 31.8336 L56 23.832 L47.836 16 L16.168 16 L16.1668 31.8336 Z',
+    // ReceiveSignal,
+    'ReceiveSignal': 'M48.1664 31.8336 L39.836 24 L47.836 16 L16.168 16 L16.168 31.836 Z',
+    // StructuredNode,
+    'StructuredNode': 'M0,0 L50,0 L50,50 L0,50 z',
+    // Note,
+    'Note': 'M20 12 L4 12 L4 22 L22 22 L22 14 L20 14 L20 12 L22 14 Z',
+};
+
 /** @private */
 function completeRegion(region, selectedObjects) {
     var collection = [];
@@ -9824,6 +12005,15 @@ function completeRegion(region, selectedObjects) {
         }
     }
     return collection;
+}
+/** @private */
+function findNodeByName(nodes, name) {
+    for (var i = 0; i < nodes.length; i++) {
+        if (nodes[i].id === name) {
+            return true;
+        }
+    }
+    return false;
 }
 /**
  * @private
@@ -9839,6 +12029,73 @@ function findObjectType(drawingObject) {
         }
     }
     return type;
+}
+/**
+ * @private
+ */
+function setUMLActivityDefaults(child, node) {
+    if (node instanceof Node) {
+        switch (child.shape.shape) {
+            case 'JoinNode':
+                if (!child.width) {
+                    node.width = 20;
+                }
+                if (!child.height) {
+                    node.height = 90;
+                }
+                if (!child.style || !child.style.fill) {
+                    node.style.fill = 'black';
+                }
+                break;
+            case 'ForkNode':
+                if (!child.width) {
+                    node.width = 90;
+                }
+                if (!child.height) {
+                    node.height = 20;
+                }
+                if (!child.style || !child.style.fill) {
+                    node.style.fill = 'black';
+                }
+                break;
+            case 'InitialNode':
+                if (!child.style || !child.style.fill) {
+                    node.style.fill = 'black';
+                }
+                break;
+            case 'FinalNode':
+                if (!child.style || !child.style.fill) {
+                    node.style.fill = 'black';
+                }
+                break;
+        }
+    }
+    else {
+        switch (child.shape.flow) {
+            case 'Object':
+                if (!child.style || !child.style.strokeDashArray) {
+                    node.style.strokeDashArray = '8 4';
+                }
+                if (!child.style || !child.style.strokeWidth) {
+                    node.style.strokeWidth = 2;
+                }
+                if (!child.targetDecorator || !child.targetDecorator.shape) {
+                    node.targetDecorator.shape = 'OpenArrow';
+                }
+                break;
+            case 'Control':
+                if (!child.style || !child.style.strokeWidth) {
+                    node.style.strokeWidth = 2;
+                }
+                if (!child.targetDecorator || !child.targetDecorator.shape) {
+                    node.targetDecorator.shape = 'OpenArrow';
+                }
+                if (!child.sourceDecorator || !child.sourceDecorator.shape) {
+                    node.sourceDecorator.shape = 'None';
+                }
+                break;
+        }
+    }
 }
 /** @private */
 function findNearestPoint(reference, start, end) {
@@ -9881,6 +12138,7 @@ function pointsForBezier(connector) {
     }
     return points;
 }
+/** @private */
 function isDiagramChild(htmlLayer) {
     var element = htmlLayer.parentElement;
     do {
@@ -9891,6 +12149,7 @@ function isDiagramChild(htmlLayer) {
     } while (element);
     return false;
 }
+/** @private */
 function groupHasType(node, type, nameTable) {
     var contains = false;
     if (node && node.children && node.children.length > 0) {
@@ -9969,6 +12228,23 @@ function intersect3(lineUtil1, lineUtil2) {
         return { enabled: true, intersectPt: point };
     }
     return { enabled: false, intersectPt: point };
+}
+/** @private */
+function intersect2(start1, end1, start2, end2) {
+    var point = { x: 0, y: 0 };
+    var lineUtil1 = getLineSegment(start1.x, start1.y, end1.x, end1.y);
+    var lineUtil2 = getLineSegment(start2.x, start2.y, end2.x, end2.y);
+    var line3 = intersect3(lineUtil1, lineUtil2);
+    if (line3.enabled) {
+        return line3.intersectPt;
+    }
+    else {
+        return point;
+    }
+}
+/** @private */
+function getLineSegment(x1, y1, x2, y2) {
+    return { 'x1': Number(x1) || 0, 'y1': Number(y1) || 0, 'x2': Number(x2) || 0, 'y2': Number(y2) || 0 };
 }
 /** @private */
 function getPoints(element, corners) {
@@ -10515,6 +12791,9 @@ function updateContent(newValues, actualObject, diagram) {
             var flowshapedata = getFlowShape(shapes.toString());
             actualObject.wrapper.children[0].data = flowshapedata;
         }
+        else if (actualObject.shape.type === 'UmlActivity' && newValues.shape.shape !== undefined) {
+            updateUmlActivityNode(actualObject, newValues);
+        }
         else if (newValues.shape.cornerRadius !== undefined) {
             actualObject.wrapper.children[0].cornerRadius = newValues.shape.cornerRadius;
         }
@@ -10525,6 +12804,80 @@ function updateContent(newValues, actualObject, diagram) {
             actualObject.wrapper.children[0].data = basicShapeData;
         }
     }
+}
+/** @private */
+function updateUmlActivityNode(actualObject, newValues) {
+    actualObject.shape.shape = newValues.shape.shape;
+    var shapes = actualObject.shape.shape;
+    var umlActivityShapeData = getUMLActivityShape(shapes.toString());
+    if (actualObject.shape.shape === 'InitialNode') {
+        actualObject.wrapper.children[0].style.fill = 'black';
+    }
+    else if (actualObject.shape.shape === 'ForkNode' ||
+        actualObject.shape.shape === 'JoinNode') {
+        actualObject.wrapper.children[0].style.fill = 'black';
+    }
+    else if (actualObject.shape.shape === 'FinalNode') {
+        if (actualObject instanceof Node) {
+            actualObject.wrapper = getUMLFinalNode(actualObject);
+        }
+        actualObject.wrapper.children[0].data = umlActivityShapeData;
+    }
+}
+/** @private */
+function getUMLFinalNode(node) {
+    var finalNodeShape = new Canvas();
+    finalNodeShape.style.fill = 'transparent';
+    //childNode0
+    var pathData = 'M 25 50 C 11.21 50 0 38.79 0 25 C 0 11.21 11.21 0 25 0 C 38.78 0 50 11.21 50 25' +
+        ' C 50 38.79 38.78 50 25 50';
+    var innerFinalNode = new PathElement();
+    innerFinalNode.data = pathData;
+    innerFinalNode.id = node.id + '_0_finalNode';
+    innerFinalNode.horizontalAlignment = 'Center';
+    innerFinalNode.verticalAlignment = 'Center';
+    innerFinalNode.relativeMode = 'Object';
+    innerFinalNode.style.strokeColor = node.style.strokeColor;
+    innerFinalNode.style.strokeWidth = node.style.strokeWidth;
+    //childNode1
+    var outerFinalNode = new PathElement();
+    outerFinalNode.data = pathData;
+    outerFinalNode.id = node.id + '_1_finalNode';
+    outerFinalNode.horizontalAlignment = 'Center';
+    outerFinalNode.verticalAlignment = 'Center';
+    outerFinalNode.relativeMode = 'Object';
+    outerFinalNode.style.fill = node.style.fill;
+    outerFinalNode.style.strokeColor = node.style.strokeColor;
+    outerFinalNode.style.strokeWidth = node.style.strokeWidth;
+    //append child and set style
+    finalNodeShape.children = [innerFinalNode, outerFinalNode];
+    finalNodeShape.children[0].width = node.width;
+    finalNodeShape.children[0].height = node.height;
+    finalNodeShape.children[1].height = node.height / 1.5;
+    finalNodeShape.children[1].width = node.width / 1.5;
+    finalNodeShape.style.strokeWidth = 0;
+    finalNodeShape.style.strokeColor = 'transparent';
+    return finalNodeShape;
+}
+/** @private */
+function getUMLActivityShapes(umlActivityShape, content, node) {
+    var umlActivityShapeData = getUMLActivityShape(node.shape.shape);
+    umlActivityShape.data = umlActivityShapeData;
+    content = umlActivityShape;
+    switch (node.shape.shape) {
+        case 'StructuredNode':
+            if (node.annotations) {
+                for (var i = 0; i < node.annotations.length; i++) {
+                    node.annotations[i].content = '<<' + node.annotations[i].content + '>>';
+                }
+            }
+            content = umlActivityShape;
+            break;
+        case 'FinalNode':
+            content = getUMLFinalNode(node);
+            break;
+    }
+    return content;
 }
 /** @private */
 function removeItem(array, item) {
@@ -10554,7 +12907,9 @@ function updateConnector(connector, points) {
         anglePoint = connector.intermediatePoints;
     }
     points = connector.clipDecorators(connector, points);
-    var element = connector.wrapper.children[1];
+    var element = connector.wrapper.children[0];
+    element.canMeasurePath = true;
+    element = connector.wrapper.children[1];
     connector.updateDecoratorElement(element, points[0], anglePoint[1], srcDecorator);
     targetPoint = connector.targetPoint;
     tarDecorator = connector.targetDecorator;
@@ -10677,6 +13032,27 @@ function findPort(node, id) {
     return port;
 }
 /** @private */
+function getInOutConnectPorts(node, isInConnect) {
+    var port = {};
+    var i = 0;
+    if (node.ports) {
+        var ports = node.ports;
+        for (i = 0; i < ports.length; i++) {
+            if (isInConnect) {
+                if ((ports[i].constraints & PortConstraints.InConnect)) {
+                    port = ports[i];
+                }
+            }
+            else {
+                if ((ports[i].constraints & PortConstraints.OutConnect)) {
+                    port = ports[i];
+                }
+            }
+        }
+    }
+    return port;
+}
+/** @private */
 function findObjectIndex(node, id, annotation) {
     var collection = (annotation) ? node.annotations : node.ports;
     for (var i = 0; i < collection.length; i++) {
@@ -10729,6 +13105,7 @@ function scaleElement(element, sw, sh, refObject) {
         }
     }
 }
+/** @private */
 function arrangeChild(obj, x, y, nameTable, drop, diagram) {
     var child = obj.children;
     var node;
@@ -10807,7 +13184,13 @@ function getElement(element) {
     var length = 'length';
     for (var i = 0; nodes && i < nodes[length]; i++) {
         if (nodes[i].id === element.nodeId) {
-            return nodes[i];
+            return getAnnotation(nodes[i], element);
+        }
+    }
+    var connectors = diagramElement[instance][0].connectors;
+    for (var i = 0; connectors && i < connectors[length]; i++) {
+        if (connectors[i].id === element.nodeId) {
+            return getAnnotation(connectors[i], element);
         }
     }
     var enterObject = diagramElement[instance][0].enterObject;
@@ -10820,6 +13203,17 @@ function getElement(element) {
         }
     }
     return null;
+}
+function getAnnotation(obj, element) {
+    var annotations = obj.annotations;
+    var length = 'length';
+    var j;
+    for (j = 0; annotations && j < annotations[length]; j++) {
+        if (element.annotationId && annotations[j].id === element.annotationId) {
+            return annotations[j];
+        }
+    }
+    return obj;
 }
 /** @private */
 function getPaletteSymbols(symbolPalette) {
@@ -11167,7 +13561,7 @@ function measureText(text, style, content, maxWidth, textValue) {
     text.childNodes = childNodes = wrapSvgText(options, textValue);
     text.wrapBounds = wrapBounds = wrapSvgTextAlign(options, childNodes);
     bounds.width = wrapBounds.width;
-    bounds.height = childNodes.length * text.style.fontSize;
+    bounds.height = childNodes.length * text.style.fontSize * 1.2;
     return bounds;
 }
 /** @private */
@@ -11650,7 +14044,7 @@ function cloneObject(obj, additionalProp, key) {
 function getInternalProperties(propName) {
     switch (propName) {
         case 'nodes':
-            return ['inEdges', 'outEdges', 'parentId', 'processId', 'nodeId'];
+            return ['inEdges', 'outEdges', 'parentId', 'processId', 'nodeId', 'umlIndex'];
         case 'connectors':
             return ['parentId'];
         case 'annotation':
@@ -12310,12 +14704,11 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
             ctx.restore();
         }
     };
-    CanvasRenderer.prototype.loadImage = function (ctx, obj) {
-        ctx.rotate(obj.angle * Math.PI / 180);
+    CanvasRenderer.prototype.loadImage = function (ctx, obj, canvas, pivotX, pivotY) {
+        this.rotateContext(canvas, obj.angle, pivotX, pivotY);
         var image = new Image();
         image.src = obj.source;
         this.image(ctx, image, obj.x, obj.y, obj.width, obj.height, obj);
-        ctx.rotate(-(obj.angle * Math.PI / 180));
     };
     /**   @private  */
     CanvasRenderer.prototype.drawImage = function (canvas, obj, parentSvg, fromPalette) {
@@ -12323,10 +14716,12 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
         if (obj.visible) {
             var ctx_1 = CanvasRenderer.getContext(canvas);
             ctx_1.save();
-            var pivotX = obj.x + obj.width * obj.pivotX;
-            var pivotY = obj.y + obj.height * obj.pivotY;
+            var pivotX_1 = obj.x + obj.width * obj.pivotX;
+            var pivotY_1 = obj.y + obj.height * obj.pivotY;
             var imageObj = new Image();
             imageObj.src = obj.source;
+            var id = ctx_1.canvas.id.split('_');
+            var value = id[id.length - 1] === ('diagram' || 'diagramLayer') ? true : false;
             /**
              *  Since Clipping portion for node with slice option is not calculated properly
              * if (obj.sourceX !== undefined && obj.sourceY !== undefined && obj.sourceWidth !== undefined
@@ -12337,11 +14732,11 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
              * }
              */
             if (!fromPalette) {
-                this.loadImage(ctx_1, obj);
+                this.loadImage(ctx_1, obj, canvas, pivotX_1, pivotY_1);
             }
             else {
                 imageObj.onload = function () {
-                    _this.loadImage(ctx_1, obj);
+                    _this.loadImage(ctx_1, obj, canvas, pivotX_1, pivotY_1);
                 };
             }
             ctx_1.restore();
@@ -12833,7 +15228,7 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
             'id': obj.id + 'image', 'x': obj.x.toString(), 'y': obj.y.toString(), 'transform': 'rotate(' + obj.angle + ','
                 + (obj.x + obj.width * obj.pivotX) + ',' + (obj.y + obj.height * obj.pivotY) + ')',
             'width': obj.width.toString(), 'visibility': obj.visible ? 'visible' : 'hidden',
-            'height': obj.height.toString(), 'preserveAspectRatio': aspectRatio
+            'height': obj.height.toString(), 'preserveAspectRatio': aspectRatio, 'opacity': (obj.opacity || 1).toString()
         };
         setAttributeSvg(image, attr);
         image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imageObj.src.toString());
@@ -12861,7 +15256,7 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
         var point = cornersPointsBeforeRotation(element).topLeft;
         htmlElement.setAttribute('style', 'height:' + (element.actualSize.height) + 'px; width:' + (element.actualSize.width) +
             'px;left:' + point.x + 'px; top:' + point.y + 'px;' +
-            'position:absolute;transform:rotate(' + element.parentTransform + 'deg);' +
+            'position:absolute;transform:rotate(' + (element.rotateAngle + element.parentTransform) + 'deg);' +
             'pointer-events:' + (value ? 'all' : 'none')
             + ';visibility:' + ((element.visible) ? 'visible' : 'hidden') + ';opacity:' + element.style.opacity + ';');
     };
@@ -13222,6 +15617,63 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         };
         this.svgRenderer.drawRectangle(canvas, options, this.diagramId);
     };
+    /**
+     * @private
+     */
+    DiagramRenderer.prototype.renderStackHighlighter = function (element, canvas, transform, isVertical, position, isUml) {
+        var width = element.actualSize.width || 2;
+        var x = element.offsetX - width * element.pivot.x;
+        var height = element.actualSize.height || 2;
+        var y = element.offsetY - height * element.pivot.y;
+        x = (x + transform.tx) * transform.scale;
+        var data;
+        var bounds = element.bounds;
+        var newPathString = '';
+        y = (y + transform.ty) * transform.scale;
+        if (!isVertical) {
+            var d = height * transform.scale;
+            data = 'M 10 -10 L 0 0 Z M -10 -10 L 0 0 Z M 0 0 L 0 ' + (d) + ' Z M 0  ' + (d) +
+                ' L -10  ' + (d + 10) + ' Z L 10  ' + (d + 10) + ' Z';
+            if (position.x >= element.offsetX) {
+                x += width;
+            }
+        }
+        else {
+            if (isUml) {
+                var d = width * transform.scale;
+                data = 'M 0 0 L ' + (d + 2) + ' 0 Z';
+                var scaleX = -bounds.x;
+                var scaleY = -bounds.y;
+                var arrayCollection = [];
+                scaleX = element.actualSize.width / Number(bounds.width ? bounds.width : 1) * transform.scale;
+                scaleY = element.actualSize.height / Number(bounds.height ? bounds.height : 1) * transform.scale;
+                var umlData = 'M7,4 L8,4 8,7 11,7 11,8 8,8 8,11 7,11 7,8 4,8 4,7 7,7 z M7.5,0.99999994' +
+                    'C3.9160004,1 1,3.9160004 0.99999994,7.5 1,11.084 3.9160004,14 7.5,14 11.084,14 14,11.084 14,7.5 14,' +
+                    '3.9160004 11.084,1 7.5,0.99999994 z M7.5,0 C11.636002,0 15,3.3639984 15,7.5 15,11.636002 11.636002,15 7.5,' +
+                    '15 3.3640003,15 0,11.636002 0,7.5 0,3.3639984 3.3640003,0 7.5,0 z';
+                arrayCollection = processPathData(umlData);
+                arrayCollection = splitArrayCollection(arrayCollection);
+                newPathString = transformPath(arrayCollection, scaleX + d + 2, scaleY - 8, false, bounds.x, bounds.y, 0, 0);
+                if (position.y >= element.offsetY) {
+                    y += height;
+                }
+            }
+            else {
+                var d = width * transform.scale;
+                data = 'M -10 -10 L 0 0 Z M -10 10 L 0 0 Z M 0 0 L ' + (d) + ' 0 Z M ' + (d) + ' 0 L ' +
+                    (d + 10) + ' 10 Z L ' + (d + 10) + ' -10 Z';
+            }
+        }
+        var options = {
+            data: data + newPathString,
+            width: width * transform.scale, height: height * transform.scale,
+            x: x, y: y, fill: 'transparent', stroke: '#8CC63F', angle: element.rotateAngle,
+            pivotX: element.pivot.x, pivotY: element.pivot.y, strokeWidth: 1,
+            dashArray: '', opacity: 1,
+            visible: true, id: canvas.id + '_stack_highlighter', class: 'e-diagram-highlighter',
+        };
+        this.svgRenderer.drawPath(canvas, options, this.diagramId);
+    };
     /**   @private  */
     DiagramRenderer.prototype.drawLine = function (canvas, options) {
         this.svgRenderer.drawLine(canvas, options);
@@ -13231,7 +15683,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         this.svgRenderer.drawPath(canvas, options, this.diagramId);
     };
     /**   @private  */
-    DiagramRenderer.prototype.renderResizeHandle = function (element, canvas, constraints, currentZoom, selectorConstraints, transform, canMask, enableNode) {
+    DiagramRenderer.prototype.renderResizeHandle = function (element, canvas, constraints, currentZoom, selectorConstraints, transform, canMask, enableNode, nodeConstraints) {
         var left = element.offsetX - element.actualSize.width * element.pivot.x;
         var top = element.offsetY - element.actualSize.height * element.pivot.y;
         var height = element.actualSize.height;
@@ -13240,35 +15692,37 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
             this.renderPivotLine(element, canvas, transform, selectorConstraints, canMask);
             this.renderRotateThumb(element, canvas, transform, selectorConstraints, canMask);
         }
-        this.renderBorder(element, canvas, transform, enableNode);
+        this.renderBorder(element, canvas, transform, enableNode, nodeConstraints);
         var nodeWidth = element.actualSize.width * currentZoom;
         var nodeHeight = element.actualSize.height * currentZoom;
-        if (nodeWidth >= 40 && nodeHeight >= 40) {
-            //Hide corners when the size is less than 40
-            if (selectorConstraints & SelectorConstraints.ResizeNorthWest) {
-                this.renderCircularHandle('resizeNorthWest', element, left, top, canvas, canShowCorner(selectorConstraints, 'ResizeNorthWest'), constraints & ThumbsConstraints.ResizeNorthWest, transform, undefined, canMask, { 'aria-label': 'Thumb to resize the selected object on top left side direction' }, undefined, 'e-diagram-resize-handle e-northwest');
+        if (!nodeConstraints) {
+            if (nodeWidth >= 40 && nodeHeight >= 40) {
+                //Hide corners when the size is less than 40
+                if (selectorConstraints & SelectorConstraints.ResizeNorthWest) {
+                    this.renderCircularHandle('resizeNorthWest', element, left, top, canvas, canShowCorner(selectorConstraints, 'ResizeNorthWest'), constraints & ThumbsConstraints.ResizeNorthWest, transform, undefined, canMask, { 'aria-label': 'Thumb to resize the selected object on top left side direction' }, undefined, 'e-diagram-resize-handle e-northwest');
+                }
+                if (selectorConstraints & SelectorConstraints.ResizeNorthEast) {
+                    this.renderCircularHandle('resizeNorthEast', element, left + width, top, canvas, canShowCorner(selectorConstraints, 'ResizeNorthEast'), constraints & ThumbsConstraints.ResizeNorthEast, transform, undefined, canMask, { 'aria-label': 'Thumb to resize the selected object on top right side direction' }, undefined, 'e-diagram-resize-handle e-northeast');
+                }
+                if (selectorConstraints & SelectorConstraints.ResizeSouthWest) {
+                    this.renderCircularHandle('resizeSouthWest', element, left, top + height, canvas, canShowCorner(selectorConstraints, 'ResizeSouthWest'), constraints & ThumbsConstraints.ResizeSouthWest, transform, undefined, canMask, { 'aria-label': 'Thumb to resize the selected object on bottom left side direction' }, undefined, 'e-diagram-resize-handle e-southwest');
+                }
+                if (selectorConstraints & SelectorConstraints.ResizeSouthEast) {
+                    this.renderCircularHandle('resizeSouthEast', element, left + width, top + height, canvas, canShowCorner(selectorConstraints, 'ResizeSouthEast'), constraints & ThumbsConstraints.ResizeSouthEast, transform, undefined, canMask, { 'aria-label': 'Thumb to resize the selected object on bottom right side direction' }, undefined, 'e-diagram-resize-handle e-southeast');
+                }
             }
-            if (selectorConstraints & SelectorConstraints.ResizeNorthEast) {
-                this.renderCircularHandle('resizeNorthEast', element, left + width, top, canvas, canShowCorner(selectorConstraints, 'ResizeNorthEast'), constraints & ThumbsConstraints.ResizeNorthEast, transform, undefined, canMask, { 'aria-label': 'Thumb to resize the selected object on top right side direction' }, undefined, 'e-diagram-resize-handle e-northeast');
+            if (selectorConstraints & SelectorConstraints.ResizeNorth) {
+                this.renderCircularHandle('resizeNorth', element, left + width / 2, top, canvas, canShowCorner(selectorConstraints, 'ResizeNorth'), constraints & ThumbsConstraints.ResizeNorth, transform, undefined, canMask, { 'aria-label': 'Thumb to resize the selected object on top side direction' }, undefined, 'e-diagram-resize-handle e-north');
             }
-            if (selectorConstraints & SelectorConstraints.ResizeSouthWest) {
-                this.renderCircularHandle('resizeSouthWest', element, left, top + height, canvas, canShowCorner(selectorConstraints, 'ResizeSouthWest'), constraints & ThumbsConstraints.ResizeSouthWest, transform, undefined, canMask, { 'aria-label': 'Thumb to resize the selected object on bottom left side direction' }, undefined, 'e-diagram-resize-handle e-southwest');
+            if (selectorConstraints & SelectorConstraints.ResizeSouth) {
+                this.renderCircularHandle('resizeSouth', element, left + width / 2, top + height, canvas, canShowCorner(selectorConstraints, 'ResizeSouth'), constraints & ThumbsConstraints.ResizeSouth, transform, undefined, canMask, { 'aria-label': 'Thumb to resize the selected object on bottom side direction' }, undefined, 'e-diagram-resize-handle e-south');
             }
-            if (selectorConstraints & SelectorConstraints.ResizeSouthEast) {
-                this.renderCircularHandle('resizeSouthEast', element, left + width, top + height, canvas, canShowCorner(selectorConstraints, 'ResizeSouthEast'), constraints & ThumbsConstraints.ResizeSouthEast, transform, undefined, canMask, { 'aria-label': 'Thumb to resize the selected object on bottom right side direction' }, undefined, 'e-diagram-resize-handle e-southeast');
+            if (selectorConstraints & SelectorConstraints.ResizeWest) {
+                this.renderCircularHandle('resizeWest', element, left, top + height / 2, canvas, canShowCorner(selectorConstraints, 'ResizeWest'), constraints & ThumbsConstraints.ResizeWest, transform, undefined, canMask, { 'aria-label': 'Thumb to resize the selected object on left side direction' }, undefined, 'e-diagram-resize-handle e-west');
             }
-        }
-        if (selectorConstraints & SelectorConstraints.ResizeNorth) {
-            this.renderCircularHandle('resizeNorth', element, left + width / 2, top, canvas, canShowCorner(selectorConstraints, 'ResizeNorth'), constraints & ThumbsConstraints.ResizeNorth, transform, undefined, canMask, { 'aria-label': 'Thumb to resize the selected object on top side direction' }, undefined, 'e-diagram-resize-handle e-north');
-        }
-        if (selectorConstraints & SelectorConstraints.ResizeSouth) {
-            this.renderCircularHandle('resizeSouth', element, left + width / 2, top + height, canvas, canShowCorner(selectorConstraints, 'ResizeSouth'), constraints & ThumbsConstraints.ResizeSouth, transform, undefined, canMask, { 'aria-label': 'Thumb to resize the selected object on bottom side direction' }, undefined, 'e-diagram-resize-handle e-south');
-        }
-        if (selectorConstraints & SelectorConstraints.ResizeWest) {
-            this.renderCircularHandle('resizeWest', element, left, top + height / 2, canvas, canShowCorner(selectorConstraints, 'ResizeWest'), constraints & ThumbsConstraints.ResizeWest, transform, undefined, canMask, { 'aria-label': 'Thumb to resize the selected object on left side direction' }, undefined, 'e-diagram-resize-handle e-west');
-        }
-        if (selectorConstraints & SelectorConstraints.ResizeEast) {
-            this.renderCircularHandle('resizeEast', element, left + width, top + height / 2, canvas, canShowCorner(selectorConstraints, 'ResizeEast'), constraints & ThumbsConstraints.ResizeEast, transform, undefined, canMask, { 'aria-label': 'Thumb to resize the selected object on right side direction' }, undefined, 'e-diagram-resize-handle e-east');
+            if (selectorConstraints & SelectorConstraints.ResizeEast) {
+                this.renderCircularHandle('resizeEast', element, left + width, top + height / 2, canvas, canShowCorner(selectorConstraints, 'ResizeEast'), constraints & ThumbsConstraints.ResizeEast, transform, undefined, canMask, { 'aria-label': 'Thumb to resize the selected object on right side direction' }, undefined, 'e-diagram-resize-handle e-east');
+            }
         }
     };
     /**   @private  */
@@ -13434,7 +15888,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         this.svgRenderer.drawCircle(canvas, options, enableSelector, ariaLabel);
     };
     /**   @private  */
-    DiagramRenderer.prototype.renderBorder = function (selector, canvas, transform, enableNode) {
+    DiagramRenderer.prototype.renderBorder = function (selector, canvas, transform, enableNode, isBorderTickness) {
         var wrapper = selector;
         var options = this.getBaseAttributes(wrapper, transform);
         options.x *= transform.scale;
@@ -13449,6 +15903,9 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         options.id = 'borderRect';
         if (!enableNode) {
             options.class += ' e-disabled';
+        }
+        if (isBorderTickness) {
+            options.class += ' e-thick-border';
         }
         options.cornerRadius = 0;
         var parentSvg = this.getParentSvg(selector, 'selector');
@@ -13776,7 +16233,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         options.childNodes = element.childNodes;
         options.dashArray = '';
         options.strokeWidth = 0;
-        options.fill = 'transparent';
+        options.fill = element.style.fill;
         var ariaLabel = element.description ? element.description : element.content ? element.content : element.id;
         this.renderer.drawRectangle(canvas, options, this.diagramId, undefined, undefined, parentSvg);
         this.renderer.drawText(canvas, options, parentSvg, ariaLabel, this.diagramId);
@@ -14050,7 +16507,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
     return DiagramRenderer;
 }());
 
-var __extends$19 = (undefined && undefined.__extends) || (function () {
+var __extends$21 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -14073,7 +16530,7 @@ var __decorate$12 = (undefined && undefined.__decorate) || function (decorators,
  * Defines the size and appearance of the diagram page
  */
 var Background = /** @__PURE__ @class */ (function (_super) {
-    __extends$19(Background, _super);
+    __extends$21(Background, _super);
     function Background() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -14109,7 +16566,7 @@ var Background = /** @__PURE__ @class */ (function (_super) {
  * @default {}
  */
 var PageSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$19(PageSettings, _super);
+    __extends$21(PageSettings, _super);
     function PageSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -14143,7 +16600,7 @@ var PageSettings = /** @__PURE__ @class */ (function (_super) {
  * Diagram ScrollSettings module handles the scroller properties of the diagram
  */
 var ScrollSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$19(ScrollSettings, _super);
+    __extends$21(ScrollSettings, _super);
     function ScrollSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -14200,7 +16657,7 @@ var ServiceLocator = /** @__PURE__ @class */ (function () {
     return ServiceLocator;
 }());
 
-var __extends$20 = (undefined && undefined.__extends) || (function () {
+var __extends$22 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -14223,7 +16680,7 @@ var __decorate$13 = (undefined && undefined.__decorate) || function (decorators,
  * Provides a visual guidance while dragging or arranging the objects on the Diagram surface
  */
 var Gridlines = /** @__PURE__ @class */ (function (_super) {
-    __extends$20(Gridlines, _super);
+    __extends$22(Gridlines, _super);
     function Gridlines() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -14246,7 +16703,7 @@ var Gridlines = /** @__PURE__ @class */ (function (_super) {
  * @default {}
  */
 var SnapSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$20(SnapSettings, _super);
+    __extends$22(SnapSettings, _super);
     function SnapSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -14268,7 +16725,7 @@ var SnapSettings = /** @__PURE__ @class */ (function (_super) {
     return SnapSettings;
 }(ChildProperty));
 
-var __extends$21 = (undefined && undefined.__extends) || (function () {
+var __extends$23 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -14291,7 +16748,7 @@ var __decorate$14 = (undefined && undefined.__decorate) || function (decorators,
  * Defines the properties of both horizontal and vertical guides/rulers to measure the diagram area.
  */
 var DiagramRuler = /** @__PURE__ @class */ (function (_super) {
-    __extends$21(DiagramRuler, _super);
+    __extends$23(DiagramRuler, _super);
     function DiagramRuler() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -14337,7 +16794,7 @@ var DiagramRuler = /** @__PURE__ @class */ (function (_super) {
  * @default {}
  */
 var RulerSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$21(RulerSettings, _super);
+    __extends$23(RulerSettings, _super);
     function RulerSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -14356,7 +16813,7 @@ var RulerSettings = /** @__PURE__ @class */ (function (_super) {
     return RulerSettings;
 }(ChildProperty));
 
-var __extends$22 = (undefined && undefined.__extends) || (function () {
+var __extends$24 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -14404,8 +16861,64 @@ var __decorate$15 = (undefined && undefined.__decorate) || function (decorators,
  * diagram.appendTo('#diagram');
  * ```
  */
+var CrudAction = /** @__PURE__ @class */ (function (_super) {
+    __extends$24(CrudAction, _super);
+    function CrudAction() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$15([
+        Property('')
+    ], CrudAction.prototype, "read", void 0);
+    __decorate$15([
+        Property('')
+    ], CrudAction.prototype, "create", void 0);
+    __decorate$15([
+        Property('')
+    ], CrudAction.prototype, "update", void 0);
+    __decorate$15([
+        Property('')
+    ], CrudAction.prototype, "destroy", void 0);
+    __decorate$15([
+        Property()
+    ], CrudAction.prototype, "customFields", void 0);
+    return CrudAction;
+}(ChildProperty));
+var ConnectionDataSource = /** @__PURE__ @class */ (function (_super) {
+    __extends$24(ConnectionDataSource, _super);
+    function ConnectionDataSource() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$15([
+        Property('')
+    ], ConnectionDataSource.prototype, "id", void 0);
+    __decorate$15([
+        Property('')
+    ], ConnectionDataSource.prototype, "sourceID", void 0);
+    __decorate$15([
+        Property('')
+    ], ConnectionDataSource.prototype, "targetID", void 0);
+    __decorate$15([
+        Property(null)
+    ], ConnectionDataSource.prototype, "sourcePointX", void 0);
+    __decorate$15([
+        Property(null)
+    ], ConnectionDataSource.prototype, "sourcePointY", void 0);
+    __decorate$15([
+        Property(null)
+    ], ConnectionDataSource.prototype, "targetPointX", void 0);
+    __decorate$15([
+        Property(null)
+    ], ConnectionDataSource.prototype, "targetPointY", void 0);
+    __decorate$15([
+        Property(null)
+    ], ConnectionDataSource.prototype, "dataManager", void 0);
+    __decorate$15([
+        Complex({}, CrudAction)
+    ], ConnectionDataSource.prototype, "crudAction", void 0);
+    return ConnectionDataSource;
+}(ChildProperty));
 var DataSource = /** @__PURE__ @class */ (function (_super) {
-    __extends$22(DataSource, _super);
+    __extends$24(DataSource, _super);
     function DataSource() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -14427,10 +16940,16 @@ var DataSource = /** @__PURE__ @class */ (function (_super) {
     __decorate$15([
         Property()
     ], DataSource.prototype, "doBinding", void 0);
+    __decorate$15([
+        Complex({}, CrudAction)
+    ], DataSource.prototype, "crudAction", void 0);
+    __decorate$15([
+        Complex({}, ConnectionDataSource)
+    ], DataSource.prototype, "connectionDataSource", void 0);
     return DataSource;
 }(ChildProperty));
 
-var __extends$23 = (undefined && undefined.__extends) || (function () {
+var __extends$25 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -14453,7 +16972,7 @@ var __decorate$16 = (undefined && undefined.__decorate) || function (decorators,
  * Defines the behavior of the automatic layouts
  */
 var Layout = /** @__PURE__ @class */ (function (_super) {
-    __extends$23(Layout, _super);
+    __extends$25(Layout, _super);
     function Layout() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -14603,7 +17122,7 @@ function findToolToActivate(obj, wrapper, position, diagram, touchStart, touchMo
             }
             paddedBounds.Inflate(ten);
             if (paddedBounds.containsPoint(position)) {
-                var action = checkForResizeHandles(diagram, element, position, matrix, x, y);
+                var action = checkResizeHandles(diagram, element, position, matrix, x, y);
                 if (action) {
                     return action;
                 }
@@ -14652,6 +17171,20 @@ function findToolToActivate(obj, wrapper, position, diagram, touchStart, touchMo
         }
     }
     return 'Select';
+}
+function checkResizeHandles(diagram, element, position, matrix, x, y) {
+    var action;
+    if ((diagram.selectedItems.nodes.length === 1 && diagram.selectedItems.connectors.length === 0)
+        && diagram.selectedItems.nodes[0].container) {
+        action = checkResizeHandleForContainer(diagram, element, position, x, y);
+    }
+    if (!action) {
+        action = checkForResizeHandles(diagram, element, position, matrix, x, y);
+    }
+    if (action) {
+        return action;
+    }
+    return null;
 }
 function checkForConnectorSegment(conn, handle, position, diagram) {
     var targetPaddingValue = 10 / diagram.scrollSettings.currentZoom;
@@ -14717,6 +17250,44 @@ function findPortToolToActivate(diagram, target, touchStart, touchMove) {
         }
     }
     return 'None';
+}
+/**
+ * Resize handle for container and also object.
+ * @private
+ */
+function checkResizeHandleForContainer(diagram, element, position, x, y) {
+    var ten = 10 / diagram.scroller.currentZoom;
+    var forty = 40 / diagram.scroller.currentZoom;
+    var selectedItems = diagram.selectedItems;
+    var width = element.actualSize.width;
+    var height = element.actualSize.height;
+    var left = new Rect(x, y + 20, element.style.strokeWidth, height - 40);
+    var right = new Rect(x + width, y + 20, element.style.strokeWidth, height - 40);
+    var top = new Rect(x + 20, y, width - 40, element.style.strokeWidth);
+    var bottom = new Rect(x + 20, y + height, width - 40, element.style.strokeWidth);
+    var container = checkParentAsContainer(diagram, diagram.selectedItems.nodes[0], true) ?
+        diagram.nameTable[diagram.selectedItems.nodes[0].parentId] : diagram.selectedItems.nodes[0];
+    if (width >= forty && height >= forty) {
+        if (canResizeCorner(selectedItems.constraints, 'ResizeEast', selectedItems.thumbsConstraints, selectedItems) &&
+            right.containsPoint(position, ten)) {
+            return 'ResizeEast';
+        }
+        if (canResizeCorner(selectedItems.constraints, 'ResizeSouth', selectedItems.thumbsConstraints, selectedItems) &&
+            bottom.containsPoint(position, ten)) {
+            return 'ResizeSouth';
+        }
+        if (container.container.type !== 'Grid') {
+            if (canResizeCorner(selectedItems.constraints, 'ResizeWest', selectedItems.thumbsConstraints, selectedItems) &&
+                left.containsPoint(position, ten)) {
+                return 'ResizeWest';
+            }
+            if (canResizeCorner(selectedItems.constraints, 'ResizeNorth', selectedItems.thumbsConstraints, selectedItems) &&
+                top.containsPoint(position, ten)) {
+                return 'ResizeNorth';
+            }
+        }
+    }
+    return null;
 }
 function checkForResizeHandles(diagram, element, position, matrix, x, y) {
     var forty = 40 / diagram.scroller.currentZoom;
@@ -14905,7 +17476,7 @@ var cursors = {
     'LabelResizeSouthWest': 'sw-resize',
 };
 
-var __extends$24 = (undefined && undefined.__extends) || (function () {
+var __extends$26 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -15003,6 +17574,7 @@ var ToolBase = /** @__PURE__ @class */ (function () {
         this.mouseUp(args);
     };
     ToolBase.prototype.updateSize = function (shape, startPoint, endPoint, corner, initialBounds, angle) {
+        shape = this.commandHandler.renderContainerHelper(shape) || shape;
         var horizontalsnap = { snapped: false, offset: 0, left: false, right: false };
         var verticalsnap = { snapped: false, offset: 0, top: false, bottom: false };
         var difx = this.currentPosition.x - this.startPosition.x;
@@ -15031,7 +17603,8 @@ var ToolBase = /** @__PURE__ @class */ (function () {
                 difx = diff.x;
                 dify = diff.y;
                 deltaHeight = 1;
-                difx = snapEnabled ? this.commandHandler.snappingModule.snapLeft(horizontalsnap, verticalsnap, snapLine, difx, dify, shape, endPoint === startPoint, initialBounds) : difx;
+                difx = snapEnabled ? this.commandHandler.snappingModule.snapLeft(horizontalsnap, verticalsnap, snapLine, difx, dify, shape, endPoint === startPoint, initialBounds) :
+                    difx;
                 dify = 0;
                 deltaWidth = (initialBounds.width - difx) / width;
                 break;
@@ -15059,7 +17632,7 @@ var ToolBase = /** @__PURE__ @class */ (function () {
                 diff = transformPointByMatrix(matrix, ({ x: difx, y: dify }));
                 difx = diff.x;
                 dify = diff.y;
-                dify = snapEnabled ? this.commandHandler.snappingModule.snapBottom(horizontalsnap, verticalsnap, snapLine, diff.x, diff.y, shape, endPoint === startPoint, initialBounds) :
+                dify = snapEnabled ? this.commandHandler.snappingModule.snapBottom(horizontalsnap, verticalsnap, snapLine, difx, dify, shape, endPoint === startPoint, initialBounds) :
                     dify;
                 deltaHeight = (initialBounds.height + dify) / height;
                 break;
@@ -15131,7 +17704,7 @@ var ToolBase = /** @__PURE__ @class */ (function () {
  * Helps to select the objects
  */
 var SelectTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$24(SelectTool, _super);
+    __extends$26(SelectTool, _super);
     function SelectTool(commandHandler, protectChange, action) {
         var _this = _super.call(this, commandHandler, true) || this;
         _this.action = action;
@@ -15200,7 +17773,7 @@ var SelectTool = /** @__PURE__ @class */ (function (_super) {
  * Helps to edit the selected connectors
  */
 var ConnectTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$24(ConnectTool, _super);
+    __extends$26(ConnectTool, _super);
     function ConnectTool(commandHandler, endPoint) {
         var _this = _super.call(this, commandHandler, true) || this;
         _this.endPoint = endPoint;
@@ -15324,6 +17897,8 @@ var ConnectTool = /** @__PURE__ @class */ (function (_super) {
             var diffY = this.currentPosition.y - this.prevPosition.y;
             var newValue = void 0;
             var oldValue = void 0;
+            var inPort = void 0;
+            var outPort = void 0;
             this.currentPosition = this.commandHandler.snapConnectorEnd(this.currentPosition);
             var connector = void 0;
             if (args.source && args.source.connectors) {
@@ -15350,15 +17925,31 @@ var ConnectTool = /** @__PURE__ @class */ (function (_super) {
                     DiagramEvent.sourcePointChange : DiagramEvent.targetPointChange;
                 this.commandHandler.triggerEvent(trigger, arg);
             }
+            if (args.target) {
+                inPort = getInOutConnectPorts(args.target, true);
+                outPort = getInOutConnectPorts(args.target, false);
+            }
             if (!arg.cancel && this.inAction && this.endPoint !== undefined && diffX !== 0 || diffY !== 0) {
                 this.blocked = !this.commandHandler.dragConnectorEnds(this.endPoint, args.source, this.currentPosition, this.selectedSegment, args.target, targetPortId);
                 this.commandHandler.updateSelector();
-                if (args.target && ((this.endPoint === 'ConnectorSourceEnd' && canOutConnect(args.target))
-                    || (this.endPoint === 'ConnectorTargetEnd' && canInConnect(args.target)))) {
+                if (args.target && ((this.endPoint === 'ConnectorSourceEnd' && (canOutConnect(args.target) || canPortOutConnect(outPort)))
+                    || (this.endPoint === 'ConnectorTargetEnd' && (canInConnect(args.target) || canPortInConnect(inPort))))) {
                     if (this.commandHandler.canDisconnect(this.endPoint, args, targetPortId, targetNodeId)) {
                         this.commandHandler.disConnect(args.source, this.endPoint);
                     }
-                    this.commandHandler.connect(this.endPoint, args);
+                    var target = this.commandHandler.findTarget(args.targetWrapper, args.target, this.endPoint === 'ConnectorSourceEnd', true);
+                    if (target instanceof Node) {
+                        if ((canInConnect(target) && this.endPoint === 'ConnectorTargetEnd')
+                            || (canOutConnect(target) && this.endPoint === 'ConnectorSourceEnd')) {
+                            this.commandHandler.connect(this.endPoint, args);
+                        }
+                    }
+                    else {
+                        var isConnect = this.checkConnect(target);
+                        if (isConnect) {
+                            this.commandHandler.connect(this.endPoint, args);
+                        }
+                    }
                 }
                 else if (this.endPoint.indexOf('Bezier') === -1) {
                     this.commandHandler.disConnect(args.source, this.endPoint);
@@ -15381,6 +17972,18 @@ var ConnectTool = /** @__PURE__ @class */ (function (_super) {
     ConnectTool.prototype.getTooltipContent = function (position) {
         return 'X:' + Math.round(position.x) + ' ' + 'Y:' + Math.round(position.y);
     };
+    ConnectTool.prototype.checkConnect = function (target) {
+        if (canPortInConnect(target) && this.endPoint === 'ConnectorTargetEnd') {
+            return true;
+        }
+        else if (canPortOutConnect(target) && this.endPoint === 'ConnectorSourceEnd') {
+            return true;
+        }
+        else if (!canPortInConnect(target) && !canPortOutConnect(target)) {
+            return true;
+        }
+        return false;
+    };
     /**   @private  */
     ConnectTool.prototype.endAction = function () {
         _super.prototype.endAction.call(this);
@@ -15393,7 +17996,7 @@ var ConnectTool = /** @__PURE__ @class */ (function (_super) {
  * Drags the selected objects
  */
 var MoveTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$24(MoveTool, _super);
+    __extends$26(MoveTool, _super);
     function MoveTool(commandHandler, objType) {
         var _this = _super.call(this, commandHandler, true) || this;
         /**   @private  */
@@ -15428,6 +18031,7 @@ var MoveTool = /** @__PURE__ @class */ (function (_super) {
     MoveTool.prototype.mouseUp = function (args) {
         var obj;
         var historyAdded = false;
+        var object;
         var redoObject = { nodes: [], connectors: [] };
         if (this.objectType !== 'Port') {
             if (args.source instanceof Node || args.source instanceof Connector) {
@@ -15445,7 +18049,8 @@ var MoveTool = /** @__PURE__ @class */ (function (_super) {
             else {
                 obj = cloneObject(args.source);
             }
-            if (obj.offsetX !== this.undoElement.offsetX || obj.offsetY !== this.undoElement.offsetY) {
+            object = this.commandHandler.renderContainerHelper(args.source) || args.source;
+            if (object.offsetX !== this.undoElement.offsetX || object.offsetY !== this.undoElement.offsetY) {
                 var oldValues = void 0;
                 var newValues = void 0;
                 if (args.source) {
@@ -15482,6 +18087,11 @@ var MoveTool = /** @__PURE__ @class */ (function (_super) {
                     element: args.source, target: this.currentTarget, position: this.currentPosition, cancel: false
                 };
                 this.commandHandler.triggerEvent(DiagramEvent.drop, arg);
+                if (!arg.cancel && args.source && this.commandHandler.isParentAsContainer(this.currentTarget)) {
+                    var node = (args.source instanceof Selector) ? args.source.nodes[0] : args.source;
+                    this.commandHandler.dropChildToContainer(this.currentTarget, node);
+                    this.commandHandler.renderContainerHelper(node);
+                }
             }
             if (args.source && this.currentTarget) {
                 this.commandHandler.dropAnnotation(args.source, this.currentTarget);
@@ -15495,7 +18105,7 @@ var MoveTool = /** @__PURE__ @class */ (function (_super) {
             redoObject.nodes.push(cloneObject(args.source));
             obj = cloneObject(redoObject);
             var entry = {
-                type: 'PortPositionChanged', changeObjectId: this.portId,
+                type: 'PortPositionChanged', objectId: this.portId,
                 redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement), category: 'Internal'
             };
             this.commandHandler.addHistoryEntry(entry);
@@ -15506,32 +18116,35 @@ var MoveTool = /** @__PURE__ @class */ (function (_super) {
     MoveTool.prototype.mouseMove = function (args) {
         _super.prototype.mouseMove.call(this, args);
         var isSame = false;
-        if (args.source instanceof Node || args.source instanceof Connector) {
-            if (args.source instanceof Node) {
-                if (args.source.offsetX === this.undoElement.nodes[0].offsetX &&
-                    args.source.offsetY === this.undoElement.nodes[0].offsetY) {
+        var object;
+        object = this.commandHandler.renderContainerHelper(args.source) ||
+            args.source;
+        if (object instanceof Node || object instanceof Connector) {
+            if (object instanceof Node) {
+                if (object.offsetX === this.undoElement.nodes[0].offsetX &&
+                    object.offsetY === this.undoElement.nodes[0].offsetY) {
                     isSame = true;
                 }
             }
             else {
-                if (Point.equals(args.source.sourcePoint, this.undoElement.connectors[0].sourcePoint) &&
-                    Point.equals(args.source.targetPoint, this.undoElement.connectors[0].targetPoint)) {
+                if (Point.equals(object.sourcePoint, this.undoElement.connectors[0].sourcePoint) &&
+                    Point.equals(object.targetPoint, this.undoElement.connectors[0].targetPoint)) {
                     isSame = true;
                 }
             }
         }
         else {
-            if (args.source.wrapper.offsetX === this.undoElement.wrapper.offsetX &&
-                args.source.wrapper.offsetY === this.undoElement.wrapper.offsetY) {
+            if (object.wrapper.offsetX === this.undoElement.wrapper.offsetX &&
+                object.wrapper.offsetY === this.undoElement.wrapper.offsetY) {
                 isSame = true;
             }
         }
         var oldValues;
-        if (args.source) {
-            oldValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
+        if (object) {
+            oldValues = { offsetX: object.wrapper.offsetX, offsetY: object.wrapper.offsetY };
         }
         var arg = {
-            source: args.source, state: 'Start', oldValue: oldValues, newValue: oldValues,
+            source: object, state: 'Start', oldValue: oldValues, newValue: oldValues,
             target: args.target, targetPosition: args.position, allowDrop: true, cancel: false
         };
         if (isSame) {
@@ -15551,11 +18164,11 @@ var MoveTool = /** @__PURE__ @class */ (function (_super) {
             var snappedPoint = this.commandHandler.snapPoint(this.prevPosition, this.currentPosition, diffX, diffY);
             this.initialOffset.x = diffX - snappedPoint.x;
             this.initialOffset.y = diffY - snappedPoint.y;
-            if (args.source) {
-                oldValues_1 = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
+            if (object) {
+                oldValues_1 = { offsetX: object.wrapper.offsetX, offsetY: object.wrapper.offsetY };
                 newValues = {
-                    offsetX: args.source.wrapper.offsetX + snappedPoint.x,
-                    offsetY: args.source.wrapper.offsetY + snappedPoint.y
+                    offsetX: object.wrapper.offsetX + snappedPoint.x,
+                    offsetY: object.wrapper.offsetY + snappedPoint.y
                 };
             }
             if (this.currentTarget && args.target !== this.currentTarget) {
@@ -15563,7 +18176,7 @@ var MoveTool = /** @__PURE__ @class */ (function (_super) {
             }
             this.currentTarget = args.target;
             var arg_1 = {
-                source: args.source, state: 'Progress', oldValue: oldValues_1, newValue: newValues,
+                source: object, state: 'Progress', oldValue: oldValues_1, newValue: newValues,
                 target: args.target, targetPosition: args.position, allowDrop: true, cancel: false
             };
             this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg_1);
@@ -15572,9 +18185,13 @@ var MoveTool = /** @__PURE__ @class */ (function (_super) {
                 var blocked = !(this.commandHandler.mouseOver(this.currentElement, this.currentTarget, this.currentPosition));
                 this.blocked = this.blocked || blocked;
             }
+            this.commandHandler.removeStackHighlighter();
+            this.commandHandler.renderStackHighlighter(args);
             if (this.currentTarget && (args.source !== this.currentTarget) &&
-                this.commandHandler.isDroppable(args.source, this.currentTarget)) {
-                this.commandHandler.drawHighlighter(this.currentTarget);
+                this.commandHandler.isDroppable(args.source, this.currentTarget) && args.source.id !== 'helper') {
+                if (!this.commandHandler.isParentAsContainer((args.source instanceof Selector) ? args.source.nodes[0] : args.source, true)) {
+                    this.commandHandler.drawHighlighter(this.currentTarget);
+                }
             }
             else {
                 this.commandHandler.removeHighlighter();
@@ -15610,7 +18227,7 @@ var MoveTool = /** @__PURE__ @class */ (function (_super) {
  * Rotates the selected objects
  */
 var RotateTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$24(RotateTool, _super);
+    __extends$26(RotateTool, _super);
     function RotateTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
@@ -15629,8 +18246,10 @@ var RotateTool = /** @__PURE__ @class */ (function (_super) {
     };
     /**   @private  */
     RotateTool.prototype.mouseUp = function (args) {
-        if (this.undoElement.rotateAngle !== args.source.wrapper.rotateAngle) {
-            var oldValue = { rotateAngle: args.source.wrapper.rotateAngle };
+        var object;
+        object = this.commandHandler.renderContainerHelper(args.source) || args.source;
+        if (this.undoElement.rotateAngle !== object.wrapper.rotateAngle) {
+            var oldValue = { rotateAngle: object.wrapper.rotateAngle };
             var arg = {
                 source: args.source, state: 'Completed', oldValue: oldValue,
                 newValue: oldValue, cancel: false
@@ -15650,20 +18269,22 @@ var RotateTool = /** @__PURE__ @class */ (function (_super) {
     /**   @private  */
     RotateTool.prototype.mouseMove = function (args) {
         _super.prototype.mouseMove.call(this, args);
-        if (this.undoElement.rotateAngle === args.source.wrapper.rotateAngle) {
-            var oldValue_1 = { rotateAngle: args.source.wrapper.rotateAngle };
+        var object;
+        object = this.commandHandler.renderContainerHelper(args.source) || args.source;
+        if (this.undoElement.rotateAngle === object.wrapper.rotateAngle) {
+            var oldValue_1 = { rotateAngle: object.wrapper.rotateAngle };
             var arg_2 = {
                 source: args.source, state: 'Start', oldValue: oldValue_1, newValue: oldValue_1, cancel: false
             };
             this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg_2);
         }
         this.currentPosition = args.position;
-        var refPoint = { x: this.currentElement.wrapper.offsetX, y: this.currentElement.wrapper.offsetY };
+        var refPoint = { x: object.wrapper.offsetX, y: object.wrapper.offsetY };
         var angle = Point.findAngle(refPoint, this.currentPosition) + 90;
         var snapAngle = this.commandHandler.snapAngle(angle);
         angle = snapAngle !== 0 ? snapAngle : angle;
         angle = (angle + 360) % 360;
-        var oldValue = { rotateAngle: args.source.wrapper.rotateAngle };
+        var oldValue = { rotateAngle: object.wrapper.rotateAngle };
         var newValue = { rotateAngle: angle };
         var arg = {
             source: args.source, state: 'Progress', oldValue: oldValue,
@@ -15671,7 +18292,7 @@ var RotateTool = /** @__PURE__ @class */ (function (_super) {
         };
         this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg);
         if (!arg.cancel) {
-            this.blocked = !(this.commandHandler.rotateSelectedItems(angle - this.currentElement.wrapper.rotateAngle));
+            this.blocked = !(this.commandHandler.rotateSelectedItems(angle - object.wrapper.rotateAngle));
         }
         if (this.commandHandler.canEnableDefaultTooltip()) {
             var content = this.getTooltipContent(args.source);
@@ -15697,7 +18318,7 @@ var RotateTool = /** @__PURE__ @class */ (function (_super) {
  * Scales the selected objects
  */
 var ResizeTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$24(ResizeTool, _super);
+    __extends$26(ResizeTool, _super);
     function ResizeTool(commandHandler, corner) {
         var _this = _super.call(this, commandHandler, true) || this;
         /**   @private  */
@@ -15718,6 +18339,7 @@ var ResizeTool = /** @__PURE__ @class */ (function (_super) {
                 this.childTable[nodes[i].id] = cloneObject(node);
             }
         }
+        this.commandHandler.checkSelection(args.source, this.corner);
         _super.prototype.mouseDown.call(this, args);
         this.initialBounds.x = args.source.wrapper.offsetX;
         this.initialBounds.y = args.source.wrapper.offsetY;
@@ -15727,9 +18349,11 @@ var ResizeTool = /** @__PURE__ @class */ (function (_super) {
     /**   @private  */
     ResizeTool.prototype.mouseUp = function (args) {
         this.commandHandler.removeSnap();
-        if (this.undoElement.offsetX !== args.source.wrapper.offsetX || this.undoElement.offsetY !== args.source.wrapper.offsetY) {
+        var object;
+        object = this.commandHandler.renderContainerHelper(args.source) || args.source;
+        if (this.undoElement.offsetX !== object.wrapper.offsetX || this.undoElement.offsetY !== object.wrapper.offsetY) {
             var deltaValues = this.updateSize(args.source, this.currentPosition, this.prevPosition, this.corner, this.initialBounds);
-            this.blocked = this.scaleObjects(deltaValues.width, deltaValues.height, this.corner, this.currentPosition, this.prevPosition, args.source);
+            this.blocked = this.scaleObjects(deltaValues.width, deltaValues.height, this.corner, this.currentPosition, this.prevPosition, object);
             var oldValue = {
                 offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY,
                 width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height
@@ -15761,7 +18385,9 @@ var ResizeTool = /** @__PURE__ @class */ (function (_super) {
     /**   @private  */
     ResizeTool.prototype.mouseMove = function (args) {
         _super.prototype.mouseMove.call(this, args);
-        if (this.undoElement.offsetX === args.source.wrapper.offsetX && this.undoElement.offsetY === args.source.wrapper.offsetY) {
+        var object;
+        object = this.commandHandler.renderContainerHelper(args.source) || args.source;
+        if (this.undoElement.offsetX === object.wrapper.offsetX && this.undoElement.offsetY === object.wrapper.offsetY) {
             var oldValue = {
                 offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY,
                 width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height
@@ -15781,7 +18407,7 @@ var ResizeTool = /** @__PURE__ @class */ (function (_super) {
         changes = this.getChanges(changes);
         this.commandHandler.removeSnap();
         var deltaValues = this.updateSize(args.source, this.startPosition, this.currentPosition, this.corner, this.initialBounds);
-        this.blocked = !(this.scaleObjects(deltaValues.width, deltaValues.height, this.corner, this.startPosition, this.currentPosition, args.source));
+        this.blocked = !(this.scaleObjects(deltaValues.width, deltaValues.height, this.corner, this.startPosition, this.currentPosition, object));
         if (this.commandHandler.canEnableDefaultTooltip()) {
             var content = this.getTooltipContent(args.source);
             this.commandHandler.showTooltip(args.source, args.position, content, 'ResizeTool', this.isTooltipVisible);
@@ -15825,7 +18451,7 @@ var ResizeTool = /** @__PURE__ @class */ (function (_super) {
      * Aspect ratio used to resize the width or height based on resizing the height or width
      */
     ResizeTool.prototype.scaleObjects = function (deltaWidth, deltaHeight, corner, startPoint, endPoint, source) {
-        if (source.nodes.length === 1 && source.nodes[0].constraints & NodeConstraints.AspectRatio) {
+        if (source instanceof Selector && source.nodes.length === 1 && source.nodes[0].constraints & NodeConstraints.AspectRatio) {
             if (corner === 'ResizeWest' || corner === 'ResizeEast' || corner === 'ResizeNorth' || corner === 'ResizeSouth') {
                 if (!(deltaHeight === 1 && deltaWidth === 1)) {
                     deltaHeight = deltaWidth = Math.max(deltaHeight === 1 ? 0 : deltaHeight, deltaWidth === 1 ? 0 : deltaWidth);
@@ -15847,7 +18473,8 @@ var ResizeTool = /** @__PURE__ @class */ (function (_super) {
             offsetX: source.offsetX, offsetY: source.offsetY,
             width: source.width, height: source.height
         };
-        var arg = { source: source, state: 'Progress', oldValue: oldValue, newValue: newValue, cancel: false };
+        var arg;
+        arg = { source: source, state: 'Progress', oldValue: oldValue, newValue: newValue, cancel: false };
         this.commandHandler.triggerEvent(DiagramEvent.sizeChange, arg);
         if (arg.cancel) {
             this.commandHandler.scaleSelectedItems(1 / deltaWidth, 1 / deltaHeight, this.getPivot(this.corner));
@@ -15860,7 +18487,7 @@ var ResizeTool = /** @__PURE__ @class */ (function (_super) {
  * Draws a node that is defined by the user
  */
 var NodeDrawingTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$24(NodeDrawingTool, _super);
+    __extends$26(NodeDrawingTool, _super);
     function NodeDrawingTool(commandHandler, sourceObject) {
         var _this = _super.call(this, commandHandler, true) || this;
         _this.sourceObject = sourceObject;
@@ -15919,7 +18546,7 @@ var NodeDrawingTool = /** @__PURE__ @class */ (function (_super) {
  * Draws a connector that is defined by the user
  */
 var ConnectorDrawingTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$24(ConnectorDrawingTool, _super);
+    __extends$26(ConnectorDrawingTool, _super);
     function ConnectorDrawingTool(commandHandler, endPoint, sourceObject) {
         var _this = _super.call(this, commandHandler, endPoint) || this;
         _this.sourceObject = sourceObject;
@@ -15976,7 +18603,7 @@ var ConnectorDrawingTool = /** @__PURE__ @class */ (function (_super) {
     return ConnectorDrawingTool;
 }(ConnectTool));
 var TextDrawingTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$24(TextDrawingTool, _super);
+    __extends$26(TextDrawingTool, _super);
     function TextDrawingTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
@@ -16039,7 +18666,7 @@ var TextDrawingTool = /** @__PURE__ @class */ (function (_super) {
  * Pans the diagram control on drag
  */
 var ZoomPanTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$24(ZoomPanTool, _super);
+    __extends$26(ZoomPanTool, _super);
     function ZoomPanTool(commandHandler, zoom) {
         var _this = _super.call(this, commandHandler) || this;
         _this.zooming = zoom;
@@ -16097,7 +18724,7 @@ var ZoomPanTool = /** @__PURE__ @class */ (function (_super) {
  * Animate the layout during expand and collapse
  */
 var ExpandTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$24(ExpandTool, _super);
+    __extends$26(ExpandTool, _super);
     function ExpandTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
@@ -16112,7 +18739,7 @@ var ExpandTool = /** @__PURE__ @class */ (function (_super) {
  * Opens the annotation hypeLink at mouse up
  */
 var LabelTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$24(LabelTool, _super);
+    __extends$26(LabelTool, _super);
     function LabelTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
@@ -16128,7 +18755,7 @@ var LabelTool = /** @__PURE__ @class */ (function (_super) {
  * Draws a Polygon shape node dynamically using polygon Tool
  */
 var PolygonDrawingTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$24(PolygonDrawingTool, _super);
+    __extends$26(PolygonDrawingTool, _super);
     function PolygonDrawingTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
@@ -16203,7 +18830,7 @@ var PolygonDrawingTool = /** @__PURE__ @class */ (function (_super) {
  * Draws a PolyLine Connector dynamically using PolyLine Drawing Tool
  */
 var PolyLineDrawingTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$24(PolyLineDrawingTool, _super);
+    __extends$26(PolyLineDrawingTool, _super);
     function PolyLineDrawingTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
@@ -16261,7 +18888,7 @@ var PolyLineDrawingTool = /** @__PURE__ @class */ (function (_super) {
     return PolyLineDrawingTool;
 }(ToolBase));
 var LabelDragTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$24(LabelDragTool, _super);
+    __extends$26(LabelDragTool, _super);
     function LabelDragTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
@@ -16298,7 +18925,7 @@ var LabelDragTool = /** @__PURE__ @class */ (function (_super) {
         this.inAction = false;
         var entryValue = {
             type: 'AnnotationPropertyChanged',
-            changeObjectId: this.annotationId, undoObject: cloneObject(this.undoElement),
+            objectId: this.annotationId, undoObject: cloneObject(this.undoElement),
             category: 'Internal', redoObject: cloneObject(redoValue)
         };
         this.commandHandler.addHistoryEntry(entryValue);
@@ -16311,7 +18938,7 @@ var LabelDragTool = /** @__PURE__ @class */ (function (_super) {
     return LabelDragTool;
 }(ToolBase));
 var LabelResizeTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$24(LabelResizeTool, _super);
+    __extends$26(LabelResizeTool, _super);
     function LabelResizeTool(commandHandler, corner) {
         var _this = _super.call(this, commandHandler, true) || this;
         _this.corner = corner;
@@ -16347,7 +18974,7 @@ var LabelResizeTool = /** @__PURE__ @class */ (function (_super) {
             args.source.nodes[0] : args.source.connectors[0];
         this.inAction = false;
         var entry = {
-            type: 'AnnotationPropertyChanged', changeObjectId: this.annotationId,
+            type: 'AnnotationPropertyChanged', objectId: this.annotationId,
             redoObject: cloneObject(redoObject), undoObject: cloneObject(this.undoElement), category: 'Internal'
         };
         this.commandHandler.addHistoryEntry(entry);
@@ -16389,7 +19016,7 @@ var LabelResizeTool = /** @__PURE__ @class */ (function (_super) {
     return LabelResizeTool;
 }(ToolBase));
 var LabelRotateTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$24(LabelRotateTool, _super);
+    __extends$26(LabelRotateTool, _super);
     function LabelRotateTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
@@ -16424,7 +19051,7 @@ var LabelRotateTool = /** @__PURE__ @class */ (function (_super) {
         var redoEntry = (args.source.nodes.length) ?
             args.source.nodes[0] : args.source.connectors[0];
         var entryObject = {
-            type: 'AnnotationPropertyChanged', changeObjectId: this.annotationId,
+            type: 'AnnotationPropertyChanged', objectId: this.annotationId,
             redoObject: cloneObject(redoEntry),
             undoObject: cloneObject(this.undoElement), category: 'Internal'
         };
@@ -16438,7 +19065,7 @@ var LabelRotateTool = /** @__PURE__ @class */ (function (_super) {
     return LabelRotateTool;
 }(ToolBase));
 
-var __extends$25 = (undefined && undefined.__extends) || (function () {
+var __extends$27 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -16455,7 +19082,7 @@ var __extends$25 = (undefined && undefined.__extends) || (function () {
  * Multiple segments editing for Connector
  */
 var ConnectorEditing = /** @__PURE__ @class */ (function (_super) {
-    __extends$25(ConnectorEditing, _super);
+    __extends$27(ConnectorEditing, _super);
     function ConnectorEditing(commandHandler, endPoint) {
         var _this = _super.call(this, commandHandler, true) || this;
         _this.endPoint = endPoint;
@@ -17256,6 +19883,21 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
     DiagramEventHandler.prototype.isMetaKey = function (evt) {
         return navigator.platform.match('Mac') ? evt.metaKey : evt.ctrlKey;
     };
+    DiagramEventHandler.prototype.renderUmlHighLighter = function (args) {
+        this.diagram.commandHandler.removeStackHighlighter();
+        var node = this.diagram.selectedItems.nodes[0];
+        if (node && node.container && node.container.type === 'Stack' && node.shape.type === 'UmlClassifier') {
+            var bound = node.wrapper.bounds;
+            if (!bound.containsPoint(this.currentPosition)) {
+                var objects = this.diagram.findObjectsUnderMouse({ x: this.currentPosition.x - 20, y: this.currentPosition.y });
+                var target = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
+                if (target && target.parentId && (target.parentId === node.id)) {
+                    var isVertical = this.diagram.nameTable[target.parentId].container.orientation === 'Vertical';
+                    renderStackHighlighter(target.wrapper, isVertical, args.position, this.diagram, true);
+                }
+            }
+        }
+    };
     DiagramEventHandler.prototype.isDeleteKey = function (key, value) {
         return (navigator.platform.match('Mac') && key === 'Backspace' && value === 'delete');
     };
@@ -17294,6 +19936,17 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
         return false;
     };
     /**   @private  */
+    DiagramEventHandler.prototype.updateVirtualization = function () {
+        var _this = this;
+        var delay = 50;
+        var removeObjectInterval;
+        removeObjectInterval = setInterval(function (args) {
+            _this.diagram.removeVirtualObjects(removeObjectInterval);
+        }, delay);
+        setTimeout(function () {
+            _this.diagram.deleteVirtualObject = true;
+        }, delay);
+    };
     DiagramEventHandler.prototype.mouseDown = function (evt) {
         this.focus = true;
         var touches;
@@ -17411,7 +20064,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
     /** @private */
     DiagramEventHandler.prototype.checkAction = function (obj) {
         if (this.action === 'LabelSelect' && this.eventArgs.sourceWrapper &&
-            this.eventArgs.sourceWrapper instanceof TextElement) {
+            (this.eventArgs.sourceWrapper instanceof TextElement || this.eventArgs.sourceWrapper instanceof DiagramHtmlElement)) {
             var annotation = this.commandHandler.findTarget(this.eventArgs.sourceWrapper, this.eventArgs.source);
             if (!isSelected(this.diagram, annotation, false, this.eventArgs.sourceWrapper) && canMove(annotation)) {
                 this.action = 'LabelDrag';
@@ -17494,6 +20147,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
                         this.tool.mouseDown(this.eventArgs);
                     }
                     this.updateCursor();
+                    this.renderUmlHighLighter(this.eventArgs);
                     var isNode = false;
                     if (!(this.hoverElement && (!(this.tool instanceof ZoomPanTool)) && obj instanceof Node &&
                         (this.diagram.selectedItems.nodes.length === 0 || !isSelected(this.diagram, this.hoverElement)))) {
@@ -17557,6 +20211,9 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
     /** @private */
     DiagramEventHandler.prototype.mouseUp = function (evt) {
         var touches;
+        if (this.diagram.mode === 'SVG' && canVitualize(this.diagram)) {
+            this.updateVirtualization();
+        }
         touches = evt.touches;
         if (this.isScrolling) {
             this.isScrolling = false;
@@ -17588,6 +20245,8 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
                         }
                     }
                 }
+                var hasStack = this.updateContainerProperties();
+                this.addUmlNode();
                 this.inAction = false;
                 this.isMouseDown = false;
                 this.currentPosition = this.getMousePosition(evt);
@@ -17602,6 +20261,18 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
                     }
                     this.eventArgs.clickCount = evt.detail;
                     this.tool.mouseUp(this.eventArgs);
+                    if (hasStack) {
+                        this.diagram.endGroupAction();
+                    }
+                }
+                if (this.diagram.selectedObject.helperObject) {
+                    var boundsUpdate = (this.tool instanceof ResizeTool) ? true : false;
+                    this.diagram.remove(this.diagram.selectedObject.helperObject);
+                    var obj = this.diagram.selectedObject.actualObject;
+                    this.diagram.updateDiagramObject(obj);
+                    this.diagram.selectedObject = { helperObject: undefined, actualObject: undefined };
+                    updateCanvasBounds(this.diagram, obj, this.eventArgs.position, boundsUpdate);
+                    this.diagram.updateSelector();
                 }
                 this.blocked = false;
                 if (this.hoverElement) {
@@ -17626,7 +20297,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
             if (!this.inAction && selector.wrapper && selector.userHandles.length > 0) {
                 this.diagram.renderSelector(true);
             }
-            if (!this.inAction && !this.diagram.currentSymbol) {
+            if (!this.inAction && !this.diagram.currentSymbol && this.eventArgs) {
                 var arg = {
                     element: this.eventArgs.source || this.diagram, position: this.eventArgs.position, count: evt.detail,
                     actualObject: this.eventArgs.actualObject
@@ -17635,7 +20306,8 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
             }
             this.eventArgs = {};
         }
-        //end the corresponding tool
+        this.eventArgs = {};
+        this.diagram.commandHandler.removeStackHighlighter(); // end the corresponding tool
     };
     /** @private */
     DiagramEventHandler.prototype.mouseLeave = function (evt) {
@@ -17737,7 +20409,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
                                     document.getElementById(this.diagram.diagramCanvas.id).focus();
                                 }
                                 if (command.execute) {
-                                    // if (i === 'nudgeUp' || i === "nudgeRight" || i === "nudgeDown" || i === 'nudgeLeft') {
+                                    // if (i === 'nudgeUp' || i === 'nudgeRight' || i === 'nudgeDown' || i === 'nudgeLeft') {
                                     //     command.execute()
                                     // } else {
                                     var execute = getFunction(command.execute);
@@ -17916,6 +20588,16 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
+    DiagramEventHandler.prototype.itemClick = function (actualTarget, diagram) {
+        var obj = actualTarget;
+        if (checkParentAsContainer(this.diagram, obj, true)) {
+            return obj;
+        }
+        return null;
+    };
+    /**
+     * @private
+     */
     DiagramEventHandler.prototype.inputChange = function (evt) {
         var minWidth = 90;
         var maxWidth;
@@ -18003,6 +20685,10 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
         else {
             objects = this.diagram.findObjectsUnderMouse(this.currentPosition, source);
             obj = this.diagram.findTargetObjectUnderMouse(objects, this.action, this.inAction, args.position, source);
+        }
+        if (obj && obj.isHeader) {
+            obj = this.diagram.nameTable[obj.parentId];
+            this.eventArgs.actualObject = obj;
         }
         var wrapper;
         if (obj) {
@@ -18139,6 +20825,151 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
     DiagramEventHandler.prototype.findActionToBeDone = function (obj, wrapper, position, target) {
         return findToolToActivate(obj, wrapper, this.currentPosition, this.diagram, this.touchStartList, this.touchMoveList, target);
     };
+    DiagramEventHandler.prototype.updateContainerProperties = function () {
+        var helperObject;
+        var isChangeProperties = false;
+        var hasStack;
+        var hasGroup;
+        if (this.diagram.selectedObject.helperObject) {
+            helperObject = this.diagram.selectedObject.helperObject;
+            this.diagram.selectedItems.wrapper.children[0].offsetX = helperObject.wrapper.offsetX;
+            this.diagram.selectedItems.wrapper.children[0].offsetY = helperObject.wrapper.offsetY;
+            this.diagram.selectedItems.wrapper.children[0].actualSize.width = helperObject.wrapper.actualSize.width;
+            this.diagram.selectedItems.wrapper.children[0].actualSize.height = helperObject.wrapper.actualSize.height;
+            var obj = this.diagram.selectedObject.actualObject;
+            obj.offsetX = helperObject.offsetX;
+            obj.offsetY = helperObject.offsetY;
+            obj.width = helperObject.width;
+            obj.height = helperObject.height;
+            obj.rotateAngle = helperObject.rotateAngle;
+            var objects = this.diagram.findObjectsUnderMouse(this.currentPosition);
+            var target = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
+            var parentNode = this.diagram.nameTable[obj.parentId];
+            var undoElement = void 0;
+            if (parentNode && parentNode.container && parentNode.container.type === 'Stack') {
+                this.diagram.startGroupAction();
+                hasGroup = true;
+            }
+            if (!target && parentNode && parentNode.container && parentNode.container.type === 'Stack' && this.action === 'Drag') {
+                var index = parentNode.wrapper.children.indexOf(obj.wrapper);
+                undoElement = {
+                    targetIndex: undefined, target: undefined,
+                    sourceIndex: index, source: cloneObject(obj)
+                };
+                if (index > -1) {
+                    var children = parentNode.children;
+                    children.splice(children.indexOf(obj.id), 1);
+                    this.diagram.nameTable[obj.id].parentId = '';
+                    hasStack = true;
+                    parentNode.wrapper.children.splice(index, 1);
+                }
+            }
+            moveChildInStack(obj, target, this.diagram, this.action);
+            parentNode = checkParentAsContainer(this.diagram, obj) ? this.diagram.nameTable[obj.parentId] :
+                (this.diagram.nameTable[obj.parentId] || obj);
+            if (parentNode && parentNode.container && parentNode.container.type === 'Canvas') {
+                parentNode.maxWidth = parentNode.wrapper.actualSize.width;
+                parentNode.wrapper.maxWidth = parentNode.wrapper.actualSize.width;
+                parentNode.maxHeight = parentNode.wrapper.actualSize.height;
+                parentNode.wrapper.maxHeight = parentNode.wrapper.actualSize.height;
+                isChangeProperties = true;
+            }
+            if (checkParentAsContainer(this.diagram, obj, true) && parentNode && parentNode.container.type === 'Canvas') {
+                checkChildNodeInContainer(this.diagram, obj);
+            }
+            else {
+                if (parentNode && parentNode.container && parentNode.container.type === 'Grid') {
+                    var container = ((parentNode.shape.type === 'SwimLane') ?
+                        parentNode.wrapper.children[0] : parentNode.wrapper);
+                    var x = parentNode.wrapper.bounds.x;
+                    var y = parentNode.wrapper.bounds.y;
+                    if (obj.columnIndex !== undefined && (parentNode.container.orientation === 'Horizontal' && obj.rowIndex === 1) ||
+                        (parentNode.container.orientation === 'Vertical' && obj.rowIndex > 0 && obj.columnIndex > 0)) {
+                        //let diff: number = helperObject.width - container.colDefns[obj.columnIndex].width;
+                        container.updateColumnWidth(obj.columnIndex, helperObject.width);
+                        //parentNode.width += diff;
+                    }
+                    else if (obj.rowIndex !== undefined) {
+                        container.updateRowHeight(obj.rowIndex, helperObject.height);
+                    }
+                    this.diagram.nodePropertyChange(parentNode, {}, {
+                        offsetX: parentNode.offsetX, offsetY: parentNode.offsetY,
+                        width: parentNode.width, height: parentNode.height,
+                        rotateAngle: parentNode.rotateAngle
+                    });
+                    this.diagram.drag(parentNode, x - parentNode.wrapper.bounds.x, y - parentNode.wrapper.bounds.y);
+                }
+                else {
+                    this.diagram.nodePropertyChange(obj, {}, {
+                        offsetX: obj.offsetX, offsetY: obj.offsetY,
+                        width: obj.width, height: obj.height,
+                        rotateAngle: obj.rotateAngle
+                    });
+                    this.diagram.updateConnectorEdges(obj);
+                }
+            }
+            if (isChangeProperties) {
+                parentNode.maxWidth = undefined;
+                parentNode.wrapper.maxWidth = undefined;
+                parentNode.maxHeight = undefined;
+                parentNode.wrapper.maxHeight = undefined;
+            }
+            if (hasStack) {
+                this.diagram.nodePropertyChange(parentNode, {}, {
+                    offsetX: parentNode.offsetX, offsetY: parentNode.offsetY,
+                    width: parentNode.width, height: parentNode.height,
+                    rotateAngle: parentNode.rotateAngle
+                });
+                var entry = {
+                    type: 'StackChildPositionChanged', redoObject: { sourceIndex: undefined, source: undoElement.source },
+                    undoObject: undoElement, category: 'Internal'
+                };
+                if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) {
+                    this.diagram.addHistoryEntry(entry);
+                }
+            }
+        }
+        return hasGroup;
+    };
+    DiagramEventHandler.prototype.addUmlNode = function () {
+        var node = this.diagram.selectedItems.nodes[0];
+        var objects = this.diagram.findObjectsUnderMouse({ x: this.currentPosition.x + 20, y: this.currentPosition.y });
+        var target = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
+        if (!target) {
+            objects = this.diagram.findObjectsUnderMouse({ x: this.currentPosition.x - 20, y: this.currentPosition.y });
+            target = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
+        }
+        if (node && node.container && node.container.type === 'Stack' && target && target.parentId
+            && target.parentId === node.id) {
+            var innerNode = target;
+            var adornerSvg = getAdornerLayerSvg(this.diagram.element.id);
+            var highlighter = adornerSvg.getElementById(adornerSvg.id + '_stack_highlighter');
+            if (highlighter) {
+                var index = node.wrapper.children.indexOf(target.wrapper) + 1;
+                var temp = new Node(this.diagram, 'nodes', {
+                    style: { fill: node.style.fill, strokeColor: '#ffffff00' },
+                    annotations: target.annotations, verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
+                    constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~(NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
+                    minHeight: 25
+                }, true);
+                temp.annotations[0].content = ' + Name : Type';
+                var id = innerNode.id.split('_');
+                temp.id = randomId() + temp.id;
+                temp.parentId = node.id;
+                temp.zIndex = -1;
+                temp.umlIndex = index;
+                this.diagram.startGroupAction();
+                var redoElement = {
+                    sourceIndex: node.wrapper.children.indexOf(temp.wrapper), source: temp,
+                    target: undefined, targetIndex: undefined
+                };
+                this.diagram.add(temp);
+                this.diagram.select([this.diagram.nameTable[temp.id]]);
+                this.diagram.endGroupAction();
+                this.diagram.startTextEdit();
+            }
+        }
+    };
     return DiagramEventHandler;
 }());
 /** @private */
@@ -18193,10 +21024,7 @@ var ObjectFinder = /** @__PURE__ @class */ (function () {
                                 var padding = (obj instanceof Connector) ? obj.hitPadding || 0 : 0;
                                 var element = void 0;
                                 element = this.findElementUnderMouse(obj, pt, padding);
-                                if (element) {
-                                    if (obj instanceof Connector && diagram.bpmnModule) {
-                                        //    obj = diagram.bpmnModule.findInteractableObject(obj, diagram);
-                                    }
+                                if (element && obj.id !== 'helper') {
                                     insertObject(obj, 'zIndex', layerTarger);
                                 }
                             }
@@ -18214,6 +21042,12 @@ var ObjectFinder = /** @__PURE__ @class */ (function () {
                 if (obj.shape.type === 'Bpmn' && obj.processId && (!(diagram[eventHandler].tool instanceof MoveTool) ||
                     (diagram[eventHandler].tool instanceof MoveTool) && canAllowDrop(obj))) {
                     var index = actualTarget.indexOf(diagram.nameTable[obj.processId]);
+                    if (index > -1) {
+                        actualTarget.splice(index, 1);
+                    }
+                }
+                if (obj.shape.type === 'UmlClassifier' && obj.container && obj.container.type === 'Stack') {
+                    var index = actualTarget.indexOf(diagram.nameTable[diagram.nameTable[obj.id].wrapper.children[0].id]);
                     if (index > -1) {
                         actualTarget.splice(index, 1);
                     }
@@ -18256,6 +21090,10 @@ var ObjectFinder = /** @__PURE__ @class */ (function () {
             if (node.processId !== actualTarget.processId) {
                 actualTarget = null;
             }
+            if (actualTarget && actualTarget.parentId &&
+                diagram.nameTable[actualTarget.parentId].shape.type === 'UmlClassifier') {
+                actualTarget = diagram.nameTable[actualTarget.parentId];
+            }
         }
         if (action === 'ConnectorSourceEnd' && connector.targetID) {
             var targetNode = diagram.nameTable[connector.targetID];
@@ -18264,6 +21102,10 @@ var ObjectFinder = /** @__PURE__ @class */ (function () {
                 if (((targetNode.shape.type === 'Bpmn') && actualTarget.shape.type !== 'Bpmn') || (id[0] === actualTarget.id) ||
                     actualTarget.shape.shape === 'TextAnnotation') {
                     actualTarget = null;
+                }
+                if (actualTarget.parentId &&
+                    diagram.nameTable[actualTarget.parentId].shape.type === 'UmlClassifier') {
+                    actualTarget = diagram.nameTable[actualTarget.parentId];
                 }
             }
         }
@@ -18276,6 +21118,8 @@ var ObjectFinder = /** @__PURE__ @class */ (function () {
         //we have to choose the object to be interacted with from the given wrapper
         //Find the object that is under mouse
         var eventHandler = 'eventHandler';
+        var inPort;
+        var outPort;
         var actualTarget = null;
         if (objects.length !== 0) {
             if (source && source instanceof Selector) {
@@ -18287,7 +21131,8 @@ var ObjectFinder = /** @__PURE__ @class */ (function () {
                 ((canDrawOnce(diagram) || canContinuousDraw(diagram)) && getObjectType(diagram.drawingObject) === Connector)) {
                 var connector = diagram.selectedItems.connectors[0];
                 for (var i = objects.length - 1; i >= 0; i--) {
-                    if (objects[i] instanceof Node && canOutConnect(objects[i])) {
+                    outPort = getInOutConnectPorts(objects[i], false);
+                    if (objects[i] instanceof Node && (canOutConnect(objects[i]) || (canPortOutConnect(outPort)))) {
                         actualTarget = objects[i];
                         if (connector) {
                             actualTarget = this.isTarget(actualTarget, diagram, action);
@@ -18299,7 +21144,8 @@ var ObjectFinder = /** @__PURE__ @class */ (function () {
             }
             else if (action === 'ConnectorTargetEnd' && source) {
                 for (var i = objects.length - 1; i >= 0; i--) {
-                    if (objects[i] instanceof Node && canInConnect(objects[i])) {
+                    inPort = getInOutConnectPorts(objects[i], true);
+                    if (objects[i] instanceof Node && (canInConnect(objects[i]) || (canPortInConnect(inPort)))) {
                         actualTarget = objects[i];
                         actualTarget = this.isTarget(actualTarget, diagram, action);
                         eventArg.actualObject = actualTarget;
@@ -18358,15 +21204,17 @@ var ObjectFinder = /** @__PURE__ @class */ (function () {
                 }
                 actualTarget = objects[objects.length - 1];
                 eventArg.actualObject = actualTarget;
-                if (actualTarget.parentId) {
-                    var obj = actualTarget;
-                    var selected = isSelected(diagram, obj);
-                    while (obj) {
-                        if (isSelected(diagram, obj) && !selected) {
-                            break;
+                if (!diagram[eventHandler].itemClick(actualTarget, true)) {
+                    if (actualTarget.parentId) {
+                        var obj = actualTarget;
+                        var selected = isSelected(diagram, obj);
+                        while (obj) {
+                            if (isSelected(diagram, obj) && !selected) {
+                                break;
+                            }
+                            actualTarget = obj;
+                            obj = diagram.nameTable[obj.parentId];
                         }
-                        actualTarget = obj;
-                        obj = diagram.nameTable[obj.parentId];
                     }
                 }
             }
@@ -18433,7 +21281,7 @@ var ObjectFinder = /** @__PURE__ @class */ (function () {
     return ObjectFinder;
 }());
 
-var __extends$26 = (undefined && undefined.__extends) || (function () {
+var __extends$28 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -18457,7 +21305,7 @@ var __decorate$17 = (undefined && undefined.__decorate) || function (decorators,
  * Layer is a named category of diagram shapes.
  */
 var Layer = /** @__PURE__ @class */ (function (_super) {
-    __extends$26(Layer, _super);
+    __extends$28(Layer, _super);
     // tslint:disable-next-line:no-any
     function Layer(parent, propName, defaultValue, isArray) {
         var _this = _super.call(this, parent, propName, defaultValue, isArray) || this;
@@ -18734,7 +21582,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 }
             }
         }
-        if (!connection && element instanceof TextElement) {
+        if (!connection) {
             var annotation = void 0;
             for (var i = 0; i < argsTarget.annotations.length; i++) {
                 annotation = argsTarget.annotations[i];
@@ -19235,7 +22083,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         this.selectObjects([newConnector], multiSelect);
         return newConnector;
     };
-    CommandHandler.prototype.cloneNode = function (node, multiSelect, children) {
+    CommandHandler.prototype.cloneNode = function (node, multiSelect, children, groupnodeID) {
         var newNode;
         var connectorsTable = {};
         var cloneObject$$1 = cloneObject(node);
@@ -19273,7 +22121,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             }
         }
         else {
-            this.translateObject(cloneObject$$1);
+            this.translateObject(cloneObject$$1, groupnodeID);
             cloneObject$$1.zIndex = -1;
             if (children) {
                 cloneObject$$1.children = children;
@@ -19350,28 +22198,57 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
     CommandHandler.prototype.cloneGroup = function (obj, multiSelect) {
         var newChildren = [];
         var children = [];
+        var connectorObj = [];
+        var newObj;
+        var oldID = [];
         children = children.concat(obj.children);
-        if (this.clipboardData.childTable) {
+        var id = randomId();
+        if (this.clipboardData.childTable || obj.children.length > 0) {
             for (var i = 0; i < children.length; i++) {
-                var childObj = this.clipboardData.childTable[children[i]];
+                var childObj = void 0;
+                if (this.clipboardData.childTable) {
+                    childObj = this.clipboardData.childTable[children[i]];
+                }
+                else {
+                    childObj = this.diagram.nameTable[children[i]];
+                }
+                childObj.parentId = '';
                 if (childObj) {
-                    var newObj = void 0;
                     if (getObjectType(childObj) === Connector) {
-                        newObj = this.cloneConnector(childObj, multiSelect);
+                        connectorObj.push(childObj);
                     }
                     else {
-                        newObj = this.cloneNode(childObj, multiSelect);
+                        newObj = this.cloneNode(childObj, multiSelect, undefined, id);
+                        oldID.push(childObj.id);
+                        newChildren.push(newObj.id);
                     }
-                    newChildren.push(newObj.id);
                 }
             }
         }
+        for (var k = 0; k < connectorObj.length; k++) {
+            if (connectorObj[k].sourceID || connectorObj[k].targetID) {
+                for (var j = 0; j < oldID.length; j++) {
+                    if (connectorObj[k].sourceID === (oldID[j])) {
+                        connectorObj[k].sourceID += id;
+                    }
+                    if (connectorObj[k].targetID === (oldID[j])) {
+                        connectorObj[k].targetID += id;
+                    }
+                }
+            }
+            newObj = this.cloneConnector(connectorObj[k], multiSelect);
+            newChildren.push(newObj.id);
+        }
         var parentObj = this.cloneNode(obj, multiSelect, newChildren);
+        if (parentObj && parentObj.container && parentObj.shape && parentObj.shape.type === 'UmlClassifier') {
+            this.diagram.updateDiagramObject(parentObj);
+            parentObj.wrapper.measure(new Size());
+        }
         return parentObj;
     };
     /** @private */
-    CommandHandler.prototype.translateObject = function (obj) {
-        obj.id += randomId();
+    CommandHandler.prototype.translateObject = function (obj, groupnodeID) {
+        obj.id += groupnodeID || randomId();
         var diff = this.clipboardData.pasteIndex * 10;
         if (getObjectType(obj) === Connector) {
             obj.sourcePoint = {
@@ -19618,6 +22495,35 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             if (!multipleSelection) {
                 selectorModel.init(this.diagram);
                 if (selectorModel.nodes.length === 1 && selectorModel.connectors.length === 0) {
+                    if (checkParentAsContainer(this.diagram, selectorModel.nodes[0], true)) {
+                        var parentNode = this.diagram.nameTable[selectorModel.nodes[0].parentId];
+                        if (parentNode && parentNode.container.type === 'Grid') {
+                            var canvas = new Canvas();
+                            canvas.children = [];
+                            var element = new DiagramElement();
+                            if (selectorModel.nodes[0].rowIndex && selectorModel.nodes[0].rowIndex > 0) {
+                                if ((parentNode.container.orientation === 'Horizontal' && selectorModel.nodes[0].rowIndex === 1) ||
+                                    (parentNode.container.orientation === 'Vertical' &&
+                                        selectorModel.nodes[0].rowIndex > 0 && selectorModel.nodes[0].columnIndex > 0)) {
+                                    var bounds = findBounds(parentNode, selectorModel.nodes[0].columnIndex, true);
+                                    canvas.offsetX = bounds.center.x;
+                                    canvas.offsetY = bounds.center.y;
+                                    element.width = bounds.width;
+                                    element.height = bounds.height;
+                                }
+                                else {
+                                    canvas.offsetX = parentNode.offsetX;
+                                    canvas.offsetY = selectorModel.nodes[0].wrapper.offsetY;
+                                    element.width = parentNode.wrapper.actualSize.width;
+                                    element.height = selectorModel.nodes[0].wrapper.actualSize.height;
+                                }
+                            }
+                            canvas.children.push(element);
+                            canvas.measure(new Size());
+                            canvas.arrange(canvas.desiredSize);
+                            selectorModel.wrapper.children[0] = canvas;
+                        }
+                    }
                     selectorModel.rotateAngle = selectorModel.nodes[0].rotateAngle;
                     selectorModel.wrapper.rotateAngle = selectorModel.nodes[0].rotateAngle;
                     selectorModel.wrapper.pivot = selectorModel.nodes[0].pivot;
@@ -20054,6 +22960,32 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    /**
+     * @private
+     */
+    CommandHandler.prototype.removeStackHighlighter = function () {
+        var adornerSvg = getAdornerLayerSvg(this.diagram.element.id);
+        var highlighter = adornerSvg.getElementById(adornerSvg.id + '_stack_highlighter');
+        if (highlighter) {
+            highlighter.parentNode.removeChild(highlighter);
+        }
+    };
+    /**
+     * @private
+     */
+    CommandHandler.prototype.renderStackHighlighter = function (args, target) {
+        var source = this.diagram.selectedItems.nodes[0];
+        if (!target) {
+            var objects = this.diagram.findObjectsUnderMouse(args.position);
+            target = this.diagram.findObjectUnderMouse(objects, 'Drag', true);
+        }
+        if (source && target && source.parentId && target.parentId && (source.parentId === target.parentId)
+            && (source.id !== target.id) && (this.diagram.nameTable[target.parentId].container &&
+            this.diagram.nameTable[target.parentId].container.type === 'Stack')) {
+            var isVertical = this.diagram.nameTable[target.parentId].container.orientation === 'Vertical';
+            renderStackHighlighter(target.wrapper, isVertical, args.position, this.diagram);
+        }
+    };
     /** @private */
     CommandHandler.prototype.drag = function (obj, tx, ty) {
         var tempNode;
@@ -20063,7 +22995,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 var oldValues = { offsetX: obj.offsetX, offsetY: obj.offsetY };
                 obj.offsetX += tx;
                 obj.offsetY += ty;
-                if (obj.children) {
+                if (obj.children && !(obj.container)) {
                     var nodes = this.getAllDescendants(obj, elements);
                     for (var i = 0; i < nodes.length; i++) {
                         tempNode = (this.diagram.nameTable[nodes[i].id]);
@@ -20071,7 +23003,12 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                     }
                     this.updateInnerParentProperties(obj);
                 }
-                this.diagram.nodePropertyChange(obj, oldValues, { offsetX: obj.offsetX, offsetY: obj.offsetY });
+                if (checkParentAsContainer(this.diagram, obj, true)) {
+                    checkChildNodeInContainer(this.diagram, obj);
+                }
+                else {
+                    this.diagram.nodePropertyChange(obj, oldValues, { offsetX: obj.offsetX, offsetY: obj.offsetY });
+                }
             }
             else {
                 var connector = obj;
@@ -20603,7 +23540,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                         var bound = this.diagram.bpmnModule.getChildrenBound(parent_1, obj.id, this.diagram);
                         this.diagram.bpmnModule.updateSubProcessess(bound, obj, this.diagram);
                     }
-                    if (obj.children && obj.children.length) {
+                    if (obj.children && obj.children.length && !obj.container) {
                         this.getChildren(obj, objects);
                     }
                 }
@@ -20673,7 +23610,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         var y = refWrapper.offsetY - refWrapper.actualSize.height * refWrapper.pivot.y;
         var refPoint = getPoint(x, y, refWrapper.actualSize.width, refWrapper.actualSize.height, refWrapper.rotateAngle, refWrapper.offsetX, refWrapper.offsetY, pivot);
         if (element.actualSize.width !== undefined && element.actualSize.height !== undefined && canPageEditable(this.diagram)) {
-            if (tempNode.children) {
+            if (tempNode.children && !(tempNode.container)) {
                 var nodes = this.getAllDescendants(tempNode, elements);
                 for (var _i = 0, nodes_1 = nodes; _i < nodes_1.length; _i++) {
                     var temp = nodes_1[_i];
@@ -20829,10 +23766,15 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                     });
                 }
                 else {
-                    this.diagram.nodePropertyChange(obj, {}, {
-                        width: node.width, height: node.height, offsetX: node.offsetX,
-                        offsetY: node.offsetY, margin: { top: node.margin.top + (top_1 - oldtop), left: node.margin.left + (left - oldleft) }
-                    });
+                    if (checkParentAsContainer(this.diagram, obj, true)) {
+                        checkChildNodeInContainer(this.diagram, obj);
+                    }
+                    else {
+                        this.diagram.nodePropertyChange(obj, {}, {
+                            width: node.width, height: node.height, offsetX: node.offsetX, offsetY: node.offsetY,
+                            margin: { top: node.margin.top + (top_1 - oldtop), left: node.margin.left + (left - oldleft) }
+                        });
+                    }
                 }
             }
             else {
@@ -20913,8 +23855,23 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         var newOffset = intermediatePoints[intermediatePoints.length - 1];
         totalLength = Point.getLengthFromListOfPoints(intermediatePoints);
         if (intersetingPts.length > 0) {
-            intersectingOffset = intersetingPts[intersetingPts.length - 1];
-            newOffset = intersectingOffset;
+            if (label.dragLimit.top || label.dragLimit.bottom || label.dragLimit.left || label.dragLimit.right) {
+                var minDistance = { minDistance: null };
+                newOffset = this.getRelativeOffset(currentPosition, intermediatePoints, minDistance);
+                var distance = { minDistance: null };
+                intersectingOffset = this.getRelativeOffset(currentPosition, intersetingPts, distance);
+                if (minDistance != null && distance.minDistance < minDistance.minDistance) {
+                    newOffset = intersectingOffset;
+                }
+                else {
+                    var connectorOffset = getOffsetOfConnector(object.intermediatePoints, label, object.wrapper.bounds);
+                    newOffset = connectorOffset.point;
+                }
+            }
+            else {
+                intersectingOffset = intersetingPts[intersetingPts.length - 1];
+                newOffset = intersectingOffset;
+            }
             if (newOffset) {
                 var p = void 0;
                 var bounds = void 0;
@@ -20925,24 +23882,91 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                             pointLength += Point.findLength(prev, newOffset);
                             break;
                         }
+                        else {
+                            pointLength += Point.findLength(prev, intermediatePoints[p]);
+                        }
                     }
                     prev = intermediatePoints[p];
                 }
                 offset = { x: pointLength / totalLength, y: 0 };
             }
-            this.updateLabelMargin(object, label, offset, currentPosition, size);
+            this.updateLabelMargin(object, label, offset, currentPosition, size, tx, ty);
         }
         else {
-            this.updateLabelMargin(object, label, null, currentPosition, size);
+            this.updateLabelMargin(object, label, null, currentPosition, size, tx, ty);
         }
     };
-    CommandHandler.prototype.updateLabelMargin = function (node, label, offset, tempPt, size) {
+    CommandHandler.prototype.getRelativeOffset = function (currentPosition, points, minDistance) {
+        var newOffset;
+        var distance;
+        var pt;
+        var i;
+        for (i = 0; i < points.length; i++) {
+            pt = points[i];
+            distance = Math.round(Math.sqrt(Math.pow((currentPosition.x - pt.x), 2) +
+                Math.pow((currentPosition.y - pt.y), 2)));
+            if (minDistance.minDistance === null ||
+                Math.min(Math.abs(minDistance.minDistance), Math.abs(distance)) === Math.abs(distance)) {
+                newOffset = pt;
+                minDistance.minDistance = distance;
+            }
+        }
+        return newOffset;
+    };
+    
+    CommandHandler.prototype.dragLimitValue = function (label, point, tempPt, contentDimension) {
+        var x = false;
+        var y = false;
+        if ((tempPt.x >= (point.x - label.dragLimit.left - (contentDimension.width / 2))) &&
+            (tempPt.x <= point.x + label.dragLimit.right + (contentDimension.width / 2))) {
+            x = true;
+        }
+        if ((tempPt.y >= (point.y - label.dragLimit.top - (contentDimension.height / 2))) &&
+            (tempPt.y <= point.y + label.dragLimit.bottom + (contentDimension.height / 2))) {
+            y = true;
+        }
+        return { x: x, y: y };
+    };
+    
+    CommandHandler.prototype.updateLabelMargin = function (node, label, offset, tempPt, size, tx, ty) {
         offset = offset ? offset : { x: label.offset, y: 0 };
         if (label && offset && offset.x > 0 && offset.x < 1) {
             var point = void 0;
             var length_1 = Point.getLengthFromListOfPoints(node.intermediatePoints);
             point = this.getPointAtLength(length_1 * offset.x, node.intermediatePoints, 0);
-            label.margin = { left: tempPt.x - point.x, top: tempPt.y - point.y, right: 0, bottom: 0 };
+            var curZoomfactor = this.diagram.scrollSettings.currentZoom;
+            var dragLimit = label.dragLimit;
+            if (dragLimit.top || dragLimit.bottom || dragLimit.left || dragLimit.right) {
+                var labelBounds = this.diagram.getWrapper(node.wrapper, label.id);
+                var contentDimension = new Rect(0, 0, 0, 0);
+                var annotationWrtapper = this.diagram.getWrapper(node.wrapper, label.id);
+                contentDimension.x = ((annotationWrtapper).offsetX / curZoomfactor) + tx;
+                contentDimension.y = (annotationWrtapper.offsetY / curZoomfactor) + ty;
+                contentDimension.width = annotationWrtapper.bounds.width / curZoomfactor;
+                contentDimension.height = annotationWrtapper.bounds.height / curZoomfactor;
+                var draggableBounds = new Rect(point.x - (dragLimit.left || 0) - contentDimension.width / 2, point.y - (dragLimit.top || 0) - contentDimension.height / 2, (dragLimit.left || 0) + (dragLimit.right || 0) + contentDimension.width, (dragLimit.top || 0) + (dragLimit.bottom || 0) + contentDimension.height);
+                if (draggableBounds.containsPoint(tempPt)) {
+                    tempPt = tempPt;
+                }
+                else {
+                    var lineIntersects = void 0;
+                    var line1 = [point, tempPt];
+                    lineIntersects = this.boundsInterSects(line1, draggableBounds, false);
+                    for (var _i = 0, lineIntersects_1 = lineIntersects; _i < lineIntersects_1.length; _i++) {
+                        var i = lineIntersects_1[_i];
+                        var ptt = i;
+                        tempPt = ptt;
+                    }
+                }
+                var cursorLimit = this.dragLimitValue(label, point, tempPt, contentDimension);
+                label.margin = {
+                    left: cursorLimit.x ? tempPt.x - point.x : label.margin.left,
+                    top: cursorLimit.y ? tempPt.y - point.y : label.margin.top, right: 0, bottom: 0
+                };
+            }
+            else {
+                label.margin = { left: tempPt.x - point.x, top: tempPt.y - point.y, right: 0, bottom: 0 };
+            }
             label.offset = offset.x;
             if (size) {
                 label.width = size.width;
@@ -20950,6 +23974,34 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    CommandHandler.prototype.boundsInterSects = function (polyLine, bounds, self) {
+        var intersects;
+        if (bounds) {
+            var polyLine2 = [
+                { x: bounds.x, y: bounds.y },
+                { x: bounds.x + bounds.width, y: bounds.y },
+                { x: bounds.x + bounds.width, y: bounds.y + bounds.height },
+                { x: bounds.x, y: bounds.y + bounds.height },
+                { x: bounds.x, y: bounds.y }
+            ];
+            intersects = this.intersect(polyLine, polyLine2, self);
+        }
+        return intersects;
+    };
+    
+    CommandHandler.prototype.intersect = function (polyLine1, polyLine2, self) {
+        var intersect = [];
+        for (var i = 0; i < polyLine1.length - 1; i++) {
+            for (var j = 0; j < polyLine2.length - 1; j++) {
+                var p = intersect2(polyLine1[i], polyLine1[i + 1], polyLine2[j], polyLine2[j + 1]);
+                if (p.x !== 0 && p.y !== 0) {
+                    intersect.push(p);
+                }
+            }
+        }
+        return intersect;
+    };
+    
     CommandHandler.prototype.getPointAtLength = function (length, points, angle) {
         angle = 0;
         var run = 0;
@@ -21169,6 +24221,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             this.state.backup.offsetX = obj.offsetX;
             this.state.backup.offsetY = obj.offsetY;
         }
+        obj = renderContainerHelper(this.diagram, obj) || obj;
         if (this.checkBoundaryConstraints(tx, ty)) {
             this.diagram.drag(obj, tx, ty);
             return true;
@@ -21186,6 +24239,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             this.state.backup.height = obj.height;
             this.state.backup.pivot = pivot;
         }
+        obj = renderContainerHelper(this.diagram, obj) || obj;
         return this.diagram.scale(obj, sx, sy, pivot);
     };
     /** @private */
@@ -21195,6 +24249,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             this.state.backup = {};
             this.state.backup.angle = obj.rotateAngle;
         }
+        obj = renderContainerHelper(this.diagram, obj) || obj;
         return this.diagram.rotate(obj, angle);
     };
     /** @private */
@@ -21235,6 +24290,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         return objects;
     };
     CommandHandler.prototype.getparentexpand = function (target, diagram, visibility, connector) {
+        var boolean;
         for (var i = 0; i < target.inEdges.length; i++) {
             var newConnector = diagram.nameTable[target.inEdges[i]];
             var previousNode = diagram.nameTable[newConnector.sourceID];
@@ -21242,10 +24298,10 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 return false;
             }
             else {
-                return true;
+                boolean = true;
             }
         }
-        return true;
+        return boolean;
     };
     /**
      * Setinterval and Clear interval for layout animation
@@ -21286,6 +24342,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             obj.offsetY = rect.y + rect.height / 2;
             obj.width = rect.width;
             obj.height = rect.height;
+            obj.wrapper.children[0].canMeasurePath = true;
             this.diagram.nodePropertyChange(obj, {}, {
                 width: rect.width, height: rect.height, offsetX: obj.offsetX,
                 offsetY: obj.offsetY
@@ -21622,6 +24679,101 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
      */
     CommandHandler.prototype.removeHighlighter = function () {
         this.diagram.clearHighlighter();
+    };
+    /**
+     * @private
+     */
+    CommandHandler.prototype.renderContainerHelper = function (node) {
+        return renderContainerHelper(this.diagram, node);
+    };
+    /**
+     * @private
+     */
+    CommandHandler.prototype.isParentAsContainer = function (node, isChild) {
+        return checkParentAsContainer(this.diagram, node, isChild);
+    };
+    /**
+     * @private
+     */
+    CommandHandler.prototype.dropChildToContainer = function (parent, node) {
+        addChildToContainer(this.diagram, parent, node);
+    };
+    /** @private */
+    CommandHandler.prototype.checkSelection = function (selector, corner) {
+        var node;
+        if (selector.nodes.length === 1 && selector.connectors.length === 0) {
+            if (checkParentAsContainer(this.diagram, selector.nodes[0], true)) {
+                node = (selector.nodes[0].shape === 'SwimLane') ? selector.nodes[0] :
+                    this.diagram.nameTable[selector.nodes[0].parentId];
+                var child = selector.nodes[0];
+                if (node.container.type === 'Grid') {
+                    if (((node.container.orientation === 'Horizontal' && child.rowIndex === 1) ||
+                        (node.container.orientation === 'Vertical' && child.rowIndex > 0 && child.columnIndex > 0))) {
+                        if (corner === 'ResizeSouth') {
+                            if (node.shape.type === 'SwimLane') {
+                                var wrapper = node.wrapper.children[0];
+                                var child_1 = wrapper.rows[wrapper.rows.length - 1].cells[0];
+                                this.select(this.diagram.nameTable[child_1.children[0].children[0].id]);
+                            }
+                            else {
+                                for (var i = 0; i < this.diagram.nodes.length; i++) {
+                                    var obj = this.diagram.nodes[i];
+                                    if (obj.rowIndex === node.rows.length - 1 && obj.columnIndex === 0) {
+                                        this.select(obj);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        if (corner === 'ResizeEast') {
+                            if (node.shape.type === 'SwimLane') {
+                                var wrapper = void 0;
+                                var child_2;
+                                wrapper = node.wrapper.children[0];
+                                child_2 = wrapper.rows[wrapper.rows.length - 1].cells[wrapper.rows[wrapper.rows.length - 1].cells.length - 1];
+                                this.select(this.diagram.nameTable[child_2.children[0].id]);
+                            }
+                            else {
+                                for (var i = 0; i < this.diagram.nodes.length; i++) {
+                                    var obj = this.diagram.nodes[i];
+                                    if (obj.rowIndex === 1 && obj.columnIndex === node.columns.length - 1) {
+                                        this.select(obj);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else {
+                if (selector.nodes[0].shape.type === 'SwimLane') {
+                    node = selector.nodes[0];
+                    var wrapper = void 0;
+                    var child = void 0;
+                    var index = void 0;
+                    if ((corner === 'ResizeSouth' && selector.nodes[0].shape.orientation === 'Vertical')) {
+                        wrapper = node.wrapper.children[0];
+                        child = wrapper.rows[wrapper.rows.length - 1].cells[0];
+                        this.select(this.diagram.nameTable[child.children[0].id]);
+                    }
+                    else if (corner === 'ResizeEast') {
+                        wrapper = node.wrapper.children[0];
+                        index = (selector.nodes[0].shape.header) ? 1 : 0;
+                        child = wrapper.rows[index].cells[wrapper.rows[index].cells.length - 1];
+                        this.select(this.diagram.nameTable[child.children[0].id]);
+                    }
+                    else if ((corner === 'ResizeSouth' && selector.nodes[0].shape.orientation === 'Horizontal')) {
+                        wrapper = node.wrapper.children[0];
+                        index = wrapper.rows.length - 1;
+                        child = wrapper.rows[index].cells[wrapper.rows[index].cells.length - 1];
+                        this.select(this.diagram.nameTable[child.children[0].id]);
+                    }
+                }
+            }
+        }
     };
     /** @private */
     CommandHandler.prototype.zoom = function (scale, scrollX, scrollY, focusPoint) {
@@ -22053,7 +25205,10 @@ var DiagramScroller = /** @__PURE__ @class */ (function () {
                 this.horizontalOffset = newOffset.x;
                 this.verticalOffset = newOffset.y;
                 this.setSize();
-                if (this.diagram.mode !== 'SVG') {
+                if (this.diagram.mode !== 'SVG' && canVitualize(this.diagram)) {
+                    this.diagram.scroller.virtualizeElements();
+                }
+                if (this.diagram.mode !== 'SVG' && !canVitualize(this.diagram)) {
                     this.diagram.refreshDiagramLayer();
                 }
                 this.diagram.setOffset(-this.horizontalOffset - pageBounds.x, -this.verticalOffset - pageBounds.y);
@@ -22725,7 +25880,7 @@ var SpatialSearch = /** @__PURE__ @class */ (function () {
     return SpatialSearch;
 }());
 
-var __extends$27 = (undefined && undefined.__extends) || (function () {
+var __extends$29 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -22748,7 +25903,7 @@ var __decorate$18 = (undefined && undefined.__decorate) || function (decorators,
  * Defines the combination of keys and modifier keys
  */
 var KeyGesture = /** @__PURE__ @class */ (function (_super) {
-    __extends$27(KeyGesture, _super);
+    __extends$29(KeyGesture, _super);
     function KeyGesture() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -22764,7 +25919,7 @@ var KeyGesture = /** @__PURE__ @class */ (function (_super) {
  * Defines a command and a key gesture to define when the command should be executed
  */
 var Command = /** @__PURE__ @class */ (function (_super) {
-    __extends$27(Command, _super);
+    __extends$29(Command, _super);
     function Command() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -22789,7 +25944,7 @@ var Command = /** @__PURE__ @class */ (function (_super) {
  * Defines the collection of commands and the corresponding key gestures
  */
 var CommandManager = /** @__PURE__ @class */ (function (_super) {
-    __extends$27(CommandManager, _super);
+    __extends$29(CommandManager, _super);
     function CommandManager() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -22802,7 +25957,7 @@ var CommandManager = /** @__PURE__ @class */ (function (_super) {
  * Defines the behavior of the context menu items
  */
 var ContextMenuSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$27(ContextMenuSettings, _super);
+    __extends$29(ContextMenuSettings, _super);
     function ContextMenuSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -22871,7 +26026,11 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         _this.preventConnectorsUpdate = false;
         /** @private */
         _this.selectionConnectorsList = [];
+        /** @private */
         _this.deleteVirtualObject = false;
+        _this.crudDeleteNodes = [];
+        /** @private */
+        _this.selectedObject = { helperObject: undefined, actualObject: undefined };
         _this.renderTimer = null;
         var child;
         var node;
@@ -22885,6 +26044,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 if (!child.style || !child.style.strokeColor) {
                     node.style.strokeColor = 'transparent';
                 }
+            }
+            if (child.shape && child.shape.type === 'UmlActivity') {
+                setUMLActivityDefaults(child, node);
             }
         }
         return _this;
@@ -23120,6 +26282,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         this.layerZIndex = -1;
         this.layerZIndexTable = {};
         this.nameTable = {};
+        this.pathTable = {};
         this.groupTable = {};
         this.commands = {};
         if (!this.isLoading) {
@@ -23143,6 +26306,10 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      * Renders the diagram control with nodes and connectors
      */
     Diagram.prototype.render = function () {
+        var collapsedNode = [];
+        if (this.dataSourceSettings.crudAction.read) {
+            this.renderInitialCrud();
+        }
         this.initHistory();
         this.diagramRenderer = new DiagramRenderer(this.element.id, new SvgRenderer(), this.mode === 'SVG');
         this.initLayers();
@@ -23165,6 +26332,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         this.scroller.setSize();
         this.scroller.updateScrollOffsets();
         this.refreshDiagramLayer();
+        if (this.scrollSettings.verticalOffset > 0 || this.scrollSettings.horizontalOffset > 0) {
+            this.updateScrollOffset();
+        }
         /**
          * Used to end the context menu rendering
          */
@@ -23175,8 +26345,38 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         this.isProtectedOnChange = false;
         this.tooltipObject = initTooltip(this);
         this.diagramActions = DiagramAction.Render;
+        var nodes = this.nodes;
+        for (var i = 0; i < nodes.length; i++) {
+            if (!nodes[i].isExpanded) {
+                collapsedNode.push(nodes[i]);
+            }
+        }
+        if (collapsedNode.length) {
+            for (var i = collapsedNode.length - 1; i >= 0; i--) {
+                this.commandHandler.expandNode(collapsedNode[i], this);
+            }
+        }
         this.initCommands();
         this.isLoading = false;
+    };
+    Diagram.prototype.renderInitialCrud = function () {
+        var tempObj = this;
+        if (tempObj.dataSourceSettings.crudAction.read) {
+            var callback = new Ajax(tempObj.dataSourceSettings.crudAction.read, 'GET', false);
+            callback.onSuccess = function (data) {
+                tempObj.dataSourceSettings.dataManager = JSON.parse(data);
+                tempObj.dataBind();
+            };
+            callback.send().then();
+        }
+        if (tempObj.dataSourceSettings.connectionDataSource.crudAction.read) {
+            var callback = new Ajax(tempObj.dataSourceSettings.connectionDataSource.crudAction.read, 'GET', false);
+            callback.onSuccess = function (data) {
+                tempObj.dataSourceSettings.connectionDataSource.dataManager = JSON.parse(data);
+                tempObj.dataBind();
+            };
+            callback.send().then();
+        }
     };
     /**
      * Returns the module name of the diagram
@@ -23262,7 +26462,8 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 args: []
             });
         }
-        if (this.dataSourceSettings.dataManager || this.dataSourceSettings.data) {
+        if (this.dataSourceSettings.dataManager || this.dataSourceSettings.data ||
+            this.dataSourceSettings.crudAction.read || this.dataSourceSettings.connectionDataSource.crudAction.read) {
             modules.push({
                 member: 'DataBinding',
                 args: []
@@ -23574,7 +26775,13 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             ty = (negativeDirection ? -1 : 1) * (y ? y : 1);
         }
         var obj = this.selectedItems;
-        this.drag(obj, tx, ty);
+        var annotation = this.selectedItems.wrapper.children[0];
+        if (annotation instanceof TextElement) {
+            this.commandHandler.labelDrag(obj.nodes[0], annotation, tx, ty);
+        }
+        else {
+            this.drag(obj, tx, ty);
+        }
     };
     /**
      * Drags the given object by the specified pixels
@@ -23803,6 +27010,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      */
     Diagram.prototype.addHistoryEntry = function (entry) {
         if (this.undoRedoModule && (this.constraints & DiagramConstraints.UndoRedo) && !this.currentSymbol) {
+            if (entry.undoObject && entry.undoObject.id === 'helper') {
+                return;
+            }
             this.undoRedoModule.addHistoryEntry(entry, this);
             if (entry.type !== 'StartGroup' && entry.type !== 'EndGroup') {
                 this.historyChangeTrigger(entry);
@@ -23985,7 +27195,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             var args = {
                 element: obj, cause: this.diagramActions, state: 'Changing', type: 'Addition', cancel: false
             };
-            this.triggerEvent(DiagramEvent.collectionChange, args);
+            if (obj.id !== 'helper') {
+                this.triggerEvent(DiagramEvent.collectionChange, args);
+            }
             this.diagramActions = this.diagramActions | DiagramAction.PublicMethod;
             obj.id = obj.id || randomId();
             var layers = this.activeLayer;
@@ -23999,6 +27211,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 }
                 if (getObjectType(obj) === Connector) {
                     newObj = new Connector(this, 'connectors', obj, true);
+                    newObj.status = 'New';
                     this.connectors.push(newObj);
                     this.initObject(newObj);
                     if (obj.visible === false) {
@@ -24008,7 +27221,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 }
                 else {
                     newObj = new Node(this, 'nodes', obj, true);
-                    //  newObj.processId = (obj as Node).processId;
+                    newObj.parentId = obj.parentId;
+                    newObj.umlIndex = obj.umlIndex;
+                    newObj.status = 'New';
                     this.nodes.push(newObj);
                     this.initObject(newObj, layers, undefined, group);
                     if (this.bpmnModule) {
@@ -24023,11 +27238,22 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                             this.bpmnModule.updateDocks(newObj, this);
                         }
                     }
+                    if (newObj.umlIndex > -1 && obj.parentId && this.nameTable[obj.parentId] &&
+                        this.nameTable[obj.parentId].shape.type === 'UmlClassifier') {
+                        var parent_1 = this.nameTable[obj.parentId];
+                        parent_1.children.splice(newObj.umlIndex, 0, newObj.id);
+                        parent_1.wrapper.children.splice(newObj.umlIndex, 0, newObj.wrapper);
+                        parent_1.wrapper.measure(new Size());
+                        parent_1.wrapper.arrange(parent_1.wrapper.desiredSize);
+                        this.updateDiagramObject(parent_1);
+                    }
                 }
                 args = {
                     element: newObj, cause: this.diagramActions, state: 'Changed', type: 'Addition', cancel: false
                 };
-                this.triggerEvent(DiagramEvent.collectionChange, args);
+                if (obj.id !== 'helper') {
+                    this.triggerEvent(DiagramEvent.collectionChange, args);
+                }
                 if (!(this.diagramActions & DiagramAction.UndoRedo) && !(this.diagramActions & DiagramAction.Group)) {
                     var entry = {
                         type: 'CollectionChanged', changeType: 'Insert', undoObject: cloneObject(obj),
@@ -24148,6 +27374,14 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     };
     /** @private */
     Diagram.prototype.removeObjectsFromLayer = function (obj) {
+        if (obj.children) {
+            for (var i = 0; i < obj.children.length; i++) {
+                var object = this.nameTable[obj.children[i]];
+                if (object) {
+                    this.removeObjectsFromLayer(object);
+                }
+            }
+        }
         var layer = this.layers.indexOf(this.commandHandler.getObjectLayer(obj.id));
         var objects = this.layers[layer].objects;
         var objIndex = objects.indexOf(obj.id);
@@ -24211,7 +27445,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     element: obj, cause: this.diagramActions,
                     state: 'Changing', type: 'Removal', cancel: false
                 };
-                if (!(this.diagramActions & DiagramAction.Clear)) {
+                if (!(this.diagramActions & DiagramAction.Clear) && (obj.id !== 'helper')) {
                     this.triggerEvent(DiagramEvent.collectionChange, args);
                 }
                 if (!args.cancel) {
@@ -24236,7 +27470,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                         if (obj instanceof Node) {
                             this.removeDependentConnector(obj);
                         }
-                        if (!(this.diagramActions & DiagramAction.Clear)) {
+                        if (!(this.diagramActions & DiagramAction.Clear) && !this.isStackChild(obj)) {
                             this.addHistoryEntry(entry);
                         }
                     }
@@ -24245,6 +27479,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     }
                     if (obj.parentId) {
                         this.deleteChild(obj);
+                        if (this.nameTable[obj.parentId] && this.nameTable[obj.parentId].shape.type === 'UmlClassifier') {
+                            this.updateDiagramObject(this.nameTable[obj.parentId]);
+                        }
                     }
                     var index = void 0;
                     this.diagramActions = this.diagramActions | DiagramAction.PublicMethod;
@@ -24255,6 +27492,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                         }
                         index = this.nodes.indexOf(currentObj);
                         if (index !== -1) {
+                            this.crudDeleteNodes.push(this.nameTable[currentObj.id]);
                             this.nodes.splice(index, 1);
                             this.updateNodeEdges(currentObj);
                         }
@@ -24262,6 +27500,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     else {
                         index = this.connectors.indexOf(currentObj);
                         if (index !== -1) {
+                            this.crudDeleteNodes.push(this.nameTable[currentObj.id]);
                             this.connectors.splice(index, 1);
                         }
                         this.updateEdges(currentObj);
@@ -24290,7 +27529,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                             element: obj, cause: this.diagramActions,
                             state: 'Changed', type: 'Removal', cancel: false
                         };
-                        this.triggerEvent(DiagramEvent.collectionChange, args);
+                        if (obj.id !== 'helper') {
+                            this.triggerEvent(DiagramEvent.collectionChange, args);
+                        }
                         this.resetTool();
                     }
                 }
@@ -24319,6 +27560,31 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /* tslint:enable */
+    Diagram.prototype.isStackChild = function (obj) {
+        var isstack;
+        var parent = this.nameTable[obj.parentId];
+        if (obj && obj.parentId && parent.container &&
+            (parent.container.type === 'Stack' &&
+                this.nameTable[obj.parentId].shape.type !== 'UmlClassifier')) {
+            isstack = true;
+            var redoElement = {
+                sourceIndex: parent.wrapper.children.indexOf(obj.wrapper), source: obj,
+                target: undefined, targetIndex: undefined
+            };
+            var entry = {
+                type: 'StackChildPositionChanged', redoObject: {
+                    sourceIndex: undefined, source: obj,
+                    target: undefined, targetIndex: undefined
+                },
+                undoObject: redoElement,
+                category: 'Internal'
+            };
+            if (!(this.diagramActions & DiagramAction.UndoRedo)) {
+                this.addHistoryEntry(entry);
+            }
+        }
+        return isstack;
+    };
     /** @private */
     Diagram.prototype.deleteChild = function (node, parentNode) {
         var id;
@@ -24341,7 +27607,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /** @private  */
-    Diagram.prototype.addChild = function (node, child) {
+    Diagram.prototype.addChild = function (node, child, index) {
         var id;
         var parentNode = this.nameTable[node.id];
         if (parentNode.children) {
@@ -24354,13 +27620,27 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 id = child.id = child.id || randomId();
                 this.add(child);
             }
-            if (id) {
+            if (id && (!child.umlIndex || child.umlIndex === -1)) {
                 var childNode = this.nameTable[id];
                 childNode.parentId = parentNode.id;
-                parentNode.children.push(id);
-                parentNode.wrapper.children.push(this.nameTable[id].wrapper);
+                if (parentNode.container && parentNode.container.type === 'Stack') {
+                    this.updateStackProperty(parentNode, childNode);
+                }
+                if (index) {
+                    parentNode.children.splice(index, 0, id);
+                    parentNode.wrapper.children.splice(index, 0, childNode.wrapper);
+                }
+                else {
+                    parentNode.children.push(id);
+                    parentNode.wrapper.children.push(childNode.wrapper);
+                }
                 parentNode.wrapper.measure(new Size());
                 parentNode.wrapper.arrange(parentNode.wrapper.desiredSize);
+                if (parentNode.container !== undefined) {
+                    childNode.offsetX = childNode.wrapper.offsetX;
+                    childNode.offsetY = childNode.wrapper.offsetY;
+                }
+                this.updateDiagramObject(parentNode);
             }
         }
     };
@@ -24414,6 +27694,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 node = (this.selectedItems.nodes[0]) ? this.selectedItems.nodes[0] : this.selectedItems.connectors[0];
             }
             if (node) {
+                if (node.shape && node.shape.type === 'UmlClassifier') {
+                    node = this.nameTable[node.children[0]];
+                }
                 var bpmnAnnotation = false;
                 if (this.bpmnModule) {
                     textWrapper = this.bpmnModule.getTextAnnotationWrapper(node, id);
@@ -24437,7 +27720,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 else {
                     bpmnAnnotation = true;
                 }
-                if (node && textWrapper &&
+                if (node && textWrapper && !(textWrapper instanceof DiagramHtmlElement) &&
                     (!enableReadOnly(textWrapper, node) || bpmnAnnotation)) {
                     var style = (textWrapper.style);
                     var maxWidth = void 0;
@@ -24462,9 +27745,17 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                             bounds = new Size((node.width > 50) ? 50 : node.width, textWrapper.style.fontSize);
                         }
                     }
-                    bounds.width = Math.max(bounds.width, 50);
-                    x = ((((textWrapper.bounds.center.x + transform.tx) * transform.scale) - (bounds.width / 2) * scale) - 2.5);
-                    y = ((((textWrapper.bounds.center.y + transform.ty) * transform.scale) - (bounds.height / 2) * scale) - 3);
+                    if (node.parentId && this.nameTable[node.parentId].shape.type === 'UmlClassifier') {
+                        bounds.width = node.wrapper.bounds.width - 20;
+                        x = ((((node.wrapper.bounds.center.x + transform.tx) * transform.scale) - (bounds.width / 2) * scale) - 2.5);
+                        y = ((((node.wrapper.bounds.center.y + transform.ty) * transform.scale) - (bounds.height / 2) * scale) - 3);
+                        textWrapper.style.textAlign = 'Left';
+                    }
+                    else {
+                        bounds.width = Math.max(bounds.width, 50);
+                        x = ((((textWrapper.bounds.center.x + transform.tx) * transform.scale) - (bounds.width / 2) * scale) - 2.5);
+                        y = ((((textWrapper.bounds.center.y + transform.ty) * transform.scale) - (bounds.height / 2) * scale) - 3);
+                    }
                     attributes = {
                         'id': this.element.id + '_editTextBoxDiv', 'style': 'position: absolute' + ';left:' + x + 'px;top:' +
                             y + 'px;width:' + ((bounds.width + 1) * scale) + 'px;height:' + (bounds.height * scale) +
@@ -24696,12 +27987,12 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     for (var i_1 = 0; i_1 < node.wrapper.children.length; i_1++) {
                         if (node.wrapper.children[i_1].id === 'group_container') {
                             var container = node.wrapper.children[i_1];
-                            container.children.push(obj.initAnnotationWrapper(obj.annotations[obj.annotations.length - 1]));
+                            container.children.push(obj.initAnnotationWrapper(obj.annotations[obj.annotations.length - 1], this.element.id));
                         }
                     }
                 }
                 else {
-                    canvas.children.push(obj.initAnnotationWrapper(obj.annotations[obj.annotations.length - 1]));
+                    canvas.children.push(obj.initAnnotationWrapper(obj.annotations[obj.annotations.length - 1], this.element.id));
                 }
             }
             else if (obj instanceof Connector) {
@@ -24709,7 +28000,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 obj.annotations.push(newObj);
                 var segment = canvas.children[0];
                 var bounds = new Rect(segment.offsetX - segment.width / 2, segment.offsetY - segment.height / 2, segment.width, segment.height);
-                canvas.children.push(obj.getAnnotationElement(obj.annotations[obj.annotations.length - 1], obj.intermediatePoints, bounds, this.getDescription));
+                canvas.children.push(obj.getAnnotationElement(obj.annotations[obj.annotations.length - 1], obj.intermediatePoints, bounds, this.getDescription, this.element.id));
             }
             if (!(this.diagramActions & DiagramAction.UndoRedo) && !(this.diagramActions & DiagramAction.Group)) {
                 var entry = {
@@ -24730,7 +28021,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     Diagram.prototype.removelabelExtension = function (obj, labels, j, wrapper) {
         for (var i = 0; i < wrapper.children.length; i++) {
             var canvas = wrapper.children[i];
-            if (canvas instanceof TextElement) {
+            if ((canvas instanceof TextElement) || (canvas instanceof DiagramHtmlElement)) {
                 if (canvas.id.match('_' + labels[j].id + '$')) {
                     for (var k = 0; k < obj.annotations.length; k++) {
                         if (canvas.id.match('_' + obj.annotations[k].id + '$')) {
@@ -24755,6 +28046,10 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                         if (textElement) {
                             element = getDiagramElement(canvas.id + '_text', this.element.id);
                             element.parentNode.removeChild(element);
+                        }
+                        var htmlElement = getDiagramElement(canvas.id + '_html_element', this.element.id);
+                        if (htmlElement) {
+                            htmlElement.parentNode.removeChild(htmlElement);
                         }
                     }
                     else {
@@ -25180,7 +28475,11 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     };
     Diagram.prototype.initData = function () {
         if (this.dataBindingModule && !(this.realActions & RealAction.PreventDataInit)) {
-            if (this.dataSourceSettings.dataManager && this.dataSourceSettings.dataManager.dataSource &&
+            if (this.dataSourceSettings.dataManager && this.dataSourceSettings.connectionDataSource.dataManager) {
+                this.nodes = this.generateData(this.dataSourceSettings.dataManager, true);
+                this.connectors = this.generateData(this.dataSourceSettings.connectionDataSource.dataManager, false);
+            }
+            else if (this.dataSourceSettings.dataManager && this.dataSourceSettings.dataManager.dataSource &&
                 this.dataSourceSettings.dataManager.dataSource.url !== undefined) {
                 this.dataBindingModule.initSource(this.dataSourceSettings, this);
             }
@@ -25188,6 +28487,42 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 this.dataBindingModule.initData(this.dataSourceSettings, this);
             }
         }
+    };
+    Diagram.prototype.generateData = function (dataSource, isNode) {
+        var nodes = [];
+        var i;
+        for (i = 0; i < dataSource.length; i++) {
+            var row = dataSource[i];
+            var node = isNode ? this.makeData(row, true) : this.makeData(row, false);
+            if (node && node.id && (!findNodeByName(nodes, node.id) || !findNodeByName(nodes, node.id))) {
+                nodes.push(node);
+            }
+        }
+        return (nodes);
+    };
+    Diagram.prototype.makeData = function (row, isNode) {
+        var i;
+        var fields = isNode ? this.dataSourceSettings : this.dataSourceSettings.connectionDataSource;
+        var data = {};
+        data.id = row[fields.id] ? row[fields.id] : randomId();
+        if (fields.sourceID) {
+            data.sourceID = row[fields.sourceID];
+        }
+        if (fields.targetID) {
+            data.targetID = row[fields.targetID];
+        }
+        if (row[fields.sourcePointX] && row[fields.sourcePointY]) {
+            data.sourcePoint = { 'x': Number(row[fields.sourcePointX]), 'y': Number(row[fields.sourcePointY]) };
+        }
+        if (row[fields.targetPointX] && row[fields.targetPointY]) {
+            data.targetPoint = { 'x': Number(row[fields.targetPointX]), 'y': Number(row[fields.targetPointY]) };
+        }
+        if (fields.crudAction.customFields && fields.crudAction.customFields.length > 0) {
+            for (i = 0; i < fields.crudAction.customFields.length; i++) {
+                data[fields.crudAction.customFields[i]] = row[fields.crudAction.customFields[i]];
+            }
+        }
+        return data;
     };
     Diagram.prototype.initNodes = function (obj, layer) {
         this.preventUpdate = true;
@@ -25247,6 +28582,20 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     Diagram.prototype.resetTool = function () {
         this.eventHandler.resetTool();
     };
+    Diagram.prototype.initObjectExtend = function (obj, layer, independentObj) {
+        if (independentObj) {
+            var checkBoundaryConstraints = this.commandHandler.checkBoundaryConstraints(undefined, undefined, obj.wrapper.bounds);
+            if (!checkBoundaryConstraints) {
+                var node = obj instanceof Node ? this.nodes : this.connectors;
+                for (var i = 0; i <= node.length; i++) {
+                    if (node[i] && obj.id === node[i].id) {
+                        node.splice(i, 1);
+                    }
+                }
+            }
+            layer.zIndexTable[obj.zIndex] = obj.id;
+        }
+    };
     /** @private */
     Diagram.prototype.initObject = function (obj, layer, independentObj, group) {
         if (independentObj === void 0) { independentObj = true; }
@@ -25263,11 +28612,13 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             }
             if (obj instanceof Node) {
                 if (independentObj) {
-                    var getDefaults = getFunction(this.getNodeDefaults);
-                    if (getDefaults) {
-                        var defaults = getDefaults(obj, this);
-                        if (defaults && defaults !== obj) {
-                            extendObject(defaults, obj);
+                    if (obj.id !== 'helper') {
+                        var getDefaults = getFunction(this.getNodeDefaults);
+                        if (getDefaults) {
+                            var defaults = getDefaults(obj, this);
+                            if (defaults && defaults !== obj) {
+                                extendObject(defaults, obj);
+                            }
                         }
                     }
                     this.initNode(obj, this.element.id);
@@ -25307,28 +28658,34 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 if (independentObj) {
                     obj.init(this);
                 }
+                for (var k = 0; k < obj.wrapper.children.length; k++) {
+                    if (this.pathTable[obj.wrapper.children[k].data]) {
+                        obj.wrapper.children[k].absoluteBounds =
+                            this.pathTable[obj.wrapper.children[k].data].absoluteBounds;
+                    }
+                }
                 obj.wrapper.measure(new Size(undefined, undefined));
                 obj.wrapper.arrange(obj.wrapper.desiredSize);
+                for (var j = 0; j < obj.wrapper.children.length; j++) {
+                    this.pathTable[obj.wrapper.children[j].data] = {};
+                    this.pathTable[obj.wrapper.children[j].data].absoluteBounds =
+                        obj.wrapper.children[j].absoluteBounds;
+                }
+            }
+            if (obj instanceof Node && obj.children && obj.container) {
+                for (var i = 0; i < obj.children.length; i++) {
+                    this.nameTable[obj.children[i]].offsetX = this.nameTable[obj.children[i]].wrapper.offsetX;
+                    this.nameTable[obj.children[i]].offsetY = this.nameTable[obj.children[i]].wrapper.offsetY;
+                }
             }
             if (this.bpmnModule && obj instanceof Node
                 && obj.shape.type === 'Bpmn' && obj.shape.annotations.length > 0) {
                 this.bpmnModule.updateQuad(obj, this);
             }
-            if (independentObj) {
-                var checkBoundaryConstraints = this.commandHandler.checkBoundaryConstraints(undefined, undefined, obj.wrapper.bounds);
-                if (!checkBoundaryConstraints) {
-                    var node = obj instanceof Node ? this.nodes : this.connectors;
-                    for (var i = 0; i <= node.length; i++) {
-                        if (node[i] && obj.id === node[i].id) {
-                            node.splice(i, 1);
-                        }
-                    }
-                }
-                layer.zIndexTable[obj.zIndex] = obj.id;
-            }
+            this.initObjectExtend(obj, layer, independentObj);
             this.nameTable[obj.id] = obj;
             if (obj instanceof Node && obj.children) {
-                if (!group) {
+                if (!group && !obj.container) {
                     this.updateGroupOffset(obj, true);
                 }
                 this.groupTable[obj.id] = obj.children;
@@ -25338,7 +28695,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                         node.parentId = obj.id;
                     }
                 }
-                if (!this.isLoading && obj.rotateAngle) {
+                if (!this.isLoading && obj.rotateAngle && !obj.container) {
                     this.commandHandler.rotateObjects(obj, [obj], obj.rotateAngle, { x: obj.offsetX, y: obj.offsetY }, false);
                 }
             }
@@ -25394,7 +28751,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Diagram.prototype.updateGroupOffset = function (node, isUpdateSize) {
-        if ((node.children && node.children.length > 0) || (node.processId)) {
+        if ((node.children && node.children.length > 0 && (!node.container)) || (node.processId)) {
             var node1 = this.nameTable[node.id];
             if (!(this.realActions & RealAction.PreventScale) && !(this.realActions & RealAction.PreventDrag)) {
                 if (node1.offsetX && !(this.diagramActions & DiagramAction.ToolAction)
@@ -25450,9 +28807,24 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         }
         if (obj.children) {
             canvas.measureChildren = false;
-            for (var i = 0; i < obj.children.length; i++) {
-                if (this.nameTable[obj.children[i]]) {
-                    canvas.children.push(this.nameTable[obj.children[i]].wrapper);
+            if (obj.container && (obj.container.type === 'Grid')) {
+                for (var i = 0; i < obj.children.length; i++) {
+                    var childCollection = new Canvas();
+                    var child = this.nameTable[obj.children[i]];
+                    childCollection.children = [];
+                    childCollection.children.push(child.wrapper);
+                    if (child) {
+                        canvas.addObject(child.wrapper, child.rowIndex, child.columnIndex, child.rowSpan, child.columnSpan);
+                    }
+                }
+            }
+            else {
+                for (var i = 0; i < obj.children.length; i++) {
+                    if (this.nameTable[obj.children[i]]) {
+                        var child = this.nameTable[obj.children[i]];
+                        this.updateStackProperty(obj, child, i);
+                        canvas.children.push(child.wrapper);
+                    }
                 }
             }
             portContainer.id = 'group_container';
@@ -25462,7 +28834,13 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             portContainer.verticalAlignment = 'Stretch';
             canvas.style = obj.style;
             portContainer.children = [];
-            canvas.children.push(portContainer);
+            portContainer.preventContainer = true;
+            if (obj.container) {
+                portContainer.relativeMode = 'Object';
+            }
+            if (!obj.container || (obj.container.type !== 'Grid')) {
+                canvas.children.push(portContainer);
+            }
         }
         else {
             var setNodeTemplate = getFunction(this.setNodeTemplate);
@@ -25484,14 +28862,103 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             (obj.children ? canvas : content).description = obj.annotations.length ? obj.annotations[0].content : obj.id;
         }
         var container = obj.children ? portContainer : canvas;
-        obj.initAnnotations(this.getDescription, container);
+        obj.initAnnotations(this.getDescription, container, this.element.id, canVitualize(this) ? true : false);
         obj.initPorts(this.getDescription, container);
         obj.initIcons(this.getDescription, this.layout, container, diagramId);
         canvas.measure(new Size(obj.width, obj.height));
-        canvas.arrange(canvas.desiredSize);
+        if (canvas instanceof GridPanel) {
+            canvas.arrange(canvas.desiredSize, true);
+        }
+        else {
+            canvas.arrange(canvas.desiredSize);
+        }
+        if (obj.shape.type === 'SwimLane') {
+            var nodesCollection = [];
+            var rowvalue = void 0;
+            var orientation_1 = obj.shape.orientation === 'Horizontal' ? true : false;
+            if (orientation_1) {
+                rowvalue = (obj.shape.header ? 1 : 0)
+                    + (obj.shape.phases.length > 0 ? 1 : 0);
+            }
+            else {
+                rowvalue = (obj.shape.header ? 1 : 0);
+            }
+            var columnValue = void 0;
+            if (orientation_1) {
+                columnValue = 0;
+            }
+            else {
+                columnValue = obj.shape.phases.length > 0 ? 1 : 0;
+            }
+            var grid = obj.wrapper.children[0];
+            if (obj.shape.lanes.length > 0) {
+                for (var i = 0; i < obj.shape.lanes.length; i++) {
+                    for (var j = 0; j < obj.shape.lanes[i].childNodes.length; j++) {
+                        var node = obj.shape.lanes[i].childNodes[j];
+                        node.parentId = grid.rows[rowvalue].cells[columnValue].children[0].id;
+                        this.initObject(node);
+                        this.nodes.push(node);
+                        nodesCollection.push(node);
+                        var canvas_1 = node.wrapper;
+                        if (orientation_1) {
+                            columnValue = 0;
+                        }
+                        if (orientation_1 && canvas_1.actualSize.width + canvas_1.margin.left > grid.rows[rowvalue].cells[0].actualSize.width) {
+                            columnValue++;
+                            canvas_1.margin.left = canvas_1.margin.left - grid.rows[rowvalue].cells[0].actualSize.width;
+                        }
+                        canvas_1.measure(new Size(node.width, node.height));
+                        canvas_1.arrange(canvas_1.desiredSize);
+                        grid.rows[rowvalue].cells[columnValue].children[0].children.push(canvas_1);
+                    }
+                    orientation_1 ? rowvalue++ : columnValue++;
+                }
+            }
+            grid.measure(new Size(obj.width, obj.height));
+            grid.arrange(canvas.desiredSize);
+            for (var i = 0; i < nodesCollection.length; i++) {
+                nodesCollection[i].offsetX = nodesCollection[i].wrapper.offsetX;
+                nodesCollection[i].offsetY = nodesCollection[i].wrapper.offsetY;
+            }
+        }
+        if (obj instanceof Node && obj.container && (obj.width < canvas.outerBounds.width || obj.height < canvas.outerBounds.height) &&
+            canvas.bounds.x <= canvas.outerBounds.x && canvas.bounds.y <= canvas.outerBounds.y) {
+            obj.width = canvas.width = canvas.outerBounds.width;
+            obj.height = canvas.height = canvas.outerBounds.height;
+            canvas.measure(new Size(obj.width, obj.height));
+            canvas.arrange(canvas.desiredSize);
+        }
+        if (obj.container && obj.container.type === 'Grid' && obj.children && obj.children.length > 0) {
+            this.updateChildPosition(obj);
+        }
+    };
+    Diagram.prototype.updateChildPosition = function (obj) {
+        for (var i = 0; i < obj.children.length; i++) {
+            var child = this.getObject(obj.children[i]);
+            child.offsetX = child.wrapper.offsetX;
+            child.offsetY = child.wrapper.offsetY;
+            if (child.children && child.children.length > 0) {
+                this.updateChildPosition(child);
+            }
+        }
     };
     Diagram.prototype.canExecute = function () {
         return true;
+    };
+    Diagram.prototype.updateStackProperty = function (obj, child, index) {
+        if (obj.container && obj.container.type === 'Stack') {
+            if (!child.width) {
+                child.wrapper.horizontalAlignment = 'Stretch';
+                child.horizontalAlignment = 'Stretch';
+            }
+            if (!child.height) {
+                child.verticalAlignment = 'Stretch';
+                child.wrapper.verticalAlignment = 'Stretch';
+            }
+            if (index && obj.shape.type === 'UmlClassifier') {
+                child.umlIndex = index;
+            }
+        }
     };
     Diagram.prototype.initViews = function () {
         if (!this.isLoading) {
@@ -25679,10 +29146,28 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         for (var _i = 0, _a = this.views; _i < _a.length; _i++) {
             var temp = _a[_i];
             view = this.views[temp];
+            if (this.diagramActions) {
+                if (view.mode === 'SVG') {
+                    var htmlLayer = getHTMLLayer(this.element.id);
+                    var diagramElementsLayer = document.getElementById(view.element.id + '_diagramLayer');
+                    this.diagramRenderer.updateNode(obj.wrapper, diagramElementsLayer, htmlLayer, undefined);
+                }
+                else {
+                    this.refreshCanvasDiagramLayer(view);
+                }
+            }
+        }
+    };
+    /** @private  */
+    Diagram.prototype.updateGridContainer = function (grid) {
+        var view;
+        var htmlLayer = getHTMLLayer(this.element.id);
+        for (var _i = 0, _a = this.views; _i < _a.length; _i++) {
+            var temp = _a[_i];
+            view = this.views[temp];
             if (view.mode === 'SVG' && this.diagramActions) {
-                var htmlLayer = getHTMLLayer(this.element.id);
                 var diagramElementsLayer = document.getElementById(view.element.id + '_diagramLayer');
-                this.diagramRenderer.updateNode(obj.wrapper, diagramElementsLayer, htmlLayer, undefined);
+                this.diagramRenderer.updateNode(grid, diagramElementsLayer, htmlLayer, undefined);
             }
             else {
                 this.refreshCanvasDiagramLayer(view);
@@ -25711,16 +29196,21 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     this.refreshSvgDiagramLayer(view);
                     break;
                 case 'Canvas':
-                    this.refreshCanvasLayers();
+                    this.refreshCanvasLayers(view);
                     break;
             }
         }
     };
     /** @private */
-    Diagram.prototype.refreshCanvasLayers = function () {
-        for (var _i = 0, _a = this.views; _i < _a.length; _i++) {
-            var temp = _a[_i];
-            var view = this.views[temp];
+    Diagram.prototype.refreshCanvasLayers = function (view) {
+        if (!view) {
+            for (var _i = 0, _a = this.views; _i < _a.length; _i++) {
+                var temp = _a[_i];
+                var view_1 = this.views[temp];
+                this.refreshCanvasDiagramLayer(view_1);
+            }
+        }
+        else {
             this.refreshCanvasDiagramLayer(view);
         }
     };
@@ -25746,6 +29236,12 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             var htmlLayer = getHTMLLayer(view.element.id);
             var bounds = this.spatialSearch.getPageBounds();
             this.renderDiagramElements(view.diagramLayer, view.diagramRenderer, htmlLayer);
+            for (var i = 0; i < this.basicElements.length; i++) {
+                var element = this.basicElements[i];
+                element.measure(new Size(element.width, element.height));
+                element.arrange(element.desiredSize);
+                view.diagramRenderer.renderElement(element, view.diagramLayer, htmlLayer);
+            }
             if (view instanceof Diagram) {
                 view.diagramLayer.style.transform = 'scale(' + (2 / 3) + ')';
                 view.diagramLayer.style.transformOrigin = '0 0';
@@ -25761,7 +29257,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 this.renderBasicElement(view);
             }
             if ((!this.diagramActions || (this.diagramActions & DiagramAction.Render) === 0)
-                || (DiagramAction.ToolAction & this.diagramActions) || (this.scroller.currentZoom !== 1)) {
+                || (DiagramAction.ToolAction & this.diagramActions) || canVitualize(this) || (this.scroller.currentZoom !== 1)) {
                 this.refreshElements(view);
             }
             else if (!this.renderTimer) {
@@ -25794,16 +29290,14 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     };
     /** @private */
     Diagram.prototype.refreshSvgDiagramLayer = function (view) {
+        var element;
+        var diagramElementsLayer = document.getElementById(view.element.id + '_diagramLayer');
+        var htmlLayer = getHTMLLayer(view.element.id);
         if (!canVitualize(this)) {
-            var container = document.getElementById(view.element.id);
-            var bounds = container.getBoundingClientRect();
-            var element = void 0;
-            var diagramElementsLayer = document.getElementById(view.element.id + '_diagramLayer');
-            var htmlLayer = getHTMLLayer(view.element.id);
             for (var i = 0; i < this.basicElements.length; i++) {
                 element = this.basicElements[i];
                 element.measure(new Size(element.width, element.height));
-                element.arrange(element.desiredSize);
+                element.arrange(element.desiredSize, (!(this.diagramActions & DiagramAction.Render) ? true : false));
                 this.diagramRenderer.renderElement(element, diagramElementsLayer, htmlLayer);
             }
             this.renderDiagramElements(diagramElementsLayer, this.diagramRenderer, htmlLayer);
@@ -25812,6 +29306,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             this.scroller.virtualizeElements();
         }
     };
+    /** @private */
     Diagram.prototype.removeVirtualObjects = function (clearIntervalVal) {
         if (this.deleteVirtualObject) {
             for (var i = 0; i < this.scroller.removeCollection.length; i++) {
@@ -25823,54 +29318,83 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         clearInterval(clearIntervalVal);
     };
     /** @private */
+    Diagram.prototype.updateTextElementValue = function (object) {
+        for (var j = 0; j < object.wrapper.children.length; j++) {
+            var element = object.wrapper.children[j];
+            if (element instanceof TextElement) {
+                element.canMeasure = true;
+                element.measure(new Size(object.width, object.height));
+                element.arrange(element.desiredSize);
+            }
+        }
+    };
+    /** @private */
     Diagram.prototype.updateVirtualObjects = function (collection, remove$$1, tCollection) {
-        var _this = this;
         var diagramElementsLayer = document.getElementById('diagram_diagramLayer');
         var htmlLayer = getHTMLLayer('diagram');
-        var removeObjectInterval;
-        for (var i = 0; i < collection.length; i++) {
-            var index = this.scroller.removeCollection.indexOf(collection[i]);
-            if (index >= 0) {
-                this.scroller.removeCollection.splice(index, 1);
+        if (this.mode === 'SVG') {
+            for (var i = 0; i < collection.length; i++) {
+                var index = this.scroller.removeCollection.indexOf(collection[i]);
+                if (index >= 0) {
+                    this.scroller.removeCollection.splice(index, 1);
+                }
+                var object = this.nameTable[collection[i]];
+                this.updateTextElementValue(object);
+                this.diagramRenderer.renderElement(object.wrapper, diagramElementsLayer, htmlLayer, undefined, undefined, undefined, undefined, object.zIndex);
             }
-            var object = this.nameTable[collection[i]];
-            this.diagramRenderer.renderElement(object.wrapper, diagramElementsLayer, htmlLayer, undefined, undefined, undefined, undefined, object.zIndex);
+            for (var k = 0; k < tCollection.length; k++) {
+                this.scroller.removeCollection.push(tCollection[k]);
+            }
+            if (this.scroller.currentZoom !== 1) {
+                this.eventHandler.updateVirtualization();
+            }
         }
-        for (var k = 0; k < tCollection.length; k++) {
-            this.scroller.removeCollection.push(tCollection[k]);
+        else if (this.diagramActions) {
+            this.refreshDiagramLayer();
         }
-        var delay = 50;
-        removeObjectInterval = setInterval(function (args) {
-            _this.removeVirtualObjects(removeObjectInterval);
-        }, delay);
-        setTimeout(function () {
-            _this.deleteVirtualObject = true;
-        }, delay);
     };
     /** @private */
     Diagram.prototype.renderDiagramElements = function (canvas, renderer, htmlLayer, transform, fromExport) {
         if (transform === void 0) { transform = true; }
+        var pageBounds = this.scroller.getPageBounds();
+        pageBounds.x *= this.scroller.currentZoom;
+        pageBounds.y *= this.scroller.currentZoom;
+        pageBounds.width *= this.scroller.currentZoom;
+        pageBounds.height *= this.scroller.currentZoom;
+        var difX = -this.scroller.horizontalOffset - pageBounds.x;
+        var difY = -this.scroller.verticalOffset - pageBounds.y;
         for (var _i = 0, _a = Object.keys(this.layerZIndexTable); _i < _a.length; _i++) {
             var layerId = _a[_i];
             var layer = this.commandHandler.getLayer(this.layerZIndexTable[layerId]);
             var left = void 0;
             var top_1 = void 0;
-            for (var _b = 0, _c = Object.keys(layer.zIndexTable); _b < _c.length; _b++) {
+            if (this.mode === 'Canvas' && canVitualize(this) && !this.diagramActions) {
+                this.scroller.virtualizeElements();
+            }
+            var id = (this.mode === 'Canvas' && canVitualize(this) &&
+                this.scroller.oldCollectionObjects.length > 0) ?
+                this.scroller.oldCollectionObjects : undefined;
+            for (var _b = 0, _c = Object.keys(id || layer.zIndexTable); _b < _c.length; _b++) {
                 var node = _c[_b];
-                var element = this.nameTable[layer.zIndexTable[node]].wrapper;
-                if (!(this.nameTable[layer.zIndexTable[node]].parentId)
-                    && !(this.nameTable[layer.zIndexTable[node]].processId)) {
+                var renderNode = id ? this.nameTable[id[node]] : this.nameTable[layer.zIndexTable[node]];
+                if (!(renderNode.parentId) &&
+                    !(renderNode.processId)) {
                     var transformValue = {
                         tx: this.scroller.transform.tx,
                         ty: this.scroller.transform.ty,
                         scale: this.scroller.transform.scale
                     };
-                    if (this.constraints & DiagramConstraints.Virtualization) {
+                    if (canVitualize(this)) {
                         if (this.scroller.currentZoom < 1) {
-                            var horizonatlValue = this.scroller.horizontalOffset < 0 ? this.scroller.horizontalOffset : 0;
-                            var verticalValue = this.scroller.verticalOffset < 0 ? this.scroller.verticalOffset : 0;
-                            left = ((this.realActions & RealAction.hScrollbarMoved) ? 0 : -horizonatlValue) + 'px';
-                            top_1 = ((this.realActions & RealAction.vScrollbarMoved) ? 0 : -verticalValue) + 'px';
+                            if (pageBounds.x < 0 || this.scroller.horizontalOffset < 0) {
+                                var verticalValue = this.scroller.verticalOffset < 0 ? this.scroller.verticalOffset : 0;
+                                left = (difX > 0 ? difX : 0) + 'px';
+                                top_1 = ((this.realActions & RealAction.vScrollbarMoved) ? 0 : -verticalValue) + 'px';
+                            }
+                            else {
+                                left = 0 + 'px';
+                                top_1 = 0 + 'px';
+                            }
                             if (this.realActions & RealAction.hScrollbarMoved) {
                                 this.realActions = this.realActions & ~RealAction.hScrollbarMoved;
                             }
@@ -25879,8 +29403,8 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                             }
                         }
                         else {
-                            left = -this.scroller.horizontalOffset + 'px';
-                            top_1 = -this.scroller.verticalOffset + 'px';
+                            left = (pageBounds.x < 0 ? difX : -this.scroller.horizontalOffset) + 'px';
+                            top_1 = (pageBounds.y < 0 ? difY : -this.scroller.verticalOffset) + 'px';
                         }
                         this.diagramLayer.style.left = left;
                         this.diagramLayer.style.top = top_1;
@@ -25891,7 +29415,8 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     if (fromExport) {
                         status_1 = false;
                     }
-                    renderer.renderElement(element, canvas, htmlLayer, (!renderer.isSvgMode && transform) ? transformValue : undefined, undefined, undefined, status_1);
+                    this.updateTextElementValue(renderNode);
+                    renderer.renderElement(renderNode.wrapper, canvas, htmlLayer, (!renderer.isSvgMode && transform) ? transformValue : undefined, undefined, undefined, status_1 && !this.diagramActions);
                 }
             }
         }
@@ -25937,7 +29462,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     Diagram.prototype.updateScrollOffset = function () {
         this.scroller.setScrollOffset(this.diagramCanvas.scrollLeft, this.diagramCanvas.scrollTop);
         updateRuler(this);
-        if (canVitualize(this) && this.mode === 'SVG') {
+        if (canVitualize(this)) {
             this.scroller.virtualizeElements();
         }
     };
@@ -25964,9 +29489,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             var diagramLayer = this.mode === 'SVG' ?
                 getDiagramLayerSvg(this.element.id) : this.diagramLayer;
             var w = (this.mode === 'Canvas' &&
-                (this.constraints & DiagramConstraints.Virtualization)) ? this.width : width;
+                (this.constraints & DiagramConstraints.Virtualization)) ? this.scroller.viewPortWidth : width;
             var h = (this.mode === 'Canvas' &&
-                (this.constraints & DiagramConstraints.Virtualization)) ? this.height : height;
+                (this.constraints & DiagramConstraints.Virtualization)) ? this.scroller.viewPortHeight : height;
             diagramLayer.setAttribute('width', (factor * w).toString());
             diagramLayer.setAttribute('height', (factor * h).toString());
             var attr = { 'width': width.toString(), 'height': height.toString() };
@@ -25984,7 +29509,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             setAttributeSvg(getBackgroundLayerSvg(this.element.id), attr);
             this.htmlLayer.style.width = width + 'px';
             this.htmlLayer.style.height = height + 'px';
-            if (this.mode !== 'SVG') {
+            if (this.mode !== 'SVG' && !(canVitualize(this))) {
                 this.refreshDiagramLayer();
             }
             if (this.mode === 'SVG' && canVitualize(this)) {
@@ -26226,7 +29751,15 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             }
             else if (selectorModel.nodes.length + selectorModel.connectors.length === 1) {
                 if (selectorModel.nodes[0] instanceof Node) {
-                    this.diagramRenderer.renderResizeHandle(selectorModel.nodes[0].wrapper, selectorElement, selectorModel.thumbsConstraints, this.scroller.currentZoom, selectorModel.constraints, this.scroller.transform, undefined, canMove(selectorModel.nodes[0]));
+                    if (checkParentAsContainer(this, selectorModel.nodes[0])) {
+                        var stack = selectorModel.nodes[0];
+                        if (stack.shape.type !== 'UmlClassifier' && (!(stack.parentId || this.nameTable[stack.parentId]
+                            && this.nameTable[stack.parentId].shape.type === 'UmlClassifier'))) {
+                            selectorModel.nodes[0].constraints &= ~(NodeConstraints.Rotate | NodeConstraints.HideThumbs);
+                            selectorModel.thumbsConstraints &= ~ThumbsConstraints.Rotate;
+                        }
+                    }
+                    this.diagramRenderer.renderResizeHandle(selectorModel.wrapper.children[0], selectorElement, selectorModel.thumbsConstraints, this.scroller.currentZoom, selectorModel.constraints, this.scroller.transform, undefined, canMove(selectorModel.nodes[0]), (selectorModel.nodes[0].constraints & NodeConstraints.HideThumbs) ? true : false);
                 }
                 else if (selectorModel.connectors[0] instanceof Connector) {
                     var connector = selectorModel.connectors[0];
@@ -26289,7 +29822,16 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                         this.diagramRenderer.renderEndPointHandle(connector, selectorElement, selectorModel.thumbsConstraints, selectorConstraints, this.scroller.transform, connector.sourceWrapper !== undefined, connector.targetWrapper !== undefined, (this.connectorEditingToolModule && canDragSegmentThumb(connector)) ? true : false);
                     }
                     else if (selectorModel.nodes[0] instanceof Node) {
-                        this.diagramRenderer.renderResizeHandle(selectorModel.nodes[0].wrapper, selectorElement, selectorModel.thumbsConstraints, this.scroller.currentZoom, selectorModel.constraints, this.scroller.transform, canHideResizers, canMove(selectorModel.nodes[0]));
+                        if (checkParentAsContainer(this, selectorModel.nodes[0])) {
+                            var stackPanel = selectorModel.nodes[0];
+                            if (stackPanel.shape.type !== 'UmlClassifier' && !(stackPanel.parentId &&
+                                this.nameTable[stackPanel.parentId]
+                                && this.nameTable[stackPanel.parentId].shape.type === 'UmlClassifier')) {
+                                selectorModel.nodes[0].constraints &= ~(NodeConstraints.HideThumbs | NodeConstraints.Rotate);
+                                selectorModel.thumbsConstraints &= ~ThumbsConstraints.Rotate;
+                            }
+                        }
+                        this.diagramRenderer.renderResizeHandle(selectorModel.wrapper.children[0], selectorElement, selectorModel.thumbsConstraints, this.scroller.currentZoom, selectorModel.constraints, this.scroller.transform, canHideResizers, canMove(selectorModel.nodes[0]), (selectorModel.nodes[0].constraints & NodeConstraints.HideThumbs) ? true : false);
                     }
                 }
                 else {
@@ -26371,9 +29913,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 if (source && node.shape.activity.subProcess.type === 'Transaction'
                     && connector.sourcePortID) {
                     var portId = connector.sourcePortID;
-                    var parent_1 = node.wrapper.children[0].children[0].children[2];
-                    if (parent_1.children) {
-                        for (var _i = 0, _a = parent_1.children; _i < _a.length; _i++) {
+                    var parent_2 = node.wrapper.children[0].children[0].children[2];
+                    if (parent_2.children) {
+                        for (var _i = 0, _a = parent_2.children; _i < _a.length; _i++) {
                             var child = _a[_i];
                             if (child.visible && child.id === node.id + '_' + portId) {
                                 return child.children[0];
@@ -26440,6 +29982,10 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 }
                 var annotation = findAnnotation(node, this.activeLabel.id);
                 if (annotation.content !== text && !args.cancel) {
+                    if (node.parentId && this.nameTable[node.parentId].shape.type === 'UmlClassifier'
+                        && text.indexOf(' + ') === -1 && node.id.indexOf('')) {
+                        text = ' + ' + text;
+                    }
                     annotation.content = text;
                     this.dataBind();
                     this.updateSelector();
@@ -26600,8 +30146,11 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 update = true;
                 updateConnector$$1 = true;
             }
-            else {
+            else if (!actualObject.container) {
                 this.scaleObject(actualObject, node.width, true);
+            }
+            else {
+                actualObject.wrapper.width = node.width;
             }
         }
         if (node.height !== undefined) {
@@ -26610,8 +30159,11 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 update = true;
                 updateConnector$$1 = true;
             }
-            else {
+            else if (!actualObject.container) {
                 this.scaleObject(actualObject, node.height, false);
+            }
+            else {
+                actualObject.wrapper.height = node.height;
             }
         }
         update = this.nodePropertyChangeExtend(actualObject, oldObject, node, update);
@@ -26682,6 +30234,11 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             updateConnector$$1 = true;
             this.bpmnModule.updateBPMN(node, oldObject, actualObject, this);
         }
+        if (actualObject.shape.type === 'UmlActivity' && actualObject.shape.shape === 'FinalNode') {
+            update = true;
+            updateConnector$$1 = true;
+            this.updateUMLActivity(node, oldObject, actualObject, this);
+        }
         if (node.ports !== undefined) {
             for (var _i = 0, _a = Object.keys(node.ports); _i < _a.length; _i++) {
                 var key = _a[_i];
@@ -26717,17 +30274,17 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             this.updateTooltip(actualObject, node);
         }
         if (update) {
-            if (!(this.diagramActions & DiagramAction.ToolAction)) {
-                if (this.checkSelectedItem(actualObject)) {
-                    this.updateSelector();
-                }
-            }
             if (this.bpmnModule !== undefined) {
                 this.bpmnModule.updateTextAnnotationProp(actualObject, { offsetX: (oldObject.offsetX || actualObject.offsetX), offsetY: (oldObject.offsetY || actualObject.offsetY) }, this);
             }
             actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height));
             actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
             this.updateObject(actualObject, oldObject, node);
+            if ((!(this.diagramActions & DiagramAction.ToolAction)) || (this.diagramActions & DiagramAction.UndoRedo)) {
+                if (this.checkSelectedItem(actualObject)) {
+                    this.updateSelector();
+                }
+            }
             if (!isLayout) {
                 this.commandHandler.connectorSegmentChange(actualObject, existingInnerBounds, (node.rotateAngle !== undefined) ? true : false);
                 if (updateConnector$$1) {
@@ -26749,12 +30306,12 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             var objects = [];
             objects = objects.concat(this.selectedItems.nodes, this.selectedItems.connectors);
             if (objects.length === 0) {
-                if (actualObject.parentId) {
-                    var parent_2 = this.nameTable[actualObject.parentId];
-                    parent_2.wrapper.measure(new Size(parent_2.wrapper.width, actualObject.wrapper.height));
-                    parent_2.wrapper.arrange(parent_2.wrapper.desiredSize);
-                    parent_2.offsetX = parent_2.wrapper.offsetX;
-                    parent_2.offsetY = parent_2.wrapper.offsetY;
+                if (actualObject.parentId && this.nameTable[actualObject.parentId]) {
+                    var parent_3 = this.nameTable[actualObject.parentId];
+                    parent_3.wrapper.measure(new Size(parent_3.wrapper.width, actualObject.wrapper.height));
+                    parent_3.wrapper.arrange(parent_3.wrapper.desiredSize);
+                    parent_3.offsetX = parent_3.wrapper.offsetX;
+                    parent_3.offsetY = parent_3.wrapper.offsetY;
                 }
             }
             if (existingInnerBounds.equals(existingInnerBounds, actualObject.wrapper.bounds) === false) {
@@ -26763,9 +30320,23 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     this.updateGroupOffset(actualObject);
                 }
             }
-            if (this.mode === 'SVG' && !this.preventNodesUpdate) {
+            if (!this.preventNodesUpdate) {
                 this.updateDiagramObject(actualObject);
             }
+            if (actualObject.status !== 'New' && this.diagramActions) {
+                actualObject.status = 'Update';
+            }
+        }
+    };
+    Diagram.prototype.updateUMLActivity = function (changedProp, oldObject, actualObject, diagram) {
+        var sizeChanged = changedProp.width !== undefined || changedProp.height !== undefined;
+        if (sizeChanged) {
+            var innerFinalNode = actualObject.wrapper.children[0].children[0];
+            innerFinalNode.width = changedProp.width;
+            innerFinalNode.height = changedProp.height;
+            var outerFinalNode = actualObject.wrapper.children[0].children[1];
+            outerFinalNode.width = changedProp.width / 1.5;
+            outerFinalNode.height = changedProp.height / 1.5;
         }
     };
     Diagram.prototype.updateConnectorProperties = function (connector) {
@@ -26822,6 +30393,8 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         var updateSelector = false;
         var points = [];
         updateSelector = this.connectorProprtyChangeExtend(actualObject, oldProp, newProp, updateSelector);
+        var inPort;
+        var outPort;
         if (newProp.visible !== undefined) {
             this.updateElementVisibility(actualObject.wrapper, actualObject, actualObject.visible);
         }
@@ -26831,7 +30404,8 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             newProp.type !== undefined || newProp.segments !== undefined) {
             if ((newProp.sourceID !== undefined && newProp.sourceID !== oldProp.sourceID) || newProp.sourcePortID) {
                 var sourceNode = this.nameTable[actualObject.sourceID];
-                if (!sourceNode || canOutConnect(sourceNode)) {
+                outPort = this.findInOutConnectPorts(sourceNode, false);
+                if (!sourceNode || (canOutConnect(sourceNode) || canPortOutConnect(outPort))) {
                     actualObject.sourceWrapper = sourceNode ? this.getEndNodeWrapper(sourceNode, actualObject, true) : undefined;
                 }
                 if (newProp.sourceID !== undefined && oldProp.sourceID !== undefined && oldProp.sourceID !== '') {
@@ -26844,7 +30418,8 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             }
             if (newProp.targetID !== undefined && newProp.targetID !== oldProp.targetID) {
                 var targetNode = this.nameTable[newProp.targetID];
-                if (!targetNode || canInConnect(targetNode)) {
+                inPort = this.findInOutConnectPorts(targetNode, true);
+                if (!targetNode || (canInConnect(targetNode) || canPortInConnect(inPort))) {
                     actualObject.targetWrapper = targetNode ? this.getEndNodeWrapper(targetNode, actualObject, false) : undefined;
                 }
                 if (oldProp !== undefined && oldProp.targetID !== undefined && oldProp.targetID !== '') {
@@ -26872,8 +30447,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     this.getWrapper(target, newProp.targetPortID) : undefined;
             }
             points = this.getPoints(actualObject);
-        }
-        //Add prop change for zindex, alignments and margin
+        } //Add prop change for zindex, alignments and margin
         if (newProp.style !== undefined) {
             updateStyle(newProp.style, actualObject.wrapper.children[0]);
         }
@@ -26913,12 +30487,23 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             this.updateQuad(actualObject);
             this.updateGroupSize(actualObject);
         }
-        if (updateSelector === true && this.checkSelectedItem(actualObject) && (!(this.diagramActions & DiagramAction.ToolAction))) {
+        if (updateSelector === true && this.checkSelectedItem(actualObject)
+            && (!(this.diagramActions & DiagramAction.ToolAction) || (this.diagramActions & DiagramAction.UndoRedo))) {
             this.updateSelector();
         }
-        if (this.mode === 'SVG' && !this.preventConnectorsUpdate) {
+        if (!this.preventConnectorsUpdate) {
             this.updateDiagramObject(actualObject);
         }
+        if (this.diagramActions && actualObject.status !== 'New') {
+            actualObject.status = 'Update';
+        }
+    };
+    Diagram.prototype.findInOutConnectPorts = function (node, isInconnect) {
+        var port = {};
+        if (node) {
+            port = getInOutConnectPorts(node, isInconnect);
+        }
+        return port;
     };
     Diagram.prototype.getPoints = function (actualObject, points) {
         var pts;
@@ -27074,7 +30659,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             if (changedObject.rotateAngle !== undefined) {
                 annotationWrapper.rotateAngle = changedObject.rotateAngle;
             }
-            if (canUpdateSize) {
+            if (canUpdateSize && !(annotationWrapper instanceof DiagramHtmlElement)) {
                 annotationWrapper.refreshTextElement();
             }
             if (actualAnnotation instanceof PathAnnotation && changedObject.segmentAngle !== undefined) {
@@ -27149,18 +30734,50 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             if (changedObject.hyperlink !== undefined) {
                 updateHyperlink(changedObject.hyperlink, annotationWrapper, actualAnnotation);
             }
-            if (changedObject.content !== undefined) {
-                if (annotationWrapper) {
-                    isMeasure = true;
-                    annotationWrapper.content = changedObject.content;
-                }
-            }
+            this.updateAnnotationContent(changedObject, isMeasure, annotationWrapper, actualObject, actualAnnotation, nodes);
             if (isMeasure === true) {
                 annotationWrapper.measure(new Size(annotationWrapper.width, annotationWrapper.height));
                 annotationWrapper.arrange(annotationWrapper.desiredSize);
             }
-            annotationWrapper.refreshTextElement();
+            if (!(annotationWrapper instanceof DiagramHtmlElement)) {
+                annotationWrapper.refreshTextElement();
+            }
             // this.refresh(); this.refreshDiagramLayer();
+        }
+    };
+    Diagram.prototype.updateAnnotationContent = function (changedObject, isMeasure, annotationWrapper, actualObject, actualAnnotation, nodes) {
+        if (changedObject.content !== undefined) {
+            if (annotationWrapper) {
+                isMeasure = true;
+                if ((actualObject.shape.type === 'UmlActivity' &&
+                    actualObject.shape.shape === 'StructuredNode')) {
+                    annotationWrapper.content = '<<' + changedObject.content + '>>';
+                }
+                else {
+                    annotationWrapper.content = changedObject.content;
+                }
+            }
+            if (annotationWrapper instanceof DiagramHtmlElement) {
+                this.updateAnnotationWrapper(annotationWrapper, actualObject, actualAnnotation, nodes);
+            }
+        }
+        if (changedObject.template !== undefined) {
+            annotationWrapper.content = changedObject.template;
+            this.updateAnnotationWrapper(annotationWrapper, actualObject, actualAnnotation, nodes);
+        }
+    };
+    Diagram.prototype.updateAnnotationWrapper = function (annotationWrapper, actualObject, actualAnnotation, nodes) {
+        for (var _i = 0, _a = this.views; _i < _a.length; _i++) {
+            var elementId = _a[_i];
+            removeElement(annotationWrapper.id + '_groupElement', elementId);
+            removeElement(annotationWrapper.id + '_html_element', elementId);
+        }
+        annotationWrapper =
+            actualObject.initAnnotationWrapper(actualAnnotation, this.element.id);
+        for (var i = 0; i < nodes.children.length; i++) {
+            if (annotationWrapper.id === nodes.children[i].id) {
+                nodes.children.splice(i, 1, annotationWrapper);
+            }
         }
     };
     /** @private */
@@ -27381,6 +30998,8 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         // initiates droppable event
         var childTable = {};
         var entryTable = {};
+        var header;
+        var lane;
         this.droppable = new Droppable(this.element);
         this.droppable.accept = '.e-dragclone';
         // tslint:disable-next-line:no-any
@@ -27388,6 +31007,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             if (!_this.currentSymbol) {
                 if (args.dragData) {
                     var newObj = void 0;
+                    var isHorizontal = void 0;
                     var position = _this.eventHandler.getMousePosition(args.event);
                     var clonedObject = void 0;
                     var selectedSymbol = args.dragData.helper;
@@ -27411,6 +31031,42 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                                     && newNode.shape.activity.subProcess.processes.length) {
                                     newNode.shape.activity.subProcess.processes = [];
                                 }
+                                if (newNode.shape.type === 'SwimLane') {
+                                    if (newNode.shape.isLane) {
+                                        newNode.children = [];
+                                        header = {
+                                            id: 'header' + randomId(),
+                                        };
+                                        header.style = newNode.shape.lanes[0].header.style;
+                                        header = _this.add(header);
+                                        lane = {
+                                            id: 'body' + randomId(),
+                                        };
+                                        lane.style = newNode.shape.lanes[0].style;
+                                        lane = _this.add(lane);
+                                        var group = {
+                                            id: 'group' + randomId(),
+                                            children: [header.id, lane.id],
+                                        };
+                                        group.shape = newNode.shape;
+                                        newNode = _this.add(group);
+                                    }
+                                }
+                                if (newNode.shape.isPhase) {
+                                    isHorizontal = (newNode.shape.orientation === 'Horizontal') ? true : false;
+                                    if (isHorizontal) {
+                                        newNode.shape.data =
+                                            'M' + 20 + ',' + (newNode.height / 2) + ' L' + (newNode.width - 20) + ',' +
+                                                (newNode.height / 2) + 'z';
+                                        newNode.height = 1;
+                                    }
+                                    else {
+                                        newNode.shape.data =
+                                            'M' + (newNode.width / 2) + ',' + 20 + ' L' + (newNode.width / 2) +
+                                                ',' + (newNode.height - 20) + 'z';
+                                        newNode.width = 1;
+                                    }
+                                }
                                 newObj = newNode;
                                 if (clonedObject.children) {
                                     var parentNode = clonedObject;
@@ -27429,7 +31085,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                                 newObj.targetPoint.x += tx;
                                 newObj.targetPoint.y += ty;
                             }
-                            newObj.id += randomId();
+                            if (!newObj.shape.isLane) {
+                                newObj.id += randomId();
+                            }
                             var arg = {
                                 source: sourceElement, element: newObj, cancel: false,
                                 diagram: _this
@@ -27437,6 +31095,43 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                             _this['enterObject'] = newObj;
                             _this['enterTable'] = entryTable;
                             _this.triggerEvent(DiagramEvent.dragEnter, arg);
+                            if ((newObj instanceof Node) && newObj.shape.type === 'SwimLane' && newObj.shape.isLane) {
+                                var swimLaneObj = arg.element;
+                                var laneObj = swimLaneObj.shape.lanes[0];
+                                var child1 = void 0;
+                                var child2 = void 0;
+                                isHorizontal = (swimLaneObj.shape.orientation === 'Horizontal') ? true : false;
+                                child1 = _this.nameTable[newObj.children[0]];
+                                child2 = _this.nameTable[newObj.children[1]];
+                                if (isHorizontal) {
+                                    header.width = laneObj.header.width;
+                                    header.height = laneObj.height;
+                                    lane.width = laneObj.width - header.width;
+                                    lane.height = laneObj.height;
+                                    lane.offsetX = (laneObj.header.width + (child2.width / 2));
+                                    lane.offsetY = child2.height / 2;
+                                }
+                                else {
+                                    header.width = laneObj.width;
+                                    header.height = laneObj.header.height;
+                                    lane.width = laneObj.width;
+                                    lane.height = laneObj.height - header.height;
+                                    lane.offsetX = child2.width / 2;
+                                    lane.offsetY = (laneObj.header.height + (child2.height / 2));
+                                }
+                                header.offsetX = child1.width / 2;
+                                header.offsetY = child1.height / 2;
+                                newObj.width = laneObj.width;
+                                newObj.height = laneObj.height;
+                            }
+                            if ((newObj instanceof Node) && newObj.shape.isPhase) {
+                                if (isHorizontal) {
+                                    newObj.height = 1;
+                                }
+                                else {
+                                    newObj.width = 1;
+                                }
+                            }
                             if (!_this.activeLayer.lock && !arg.cancel) {
                                 _this.preventUpdate = true;
                                 if (newObj.children) {
@@ -27508,7 +31203,13 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     if (clonedObject.children) {
                         _this.addChildNodes(clonedObject);
                     }
-                    _this.add(clonedObject, true);
+                    if (arg.target && (arg.target instanceof Node) && checkParentAsContainer(_this, arg.target)
+                        && canAllowDrop(arg.target)) {
+                        addChildToContainer(_this, arg.target, clonedObject);
+                    }
+                    else {
+                        _this.add(clonedObject, true);
+                    }
                     if (canSingleSelect(_this)) {
                         _this.select([_this.nameTable[clonedObject[id]]]);
                     }
@@ -27610,6 +31311,123 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 this.add(temp, true);
             }
         }
+    };
+    /**
+     * Inserts newly added element into the database
+     */
+    Diagram.prototype.insertData = function (node) {
+        return this.crudOperation(node, 'create', this.getNewUpdateNodes('New'));
+    };
+    /**
+     * updates the user defined element properties into the existing database
+     */
+    Diagram.prototype.updateData = function (node) {
+        return this.crudOperation(node, 'update', this.getNewUpdateNodes('Update'));
+    };
+    /**
+     * Removes the user deleted element from the existing database
+     */
+    Diagram.prototype.removeData = function (node) {
+        return this.crudOperation(node, 'destroy', this.getDeletedNodes());
+    };
+    Diagram.prototype.crudOperation = function (node, crud, getNodesCollection) {
+        if (node) {
+            var data = this.parameterMap(node, node instanceof Connector ? false : true);
+            if (data) {
+                var url = node instanceof Connector ? this.dataSourceSettings.connectionDataSource.crudAction[crud] : this.dataSourceSettings.crudAction[crud];
+                this.raiseAjaxPost(JSON.stringify(data), url);
+            }
+            return data;
+        }
+        else {
+            var newObjects = getNodesCollection;
+            this.processCrudCollection(newObjects, this.dataSourceSettings.crudAction[crud], this.dataSourceSettings.connectionDataSource.crudAction[crud]);
+            return newObjects;
+        }
+    };
+    Diagram.prototype.processCrudCollection = function (newObjects, nodeCrudAction, connectorCrudAction) {
+        if (newObjects.nodes) {
+            var data = [];
+            var i = void 0;
+            for (i = 0; i < newObjects.nodes.length; i++) {
+                data.push(this.parameterMap(newObjects.nodes[i], true));
+            }
+            if (data && data.length > 0)
+                this.raiseAjaxPost(JSON.stringify(data), nodeCrudAction);
+        }
+        if (newObjects.connectors) {
+            var data = [];
+            var i = void 0;
+            for (i = 0; i < newObjects.connectors.length; i++) {
+                data.push(this.parameterMap(newObjects.connectors[i], false));
+            }
+            if (data && data.length > 0)
+                this.raiseAjaxPost(JSON.stringify(data), connectorCrudAction);
+        }
+    };
+    Diagram.prototype.parameterMap = function (object, isNode) {
+        var mappingObj = {};
+        var i;
+        var fields = isNode ? this.dataSourceSettings : this.dataSourceSettings.connectionDataSource;
+        if (fields.id)
+            mappingObj[fields.id] = object.id;
+        if (fields.sourcePointX && fields.sourcePointY) {
+            mappingObj[fields.sourcePointX] = object.sourcePoint.x;
+            mappingObj[fields.sourcePointY] = object.sourcePoint.y;
+        }
+        if (fields.targetPointX && fields.targetPointY) {
+            mappingObj[fields.targetPointX] = object.targetPoint.x;
+            mappingObj[fields.targetPointY] = object.targetPoint.y;
+        }
+        if (fields.sourceID)
+            mappingObj[fields.sourceID] = object.sourceID;
+        if (fields.targetID)
+            mappingObj[fields.targetID] = object.targetID;
+        if (fields.crudAction && fields.crudAction.customFields && fields.crudAction.customFields.length > 0) {
+            for (i = 0; i < fields.crudAction.customFields.length; i++)
+                mappingObj[fields.crudAction.customFields[i]] = object[fields.crudAction.customFields[i]];
+        }
+        return mappingObj;
+    };
+    Diagram.prototype.getNewUpdateNodes = function (status) {
+        var nodes = [];
+        var connectors = [];
+        for (var name_1 in this.nameTable) {
+            var node = this.nameTable[name_1];
+            if (node.status == status) {
+                if (node && node instanceof Connector) {
+                    node.status = 'None';
+                    connectors.push(node);
+                }
+                else {
+                    node.status = 'None';
+                    nodes.push(node);
+                }
+            }
+        }
+        return { nodes: nodes, connectors: connectors };
+    };
+    Diagram.prototype.getDeletedNodes = function () {
+        var nodes = [];
+        var connectors = [];
+        var i;
+        for (i = 0; i < this.crudDeleteNodes.length; i++) {
+            var node = this.crudDeleteNodes[i];
+            if (node && node.segments)
+                connectors.push(node);
+            else if (node) {
+                nodes.push(node);
+            }
+        }
+        this.crudDeleteNodes = [];
+        return { nodes: nodes, connectors: connectors };
+    };
+    Diagram.prototype.raiseAjaxPost = function (value, url) {
+        var callback = new Ajax(url, 'POST', true, 'application/json');
+        var data = JSON.stringify(JSON.parse(value));
+        callback.send(data).then();
+        callback.onSuccess = function (data) {
+        };
     };
     __decorate([
         Property('100%')
@@ -27770,6 +31588,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], Diagram.prototype, "contextMenuOpen", void 0);
+    __decorate([
+        Event()
+    ], Diagram.prototype, "contextMenuBeforeItemRender", void 0);
     __decorate([
         Event()
     ], Diagram.prototype, "contextMenuClick", void 0);
@@ -28371,182 +32192,6 @@ var PrintAndExport = /** @__PURE__ @class */ (function () {
     return PrintAndExport;
 }());
 
-var __extends$28 = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-/**
- * StackPanel module is used to arrange its children in a line
- */
-var StackPanel = /** @__PURE__ @class */ (function (_super) {
-    __extends$28(StackPanel, _super);
-    function StackPanel() {
-        var _this = _super !== null && _super.apply(this, arguments) || this;
-        /**
-         * Gets/Sets the orientation of the stack panel
-         */
-        _this.orientation = 'Vertical';
-        /**
-         * Not applicable for canvas
-         * @private
-         */
-        _this.measureChildren = undefined;
-        return _this;
-    }
-    /**
-     * Measures the minimum space that the panel needs
-     * @param availableSize
-     */
-    StackPanel.prototype.measure = function (availableSize) {
-        var updateSize = this.orientation === 'Horizontal' ? this.updateHorizontalStack : this.updateVerticalStack;
-        this.desiredSize = this.measureStackPanel(availableSize, updateSize);
-        return this.desiredSize;
-    };
-    /**
-     * Arranges the child elements of the stack panel
-     * @param desiredSize
-     */
-    StackPanel.prototype.arrange = function (desiredSize) {
-        var updateSize = this.orientation === 'Horizontal' ? this.arrangeHorizontalStack : this.arrangeVerticalStack;
-        this.actualSize = this.arrangeStackPanel(desiredSize, updateSize);
-        this.updateBounds();
-        return this.actualSize;
-    };
-    /**
-     * Measures the minimum space that the panel needs
-     * @param availableSize
-     */
-    StackPanel.prototype.measureStackPanel = function (availableSize, updateSize) {
-        var desired = undefined;
-        if (this.children !== undefined && this.children.length > 0) {
-            for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
-                var child = _a[_i];
-                child.parentTransform = this.rotateAngle + this.parentTransform;
-                //Measure children
-                child.measure(availableSize);
-                var childSize = child.desiredSize.clone();
-                //Consider Child's margin
-                this.applyChildMargin(child, childSize);
-                //Consider children's rotation
-                if (child.rotateAngle !== 0) {
-                    childSize = rotateSize(childSize, child.rotateAngle);
-                }
-                //Measure stack panel
-                if (desired === undefined) {
-                    desired = childSize;
-                }
-                else {
-                    updateSize(childSize, desired);
-                }
-            }
-        }
-        desired = _super.prototype.validateDesiredSize.call(this, desired, availableSize);
-        this.stretchChildren(desired);
-        //Considering padding values
-        this.applyPadding(desired);
-        return desired;
-    };
-    StackPanel.prototype.arrangeStackPanel = function (desiredSize, updatePosition) {
-        if (this.children !== undefined && this.children.length > 0) {
-            var x = void 0;
-            var y = void 0;
-            x = this.offsetX - desiredSize.width * this.pivot.x + this.padding.left;
-            y = this.offsetY - desiredSize.height * this.pivot.y + this.padding.top;
-            for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
-                var child = _a[_i];
-                var childSize = child.desiredSize.clone();
-                var rotatedSize = childSize;
-                if (this.orientation === 'Vertical') {
-                    y += child.margin.top;
-                }
-                else {
-                    x += child.margin.left;
-                }
-                if (child.rotateAngle !== 0) {
-                    rotatedSize = rotateSize(childSize, child.rotateAngle);
-                }
-                var center = updatePosition(x, y, child, this, desiredSize, rotatedSize);
-                _super.prototype.findChildOffsetFromCenter.call(this, child, center);
-                child.arrange(childSize);
-                if (this.orientation === 'Vertical') {
-                    y += rotatedSize.height + child.margin.bottom;
-                }
-                else {
-                    x += rotatedSize.width + child.margin.right;
-                }
-            }
-        }
-        return desiredSize;
-    };
-    StackPanel.prototype.updateHorizontalStack = function (child, parent) {
-        parent.height = Math.max(child.height, parent.height);
-        parent.width += child.width;
-    };
-    StackPanel.prototype.updateVerticalStack = function (child, parent) {
-        parent.width = Math.max(child.width, parent.width);
-        parent.height += child.height;
-    };
-    StackPanel.prototype.arrangeHorizontalStack = function (x, y, child, parent, parenBounds, childBounds) {
-        var centerY = 0;
-        if (child.verticalAlignment === 'Top') {
-            centerY = y + child.margin.top + childBounds.height / 2;
-        }
-        else if (child.verticalAlignment === 'Bottom') {
-            var parentBottom = parent.offsetY + parenBounds.height * (1 - parent.pivot.y);
-            centerY = parentBottom - parent.padding.bottom - child.margin.bottom - childBounds.height / 2;
-        }
-        else {
-            centerY = parent.offsetY - parenBounds.height * parent.pivot.y + parenBounds.height / 2;
-        }
-        return { x: x + childBounds.width / 2, y: centerY };
-    };
-    StackPanel.prototype.arrangeVerticalStack = function (x, y, child, parent, parentSize, childSize) {
-        var centerX = 0;
-        if (child.horizontalAlignment === 'Left') {
-            centerX = x + child.margin.left + childSize.width / 2;
-        }
-        else if (child.horizontalAlignment === 'Right') {
-            var parentRight = parent.offsetX + parentSize.width * (1 - parent.pivot.x);
-            centerX = parentRight - parent.padding.right - child.margin.right - childSize.width / 2;
-        }
-        else {
-            centerX = parent.offsetX - parentSize.width * parent.pivot.x + parentSize.width / 2;
-        }
-        return { x: centerX, y: y + childSize.height / 2 };
-    };
-    StackPanel.prototype.stretchChildren = function (size) {
-        if (this.children !== undefined && this.children.length > 0) {
-            for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
-                var child = _a[_i];
-                if (this.orientation === 'Vertical') {
-                    if (child.horizontalAlignment === 'Stretch') {
-                        child.desiredSize.width = size.width;
-                    }
-                }
-                else {
-                    if (child.verticalAlignment === 'Stretch') {
-                        child.desiredSize.height = size.height;
-                    }
-                }
-            }
-        }
-    };
-    StackPanel.prototype.applyChildMargin = function (child, size) {
-        size.height += child.margin.top + child.margin.bottom;
-        size.width += child.margin.left + child.margin.right;
-    };
-    return StackPanel;
-}(Container));
-
 /**
  * data source defines the basic unit of diagram
  */
@@ -28858,6 +32503,7 @@ var DiagramContextMenu = /** @__PURE__ @class */ (function () {
             select: this.contextMenuItemClick.bind(this),
             beforeOpen: this.contextMenuBeforeOpen.bind(this),
             onOpen: this.contextMenuOpen.bind(this),
+            beforeItemRender: this.BeforeItemRender.bind(this),
             onClose: this.contextMenuOnClose.bind(this),
             cssClass: 'e-diagram-menu'
         });
@@ -28905,6 +32551,9 @@ var DiagramContextMenu = /** @__PURE__ @class */ (function () {
     };
     DiagramContextMenu.prototype.contextMenuOpen = function () {
         this.isOpen = true;
+    };
+    DiagramContextMenu.prototype.BeforeItemRender = function (args) {
+        this.parent.trigger(contextMenuBeforeItemRender, args);
     };
     DiagramContextMenu.prototype.contextMenuItemClick = function (args) {
         document.getElementById(this.parent.element.id + 'content').focus();
@@ -30299,8 +33948,8 @@ var BpmnDiagrams = /** @__PURE__ @class */ (function () {
     BpmnDiagrams.prototype.clearAnnotations = function (obj, diagram) {
         var bpmnShape = obj.shape;
         if (bpmnShape.annotations.length) {
-            for (var _i = 0, _a = bpmnShape.annotations; _i < _a.length; _i++) {
-                var annotation = _a[_i];
+            for (var i = bpmnShape.annotations.length - 1; i >= 0; i--) {
+                var annotation = bpmnShape.annotations[i];
                 this.removeAnnotationObjects(obj, annotation, diagram);
             }
         }
@@ -31870,7 +35519,7 @@ var ConnectorBridging = /** @__PURE__ @class */ (function () {
     ConnectorBridging.prototype.inter1 = function (startPt, endPt, pts, zOrder, bridgeDirection) {
         var points1 = [];
         for (var i = 0; i < pts.length - 1; i++) {
-            var point = this.intersect2(startPt, endPt, pts[i], pts[i + 1]);
+            var point = intersect2(startPt, endPt, pts[i], pts[i + 1]);
             if (!this.isEmptyPoint(point)) {
                 var angle = this.angleCalculation(startPt, endPt);
                 var angle1 = this.angleCalculation(pts[i], pts[i + 1]);
@@ -31907,22 +35556,6 @@ var ConnectorBridging = /** @__PURE__ @class */ (function () {
             temp = roundedAngle;
         }
         return temp;
-    };
-    ConnectorBridging.prototype.intersect2 = function (start1, end1, start2, end2) {
-        var point = { x: 0, y: 0 };
-        var lineUtil1 = this.getLineSegment(start1.x, start1.y, end1.x, end1.y);
-        var lineUtil2 = this.getLineSegment(start2.x, start2.y, end2.x, end2.y);
-        var line3 = intersect3(lineUtil1, lineUtil2);
-        if (line3.enabled) {
-            return line3.intersectPt;
-        }
-        else {
-            return point;
-        }
-    };
-    /** @private */
-    ConnectorBridging.prototype.getLineSegment = function (x1, y1, x2, y2) {
-        return { 'x1': Number(x1) || 0, 'y1': Number(y1) || 0, 'x2': Number(x2) || 0, 'y2': Number(y2) || 0 };
     };
     ConnectorBridging.prototype.isEmptyPoint = function (point) {
         return point.x === 0 && point.y === 0;
@@ -32529,7 +36162,8 @@ var Snapping = /** @__PURE__ @class */ (function () {
             this.snapSize(this.diagram, horizontalSnap, verticalSnap, snapLine, deltaX, y, this.diagram.selectedItems, ended);
         }
         var bounds;
-        bounds = (shape instanceof TextElement) ? getBounds(shape) : getBounds(shape.wrapper);
+        bounds = ((shape instanceof TextElement) || (shape instanceof DiagramHtmlElement)) ? getBounds(shape) :
+            getBounds(shape.wrapper);
         if (!verticalSnap.snapped) {
             if (this.diagram.snapSettings.constraints & SnapConstraints.SnapToHorizontalLines) {
                 var bottom = initialRect.y + initialRect.height * (1 - shape.pivot.y);
@@ -33494,6 +37128,12 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
             case 'AnnotationPropertyChanged':
                 this.recordAnnotationChanged(entry, diagram, false);
                 break;
+            case 'ChildCollectionChanged':
+                this.recordChildCollectionChanged(entry, diagram, false);
+                break;
+            case 'StackChildPositionChanged':
+                this.recordStackPositionChanged(entry, diagram, false);
+                break;
         }
         diagram.diagramActions &= ~DiagramAction.UndoRedo;
         diagram.protectPropertyChange(false);
@@ -33528,10 +37168,10 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
     };
     UndoRedo.prototype.recordAnnotationChanged = function (entry, diagram, isRedo) {
         var entryObject = ((isRedo) ? entry.redoObject : entry.undoObject);
-        var oldElement = findAnnotation(entryObject, entry.changeObjectId);
+        var oldElement = findAnnotation(entryObject, entry.objectId);
         var undoChanges = diagram.commandHandler.getAnnotationChanges(diagram.nameTable[entryObject.id], oldElement);
         var currentObject = diagram.nameTable[entryObject.id];
-        var currentElement = findAnnotation(currentObject, entry.changeObjectId);
+        var currentElement = findAnnotation(currentObject, entry.objectId);
         currentElement.offset = oldElement.offset;
         currentElement.margin = oldElement.margin;
         currentElement.width = oldElement.width;
@@ -33545,13 +37185,62 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
             diagram.connectorPropertyChange(currentObject, {}, undoChanges);
         }
     };
+    UndoRedo.prototype.recordChildCollectionChanged = function (entry, diagram, isRedo) {
+        var entryObject = ((isRedo) ? entry.redoObject : entry.undoObject);
+        var parentNode;
+        var actualObject = diagram.nameTable[entryObject.id];
+        if (actualObject.parentId) {
+            parentNode = diagram.nameTable[actualObject.parentId];
+            parentNode.children.splice(parentNode.children.indexOf(actualObject.id), 1);
+            parentNode.wrapper.children.splice(parentNode.wrapper.children.indexOf(actualObject.wrapper), 1);
+        }
+        if (entryObject.parentId !== '') {
+            parentNode = diagram.nameTable[entryObject.parentId];
+            parentNode.children.push(entryObject.id);
+            parentNode.wrapper.children.push(actualObject.wrapper);
+        }
+        actualObject.parentId = entryObject.parentId;
+        diagram.updateDiagramObject(actualObject);
+    };
+    UndoRedo.prototype.recordStackPositionChanged = function (entry, diagram, isRedo) {
+        var entryObject = ((isRedo) ? entry.redoObject : entry.undoObject);
+        if (entryObject.source) {
+            var parent_1 = diagram.nameTable[entryObject.source.parentId];
+            if (parent_1) {
+                if (entryObject.target) {
+                    parent_1.wrapper.children.splice(entryObject.targetIndex, 1);
+                    parent_1.wrapper.children.splice(entryObject.sourceIndex, 0, entryObject.source.wrapper);
+                }
+                else {
+                    if (entryObject.sourceIndex !== undefined) {
+                        if (!diagram.nameTable[entryObject.source.id]) {
+                            diagram.add(entryObject.source);
+                        }
+                        parent_1.wrapper.children.splice(entryObject.sourceIndex, 0, diagram.nameTable[entryObject.source.id].wrapper);
+                        diagram.nameTable[entryObject.source.id].parentId = parent_1.id;
+                    }
+                    else {
+                        parent_1.wrapper.children.splice(parent_1.wrapper.children.indexOf(diagram.nameTable[entryObject.source.id].wrapper), 1);
+                        diagram.nameTable[entryObject.source.id].parentId = '';
+                    }
+                }
+                if (isRedo && parent_1.shape.type === 'UmlClassifier') {
+                    diagram.remove(entryObject.source);
+                }
+                parent_1.wrapper.measure(new Size());
+                parent_1.wrapper.arrange(parent_1.wrapper.desiredSize);
+                diagram.updateDiagramObject(parent_1);
+                diagram.updateSelector();
+            }
+        }
+    };
     UndoRedo.prototype.recordPortChanged = function (entry, diagram, isRedo) {
         var entryObject = ((isRedo) ? entry.redoObject.nodes[0] :
             entry.undoObject.nodes[0]);
-        var oldElement = findPort(entryObject, entry.changeObjectId);
+        var oldElement = findPort(entryObject, entry.objectId);
         var undoChanges = diagram.commandHandler.getPortChanges(diagram.nameTable[entryObject.id], oldElement);
         var currentObject = diagram.nameTable[entryObject.id];
-        var currentElement = findPort(currentObject, entry.changeObjectId);
+        var currentElement = findPort(currentObject, entry.objectId);
         currentElement.offset = oldElement.offset;
         diagram.nodePropertyChange(currentObject, {}, undoChanges);
     };
@@ -33623,7 +37312,7 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
         if (obj && obj.nodes && obj.nodes.length > 0) {
             for (i = 0; i < obj.nodes.length; i++) {
                 node = obj.nodes[i];
-                if (node.children) {
+                if (node.children && !node.container) {
                     var elements = [];
                     var nodes = diagram.commandHandler.getAllDescendants(node, elements);
                     for (var i_1 = 0; i_1 < nodes.length; i_1++) {
@@ -33940,6 +37629,12 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
                 break;
             case 'AnnotationPropertyChanged':
                 this.recordAnnotationChanged(historyEntry, diagram, true);
+                break;
+            case 'ChildCollectionChanged':
+                this.recordChildCollectionChanged(historyEntry, diagram, true);
+                break;
+            case 'StackChildPositionChanged':
+                this.recordStackPositionChanged(historyEntry, diagram, true);
                 break;
         }
         diagram.protectPropertyChange(false);
@@ -38417,7 +42112,7 @@ var CrossReduction = /** @__PURE__ @class */ (function () {
  * Diagram component exported items
  */
 
-var __extends$29 = (undefined && undefined.__extends) || (function () {
+var __extends$30 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -38451,7 +42146,7 @@ var getObjectType$1 = function (obj) {
  * A palette allows to display a group of related symbols and it textually annotates the group with its header.
  */
 var Palette = /** @__PURE__ @class */ (function (_super) {
-    __extends$29(Palette, _super);
+    __extends$30(Palette, _super);
     function Palette() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -38479,7 +42174,7 @@ var Palette = /** @__PURE__ @class */ (function (_super) {
  * customize the preview size and position of the individual palette items.
  */
 var SymbolPreview = /** @__PURE__ @class */ (function (_super) {
-    __extends$29(SymbolPreview, _super);
+    __extends$30(SymbolPreview, _super);
     function SymbolPreview() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -38509,7 +42204,7 @@ var SymbolPreview = /** @__PURE__ @class */ (function (_super) {
  * and to drag and drop those nodes/connectors to drawing area
  */
 var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
-    __extends$29(SymbolPalette, _super);
+    __extends$30(SymbolPalette, _super);
     //region - protected methods 
     /**
      * Constructor for creating the component
@@ -38522,6 +42217,7 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
         /**   @private  */
         _this.childTable = {};
         _this.info = 'info';
+        _this.laneTable = {};
         /**
          * helper method for draggable
          * @return {void}
@@ -38539,6 +42235,17 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
             }
             return clonedElement;
         };
+        var child;
+        var node;
+        for (var i = 0; _this && _this.palettes && i < _this.palettes.length; i++) {
+            for (var j = 0; j < _this.palettes[i].symbols.length; j++) {
+                child = _this.palettes[i].symbols[j];
+                node = options.palettes[i].symbols[j];
+                if (child && child.shape.type === 'UmlActivity') {
+                    setUMLActivityDefaults(node, child);
+                }
+            }
+        }
         return _this;
     }
     /**
@@ -38725,8 +42432,56 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
      */
     SymbolPalette.prototype.initSymbols = function (symbolGroup) {
         var group = [];
+        var laneHeight = 0;
+        var laneWidth = 0;
         for (var _i = 0, _a = symbolGroup.symbols; _i < _a.length; _i++) {
             var symbol = _a[_i];
+            if (symbol.shape.type === 'SwimLane') {
+                var swimLaneObj = symbol;
+                var swimLaneShape = symbol.shape;
+                var isHorizontal = (swimLaneShape.orientation === 'Horizontal') ? true : false;
+                if (swimLaneShape.isLane) {
+                    laneHeight = isHorizontal ? this.symbolHeight - this.symbolHeight / 2 : this.symbolHeight - this.symbolHeight / 4;
+                    laneWidth = isHorizontal ? this.symbolWidth - this.symbolWidth / 4 : this.symbolWidth - this.symbolWidth / 2;
+                    this.laneTable[symbol.id] = { height: laneHeight, width: laneWidth };
+                    var header = swimLaneShape.lanes[0].header;
+                    var laneStyle = swimLaneShape.lanes[0].style;
+                    var headerStyle = header.style;
+                    var headerObj = {
+                        id: 'header' + randomId(), shape: { type: 'Basic', shape: 'Rectangle' },
+                        width: isHorizontal ? header.width : swimLaneObj.width,
+                        height: isHorizontal ? swimLaneObj.height : header.height,
+                        style: headerStyle,
+                        annotations: [{ content: header.content.content }]
+                    };
+                    headerObj.offsetX = headerObj.width / 2;
+                    headerObj.offsetY = headerObj.height / 2;
+                    this.addPaletteItem(symbolGroup.id, headerObj);
+                    var laneObj = {
+                        id: 'lane' + randomId(), shape: { type: 'Basic', shape: 'Rectangle' },
+                        width: isHorizontal ? (swimLaneObj.width - header.width) : swimLaneObj.width,
+                        height: isHorizontal ? swimLaneObj.height : (swimLaneObj.height - header.height),
+                        style: laneStyle
+                    };
+                    laneObj.offsetX = isHorizontal ? (headerObj.width + (laneObj.width / 2)) : laneObj.width / 2;
+                    laneObj.offsetY = isHorizontal ? laneObj.height / 2 : (headerObj.height + (laneObj.height / 2));
+                    this.addPaletteItem(symbolGroup.id, laneObj);
+                    swimLaneObj.children = [headerObj.id, laneObj.id];
+                }
+                else if (swimLaneShape.isPhase) {
+                    laneHeight = swimLaneObj.height ? swimLaneObj.height : this.symbolHeight;
+                    laneWidth = swimLaneObj.width ? swimLaneObj.width : this.symbolWidth;
+                    symbol.shape.type = 'Path';
+                    if (isHorizontal) {
+                        symbol.shape.data =
+                            'M' + 20 + ',' + (laneHeight / 2) + ' L' + (laneWidth - 20) + ',' + (laneHeight / 2) + 'z';
+                    }
+                    else {
+                        symbol.shape.data =
+                            'M' + (laneWidth / 2) + ',' + 20 + ' L' + (laneWidth / 2) + ',' + (laneHeight - 20) + 'z';
+                    }
+                }
+            }
             if (symbol instanceof Node) {
                 var getNodeDefaults = getFunction(this.getNodeDefaults);
                 if (getNodeDefaults) {
@@ -38802,7 +42557,9 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
                 }
                 this.symbolTable[obj.id] = obj;
                 var paletteDiv = document.getElementById(symbolPaletteGroup.id);
-                paletteDiv.appendChild(this.getSymbolContainer(obj, paletteDiv));
+                if (paletteDiv) {
+                    paletteDiv.appendChild(this.getSymbolContainer(obj, paletteDiv));
+                }
                 break;
             }
         }
@@ -38892,14 +42649,17 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
             if (width !== undefined && height !== undefined) {
                 var actualWidth = width;
                 var actualHeight = height;
+                var isLane = symbol.shape.isLane ? true : false;
                 if (this.symbolWidth !== undefined) {
-                    actualWidth = this.symbolWidth - this.symbolMargin.left - this.symbolMargin.right;
+                    actualWidth = isLane ? this.laneTable[obj.id].width :
+                        this.symbolWidth - this.symbolMargin.left - this.symbolMargin.right;
                 }
                 else {
                     width += obj.style.strokeWidth;
                 }
                 if (this.symbolHeight !== undefined) {
-                    actualHeight = this.symbolHeight - this.symbolMargin.top - this.symbolMargin.bottom;
+                    actualHeight = isLane ? this.laneTable[obj.id].height :
+                        this.symbolHeight - this.symbolMargin.top - this.symbolMargin.bottom;
                 }
                 else {
                     height += obj.style.strokeWidth;
@@ -39652,7 +43412,7 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
  * Exported symbol palette files
  */
 
-var __extends$30 = (undefined && undefined.__extends) || (function () {
+var __extends$31 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -39693,7 +43453,7 @@ var __decorate$20 = (undefined && undefined.__decorate) || function (decorators,
  * ```
  */
 var Overview = /** @__PURE__ @class */ (function (_super) {
-    __extends$30(Overview, _super);
+    __extends$31(Overview, _super);
     function Overview(options, element) {
         var _this = _super.call(this, options, element) || this;
         /** @private */
@@ -40554,5 +44314,5 @@ var Overview = /** @__PURE__ @class */ (function (_super) {
  * Diagram component exported items
  */
 
-export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, Thickness, Margin, Shadow, Stop, Gradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findObjectType, findNearestPoint, isDiagramChild, groupHasType, isPointOverConnector, intersect3, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, serialize, deserialize, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getPoint, getObjectType, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, Node, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, UserHandle, Selector, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolPreview, SymbolPalette, Ruler, Overview };
+export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setUMLActivityDefaults, findNearestPoint, isDiagramChild, groupHasType, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, serialize, deserialize, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getPoint, getObjectType, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, UserHandle, Selector, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, renderStackHighlighter, moveChildInStack, initSwimLane, addObjectToGrid, headerDefine, phaseDefine, laneCollection, createRow, createColumn, initGridRow, initGridColumns, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolPreview, SymbolPalette, Ruler, Overview };
 //# sourceMappingURL=ej2-diagrams.es5.js.map

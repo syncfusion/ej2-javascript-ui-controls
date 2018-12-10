@@ -3,17 +3,17 @@
  */
 import { Maps, ILoadedEventArgs, ITouches, BingMap, ILoadEventArgs } from '../../../src/index';
 import { createElement, remove, Browser } from '@syncfusion/ej2-base';
-import { World_Map, usMap, CustomPathData, flightRoutes, intermediatestops1 } from '../data/data.spec';
+import { World_Map, usMap, africa } from '../data/data.spec';
 import { MouseEvents } from '../../../spec/maps/base/events.spec';
 import { Zoom, Bubble, Marker } from '../../../src/maps/index';
 import { getElementByID } from '../layers/colormapping.spec';
-import { electiondata, randomcountriesData } from '../data/us-data.spec';
-import { Point, Rect } from '../../../src/maps/utils/helper';
+import { randomcountriesData } from '../data/us-data.spec';
+import { Rect } from '../../../src/maps/utils/helper';
 Maps.Inject(Zoom, Marker, Bubble);
 
 let MapData: Object = World_Map;
 let imageUrl: string = "http:\/\/ecn.{subdomain}.tiles.virtualearth.net\/tiles\/a{quadkey}.jpeg?g=6465";
-let subDomains: string[] = ["t0","t1","t2","t3"];
+let subDomains: string[] = ["t0", "t1", "t2", "t3"];
 let zoomMax: string = "21";
 describe('Zoom feature tesing for map control', () => {
     describe('Checking tool bar zooming', () => {
@@ -137,7 +137,7 @@ describe('Zoom feature tesing for map control', () => {
         });
 
         it('Checking with Zoom in button - bing map ', () => {
-            map.load = (args: ILoadEventArgs) =>{
+            map.load = (args: ILoadEventArgs) => {
                 debugger
                 let bing: BingMap = new BingMap(map);
                 bing.imageUrl = imageUrl;
@@ -145,7 +145,7 @@ describe('Zoom feature tesing for map control', () => {
                 bing.subDomains = subDomains;
                 map.mapLayerPanel["bing"] = bing;
             };
-            map.loaded = (args: ILoadedEventArgs) => {                
+            map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
                 let eventObj: Object = {
                     target: element,
@@ -178,12 +178,12 @@ describe('Zoom feature tesing for map control', () => {
                     latitude: 40.7489,
                     longitude: -74.968
                 }]
-            }];            
+            }];
             map.refresh();
         });
 
         it('Checking with zoom out button - bing map ', () => {
-            map.load = (args: ILoadEventArgs) =>{
+            map.load = (args: ILoadEventArgs) => {
                 let bing: BingMap = new BingMap(map);
                 bing.imageUrl = imageUrl;
                 bing.maxZoom = zoomMax;
@@ -238,7 +238,7 @@ describe('Zoom feature tesing for map control', () => {
                 layers: [
                     {
                         shapeData: MapData,
-                        key: "AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L",                         
+                        key: "AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L",
                     }
                 ],
                 zoomSettings: {
@@ -294,7 +294,7 @@ describe('Zoom feature tesing for map control', () => {
                 pageY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
             };
             map.layers[0].layerType = 'Bing';
-            map.load = (args: ILoadEventArgs) =>{
+            map.load = (args: ILoadEventArgs) => {
                 let bing: BingMap = new BingMap(map);
                 bing.imageUrl = imageUrl;
                 bing.maxZoom = zoomMax;
@@ -304,7 +304,7 @@ describe('Zoom feature tesing for map control', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 map.zoomModule.mapMouseWheel(<WheelEvent>wheelArgs);
             }
-            map.refresh();            
+            map.refresh();
         });
 
         it('mouse wheel zoom out with bing map', () => {
@@ -371,7 +371,7 @@ describe('Zoom feature tesing for map control', () => {
                 }
                 map.zoomModule.mouseDownPoints = { x: (rect.left + 100), y: (rect.top + 100) };
                 map.zoomModule.mouseMovePoints = { x: (rect.left + 200), y: (rect.top + 100) };
-                map.zoomModule.panning();
+                map.zoomModule.panning('None', null, null);
             };
             map.refresh();
         });
@@ -383,9 +383,9 @@ describe('Zoom feature tesing for map control', () => {
                 map.zoomModule.mouseMovePoints = { x: (rect.left + 200), y: (rect.top + 100) };
                 map.scale = 2;
                 map.tileZoomLevel = 2;
-                map.zoomModule.panning();
+                map.zoomModule.panning('None', null, null);
             };
-            map.load = (args: ILoadEventArgs) =>{
+            map.load = (args: ILoadEventArgs) => {
                 let bing: BingMap = new BingMap(map);
                 bing.imageUrl = imageUrl;
                 bing.maxZoom = zoomMax;
@@ -576,7 +576,7 @@ describe('Zoom feature tesing for map control', () => {
                 map.zoomModule.currentScale = 1;
                 map.zoomModule.performPinchZooming(<TouchEvent>{});
             };
-            map.load = (args: ILoadEventArgs) =>{
+            map.load = (args: ILoadEventArgs) => {
                 let bing: BingMap = new BingMap(map);
                 bing.imageUrl = imageUrl;
                 bing.maxZoom = zoomMax;
@@ -635,7 +635,7 @@ describe('Zoom feature tesing for map control', () => {
                 trigger.dragAndDropEvent(element, (rect.left + (rect.width / 2)), (rect.top + (rect.height / 2)),
                     (rect.left + rect.width), (rect.top + rect.height), '', map);
             };
-            map.load = (args: ILoadEventArgs) =>{
+            map.load = (args: ILoadEventArgs) => {
                 let bing: BingMap = new BingMap(map);
                 bing.imageUrl = imageUrl;
                 bing.maxZoom = zoomMax;
@@ -655,7 +655,7 @@ describe('Zoom feature tesing for map control', () => {
                 trigger.mousemoveEvent(element, (rect.left + 50), (rect.top + 50),
                     (rect.left + 150), (rect.top + 150));
             };
-            map.load = (args: ILoadEventArgs) =>{
+            map.load = (args: ILoadEventArgs) => {
                 let bing: BingMap = new BingMap(map);
                 bing.imageUrl = imageUrl;
                 bing.maxZoom = zoomMax;
@@ -675,7 +675,7 @@ describe('Zoom feature tesing for map control', () => {
                 trigger.mouseupEvent(element, (rect.left + 150), (rect.top + 150),
                     (rect.left + 120), (rect.top + 120));
             };
-            map.load = (args: ILoadEventArgs) =>{
+            map.load = (args: ILoadEventArgs) => {
                 let bing: BingMap = new BingMap(map);
                 bing.imageUrl = imageUrl;
                 bing.maxZoom = zoomMax;
@@ -1191,7 +1191,7 @@ describe('Zoom feature tesing for map control', () => {
                 eventObj['target'] = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomOut_Rect');
                 map.zoomModule.performToolBarAction(eventObj as PointerEvent);
             };
-            map.load = (args: ILoadEventArgs) =>{
+            map.load = (args: ILoadEventArgs) => {
                 let bing: BingMap = new BingMap(map);
                 bing.imageUrl = imageUrl;
                 bing.maxZoom = zoomMax;
@@ -1212,7 +1212,7 @@ describe('Zoom feature tesing for map control', () => {
                 };
                 map.zoomModule.performZoomingByToolBar('pan');
             };
-            map.load = (args: ILoadEventArgs) =>{
+            map.load = (args: ILoadEventArgs) => {
                 let bing: BingMap = new BingMap(map);
                 bing.imageUrl = imageUrl;
                 bing.maxZoom = zoomMax;
@@ -1314,6 +1314,68 @@ describe('Zoom feature tesing for map control', () => {
             };
             map.refresh();
         });
+    });
 
+    describe('Checking with OSM and Geometry sub layer', () => {
+        let id: string = 'container';
+        let map: Maps;
+        let ele: HTMLDivElement;
+        let prevent: Function = (): void => {
+            //Prevent Function
+        };
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            map = new Maps({
+                titleSettings: {
+                    text: 'Location of Africa continent in the World map',
+                    textStyle: {
+                        size: '16px'
+                    }
+                },
+                zoomSettings: {
+                    enable: true
+                },
+                annotations: [{
+                    content: '<div style="height:18px;width:170px;background:white;text-align:center">' +
+                        '<a href="https://www.openstreetmap.org/copyright"  target = "_blank" > © OpenStreetMap contributors </a></div > ',
+                    verticalAlignment: 'Far',
+                    zIndex: '1',
+                    x: '-40',
+                    y: '-20',
+                    horizontalAlignment: 'Far'
+                }],
+                layers: [{
+                    layerType: 'OSM',
+                },
+                {
+                    type: 'SubLayer',
+                    animationDuration: 0,
+                    shapeData: africa,
+                    shapeSettings: {
+                        fill: '#5100a3',
+                        opacity: 0.5
+                    }
+                }]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            map.destroy();
+        });
+
+        it('Checking with sub layer rendering on osm map', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_svg');
+                let eventObj: Object = {
+                    target: element,
+                    type: 'mouseup'
+                };
+                map.zoomModule['distanceX'] = 40;
+                map.zoomModule.mouseUpHandler(eventObj as PointerEvent);
+            };
+            map.refresh();
+        });
     });
 });

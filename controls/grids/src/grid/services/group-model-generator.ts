@@ -43,7 +43,7 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
     private getGroupedRecords(index: number, data: GroupedData, raw?: Object): void {
         let level: number = <number>raw;
         if (isNullOrUndefined(data.items)) {
-            if (isNullOrUndefined(data.GroupGuid)) {
+            if (isNullOrUndefined(data.GroupGuid) && (this.parent.columns.length !== this.parent.groupSettings.columns.length)) {
                 this.rows = this.rows.concat(this.generateDataRows((data as Object[]), index));
             } else {
                 for (let j: number = 0, len: number = (data as Object[]).length; j < len; j++) {
@@ -98,8 +98,11 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
             let tmpFlag: boolean = wFlag && indexes.indexOf(indent) !== -1;
             if (tmpFlag) { wFlag = false; }
             let cellType: CellType = !this.parent.enableColumnVirtualization || tmpFlag ?
-            CellType.GroupCaption : CellType.GroupCaptionEmpty;
+                CellType.GroupCaption : CellType.GroupCaptionEmpty;
             indent = this.parent.enableColumnVirtualization && cellType === CellType.GroupCaption ? indent + groupedLen : indent;
+            if (gObj.isRowDragable()) {
+                indent++;
+            }
             cells.push(this.generateCell(column, null, cellType, indent));
         });
         cells.push(...visibles);
@@ -128,8 +131,10 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
         let data: GroupedData = row.data;
         let col: Column = this.parent.getColumnByField(data.field);
         if (col && col.isForeignColumn && col.isForeignColumn()) {
-            setValue('foreignKey', (col.valueAccessor as Function)(col.foreignKeyValue, getForeignData(col, {}, <string>data.key)[0], col),
-                     row.data);
+            setValue(
+                'foreignKey',
+                (col.valueAccessor as Function)(col.foreignKeyValue, getForeignData(col, {}, <string>data.key)[0], col),
+                row.data);
         }
     }
 

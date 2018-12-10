@@ -1123,6 +1123,386 @@ function getMaxZindex(tagName = ['*']) {
  * Popup Components
  */
 
+/**
+ * Resize library
+ */
+let elementClass = ['north-west', 'north', 'north-east', 'west', 'east', 'south-west', 'south', 'south-east'];
+let targetElement;
+let selectedHandler;
+let originalWidth = 0;
+let originalHeight = 0;
+let originalX = 0;
+let originalY = 0;
+let originalMouseX = 0;
+let originalMouseY = 0;
+const RESIZE_HANDLER = 'e-resize-handle';
+const FOCUSED_HANDLER = 'e-focused-handle';
+let RESTRICT_LEFT = ['e-restrict-left'];
+const RESIZE_WITHIN_VIEWPORT = 'e-resize-viewport';
+let minHeight;
+let maxHeight;
+let minWidth;
+let maxWidth;
+let containerElement;
+let resizeStart = null;
+let resize = null;
+let resizeEnd = null;
+let resizeWestWidth;
+let setLeft = true;
+let previousWidth = 0;
+let setWidth = true;
+function createResize(args) {
+    resizeStart = args.resizeBegin;
+    resize = args.resizing;
+    resizeEnd = args.resizeComplete;
+    targetElement = getDOMElement(args.element);
+    containerElement = getDOMElement(args.boundary);
+    let directions = args.direction.split(' ');
+    for (let i = 0; i < directions.length; i++) {
+        let resizeHandler = createElement('div', { className: 'e-icons ' + RESIZE_HANDLER + ' ' + 'e-' + directions[i] });
+        targetElement.appendChild(resizeHandler);
+    }
+    minHeight = args.minHeight;
+    minWidth = args.minWidth;
+    maxWidth = args.maxWidth;
+    maxHeight = args.maxHeight;
+    wireEvents();
+}
+function getDOMElement(element) {
+    let domElement;
+    if (!isNullOrUndefined(element)) {
+        if (typeof (element) === 'string') {
+            domElement = document.querySelector(element);
+        }
+        else {
+            domElement = element;
+        }
+    }
+    return domElement;
+}
+function wireEvents() {
+    let resizers = targetElement.querySelectorAll('.' + RESIZE_HANDLER);
+    for (let i = 0; i < resizers.length; i++) {
+        selectedHandler = resizers[i];
+        EventHandler.add(selectedHandler, 'mousedown', onMouseDown, this);
+        let eventName = (Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
+        EventHandler.add(selectedHandler, eventName, onTouchStart, this);
+    }
+}
+/* istanbul ignore next */
+function getEventType(e) {
+    return (e.indexOf('mouse') > -1) ? 'mouse' : 'touch';
+}
+/* istanbul ignore next */
+function onMouseDown(e) {
+    e.preventDefault();
+    targetElement = e.target.parentElement;
+    calculateValues();
+    originalMouseX = e.pageX;
+    originalMouseY = e.pageY;
+    e.target.classList.add(FOCUSED_HANDLER);
+    if (!isNullOrUndefined(resizeStart)) {
+        resizeStart(e);
+    }
+    let target = (isNullOrUndefined(containerElement)) ? document : containerElement;
+    EventHandler.add(target, 'mousemove', onMouseMove, this);
+    EventHandler.add(document, 'mouseup', onMouseUp, this);
+    for (let i = 0; i < RESTRICT_LEFT.length; i++) {
+        if (targetElement.classList.contains(RESTRICT_LEFT[i])) {
+            setLeft = false;
+        }
+        else {
+            setLeft = true;
+        }
+    }
+}
+/* istanbul ignore next */
+function onMouseUp(e) {
+    let touchMoveEvent = (Browser.info.name === 'msie') ? 'pointermove' : 'touchmove';
+    let touchEndEvent = (Browser.info.name === 'msie') ? 'pointerup' : 'touchend';
+    let target = (isNullOrUndefined(containerElement)) ? document : containerElement;
+    EventHandler.remove(target, 'mousemove', onMouseMove);
+    EventHandler.remove(target, touchMoveEvent, onMouseMove);
+    let eventName = (Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
+    EventHandler.remove(target, eventName, onMouseMove);
+    if (!isNullOrUndefined(document.body.querySelector('.' + FOCUSED_HANDLER))) {
+        document.body.querySelector('.' + FOCUSED_HANDLER).classList.remove(FOCUSED_HANDLER);
+    }
+    if (!isNullOrUndefined(resizeEnd)) {
+        resizeEnd(e);
+    }
+    EventHandler.remove(document, 'mouseup', onMouseUp);
+    EventHandler.remove(document, touchEndEvent, onMouseUp);
+}
+/* istanbul ignore next */
+function calculateValues() {
+    originalWidth = parseFloat(getComputedStyle(targetElement, null).getPropertyValue('width').replace('px', ''));
+    originalHeight = parseFloat(getComputedStyle(targetElement, null).getPropertyValue('height').replace('px', ''));
+    originalX = targetElement.getBoundingClientRect().left;
+    originalY = targetElement.getBoundingClientRect().top;
+}
+/* istanbul ignore next */
+function onTouchStart(e) {
+    targetElement = e.target.parentElement;
+    calculateValues();
+    originalMouseX = e.touches[0].pageX;
+    originalMouseY = e.touches[0].pageY;
+    if (!isNullOrUndefined(resizeStart)) {
+        resizeStart(e);
+    }
+    let touchMoveEvent = (Browser.info.name === 'msie') ? 'pointermove' : 'touchmove';
+    let touchEndEvent = (Browser.info.name === 'msie') ? 'pointerup' : 'touchend';
+    let target = (isNullOrUndefined(containerElement)) ? document : containerElement;
+    EventHandler.add(target, touchMoveEvent, onMouseMove, this);
+    EventHandler.add(document, touchEndEvent, onMouseUp);
+}
+/* istanbul ignore next */
+function onMouseMove(e) {
+    if (e.target.classList.contains(RESIZE_HANDLER) && e.target.classList.contains(FOCUSED_HANDLER)) {
+        selectedHandler = e.target;
+    }
+    else if (!isNullOrUndefined(document.body.querySelector('.' + FOCUSED_HANDLER))) {
+        selectedHandler = document.body.querySelector('.' + FOCUSED_HANDLER);
+    }
+    if (!isNullOrUndefined(selectedHandler)) {
+        let resizeTowards = '';
+        for (let i = 0; i < elementClass.length; i++) {
+            if (selectedHandler.classList.contains('e-' + elementClass[i])) {
+                resizeTowards = elementClass[i];
+            }
+        }
+        if (!isNullOrUndefined(resize)) {
+            resize(e);
+        }
+        switch (resizeTowards) {
+            case 'south':
+                resizeSouth(e);
+                break;
+            case 'north':
+                resizeNorth(e);
+                break;
+            case 'west':
+                resizeWest(e);
+                break;
+            case 'east':
+                resizeEast(e);
+                break;
+            case 'south-east':
+                resizeSouth(e);
+                resizeEast(e);
+                break;
+            case 'south-west':
+                resizeSouth(e);
+                resizeWest(e);
+                break;
+            case 'north-east':
+                resizeNorth(e);
+                resizeEast(e);
+                break;
+            case 'north-west':
+                resizeNorth(e);
+                resizeWest(e);
+                break;
+            default: break;
+        }
+    }
+}
+/* istanbul ignore next */
+function getClientRectValues(element) {
+    return element.getBoundingClientRect();
+}
+/* istanbul ignore next */
+// tslint:disable-next-line
+function resizeSouth(e) {
+    let documentHeight = document.documentElement.clientHeight;
+    let calculateValue = false;
+    let containerRectValues;
+    let currentpageY = (getEventType(e.type) === 'mouse') ? e.pageY : e.touches[0].pageY;
+    let targetRectValues = getClientRectValues(targetElement);
+    if (!isNullOrUndefined(containerElement)) {
+        containerRectValues = getClientRectValues(containerElement);
+    }
+    if (!isNullOrUndefined(containerElement)) {
+        calculateValue = true;
+    }
+    else if (isNullOrUndefined(containerElement) && ((documentHeight - currentpageY) >= 0 || (targetRectValues.top < 0))) {
+        calculateValue = true;
+    }
+    let calculatedHeight = originalHeight + (currentpageY - originalMouseY);
+    calculatedHeight = (calculatedHeight > minHeight) ? calculatedHeight : minHeight;
+    let containerTop = 0;
+    if (!isNullOrUndefined(containerElement)) {
+        containerTop = containerRectValues.top;
+    }
+    let borderValue = isNullOrUndefined(containerElement) ? 0 : containerElement.offsetHeight - containerElement.clientHeight;
+    let topWithoutborder = (targetRectValues.top - containerTop) - (borderValue / 2);
+    topWithoutborder = (topWithoutborder < 0) ? 0 : topWithoutborder;
+    if (targetRectValues.top > 0 && (topWithoutborder + calculatedHeight) > maxHeight) {
+        calculateValue = false;
+        if (targetElement.classList.contains(RESIZE_WITHIN_VIEWPORT)) {
+            return;
+        }
+        targetElement.style.height = (maxHeight - parseInt(topWithoutborder.toString(), 10)) + 'px';
+        return;
+    }
+    let targetTop = 0;
+    if (calculateValue) {
+        if (targetRectValues.top < 0 && (documentHeight + (targetRectValues.height + targetRectValues.top) > 0)) {
+            targetTop = targetRectValues.top;
+            if ((calculatedHeight + targetTop) <= 30) {
+                calculatedHeight = (targetRectValues.height - (targetRectValues.height + targetRectValues.top)) + 30;
+            }
+        }
+        if (((calculatedHeight + targetRectValues.top) >= maxHeight)) {
+            targetElement.style.height = targetRectValues.height +
+                (documentHeight - (targetRectValues.height + targetRectValues.top)) + 'px';
+        }
+        let calculatedTop = (isNullOrUndefined(containerElement)) ? targetTop : topWithoutborder;
+        if (calculatedHeight >= minHeight && ((calculatedHeight + calculatedTop) <= maxHeight)) {
+            targetElement.style.height = calculatedHeight + 'px';
+        }
+    }
+}
+/* istanbul ignore next */
+// tslint:disable-next-line
+function resizeNorth(e) {
+    let calculateValue = false;
+    let boundaryRectValues;
+    let pageY = (getEventType(e.type) === 'mouse') ? e.pageY : e.touches[0].pageY;
+    let targetRectValues = getClientRectValues(targetElement);
+    if (!isNullOrUndefined(containerElement)) {
+        boundaryRectValues = getClientRectValues(containerElement);
+    }
+    if (!isNullOrUndefined(containerElement) && (targetRectValues.top - boundaryRectValues.top) > 0) {
+        calculateValue = true;
+    }
+    else if (isNullOrUndefined(containerElement) && pageY > 0) {
+        calculateValue = true;
+    }
+    let currentHeight = originalHeight - (pageY - originalMouseY);
+    if ((getClientRectValues(targetElement).bottom + currentHeight) > maxHeight) {
+        calculateValue = false;
+        targetElement.style.height = maxHeight - getClientRectValues(targetElement).bottom + 'px';
+    }
+    if (calculateValue) {
+        if (currentHeight >= minHeight && currentHeight <= maxHeight) {
+            let containerTop = 0;
+            if (!isNullOrUndefined(containerElement)) {
+                containerTop = boundaryRectValues.top;
+            }
+            let top = (originalY - containerTop) + (pageY - originalMouseY);
+            top = top > 0 ? top : 1;
+            targetElement.style.height = currentHeight + 'px';
+            targetElement.style.top = top + 'px';
+        }
+    }
+}
+/* istanbul ignore next */
+// tslint:disable-next-line
+function resizeWest(e) {
+    let documentWidth = document.documentElement.clientWidth;
+    let calculateValue = false;
+    let rectValues;
+    if (!isNullOrUndefined(containerElement)) {
+        rectValues = getClientRectValues(containerElement);
+    }
+    let pageX = (getEventType(e.type) === 'mouse') ? e.pageX : e.touches[0].pageX;
+    let targetRectValues = getClientRectValues(targetElement);
+    let borderValue = isNullOrUndefined(containerElement) ? 0 : containerElement.offsetWidth - containerElement.clientWidth;
+    let left = isNullOrUndefined(containerElement) ? 0 : rectValues.left;
+    let containerWidth = isNullOrUndefined(containerElement) ? 0 : rectValues.width;
+    if (isNullOrUndefined(resizeWestWidth)) {
+        if (!isNullOrUndefined(containerElement)) {
+            resizeWestWidth = (((targetRectValues.left - left) - borderValue / 2)) + targetRectValues.width;
+            resizeWestWidth = resizeWestWidth + (containerWidth - borderValue - resizeWestWidth);
+        }
+        else {
+            resizeWestWidth = documentWidth;
+        }
+    }
+    if (!isNullOrUndefined(containerElement) &&
+        (((targetRectValues.left - rectValues.left) + targetRectValues.width +
+            (rectValues.right - targetRectValues.right)) - borderValue) <= maxWidth) {
+        calculateValue = true;
+    }
+    else if (isNullOrUndefined(containerElement) && pageX >= 0) {
+        calculateValue = true;
+    }
+    let calculatedWidth = originalWidth - (pageX - originalMouseX);
+    if (setLeft) {
+        calculatedWidth = (calculatedWidth > resizeWestWidth) ? resizeWestWidth : calculatedWidth;
+    }
+    if (calculateValue) {
+        if (calculatedWidth >= minWidth && calculatedWidth <= maxWidth) {
+            let containerLeft = 0;
+            if (!isNullOrUndefined(containerElement)) {
+                containerLeft = rectValues.left;
+            }
+            let left = (originalX - containerLeft) + (pageX - originalMouseX);
+            left = (left > 0) ? left : 1;
+            if (calculatedWidth !== previousWidth && setWidth) {
+                targetElement.style.width = calculatedWidth + 'px';
+            }
+            if (setLeft) {
+                targetElement.style.left = left + 'px';
+                if (left === 1) {
+                    setWidth = false;
+                }
+                else {
+                    setWidth = true;
+                }
+            }
+        }
+    }
+    previousWidth = calculatedWidth;
+}
+/* istanbul ignore next */
+// tslint:disable-next-line
+function resizeEast(e) {
+    let documentWidth = document.documentElement.clientWidth;
+    let calculateValue = false;
+    let containerRectValues;
+    if (!isNullOrUndefined(containerElement)) {
+        containerRectValues = getClientRectValues(containerElement);
+    }
+    let pageX = (getEventType(e.type) === 'mouse') ? e.pageX : e.touches[0].pageX;
+    let targetRectValues = getClientRectValues(targetElement);
+    if (!isNullOrUndefined(containerElement) && (((targetRectValues.left - containerRectValues.left) + targetRectValues.width) < maxWidth
+        || (targetRectValues.right - containerRectValues.left) > targetRectValues.width)) {
+        calculateValue = true;
+    }
+    else if (isNullOrUndefined(containerElement) && (documentWidth - pageX) > 0) {
+        calculateValue = true;
+    }
+    let calculatedWidth = originalWidth + (pageX - originalMouseX);
+    let containerLeft = 0;
+    if (!isNullOrUndefined(containerElement)) {
+        containerLeft = containerRectValues.left;
+    }
+    if (((targetRectValues.left - containerLeft) + calculatedWidth) > maxWidth) {
+        calculateValue = false;
+        if (targetElement.classList.contains(RESIZE_WITHIN_VIEWPORT)) {
+            return;
+        }
+        targetElement.style.width = maxWidth - (targetRectValues.left - containerLeft) + 'px';
+    }
+    if (calculateValue) {
+        if (calculatedWidth >= minWidth && calculatedWidth <= maxWidth) {
+            targetElement.style.width = calculatedWidth + 'px';
+        }
+    }
+}
+/* istanbul ignore next */
+function setMinHeight(minimumHeight) {
+    minHeight = minimumHeight;
+}
+function removeResize() {
+    let handlers = targetElement.querySelectorAll('.' + RESIZE_HANDLER);
+    for (let i = 0; i < handlers.length; i++) {
+        detach(handlers[i]);
+    }
+}
+
 var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -1177,6 +1557,9 @@ const DLG_UTIL_DEFAULT_TITLE = 'Information';
 const DLG_UTIL_ROOT = 'e-scroll-disabled';
 const DLG_UTIL_ALERT = 'e-alert-dialog';
 const DLG_UTIL_CONFIRM = 'e-confirm-dialog';
+const DLG_RESIZABLE = 'e-dlg-resizable';
+const DLG_RESTRICT_LEFT_VALUE = 'e-restrict-left';
+const DLG_RESTRICT_WIDTH_VALUE = 'e-resize-viewport';
 /**
  * Represents the dialog component that displays the information and get input from the user.
  * Two types of dialog components are `Modal and Modeless (non-modal)` depending on its interaction with parent application.
@@ -1209,6 +1592,12 @@ let Dialog = class Dialog extends Component {
         if (this.width === '100%') {
             this.element.style.width = '';
         }
+        if (this.enableResize) {
+            this.setResize();
+            if (this.animationSettings.effect === 'None') {
+                this.getMinHeight();
+            }
+        }
     }
     /**
      * Initialize the event handler
@@ -1233,6 +1622,7 @@ let Dialog = class Dialog extends Component {
         };
         let localeText = { close: 'Close' };
         this.l10n = new L10n('dialog', localeText, this.locale);
+        this.checkPositionData();
         if (isNullOrUndefined(this.target)) {
             let prevOnChange = this.isProtectedOnChange;
             this.isProtectedOnChange = true;
@@ -1241,6 +1631,91 @@ let Dialog = class Dialog extends Component {
         }
     }
     ;
+    isNumberValue(value) {
+        let isNumber = /^[-+]?\d*\.?\d+$/.test(value);
+        return isNumber;
+    }
+    checkPositionData() {
+        if (!isNullOrUndefined(this.position)) {
+            if (!isNullOrUndefined(this.position.X) && (typeof (this.position.X) !== 'number')) {
+                let isNumber = this.isNumberValue(this.position.X);
+                if (isNumber) {
+                    let prevOnChange = this.isProtectedOnChange;
+                    this.isProtectedOnChange = true;
+                    this.position.X = parseFloat(this.position.X);
+                    this.isProtectedOnChange = prevOnChange;
+                }
+            }
+            if (!isNullOrUndefined(this.position.Y) && (typeof (this.position.Y) !== 'number')) {
+                let isNumber = this.isNumberValue(this.position.Y);
+                if (isNumber) {
+                    let prevOnChange = this.isProtectedOnChange;
+                    this.isProtectedOnChange = true;
+                    this.position.Y = parseFloat(this.position.Y);
+                    this.isProtectedOnChange = prevOnChange;
+                }
+            }
+        }
+    }
+    /* istanbul ignore next */
+    getMinHeight() {
+        let computedHeaderHeight = '0px';
+        let computedFooterHeight = '0px';
+        if (!isNullOrUndefined(this.element.querySelector('.' + DLG_HEADER_CONTENT))) {
+            computedHeaderHeight = getComputedStyle(this.headerContent).height;
+        }
+        if (!isNullOrUndefined(this.element.querySelector('.' + DLG_FOOTER_CONTENT))) {
+            computedFooterHeight = getComputedStyle(this.element.querySelector('.' + DLG_FOOTER_CONTENT)).height;
+        }
+        let headerHeight = parseInt(computedHeaderHeight.slice(0, computedHeaderHeight.indexOf('p')), 10);
+        let footerHeight = parseInt(computedFooterHeight.slice(0, computedFooterHeight.indexOf('p')), 10);
+        setMinHeight(headerHeight + 30 + footerHeight);
+    }
+    onResizeStart(args) {
+        this.trigger('resizeStart', args);
+    }
+    onResizing(args) {
+        this.trigger('resizing', args);
+    }
+    onResizeComplete(args) {
+        this.trigger('resizeStop', args);
+    }
+    setResize() {
+        if (this.enableResize) {
+            this.element.classList.add(DLG_RESIZABLE);
+            let computedHeight = getComputedStyle(this.element).minHeight;
+            let computedWidth = getComputedStyle(this.element).minWidth;
+            let direction = this.enableRtl ? 'south-west' : 'south-east';
+            if (this.isModal && this.enableRtl) {
+                this.element.classList.add(DLG_RESTRICT_LEFT_VALUE);
+            }
+            else if (this.isModal && this.target === document.body) {
+                this.element.classList.add(DLG_RESTRICT_WIDTH_VALUE);
+            }
+            createResize({
+                element: this.element,
+                direction: direction,
+                minHeight: parseInt(computedHeight.slice(0, computedWidth.indexOf('p')), 10),
+                maxHeight: this.targetEle.clientHeight,
+                minWidth: parseInt(computedWidth.slice(0, computedWidth.indexOf('p')), 10),
+                maxWidth: this.targetEle.clientWidth,
+                boundary: this.target === document.body ? null : this.targetEle,
+                resizeBegin: this.onResizeStart.bind(this),
+                resizeComplete: this.onResizeComplete.bind(this),
+                resizing: this.onResizing.bind(this)
+            });
+        }
+        else {
+            removeResize();
+            if (this.isModal) {
+                this.element.classList.remove(DLG_RESTRICT_LEFT_VALUE);
+            }
+            else {
+                this.element.classList.remove(DLG_RESTRICT_WIDTH_VALUE);
+            }
+            this.element.classList.remove(DLG_RESIZABLE);
+        }
+    }
     /* istanbul ignore next */
     keyDown(event) {
         if (event.keyCode === 9) {
@@ -1354,6 +1829,9 @@ let Dialog = class Dialog extends Component {
                     element: this.element,
                     target: this.target
                 };
+                if (this.enableResize && this.animationSettings.effect !== 'None') {
+                    this.getMinHeight();
+                }
                 this.trigger('open', eventArgs);
             },
             close: (event) => {
@@ -1365,7 +1843,11 @@ let Dialog = class Dialog extends Component {
                     this.dlgContainer.style.display = 'none';
                 }
                 this.trigger('close', this.closeArgs);
+                if (!isNullOrUndefined(document.activeElement.blur)) {
+                    document.activeElement.blur();
+                }
                 if (!isNullOrUndefined(this.storeActiveElement)) {
+                    document.activeElement.blur();
                     this.storeActiveElement.focus();
                 }
             }
@@ -1441,6 +1923,7 @@ let Dialog = class Dialog extends Component {
                     this.element.style.position = 'relative';
                 }
                 this.trigger('dragStop', event);
+                this.element.classList.remove(DLG_RESTRICT_LEFT_VALUE);
             },
             drag: (event) => {
                 this.trigger('drag', event);
@@ -1513,6 +1996,10 @@ let Dialog = class Dialog extends Component {
     }
     setEnableRTL() {
         this.enableRtl ? addClass([this.element], RTL) : removeClass([this.element], RTL);
+        if (!isNullOrUndefined(this.element.querySelector('.e-resize-handle'))) {
+            removeResize();
+            this.setResize();
+        }
     }
     setTargetContent() {
         if (isNullOrUndefined(this.content) || this.content === '') {
@@ -1782,6 +2269,7 @@ let Dialog = class Dialog extends Component {
                     this.popupObj.relateTo = newProp.target;
                     break;
                 case 'position':
+                    this.checkPositionData();
                     if (this.isModal) {
                         let positionX = isNullOrUndefined(oldProp.position.X) ? this.position.X : oldProp.position.X;
                         let positionY = isNullOrUndefined(oldProp.position.Y) ? this.position.Y : oldProp.position.Y;
@@ -1793,6 +2281,9 @@ let Dialog = class Dialog extends Component {
                     break;
                 case 'enableRtl':
                     this.setEnableRTL();
+                    break;
+                case 'enableResize':
+                    this.setResize();
                     break;
             }
         }
@@ -2072,6 +2563,9 @@ __decorate$1([
     Property(true)
 ], Dialog.prototype, "visible", void 0);
 __decorate$1([
+    Property(false)
+], Dialog.prototype, "enableResize", void 0);
+__decorate$1([
     Property('auto')
 ], Dialog.prototype, "height", void 0);
 __decorate$1([
@@ -2131,6 +2625,15 @@ __decorate$1([
 __decorate$1([
     Event()
 ], Dialog.prototype, "overlayClick", void 0);
+__decorate$1([
+    Event()
+], Dialog.prototype, "resizeStart", void 0);
+__decorate$1([
+    Event()
+], Dialog.prototype, "resizing", void 0);
+__decorate$1([
+    Event()
+], Dialog.prototype, "resizeStop", void 0);
 Dialog = __decorate$1([
     NotifyPropertyChanges
 ], Dialog);
@@ -2250,6 +2753,8 @@ var DialogUtility;
         options.allowDragging = !isNullOrUndefined(option.isDraggable) ? option.isDraggable : false;
         options.closeOnEscape = !isNullOrUndefined(option.closeOnEscape) ? option.closeOnEscape : false;
         options.position = !isNullOrUndefined(option.position) ? option.position : { X: 'center', Y: 'top' };
+        options.animationSettings = !isNullOrUndefined(option.animationSettings) ? option.animationSettings :
+            { effect: 'Fade', duration: 400, delay: 0 };
         return options;
     }
     function setAlertButtonModel(options, option) {

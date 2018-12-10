@@ -13,7 +13,7 @@ describe('Heatmap Control', () => {
         let heatmap: HeatMap;
         let ele: HTMLElement;
         let tempElement: HTMLElement;
-        let created: EmitType<ILoadedEventArgs>;
+        let created: EmitType<Object>;
         let trigger: MouseEvents = new MouseEvents();
         // let trigger: MouseEvents = new MouseEvents();
         beforeAll((): void => {
@@ -164,6 +164,23 @@ describe('Heatmap Control', () => {
             trigger.mousemoveEvent(tempElement, 0, 0, 60, 20);
             tempElement = document.getElementById('containerCelltooltipcontainer_svg');
             expect(tempElement).toBe(null);
+        });
+        it('Check tooltip Color', () => {
+            heatmap.tooltipRender = function (args) {
+                args.cancel = false;
+            };
+            heatmap.tooltipSettings.fill = "RED";
+            heatmap.refresh();
+            tempElement = document.getElementById('container_HeatMapRect_0');
+            trigger.mousemoveEvent(tempElement, 0, 0, 60, 20);
+            expect(document.getElementById('containerCelltooltipcontainer_path').getAttribute("fill")).toBe("RED");
+        });
+        it('Changing tooltip color dynamically', () => {
+            heatmap.tooltipSettings.fill = "Pink";
+            heatmap.dataBind();
+            tempElement = document.getElementById('container_HeatMapRect_0');
+            trigger.mousemoveEvent(tempElement, 0, 0, 60, 20);
+            expect(document.getElementById('containerCelltooltipcontainer_path').getAttribute("fill")).toBe("Pink");
         });
     });
 });

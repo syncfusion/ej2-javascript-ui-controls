@@ -105,22 +105,22 @@ describe('Diagram Control', () => {
             wrapper = (diagram.nodes[1] as NodeModel).wrapper;
 
             wrapper = (diagram.nodes[2] as NodeModel).wrapper;
-
+            
             //first label
             expect(((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width === 79.359375
-                && (diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.height === 48 &&
+                && (diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.height === 57.599999999999994 &&
                 (diagram.nodes[0] as NodeModel).wrapper.children[1].offsetX === 104.6796875 &&
-                (diagram.nodes[0] as NodeModel).wrapper.children[1].offsetY === 84) &&
+                (diagram.nodes[0] as NodeModel).wrapper.children[1].offsetY === 88.8) &&
                 //second label
                 ((diagram.nodes[1] as NodeModel).wrapper.children[1].actualSize.width === 82.03125
-                    && (diagram.nodes[1] as NodeModel).wrapper.children[1].actualSize.height === 48 &&
+                    && (diagram.nodes[1] as NodeModel).wrapper.children[1].actualSize.height === 57.599999999999994 &&
                     (diagram.nodes[1] as NodeModel).wrapper.children[1].offsetX === 293.984375 &&
-                    (diagram.nodes[1] as NodeModel).wrapper.children[1].offsetY === 111) &&
+                    (diagram.nodes[1] as NodeModel).wrapper.children[1].offsetY === 106.2) &&
                 //third label
                 ((diagram.nodes[2] as NodeModel).wrapper.children[1].actualSize.width === 93.15625
-                    && (diagram.nodes[2] as NodeModel).wrapper.children[1].actualSize.height === 36 &&
+                    && (diagram.nodes[2] as NodeModel).wrapper.children[1].actualSize.height === 43.199999999999996 &&
                     (diagram.nodes[2] as NodeModel).wrapper.children[1].offsetX === 496.578125 &&
-                    (diagram.nodes[2] as NodeModel).wrapper.children[1].offsetY === 83)
+                    (diagram.nodes[2] as NodeModel).wrapper.children[1].offsetY === 86.6)
             ).toBe(true);
             done();
         });
@@ -153,23 +153,24 @@ describe('Diagram Control', () => {
             wrapper = (diagram.nodes[1] as NodeModel).wrapper;
 
             wrapper = (diagram.nodes[2] as NodeModel).wrapper;
+            
 
             //first label
                 expect(((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width === 99.375
-                && (diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.height === 24 &&
+                && (diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.height === 28.799999999999997 &&
                 (diagram.nodes[0] as NodeModel).wrapper.children[1].offsetX === 99.6875 &&
-                (diagram.nodes[0] as NodeModel).wrapper.children[1].offsetY === 72) &&
+                (diagram.nodes[0] as NodeModel).wrapper.children[1].offsetY === 74.4) &&
                 //second label
                 ((diagram.nodes[1] as NodeModel).wrapper.children[1].actualSize.width === 66.6875
-                    && (diagram.nodes[1] as NodeModel).wrapper.children[1].actualSize.height === 48 &&
+                    && (diagram.nodes[1] as NodeModel).wrapper.children[1].actualSize.height === 57.599999999999994 &&
                     (diagram.nodes[1] as NodeModel).wrapper.children[1].offsetX === 301.65625 &&
-                    (diagram.nodes[1] as NodeModel).wrapper.children[1].offsetY === 126) &&
+                    (diagram.nodes[1] as NodeModel).wrapper.children[1].offsetY === 121.2) &&
                 //third label
                 (((diagram.nodes[2] as NodeModel).wrapper.children[1].actualSize.width === 97.828125 ||
                     (diagram.nodes[2] as NodeModel).wrapper.children[1].actualSize.width === 98.15625)
-                    && (diagram.nodes[2] as NodeModel).wrapper.children[1].actualSize.height === 36 &&
+                    && (diagram.nodes[2] as NodeModel).wrapper.children[1].actualSize.height === 43.199999999999996 &&
                     Math.round((diagram.nodes[2] as NodeModel).wrapper.children[1].offsetX) === 501 &&
-                    (diagram.nodes[2] as NodeModel).wrapper.children[1].offsetY === 117)
+                    (diagram.nodes[2] as NodeModel).wrapper.children[1].offsetY === 113.4)
             ).toBe(true);
             done();
         });

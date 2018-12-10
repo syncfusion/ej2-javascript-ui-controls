@@ -25,6 +25,8 @@ export class ResourceBase {
     private parent: Schedule;
     public resourceCollection: ResourcesModel[] = [];
     public lastResourceLevel: TdData[];
+    public renderedResources: TdData[];
+    public expandedResources: TdData[];
     private colorIndex: number;
     private resourceTreeLevel: TdData[];
     private treeViewObj: TreeView;
@@ -48,7 +50,7 @@ export class ResourceBase {
     }
 
     public hideResourceRows(tBody: Element): void {
-        if (this.resourceCollection.length <= 1) {
+        if (this.resourceCollection.length <= 1 || this.parent.virtualScrollModule) {
             return;
         }
         let trCount: number = this.lastResourceLevel.length;
@@ -71,11 +73,31 @@ export class ResourceBase {
         let tBody: Element = tbl.querySelector('tbody');
         let resData: TdData[] = this.generateTreeData(true) as TdData[];
         this.countCalculation(resColl.slice(0, -2), resColl.slice(0, -1));
+        this.renderedResources = this.lastResourceLevel;
+        if (this.parent.virtualScrollModule) {
+            let resourceCount: number = this.parent.virtualScrollModule.getRenderedCount();
+            this.setExpandedResources();
+            resData = this.expandedResources.slice(0, resourceCount);
+            this.renderedResources = resData;
+        }
         append(this.getContentRows(resData), tBody);
         this.hideResourceRows(tBody);
         tbl.appendChild(tBody);
         resDiv.appendChild(tbl);
         return resDiv;
+    }
+
+    public setExpandedResources(): void {
+        let resources: TdData[] = [];
+        for (let i: number = 0; i < this.lastResourceLevel.length; i++) {
+            let resource: { [key: string]: Object } = this.lastResourceLevel[i].resourceData;
+            let count: number = resource.Count as number;
+            resources.push(this.lastResourceLevel[i]);
+            if (!isNullOrUndefined(resource.Expand) && !resource.Expand && count > 0) {
+                i = i + count;
+            }
+        }
+        this.expandedResources = resources;
     }
 
     public getContentRows(resData: TdData[]): Element[] {
@@ -90,10 +112,10 @@ export class ResourceBase {
             rIndex = util.findIndexInData(<{ [key: string]: Object }[]>resColl, 'name', resData[i].resource.name);
             if (rIndex === resColl.length - 1) {
                 extend(resData[i].resourceData, { ClassName: cls.RESOURCE_CHILD_CLASS });
-                this.lastResourceLevel[i].className = [cls.RESOURCE_CHILD_CLASS];
+                this.renderedResources[i].className = [cls.RESOURCE_CHILD_CLASS];
             } else {
                 extend(resData[i].resourceData, { ClassName: cls.RESOURCE_PARENT_CLASS });
-                this.lastResourceLevel[i].className = [cls.RESOURCE_PARENT_CLASS];
+                this.renderedResources[i].className = [cls.RESOURCE_PARENT_CLASS];
             }
             left = (rIndex * this.leftPixel) + 'px';
             if (resData[i].resourceData.ClassName as string === cls.RESOURCE_PARENT_CLASS) {
@@ -168,7 +190,7 @@ export class ResourceBase {
         let hide: boolean;
         let trElement: HTMLTableRowElement = closest(target as Element, '.' + cls.RESOURCE_PARENT_CLASS)
             .parentElement as HTMLTableRowElement;
-        let index: number = trElement.rowIndex;
+        let index: number = parseInt(trElement.children[0].getAttribute('data-group-index'), 10);
         let args: ActionEventArgs = {
             cancel: false, event: e, groupIndex: index,
             requestType: !target.classList.contains(cls.RESOURCE_COLLAPSE_CLASS) ? 'resourceExpand' : 'resourceCollapse',
@@ -184,19 +206,37 @@ export class ResourceBase {
             classList(target, [cls.RESOURCE_COLLAPSE_CLASS], [cls.RESOURCE_EXPAND_CLASS]);
             hide = false;
         }
+
+        let eventElements: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
+        for (let i: number = 0; i < eventElements.length; i++) {
+            remove(eventElements[i]);
+        }
+        if (this.parent.virtualScrollModule) {
+            this.updateVirtualContent(index, hide);
+        } else {
+            this.updateContent(index, hide);
+        }
+        let data: NotifyEventArgs = { cssProperties: this.parent.getCssProperties(), module: 'scroll' };
+        this.parent.notify(events.scrollUiUpdate, data);
+        args = {
+            cancel: false, event: e, groupIndex: index,
+            requestType: target.classList.contains(cls.RESOURCE_COLLAPSE_CLASS) ? 'resourceExpanded' : 'resourceCollapsed',
+        };
+        this.parent.notify(events.dataReady, {});
+        this.parent.trigger(events.actionComplete, args);
+    }
+
+    public updateContent(index: number, hide: boolean): void {
         let rowCollection: HTMLTableRowElement[] = [];
         let workCellCollection: HTMLTableRowElement[] = [];
         let headerRowCollection: HTMLTableRowElement[] = [];
         let pNode: boolean;
         let clickedRes: { [key: string]: Object } = this.lastResourceLevel[index].resourceData as { [key: string]: Object };
         let resRows: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.RESOURCE_COLUMN_WRAP_CLASS + ' ' + 'tr'));
-        let contentRows: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CONTENT_WRAP_CLASS + ' ' + 'tbody tr'));
+        let contentRows: Element[] = [].slice.call(this.parent.element.querySelectorAll
+            ('.' + cls.CONTENT_WRAP_CLASS + ' ' + 'tbody tr'));
         let eventRows: Element[] = [].slice.call(this.parent.element.querySelectorAll
             ('.' + cls.CONTENT_WRAP_CLASS + ' .' + cls.APPOINTMENT_CONTAINER_CLASS));
-        let eventElements: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
-        for (let i: number = 0; i < eventElements.length; i++) {
-            remove(eventElements[i]);
-        }
         for (let j: number = 0; j < clickedRes.Count; j++) {
             rowCollection.push(resRows[index + j + 1] as HTMLTableRowElement);
             workCellCollection.push(contentRows[index + j + 1] as HTMLTableRowElement);
@@ -236,14 +276,27 @@ export class ResourceBase {
                 }
             }
         }
-        let data: NotifyEventArgs = { cssProperties: this.parent.getCssProperties(), module: 'scroll' };
-        this.parent.notify(events.scrollUiUpdate, data);
-        args = {
-            cancel: false, event: e, groupIndex: index,
-            requestType: target.classList.contains(cls.RESOURCE_COLLAPSE_CLASS) ? 'resourceExpanded' : 'resourceCollapsed',
-        };
-        this.parent.notify(events.dataReady, {});
-        this.parent.trigger(events.actionComplete, args);
+    }
+
+    public updateVirtualContent(index: number, expand: boolean): void {
+        this.lastResourceLevel[index].resourceData[this.lastResourceLevel[index].resource.expandedField] = !expand;
+        this.setExpandedResources();
+        let resourceCount: number = this.parent.virtualScrollModule.getRenderedCount();
+        let startIndex: number = this.expandedResources.indexOf(this.renderedResources[0]);
+        this.renderedResources = this.expandedResources.slice(startIndex, startIndex + resourceCount);
+        if (this.renderedResources.length < resourceCount) {
+            let sIndex: number = this.expandedResources.length - resourceCount;
+            sIndex = (sIndex > 0) ? sIndex : 0;
+            this.renderedResources = this.expandedResources.slice(sIndex, this.expandedResources.length);
+        }
+        let virtualTrack: HTMLElement = this.parent.element.querySelector('.' + cls.VIRTUAL_TRACK_CLASS);
+        this.parent.virtualScrollModule.updateVirtualTrackHeight(virtualTrack);
+        let resTable: HTMLElement =
+            this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS + ' ' + 'table') as HTMLElement;
+        let contentTable: HTMLElement =
+            this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' ' + 'table') as HTMLElement;
+        let eventTable: HTMLElement = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS) as HTMLElement;
+        this.parent.virtualScrollModule.updateContent(resTable, contentTable, eventTable, this.renderedResources);
     }
 
     public renderResourceHeader(): void {
@@ -633,7 +686,7 @@ export class ResourceBase {
         return dateHeaderLevels;
     }
 
-    public setResourceValues(eventObj: { [key: string]: Object }, isCrud: boolean): void {
+    public setResourceValues(eventObj: { [key: string]: Object }, isCrud: boolean, groupIndex?: number): void {
         let setValues: Function = (index: number, field: string, value: Object) => {
             if (this.resourceCollection[index].allowMultiple && (!isCrud || isCrud && this.parent.activeViewOptions.group.allowGroupEdit)) {
                 eventObj[field] = [value];
@@ -641,8 +694,10 @@ export class ResourceBase {
                 eventObj[field] = value;
             }
         };
-        let groupIndex: number = this.parent.uiStateValues.isGroupAdaptive ? this.parent.uiStateValues.groupIndex :
-            this.parent.activeCellsData.groupIndex;
+        if (groupIndex === void 0) {
+            groupIndex = this.parent.uiStateValues.isGroupAdaptive ? this.parent.uiStateValues.groupIndex :
+                this.parent.activeCellsData.groupIndex;
+        }
         if (this.parent.activeViewOptions.group.resources.length > 0 && !isNullOrUndefined(groupIndex)) {
             let groupOrder: number[] | string[] = this.lastResourceLevel[groupIndex].groupOrder;
             for (let index: number = 0; index < this.resourceCollection.length; index++) {

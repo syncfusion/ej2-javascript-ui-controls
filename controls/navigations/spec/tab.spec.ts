@@ -8,7 +8,9 @@ import { Toolbar } from '../src/toolbar/toolbar';
 import '../node_modules/es6-promise/dist/es6-promise';
 
 describe('Tab Control', () => {
-    // DOM Element with Control Class testing
+    let commonCss: string = ".e-toolbar { display: block; white-space: nowrap; position: relative; } .e-separator { border-right:1px solid; height: 15px; margin: 7.5px 3px} .e-hor-nav { height: 30px; } .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator + .e-separator { display:none } .e-toolbar-items { display: inline-block; } .e-toolbar-items.e-hscroll { width:inherit; }  .e-toolbar .e-fix-width {width : 0px !important; } .e-toolbar .e-tbarpop  { position: fixed; } .e-toolbar-items .e-toolbar-item, .e-toolbar-left, .e-toolbar-center, .e-toolbar-right { display: inline-block; } .e-toolbar .e-hor-nav { float:right; width:30px; }  .e-toolbar .e-toolbar-pop { position: fixed;} .e-popup-open { display:block } .e-popup-close { display: none } button {font-family:Arial; font-size: 14px; padding: 1px 6px}";
+    let commonCss2: string = ".e-vertical.e-toolbar { display: block; } .e-vscroll { height: inherit; } .e-vscroll > * { height: inherit; } .e-toolbar-items { display: block; } .e-vertical .e-toolbar-item { display: block !important; } .e-vertical .e-scroll-nav { height: 0px }";
+
     describe('Root of tab element', () => {
         let tab: any;
         let ele: HTMLElement
@@ -37,6 +39,7 @@ describe('Tab Control', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
             expect(element.classList.contains('e-tab')).toEqual(true);
             expect(element.classList.contains('e-template')).toEqual(true);
+            expect(element.classList.contains('e-control')).toEqual(true);
         });
         it('Items - Toolbar child element testing', () => {
             tab = new Tab({
@@ -46,12 +49,45 @@ describe('Tab Control', () => {
              });
             tab.appendTo('#ej2Tab');
             let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
             expect(element.querySelector('.e-tab-header').classList.contains('e-toolbar')).toEqual(true);
             expect(element.querySelectorAll('.e-toolbar-item').length).toEqual(1);
             expect(element.querySelectorAll('.e-content .e-item').length).toEqual(1);
         });
-        it('Items -Without content data to item render testing', () => {
+        it('Items [Orientation left] - Toolbar child element testing', () => {
+            tab = new Tab({
+                headerPlacement: 'Left',
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+             });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.querySelector('.e-tab-header').classList.contains('e-toolbar')).toEqual(true);
+            expect(element.querySelector('.e-tab-header').classList.contains('e-vertical')).toEqual(true);
+            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.querySelector('.e-tab-header').classList.contains('e-vertical-left')).toEqual(true);
+        });
+        it('Items [Orientation right] - Toolbar child element testing', () => {
+            tab = new Tab({
+                headerPlacement: 'Right',
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+             });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.querySelector('.e-tab-header').classList.contains('e-toolbar')).toEqual(true);
+            expect(element.querySelector('.e-tab-header').classList.contains('e-vertical')).toEqual(true);
+            expect(element.querySelector('.e-tab-header').classList.contains('e-vertical-right')).toEqual(true);
+        });
+        it('Items - Without content data to item render testing', () => {
             tab = new Tab({
                 items: [
                     { header: { "text": "item1" } }
@@ -104,6 +140,30 @@ describe('Tab Control', () => {
             expect(element.querySelectorAll('.e-toolbar-item').length).toEqual(1);
             expect(element.querySelectorAll('.e-content .e-item').length).toEqual(1);
         });
+        it('Template [Orientation left] - Toolbar child element testing', () => {
+            ele.innerHTML = '<div class="e-tab-header"> <div> item1 </div> </div> <div class="e-content"> <div> Content1 </div> </div>';
+            tab = new Tab({ headerPlacement: 'Left' });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.querySelector('.e-tab-header').classList.contains('e-toolbar')).toEqual(true);
+            expect(element.querySelector('.e-tab-header').classList.contains('e-vertical')).toEqual(true);
+            expect(element.querySelector('.e-tab-header').classList.contains('e-vertical-left')).toEqual(true);
+            expect(element.querySelectorAll('.e-toolbar-item').length).toEqual(1);
+            expect(element.querySelectorAll('.e-content .e-item').length).toEqual(1);
+        });
+        it('Template [Orientation right] - Toolbar child element testing', () => {
+            ele.innerHTML = '<div class="e-tab-header"> <div> item1 </div> </div> <div class="e-content"> <div> Content1 </div> </div>';
+            tab = new Tab({ headerPlacement: 'Right' });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.querySelector('.e-tab-header').classList.contains('e-toolbar')).toEqual(true);
+            expect(element.querySelector('.e-tab-header').classList.contains('e-vertical')).toEqual(true);
+            expect(element.querySelector('.e-tab-header').classList.contains('e-vertical-right')).toEqual(true);
+            expect(element.querySelectorAll('.e-toolbar-item').length).toEqual(1);
+            expect(element.querySelectorAll('.e-content .e-item').length).toEqual(1);
+        });
         it('Template - Without content element', () => {
             ele.innerHTML = '<div class="e-tab-header"> </div>';
             tab = new Tab();
@@ -150,7 +210,7 @@ describe('Tab Control', () => {
         });
         it('Tab items collection - default model value testing', () => {
             tab = new Tab({
-                items: [{}]
+                items: [{header:{'text':'sample'}}]
             });
             tab.appendTo('#ej2Tab');
             expect(tab.items[0].header instanceof Object).toEqual(true);
@@ -160,17 +220,29 @@ describe('Tab Control', () => {
         });
         it('TabItemHeader object - default model value testing', () => {
             tab = new Tab({ 
-                items: [{}]
+                items: [{header:{'iconCss':'sampleIcon'}}]
              });
             tab.appendTo('#ej2Tab');
             expect(tab.items[0].header.text).toEqual('');
-            expect(tab.items[0].header.iconCss).toEqual('');
+            expect(tab.items[0].header.iconCss).toEqual('sampleIcon');
             expect(tab.items[0].header.iconPosition).toEqual('left');
+        });
+        it('TabItemHeader object - default model value testing' , () => {
+            tab = new Tab({
+                items: [{header:{text:'sample'}}]
+            });
+            tab.appendTo('#ej2Tab');
+            expect(tab.items[0].header.text).toEqual('sample');
+            expect(tab.items[0].header.iconCss).toEqual('');
         });
     });
     describe('Dynamic model value testing', () => {
         let tab: Tab;
         beforeEach((): void => {
+            let styleTag: any = document.createElement('style');
+            let styles: string = '.e-toolbar-items { height: 100%; } .e-toolbar-item { display: inline-flex; width: auto; }';
+            styleTag.innerHTML = styles;
+            document.body.appendChild(styleTag);
             tab = undefined;
             let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
             document.body.appendChild(ele);
@@ -672,6 +744,10 @@ describe('Tab Control', () => {
     describe('overflowMode property testing', () => {
         let tab: Tab;
         beforeEach((): void => {
+            let styleTag: any = document.createElement('style');
+            let styles: string = '.e-toolbar-items { height: 100%; } .e-toolbar-item { display: inline-flex; width: auto; }';
+            styleTag.innerHTML = styles;
+            document.body.appendChild(styleTag);
             tab = undefined;
             let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
             document.body.appendChild(ele);
@@ -822,6 +898,18 @@ describe('Tab Control', () => {
                 heightAdjustMode: 'Auto',
                 items: [
                     { header: { "text": "item1" }, content: test },
+                    { header: { "text": "item2" }, content: "Content2" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let ele: HTMLElement = document.getElementById('ej2Tab');
+            expect(tab.heightAdjustMode).toEqual('Auto');
+        });
+        it('Items - Template engine to content passing', () => {
+            tab = new Tab({
+                heightAdjustMode: 'Auto',
+                items: [
+                    { header: { "text": "item1" }, content: "#test" },
                     { header: { "text": "item2" }, content: "Content2" }
                 ]
             });
@@ -1280,6 +1368,38 @@ describe('Tab Control', () => {
             expect(element.children.item(1).classList.contains('e-tab-header')).toEqual(true);
             expect(tab.headerPlacement).toEqual('Bottom');
         });
+        it('Items - headerPlacement property as left', () => {
+            tab = new Tab({
+                headerPlacement: 'Left',
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" }
+                ]
+             });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical-left')).toEqual(true);
+            expect(tab.headerPlacement).toEqual('Left');
+        });
+        it('Items - headerPlacement property as right', () => {
+            tab = new Tab({
+                headerPlacement: 'Right',
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" }
+                ]
+             });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical-right')).toEqual(true);
+            expect(tab.headerPlacement).toEqual('Right');
+        });
         it('Items - headerPlacement property with onPropertyChanged testing', () => {
             tab = new Tab({
                 headerPlacement: 'Top',
@@ -1291,17 +1411,134 @@ describe('Tab Control', () => {
             tab.appendTo('#ej2Tab');
             let element: HTMLElement = document.getElementById('ej2Tab');
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
             expect(tab.headerPlacement).toEqual('Top');
             tab.headerPlacement = 'Bottom';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Bottom');
+            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(false);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(1).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(1).classList.contains('e-vertical')).toEqual(false);
+            expect(element.children.item(1).classList.contains('e-vertical-right')).toEqual(false);
             tab.headerPlacement = 'Top';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Top');
+            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(false);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical')).toEqual(false);
+            expect(element.children.item(0).classList.contains('e-vertical-right')).toEqual(false);
+            tab.headerPlacement = 'Left';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Left');
+            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(true);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical-left')).toEqual(true);
+            tab.headerPlacement = 'Top';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Top');
+            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(false);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical')).toEqual(false);
+            expect(element.children.item(0).classList.contains('e-vertical-right')).toEqual(false);
+            tab.headerPlacement = 'Right';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Right');
+            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(true);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical-right')).toEqual(true);
+            tab.headerPlacement = 'Top';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Top');
+            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(false);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical')).toEqual(false);
+            expect(element.children.item(0).classList.contains('e-vertical-right')).toEqual(false);
+            tab.headerPlacement = 'Bottom';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Bottom');
+            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(false);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(1).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(1).classList.contains('e-vertical')).toEqual(false);
+            expect(element.children.item(1).classList.contains('e-vertical-right')).toEqual(false);
+            tab.headerPlacement = 'Left';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Left');
+            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(true);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical-left')).toEqual(true);
+            tab.headerPlacement = 'Bottom';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Bottom');
+            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(false);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(1).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(1).classList.contains('e-vertical')).toEqual(false);
+            expect(element.children.item(1).classList.contains('e-vertical-right')).toEqual(false);
+            tab.headerPlacement = 'Right';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Right');
+            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(true);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical-right')).toEqual(true);
+            tab.headerPlacement = 'Bottom';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Bottom');
+            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(false);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(1).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(1).classList.contains('e-vertical')).toEqual(false);
+            expect(element.children.item(1).classList.contains('e-vertical-right')).toEqual(false);
+            tab.headerPlacement = 'Left';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Left');
+            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(true);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical-left')).toEqual(true);
+            tab.headerPlacement = 'Right';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Right');
+            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(true);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical-right')).toEqual(true);
+            tab.headerPlacement = 'Left';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Left');
+            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(true);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical-left')).toEqual(true);
         });
         it('Items - headerPlacement onPropertyChanged with model value testing', () => {
             tab = new Tab({
@@ -1375,13 +1612,134 @@ describe('Tab Control', () => {
             tab = new Tab();
             tab.appendTo('#ej2Tab');
             let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
             expect(tab.headerPlacement).toEqual('Top');
             tab.headerPlacement = 'Bottom';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Bottom');
+            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(false);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(1).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(1).classList.contains('e-vertical')).toEqual(false);
+            expect(element.children.item(1).classList.contains('e-vertical-right')).toEqual(false);
+            tab.headerPlacement = 'Top';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Top');
+            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(false);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical')).toEqual(false);
+            expect(element.children.item(0).classList.contains('e-vertical-right')).toEqual(false);
+            tab.headerPlacement = 'Left';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Left');
+            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(true);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical-left')).toEqual(true);
+            tab.headerPlacement = 'Top';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Top');
+            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(false);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical')).toEqual(false);
+            expect(element.children.item(0).classList.contains('e-vertical-right')).toEqual(false);
+            tab.headerPlacement = 'Right';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Right');
+            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(true);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical-right')).toEqual(true);
+            tab.headerPlacement = 'Top';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Top');
+            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(false);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical')).toEqual(false);
+            expect(element.children.item(0).classList.contains('e-vertical-right')).toEqual(false);
+            tab.headerPlacement = 'Bottom';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Bottom');
+            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(false);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(1).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(1).classList.contains('e-vertical')).toEqual(false);
+            expect(element.children.item(1).classList.contains('e-vertical-right')).toEqual(false);
+            tab.headerPlacement = 'Left';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Left');
+            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(true);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical-left')).toEqual(true);
+            tab.headerPlacement = 'Bottom';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Bottom');
+            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(false);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(1).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(1).classList.contains('e-vertical')).toEqual(false);
+            expect(element.children.item(1).classList.contains('e-vertical-right')).toEqual(false);
+            tab.headerPlacement = 'Right';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Right');
+            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(true);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical-right')).toEqual(true);
+            tab.headerPlacement = 'Bottom';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Bottom');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(false);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(1).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(1).classList.contains('e-vertical')).toEqual(false);
+            expect(element.children.item(1).classList.contains('e-vertical-right')).toEqual(false);
+            tab.headerPlacement = 'Left';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Left');
+            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(true);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical-left')).toEqual(true);
+            tab.headerPlacement = 'Right';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Right');
+            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(true);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical-right')).toEqual(true);
+            tab.headerPlacement = 'Left';
+            tab.dataBind();
+            expect(tab.headerPlacement).toEqual('Left');
+            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(true);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical-left')).toEqual(true);
         });
         it('Template - onPropertyChanged with headerPlacement model value testing', () => {
             let ele: HTMLElement = document.getElementById('ej2Tab');
@@ -3881,6 +4239,8 @@ describe('Tab Control', () => {
             expect(element.children.length).toEqual(2);
             tab.destroy();
             expect(element.children.length).toEqual(0);
+            expect(element.classList.contains('e-rtl')).toBe(false);
+            expect(element.classList.contains('e-focused')).toBe(false);
         });
         it('Template - Without header element tab destroy', () => {
             let ele: HTMLElement = document.getElementById('ej2Tab');
@@ -4141,7 +4501,7 @@ describe('Tab Control', () => {
         let toolbar: DomElements;
         let toolbarObj: any;
         beforeAll((): void => {
-            let css: string = ".e-toolbar-item { display: table-cell !important } .e-scroll-left-nav { height: 20px;} .e-scroll-right-nav {height: 20px; } button { font-family:Arial; font-size: 14px; padding: 1px 6px; } .e-toolbar-items.e-hscroll { width:inherit; }  .e-toolbar .e-fix-width {width : 0px !important; } .e-toolbar-items .e-toolbar-item, .e-toolbar-left, .e-toolbar-center, .e-toolbar-right { display: inline-block; } .e-toolbar .e-hor-nav { float:right; width:30px; height: 38px; display: block }";
+            let css: string = ".e-toolbar-items { height: 100%; } .e-toolbar-item { display: table-cell !important; width: auto; } .e-scroll-left-nav { height: 20px;} .e-scroll-right-nav {height: 20px; } button { font-family:Arial; font-size: 14px; padding: 1px 6px; } .e-toolbar-items.e-hscroll { width:inherit; }  .e-toolbar .e-fix-width {width : 0px !important; } .e-toolbar-items .e-toolbar-item, .e-toolbar-left, .e-toolbar-center, .e-toolbar-right { display: inline-block; } .e-toolbar .e-hor-nav { float:right; width:30px; height: 38px; display: block }" + commonCss2;
             let style: HTMLStyleElement = document.createElement('style'); 
             style.type = 'text/css';
             style.id = 'scroll';
@@ -4187,9 +4547,34 @@ describe('Tab Control', () => {
             expect(element.querySelectorAll('.e-hscroll-content').length).toEqual(1);
             expect(element.querySelectorAll('.e-hscroll-content .e-toolbar-item').length).toEqual(6);
         });
+        it('Vertical - Items - Required scrollable class testing', () => {
+            tab = new Tab({
+                height: '70px',
+                heightAdjustMode: 'None',
+                headerPlacement: 'Left',
+                overflowMode: 'Scrollable',
+                items: [
+                    { header: { "text": "header-item1" }, content: "Content1" },
+                    { header: { "text": "header-item2" }, content: "Content2" },
+                    { header: { "text": "header-item3" }, content: "Content3" },
+                    { header: { "text": "header-item4" }, content: "Content4" },
+                    { header: { "text": "header-item5" }, content: "Content5" },
+                    { header: { "text": "header-item6" }, content: "Content6" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelector('.e-toolbar-items').classList.contains('e-vscroll')).toEqual(true);
+            expect(element.querySelectorAll('.e-scroll-nav').length).toEqual(2);
+            expect(element.querySelectorAll('.e-scroll-up-nav').length).toEqual(1);
+            expect(element.querySelectorAll('.e-scroll-down-nav').length).toEqual(1);
+            expect(element.querySelectorAll('.e-vscroll-bar').length).toEqual(1);
+            expect(element.querySelectorAll('.e-vscroll-content').length).toEqual(1);
+            expect(element.querySelectorAll('.e-vscroll-content .e-toolbar-item').length).toEqual(6);
+        });
         it('Items - Switching to popup mode with no toolbar items testing', () => {
             tab = new Tab({
-                width: '50px',
+                width: '120px',
                 overflowMode: 'Scrollable',
                 items: [
                     { header: { "text": "header-item1" }, content: "Content1" },
@@ -4229,9 +4614,80 @@ describe('Tab Control', () => {
             leftScrollArrow.click();
             expect(element.querySelector('#e-item_0').getBoundingClientRect().left > 0).toEqual(true);
         });
+        it('Vertical - Items - Perform scroll by click event', () => {
+            tab = new Tab({
+                height: '70px',
+                heightAdjustMode: 'None',
+                headerPlacement: 'Left',
+                overflowMode: 'Scrollable',
+                items: [
+                    { header: { "text": "header-item1" }, content: "Content1" },
+                    { header: { "text": "header-item2" }, content: "Content2" },
+                    { header: { "text": "header-item3" }, content: "Content3" },
+                    { header: { "text": "header-item4" }, content: "Content4" },
+                    { header: { "text": "header-item5" }, content: "Content5" },
+                    { header: { "text": "header-item6" }, content: "Content6" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let upScrollArrow: HTMLElement = <HTMLElement> document.querySelector('.e-scroll-up-nav');
+            let downScrollArrow: HTMLElement = <HTMLElement> document.querySelector('.e-scroll-down-nav');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelector('#e-item_0').getBoundingClientRect().top > 20).toEqual(true);
+            downScrollArrow.click();
+            expect(element.querySelector('#e-item_0').getBoundingClientRect().top < 20).toEqual(true);
+            upScrollArrow.click();
+            expect(element.querySelector('#e-item_0').getBoundingClientRect().top > 20).toEqual(true);
+        });
         it('Space key testing', () => {
             tab = new Tab({
                 width: '200px',
+                overflowMode: 'Scrollable',
+                items: [
+                    { header: { "text": "header-item1" }, content: "Content1" },
+                    { header: { "text": "header-item2" }, content: "Content2" },
+                    { header: { "text": "header-item3" }, content: "Content3" },
+                    { header: { "text": "header-item4" }, content: "Content4" },
+                    { header: { "text": "header-item5" }, content: "Content5" },
+                    { header: { "text": "header-item6" }, content: "Content6" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: element,
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle1: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'end',
+                target: actEle1,
+            };
+            toolbarObj.keyActionHandler(keyEventArgs);
+            let actEle2: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle2, '.e-toolbar-item').id).toEqual('e-item_5');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'space',
+                target: actEle2,
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle3: HTMLElement = <HTMLElement> document.activeElement;
+            expect(tab.selectedItem).toEqual(5);
+            expect(element.querySelector('#e-item_5').classList.contains('e-active')).toEqual(true);
+            expect(closest(actEle3, '.e-toolbar-item').classList.contains('e-active')).toEqual(true);
+        });
+        it('Vertical - Space key testing', () => {
+            tab = new Tab({
+                height: '70px',
+                heightAdjustMode: 'None',
+                headerPlacement: 'Left',
                 overflowMode: 'Scrollable',
                 items: [
                     { header: { "text": "header-item1" }, content: "Content1" },
@@ -4296,6 +4752,31 @@ describe('Tab Control', () => {
             expect(element.querySelectorAll('.e-hscroll-content').length).toEqual(1);
             expect(element.querySelectorAll('.e-hscroll-content .e-toolbar-item').length).toEqual(6);
         });
+        it('Vertical - Template - Required scrollable class testing', () => {
+            let ele: HTMLElement = document.getElementById('ej2Tab');
+            ele.innerHTML = '<div class="e-tab-header"> <div> header-item1 </div> <div> header-item2 </div>'
+            +' <div> header-item3 </div> <div> header-item4 </div> <div> header-item5 </div>'
+            + '<div> header-item6 </div> </div> <div class="e-content"> <div> <div> <h1>Content1</h1>'
+            + '<p> text</p> </div> </div> <div> <div> <h1>Content2</h1> <p> text</p> </div> </div> <div> <div>'
+            + '<h1>Content3</h1> <p> text</p> </div> </div> <div> <div> <h1>Content4</h1> <p> text</p> </div>'
+            + '</div> <div> <div> <h1>Content5</h1> <p> text</p> </div> </div> <div> <div> <h1>Content6</h1>'
+            + '<p> text</p> </div> </div> </div>';
+            tab = new Tab({
+                height: '70px',
+                heightAdjustMode: 'None',
+                headerPlacement: 'Left',
+                overflowMode: 'Scrollable'
+            });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelector('.e-toolbar-items').classList.contains('e-vscroll')).toEqual(true);
+            expect(element.querySelectorAll('.e-scroll-nav').length).toEqual(2);
+            expect(element.querySelectorAll('.e-scroll-up-nav').length).toEqual(1);
+            expect(element.querySelectorAll('.e-scroll-down-nav').length).toEqual(1);
+            expect(element.querySelectorAll('.e-vscroll-bar').length).toEqual(1);
+            expect(element.querySelectorAll('.e-vscroll-content').length).toEqual(1);
+            expect(element.querySelectorAll('.e-vscroll-content .e-toolbar-item').length).toEqual(6);
+        });
         it('Template - Switching to popup mode with no toolbar items testing', () => {
             let ele: HTMLElement = document.getElementById('ej2Tab');
             ele.innerHTML = '<div class="e-tab-header"> <div> header-item1 </div> <div> header-item2 </div>'
@@ -4306,7 +4787,7 @@ describe('Tab Control', () => {
             + '</div> <div> <div> <h1>Content5</h1> <p> text</p> </div> </div> <div> <div> <h1>Content6</h1>'
             + '<p> text</p> </div> </div> </div>';
             tab = new Tab({
-                width: '50px',
+                width: '120px',
                 overflowMode: 'Scrollable',
             });
             tab.appendTo('#ej2Tab');
@@ -4337,11 +4818,36 @@ describe('Tab Control', () => {
             leftScrollArrow.click();
             expect(element.querySelector('#e-item_0').getBoundingClientRect().left > 0).toEqual(true);
         });
+        it('Vertical - Template - Perform scroll by click event', () => {
+            let ele: HTMLElement = document.getElementById('ej2Tab');
+            ele.innerHTML = '<div class="e-tab-header"> <div> header-item1 </div> <div> header-item2 </div>'
+            +' <div> header-item3 </div> <div> header-item4 </div> <div> header-item5 </div>'
+            + '<div> header-item6 </div> </div> <div class="e-content"> <div> <div> <h1>Content1</h1>'
+            + '<p> text</p> </div> </div> <div> <div> <h1>Content2</h1> <p> text</p> </div> </div> <div> <div>'
+            + '<h1>Content3</h1> <p> text</p> </div> </div> <div> <div> <h1>Content4</h1> <p> text</p> </div>'
+            + '</div> <div> <div> <h1>Content5</h1> <p> text</p> </div> </div> <div> <div> <h1>Content6</h1>'
+            + '<p> text</p> </div> </div> </div>';
+            tab = new Tab({
+                height: '70px',
+                heightAdjustMode: 'None',
+                headerPlacement: 'Left',
+                overflowMode: 'Scrollable',
+            });
+            tab.appendTo('#ej2Tab');
+            let upScrollArrow: HTMLElement = <HTMLElement> document.querySelector('.e-scroll-up-nav');
+            let downScrollArrow: HTMLElement = <HTMLElement> document.querySelector('.e-scroll-down-nav');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelector('#e-item_0').getBoundingClientRect().top > 20).toEqual(true);
+            downScrollArrow.click();
+            expect(element.querySelector('#e-item_0').getBoundingClientRect().top < 20).toEqual(true);
+            upScrollArrow.click();
+            expect(element.querySelector('#e-item_0').getBoundingClientRect().top > 20).toEqual(true);
+        });
     });
     describe('Popup [Items] - Mobile adaptive mode - class and element testing', () => {
         let tab: Tab;
         beforeAll((): void => {
-            let css: string = ".e-toolbar { display: block; white-space: nowrap; position: relative; } .e-separator { border-right:1px solid; height: 15px; margin: 7.5px 3px} .e-hor-nav { height: 30px; } .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator + .e-separator { display:none } .e-toolbar-items { display: inline-block; } .e-toolbar-items.e-hscroll { width:inherit; }  .e-toolbar .e-fix-width {width : 0px !important; } .e-toolbar .e-tbarpop  { position: fixed; } .e-toolbar-items .e-toolbar-item, .e-toolbar-left, .e-toolbar-center, .e-toolbar-right { display: inline-block; } .e-toolbar .e-hor-nav { float:right; width:30px; }  .e-toolbar .e-toolbar-pop { position: fixed;} .e-popup-open { display:block } .e-popup-close { display: none } button {font-family:Arial; font-size: 14px; padding: 1px 6px} ";
+            let css: string = commonCss;
             let style: HTMLStyleElement = document.createElement('style'); 
             style.type = 'text/css';
             style.id = 'scroll';
@@ -4408,10 +4914,82 @@ describe('Tab Control', () => {
             expect(element.querySelector('.e-toolbar-pop').classList.contains('e-popup-close')).toEqual(true);
         });
     });
+    describe('Vertical - Popup [Items] - Mobile adaptive mode - class and element testing', () => {
+        let tab: Tab;
+        beforeAll((): void => {
+            let css: string = commonCss2;
+            let style: HTMLStyleElement = document.createElement('style'); 
+            style.type = 'text/css';
+            style.id = 'scroll';
+            style.appendChild(document.createTextNode(css));
+            document.getElementsByTagName('head')[0].appendChild(style);
+        });
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+            tab = new Tab({
+                height: '70px',
+                heightAdjustMode: 'None',
+                headerPlacement: 'Left',
+                overflowMode: 'Popup',
+                items: [
+                    { header: { "text": "header-item1" }, content: "Content1" },
+                    { header: { "text": "header-item2" }, content: "Content2" },
+                    { header: { "text": "header-item3" }, content: "Content3" },
+                    { header: { "text": "header-item4" }, content: "Content4" },
+                    { header: { "text": "header-item5" }, content: "Content5" },
+                    { header: { "text": "header-item6" }, content: "Content6" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        afterAll((): void => {
+            document.getElementById('scroll').remove();
+        });
+        it('Header element popup class testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelector('.e-tab-header').classList.contains('e-toolpop')).toEqual(true);
+        });
+        it('Popup container element availability checking', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelectorAll('.e-toolbar-pop').length).toEqual(1);
+        });
+        it('Popup container class checking', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelector('.e-toolbar-pop').classList.contains('e-control')).toEqual(true);
+            expect(element.querySelector('.e-toolbar-pop').classList.contains('e-popup')).toEqual(true);
+        });
+        it('Popup container holds toolbar item checking', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelectorAll('.e-toolbar-pop .e-toolbar-item').length > 0).toEqual(true);
+        });
+        it('Popup class testing in toolbar item inside the popup', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelectorAll('.e-toolbar-pop .e-toolbar-item').item(0).classList.contains('e-toolbar-popup')).toEqual(true);
+            expect(element.querySelectorAll('.e-toolbar-pop .e-toolbar-item').item(1).classList.contains('e-toolbar-popup')).toEqual(true);
+        });
+        it('Popup button availability checking', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelectorAll('.e-tab-header .e-_nav').length > 0).toEqual(true);
+            expect(element.querySelectorAll('.e-tab-header .e-hor-nav').length > 0).toEqual(true);
+            expect(element.querySelectorAll('.e-tab-header .e-hor-nav .e-icons').length > 0).toEqual(true);
+        });
+        it('Popup default icon class testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelector('.e-toolbar-pop').classList.contains('e-popup-close')).toEqual(true);
+        });
+    });
     describe('Popup [Template] - Mobile adaptive mode - class and element testing', () => {
         let tab: Tab;
         beforeAll((): void => {
-            let css: string = ".e-toolbar { display: block; white-space: nowrap; position: relative; } .e-separator { border-right:1px solid; height: 15px; margin: 7.5px 3px} .e-hor-nav { height: 30px; } .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator + .e-separator { display:none } .e-toolbar-items { display: inline-block; } .e-toolbar-items.e-hscroll { width:inherit; }  .e-toolbar .e-fix-width {width : 0px !important; } .e-toolbar .e-tbarpop  { position: fixed; } .e-toolbar-items .e-toolbar-item, .e-toolbar-left, .e-toolbar-center, .e-toolbar-right { display: inline-block; } .e-toolbar .e-hor-nav { float:right; width:30px; }  .e-toolbar .e-toolbar-pop { position: fixed;} .e-popup-open { display:block } .e-popup-close { display: none } button {font-family:Arial; font-size: 14px; padding: 1px 6px} ";
+            let css: string = commonCss;
             let style: HTMLStyleElement = document.createElement('style'); 
             style.type = 'text/css';
             style.id = 'scroll';
@@ -4477,10 +5055,81 @@ describe('Tab Control', () => {
             expect(element.querySelector('.e-toolbar-pop').classList.contains('e-popup-close')).toEqual(true);
         });
     });
+    describe('Vertical - Popup [Template] - Mobile adaptive mode - class and element testing', () => {
+        let tab: Tab;
+        beforeAll((): void => {
+            let css: string = commonCss2;
+            let style: HTMLStyleElement = document.createElement('style'); 
+            style.type = 'text/css';
+            style.id = 'scroll';
+            style.appendChild(document.createTextNode(css));
+            document.getElementsByTagName('head')[0].appendChild(style);
+        });
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            ele.innerHTML = '<div class="e-tab-header"> <div> header-item0 </div> <div> header-item1 </div>'
+            +' <div> header-item2 </div> <div> header-item3 </div> <div> header-item4 </div>'
+            + '<div> header-item5 </div> </div> <div class="e-content"> <div> <div> <h1>Content1</h1>'
+            + '<p> text</p> </div> </div> <div> <div> <h1>Content2</h1> <p> text</p> </div> </div> <div> <div>'
+            + '<h1>Content3</h1> <p> text</p> </div> </div> <div> <div> <h1>Content4</h1> <p> text</p> </div>'
+            + '</div> <div> <div> <h1>Content5</h1> <p> text</p> </div> </div> <div> <div> <h1>Content6</h1>'
+            + '<p> text</p> </div> </div> </div>';
+            document.body.appendChild(ele);
+            tab = new Tab({
+                height: '70px',
+                heightAdjustMode: 'None',
+                headerPlacement: 'Right',
+                overflowMode: 'Popup'
+            });
+            tab.appendTo('#ej2Tab');
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        afterAll((): void => {
+            document.getElementById('scroll').remove();
+        });
+        it('Header element popup class testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelector('.e-tab-header').classList.contains('e-toolpop')).toEqual(true);
+        });
+        it('Popup container element availability checking', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelectorAll('.e-toolbar-pop').length).toEqual(1);
+        });
+        it('Popup container class checking', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelector('.e-toolbar-pop').classList.contains('e-control')).toEqual(true);
+            expect(element.querySelector('.e-toolbar-pop').classList.contains('e-popup')).toEqual(true);
+        });
+        it('Popup container holds toolbar item checking', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelectorAll('.e-toolbar-pop .e-toolbar-item').length > 0).toEqual(true);
+        });
+        it('Popup class testing in toolbar item inside the popup', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelectorAll('.e-toolbar-pop .e-toolbar-item').item(0).classList.contains('e-toolbar-popup')).toEqual(true);
+            expect(element.querySelectorAll('.e-toolbar-pop .e-toolbar-item').item(1).classList.contains('e-toolbar-popup')).toEqual(true);
+        });
+        it('Popup button availability checking', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelectorAll('.e-tab-header .e-_nav').length > 0).toEqual(true);
+            expect(element.querySelectorAll('.e-tab-header .e-hor-nav').length > 0).toEqual(true);
+            expect(element.querySelectorAll('.e-tab-header .e-hor-nav .e-icons').length > 0).toEqual(true);
+        });
+        it('Popup default icon class testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelector('.e-toolbar-pop').classList.contains('e-popup-close')).toEqual(true);
+        });
+    });
     describe('Items [Popup] - Mobile adaptive mode [Handling]', () => {
         let tab: Tab;
         beforeEach((done: Function): void => {
-            let css: string = ".e-toolbar { display: block; white-space: nowrap; position: relative; } .e-separator { border-right:1px solid; height: 15px; margin: 7.5px 3px} .e-hor-nav { height: 30px; } .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator + .e-separator { display:none } .e-toolbar-items { display: inline-block; } .e-toolbar-items.e-hscroll { width:inherit; }  .e-toolbar .e-fix-width {width : 0px !important; } .e-toolbar .e-tbarpop  { position: fixed; } .e-toolbar-items .e-toolbar-item, .e-toolbar-left, .e-toolbar-center, .e-toolbar-right { display: inline-block; } .e-toolbar .e-hor-nav { float:right; width:30px; }  .e-toolbar .e-toolbar-pop { position: fixed;} .e-popup-open { display:block } .e-popup-close { display: none } button {font-family:Arial; font-size: 14px; padding: 1px 6px} ";
+            let css: string = commonCss;
             let style: HTMLStyleElement = document.createElement('style'); 
             style.type = 'text/css';
             style.id = 'scroll';
@@ -4539,7 +5188,7 @@ describe('Tab Control', () => {
         it('OverflowMode switching', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
             tab.overflowMode = "Scrollable";
-            tab.width = 100;
+            tab.width = 150;
             tab.dataBind();
             expect(element.querySelectorAll('.e-hscroll-bar').length).toEqual(1);
             tab.overflowMode = "Popup";
@@ -4567,7 +5216,7 @@ describe('Tab Control', () => {
     describe('Template [Popup] - Mobile adaptive mode [Handling]', () => {
         let tab: Tab;
         beforeEach((done: Function): void => {
-            let css: string = ".e-toolbar { display: block; white-space: nowrap; position: relative; } .e-separator { border-right:1px solid; height: 15px; margin: 7.5px 3px} .e-hor-nav { height: 30px; } .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator + .e-separator { display:none } .e-toolbar-items { display: inline-block; } .e-toolbar-items.e-hscroll { width:inherit; }  .e-toolbar .e-fix-width {width : 0px !important; } .e-toolbar .e-tbarpop  { position: fixed; } .e-toolbar-items .e-toolbar-item, .e-toolbar-left, .e-toolbar-center, .e-toolbar-right { display: inline-block; } .e-toolbar .e-hor-nav { float:right; width:30px; }  .e-toolbar .e-toolbar-pop { position: fixed;} .e-popup-open { display:block } .e-popup-close { display: none } button {font-family:Arial; font-size: 14px; padding: 1px 6px} ";
+            let css: string = commonCss;
             let style: HTMLStyleElement = document.createElement('style'); 
             style.type = 'text/css';
             style.id = 'scroll';
@@ -4623,7 +5272,7 @@ describe('Tab Control', () => {
     describe('Animation combination testing', () => {
         let tab: Tab;
         beforeEach((done: Function): void => {
-            let css: string = ".e-toolbar { display: block; white-space: nowrap; position: relative; } .e-separator { border-right:1px solid; height: 15px; margin: 7.5px 3px} .e-hor-nav { height: 30px; } .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator + .e-separator { display:none } .e-toolbar-items { display: inline-block; } .e-toolbar-items.e-hscroll { width:inherit; }  .e-toolbar .e-fix-width {width : 0px !important; } .e-toolbar .e-tbarpop  { position: fixed; } .e-toolbar-items .e-toolbar-item, .e-toolbar-left, .e-toolbar-center, .e-toolbar-right { display: inline-block; } .e-toolbar .e-hor-nav { float:right; width:30px; }  .e-toolbar .e-toolbar-pop { position: fixed;} .e-popup-open { display:block } .e-popup-close { display: none } button {font-family:Arial; font-size: 14px; padding: 1px 6px} ";
+            let css: string = commonCss;
             let style: HTMLStyleElement = document.createElement('style'); 
             style.type = 'text/css';
             style.id = 'scroll';
@@ -4699,7 +5348,7 @@ describe('Tab Control', () => {
     describe('Items - Animations related testing', () => {
         let tab: Tab;
         beforeEach((done: Function): void => {
-            let css: string = ".e-toolbar { display: block; white-space: nowrap; position: relative; } .e-separator { border-right:1px solid; height: 15px; margin: 7.5px 3px} .e-hor-nav { height: 30px; } .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator + .e-separator { display:none } .e-toolbar-items { display: inline-block; } .e-toolbar-items.e-hscroll { width:inherit; }  .e-toolbar .e-fix-width {width : 0px !important; } .e-toolbar .e-tbarpop  { position: fixed; } .e-toolbar-items .e-toolbar-item, .e-toolbar-left, .e-toolbar-center, .e-toolbar-right { display: inline-block; } .e-toolbar .e-hor-nav { float:right; width:30px; }  .e-toolbar .e-toolbar-pop { position: fixed;} .e-popup-open { display:block } .e-popup-close { display: none } button {font-family:Arial; font-size: 14px; padding: 1px 6px} ";
+            let css: string = commonCss;
             let style: HTMLStyleElement = document.createElement('style'); 
             style.type = 'text/css';
             style.id = 'scroll';
@@ -4828,7 +5477,7 @@ describe('Tab Control', () => {
     describe('Template - Animations related testing', () => {
         let tab: Tab;
         beforeEach((done: Function): void => {
-            let css: string = ".e-toolbar { display: block; white-space: nowrap; position: relative; } .e-separator { border-right:1px solid; height: 15px; margin: 7.5px 3px} .e-hor-nav { height: 30px; } .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator + .e-separator { display:none } .e-toolbar-items { display: inline-block; } .e-toolbar-items.e-hscroll { width:inherit; }  .e-toolbar .e-fix-width {width : 0px !important; } .e-toolbar .e-tbarpop  { position: fixed; } .e-toolbar-items .e-toolbar-item, .e-toolbar-left, .e-toolbar-center, .e-toolbar-right { display: inline-block; } .e-toolbar .e-hor-nav { float:right; width:30px; }  .e-toolbar .e-toolbar-pop { position: fixed;} .e-popup-open { display:block } .e-popup-close { display: none } button {font-family:Arial; font-size: 14px; padding: 1px 6px} ";
+            let css: string = commonCss;
             let style: HTMLStyleElement = document.createElement('style'); 
             style.type = 'text/css';
             style.id = 'scroll';
@@ -4956,7 +5605,7 @@ describe('Tab Control', () => {
         let toolbar: DomElements;
         let toolbarObj: any;
         beforeEach((): void => {
-            let css: string = ".e-toolbar { display: block; white-space: nowrap; position: relative; } .e-separator { border-right:1px solid; height: 15px; margin: 7.5px 3px} .e-hor-nav { height: 30px; } .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator + .e-separator { display:none } .e-toolbar-items { display: inline-block; } .e-toolbar-items.e-hscroll { width:inherit; }  .e-toolbar .e-fix-width {width : 0px !important; } .e-toolbar .e-tbarpop  { position: fixed; } .e-toolbar-items .e-toolbar-item, .e-toolbar-left, .e-toolbar-center, .e-toolbar-right { display: inline-block; } .e-toolbar .e-hor-nav { float:right; width:30px; }  .e-toolbar .e-toolbar-pop { position: fixed;} .e-popup-open { display:block } .e-popup-close { display: none } button {font-family:Arial; font-size: 14px; padding: 1px 6px} ";
+            let css: string = commonCss;
             let style: HTMLStyleElement = document.createElement('style'); 
             style.type = 'text/css';
             style.id = 'scroll';
@@ -5027,6 +5676,45 @@ describe('Tab Control', () => {
             let actEle3: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle3, '.e-toolbar-item').id).toEqual('e-item_0');
         });
+        it('Vertical tab - end and home key with item visibility testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: element,
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle1: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'end',
+                target: actEle1,
+            };
+            toolbarObj.keyActionHandler(keyEventArgs);
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'end',
+                target: actEle1,
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle2: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle2, '.e-toolbar-item').id).toEqual('e-item_5');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'home',
+                target: actEle2,
+            };
+            toolbarObj.keyActionHandler(keyEventArgs);
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'home',
+                target: actEle2,
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle3: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle3, '.e-toolbar-item').id).toEqual('e-item_0');
+        });
     });
     describe('Items - Keyboard navigation testing', () => {
         let tab: any;
@@ -5034,7 +5722,7 @@ describe('Tab Control', () => {
         let toolbar: DomElements;
         let toolbarObj: any;
         beforeEach((done: Function): void => {
-            let css: string = ".e-toolbar { display: block; white-space: nowrap; position: relative; } .e-separator { border-right:1px solid; height: 15px; margin: 7.5px 3px} .e-hor-nav { height: 30px; } .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator + .e-separator { display:none } .e-toolbar-items { display: inline-block; } .e-toolbar-items.e-hscroll { width:inherit; }  .e-toolbar .e-fix-width {width : 0px !important; } .e-toolbar .e-tbarpop  { position: fixed; } .e-toolbar-items .e-toolbar-item, .e-toolbar-left, .e-toolbar-center, .e-toolbar-right { display: inline-block; } .e-toolbar .e-hor-nav { float:right; width:30px; }  .e-toolbar .e-toolbar-pop { position: fixed;} .e-popup-open { display:block } .e-popup-close { display: none } button {font-family:Arial; font-size: 14px; padding: 1px 6px} ";
+            let css: string = commonCss;
             let style: HTMLStyleElement = document.createElement('style'); 
             style.type = 'text/css';
             style.id = 'scroll';
@@ -5070,7 +5758,7 @@ describe('Tab Control', () => {
             }
             document.body.innerHTML = '';
         });
-        it('moveRight and moveLeft with shiftTab popup openingkey testing', (done: Function): void => {
+        it('moveRight and moveLeft with shiftTab popup opening key testing', (done: Function): void => {
             let element: HTMLElement = document.getElementById('ej2Tab');
             keyEventArgs = {
                 preventDefault: function () { },
@@ -5097,7 +5785,6 @@ describe('Tab Control', () => {
             tab.keyHandler(keyEventArgs);
             setTimeout(() => { done(); }, 450);
         });
-
     });
     describe('Items - Keyboard navigation testing', () => {
         let tab: any;
@@ -5105,7 +5792,7 @@ describe('Tab Control', () => {
         let toolbar: DomElements;
         let toolbarObj: any;
         beforeEach((done: Function): void => {
-            let css: string = ".e-toolbar { display: block; white-space: nowrap; position: relative; } .e-separator { border-right:1px solid; height: 15px; margin: 7.5px 3px} .e-hor-nav { height: 30px; } .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator + .e-separator { display:none } .e-toolbar-items { display: inline-block; } .e-toolbar-items.e-hscroll { width:inherit; }  .e-toolbar .e-fix-width {width : 0px !important; } .e-toolbar .e-tbarpop  { position: fixed; } .e-toolbar-items .e-toolbar-item, .e-toolbar-left, .e-toolbar-center, .e-toolbar-right { display: inline-block; } .e-toolbar .e-hor-nav { float:right; width:30px; }  .e-toolbar .e-toolbar-pop { position: fixed;} .e-popup-open { display:block } .e-popup-close { display: none } button {font-family:Arial; font-size: 14px; padding: 1px 6px} ";
+            let css: string = commonCss;
             let style: HTMLStyleElement = document.createElement('style'); 
             style.type = 'text/css';
             style.id = 'scroll';
@@ -5461,13 +6148,370 @@ describe('Tab Control', () => {
             expect(closest(actEle4, '.e-toolbar-item').id).toEqual('e-item_2');
         });
     });
+    describe('Vertical - Items - Keyboard navigation testing', () => {
+        let tab: any;
+        let keyEventArgs: any;
+        let toolbar: DomElements;
+        let toolbarObj: any;
+        beforeEach((done: Function): void => {
+            let css: string = commonCss2;
+            let style: HTMLStyleElement = document.createElement('style'); 
+            style.type = 'text/css';
+            style.id = 'scroll';
+            style.appendChild(document.createTextNode(css));
+            document.getElementsByTagName('head')[0].appendChild(style);
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+            tab = new Tab({
+                height: '100px',
+                heightAdjustMode: 'None',
+                headerPlacement: 'Left',
+                overflowMode: 'Popup',
+                items: [
+                    { header: { "text": "header-item0" }, content: "Content0" },
+                    { header: { "text": "header-item1" }, content: "Content1" },
+                    { header: { "text": "header-item2" }, content: "Content2" },
+                    { header: { "text": "header-item3" }, content: "Content3" },
+                    { header: { "text": "header-item4" }, content: "Content4" },
+                    { header: { "text": "header-item5" }, content: "Content5" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let popup: HTMLElement = <HTMLElement> document.querySelector('.e-tab-header .e-hor-nav');
+            popup.click();
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            toolbar = <DomElements> element.querySelector('.e-tab-header');
+            toolbarObj = <Toolbar> toolbar.ej2_instances[0];
+            setTimeout(() => { done(); }, 450);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Tab key testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: element,
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle, '.e-toolbar-item').id).toEqual('e-item_0');
+        });
+        it('moveUp and moveDown key testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: element,
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle1: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'moveDown',
+                target: actEle1,
+            };
+            toolbarObj.keyActionHandler(keyEventArgs);
+            let actEle2: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle2, '.e-toolbar-item').id).toEqual('e-item_1');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'shiftTab',
+                target: actEle2,
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle3: HTMLElement = <HTMLElement> document.activeElement;
+            expect(actEle3.getAttribute('tabindex')).toEqual('-1');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'moveUp',
+                target: actEle3,
+            };
+            toolbarObj.keyActionHandler(keyEventArgs);
+            let actEle4: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle4, '.e-toolbar-item').id).toEqual('e-item_0');
+        });
+        it('Home and End key testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: element,
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle1: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'end',
+                target: actEle1,
+            };
+            toolbarObj.keyActionHandler(keyEventArgs);
+            let actEle2: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle2, '.e-toolbar-item').id).toEqual('e-item_2');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'home',
+                target: actEle2,
+            };
+            toolbarObj.keyActionHandler(keyEventArgs);
+            let actEle3: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle3, '.e-toolbar-item').id).toEqual('e-item_0');
+        });
+        it('Space key testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: element,
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle1: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'end',
+                target: actEle1,
+            };
+            toolbarObj.keyActionHandler(keyEventArgs);
+            let actEle2: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle2, '.e-toolbar-item').id).toEqual('e-item_2');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'space',
+                target: actEle2,
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle3: HTMLElement = <HTMLElement> document.activeElement;
+            expect(tab.selectedItem).toEqual(2);
+            expect(element.querySelector('#e-item_2').classList.contains('e-active')).toEqual(true);
+            expect(closest(actEle3, '.e-toolbar-item').classList.contains('e-active')).toEqual(true);
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'space',
+                target: actEle3,
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle4: HTMLElement = <HTMLElement> document.activeElement;
+            expect(tab.selectedItem).toEqual(2);
+            expect(element.querySelector('#e-item_2').classList.contains('e-active')).toEqual(true);
+            expect(closest(actEle4, '.e-toolbar-item').classList.contains('e-active')).toEqual(true);
+            tab.height = 2000;
+            tab.dataBind();
+            let actEle5: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle5, '.e-toolbar-item').classList.contains('e-active')).toEqual(true);
+            expect(document.documentElement.scrollTop).toEqual(0);
+            let e: any = new KeyboardEvent("keydown", {bubbles : true, cancelable : true, key : '32', shiftKey : true});
+            Object.defineProperty(e, "keyCode", {"value" : 32});
+            Object.defineProperty(e, "which", {"value" : 32});
+            actEle5.dispatchEvent(e);
+            (<HTMLElement>element.children[1].children[0]).dispatchEvent(e);
+            expect(document.documentElement.scrollTop).toEqual(0);
+            let eve: any = new KeyboardEvent("keydown", {bubbles : true, cancelable : true, key : '32', shiftKey : true});
+            Object.defineProperty(eve, "keyCode", {"value" : 32});
+            Object.defineProperty(eve, "which", {"value" : 40});
+            actEle5.dispatchEvent(eve);
+            expect(document.documentElement.scrollTop).toEqual(0);
+            let arg: any = new KeyboardEvent("keydown", {bubbles : true, cancelable : true, key : '35', shiftKey : true});
+            Object.defineProperty(arg, "keyCode", {"value" : 35});
+            Object.defineProperty(arg, "which", {"value" : 35});
+            actEle5.dispatchEvent(arg);
+            expect(document.documentElement.scrollTop).toEqual(0);
+        });
+        it('Space key to popup close testing', (done: Function) => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-hor-nav');
+            trgEle.focus();
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'space',
+                target: trgEle,
+            };
+            tab.keyHandler(keyEventArgs);
+            setTimeout(function() {
+                let element: HTMLElement = document.getElementById('ej2Tab');
+                expect(element.querySelector('.e-toolbar-pop').classList.contains('e-popup-close')).toEqual(true);
+                done();
+            }, 1000);
+        });
+        it('Enter key testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: element,
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle1: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'end',
+                target: actEle1,
+            };
+            toolbarObj.keyActionHandler(keyEventArgs);
+            let actEle2: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle2, '.e-toolbar-item').id).toEqual('e-item_2');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'enter',
+                target: actEle2,
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle3: HTMLElement = <HTMLElement> document.activeElement;
+            expect(element.querySelector('#e-item_2').classList.contains('e-active')).toEqual(true);
+            expect(closest(actEle3, '.e-toolbar-item').classList.contains('e-active')).toEqual(true);
+        });
+        it('Delete key testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            tab.showCloseButton = true;
+            tab.dataBind();
+            let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: element
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle1: HTMLElement = <HTMLElement> document.activeElement;
+            expect(tab.showCloseButton).toEqual(true);
+            expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'end',
+                target: actEle1
+            };
+            toolbarObj.keyActionHandler(keyEventArgs);
+            let actEle2: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle2, '.e-toolbar-item').id).toEqual('e-item_2');
+            expect(element.querySelectorAll('.e-toolbar-items .e-toolbar-item').length).toEqual(3);
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'delete',
+                target: actEle2
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle3: HTMLElement = <HTMLElement> document.activeElement;
+            expect(element.querySelector('#e-item_2')).toEqual(null);
+            expect(element.querySelectorAll('.e-toolbar-items .e-toolbar-item').length).toEqual(2);
+        });
+        it('Delete key with showCloseButton as false', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: element
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle1: HTMLElement = <HTMLElement> document.activeElement;
+            expect(tab.showCloseButton).toEqual(false);
+            expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'end',
+                target: actEle1
+            };
+            toolbarObj.keyActionHandler(keyEventArgs);
+            let actEle2: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle2, '.e-toolbar-item').id).toEqual('e-item_2');
+            expect(element.querySelectorAll('.e-toolbar-items .e-toolbar-item').length).toEqual(3);
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'delete',
+                target: actEle2
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle3: HTMLElement = <HTMLElement> document.activeElement;
+            expect(element.querySelector('#e-item_2')).not.toEqual(null);
+            expect(element.querySelectorAll('.e-toolbar-items .e-toolbar-item').length).toEqual(3);
+        });
+        it('Delete key with invalid element as target', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            tab.showCloseButton = true;
+            tab.dataBind();
+            let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: element
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle1: HTMLElement = <HTMLElement> document.activeElement;
+            expect(tab.showCloseButton).toEqual(true);
+            expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'end',
+                target: actEle1
+            };
+            toolbarObj.keyActionHandler(keyEventArgs);
+            let actEle2: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle2, '.e-toolbar-item').id).toEqual('e-item_2');
+            expect(element.querySelectorAll('.e-toolbar-items .e-toolbar-item').length).toEqual(3);
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'delete',
+                target: element
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle3: HTMLElement = <HTMLElement> document.activeElement;
+            expect(element.querySelector('#e-item_2')).not.toEqual(null);
+            expect(element.querySelectorAll('.e-toolbar-items .e-toolbar-item').length).toEqual(3);
+        });
+        it('Delete key press with next element focus testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            tab.showCloseButton = true;
+            tab.dataBind();
+            let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: element
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle1: HTMLElement = <HTMLElement> document.activeElement;
+            expect(tab.showCloseButton).toEqual(true);
+            expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('#e-item_1 div');
+            trgEle.focus();
+            let actEle2: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle2, '.e-toolbar-item').id).toEqual('e-item_1');
+            expect(element.querySelectorAll('.e-toolbar-items .e-toolbar-item').length).toEqual(3);
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'delete',
+                target: actEle2
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle3: HTMLElement = <HTMLElement> document.activeElement;
+            expect(element.querySelector('#e-item_1')).toEqual(null);
+            expect(element.querySelectorAll('.e-toolbar-items .e-toolbar-item').length).toEqual(2);
+        });
+    });
     describe('Template - Keyboard navigation testing', () => {
         let tab: any;
         let keyEventArgs: any;
         let toolbar: DomElements;
         let toolbarObj: any;
         beforeEach((done: Function): void => {
-            let css: string = ".e-toolbar { display: block; white-space: nowrap; position: relative; } .e-separator { border-right:1px solid; height: 15px; margin: 7.5px 3px} .e-hor-nav { height: 30px; } .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator + .e-separator { display:none } .e-toolbar-items { display: inline-block; } .e-toolbar-items.e-hscroll { width:inherit; }  .e-toolbar .e-fix-width {width : 0px !important; } .e-toolbar .e-tbarpop  { position: fixed; } .e-toolbar-items .e-toolbar-item, .e-toolbar-left, .e-toolbar-center, .e-toolbar-right { display: inline-block; } .e-toolbar .e-hor-nav { float:right; width:30px; }  .e-toolbar .e-toolbar-pop { position: fixed;} .e-popup-open { display:block } .e-popup-close { display: none } button {font-family:Arial; font-size: 14px; padding: 1px 6px} ";
+            let css: string = commonCss;
             let style: HTMLStyleElement = document.createElement('style'); 
             style.type = 'text/css';
             style.id = 'scroll';
@@ -5718,11 +6762,267 @@ describe('Tab Control', () => {
             expect(closest(actEle4, '.e-toolbar-item').id).toEqual('e-item_2');
         });
     });
+    describe('Vertical - Template - Keyboard navigation testing', () => {
+        let tab: any;
+        let keyEventArgs: any;
+        let toolbar: DomElements;
+        let toolbarObj: any;
+        beforeEach((done: Function): void => {
+            let css: string = commonCss2;
+            let style: HTMLStyleElement = document.createElement('style'); 
+            style.type = 'text/css';
+            style.id = 'scroll';
+            style.appendChild(document.createTextNode(css));
+            document.getElementsByTagName('head')[0].appendChild(style);
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            ele.innerHTML = '<div class="e-tab-header"> <div> header-item0 </div> <div> header-item1 </div>'
+            +' <div> header-item2 </div> <div> header-item3 </div> <div> header-item4 </div>'
+            + '<div> header-item5 </div> </div> <div class="e-content"> <div> <div> <h1>Content1</h1>'
+            + '<p> text</p> </div> </div> <div> <div> <h1>Content2</h1> <p> text</p> </div> </div> <div> <div>'
+            + '<h1>Content3</h1> <p> text</p> </div> </div> <div> <div> <h1>Content4</h1> <p> text</p> </div>'
+            + '</div> <div> <div> <h1>Content5</h1> <p> text</p> </div> </div> <div> <div> <h1>Content6</h1>'
+            + '<p> text</p> </div> </div> </div>';
+            document.body.appendChild(ele);
+            tab = new Tab({
+                height: '100px',
+                heightAdjustMode: 'None',
+                headerPlacement: 'Left',
+                overflowMode: 'Popup',
+            });
+            tab.appendTo('#ej2Tab');
+            let popup: HTMLElement = <HTMLElement> document.querySelector('.e-tab-header .e-hor-nav');
+            popup.click();
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            toolbar = <DomElements> element.querySelector('.e-tab-header');
+            toolbarObj = <Toolbar> toolbar.ej2_instances[0];
+            setTimeout(() => { done(); }, 450);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('keyboard class testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.classList.contains('e-keyboard')).toEqual(true);
+            expect(element.querySelector('.e-tab-header').classList.contains('e-keyboard')).toEqual(true);
+        });
+        it('Tab key testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: element,
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle, '.e-toolbar-item').id).toEqual('e-item_0');
+        });
+        it('moveRight and moveLeft key testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: element,
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle1: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'moveRight',
+                target: actEle1,
+            };
+            toolbarObj.keyActionHandler(keyEventArgs);
+            let actEle2: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle2, '.e-toolbar-item').id).toEqual('e-item_0');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'moveLeft',
+                target: actEle2,
+            };
+            toolbarObj.keyActionHandler(keyEventArgs);
+            let actEle3: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle3, '.e-toolbar-item').id).toEqual('e-item_0');
+        });
+        it('Home and End key testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: element,
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle1: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'end',
+                target: actEle1,
+            };
+            toolbarObj.keyActionHandler(keyEventArgs);
+            let actEle2: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle2, '.e-toolbar-item').id).toEqual('e-item_2');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'home',
+                target: actEle2,
+            };
+            toolbarObj.keyActionHandler(keyEventArgs);
+            let actEle3: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle3, '.e-toolbar-item').id).toEqual('e-item_0');
+        });
+        it('Space key testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: element,
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle1: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'end',
+                target: actEle1,
+            };
+            toolbarObj.keyActionHandler(keyEventArgs);
+            let actEle2: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle2, '.e-toolbar-item').id).toEqual('e-item_2');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'space',
+                target: actEle2,
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle3: HTMLElement = <HTMLElement> document.activeElement;
+            expect(element.querySelector('#e-item_2').classList.contains('e-active')).toEqual(true);
+            expect(closest(actEle3, '.e-toolbar-item').classList.contains('e-active')).toEqual(true);
+        });
+        it('Space key to popup close testing', (done: Function) => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-hor-nav');
+            trgEle.focus();
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'space',
+                target: trgEle,
+            };
+            tab.keyHandler(keyEventArgs);
+            setTimeout(function() {
+                let element: HTMLElement = document.getElementById('ej2Tab');
+                expect(element.querySelector('.e-toolbar-pop').classList.contains('e-popup-close')).toEqual(true);
+                done();
+            }, 1000);
+        });
+        it('Enter key testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: element,
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle1: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'end',
+                target: actEle1,
+            };
+            toolbarObj.keyActionHandler(keyEventArgs);
+            let actEle2: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle2, '.e-toolbar-item').id).toEqual('e-item_2');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'enter',
+                target: actEle2,
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle3: HTMLElement = <HTMLElement> document.activeElement;
+            expect(element.querySelector('#e-item_2').classList.contains('e-active')).toEqual(true);
+            expect(closest(actEle3, '.e-toolbar-item').classList.contains('e-active')).toEqual(true);
+        });
+        it('Delete key testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            tab.showCloseButton = true;
+            tab.dataBind();
+            let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: element
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle1: HTMLElement = <HTMLElement> document.activeElement;
+            expect(tab.showCloseButton).toEqual(true);
+            expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'end',
+                target: actEle1
+            };
+            toolbarObj.keyActionHandler(keyEventArgs);
+            let actEle2: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle2, '.e-toolbar-item').id).toEqual('e-item_2');
+            expect(element.querySelectorAll('.e-toolbar-items .e-toolbar-item').length).toEqual(3);
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'delete',
+                target: actEle2
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle3: HTMLElement = <HTMLElement> document.activeElement;
+            expect(element.querySelector('#e-item_2')).toEqual(null);
+            expect(element.querySelectorAll('.e-toolbar-items .e-toolbar-item').length).toEqual(2);
+        });
+        it('Delete key press with next element focus testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            tab.showCloseButton = true;
+            tab.dataBind();
+            let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: element
+            };
+            tab.keyHandler(keyEventArgs);
+            let actEle1: HTMLElement = <HTMLElement> document.activeElement;
+            expect(tab.showCloseButton).toEqual(true);
+            expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('#e-item_1 div');
+            trgEle.focus();
+            let actEle2: HTMLElement = <HTMLElement> document.activeElement;
+            expect(closest(actEle2, '.e-toolbar-item').id).toEqual('e-item_1');
+            expect(element.querySelectorAll('.e-toolbar-items .e-toolbar-item').length).toEqual(3);
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'delete',
+                target: actEle2
+            };
+            tab.keyHandler(keyEventArgs);
+            expect(element.querySelector('#e-item_1')).toEqual(null);
+            expect(element.querySelectorAll('.e-toolbar-items .e-toolbar-item').length).toEqual(2);
+        });
+    });
     describe('Items - Keyboard navigation at scrollable mode testing', () => {
         let tab: any;
         let keyEventArgs: any;
         beforeEach((): void => {
-            let css: string = ".e-toolbar { display: block; white-space: nowrap; position: relative; } .e-separator { border-right:1px solid; height: 15px; margin: 7.5px 3px} .e-hor-nav { height: 30px; } .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator + .e-separator { display:none } .e-toolbar-items { display: inline-block; } .e-toolbar-items.e-hscroll { width:inherit; }  .e-toolbar .e-fix-width {width : 0px !important; } .e-toolbar .e-tbarpop  { position: fixed; } .e-toolbar-items .e-toolbar-item, .e-toolbar-left, .e-toolbar-center, .e-toolbar-right { display: inline-block; } .e-toolbar .e-hor-nav { float:right; width:30px; }  .e-toolbar .e-toolbar-pop { position: fixed;} .e-popup-open { display:block } .e-popup-close { display: none } button {font-family:Arial; font-size: 14px; padding: 1px 6px} ";
+            let css: string = commonCss;
             let style: HTMLStyleElement = document.createElement('style'); 
             style.type = 'text/css';
             style.id = 'scroll';
@@ -5778,7 +7078,7 @@ describe('Tab Control', () => {
     describe('Items - Resize to active element position testing', () => {
         let tab: any;
         beforeEach((): void => {
-            let css: string = ".e-toolbar { display: block; white-space: nowrap; position: relative; } .e-separator { border-right:1px solid; height: 15px; margin: 7.5px 3px} .e-hor-nav { height: 30px; } .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator + .e-separator { display:none } .e-toolbar-items { display: inline-block; } .e-toolbar-items.e-hscroll { width:inherit; }  .e-toolbar .e-fix-width {width : 0px !important; } .e-toolbar .e-tbarpop  { position: fixed; } .e-toolbar-items .e-toolbar-item, .e-toolbar-left, .e-toolbar-center, .e-toolbar-right { display: inline-block; } .e-toolbar .e-hor-nav { float:right; width:30px; }  .e-toolbar .e-toolbar-pop { position: fixed;} .e-popup-open { display:block } .e-popup-close { display: none } button {font-family:Arial; font-size: 14px; padding: 1px 6px} ";
+            let css: string = commonCss;
             let style: HTMLStyleElement = document.createElement('style'); 
             style.type = 'text/css';
             style.id = 'scroll';
@@ -5830,7 +7130,7 @@ describe('Tab Control', () => {
     describe('Template - Resize to active element position testing', () => {
         let tab: any;
         beforeEach((): void => {
-            let css: string = ".e-toolbar { display: block; white-space: nowrap; position: relative; } .e-separator { border-right:1px solid; height: 15px; margin: 7.5px 3px} .e-hor-nav { height: 30px; } .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator + .e-separator { display:none } .e-toolbar-items { display: inline-block; } .e-toolbar-items.e-hscroll { width:inherit; }  .e-toolbar .e-fix-width {width : 0px !important; } .e-toolbar .e-tbarpop  { position: fixed; } .e-toolbar-items .e-toolbar-item, .e-toolbar-left, .e-toolbar-center, .e-toolbar-right { display: inline-block; } .e-toolbar .e-hor-nav { float:right; width:30px; }  .e-toolbar .e-toolbar-pop { position: fixed;} .e-popup-open { display:block } .e-popup-close { display: none } button {font-family:Arial; font-size: 14px; padding: 1px 6px} ";
+            let css: string = commonCss;
             let style: HTMLStyleElement = document.createElement('style'); 
             style.type = 'text/css';
             style.id = 'scroll';
@@ -5882,7 +7182,7 @@ describe('Tab Control', () => {
         let tab: any;
         let keyEventArgs: any;
         beforeEach((): void => {
-            let css: string = ".e-toolbar { display: block; white-space: nowrap; position: relative; } .e-separator { border-right:1px solid; height: 15px; margin: 7.5px 3px} .e-hor-nav { height: 30px; } .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator + .e-separator { display:none } .e-toolbar-items { display: inline-block; } .e-toolbar-items.e-hscroll { width:inherit; }  .e-toolbar .e-fix-width {width : 0px !important; } .e-toolbar .e-tbarpop  { position: fixed; } .e-toolbar-items .e-toolbar-item, .e-toolbar-left, .e-toolbar-center, .e-toolbar-right { display: inline-block; } .e-toolbar .e-hor-nav { float:right; width:30px; }  .e-toolbar .e-toolbar-pop { position: fixed;} .e-popup-open { display:block } .e-popup-close { display: none } button {font-family:Arial; font-size: 14px; padding: 1px 6px} ";
+            let css: string = commonCss;
             let style: HTMLStyleElement = document.createElement('style'); 
             style.type = 'text/css';
             style.id = 'scroll';
@@ -5939,7 +7239,112 @@ describe('Tab Control', () => {
             tab.keyHandler(keyEventArgs);
             setTimeout(function() {
                 let element: HTMLElement = document.getElementById('ej2Tab');
-                expect(element.querySelector('.e-toolbar-pop').classList.contains('e-popup-open')).toEqual(false);
+                expect(element.querySelector('.e-toolbar-pop').classList.contains('e-popup-open')).toEqual(true);
+                done();
+            }, 1000);
+        });
+        it('Open Popup when press shift+f10 key', (done: Function) => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-hor-nav');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'openPopup',
+                target: trgEle,
+            };
+            tab.keyHandler(keyEventArgs);
+            setTimeout(function() {
+                let element: HTMLElement = document.getElementById('ej2Tab');
+                expect(element.querySelector('.e-toolbar-pop').classList.contains('e-popup-open')).toEqual(true);
+                keyEventArgs = {
+                    preventDefault: function () { },
+                    action: 'openPopup',
+                    target: trgEle,
+                };
+                tab.keyHandler(keyEventArgs);
+                expect(element.querySelector('.e-toolbar-pop').classList.contains('e-popup-open')).toEqual(true);
+                done();
+            }, 1000);
+        });
+        it('Open Popup when invalid key press', (done: Function) => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-popup');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'openPopup',
+                target: trgEle,
+            };
+            tab.keyHandler(keyEventArgs);
+            setTimeout(function() {
+                let element: HTMLElement = document.getElementById('ej2Tab');
+                expect(element.querySelector('.e-toolbar-pop').classList.contains('e-popup-open')).toEqual(true);
+                done();
+            }, 1000);
+        });
+    });
+    describe('Vertical - Items - Popup open testing using keyboard navigation', () => {
+        let tab: any;
+        let keyEventArgs: any;
+        beforeEach((): void => {
+            let css: string = commonCss2;
+            let style: HTMLStyleElement = document.createElement('style'); 
+            style.type = 'text/css';
+            style.id = 'scroll';
+            style.appendChild(document.createTextNode(css));
+            document.getElementsByTagName('head')[0].appendChild(style);
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+            tab = new Tab({
+                height: '100px',
+                heightAdjustMode: 'None',
+                headerPlacement: 'Left',
+                overflowMode: 'Popup',
+                items: [
+                    { header: { "text": "header-item0" }, content: "Content0" },
+                    { header: { "text": "header-item1" }, content: "Content1" },
+                    { header: { "text": "header-item2" }, content: "Content2" },
+                    { header: { "text": "header-item3" }, content: "Content3" },
+                    { header: { "text": "header-item4" }, content: "Content4" },
+                    { header: { "text": "header-item5" }, content: "Content5" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Open Popup when press space key', (done: Function) => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-hor-nav');
+            trgEle.focus();
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'space',
+                target: trgEle,
+            };
+            tab.keyHandler(keyEventArgs);
+            setTimeout(function() {
+                let element: HTMLElement = document.getElementById('ej2Tab');
+                expect(element.querySelector('.e-toolbar-pop').classList.contains('e-popup-open')).toEqual(true);
+                done();
+            }, 1000);
+        });
+        it('Open Popup when press enter key', (done: Function) => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-hor-nav');
+            trgEle.focus();
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'enter',
+                target: trgEle,
+            };
+            tab.keyHandler(keyEventArgs);
+            setTimeout(function() {
+                let element: HTMLElement = document.getElementById('ej2Tab');
+                expect(element.querySelector('.e-toolbar-pop').classList.contains('e-popup-open')).toEqual(true);
                 done();
             }, 1000);
         });
@@ -6463,6 +7868,58 @@ describe('Tab Control', () => {
             tab.appendTo('#ej2Tab');
             expect((<HTMLElement> ele.querySelector('.e-hscroll-content').firstChild).classList.contains('e-indicator')).toEqual(true);
         });
+        it('Vertical - Items - Border element class list and availability checking', () => {
+            tab = new Tab({
+                headerPlacement: 'Left',
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let ele: HTMLElement = document.getElementById('ej2Tab');
+            expect((<HTMLElement> ele.querySelector('.e-toolbar-items').firstChild).classList.contains('e-indicator')).toEqual(true);
+            expect((<HTMLElement> ele.querySelector('.e-toolbar-items').firstChild).classList.contains('e-ignore')).toEqual(true);
+            expect((<HTMLElement> ele.querySelector('.e-toolbar-items').firstChild).classList.contains('e-hidden')).toEqual(false);
+        });
+        it('Vertical - Items - Scrollable mode border element appended place checking', () => {
+            tab = new Tab({
+                height: 20,
+                headerPlacement: 'Right',
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let ele: HTMLElement = document.getElementById('ej2Tab');
+            expect((<HTMLElement> ele.querySelector('.e-vscroll-content').firstChild).classList.contains('e-indicator')).toEqual(true);
+        });
+        it('Vertical - Template - Border element class list and availability checking', () => {
+            let ele: HTMLElement = document.getElementById('ej2Tab');
+            ele.innerHTML = '<div class="e-tab-header"> <div> item1 </div> <div> item2 </div> </div>'
+                + '<div class="e-content"> <div> <div> <h1>Content1</h1> <p> text</p> </div> </div> <div>'
+                + '<div> <h1>Content2</h1> <p> text</p> </div> </div> </div>';
+            tab = new Tab({
+                headerPlacement: 'Left'
+            });
+            tab.appendTo('#ej2Tab');
+            expect((<HTMLElement> ele.querySelector('.e-toolbar-items').firstChild).classList.contains('e-indicator')).toEqual(true);
+            expect((<HTMLElement> ele.querySelector('.e-toolbar-items').firstChild).classList.contains('e-ignore')).toEqual(true);
+            expect((<HTMLElement> ele.querySelector('.e-toolbar-items').firstChild).classList.contains('e-hidden')).toEqual(false);
+        });
+        it('Vertical - Template - Scrollable mode Border element appended place checking', () => {
+            let ele: HTMLElement = document.getElementById('ej2Tab');
+            ele.innerHTML = '<div class="e-tab-header"> <div> item1 </div> <div> item2 </div> </div>'
+                + '<div class="e-content"> <div> <div> <h1>Content1</h1> <p> text</p> </div> </div> <div>'
+                + '<div> <h1>Content2</h1> <p> text</p> </div> </div> </div>';
+            tab = new Tab({
+                height: 20,
+                headerPlacement: 'Right'
+            });
+            tab.appendTo('#ej2Tab');
+            expect((<HTMLElement> ele.querySelector('.e-vscroll-content').firstChild).classList.contains('e-indicator')).toEqual(true);
+        });
     });
     describe('Swipe event testing', () => {
         let tab: any;
@@ -6503,7 +7960,7 @@ describe('Tab Control', () => {
             tab.swipeHandler(swipeEventArgs);
             expect(ele.querySelector('#e-item_0').classList.contains('e-active')).toEqual(true);
         });
-        it('Items - Swipe right and left testing', () => {
+        it('Items - Swipe right, left and velocity with testing', () => {
             tab = new Tab({
                 items: [
                     { header: { "text": "item1" }, content: "Content1" },
@@ -6521,7 +7978,7 @@ describe('Tab Control', () => {
             let ele: HTMLElement = document.getElementById('ej2Tab');
             expect(ele.querySelector('#e-item_0').classList.contains('e-active')).toEqual(true);
         });
-        it('Items - Swipe left to right testing', () => {
+        it('Items - Swipe left to right testing at last item selected', () => {
             tab = new Tab({
                 width: 100,
                 selectedItem: 3,
@@ -6813,7 +8270,7 @@ describe('Tab Control', () => {
             expect(tNestContent.children[2].classList.contains('e-active')).toBe(false);
         });
     });
-    describe('Nested Tab testing with headerplacement', () => {
+    describe('Horizontal -Nested Tab testing with headerPlacement as bottom', () => {
         let tabObj: Tab
         beforeAll((): void => {
             let css: string = ".e-hor-nav { position: absolute }";
@@ -6925,7 +8382,7 @@ describe('Tab Control', () => {
             }
             document.body.innerHTML = '';
         });
-        it('Nested tab Testing with headerplacement testing', () => {
+        it('Nested tab Testing with headerPlacement testing', () => {
             let rootEle: HTMLElement = document.getElementById('temTab');
             let rootCon: HTMLElement = rootEle.children[0] as HTMLElement;
             let fNested: HTMLElement = rootCon.querySelector('#Tab1') as HTMLElement;
@@ -6983,6 +8440,354 @@ describe('Tab Control', () => {
             expect(tNestContent.children[2].classList.contains('e-active')).toBe(false);
         });
     });
+    describe('Vertical Orientation Left - Nested Tab testing with headerPlacement', () => {
+        let tabObj: Tab
+        beforeAll((): void => {
+            let css: string = ".e-hor-nav { position: absolute } .e-toolbar-items { height: 100%; } .e-toolbar-item { display: block !important; width: auto; }";
+            let style: HTMLStyleElement = document.createElement('style'); 
+            style.type = 'text/css';
+            style.id = 'scroll';
+            let styleNode: Node = style.appendChild(document.createTextNode(css));
+            document.getElementsByTagName('head')[0].appendChild(style);
+        });
+        beforeEach((done: Function): void => {
+            let rootDiv: HTMLElement = createElement('div', {id:'temTab'});
+            let header: HTMLElement = createElement('div', {className: 'e-tab-header'});
+            let itemHead1: HTMLElement = createElement ('div', {innerHTML: 'India'});
+            let itemHead2: HTMLElement = createElement ('div', {innerHTML: 'Canada'});
+            let itemHead3: HTMLElement = createElement ('div', {innerHTML: 'Australia'});
+            let itemHead4: HTMLElement = createElement ('div', {innerHTML: 'USA'});
+            let content: HTMLElement = createElement('div', {className: 'e-content'});
+            let contentItem1: HTMLElement = createElement('div').appendChild(createElement('div', { innerHTML : "India, officially the Commonwealth of Australia, is a country comprising the mainland of the Australian continent, the island of Tasmania and numerous smaller islands. It is the world's sixth-largest country by total area. Neighboring countries include Indonesia, East Timor and Papua New Guinea to the north; the Solomon Islands, Vanuatu and New Caledonia to the north-east; and New Zealand to the south-east. <div id='Tab1'></div>"}));
+            let contentItem2: HTMLElement = createElement('div').appendChild(createElement('div', { innerHTML : "Canada, officially the Commonwealth of Australia, is a country comprising the mainland of the Australian continent, the island of Tasmania and numerous smaller islands. It is the world's sixth-largest country by total area. Neighboring countries include Indonesia, East Timor and Papua New Guinea to the north; the Solomon Islands, Vanuatu and New Caledonia to the north-east; and New Zealand to the south-east. <div id='Tab2'></div>"}));
+            let contentItem3: HTMLElement = createElement('div').appendChild(createElement('div', { innerHTML : "Australia, officially the Commonwealth of Australia, is a country comprising the mainland of the Australian continent, the island of Tasmania and numerous smaller islands. It is the world's sixth-largest country by total area. Neighboring countries include Indonesia, East Timor and Papua New Guinea to the north; the Solomon Islands, Vanuatu and New Caledonia to the north-east; and New Zealand to the south-east. <div id='Tab3'></div>"}));
+            let contentItem4: HTMLElement = createElement('div').appendChild(createElement('div', { innerHTML : "USA, officially the Commonwealth of Australia, is a country comprising the mainland of the Australian continent, the island of Tasmania and numerous smaller islands. It is the world's sixth-largest country by total area. Neighboring countries include Indonesia, East Timor and Papua New Guinea to the north; the Solomon Islands, Vanuatu and New Caledonia to the north-east; and New Zealand to the south-east. <div id='Tab4'></div>"}));
+            content.appendChild(contentItem1);
+            content.appendChild(contentItem2);
+            content.appendChild(contentItem3);
+            content.appendChild(contentItem4);
+            header.appendChild(itemHead1);
+            header.appendChild(itemHead2);
+            header.appendChild(itemHead3);
+            header.appendChild(itemHead4);
+            rootDiv.appendChild(header);
+            rootDiv.appendChild(content);
+            document.body.appendChild(rootDiv);
+            tabObj = new Tab({
+                overflowMode: 'Popup',
+                headerPlacement: 'Left',
+                animation: { next: { effect : 'None'}, previous: { effect: 'None'}}
+            });
+            tabObj.appendTo(rootDiv);
+            let tabObj1: Tab = new Tab({
+                headerPlacement: 'Left',
+                animation: { next: { effect : 'None'}, previous: { effect: 'None'}},
+                items: [
+                    {
+                        header: { 'text': 'India1' },
+                        content: '1India'
+                    },
+                    {
+                        header: { 'text': 'Australia1' },
+                        content: '1Australia'
+                    },
+                    {
+                        header: { 'text': 'USA1' },
+                        content: '1The United States of America'
+                    },
+                    {
+                        header: { 'text': 'France1' },
+                        content: '1France'
+                    }
+                ],
+            });
+            tabObj1.appendTo('#Tab1')
+            let tabObj2: Tab = new Tab({
+                headerPlacement: 'Left',
+                animation: { next: { effect : 'None'}, previous: { effect: 'None'}},
+                items: [
+                    {
+                        header: { 'text': 'India2' },
+                        content: '2India'
+                    },
+                    {
+                        header: { 'text': 'Australia2' },
+                        content: '2Australia'
+                    },
+                    {
+                        header: { 'text': 'USA2' },
+                        content: '2The United States of America'
+                    },
+                    {
+                        header: { 'text': 'France2' },
+                        content: '2France'
+                    }
+                ],
+            });
+            tabObj2.appendTo('#Tab2')
+            let tabObj3: Tab = new Tab({
+                headerPlacement: 'Left',
+                animation: { next: { effect : 'None'}, previous: { effect: 'None'}},
+                items: [
+                    {
+                        header: { 'text': 'India3' },
+                        content: '3India'
+                    },
+                    {
+                        header: { 'text': 'Australia3' },
+                        content: '3Australia'
+                    },
+                    {
+                        header: { 'text': 'USA3' },
+                        content: '3The United States of America'
+                    },
+                    {
+                        header: { 'text': 'France3' },
+                        content: '3France'
+                    }
+                ],
+            });
+            tabObj3.appendTo('#Tab3');
+            setTimeout(() => { done(); }, 2000);
+        });
+        afterEach((): void => {
+            if (tabObj) {
+                tabObj.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Nested tab Testing with headerPlacement testing', () => {
+            let rootEle: HTMLElement = document.getElementById('temTab');
+            let rootCon: HTMLElement = rootEle.children[1] as HTMLElement;
+            let fNested: HTMLElement = rootCon.querySelector('#Tab1') as HTMLElement;
+            let fNestContent: HTMLElement = rootCon.querySelector('#Tab1').children[1] as HTMLElement;
+            expect(rootCon.children[0].classList.contains('e-active')).toBe(true);
+            expect(fNestContent.children[0].classList.contains('e-active')).toBe(true);
+            expect(fNestContent.children[0].innerHTML).toBe('<div>1India</div>');
+            (<HTMLElement>fNested.children[0].children[0].children[2]).click();
+            expect(fNestContent.children[1].innerHTML).toBe('<div>1Australia</div>');
+            expect(fNestContent.children[1].classList.contains('e-active')).toBe(true);
+            expect(fNestContent.children[0].classList.contains('e-active')).toBe(false);
+            (<HTMLElement>fNested.children[0].children[0].children[3]).click();
+            expect(fNestContent.children[2].innerHTML).toBe('<div>1The United States of America</div>');
+            expect(fNestContent.children[2].classList.contains('e-active')).toBe(true);
+            expect(fNestContent.children[1].classList.contains('e-active')).toBe(false);
+            (<HTMLElement>fNested.children[0].children[0].children[4]).click();
+            expect(fNestContent.children[3].innerHTML).toBe('<div>1France</div>');
+            expect(fNestContent.children[3].classList.contains('e-active')).toBe(true);
+            expect(fNestContent.children[2].classList.contains('e-active')).toBe(false);
+            let sNested: HTMLElement = rootCon.querySelector('#Tab2') as HTMLElement;
+            let sNestContent: HTMLElement = rootCon.querySelector('#Tab2').children[1] as HTMLElement;
+            (<HTMLElement>rootEle.children[0].children[0].children[2]).click();
+            expect(rootCon.children[1].classList.contains('e-active')).toBe(true);
+            expect(sNestContent.children[0].classList.contains('e-active')).toBe(true);
+            expect(sNestContent.children[0].innerHTML).toBe('<div>2India</div>');
+            (<HTMLElement>sNested.children[0].children[0].children[2]).click();
+            expect(sNestContent.children[1].innerHTML).toBe('<div>2Australia</div>');
+            expect(sNestContent.children[1].classList.contains('e-active')).toBe(true);
+            expect(sNestContent.children[0].classList.contains('e-active')).toBe(false);
+            (<HTMLElement>sNested.children[0].children[0].children[3]).click();
+            expect(sNestContent.children[2].innerHTML).toBe('<div>2The United States of America</div>');
+            expect(sNestContent.children[2].classList.contains('e-active')).toBe(true);
+            expect(sNestContent.children[1].classList.contains('e-active')).toBe(false);
+            (<HTMLElement>sNested.children[0].children[0].children[4]).click();
+            expect(sNestContent.children[3].innerHTML).toBe('<div>2France</div>');
+            expect(sNestContent.children[3].classList.contains('e-active')).toBe(true);
+            expect(sNestContent.children[2].classList.contains('e-active')).toBe(false);
+            let tNested: HTMLElement = rootCon.querySelector('#Tab3') as HTMLElement;
+            let tNestContent: HTMLElement = rootCon.querySelector('#Tab3').children[1] as HTMLElement;
+            (<HTMLElement>rootEle.children[0].children[0].children[3]).click();
+            expect(rootCon.children[2].classList.contains('e-active')).toBe(true);
+            expect(tNestContent.children[0].classList.contains('e-active')).toBe(true);
+            expect(tNestContent.children[0].innerHTML).toBe('<div>3India</div>');
+            (<HTMLElement>tNested.children[0].children[0].children[2]).click();
+            expect(tNestContent.children[1].innerHTML).toBe('<div>3Australia</div>');
+            expect(tNestContent.children[1].classList.contains('e-active')).toBe(true);
+            expect(tNestContent.children[0].classList.contains('e-active')).toBe(false);
+            (<HTMLElement>tNested.children[0].children[0].children[3]).click();
+            expect(tNestContent.children[2].innerHTML).toBe('<div>3The United States of America</div>');
+            expect(tNestContent.children[2].classList.contains('e-active')).toBe(true);
+            expect(tNestContent.children[1].classList.contains('e-active')).toBe(false);
+            (<HTMLElement>tNested.children[0].children[0].children[4]).click();
+            expect(tNestContent.children[3].innerHTML).toBe('<div>3France</div>');
+            expect(tNestContent.children[3].classList.contains('e-active')).toBe(true);
+            expect(tNestContent.children[2].classList.contains('e-active')).toBe(false);
+        });
+    });
+    describe('Vertical Orientation Right - Nested Tab testing with headerPlacement', () => {
+        let tabObj: Tab
+        beforeAll((): void => {
+            let css: string = ".e-hor-nav { position: absolute } .e-toolbar-items { height: 100%; } .e-toolbar-item { display: block !important; width: auto; }";
+            let style: HTMLStyleElement = document.createElement('style'); 
+            style.type = 'text/css';
+            style.id = 'scroll';
+            let styleNode: Node = style.appendChild(document.createTextNode(css));
+            document.getElementsByTagName('head')[0].appendChild(style);
+        });
+        beforeEach((done: Function): void => {
+            let rootDiv: HTMLElement = createElement('div', {id:'temTab'});
+            let header: HTMLElement = createElement('div', {className: 'e-tab-header'});
+            let itemHead1: HTMLElement = createElement ('div', {innerHTML: 'India'});
+            let itemHead2: HTMLElement = createElement ('div', {innerHTML: 'Canada'});
+            let itemHead3: HTMLElement = createElement ('div', {innerHTML: 'Australia'});
+            let itemHead4: HTMLElement = createElement ('div', {innerHTML: 'USA'});
+            let content: HTMLElement = createElement('div', {className: 'e-content'});
+            let contentItem1: HTMLElement = createElement('div').appendChild(createElement('div', { innerHTML : "India, officially the Commonwealth of Australia, is a country comprising the mainland of the Australian continent, the island of Tasmania and numerous smaller islands. It is the world's sixth-largest country by total area. Neighboring countries include Indonesia, East Timor and Papua New Guinea to the north; the Solomon Islands, Vanuatu and New Caledonia to the north-east; and New Zealand to the south-east. <div id='Tab1'></div>"}));
+            let contentItem2: HTMLElement = createElement('div').appendChild(createElement('div', { innerHTML : "Canada, officially the Commonwealth of Australia, is a country comprising the mainland of the Australian continent, the island of Tasmania and numerous smaller islands. It is the world's sixth-largest country by total area. Neighboring countries include Indonesia, East Timor and Papua New Guinea to the north; the Solomon Islands, Vanuatu and New Caledonia to the north-east; and New Zealand to the south-east. <div id='Tab2'></div>"}));
+            let contentItem3: HTMLElement = createElement('div').appendChild(createElement('div', { innerHTML : "Australia, officially the Commonwealth of Australia, is a country comprising the mainland of the Australian continent, the island of Tasmania and numerous smaller islands. It is the world's sixth-largest country by total area. Neighboring countries include Indonesia, East Timor and Papua New Guinea to the north; the Solomon Islands, Vanuatu and New Caledonia to the north-east; and New Zealand to the south-east. <div id='Tab3'></div>"}));
+            let contentItem4: HTMLElement = createElement('div').appendChild(createElement('div', { innerHTML : "USA, officially the Commonwealth of Australia, is a country comprising the mainland of the Australian continent, the island of Tasmania and numerous smaller islands. It is the world's sixth-largest country by total area. Neighboring countries include Indonesia, East Timor and Papua New Guinea to the north; the Solomon Islands, Vanuatu and New Caledonia to the north-east; and New Zealand to the south-east. <div id='Tab4'></div>"}));
+            content.appendChild(contentItem1);
+            content.appendChild(contentItem2);
+            content.appendChild(contentItem3);
+            content.appendChild(contentItem4);
+            header.appendChild(itemHead1);
+            header.appendChild(itemHead2);
+            header.appendChild(itemHead3);
+            header.appendChild(itemHead4);
+            rootDiv.appendChild(header);
+            rootDiv.appendChild(content);
+            document.body.appendChild(rootDiv);
+            tabObj = new Tab({
+                overflowMode: 'Popup',
+                headerPlacement: 'Right',
+                animation: { next: { effect : 'None'}, previous: { effect: 'None'}}
+            });
+            tabObj.appendTo(rootDiv);
+            let tabObj1: Tab = new Tab({
+                headerPlacement: 'Right',
+                animation: { next: { effect : 'None'}, previous: { effect: 'None'}},
+                items: [
+                    {
+                        header: { 'text': 'India1' },
+                        content: '1India'
+                    },
+                    {
+                        header: { 'text': 'Australia1' },
+                        content: '1Australia'
+                    },
+                    {
+                        header: { 'text': 'USA1' },
+                        content: '1The United States of America'
+                    },
+                    {
+                        header: { 'text': 'France1' },
+                        content: '1France'
+                    }
+                ],
+            });
+            tabObj1.appendTo('#Tab1')
+            let tabObj2: Tab = new Tab({
+                headerPlacement: 'Right',
+                animation: { next: { effect : 'None'}, previous: { effect: 'None'}},
+                items: [
+                    {
+                        header: { 'text': 'India2' },
+                        content: '2India'
+                    },
+                    {
+                        header: { 'text': 'Australia2' },
+                        content: '2Australia'
+                    },
+                    {
+                        header: { 'text': 'USA2' },
+                        content: '2The United States of America'
+                    },
+                    {
+                        header: { 'text': 'France2' },
+                        content: '2France'
+                    }
+                ],
+            });
+            tabObj2.appendTo('#Tab2')
+            let tabObj3: Tab = new Tab({
+                headerPlacement: 'Right',
+                animation: { next: { effect : 'None'}, previous: { effect: 'None'}},
+                items: [
+                    {
+                        header: { 'text': 'India3' },
+                        content: '3India'
+                    },
+                    {
+                        header: { 'text': 'Australia3' },
+                        content: '3Australia'
+                    },
+                    {
+                        header: { 'text': 'USA3' },
+                        content: '3The United States of America'
+                    },
+                    {
+                        header: { 'text': 'France3' },
+                        content: '3France'
+                    }
+                ],
+            });
+            tabObj3.appendTo('#Tab3');
+            setTimeout(() => { done(); }, 2000);
+        });
+        afterEach((): void => {
+            if (tabObj) {
+                tabObj.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Nested tab Testing with headerPlacement testing', () => {
+            let rootEle: HTMLElement = document.getElementById('temTab');
+            let rootCon: HTMLElement = rootEle.children[1] as HTMLElement;
+            let fNested: HTMLElement = rootCon.querySelector('#Tab1') as HTMLElement;
+            let fNestContent: HTMLElement = rootCon.querySelector('#Tab1').children[1] as HTMLElement;
+            expect(rootCon.children[0].classList.contains('e-active')).toBe(true);
+            expect(fNestContent.children[0].classList.contains('e-active')).toBe(true);
+            expect(fNestContent.children[0].innerHTML).toBe('<div>1India</div>');
+            (<HTMLElement>fNested.children[0].children[0].children[2]).click();
+            expect(fNestContent.children[1].innerHTML).toBe('<div>1Australia</div>');
+            expect(fNestContent.children[1].classList.contains('e-active')).toBe(true);
+            expect(fNestContent.children[0].classList.contains('e-active')).toBe(false);
+            (<HTMLElement>fNested.children[0].children[0].children[3]).click();
+            expect(fNestContent.children[2].innerHTML).toBe('<div>1The United States of America</div>');
+            expect(fNestContent.children[2].classList.contains('e-active')).toBe(true);
+            expect(fNestContent.children[1].classList.contains('e-active')).toBe(false);
+            (<HTMLElement>fNested.children[0].children[0].children[4]).click();
+            expect(fNestContent.children[3].innerHTML).toBe('<div>1France</div>');
+            expect(fNestContent.children[3].classList.contains('e-active')).toBe(true);
+            expect(fNestContent.children[2].classList.contains('e-active')).toBe(false);
+            let sNested: HTMLElement = rootCon.querySelector('#Tab2') as HTMLElement;
+            let sNestContent: HTMLElement = rootCon.querySelector('#Tab2').children[1] as HTMLElement;
+            (<HTMLElement>rootEle.children[0].children[0].children[2]).click();
+            expect(rootCon.children[1].classList.contains('e-active')).toBe(true);
+            expect(sNestContent.children[0].classList.contains('e-active')).toBe(true);
+            expect(sNestContent.children[0].innerHTML).toBe('<div>2India</div>');
+            (<HTMLElement>sNested.children[0].children[0].children[2]).click();
+            expect(sNestContent.children[1].innerHTML).toBe('<div>2Australia</div>');
+            expect(sNestContent.children[1].classList.contains('e-active')).toBe(true);
+            expect(sNestContent.children[0].classList.contains('e-active')).toBe(false);
+            (<HTMLElement>sNested.children[0].children[0].children[3]).click();
+            expect(sNestContent.children[2].innerHTML).toBe('<div>2The United States of America</div>');
+            expect(sNestContent.children[2].classList.contains('e-active')).toBe(true);
+            expect(sNestContent.children[1].classList.contains('e-active')).toBe(false);
+            (<HTMLElement>sNested.children[0].children[0].children[4]).click();
+            expect(sNestContent.children[3].innerHTML).toBe('<div>2France</div>');
+            expect(sNestContent.children[3].classList.contains('e-active')).toBe(true);
+            expect(sNestContent.children[2].classList.contains('e-active')).toBe(false);
+            let tNested: HTMLElement = rootCon.querySelector('#Tab3') as HTMLElement;
+            let tNestContent: HTMLElement = rootCon.querySelector('#Tab3').children[1] as HTMLElement;
+            (<HTMLElement>rootEle.children[0].children[0].children[3]).click();
+            expect(rootCon.children[2].classList.contains('e-active')).toBe(true);
+            expect(tNestContent.children[0].classList.contains('e-active')).toBe(true);
+            expect(tNestContent.children[0].innerHTML).toBe('<div>3India</div>');
+            (<HTMLElement>tNested.children[0].children[0].children[2]).click();
+            expect(tNestContent.children[1].innerHTML).toBe('<div>3Australia</div>');
+            expect(tNestContent.children[1].classList.contains('e-active')).toBe(true);
+            expect(tNestContent.children[0].classList.contains('e-active')).toBe(false);
+            (<HTMLElement>tNested.children[0].children[0].children[3]).click();
+            expect(tNestContent.children[2].innerHTML).toBe('<div>3The United States of America</div>');
+            expect(tNestContent.children[2].classList.contains('e-active')).toBe(true);
+            expect(tNestContent.children[1].classList.contains('e-active')).toBe(false);
+            (<HTMLElement>tNested.children[0].children[0].children[4]).click();
+            expect(tNestContent.children[3].innerHTML).toBe('<div>3France</div>');
+            expect(tNestContent.children[3].classList.contains('e-active')).toBe(true);
+            expect(tNestContent.children[2].classList.contains('e-active')).toBe(false);
+        });
+    });
     describe('prevent selection in tab select while swiping', () => {
         let tab: any;
         let swipeEventArgs: any;
@@ -7007,23 +8812,13 @@ describe('Tab Control', () => {
                 items: [
                     { header: { "text": "item1" }, content: "Content1" },
                     { header: { "text": "item2" }, content: "Content2" }
-                ],animation: { next: { effect : 'None'}, previous: { effect: 'None'}}
+                ],
+                animation: { next: { effect : 'None'}, previous: { effect: 'None'}}
             });
             tab.appendTo('#ej2Tab');
             let element: HTMLElement = document.getElementById('ej2Tab');
-            swipeEventArgs = {
-                preventDefault: function () { },
-                swipeDirection: 'Left',
-                originalEvent: {
-                    changedTouches: {}
-                }
-            };
-            tab.swipeHandler(swipeEventArgs);
-            expect(element.querySelector('#e-item_1').classList.contains('e-active')).toEqual(false);
             expect(element.querySelector('#e-item_0').classList.contains('e-active')).toEqual(true);
-            (<HTMLElement>element.children[0].children[0].children[2]).click();
-            expect(element.querySelector('#e-item_0').classList.contains('e-active')).toEqual(false);
-            expect(element.querySelector('#e-item_1').classList.contains('e-active')).toEqual(true);
+            expect(element.querySelector('#e-item_1').classList.contains('e-active')).toEqual(false);
             swipeEventArgs = {
                 preventDefault: function () { },
                 swipeDirection: 'Left',
@@ -7032,13 +8827,22 @@ describe('Tab Control', () => {
                 }
             };
             tab.swipeHandler(swipeEventArgs);
-            expect(element.querySelector('#e-item_0').classList.contains('e-active')).toEqual(false);
-            expect(element.querySelector('#e-item_1').classList.contains('e-active')).toEqual(true);
+            expect(element.querySelector('#e-item_0').classList.contains('e-active')).toEqual(true);
+            expect(element.querySelector('#e-item_1').classList.contains('e-active')).toEqual(false);
+            swipeEventArgs = {
+                preventDefault: function () { },
+                swipeDirection: 'Left',
+                originalEvent: {
+                    changedTouches: {}
+                }
+            };
+            tab.swipeHandler(swipeEventArgs);
+            expect(element.querySelector('#e-item_0').classList.contains('e-active')).toEqual(true);
+            expect(element.querySelector('#e-item_1').classList.contains('e-active')).toEqual(false);
         });
     });
     describe('SelectedItem onPropertychange testing with navigating zeroth index', () => {
         let tab: any;
-        let swipeEventArgs: any;
         beforeEach((): void => {
             tab = undefined;
             let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
@@ -7052,6 +8856,7 @@ describe('Tab Control', () => {
         });
         it('SelectedItem onPropertychange testing', () => {
             tab = new Tab({
+                selectedItem: 1,
                 items: [
                     { header: { "text": "item1" }, content: "Content1" },
                     { header: { "text": "item2" }, content: "Content2" }
@@ -7060,7 +8865,6 @@ describe('Tab Control', () => {
             });
             tab.appendTo('#ej2Tab');
             let element: HTMLElement = document.getElementById('ej2Tab');
-            (<HTMLElement>element.children[0].children[0].children[2]).click();
             expect(element.querySelector('#e-item_1').classList.contains('e-active')).toEqual(true);
             expect(element.querySelector('#e-item_0').classList.contains('e-active')).toEqual(false);
             tab.selectedItem = 0;
@@ -7185,7 +8989,7 @@ describe('Tab Control', () => {
             }
             document.body.innerHTML = '';
         });
-        it('items onpropertychange testing with zeor item', () => {
+        it('items onpropertychange testing with zero item', () => {
             tab = new Tab({
                 items: [
                     { header: { "text": "item1" }, content: "#templateId" },
@@ -7451,9 +9255,7 @@ describe('Tab Control', () => {
             expect(tab.element.querySelector('#e-item_0').classList.contains('test1')).toEqual(true);
             expect(tab.element.querySelector('#e-item_1').classList.contains('tabCssClass2')).not.toEqual(true);
             expect(tab.element.querySelector('#e-item_1').classList.contains('test2')).toEqual(true);
-            tab.items[2].cssClass = 'test3';
             tab.dataBind();
-            expect(tab.items[2].cssClass).toEqual('test3');
         });
         it('Items - disabled property change testing', () => {
             tab = new Tab({
@@ -7601,7 +9403,7 @@ describe('Tab Control', () => {
             (<HTMLElement>tab.element.querySelector('#ejbutton')).click();
             expect(btnCLick).toBe(1);
         });
-        it('Header element dublicate testing', () => {
+        it('Header element duplicate testing', () => {
             let btnEle = document.getElementById('ejbutton')
             tab = new Tab({
                 items: [
@@ -7659,9 +9461,11 @@ describe('Tab Control', () => {
         let tab: Tab;
         let i: number = 0;
         let j: HTMLElement;
-        function clickFn(obj: SelectingEventArgs): any {
+        let k: HTMLElement;
+        function selectEventFn(obj: SelectingEventArgs): any {
             i = obj.selectingIndex;
             j = obj.selectingItem;
+            k = obj.selectingContent;
         }
         beforeEach((): void => {
             tab = undefined;
@@ -7676,7 +9480,7 @@ describe('Tab Control', () => {
         });
         it('Items - selecting' , () => {
             tab = new Tab({
-                selecting: clickFn,
+                selecting: selectEventFn,
                 items: [
                     { header: { "text": "item1" }, content: "Content1" },
                     { header: { "text": "item2" }, content: "Content2" }
@@ -7687,12 +9491,18 @@ describe('Tab Control', () => {
             tab.select(0);
             expect(i).toEqual(0);
             expect(element.querySelectorAll('.e-toolbar-items .e-toolbar-item')[0] as HTMLElement).toEqual(j);
+            expect(element.querySelector('.e-content').children[0]).toEqual(k);
             tab.select(1);
             expect(i).toEqual(1);
             expect(element.querySelectorAll('.e-toolbar-items .e-toolbar-item')[1] as HTMLElement).toEqual(j);
+            expect(k).toEqual(null);
+            tab.select(1);
+            expect(element.querySelector('.e-content').children[1]).toEqual(k);
+            tab.select(0);
+            expect(element.querySelector('.e-content').children[0]).toEqual(k);
         });
     });
-    describe('Hidden tab with select method arguments testing', () => {
+        describe('Hidden tab with select method arguments testing', () => {
         let tab: any;
         let prevIndex = 0;
         let swipeEventArgs: any;
@@ -7949,6 +9759,155 @@ describe('Tab Control', () => {
             expect(ele.querySelector('#e-item_5').classList.contains('e-hidden')).toEqual(true);
             expect(ele.querySelector('#e-item_5').classList.contains('e-active')).toEqual(false);
             tab.hideTab(5, false);
+        });
+    });
+    describe('Header field value empty with addTab method testing', () => {
+        let tab: Tab;
+        let newItems: object[];
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+            newItems = [
+                { header: {}, content: "sample content" },
+                { header: { "text": "" }, content: "sample content" },
+                { header: { "text": "", "iconCss": "icon" }, content: 'samle content' },
+                { header: { "text": "", "iconCss": "" }, content: 'sample content' }
+            ];
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Empty header with addTab method testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item3" }, content: "Content3" },
+                    { header: { "text": "item4" }, content: "Content4" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.children.length).toEqual(2);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.querySelectorAll('.e-content').length).toEqual(1);
+            expect(element.querySelectorAll('.e-toolbar-items').length).toEqual(1);
+            expect(element.querySelectorAll('.e-toolbar-item').length).toEqual(2);
+            tab.addTab([newItems[0]], 0);
+            expect(element.children.length).toEqual(2);
+        });
+        it('Empty header Text with addTab method testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item3" }, content: "Content3" },
+                    { header: { "text": "item4" }, content: "Content4" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.children.length).toEqual(2);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.querySelectorAll('.e-content').length).toEqual(1);
+            expect(element.querySelectorAll('.e-toolbar-items').length).toEqual(1);
+            expect(element.querySelectorAll('.e-toolbar-item').length).toEqual(2);
+            tab.addTab([newItems[1]], 0);
+            expect(element.children.length).toEqual(2);
+        }); 
+        it('Empty header Text & headerIcon with addTab method testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item3" }, content: "Content3" },
+                    { header: { "text": "item4" }, content: "Content4" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.children.length).toEqual(2);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.querySelectorAll('.e-content').length).toEqual(1);
+            expect(element.querySelectorAll('.e-toolbar-items').length).toEqual(1);
+            expect(element.querySelectorAll('.e-toolbar-item').length).toEqual(2);
+            tab.addTab([newItems[2]], 0);
+            expect(element.querySelectorAll('.e-toolbar-item').length).toEqual(3);
+        });
+        it('Empty header Text & Empty headerIcon with addTab method testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item3" }, content: "Content3" },
+                    { header: { "text": "item4" }, content: "Content4" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.children.length).toEqual(2);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.querySelectorAll('.e-content').length).toEqual(1);
+            expect(element.querySelectorAll('.e-toolbar-items').length).toEqual(1);
+            expect(element.querySelectorAll('.e-toolbar-item').length).toEqual(2);
+            tab.addTab([newItems[3]], 0);
+            expect(element.children.length).toEqual(2);
+        });
+    });
+    describe('Header field value empty with onPropertyChanged value testing', () => {
+        let tab: Tab;
+        let items: any;
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+            items = [
+                { header: { "text": "sample1" }, content: "sample content" },
+                { header: { "text": "", "iconCss": "icon" }, content: "sample content" },
+                { header: { "text": "sample2", "iconCss": "icon" }, content: "sample content" }
+            ];
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('onPropertyChanged - empty header testing', () => {
+            tab = new Tab( {
+                items: items
+            });
+            tab.appendTo('#ej2Tab');
+            tab.items[0].header.text = ""; 
+            tab.dataBind();
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.querySelectorAll('.e-content').length).toEqual(1);
+            expect(element.querySelectorAll('.e-toolbar-items').length).toEqual(1);
+            expect(element.querySelectorAll('.e-toolbar-item').length).toEqual(2);
+        });
+        it('onPropertyChanged -empty icon testing', () => {
+            tab = new Tab( {
+                items: items
+            });
+            tab.appendTo('#ej2Tab');
+            tab.items[1].header.iconCss = ""; 
+            tab.dataBind();
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.querySelectorAll('.e-content').length).toEqual(1);
+            expect(element.querySelectorAll('.e-toolbar-items').length).toEqual(1);
+            expect(element.querySelectorAll('.e-toolbar-item').length).toEqual(2);
+        });
+        it('onPropertyChanged - empty header with icon testing', () => {
+            tab = new Tab( {
+                items: items
+            });
+            tab.appendTo('#ej2Tab');
+            tab.items[0].header.text = "sample3"; 
+            tab.dataBind();
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(tab.items[0].header.text).toEqual('sample3');
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.querySelectorAll('.e-content').length).toEqual(1);
+            expect(element.querySelectorAll('.e-toolbar-items').length).toEqual(1);
+            expect(element.querySelectorAll('.e-toolbar-item').length).toEqual(3);
         });
     });
 });

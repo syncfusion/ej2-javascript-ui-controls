@@ -482,8 +482,8 @@ describe('Column chooser module', () => {
             destroy(gridObj);
         });
     });
-    
-    describe('Open the multiple column chooser in hierarchyGrid', () => {
+
+    describe('Open multiple column chooser in hierarchyGrid', () => {
         let gridObj: Grid;
         let beforeOpenColumnChooser: () => void;
         let actionComplete: Function;
@@ -506,8 +506,8 @@ describe('Column chooser module', () => {
                         dataSource: [],
                         queryString: 'EmployeeID',
                         allowPaging: true,
-                        toolbar:['ColumnChooser'],
-                    showColumnChooser:true,
+                        toolbar: ['ColumnChooser'],
+                        showColumnChooser: true,
                         columns: [
                             { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120 },
                             { field: 'ShipCity', headerText: 'Ship City', width: 120 },
@@ -520,7 +520,7 @@ describe('Column chooser module', () => {
         it('Show/hide the column chooser in parent grid', (done: Function) => {
             setTimeout(() => {
                 ;
-                gridObj.columnChooserModule.openColumnChooser();               
+                gridObj.columnChooserModule.openColumnChooser();
                 gridObj.columnChooserModule.openColumnChooser();
                 done();
             }, 500);
@@ -530,5 +530,5 @@ describe('Column chooser module', () => {
             destroy(gridObj);
         });
     });
-
+    
 });

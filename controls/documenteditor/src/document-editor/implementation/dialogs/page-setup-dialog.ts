@@ -1,6 +1,6 @@
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { LayoutViewer } from '../index';
-import { createElement, L10n, setCulture } from '@syncfusion/ej2-base';
+import { createElement, L10n } from '@syncfusion/ej2-base';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { CheckBox, RadioButton, ChangeArgs } from '@syncfusion/ej2-buttons';
 import { SelectionSectionFormat } from '../index';
@@ -72,10 +72,9 @@ export class PageSetupDialog {
     /**
      * @private
      */
-    public initPageSetupDialog(locale: L10n): void {
+    public initPageSetupDialog(locale: L10n, isRtl?: boolean): void {
         let id: string = this.owner.owner.containerId + '_pagesetup_dialog';
         this.target = createElement('div', { id: id, className: 'e-de-pagesetup-dlg-container' });
-        this.owner.owner.element.appendChild(this.target);
         let ejtabContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_MarginTabContainer' });
         this.target.appendChild(ejtabContainer);
         this.marginTab = <HTMLDivElement>createElement('div', {
@@ -110,20 +109,23 @@ export class PageSetupDialog {
         contentContainer.appendChild(paperContent); contentContainer.appendChild(layoutContent);
         ejtab.appendChild(headerContainer); ejtab.appendChild(contentContainer);
         ejtabContainer.appendChild(ejtab);
-        this.initMarginProperties(this.marginTab, locale);
-        this.initPaperSizeProperties(this.paperTab, locale);
-        this.initLayoutProperties(this.layoutTab, locale);
-        let tabObj: Tab = new Tab({}, ejtab);
+        this.initMarginProperties(this.marginTab, locale, isRtl);
+        this.initPaperSizeProperties(this.paperTab, locale, isRtl);
+        this.initLayoutProperties(this.layoutTab, locale, isRtl);
+        let tabObj: Tab = new Tab({ enableRtl: isRtl }, ejtab);
         this.target.addEventListener('keyup', this.keyUpInsertPageSettings);
         let marginTabHeader: HTMLElement = tabObj.element.getElementsByClassName('e-item e-toolbar-item')[0] as HTMLElement;
         let marginTabHeaderItem: HTMLElement = marginTabHeader.getElementsByClassName('e-tab-wrap')[0] as HTMLElement;
         marginTabHeaderItem.classList.add('e-de-page-setup-dlg-margin-tab-header');
+        if (isRtl) {
+            marginTabHeaderItem.classList.add('e-de-rtl');
+        }
     }
 
     /**
      * @private
      */
-    public initMarginProperties(element: HTMLDivElement, locale: L10n): void {
+    public initMarginProperties(element: HTMLDivElement, locale: L10n, isRtl?: boolean): void {
         let marginDiv: HTMLDivElement = createElement('div', {
             id: 'margin_div',
             className: 'e-de-page-setup-dlg-sub-container', styles: 'height:135px;'
@@ -134,6 +136,10 @@ export class PageSetupDialog {
         // tslint:disable-next-line:max-line-length
         let rightMarginDiv: HTMLDivElement = createElement('div', { className: 'e-de-page-setup-dlg-right-sub-container' }) as HTMLDivElement;
         marginDiv.appendChild(rightMarginDiv);
+        if (isRtl) {
+            leftMarginDiv.classList.add('e-de-rtl');
+            rightMarginDiv.classList.add('e-de-rtl');
+        }
 
         let topLabel: HTMLLabelElement = createElement('label', {
             innerHTML: locale.getConstant('Top'), className: 'e-de-page-setup-dlg-sub-header',
@@ -189,7 +195,13 @@ export class PageSetupDialog {
         // tslint:disable-next-line:max-line-length
         let orientationLabeldiv: HTMLElement = createElement('div', { id: '_orientationLabelDiv', className: 'e-de-page-setup-dlg-sub-label', innerHTML: locale.getConstant('Orientation') });
         let orientationPropDiv: HTMLDivElement = createElement('div', { id: '_orientationPropDiv', styles: 'display: flex;', className: 'e-de-page-setup-dlg-orientation-prop' }) as HTMLDivElement;
-        let portraitDiv: HTMLDivElement = createElement('div', { id: '_portraitDiv', styles: 'padding-right: 30px;' }) as HTMLDivElement;
+        let portraitDivStyles: string;
+        if (isRtl) {
+            portraitDivStyles = 'padding-left: 30px;';
+        } else {
+            portraitDivStyles = 'padding-right: 30px;';
+        }
+        let portraitDiv: HTMLDivElement = createElement('div', { id: '_portraitDiv', styles: portraitDivStyles }) as HTMLDivElement;
         let portrait: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'radiobutton' }, id: this.target.id + '_portrait'
         });
@@ -201,16 +213,16 @@ export class PageSetupDialog {
         orientationPropDiv.appendChild(portraitDiv); orientationPropDiv.appendChild(landscapeDiv);
         orientationDiv.appendChild(orientationLabeldiv);
         orientationDiv.appendChild(orientationPropDiv);
-
-        this.portrait = new RadioButton({ label: locale.getConstant('Portrait'), checked: true, change: this.onPortrait });
-        this.landscape = new RadioButton({ label: locale.getConstant('Landscape'), change: this.onLandscape });
+        // tslint:disable-next-line:max-line-length
+        this.portrait = new RadioButton({ label: locale.getConstant('Portrait'), checked: true, enableRtl: isRtl, change: this.onPortrait });
+        this.landscape = new RadioButton({ label: locale.getConstant('Landscape'), enableRtl: isRtl, change: this.onLandscape });
         this.portrait.appendTo(portrait); this.landscape.appendTo(landscape);
         element.appendChild(orientationDiv);
     }
     /**
      * @private
      */
-    public initPaperSizeProperties(element: HTMLDivElement, locale: L10n): void {
+    public initPaperSizeProperties(element: HTMLDivElement, locale: L10n, isRtl?: boolean): void {
         let sizeDiv: HTMLDivElement = createElement('div', {
             id: 'size_div',
             className: 'e-de-page-setup-dlg-sub-size-container'
@@ -221,6 +233,10 @@ export class PageSetupDialog {
         // tslint:disable-next-line:max-line-length
         let rightSizeDiv: HTMLDivElement = createElement('div', { className: 'e-de-page-setup-dlg-right-sub-container' }) as HTMLDivElement;
         sizeDiv.appendChild(rightSizeDiv);
+        if (isRtl) {
+            leftSizeDiv.classList.add('e-de-rtl');
+            rightSizeDiv.classList.add('e-de-rtl');
+        }
 
         let widthLabel: HTMLLabelElement = createElement('label', {
             innerHTML: locale.getConstant('Width'), className: 'e-de-page-setup-dlg-sub-header',
@@ -266,14 +282,14 @@ export class PageSetupDialog {
                 '</option><option value="customsize">' + locale.getConstant('Custom Size') + '</option>'
         }) as HTMLSelectElement;
         paperSizeDiv.appendChild(paperSize);
-        this.paperSize = new DropDownList({ change: this.changeByPaperSize, width: '170px' });
+        this.paperSize = new DropDownList({ change: this.changeByPaperSize, width: '170px', enableRtl: isRtl });
         this.paperSize.appendTo(paperSize);
         element.appendChild(paperSizeDiv);
     }
     /**
      * @private
      */
-    public initLayoutProperties(element: HTMLDivElement, locale: L10n): void {
+    public initLayoutProperties(element: HTMLDivElement, locale: L10n, isRtl?: boolean): void {
         // tslint:disable-next-line:max-line-length
         let layoutDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { id: '_layoutDiv', className: 'e-de-page-setup-dlg-layout-sub-container', });
         // tslint:disable-next-line:max-line-length
@@ -290,8 +306,8 @@ export class PageSetupDialog {
         oddOrEvenDiv.appendChild(checkBox2);
         layoutDiv.appendChild(firstPageDiv); layoutDiv.appendChild(oddOrEvenDiv);
 
-        this.checkBox1 = new CheckBox({ label: locale.getConstant('Different odd and even') });
-        this.checkBox2 = new CheckBox({ label: locale.getConstant('Different first page') });
+        this.checkBox1 = new CheckBox({ label: locale.getConstant('Different odd and even'), enableRtl: isRtl });
+        this.checkBox2 = new CheckBox({ label: locale.getConstant('Different first page'), enableRtl: isRtl });
         this.checkBox1.appendTo(checkBox1); this.checkBox2.appendTo(checkBox2);
         element.appendChild(layoutDiv);
 
@@ -311,6 +327,10 @@ export class PageSetupDialog {
         // tslint:disable-next-line:max-line-length
         let rightLayoutDiv: HTMLDivElement = createElement('div', { className: 'e-de-page-setup-dlg-right-layout-container' }) as HTMLDivElement;
         propertyDiv.appendChild(rightLayoutDiv);
+        if (isRtl) {
+            rightLayoutDiv.classList.add('e-de-rtl');
+            leftLayoutDiv.classList.add('e-de-rtl');
+        }
 
         let headerLabel: HTMLLabelElement = createElement('label', {
             innerHTML: locale.getConstant('Header'), className: 'e-de-page-setup-dlg-sub-header',
@@ -345,9 +365,8 @@ export class PageSetupDialog {
     public show(): void {
         let localValue: L10n = new L10n('documenteditor', this.owner.owner.defaultLocale);
         localValue.setLocale(this.owner.owner.locale);
-        setCulture(this.owner.owner.locale);
         if (!this.target) {
-            this.initPageSetupDialog(localValue);
+            this.initPageSetupDialog(localValue, this.owner.owner.enableRtl);
         }
         this.owner.dialog.header = localValue.getConstant('Page Setup');
         this.owner.dialog.width = 'auto';

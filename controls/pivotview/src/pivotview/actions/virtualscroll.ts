@@ -11,6 +11,9 @@ import { showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 export class VirtualScroll {
     private parent: PivotView;
     private previousValues: { top: number, left: number } = { top: 0, left: 0 };
+    private frozenPreviousValues: { top: number, left: number } = { top: 0, left: 0 };
+    private pageXY: { x: number, y: number };
+    private eventType: string = '';
     /** @hidden */
     public direction: string;
 
@@ -46,9 +49,81 @@ export class VirtualScroll {
             EventHandler.add(mCont, 'scroll touchmove pointermove', this.onHorizondalScroll(mHdr, mCont, fCont), this);
             EventHandler.add(mCont, 'scroll wheel touchmove pointermove', this.onVerticalScroll(fCont, mCont), this);
             EventHandler.add(mCont, 'mouseup touchend', this.common(mHdr, mCont, fCont), this);
+            EventHandler.add(fCont, 'wheel', this.onWheelScroll(mCont, fCont), this);
+            EventHandler.add(fCont, 'touchstart pointerdown', this.setPageXY(), this);
+            EventHandler.add(fCont, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
+            EventHandler.add(mHdr, 'touchstart pointerdown', this.setPageXY(), this);
+            EventHandler.add(mHdr, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
         }
         this.parent.grid.isPreventScrollEvent = true;
     }
+
+    private onWheelScroll(mCont: HTMLElement, fCont: HTMLElement): Function {
+        let element: HTMLElement = mCont;
+        return (e: WheelEvent) => {
+            let top: number = element.scrollTop + (e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY);
+            if (this.frozenPreviousValues.top === top) {
+                return;
+            }
+            e.preventDefault();
+            fCont.scrollTop = top;
+            element.scrollTop = top;
+            this.frozenPreviousValues.top = top;
+            this.eventType = e.type;
+        };
+    }
+
+    private onTouchScroll(mHdr: HTMLElement, mCont: HTMLElement, fCont: HTMLElement): Function {
+        let element: HTMLElement = mCont;
+        return (e: PointerEvent | TouchEvent) => {
+            if ((e as PointerEvent).pointerType === 'mouse') {
+                return;
+            }
+            let pageXY: { x: number, y: number } = this.getPointXY(e);
+            let top: number = element.scrollTop + (this.pageXY.y - pageXY.y);
+            let left: number = element.scrollLeft + (this.pageXY.x - pageXY.x);
+            if (this.parent.element.querySelector('.' + cls.HEADERCONTENT).contains(e.target as Element)) {
+                if (this.frozenPreviousValues.left === left || left < 0) {
+                    return;
+                }
+                mHdr.scrollLeft = left;
+                element.scrollLeft = left;
+                this.pageXY.x = pageXY.x;
+                this.frozenPreviousValues.left = left;
+            } else {
+                if (this.frozenPreviousValues.top === top || top < 0) {
+                    return;
+                }
+                fCont.scrollTop = top;
+                element.scrollTop = top;
+                this.pageXY.y = pageXY.y;
+                this.frozenPreviousValues.top = top;
+            }
+            this.eventType = e.type;
+        };
+    }
+
+    private setPageXY(): Function {
+        return (e: PointerEvent | TouchEvent) => {
+            if ((e as PointerEvent).pointerType === 'mouse') {
+                return;
+            }
+            this.pageXY = this.getPointXY(e);
+        };
+    }
+
+    private getPointXY(e: PointerEvent | TouchEvent): { x: number, y: number } {
+        let pageXY: { x: number, y: number } = { x: 0, y: 0 };
+        if ((e as TouchEvent).touches && (e as TouchEvent).touches.length) {
+            pageXY.x = (e as TouchEvent).touches[0].pageX;
+            pageXY.y = (e as TouchEvent).touches[0].pageY;
+        } else {
+            pageXY.x = (e as PointerEvent).pageX;
+            pageXY.y = (e as PointerEvent).pageY;
+        }
+        return pageXY;
+    }
+
 
     private update(mHdr: HTMLElement, mCont: HTMLElement, top: number, left: number, e: Event): void {
         if (this.direction === 'vertical') {
@@ -107,7 +182,7 @@ export class VirtualScroll {
         let timeOutObj: any;
         return (e: Event) => {
             let left: number = mCont.scrollLeft;
-            if (e.type === 'wheel' || e.type === 'touchmove') {
+            if (e.type === 'wheel' || e.type === 'touchmove' || this.eventType === 'wheel' || this.eventType === 'touchmove') {
                 clearTimeout(timeOutObj);
                 /* tslint:disable */
                 timeOutObj = setTimeout(() => {
@@ -147,6 +222,8 @@ export class VirtualScroll {
                 this.parent.scrollPosObject.horizontalSection = this.parent.scrollPosObject.horizontalSection + excessMove;
             }
             this.previousValues.left = left;
+            this.frozenPreviousValues.left = left;
+            this.eventType = '';
             mHdr.scrollLeft = mCont.scrollLeft;
         }
     }
@@ -156,7 +233,7 @@ export class VirtualScroll {
         let timeOutObj: any;
         return (e: Event) => {
             let top: number = mCont.scrollTop;
-            if (e.type === 'wheel' || e.type === 'touchmove') {
+            if (e.type === 'wheel' || e.type === 'touchmove' || this.eventType === 'wheel' || this.eventType === 'touchmove') {
                 clearTimeout(timeOutObj);
                 /* tslint:disable */
                 timeOutObj = setTimeout(() => {
@@ -194,6 +271,8 @@ export class VirtualScroll {
                 this.parent.scrollPosObject.verticalSection = this.parent.scrollPosObject.verticalSection + excessMove;
             }
             this.previousValues.top = top;
+            this.frozenPreviousValues.top = top;
+            this.eventType = '';
             fCont.scrollTop = mCont.scrollTop;
             mCont.scrollTop = fCont.scrollTop;
         };

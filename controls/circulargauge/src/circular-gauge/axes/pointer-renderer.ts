@@ -160,21 +160,29 @@ export class PointerRenderer {
         let roundedEndAngle: number;
         let oldStart: number;
         let oldEnd: number;
+        let radius: number = pointer.roundedCornerRadius;
+        let process: number = radius * 0.25;
+        if (value <= process) {
+            radius = value === 1 || 2 ? 8 : radius;
+            radius /= 2;
+            process = radius * 0.25;
+        }
         oldStart = ((((pointer.currentRadius - (pointer.pointerWidth / 2)) * ((startAngle * Math.PI) / 180) -
-            (pointer.roundedCornerRadius / 4)) / (pointer.currentRadius - (pointer.pointerWidth / 2))) * 180) / Math.PI;
+            (radius / process)) / (pointer.currentRadius - (pointer.pointerWidth / 2))) * 180) / Math.PI;
         oldEnd = ((((pointer.currentRadius - (pointer.pointerWidth / 2)) * ((endAngle * Math.PI) / 180) +
-            (pointer.roundedCornerRadius / 4)) / (pointer.currentRadius - (pointer.pointerWidth / 2))) * 180) / Math.PI;
+            (radius / process)) / (pointer.currentRadius - (pointer.pointerWidth / 2))) * 180) / Math.PI;
         roundedStartAngle = ((((pointer.currentRadius) * ((startAngle * Math.PI) / 180) +
-            pointer.roundedCornerRadius) / (pointer.currentRadius)) * 180) / Math.PI;
+            radius) / (pointer.currentRadius)) * 180) / Math.PI;
         roundedEndAngle = ((((pointer.currentRadius) * ((endAngle * Math.PI) / 180) -
-            pointer.roundedCornerRadius) / (pointer.currentRadius)) * 180) / Math.PI;
+            radius) / (pointer.currentRadius)) * 180) / Math.PI;
         pointer.pathElement.map((element: Element) => {
             if (pointer.type === 'RangeBar') {
-                if (pointer.roundedCornerRadius) {
+                if (pointer.roundedCornerRadius && value) {
                     element.setAttribute('d', getRoundedPathArc(
                         location, roundedStartAngle, roundedEndAngle, oldStart, oldEnd, pointer.currentRadius,
                         pointer.pointerWidth, pointer.pointerWidth
                     ));
+                    radius = 0;
                 } else {
                     element.setAttribute('d', getCompleteArc(
                         location, startAngle, endAngle, pointer.currentRadius, (pointer.currentRadius - pointer.pointerWidth)

@@ -193,12 +193,16 @@ export class ContentRender implements IRenderer {
             this.tbody = this.getTable().querySelector('tbody');
         }
         for (let i: number = 0, len: number = modelData.length; i < len; i++) {
+            this.rows.push(modelData[i]);
             if (!gObj.rowTemplate) {
                 tr = row.render(modelData[i], columns);
                 if (gObj.frozenRows && i < gObj.frozenRows) {
                     hdrfrag.appendChild(tr);
                 } else {
                     frag.appendChild(tr);
+                }
+                if (modelData[i].isExpand) {
+                    gObj.notify(events.expandChildGrid, (<HTMLTableRowElement>tr).cells[gObj.groupSettings.columns.length]);
                 }
             } else {
                 let elements: NodeList = gObj.getRowTemplate()(extend({ index: i }, dataSource[i]), gObj, 'rowTemplate');
@@ -224,8 +228,6 @@ export class ContentRender implements IRenderer {
                     }
                 }
             }
-
-            this.rows.push(modelData[i]);
             if (modelData[i].isDataRow) {
                 //detailrowvisible 
                 let td: Element = tr.querySelectorAll('.e-rowcell:not(.e-hide)')[0];

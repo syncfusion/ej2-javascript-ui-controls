@@ -272,7 +272,7 @@ describe('Map layer testing', () => {
                 useGroupingSeparator: true,
                 layers: [{
                     shapeDataPath: 'State',
-                    shapePropertyPath: 'name',
+                    shapePropertyPath:['name', 'admin'],
                     dataSource: electiondata,
                     dataLabelSettings: {
                         visible: true,
@@ -298,16 +298,6 @@ describe('Map layer testing', () => {
                 done();
             };
             label.appendTo('#' + id);
-        });
-        it('testing datalabel from numeric datasource', (done: Function) => {
-            label.loaded = (args: ILoadedEventArgs) => {
-                spec = getElement('label_LayerIndex_0_shapeIndex_4_LabelIndex_4');
-                expect(spec.innerHTML).toBe('4');
-                done();
-            };
-            label.format = null;
-            label.useGroupingSeparator = false;
-            label.refresh();
         });
     });
 });

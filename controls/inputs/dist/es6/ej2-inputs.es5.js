@@ -1,4 +1,4 @@
-import { Ajax, Animation, Base, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getInstance, getNumericObject, getUniqueID, getValue, isNullOrUndefined, merge, remove, removeClass, rippleEffect, select, selectAll, setStyleAttribute, setValue } from '@syncfusion/ej2-base';
+import { Ajax, Animation, Base, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getInstance, getNumericObject, getUniqueID, getValue, isNullOrUndefined, merge, onIntlChange, remove, removeClass, rippleEffect, select, selectAll, setStyleAttribute, setValue } from '@syncfusion/ej2-base';
 import { Popup, Tooltip, createSpinner, getZindexPartial, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { SplitButton, getModel } from '@syncfusion/ej2-splitbuttons';
 
@@ -656,7 +656,7 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         this.isCalled = false;
         var ejInstance = getValue('ej2_instances', this.element);
         this.cloneElement = this.element.cloneNode(true);
-        removeClass([this.cloneElement], [CONTROL, COMPONENT]);
+        removeClass([this.cloneElement], [CONTROL, COMPONENT, 'e-lib']);
         this.angularTagName = null;
         if (this.element.tagName === 'EJS-NUMERICTEXTBOX') {
             this.angularTagName = this.element.tagName;
@@ -1763,6 +1763,7 @@ function resetHandler(e) {
     e.preventDefault();
     if (!this.inputObj.clearButton.classList.contains('e-clear-icon-hide')) {
         clear.call(this, e);
+        this.value = '';
     }
 }
 function clear(event) {
@@ -2686,7 +2687,7 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
         this.isIosInvalid = false;
         var ejInstance = getValue('ej2_instances', this.element);
         this.cloneElement = this.element.cloneNode(true);
-        removeClass([this.cloneElement], [CONTROL$1, COMPONENT$1]);
+        removeClass([this.cloneElement], [CONTROL$1, COMPONENT$1, 'e-lib']);
         this.angularTagName = null;
         if (this.element.tagName === 'EJS-MASKEDTEXTBOX') {
             this.angularTagName = this.element.tagName;
@@ -3463,12 +3464,15 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         var tooltipElement = this.activeHandle === 1 ? this.firstTooltipElement : this.secondTooltipElement;
         if (pos === 0 && this.type !== 'Range') {
             this.getHandle().classList.add(classNames.sliderHandleStart);
-            if (this.isMaterial && this.tooltip.isVisible) {
+            if (this.isMaterial && this.tooltip.isVisible && this.firstMaterialHandle) {
                 this.firstMaterialHandle.classList.add(classNames.sliderHandleStart);
                 if (tooltipElement) {
                     tooltipElement.classList.add(classNames.sliderTooltipStart);
                 }
             }
+        }
+        else {
+            this.getHandle().classList.remove(classNames.sliderHandleStart);
         }
     };
     Slider.prototype.transitionEnd = function (e) {
@@ -4722,7 +4726,11 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         }
         return value;
     };
-    Slider.prototype.onResize = function () {
+    /**
+     * It is used to reposition slider.
+     * @returns void
+     */
+    Slider.prototype.reposition = function () {
         var _this = this;
         this.firstHandle.style.transition = 'none';
         if (this.type !== 'Default') {
@@ -4783,6 +4791,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             this.removeElement(this.ul);
             this.renderScale();
         }
+        this.handleStart();
         if (!this.tooltip.isVisible) {
             setTimeout(function () {
                 _this.firstHandle.style.transition = _this.scaleTransform;
@@ -5344,7 +5353,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Slider.prototype.wireEvents = function () {
-        this.onresize = this.onResize.bind(this);
+        this.onresize = this.reposition.bind(this);
         window.addEventListener('resize', this.onresize);
         if (this.enabled && !this.readonly) {
             EventHandler.add(this.element, 'mousedown touchstart', this.sliderDown, this);
@@ -5700,7 +5709,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
                 case 'showButtons':
                     if (newProp.showButtons) {
                         this.setButtons();
-                        this.onResize();
+                        this.reposition();
                         if (this.enabled && !this.readonly) {
                             this.wireButtonEvt(false);
                         }
@@ -5722,7 +5731,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'customValue':
                     this.setValue();
-                    this.onResize();
+                    this.reposition();
                     break;
             }
         }
@@ -5924,6 +5933,8 @@ var FormValidator = /** @__PURE__ @class */ (function (_super) {
         _this.infoElement = null;
         _this.inputElement = null;
         _this.selectQuery = 'input:not([type=reset]):not([type=button]), select, textarea';
+        // tslint:disable-next-line:no-any
+        _this.localyMessage = {};
         /**
          * Specifies the default messages for validation rules.
          * @default : { List of validation message };
@@ -5951,6 +5962,11 @@ var FormValidator = /** @__PURE__ @class */ (function (_super) {
         if (typeof _this.rules === 'undefined') {
             _this.rules = {};
         }
+        _this.l10n = new L10n('formValidator', _this.defaultMessages, _this.locale);
+        if (_this.locale) {
+            _this.localeFunc();
+        }
+        onIntlChange.on('notifyExternalChange', _this.afterLocalization, _this);
         element = typeof element === 'string' ? select(element, document) : element;
         // Set novalidate to prevent default HTML5 form validation
         if (_this.element != null) {
@@ -6059,19 +6075,46 @@ var FormValidator = /** @__PURE__ @class */ (function (_super) {
             element.remove();
         }
         _super.prototype.destroy.call(this);
+        onIntlChange.off('notifyExternalChange', this.afterLocalization);
     };
     /**
      * @private
      */
     FormValidator.prototype.onPropertyChanged = function (newProp, oldProp) {
-        // No code are needed
+        for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
+            var prop = _a[_i];
+            switch (prop) {
+                case 'locale':
+                    this.localeFunc();
+                    break;
+            }
+        }
     };
     
     /**
      * @private
      */
+    FormValidator.prototype.localeFunc = function () {
+        for (var _i = 0, _a = Object.keys(this.defaultMessages); _i < _a.length; _i++) {
+            var key = _a[_i];
+            this.l10n.setLocale(this.locale);
+            var value = this.l10n.getConstant(key);
+            this.localyMessage[key] = value;
+        }
+    };
+    /**
+     * @private
+     */
     FormValidator.prototype.getModuleName = function () {
         return 'formValidator';
+    };
+    /**
+     * @private
+     */
+    // tslint:disable-next-line:no-any
+    FormValidator.prototype.afterLocalization = function (args) {
+        this.locale = args.locale;
+        this.localeFunc();
     };
     FormValidator.prototype.clearForm = function () {
         this.errorRules = [];
@@ -6384,7 +6427,8 @@ var FormValidator = /** @__PURE__ @class */ (function (_super) {
     };
     // Return default error message or custom error message 
     FormValidator.prototype.getErrorMessage = function (ruleValue, rule) {
-        var message = (ruleValue instanceof Array && typeof ruleValue[1] === 'string') ? ruleValue[1] : this.defaultMessages[rule];
+        var message = (ruleValue instanceof Array && typeof ruleValue[1] === 'string') ? ruleValue[1] :
+            (Object.keys(this.localyMessage).length !== 0) ? this.localyMessage[rule] : this.defaultMessages[rule];
         var formats = message.match(/{(\d)}/g);
         if (!isNullOrUndefined(formats)) {
             for (var i = 0; i < formats.length; i++) {
@@ -6553,6 +6597,9 @@ var FormValidator = /** @__PURE__ @class */ (function (_super) {
         },
     };
     __decorate$3([
+        Property('')
+    ], FormValidator.prototype, "locale", void 0);
+    __decorate$3([
         Property('e-hidden')
     ], FormValidator.prototype, "ignore", void 0);
     __decorate$3([
@@ -6660,6 +6707,7 @@ var ICON_FOCUSED = 'e-clear-icon-focus';
 var PROGRESS_INNER_WRAPPER = 'e-progress-inner-wrap';
 var PAUSE_UPLOAD = 'e-file-pause-btn';
 var RESUME_UPLOAD = 'e-file-play-btn';
+var RESTRICT_SEQUENTIAL = 'e-restrict-sequential';
 var FilesProp = /** @__PURE__ @class */ (function (_super) {
     __extends$4(FilesProp, _super);
     function FilesProp() {
@@ -6742,6 +6790,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         _this.pausedData = [];
         _this.uploadMetaData = [];
         _this.tabIndex = '0';
+        _this.count = -1;
         return _this;
     }
     /**
@@ -6786,6 +6835,13 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 case 'maxFileSize':
                 case 'template':
                 case 'autoUpload':
+                    if (this.sequentialUpload) {
+                        this.count = -1;
+                    }
+                    this.clearAll();
+                    break;
+                case 'sequentialUpload':
+                    this.count = -1;
                     this.clearAll();
                     break;
                 case 'locale':
@@ -7140,13 +7196,35 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     };
     Uploader.prototype.checkAutoUpload = function (fileData) {
         if (this.autoUpload) {
-            this.upload(fileData);
+            if (this.sequentialUpload) {
+                /* istanbul ignore next */
+                this.sequenceUpload(fileData);
+            }
+            else {
+                this.upload(fileData);
+            }
             this.removeActionButtons();
         }
         else if (!this.actionButtons) {
             this.renderActionButtons();
         }
         this.checkActionButtonStatus();
+    };
+    Uploader.prototype.sequenceUpload = function (fileData) {
+        if (this.filesData.length - fileData.length === 0 ||
+            this.filesData[(this.filesData.length - fileData.length - 1)].statusCode !== '1') {
+            ++this.count;
+            var isFileListCreated = this.showFileList ? false : true;
+            if (typeof this.filesData[this.count] === 'object') {
+                this.upload(this.filesData[this.count], isFileListCreated);
+                if (this.filesData[this.count].statusCode === '0') {
+                    this.sequenceUpload(fileData);
+                }
+            }
+            else {
+                --this.count;
+            }
+        }
     };
     Uploader.prototype.wireEvents = function () {
         EventHandler.add(this.browseButton, 'click', this.browseButtonClick, this);
@@ -7317,10 +7395,19 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         this.element.click();
     };
     Uploader.prototype.uploadButtonClick = function () {
-        this.upload(this.filesData);
+        if (this.sequentialUpload) {
+            this.sequenceUpload(this.filesData);
+        }
+        else {
+            this.upload(this.filesData);
+        }
     };
     Uploader.prototype.clearButtonClick = function () {
         this.clearAll();
+        /* istanbul ignore next */
+        if (this.sequentialUpload) {
+            this.count = -1;
+        }
     };
     Uploader.prototype.bindDropEvents = function () {
         if (this.dropZoneElement) {
@@ -7380,6 +7467,10 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 createSpinner({ target: spinnerTarget, width: '20px' });
                 showSpinner(spinnerTarget);
             }
+            if (this.sequentialUpload) {
+                /* istanbul ignore next */
+                this.uploadSequential();
+            }
         }
         else {
             this.remove(fileData, false, false, args);
@@ -7408,6 +7499,12 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             detach(this.listParent);
             this.listParent = null;
             this.removeActionButtons();
+        }
+        if (this.sequentialUpload) {
+            /* istanbul ignore next */
+            if (index <= this.count) {
+                --this.count;
+            }
         }
     };
     Uploader.prototype.removeUploadedFile = function (file, eventArgs, removeDirectly, custom) {
@@ -7464,8 +7561,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Uploader.prototype.removeCompleted = function (e, files, customTemplate) {
+        var response = e && e.currentTarget ? this.getResponse(e) : null;
         var args = {
-            e: e, operation: 'remove', file: this.updateStatus(files, this.localizedTexts('removedSuccessMessage'), '2')
+            e: e, response: response, operation: 'remove', file: this.updateStatus(files, this.localizedTexts('removedSuccessMessage'), '2')
         };
         this.trigger('success', args);
         this.removeFilesData(files, customTemplate);
@@ -7474,8 +7572,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         this.trigger('change', { files: this.uploadedFilesData });
     };
     Uploader.prototype.removeFailed = function (e, files, customTemplate) {
+        var response = e && e.currentTarget ? this.getResponse(e) : null;
         var args = {
-            e: e, operation: 'remove', file: this.updateStatus(files, this.localizedTexts('removedFailedMessage'), '0')
+            e: e, response: response, operation: 'remove', file: this.updateStatus(files, this.localizedTexts('removedFailedMessage'), '0')
         };
         if (!customTemplate) {
             var index = this.filesData.indexOf(files);
@@ -7491,6 +7590,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         }
         this.trigger('failure', args);
         var liElement = this.getLiElement(files);
+        /* istanbul ignore next */
         if (!isNullOrUndefined(liElement) && !isNullOrUndefined(liElement.querySelector('.' + DELETE_ICON))) {
             var spinnerTarget = liElement.querySelector('.' + DELETE_ICON);
             hideSpinner(spinnerTarget);
@@ -7608,6 +7708,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             progressInterval: '',
             isCanceled: false
         };
+        /* istanbul ignore next */
         if (targetFiles.length < 1) {
             eventArgs.isCanceled = true;
             this.trigger('selected', eventArgs);
@@ -8018,7 +8119,8 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             hideSpinner(spinnerTarget);
             detach(liElement.querySelector('.e-spinner-pane'));
         }
-        var args = { event: e, operation: 'cancel', file: file };
+        var requestResponse = e && e.currentTarget ? this.getResponse(e) : null;
+        var args = { event: e, response: requestResponse, operation: 'cancel', file: file };
         this.trigger('success', args);
     };
     Uploader.prototype.renderFailureState = function (e, file, liElement) {
@@ -8052,6 +8154,10 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             }
             this.pauseButton = null;
         }
+        if (this.sequentialUpload) {
+            /* istanbul ignore next */
+            liElement.classList.add(RESTRICT_SEQUENTIAL);
+        }
         this.upload([file]);
     };
     /* istanbul ignore next */
@@ -8079,21 +8185,60 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             this.uploadFailed(e, file);
         }
     };
+    Uploader.prototype.getResponse = function (e) {
+        // tslint:disable-next-line
+        var target = e.currentTarget;
+        var response = {
+            readyState: target.readyState,
+            statusCode: target.status,
+            statusText: target.statusText,
+            headers: target.getAllResponseHeaders(),
+            withCredentials: target.withCredentials
+        };
+        return response;
+    };
     Uploader.prototype.raiseSuccessEvent = function (e, file) {
-        var args = { e: e, operation: 'upload', file: this.updateStatus(file, this.localizedTexts('uploadSuccessMessage'), '2') };
+        var response = e && e.currentTarget ? this.getResponse(e) : null;
+        var args = {
+            e: e, response: response, operation: 'upload', file: this.updateStatus(file, this.localizedTexts('uploadSuccessMessage'), '2')
+        };
         this.trigger('success', args);
         this.uploadedFilesData.push(file);
         this.trigger('change', { file: this.uploadedFilesData });
         this.checkActionButtonStatus();
+        if (this.sequentialUpload && this.fileList.length > 0) {
+            if ((!(this.getLiElement(file)).classList.contains(RESTRICT_SEQUENTIAL))) {
+                this.uploadSequential();
+            }
+            else {
+                /* istanbul ignore next */
+                (this.getLiElement(file)).classList.remove(RESTRICT_SEQUENTIAL);
+            }
+        }
     };
     Uploader.prototype.uploadFailed = function (e, file) {
         var li = this.getLiElement(file);
-        var args = { e: e, operation: 'upload', file: this.updateStatus(file, this.localizedTexts('uploadFailedMessage'), '0') };
+        var response = e && e.currentTarget ? this.getResponse(e) : null;
+        var args = {
+            e: e, response: response, operation: 'upload', file: this.updateStatus(file, this.localizedTexts('uploadFailedMessage'), '0')
+        };
         if (!isNullOrUndefined(li)) {
             this.renderFailureState(e, file, li);
         }
         this.trigger('failure', args);
         this.checkActionButtonStatus();
+        this.uploadSequential();
+    };
+    Uploader.prototype.uploadSequential = function () {
+        if (this.sequentialUpload) {
+            if (this.autoUpload) {
+                /* istanbul ignore next */
+                this.checkAutoUpload(this.filesData);
+            }
+            else {
+                this.uploadButtonClick();
+            }
+        }
     };
     Uploader.prototype.updateProgressBarClasses = function (li, className) {
         var progressBar = li.querySelector('.' + PROGRESSBAR);
@@ -8227,11 +8372,13 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             chunkSize: this.asyncSettings.chunkSize === 0 ? null : this.asyncSettings.chunkSize
         };
         ajax.beforeSend = function (e) {
-            if (metaData.chunkIndex !== 0) {
-                return;
-            }
             eventArgs.currentRequest = ajax.httpRequest;
-            _this.trigger('uploading', eventArgs);
+            eventArgs.currentChunkIndex = metaData.chunkIndex;
+            if (eventArgs.currentChunkIndex === 0) {
+                // This event is currently not required but to avoid breaking changes for previous customer, we have included.
+                _this.trigger('uploading', eventArgs);
+            }
+            _this.trigger('chunkUploading', eventArgs);
             if (eventArgs.cancel) {
                 _this.eventCancelByArgs(e, eventArgs, file);
             }
@@ -8270,13 +8417,15 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         var response = e.target;
         var liElement;
         if (response.readyState === 4 && response.status >= 200 && response.status < 300) {
+            var requestResponse = e && e.currentTarget ? this.getResponse(e) : null;
             var totalChunk = Math.max(Math.ceil(metaData.file.size / this.asyncSettings.chunkSize), 1);
             var eventArgs = {
                 event: e,
                 file: metaData.file,
                 chunkIndex: metaData.chunkIndex,
                 totalChunk: totalChunk,
-                chunkSize: this.asyncSettings.chunkSize
+                chunkSize: this.asyncSettings.chunkSize,
+                response: requestResponse
             };
             this.trigger('chunkSuccess', eventArgs);
             if (isNullOrUndefined(custom) || !custom) {
@@ -8463,23 +8612,20 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(this.template) && (isNullOrUndefined(custom) || !custom)) {
             liElement = this.getLiElement(metaData.file);
         }
+        var requestResponse = e && e.currentTarget ? this.getResponse(e) : null;
         var eventArgs = {
             event: e,
             file: metaData.file,
             chunkIndex: metaData.chunkIndex,
             totalChunk: chunkCount,
             chunkSize: this.asyncSettings.chunkSize,
-            cancel: false
+            cancel: false,
+            response: requestResponse
         };
         this.trigger('chunkFailure', eventArgs);
-        /* tslint:disable */
-        var eventArgsData = eventArgs;
-        var values = Object.keys(eventArgsData).map(function (e) {
-            return eventArgsData[e];
-        });
-        /* tslint:enable */
         // To prevent triggering of failure event
-        if (!values[values.length - 2]) {
+        // tslint:disable-next-line
+        if (!eventArgs.cancel) {
             if (metaData.retryCount < this.asyncSettings.retryCount) {
                 setTimeout(function () { _this.retryRequest(liElement, metaData, custom); }, this.asyncSettings.retryAfterDelay);
             }
@@ -8510,8 +8656,13 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 }
                 metaData.retryCount = 0;
                 var file = metaData.file;
-                var args = { e: e, operation: 'upload', file: this.updateStatus(file, this.localizedTexts('uploadFailedMessage'), '0') };
+                var args = {
+                    e: e, response: requestResponse,
+                    operation: 'upload',
+                    file: this.updateStatus(file, this.localizedTexts('uploadFailedMessage'), '0')
+                };
                 this.trigger('failure', args);
+                this.uploadSequential();
             }
         }
     };
@@ -8553,6 +8704,10 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             metaData.file.statusCode = '1';
             metaData.file.status = this.localizedTexts('readyToUploadMessage');
             this.chunkUpload(metaData.file);
+        }
+        if (this.sequentialUpload) {
+            /* istanbul ignore next */
+            (this.getLiElement(metaData.file)).classList.add(RESTRICT_SEQUENTIAL);
         }
     };
     Uploader.prototype.chunkUploadInProgress = function (e, metaData, custom) {
@@ -8959,6 +9114,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     ], Uploader.prototype, "asyncSettings", void 0);
     __decorate$4([
         Property(false)
+    ], Uploader.prototype, "sequentialUpload", void 0);
+    __decorate$4([
+        Property(false)
     ], Uploader.prototype, "enableRtl", void 0);
     __decorate$4([
         Property(true)
@@ -9029,6 +9187,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     __decorate$4([
         Event()
     ], Uploader.prototype, "chunkFailure", void 0);
+    __decorate$4([
+        Event()
+    ], Uploader.prototype, "chunkUploading", void 0);
     __decorate$4([
         Event()
     ], Uploader.prototype, "canceling", void 0);
@@ -11047,6 +11208,7 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         event.preventDefault();
         if (!(this.textboxWrapper.clearButton.classList.contains(HIDE_CLEAR))) {
             Input.setValue('', this.element, this.floatLabelType, this.showClearButton);
+            this.value = '';
         }
     };
     TextBox.prototype.unWireEvents = function () {

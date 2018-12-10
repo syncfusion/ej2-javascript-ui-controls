@@ -5,7 +5,7 @@ import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, Aja
 import { EventHandler, Browser, EmitType, isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
 import { SvgRenderer, Event, remove, L10n, Collection, Internationalization, Complex } from '@syncfusion/ej2-base';
 import { ModuleDeclaration } from '@syncfusion/ej2-base';
-import { Size, createSvg, Point, removeElement, triggerShapeEvent, showTooltip, getElement } from './utils/helper';
+import { Size, createSvg, Point, removeElement, triggerShapeEvent, showTooltip, getElement, removeClass } from './utils/helper';
 import { ZoomSettings, LegendSettings } from './model/base';
 import { LayerSettings, TitleSettings, Border, Margin, MapsAreaSettings, Annotation } from './model/base';
 import { ZoomSettingsModel, LegendSettingsModel, LayerSettingsModel, BubbleSettingsModel, MarkerSettingsModel } from './model/base-model';
@@ -20,13 +20,13 @@ import { MapsTooltip } from './user-interaction/tooltip';
 import { Zoom } from './user-interaction/zoom';
 import { load, click, rightClick, loaded, doubleClick, resize, shapeSelected, shapeHighlight, itemSelection } from './model/constants';
 import { itemHighlight } from './model/constants';
-import { ProjectionType, MapsTheme } from './utils/enum';
+import { ProjectionType, MapsTheme, PanDirection } from './utils/enum';
 import { MapsModel } from './maps-model';
-import { Theme, BootstrapTheme, FabricTheme, HighContrastTheme } from './model/theme';
+import { Theme, BootstrapTheme, FabricTheme, HighContrastTheme, DarkTheme } from './model/theme';
 import { ILoadEventArgs, ILoadedEventArgs, IMouseEventArgs, IResizeEventArgs, ITooltipRenderEventArgs } from './model/interface';
 import { ILayerRenderingEventArgs, IShapeRenderingEventArgs, IMarkerRenderingEventArgs, IMarkerClickEventArgs } from './model/interface';
 import { IMarkerMoveEventArgs, ILabelRenderingEventArgs, IBubbleMoveEventArgs, IBubbleClickEventArgs } from './model/interface';
-import { ISelectionEventArgs, IShapeSelectedEventArgs } from './model/interface';
+import { ISelectionEventArgs, IShapeSelectedEventArgs, IMapPanEventArgs, IMapZoomEventArgs } from './model/interface';
 import { IBubbleRenderingEventArgs, IAnimationCompleteEventArgs, IPrintEventArgs } from './model/interface';
 import { LayerPanel } from './layers/layer-panel';
 import { GeoLocation, Rect, RectOption, measureText, getElementByID, MapAjax } from '../maps/utils/helper';
@@ -358,6 +358,20 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     @Event()
     public annotationRendering: EmitType<IAnnotationRenderingEventArgs>;
 
+    /**
+     * Triggers before zoom in or zoom out.
+     * @event
+     */
+    @Event()
+    public zoom: EmitType<IMapZoomEventArgs>;
+
+    /**
+     * Triggers before panning.
+     * @event
+     */
+    @Event()
+    public pan: EmitType<IMapPanEventArgs>;
+
     // Internal properties declaration area.
     /**
      * Format method
@@ -513,34 +527,44 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      */
     private themeEffect(): void {
         this.setBackgroundValue(this.theme);
-        switch (this.theme) {
-            case 'Material':
+        let theme: string = this.theme.toLowerCase();
+        switch (theme) {
+            case 'highcontrastlight':
+            case 'material':
                 this.setTextStyle(Theme.mapsTitleFont, this.titleSettings.textStyle);
                 this.setTextStyle(Theme.mapsSubTitleFont, this.titleSettings.subtitleSettings.textStyle);
                 this.setTextStyle(Theme.legendLabelFont, this.legendSettings.textStyle);
                 this.setTextStyle(Theme.legendTitleFont, this.legendSettings.textStyle);
                 this.setLabelFont(this.layers, Theme.dataLabelFont);
                 break;
-            case 'Bootstrap':
+            case 'bootstrap':
                 this.setTextStyle(BootstrapTheme.mapsTitleFont, this.titleSettings.textStyle);
                 this.setTextStyle(BootstrapTheme.mapsSubTitleFont, this.titleSettings.subtitleSettings.textStyle);
                 this.setTextStyle(BootstrapTheme.legendLabelFont, this.legendSettings.textStyle);
                 this.setTextStyle(BootstrapTheme.legendTitleFont, this.legendSettings.textStyle);
                 this.setLabelFont(this.layers, BootstrapTheme.dataLabelFont);
                 break;
-            case 'Fabric':
+            case 'fabric':
                 this.setTextStyle(FabricTheme.mapsTitleFont, this.titleSettings.textStyle);
                 this.setTextStyle(FabricTheme.mapsSubTitleFont, this.titleSettings.subtitleSettings.textStyle);
                 this.setTextStyle(FabricTheme.legendLabelFont, this.legendSettings.textStyle);
                 this.setTextStyle(FabricTheme.legendTitleFont, this.legendSettings.textStyle);
                 this.setLabelFont(this.layers, FabricTheme.dataLabelFont);
                 break;
-            case 'Highcontrast':
+            case 'highcontrast':
                 this.setTextStyle(HighContrastTheme.mapsTitleFont, this.titleSettings.textStyle);
                 this.setTextStyle(HighContrastTheme.mapsSubTitleFont, this.titleSettings.subtitleSettings.textStyle);
                 this.setTextStyle(HighContrastTheme.legendLabelFont, this.legendSettings.textStyle);
                 this.setTextStyle(HighContrastTheme.legendTitleFont, this.legendSettings.textStyle);
                 this.setLabelFont(this.layers, HighContrastTheme.dataLabelFont);
+                break;
+            case 'materialdark':
+            case 'bootstrapdark':
+            case 'fabricdark':
+                this.setTextStyle(DarkTheme.mapsTitleFont, this.titleSettings.textStyle);
+                this.setTextStyle(DarkTheme.mapsSubTitleFont, this.titleSettings.subtitleSettings.textStyle);
+                this.setTextStyle(DarkTheme.legendLabelFont, this.legendSettings.textStyle);
+                this.setTextStyle(DarkTheme.legendTitleFont, this.legendSettings.textStyle);
                 break;
         }
     }
@@ -549,10 +573,12 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @param theme based on theme background colors will change.
      */
     private setBackgroundValue(theme: MapsTheme): void {
-        let color: string = theme === 'Highcontrast' ? '#000000' : '#FFFFFF';
+        let color: string = (theme.toLowerCase().indexOf('dark') > -1 || theme.toLowerCase() === 'highcontrast') ?
+            '#000000' : '#FFFFFF';
         this.background = this.background ? this.background : color;
         this.mapsArea.background = this.mapsArea.background ? this.mapsArea.background : color;
-        color = theme !== 'Highcontrast' ? '#737373' : '#FFFFFF';
+        color = (theme.toLowerCase().indexOf('dark') > -1 || theme.toLowerCase() === 'highcontrast') ?
+            '#FFFFFF' : '#737373';
         this.zoomSettings.color = (this.zoomSettings.color) ? this.zoomSettings.color : color;
     }
     /**
@@ -673,7 +699,17 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         this.mapLayerPanel.measureLayerPanel();
 
         this.element.appendChild(this.svgObject);
-
+        if (!isNullOrUndefined(document.getElementById(this.element.id + '_tile_parent'))) {
+            let svg: ClientRect = this.svgObject.getBoundingClientRect();
+            let tile: ClientRect = document.getElementById(this.element.id + '_tile_parent').getBoundingClientRect();
+            let bottom: number = svg.bottom - tile.bottom;
+            let left: number = parseFloat(document.getElementById(this.element.id + '_tile_parent').style.left);
+            document.getElementById(this.element.id + '_tile_parent').style.left = (tile.left < this.element.getBoundingClientRect().left ?
+                left + this.margin.right + Math.abs(tile.left - this.element.getBoundingClientRect().left) : 0) + 'px';
+            let top: number = parseFloat(document.getElementById(this.element.id + '_tile_parent').style.top);
+            let value: number = (bottom <= 10) ? top : (top * 2);
+            document.getElementById(this.element.id + '_tile_parent').style.top = value + 'px';
+        }
         //this.setSecondaryElementPosition();
 
         this.arrangeTemplate();
@@ -950,6 +986,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         EventHandler.add(this.element, Browser.touchStartEvent, this.mouseDownOnMap, this);
         EventHandler.add(this.element, Browser.touchMoveEvent, this.mouseMoveOnMap, this);
         EventHandler.add(this.element, Browser.touchEndEvent, this.mouseEndOnMap, this);
+        EventHandler.add(this.element, 'pointerleave mouseleave', this.mouseLeaveOnMap, this);
         //  EventHandler.add(this.element, cancelEvent, this.mouseLeaveOnMap, this);
         window.addEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
@@ -969,12 +1006,21 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         EventHandler.remove(this.element, Browser.touchStartEvent, this.mouseDownOnMap);
         EventHandler.remove(this.element, Browser.touchMoveEvent, this.mouseMoveOnMap);
         EventHandler.remove(this.element, Browser.touchEndEvent, this.mouseEndOnMap);
+        EventHandler.remove(this.element, 'pointerleave mouseleave', this.mouseLeaveOnMap);
         //EventHandler.remove(this.element, cancelEvent, this.mouseLeaveOnMap);
         window.removeEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
             this.mapsOnResize
         );
     }
+
+    public mouseLeaveOnMap(e: PointerEvent): void {
+        if (document.getElementsByClassName('highlightMapStyle').length > 0) {
+            this.legendModule.removeShapeHighlightCollection();
+            removeClass(document.getElementsByClassName('highlightMapStyle')[0]);
+        }
+    }
+
     /**
      * To handle the click event for the maps.
      */
@@ -1005,6 +1051,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * 
      */
     public mouseEndOnMap(e: PointerEvent): boolean {
+        let targetEle: Element = <Element>e.target;
+        let targetId: string = targetEle.id;
         let pageX: number;
         let pageY: number;
         let target: Element;
@@ -1022,6 +1070,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             pageX = e.pageX;
             pageY = e.pageY;
             target = <Element>e.target;
+        }
+        if (targetEle.id.indexOf('ShapeIndex') !== -1) {
+            let layerIndex: number = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
+            triggerShapeEvent(targetId, this.layers[layerIndex].selectionSettings, this, shapeSelected);
         }
         if (this.isTouch) {
             this.titleTooltip(e, pageX, pageY, true);
@@ -1127,37 +1179,90 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
         return false;
     }
+
+    /**
+     * To zoom the map by specifies the center position
+     * @param centerPosition 
+     * @param zoomFactor 
+     */
     public zoomByPosition(centerPosition: { latitude: number, longitude: number }, zoomFactor: number): void {
-        let lattitude: number = centerPosition.latitude;
-        let longitude: number = centerPosition.longitude;
         let factor: number = this.mapLayerPanel.calculateFactor(this.layersCollection[0]);
-        let position: Point = convertGeoToPoint(lattitude, longitude, factor, this.layersCollection[0], this);
-        if (this.zoomModule) {
-            this.zoomModule.performZooming(position, zoomFactor, 'ZoomIn');
+        let position: Point; let size: Rect = this.mapAreaRect;
+        if (!isNullOrUndefined(centerPosition) && this.zoomModule) {
+            position = convertGeoToPoint(
+                centerPosition.latitude, centerPosition.longitude, factor, this.layersCollection[0], this);
+            let mapRect: ClientRect = document.getElementById(this.element.id + '_Layer_Collections').getBoundingClientRect();
+            let svgRect: ClientRect = this.svgObject.getBoundingClientRect();
+            let xDiff: number = Math.abs(mapRect.left - svgRect.left) / this.scale;
+            let yDiff: number = Math.abs(mapRect.top - svgRect.top) / this.scale;
+            let x: number = this.translatePoint.x + xDiff;
+            let y: number = this.translatePoint.y + yDiff;
+            this.scale = zoomFactor;
+            this.translatePoint.x = ((mapRect.left < svgRect.left ? x : 0) + (size.width / 2) - (position.x * zoomFactor)) / zoomFactor;
+            this.translatePoint.y = ((mapRect.top < svgRect.top ? y : 0) + (size.height / 2) - (position.y * zoomFactor)) / zoomFactor;
+            this.zoomModule.applyTransform();
+        } else if (this.zoomModule) {
+            position = { x: size.width / 2, y: size.height / 2 };
+            this.zoomModule.performZooming(position, zoomFactor, zoomFactor > this.scale ? 'ZoomIn' : 'ZoomOut');
         }
     }
 
     /**
-     * To add layers to maps
+     * To pan the map by specifies the direction
+     * @param direction 
+     */
+    public panByDirection(direction: PanDirection): void {
+        let xDiff: number = 0; let yDiff: number = 0;
+        switch (direction) {
+            case 'Left':
+                xDiff = -(this.mapAreaRect.width / 7);
+                break;
+            case 'Right':
+                xDiff = (this.mapAreaRect.width / 7);
+                break;
+            case 'Top':
+                yDiff = -(this.mapAreaRect.height / 7);
+                break;
+            case 'Bottom':
+                yDiff = (this.mapAreaRect.height / 7);
+                break;
+        }
+        if (this.zoomModule) {
+            this.zoomModule.panning(direction, xDiff, yDiff);
+        }
+    }
+
+    /**
+     * To add layer
+     * @param layer 
      */
     public addLayer(layer: LayerSettingsModel): void {
         this.layers.push(new LayerSettings(this.layers[0] as LayerSettings, 'layers', layer));
         this.refresh();
     }
     /**
-     * To remove layers from maps
+     * To remove layer
+     * @param index 
      */
     public removeLayer(index: number): void {
         this.layers.splice(index, 1);
         this.refresh();
     }
     /**
-     * To add marker to layers
+     * To add marker
+     * @param layerIndex 
+     * @param marker 
      */
     public addMarker(layerIndex: number, marker: MarkerSettingsModel): void {
-        let currentMarker: MarkerSettingsModel[] = this.layers[layerIndex].markerSettings;
+        let currentMarker: MarkerSettingsModel[] = this.layersCollection[layerIndex].markerSettings;
         currentMarker.push(new MarkerSettings(currentMarker[0] as MarkerSettings, 'markerSettings', marker));
-        this.refresh();
+        let layerEle: Element = document.getElementById(this.element.id + '_LayerIndex_' + layerIndex);
+        if (this.markerModule && layerEle) {
+            this.markerModule.markerRender(layerEle, layerIndex, this.mapLayerPanel['currentFactor'], 'AddMarker');
+            if (marker.template) {
+                this.arrangeTemplate();
+            }
+        }
     }
     /**
      * Method to set culture for maps

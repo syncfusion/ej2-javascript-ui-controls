@@ -43,7 +43,7 @@
         font-size: $btn-icon-font-size;
         margin-top: $btn-icon-margin-top;
         vertical-align: middle;
-        width: $icon-btn-width;
+        width: $btn-icon-btn-width;
 
         &.e-icon-left {
           margin-left: $btn-icon-margin;
@@ -58,14 +58,14 @@
         &.e-icon-top {
           display: block;
           margin-top: 0;
-          padding-bottom: $icon-top-bottom-padding;
+          padding-bottom: $btn-icon-top-bottom-padding;
           width: auto;
         }
 
         &.e-icon-bottom {
           display: block;
           margin-top: 0;
-          padding-top: $icon-top-bottom-padding;
+          padding-top: $btn-icon-top-bottom-padding;
           width: auto;
         }
       }
@@ -77,7 +77,7 @@
       &.e-top-icon-btn,
       &.e-bottom-icon-btn {
         line-height: 1;
-        padding: $top-icon-btn-padding;
+        padding: $btn-top-icon-padding;
       }
 
       &.e-round {
@@ -118,7 +118,7 @@
 
         & .e-btn-icon {
           font-size: $btn-small-icon-font-size;
-          width: $icon-small-btn-width;
+          width: $btn-icon-small-width;
 
           &.e-icon-left {
             margin-left: $btn-small-icon-margin;
@@ -131,12 +131,12 @@
           }
 
           &.e-icon-top {
-            padding-bottom: $small-icon-top-bottom-padding;
+            padding-bottom: $btn-small-icon-top-bottom-padding;
             width: auto;
           }
 
           &.e-icon-bottom {
-            padding-top: $small-icon-top-bottom-padding;
+            padding-top: $btn-small-icon-top-bottom-padding;
             width: auto;
           }
         }
@@ -148,7 +148,7 @@
         &.e-top-icon-btn,
         &.e-bottom-icon-btn {
           line-height: 1;
-          padding: $top-icon-btn-padding;
+          padding: $btn-top-icon-padding;
         }
 
         &.e-round {
@@ -194,7 +194,7 @@
 
     & .e-btn-icon {
       font-size: $btn-bigger-icon-font-size;
-      width: $icon-bigger-btn-width;
+      width: $btn-icon-bigger-width;
 
       &.e-icon-left {
         margin-left: $btn-bigger-icon-margin;
@@ -207,12 +207,12 @@
       }
 
       &.e-icon-top {
-        padding-bottom: $bigger-icon-top-bottom-padding;
+        padding-bottom: $btn-bigger-icon-top-bottom-padding;
         width: auto;
       }
 
       &.e-icon-bottom {
-        padding-top: $bigger-icon-top-bottom-padding;
+        padding-top: $btn-bigger-icon-top-bottom-padding;
         width: auto;
       }
     }
@@ -224,7 +224,7 @@
     &.e-top-icon-btn,
     &.e-bottom-icon-btn {
       line-height: 1;
-      padding: $top-icon-bigger-btn-padding;
+      padding: $btn-top-icon-bigger-padding;
     }
 
     &.e-round {
@@ -259,7 +259,7 @@
 
       & .e-btn-icon {
         font-size: $btn-bigger-small-icon-font-size;
-        width: $icon-bigger-small-btn-width;
+        width: $btn-icon-bigger-small-width;
 
         &.e-icon-left {
           margin-left: $btn-bigger-small-icon-margin;
@@ -272,12 +272,12 @@
         }
 
         &.e-icon-top {
-          padding-bottom: $small-icon-top-bottom-padding;
+          padding-bottom: $btn-small-icon-top-bottom-padding;
           width: auto;
         }
 
         &.e-icon-bottom {
-          padding-top: $small-icon-top-bottom-padding;
+          padding-top: $btn-small-icon-top-bottom-padding;
           width: auto;
         }
       }
@@ -289,7 +289,7 @@
       &.e-top-icon-btn,
       &.e-bottom-icon-btn {
         line-height: 1;
-        padding: $top-icon-bigger-btn-padding;
+        padding: $btn-top-icon-bigger-padding;
       }
 
       &.e-round {

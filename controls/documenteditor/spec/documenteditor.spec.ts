@@ -282,7 +282,7 @@ describe('Table Dialog testing-1', () => {
     it('table dialog-preferred width using point testing', () => {
         editor.open(getJson());
         editor.showTablePropertiesDialog();
-        expect((editor.tablePropertiesDialogModule as any).preferCheckBox.checked).toBe(true);
+        expect((editor.tablePropertiesDialogModule as any).preferCheckBox.checked).toBe(false);
         (editor.tablePropertiesDialogModule as any).preferCheckBox.checked = true;
         expect((editor.tablePropertiesDialogModule as any).preferCheckBox.checked).toBe(true);
         (editor.tablePropertiesDialogModule as any).preferCheckBox.dataBind();

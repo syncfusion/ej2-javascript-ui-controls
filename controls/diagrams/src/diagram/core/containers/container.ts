@@ -55,6 +55,12 @@ export class Container extends DiagramElement {
             //Measuring the children
             for (let i: number = 0; i < this.children.length; i++) {
                 child = this.children[i];
+                if (child.horizontalAlignment === 'Stretch' && !availableSize.width) {
+                    availableSize.width = child.bounds.width;
+                }
+                if (child.verticalAlignment === 'Stretch' && !availableSize.height) {
+                    availableSize.height = child.bounds.height;
+                }
                 let force: boolean = child.horizontalAlignment === 'Stretch' || child.verticalAlignment === 'Stretch';
                 if (this.measureChildren || force || (child instanceof Container && child.measureChildren !== undefined)) {
                     child.measure(availableSize);
@@ -65,6 +71,13 @@ export class Container extends DiagramElement {
                         this.desiredBounds = childBounds;
                     } else {
                         this.desiredBounds.uniteRect(childBounds);
+                    }
+                } else if (this.actualSize && !this.actualSize.width && !this.actualSize.height &&
+                    !child.preventContainer && child.horizontalAlignment === 'Stretch' && child.verticalAlignment === 'Stretch') {
+                    if (this.desiredBounds === undefined) {
+                        this.desiredBounds = child.bounds;
+                    } else {
+                        this.desiredBounds.uniteRect(child.bounds);
                     }
                 }
             }

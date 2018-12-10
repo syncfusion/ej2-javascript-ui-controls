@@ -1,5 +1,6 @@
 /// <reference path='../common/menu-base-model.d.ts'/>
-import { Collection, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
+import { attributes, Collection, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
+import { getZindexPartial } from '@syncfusion/ej2-popups';
 import { ContextMenuModel } from './context-menu-model';
 import { MenuBase, MenuItem } from '../common/menu-base';
 import { MenuItemModel } from './../common/menu-base-model';
@@ -43,6 +44,7 @@ export class ContextMenu extends MenuBase implements INotifyPropertyChanged {
     /**
      * Specifies menu items with its properties which will be rendered as ContextMenu.
      * @default []
+     * @aspType object
      */
     @Collection<MenuItemModel>([], MenuItem)
     public items: MenuItemModel[];
@@ -54,6 +56,12 @@ export class ContextMenu extends MenuBase implements INotifyPropertyChanged {
     protected preRender(): void {
         this.isMenu = false;
         super.preRender();
+    }
+
+    protected initialize(): void {
+        super.initialize();
+        attributes(this.element, <{ [key: string]: string }>{ 'role': 'menu', 'tabindex': '0' });
+        this.element.style.zIndex = getZindexPartial(this.element).toString();
     }
 
     /**

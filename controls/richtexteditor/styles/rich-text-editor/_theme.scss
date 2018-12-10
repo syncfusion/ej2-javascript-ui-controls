@@ -386,14 +386,14 @@
   .e-dropdown-popup {
     & ul {
       & .e-item.e-active {
-        background-color: $dropdown-selection-bgcolor;
-        color: $dropdown-selection-color;
+        background-color: $rte-dropdown-selection-bgcolor;
+        color: $rte-dropdown-selection-color;
       }
     }
   }
 
   .e-popup-overlay {
-    background-color: $overlay-color;
+    background-color: $rte-overlay-color;
   }
 
   .e-rte-toolbar.e-extended-toolbar .e-toolbar-item.e-overlay .e-dropdown-btn {

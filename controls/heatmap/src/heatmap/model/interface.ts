@@ -1,4 +1,4 @@
-import { HeatMap } from '..';
+import { HeatMap, SelectedCellDetails } from '..';
 import { TextOverflow } from '../utils/enum';
 import { PaletteCollectionModel } from '../model/base-model';
 import { BubbleTooltipData } from '../model/base';
@@ -23,6 +23,7 @@ export interface IThemeStyle {
     background: string;
     cellBorder: string;
     cellTextColor: string;
+    toggledColor: string;
     emptyCellColor: string;
     palette: PaletteCollectionModel[];
 }
@@ -71,4 +72,28 @@ export interface ITooltipEventArgs extends IHeatMapEventArgs {
     yValue: string | number | Date;
     /** Defines tooltip text value */
     content: string[];
+}
+
+export interface ICellEventArgs extends IHeatMapEventArgs {
+    /** Defines the current HeatMap instance */
+    heatmap: HeatMap;
+    /** Defines current hover cell value */
+    value: number | BubbleTooltipData[];
+    /** Defines x-axis label */
+    xLabel: string;
+    /** Defines y-axis label */
+    yLabel: string;
+    /** Defines x-axis value */
+    xValue: string | number | Date;
+    /** Defines y-axis value */
+    yValue: string | number | Date;
+    /** Defines cell value */
+    displayText: string;
+}
+
+export interface ISelectedEventArgs extends IHeatMapEventArgs {
+    /** Defines the current HeatMap instance */
+    heatmap: HeatMap;
+    /** Defines details of a cell */
+    data: SelectedCellDetails[];
 }

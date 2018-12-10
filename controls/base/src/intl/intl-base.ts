@@ -4,6 +4,7 @@ import { getValue, isNullOrUndefined, extend } from '../util';
 import { ParserBase as parser } from './parser-base';
 import { DateFormat, FormatOptions } from './date-formatter';
 import { NumberFormat, FormatParts, CommonOptions } from './number-formatter';
+import { isUndefined } from '../util';
 /**
  * Date base common constants and function for date parser and formatter.
  */
@@ -30,6 +31,7 @@ export namespace IntlBase {
         'E': 'ddd'
     };
     const defaultFirstDay: string = 'sun';
+    export const islamicRegex: RegExp = /^islamic/;
     const firstDayMapper: Object = {
         'sun': 0,
         'mon': 1,
@@ -258,6 +260,169 @@ export namespace IntlBase {
                             'yMMMM': 'MMMM y',
                         },
                     }
+                },
+                "islamic": {
+                    "months": {
+                        "stand-alone": {
+                            "abbreviated": {
+                                "1": "Muh.",
+                                "2": "Saf.",
+                                "3": "Rab. I",
+                                "4": "Rab. II",
+                                "5": "Jum. I",
+                                "6": "Jum. II",
+                                "7": "Raj.",
+                                "8": "Sha.",
+                                "9": "Ram.",
+                                "10": "Shaw.",
+                                "11": "Dhuʻl-Q.",
+                                "12": "Dhuʻl-H."
+                            },
+                            "narrow": {
+                                "1": "1",
+                                "2": "2",
+                                "3": "3",
+                                "4": "4",
+                                "5": "5",
+                                "6": "6",
+                                "7": "7",
+                                "8": "8",
+                                "9": "9",
+                                "10": "10",
+                                "11": "11",
+                                "12": "12"
+                            },
+                            "wide": {
+                                "1": "Muharram",
+                                "2": "Safar",
+                                "3": "Rabiʻ I",
+                                "4": "Rabiʻ II",
+                                "5": "Jumada I",
+                                "6": "Jumada II",
+                                "7": "Rajab",
+                                "8": "Shaʻban",
+                                "9": "Ramadan",
+                                "10": "Shawwal",
+                                "11": "Dhuʻl-Qiʻdah",
+                                "12": "Dhuʻl-Hijjah"
+                            }
+                        }
+                    },
+                    "days": {
+                        "stand-alone": {
+                            "abbreviated": {
+                                "sun": "Sun",
+                                "mon": "Mon",
+                                "tue": "Tue",
+                                "wed": "Wed",
+                                "thu": "Thu",
+                                "fri": "Fri",
+                                "sat": "Sat"
+                            },
+                            "narrow": {
+                                "sun": "S",
+                                "mon": "M",
+                                "tue": "T",
+                                "wed": "W",
+                                "thu": "T",
+                                "fri": "F",
+                                "sat": "S"
+                            },
+                            "short": {
+                                "sun": "Su",
+                                "mon": "Mo",
+                                "tue": "Tu",
+                                "wed": "We",
+                                "thu": "Th",
+                                "fri": "Fr",
+                                "sat": "Sa"
+                            },
+                            "wide": {
+                                "sun": "Sunday",
+                                "mon": "Monday",
+                                "tue": "Tuesday",
+                                "wed": "Wednesday",
+                                "thu": "Thursday",
+                                "fri": "Friday",
+                                "sat": "Saturday"
+                            }
+                        }
+                    },
+                     "dayPeriods": {
+                        "format": {
+                            "wide": {
+                                "am": "AM",
+                                "pm": "PM"
+                            }
+                        }
+                    },
+                    "eras": {
+                        "eraNames": {
+                            "0": "AH"
+                        },
+                        "eraAbbr": {
+                            "0": "AH"
+                        },
+                        "eraNarrow": {
+                            "0": "AH"
+                        }
+                    },
+                    "dateFormats": {
+                        "full": "EEEE, MMMM d, y G",
+                        "long": "MMMM d, y G",
+                        "medium": "MMM d, y G",
+                        "short": "M/d/y GGGGG"
+                    },
+                    "timeFormats": {
+                        "full": "h:mm:ss a zzzz",
+                        "long": "h:mm:ss a z",
+                        "medium": "h:mm:ss a",
+                        "short": "h:mm a"
+                    },
+                    "dateTimeFormats": {
+                        "full": "{1} 'at' {0}",
+                        "long": "{1} 'at' {0}",
+                        "medium": "{1}, {0}",
+                        "short": "{1}, {0}",
+                        "availableFormats": {
+                            "d": "d",
+                            "E": "ccc",
+                            "Ed": "d E",
+                            "Ehm": "E h:mm a",
+                            "EHm": "E HH:mm",
+                            "Ehms": "E h:mm:ss a",
+                            "EHms": "E HH:mm:ss",
+                            "Gy": "y G",
+                            "GyMMM": "MMM y G",
+                            "GyMMMd": "MMM d, y G",
+                            "GyMMMEd": "E, MMM d, y G",
+                            "h": "h a",
+                            "H": "HH",
+                            "hm": "h:mm a",
+                            "Hm": "HH:mm",
+                            "hms": "h:mm:ss a",
+                            "Hms": "HH:mm:ss",
+                            "M": "L",
+                            "Md": "M/d",
+                            "MEd": "E, M/d",
+                            "MMM": "LLL",
+                            "MMMd": "MMM d",
+                            "MMMEd": "E, MMM d",
+                            "MMMMd": "MMMM d",
+                            "ms": "mm:ss",
+                            "y": "y G",
+                            "yyyy": "y G",
+                            "yyyyM": "M/y GGGGG",
+                            "yyyyMd": "M/d/y GGGGG",
+                            "yyyyMEd": "E, M/d/y GGGGG",
+                            "yyyyMMM": "MMM y G",
+                            "yyyyMMMd": "MMM d, y G",
+                            "yyyyMMMEd": "E, MMM d, y G",
+                            "yyyyMMMM": "MMMM y G",
+                            "yyyyQQQ": "QQQ y G",
+                            "yyyyQQQQ": "QQQQ y G"
+                        }
+                    }
                 }
             },
             'timeZoneNames': {
@@ -346,7 +511,7 @@ export namespace IntlBase {
      * @param {string} type 
      * @returns {string}
      */
-    export function getResultantPattern(skeleton: string, dateObject: Object, type: string): string {
+    export function getResultantPattern(skeleton: string, dateObject: Object, type: string, isIslamic?: boolean): string {
         let resPattern: string;
         let iType: string = type || 'date';
         if (basicPatterns.indexOf(skeleton) !== -1) {
@@ -359,7 +524,15 @@ export namespace IntlBase {
         } else {
             resPattern = getValue('dateTimeFormats.availableFormats.' + skeleton, dateObject);
         }
+        if (isUndefined(resPattern) && skeleton === 'yMd') {
+            resPattern = 'M/d/y';
+        }
         return resPattern;
+    }
+    export interface DateObject {
+        year?: number;
+        month?: number;
+        date?: number;
     }
     /**
      * Returns the dependable object for provided cldr data and culture
@@ -369,13 +542,14 @@ export namespace IntlBase {
      * @param {boolean} isNumber 
      * @returns {Dependables}
      */
-    export function getDependables(cldr: Object, culture: string, isNumber?: boolean): Dependables {
+    export function getDependables(cldr: Object, culture: string, mode: string, isNumber?: boolean): Dependables {
         let ret: Dependables = {};
+        let calendartype: string = mode || 'gregorian';
         ret.parserObject = parser.getMainObject(cldr, culture) || defaultObject;
         if (isNumber) {
             ret.numericObject = getValue('numbers', ret.parserObject);
         } else {
-            ret.dateObject = getValue('dates.calendars.gregorian', ret.parserObject);
+            ret.dateObject = getValue('dates.calendars.' + calendartype, ret.parserObject);
         }
         return ret;
     }
@@ -587,7 +761,7 @@ export namespace IntlBase {
      * @returns {string}
      */
     export function getActualDateTimeFormat(culture: string, options: DateFormatOptions, cldr?: Object, isExcelFormat?: boolean): string {
-        let dependable: Dependables = getDependables(cldr, culture);
+        let dependable: Dependables = getDependables(cldr, culture, options.calendar);
         let actualPattern: string = options.format || getResultantPattern(options.skeleton, dependable.dateObject, options.type);
         if (isExcelFormat) {
             actualPattern = actualPattern.replace(patternRegex, (pattern: string): string => {
@@ -625,10 +799,10 @@ export namespace IntlBase {
      * @returns {string}
      */
     export function getActualNumberFormat(culture: string, options: NumberFormatOptions, cldr?: Object): string {
-        let dependable: Dependables = getDependables(cldr, culture, true);
+        let dependable: Dependables = getDependables(cldr, culture, '', true);
         let parseOptions: NumericParts = { custom: true };
         let minFrac: number;
-        let curObj: GenericFormatOptions & {hasNegativePattern?: boolean} = {};
+        let curObj: GenericFormatOptions & { hasNegativePattern?: boolean } = {};
         let curMatch: string[] = (options.format || '').match(currencyFormatRegex);
         if (curMatch) {
             let dOptions: CommonOptions = {};

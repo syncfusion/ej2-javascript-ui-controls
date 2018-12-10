@@ -1,4 +1,104 @@
-import { DataManager } from '@syncfusion/ej2-data';import { Property, ChildProperty } from '@syncfusion/ej2-base';
+import { DataManager } from '@syncfusion/ej2-data';import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';
+
+/**
+ * Interface for a class CrudAction
+ */
+export interface CrudActionModel {
+
+    /**
+     * set an URL to get a data from database
+     * @default ''
+     */
+    read?: string;
+
+    /**
+     * set an URL to add a data into database
+     * @default ''
+     */
+    create?: string;
+
+    /**
+     * set an URL to update the existing data in database
+     * @default ''
+     */
+    update?: string;
+
+    /**
+     * set an URL to remove an data in database
+     * @default ''
+     */
+    destroy?: string;
+
+    /**
+     * Add custom fields to node
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+    customFields?: Object[];
+
+}
+
+/**
+ * Interface for a class ConnectionDataSource
+ */
+export interface ConnectionDataSourceModel {
+
+    /**
+     * set an id for connector dataSource
+     * @default ''
+     */
+    id?: string;
+
+    /**
+     * define sourceID to connect with connector
+     * @default ''
+     */
+    sourceID?: string;
+
+    /**
+     * define targetID to connect with connector
+     * @default ''
+     */
+    targetID?: string;
+
+    /**
+     * define sourcePoint to render connector startPoint
+     * @default null
+     */
+    sourcePointX?: number;
+
+    /**
+     * define sourcePoint to render connector startPoint
+     * @default null
+     */
+    sourcePointY?: number;
+
+    /**
+     * define targetPoint to render connector targetPoint
+     * @default null
+     */
+    targetPointX?: number;
+
+    /**
+     * define targetPoint to render connector targetPoint
+     * @default null
+     */
+    targetPointY?: number;
+
+    /**
+     * Sets the data source either as a collection of objects or as an URL of DataManager
+     * @default null
+     */
+    dataManager?: DataManager;
+
+    /**
+     * Add CrudAction to connector data source
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+    crudAction?: CrudActionModel;
+
+}
 
 /**
  * Interface for a class DataSource
@@ -44,5 +144,19 @@ export interface DataSourceModel {
      * @default undefined
      */
     doBinding?: Function | string;
+
+    /**
+     * Add CrudAction to data source
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+    crudAction?: CrudActionModel;
+
+    /**
+     * define connectorDataSource collection
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+    connectionDataSource?: ConnectionDataSourceModel;
 
 }

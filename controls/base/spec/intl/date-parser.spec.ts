@@ -107,7 +107,7 @@ export function dateMatched(date1: Date, date2: Date): boolean {
 
 export function loadCultureFiles(name: string, base?: boolean): void {
     let files: string[] = !base ?
-        ['ca-gregorian.json', 'numbers.json', 'timeZoneNames.json', 'currencies.json'] : ['numberingSystems.json'];
+        ['ca-gregorian.json','ca-islamic.json', 'numbers.json', 'timeZoneNames.json', 'currencies.json'] : ['numberingSystems.json'];
     for (let prop of files) {
         let val: Object;
         let ajax: Ajax;
@@ -129,6 +129,7 @@ loadCultureFiles('ja');
 loadCultureFiles('da');
 loadCultureFiles('de');
 loadCultureFiles('zh');
+loadCultureFiles('en');
 export function monthDayMatch(date1: Date, date2: Date): boolean {
     return date1.toLocaleDateString() === date2.toLocaleDateString()
 }
@@ -850,5 +851,22 @@ describe('DateParser', () => {
             let result: string = IntlBase.getActualDateTimeFormat('en', { skeleton: 'yMMMM' });
             expect(result).toBe('MMMM y');
         });
+    });
+    describe('Islamic calendar mode parsing evaluation', ()=> {
+        describe('check parsing',()=>{
+            it('default format  returns proper value',()=>{
+                let iFormatter: Date = DateParser.dateParser('en', { skeleton: 'short',calendar:'islamic' }, cldrData)('3/10/1436 AH');
+                expect(DateFormat.dateFormat('en',{format:'d/M/y'},cldrData)(iFormatter)).toBe('1/1/2015');
+            });
+            it('year only format input returns correct year value',()=>{
+                let tFormatter: Date = DateParser.dateParser('en', { format:'yy',calendar:'islamic' }, cldrData)('40');
+                let iFormatter: Date = DateParser.dateParser('en', { format:'y',calendar:'islamic' }, cldrData)('1440');
+                expect(iFormatter.getFullYear()).toBe(2018);
+            });
+            it('full  skeletom eleton returns proper value',()=>{
+                let iFormatter: Date = DateParser.dateParser('en', { skeleton: 'full',calendar:'islamic' }, cldrData)('Tuesday, Safar 19, 1437 AH');
+                expect(DateFormat.dateFormat('en',{format:'d/M/y'},cldrData)(iFormatter)).toBe('1/12/2015');
+            });
+        })
     });
 });

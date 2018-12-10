@@ -327,13 +327,8 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      * Hide the Sidebar component, if it is in an open state.
      * @returns void 
      */
-    public hide(e?: Event): void {
-        let closeArguments: EventArgs = {
-            model: this,
-            element: this.element,
-            cancel: false,
-            isInteracted: !isNullOrUndefined(e),
-            event:  (e || null) };
+    public hide(): void {
+        let closeArguments: EventArgs = { model: this, element: this.element, cancel: false };
         this.trigger('close', closeArguments);
         if (!closeArguments.cancel) {
             if (this.element.classList.contains(CLOSE)) {
@@ -368,14 +363,8 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      * Shows the Sidebar component, if it is in closed state.
      * @returns void 
      */
-    public show(e?: Event): void {
-        let openArguments: EventArgs = {
-            model: this,
-            element: this.element,
-            cancel: false,
-            isInteracted: !isNullOrUndefined(e),
-            event:  (e || null)
-          };
+    public show(): void {
+        let openArguments: EventArgs = { model: this, element: this.element, cancel: false };
         this.trigger('open', openArguments);
         if (!openArguments.cancel) {
             removeClass([this.element], VISIBILITY);
@@ -481,7 +470,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         if (closest((<HTMLElement>e.target), '.' + CONTROL + '' + '.' + ROOT)) {
             return;
         }
-        this.hide(e);
+        this.hide();
     }
 
     private enableGestureHandler(args: SwipeEventArgs): void {
@@ -711,13 +700,4 @@ export interface EventArgs {
      * Defines the element.
      */
     element: HTMLElement;
-    /** 
-     * Defines the boolean that returns true when the Sidebar is closed by user interaction, otherwise returns false.
-     */
-    isInteracted?: boolean;
-
-    /** 
-     * Defines the original event arguments. 
-     */
-    event?:  MouseEvent | Event;
 }

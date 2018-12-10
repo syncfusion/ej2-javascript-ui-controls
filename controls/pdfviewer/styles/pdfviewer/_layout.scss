@@ -1,0 +1,71 @@
+@include export-module('pdfviewer-layout') {
+  /*! component layout */
+  // sass-lint:disable no-vendor-prefixes
+  .e-pdfviewer {
+    .e-pv-viewer-container {
+      border-style: $pv-viewer-border-style;
+      border-width: $pv-viewer-border-width;
+    }
+
+    .e-pv-text-layer {
+      position: absolute;
+      top: 0;
+      z-index: 2;
+    }
+
+    .e-pv-text {
+      background: transparent;
+      color: transparent;
+      opacity: .6;
+      position: absolute;
+    }
+
+    .e-pv-hyperlink {
+      z-index: 2;
+    }
+
+    .e-pv-hyperlink.e-pv-onselection {
+      z-index: 1;
+    }
+
+    .e-enable-text-selection {
+      -moz-user-select: text;
+      -ms-user-select: text;
+      -webkit-user-select: text;
+      user-select: text;
+    }
+
+    .e-disable-text-selection {
+      -moz-user-select: none;
+      -ms-user-select: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .e-pv-cursor {
+      cursor: text;
+    }
+
+    .e-pv-touch-select-drop {
+      display: inline-block;
+      height: 30px;
+      position: absolute;
+      width: 30px;
+      z-index: 1000;
+    }
+
+    .e-pv-touch-ellipse {
+      background-color: $pv-selection-touch-element-background-color;
+      border-bottom-left-radius: 50%;
+      border-bottom-right-radius: 50%;
+      border-color: $pv-selection-touch-element-border-color;
+      border-style: solid;
+      border-top-left-radius: 50%;
+      border-width: 2px;
+      height: 20px;
+      margin: 0 0 0 9px;
+      position: absolute;
+      width: 20px;
+    }
+  }
+}

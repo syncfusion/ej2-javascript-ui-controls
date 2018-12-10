@@ -2,7 +2,7 @@
  * Circular Gauge Spec Started
  */
 
-import { createElement } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { CircularGauge } from '../../../src/circular-gauge/circular-gauge';
 import { Range, Axis } from '../../../src/circular-gauge/axes/axis';
 import { ILoadedEventArgs } from '../../../src/circular-gauge/model/interface';
@@ -666,6 +666,15 @@ describe('Circular-Gauge Control', () => {
             gauge.axes[0].majorTicks.useRangeColor = false;
             gauge.axes[0].minorTicks.useRangeColor = false;
             gauge.axes[0].labelStyle.useRangeColor = true;
+            gauge.refresh();
+        });
+        it('checking highcontrast', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Label_0');
+                expect(isNullOrUndefined(svg)).toBe(false);
+                done();
+            };
+            gauge.theme = 'Highcontrast';
             gauge.refresh();
         });
     });

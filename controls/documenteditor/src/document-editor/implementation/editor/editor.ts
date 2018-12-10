@@ -38,7 +38,7 @@ import { Dictionary } from '../../base/dictionary';
 import { WParagraphStyle } from '../format/style';
 import {
     TableAlignment, WidthType, HeightType, CellVerticalAlignment, BorderType, LineStyle,
-    TabLeader, OutlineLevel
+    TabLeader, OutlineLevel, AutoFitType
 } from '../../base/types';
 import { DocumentEditor } from '../../document-editor';
 
@@ -800,6 +800,10 @@ export class Editor {
         this.initHistory('Insert');
         let paragraphInfo: ParagraphInfo = this.getParagraphInfo(selection.start);
         this.viewer.selection.editPosition = this.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
+        let bidi: boolean = selection.start.paragraph.paragraphFormat.getValue('bidi') as boolean;
+        if (!bidi && this.viewer.layout.isContainsRtl(selection.start.currentWidget)) {
+            this.viewer.layout.reArrangeElementsForRtl(selection.start.currentWidget, bidi);
+        }
         if ((!selection.isEmpty && !this.viewer.selection.isImageSelected) ||
             this.viewer.isListTextSelected && selection.contextType === 'List') {
             selection.isSkipLayouting = true;
@@ -818,6 +822,8 @@ export class Editor {
                 let insertFormat: WCharacterFormat = this.copyInsertFormat(insertPosition.paragraph.characterFormat, true);
                 span.characterFormat.copyFormat(insertFormat);
                 span.text = text;
+                let isBidi: boolean = this.viewer.textHelper.getRtlLanguage(text).isRtl;
+                span.characterFormat.bidi = isBidi;
                 span.line = (insertPosition.paragraph as ParagraphWidget).childWidgets[0] as LineWidget;
                 span.margin = new Margin(0, 0, 0, 0);
                 span.line.children.push(span);
@@ -829,12 +835,22 @@ export class Editor {
                 this.viewer.layout.reLayoutParagraph(insertPosition.paragraph, 0, 0);
             } else {
                 let indexInInline: number = 0;
-                let inlineObj: ElementInfo = insertPosition.currentWidget.getInline(insertPosition.offset, indexInInline);
+                let inlineObj: ElementInfo = insertPosition.currentWidget.getInline(insertPosition.offset, indexInInline, bidi);
                 let inline: ElementBox = inlineObj.element;
                 indexInInline = inlineObj.index;
                 // Todo: compare selection format
                 let insertFormat: WCharacterFormat = this.copyInsertFormat(inline.characterFormat, true);
-                if (insertFormat.isSameFormat(inline.characterFormat)) {
+                let isBidi: boolean = this.viewer.textHelper.getRtlLanguage(text).isRtl;
+                let insertLangId: number = this.viewer.textHelper.getRtlLanguage(text).id;
+                let inlineLangId: number = 0;
+                let isRtl: boolean = false;
+                if (inline instanceof TextElementBox) {
+                    inlineLangId = this.viewer.textHelper.getRtlLanguage(inline.text).id;
+                    isRtl = this.viewer.textHelper.getRtlLanguage(inline.text).isRtl;
+                }
+                insertFormat.bidi = isBidi;
+                if (insertFormat.isSameFormat(inline.characterFormat) && (!isBidi || (isBidi && insertLangId === inlineLangId))
+                    || (text.trim() === '' && !isBidi && inline.characterFormat.bidi)) {
                     this.insertTextInline(inline, selection, text, indexInInline);
                 } else {
                     let tempSpan: TextElementBox = new TextElementBox();
@@ -844,20 +860,33 @@ export class Editor {
                     let insertIndex: number = inline.indexInOwner;
                     if (indexInInline === inline.length) {
                         inline.line.children.splice(insertIndex + 1, 0, tempSpan);
+                        if (inline.line.paragraph.bidi) {
+                            this.viewer.layout.reArrangeElementsForRtl(inline.line, inline.line.paragraph.bidi);
+                        }
                     } else if (indexInInline === 0) {
-                        inline.line.children.splice(insertIndex, 0, tempSpan);
+                        if (isRtl && !isBidi) {
+                            inline.line.children.splice(insertIndex + 1, 0, tempSpan);
+                        } else {
+                            inline.line.children.splice(insertIndex, 0, tempSpan);
+                        }
                     } else {
                         if (inline instanceof TextElementBox) {
                             let splittedSpan: TextElementBox = new TextElementBox();
                             splittedSpan.line = inline.line;
                             splittedSpan.characterFormat.copyFormat(inline.characterFormat);
-                            splittedSpan.text = (inline as TextElementBox).text.substring(indexInInline);
-                            (inline as TextElementBox).text = (inline as TextElementBox).text.slice(0, indexInInline);
+                            if (bidi && isRtl && !isBidi) {
+                                splittedSpan.text = inline.text.slice(0, indexInInline);
+                                inline.text = inline.text.substring(indexInInline);
+                            } else {
+                                splittedSpan.text = (inline as TextElementBox).text.substring(indexInInline);
+                                (inline as TextElementBox).text = (inline as TextElementBox).text.slice(0, indexInInline);
+                            }
                             inline.line.children.splice(insertIndex + 1, 0, splittedSpan);
                         }
                         inline.line.children.splice(insertIndex + 1, 0, tempSpan);
                     }
                     this.viewer.layout.reLayoutParagraph(insertPosition.paragraph, inline.line.indexInOwner, 0);
+
                 }
             }
             this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + text.length, true);
@@ -1240,7 +1269,10 @@ export class Editor {
             let paragraph: ParagraphWidget = (element.line as LineWidget).paragraph;
             let lineIndex: number = paragraph.childWidgets.indexOf(element.line);
             let elementIndex: number = element.line.children.indexOf(element);
-            this.viewer.layout.reLayoutParagraph(paragraph, lineIndex, elementIndex);
+            if (element.line.paragraph.bidi) {
+                this.viewer.layout.reArrangeElementsForRtl(element.line, element.line.paragraph.bidi);
+            }
+            this.viewer.layout.reLayoutParagraph(paragraph, lineIndex, elementIndex, element.line.paragraph.bidi);
         } else if (element instanceof ImageElementBox) {
             this.insertImageText(element as ImageElementBox, selection, text, index);
         } else if (element instanceof FieldElementBox) {
@@ -2056,10 +2088,9 @@ export class Editor {
         newTable.index = table.index;
         table.containerWidget = undefined;
         newTable.containerWidget = owner;
-        newTable.isGridUpdated = false;
+        this.viewer.layout.clearTableWidget(newTable, true, true, true);
         newTable.buildTableColumns();
         newTable.isGridUpdated = true;
-        this.viewer.layout.clearTableWidget(newTable, true, true);
         this.updateNextBlocksIndex(newTable, true);
         this.viewer.layout.linkFieldInTable(newTable);
         this.viewer.layout.layoutBodyWidgetCollection(newTable.index, owner as Widget, newTable, false);
@@ -2439,6 +2470,38 @@ export class Editor {
             this.selection.selectParagraph(paragraph, true);
         }
         this.reLayout(this.selection, true);
+    }
+    /**
+     * Fits the table based on AutoFitType.
+     * @param {AutoFitType} - auto fit type
+     */
+    public autoFitTable(fitType: AutoFitType): void {
+        if (this.viewer.owner.isReadOnlyMode) {
+            return;
+        }
+        let startPosition: TextPosition = this.selection.start;
+        let endPosition: TextPosition = this.selection.end;
+        if (!this.selection.isForward) {
+            startPosition = this.selection.end;
+            endPosition = this.selection.start;
+        }
+        let tableAdv: TableWidget = this.selection.getTable(startPosition, endPosition);
+        tableAdv = tableAdv.getSplitWidgets()[0] as TableWidget;
+        let parentTable: TableWidget = this.viewer.layout.getParentTable(tableAdv);
+        if (!isNullOrUndefined(parentTable)) {
+            this.setOffsetValue(this.selection);
+            parentTable = parentTable.combineWidget(this.viewer) as TableWidget;
+            // tslint:disable-next-line:max-line-length
+            this.initHistory(fitType === 'FitToContents' ? 'TableAutoFitToContents' : fitType === 'FitToWindow' ? 'TableAutoFitToWindow' : 'TableFixedColumnWidth');
+            if (this.viewer.owner.editorHistoryModule) {
+                this.cloneTableToHistoryInfo(parentTable);
+            }
+            parentTable.updateProperties(true, tableAdv, fitType);
+            this.viewer.owner.isShiftingEnabled = true;
+            //Layouts the table.
+            this.viewer.layout.reLayoutTable(tableAdv);
+            this.reLayout(this.selection, true);
+        }
     }
     private updateCellFormatForInsertedRow(newRow: TableRowWidget, cellFormats: WCellFormat[]): void {
         for (let i: number = 0; i < newRow.childWidgets.length; i++) {
@@ -2864,7 +2927,9 @@ export class Editor {
                                 && block.childWidgets.length === 0) {
                                 break;
                             }
-                            mergedCell.childWidgets.push(block.clone());
+                            let newBlock: BlockWidget = block.clone();
+                            newBlock.containerWidget = mergedCell;
+                            mergedCell.childWidgets.push(newBlock);
                         }
                         row.childWidgets.splice(j, 1);
                         cell.destroy();
@@ -3522,6 +3587,7 @@ export class Editor {
      * @private
      */
     public onApplyCharacterFormat(property: string, value: Object, update?: boolean): void {
+        this.viewer.layout.isBidiReLayout = true;
         let selection: Selection = this.viewer.selection;
         if (selection.owner.isReadOnlyMode || !selection.owner.isDocumentLoaded) {
             return;
@@ -3561,6 +3627,7 @@ export class Editor {
             //Iterate and update format.
             this.updateSelectionCharacterFormatting(property, value, update);
         }
+        this.viewer.layout.isBidiReLayout = false;
     }
     /**
      * @private
@@ -3942,6 +4009,7 @@ export class Editor {
                 this.updateCharacterFormat('fontFamily', values);
                 break;
             case 'fontSize':
+                this.viewer.layout.isBidiReLayout = false;
                 this.updateCharacterFormatWithUpdate(this.viewer.selection, 'fontSize', values, update);
                 break;
             case 'highlightColor':
@@ -4493,7 +4561,7 @@ export class Editor {
      * @private
      */
     public onApplyParagraphFormat(property: string, value: Object, update: boolean, isSelectionChanged: boolean): void {
-        let action: Action = (property[0].toUpperCase() + property.slice(1)) as Action;
+        let action: Action = property === 'bidi' ? 'ParagraphBidi' : (property[0].toUpperCase() + property.slice(1)) as Action;
         this.viewer.owner.isShiftingEnabled = true;
         let selection: Selection = this.viewer.selection;
         this.initHistory(action);
@@ -4508,15 +4576,19 @@ export class Editor {
         }
         if (selection.isEmpty) {
             this.setOffsetValue(selection);
+            this.viewer.layout.isBidiReLayout = true;
             if (update && property === 'leftIndent') {
                 value = this.getIndentIncrementValue(selection.start.paragraph, value as number);
             }
             let para: ParagraphWidget = selection.start.paragraph.combineWidget(this.viewer) as ParagraphWidget;
             this.applyParaFormatProperty(para, property, value, update);
             this.layoutItemBlock(para, false);
+            this.viewer.layout.isBidiReLayout = false;
         } else {
             //Iterate and update formatting's.      
-            this.setOffsetValue(selection);
+            if (action !== 'ParagraphBidi') {
+                this.setOffsetValue(selection);
+            }
             this.updateSelectionParagraphFormatting(property, value, update);
         }
         this.reLayout(selection);
@@ -4648,6 +4720,11 @@ export class Editor {
                 // this.initializeHistory('ClearParagraphFormat', selectionRange);
                 this.updateParagraphFormat(undefined, value, false);
                 break;
+            case 'bidi':
+                this.viewer.layout.isBidiReLayout = true;
+                this.updateParagraphFormat('bidi', value, false);
+                this.viewer.layout.isBidiReLayout = false;
+                break;
         }
     }
     /**
@@ -4762,6 +4839,8 @@ export class Editor {
             this.onListFormatChange(format.ownerBase as ParagraphWidget, <WListFormat>value, format);
             this.layoutItemBlock(format.ownerBase as ParagraphWidget, false);
             return;
+        } else if (property === 'bidi') {
+            format.bidi = value as boolean;
         }
     }
     private copyParagraphFormat(sourceFormat: WParagraphFormat, destFormat: WParagraphFormat): void {
@@ -5017,7 +5096,7 @@ export class Editor {
         }
         this.getNextParagraphForFormatting(paragraph, start, end, property, value, update);
     }
-    /* tslint:disable-next-line:max-line-length */
+    /* tslint:disable-next-line:max-line-length */
     private applyCharacterStyle(paragraph: ParagraphWidget, start: TextPosition, end: TextPosition, property: string, value: WStyle, update: boolean): boolean {
         let paragraphWidget: BlockWidget[] = paragraph.getSplitWidgets() as BlockWidget[];
         if ((end.paragraph === paragraph || paragraphWidget.indexOf(end.paragraph) !== -1)) {
@@ -5276,6 +5355,8 @@ export class Editor {
                 return 'TablePreferredWidthType';
             case 'shading':
                 return 'Shading';
+            case 'bidi':
+                return 'TableBidi';
             default:
                 return 'DefaultCellSpacing';
         }
@@ -5439,7 +5520,7 @@ export class Editor {
             for (let j: number = 0; j < previousBodyWidget.childWidgets.length; j++) {
                 let block: BlockWidget = previousBodyWidget.childWidgets[j] as BlockWidget;
                 if (block instanceof TableWidget) {
-                    this.viewer.layout.clearTableWidget(block, true, true);
+                    this.viewer.layout.clearTableWidget(block, true, true, true);
                 } else {
                     block.x = 0;
                     block.y = 0;
@@ -5544,6 +5625,11 @@ export class Editor {
                 this.editorHistory.initializeHistory('AllowBreakAcrossPages');
                 this.updateRowFormat(selection, 'allowBreakAcrossPages', value);
                 break;
+            case 'TableBidi':
+                this.editorHistory.initializeHistory(action);
+                this.updateTableFormat(selection, 'bidi', value);
+                break;
+
         }
     }
     // Update Table Properties
@@ -5565,6 +5651,9 @@ export class Editor {
         this.initHistoryPosition(selection, tableStartPosition);
         // tslint:disable-next-line:max-line-length
         this.applyTablePropertyValue(selection, property, value, tableStartPosition.paragraph.associatedCell.ownerTable);
+        if (this.editorHistory && (this.editorHistory.isUndoing || this.editorHistory.isRedoing)) {
+            this.viewer.layout.reLayoutTable(tableStartPosition.paragraph.associatedCell.ownerTable);
+        }
     }
     /**
      * update cell format on undo
@@ -9077,6 +9166,8 @@ export class Editor {
             sourceFormat.bottomMargin = value as number;
         } else if (property === 'preferredWidthType') {
             sourceFormat.preferredWidthType = value as WidthType;
+        } else if (property === 'bidi') {
+            sourceFormat.bidi = value as boolean;
         }
         if (property === 'shading') {
             sourceFormat.shading = <WShading>value;
@@ -9098,6 +9189,9 @@ export class Editor {
             }
         }
         if (!this.isBordersAndShadingDialog) {
+            if (applyFormat.hasValue('bidi') && applyFormat.bidi !== tableFormat.bidi) {
+                tableFormat.bidi = applyFormat.bidi;
+            }
             if (applyFormat.hasValue('preferredWidth') && applyFormat.preferredWidth !== tableFormat.preferredWidth) {
                 tableFormat.preferredWidth = applyFormat.preferredWidth;
             }
@@ -9928,6 +10022,7 @@ export class Editor {
             }
         }
     }
+
 
 }
 /**

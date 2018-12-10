@@ -11,7 +11,7 @@ describe('Heatmap Control', () => {
         let heatmap: HeatMap;
         let ele: HTMLElement;
         let tempElement: HTMLElement;
-        let created: EmitType<ILoadedEventArgs>;
+        let created: EmitType<Object>;
         let trigger: MouseEvents = new MouseEvents();
        // let trigger: MouseEvents = new MouseEvents();
         beforeAll((): void => {
@@ -71,8 +71,14 @@ describe('Heatmap Control', () => {
             tempElement = document.getElementById('container_svg');
             expect((tempElement.getAttribute('width') == '767' || tempElement.getAttribute('width') == '769') && tempElement.getAttribute('height') == '450').toBe(true);
         });
-        it('Change the width and height of heatmap', () => {
-            heatmap.theme = "Highcontrast",
+        it('Cehck the heat map with Highcontrast light theme', () => {
+            heatmap.theme = "HighcontrastLight",
+            heatmap.dataBind();
+            tempElement = document.getElementById('container_HeatmapBorder');
+            expect(tempElement.getAttribute('fill') == '#000000').toBe(true);
+        });
+        it('Cehck the heat map with Material dark theme', () => {
+            heatmap.theme = "MaterialDark",
             heatmap.dataBind();
             tempElement = document.getElementById('container_HeatmapBorder');
             expect(tempElement.getAttribute('fill') == '#000000').toBe(true);

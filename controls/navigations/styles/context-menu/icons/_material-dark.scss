@@ -1,0 +1,30 @@
+@include export-module('context-menu-material-dark-icons') {
+  /*! contextmenu layout */
+  .e-contextmenu-wrapper {
+    @at-root {
+      & ul {
+        & .e-menu-item  {
+          & .e-previous {
+            &::before {
+              content: '\e977';
+            }
+          }
+
+          & .e-caret {
+            &::before {
+              content: '\e956';
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .e-rtl.e-contextmenu-wrapper .e-menu-item {
+    & .e-caret {
+      &::before {
+        content: '\e937';
+      }
+    }
+  }
+}

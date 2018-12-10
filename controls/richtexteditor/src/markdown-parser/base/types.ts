@@ -10,6 +10,7 @@ export type MarkdownExecCommand =
     'Effects' |
     'Casing' |
     'Actions' |
+    'table' |
     'Links' |
     'Images' |
     'Clear';

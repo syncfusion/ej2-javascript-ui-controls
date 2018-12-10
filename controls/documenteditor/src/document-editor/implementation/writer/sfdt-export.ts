@@ -181,6 +181,7 @@ export class SfdtExport {
         section.sectionFormat.differentOddAndEvenPages = bodyWidget.sectionFormat.differentOddAndEvenPages;
         section.sectionFormat.headerDistance = bodyWidget.sectionFormat.headerDistance;
         section.sectionFormat.footerDistance = bodyWidget.sectionFormat.footerDistance;
+        section.sectionFormat.bidi = bodyWidget.sectionFormat.bidi;
         section.blocks = [];
         section.headersFooters = {};
         return section;
@@ -231,9 +232,14 @@ export class SfdtExport {
         }
         return this.writeNextBlock(paragraphWidget, blocks);
     }
-    private writeInlines(line: LineWidget, inlines: any): void {
-        for (let i: number = 0; i < line.children.length; i++) {
-            let element: ElementBox = line.children[i];
+    private writeInlines(paragraph: ParagraphWidget, line: LineWidget, inlines: any): void {
+        let lineWidget: LineWidget = line.clone();
+        let bidi: boolean = paragraph.paragraphFormat.getValue('bidi') as boolean;
+        if (bidi || this.viewer.layout.isContainsRtl(lineWidget)) {
+            this.viewer.layout.reArrangeElementsForRtl(lineWidget, bidi);
+        }
+        for (let i: number = 0; i < lineWidget.children.length; i++) {
+            let element: ElementBox = lineWidget.children[i];
             if (element instanceof ListTextElementBox) {
                 continue;
             }
@@ -271,7 +277,7 @@ export class SfdtExport {
             if (this.endLine === child || (lineIndex === i && offset !== 0)) {
                 this.writeLine(child, offset, inlines);
             } else {
-                this.writeInlines(child, inlines);
+                this.writeInlines(paragraph, child, inlines);
             }
         }
         return endParagraph;
@@ -341,6 +347,7 @@ export class SfdtExport {
         paragraphFormat.outlineLevel = isInline ? format.outlineLevel : format.getValue('outlineLevel');
         paragraphFormat.listFormat = this.writeListFormat(format.listFormat, isInline);
         paragraphFormat.tabs = this.writeTabs(format.tabs);
+        paragraphFormat.bidi = isInline ? format.bidi : format.getValue('bidi');
         if (this.writeInlineStyles && !isInline) {
             paragraphFormat.inlineFormat = this.writeParagraphFormat(format, true);
         }
@@ -522,6 +529,8 @@ export class SfdtExport {
         tableFormat.bottomMargin = wTableFormat.bottomMargin;
         tableFormat.preferredWidth = wTableFormat.preferredWidth;
         tableFormat.preferredWidthType = wTableFormat.preferredWidthType;
+        tableFormat.bidi = wTableFormat.bidi;
+        tableFormat.allowAutoFit = wTableFormat.allowAutoFit;
         return tableFormat;
     }
     private writeStyles(viewer: LayoutViewer): void {

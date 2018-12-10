@@ -8,12 +8,12 @@ import { MenuItemModel } from './../../src/common/index';
 let menuItems: MenuItemModel[] = [
     {
         text: 'Preview',
-        iconCss: 'e-icons e-cut',
+        iconCss: 'e-icons e-preview',
         url: 'www.google.com'
     },
     {
         text: 'Share',
-        iconCss: 'e-icons e-share',
+        iconCss: 'e-cm-icons e-share',
         items: [
             {
                 text: 'Facebook'
@@ -25,7 +25,7 @@ let menuItems: MenuItemModel[] = [
     },
     {
         text: 'Get Link',
-        iconCss: 'e-icons e-link'
+        iconCss: 'e-cm-icons e-link'
     },
     {
         separator: true

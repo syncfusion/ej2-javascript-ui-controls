@@ -83,6 +83,10 @@ export class Highlight {
                 this.highlightSettings = this.maps.layers[layerIndex].navigationLineSettings[index].highlightSettings;
             }
             if (this.highlightSettings.enable) {
+                if (this.maps.legendSettings.visible) {
+                    this.maps.legendModule.shapeHighLightAndSelection(
+                        targetEle, data, this.highlightSettings, 'highlight', layerIndex);
+                }
                 this.mapHighlight(targetEle, shapeData, data);
             } else {
                 let element: Element = document.getElementsByClassName('highlightMapStyle')[0];
@@ -106,9 +110,21 @@ export class Highlight {
                 targetEle.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
             }
             removeClass(targetEle);
+            if (this.maps.legendSettings.visible) {
+                this.maps.legendModule.removeShapeHighlightCollection();
+            }
+        } else if ((targetEle.id.indexOf(this.maps.element.id + '_Legend_Shape_Index') !== -1 ||
+            targetEle.id.indexOf(this.maps.element.id + '_Legend_Index') !== -1) &&
+            this.maps.legendSettings.visible && targetEle.id.indexOf('_Text') === -1) {
+            this.maps.legendModule.legendHighLightAndSelection(targetEle, 'highlight');
+        } else {
+            if (this.maps.legendSettings.visible) {
+                this.maps.legendModule.removeLegendHighlightCollection();
+            }
         }
     }
     private mapHighlight(targetEle: Element, shapeData: object, data: object): void {
+        if (this.maps.legendSettings.visible ? (this.maps.legendModule.legendElement !== this.maps.legendModule.oldShapeElement) : true) {
         let eventArgs: ISelectionEventArgs = {
             opacity: this.highlightSettings.opacity,
             fill: targetEle.id.indexOf('NavigationIndex') === -1 ? this.highlightSettings.fill : 'none',
@@ -121,6 +137,7 @@ export class Highlight {
         };
         this.maps.trigger(itemHighlight, eventArgs);
         this.highlightMap(targetEle, eventArgs);
+    }
     }
     private highlightMap(targetEle: Element, eventArgs: ISelectionEventArgs): void {
         let parentElement: Element;

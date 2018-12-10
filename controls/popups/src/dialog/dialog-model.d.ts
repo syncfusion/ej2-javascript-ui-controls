@@ -1,4 +1,4 @@
-import { Component, Property, Event, Collection, L10n, Browser, EmitType, Complex, compile, createElement  } from '@syncfusion/ej2-base';import { addClass, removeClass, detach, attributes, prepend, setStyleAttribute } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, append } from '@syncfusion/ej2-base';import { EventHandler } from '@syncfusion/ej2-base';import { Draggable } from '@syncfusion/ej2-base';import { Popup, PositionData, getZindexPartial } from '../popup/popup';import { PositionDataModel } from '../popup/popup-model';import { Button, ButtonModel } from '@syncfusion/ej2-buttons';
+import { Component, Property, Event, Collection, L10n, Browser, EmitType, Complex, compile, createElement  } from '@syncfusion/ej2-base';import { addClass, removeClass, detach, attributes, prepend, setStyleAttribute } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, append } from '@syncfusion/ej2-base';import { EventHandler } from '@syncfusion/ej2-base';import { Draggable } from '@syncfusion/ej2-base';import { Popup, PositionData, getZindexPartial } from '../popup/popup';import { PositionDataModel } from '../popup/popup-model';import { Button, ButtonModel } from '@syncfusion/ej2-buttons';import { createResize, removeResize, setMinHeight } from '../common/resize';
 import {ButtonType,DialogEffect,BeforeOpenEventArgs,BeforeCloseEventArgs} from "./dialog";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -52,16 +52,19 @@ export interface AnimationSettingsModel {
      * 14. SlideTop
      * 15. Zoom
      * 16. None
+     * @default 'Fade'
      */
     effect?: DialogEffect;
 
     /**
      * Specifies the duration in milliseconds that the animation takes to open or close the dialog.
+     * @default 400
      */
     duration?: number;
 
     /**
-     * Specifies the delay in milliseconds to start animation. 
+     * Specifies the delay in milliseconds to start animation.
+     * @default 0
      */
     delay?: number;
 
@@ -111,6 +114,13 @@ export interface DialogModel extends ComponentModel{
      * @default true 
      */
     visible?: boolean;
+
+    /**
+     * Specifies the value whether the dialog component can be resized by the end-user.
+     * If enableResize is true, the dialog component creates grip to resize it diagonal direction.
+     * @default false 
+     */
+    enableResize?: boolean;
 
     /**
      * Specifies the height of the dialog component.
@@ -264,5 +274,23 @@ export interface DialogModel extends ComponentModel{
      * @event
      */
     overlayClick?: EmitType<Object>;
+
+    /**
+     * Event triggers when the user begins to resize a dialog.
+     * @event
+     */
+    resizeStart?: EmitType<Object>;
+
+    /**
+     * Event triggers when the user resize the dialog.
+     * @event
+     */
+    resizing?: EmitType<Object>;
+
+    /**
+     * Event triggers when the user stop to resize a dialog.
+     * @event
+     */
+    resizeStop?: EmitType<Object>;
 
 }

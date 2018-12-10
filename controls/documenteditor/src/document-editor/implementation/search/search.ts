@@ -256,6 +256,7 @@ export class Search {
      * Highlight search result
      * @private
      */
+    // tslint:disable:max-func-body-length
     public highlightSearchResult(paragraph: ParagraphWidget, start: TextPosition, end: TextPosition): void {
         let selectionStartIndex: number = 0;
         let selectionEndIndex: number = 0;
@@ -277,18 +278,85 @@ export class Search {
         if (!isNullOrUndefined(startLineWidget) && startLineWidget === endLineWidget) {
             //find result ends in current line.
             let right: number = this.viewer.selection.getLeftInternal(endLineWidget, endElement, selectionEndIndex);
-            this.createHighlightBorder(startLineWidget, right - left, left, top);
+            let isRtlText: boolean = false;
+            if (endElement instanceof TextElementBox) {
+                isRtlText = endElement.isRightToLeft;
+            }
+            let width: number = 0;
+            width = Math.abs(right - left);
+            if (!isRtlText && startElement instanceof TextElementBox) {
+                isRtlText = startElement.isRightToLeft;
+            }
+            // Handled the highlighting approach as genric for normal and rtl text.
+            if (isRtlText || paragraph.bidi) {
+                // tslint:disable-next-line:max-line-length
+                let elementBox: ElementBox[] = this.viewer.selection.getElementsForward(startLineWidget, startElement, endElement, paragraph.bidi);
+                if (elementBox && elementBox.length > 1) {
+                    for (let i: number = 0; i < elementBox.length; i++) {
+                        let element: ElementBox = elementBox[i];
+                        let elementIsRTL: boolean = false;
+                        let index: number = element instanceof TextElementBox ? (element as TextElementBox).length : 1;
+                        if (element === startElement) {
+                            left = this.viewer.selection.getLeftInternal(startLineWidget, element, selectionStartIndex);
+                            right = this.viewer.selection.getLeftInternal(startLineWidget, element, index);
+                        } else if (element === endElement) {
+                            left = this.viewer.selection.getLeftInternal(startLineWidget, element, 0);
+                            right = this.viewer.selection.getLeftInternal(startLineWidget, element, selectionEndIndex);
+                        } else {
+                            left = this.viewer.selection.getLeftInternal(startLineWidget, element, 0);
+                            right = this.viewer.selection.getLeftInternal(startLineWidget, element, index);
+                        }
+                        if (element instanceof TextElementBox) {
+                            elementIsRTL = element.isRightToLeft;
+                        }
+                        width = Math.abs(right - left);
+                        this.createHighlightBorder(startLineWidget, width, elementIsRTL ? right : left, top);
+                    }
+                } else {
+                    this.createHighlightBorder(startLineWidget, width, isRtlText ? right : left, top);
+                }
+            } else {
+                // Start element and end element will be in reverese for Bidi paragraph highlighting. 
+                // So, the right is considered based on Bidi property. 
+                this.createHighlightBorder(startLineWidget, width, left, top);
+            }
         } else {
             if (!isNullOrUndefined(startLineWidget)) {
                 if (paragraph !== startLineWidget.paragraph) {
                     paragraph = startLineWidget.paragraph;
                 }
-                // tslint:disable-next-line:max-line-length
-                this.createHighlightBorder(startLineWidget, this.viewer.selection.getWidth(startLineWidget, true) - (left - startLineWidget.paragraph.x), left, top);
+                let width: number = this.viewer.selection.getWidth(startLineWidget, true) - (left - startLineWidget.paragraph.x);
+                // Handled the  highlighting approach as genric for normal and rtl text.
+                if (paragraph.bidi || (startElement instanceof TextElementBox && startElement.isRightToLeft)) {
+                    let right: number = 0;
+                    // tslint:disable-next-line:max-line-length
+                    let elementCollection: ElementBox[] = this.viewer.selection.getElementsForward(startLineWidget, startElement, endElement, paragraph.bidi);
+                    if (elementCollection) {
+                        let elementIsRTL: boolean = false;
+                        for (let i: number = 0; i < elementCollection.length; i++) {
+                            let element: ElementBox = elementCollection[i];
+                            let index: number = element instanceof TextElementBox ? (element as TextElementBox).length : 1;
+                            right = this.viewer.selection.getLeftInternal(startLineWidget, element, index);
+                            elementIsRTL = false;
+                            if (element === startElement) {
+                                left = this.viewer.selection.getLeftInternal(startLineWidget, element, selectionStartIndex);
+                            } else {
+                                left = this.viewer.selection.getLeftInternal(startLineWidget, element, 0);
+                            }
+                            if (element instanceof TextElementBox) {
+                                elementIsRTL = element.isRightToLeft;
+                            }
+                            width = Math.abs(right - left);
+                            this.createHighlightBorder(startLineWidget, width, elementIsRTL ? right : left, top);
+                        }
+                        // Highlight the Paragrph mark for last line.
+                    }
+                } else {
+                    this.createHighlightBorder(startLineWidget, width, left, top);
+                }
                 let lineIndex: number = startLineWidget.paragraph.childWidgets.indexOf(startLineWidget);
                 //Iterates to last item of paragraph or search result end.
 
-                let startParagraphWidget: number;
                 for (let i: number = 0; i < paragraph.childWidgets.length; i++) {
                     if (paragraph === startLineWidget.paragraph) {
                         lineIndex += 1;
@@ -339,20 +407,52 @@ export class Search {
     // tslint:disable-next-line:max-line-length
     public highlightSearchResultParaWidget(widget: ParagraphWidget, startIndex: number, endLine: LineWidget, endElement: ElementBox, endIndex: number): void {
         let top: number = 0;
+        let width: number = 0;
+        let isRtlText: boolean = false;
         for (let j: number = startIndex; j < widget.childWidgets.length; j++) {
             let lineWidget: LineWidget = widget.childWidgets[j] as LineWidget;
             if (j === startIndex) {
                 top = this.viewer.selection.getTop(lineWidget);
             }
             let left: number = this.viewer.selection.getLeft(lineWidget);
-            if (lineWidget === endLine) {
-                //Search result ends in current line.
-                let right: number = this.viewer.selection.getLeftInternal(endLine, endElement, endIndex);
-                this.createHighlightBorder(lineWidget, right - left, left, top);
-                return;
+            if (endElement instanceof TextElementBox) {
+                isRtlText = endElement.isRightToLeft;
             }
-            this.createHighlightBorder(lineWidget, this.viewer.selection.getWidth(lineWidget, true) - (left - widget.x), left, top);
-            top += lineWidget.height;
+            if (lineWidget === endLine) {
+                //Selection ends in current line.
+                let right: number = 0;
+                // Handled the highlighting using the element box highlighting approach as genric for normal and rtl text.
+                if (isRtlText || widget.bidi) {
+                    // tslint:disable-next-line:max-line-length
+                    let elementBox: ElementBox[] = this.viewer.selection.getElementsBackward(lineWidget, endElement, endElement, widget.bidi);
+                    for (let i: number = 0; i < elementBox.length; i++) {
+                        let element: ElementBox = elementBox[i];
+                        let elementIsRTL: boolean = false;
+                        left = this.viewer.selection.getLeftInternal(lineWidget, element, 0);
+                        if (element === endElement) {
+                            right = this.viewer.selection.getLeftInternal(lineWidget, element, endIndex);
+                        } else {
+                            let index: number = element instanceof TextElementBox ? (element as TextElementBox).length : 1;
+                            right = this.viewer.selection.getLeftInternal(lineWidget, element, index);
+                        }
+                        if (element instanceof TextElementBox) {
+                            elementIsRTL = element.isRightToLeft;
+                        }
+                        width = Math.abs(right - left);
+                        this.createHighlightBorder(lineWidget, width, elementIsRTL ? right : left, top);
+                    }
+                    return;
+                } else {
+                    right = this.viewer.selection.getLeftInternal(endLine, endElement, endIndex);
+                    width = Math.abs(right - left);
+                    this.createHighlightBorder(lineWidget, width, isRtlText ? right : left, top);
+                    return;
+                }
+            } else {
+                width = this.viewer.selection.getWidth(lineWidget, true) - (left - widget.x);
+                this.createHighlightBorder(lineWidget, width, left, top);
+                top += lineWidget.height;
+            }
         }
     }
 

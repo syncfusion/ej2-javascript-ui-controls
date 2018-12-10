@@ -1,8 +1,9 @@
-import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';
-import { BorderModel, FontModel } from './base-model';
+import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';
+import { BorderModel, FontModel, PeriodsModel } from './base-model';
 import { EmptyPointMode} from '../../chart/utils/enum';
 import { AccEmptyPointMode, ConnectorType} from '../../accumulation-chart/model/enum';
 import { Alignment, TextOverflow } from '../utils/enum';
+import { RangeIntervalType, PeriodSelectorPosition } from '../utils/enum';
 import {  Theme } from '../model/theme';
 
 /**
@@ -219,9 +220,7 @@ export class Animation extends ChildProperty<Animation> {
     @Property(0)
     public delay: number;
 }
-/**
- * Selection Option for series and point indexes.
- */
+/** @private */
 export class Indexes extends ChildProperty<Indexes> {
     /**
      * Specifies the series index
@@ -322,6 +321,14 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public enable: boolean;
 
     /**
+     * Enables / Disables the visibility of the marker.
+     * @default true.
+     */
+
+    @Property(true)
+    public enableMarker: boolean;
+
+    /**
      * If set to true, a single ToolTip will be displayed for every index.
      * @default false.
      */
@@ -389,4 +396,63 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     @Complex<BorderModel>({ color: '#cccccc', width: 0.5 }, Border)
     public border: BorderModel;
 
+}
+
+/**
+ * button settings in period selector
+ */
+export class Periods extends ChildProperty<Periods> {
+    /**
+     * IntervalType of button
+     * @default 'Years'
+     */
+    @Property('Years')
+    public intervalType: RangeIntervalType;
+
+    /**
+     * Count value for the button
+     * @default 1
+     */
+    @Property(1)
+    public interval: number;
+
+    /**
+     * Text to be displayed on the button
+     * @default null
+     */
+    @Property(null)
+    public text: string;
+
+    /**
+     * To select the default period
+     * @default false
+     */
+    @Property(false)
+    public selected: boolean;
+}
+
+/**
+ * Period Selector Settings
+ */
+export class PeriodSelectorSettings extends ChildProperty<PeriodSelectorSettings> {
+
+    /**
+     * Height for the period selector
+     * @default 43
+     */
+    @Property(43)
+    public height: number;
+
+    /**
+     * vertical position of the period selector
+     * @default 'Bottom'
+     */
+    @Property('Bottom')
+    public position: PeriodSelectorPosition;
+
+    /**
+     * Buttons
+     */
+    @Collection<PeriodsModel>([], Periods)
+    public periods: PeriodsModel[];
 }

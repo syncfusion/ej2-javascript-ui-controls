@@ -1,0 +1,248 @@
+
+$diagram-endpoint-handle-color: #046ae5  !default;
+$diagram-endpoint-handle-connected-border: #0f0 !default;
+$diagram-endpoint-handle-connected-color: #0f0 !default;;
+$diagram-resize-handle-color: #046ae5  !default;
+$diagram-resize-handle-stroke: #046ae5  !default;
+$diagram-resize-handle-disable-color: #aaa !default;
+$diagram-resize-handle-disable-stroke: #aaa !default;
+$diagram-border-stroke-disabled: #aaa !default;
+$diagram-rotate-handle-color: #046ae5  !default;
+$diagram-border-stroke: #000 !default;
+$diagram-highlighter-stroke: #6a5acd  !default;
+$diagram-selected-region-stroke: #046ae5 !default;
+$diagram-pivot-line-stroke: #ff8c00 !default;
+$diagram-text-edit-color: #f00 !default;
+$diagram-text-edit-selection-color: #fff !default;
+$diagram-text-edit-selection-background: #aaa !default;
+$diagram-text-edit-background: #ff0 !default;
+$diagram-symbolpalette-hover: #f00 !default;
+$diagram-symbolpalette-selected: #f00 !default;
+$diagram-tooltip: none !default;
+$diagram-ruler-color: #979797  !default;
+$diagram-ruler-font: Roboto-Regular !default;
+$diagram-ruler-font-size: 10px !default;
+$diagram-bezier-handle-color: #f00 !default;
+$diagram-bezier-line-color: #00f !default;
+$diagram-ruler-marker-stroke: #0f0 !default;
+$diagram-ruler-marker-background-color: #ffa500 !default;
+$diagram-ruler-label-fill: #f00 !default;
+$diagram-ruler-tick-stroke: #0f0 !default;
+$diagram-editbox-background: #fff !default;
+$diagram-editbox-font-color: #000 !default;
+$hc-theme-primary: rgb(0, 120, 215) !default;
+$hc-theme-dark-font: #fff !default;
+$hc-theme-dark: rgb(0, 90, 158) !default;
+$hc-neutral-tertiary: rgb(166, 166, 166) !default;
+$hc-grey-dark-font: #fff !default;
+$hc-neutral-light: rgb(234, 234, 234) !default;
+$hc-theme-light: rgb(199, 224, 244) !default;
+$hc-theme-secondary: #2b88d8 !default;
+$hc-neutral-secondary-alt: #767676 !default;
+
+$diagram-endpoint-handle-color: $hc-theme-primary !default;
+$diagram-endpoint-handle-connected-border: $hc-theme-primary !default;
+$diagram-endpoint-handle-connected-color: $hc-theme-dark-font !default;
+
+$diagram-resize-handle-color: $hc-theme-primary !default;
+$diagram-resize-handle-stroke: $hc-theme-dark-font !default;
+$diagram-border-stroke: $hc-theme-dark !default;
+
+$diagram-resize-handle-disable-color: $hc-neutral-tertiary !default;
+$diagram-resize-handle-disable-stroke: $hc-grey-dark-font !default;
+$diagram-border-stroke-disabled: $hc-neutral-tertiary !default;
+
+$diagram-rotate-handle-color: #000 !default;
+
+$diagram-bezier-handle-color: $hc-theme-dark !default;
+$diagram-bezier-line-color: $hc-theme-dark !default;
+
+$diagram-highlighter-stroke: $hc-theme-dark !default;
+$diagram-selected-region-stroke: $hc-theme-primary !default;
+$diagram-pivot-line-stroke: $hc-theme-primary !default;
+
+$diagram-text-edit-selection-color: $hc-theme-dark-font !default;
+$diagram-text-edit-selection-background: $hc-theme-primary !default;
+
+$diagram-symbolpalette-hover: $hc-neutral-light !default;
+$diagram-symbolpalette-selected: $hc-theme-light !default;
+
+$diagram-tooltip: none !default;
+
+$diagram-ruler-color: $hc-neutral-tertiary !default;
+$diagram-ruler-font-size: 10px !default;
+$diagram-ruler-marker-stroke: $hc-theme-primary !default;
+$diagram-ruler-marker-background-color: $hc-grey-dark-font !default;
+$diagram-ruler-label-fill:  $hc-neutral-tertiary !default;
+$diagram-ruler-tick-stroke: $hc-neutral-secondary-alt !default;
+
+$diagram-background-color: #fff !default;
+
+$diagram-editbox-background: #fff !default;
+$diagram-editbox-fontcolor: #000 !default;
+
+@include export-module('diagram-icons') {
+  /*! component icons */
+
+  #{&}.e-diagram,
+  .e-diagram-menu {
+    .e-bringforward::before { content: '\e574'; }
+    .e-bringfront::before { content: '\e575'; }
+    .e-sendback::before { content: '\e576'; }
+    .e-sendbackward::before { content: '\e577'; }
+    .e-delete::before { content: '\e578'; }
+    .e-ungroup::before { content: '\e579'; }
+    .e-group::before { content: '\e57a'; }
+    .e-undo::before { content: '\e57c'; }
+    .e-cut::before { content: '\e57d'; }
+    .e-save::before { content: '\e57e'; }
+    .e-paste::before { content: '\e57f'; }
+    .e-copy::before { content: '\e580'; }
+    .e-redo::before { content: '\e581'; }
+    .e-zoomin::before { content: '\e582'; }
+    .e-italic::before { content: '\e583'; }
+    .e-close::before { content: '\e584'; }
+    .e-pan::before { content: '\e585'; }
+    .e-bold::before { content: '\e586'; }
+    .e-underline::before { content: '\e587'; }
+    .e-zoomout::before { content: '\e588'; }
+    .e-export::before { content: '\e589'; }
+    .e-print::before { content: '\e58a'; }
+    .e-order::before { content: '\e58b'; }
+  }
+  }
+@include export-module('symbolpalette-icons') {
+
+
+  #{&}.e-symbolpalette {
+    .e-clear-searchtext::before { content: '\e58c'; }
+  }
+  }
+@include export-module('diagram-theme') {
+
+  .e-diagram {
+    background-color: $diagram-background-color;
+    display: block;
+  }
+
+  .e-diagram-endpoint-handle {
+    fill: $diagram-endpoint-handle-color;
+    stroke: $diagram-resize-handle-stroke;
+  }
+
+  .e-diagram-endpoint-handle.e-disabled {
+    fill: $diagram-resize-handle-disable-color;
+    opacity: 1;
+    stroke: $diagram-resize-handle-disable-stroke;
+  }
+
+  .e-diagram-endpoint-handle.e-connected {
+    fill: $diagram-endpoint-handle-connected-color;
+    stroke: $diagram-endpoint-handle-connected-border;
+  }
+
+  .e-diagram-bezier-handle {
+    fill: $diagram-bezier-handle-color;
+    stroke: $diagram-resize-handle-stroke;
+  }
+
+  .e-diagram-bezier-line {
+    stroke: $diagram-bezier-line-color;
+  }
+
+  .e-diagram-resize-handle {
+    fill: $diagram-resize-handle-color;
+    stroke: $diagram-resize-handle-stroke;
+  }
+
+  .e-diagram-resize-handle.e-disabled {
+    fill: $diagram-resize-handle-disable-color;
+    opacity: 1;
+    stroke: $diagram-resize-handle-disable-stroke;
+  }
+
+  .e-diagram-rotate-handle {
+    fill: $diagram-rotate-handle-color;
+    stroke: $diagram-resize-handle-stroke;
+  }
+
+  .e-diagram-border {
+    stroke: $diagram-border-stroke;
+  }
+
+  .e-diagram-border.e-disabled {
+    opacity: 1;
+    stroke: $diagram-border-stroke-disabled;
+  }
+
+  .e-diagram-highlighter {
+    stroke: $diagram-highlighter-stroke;
+  }
+
+  .e-diagram-selected-region {
+    stroke: $diagram-selected-region-stroke;
+  }
+
+  .e-diagram-pivot-line {
+    stroke: $diagram-pivot-line-stroke;
+  }
+
+  .e-symbolpalette .e-symbol-hover:hover {
+    background: $diagram-symbolpalette-hover;
+  }
+
+  .e-symbolpalette .e-symbol-selected {
+    background: $diagram-symbolpalette-selected;
+  }
+
+  .e-diagram-tooltip {
+    pointer-events: $diagram-tooltip;
+  }
+
+  .e-diagram .e-ruler {
+    background-color: $diagram-ruler-marker-background-color;
+    color: $diagram-ruler-color;
+    font-size: $diagram-ruler-font-size;
+  }
+
+  .e-diagram .e-ruler-overlap {
+    background-color: $diagram-ruler-marker-background-color;
+  }
+
+  .e-diagram .e-d-ruler-marker {
+    stroke: $diagram-ruler-marker-stroke;
+  }
+
+  .e-diagram .e-diagram-text-edit {
+    background: $diagram-editbox-background;
+    border-color: $diagram-bezier-line-color;
+    border-style: dashed;
+    border-width: 1px;
+    box-sizing: content-box;
+    color: $diagram-editbox-fontcolor;
+    min-width: 50px;
+  }
+
+  .e-diagram-text-edit::selection {
+    background: $diagram-text-edit-selection-background;
+    color: $diagram-text-edit-selection-color;
+  }
+
+  .e-ruler-tick-label {
+    fill: $diagram-ruler-label-fill;
+  }
+
+  .e-ruler-tick {
+    stroke: $diagram-ruler-tick-stroke;
+  }
+
+  .e-menu-item e-blankicon {
+    padding-left: 28px;
+  }
+
+  // sass-lint:disable-all
+  .e-diagram-rotate {
+    cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAACXBIWXMAAAsSAAALEgHS3X78AAAA60lEQVQ4jZ1SwQ2DMBAzlfLJI2KEjJAVukG7ARsxQkfoKHQDugHdgOoqh14oCaGWIpSTudzZRg2MdYOxrq0il2Csm411o7Eu5GinTN0D6AGMAGZVux9p1LGBrHIF0LD+4l3ql70thDABSFZYaeTJ6UqNWhL3ELhyyhUR98TcwI06Lk1aNonO1NocqGWy/6zOcGCq6OjiSCw22/wUfEzL8ND2P9duFXBmHMDvWVN7CliFkkGe69VM5RmVLDqG7ZMPOroWP5BTle5WjR6dkQayutyLqU6gsiU/ypHMiI41yf+CE01qov+R0egXAN5x6jng51I3yAAAAABJRU5ErkJggg==), auto !important;
+   }
+  // sass-lint:enable-all
+}

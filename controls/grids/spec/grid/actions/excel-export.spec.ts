@@ -1,3 +1,301 @@
+/**
+ * Grid Excel Export spec document
+ */
+/* tslint:disable */
+import { Grid } from '../../../src/grid/base/grid';
+import { Page } from '../../../src/grid/actions/page';
+import { Selection } from '../../../src/grid/actions/selection';
+import { Group } from '../../../src/grid/actions/group';
+import { Toolbar } from '../../../src/grid/actions/toolbar';
+import { DetailRow } from '../../../src/grid/actions/detail-row';
+import { ForeignKey } from '../../../src/grid/actions/foreign-key';
+import { data, employeeData, customerData } from '../base/datasource.spec';
+import '../../../node_modules/es6-promise/dist/es6-promise';
+import { ExcelExport } from '../../../src/grid/actions/excel-export';
+import { createGrid, destroy} from '../base/specutil.spec';
+import { HierarchyGridPrintMode } from '../../../src/grid/base/enum';
+import { DataManager } from '@syncfusion/ej2-data';
+import { Workbook } from '@syncfusion/ej2-excel-export';
+import { ExcelRow, ExcelExportProperties } from '../../../src';
+
+Grid.Inject(Page, Group, Selection, Toolbar, ExcelExport, DetailRow, ForeignKey);
+
+describe('excel Export =>', () => {
+    let exportComplete: () => void = () => true;
+    describe('Single Grid excel Export =>', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData,
+                    allowExcelExport: true,
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'FirstName', headerText: 'Name', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 180 },
+                        { field: 'City', headerText: 'city', width: 110 },
+                        { field: 'Country', headerText: 'Country', width: 110 }
+                    ],
+                    excelExportComplete: exportComplete,
+                    beforeExcelExport: () => true
+                }, done);
+        });
+
+        it("Export cancel Check", (done: Function) => {
+            gridObj.beforeExcelExport = (args: any) => {
+                gridObj.beforeExcelExport = undefined;
+                args.cancel = true;
+            };
+            gridObj.excelExport().then((doc) => {
+                expect(doc).toBeUndefined();
+                done();
+            });
+        });
+
+        it('grid exporting(Check with multiple exporting)', (done) => {
+            spyOn(gridObj, 'excelExportComplete');
+            gridObj.excelExport({}, true).then((excelDoc: Workbook) => {
+                expect(gridObj.excelExportComplete).toHaveBeenCalled();
+                expect(excelDoc).not.toBeUndefined();
+                done();
+            });     
+        });
+        
+        it('Excel grid Check column length', () => {
+            let excelRows: ExcelRow[] = (<any>gridObj.excelExportModule).processGridExport(gridObj, {}, {result: gridObj.dataSource });
+            expect((<any>gridObj.excelExportModule).columns.length).toBe(10);
+            expect(excelRows.length).toBe((<any>gridObj.dataSource).length + 1);
+            expect(excelRows[0].cells.length).toBe(5);
+        });
+
+        it("hide a column", (done) => {
+            gridObj.dataBound = () => {
+                expect(gridObj.getVisibleColumns().length).toBe(4);
+                gridObj.dataBound = null;
+                done();
+            }
+            gridObj.hideColumns('Title');
+        });
+
+        it('visibility check', () => {
+            let excelRows: ExcelRow[] = (<any>gridObj.excelExportModule).processGridExport(gridObj, {}, {result: gridObj.dataSource });
+            expect(excelRows[0].cells.length).toBe(4);
+        });
+
+        it('visibility check include hidden column', () => {
+            (<any>gridObj.excelExportModule).includeHiddenColumn = true;
+            let excelRows: ExcelRow[] = (<any>gridObj.excelExportModule).processGridExport(gridObj, {includeHiddenColumn: true}, {result: gridObj.dataSource });
+            expect(excelRows[0].cells.length).toBe(5);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('Stacked Header Grid Excel Export =>', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowExcelExport: true,
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', dataSource: employeeData, foreignKeyValue: 'FirstName', width: 120 },
+                        {
+                            headerText: 'Order Details', columns: [
+                                { field: 'OrderDate', headerText: 'Order Date', textAlign: 'Right', width: 135, format: 'yMd' },
+                                { field: 'Freight', headerText: 'Freight($)', textAlign: 'Right', width: 120, format: 'C2' },
+                            ]
+                        },
+                        {
+                            headerText: 'Ship Details', columns: [
+                                { field: 'ShippedDate', headerText: 'Shipped Date', textAlign: 'Right', width: 145, format: 'yMd' },
+                                { field: 'ShipCountry', headerText: 'Ship Country', width: 140 },
+                            ]
+                        }
+                    ],
+                    excelExportComplete: exportComplete,
+                }, done);
+        });
+        it('grid exporting(Check with multiple exporting)', (done) => {
+            gridObj.excelExport({dataSource: data}, true).then((Doc: Workbook) => {
+                expect(Doc).not.toBeUndefined();
+                done();
+            });     
+        });
+        it('Excel grid header length', () => {
+            let excelRows: ExcelRow[] = (<any>gridObj.excelExportModule).processGridExport(gridObj, {}, {result: gridObj.dataSource });
+            expect(excelRows.length).toBe((<any>gridObj.dataSource).length + 2);
+            expect((<any>excelRows[0]).cells.length).toBe(3);
+            expect((<any>excelRows[1]).cells.length).toBe(4);
+            expect((<any>excelRows[0]).cells[0].rowSpan).toBe(2);
+            expect((<any>excelRows[0]).cells[1].colSpan).toBe(2);
+        });
+
+        it("hide a column", (done) => {
+            gridObj.dataBound = () => {
+                expect(gridObj.getVisibleColumns().length).toBe(4);
+                gridObj.dataBound = null;
+                done();
+            }
+            gridObj.hideColumns('Freight', 'field');
+        });
+        it('stacked header visibility check', () => {
+            let excelRows: ExcelRow[] = (<any>gridObj.excelExportModule).processGridExport(gridObj, undefined, {result: gridObj.dataSource });
+            expect((<any>excelRows[0]).cells.length).toBe(3);
+            expect((<any>excelRows[1]).cells.length).toBe(3);
+        });
+
+        it('stacked header visibility check for include hidden column', () => {
+            (<any>gridObj.excelExportModule).includeHiddenColumn = true;
+            let excelRows: ExcelRow[] = (<any>gridObj.excelExportModule).processGridExport(gridObj, {includeHiddenColumn: true}, {result: gridObj.dataSource } );
+            expect((<any>excelRows[0]).cells.length).toBe(3);
+            expect((<any>excelRows[1]).cells.length).toBe(4);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('Custom font in Grid excel Export =>', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData,
+                    allowExcelExport: true,
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'FirstName', headerText: 'Name', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 180 },
+                        { field: 'City', headerText: 'city', width: 110 },
+                        { field: 'Country', headerText: 'Country', width: 110 }
+                    ],
+                    excelExportComplete: exportComplete,
+                }, done);
+        });
+        it('grid exporting(Check with multiple exporting)', (done) => {
+            gridObj.excelExport({dataSource: new DataManager(data)}, true).then((doc: Workbook) => {
+                expect(doc).not.toBeUndefined();
+                done();
+            });     
+        });
+        it('Excel grid Check column length', () => {
+            (<any>gridObj.excelExportModule).styles = [];
+            (<any>gridObj.excelExportModule).theme = {
+                header: { bold: false, fontSize: 15 },
+                caption: { bold: true, fontSize: 10 },
+                record: { fontName: "TimesRoman", fontColor: "#FFFFFF", fontSize: 12 }
+            }
+            let excelRows: ExcelRow[] = (<any>gridObj.excelExportModule).processGridExport(gridObj, {
+                theme: {
+                    header: { bold: false, fontSize: 15 },
+                    caption: { bold: true, fontSize: 10 },
+                    record: { fontName: "TimesRoman", fontColor: "#FFFFFF", fontSize: 12 }
+                },
+            } as ExcelExportProperties, {result: gridObj.dataSource });
+            expect((<any>excelRows[0]).cells[0].style.fontSize).toBe(15);
+            expect((<any>excelRows[0]).cells[0].style.bold).toBeFalsy();
+            expect((<any>excelRows[0]).cells[0].style.hAlign).toBe('right');
+            let style: any = (<any>gridObj.excelExportModule).styles[(<any>gridObj.excelExportModule).getColumnStyle(gridObj, 1)];
+            expect(style.bold).toBeFalsy();
+            expect(style.fontSize).toBe(12);
+            expect(style.fontName).toBe("TimesRoman");
+            expect(style.fontColor).toBe("#FFFFFF");
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('Hierarchy Excel export => ', () => {
+        let gridObj: Grid;
+        let exportedMode: HierarchyGridPrintMode = 'Expanded';
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData,
+                    allowSorting: true,
+                    allowFiltering: true,
+                    allowGrouping: true,
+                    allowPaging: true,
+                    pageSettings: {pageSize: 4},
+                    allowExcelExport: true,
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'FirstName', headerText: 'Name', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 180 },
+                        { field: 'City', headerText: 'city', width: 110 },
+                        { field: 'Country', headerText: 'Country', width: 110 }
+                    ],
+                    childGrid: {
+                        dataSource: data,
+                        queryString: 'EmployeeID',
+                        columns: [
+                            { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                            { field: 'ShipCity', headerText: 'Ship City', width: 120 },
+                            { field: 'Freight', headerText: 'Freight', width: 120 },
+                            { field: 'ShipName', headerText: 'Ship Name', width: 150 }
+                        ],
+                        childGrid: {
+                            dataSource: customerData,
+                            queryString: 'CustomerID',
+                            columns: [
+                                { field: 'CustomerID', headerText: 'Customer ID', textAlign: 'Right', width: 75 },
+                                { field: 'Phone', headerText: 'Phone', width: 100 },
+                                { field: 'Address', headerText: 'Address', width: 120 },
+                                { field: 'Country', headerText: 'Country', width: 100 }
+                            ]
+                        }
+                    },
+                    excelExportComplete: exportComplete,
+                }, done);
+        });
+        it('grid exporting(Check with multiple exporting)', (done) => {
+            gridObj.excelExport({}, true).then((Doc: Workbook) => {
+                expect(Doc).not.toBeUndefined();
+                done();
+            });     
+        });
+        it('Expand a detail row', (done) => {
+            gridObj.childGrid.dataBound = () => {
+                expect(gridObj.getRowsObject().filter((row: any) => row.isExpand && !row.isDetailRow).length).toBe(1);
+                done();
+            }
+            gridObj.detailRowModule.expand(0);
+        });
+
+        it('Hierarchy grid exporting', (done) => {
+            gridObj.excelExport({}, true).then((doc) => {
+                expect(doc).not.toBeUndefined();
+                done();
+            });
+        });
+
+        it('Hierarchy grid exporting', (done) => {
+            gridObj.excelExport({hierarchyExportMode: 'All'}, true).then((doc) => {
+                expect(doc).not.toBeUndefined();
+                done();
+            });
+        });
+
+        it('Hierarchy grid exporting', (done) => {
+            gridObj.excelExport({hierarchyExportMode: 'None'}, true).then((doc) => {
+                expect(doc).not.toBeUndefined();
+                done();
+            });
+        });
+    
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+});
+
+
 // /**
 //  * Grid Excel Export spec document
 //  */
@@ -16,7 +314,7 @@
 // import { ExcelExport } from '../../../src/grid/actions/excel-export';
 // import { createGrid, destroy, getKeyUpObj, getClickObj, getKeyActionObj } from '../base/specutil.spec';
 // import '../../../node_modules/es6-promise/dist/es6-promise';
-
+ 
 // Grid.Inject(Page, Group, Selection, Toolbar, ExcelExport, Aggregate);
 
 

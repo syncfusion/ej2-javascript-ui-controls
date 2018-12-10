@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, createElement } from '@syncfusion/ej2-base';import { isNullOrUndefined, getValue } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { Border, Font, Animation, Index, EmptyPointSettings, Connector } from '../../common/model/base';import { Rect, ChartLocation, stringToNumber, PathOption, Size, appendChildElement } from '../../common/utils/helper';import { AccumulationType, AccumulationLabelPosition, PyramidModes } from '../model/enum';import { IAccSeriesRenderEventArgs, IAccPointRenderEventArgs } from '../model/pie-interface';import { LegendShape } from '../../chart/utils/enum';import { Data } from '../../common/model/data';import { seriesRender, pointRender } from '../../common/model/constants';import { getSeriesColor } from '../../common/model/theme';import { FontModel, BorderModel, AnimationModel, EmptyPointSettingsModel, ConnectorModel } from '../../common/model/base-model';import { AccumulationChart } from '../accumulation';import { getElement, firstToLowerCase } from '../../common/utils/helper';import { Units, Alignment, Regions, Position, SeriesCategories } from '../../common/utils/enum';import { GroupModes } from './enum';
+import { Property, ChildProperty, Complex, createElement } from '@syncfusion/ej2-base';import { isNullOrUndefined, getValue } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { Border, Font, Animation, Index, EmptyPointSettings, Connector } from '../../common/model/base';import { Rect, ChartLocation, stringToNumber, PathOption, Size, appendChildElement} from '../../common/utils/helper';import { AccumulationType, AccumulationLabelPosition, PyramidModes } from '../model/enum';import { IAccSeriesRenderEventArgs, IAccPointRenderEventArgs } from '../model/pie-interface';import { LegendShape } from '../../chart/utils/enum';import { Data } from '../../common/model/data';import { seriesRender, pointRender } from '../../common/model/constants';import { getSeriesColor } from '../../common/model/theme';import { FontModel, BorderModel, AnimationModel, EmptyPointSettingsModel, ConnectorModel } from '../../common/model/base-model';import { AccumulationChart } from '../accumulation';import { getElement, firstToLowerCase } from '../../common/utils/helper';import { Units, Alignment, Regions, Position, SeriesCategories } from '../../common/utils/enum';import { GroupModes } from './enum';
 
 /**
  * Interface for a class AccumulationAnnotationSettings
@@ -148,6 +148,25 @@ export interface AccumulationDataLabelSettingsModel {
 }
 
 /**
+ * Interface for a class PieCenter
+ */
+export interface PieCenterModel {
+
+    /**
+     * X value of the center.
+     * @default '50%'
+     */
+    x?: string;
+
+    /**
+     * Y value of the center.
+     * @default '50%'
+     */
+    y?: string;
+
+}
+
+/**
  * Interface for a class AccPoints
  */
 export interface AccPointsModel {
@@ -207,7 +226,7 @@ export interface AccumulationSeriesModel {
     name?: string;
 
     /**
-     * The provided value will be considered as a Tooltip Mapping name 
+     * The provided value will be considered as a Tooltip Mapping name
      * @default ''
      */
     tooltipMappingName?: string;

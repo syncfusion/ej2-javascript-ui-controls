@@ -13,7 +13,7 @@
     }
 
     .e-spinner {
-      transition: $transition;
+      transition: $progress-btn-transition;
     }
 
     .e-btn-content {
@@ -81,7 +81,7 @@
 
       &.e-spin-left:not(.e-round) {
         .e-spinner {
-          padding-right: $spinner-padding;
+          padding-right: $progress-btn-spinner-padding;
 
           .e-spinner-inner {
             top: -1px;
@@ -90,7 +90,7 @@
 
         &.e-rtl {
           .e-spinner {
-            padding-left: $spinner-padding;
+            padding-left: $progress-btn-spinner-padding;
             padding-right: 0;
           }
         }
@@ -98,7 +98,7 @@
 
       &.e-spin-right:not(.e-round) {
         .e-spinner {
-          padding-left: $spinner-padding;
+          padding-left: $progress-btn-spinner-padding;
 
           .e-spinner-inner {
             top: -1px;
@@ -108,38 +108,38 @@
         &.e-rtl {
           .e-spinner {
             padding-left: 0;
-            padding-right: $spinner-padding;
+            padding-right: $progress-btn-spinner-padding;
             }
           }
     }
 
       &.e-spin-top {
-        padding-bottom: $spin-btn-padding;
-        padding-top: $spin-btn-padding;
+        padding-bottom: $progress-btn-spin-btn-padding;
+        padding-top: $progress-btn-spin-btn-padding;
 
         .e-spinner {
-          padding-bottom: $spinner-padding;
+          padding-bottom: $progress-btn-spinner-padding;
           }
       }
 
       &.e-spin-bottom {
-        padding-bottom: $spin-btn-padding;
-        padding-top: $spin-btn-padding;
+        padding-bottom: $progress-btn-spin-btn-padding;
+        padding-top: $progress-btn-spin-btn-padding;
 
         .e-spinner {
-          padding-top: $spinner-padding;
+          padding-top: $progress-btn-spinner-padding;
         }
       }
 
       &.e-small {
         &.e-spin-left:not(.e-round) {
           .e-spinner {
-            padding-right: $spinner-padding-small;
+            padding-right: $progress-btn-spinner-padding-small;
           }
 
           &.e-rtl {
             .e-spinner {
-              padding-left: $spinner-padding-small;
+              padding-left: $progress-btn-spinner-padding-small;
               padding-right: 0;
               }
             }
@@ -147,32 +147,32 @@
 
         &.e-spin-right:not(.e-round) {
           .e-spinner {
-            padding-left: $spinner-padding-small;
+            padding-left: $progress-btn-spinner-padding-small;
           }
 
           &.e-rtl {
             .e-spinner {
               padding-left: 0;
-              padding-right: $spinner-padding-small;
+              padding-right: $progress-btn-spinner-padding-small;
               }
             }
       }
 
         &.e-spin-top {
-          padding-bottom: $small-spin-btn-padding;
-          padding-top: $small-spin-btn-padding;
+          padding-bottom: $progress-btn-small-spin-btn-padding;
+          padding-top: $progress-btn-small-spin-btn-padding;
 
           .e-spinner {
-            padding-bottom: $spinner-padding-small;
+            padding-bottom: $progress-btn-spinner-padding-small;
          }
         }
 
         &.e-spin-bottom {
-          padding-bottom: $small-spin-btn-padding;
-          padding-top: $small-spin-btn-padding;
+          padding-bottom: $progress-btn-small-spin-btn-padding;
+          padding-top: $progress-btn-small-spin-btn-padding;
 
           .e-spinner {
-            padding-top: $spinner-padding-small;
+            padding-top: $progress-btn-spinner-padding-small;
          }
       }
     }
@@ -302,12 +302,12 @@
     &.e-progress-active:not(.e-hide-spinner) {
       &.e-spin-left:not(.e-round) {
         .e-spinner {
-          padding-right: $spinner-padding-bigger;
+          padding-right: $progress-btn-spinner-padding-bigger;
        }
 
         &.e-rtl {
           .e-spinner {
-            padding-left: $spinner-padding-bigger;
+            padding-left: $progress-btn-spinner-padding-bigger;
             padding-right: 0;
           }
         }
@@ -315,44 +315,44 @@
 
       &.e-spin-right:not(.e-round) {
         .e-spinner {
-          padding-left: $spinner-padding-bigger;
+          padding-left: $progress-btn-spinner-padding-bigger;
        }
 
         &.e-rtl {
           .e-spinner {
             padding-left: 0;
-            padding-right: $spinner-padding-bigger;
+            padding-right: $progress-btn-spinner-padding-bigger;
           }
         }
      }
 
       &.e-spin-top {
-        padding-bottom: $bigger-spin-btn-padding;
-        padding-top: $bigger-spin-btn-padding;
+        padding-bottom: $progress-btn-bigger-spin-btn-padding;
+        padding-top: $progress-btn-bigger-spin-btn-padding;
 
         .e-spinner {
-          padding-bottom: $spinner-padding-bigger;
+          padding-bottom: $progress-btn-spinner-padding-bigger;
       }
     }
 
       &.e-spin-bottom {
-        padding-bottom: $bigger-spin-btn-padding;
-        padding-top: $bigger-spin-btn-padding;
+        padding-bottom: $progress-btn-bigger-spin-btn-padding;
+        padding-top: $progress-btn-bigger-spin-btn-padding;
 
         .e-spinner {
-          padding-top: $spinner-padding-bigger;
+          padding-top: $progress-btn-spinner-padding-bigger;
       }
     }
 
       &.e-small {
         &.e-spin-left:not(.e-round) {
           .e-spinner {
-            padding-right: $spinner-padding-bigger-small;
+            padding-right: $progress-btn-spinner-padding-bigger-small;
         }
 
           &.e-rtl {
             .e-spinner {
-              padding-left: $spinner-padding-bigger-small;
+              padding-left: $progress-btn-spinner-padding-bigger-small;
               padding-right: 0;
             }
           }
@@ -360,32 +360,32 @@
 
         &.e-spin-right:not(.e-round) {
           .e-spinner {
-            padding-left: $spinner-padding-bigger-small;
+            padding-left: $progress-btn-spinner-padding-bigger-small;
           }
 
           &.e-rtl {
             .e-spinner {
               padding-left: 0;
-              padding-right: $spinner-padding-bigger-small;
+              padding-right: $progress-btn-spinner-padding-bigger-small;
             }
           }
       }
 
         &.e-spin-top {
-          padding-bottom: $bigger-small-spin-btn-padding;
-          padding-top: $bigger-small-spin-btn-padding;
+          padding-bottom: $progress-btn-bigger-small-spin-btn-padding;
+          padding-top: $progress-btn-bigger-small-spin-btn-padding;
 
           .e-spinner {
-            padding-bottom: $spinner-padding-bigger-small;
+            padding-bottom: $progress-btn-spinner-padding-bigger-small;
          }
        }
 
         &.e-spin-bottom {
-          padding-bottom: $bigger-small-spin-btn-padding;
-          padding-top: $bigger-small-spin-btn-padding;
+          padding-bottom: $progress-btn-bigger-small-spin-btn-padding;
+          padding-top: $progress-btn-bigger-small-spin-btn-padding;
 
           .e-spinner {
-            padding-top: $spinner-padding-bigger-small;
+            padding-top: $progress-btn-spinner-padding-bigger-small;
         }
       }
     }

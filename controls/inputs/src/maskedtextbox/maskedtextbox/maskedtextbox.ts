@@ -120,7 +120,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
      * </a></b>, <b><a href="../maskedtextbox/mask-configuration.html#custom-characters" target="_blank">custom characters</a></b> and
      * <b><a href="../maskedtextbox/mask-configuration.html#regular-expression" target="_blank">regular expression</a></b> as mask elements.
      * For more information on mask, refer to
-     * [mask](./mask-configuration.html#standard-mask-elements).
+     * [mask](../maskedtextbox/mask-configuration#standard-mask-elements/).
      * * If the mask value is empty, the MaskedTextBox will behave as an input element with text type.
      * @default null
      */
@@ -131,7 +131,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
      * Gets or sets a value that will be shown as a prompting symbol for the masked value.
      * The symbol used to show input positions in the MaskedTextBox.
      * For more information on prompt-character, refer to
-     * [prompt-character](./mask-configuration.html#prompt-character).
+     * [prompt-character](../maskedtextbox/mask-configuration#prompt-character/).
      * @default _
      */
     @Property('_')
@@ -170,7 +170,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
      * </script>
      * ```
      * For more information on customCharacters, refer to
-     * [customCharacters](./mask-configuration.html#custom-characters).
+     * [customCharacters](../maskedtextbox/mask-configuration#custom-characters/).
      * @default null
      */
     @Property(null)
@@ -235,7 +235,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
         this.isIosInvalid = false;
         let ejInstance: Object = getValue('ej2_instances', this.element);
         this.cloneElement = <HTMLElement>this.element.cloneNode(true);
-        removeClass([this.cloneElement], [CONTROL, COMPONENT]);
+        removeClass([this.cloneElement], [CONTROL, COMPONENT, 'e-lib']);
         this.angularTagName = null;
         if (this.element.tagName === 'EJS-MASKEDTEXTBOX') {
             this.angularTagName = this.element.tagName;
@@ -284,8 +284,8 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
             this.setWidth(this.width);
             this.preEleVal = this.element.value;
             if (!Browser.isDevice && (Browser.info.version === '11.0' || Browser.info.name === 'edge')) {
-                this.element.blur();
-            }
+                 this.element.blur();
+             }
         }
     }
 

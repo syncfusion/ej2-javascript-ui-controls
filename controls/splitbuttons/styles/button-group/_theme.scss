@@ -22,7 +22,7 @@
     input:focus+label.e-btn {
       @include button-focus;
       box-shadow: none;
-      outline-color: $outline-focus-color;
+      outline-color: $btn-grp-outline-focus-color;
       @if $skin-name == 'fabric' {
         outline-offset: -2px;
       }
@@ -34,7 +34,7 @@
       &.e-primary {
         @include primary-focus;
         box-shadow: none;
-        outline-color: $outline-focus-primary-color;
+        outline-color: $btn-grp-outline-focus-primary-color;
         @if $skin-name == 'fabric' {
           border-color: transparent;
         }
@@ -43,7 +43,7 @@
       &.e-success {
         @include success-focus;
         box-shadow: none;
-        outline-color: $outline-focus-success-color;
+        outline-color: $btn-grp-outline-focus-success-color;
         @if $skin-name == 'fabric' {
           border-color: transparent;
         }
@@ -52,7 +52,7 @@
       &.e-info {
         @include info-focus;
         box-shadow: none;
-        outline-color: $outline-focus-info-color;
+        outline-color: $btn-grp-outline-focus-info-color;
         @if $skin-name == 'fabric' {
           border-color: transparent;
         }
@@ -61,7 +61,7 @@
       &.e-warning {
         @include warning-focus;
         box-shadow: none;
-        outline-color: $outline-focus-warning-color;
+        outline-color: $btn-grp-outline-focus-warning-color;
         @if $skin-name == 'fabric' {
           border-color: transparent;
         }
@@ -70,7 +70,7 @@
       &.e-danger {
         @include danger-focus;
         box-shadow: none;
-        outline-color: $outline-focus-danger-color;
+        outline-color: $btn-grp-outline-focus-danger-color;
         @if $skin-name == 'fabric' {
           border-color: transparent;
         }

@@ -9,7 +9,7 @@ let gameList: { [key: string]: Object }[] = [
         { id: "Op3", text: "Go", iconCss: "", parentId: null },
         { id: "Op4", text: "Help", iconCss: "", parentId: null },
 
-        { id: "Op5", text: "New File", iconCss: "e-icons e-link", parentId: "Op1" },
+        { id: "Op5", text: "New File", iconCss: "e-menu-icons e-link", parentId: "Op1" },
         { id: "Op6", text: "New Window", iconCss: "", parentId: "Op1" },
         { id: "Op7", text: "Undo", iconCss: "", parentId: "Op2" },
 

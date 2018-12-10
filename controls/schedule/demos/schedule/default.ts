@@ -57,9 +57,7 @@ document.getElementById('themechange').onchange = () => {
     for (let link of links) {
         let hrefValue: string = link.getAttribute('href');
         if (hrefValue.indexOf('../css/') !== -1) {
-            let currentTheme: string = hrefValue.indexOf('material') !== -1 ? 'material' :
-                hrefValue.indexOf('fabric') !== -1 ? 'fabric' :
-                    hrefValue.indexOf('bootstrap') !== -1 ? 'bootstrap' : 'highcontrast';
+            let currentTheme: string = hrefValue.split('/').pop().split('.')[0];
             link.setAttribute('href', hrefValue.replace(currentTheme, ddl.value));
         }
     }

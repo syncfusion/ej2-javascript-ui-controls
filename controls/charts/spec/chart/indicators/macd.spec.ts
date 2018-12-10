@@ -187,12 +187,12 @@ describe('Chart', () => {
 
                 //define check condition
                 let svg: HTMLElement = document.getElementById('containerAxisLine_2');
-                expect(svg.getAttribute('x1') == '1222.5' || svg.getAttribute('x1') == '717.5' ||
-                    svg.getAttribute('x1') == '729.5').toBe(true);
-                expect(svg.getAttribute('y1') == '10.25').toBe(true);
-                expect(svg.getAttribute('x2') == '1222.5' || svg.getAttribute('x2') == '717.5' ||
-                    svg.getAttribute('x1') == '729.5').toBe(true);
-                expect(svg.getAttribute('y2') == '381.5' || svg.getAttribute('y2') == '379.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[1] == '1222.5' || svg.getAttribute('d').split(' ')[1] == '717.5' ||
+                    svg.getAttribute('d').split(' ')[1] == '729.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '10.25').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[4] == '1222.5' || svg.getAttribute('d').split(' ')[4] == '717.5' ||
+                    svg.getAttribute('d').split(' ')[4] == '729.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[5] == '381.5' || svg.getAttribute('d').split(' ')[5] == '379.5').toBe(true);
                 expect(chartObj.visibleSeries[1].yAxis.name).toBe('secondary');
                 done();
             };
@@ -279,11 +279,11 @@ describe('Chart', () => {
                 let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
                 expect(signalLine.getAttribute('d')).not.toBeNull();
                 let svg: HTMLElement = document.getElementById('containerAxisLine_0');
-                expect(svg.getAttribute('x1') == '57.5' || svg.getAttribute('x1') == '53.5').toBe(true);
-                expect(svg.getAttribute('y1') == '36.75' || svg.getAttribute('y1') == '35.75').toBe(true);
-                expect(svg.getAttribute('x2') == '1222.5' || svg.getAttribute('x2') == '717.5' ||
-                    svg.getAttribute('x2') == '729.5').toBe(true);
-                expect(svg.getAttribute('y2') == '36.75' || svg.getAttribute('y2') == '35.75').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[1] == '57.5' || svg.getAttribute('d').split(' ')[1] == '53.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '36.75' || svg.getAttribute('d').split(' ')[2] == '35.75').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[4] == '1222.5' || svg.getAttribute('d').split(' ')[4] == '717.5' ||
+                    svg.getAttribute('d').split(' ')[4] == '729.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[5] == '36.75' || svg.getAttribute('d').split(' ')[5] == '35.75').toBe(true);
                 done();
 
                 

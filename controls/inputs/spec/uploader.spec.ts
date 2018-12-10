@@ -766,6 +766,63 @@ describe('Uploader Control', () => {
                 }, 500);
             }, 700);
         });
+        it('args.response in failure event', (done) => {
+            uploadObj = new Uploader({
+                multiple: true, asyncSettings: { saveUrl: 'js.syncfusion.comm', chunkSize: 2 },
+                chunkFailure: function(args: any) {
+                    expect(Object.keys(args.response).length).toBe(5);
+                    expect(args.response.readyState).toBe(4);
+                    expect(args.response.headers).not.toBe("");
+                    expect(args.response.withCredentials).toBe(false);
+                },
+                failure: function(args: any) {
+                    expect(Object.keys(args.response).length).toBe(5);
+                    expect(args.response.readyState).toBe(4);
+                    expect(args.response.headers).not.toBe("");
+                    expect(args.response.withCredentials).toBe(false);
+                },
+            });
+            uploadObj.appendTo(document.getElementById('upload'));
+            let fileObj: File = new File(["Nice One"], "sample.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            setTimeout(() => {
+                done();
+            }, 1500);
+        }); 
+        it('args.response in success and progress events', (done) => {
+            uploadObj = new Uploader({
+                multiple: true, success: function(args: any) {
+                    expect(Object.keys(args.response).length).toBe(5);
+                    expect(args.response.readyState).toBe(4);
+                    expect(args.response.headers).not.toBe("");
+                    expect(args.response.withCredentials).toBe(false);
+                },
+                progress: function(args: any) {
+                    expect(Object.keys(args.response).length).toBe(5);
+                    expect(args.response.readyState).toBe(4);
+                    expect(args.response.headers).not.toBe("");
+                    expect(args.response.withCredentials).toBe(false);
+                },
+                chunkSuccess: function(args: any) {
+                    expect(Object.keys(args.response).length).toBe(5);
+                    expect(args.response.readyState).toBe(4);
+                    expect(args.response.headers).not.toBe("");
+                    expect(args.response.withCredentials).toBe(false);
+                },
+                asyncSettings: { 
+                    saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                    removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+                    chunkSize: 1
+                }
+            });
+            uploadObj.appendTo(document.getElementById('upload'));let fileObj: File = new File(["Nice One"], "sample.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            setTimeout(() => {
+                done();
+            }, 1000);
+        });
     })
     describe('Methods', () => {
         let uploadObj: any;
@@ -1801,6 +1858,7 @@ describe('Uploader Control', () => {
         let uploadObj: any;
         let chunkSuccess: EmitType<Object> = jasmine.createSpy('chunkSuccess');
         let chunkFailure: EmitType<Object> = jasmine.createSpy('chunkFailure');
+        let beforeChunkUpload: EmitType<Object> = jasmine.createSpy('chunkUploading');
         let originalTimeout: number;
         beforeEach((): void => {
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
@@ -1813,9 +1871,9 @@ describe('Uploader Control', () => {
             if (uploadObj.uploadWrapper) { uploadObj.destroy();}
             document.body.innerHTML = '';
         });
-        it('chunk success event trigger', (done) => {
+        it('chunk success and chunk uploading event trigger', (done) => {
             uploadObj = new Uploader({
-                multiple: true, chunkSuccess: chunkSuccess, autoUpload: false,
+                multiple: true, chunkSuccess: chunkSuccess, chunkUploading: beforeChunkUpload, autoUpload: false,
                 asyncSettings: {
                     saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
                     removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
@@ -1830,6 +1888,7 @@ describe('Uploader Control', () => {
             uploadObj.upload([uploadObj.filesData[0]]);
             setTimeout(() => {
                 expect(chunkSuccess).toHaveBeenCalled();
+                expect(beforeChunkUpload).toHaveBeenCalled();
                 done();
             }, 1500);
         });
@@ -2765,6 +2824,330 @@ describe('Uploader Control', () => {
             uploadObj.onSelectFiles(eventArgs);
             expect(uploadObj.fileList.length).toEqual(1);
             uploadObj.upload([uploadObj.filesData[0]]);
+        });
+    })
+    describe('Sequential Upload testing on uploading', () => {
+        let uploadObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload'});       
+            document.body.appendChild(element);
+            element.setAttribute('type', 'file');
+        })
+        afterAll((): void => {
+            uploadObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('Dynamically enable sequential upload', (done) => {
+            uploadObj = new Uploader({ asyncSettings: {
+                saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+            }});
+            uploadObj.appendTo(document.getElementById('upload'));
+            let fileObj: File = new File(["Nice One"], "sample1.txt", {lastModified: 0, type: "overide/mimetype"});
+            let fileObj1: File = new File(["Nice One"], "sample2.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj,fileObj1]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            expect(uploadObj.getFilesData().length).toEqual(2);
+            uploadObj.sequentialUpload = true;
+            uploadObj.dataBind();
+            expect(uploadObj.fileList.length).toEqual(0);
+            done();
+        });
+    })
+    describe('Sequential Upload testing with filesize', () => {
+        let uploadObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload'});            
+            document.body.appendChild(element);
+            element.setAttribute('type', 'file');
+        })
+        afterAll((): void => {
+            uploadObj.destroy();
+            document.body.innerHTML = '';
+        });
+            var textContent1 = 'The uploader component is useful to upload images, documents, and other files to server. The component is the extended version of HTML5 that is uploaded with multiple file selection, auto upload, drag and drop, progress bar, preload files, and validation'
+        + 'Asynchronous upload - Allows you to upload the files asynchronously. The upload process requires save and remove action URL to manage upload process in the server.'
+        + 'Drag and drop - Allows you to drag files from the file explorer and drop into the drop area. By default, the uploader component act as drop area element.'
+        + 'Form supports - The selected or dropped files are received as a collection in a form action when the form is submitted.'
+        + 'Validation - Validates the selected file size and extension by using the allowedExtensions, maxFileSize, and minFileSize properties.'
+        + 'Template - You can customize default appearance of the uploader using the template property along with the buttons property.'
+        + 'Localization - Supports to localize the text content of action buttons, file status, clear icon title, tooltips, and text content of drag area.'
+        + 'The uploader component is useful to upload images, documents, and other files to server.'
+        + 'The component is the extended version of HTML5 that is uploaded with multiple file selection, auto upload, drag and drop, progress bar, preload files, and validation'
+        + 'Asynchronous upload - Allows you to upload the files asynchronously. The upload process requires save and remove action URL to manage upload process in the server.'
+
+        let parts1 = [
+            new Blob([textContent1], {type: 'text/plain'}),
+            new Uint16Array([33])
+        ];
+            var textContent2 = 'The uploader component is useful to upload images, documents, and other files to server. The component is the extended version of HTML5 that is uploaded with multiple file selection, auto upload, drag and drop, progress bar, preload files, and validation'
+        + 'Asynchronous upload - Allows you to upload the files asynchronously. The upload process requires save and remove action URL to manage upload process in the server.'
+        + 'Drag and drop - Allows you to drag files from the file explorer and drop into the drop area. By default, the uploader component act as drop area element.'
+        + 'Form supports - The selected or dropped files are received as a collection in a form action when the form is submitted.'
+        + 'Validation - Validates the selected file size and extension by using the allowedExtensions, maxFileSize, and minFileSize properties.'
+        + 'Template - You can customize default appearance of the uploader using the template property along with the buttons property.'
+        + 'Localization - Supports to localize the text content of action buttons, file status, clear icon title, tooltips, and text content of drag area.'
+        + 'The uploader component is useful to upload images, documents, and other files to server.'
+        + 'The component is the extended version of HTML5 that is uploaded with multiple file selection, auto upload, drag and drop, progress bar, preload files, and validation'
+        + 'Asynchronous upload - Allows you to upload the files asynchronously. The upload process requires save and remove action URL to manage upload process in the server.'
+        + 'Drag and drop - Allows you to drag files from the file explorer and drop into the drop area. By default, the uploader component act as drop area element.'
+        + 'Form supports - The selected or dropped files are received as a collection in a form action when the form is submitted.'
+        + 'Validation - Validates the selected file size and extension by using the allowedExtensions, maxFileSize, and minFileSize properties.'
+        + 'Template - You can customize default appearance of the uploader using the template property along with the buttons property.'
+        + 'Localization - Supports to localize the text content of action buttons, file status, clear icon title, tooltips, and text content of drag area.'
+        + 'The uploader component is useful to upload images, documents, and other files to server.'
+        + 'The uploader component is useful to upload images, documents, and other files to server.' 
+        + 'The component is the extended version of HTML5 that is uploaded with multiple file selection, auto upload, drag and drop, progress bar, preload files, and validation'
+        + 'Asynchronous upload - Allows you to upload the files asynchronously. The upload process requires save and remove action URL to manage upload process in the server.'
+        + 'Drag and drop - Allows you to drag files from the file explorer and drop into the drop area. By default, the uploader component act as drop area element.'
+        + 'Form supports - The selected or dropped files are received as a collection in a form action when the form is submitted.'
+        + 'Validation - Validates the selected file size and extension by using the allowedExtensions, maxFileSize, and minFileSize properties.'
+        + 'Template - You can customize default appearance of the uploader using the template property along with the buttons property.'
+        + 'Localization - Supports to localize the text content of action buttons, file status, clear icon title, tooltips, and text content of drag area.'
+        + 'The uploader component is useful to upload images, documents, and other files to server.'
+        + 'The component is the extended version of HTML5 that is uploaded with multiple file selection, auto upload, drag and drop, progress bar, preload files, and validation'
+        + 'Asynchronous upload - Allows you to upload the files asynchronously. The upload process requires save and remove action URL to manage upload process in the server.'
+        + 'Drag and drop - Allows you to drag files from the file explorer and drop into the drop area. By default, the uploader component act as drop area element.'
+        + 'Form supports - The selected or dropped files are received as a collection in a form action when the form is submitted.'
+        + 'Validation - Validates the selected file size and extension by using the allowedExtensions, maxFileSize, and minFileSize properties.'
+        + 'Template - You can customize default appearance of the uploader using the template property along with the buttons property.'
+        + 'Localization - Supports to localize the text content of action buttons, file status, clear icon title, tooltips, and text content of drag area.'
+        + 'The uploader component is useful to upload images, documents, and other files to server. The component is the extended version of HTML5 that is uploaded with multiple file selection, auto upload, drag and drop, progress bar, preload files, and validation'
+        + 'Asynchronous upload - Allows you to upload the files asynchronously. The upload process requires save and remove action URL to manage upload process in the server.'
+        + 'Drag and drop - Allows you to drag files from the file explorer and drop into the drop area. By default, the uploader component act as drop area element.'
+        + 'Form supports - The selected or dropped files are received as a collection in a form action when the form is submitted.'
+        + 'Validation - Validates the selected file size and extension by using the allowedExtensions, maxFileSize, and minFileSize properties.'
+        + 'Template - You can customize default appearance of the uploader using the template property along with the buttons property.'
+        + 'Localization - Supports to localize the text content of action buttons, file status, clear icon title, tooltips, and text content of drag area.'
+        + 'The uploader component is useful to upload images, documents, and other files to server.'
+        + 'The component is the extended version of HTML5 that is uploaded with multiple file selection, auto upload, drag and drop, progress bar, preload files, and validation'
+        + 'Asynchronous upload - Allows you to upload the files asynchronously. The upload process requires save and remove action URL to manage upload process in the server.'
+        + 'Drag and drop - Allows you to drag files from the file explorer and drop into the drop area. By default, the uploader component act as drop area element.'
+        + 'Form supports - The selected or dropped files are received as a collection in a form action when the form is submitted.'
+        + 'Validation - Validates the selected file size and extension by using the allowedExtensions, maxFileSize, and minFileSize properties.'
+        + 'Template - You can customize default appearance of the uploader using the template property along with the buttons property.'
+        + 'Localization - Supports to localize the text content of action buttons, file status, clear icon title, tooltips, and text content of drag area.'
+        + 'The uploader component is useful to upload images, documents, and other files to server.'
+        + 'The uploader component is useful to upload images, documents, and other files to server.' 
+        + 'The component is the extended version of HTML5 that is uploaded with multiple file selection, auto upload, drag and drop, progress bar, preload files, and validation'
+        + 'Asynchronous upload - Allows you to upload the files asynchronously. The upload process requires save and remove action URL to manage upload process in the server.'
+        + 'Drag and drop - Allows you to drag files from the file explorer and drop into the drop area. By default, the uploader component act as drop area element.'
+        + 'Form supports - The selected or dropped files are received as a collection in a form action when the form is submitted.'
+        + 'Validation - Validates the selected file size and extension by using the allowedExtensions, maxFileSize, and minFileSize properties.'
+        + 'Template - You can customize default appearance of the uploader using the template property along with the buttons property.'
+        + 'Localization - Supports to localize the text content of action buttons, file status, clear icon title, tooltips, and text content of drag area.'
+        + 'The uploader component is useful to upload images, documents, and other files to server.'
+        + 'The component is the extended version of HTML5 that is uploaded with multiple file selection, auto upload, drag and drop, progress bar, preload files, and validation'
+        + 'Asynchronous upload - Allows you to upload the files asynchronously. The upload process requires save and remove action URL to manage upload process in the server.'
+        + 'Drag and drop - Allows you to drag files from the file explorer and drop into the drop area. By default, the uploader component act as drop area element.'
+        + 'Form supports - The selected or dropped files are received as a collection in a form action when the form is submitted.'
+        + 'Validation - Validates the selected file size and extension by using the allowedExtensions, maxFileSize, and minFileSize properties.'
+        + 'Template - You can customize default appearance of the uploader using the template property along with the buttons property.'
+        + 'Localization - Supports to localize the text content of action buttons, file status, clear icon title, tooltips, and text content of drag area.'
+            
+        let parts2 = [
+            new Blob([textContent2], {type: 'text/plain'}),
+            new Uint16Array([33])
+        ];
+        it('sequential upload size validation with autoupload false', (done) => {
+            uploadObj = new Uploader({ asyncSettings: {
+                saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+            }, autoUpload: false, sequentialUpload: true,});
+            uploadObj.appendTo(document.getElementById('upload'));
+            uploadObj.minFileSize = 5000;
+            uploadObj.dataBind();
+            let fileObj: File = new File(parts1, "sample1.txt", {lastModified: 0, type: "overide/mimetype"});
+            let fileObj1: File = new File(parts2, "sample1.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj,fileObj1]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            uploadObj.uploadButtonClick();
+            setTimeout(() => {
+                expect(uploadObj.filesData[0].status).toEqual('File size is too small');
+                expect(uploadObj.filesData[0].statusCode).toBe('0');
+                expect(uploadObj.filesData[1].status).toEqual('File uploaded successfully');
+                expect(uploadObj.filesData[1].statusCode).toBe('2');
+                done();
+            }, 500);
+        });
+    })
+
+    describe('Sequential Upload testing on uploading', () => {
+        let uploadObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload'});       
+            document.body.appendChild(element);
+            element.setAttribute('type', 'file');
+        })
+        afterAll((): void => {
+            uploadObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('sequential upload with autoupload false', (done) => {
+            uploadObj = new Uploader({ asyncSettings: {
+                saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+            }, autoUpload: false, sequentialUpload: true,});
+            uploadObj.appendTo(document.getElementById('upload'));
+            let fileObj: File = new File(["Nice One"], "sample1.txt", {lastModified: 0, type: "overide/mimetype"});
+            let fileObj1: File = new File(["Nice One"], "sample2.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj,fileObj1]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            expect(uploadObj.getFilesData().length).toEqual(2);
+            uploadObj.uploadButtonClick();
+            setTimeout(() => {
+                expect(uploadObj.filesData[0].status).toEqual('File uploaded successfully');
+                expect(uploadObj.filesData[0].statusCode).toBe('2');
+                expect(uploadObj.filesData[1].status).toEqual('Uploading');
+                expect(uploadObj.filesData[1].statusCode).toBe('3');
+                setTimeout(() => {
+                    expect(uploadObj.filesData[1].status).toEqual('File uploaded successfully');
+                    expect(uploadObj.filesData[1].statusCode).toBe('2');
+                    done();
+                }, 900);
+            }, 400);
+        });
+    })
+
+    describe('Sequential Upload testing on chunk uploading', () => {
+        let uploadObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload'});       
+            document.body.appendChild(element);
+            element.setAttribute('type', 'file');
+        })
+        afterAll((): void => {
+            uploadObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('sequential upload with chunk upload on autoupload false', (done) => {
+            uploadObj = new Uploader({ asyncSettings: {
+                saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+                chunkSize: 1
+            }, autoUpload: false, sequentialUpload: true,});
+            uploadObj.appendTo(document.getElementById('upload'));
+            let fileObj: File = new File(["Nice One"], "sample1.txt", {lastModified: 0, type: "overide/mimetype"});
+            let fileObj1: File = new File(["Nice One"], "sample2.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj,fileObj1]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            expect(uploadObj.getFilesData().length).toEqual(2);
+            uploadObj.uploadButtonClick();
+            setTimeout(() => {
+                expect(uploadObj.filesData[0].status).toEqual('Uploading');
+                expect(uploadObj.filesData[0].statusCode).toBe('3');
+                expect(uploadObj.filesData[1].status).toEqual('Ready to upload');
+                expect(uploadObj.filesData[1].statusCode).toBe('1');
+                done();
+            }, 800);
+        });
+    })
+
+    describe('Sequential Upload testing on canceling', () => {
+            let uploadObj: any;
+            beforeAll((): void => {
+                let element: HTMLElement = createElement('input', {id: 'upload'});       
+                document.body.appendChild(element);
+                element.setAttribute('type', 'file');
+            })
+            afterAll((): void => {
+                uploadObj.destroy();
+                document.body.innerHTML = '';
+            });
+            
+            it('sequential upload with abort icon clicked', (done) => {
+                var textContent1 = 'The uploader component is useful to upload images, documents, and other files to server. The component is the extended version of HTML5 that is uploaded with multiple file selection, auto upload, drag and drop, progress bar, preload files, and validation'
+            + 'Asynchronous upload - Allows you to upload the files asynchronously. The upload process requires save and remove action URL to manage upload process in the server.'
+            + 'Drag and drop - Allows you to drag files from the file explorer and drop into the drop area. By default, the uploader component act as drop area element.'
+            + 'Form supports - The selected or dropped files are received as a collection in a form action when the form is submitted.'
+            + 'Validation - Validates the selected file size and extension by using the allowedExtensions, maxFileSize, and minFileSize properties.'
+            + 'Template - You can customize default appearance of the uploader using the template property along with the buttons property.'
+            + 'Localization - Supports to localize the text content of action buttons, file status, clear icon title, tooltips, and text content of drag area.'
+            + 'The uploader component is useful to upload images, documents, and other files to server.'
+            + 'The component is the extended version of HTML5 that is uploaded with multiple file selection, auto upload, drag and drop, progress bar, preload files, and validation'
+            + 'Asynchronous upload - Allows you to upload the files asynchronously. The upload process requires save and remove action URL to manage upload process in the server.'
+            + 'Drag and drop - Allows you to drag files from the file explorer and drop into the drop area. By default, the uploader component act as drop area element.'
+            + 'Form supports - The selected or dropped files are received as a collection in a form action when the form is submitted.'
+            + 'Validation - Validates the selected file size and extension by using the allowedExtensions, maxFileSize, and minFileSize properties.'
+            + 'Template - You can customize default appearance of the uploader using the template property along with the buttons property.'
+            + 'Localization - Supports to localize the text content of action buttons, file status, clear icon title, tooltips, and text content of drag area.'
+            + 'The uploader component is useful to upload images, documents, and other files to server.'
+            + 'The uploader component is useful to upload images, documents, and other files to server.' 
+            + 'The component is the extended version of HTML5 that is uploaded with multiple file selection, auto upload, drag and drop, progress bar, preload files, and validation'
+            + 'Asynchronous upload - Allows you to upload the files asynchronously. The upload process requires save and remove action URL to manage upload process in the server.'
+            + 'Drag and drop - Allows you to drag files from the file explorer and drop into the drop area. By default, the uploader component act as drop area element.'
+            + 'Form supports - The selected or dropped files are received as a collection in a form action when the form is submitted.'
+            + 'Validation - Validates the selected file size and extension by using the allowedExtensions, maxFileSize, and minFileSize properties.'
+            + 'Template - You can customize default appearance of the uploader using the template property along with the buttons property.'
+            + 'Localization - Supports to localize the text content of action buttons, file status, clear icon title, tooltips, and text content of drag area.'
+            + 'The uploader component is useful to upload images, documents, and other files to server.'
+            + 'The component is the extended version of HTML5 that is uploaded with multiple file selection, auto upload, drag and drop, progress bar, preload files, and validation'
+            + 'Asynchronous upload - Allows you to upload the files asynchronously. The upload process requires save and remove action URL to manage upload process in the server.'
+            + 'Drag and drop - Allows you to drag files from the file explorer and drop into the drop area. By default, the uploader component act as drop area element.'
+            + 'Form supports - The selected or dropped files are received as a collection in a form action when the form is submitted.'
+            + 'Validation - Validates the selected file size and extension by using the allowedExtensions, maxFileSize, and minFileSize properties.'
+            + 'Template - You can customize default appearance of the uploader using the template property along with the buttons property.'
+            + 'Localization - Supports to localize the text content of action buttons, file status, clear icon title, tooltips, and text content of drag area.'
+            + 'The uploader component is useful to upload images, documents, and other files to server. The component is the extended version of HTML5 that is uploaded with multiple file selection, auto upload, drag and drop, progress bar, preload files, and validation'
+            + 'Asynchronous upload - Allows you to upload the files asynchronously. The upload process requires save and remove action URL to manage upload process in the server.'
+            + 'Drag and drop - Allows you to drag files from the file explorer and drop into the drop area. By default, the uploader component act as drop area element.'
+            + 'Form supports - The selected or dropped files are received as a collection in a form action when the form is submitted.'
+            + 'Validation - Validates the selected file size and extension by using the allowedExtensions, maxFileSize, and minFileSize properties.'
+            + 'Template - You can customize default appearance of the uploader using the template property along with the buttons property.'
+            + 'Localization - Supports to localize the text content of action buttons, file status, clear icon title, tooltips, and text content of drag area.'
+            + 'The uploader component is useful to upload images, documents, and other files to server.'
+            + 'The component is the extended version of HTML5 that is uploaded with multiple file selection, auto upload, drag and drop, progress bar, preload files, and validation'
+            + 'Asynchronous upload - Allows you to upload the files asynchronously. The upload process requires save and remove action URL to manage upload process in the server.'
+            + 'Drag and drop - Allows you to drag files from the file explorer and drop into the drop area. By default, the uploader component act as drop area element.'
+            + 'Form supports - The selected or dropped files are received as a collection in a form action when the form is submitted.'
+            + 'Validation - Validates the selected file size and extension by using the allowedExtensions, maxFileSize, and minFileSize properties.'
+            + 'Template - You can customize default appearance of the uploader using the template property along with the buttons property.'
+            + 'Localization - Supports to localize the text content of action buttons, file status, clear icon title, tooltips, and text content of drag area.'
+            + 'The uploader component is useful to upload images, documents, and other files to server.'
+            + 'The uploader component is useful to upload images, documents, and other files to server.' 
+            + 'The component is the extended version of HTML5 that is uploaded with multiple file selection, auto upload, drag and drop, progress bar, preload files, and validation'
+            + 'Asynchronous upload - Allows you to upload the files asynchronously. The upload process requires save and remove action URL to manage upload process in the server.'
+            + 'Drag and drop - Allows you to drag files from the file explorer and drop into the drop area. By default, the uploader component act as drop area element.'
+            + 'Form supports - The selected or dropped files are received as a collection in a form action when the form is submitted.'
+            + 'Validation - Validates the selected file size and extension by using the allowedExtensions, maxFileSize, and minFileSize properties.'
+            + 'Template - You can customize default appearance of the uploader using the template property along with the buttons property.'
+            + 'Localization - Supports to localize the text content of action buttons, file status, clear icon title, tooltips, and text content of drag area.'
+            + 'The uploader component is useful to upload images, documents, and other files to server.'
+            + 'The component is the extended version of HTML5 that is uploaded with multiple file selection, auto upload, drag and drop, progress bar, preload files, and validation'
+            + 'Asynchronous upload - Allows you to upload the files asynchronously. The upload process requires save and remove action URL to manage upload process in the server.'
+            + 'Drag and drop - Allows you to drag files from the file explorer and drop into the drop area. By default, the uploader component act as drop area element.'
+            + 'Form supports - The selected or dropped files are received as a collection in a form action when the form is submitted.'
+            + 'Validation - Validates the selected file size and extension by using the allowedExtensions, maxFileSize, and minFileSize properties.'
+            + 'Template - You can customize default appearance of the uploader using the template property along with the buttons property.'
+            + 'Localization - Supports to localize the text content of action buttons, file status, clear icon title, tooltips, and text content of drag area.'
+
+            let parts1 = [
+                new Blob([textContent1], {type: 'text/plain'}),
+                new Uint16Array([33])
+            ];
+                uploadObj = new Uploader({ asyncSettings: {
+                    saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                    removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+                }, autoUpload: false, sequentialUpload: true,});
+                uploadObj.appendTo(document.getElementById('upload'));
+                let fileObj: File = new File(parts1, "sample1.txt", {lastModified: 0, type: "overide/mimetype"});
+                let fileObj1: File = new File(parts1, "sample2.txt", {lastModified: 0, type: "overide/mimetype"});
+                let eventArgs = { type: 'click', target: {files: [fileObj,fileObj1]}, preventDefault: (): void => { } };
+                uploadObj.onSelectFiles(eventArgs);
+                expect(uploadObj.getFilesData().length).toEqual(2);
+                uploadObj.uploadButtonClick();
+                setTimeout(() => {
+                    uploadObj.cancel(uploadObj.getFilesData()[0]);
+                    expect(uploadObj.filesData[0].status).toEqual('File upload canceled');
+                    expect(uploadObj.filesData[0].statusCode).toEqual('5');
+                    expect(uploadObj.filesData[1].status).toEqual('Ready to upload');
+                    expect(uploadObj.filesData[1].statusCode).toBe('1');
+                    setTimeout(() => {
+                        expect(uploadObj.filesData[1].status).toEqual('File uploaded successfully');
+                        expect(uploadObj.filesData[1].statusCode).toBe('2');
+                        done();
+                    }, 900);
+            }, 220);
         });
     })
 });

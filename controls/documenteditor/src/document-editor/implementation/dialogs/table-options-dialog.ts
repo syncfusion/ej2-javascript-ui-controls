@@ -3,7 +3,7 @@ import { Dialog } from '@syncfusion/ej2-popups';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { WTableFormat } from '../index';
-import { isNullOrUndefined, L10n, createElement, setCulture } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, L10n, createElement } from '@syncfusion/ej2-base';
 import { SelectionTableFormat } from '../index';
 import { TableWidget } from '../viewer/page';
 import { CellOptionsDialog } from './index';
@@ -71,12 +71,11 @@ export class TableOptionsDialog {
     /**
      * @private
      */
-    public initTableOptionsDialog(localValue: L10n): void {
+    public initTableOptionsDialog(localValue: L10n, isRtl?: boolean): void {
         let instance: LayoutViewer = this.owner;
         this.target = createElement('div', {
             id: this.owner.owner.containerId + '_insertCellMarginsDialog', className: 'e-de-table-options-dlg'
         });
-        this.owner.owner.element.appendChild(this.target);
         let innerDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width: 475px;position: relative;height: 180px;' });
         let innerDivLabel: HTMLElement = createElement('Label', {
             id: this.target.id + '_innerDivLabel', className: 'e-de-cell-dia-options-label',
@@ -99,7 +98,13 @@ export class TableOptionsDialog {
         let allowSpaceCheckBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'checkbox' }, id: this.target.id + '_cellcheck'
         });
-        let td6: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { styles: 'padding-left: 15px;', });
+        let td6Padding: string;
+        if (isRtl) {
+            td6Padding = 'padding-right:15px;';
+        } else {
+            td6Padding = 'padding-left:15px;';
+        }
+        let td6: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { styles: td6Padding, });
         this.cellspacingTextBox = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'text' }, id: this.target.id + '_cellspacing'
         });
@@ -118,6 +123,7 @@ export class TableOptionsDialog {
         this.allowSpaceCheckBox = new CheckBox({
             label: localValue.getConstant('Allow spacing between cells'),
             change: this.changeAllowSpaceCheckBox,
+            enableRtl: isRtl,
             cssClass: 'e-de-tbl-margin-sub-header',
         });
         this.allowSpaceCheckBox.appendTo(allowSpaceCheckBox);
@@ -224,9 +230,8 @@ export class TableOptionsDialog {
     public show(): void {
         let documentLocale: L10n = new L10n('documenteditor', this.owner.owner.defaultLocale);
         documentLocale.setLocale(this.owner.owner.locale);
-        setCulture(this.owner.owner.locale);
         if (!this.target) {
-            this.initTableOptionsDialog(documentLocale);
+            this.initTableOptionsDialog(documentLocale, this.owner.owner.enableRtl);
         }
         this.loadCellMarginsDialog();
         this.owner.dialog.header = documentLocale.getConstant('Table Options');

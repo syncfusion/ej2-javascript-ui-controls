@@ -258,7 +258,7 @@ describe('Chart Control', () => {
                 axisLabel = document.getElementById('container0_AxisLabel_0');
                 expect(axisLabel.textContent).toEqual('USA');
                 let axisStart: HTMLElement = document.getElementById('containerAxisLine_0');
-                expect(+(axisLabel.getAttribute('x')) > +(axisStart.getAttribute('x1'))).toBe(true);
+                expect(+(axisLabel.getAttribute('x')) > +(axisStart.getAttribute('d').split(' ')[1])).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -277,7 +277,7 @@ describe('Chart Control', () => {
                 axisLabel = document.getElementById('container0_AxisLabel_0');
                 expect(axisLabel.textContent).toEqual('USA');
                 let axisStart: HTMLElement = document.getElementById('containerAxisLine_0');
-                expect(+(axisLabel.getAttribute('x')) < +(axisStart.getAttribute('x1'))).toBe(true);
+                expect(+(axisLabel.getAttribute('x')) < +(axisStart.getAttribute('d').split(' ')[1])).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -778,7 +778,7 @@ describe('Chart Control', () => {
                 expect(+axisCollection.childElementCount).toEqual(5);
 
                 let axis2 = document.getElementById('containerAxisLine_1');
-                expect(+axis1.getAttribute('x2')).toEqual(+axis2.getAttribute('x1'));
+                expect(+axis1.getAttribute('d').split(' ')[4]).toEqual(+axis2.getAttribute('d').split(' ')[1]);
 
                 let series0: Series = <Series>chartObj.series[0];
                 let series1 = <Series>chartObj.series[1];

@@ -20,7 +20,7 @@ describe('Map layer testing', () => {
             document.body.appendChild(ele);
             colormap = new Maps({
                 theme: 'Highcontrast',
-                zoomSettings:{
+                zoomSettings: {
                     enable: true
                 },
                 layers: [
@@ -86,6 +86,36 @@ describe('Map layer testing', () => {
             ];
             colormap.refresh();
         });
+        it('Desaturation color mappping testing spec', (done: Function) => {
+            colormap.loaded = (args: ILoadedEventArgs) => {
+                spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_10_dataIndex_28');
+                expect(spec.getAttribute('fill')).toBe('#33CCFF');
+                // spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_50_dataIndex_undefined');
+                // expect(spec.getAttribute('fill')).toBe('#33CCFF');
+                // spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_20_dataIndex_undefined');
+                // expect(spec.getAttribute('fill')).toBe('#33CCFF');
+                // spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_41_dataIndex_undefined');
+                // expect(spec.getAttribute('fill')).toBe('#33CCFF');
+                done();
+            };
+            colormap.layers[0].shapeSettings.colorValuePath = 'Electors';
+            colormap.layers[0].shapeSettings.colorMapping = [
+                {
+                    from: 1, to: 7, color: '#33CCFF', minOpacity: 0.25, maxOpacity: 1
+                },
+                {
+                    from: 8, to: 15, color: '#FF4500', minOpacity: 0.5, maxOpacity: 1
+                },
+                {
+                    from: 16, to: 30, color: '#A500FF', minOpacity: 0.75, maxOpacity: 1
+                },
+                {
+                    from: 31, to: 99, color: '#00FFA5', minOpacity: 0.85, maxOpacity: 1
+                },
+            ];
+            colormap.refresh();
+        });
+
         it('color value path and value path null color mappping testing spec', (done: Function) => {
             colormap.loaded = (args: ILoadedEventArgs) => {
                 spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_10_dataIndex_undefined');
@@ -137,5 +167,187 @@ describe('Map layer testing', () => {
             colormap.layers[0].shapeSettings.colorMapping = [];
             colormap.refresh();
         });
+    });
+
+    describe('Generate Legend for out of the range in Color Map testing', () => {
+        let id: string = 'color-map';
+        let colormap: Maps;
+        let ele: HTMLDivElement;
+        let spec: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            colormap = new Maps({
+                theme: 'Highcontrast',
+                zoomSettings: {
+                    enable: true
+                },
+                layers: [
+                    {
+                        shapeData: usMap,
+                        dataSource: electiondata,
+                        shapeDataPath: 'State',
+                        shapePropertyPath: 'name',
+                        shapeSettings: {
+                            valuePath: 'Electors',
+                            fill: 'Orange',
+                            colorValuePath: 'Candidate',
+                            colorMapping: [
+                                {
+                                    value: 'Romney', color: '#33CCFF'
+                                },
+                                {
+                                    color: '#FF4500'
+                                }
+                            ]
+                        }
+                    }
+                ],
+                legendSettings: {
+                    visible: true
+                }
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            colormap.destroy();
+        });
+
+        it('Equal color mappping testing spec for out of the ranges', (done: Function) => {
+            colormap.loaded = (args: ILoadedEventArgs) => {
+                spec = getElementByID('color-map_LayerIndex_0_ShapeIndex_10_dataIndex_28');
+                expect(spec.getAttribute('fill')).toBe('#FF4500');
+                done();
+            };
+            colormap.refresh();
+        });
+
+        it('Range color mappping testing spec for out of the ranges', (done: Function) => {
+            colormap.loaded = (args: ILoadedEventArgs) => {
+                spec = getElementByID('color-map_LayerIndex_0_ShapeIndex_8_dataIndex_4');
+                expect(spec.getAttribute('fill')).toBe('violet');
+                done();
+            };
+            colormap.layers[0].shapeSettings.colorValuePath = 'Electors';
+            colormap.layers[0].shapeSettings.colorMapping = [
+                {
+                    from: 1, to: 7, color: ['red', 'green']
+                },
+                {
+                    from: 8, to: 15, color: ['pink', 'white', 'blue']
+                },
+                {
+                    from: 16, to: 30, color: ['brown', 'yellow', 'orange', 'skyblue']
+                },
+                {
+                    color: 'violet'
+                },
+            ];
+            colormap.refresh();
+        });
+
+    });
+
+    describe('Generate Multi Colors for Range Desaturation and Equal Color Map testing', () => {
+        let id: string = 'color-map';
+        let colormap: Maps;
+        let ele: HTMLDivElement;
+        let spec: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            colormap = new Maps({
+                theme: 'Highcontrast',
+                zoomSettings: {
+                    enable: true
+                },
+                layers: [
+                    {
+                        shapeData: usMap,
+                        dataSource: electiondata,
+                        shapeDataPath: 'State',
+                        shapePropertyPath: 'name',
+                        shapeSettings: {
+                            valuePath: 'Electors',
+                            fill: 'Orange',
+                            colorValuePath: 'Candidate',
+                            colorMapping: [
+                                {
+                                    value: 'Romney', color: '#33CCFF'
+                                },
+                                {
+                                    value: 'Obama', color: ['red', 'blue']
+                                }
+                            ]
+                        }
+                    }
+                ],
+                legendSettings: {
+                    visible: true
+                }
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            colormap.destroy();
+        });
+
+        it('Equal color mappping testing spec with multi colors', (done: Function) => {
+            colormap.loaded = (args: ILoadedEventArgs) => {
+                spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_9_dataIndex_5');
+                expect(spec.getAttribute('fill')).toBe('red');
+                done();
+            };
+            colormap.refresh();
+        });
+
+        it('Range color mappping testing spec with multi colors', (done: Function) => {
+            colormap.loaded = (args: ILoadedEventArgs) => {
+                spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_19_dataIndex_27');
+                expect(spec.getAttribute('fill')).toBe('#555500');
+                let spec1: Element = getElementByID(id + '_LayerIndex_0_ShapeIndex_16_dataIndex_15');
+                expect(spec1.getAttribute('fill')).toBe('#2b6b00');
+                done();
+            };
+            colormap.layers[0].shapeSettings.colorValuePath = 'Electors';
+            colormap.layers[0].shapeSettings.colorMapping = [
+                {
+                    from: 1, to: 7, color: ['red', 'green']
+                },
+                {
+                    from: 8, to: 15, color: ['pink', 'orange', 'violet']
+                },
+                {
+                    from: 16, to: 40, color: ['brown', 'yellow', 'blue', 'skyblue']
+                },
+            ];
+            colormap.refresh();
+        });
+
+        it('Desaturation color mappping testing spec with multi colors', (done: Function) => {
+            colormap.loaded = (args: ILoadedEventArgs) => {
+                spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_14_dataIndex_50');
+                expect(spec.getAttribute('fill')).toBe('#aa2b00');
+                expect(spec.getAttribute('opacity')).toBe('0.5');
+                let specanother: Element = getElementByID(id + '_LayerIndex_0_ShapeIndex_34_dataIndex_14');
+                expect(specanother.getAttribute('fill')).toBe('#24f6f8');
+                expect(specanother.getAttribute('opacity')).toBe('0.7142857142857143');
+                done();
+            };
+            colormap.layers[0].shapeSettings.colorValuePath = 'Electors';
+            colormap.layers[0].shapeSettings.colorMapping = [
+                {
+                    from: 1, to: 7, color: ['#FF0000', '#008000'], minOpacity: 0.25, maxOpacity: 1
+                },
+                {
+                    from: 8, to: 15, color: ['#FFC0CB', '#00FFFF', '#FFB6C1'], minOpacity: 0.5, maxOpacity: 1
+                },
+                {
+                    from: 16, to: 40, color: ['#A52A2A', '#FFFF00', '#9f8170', '#3d2b1f'], minOpacity: 0.75, maxOpacity: 1
+                },
+            ];
+            colormap.refresh();
+        });
+
     });
 });

@@ -17,6 +17,12 @@ export function getElementHeightFromClass(container: Element, elementClass: stri
     return height;
 }
 
+export function getTranslateY(element: HTMLElement | Element): number {
+    let style: CSSStyleDeclaration = getComputedStyle(element);
+    return (<{ [key: string]: Object } & Window>window).WebKitCSSMatrix ?
+        new WebKitCSSMatrix(style.webkitTransform).m42 : 0;
+}
+
 export function getWeekFirstDate(date1: Date, firstDayOfWeek: number): Date {
     let date: Date = new Date(date1.getTime());
     firstDayOfWeek = (firstDayOfWeek - date.getDay() + 7 * (-1)) % 7;

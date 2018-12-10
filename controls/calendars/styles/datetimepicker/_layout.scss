@@ -5,7 +5,7 @@
     -webkit-tap-highlight-color: transparent;
 
     & .e-time-icon.e-icons::before {
-      font-size: $icon-normal-font-size;
+      font-size: $datetime-icon-normal-font-size;
     }
 
     &.e-control-wrapper {
@@ -28,25 +28,25 @@
     & .e-input-group-icon.e-date-icon,
     & .e-input-group-icon.e-time-icon {
       font-size: 16px;
-      margin: $date-icon-margin;
-      min-height: $normal-min-height;
-      min-width: $normal-min-width;
+      margin: $datetime-date-icon-margin;
+      min-height: $datetime-normal-min-height;
+      min-width: $datetime-normal-min-width;
       outline: none;
     }
 
     & .e-input-group-icon.e-time-icon {
-      border: $time-icon-border;
-      border-style: $time-icon-border-style;
-      margin: $time-icon-margin;
+      border: $datetime-time-icon-border;
+      border-style: $datetime-time-icon-border-style;
+      margin: $datetime-time-icon-margin;
     }
 
     &.e-rtl .e-input-group-icon.e-time-icon {
-      margin: $time-rtl-icon-margin;
+      margin: $datetime-time-rtl-icon-margin;
     }
   }
 
   #{&}.e-datetimepicker.e-time-modal {
-    background-color: $default-overlay;
+    background-color: $datetime-default-overlay;
     height: 100%;
     left: 0;
     opacity: .5;
@@ -68,12 +68,12 @@
 
     & .e-list-parent.e-ul {
       margin: 0;
-      padding: $list-normal-padding 0;
+      padding: $datetime-list-normal-padding 0;
 
       & .e-list-item {
-        color: $list-default-font-color;
+        color: $datetime-list-default-font-color;
         cursor: default;
-        font-size: $list-normal-font-size;
+        font-size: $datetime-list-normal-font-size;
         overflow: hidden;
         position: relative;
         text-overflow: ellipsis;
@@ -92,8 +92,8 @@
 
   #{&}.e-datetimepicker.e-popup {
     & .e-list-parent.e-ul .e-list-item {
-      line-height: $list-normal-line-height;
-      text-indent: $list-normal-text-indent;
+      line-height: $datetime-list-normal-line-height;
+      text-indent: $datetime-list-normal-text-indent;
     }
   }
 
@@ -102,29 +102,29 @@
   &.e-bigger .e-datetime-wrapper {
 
     & .e-time-icon.e-icons::before {
-      font-size: $icon-bigger-font-size;
+      font-size: $datetime-icon-bigger-font-size;
     }
 
     & .e-input-group-icon.e-time-icon {
-      margin: $time-bigger-icon-margin;
-      min-height: $bigger-min-height;
-      min-width: $bigger-min-width;
+      margin: $datetime-time-bigger-icon-margin;
+      min-height: $datetime-bigger-min-height;
+      min-width: $datetime-bigger-min-width;
     }
 
     &.e-rtl .e-input-group-icon.e-time-icon {
-      margin: $time-rtl-bigger-icon-margin;
+      margin: $datetime-time-rtl-bigger-icon-margin;
     }
   }
 
   .e-bigger #{&}.e-datetimepicker.e-popup,
   &.e-bigger#{&}.e-datetimepicker.e-popup {
     & .e-list-parent.e-ul {
-      padding: $list-bigger-padding 0;
+      padding: $datetime-list-bigger-padding 0;
 
       & .e-list-item {
-        font-size: $list-bigger-font-size;
-        line-height: $list-bigger-line-height;
-        text-indent: $list-bigger-text-indent;
+        font-size: $datetime-list-bigger-font-size;
+        line-height: $datetime-list-bigger-line-height;
+        text-indent: $datetime-list-bigger-text-indent;
       }
     }
   }

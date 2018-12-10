@@ -3,6 +3,7 @@ import { IntlBase as base } from './intl-base';
 import { ParserBase as parser, NumericOptions, NumberMapper } from './parser-base';
 import { isUndefined, throwError, getValue, isNullOrUndefined } from '../util';
 import { datePartMatcher } from './date-formatter';
+import { HijriParser } from '../hijri-parser';
 const number: string = 'numbers';
 const defNoSystem: string = 'defaultNumberingSystem';
 const noSystem: string = 'numberingSystem';
@@ -30,6 +31,7 @@ interface ParseOptions {
     hour12?: boolean;
     parserRegex?: RegExp;
     evalposition?: { [key: string]: ValuePosition };
+    isIslamic?: boolean;
 }
 
 /**
@@ -71,7 +73,7 @@ export class DateParser {
      */
     // tslint:disable-next-line:max-func-body-length
     public static dateParser(culture: string, option: DateFormatOptions, cldr: Object): Function {
-        let dependable: base.Dependables = base.getDependables(cldr, culture);
+        let dependable: base.Dependables = base.getDependables(cldr, culture, option.calendar);
         let numOptions: NumericOptions = parser.getCurrentNumericOptions(dependable.parserObject, parser.getNumberingSystem(cldr));
         let parseOptions: ParseOptions = {};
         let resPattern: string = option.format || base.getResultantPattern(option.skeleton, dependable.dateObject, option.type);
@@ -80,7 +82,7 @@ export class DateParser {
         if (isUndefined(resPattern)) {
             throwError('Format options or type given must be invalid');
         } else {
-            parseOptions = { pattern: resPattern, evalposition: {} };
+            parseOptions = { isIslamic: base.islamicRegex.test(option.calendar), pattern: resPattern, evalposition: {} };
             let patternMatch: string[] = resPattern.match(base.dateParseRegex) || [];
             let length: number = patternMatch.length;
             let gmtCorrection: number = 0;
@@ -180,10 +182,31 @@ export class DateParser {
             if (isNullOrUndefined(parsedDateParts) || !Object.keys(parsedDateParts).length) {
                 return null;
             }
+            if (parseOptions.isIslamic) {
+                let dobj: base.DateObject = {};
+                let tYear: number = parsedDateParts.year;
+                let tDate: number = parsedDateParts.day;
+                let tMonth: number = parsedDateParts.month;
+                let ystrig: string = tYear ? (tYear + '') : '';
+                let is2DigitYear: boolean = (ystrig.length === 2);
+                if (!tYear || !tMonth || !tDate || is2DigitYear) {
+                    dobj = HijriParser.getHijriDate(new Date());
+                }
+                if (is2DigitYear) {
+                    tYear = parseInt((dobj.year + '').slice(0, 2) + ystrig, 10);
+                }
+                // tslint:disable-next-line
+                let dateObject: Date = HijriParser.toGregorian(
+                    tYear || dobj.year, tMonth || dobj.month, tDate || dobj.date);
+                parsedDateParts.year = dateObject.getFullYear();
+                parsedDateParts.month = dateObject.getMonth() + 1;
+                parsedDateParts.day = dateObject.getDate();
+
+            }
             return this.getDateObject(parsedDateParts);
         };
     }
-
+      /* tslint:disable */
     /**
      * Returns date object for provided date options
      * @param {DateParts} options 
@@ -216,7 +239,7 @@ export class DateParser {
                     let pDate: number = res.getDate();
                     res.setDate(1);
                     (<any>res)[(<any>timeSetter)[key]](tValue);
-                    let lDate: number =  new Date(res.getFullYear(), tValue + 1, 0).getDate();
+                    let lDate: number = new Date(res.getFullYear(), tValue + 1, 0).getDate();
                     res.setDate(pDate < lDate ? pDate : lDate);
                 } else {
                     if (key === 'day') {
@@ -224,7 +247,6 @@ export class DateParser {
                         if ((tValue < 1 || tValue > lastDay)) {
                             return null;
                         }
-
                     }
                     (<any>res)[(<any>timeSetter)[key]](tValue);
                 }
@@ -255,7 +277,7 @@ export class DateParser {
      */
     private static internalDateParse(value: string, parseOptions: ParseOptions, num: NumericOptions): DateParts {
         let matches: string[] = value.match(parseOptions.parserRegex);
-        let retOptions: DateParts = { 'hour': 0, 'minute': 0, 'second': 0};
+        let retOptions: DateParts = { 'hour': 0, 'minute': 0, 'second': 0 };
         let nRegx: string = num.numericRegex;
         if (isNullOrUndefined(matches)) {
             return null;
@@ -352,4 +374,4 @@ export class DateParser {
         return value;
     }
 }
-
+/* tslint:enable */

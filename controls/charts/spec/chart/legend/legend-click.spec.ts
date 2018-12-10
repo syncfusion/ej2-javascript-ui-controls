@@ -86,7 +86,7 @@ describe('Chart Control Legend Checking', () => {
     });
     it('checking with datalabel after legend click', () => {
         dataLabel = getElement('cartesianChart_Series_3_Point_0_Text_0') as HTMLElement;
-        expect(parseFloat(dataLabel.getAttribute('y'))).toEqual(181.625);
+        expect(parseFloat(dataLabel.getAttribute('y'))).toBeGreaterThanOrEqual(181.625);
     });
     it('checking with line series legend again selected', (done: Function) => {
         legendElement = getElement('cartesianChart_chart_legend_text_4');
@@ -102,7 +102,7 @@ describe('Chart Control Legend Checking', () => {
 
     it('checking with datalabel before legend selected', () => {
         dataLabel = getElement('cartesianChart_Series_3_Point_0_Text_0') as HTMLElement;
-        expect(+(dataLabel.getAttribute('y'))).toEqual(213.75);
+        expect(+(dataLabel.getAttribute('y'))).toBeLessThanOrEqual(213.75);
     });
 
     it('checking with column series legend deselect', (done: Function) => {
@@ -248,7 +248,7 @@ describe('Chart Control Legend Checking', () => {
         setTimeout(() => {
             expect(seriesElement.contains(getElement(ele.id + 'SymbolGropu4'))).toBe(false);
             dataLabel = getElement('cartesianChart_Series_2_Point_0_Symbol') as HTMLElement;
-            expect(parseFloat(dataLabel.getAttribute('cy'))).toEqual(200.78125);
+            expect(parseFloat(dataLabel.getAttribute('cy'))).toBeGreaterThanOrEqual(200.78125);
             expect(seriesElement.childElementCount).toEqual(12);
             done();
         }, 301);
@@ -269,7 +269,7 @@ describe('Chart Control Legend Checking', () => {
         setTimeout(() => {
             let errorBar: Element = getElement('cartesianChart_Series__ErrorBarGroup_0_Point_0');
             seriesElement = getElement(ele.id + 'SeriesCollection') as HTMLElement;
-            expect((errorBar.getAttribute('d').split(' ')[2])).toBe('285.9125');
+            expect((errorBar.getAttribute('d').split(' ')[2])).toBeLessThanOrEqual(285.9125);
             expect(seriesElement.childElementCount).toEqual(17);
             done();
         }, 301);
@@ -282,14 +282,14 @@ describe('Chart Control Legend Checking', () => {
             }
         ];
         chart.refresh();
-        let stripLine: Element = getElement('cartesianChart_stripline_Behind_rect_0');
+        let stripLine: Element = getElement('cartesianChart_stripline_Behind_rect_primaryYAxis_0');
         expect(stripLine.getAttribute('y')).toEqual('170.875');
     });
     it('checked with stripline after legend click', (done: Function) => {
         legendElement = getElement('cartesianChart_chart_legend_text_4');
         trigger.clickEvent(legendElement);
         setTimeout(() => {
-            let stripLine: Element = getElement('cartesianChart_stripline_Behind_rect_0');
+            let stripLine: Element = getElement('cartesianChart_stripline_Behind_rect_primaryYAxis_0');
             expect(stripLine.getAttribute('y')).toEqual('130.71875');
             done();
         }, 301);

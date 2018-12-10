@@ -27,7 +27,10 @@ export class StackedHeaderCellRenderer extends CellRenderer implements ICellRend
     public render(cell: Cell<Column>, data: Object, attributes?: { [x: string]: Object }): Element {
 
         let node: Element = this.element.cloneNode() as Element;
-        let div : Element = this.parent.createElement('div', {className: 'e-stackedheadercelldiv'});
+        let div : Element = this.parent.createElement('div', {
+            className: 'e-stackedheadercelldiv',
+            attrs: { 'e-mappinguid': cell.column.uid }
+        });
         node.appendChild(div);
         div.innerHTML = cell.column.headerText;
 
@@ -42,8 +45,12 @@ export class StackedHeaderCellRenderer extends CellRenderer implements ICellRend
         node.setAttribute('colspan', cell.colSpan.toString());
         node.setAttribute('aria-colspan', cell.colSpan.toString());
         node.setAttribute('aria-rowspan', '1');
+        if (this.parent.allowResizing) {
+            let handler: HTMLElement = this.parent.createElement('div');
+            handler.className = cell.column.allowResizing ? 'e-rhandler e-rcursor' : 'e-rsuppress';
+            node.appendChild(handler);
+        }
         this.parent.trigger(headerCellInfo, {cell, node});
         return node;
     }
-
 }

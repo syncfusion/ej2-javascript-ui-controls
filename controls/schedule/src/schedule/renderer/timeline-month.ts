@@ -81,12 +81,15 @@ export class TimelineMonth extends Month {
         this.collapseRows(wrap);
         EventHandler.add(wrap, 'scroll', this.onContentScroll, this);
         contentTd.appendChild(wrap);
+        if (this.parent.virtualScrollModule) {
+            this.parent.virtualScrollModule.renderVirtualTrack(wrap);
+        }
         contentTr.appendChild(contentTd);
     }
 
     private getRowCount(): number {
         if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
-            return this.parent.resourceBase.lastResourceLevel.length;
+            return this.parent.resourceBase.renderedResources.length;
         }
         return 1;
     }
@@ -97,7 +100,7 @@ export class TimelineMonth extends Month {
             for (let data of this.colLevels[this.colLevels.length - 1]) {
                 data.className = [cls.WORK_CELLS_CLASS];
                 if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
-                    let resLevel: TdData = this.parent.resourceBase.lastResourceLevel[row];
+                    let resLevel: TdData = this.parent.resourceBase.renderedResources[row];
                     data.workDays = (resLevel.resourceData[resLevel.resource.workDaysField] as number[]) || this.parent.workDays;
                     data.className = data.className.concat(resLevel.className);
                     data.groupIndex = resLevel.groupIndex;

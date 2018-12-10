@@ -342,7 +342,7 @@ describe('Diagram Control', () => {
             diagram.dataBind();
 
             let image: HTMLElement = document.getElementById('node4_contentimage')
-            expect(image.attributes[8].nodeValue === 'https://www.w3schools.com/images/w3schools_green.jpg').toBe(true);
+            expect(image.attributes[9].nodeValue === 'https://www.w3schools.com/images/w3schools_green.jpg').toBe(true);
             done();
         });
 

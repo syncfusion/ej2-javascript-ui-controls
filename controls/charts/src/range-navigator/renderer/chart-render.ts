@@ -25,6 +25,7 @@ export class RangeSeries extends NiceInterval {
     private yAxis: Axis;
     public xAxis: Axis;
     private seriesLength: number;
+    private chartGroup: Element;
     constructor(range: RangeNavigator) {
         super();
         this.dataSource = range.dataSource;
@@ -172,7 +173,7 @@ export class RangeSeries extends NiceInterval {
      * @private
      */
     public renderSeries(control: RangeNavigator): void {
-        let chartGroup: Element = control.renderer.createGroup({ id: control.element.id + '_chart' });
+        this.chartGroup = control.renderer.createGroup({ id: control.element.id + '_chart' });
         let colors: string[] = getSeriesColor(control.theme);
         control.series.map((series: RangeNavigatorSeries, index: number) => {
             series.xAxis = this.xAxis;
@@ -182,17 +183,33 @@ export class RangeSeries extends NiceInterval {
             series.xAxis.isInversed = control.enableRtl;
             series.interior = series.fill || colors[index % colors.length];
             this.createSeriesElement(control, series, index);
-            control[firstToLowerCase(series.type) + 'SeriesModule'].render(
-                series, this.xAxis, this.yAxis, false
-            );
-            chartGroup.appendChild(series.seriesElement);
+            if (control[firstToLowerCase(series.type) + 'SeriesModule']) {
+                control[firstToLowerCase(series.type) + 'SeriesModule'].render(
+                    series, this.xAxis, this.yAxis, false
+                );
+            } else {
+                control['line' + 'SeriesModule'].render(
+                    series, this.xAxis, this.yAxis, false
+                );
+            }
+            this.chartGroup.appendChild(series.seriesElement);
             if (series.animation.enable && control.animateSeries) {
+                if (control[firstToLowerCase(series.type) + 'SeriesModule']) {
                 control[firstToLowerCase(series.type) + 'SeriesModule'].doAnimation(series);
+                } else {
+                    //control['line' + 'SeriesModule'].doAnimation(series);
+                }
             }
         });
-        control.svgObject.appendChild(chartGroup);
+    }
+
+    /**
+     * Append series elements in element
+     */
+    public appendSeriesElements(control: RangeNavigator): void {
+        control.svgObject.appendChild(this.chartGroup);
         if (control.series.length) {
-            this.drawSeriesBorder(control, chartGroup);
+            this.drawSeriesBorder(control, this.chartGroup);
         }
     }
 
@@ -235,13 +252,15 @@ export class RangeSeries extends NiceInterval {
     }
 
     private drawSeriesBorder(control: RangeNavigator, chartElement: Element): void {
+        let start: string = control.stockChart ? 'M' : 'L';
+        let close: string = control.stockChart ? '' : 'Z';
         let options: PathOption = new PathOption(
             control.element.id + '_SeriesBorder', 'transparent', control.navigatorBorder.width,
             control.navigatorBorder.color, 1, '',
             ('M ' + (control.bounds.x) + ' ' + (control.bounds.y) +
                 ' L ' + (control.bounds.x + control.bounds.width) + ' ' + control.bounds.y +
-                ' L ' + (control.bounds.x + control.bounds.width) + ' ' + (control.bounds.y + control.bounds.height) +
-                ' L ' + (control.bounds.x) + ' ' + (control.bounds.y + control.bounds.height) + 'Z')
+                start + (control.bounds.x + control.bounds.width) + ' ' + (control.bounds.y + control.bounds.height) +
+                ' L ' + (control.bounds.x) + ' ' + (control.bounds.y + control.bounds.height) + close)
 
         );
         let htmlObject: Element = control.renderer.drawPath(options) as HTMLElement;

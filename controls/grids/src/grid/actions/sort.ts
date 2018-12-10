@@ -321,7 +321,10 @@ export class Sort implements IAction {
         if (this.parent.element.querySelector('.e-gridpopup').querySelectorAll('.e-sortdirect').length) {
             (this.parent.element.querySelector('.e-gridpopup') as HTMLElement).style.display = 'none';
         }
-        this.clearSorting();
+        // tslint:disable-next-line:no-any
+        if (!(<any>this.parent).refreshing) {
+            this.clearSorting();
+        }
         this.isModelChanged = true;
         this.removeEventListener();
     }

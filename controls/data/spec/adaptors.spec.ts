@@ -1364,9 +1364,9 @@ describe('OData Adaptor', () => {
     });
     describe('Branch coverage', () => {
         let odata: ODataAdaptor = new ODataAdaptor();
-        odata.generateDeleteRequest(undefined, {});
-        odata.generateInsertRequest(undefined, {});
-        odata.generateUpdateRequest(undefined, {}, []);
+        odata.generateDeleteRequest(undefined, {}, undefined);
+        odata.generateInsertRequest(undefined, {}, undefined);
+        odata.generateUpdateRequest(undefined, {}, undefined, []);
 
         it ('checked insert a record in a table', () => {
             expect((<any>odata.insert(new DataManager({url: '/home'}), {order: 2}, 'order')).url).

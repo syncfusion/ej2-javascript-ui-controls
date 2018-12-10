@@ -168,7 +168,7 @@ describe('Map navigation properties tesing', () => {
                 let spec: Element = document.getElementById('container_LayerIndex_0_NavigationIndex_0_Line0');
                 let fill: string = spec.getAttribute('d');
                 expect(fill).toEqual(
-                    'M 140.74384333333327,188.237209914718 A 213.75093827807066 213.75093827807066 0,0,0 , 352.5999999999999,216.63496505811577 ');
+                    'M 140.74384333333327,188.237209914718 A 106.87546913903533 106.87546913903533 0,0,0 , 352.5999999999999,216.63496505811577 ');
             };
             map.layers[0].navigationLineSettings = [
                 {

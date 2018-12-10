@@ -88,8 +88,7 @@ export class TreeMapTooltip {
                     location: tootipArgs.options['location'],
                     palette: [markerFill],
                     areaBounds: this.treemap.areaRect,
-                    textStyle: tootipArgs.options['textStyle'],
-                    theme: this.treemap.theme
+                    textStyle: tootipArgs.options['textStyle']
                 });
                 this.svgTooltip.appendTo(tooltipEle);
             } else {

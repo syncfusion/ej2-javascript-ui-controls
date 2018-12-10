@@ -73,7 +73,7 @@ export class FieldValidator {
                 remove(elem);
             }
         }
-        if (this.formObj) {
+        if (this.formObj && this.formObj.element) {
             this.formObj.reset();
         }
     }

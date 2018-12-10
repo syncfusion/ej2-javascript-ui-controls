@@ -18,14 +18,46 @@ export type Sorting =
 export type SummaryTypes =
     /** Defines sum aggregate type */
     'Sum' |
+    /** Defines product aggregate type */
+    'Product' |
     /** Specifies count aggregate type */
     'Count' |
+    /** Specifies distinct count aggregate type */
+    'DistinctCount' |
     /** Specifies minimum aggregate type */
     'Min' |
     /** Specifies maximum aggregate type */
     'Max' |
     /** Specifies average aggregate type */
     'Avg' |
+    /** Specifies index aggregate type */
+    'Index' |
+    /** Specifies percentage of grand totals of total aggregate type */
+    'PercentageOfGrandTotal' |
+    /** Specifies percentage of grand column total aggregate type */
+    'PercentageOfColumnTotal' |
+    /** Specifies percentage of grand row total aggregate type */
+    'PercentageOfRowTotal' |
+    /** Specifies percentage of grand parent row total aggregate type */
+    'PercentageOfParentRowTotal' |
+    /** Specifies percentage of grand parent column total aggregate type */
+    'PercentageOfParentColumnTotal' |
+    /** Specifies percentage of grand parent total aggregate type */
+    'PercentageOfParentTotal' |
+    /** Specifies running totals aggregate type */
+    'RunningTotals' |
+    /** Specifies standard deviation of population aggregate type */
+    'PopulationStDev' |
+    /** Specifies sample standard deviation aggregate type */
+    'SampleStDev' |
+    /** Specifies variance of population aggregate type */
+    'PopulationVar' |
+    /** Specifies sample variance aggregate type */
+    'SampleVar' |
+    /** Specifies difference from aggregate type */
+    'DifferenceFrom' |
+    /** Specifies % of difference from aggregate type */
+    'PercentageOfDifferenceFrom' |
     /** Specifies 'CalculatedField' aggregate type for calculated fields */
     'CalculatedField';
 

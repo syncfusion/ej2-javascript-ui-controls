@@ -7,7 +7,7 @@ import { remove, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { AccumulationChartModel } from './accumulation-model';
 import { Font, Margin, Border, TooltipSettings, Indexes } from '../common/model/base';
-import { AccumulationSeries, AccPoints } from './model/acc-base';
+import { AccumulationSeries, AccPoints, PieCenter } from './model/acc-base';
 import { AccumulationType, AccumulationSelectionMode } from './model/enum';
 import { IAccSeriesRenderEventArgs, IAccTextRenderEventArgs, IAccTooltipRenderEventArgs } from './model/pie-interface';
 import { IAccAnimationCompleteEventArgs, IAccPointRenderEventArgs, IAccLoadedEventArgs } from './model/pie-interface';
@@ -18,7 +18,7 @@ import { load, seriesRender, legendRender, textRender, tooltipRender, pointClick
 import { pointMove, chartMouseClick, chartMouseDown } from '../common/model/constants';
 import { chartMouseLeave, chartMouseMove, chartMouseUp, resized } from '../common/model/constants';
 import { FontModel, MarginModel, BorderModel, IndexesModel, TooltipSettingsModel } from '../common/model/base-model';
-import { AccumulationSeriesModel} from './model/acc-base-model';
+import { AccumulationSeriesModel, PieCenterModel} from './model/acc-base-model';
 import { LegendSettings } from '../common/legend/legend';
 import { AccumulationLegend } from './renderer/legend';
 import { LegendSettingsModel } from '../common/legend/legend-model';
@@ -135,6 +135,12 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      */
     @Property(null)
     public title: string;
+
+    /**
+     * Center of pie
+     */
+    @Complex<PieCenterModel>({}, PieCenter)
+    public center: PieCenterModel;
 
    /**
     * Specifies the dataSource for the AccumulationChart. It can be an array of JSON objects or an instance of DataManager.
@@ -459,7 +465,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     public mouseY: number;
     private resizeTo: number;
     /** @private */
-    public center: ChartLocation;
+    public origin: ChartLocation;
     /** @private */
     public get type(): AccumulationType {
         if (this.series && this.series.length) {
@@ -970,11 +976,11 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
         this.renderBorder();
 
-        this.renderTitle();
-
         this.createSecondaryElement();
 
         this.renderSeries();
+
+        this.renderTitle();
 
         this.renderLegend();
 

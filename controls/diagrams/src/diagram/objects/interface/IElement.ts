@@ -342,3 +342,11 @@ export interface IDropEventArgs {
     /** returns whether or not to cancel the drop event */
     cancel: boolean;
 }
+
+/** @private */
+export interface StackEntryObject {
+    targetIndex?: number;
+    target?: NodeModel;
+    sourceIndex?: number;
+    source?: NodeModel;
+}

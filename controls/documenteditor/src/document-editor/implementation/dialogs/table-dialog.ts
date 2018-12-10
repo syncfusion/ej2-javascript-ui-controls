@@ -1,6 +1,6 @@
 import { LayoutViewer } from '../index';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
-import { L10n, createElement, setCulture, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { L10n, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * The Table dialog is used to insert table at selection.
  */
@@ -84,7 +84,6 @@ export class TableDialog {
     public show(): void {
         let localValue: L10n = new L10n('documenteditor', this.owner.owner.defaultLocale);
         localValue.setLocale(this.owner.owner.locale);
-        setCulture(this.owner.owner.locale);
         if (!this.target) {
             this.initTableDialog(localValue);
         }

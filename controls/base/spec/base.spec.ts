@@ -114,14 +114,14 @@ describe('Library', (): void => {
     describe('Root class declaration', (): void => {
         it(' test module class name at class instance creation', () => {
             let obj: DemoClass = new DemoClass(ele);
-            expect(obj.element.className.indexOf('e-control e-demolib')).toEqual(0);
+            expect(obj.element.className.indexOf('e-lib e-demolib')).toEqual(0);
         });
 
         it(' test module class name at class instance destroy', () => {
             let ele: HTMLElement = createElement('div', { id: 'element' });
             let obj: DemoClass = new DemoClass(ele);
             obj.destroy();
-            expect(obj.element.className.indexOf('e-control e-demolib')).toEqual(-1);
+            expect(obj.element.className.indexOf('e-lib e-demolib')).toEqual(-1);
         });
     });
     describe('check whether the notify trigger after component destroyed', () => {

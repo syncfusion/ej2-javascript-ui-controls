@@ -2,104 +2,32 @@
 
 ## [Unreleased]
 
-## 16.3.33 (2018-11-15)
+## 16.4.40-beta (2018-12-10)
 
 ### Grid
 
 #### Bug Fixes
 
-- Using html in `footerTemplate` of aggregation is hidden in `excel-export` and `pdf-export` is fixed.
-- `columnMenu` is not properly render when disable the grid properties at column level is resolved.
-- With Virtual scrolling, args.data returns as undefined in `rowSelected` event is fixed.
-- `Virtualization` translate value calculated incorrectly when set `height` 100% is fixed.
-
-## 16.3.32 (2018-11-13)
-
-### Grid
-
-#### Bug Fixes
-
-- Refreshing a template in column Grid after edit and update displays no records in IE is fixed.
-- Unable to use `captionTemplate` in angular grid is resolved.
-
-## 16.3.31 (2018-11-07)
-
-### Grid
-
-#### Bug Fixes
-
-- `aggregateModule` is made public from grid class.
-- `Tooltip` throw script error when hover grid cell faster with `EllipsisWithTooltip` is fixed.
-- `excelexport` failed when complex property has null as value is resolved.
-- Script error throws while deleting the records after adding new records in `batch-editing` mode is resolved.
-
-#### New Features
-
-- Provided dialog settings to customize dialog-editing.
+- Getter function from super class are not available inside the `template-context` is fixed.
+- Filter icon goes a little above the `headerText` with `wrapMode` as `Header` is resolved.
+- `rowDeselecting` event not triggered after double clicking a particular row and select different row is resolved.
+- `Column-Menu` items are not disabled when disabled the grid properties at column level is fixed.
+- Provided theme support for grid header in `excel-export`.
+- Provided whole dataset for the `custom-aggregate` function when use `disablePageWiseAggregate` with no grouping.
+- Provided theme support for grid content in `pdf-export`.
+- Script error when `editTemplate` is used in `batch mode` is fixed.
 
 #### Breaking Changes
 
-- For dialog editing, the dialog overlay will be displayed to entire document, Previously the overlay will be displayed only on the grid element.
-
-## 16.3.30 (2018-11-01)
-
-### Grid
-
-#### Bug Fixes
-
-- `extend` like method to keep getters in the data is added.
-- `Tab-key` press and update the data in `command-column` causes multiple posts at server side is resolved.
-- Added `target` to the arguments of the `rowDeselecting` event of Grid.
-- Cell edit template read function does not called when column type as `boolean` is resolved.
-- Script error thrown in production mode when using `hideColumns` method to hide a column.
-
-## 16.3.27 (2018-10-23)
-
-### Grid
-
-#### Bug Fixes
-
-- Grid `Filter` column field is undefined while using stacked headers is fixed.
-- Angular Grid is failed in production mode when `sideEffects` is set as false is fixed.
-- `Checkbox` select all is not selecting all records when batch added record is fixed.
-- `rowHeight` is not set properly when grouping column enabled is resolved.
-- When performing excel filter search with enter key the operators are always `contains` is resolved.
-- script error throws in `rowSelected` and `cellSelected` event after moving from one page to another page is fixed.
-
-## 16.3.25 (2018-10-15)
-
-### Grid
-
-#### Bug Fixes
-
-- Angular Grid printing is not working properly when using ng-template is fixed.
-- dialog template is not working properly when grid contains column template is fixed.
-- `ODataV4` - Need to skip expand and select queries when apply `groupby` is used is added.
-- parse error when valid `json` values are passed into `DataUtil.parse.parseJSON`.
-- field value is undefined while adding the record in batch editing when we enable checkbox selection is resolved.
-- Need to provide whole dataset for the custom aggregate function when use `disablePageWiseAggregates` with no grouping is added.
-- `rowSelected` event arguments are not proper when selecting new records in batch mode is fixed.
-- Custom aggregate function parameters are incorrect when perform grouping with `disablePageWiseAggregates` is resolved.
-- `setCellValue` is not working for template column is fixed.
-- Provided separate title support for command column button.
-
-## 16.3.24 (2018-10-09)
-
-### Grid
-
-#### Bug Fixes
-
-- Excel Exporting with aggregates throws error is fixed.
-- Field value is undefined while adding record in batch editing when enabling checkbox selection is fixed.
-- Column chooser is overridden by search textbox due to padding top property issue is fixed.
-- Rendering dropdown component in grid editing returns only the first record in the dropdown list is fixed.
-- Parent grid column chooser is not opening after expanding child grid in hierarchical is resolved.
-- Grid Excel export not supporting the custom date format instead of skeleton format is resolved.
-- Provided support for range selection delete with Batch mode.
-- Separators are not hidden in context menu is resolved.
-- Using angular services to replace display values in checkbox filter is resolved.
-
-## 16.3.23 (2018-10-03)
+Interface changed for `PdfExportProperties`
+| Property | Old | New |
+| -------- | --- | --- |
+| **theme.header** | borders.color | border.color |
+| | borders.lineStyle | border.dashStyle |
+| **theme.record** | borders.color | border.color |
+| | borders.lineStyle| border.dashStyle |
+| **theme.caption** | borders.color | border.color |
+| | borders.lineStyle | border.dashStyle |
 
 ### Grid
 
@@ -112,48 +40,6 @@
 - Batch changes not passed when the column is edited with spaces.
 - Misalignment occurred while doing show or hide grid column with enable frozen columns is fixed.
 - Support for column chooser can search with user given operators.
-
-## 16.3.22 (2018-09-25)
-
-### Grid
-
-#### Bug Fixes
-
-- Provided `batchsave` as request type for `actionComplete` event of bulk save.
-- Provided optional parameter support for `autoFitColumns` API.
-- Cancel icon is not clearing the searched text when externally opening column chooser fixed.
-- Now row height is set in batch edit mode to avoid shrinking when not data is added.
-- Foreign key column checkbox filter shows blank values resolved.
-- Date value is sent to server side as empty sting instead of null value while adding the record fixed.
-- Script error thrown when perform editing with command column and detail template.
-- Need to retrieve the batch changes from the grid when the column is edited with spaces.
-- Changing page size dropdown value destroys another grid page size dropdown resolved.
-- Deleted record row objects maintains resolved.
-- Resolved issue with dynamic data source change when foreign key is used.
-- Added cancel event argument for search `actionBegin` event.
-- `ODataV4` - Excel filter now uses `groupby` to get distinct data.
-- Autofit columns for empty detail Grid issue is fixed.
-
-## 16.3.21 (2018-09-22)
-
-### Grid
-
-#### Bug Fixes
-
-- Initial multi-sorting icon is added incorrectly fixed.
-- Validation for complex property is not added properly resolved.
-
-#### New Features
-
-- Dialog edit template support added.
-- Reactive aggregate update support added.
-- Date time type column filter support added.
-- Windows explorer like check-box selection added.
-- Expand and collapse enabled in excel exported document for grouped grid.
-- Support to prevent the overriding of autofit columns by Resizing added.
-- Show All option added for page size drop-down.
-
-## 16.3.17 (2018-09-12)
 
 ### Grid
 

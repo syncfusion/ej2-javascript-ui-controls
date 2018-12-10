@@ -347,7 +347,7 @@ describe('Sparkline ', () => {
             expect(options.text).toBe('June : 785');
             expect(options.x).toBe(426);
             expect(options.y === 56 || options.y === 57).toBe(true);
-            expect(options.fill).toBe('#FFFFFF');
+            //expect(options.fill).toBe('#424242');
             expect(options['font-size']).toBe(10);
             expect(options['font-family']).toBe('fantasy');
             expect(options['font-style']).toBe('Bold');

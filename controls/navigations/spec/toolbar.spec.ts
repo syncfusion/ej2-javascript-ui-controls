@@ -4,8 +4,9 @@
 import { ScrollEventArgs, TouchEventArgs, Browser } from '@syncfusion/ej2-base';
 import { createElement, isVisible, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Toolbar, ClickEventArgs, BeforeCreateArgs } from '../src/toolbar/toolbar';
-import {  ItemModel } from '../src/toolbar/toolbar-model';
+import { ItemModel } from '../src/toolbar/toolbar-model';
 import { HScroll } from '../src/common/h-scroll';
+import { VScroll } from '../src/common/v-scroll';
 import { Button } from '@syncfusion/ej2-buttons';
 import '../node_modules/es6-promise/dist/es6-promise';
 
@@ -16,11 +17,11 @@ let ieUa: string = 'Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; Touch; .NET
     'Tablet PC 2.0; .NET CLR 3.5.30729; .NET CLR 2.0.50727; .NET CLR 3.0.30729; InfoPath.3; rv:11.0) like Gecko';
 
 describe('Toolbar Control', () => {
-    let css: string = ".e-toolbar { height: auto;white-space: nowrap; display:block;position:relative } .e-separator { border-right:1px solid; height: 15px; margin: 7.5px 3px} .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator + .e-separator { display:none } .e-toolbar-items { display: inline-block; } .e-toolbar-items.e-hscroll { width:inherit; }  .e-toolbar .e-fix-width {width : 0px !important; } .e-toolbar .e-tbarpop  { position: fixed; } .e-toolbar-items .e-toolbar-item, .e-toolbar-left, .e-toolbar-center, .e-toolbar-right { display: inline-block; } .e-toolbar .e-hor-nav { float:right; width:30px; }  .e-toolbar .e-toolbar-pop { position: fixed;} .e-popup-open { display:block } .e-popup-close { display: none } button {font-family:Arial; font-size: 14px; padding: 1px 6px} ";
+    let css: string = ".e-toolbar { height: auto;white-space: nowrap; display:block;position:relative } .e-separator { border-right:1px solid; height: 15px; margin: 7.5px 3px} .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator + .e-separator { display:none } .e-toolbar-items { display: inline-block; } .e-toolbar-items.e-hscroll { width:inherit; }  .e-toolbar .e-fix-width {width : 0px !important; } .e-toolbar .e-tbarpop  { position: fixed; } .e-toolbar-items .e-toolbar-item, .e-toolbar-left, .e-toolbar-center, .e-toolbar-right { display: inline-block; } .e-toolbar .e-hor-nav { float:right; width:30px; }  .e-toolbar .e-toolbar-pop { position: fixed;} .e-popup-open { display:block } .e-popup-close { display: none } button {font-family:Arial; font-size: 14px; padding: 1px 6px}"
+        + ".e-vertical.e-toolbar { height: 100%; width: auto } .e-vertical .e-toolbar-items { display: block; height: inherit } .e-vertical .e-toolbar-items .e-toolbar-item { display: block; } .e-vscroll > * { height: inherit; } .e-vscroll .e-scroll-nav { height: 0px } ";
     let style: HTMLStyleElement = document.createElement('style'); style.type = 'text/css';
     let styleNode: Node = style.appendChild(document.createTextNode(css));
     document.getElementsByTagName('head')[0].appendChild(style);
-
 
     // DOM Element with Control Class testing
     describe('Dom toolbar element', () => {
@@ -1300,6 +1301,20 @@ describe('Toolbar Control', () => {
             let element: HTMLElement = document.getElementById('ej2Toolbar');
             toolbar = new Toolbar({
                 width: 70,
+                overflowMode: 'Popup',
+                items: [
+                    { type: 'Separator', text: 'Underline', overflow: 'Hide', tooltipText: 'Bold' },
+                    { type: 'Button', text: 'Bold', overflow: 'Hide', tooltipText: 'Bold' },
+                    { type: 'Button', text: 'Italic', overflow: 'Show', tooltipText: 'Bold' }
+                ],
+            }); toolbar.appendTo('#ej2Toolbar');
+            expect(element.querySelectorAll('.e-popup .e-toolbar-item').length == 2).toEqual(true);
+        });
+        it('Overflow property popup control OverflowOption With separator', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            element.classList.add('e-vertical');
+            toolbar = new Toolbar({
+                height: 25,
                 overflowMode: 'Popup',
                 items: [
                     { type: 'Separator', text: 'Underline', overflow: 'Hide', tooltipText: 'Bold' },
@@ -2857,9 +2872,7 @@ describe('Toolbar Control', () => {
             expect(document.activeElement.children[0].innerHTML).toEqual('Underline Button');
         });
     });
-
-
-    describe(' Keyboard Interaction testing', () => {
+    describe('Horizontal toolbar - Keyboard Interaction testing', () => {
         let toolbar: any;
         let keyEventArgs: any;
         document.body.innerHTML = '';
@@ -2877,7 +2890,7 @@ describe('Toolbar Control', () => {
             document.body.removeAttribute('style');
             document.body.innerHTML = '';
         });
-        it('allowKeyboardInteraction Property testing ', () => {
+        it('Class testing ', () => {
             let element: HTMLElement = document.getElementById('ej2Toolbar');
             toolbar = new Toolbar({
                 width: 170,
@@ -2916,7 +2929,6 @@ describe('Toolbar Control', () => {
             toolbar.keyActionHandler(keyEventArgs);
             expect(document.activeElement.children[0].innerHTML).toEqual('Underline');
         });
-
         it('Right arrow Key  without Element testing', () => {
             let element: HTMLElement = document.getElementById('ej2Toolbar');
             toolbar = new Toolbar({
@@ -2974,7 +2986,6 @@ describe('Toolbar Control', () => {
             toolbar.keyActionHandler(keyEventArgs);
             expect(document.activeElement.children[0].innerHTML === 'Bold').toEqual(false);
         });
-
         it('Right arrow Key  with inbetween Separator testing', () => {
             let element: HTMLElement = document.getElementById('ej2Toolbar');
             toolbar = new Toolbar({
@@ -3244,7 +3255,6 @@ describe('Toolbar Control', () => {
             let btn1: HTMLElement = createElement('button', { id: 'focusButton1' });
             element.parentElement.insertBefore(btn, element);
             element.parentElement.insertBefore(btn1, element);
-
             toolbar = new Toolbar({
                 width: 100,
                 overflowMode: 'Popup',
@@ -3339,7 +3349,6 @@ describe('Toolbar Control', () => {
             toolbar.keyActionHandler(keyEventArgs);
             expect(document.activeElement.children[0].innerHTML == 'Underline').toEqual(false);
         });
-
         it('Left arrow Key   testing', () => {
             let element: HTMLElement = document.getElementById('ej2Toolbar');
             toolbar = new Toolbar({
@@ -3367,7 +3376,6 @@ describe('Toolbar Control', () => {
             toolbar.keyActionHandler(keyEventArgs);
             expect(document.activeElement.children[0].innerHTML).toEqual('New');
         });
-
         it('Left arrow Key  without Element in left side testing', () => {
             let element: HTMLElement = document.getElementById('ej2Toolbar');
             toolbar = new Toolbar({
@@ -3406,7 +3414,6 @@ describe('Toolbar Control', () => {
             };
             expect(document.activeElement.children[0].innerHTML == 'Bold').toEqual(false);
         });
-
         it('Left arrow Key  with in between Separator  testing', () => {
             let element: HTMLElement = document.getElementById('ej2Toolbar');
             toolbar = new Toolbar({
@@ -3682,7 +3689,6 @@ describe('Toolbar Control', () => {
             expect(scrollVal === window.scrollY).toBe(true);
             toolbar.keyActionHandler(keyEventArgs);
         });
-
         it('Down arrow Key  without Popup  testing', () => {
             let element: HTMLElement = document.getElementById('ej2Toolbar');
             toolbar = new Toolbar({
@@ -3712,7 +3718,155 @@ describe('Toolbar Control', () => {
         });
     });
 
-    describe(' Public methods add items Testing', () => {
+    describe('Vertical Toolbar - Keyboard Interaction testing', () => {
+        let toolbar: any;
+        let keyEventArgs: any;
+        document.body.innerHTML = '';
+        beforeEach((): void => {
+            toolbar = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Toolbar', className: 'e-vertical' });
+            setStyleAttribute(ele, { 'display': 'block', 'white-space': 'nowrap', 'position': 'relative' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (toolbar) {
+                toolbar.destroy();
+            }
+            document.body.removeAttribute('style');
+            document.body.innerHTML = '';
+        });
+        it('Class testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                overflowMode: 'Popup',
+                items: [
+                    { type: 'Button', text: 'new', },
+                    { type: 'Button', text: 'Underline Button', }]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            expect(element.classList.contains('e-keyboard')).toEqual(true);
+        });
+        it('Right arrow Key Testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                items: [
+                    { type: 'Button', text: 'new', htmlAttributes: { 'role': 'Toolbar' } },
+                    { type: 'Button', text: 'Underline', htmlAttributes: { 'role': 'Toolbar' } },
+                    { type: 'Button', text: 'Bold', htmlAttributes: { 'role': 'Toolbar' } },
+                ]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'moveRight',
+                target: toolbar.element.querySelectorAll('.e-toolbar-item')[0],
+            };
+            element.focus();
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(document.activeElement).toEqual(element);
+        });
+        it('Left arrow Key Testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                items: [
+                    { type: 'Button', text: 'new', htmlAttributes: { 'role': 'Toolbar' } },
+                    { type: 'Button', text: 'Underline', htmlAttributes: { 'role': 'Toolbar' } },
+                    { type: 'Button', text: 'Bold', htmlAttributes: { 'role': 'Toolbar' } },
+                ]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'moveLeft',
+                target: toolbar.element.querySelectorAll('.e-toolbar-item')[0],
+            };
+            element.focus();
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(document.activeElement).toEqual(element);
+        });
+        it('Tab Key testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                height: 25,
+                overflowMode: 'Scrollable',
+                items: [
+                    { type: 'Button', text: 'New', htmlAttributes: { 'role': 'Toolbar' }, },
+                    { type: 'Separator' },
+                    { type: 'Button', text: 'Underline', htmlAttributes: { 'role': 'Toolbar' }, },
+                    { type: 'Button', text: 'Bold', htmlAttributes: { 'role': 'Toolbar' }, }]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: toolbar.element,
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(document.activeElement.children[0].innerHTML).toEqual('New');
+        });
+        it('Up and Down arrow key testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                items: [
+                    { type: 'Button', text: 'New', htmlAttributes: { 'role': 'Toolbar' } },
+                    { type: 'Button', text: 'Underline', htmlAttributes: { 'role': 'Toolbar' } },
+                    {
+                        type: 'Button', text: 'Bold', htmlAttributes: { 'role': 'Toolbar' }
+                    }
+                ]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'moveDown',
+                target: toolbar.element.querySelectorAll('.e-toolbar-item')[0],
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(document.activeElement.children[0].innerHTML).toEqual('Underline');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'moveUp',
+                target: toolbar.element.querySelectorAll('.e-toolbar-item')[1],
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(document.activeElement.children[0].innerHTML).toEqual('New');
+            toolbar.disable(true);
+        });
+        it('Home and End arrow Key testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                items: [
+                    { type: 'Button', text: 'New', htmlAttributes: { 'role': 'Toolbar' } },
+                    { type: 'Button', text: 'Underline', htmlAttributes: { 'role': 'Toolbar' } },
+                    {
+                        type: 'Button', text: 'Bold', htmlAttributes: { 'role': 'Toolbar' }
+                    }
+                ]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'home',
+                target: toolbar.element.querySelectorAll('.e-toolbar-item')[1],
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(document.activeElement.children[0].innerHTML).toEqual('New');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'end',
+                target: toolbar.element,
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(document.activeElement.children[0].innerHTML).toEqual('Bold');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'home',
+                target: toolbar.element.querySelectorAll('.e-toolbar-item')[1],
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+        });
+    });
+    describe('Public methods add items Testing', () => {
         let toolbar: Toolbar;
         document.body.innerHTML = '';
         beforeEach((): void => {
@@ -5094,6 +5248,39 @@ describe('Toolbar Control', () => {
             let element: HTMLElement = document.getElementById('ej2Toolbar');
             expect(toolbar.popObj.element.style.height === 'auto').toEqual(false);
             expect(toolbar.popObj.element.style.maxHeight === '').toEqual(false);
+        });
+    });
+    describe('Vertical - Popup with more content overflow testing', () => {
+        let toolbar: any;
+        let keyEventArgs: any;
+        document.body.innerHTML = '';
+        beforeEach((done: Function) => {
+            toolbar = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Toolbar', className: 'e-vertical' });
+            setStyleAttribute(ele, { 'display': 'block', 'white-space': 'nowrap', 'position': 'relative' });
+            ele.style.display = 'block';
+            document.body.appendChild(ele);
+            toolbar = new Toolbar({
+                height: 30,
+                overflowMode: 'Popup',
+                items: [
+                    { type: 'Button', text: 'Hii2', }, { type: 'Button', text: 'Unterline22', }, { type: 'Button', text: 'Hii', }, { type: 'Button', text: 'Unterline', }, { type: 'Button', text: 'Hii', }, { type: 'Button', text: 'Hii', }, { type: 'Button', text: 'Unterline', }, { type: 'Button', text: 'Hii', }, { type: 'Button', text: 'Unterline', }, { type: 'Button', text: 'Hii', }, { type: 'Button', text: 'Unterline', }, { type: 'Button', text: 'Hii', }, { type: 'Button', text: 'Unterline', }, { type: 'Button', text: 'Bold', }, { type: 'Button', text: 'Hii', }, { type: 'Button', text: 'Unterline', }, { type: 'Button', text: 'Bold', }, { type: 'Button', text: 'Hii', }, { type: 'Button', text: 'Unterline', }, { type: 'Button', text: 'Bold', }, { type: 'Button', text: 'Hii', }, { type: 'Button', text: 'Unterline', }, { type: 'Button', text: 'Bold', }, { type: 'Button', text: 'Hii', }, { type: 'Button', text: 'Unterline', }, { type: 'Button', text: 'Bold', }, { type: 'Button', text: 'Hii', }, { type: 'Button', text: 'Unterline', }, { type: 'Button', text: 'Bold', }, { type: 'Button', text: 'Hii', }, { type: 'Button', text: 'Unterline', }, { type: 'Button', text: 'Bold', }, { type: 'Button', text: 'Hii', }, { type: 'Button', text: 'Unterline', }, { type: 'Button', text: 'Bold', }, { type: 'Button', text: 'Hii', }, { type: 'Button', text: 'Unterline', }, { type: 'Button', text: 'Bold', }, { type: 'Button', text: 'Hii', }, { type: 'Button', text: 'Unterline', }, { type: 'Button', text: 'Bold', }, { type: 'Button', text: 'Hii', }, { type: 'Button', text: 'Unterline', }, { type: 'Button', text: 'Bold', },
+                ],
+            }); toolbar.appendTo('#ej2Toolbar');
+            let popupNav: HTMLElement = toolbar.element.querySelector('.e-hor-nav') as HTMLElement;
+            let win: any = window;
+            win.innerHeight = 40;
+            popupNav.click();
+            setTimeout(() => { done(); }, 450);
+        });
+        afterEach((): void => {
+            if (toolbar) {
+                toolbar.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('popup opened with content overflow testing', () => {
+            expect(isVisible(toolbar.popObj.element)).toEqual(true);
         });
     });
     describe('input element focusing with window resizing', () => {
@@ -8534,6 +8721,9 @@ describe('Toolbar Control', () => {
                         type: "Button", text: 'Undo'
                     },
                     {
+                        type: "Separator"
+                    },
+                    {
                         type: "Button", text: 'Redo'
                     },
                     {
@@ -8924,7 +9114,7 @@ describe('Toolbar Control', () => {
             expect(element.style.height).toEqual('auto');
         });
     });
-    describe('Onproperty change testing with multirow', () => {
+    describe('Onproperty change testing with overflowMode', () => {
         let toolbar: Toolbar;
         document.body.innerHTML = '';
         beforeEach((): void => {
@@ -9018,6 +9208,162 @@ describe('Toolbar Control', () => {
             toolbar.overflowMode = 'MultiRow';
             expect(toolbar.overflowMode).toEqual('MultiRow');
         });
+        it('onproperty change form Scrollable to Popup', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                overflowMode: 'Scrollable',
+                width: 600, 
+                items: [
+                {
+                    type: "Button", text: 'Cut'
+                },
+                {
+                    type: "Button", text: 'Copy'
+                },
+                {
+                    type: "Button", text: 'Paste'
+                },
+                {
+                    type: "Button", text: 'Bold'
+                },
+                {
+                    type: "Button", text: 'Underline'
+                },
+                {
+                    type: "Button", text: 'Italic'
+                },
+                {
+                    type: "Button", text: 'Bullets'
+                },
+                {
+                    type: "Button", text: 'Bullets'
+                },
+                {
+                    type: "Button", text: 'Undo'
+                },
+                {
+                    type: "Button", text: 'Redo'
+                },
+                {
+                    type: "Button", text: 'Align-Left'
+                },
+                {
+                    type: "Button", text: 'Align-Justify'
+                },
+                {
+                    type: "Button", text: 'Align-Right'
+                },
+                {
+                    type: "Button", text: 'Align-Center'
+                },
+                {
+                    type: "Button", text: 'Radar'
+                },
+                {
+                    type: "Button", text: 'Line'
+                },
+                {
+                    type: "Button", text: 'Doughnut'
+                },
+                {
+                    type: "Button", text: 'Bubble'
+                },
+                {
+                    type: "Button", text: 'Table'
+                },
+                {
+                    type: "Button", text: 'Picture'
+                },
+                {
+                    type: "Button", text: 'Design'
+                },
+                {
+                    type: "Button", text: 'Sort A - Z'
+                }],
+            }); 
+            toolbar.appendTo('#ej2Toolbar');
+            expect(toolbar.overflowMode).toEqual('Scrollable');
+            toolbar.overflowMode = 'Popup';
+            expect(toolbar.overflowMode).toEqual('Popup');
+        });
+        it('onproperty change form Scrollable to Extended', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                overflowMode: 'Scrollable',
+                width: 600, 
+                items: [
+                {
+                    type: "Button", text: 'Cut'
+                },
+                {
+                    type: "Button", text: 'Copy'
+                },
+                {
+                    type: "Button", text: 'Paste'
+                },
+                {
+                    type: "Button", text: 'Bold'
+                },
+                {
+                    type: "Button", text: 'Underline'
+                },
+                {
+                    type: "Button", text: 'Italic'
+                },
+                {
+                    type: "Button", text: 'Bullets'
+                },
+                {
+                    type: "Button", text: 'Bullets'
+                },
+                {
+                    type: "Button", text: 'Undo'
+                },
+                {
+                    type: "Button", text: 'Redo'
+                },
+                {
+                    type: "Button", text: 'Align-Left'
+                },
+                {
+                    type: "Button", text: 'Align-Justify'
+                },
+                {
+                    type: "Button", text: 'Align-Right'
+                },
+                {
+                    type: "Button", text: 'Align-Center'
+                },
+                {
+                    type: "Button", text: 'Radar'
+                },
+                {
+                    type: "Button", text: 'Line'
+                },
+                {
+                    type: "Button", text: 'Doughnut'
+                },
+                {
+                    type: "Button", text: 'Bubble'
+                },
+                {
+                    type: "Button", text: 'Table'
+                },
+                {
+                    type: "Button", text: 'Picture'
+                },
+                {
+                    type: "Button", text: 'Design'
+                },
+                {
+                    type: "Button", text: 'Sort A - Z'
+                }],
+            }); 
+            toolbar.appendTo('#ej2Toolbar');
+            expect(toolbar.overflowMode).toEqual('Scrollable');
+            toolbar.overflowMode = 'Extended';
+            expect(toolbar.overflowMode).toEqual('Extended');
+        });
         it('onproperty change form Popup to MultiRow', () => {
             let element: HTMLElement = document.getElementById('ej2Toolbar');
             toolbar = new Toolbar({
@@ -9047,6 +9393,252 @@ describe('Toolbar Control', () => {
                 },
                 {
                     type: "Button", text: 'Bullets'
+                },
+                {
+                    type: "Separator"
+                },
+                {
+                    type: "Button", text: 'Undo'
+                },
+                {
+                    type: "Button", text: 'Redo'
+                },
+                {
+                    type: "Button", text: 'Align-Left'
+                },
+                {
+                    type: "Button", text: 'Align-Justify'
+                },
+                {
+                    type: "Button", text: 'Align-Right'
+                },
+                {
+                    type: "Button", text: 'Align-Center'
+                },
+                {
+                    type: "Button", text: 'Radar'
+                },
+                {
+                    type: "Button", text: 'Line'
+                },
+                {
+                    type: "Button", text: 'Doughnut'
+                },
+                {
+                    type: "Button", text: 'Bubble'
+                },
+                {
+                    type: "Button", text: 'Table'
+                },
+                {
+                    type: "Button", text: 'Picture'
+                },
+                {
+                    type: "Button", text: 'Design'
+                },
+                {
+                    type: "Button", text: 'Sort A - Z'
+                }],
+            }); 
+            toolbar.appendTo('#ej2Toolbar');
+            expect(toolbar.overflowMode).toEqual('Popup');
+            toolbar.overflowMode = 'MultiRow';
+            expect(toolbar.overflowMode).toEqual('MultiRow');
+        });
+        it('onproperty change form Popup to Scrollable', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                overflowMode: 'Popup',
+                width: 600, 
+                items: [
+                {
+                    type: "Button", text: 'Cut'
+                },
+                {
+                    type: "Button", text: 'Copy'
+                },
+                {
+                    type: "Button", text: 'Paste'
+                },
+                {
+                    type: "Button", text: 'Bold'
+                },
+                {
+                    type: "Button", text: 'Underline'
+                },
+                {
+                    type: "Button", text: 'Italic'
+                },
+                {
+                    type: "Button", text: 'Bullets'
+                },
+                {
+                    type: "Button", text: 'Bullets'
+                },
+                {
+                    type: "Separator"
+                },
+                {
+                    type: "Button", text: 'Undo'
+                },
+                {
+                    type: "Button", text: 'Redo'
+                },
+                {
+                    type: "Button", text: 'Align-Left'
+                },
+                {
+                    type: "Button", text: 'Align-Justify'
+                },
+                {
+                    type: "Button", text: 'Align-Right'
+                },
+                {
+                    type: "Button", text: 'Align-Center'
+                },
+                {
+                    type: "Button", text: 'Radar'
+                },
+                {
+                    type: "Button", text: 'Line'
+                },
+                {
+                    type: "Button", text: 'Doughnut'
+                },
+                {
+                    type: "Button", text: 'Bubble'
+                },
+                {
+                    type: "Button", text: 'Table'
+                },
+                {
+                    type: "Button", text: 'Picture'
+                },
+                {
+                    type: "Button", text: 'Design'
+                },
+                {
+                    type: "Button", text: 'Sort A - Z'
+                }],
+            }); 
+            toolbar.appendTo('#ej2Toolbar');
+            expect(toolbar.overflowMode).toEqual('Popup');
+            toolbar.overflowMode = 'Scrollable';
+            expect(toolbar.overflowMode).toEqual('Scrollable');
+        });
+        it('onproperty change form Popup to Extended', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                overflowMode: 'Popup',
+                width: 600, 
+                items: [
+                {
+                    type: "Button", text: 'Cut'
+                },
+                {
+                    type: "Button", text: 'Copy'
+                },
+                {
+                    type: "Button", text: 'Paste'
+                },
+                {
+                    type: "Button", text: 'Bold'
+                },
+                {
+                    type: "Button", text: 'Underline'
+                },
+                {
+                    type: "Button", text: 'Italic'
+                },
+                {
+                    type: "Button", text: 'Bullets'
+                },
+                {
+                    type: "Button", text: 'Bullets'
+                },
+                {
+                    type: "Separator"
+                },
+                {
+                    type: "Button", text: 'Undo'
+                },
+                {
+                    type: "Button", text: 'Redo'
+                },
+                {
+                    type: "Button", text: 'Align-Left'
+                },
+                {
+                    type: "Button", text: 'Align-Justify'
+                },
+                {
+                    type: "Button", text: 'Align-Right'
+                },
+                {
+                    type: "Button", text: 'Align-Center'
+                },
+                {
+                    type: "Button", text: 'Radar'
+                },
+                {
+                    type: "Button", text: 'Line'
+                },
+                {
+                    type: "Button", text: 'Doughnut'
+                },
+                {
+                    type: "Button", text: 'Bubble'
+                },
+                {
+                    type: "Button", text: 'Table'
+                },
+                {
+                    type: "Button", text: 'Picture'
+                },
+                {
+                    type: "Button", text: 'Design'
+                },
+                {
+                    type: "Button", text: 'Sort A - Z'
+                }],
+            }); 
+            toolbar.appendTo('#ej2Toolbar');
+            expect(toolbar.overflowMode).toEqual('Popup');
+            toolbar.overflowMode = 'Extended';
+            expect(toolbar.overflowMode).toEqual('Extended');
+        });
+it('onproperty change form Popup to MultiRow', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                overflowMode: 'Popup',
+                width: 600, 
+                items: [
+                {
+                    type: "Button", text: 'Cut'
+                },
+                {
+                    type: "Button", text: 'Copy'
+                },
+                {
+                    type: "Button", text: 'Paste'
+                },
+                {
+                    type: "Button", text: 'Bold'
+                },
+                {
+                    type: "Button", text: 'Underline'
+                },
+                {
+                    type: "Button", text: 'Italic'
+                },
+                {
+                    type: "Button", text: 'Bullets'
+                },
+                {
+                    type: "Button", text: 'Bullets'
+                },
+                {
+                    type: "Separator"
                 },
                 {
                     type: "Button", text: 'Undo'
@@ -9166,6 +9758,9 @@ describe('Toolbar Control', () => {
                     type: "Button", text: 'Design'
                 },
                 {
+                    type: "Separator"
+                },
+                {
                     type: "Button", text: 'Sort A - Z'
                 }],
             }); 
@@ -9244,6 +9839,9 @@ describe('Toolbar Control', () => {
                     type: "Button", text: 'Design'
                 },
                 {
+                    type: "Separator"
+                },
+                {
                     type: "Button", text: 'Sort A - Z'
                 }],
             }); 
@@ -9252,27 +9850,90 @@ describe('Toolbar Control', () => {
             toolbar.overflowMode = 'Scrollable';
             expect(toolbar.overflowMode).toEqual('Scrollable');
         });
-    });
-    // Extended Toolbar width property testing
-    describe('Width property testing for extended toolbar', () => {
-        let toolbar: Toolbar;
-        document.body.innerHTML = '';
-        beforeEach((): void => {
-            toolbar = undefined;
-            let ele: HTMLElement = createElement('div', { id: 'ej2Toolbar' });
-            setStyleAttribute(ele, { 'display': 'block', 'white-space': 'nowrap', 'position': 'relative' });
-            ele.style.display = 'block';
-            document.body.appendChild(ele);
+        it('onproperty change form MultiRow to Extended', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                overflowMode: 'MultiRow',
+                width: 600, 
+                items: [
+                {
+                    type: "Button", text: 'Cut'
+                },
+                {
+                    type: "Button", text: 'Copy'
+                },
+                {
+                    type: "Button", text: 'Paste'
+                },
+                {
+                    type: "Button", text: 'Bold'
+                },
+                {
+                    type: "Button", text: 'Underline'
+                },
+                {
+                    type: "Button", text: 'Italic'
+                },
+                {
+                    type: "Button", text: 'Bullets'
+                },
+                {
+                    type: "Button", text: 'Bullets'
+                },
+                {
+                    type: "Button", text: 'Undo'
+                },
+                {
+                    type: "Button", text: 'Redo'
+                },
+                {
+                    type: "Button", text: 'Align-Left'
+                },
+                {
+                    type: "Button", text: 'Align-Justify'
+                },
+                {
+                    type: "Button", text: 'Align-Right'
+                },
+                {
+                    type: "Button", text: 'Align-Center'
+                },
+                {
+                    type: "Button", text: 'Radar'
+                },
+                {
+                    type: "Button", text: 'Line'
+                },
+                {
+                    type: "Button", text: 'Doughnut'
+                },
+                {
+                    type: "Button", text: 'Bubble'
+                },
+                {
+                    type: "Button", text: 'Table'
+                },
+                {
+                    type: "Button", text: 'Picture'
+                },
+                {
+                    type: "Button", text: 'Design'
+                },
+                {
+                    type: "Separator"
+                },
+                {
+                    type: "Button", text: 'Sort A - Z'
+                }],
+            }); 
+            toolbar.appendTo('#ej2Toolbar');
+            expect(toolbar.overflowMode).toEqual('MultiRow');
+            toolbar.overflowMode = 'Extended';
+            expect(toolbar.overflowMode).toEqual('Extended');
         });
-        afterEach((): void => {
-            if (toolbar) {
-                toolbar.destroy();
-            }
-            document.body.innerHTML = '';
-        });
-    it('Toolbar width property testing with pixel value', () => {
-        let element: HTMLElement = document.getElementById('ej2Toolbar');
-        toolbar = new Toolbar({
+        it('onproperty change form Extended to Popup', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
                 overflowMode: 'Extended',
                 width: 600, 
                 items: [
@@ -9340,6 +10001,270 @@ describe('Toolbar Control', () => {
                     type: "Button", text: 'Design'
                 },
                 {
+                    type: "Separator"
+                },
+                {
+                    type: "Button", text: 'Sort A - Z'
+                }],
+            }); 
+            toolbar.appendTo('#ej2Toolbar');
+            expect(toolbar.overflowMode).toEqual('Extended');
+            toolbar.overflowMode = 'Popup';
+            expect(toolbar.overflowMode).toEqual('Popup');
+        });
+        it('onproperty change form Extended MultiRow', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                overflowMode: 'Extended',
+                width: 600, 
+                items: [
+                {
+                    type: "Button", text: 'Cut'
+                },
+                {
+                    type: "Button", text: 'Copy'
+                },
+                {
+                    type: "Button", text: 'Paste'
+                },
+                {
+                    type: "Button", text: 'Bold'
+                },
+                {
+                    type: "Button", text: 'Underline'
+                },
+                {
+                    type: "Button", text: 'Italic'
+                },
+                {
+                    type: "Button", text: 'Bullets'
+                },
+                {
+                    type: "Button", text: 'Bullets'
+                },
+                {
+                    type: "Button", text: 'Undo'
+                },
+                {
+                    type: "Button", text: 'Redo'
+                },
+                {
+                    type: "Button", text: 'Align-Left'
+                },
+                {
+                    type: "Button", text: 'Align-Justify'
+                },
+                {
+                    type: "Button", text: 'Align-Right'
+                },
+                {
+                    type: "Button", text: 'Align-Center'
+                },
+                {
+                    type: "Button", text: 'Radar'
+                },
+                {
+                    type: "Button", text: 'Line'
+                },
+                {
+                    type: "Button", text: 'Doughnut'
+                },
+                {
+                    type: "Button", text: 'Bubble'
+                },
+                {
+                    type: "Button", text: 'Table'
+                },
+                {
+                    type: "Button", text: 'Picture'
+                },
+                {
+                    type: "Button", text: 'Design'
+                },
+                {
+                    type: "Separator"
+                },
+                {
+                    type: "Button", text: 'Sort A - Z'
+                }],
+            }); 
+            toolbar.appendTo('#ej2Toolbar');
+            expect(toolbar.overflowMode).toEqual('Extended');
+            toolbar.overflowMode = 'MultiRow';
+            expect(toolbar.overflowMode).toEqual('MultiRow');
+        });
+        it('onproperty change form Extended to Scrollable', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                overflowMode: 'Extended',
+                width: 600, 
+                items: [
+                {
+                    type: "Button", text: 'Cut'
+                },
+                {
+                    type: "Button", text: 'Copy'
+                },
+                {
+                    type: "Button", text: 'Paste'
+                },
+                {
+                    type: "Button", text: 'Bold'
+                },
+                {
+                    type: "Button", text: 'Underline'
+                },
+                {
+                    type: "Button", text: 'Italic'
+                },
+                {
+                    type: "Button", text: 'Bullets'
+                },
+                {
+                    type: "Button", text: 'Bullets'
+                },
+                {
+                    type: "Button", text: 'Undo'
+                },
+                {
+                    type: "Button", text: 'Redo'
+                },
+                {
+                    type: "Button", text: 'Align-Left'
+                },
+                {
+                    type: "Button", text: 'Align-Justify'
+                },
+                {
+                    type: "Button", text: 'Align-Right'
+                },
+                {
+                    type: "Button", text: 'Align-Center'
+                },
+                {
+                    type: "Button", text: 'Radar'
+                },
+                {
+                    type: "Button", text: 'Line'
+                },
+                {
+                    type: "Button", text: 'Doughnut'
+                },
+                {
+                    type: "Button", text: 'Bubble'
+                },
+                {
+                    type: "Button", text: 'Table'
+                },
+                {
+                    type: "Button", text: 'Picture'
+                },
+                {
+                    type: "Button", text: 'Design'
+                },
+                {
+                    type: "Separator"
+                },
+                {
+                    type: "Button", text: 'Sort A - Z'
+                }],
+            }); 
+            toolbar.appendTo('#ej2Toolbar');
+            expect(toolbar.overflowMode).toEqual('Extended');
+            toolbar.overflowMode = 'Scrollable';
+            expect(toolbar.overflowMode).toEqual('Scrollable');
+        });
+    });
+    // Extended Toolbar width property testing
+    describe('Width property testing for extended toolbar', () => {
+        let toolbar: any;
+        document.body.innerHTML = '';
+        beforeEach((): void => {
+            toolbar = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Toolbar' });
+            setStyleAttribute(ele, { 'display': 'block', 'white-space': 'nowrap', 'position': 'relative' });
+            ele.style.display = 'block';
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (toolbar) {
+                toolbar.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+    it('Toolbar width property testing with pixel value', () => {
+        let element: HTMLElement = document.getElementById('ej2Toolbar');
+        toolbar = new Toolbar({
+                overflowMode: 'Extended',
+                width: 600, 
+                items: [
+                {
+                    type: "Button", text: 'Cut'
+                },
+                {
+                    type: "Button", text: 'Copy'
+                },
+                {
+                    type: "Button", text: 'Paste'
+                },
+                {
+                    type: "Button", text: 'Bold'
+                },
+                {
+                    type: "Button", text: 'Underline'
+                },
+                {
+                    type: "Button", text: 'Italic'
+                },
+                {
+                    type: "Button", text: 'Bullets'
+                },
+                {
+                    type: "Button", text: 'Bullets'
+                },
+                {
+                    type: "Separator"
+                },
+                {
+                    type: "Button", text: 'Undo'
+                },
+                {
+                    type: "Button", text: 'Redo'
+                },
+                {
+                    type: "Button", text: 'Align-Left'
+                },
+                {
+                    type: "Button", text: 'Align-Justify'
+                },
+                {
+                    type: "Button", text: 'Align-Right'
+                },
+                {
+                    type: "Button", text: 'Align-Center'
+                },
+                {
+                    type: "Button", text: 'Radar'
+                },
+                {
+                    type: "Button", text: 'Line'
+                },
+                {
+                    type: "Button", text: 'Doughnut'
+                },
+                {
+                    type: "Button", text: 'Bubble'
+                },
+                {
+                    type: "Button", text: 'Table'
+                },
+                {
+                    type: "Button", text: 'Picture'
+                },
+                {
+                    type: "Button", text: 'Design'
+                },
+                {
                     type: "Button", text: 'Sort A - Z'
                 },
                 {
@@ -9361,6 +10286,9 @@ describe('Toolbar Control', () => {
                     type: "Button", text: 'Clear'
                 },
                 {
+                    type: "Separator"
+                },
+                {
                     type: "Button", text: 'Reload'
                 },
                 {
@@ -9369,6 +10297,7 @@ describe('Toolbar Control', () => {
             }); 
             toolbar.appendTo('#ej2Toolbar');
             expect(element.style.width).toEqual('600px');
+            toolbar.resize();
         });
         it('Toolbar width property testing with percentage value', () => {
             let element: HTMLElement = document.getElementById('ej2Toolbar');
@@ -9462,6 +10391,9 @@ describe('Toolbar Control', () => {
                 },
                 {
                     type: "Button", text: 'Reload'
+                },
+                {
+                    type: "Separator"
                 },
                 {
                     type: "Button", text: 'Export'
@@ -9662,6 +10594,9 @@ describe('Onproperty change testing with extended', () => {
                 type: "Button", text: 'Design'
             },
             {
+                type: "Separator"
+            },
+            {
                 type: "Button", text: 'Sort A - Z'
             }],
         }); 
@@ -9740,6 +10675,9 @@ describe('Onproperty change testing with extended', () => {
                 type: "Button", text: 'Design'
             },
             {
+                type: "Separator"
+            },
+            {
                 type: "Button", text: 'Sort A - Z'
             }],
         }); 
@@ -9813,6 +10751,9 @@ describe('Onproperty change testing with extended', () => {
             },
             {
                 type: "Button", text: 'Picture'
+            },
+            {
+                type: "Separator"
             },
             {
                 type: "Button", text: 'Design'
@@ -9971,6 +10912,9 @@ describe('Onproperty change testing with extended', () => {
                 type: "Button", text: 'Picture'
             },
             {
+                type: "Separator"
+            },
+            {
                 type: "Button", text: 'Design'
             },
             {
@@ -10047,6 +10991,9 @@ describe('Onproperty change testing with extended', () => {
             },
             {
                 type: "Button", text: 'Picture'
+            },
+            {
+                type: "Separator"
             },
             {
                 type: "Button", text: 'Design'
@@ -10393,6 +11340,36 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
             expect(i).toEqual(3);
             (<HTMLElement>document.querySelectorAll('.e-toolbar .e-toolbar-item')[3].firstChild).click();
             expect(i).toEqual(4);
+        });
+    });
+    describe('ChangeOrientation method testing', () => {
+        let toolbar: any;
+        beforeEach((): void => {
+            toolbar = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Toolbar' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (toolbar) {
+                toolbar.destroy();
+            }
+        });
+        it('Orientation attribute testing', () => {
+            toolbar = new Toolbar({
+                items: [
+                    { text: 'Cut' },
+                    { text: 'Copy' },
+                    { type: 'Separator' },
+                    { text: 'Paste' },
+                ]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            toolbar.changeOrientation();
+            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            toolbar.changeOrientation();
+            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
         });
     });
 });

@@ -184,7 +184,7 @@ export class FocusStrategy {
     }
 
     protected refreshMatrix(content?: boolean): Function {
-        return (e: { rows: Row<Column>[], args?: NotifyArgs }) => {
+        return (e: { rows: Row<Column>[], args?: NotifyArgs, name?: string }) => {
             if (content && (e.args && e.args.isFrozen) && !this.fContent) {
                 this.fContent = new FixedContentFocus(this.parent);
             } else if (content && !this.content) {
@@ -200,7 +200,21 @@ export class FocusStrategy {
             let rows: Row<Column>[] = content ? e.rows.slice(this.parent.frozenRows) : e.rows;
             let updateRow: Row<Column>[] = content ? e.rows.slice(0, this.parent.frozenRows) : e.rows;
             let matrix: number[][] = cFocus.matrix.generate(updateRow, cFocus.selector);
-            cFocus.matrix.generate(rows, cFocus.selector);
+            let frozenColumnsCount: number = this.parent.getFrozenColumns();
+            if (e.name === 'batchAdd' && frozenColumnsCount) {
+                let newMovableRows: Row<Column>[] = rows.map((row: Row<Column>) => { return row.clone(); });
+                let newFrozenRows: Row<Column>[] = rows.map((row: Row<Column>) => { return row.clone(); });
+                for (let i: number = 0; i < rows.length; i++) {
+                    if (rows[i].cells.length > frozenColumnsCount) {
+                        newFrozenRows[i].cells = rows[i].cells.slice(0, frozenColumnsCount);
+                        newMovableRows[i].cells = rows[i].cells.slice(frozenColumnsCount);
+                    }
+                }
+                this.fContent.matrix.generate(newFrozenRows, this.fContent.selector);
+                cFocus.matrix.generate(newMovableRows, cFocus.selector);
+            } else {
+                cFocus.matrix.generate(rows, cFocus.selector);
+            }
             cFocus.generateRows(updateRow, { matrix, handlerInstance: (e.args && e.args.isFrozen) ? this.fHeader : this.header });
             if (!Browser.isDevice && !this.focusByClick && e && e.args && e.args.requestType === 'paging') {
                 this.skipFocus = false; this.parent.element.focus();
@@ -577,6 +591,7 @@ export class ContentFocus implements IFocus {
             return false;
         };
     }
+
     protected shouldFocusChange(e: KeyboardEventArgs): boolean {
         let [rIndex = -1, cIndex = -1]: number[] = this.matrix.current;
         if (rIndex < 0 || cIndex < 0) { return true; }

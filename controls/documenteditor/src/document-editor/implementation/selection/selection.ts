@@ -1,8 +1,8 @@
 import { DocumentEditor } from '../../document-editor';
 import {
     Rect, Margin, IWidget, Widget, BodyWidget, TableRowWidget, TableWidget,
-    LineWidget, ElementBox, TextElementBox, ListTextElementBox, ImageElementBox, Page, ParagraphWidget, TableCellWidget,
-    FieldElementBox, BlockWidget, HeaderFooterWidget, BlockContainer, BookmarkElementBox
+    LineWidget, TextElementBox, ListTextElementBox, ImageElementBox, Page, ParagraphWidget, TableCellWidget,
+    FieldElementBox, BlockWidget, HeaderFooterWidget, BlockContainer, BookmarkElementBox, ElementBox
 } from '../viewer/page';
 import {
     ElementInfo, CaretHeightInfo, IndexInfo, SizeInfo,
@@ -83,7 +83,7 @@ export class Selection {
     /**
      * @private
      */
-    public selectedWidgets: Dictionary<IWidget, SelectionWidgetInfo> = undefined;
+    public selectedWidgets: Dictionary<IWidget, object> = undefined;
     /**
      * @private
      */
@@ -256,7 +256,7 @@ export class Selection {
         this.viewer = this.owner.viewer;
         this.start = new TextPosition(this.owner);
         this.end = new TextPosition(this.owner);
-        this.selectedWidgets = new Dictionary<IWidget, SelectionWidgetInfo>();
+        this.selectedWidgets = new Dictionary<IWidget, object>();
         this.characterFormatIn = new SelectionCharacterFormat(this);
         this.paragraphFormatIn = new SelectionParagraphFormat(this, this.viewer);
         this.sectionFormatIn = new SelectionSectionFormat(this);
@@ -505,14 +505,38 @@ export class Selection {
     /**
      * @private
      */
-    public createHighlightBorder(lineWidget: LineWidget, width: number, left: number, top: number): void {
+    public createHighlightBorder(lineWidget: LineWidget, width: number, left: number, top: number, isElementBoxHighlight: boolean): void {
         if (width < 0) {
             width = 0;
         }
         let page: Page = this.getPage(lineWidget.paragraph);
         let height: number = lineWidget.height;
         let selectionWidget: SelectionWidgetInfo = undefined;
-        if (!this.selectedWidgets.containsKey(lineWidget)) {
+        let selectionWidgetCollection: SelectionWidgetInfo[] = undefined;
+        if (this.selectedWidgets.containsKey(lineWidget)) {
+            if (this.selectedWidgets.get(lineWidget) instanceof SelectionWidgetInfo) {
+                selectionWidget = this.selectedWidgets.get(lineWidget) as SelectionWidgetInfo;
+                // if the line element has already added with SelectionWidgetInfo
+                // now its need to be added as ElementBox highlighting them remove it from dictionary and add it collection.
+                if (isElementBoxHighlight) {
+                    this.selectedWidgets.remove(lineWidget);
+                    selectionWidgetCollection = [];
+                    this.selectedWidgets.add(lineWidget, selectionWidgetCollection);
+                }
+
+            } else {
+                selectionWidgetCollection = this.selectedWidgets.get(lineWidget) as SelectionWidgetInfo[];
+            }
+        } else {
+            if (isElementBoxHighlight) {
+                selectionWidgetCollection = [];
+                this.selectedWidgets.add(lineWidget, selectionWidgetCollection);
+            } else {
+                selectionWidget = new SelectionWidgetInfo(left, width);
+                this.selectedWidgets.add(lineWidget, selectionWidget);
+            }
+        }
+        if (selectionWidget === undefined) {
             selectionWidget = new SelectionWidgetInfo(left, width);
             this.selectedWidgets.add(lineWidget, selectionWidget);
         }
@@ -534,6 +558,9 @@ export class Selection {
             }
             viewer.selectionContext.restore();
         }
+        if (isElementBoxHighlight) {
+            selectionWidgetCollection.push(selectionWidget);
+        }
     }
     /**
      * Create selection highlight inside table
@@ -551,15 +578,19 @@ export class Selection {
         let pageLeft: number = page.boundingRectangle.x;
         let isVisiblePage: boolean = this.viewer.containerTop <= pageTop
             || pageTop < this.viewer.containerTop + this.viewer.selectionCanvas.height;
-        if (this.selectedWidgets.containsKey(cellWidget)) {
-            selectionWidget = this.selectedWidgets.get(cellWidget);
+        if (this.selectedWidgets.containsKey(cellWidget) && this.selectedWidgets.get(cellWidget) instanceof SelectionWidgetInfo) {
+            selectionWidget = this.selectedWidgets.get(cellWidget) as SelectionWidgetInfo;
             if (isVisiblePage) {
                 // tslint:disable-next-line:max-line-length
                 this.viewer.selectionContext.clearRect((pageLeft + (selectionWidget.left * this.viewer.zoomFactor) - this.viewer.containerLeft), (pageTop + (top * this.viewer.zoomFactor)) - this.viewer.containerTop, selectionWidget.width * this.viewer.zoomFactor, height * this.viewer.zoomFactor);
             }
+        } else {
+            selectionWidget = new SelectionWidgetInfo(left, width);
+            if (this.selectedWidgets.containsKey(cellWidget)) {
+                this.selectedWidgets.remove(this.selectedWidgets.get(cellWidget));
+            }
+            this.selectedWidgets.add(cellWidget, selectionWidget);
         }
-        selectionWidget = new SelectionWidgetInfo(left, width);
-        this.selectedWidgets.add(cellWidget, selectionWidget);
         if (isVisiblePage) {
             this.viewer.selectionContext.fillStyle = 'gray';
             this.viewer.selectionContext.globalAlpha = 0.4;
@@ -591,21 +622,32 @@ export class Selection {
     public addSelectionHighlight(canvasContext: CanvasRenderingContext2D, widget: LineWidget, top: number): void {
         if (this.selectedWidgets.containsKey(widget)) {
             let height: number = widget.height;
-            let widgetInfo: SelectionWidgetInfo = this.selectedWidgets.get(widget);
-            let width: number = this.viewer.render.getScaledValue(widgetInfo.width);
-            let left: number = this.viewer.render.getScaledValue(widgetInfo.left, 1);
-
-            let page: Page = this.owner.selection.getPage(widget.paragraph);
-            this.owner.selection.clipSelection(page, this.owner.selection.getPageTop(page));
-            if (this.viewer.isComposingIME) {
-                this.renderDashLine(canvasContext, page, widget, left, top, width, height);
+            let widgetInfo: object = this.selectedWidgets.get(widget);
+            let widgetInfoCollection: SelectionWidgetInfo[] = undefined;
+            if (widgetInfo instanceof SelectionWidgetInfo) {
+                widgetInfoCollection = [];
+                widgetInfoCollection.push(widgetInfo as SelectionWidgetInfo);
             } else {
-                height = this.viewer.render.getScaledValue(height);
-                canvasContext.globalAlpha = 0.4;
-                canvasContext.fillStyle = 'gray';
-                canvasContext.fillRect(left, this.viewer.render.getScaledValue(top, 2), width, height);
+                widgetInfoCollection = widgetInfo as SelectionWidgetInfo[];
             }
-            canvasContext.restore();
+            if (!isNullOrUndefined(widgetInfoCollection)) {
+                for (let i: number = 0; i < widgetInfoCollection.length; i++) {
+                    let width: number = this.viewer.render.getScaledValue(widgetInfoCollection[i].width);
+                    let left: number = this.viewer.render.getScaledValue(widgetInfoCollection[i].left, 1);
+
+                    let page: Page = this.owner.selection.getPage(widget.paragraph);
+                    this.owner.selection.clipSelection(page, this.owner.selection.getPageTop(page));
+                    if (this.viewer.isComposingIME) {
+                        this.renderDashLine(canvasContext, page, widget, left, top, width, height);
+                    } else {
+                        height = this.viewer.render.getScaledValue(height);
+                        canvasContext.globalAlpha = 0.4;
+                        canvasContext.fillStyle = 'gray';
+                        canvasContext.fillRect(left, this.viewer.render.getScaledValue(top, 2), width, height);
+                    }
+                    canvasContext.restore();
+                }
+            }
         }
     }
     /**
@@ -631,16 +673,27 @@ export class Selection {
      */
     public addSelectionHighlightTable(canvasContext: CanvasRenderingContext2D, tableCellWidget: TableCellWidget): void {
         if (this.selectedWidgets.containsKey(tableCellWidget)) {
-            let selectionWidget: SelectionWidgetInfo = this.selectedWidgets.get(tableCellWidget);
-            let left: number = this.viewer.render.getScaledValue(selectionWidget.left, 1);
-            let top: number = this.viewer.render.getScaledValue(tableCellWidget.y, 2);
-            let width: number = this.viewer.render.getScaledValue(selectionWidget.width);
-            let height: number = this.viewer.render.getScaledValue(tableCellWidget.height);
-            canvasContext.fillStyle = 'gray';
-            let page: Page = this.owner.selection.getPage(tableCellWidget);
-            this.owner.selection.clipSelection(page, this.owner.selection.getPageTop(page));
-            canvasContext.fillRect(left, top, width, height);
-            canvasContext.restore();
+            let selectedWidgetInfo: object = this.selectedWidgets.get(tableCellWidget);
+            let selectedWidgetInfoCollection: SelectionWidgetInfo[] = undefined;
+            if (selectedWidgetInfo instanceof SelectionWidgetInfo) {
+                selectedWidgetInfoCollection = [];
+                selectedWidgetInfoCollection.push(selectedWidgetInfo as SelectionWidgetInfo);
+            } else {
+                selectedWidgetInfoCollection = selectedWidgetInfo as SelectionWidgetInfo[];
+            }
+            if (!isNullOrUndefined(selectedWidgetInfoCollection)) {
+                for (let i: number = 0; i < selectedWidgetInfoCollection.length; i++) {
+                    let left: number = this.viewer.render.getScaledValue(selectedWidgetInfoCollection[i].left, 1);
+                    let top: number = this.viewer.render.getScaledValue(tableCellWidget.y, 2);
+                    let width: number = this.viewer.render.getScaledValue(selectedWidgetInfoCollection[i].width);
+                    let height: number = this.viewer.render.getScaledValue(tableCellWidget.height);
+                    canvasContext.fillStyle = 'gray';
+                    let page: Page = this.owner.selection.getPage(tableCellWidget);
+                    this.owner.selection.clipSelection(page, this.owner.selection.getPageTop(page));
+                    canvasContext.fillRect(left, top, width, height);
+                    canvasContext.restore();
+                }
+            }
         }
     }
     /**
@@ -675,20 +728,31 @@ export class Selection {
         if (isNullOrUndefined(page)) {
             return;
         }
-        let widgetInfo: SelectionWidgetInfo = this.selectedWidgets.get(widget);
-        width = widgetInfo.width;
-        left = widgetInfo.left;
+        let selectedWidget: object = this.selectedWidgets.get(widget);
+        let selectedWidgetCollection: SelectionWidgetInfo[] = undefined;
+        if (selectedWidget instanceof SelectionWidgetInfo) {
+            selectedWidgetCollection = [];
+            selectedWidgetCollection.push(selectedWidget as SelectionWidgetInfo);
+        } else {
+            selectedWidgetCollection = selectedWidget as SelectionWidgetInfo[];
+        }
+        if (!isNullOrUndefined(selectedWidgetCollection)) {
+            for (let i: number = 0; i < selectedWidgetCollection.length; i++) {
+                width = selectedWidgetCollection[i].width;
+                left = selectedWidgetCollection[i].left;
 
-        let pageRect: Rect = page.boundingRectangle;
-        let pageIndex: number = this.viewer.pages.indexOf(page);
-        let pageGap: number = (this.viewer as PageLayoutViewer).pageGap;
-        let pageTop: number = (pageRect.y - pageGap * (pageIndex + 1)) * this.viewer.zoomFactor + pageGap * (pageIndex + 1);
-        let pageLeft: number = pageRect.x;
-        let zoomFactor: number = this.viewer.zoomFactor;
-        if (this.viewer.containerTop <= pageTop
-            || pageTop < this.viewer.containerTop + this.viewer.selectionCanvas.height) {
-            // tslint:disable-next-line:max-line-length
-            this.viewer.selectionContext.clearRect((pageLeft + (left * zoomFactor) - this.viewer.containerLeft) - 0.5, (pageTop + (top * zoomFactor)) - this.viewer.containerTop - 0.5, width * zoomFactor + 0.5, height * zoomFactor + 0.5);
+                let pageRect: Rect = page.boundingRectangle;
+                let pageIndex: number = this.viewer.pages.indexOf(page);
+                let pageGap: number = (this.viewer as PageLayoutViewer).pageGap;
+                let pageTop: number = (pageRect.y - pageGap * (pageIndex + 1)) * this.viewer.zoomFactor + pageGap * (pageIndex + 1);
+                let pageLeft: number = pageRect.x;
+                let zoomFactor: number = this.viewer.zoomFactor;
+                if (this.viewer.containerTop <= pageTop
+                    || pageTop < this.viewer.containerTop + this.viewer.selectionCanvas.height) {
+                    // tslint:disable-next-line:max-line-length
+                    this.viewer.selectionContext.clearRect((pageLeft + (left * zoomFactor) - this.viewer.containerLeft) - 0.5, (pageTop + (top * zoomFactor)) - this.viewer.containerTop - 0.5, width * zoomFactor + 0.5, height * zoomFactor + 0.5);
+                }
+            }
         }
     }
 
@@ -998,9 +1062,12 @@ export class Selection {
     //Table
     public getLastBlockInLastCell(table: TableWidget): BlockWidget {
         if (table.childWidgets.length > 0) {
-            let lastrow: TableRowWidget = table.childWidgets[table.childWidgets.length - 1] as TableRowWidget;
-            let lastcell: TableCellWidget = lastrow.childWidgets[lastrow.childWidgets.length - 1] as TableCellWidget;
-            return lastcell.childWidgets[lastcell.childWidgets.length - 1] as BlockWidget;
+            let lastRow: TableRowWidget = table.childWidgets[table.childWidgets.length - 1] as TableRowWidget;
+            let lastCell: TableCellWidget = lastRow.childWidgets[lastRow.childWidgets.length - 1] as TableCellWidget;
+            while (lastCell.childWidgets.length === 0 && !isNullOrUndefined(lastCell.previousSplitWidget)) {
+                lastCell = lastCell.previousSplitWidget as TableCellWidget;
+            }
+            return lastCell.childWidgets[lastCell.childWidgets.length - 1] as BlockWidget;
         }
         return undefined;
     }
@@ -1200,7 +1267,12 @@ export class Selection {
      * Handles control shift left key.
      */
     public handleControlShiftLeftKey(): void {
-        this.extendToWordStart(false);
+        let isForward: boolean = this.isForward ? this.start.isCurrentParaBidi : this.end.isCurrentParaBidi;
+        if (isForward) {
+            this.extendToWordEnd(false);
+        } else {
+            this.extendToWordStart(false);
+        }
         this.checkForCursorVisibility();
     }
     /**
@@ -1216,7 +1288,12 @@ export class Selection {
      * @private
      */
     public handleControlShiftRightKey(): void {
-        this.extendToWordEnd(false);
+        let isForward: boolean = this.isForward ? this.start.isCurrentParaBidi : this.end.isCurrentParaBidi;
+        if (isForward) {
+            this.extendToWordStart(false);
+        } else {
+            this.extendToWordEnd(false);
+        }
         this.checkForCursorVisibility();
     }
     /**
@@ -1232,7 +1309,12 @@ export class Selection {
      * @private
      */
     public handleLeftKey(): void {
-        this.movePreviousPosition();
+        if (this.end.isCurrentParaBidi) {
+            this.moveNextPosition();
+        } else {
+            this.movePreviousPosition();
+        }
+
         this.checkForCursorVisibility();
     }
     /**
@@ -1250,7 +1332,11 @@ export class Selection {
      * @private
      */
     public handleRightKey(): void {
-        this.moveNextPosition();
+        if (this.end.isCurrentParaBidi) {
+            this.movePreviousPosition();
+        } else {
+            this.moveNextPosition();
+        }
         this.checkForCursorVisibility();
     }
     /**
@@ -1588,7 +1674,12 @@ export class Selection {
         if (isNullOrUndefined(this.start)) {
             return;
         }
-        this.end.moveBackward();
+        let isForward: boolean = this.isForward ? this.start.isCurrentParaBidi : this.end.isCurrentParaBidi;
+        if (isForward) {
+            this.end.moveForward();
+        } else {
+            this.end.moveBackward();
+        }
         this.upDownSelectionLength = this.end.location.x;
         this.fireSelectionChanged(true);
     }
@@ -1600,7 +1691,13 @@ export class Selection {
         if (isNullOrUndefined(this.start)) {
             return;
         }
-        this.end.moveForward();
+        let isForward: boolean = this.isForward ? this.start.isCurrentParaBidi : this.end.isCurrentParaBidi;
+        if (isForward) {
+            this.end.moveBackward();
+        } else {
+            this.end.moveForward();
+        }
+
         this.upDownSelectionLength = this.end.location.x;
         this.fireSelectionChanged(true);
     }
@@ -1628,7 +1725,11 @@ export class Selection {
         if (isCellSelected) {
             this.end.moveToPreviousParagraphInTable(this);
         } else {
-            this.end.moveToWordStartInternal(isNavigation ? 0 : 1);
+            if (isNavigation && this.end.isCurrentParaBidi) {
+                this.end.moveToWordEndInternal(isNavigation ? 0 : 1, false);
+            } else {
+                this.end.moveToWordStartInternal(isNavigation ? 0 : 1);
+            }
         }
         if (isNavigation) {
             this.start.setPositionInternal(this.end);
@@ -1648,7 +1749,11 @@ export class Selection {
         if (isCellSelect) {
             this.end.moveToNextParagraphInTable();
         } else {
-            this.end.moveToWordEndInternal(isNavigation ? 0 : 1, false);
+            if (isNavigation && this.end.isCurrentParaBidi) {
+                this.end.moveToWordStartInternal(isNavigation ? 0 : 1);
+            } else {
+                this.end.moveToWordEndInternal(isNavigation ? 0 : 1, false);
+            }
         }
         if (isNavigation) {
             this.start.setPositionInternal(this.end);
@@ -1768,6 +1873,7 @@ export class Selection {
         }
         return undefined;
     }
+
     /**
      * @private
      */
@@ -1787,7 +1893,6 @@ export class Selection {
         return listTextElement;
 
     }
-
     /**
      * @private
      */
@@ -2421,7 +2526,8 @@ export class Selection {
      */
     public getLineLength(line: LineWidget, elementInfo?: ElementInfo): number {
         let length: number = 0;
-        for (let i: number = 0; i < line.children.length; i++) {
+        let bidi: boolean = line.paragraph.bidi;
+        for (let i: number = !bidi ? 0 : line.children.length - 1; bidi ? i > -1 : i < line.children.length; bidi ? i-- : i++) {
             let element: ElementBox = line.children[i] as ElementBox;
             if (element instanceof ListTextElementBox) {
                 continue;
@@ -2868,7 +2974,7 @@ export class Selection {
             return new Point(left, paragraphWidget.y + topMargin);
         } else {
             let indexInInline: number = 0;
-            let inlineObj: ElementInfo = line.getInline(offset, indexInInline);
+            let inlineObj: ElementInfo = line.getInline(offset, indexInInline, line.paragraph.bidi);
             let inline: ElementBox = inlineObj.element;           //return indexInInline must
             indexInInline = inlineObj.index;
             // tslint:disable-next-line:max-line-length
@@ -2947,7 +3053,7 @@ export class Selection {
     /**
      * @private
      */
-
+    // tslint:disable:max-func-body-length
     public highlight(paragraph: ParagraphWidget, start: TextPosition, end: TextPosition): void {
         let selectionStartIndex: number = 0;
         let selectionEndIndex: number = 0;
@@ -2982,11 +3088,140 @@ export class Selection {
         if (!isNullOrUndefined(startLineWidget) && startLineWidget === endLineWidget) {
             //Selection ends in current line.
             let right: number = this.getLeftInternal(endLineWidget, endElement, selectionEndIndex);
-            this.createHighlightBorder(startLineWidget, right - left, left, top);
+            let width: number = 0;
+            let isRtlText: boolean = false;
+            if (endElement instanceof TextElementBox) {
+                isRtlText = endElement.isRightToLeft;
+            }
+            if (!isRtlText && startElement instanceof TextElementBox) {
+                isRtlText = startElement.isRightToLeft;
+            }
+            width = Math.abs(right - left);
+            // Handled the highlighting approach as genric for normal and rtl text.
+            if (isRtlText || paragraph.bidi) {
+                let elementBoxCollection: ElementBox[] = this.getElementsForward(startLineWidget, startElement, endElement, paragraph.bidi);
+                if (elementBoxCollection && elementBoxCollection.length > 1) {
+                    for (let i: number = 0; i < elementBoxCollection.length; i++) {
+                        let element: ElementBox = elementBoxCollection[i];
+                        let elementIsRTL: boolean = false;
+                        let index: number = element instanceof TextElementBox ? (element as TextElementBox).length : 1;
+                        if (element === startElement) {
+                            left = this.getLeftInternal(startLineWidget, element, selectionStartIndex);
+                            right = this.getLeftInternal(startLineWidget, element, index);
+                        } else if (element === endElement) {
+                            left = this.getLeftInternal(startLineWidget, element, 0);
+                            right = this.getLeftInternal(startLineWidget, element, selectionEndIndex);
+                        } else {
+                            left = this.getLeftInternal(startLineWidget, element, 0);
+                            right = this.getLeftInternal(startLineWidget, element, index);
+                        }
+                        if (element instanceof TextElementBox) {
+                            elementIsRTL = element.isRightToLeft;
+                        }
+                        width = Math.abs(right - left);
+                        // Handled the paragraph mark highliting as special case.
+                        if (element === endElement && element instanceof TextElementBox
+                            && selectionEndIndex > (element as TextElementBox).length) {
+                            let charFormat: WCharacterFormat = element.line.paragraph.characterFormat;
+                            let paragraphMarkWidth: number = this.viewer.textHelper.getParagraphMarkSize(charFormat).Width;
+                            if (elementIsRTL) {
+                                right += paragraphMarkWidth;
+                                // Paragrph and Selection ends in normal text
+                            } else if (paragraph.bidi) {
+                                width -= paragraphMarkWidth;
+                                // Highlight the element.
+                                this.createHighlightBorder(startLineWidget, width, left, top, true);
+                                // Highlight the paragraph mark of Bidi paragrph. 
+                                left = this.getLineStartLeft(startLineWidget) - paragraphMarkWidth;
+                                this.createHighlightBorder(startLineWidget, paragraphMarkWidth, left, top, true);
+                                // continue to next element.
+                                continue;
+                            }
+                        }
+                        this.createHighlightBorder(startLineWidget, width, elementIsRTL ? right : left, top, true);
+                    }
+                } else { // Need to handle the Paragraph mark highlighting.
+                    if (endElement instanceof TextElementBox && selectionEndIndex > (endElement as TextElementBox).length) {
+                        let charFormat: WCharacterFormat = endElement.line.paragraph.characterFormat;
+                        let paragraphMarkWidth: number = this.viewer.textHelper.getParagraphMarkSize(charFormat).Width;
+                        // Since isRTLText is truo, so the right is considered as left
+                        if (!paragraph.bidi && isRtlText) {
+                            right += paragraphMarkWidth;
+                            width -= paragraphMarkWidth;
+                            // Highlight the element.
+                            this.createHighlightBorder(startLineWidget, width, right, top, true);
+                            // Highlight the paragraph mark. 
+                            right += endElement.width;
+                            this.createHighlightBorder(startLineWidget, paragraphMarkWidth, right, top, true);
+                        } else if (paragraph.bidi && !isRtlText) {
+                            width -= paragraphMarkWidth;
+                            // Highlight the element.
+                            this.createHighlightBorder(startLineWidget, width, left, top, true);
+                            // Highlight the paragraph mark of Bidi paragrph. 
+                            left = this.getLineStartLeft(startLineWidget) - paragraphMarkWidth;
+                            this.createHighlightBorder(startLineWidget, paragraphMarkWidth, left, top, true);
+                        } else {
+                            this.createHighlightBorder(startLineWidget, width, isRtlText ? right : left, top, false);
+                        }
+
+                    } else {
+                        this.createHighlightBorder(startLineWidget, width, isRtlText ? right : left, top, false);
+                    }
+                }
+            } else {
+                // Start element and end element will be in reverese for Bidi paragraph highlighting. 
+                // So, the right is considered based on Bidi property. 
+                this.createHighlightBorder(startLineWidget, width, paragraph.bidi ? right : left, top, false);
+            }
         } else {
             if (!isNullOrUndefined(startLineWidget)) {
                 let x: number = startLineWidget.paragraph.x;
-                this.createHighlightBorder(startLineWidget, this.getWidth(startLineWidget, true) - (left - x), left, top);
+                if (paragraph !== startLineWidget.paragraph) {
+                    paragraph = startLineWidget.paragraph;
+                }
+                let width: number = this.getWidth(startLineWidget, true) - (left - startLineWidget.paragraph.x);
+                // Handled the  highlighting approach as genric for normal and rtl text.
+                if (paragraph.bidi || (startElement instanceof TextElementBox && startElement.isRightToLeft)) {
+                    let right: number = 0;
+                    // tslint:disable-next-line:max-line-length
+                    let elementCollection: ElementBox[] = this.getElementsForward(startLineWidget, startElement, endElement, paragraph.bidi);
+                    if (elementCollection) {
+                        let elementIsRTL: boolean = false;
+                        for (let i: number = 0; i < elementCollection.length; i++) {
+                            let element: ElementBox = elementCollection[i];
+                            elementIsRTL = false;
+                            if (element === startElement) {
+                                left = this.getLeftInternal(startLineWidget, element, selectionStartIndex);
+                            } else {
+                                left = this.getLeftInternal(startLineWidget, element, 0);
+                            }
+                            let index: number = element instanceof TextElementBox ? (element as TextElementBox).length : 1;
+                            right = this.getLeftInternal(startLineWidget, element, index);
+                            if (element instanceof TextElementBox) {
+                                elementIsRTL = element.isRightToLeft;
+                            }
+                            width = Math.abs(right - left);
+                            this.createHighlightBorder(startLineWidget, width, elementIsRTL ? right : left, top, true);
+                        }
+                        // Highlight the Paragrph mark for last line.
+                        if (startLineWidget.isLastLine()) {
+                            // tslint:disable-next-line:max-line-length
+                            let charFormat: WCharacterFormat = elementCollection[elementCollection.length - 1].line.paragraph.characterFormat;
+                            let paragraphMarkWidth: number = this.viewer.textHelper.getParagraphMarkSize(charFormat).Width;
+                            if (paragraph.bidi) {
+                                // The paragraph mark will be at the left most end.
+                                left = this.getLineStartLeft(startLineWidget) - paragraphMarkWidth;
+                            } else { // The paragraph mark will at right most end.
+                                left = elementIsRTL ? startLineWidget.paragraph.x + this.getWidth(startLineWidget, false) : right;
+                            }
+                            this.createHighlightBorder(startLineWidget, paragraphMarkWidth, left, top, true);
+                        }
+                    } else {
+                        this.createHighlightBorder(startLineWidget, width, left, top, false);
+                    }
+                } else {
+                    this.createHighlightBorder(startLineWidget, width, left, top, false);
+                }
                 let lineIndex: number = startLineWidget.paragraph.childWidgets.indexOf(startLineWidget);
                 //Iterates to last item of paragraph or selection end.                                             
                 this.highlightParagraph(paragraph as ParagraphWidget, lineIndex + 1, endLineWidget, endElement, selectionEndIndex);
@@ -4036,20 +4271,73 @@ export class Selection {
     // tslint:disable-next-line:max-line-length
     public highlightParagraph(widget: ParagraphWidget, startIndex: number, endLine: LineWidget, endElement: ElementBox, endIndex: number): void {
         let top: number = 0;
+        let width: number = 0;
+        let isRtlText: boolean = false;
         for (let i: number = startIndex; i < widget.childWidgets.length; i++) {
             let line: LineWidget = widget.childWidgets[i] as LineWidget;
             if (i === startIndex) {
                 top = this.getTop(line);
             }
+            if (endElement instanceof TextElementBox) {
+                isRtlText = endElement.isRightToLeft;
+            }
             let left: number = this.getLeft(line);
             if (line === endLine) {
                 //Selection ends in current line.
-                let right: number = this.getLeftInternal(endLine, endElement, endIndex);
-                this.createHighlightBorder(line, right - left, left, top);
-                return;
+                let right: number = 0;
+                // highlighting approach for normal and rtl text.
+                if (isRtlText || widget.bidi) {
+                    let elementBoxCollection: ElementBox[] = this.getElementsBackward(line, endElement, endElement, widget.bidi);
+                    for (let i: number = 0; i < elementBoxCollection.length; i++) {
+                        let element: ElementBox = elementBoxCollection[i];
+                        let elementIsRTL: boolean = false;
+                        if (element === endElement) {
+                            right = this.getLeftInternal(line, element, endIndex);
+                        } else {
+                            let index: number = element instanceof TextElementBox ? (element as TextElementBox).length : 1;
+                            right = this.getLeftInternal(line, element, index);
+                        }
+                        left = this.getLeftInternal(line, element, 0);
+                        if (element instanceof TextElementBox) {
+                            elementIsRTL = element.isRightToLeft;
+                        }
+                        width = Math.abs(right - left);
+                        // Handled the paragraph mark highliting as special case.
+                        if (element === endElement && element instanceof TextElementBox && endIndex > (element as TextElementBox).length) {
+                            // tslint:disable-next-line:max-line-length
+                            let paragraphMarkWidth: number = this.viewer.textHelper.getParagraphMarkSize(element.line.paragraph.characterFormat).Width;
+                            if (!widget.bidi && elementIsRTL) {
+                                right += paragraphMarkWidth;
+                            } else if (widget.bidi && !elementIsRTL) { // Paragrph and Selection ends in normal text
+                                width -= paragraphMarkWidth;
+                                // Highlight the element.
+                                this.createHighlightBorder(line, width, left, top, true);
+                                // Highlight the paragraph mark of Bidi paragrph. 
+                                left = this.getLineStartLeft(line) - paragraphMarkWidth;
+                                this.createHighlightBorder(line, paragraphMarkWidth, left, top, true);
+                                // continue to next element.
+                                continue;
+                            }
+                        }
+                        this.createHighlightBorder(line, width, elementIsRTL ? right : left, top, true);
+                    }
+                    return;
+                } else {
+                    right = this.getLeftInternal(endLine, endElement, endIndex);
+                    width = Math.abs(right - left);
+                    this.createHighlightBorder(line, width, isRtlText ? right : left, top, false);
+                    return;
+                }
+            } else {
+                width = this.getWidth(line, true) - (left - widget.x);
+                // Highlight the paragrph mark for Bidi paragrph.
+                if (widget.bidi && line.isLastLine()) {
+                    left -= this.viewer.textHelper.getParagraphMarkSize(widget.characterFormat).Width;
+                }
+                this.createHighlightBorder(line, width, left, top, false);
+                top += line.height;
             }
-            this.createHighlightBorder(line, this.getWidth(line, true) - (left - widget.x), left, top);
-            top += line.height;
+
         }
     }
     //Table Widget
@@ -4254,6 +4542,8 @@ export class Selection {
         let left: number = widget.paragraph.x;
         let elementValues: FirstElementInfo = this.getFirstElement(widget, left);
         let element: ElementBox = elementValues.element;
+        let isRtlText: boolean = false;
+        let isParaBidi: boolean = false;
         left = elementValues.left;
         if (isNullOrUndefined(element)) {
             let topMargin: number = 0; let bottomMargin: number = 0;
@@ -4275,17 +4565,39 @@ export class Selection {
                 if (caretPosition.x > left + element.margin.left) {
                     for (let i: number = widget.children.indexOf(element); i < widget.children.length; i++) {
                         element = widget.children[i];
-                        if (caretPosition.x < left + element.margin.left + element.width || i === widget.children.length - 1) {
+                        let isCurrentParaBidi: boolean = false;
+                        if (element instanceof ListTextElementBox || element instanceof TextElementBox) {
+                            isCurrentParaBidi = element.line.paragraph.paragraphFormat.bidi;
+                        }
+                        if (caretPosition.x < left + element.margin.left + element.width || i === widget.children.length - 1
+                            || ((widget.children[i + 1] instanceof ListTextElementBox) && isCurrentParaBidi)) {
                             break;
                         }
                         left += element.margin.left + element.width;
                     }
+                    if (element instanceof TextElementBox) {
+                        isRtlText = element.isRightToLeft;
+                        isParaBidi = (element as TextElementBox).line.paragraph.paragraphFormat.bidi;
+                    }
                     if (caretPosition.x > left + element.margin.left + element.width) {
                         //Line End
                         index = element instanceof TextElementBox ? (element as TextElementBox).length : 1;
-                        left += element.margin.left + element.width;
+                        if (isRtlText && isParaBidi) {
+                            index = 0;
+                        }
+                        if ((element instanceof TextElementBox && (element as TextElementBox).text !== "\v") || includeParagraphMark) {
+                            left += element.margin.left + element.width;
+                        }
                     } else if (element instanceof TextElementBox) {
-                        let x: number = caretPosition.x - left - element.margin.left;
+                        if (element instanceof TextElementBox && isRtlText) {
+                            left += element.width;
+                        }
+                        let x: number = 0;
+                        if (isRtlText) {
+                            x = (left + element.margin.left) - caretPosition.x;
+                        } else {
+                            x = caretPosition.x - left - element.margin.left;
+                        }
                         left += element.margin.left;
                         let prevWidth: number = 0;
                         let charIndex: number = 0;
@@ -4300,14 +4612,22 @@ export class Selection {
                                 //Updates exact left position of the caret.
                                 let charWidth: number = width - prevWidth;
                                 if (x - prevWidth > charWidth / 2) {
-                                    left += width;
+                                    if (isRtlText) {
+                                        left -= width;
+                                    } else {
+                                        left += width;
+                                    }
                                     charIndex = i;
                                 } else {
-                                    left += prevWidth;
+                                    if (isRtlText) {
+                                        left -= prevWidth;
+                                    } else {
+                                        left += prevWidth;
+                                    }
                                     charIndex = i - 1;
                                     if (i === 1 && element !== widget.children[0]) {
                                         let curIndex: number = widget.children.indexOf(element);
-                                        if (!(widget.children[curIndex - 1] instanceof ListTextElementBox)) {
+                                        if (!(widget.children[curIndex - 1] instanceof ListTextElementBox) && !isRtlText) {
                                             element = widget.children[curIndex - 1];
                                             charIndex = element instanceof TextElementBox ? (element as TextElementBox).length : 1;
                                         }
@@ -4336,6 +4656,13 @@ export class Selection {
                     }
 
                 } else {
+                    isRtlText = element.isRightToLeft;
+                    isParaBidi = element.line.paragraph.paragraphFormat.bidi;
+                    if (element instanceof TextElementBox && (isParaBidi || isRtlText) && caretPosition.x < left + element.margin.left + element.width) {
+                        index = this.getTextLength(element.line, element) + (element as TextElementBox).length;
+                    } else {
+                        index = this.getTextLength(element.line, element);
+                    }
                     left += element.margin.left;
                 }
                 if (element instanceof TextElementBox) {
@@ -4390,21 +4717,21 @@ export class Selection {
      * Get text length if the line widget
      * @private
      */
-    // public getTextLength(viewer: LayoutViewer, widget: LineWidget, element: ElementBox): number {
-    //     let length: number = 0;
-    //     let count: number = widget.children.indexOf(element);
-    //     if (widget.children.length > 0 && widget.children[0] instanceof ListTextElementBox) {
-    //         if (widget.children[1] instanceof ListTextElementBox) {
-    //             count -= 2;
-    //         } else {
-    //             count -= 1;
-    //         }
-    //     }
-    //     for (let i: number = 1; i < count; i++) {
-    //         length += widget.children[i].length;
-    //     }
-    //     return length;
-    // }
+    public getTextLength(widget: LineWidget, element: ElementBox): number {
+        let length: number = 0;
+        let count: number = widget.children.indexOf(element);
+        if (widget.children.length > 0 && widget.children[0] instanceof ListTextElementBox) {
+            if (widget.children[1] instanceof ListTextElementBox) {
+                count -= 2;
+            } else {
+                count -= 1;
+            }
+        }
+        for (let i: number = 1; i < count; i++) {
+            length += widget.children[i].length;
+        }
+        return length;
+    }
     /**
      * Get Line widget left
      * @private
@@ -4412,7 +4739,7 @@ export class Selection {
     public getLeft(widget: LineWidget): number {
         let left: number = widget.paragraph.x;
         let paragraphFormat: WParagraphFormat = widget.paragraph.paragraphFormat;
-        if (this.isParagraphFirstLine(widget) && !(paragraphFormat.textAlignment === 'Right')) {
+        if (this.isParagraphFirstLine(widget) && !paragraphFormat.bidi && !(paragraphFormat.textAlignment === 'Right')) {
             left += HelperMethods.convertPointToPixel(paragraphFormat.firstLineIndent);
         }
         for (let i: number = 0; i < widget.children.length; i++) {
@@ -4448,7 +4775,7 @@ export class Selection {
      */
     public getFirstElement(widget: LineWidget, left: number): FirstElementInfo {
         let firstLineIndent: number = 0;
-        if (this.isParagraphFirstLine(widget)) {
+        if (this.isParagraphFirstLine(widget) && !widget.paragraph.paragraphFormat.bidi) {
             firstLineIndent = HelperMethods.convertPointToPixel(widget.paragraph.paragraphFormat.firstLineIndent);
         }
         left += firstLineIndent;
@@ -4515,8 +4842,9 @@ export class Selection {
      */
     public getWidth(widget: LineWidget, includeParagraphMark: boolean): number {
         let width: number = 0;
-        if (this.isParagraphFirstLine(widget)) {
-            width += HelperMethods.convertPointToPixel(widget.paragraph.paragraphFormat.firstLineIndent);
+        let paraFormat: WParagraphFormat = widget.paragraph.paragraphFormat;
+        if (this.isParagraphFirstLine(widget) && !paraFormat.bidi) {
+            width += HelperMethods.convertPointToPixel(paraFormat.firstLineIndent);
         }
         for (let i: number = 0; i < widget.children.length; i++) {
             width += widget.children[i].margin.left + widget.children[i].width;
@@ -4533,9 +4861,32 @@ export class Selection {
      */
     public getLeftInternal(widget: LineWidget, elementBox: ElementBox, index: number): number {
         let left: number = widget.paragraph.x;
-        if (this.isParagraphFirstLine(widget)) {
+        let paraFormat: WParagraphFormat = widget.paragraph.paragraphFormat;
+        if (this.isParagraphFirstLine(widget) && !paraFormat.bidi) {
             // tslint:disable-next-line:max-line-length
             left += HelperMethods.convertPointToPixel(widget.paragraph.paragraphFormat.firstLineIndent);
+        }
+        let isRtlText: boolean = false;
+        let isParaBidi: boolean = false;
+        if (elementBox instanceof TextElementBox) {
+            isRtlText = elementBox.isRightToLeft;
+            isParaBidi = (elementBox as TextElementBox).line.paragraph.paragraphFormat.bidi;
+        }
+        //when line contains normal text and para is RTL para.
+        //if home key is pressed, update caret position after the last element in a line.
+        //if end key pressed, update caret position before the first element in a line. 
+
+        if (isParaBidi) {
+            if (!isRtlText) {
+                if (this.viewer.moveCaretPosition === 1 && widget.children.length > 0) {
+                    elementBox = widget.children[widget.children.length - 1];
+                } else if (this.viewer.moveCaretPosition === 2) {
+                    elementBox = widget.children[0];
+                }
+                if (elementBox instanceof ListTextElementBox && widget.children.length > 2) {
+                    elementBox = widget.children[widget.children.length - 3];
+                }
+            }
         }
         let count: number = widget.children.indexOf(elementBox);
         if ((widget.children.length === 1 && widget.children[0] instanceof ListTextElementBox) || (widget.children.length === 2
@@ -4555,17 +4906,39 @@ export class Selection {
         }
         if (!isNullOrUndefined(elementBox)) {
             left += elementBox.margin.left;
+            if (isRtlText || (this.viewer.moveCaretPosition === 1 && !isRtlText && isParaBidi)) {
+                left += elementBox.width;
+            }
         }
+        let width: number = 0;
         if (elementBox instanceof TextElementBox) {
-            if (index === (elementBox as TextElementBox).length) {
+            if ((this.viewer.moveCaretPosition !== 0) && (isParaBidi || isRtlText)) {
+                if ((isRtlText && isParaBidi && this.viewer.moveCaretPosition === 2)
+                    || (isRtlText && !isParaBidi && this.viewer.moveCaretPosition === 1)) {
+                    left -= elementBox.width;
+                }
+                this.viewer.moveCaretPosition = 0;
+                return left;
+            }
+            if (index === (elementBox as TextElementBox).length && !isRtlText) {
                 left += elementBox.width;
             } else if (index > (elementBox as TextElementBox).length) {
-                // tslint:disable-next-line:max-line-length
-                left += elementBox.width + this.viewer.textHelper.getParagraphMarkWidth(elementBox.line.paragraph.characterFormat);
+                width = this.viewer.textHelper.getParagraphMarkWidth(elementBox.line.paragraph.characterFormat);
+                if (isRtlText) {
+                    left -= elementBox.width + width;
+                } else {
+                    left += elementBox.width + width;
+                }
             } else {
                 // tslint:disable-next-line:max-line-length
-                left += this.viewer.textHelper.getWidth((elementBox as TextElementBox).text.substr(0, index), (elementBox as TextElementBox).characterFormat);
+                width = this.viewer.textHelper.getWidth((elementBox as TextElementBox).text.substr(0, index), (elementBox as TextElementBox).characterFormat);
+                if (isRtlText) {
+                    left -= width;
+                } else {
+                    left += width;
+                }
             }
+            this.viewer.moveCaretPosition = 0;
         } else if (index > 0) {
             if (!isNullOrUndefined(elementBox) && !(elementBox instanceof ListTextElementBox)) {
                 left += elementBox.width;
@@ -4585,8 +4958,9 @@ export class Selection {
      */
     public getLineStartLeft(widget: LineWidget): number {
         let left: number = widget.paragraph.x;
-        if (this.isParagraphFirstLine(widget)) {
-            left += HelperMethods.convertPointToPixel(widget.paragraph.paragraphFormat.firstLineIndent);
+        let paragraphFormat: WParagraphFormat = widget.paragraph.paragraphFormat;
+        if (this.isParagraphFirstLine(widget) && !paragraphFormat.bidi) {
+            left += HelperMethods.convertPointToPixel(paragraphFormat.firstLineIndent);
         }
         if (widget.children.length > 0) {
             left += widget.children[0].margin.left;
@@ -6000,6 +6374,29 @@ export class Selection {
         return false;
     }
     /**
+     * @private
+     */
+    public isTableSelected(): boolean {
+        let start: TextPosition = this.start;
+        let end: TextPosition = this.end;
+        if (!this.isForward) {
+            start = this.end;
+            end = this.start;
+        }
+        if (isNullOrUndefined(start.paragraph.associatedCell) ||
+            isNullOrUndefined(end.paragraph.associatedCell)) {
+            return false;
+        }
+        let table: TableWidget[] = start.paragraph.associatedCell.ownerTable.getSplitWidgets() as TableWidget[];
+        let firstParagraph: ParagraphWidget = this.getFirstBlockInFirstCell(table[0]) as ParagraphWidget;
+        let lastParagraph: ParagraphWidget = this.getLastBlockInLastCell(table[table.length - 1]) as ParagraphWidget;
+        return start.paragraph.associatedCell.equals(firstParagraph.associatedCell) &&
+            end.paragraph.associatedCell.equals(lastParagraph.associatedCell)
+            && (!firstParagraph.associatedCell.equals(lastParagraph.associatedCell) || (start.offset === 0
+                && end.offset === this.getLineLength(lastParagraph.lastChild as LineWidget) + 1));
+
+    }
+    /**
      * Select List Text
      * @private
      */
@@ -6021,7 +6418,7 @@ export class Selection {
         let width: number = linewidget.children[0].width;
         let left: number = this.viewer.getLeftValue(linewidget);
         let top: number = linewidget.paragraph.y;
-        this.createHighlightBorder(linewidget, width, left, top);
+        this.createHighlightBorder(linewidget, width, left, top, false);
         this.viewer.isListTextSelected = true;
     }
     /**
@@ -6051,7 +6448,7 @@ export class Selection {
             (inline as ImageElementBox).height = imageFormat.height;
             imageFormat.width = width;
             imageFormat.height = height;
-            if (paragraph != null && paragraph.containerWidget != null && this.owner.editorModule) {
+            if (paragraph !== null && paragraph.containerWidget !== null && this.owner.editorModule) {
                 let lineIndex: number = paragraph.childWidgets.indexOf(inline.line);
                 let elementIndex: number = inline.line.children.indexOf(inline);
                 this.viewer.layout.reLayoutParagraph(paragraph, lineIndex, elementIndex);
@@ -6747,6 +7144,66 @@ export class Selection {
     private isTocStyle(paragraph: ParagraphWidget): boolean {
         let style: WStyle = (paragraph.paragraphFormat.baseStyle as WStyle);
         return (style !== undefined && (style.name.toLowerCase().indexOf('toc') !== -1));
+    }
+
+    /**
+     * @private
+     */
+    public getElementsForward(lineWidget: LineWidget, startElement: ElementBox, endElement: ElementBox, bidi: boolean): ElementBox[] {
+        if (isNullOrUndefined(startElement)) {
+            return undefined;
+        }
+        let elements: ElementBox[] = [];
+
+        let elementIndex: number = lineWidget.children.indexOf(startElement);
+        while (elementIndex >= 0) {
+            for (let i: number = elementIndex; i > -1 && i < lineWidget.children.length; bidi ? i-- : i++) {
+                let inlineElement: ElementBox = lineWidget.children[i];
+                if (inlineElement.line === lineWidget) {
+                    if (inlineElement === endElement) {
+                        elements.push(inlineElement);
+                        elementIndex = -1;
+                        break;
+                    } else {
+                        elements.push(inlineElement);
+                    }
+                } else {
+                    elementIndex = -1;
+                    break;
+                }
+
+            }
+            // inline = inline !== null && inline.NextNode !== null ? (inline.NextNode as Inline).GetNextRenderedInline() : null;
+            elementIndex = -1;
+        }
+
+        return elements.length === 0 ? undefined : elements;
+    }
+
+    // Gets the current line elements in inline reverse order from the end element.
+    /**
+     * @private
+     */
+    public getElementsBackward(lineWidget: LineWidget, startElement: ElementBox, endElement: ElementBox, bidi: boolean): ElementBox[] {
+        let elements: ElementBox[] = [];
+
+        let elementIndex: number = lineWidget.children.indexOf(startElement);
+        while (elementIndex >= 0) {
+            for (let i: number = elementIndex; i > -1 && i < lineWidget.children.length; bidi ? i++ : i--) {
+                let inlineElement: ElementBox = lineWidget.children[i];
+                if (inlineElement.line === lineWidget) {
+                    elements.push(inlineElement);
+                } else {
+                    elementIndex = -1;
+                    break;
+                }
+
+            }
+            // inline = inline !== null && inline.NextNode !== null ? (inline.NextNode as Inline).GetNextRenderedInline() : null;
+            elementIndex = -1;
+        }
+
+        return elements;
     }
 }
 /**

@@ -1,12 +1,14 @@
-import { Component, Property, ChildProperty, NotifyPropertyChanges, INotifyPropertyChanged } from '@syncfusion/ej2-base';
+import { Component, Property, ChildProperty, NotifyPropertyChanges, INotifyPropertyChanged, AnimationModel } from '@syncfusion/ej2-base';
 import { Event, EventHandler, EmitType, BaseEventArgs, KeyboardEvents, KeyboardEventArgs, Touch, TapEventArgs } from '@syncfusion/ej2-base';
 import { attributes, Animation, AnimationOptions, TouchEventArgs, MouseEventArgs } from '@syncfusion/ej2-base';
 import { Browser, Collection, setValue, getValue, getUniqueID, getInstance, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { select, selectAll, closest, detach, append, rippleEffect, isVisible, Complex, addClass, removeClass } from '@syncfusion/ej2-base';
 import { ListBase, ListBaseOptions } from '@syncfusion/ej2-lists';
-import { getZindexPartial, calculatePosition, OffsetPosition, isCollide, fit } from '@syncfusion/ej2-popups';
-import {  getScrollableParent } from '@syncfusion/ej2-popups';
-import { MenuItemModel, MenuBaseModel, FieldSettingsModel } from './menu-base-model';
+import { getZindexPartial, calculatePosition, OffsetPosition, isCollide, flip, fit, Popup } from '@syncfusion/ej2-popups';
+import { getScrollableParent } from '@syncfusion/ej2-popups';
+import { MenuItemModel, MenuBaseModel, FieldSettingsModel, MenuAnimationSettingsModel } from './menu-base-model';
+import { HScroll } from '../common/h-scroll';
+import { VScroll } from '../common/v-scroll';
 
 type objColl = { [key: string]: Object }[];
 type obj = { [key: string]: Object };
@@ -46,6 +48,8 @@ const HIDE: string = 'e-menu-hide';
 const ICONS: string = 'e-icons';
 
 const RTL: string = 'e-rtl';
+
+const POPUP: string = 'e-menu-popup';
 
 /**
  * Menu animation effects
@@ -153,6 +157,37 @@ export class MenuItem extends ChildProperty<MenuItem> {
      */
     @Property('')
     public url: string;
+}
+
+/**
+ * Animation configuration settings.
+ */
+export class MenuAnimationSettings extends ChildProperty<MenuAnimationSettings> {
+    /**
+     * Specifies the effect that shown in the sub menu transform.
+     * The possible effects are:
+     * * None: Specifies the sub menu transform with no animation effect.
+     * * SlideDown: Specifies the sub menu transform with slide down effect.
+     * * ZoomIn: Specifies the sub menu transform with zoom in effect.
+     * * FadeIn: Specifies the sub menu transform with fade in effect.
+     * @default 'SlideDown'
+     * @aspType Syncfusion.EJ2.Navigations.MenuEffect
+     * @isEnumeration true
+     */
+    @Property('SlideDown')
+    public effect: MenuEffect;
+    /**
+     * Specifies the time duration to transform object.
+     * @default 400
+     */
+    @Property(400)
+    public duration: number;
+    /**
+     * Specifies the easing effect applied while transform.
+     * @default 'ease'
+     */
+    @Property('ease')
+    public easing: string;
 }
 
 /**
@@ -264,6 +299,15 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     public template: string;
 
     /**
+     * Specifies whether to enable / disable the scrollable option in Menu.
+     * Not applicable to ContextMenu component.
+     * @default false
+     * @private
+     */
+    @Property(false)
+    public enableScrolling: boolean;
+
+    /**
      * Specifies mapping fields from the dataSource.
      * Not applicable to ContextMenu component.
      * @default { itemId: "id", text: "text", parentId: "parentId", iconCss: "iconCss", url: "url", separator: "separator",
@@ -284,8 +328,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
      * Specifies the animation settings for the sub menu open.
      * @default { duration: 400, easing: 'ease', effect: 'SlideDown' }
      */
-    @Property<MenuAnimationSettings>({ duration: 400, easing: 'ease', effect: 'SlideDown' })
-    public animationSettings: MenuAnimationSettings;
+    @Complex<MenuAnimationSettingsModel>({}, MenuAnimationSettings)
+    public animationSettings: MenuAnimationSettingsModel;
 
     /**
      * Constructor for creating the widget.
@@ -320,7 +364,6 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             let ejInstance: Object = getValue('ej2_instances', ele);
             let ul: Element = this.createElement('ul');
             let wrapper: HTMLElement = this.createElement('EJS-MENU', { className: 'e-' + this.getModuleName() + '-wrapper' });
-            wrapper.style.display = 'block';
             for (let idx: number = 0, len: number = ele.attributes.length; idx < len; idx++) {
                 ul.setAttribute(ele.attributes[idx].nodeName, ele.attributes[idx].nodeValue);
             }
@@ -363,20 +406,22 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         if (this.enableRtl) {
             wrapper.classList.add(RTL);
         }
-        attributes(this.element, <{ [key: string]: string }>{ 'role': this.isMenu ? 'menubar' : 'menu', 'tabindex': '0' });
         wrapper.appendChild(this.element);
-        this.element.style.zIndex = getZindexPartial(this.element).toString();
     }
 
     private renderItems(): void {
         if (!(this.items as objColl).length) {
-            let items: { [key: string]: Object; }[] = ListBase.createJsonFromElement(this.element, { fields: { child: 'items' }});
+            let items: { [key: string]: Object; }[] = ListBase.createJsonFromElement(this.element, { fields: { child: 'items' } });
             this.setProperties({ items: items }, true);
             this.element.innerHTML = '';
         }
         let ul: Element = this.createItems(this.items as objColl);
         append(Array.prototype.slice.call(ul.children), this.element);
         this.element.classList.add('e-menu-parent');
+        let wrapper: HTMLElement = this.getWrapper() as HTMLElement;
+        this.element.classList.contains('e-vertical') ?
+            this.addScrolling(wrapper, this.element, 'vscroll', wrapper.offsetHeight, this.element.offsetHeight)
+            : this.addScrolling(wrapper, this.element, 'hscroll', wrapper.offsetWidth, this.element.offsetWidth);
     }
 
     protected wireEvents(): void {
@@ -405,6 +450,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         }
         this.delegateClickHandler = this.clickHandler.bind(this);
         EventHandler.add(document, 'click', this.delegateClickHandler, this);
+        this.wireKeyboardEvent(wrapper);
+        this.rippleFn = rippleEffect(wrapper, { selector: '.' + ITEM });
+    }
+
+    private wireKeyboardEvent(element: HTMLElement): void {
         let keyConfigs: { [key: string]: string; } = {
             downarrow: DOWNARROW,
             uparrow: UPARROW,
@@ -417,32 +467,36 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             keyConfigs.home = HOME;
             keyConfigs.end = END;
         }
-        new KeyboardEvents(wrapper, {
+        new KeyboardEvents(element, {
             keyAction: this.keyBoardHandler.bind(this),
             keyConfigs: keyConfigs
         });
-        this.rippleFn = rippleEffect(wrapper, { selector: '.' + ITEM });
     }
 
     private mouseDownHandler(e: MouseEvent): void {
-        if (closest(e.target as Element, '.e-' + this.getModuleName() + '-wrapper') !== this.getWrapper()) {
+        if (closest(e.target as Element, '.e-' + this.getModuleName() + '-wrapper') !== this.getWrapper()
+            && !closest(e.target as Element, '.e-' + this.getModuleName() + '-popup')) {
             this.closeMenu(this.navIdx.length, e);
         }
     }
 
     private keyBoardHandler(e: KeyboardEventArgs): void {
         let actionName: string = '';
+        let trgt: Element = e.target as Element;
         let actionNeeded: boolean = this.isMenu && !this.element.classList.contains('e-vertical') && this.navIdx.length < 1;
         e.preventDefault();
+        if (this.enableScrolling && e.keyCode ===  13 && trgt.classList.contains('e-scroll-nav')) {
+            this.removeLIStateByClass([FOCUSED, SELECTED], [closest(trgt, '.e-' + this.getModuleName() + '-wrapper')]);
+        }
         if (actionNeeded) {
             switch (e.action) {
                 case RIGHTARROW:
-                    actionName =  RIGHTARROW;
+                    actionName = RIGHTARROW;
                     e.action = DOWNARROW;
                     break;
                 case LEFTARROW:
                     actionName = LEFTARROW;
-                    e.action =  UPARROW;
+                    e.action = UPARROW;
                     break;
                 case DOWNARROW:
                     actionName = DOWNARROW;
@@ -456,15 +510,15 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         } else if (this.enableRtl) {
             switch (e.action) {
                 case LEFTARROW:
-                actionNeeded = true;
-                actionName = LEFTARROW;
-                e.action = RIGHTARROW;
-                break;
+                    actionNeeded = true;
+                    actionName = LEFTARROW;
+                    e.action = RIGHTARROW;
+                    break;
                 case RIGHTARROW:
-                actionNeeded = true;
-                actionName = RIGHTARROW;
-                e.action = LEFTARROW;
-                break;
+                    actionNeeded = true;
+                    actionName = RIGHTARROW;
+                    e.action = LEFTARROW;
+                    break;
             }
         }
         switch (e.action) {
@@ -493,8 +547,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private upDownKeyHandler(e: KeyboardEventArgs): void {
-        let wrapper: Element = this.getWrapper();
-        let cul: Element = wrapper.children[this.navIdx.length];
+        let cul: Element = this.getUlByNavIdx();
         let defaultIdx: number = (e.action === DOWNARROW || e.action === HOME) ? 0 : cul.childElementCount - 1;
         let fliIdx: number = defaultIdx;
         let fli: Element = this.getLIByClass(cul, FOCUSED);
@@ -518,7 +571,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private isValidLI(cli: Element, index: number, action: string): number {
         let wrapper: Element = this.getWrapper();
-        let cul: Element = wrapper.children[this.navIdx.length];
+        let cul: Element = this.getUlByNavIdx();
         if (cli.classList.contains(SEPARATOR) || cli.classList.contains(DISABLED) || cli.classList.contains(HIDE)) {
             ((action === DOWNARROW) || (action === RIGHTARROW)) ? index++ : index--;
         }
@@ -529,10 +582,18 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         return index;
     }
 
+    private getUlByNavIdx(navIdxLen: number = this.navIdx.length): HTMLElement {
+        if (this.isMenu) {
+            let popup: Element = [this.getWrapper()].concat([].slice.call(selectAll('.' + POPUP)))[navIdxLen];
+            return isNullOrUndefined(popup) ? null : select('.e-menu-parent', popup) as HTMLElement;
+        } else {
+            return this.getWrapper().children[navIdxLen] as HTMLElement;
+        }
+    }
+
     private rightEnterKeyHandler(e: KeyboardEventArgs): void {
         let eventArgs: MenuEventArgs;
-        let wrapper: Element = this.getWrapper();
-        let cul: Element = wrapper.children[this.navIdx.length];
+        let cul: Element = this.getUlByNavIdx();
         let fli: Element = this.getLIByClass(cul, FOCUSED);
         if (fli) {
             let fliIdx: number = this.getIdx(cul, fli);
@@ -543,19 +604,26 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 this.navIdx.push(fliIdx);
                 this.openMenu(fli, item, null, null, e);
                 fli.classList.remove(FOCUSED);
+                if (this.isMenu && this.navIdx.length === 1) {
+                    this.removeLIStateByClass([SELECTED], [this.getWrapper()]);
+                }
                 fli.classList.add(SELECTED);
                 if (e.action === ENTER) {
                     eventArgs = { element: fli as HTMLElement, item: item };
                     this.trigger('select', eventArgs);
                 }
                 (fli as HTMLElement).focus();
-                cul = wrapper.children[this.navIdx.length];
+                cul = this.getUlByNavIdx();
                 index = this.isValidLI(cul.children[0], 0, e.action);
                 cul.children[index].classList.add(FOCUSED);
                 (cul.children[index] as HTMLElement).focus();
             } else {
                 if (e.action === ENTER) {
-                    fli.classList.remove(FOCUSED);
+                    if (this.isMenu && this.navIdx.length === 0) {
+                        this.removeLIStateByClass([SELECTED], [this.getWrapper()]);
+                    } else {
+                        fli.classList.remove(FOCUSED);
+                    }
                     fli.classList.add(SELECTED);
                     eventArgs = { element: fli as HTMLElement, item: item };
                     this.trigger('select', eventArgs);
@@ -567,9 +635,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private leftEscKeyHandler(e: KeyboardEventArgs): void {
         if (this.navIdx.length) {
-            let wrapper: Element = this.getWrapper();
             this.closeMenu(this.navIdx.length, e);
-            let cul: Element = wrapper.children[this.navIdx.length];
+            let cul: Element = this.getUlByNavIdx();
             let sli: Element = this.getLIByClass(cul, SELECTED);
             if (sli) {
                 sli.setAttribute('aria-expanded', 'false');
@@ -613,9 +680,13 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             let items: MenuItemModel[];
             let closeArgs: OpenCloseMenuEventArgs;
             let beforeCloseArgs: BeforeOpenCloseMenuEventArgs;
+            let popupEle: HTMLElement;
+            let popupObj: Popup;
             let wrapper: Element = this.getWrapper();
-            for (let cnt: number = wrapper.childElementCount; cnt > ulIndex; cnt--) {
-                ul = wrapper.children[cnt - 1] as HTMLElement;
+            let popups: Element[] = this.getPopups();
+            for (let cnt: number = this.isMenu ? popups.length + 1 : wrapper.childElementCount; cnt > ulIndex; cnt--) {
+                ul = this.isMenu && cnt !== 1 ? select('.e-ul', popups[cnt - 2]) as HTMLElement
+                    : selectAll('.e-menu-parent', wrapper)[cnt - 1] as HTMLElement;
                 if (this.isMenu && ul.classList.contains('e-menu')) {
                     sli = this.getLIByClass(ul, SELECTED);
                     if (sli) {
@@ -628,13 +699,35 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 beforeCloseArgs = { element: ul, parentItem: item, items: items, event: e, cancel: false };
                 this.trigger('beforeClose', beforeCloseArgs);
                 if (!beforeCloseArgs.cancel) {
-                    this.toggleAnimation(ul, false);
+                    if (this.isMenu) {
+                        popupEle = closest(ul, '.' + POPUP) as HTMLElement;
+                        this.unWireKeyboardEvent(popupEle);
+                        this.destroyScrollObj(getInstance(popupEle.children[0] as HTMLElement, VScroll) as VScroll, popupEle.children[0]);
+                        popupObj = getInstance(popupEle, Popup) as Popup;
+                        popupObj.hide();
+                        popupObj.destroy();
+                        detach(popupEle);
+                    } else {
+                        this.toggleAnimation(ul, false);
+                    }
                     this.navIdx.length = ulIndex ? ulIndex - 1 : ulIndex;
                     closeArgs = { element: ul, parentItem: item, items: items };
                     this.trigger('onClose', closeArgs);
                 }
             }
         }
+    }
+
+    private destroyScrollObj(scrollObj: VScroll | HScroll, scrollEle: Element): void {
+        if (scrollObj) {
+            scrollObj.destroy();
+            scrollEle.parentElement.appendChild(select('.e-menu-parent', scrollEle));
+            detach(scrollEle);
+        }
+    }
+
+    private getPopups(): Element[] {
+        return [].slice.call(document.querySelectorAll('.' + POPUP));
     }
 
     private isMenuVisible(): boolean {
@@ -646,8 +739,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         if (this.filter) {
             canOpen = false;
             let filter: string[] = this.filter.split(' ');
-            for (let i: number = 0, len: number = target.classList.length; i < len; i++) {
-                if (filter.indexOf(target.classList[i]) > -1) {
+            for (let i: number = 0, len: number = filter.length; i < len; i++) {
+                if (closest(target, '.' + filter[i])) {
                     canOpen = true;
                     break;
                 }
@@ -659,38 +752,155 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     protected openMenu(
         li: Element, item: MenuItemModel | { [key: string]: Object }, top: number = 0, left: number = 0,
         e: MouseEvent | KeyboardEvent = null, target: HTMLElement = this.targetElement): void {
-        let ul: HTMLElement;
-        let navIdx: number[];
+        let ul: HTMLElement; let popupObj: Popup; let popupWrapper: HTMLElement; let eventArgs: BeforeOpenCloseMenuEventArgs;
         let wrapper: Element = this.getWrapper();
         if (li) {
             ul = this.createItems((<obj>item)[this.getField('children', this.navIdx.length - 1)] as objColl);
             if (!this.isMenu && Browser.isDevice) {
                 (wrapper.lastChild as HTMLElement).style.display = 'none';
                 let data: { [key: string]: string } = {
-                    text: (<obj>item)[this.getField('text')].toString(), iconCss: ICONS + ' e-previous' };
+                    text: (<obj>item)[this.getField('text')].toString(), iconCss: ICONS + ' e-previous'
+                };
                 let hdata: MenuItem = new MenuItem(this.items[0] as MenuItem, null, data, true);
                 let hli: Element = this.createItems([hdata] as MenuItemModel[]).children[0];
                 hli.classList.add(HEADER);
                 ul.insertBefore(hli, ul.children[0]);
             }
-            ul.style.zIndex = this.element.style.zIndex;
-            wrapper.appendChild(ul);
+            if (this.isMenu) {
+                popupWrapper = this.createElement('div', {
+                    className: 'e-' + this.getModuleName() + '-wrapper ' + POPUP, id: li.id + '-menu-popup' });
+                document.body.appendChild(popupWrapper);
+                let isNestedOrVerticalMenu: boolean = this.element.classList.contains('e-vertical') || this.navIdx.length !== 1;
+                popupObj = new Popup(popupWrapper, {
+                    relateTo: li as HTMLElement,
+                    collision: { X: isNestedOrVerticalMenu || this.enableRtl ? 'none' : 'flip', Y: 'fit' },
+                    position: isNestedOrVerticalMenu ? { X: 'right', Y: 'top' } : { X: 'left', Y: 'bottom' },
+                    targetType: 'relative',
+                    enableRtl: this.enableRtl,
+                    content: ul,
+                    open: (): void => {
+                            let scrollEle: HTMLElement = select('.e-menu-vscroll', popupObj.element) as HTMLElement;
+                            if (scrollEle) {
+                                scrollEle.style.height = 'inherit';
+                                scrollEle.style.maxHeight = '';
+                            }
+                            let ul: HTMLElement = select('.e-ul', popupObj.element) as HTMLElement;
+                            popupObj.element.style.maxHeight = '';
+                            ul.focus();
+                            this.triggerOpen(ul);
+                        }
+                });
+                if (this.cssClass) {
+                    addClass([popupWrapper], this.cssClass.split(' '));
+                }
+                popupObj.hide();
+                eventArgs = this.triggerBeforeOpen(li, ul, item, e, 0, 0);
+                top = eventArgs.top; left = eventArgs.left;
+                popupWrapper.style.display = 'block'; popupWrapper.style.maxHeight = popupWrapper.getBoundingClientRect().height + 'px';
+                this.addScrolling(popupWrapper, ul, 'vscroll', popupWrapper.offsetHeight, ul.offsetHeight);
+                this.checkScrollOffset(e);
+                let collide: string[]; let offset: OffsetPosition;
+                if (!left && !top) {
+                    popupObj.refreshPosition(li as HTMLElement, true);
+                    left = parseInt(popupWrapper.style.left, 10); top = parseInt(popupWrapper.style.top, 10);
+                    if (this.enableRtl) {
+                        left = isNestedOrVerticalMenu ? left - popupWrapper.offsetWidth - li.parentElement.offsetWidth
+                            : left - popupWrapper.offsetWidth + (li as HTMLElement).offsetWidth;
+                    }
+                    collide = isCollide(popupWrapper, null, left, top);
+                    if ((isNestedOrVerticalMenu || this.enableRtl) && (collide.indexOf('right') > -1 || collide.indexOf('left') > -1)) {
+                        popupObj.collision.X = 'none';
+                        left = this.enableRtl ? calculatePosition(li, isNestedOrVerticalMenu ? 'right' : 'left', 'top').left : left -
+                            popupWrapper.offsetWidth - (closest(li, '.e-' + this.getModuleName() + '-wrapper') as HTMLElement).offsetWidth;
+                    }
+                    collide = isCollide(popupWrapper, null, left, top);
+                    if (collide.indexOf('left') > -1 || collide.indexOf('right') > -1) {
+                        left = this.callFit(popupWrapper, true, false, top, left).left;
+                    }
+                    popupWrapper.style.left = left + 'px';
+                } else {
+                    popupObj.collision = { X: 'none', Y: 'none' };
+                }
+                popupWrapper.style.display = '';
+            } else {
+                ul.style.zIndex = this.element.style.zIndex;
+                wrapper.appendChild(ul);
+                eventArgs = this.triggerBeforeOpen(li, ul, item, e, top, left);
+                top = eventArgs.top; left = eventArgs.left;
+            }
         } else {
             ul = this.element;
             ul.style.zIndex = getZindexPartial(target ? target : this.element).toString();
+            eventArgs = this.triggerBeforeOpen(li, ul, item, e, top, left);
+            top = eventArgs.top; left = eventArgs.left;
         }
-        navIdx = this.getIndex(li ? li.id : null, true);
+        if (eventArgs.cancel) {
+            this.navIdx.pop();
+        } else {
+            if (this.isMenu) {
+                this.wireKeyboardEvent(popupWrapper);
+                rippleEffect(popupWrapper, { selector: '.' + ITEM });
+                popupWrapper.style.left = left + 'px'; popupWrapper.style.top = top + 'px';
+                let animationOptions: AnimationModel = this.animationSettings.effect !== 'None' ? {
+                    name: this.animationSettings.effect, duration: this.animationSettings.duration,
+                    timingFunction: this.animationSettings.easing
+                } : null;
+                popupObj.show(animationOptions, li as HTMLElement);
+            } else {
+                this.setPosition(li, ul, top, left);
+                this.toggleAnimation(ul);
+            }
+        }
+    }
+
+    private callFit(element: HTMLElement, x: boolean, y: boolean, top: number, left: number): OffsetPosition {
+        return fit(element, null, { X: x, Y: y }, { top: top, left: left });
+    }
+
+    private triggerBeforeOpen(
+        li: Element, ul: HTMLElement, item: MenuItemModel, e: MouseEvent | KeyboardEvent,
+        top: number, left: number): BeforeOpenCloseMenuEventArgs {
+        let navIdx: number[] = this.getIndex(li ? li.id : null, true);
         let items: MenuItemModel[] = li ? (<obj>item)[this.getField('children', this.navIdx.length - 1)] as objColl : this.items as objColl;
         let eventArgs: BeforeOpenCloseMenuEventArgs = {
             element: ul, items: items, parentItem: item, event: e, cancel: false, top: top, left: left
         };
         this.trigger('beforeOpen', eventArgs);
-        top = eventArgs.top; left = eventArgs.left;
-        if (eventArgs.cancel) {
-            this.navIdx.pop();
-        } else {
-            this.setPosition(li, ul, top, left);
-            this.toggleAnimation(ul);
+        return eventArgs;
+    }
+
+    private checkScrollOffset(e: MouseEvent | KeyboardEvent): void {
+        let wrapper: Element = this.getWrapper();
+        if (wrapper.children[0].classList.contains('e-menu-hscroll') && this.navIdx.length === 1) {
+            let trgt: HTMLElement = isNullOrUndefined(e) ? this.element : closest(e.target as Element, '.' + ITEM) as HTMLElement;
+            let offsetEle: HTMLElement = (select('.e-hscroll-bar', wrapper) as HTMLElement);
+            let offsetLeft: number; let offsetRight: number;
+            if (offsetEle.scrollLeft > trgt.offsetLeft) {
+                offsetEle.scrollLeft -= (offsetEle.scrollLeft - trgt.offsetLeft);
+            }
+            offsetLeft = offsetEle.scrollLeft + offsetEle.offsetWidth;
+            offsetRight = trgt.offsetLeft + trgt.offsetWidth;
+            if (offsetLeft < offsetRight) {
+                offsetEle.scrollLeft += (offsetRight - offsetLeft);
+            }
+        }
+    }
+
+    private addScrolling(wrapper: HTMLElement, ul: HTMLElement, scrollType: string, wrapperOffset: number, contentOffset: number): void {
+        if (this.enableScrolling && wrapperOffset < contentOffset) {
+            let scrollEle: HTMLElement = this.createElement('div', { className: 'e-menu-' + scrollType });
+            wrapper.appendChild(scrollEle);
+            scrollEle.appendChild(ul);
+            scrollEle.style.maxHeight = wrapper.style.maxHeight;
+            let scrollObj: VScroll | HScroll;
+            wrapper.style.overflow = 'hidden';
+            if (scrollType === 'vscroll') {
+                scrollObj = new VScroll({ enableRtl: this.enableRtl }, scrollEle);
+                scrollObj.scrollStep = (select('.e-' + scrollType + '-bar', wrapper) as HTMLElement).offsetHeight / 2;
+            } else {
+                scrollObj = new HScroll({ enableRtl: this.enableRtl }, scrollEle);
+                scrollObj.scrollStep = (select('.e-' + scrollType + '-bar', wrapper) as HTMLElement).offsetWidth;
+            }
         }
     }
 
@@ -703,81 +913,39 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 left = left - ul.offsetWidth;
             }
             if (collide.indexOf('bottom') > -1) {
-                let offset: OffsetPosition = fit(ul, null, { X: false, Y: true }, { top: top, left: left });
+                let offset: OffsetPosition = this.callFit(ul, false, true, top, left);
                 top = offset.top - 20;
             }
             collide = isCollide(ul, null, left, top);
             if (collide.indexOf('left') > -1) {
-                let offset: OffsetPosition = fit(ul, null, { X: true, Y: false }, { top: top, left: left });
+                let offset: OffsetPosition = this.callFit(ul, true, false, top, left);
                 left = offset.left;
             }
         } else {
-            let offset: OffsetPosition;
-            let isRelative: boolean = this.isMenu && this.element.offsetParent.tagName !== 'BODY';
-            if (!this.isMenu && Browser.isDevice) {
+            if (Browser.isDevice) {
                 top = Number(this.element.style.top.replace(px, ''));
                 left = Number(this.element.style.left.replace(px, ''));
             } else {
-                let x: string = 'right';
-                let y: string = 'top';
-                if (this.isMenu && !this.element.classList.contains('e-vertical') && this.navIdx.length < 2) {
-                    x = this.enableRtl ? 'right' : 'left';
-                    y = 'bottom';
-                } else {
-                    x = this.enableRtl ? 'left' : 'right';
+                let x: string = this.enableRtl ? 'left' : 'right';
+                let offset: OffsetPosition = calculatePosition(li, x, 'top');
+                top = offset.top;
+                left = offset.left;
+                let collide: string[] = isCollide(ul, null, this.enableRtl ? left - ul.offsetWidth : left, top);
+                let xCollision: boolean = collide.indexOf('left') > -1 || collide.indexOf('right') > -1;
+                if (xCollision) {
+                    offset = calculatePosition(li, this.enableRtl ? 'right' : 'left', 'top');
+                    left = offset.left;
                 }
-                offset = calculatePosition(li, x, y);
-                top = offset.top;
-                left = offset.left;
-            }
-            let collide: string[] = isCollide(ul, null, this.enableRtl ? left - ul.offsetWidth : left, top);
-            let xCollision: boolean = collide.indexOf('left') > -1 || collide.indexOf('right') > -1;
-            let yCollision: boolean = collide.indexOf('bottom') > -1;
-            if (xCollision) {
-                offset = calculatePosition(li, this.enableRtl ? 'right' : 'left', 'top');
-                left = offset.left;
-            }
-            if (this.enableRtl || xCollision) {
-                left = (this.enableRtl && xCollision) ? left : left - ul.offsetWidth;
-                if (this.isMenu && xCollision && !this.element.classList.contains('e-vertical') && this.navIdx && this.navIdx.length < 2) {
-                    left = this.enableRtl ? left - li.getBoundingClientRect().width : left + li.getBoundingClientRect().width;
+                if (this.enableRtl || xCollision) {
+                    left = (this.enableRtl && xCollision) ? left : left - ul.offsetWidth;
                 }
-            }
-            if (yCollision) {
-                offset = fit(
-                    ul, null, { X: false, Y: true },
-                    { top: top, left: left });
-                top = offset.top;
-            }
-            collide = isCollide(ul, null, left, top);
-            xCollision = collide.indexOf('left') > -1 || collide.indexOf('right') > -1;
-            if (xCollision) {
-                offset = fit(
-                    ul, null, { X: true, Y: false },
-                    { top: top, left: left });
-                top = offset.top;
-                left = offset.left;
-            }
-            if (isRelative) {
-                let boundRect: ClientRect = ul.offsetParent.getBoundingClientRect();
-                top -= boundRect.top + pageYOffset;
-                left -= boundRect.left + pageXOffset;
+                if (collide.indexOf('bottom') > -1) {
+                    offset = this.callFit(ul, false, true, top, left);
+                    top = offset.top;
+                }
             }
         }
         this.toggleVisiblity(ul, false);
-        if (this.isMenu) {
-            if (this.element.classList.contains('e-vertical') && this.navIdx && this.navIdx[this.navIdx.length - 1] === 0) {
-                top = top - 1;
-            } else {
-                if (this.navIdx && this.navIdx[this.navIdx.length - 1] === 0) {
-                    if (this.navIdx.length === 1) {
-                        left = left - 1;
-                    } else {
-                        top = top - 1;
-                    }
-                }
-            }
-        }
         ul.style.top = top + px;
         ul.style.left = left + px;
     }
@@ -815,11 +983,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     args.item.removeAttribute('role');
                 }
                 if (showIcon && !(<obj>args.curData)[args.fields.iconCss as string]
-                && !(<obj>args.curData)[this.getField('separator', level)]) {
+                    && !(<obj>args.curData)[this.getField('separator', level)]) {
                     (args.item as HTMLElement).classList.add('e-blankicon');
                 }
                 if ((<obj>args.curData)[args.fields.child as string]
-                && (<objColl>(<obj>args.curData)[args.fields.child as string]).length) {
+                    && (<objColl>(<obj>args.curData)[args.fields.child as string]).length) {
                     let span: Element = this.createElement('span', { className: ICONS + ' ' + CARET });
                     args.item.appendChild(span);
                     args.item.setAttribute('aria-haspopup', 'true');
@@ -851,24 +1019,43 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         let trgt: Element = e.target as Element;
         let cli: Element = this.getLI(trgt);
         if (cli && closest(cli, '.e-' + this.getModuleName() + '-wrapper')) {
-            let fli: Element = select('.' + FOCUSED, wrapper);
-            if (fli) {
-                fli.classList.remove(FOCUSED);
-            }
+            this.removeLIStateByClass([FOCUSED], this.isMenu ? [wrapper].concat(this.getPopups()) : [wrapper]);
             cli.classList.add(FOCUSED);
             if (!this.showItemOnClick) {
                 this.clickHandler(e);
             }
         }
-        if (this.isMenu && trgt.parentElement !== wrapper && !cli && this.navIdx.length) {
-            this.closeMenu(null, e);
+        if (this.isMenu) {
+            if ((trgt.parentElement !== wrapper && !closest(trgt, '.e-' + this.getModuleName() + '-popup')) && !cli) {
+                this.removeLIStateByClass([FOCUSED, SELECTED], [wrapper]);
+                if (this.navIdx.length) {
+                    this.closeMenu(null, e);
+                }
+            }
+            wrapper = closest(trgt, '.e-menu-vscroll');
+            if (trgt.tagName === 'DIV' && wrapper) {
+                this.removeLIStateByClass([FOCUSED, SELECTED], [wrapper]);
+            }
+        }
+    }
+
+    private removeLIStateByClass(classList: string[], element: Element[]): void {
+        let li: Element;
+        for (let i: number = 0; i < element.length; i++) {
+            classList.forEach((className: string) => {
+                li = select('.' + className, element[i]);
+                if (li) {
+                    li.classList.remove(className);
+                }
+            });
         }
     }
 
     protected getField(propName: string, level: number = 0): string {
         let fieldName: object = (<obj>this.fields)[propName];
         return typeof fieldName === 'string' ? fieldName :
-        (!(<obj>fieldName)[level] ? (fieldName as obj)[(<objColl>fieldName).length - 1].toString() : (<obj>fieldName)[level].toString());
+            (!(<obj>fieldName)[level] ? (fieldName as obj)[(<objColl>fieldName).length - 1].toString()
+                : (<obj>fieldName)[level].toString());
     }
 
     private getFields(level: number = 0): obj {
@@ -899,7 +1086,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             let trgt: Element = e.target as Element;
             let cli: Element = this.getLI(trgt);
             let cliWrapper: Element = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : null;
-            let isInstLI: boolean = cli && cliWrapper && wrapper.firstElementChild.id === cliWrapper.firstElementChild.id;
+            let isInstLI: boolean = cli && cliWrapper && (wrapper.firstElementChild.id === cliWrapper.firstElementChild.id || this.isMenu);
             if (isInstLI && e.type === 'click' && !cli.classList.contains(HEADER)) {
                 this.setLISelected(cli);
                 let navIdx: number[] = this.getIndex(cli.id, true);
@@ -924,7 +1111,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         let cul: Element = cli.parentNode as Element;
                         let cliIdx: number = this.getIdx(cul, cli);
                         if (this.isMenu || !Browser.isDevice) {
-                            let culIdx: number = this.getIdx(wrapper, cul);
+                            let culIdx: number = this.isMenu ? Array.prototype.indexOf.call(
+                                [wrapper].concat(this.getPopups()), closest(cul, '.' + 'e-' + this.getModuleName() + '-wrapper'))
+                                : this.getIdx(wrapper, cul);
                             if (this.navIdx[culIdx] === cliIdx) {
                                 showSubMenu = false;
                             }
@@ -940,20 +1129,12 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                             let idx: number[] = this.navIdx.concat(cliIdx);
                             let item: MenuItemModel = this.getItem(idx);
                             if ((<objColl>(<obj>item)[this.getField('children', idx.length - 1)]) &&
-                            (<objColl>(<obj>item)[this.getField('children', idx.length - 1)]).length) {
+                                (<objColl>(<obj>item)[this.getField('children', idx.length - 1)]).length) {
                                 if (e.type === 'mouseover' || (Browser.isDevice && this.isMenu)) {
                                     this.setLISelected(cli);
                                 }
                                 cli.setAttribute('aria-expanded', 'true');
                                 this.navIdx.push(cliIdx);
-                                if (this.isMenu && !this.element.classList.contains('e-vertical') && this.navIdx.length < 2) {
-                                    let collision: string[] = isCollide(cli as HTMLElement, this.element);
-                                    if (collision.length) {
-                                        let boundRect: ClientRect = cli.getBoundingClientRect();
-                                        this.element.scroll(
-                                            (collision.indexOf('right') > -1 ? boundRect.right : boundRect.left) as number, 0);
-                                    }
-                                }
                                 this.openMenu(cli, item, null, null, e);
                             } else {
                                 if (e.type !== 'mouseover') {
@@ -964,9 +1145,18 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     }
                 }
             } else {
-                if (trgt.tagName !== 'UL' || trgt.parentElement !== wrapper) {
-                    if (!cli || !cli.querySelector('.' + CARET)) {
-                        this.closeMenu(null, e);
+                if (this.isMenu && trgt.tagName === 'DIV' && this.navIdx.length && closest(trgt, '.e-menu-vscroll')) {
+                    let popupEle: Element = closest(trgt, '.' + POPUP);
+                    let cIdx: number = Array.prototype.indexOf.call(this.getPopups(), popupEle) + 1;
+                    if (cIdx < this.navIdx.length) {
+                        this.closeMenu(cIdx + 1, e);
+                        this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]);
+                    }
+                } else {
+                    if (trgt.tagName !== 'UL' || trgt.parentElement !== wrapper) {
+                        if (!cli || !cli.querySelector('.' + CARET)) {
+                            this.closeMenu(null, e);
+                        }
                     }
                 }
             }
@@ -978,7 +1168,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         if (sli) {
             sli.classList.remove(SELECTED);
         }
-        li.classList.remove(FOCUSED);
+        if (!this.isMenu) {
+            li.classList.remove(FOCUSED);
+        }
         li.classList.add(SELECTED);
     }
 
@@ -1029,7 +1221,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
      * @returns void
      */
     public onPropertyChanged(newProp: MenuBaseModel, oldProp: MenuBaseModel): void {
-        let wrapper: Element = this.getWrapper();
+        let wrapper: HTMLElement = this.getWrapper() as HTMLElement;
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'cssClass':
@@ -1048,20 +1240,56 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     this.showItemOnClick = newProp.showItemOnClick;
                     this.wireEvents();
                     break;
+                case 'enableScrolling':
+                    if (newProp.enableScrolling) {
+                        let ul: HTMLElement;
+                        this.element.classList.contains('e-vertical') ?
+                            this.addScrolling(wrapper, this.element, 'vscroll', wrapper.offsetHeight, this.element.offsetHeight)
+                            : this.addScrolling(wrapper, this.element, 'hscroll', wrapper.offsetWidth, this.element.offsetWidth);
+                        (this.getPopups() as HTMLElement[]).forEach((wrapper: HTMLElement) => {
+                            ul = select('.e-ul', wrapper) as HTMLElement;
+                            this.addScrolling(wrapper, ul, 'vscroll', wrapper.offsetHeight, ul.offsetHeight);
+                        });
+                    } else {
+                        let ul: HTMLElement = wrapper.children[0] as HTMLElement;
+                        this.element.classList.contains('e-vertical') ? this.destroyScrollObj(getInstance(ul, VScroll) as VScroll, ul)
+                            : this.destroyScrollObj(getInstance(ul, HScroll) as HScroll, ul);
+                        wrapper.style.overflow = '';
+                        wrapper.appendChild(this.element);
+                        (this.getPopups() as HTMLElement[]).forEach((wrapper: HTMLElement) => {
+                            ul = wrapper.children[0] as HTMLElement;
+                            this.destroyScrollObj(getInstance(ul, VScroll) as VScroll, ul);
+                            wrapper.style.overflow = '';
+                        });
+                    }
+                    break;
                 case 'items':
                     let idx: number;
                     let navIdx: number[];
                     let item: MenuItemModel[];
-                    let keys: string[] = Object.keys(newProp.items);
-                    for (let i: number = 0; i < keys.length; i++) {
-                        navIdx = this.getChangedItemIndex(newProp, [], Number(keys[i]));
-                        if (navIdx.length <= this.getWrapper().children.length) {
-                            idx = navIdx.pop();
-                            item = this.getItems(navIdx);
-                            this.insertAfter([item[idx]], item[idx].text);
-                            this.removeItem(item, navIdx, idx);
+                    if (!Object.keys(oldProp.items).length) {
+                        let ul: HTMLElement = this.element;
+                        ul.innerHTML = '';
+                        let lis: HTMLElement[] = [].slice.call(this.createItems(newProp.items).children);
+                        lis.forEach((li: HTMLElement): void => {
+                            ul.appendChild(li);
+                        });
+                        for (let i: number = 1, count: number = wrapper.childElementCount; i < count; i++) {
+                            detach(wrapper.lastElementChild);
                         }
-                        navIdx.length = 0;
+                        this.navIdx = [];
+                    } else {
+                        let keys: string[] = Object.keys(newProp.items);
+                        for (let i: number = 0; i < keys.length; i++) {
+                            navIdx = this.getChangedItemIndex(newProp, [], Number(keys[i]));
+                            if (navIdx.length <= this.getWrapper().children.length) {
+                                idx = navIdx.pop();
+                                item = this.getItems(navIdx);
+                                this.insertAfter([item[idx]], item[idx].text);
+                                this.removeItem(item, navIdx, idx);
+                            }
+                            navIdx.length = 0;
+                        }
                     }
                     break;
             }
@@ -1120,11 +1348,15 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             EventHandler.remove(document, 'mousedown', this.delegateMouseDownHandler);
         }
         EventHandler.remove(document, 'click', this.delegateClickHandler);
-        let keyboardModule: KeyboardEvents = getInstance(wrapper, KeyboardEvents) as KeyboardEvents;
+        this.unWireKeyboardEvent(wrapper);
+        this.rippleFn();
+    }
+
+    private unWireKeyboardEvent(element: HTMLElement): void {
+        let keyboardModule: KeyboardEvents = getInstance(element, KeyboardEvents) as KeyboardEvents;
         if (keyboardModule) {
             keyboardModule.destroy();
         }
-        this.rippleFn();
     }
 
     private toggleAnimation(ul: HTMLElement, isMenuOpen: boolean = true): void {
@@ -1146,15 +1378,19 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         }
     }
 
+    private triggerOpen(ul: HTMLElement): void {
+        let item: MenuItemModel = this.navIdx.length ? this.getItem(this.navIdx) : null;
+        let eventArgs: OpenCloseMenuEventArgs = {
+            element: ul, parentItem: item, items: item ? item.items : this.items as objColl
+        };
+        this.trigger('onOpen', eventArgs);
+    }
+
     private end(ul: HTMLElement, isMenuOpen: boolean): void {
         if (isMenuOpen) {
             ul.style.display = 'block';
             ul.style.maxHeight = '';
-            let item: MenuItemModel = this.navIdx.length ? this.getItem(this.navIdx) : null;
-            let eventArgs: OpenCloseMenuEventArgs = {
-                element: ul as HTMLElement, parentItem: item, items: item ? item.items : this.items as objColl
-            };
-            this.trigger('onOpen', eventArgs);
+            this.triggerOpen(ul);
             if (ul.querySelector('.' + FOCUSED)) {
                 (ul.querySelector('.' + FOCUSED) as HTMLElement).focus();
             } else {
@@ -1211,7 +1447,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 nIndex.push(i);
                 break;
             } else if ((<objColl>(<obj>item)[this.getField('children', level)])
-            && (<objColl>(<obj>item)[this.getField('children', level)]).length) {
+                && (<objColl>(<obj>item)[this.getField('children', level)]).length) {
                 nIndex = this.getIndex(data, isUniqueId, (<objColl>(<obj>item)[this.getField('children', level)]), nIndex, true, level);
                 if (nIndex[nIndex.length - 1] === -1) {
                     if (i !== len - 1) {
@@ -1242,11 +1478,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         let idx: number;
         let navIdx: number[];
         let disabled: string = DISABLED;
-        let wrapper: Element = this.getWrapper();
         for (let i: number = 0; i < items.length; i++) {
             navIdx = this.getIndex(items[i], isUniqueId);
             idx = navIdx.pop();
-            ul = wrapper.children[navIdx.length];
+            ul = this.getUlByNavIdx(navIdx.length);
             if (ul) {
                 if (enable) {
                     if (this.isMenu) {
@@ -1298,11 +1533,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         let ul: Element;
         let index: number;
         let navIdx: number[];
-        let wrapper: Element = this.getWrapper();
         for (let i: number = 0; i < items.length; i++) {
             navIdx = this.getIndex(items[i], isUniqueId);
             index = navIdx.pop();
-            ul = wrapper.children[navIdx.length];
+            ul = this.getUlByNavIdx(navIdx.length);
             if (ul) {
                 if (ishide) {
                     if (Browser.isDevice && !ul.classList.contains('e-contextmenu')) {
@@ -1372,12 +1606,13 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             iitems = this.getItems(navIdx);
             menuitem = new MenuItem(iitems[0] as MenuItem, 'items', items[i], true);
             iitems.splice(isAfter ? idx + 1 : idx, 0, menuitem);
-            let uls: HTMLCollection = this.getWrapper().children;
+            let uls: Element[] = this.isMenu ? [this.getWrapper()].concat(this.getPopups()) : [].slice.call(this.getWrapper().children);
             if (navIdx.length < uls.length) {
                 idx = isAfter ? idx + 1 : idx;
                 showIcon = this.hasField(iitems, this.getField('iconCss', navIdx.length - 1));
                 li = this.createItems(iitems).children[idx];
-                uls[navIdx.length].insertBefore(li, uls[navIdx.length].children[idx]);
+                let ul: Element = this.isMenu ? select('.e-menu-parent', uls[navIdx.length]) : uls[navIdx.length];
+                ul.insertBefore(li, ul.children[idx]);
             }
         }
     }
@@ -1427,7 +1662,6 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
 /**
  * Interface for before item render/select event.
- * @private
  */
 export interface MenuEventArgs extends BaseEventArgs {
     element: HTMLElement;
@@ -1436,7 +1670,6 @@ export interface MenuEventArgs extends BaseEventArgs {
 
 /**
  * Interface for before open/close event.
- * @private
  */
 export interface BeforeOpenCloseMenuEventArgs extends BaseEventArgs {
     element: HTMLElement;
@@ -1457,25 +1690,4 @@ export interface OpenCloseMenuEventArgs extends BaseEventArgs {
     parentItem: MenuItemModel;
 }
 
-/**
- * Animation configuration settings.
- */
-export interface MenuAnimationSettings {
-    /**
-     * Specifies the effect that shown in the sub menu transform.
-     * The possible effects are:
-     * * None: Specifies the sub menu transform with no animation effect.
-     * * SlideDown: Specifies the sub menu transform with slide down effect.
-     * * ZoomIn: Specifies the sub menu transform with zoom in effect.
-     * * FadeIn: Specifies the sub menu transform with fade in effect.
-     */
-    effect?: MenuEffect;
-    /**
-     * Specifies the time duration to transform object.
-     */
-    duration?: number;
-    /**
-     * Specifies the easing effect applied while transform.
-     */
-    easing?: string;
-}
+

@@ -1,9 +1,6 @@
 /**
  * Grid print spec document
  */
-import { EmitType } from '@syncfusion/ej2-base';
-import { createElement } from '@syncfusion/ej2-base';
-import { PrintMode } from '../../../src/grid/base/enum';
 import { Grid } from '../../../src/grid/base/grid';
 import { Sort } from '../../../src/grid/actions/sort';
 import { Filter } from '../../../src/grid/actions/filter';
@@ -11,11 +8,13 @@ import { Page } from '../../../src/grid/actions/page';
 import { Print } from '../../../src/grid/actions/print';
 import { Group } from '../../../src/grid/actions/group';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
-import { data } from '../base/datasource.spec';
+import { DetailRow } from '../../../src/grid/actions/detail-row';
+import { data, employeeData, fCustomerData } from '../base/datasource.spec';
 import { createGrid, destroy } from '../base/specutil.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
+import { IGrid } from '../../../src/grid/base/interface'; 
 
-Grid.Inject(Sort, Page, Filter, Print, Group, Toolbar);
+Grid.Inject(Sort, Page, Filter, Print, Group, Toolbar, DetailRow);
 
 describe('Print module', () => {
     describe('Print without paging', () => {
@@ -30,7 +29,7 @@ describe('Print module', () => {
 
         beforeAll((done: Function) => {
             gridObj = createGrid({
-                dataSource: data,
+                dataSource: data.slice(0, 15),
                 columns: [{ field: 'OrderID' }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight' },
                 { field: 'ShipCity' }],
                 allowSelection: false,
@@ -43,7 +42,7 @@ describe('Print module', () => {
             let printComplete = (args?: { element: Element }): void => {
                 expect(args.element.querySelectorAll('.e-gridpager').length).toBe(0);
                 expect(args.element.querySelectorAll('.e-filterbar').length).toBe(1);
-                expect((args.element.querySelectorAll('.e-filterbar')[0] as HTMLElement).style.display).toBe('none');
+                expect(args.element.classList.contains('e-print-grid-layout')).toBeTruthy();
                 expect(args.element.querySelectorAll('.e-row').length).toBe(15);
                 let contentDiv: HTMLElement = (args.element.querySelector('.e-content') as HTMLElement);
                 expect(contentDiv.style.height).toBe('auto');
@@ -91,15 +90,14 @@ describe('Print module', () => {
                 printMode: 'CurrentPage'
             }, done);
         });
-        
+
         it('current page testing and group column', (done: Function) => {
             let printComplete = (args?: { element: Element }): void => {
                 expect(args.element.querySelectorAll('.e-gridpager').length).toBe(1);
-                expect((args.element.querySelectorAll('.e-gridpager')[0] as HTMLElement).style.display).toBe('none');
-                expect(args.element.querySelectorAll('.e-grouptopleftcell').length).toBe(0);
-                expect(args.element.querySelectorAll('.e-recordpluscollapse').length).toBe(0);
-                expect(args.element.querySelectorAll('.e-indentcell').length).toBe(0);
-                expect(args.element.querySelectorAll('.e-recordplusexpand').length).toBe(0);
+                expect(args.element.querySelector('.e-gridpager').clientWidth).toBe(0);
+                expect(args.element.querySelector('.e-grouptopleftcell').clientWidth).toBe(0);
+                expect(args.element.querySelector('.e-indentcell').clientWidth).toBe(0);
+                expect(args.element.querySelector('.e-recordplusexpand').clientWidth).toBe(0);
                 expect(args.element.querySelectorAll('.e-toolbar').length).toBe(0);
                 done();
             };
@@ -203,6 +201,241 @@ describe('Print module', () => {
         afterAll(() => {
             gridObj.printModule.destroy();
             destroy(gridObj);
+        });
+    });
+
+    describe('Print with hierarchy grid All mode=>', () => {
+        let gridObj: Grid;
+        let printGrid: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid({
+                dataSource: employeeData.slice(0, 4),
+                allowSorting: true,
+                allowFiltering: true,
+                allowGrouping: true,
+                hierarchyPrintMode: 'All',
+                columns: [
+                    { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                    { field: 'FirstName', headerText: 'Name', width: 125 },
+                    { field: 'Title', headerText: 'Title', width: 180 },
+                    { field: 'City', headerText: 'City', width: 110 },
+                    { field: 'Country', headerText: 'Country', width: 110 }
+                ],
+                childGrid: {
+                    dataSource: data.slice(0, 20),
+                    queryString: 'EmployeeID',
+                    hierarchyPrintMode: 'All',
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                        { field: 'ShipCity', headerText: 'Ship City', width: 120 },
+                        { field: 'Freight', headerText: 'Freight', width: 120 },
+                        { field: 'ShipName', headerText: 'Ship Name', width: 150 }
+                    ],
+                    childGrid: {
+                        dataSource: fCustomerData,
+                        queryString: 'CustomerID',
+                        columns: [
+                            { field: 'CustomerID', headerText: 'Customer ID', textAlign: 'Right', width: 75 },
+                            { field: 'Phone', headerText: 'Phone', width: 100 },
+                            { field: 'Address', headerText: 'Address', width: 120 },
+                            { field: 'Country', headerText: 'Country', width: 100 }
+                        ]
+                    },
+                }
+            }, done);
+        });
+        it('Check hierarchy in before print', (done: Function) => {
+            let trigger: number = 0;
+            expect(gridObj.hierarchyPrintMode).toBe('All');
+            gridObj.beforePrint = (args) => {
+                expect(args.element.classList.contains('e-print-grid')).toBeTruthy();
+                expect(args.element.querySelectorAll('[aria-busy=true]').length).toBe(0);
+                expect((args.element as any).ej2_instances[0]['isPrinting']).toBeTruthy();
+                expect(args.element.querySelectorAll('.e-grid').length).toBe(14);
+                expect(trigger).toBe(0);
+                expect((<{printGridObj?: IGrid}>window).printGridObj.expandedRows).not.toBeUndefined();
+                printGrid = (<{printGridObj?: IGrid}>window).printGridObj as Grid;
+            };
+            gridObj.printComplete = (args) => {
+                expect((args.element as any).ej2_instances[0]['isPrinting']).toBeFalsy();
+                expect((<{printGridObj?: IGrid}>window).printGridObj).toBeUndefined();
+                expect(args.element.classList.contains('e-print-grid-layout')).toBeTruthy();
+                done();
+            }
+            (<any>gridObj.printModule).printGridElement = () => true;
+            (<any>gridObj.printModule).renderPrintGrid();
+            (<Grid>(<{printGridObj?: IGrid}>window).printGridObj).actionFailure = () => trigger++;
+        });
+
+        afterAll(() => {
+            gridObj.printModule.destroy();
+            destroy(gridObj);
+            destroy(printGrid)
+        });
+    });
+
+    describe('Print with hierarchy grid expanded mode =>', () => {
+        let gridObj: Grid;
+        let childGrid: Grid;
+        let printGrid: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid({
+                dataSource: employeeData.slice(0, 4),
+                allowSorting: true,
+                allowFiltering: true,
+                allowGrouping: true,
+                hierarchyPrintMode: 'Expanded',
+                columns: [
+                    { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                    { field: 'FirstName', headerText: 'Name', width: 125 },
+                    { field: 'Title', headerText: 'Title', width: 180 },
+                    { field: 'City', headerText: 'City', width: 110 },
+                    { field: 'Country', headerText: 'Country', width: 110 }
+                ],
+                childGrid: {
+                    dataSource: data.slice(0, 20),
+                    queryString: 'EmployeeID',
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                        { field: 'ShipCity', headerText: 'Ship City', width: 120 },
+                        { field: 'Freight', headerText: 'Freight', width: 120 },
+                        { field: 'ShipName', headerText: 'Ship Name', width: 150 }
+                    ],
+                    childGrid: {
+                        dataSource: fCustomerData,
+                        queryString: 'CustomerID',
+                        columns: [
+                            { field: 'CustomerID', headerText: 'Customer ID', textAlign: 'Right', width: 75 },
+                            { field: 'Phone', headerText: 'Phone', width: 100 },
+                            { field: 'Address', headerText: 'Address', width: 120 },
+                            { field: 'Country', headerText: 'Country', width: 100 }
+                        ]
+                    },
+                }
+            }, done);
+        });
+
+        it('expand the child grid', (done: Function) => {
+            gridObj.detailDataBound = (args: any) => {
+                childGrid = args.childGrid;
+                childGrid.dataBound = () => {done()};
+                expect(gridObj.element.querySelectorAll('.e-grid').length).toBe(1);
+            };
+            gridObj.detailRowModule.expand(2);
+        });
+
+        it('expand inner childGrid', (done: Function) => {
+            childGrid.detailDataBound = (args) => {
+                expect(gridObj.element.querySelectorAll('.e-grid').length).toBe(2);
+                done();
+            };
+            childGrid.detailRowModule.expand(1);
+        });
+
+        it('Check hierarchy in before expanded print', (done: Function) => {
+            let trigger: number = 0;
+            expect(gridObj.hierarchyPrintMode).toBe('Expanded');
+            gridObj.beforePrint = (args) => {
+                expect(args.element.classList.contains('e-print-grid')).toBeTruthy();
+                expect(args.element.querySelectorAll('[aria-busy=true]').length).toBe(0);
+                expect((args.element as any).ej2_instances[0]['isPrinting']).toBeTruthy();
+                expect(args.element.querySelectorAll('.e-grid').length).toBe(2);
+                expect(trigger).toBe(0);
+                expect((<{printGridObj?: IGrid}>window).printGridObj.expandedRows).not.toBeUndefined();
+                printGrid = (<{printGridObj?: IGrid}>window).printGridObj as Grid;
+            };
+            gridObj.printComplete = (args) => {
+                expect((args.element as any).ej2_instances[0]['isPrinting']).toBeFalsy();
+                expect((<{printGridObj?: IGrid}>window).printGridObj).toBeUndefined();
+                expect(args.element.classList.contains('e-print-grid-layout')).toBeTruthy();
+                done();
+            }
+            (<any>gridObj.printModule).printGridElement = () => true;
+            (<any>gridObj.printModule).renderPrintGrid();
+            (<Grid>(<{printGridObj?: IGrid}>window).printGridObj).actionFailure = () => trigger++;
+        });
+
+        afterAll(() => {
+            gridObj.printModule.destroy();
+            destroy(gridObj);
+            destroy(printGrid);
+        });
+    });
+
+    describe('Print with hierarchy grid None mode =>', () => {
+        let gridObj: Grid;
+        let printGrid: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid({
+                dataSource: employeeData.slice(0, 4),
+                allowSorting: true,
+                allowFiltering: true,
+                allowGrouping: true,
+                hierarchyPrintMode: 'None',
+                columns: [
+                    { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                    { field: 'FirstName', headerText: 'Name', width: 125 },
+                    { field: 'Title', headerText: 'Title', width: 180 },
+                    { field: 'City', headerText: 'City', width: 110 },
+                    { field: 'Country', headerText: 'Country', width: 110 }
+                ],
+                childGrid: {
+                    dataSource: data.slice(0, 20),
+                    queryString: 'EmployeeID',
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                        { field: 'ShipCity', headerText: 'Ship City', width: 120 },
+                        { field: 'Freight', headerText: 'Freight', width: 120 },
+                        { field: 'ShipName', headerText: 'Ship Name', width: 150 }
+                    ],
+                    childGrid: {
+                        dataSource: fCustomerData,
+                        queryString: 'CustomerID',
+                        columns: [
+                            { field: 'CustomerID', headerText: 'Customer ID', textAlign: 'Right', width: 75 },
+                            { field: 'Phone', headerText: 'Phone', width: 100 },
+                            { field: 'Address', headerText: 'Address', width: 120 },
+                            { field: 'Country', headerText: 'Country', width: 100 }
+                        ]
+                    },
+                }
+            }, done);
+        });
+
+        it('expand the child grid', (done: Function) => {
+            gridObj.detailDataBound = (args: any) => {
+                expect(gridObj.element.querySelectorAll('.e-grid').length).toBe(1);
+                done();
+            };
+            gridObj.detailRowModule.expand(2);
+        });
+
+        it('Check hierarchy in before None print', (done: Function) => {
+            let trigger: number = 0;
+            expect(gridObj.hierarchyPrintMode).toBe('None');
+            gridObj.beforePrint = (args) => {
+                expect(args.element.classList.contains('e-print-grid')).toBeTruthy();
+                expect(args.element.querySelectorAll('[aria-busy=true]').length).toBe(0);
+                expect((args.element as any).ej2_instances[0]['isPrinting']).toBeTruthy();
+                expect(args.element.querySelectorAll('.e-grid').length).toBe(0);
+                expect((<{printGridObj?: IGrid}>window).printGridObj.expandedRows).toBeUndefined();
+                printGrid = (<{printGridObj?: IGrid}>window).printGridObj as Grid;
+            };
+            gridObj.printComplete = (args) => {
+                expect((args.element as any).ej2_instances[0]['isPrinting']).toBeFalsy();
+                expect((<{printGridObj?: IGrid}>window).printGridObj).toBeUndefined();
+                expect(args.element.classList.contains('e-print-grid-layout')).toBeTruthy();
+                done();
+            }
+            (<any>gridObj.printModule).printGridElement = () => true;
+            (<any>gridObj.printModule).renderPrintGrid();
+            (<Grid>(<{printGridObj?: IGrid}>window).printGridObj).actionFailure = () => trigger++;
+        });
+
+        afterAll(() => {
+            gridObj.printModule.destroy();
+            destroy(gridObj);
+            destroy(printGrid);
         });
     });
 });

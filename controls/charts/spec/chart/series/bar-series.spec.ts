@@ -1190,7 +1190,6 @@ describe('Chart Control', () => {
         });
         it('with marker and datalabel', (done: Function) => {
             loaded = (args: Object): void => {
-                debugger
                 let series1 = document.getElementById('container_Series_0_Point_1_Symbol');
                 let datalabel = document.getElementById('container_Series_0_Point_1_Text_0');
                 expect(+(datalabel.getAttribute('x')) < +(series1.getAttribute('cx'))).toBe(true);

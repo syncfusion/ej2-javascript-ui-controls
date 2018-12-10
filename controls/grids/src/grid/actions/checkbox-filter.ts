@@ -18,7 +18,7 @@ import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
 import { Input } from '@syncfusion/ej2-inputs';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { getFilterMenuPostion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, getColumnByForeignKeyValue } from '../base/util';
-import { InputArgs }  from '@syncfusion/ej2-inputs';
+import { InputArgs } from '@syncfusion/ej2-inputs';
 /**
  * @hidden
  * `CheckBoxFilter` module is used to handle filtering action.
@@ -135,12 +135,11 @@ export class CheckBoxFilter {
             });
     }
 
-    private foreignFilter(args: {filterCollection?: PredicateModel[]}, value: string): void {
+    private foreignFilter(args: { filterCollection?: PredicateModel[] }, value: string): void {
         let operator: string = this.parent.getDataModule().isRemote() ?
             (this.options.column.type === 'string' ? 'contains' : 'equal') : (this.options.column.type ? 'startswith' : 'contains');
         let initalPredicate: Predicate =
-        new Predicate(this.options.column.foreignKeyValue, operator, value, true,
-                      this.parent.filterSettings.ignoreAccent);
+            new Predicate(this.options.column.foreignKeyValue, operator, value, true, this.parent.filterSettings.ignoreAccent);
         this.foreignKeyFilter(args, [args.filterCollection], initalPredicate);
     }
 
@@ -178,7 +177,7 @@ export class CheckBoxFilter {
 
     private updateDataSource(): void {
         let dataSource: Object[] = this.options.dataSource as Object[];
-        let str : string = 'object';
+        let str: string = 'object';
         if (!(dataSource instanceof DataManager)) {
             for (let i: number = 0; i < dataSource.length; i++) {
                 if (typeof dataSource !== str) {
@@ -331,11 +330,20 @@ export class CheckBoxFilter {
         if (this.filterState) {
             if ((<Element>e.target).tagName.toLowerCase() === 'input') {
                 let value: string = (<HTMLInputElement>e.target).value;
+                if (this.options.column.type === 'boolean') {
+                    if (value !== undefined &&
+                        this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf((value as string).toLowerCase()) !== -1) {
+                        value = 'true';
+                    } else if (value !== undefined &&
+                        this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf((value as string).toLowerCase()) !== -1) {
+                        value = 'false';
+                    }
+                }
                 let args: Object = {
                     action: 'filtering', filterCollection: {
                         field: this.options.field,
                         operator: this.parent.getDataModule().isRemote() ?
-                        (this.options.column.type === 'string' ? 'contains' : 'equal') :
+                            (this.options.column.type === 'string' ? 'contains' : 'equal') :
                             (this.options.column.type === 'date' || this.options.column.type === 'datetime' ||
                                 this.options.column.type === 'boolean' ? 'equal' : 'contains'),
                         value: value, matchCase: false, type: this.options.column.type
@@ -343,7 +351,7 @@ export class CheckBoxFilter {
                     field: this.options.field
                 };
                 value ? this.options.column.isForeignColumn() ? this.foreignFilter(args, value) :
-                this.options.handler(args) : this.closeDialog();
+                    this.options.handler(args) : this.closeDialog();
             } else {
                 let text: string = (e.target as HTMLElement).firstChild.textContent.toLowerCase();
                 if (this.getLocalizedLabel(this.isExcel ? 'OKButton' : 'FilterButton').toLowerCase() === text) {
@@ -364,11 +372,13 @@ export class CheckBoxFilter {
         let optr: string = 'equal';
         let caseSen: boolean = this.options.type === 'string' ?
             this.options.allowCaseSensitive : true;
-        let defaults: { predicate?: string, field?: string, type?: string,
-            operator?: string, matchCase?: boolean, ignoreAccent?: boolean } = {
-            field: this.options.field, predicate: 'or',
-            operator: optr, type: this.options.type, matchCase: caseSen, ignoreAccent: this.parent.filterSettings.ignoreAccent
-        };
+        let defaults: {
+            predicate?: string, field?: string, type?: string,
+            operator?: string, matchCase?: boolean, ignoreAccent?: boolean
+        } = {
+                field: this.options.field, predicate: 'or',
+                operator: optr, type: this.options.type, matchCase: caseSen, ignoreAccent: this.parent.filterSettings.ignoreAccent
+            };
         let isNotEqual: boolean = this.itemsCnt !== checked.length && this.itemsCnt - checked.length < checked.length;
         if (isNotEqual) {
             optr = 'notequal';
@@ -389,7 +399,25 @@ export class CheckBoxFilter {
                 if (value && !value.toString().length) {
                     fObj.operator = isNotEqual ? 'notequal' : 'equal';
                 }
-                coll.push(fObj);
+                if (value === '' || isNullOrUndefined(value)) {
+                    coll.push(
+                        {
+                            field: defaults.field, ignoreAccent: defaults.ignoreAccent, matchCase: defaults.matchCase,
+                            operator: defaults.operator, predicate: defaults.predicate, value: ''
+                        });
+                    coll.push(
+                        {
+                            field: defaults.field,
+                            matchCase: defaults.matchCase, operator: defaults.operator, predicate: defaults.predicate, value: null
+                        });
+                    coll.push(
+                        {
+                            field: defaults.field, matchCase: defaults.matchCase, operator: defaults.operator,
+                            predicate: defaults.predicate, value: undefined
+                        });
+                } else {
+                    coll.push(fObj);
+                }
                 if (isActionPrevent(this.parent)) {
                     this.parent.notify(events.preventBatch, {
                         instance: this, handler: this.fltrBtnHandler, arg1: fObj.field, arg2: fObj.predicate, arg3: fObj.operator,
@@ -430,6 +458,8 @@ export class CheckBoxFilter {
         let column: Column = this.options.column;
         let query: Query = column.isForeignColumn() ? this.foreignKeyQuery.clone() : this.options.query.clone();
         let foreignQuery: Query = this.options.query.clone();
+        query.queries = [];
+        foreignQuery.queries = [];
         let parsed: string | number | Date | boolean = (this.options.type !== 'string' && parseFloat(val)) ? parseFloat(val) : val;
         let operator: string = this.parent.getDataModule().isRemote() ?
             (this.options.type === 'string' ? 'contains' : 'equal') : (this.options.type ? 'startswith' : 'contains');
@@ -446,7 +476,6 @@ export class CheckBoxFilter {
                 this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf((parsed as string).toLowerCase()) !== -1) {
                 parsed = 'false';
             }
-            parsed = parsed === 'true';
             operator = 'equal';
         }
         this.addDistinct(query);
@@ -525,15 +554,6 @@ export class CheckBoxFilter {
         return predicateList.length && Predicate.and(predicateList);
     }
 
-    private addDistinct(query: Query): Query {
-        let filteredColumn: Object[] = DataUtil.distinct(this.parent.filterSettings.columns, 'field');
-        if (filteredColumn.indexOf(this.options.column.field) <= -1) {
-            filteredColumn = filteredColumn.concat(this.options.column.field);
-        }
-        query.distinct(filteredColumn as string []);
-        return query;
-    }
-
     private getAllData(): void {
         let query: Query = this.parent.getQuery().clone();
         query.requiresCount(); //consider take query
@@ -552,6 +572,15 @@ export class CheckBoxFilter {
         } else {
             this.processDataOperation(query, true);
         }
+    }
+
+    private addDistinct(query: Query): Query {
+        let filteredColumn: Object[] = DataUtil.distinct(this.parent.filterSettings.columns, 'field');
+        if (filteredColumn.indexOf(this.options.column.field) <= -1) {
+            filteredColumn = filteredColumn.concat(this.options.column.field);
+        }
+        query.distinct(filteredColumn as string[]);
+        return query;
     }
 
     private filterEvent(args: Object, query: Query): void {
@@ -620,7 +649,7 @@ export class CheckBoxFilter {
         let result: Object[] = new DataManager(this.fullData as JSON[]).executeLocal(query);
         let col: Column = this.options.column;
         this.filteredData = (CheckBoxFilter.
-            getDistinct(result, this.options.field, col, this.foreignKeyData)as { records: Object[] }).records || [];
+            getDistinct(result, this.options.field, col, this.foreignKeyData) as { records: Object[] }).records || [];
         this.processDataSource(null, true, this.filteredData);
         this.sInput.focus();
         let args: Object = {
@@ -708,7 +737,7 @@ export class CheckBoxFilter {
         let className: string[] = [];
         let elem: Element = this.cBox.querySelector('.e-selectall');
         let selected: number = this.cBox.querySelectorAll('.e-check:not(.e-selectall)').length;
-        let btn: Button = (<{btnObj?: Button}>(this.dialogObj as DialogModel)).btnObj[0];
+        let btn: Button = (<{ btnObj?: Button }>(this.dialogObj as DialogModel)).btnObj[0];
         btn.disabled = false;
         if (cnt === selected) {
             className = ['e-check'];
@@ -726,11 +755,18 @@ export class CheckBoxFilter {
 
     private createFilterItems(data: Object[], isInitial?: boolean): void {
         let cBoxes: Element = this.parent.createElement('div');
-        let btn: Button = (<{btnObj?: Button}>(this.dialogObj as DialogModel)).btnObj[0];
-        this.itemsCnt = data.length;
+        let btn: Button = (<{ btnObj?: Button }>(this.dialogObj as DialogModel)).btnObj[0];
+        let nullCounter: number = -1;
+        for (let i: number = 0; i < data.length; i++) {
+            let val: string = getValue('ejValue', data[i]);
+            if (val === '' || isNullOrUndefined(val)) {
+                nullCounter = nullCounter + 1;
+            }
+        }
+        this.itemsCnt = nullCounter !== -1 ? data.length - nullCounter : data.length;
         if (data.length && !this.renderEmpty) {
             let selectAllValue: string = this.getLocalizedLabel('SelectAll');
-            let checkBox: Element = this.createCheckbox(selectAllValue, false, {[this.options.field]: selectAllValue});
+            let checkBox: Element = this.createCheckbox(selectAllValue, false, { [this.options.field]: selectAllValue });
             let selectAll: Element = createCboxWithWrap(getUid('cbox'), checkBox, 'e-ftrchk');
             selectAll.querySelector('.e-frame').classList.add('e-selectall');
             cBoxes.appendChild(selectAll);
@@ -740,12 +776,19 @@ export class CheckBoxFilter {
             }
             let isColFiltered: number = new DataManager(this.options.filteredColumns as JSON[]).executeLocal(
                 new Query().where(predicate)).length;
+            let isRndere: boolean;
             for (let i: number = 0; i < data.length; i++) {
                 let uid: string = getUid('cbox');
                 this.values[uid] = getValue('ejValue', data[i]);
                 let value: string = this.valueFormatter.toView(getValue(this.options.field, data[i]), this.options.formatFn) as string;
+                if ((value === '' || isNullOrUndefined(value))) {
+                    if (isRndere) {
+                        continue;
+                    }
+                    isRndere = true;
+                }
                 let checkbox: Element =
-                this.createCheckbox(value, this.getCheckedState(isColFiltered, this.values[uid]), getValue('dataObj', data[i]));
+                    this.createCheckbox(value, this.getCheckedState(isColFiltered, this.values[uid]), getValue('dataObj', data[i]));
                 cBoxes.appendChild(createCboxWithWrap(uid, checkbox, 'e-ftrchk'));
             }
             this.cBox.innerHTML = '';
@@ -786,21 +829,19 @@ export class CheckBoxFilter {
 
         while (len--) {
             value = json[len] as string;
-            value = getValue(field, value); //local remote diff, check with mdu           
-            if (!isNullOrUndefined(value)) {
-                if (!(value in lookup)) {
-                    let obj: Object = {};
-                    obj[ejValue] = value;
-                    lookup[value] = true;
-                    if (isForeignKey) {
-                        let foreignDataObj: Object = getForeignData(column, {}, value, foreignKeyData)[0];
-                        setValue(events.foreignKeyData, foreignDataObj, json[len]);
-                        value = getValue(column.foreignKeyValue, foreignDataObj);
-                    }
-                    setValue(field, isNullOrUndefined(value) ? null : value, obj);
-                    setValue('dataObj', json[len], obj);
-                    result.push(obj);
+            value = getValue(field, value); //local remote diff, check with mdu   
+            if (!(value in lookup)) {
+                let obj: Object = {};
+                obj[ejValue] = value;
+                lookup[value] = true;
+                if (isForeignKey) {
+                    let foreignDataObj: Object = getForeignData(column, {}, value, foreignKeyData)[0];
+                    setValue(events.foreignKeyData, foreignDataObj, json[len]);
+                    value = getValue(column.foreignKeyValue, foreignDataObj);
                 }
+                setValue(field, isNullOrUndefined(value) ? null : value, obj);
+                setValue('dataObj', json[len], obj);
+                result.push(obj);
             }
         }
         return DataUtil.group(DataUtil.sort(result, field, DataUtil.fnAscending), 'ejValue');

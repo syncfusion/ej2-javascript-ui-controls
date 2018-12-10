@@ -26,7 +26,7 @@ export interface DateTimePickerModel extends DatePickerModel{
     zIndex?: number;
 
     /**
-     * When set to true, enables RTL mode of the component that displays the content in the       right-to-left direction.
+     * When set to true, enables RTL mode of the component that displays the content in the right-to-left direction.
      * @default false
      */
     enableRtl?: boolean;
@@ -37,6 +37,13 @@ export interface DateTimePickerModel extends DatePickerModel{
      * @default false
      */
     enablePersistence?: boolean;
+
+    /**
+     * Specifies the option to enable the multiple dates selection of the calendar.
+     * @default false
+     * @private
+     */
+    isMultiSelection?: boolean;
 
     /**
      * Specifies whether to show or hide the clear icon in textbox.
@@ -57,7 +64,7 @@ export interface DateTimePickerModel extends DatePickerModel{
      * it allows invalid or out-of-range value with highlighted error class.
      * @default false
      * > For more details refer to 
-     * [`Strict Mode`](./datetimepicker/strict-mode.html) documentation.
+     * [`Strict Mode`](../datetimepicker/strict-mode/) documentation.
      */
     strictMode?: boolean;
 

@@ -2,7 +2,17 @@
 
 ## [Unreleased]
 
-## 16.3.33 (2018-11-15)
+## 16.4.40-beta (2018-12-10)
+
+### Document Editor
+
+#### New Features
+
+- Added support for Right-to-left flow direction in control.
+- Added support for table auto fit layout.
+- Added Document Editor Container component for toolbar and properties pane.
+
+## 16.3.33 (2018-11-20)
 
 ### Document Editor
 

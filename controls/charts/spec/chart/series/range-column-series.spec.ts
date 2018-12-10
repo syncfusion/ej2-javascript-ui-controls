@@ -215,7 +215,7 @@ describe('Chart', () => {
                 let axisLabel: Element = document.getElementById('container0_AxisLabel_0');
                 expect(axisLabel.textContent == 'USA').toBe(true);
                 let axisStart = document.getElementById('containerAxisLine_0');
-                expect(parseInt(axisLabel.getAttribute('x')) > parseInt(axisStart.getAttribute('x1'))).toBe(true);
+                expect(parseInt(axisLabel.getAttribute('x')) > parseInt(axisStart.getAttribute('d').split(' ')[1])).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -235,7 +235,7 @@ describe('Chart', () => {
                 let axisLabel: Element = document.getElementById('container0_AxisLabel_0');
                 expect(axisLabel.textContent == 'USA').toBe(true);
                 let axisStart: Element = document.getElementById('containerAxisLine_0');
-                expect(parseInt(axisLabel.getAttribute('x')) < parseInt(axisStart.getAttribute('x1'))).toBe(true);
+                expect(parseInt(axisLabel.getAttribute('x')) < parseInt(axisStart.getAttribute('d').split(' ')[1])).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

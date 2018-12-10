@@ -191,6 +191,7 @@ export class Page implements IAction {
             currentPage: e.currentPage,
             type: events.actionBegin
         });
+        this.parent.requestTypeAction = 'paging';
     }
 
     private keyPressHandler(e: KeyboardEventArgs): void {

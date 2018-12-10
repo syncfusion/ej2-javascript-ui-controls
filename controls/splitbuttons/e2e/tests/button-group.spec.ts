@@ -62,7 +62,7 @@ describe('ButtonGroup', function () {
     }
 
     it ('Rounded Corner ButtonGroup', () => {
-        browser.load('/demos/button-group/util.html');
+        browser.load('/demos/button-group/util/util.html');
         browser.compareScreen(element.all(helper.table).get(4), 'btn_group_round_corner');
     });
 

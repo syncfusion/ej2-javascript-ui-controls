@@ -17,6 +17,13 @@ export class WTableFormat {
     public borders: WBorders = new WBorders(this);
     public shading: WShading = new WShading(this);
     public ownerBase: TableWidget = undefined;
+
+    get allowAutoFit(): boolean {
+        return this.getPropertyValue('allowAutoFit') as boolean;
+    }
+    set allowAutoFit(value: boolean) {
+        this.setPropertyValue('allowAutoFit', value);
+    }
     get cellSpacing(): number {
         return this.getPropertyValue('cellSpacing') as number;
     }
@@ -77,6 +84,14 @@ export class WTableFormat {
     set preferredWidthType(value: WidthType) {
         this.setPropertyValue('preferredWidthType', value);
     }
+
+    get bidi(): boolean {
+        return this.getPropertyValue('bidi') as boolean;
+    }
+
+    set bidi(value: boolean) {
+        this.setPropertyValue('bidi', value);
+    }
     constructor(owner?: TableWidget) {
         this.ownerBase = owner;
         this.assignTableMarginValue(5.4, 0, 5.4, 0);
@@ -109,6 +124,7 @@ export class WTableFormat {
     }
     private initializeUniqueTableFormat(property: string, propValue: Object): void {
         let uniqueTableFormatTemp: Dictionary<number, object> = new Dictionary<number, object>();
+        this.addUniqueTableFormat('allowAutoFit', property, propValue, uniqueTableFormatTemp);
         this.addUniqueTableFormat('cellSpacing', property, propValue, uniqueTableFormatTemp);
         this.addUniqueTableFormat('leftMargin', property, propValue, uniqueTableFormatTemp);
         this.addUniqueTableFormat('topMargin', property, propValue, uniqueTableFormatTemp);
@@ -118,6 +134,7 @@ export class WTableFormat {
         this.addUniqueTableFormat('tableAlignment', property, propValue, uniqueTableFormatTemp);
         this.addUniqueTableFormat('preferredWidth', property, propValue, uniqueTableFormatTemp);
         this.addUniqueTableFormat('preferredWidthType', property, propValue, uniqueTableFormatTemp);
+        this.addUniqueTableFormat('bidi', property, propValue, uniqueTableFormatTemp);
         this.uniqueTableFormat = WTableFormat.uniqueTableFormats.addUniqueFormat(uniqueTableFormatTemp, WTableFormat.uniqueFormatType);
     }
     // tslint:disable-next-line:max-line-length
@@ -131,6 +148,9 @@ export class WTableFormat {
     private static getPropertyDefaultValue(property: string): Object {
         let value: Object = undefined;
         switch (property) {
+            case 'allowAutoFit':
+                value = false;
+                break;
             case 'cellSpacing':
                 value = 0;
                 break;
@@ -157,6 +177,9 @@ export class WTableFormat {
                 break;
             case 'preferredWidthType':
                 value = 'Point';
+                break;
+            case 'bidi':
+                value = false;
                 break;
         }
         return value;
@@ -209,6 +232,8 @@ export class WTableFormat {
         tableFormat.preferredWidthType = this.preferredWidthType;
         tableFormat.borders = isNullOrUndefined(this.borders) ? undefined : this.borders.cloneFormat();
         tableFormat.shading = isNullOrUndefined(this.shading) ? undefined : this.shading.cloneFormat();
+        tableFormat.bidi = this.bidi;
+        tableFormat.allowAutoFit = this.allowAutoFit;
         return tableFormat;
     }
     public hasValue(property: string): boolean {
@@ -230,6 +255,8 @@ export class WTableFormat {
                 this.tableAlignment = format.tableAlignment;
                 this.preferredWidth = format.preferredWidth;
                 this.preferredWidthType = format.preferredWidthType;
+                this.bidi = format.bidi;
+                this.allowAutoFit = format.allowAutoFit;
             }
             if (!isNullOrUndefined(format.borders)) {
                 this.borders = new WBorders(this);

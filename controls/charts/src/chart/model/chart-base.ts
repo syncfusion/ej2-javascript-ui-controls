@@ -3,7 +3,7 @@ import { ZIndex, Anchor, BorderType, sizeType } from '../utils/enum';
 import { Theme } from '../../common/model/theme';
 import { Font, Border } from '../../common/model/base';
 import { BorderModel, FontModel } from '../../common/model/base-model';
-import { LabelBorderModel, MultiLevelCategoriesModel } from '../../chart/model/chart-base-model';
+import { LabelBorderModel, MultiLevelCategoriesModel, ScrollbarSettingsRangeModel  } from '../../chart/model/chart-base-model';
 import { Units, Alignment, Regions, Position, TextOverflow } from '../../common/utils/enum';
 
 /**
@@ -122,7 +122,7 @@ export class LabelBorder extends ChildProperty<LabelBorder> {
 
     /**
      * Border type for labels
-     * * Rectangle 
+     * * Rectangle
      * * Without Top Border
      * * Without Top and BottomBorder
      * * Without Border
@@ -312,7 +312,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
     public rotation: number;
 
     /**
-     * Defines the position of the strip line text horizontally. They are, 
+     * Defines the position of the strip line text horizontally. They are,
      * * Start: Places the strip line text at the start.
      * * Middle: Places the strip line text in the middle.
      * * End: Places the strip line text at the end.
@@ -322,7 +322,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
     public horizontalAlignment: Anchor;
 
     /**
-     * Defines the position of the strip line text vertically. They are, 
+     * Defines the position of the strip line text vertically. They are,
      * * Start: Places the strip line text at the start.
      * * Middle: Places the strip line text in the middle.
      * * End: Places the strip line text at the end.
@@ -360,7 +360,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
 export class MultiLevelLabels extends ChildProperty<MultiLevelLabels[]> {
 
     /**
-     * Defines the position of the multi level labels. They are, 
+     * Defines the position of the multi level labels. They are,
      * * Near: Places the multi level labels at Near.
      * * Center: Places the multi level labels at Center.
      * * Far: Places the multi level labels at Far.
@@ -370,7 +370,7 @@ export class MultiLevelLabels extends ChildProperty<MultiLevelLabels[]> {
     public alignment: Alignment;
 
     /**
-     * Defines the textOverFlow for multi level labels. They are, 
+     * Defines the textOverFlow for multi level labels. They are,
      * * Trim: Trim textOverflow for multi level labels.
      * * Wrap: Wrap textOverflow for multi level labels.
      * * none: None textOverflow for multi level labels.
@@ -393,4 +393,53 @@ export class MultiLevelLabels extends ChildProperty<MultiLevelLabels[]> {
      */
     @Collection<MultiLevelCategories>([], MultiLevelCategories)
     public categories: MultiLevelCategoriesModel[];
+
 }
+
+/**
+ * Specifies range for scrollbarSettings property
+ */
+export class ScrollbarSettingsRange extends ChildProperty<ScrollbarSettingsRange> {
+
+    /**
+     * Specifies the minimum range of an scrollbar.
+     * @default null
+     */
+
+     @Property(null)
+     public minimum: Date | string | number;
+
+     /**
+      * Specifies the maximum range of an scrollbar.
+      * @default null
+      */
+
+     @Property(null)
+     public maximum: Date | string | number;
+
+  }
+
+  /**
+   * Scrollbar Settings Properties for Lazy Loading
+   */
+  export class ScrollbarSettings extends ChildProperty<ScrollbarSettings> {
+      /**
+       * Enables the scrollbar for lazy loading.
+       * @default false
+       */
+     @Property(false)
+     public enable: boolean;
+
+      /**
+       * Defines the length of the points for numeric and logarithmic values.
+       * @default null
+       */
+     @Property(null)
+     public pointsLength: number;
+
+     /**
+      * Specifies the range for date time values alone.
+      */
+     @Complex<ScrollbarSettingsRangeModel>({}, ScrollbarSettingsRange)
+     public range: ScrollbarSettingsRangeModel;
+  }

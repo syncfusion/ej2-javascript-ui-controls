@@ -1416,6 +1416,7 @@ describe('keyboard events', () => {
     let datetimepicker: any;
     let keyEventArgs: any = {
         preventDefault: (): void => { /** NO Code */ },
+        stopPropagation:(): void=>{},
         action: 'altDownArrow'
     };
     beforeEach(() => {

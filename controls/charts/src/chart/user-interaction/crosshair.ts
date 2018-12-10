@@ -111,6 +111,10 @@ export class Crosshair {
         if (chart.tooltip.enable && !withInBounds(chart.tooltipModule.valueX, chart.tooltipModule.valueY, chartRect)) {
             return null;
         }
+        if  (chart.stockChart && chart.stockChart.onPanning) {
+            this.removeCrosshair(1000);
+            return null;
+        }
 
         this.valueX = chart.tooltip.enable ? chart.tooltipModule.valueX : chart.mouseX;
         this.valueY = chart.tooltip.enable ? chart.tooltipModule.valueY : chart.mouseY;
@@ -129,7 +133,7 @@ export class Crosshair {
             let axisTooltipGroup: Element = chart.renderer.createGroup({ 'id': this.elementID + '_crosshair_axis' });
             options = new PathOption(
                 this.elementID + '_HorizontalLine', 'none', crosshair.line.width,
-                crosshair.line.color || chart.themeStyle.crosshairLine, 1, null, horizontalCross
+                crosshair.line.color || chart.themeStyle.crosshairLine, 1, crosshair.dashArray, horizontalCross
             );
             this.renderCrosshairLine(options, crossGroup);
 
@@ -238,13 +242,13 @@ export class Crosshair {
         let boundsX: number = bounds.x;
         let boundsY: number = bounds.y;
         let islabelInside: boolean = axis.labelPosition === 'Inside';
-        let scrollBarHeight: number = axis.zoomingScrollBar && axis.zoomingScrollBar.svgObject ? axis.scrollBarHeight : 0;
-
+        let scrollBarHeight: number = axis.scrollbarSettings.enable || (axis.zoomingScrollBar && axis.zoomingScrollBar.svgObject)
+        ? axis.scrollBarHeight : 0;
         this.elementSize = measureText(text, axis.crosshairTooltip.textStyle);
 
         if (axis.orientation === 'Horizontal') {
             let yLocation: number = islabelInside ? axisRect.y - this.elementSize.height - (padding * 2 + arrowPadding) :
-             axisRect.y + scrollBarHeight;
+                axisRect.y + scrollBarHeight;
             let height: number = islabelInside ? axisRect.y - this.elementSize.height - arrowPadding : axisRect.y + arrowPadding;
             this.arrowLocation = new ChartLocation(this.valueX, yLocation);
 

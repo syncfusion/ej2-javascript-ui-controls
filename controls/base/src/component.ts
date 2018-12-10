@@ -5,7 +5,7 @@ import { Observer, BoundOptions } from './observer';
 import { ChildProperty } from './child-property';
 import { Property, NotifyPropertyChanges } from './notify-property-change';
 import { onIntlChange, rightToLeft, defaultCulture } from './internationalization';
-import { createElement } from './dom';
+import { createElement, addClass, removeClass } from './dom';
 
 let componentCount: number = 0;
 let lastPageID: number;
@@ -58,6 +58,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
             this.setPersistData();
         }
         this.localObserver.destroy();
+        removeClass([this.element], ['e-control']);
         if (this.refreshing) { return; }
         this.trigger('destroyed', { cancel: false });
         super.destroy();
@@ -89,6 +90,8 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
             this.element = <ElementType>selector;
         }
         if (!isNullOrUndefined(this.element)) {
+            let moduleClass: string = 'e-' + this.getModuleName().toLowerCase();
+            addClass([this.element], ['e-control', moduleClass]);
             this.isProtectedOnChange = false;
             if (this.needsID && !this.element.id) {
                 this.element.id = this.getUniqueID(this.getModuleName());

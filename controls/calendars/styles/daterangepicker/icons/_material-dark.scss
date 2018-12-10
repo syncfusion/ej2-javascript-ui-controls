@@ -1,0 +1,50 @@
+@include export-module('daterangepicker-material-icons') {
+  /*! component icons */
+  .e-input-group-icon.e-range-icon,
+  &.e-control-wrapper .e-input-group-icon.e-range-icon {
+    font-size: $range-icon-font-size;
+    margin: $range-icon-margin;
+    min-height: $range-icon-container-min-height;
+    min-width: $range-icon-container-min-width;
+    outline: none;
+
+    &::before {
+      content: '\e245';
+      font-family: 'e-icons';
+  }
+
+    &:focus {
+      background: $range-icon-hover-color;
+      border-radius: $range-icon-border-radius;
+  }
+}
+
+  .e-daterangepicker {
+    & .e-calendar .e-header .e-date-icon-next::before {
+      content: '\e913';
+    }& .e-calendar .e-header .e-date-icon-prev::before {
+      content: '\e921';
+    }& .e-change-icon::before {
+      content: '\e85f';
+    }& .e-calendar.e-rtl .e-header .e-date-icon-next::before {
+      content: '\e921';
+    }& .e-calendar.e-rtl .e-header .e-date-icon-prev::before {
+      content: '\e913';
+    }&.e-rtl .e-start-end .e-change-icon::before {
+      content: '\e85b';
+    }
+  }
+
+  .e-bigger {
+    & .e-input-group-icon.e-range-icon,
+    &.e-control-wrapper .e-input-group-icon.e-range-icon,
+    & .e-control-wrapper .e-input-group-icon.e-range-icon {
+      font-size: $range-bigger-icon-font-size;
+      margin: $range-icon-bigger-margin;
+      min-height: $range-icon-container-min-height;
+      min-width: $range-icon-container-min-width;
+      outline: none;
+    }
+  }
+}
+

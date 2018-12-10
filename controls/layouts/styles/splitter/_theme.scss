@@ -1,0 +1,87 @@
+@include export-module('splitter-theme') {
+  #{&}.e-splitter {
+
+    &.e-splitter-horizontal,
+    &.e-splitter-vertical {
+      border: solid 1px $splitter-border-color;
+
+      .e-pane {
+        color: $splitpane-font-color;
+
+        // sass-lint:disable-all
+        &.e-splitter {
+
+          &.e-splitter-horizontal {
+            border: transparent;
+          }
+
+          &.e-splitter-vertical {
+            border: transparent;
+          }
+        }
+      }
+    }
+
+    .e-split-bar {
+
+      &.e-split-bar-horizontal {
+        background: $splitbar-border-color;
+
+        .e-resize-handler {
+          background: $resize-icon-bg-color;
+          color: $splitbar-icon-color;
+        }
+
+        &.e-split-bar-hover {
+          background: $splitbar-hover-border-color;
+
+          .e-resize-handler {
+            background: $resize-icon-bg-color;
+            color: $splitbar-hover-border-color;
+          }
+        }
+
+        &.e-split-bar-active {
+          background: $splitbar-hover-border-color;
+
+          .e-resize-handler {
+            background: $resize-icon-bg-color;
+            color: $splitbar-hover-border-color;
+          }
+        }
+      }
+
+      &.e-split-bar-vertical {
+        background: $splitbar-border-color;
+
+        .e-resize-handler {
+          background: $resize-icon-bg-color;
+          color: $splitbar-icon-color;
+        }
+
+        &.e-split-bar-hover {
+          background: $splitbar-hover-border-color;
+
+          .e-resize-handler {
+            background: $resize-icon-bg-color;
+            color: $splitbar-hover-border-color;
+          }
+        }
+
+        &.e-split-bar-active {
+          background: $splitbar-hover-border-color;
+
+          .e-resize-handler {
+            background: $resize-icon-bg-color;
+            color: $splitbar-hover-border-color;
+          }
+        }
+      }
+    }
+
+    &.e-disabled {
+      opacity: 00.4;
+      pointer-events: none;
+    }
+  }
+}

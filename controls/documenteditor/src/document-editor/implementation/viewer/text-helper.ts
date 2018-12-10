@@ -2,8 +2,8 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { WCharacterFormat } from '../index';
 import { TextElementBox, ListTextElementBox, ParagraphWidget } from './page';
 import { LayoutViewer } from './viewer';
-import { HelperMethods } from '../editor/editor-helper';
-import { BaselineAlignment } from '../../index';
+import { HelperMethods, RtlInfo } from '../editor/editor-helper';
+import { BaselineAlignment, BiDirectionalOverride } from '../../index';
 /** 
  * @private
  */
@@ -63,7 +63,9 @@ export class TextHelper {
     public getTextSize(elementBox: TextElementBox, characterFormat: WCharacterFormat): number {
         // Gets the text element's width;
         let textTrimEndWidth: number = 0;
-        textTrimEndWidth = this.getWidth(elementBox.text, characterFormat);
+        let isRTL: boolean = characterFormat.bidi || this.isRTLText(elementBox.text);
+        let text: string = this.setText(elementBox.text, isRTL, characterFormat.bdo);
+        textTrimEndWidth = this.getWidth(text, characterFormat);
         elementBox.width = textTrimEndWidth;
         // Calculate the text element's height and baseline offset.
         let textHelper: TextSizeInfo = this.getHeight(characterFormat);
@@ -154,6 +156,22 @@ export class TextHelper {
         this.context.font = bold + ' ' + italic + ' ' + fontSize + 'pt' + ' ' + fontFamily;
         return this.context.measureText(text).width;
     }
+
+    public setText(textToRender: string, isBidi: boolean, bdo: BiDirectionalOverride, isRender?: boolean): string {
+        if (isNullOrUndefined(isRender)) {
+            isRender = false;
+        }
+        if (textToRender.length === 0) {
+            return '';
+        }
+        if ((!this.isRTLText(textToRender) && (bdo === 'RTL')) || (this.isRTLText(textToRender) && (bdo === 'LTR'))) {
+            textToRender = HelperMethods.ReverseString(textToRender);
+        } else if (isRender && this.isRTLText(textToRender) && HelperMethods.endsWith(textToRender)) {
+            let spaceCount: number = textToRender.length - HelperMethods.trimEnd(textToRender).length;
+            textToRender = HelperMethods.addSpace(spaceCount) + HelperMethods.trimEnd(textToRender);
+        }
+        return textToRender;
+    }
     /**
      * @private
      */
@@ -212,11 +230,76 @@ export class TextHelper {
         if (italic) {
             format.italic = true;
         }
-        elementBox.width = this.getWidth(elementBox.text, format);
+        let isRTL: boolean = format.bidi || this.isRTLText(elementBox.text);
+        let text: string = this.setText(elementBox.text, isRTL, format.bdo);
+        elementBox.width = this.getWidth(text, format);
         // Calculate the text element's height and baseline offset.
         let textHelper: TextSizeInfo = this.getHeight(format);
         elementBox.height = textHelper.Height;
         elementBox.baselineOffset = textHelper.BaselineOffset;
+    }
+
+    /**
+     * @private
+     */
+    public isRTLText(text: string): boolean {
+        let isRTL: boolean = false;
+        if (!isNullOrUndefined(text) && text !== '') {
+            for (let i: number = 0; i < text.length; i++) {
+                let temp: string = text[i];
+                if ((temp >= '\u0590' && temp <= '\u05ff') //Hebrew characters
+                    || (temp >= '\u0600' && temp <= '\u06ff') //Arabic - Urdu characters
+                    || (temp >= '\u0750' && temp <= '\u077f') //Arabic - Urdu characters
+                    || (temp >= '\u08a0' && temp <= '\u08ff') //Arabic characters
+                    || (temp >= '\ufb50' && temp <= '\ufdff') //Arabic - Urdu characters
+                    || (temp >= '\ufe70' && temp <= '\ufeff') //Arabic - Urdu characters
+                    || (temp >= '\ua980' && temp <= '\ua9df') //Javanese characters
+                    || (temp >= '\u0700' && temp <= '\u074f') //Syriac characters
+                    || (temp >= '\u0780' && temp <= '\u07bf') //Thaana characters
+                    || (temp >= '\u0840' && temp <= '\u085f') //Mandiac characters
+                    || (temp >= '\u07c0' && temp <= '\u07ff') //N'Ko characters
+                    || (temp >= '\u0800' && temp <= '\u083f') //Samaritan characters
+                    //Tifinag characters 
+                    || (temp >= '\u2d30' && temp <= '\u2d7f')) {
+                    isRTL = true;
+                    break;
+                }
+            }
+        }
+        return isRTL;
+    }
+    /**
+     * @private     
+     */
+    public getRtlLanguage(text: string): RtlInfo {
+        if (isNullOrUndefined(text) || text === '') {
+            return { isRtl: false, id: 0 };
+        }
+        if (text >= '\u0590' && text <= '\u05ff') {
+            return { isRtl: true, id: 1 };
+            //Arabic - Urdu characters
+        } else if ((text >= '\u0600' && text <= '\u06ff')
+            || (text >= '\u0750' && text <= '\u077f')
+            || (text >= '\u08a0' && text <= '\u08ff')
+            || (text >= '\ufb50' && text <= '\ufdff')
+            || (text >= '\ufe70' && text <= '\ufeff')) {
+            return { isRtl: true, id: 2 };
+        } else if (text >= '\ua980' && text <= '\ua9df') {
+            return { isRtl: true, id: 3 };
+        } else if (text >= '\u0700' && text <= '\u074f') {
+            return { isRtl: true, id: 4 };
+        } else if (text >= '\u0780' && text <= '\u07bf') {
+            return { isRtl: true, id: 5 };
+        } else if (text >= '\u0840' && text <= '\u085f') {
+            return { isRtl: true, id: 6 };
+        } else if (text >= '\u07c0' && text <= '\u07ff') {
+            return { isRtl: true, id: 7 };
+        } else if (text >= '\u0800' && text <= '\u083f') {
+            return { isRtl: true, id: 8 };
+        } else if (text >= '\u2d30' && text <= '\u2d7f') {
+            return { isRtl: true, id: 9 };
+        }
+        return { isRtl: false, id: 0 };
     }
     public destroy(): void {
         this.owner = undefined;

@@ -122,7 +122,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * @default 0
      * @aspType int
      * > For more details about firstDayOfWeek refer to 
-     * [`First day of week`](./how-to.html#change-the-first-day-of-the-week) documentation.
+     * [`First day of week`](../calendar/how-to/first-day-of-week#change-the-first-day-of-the-week) documentation.
      */
     @Property(null)
     public firstDayOfWeek: number;
@@ -151,7 +151,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * </table>
      * 
      * > For more details about start refer to 
-     * [`calendarView`](./calendar-views.html#view-restriction)documentation.
+     * [`calendarView`](../calendar/calendar-views#view-restriction)documentation.
      */
     @Property('Month')
     public start: CalendarView;
@@ -180,7 +180,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * </table> 
      * 
      * > For more details about depth refer to 
-     *  [`calendarView`](./calendar-views.html#view-restriction)documentation.
+     *  [`calendarView`](../calendar/calendar-views#view-restriction)documentation.
      */
     @Property('Month')
     public depth: CalendarView;
@@ -188,7 +188,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * Determines whether the week number of the year is to be displayed in the calendar or not.
      * @default false
      * > For more details about weekNumber refer to 
-     * [`Calendar with week number`](./how-to.html#render-the-calendar-with-week-numbers)documentation.
+     * [`Calendar with week number`](../calendar/how-to/week-number#render-the-calendar-with-week-numbers)documentation.
      */
     @Property(false)
     public weekNumber: boolean;

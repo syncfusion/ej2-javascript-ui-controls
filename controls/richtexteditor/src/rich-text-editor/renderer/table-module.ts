@@ -13,6 +13,7 @@ import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import * as classes from '../base/classes';
 import { dispatchEvent } from '../base/util';
+import { EditorManager } from '../../editor-manager';
 /**
  * `Table` module is used to handle table actions.
  */
@@ -77,6 +78,7 @@ export class Table {
     private afterRender(): void {
         this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
         this.parent.on(events.tableColorPickerChanged, this.setBGColor, this);
+        this.parent.on(events.mouseDown, this.cellSelect, this);
         if (this.parent.tableSettings.resize) {
             EventHandler.add(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
         }
@@ -193,9 +195,29 @@ export class Table {
         }
         this.parent.formatter.saveData();
     }
+    private insideList(range: Range): boolean {
+        let blockNodes: Element[] = <Element[]>(this.parent.formatter.editorManager as EditorManager).domNode.blockNodes();
+        let nodes: Element[] = [];
+        for (let i: number = 0; i < blockNodes.length; i++) {
+            if ((blockNodes[i].parentNode as Element).tagName === 'LI') {
+                nodes.push(blockNodes[i].parentNode as Element);
+            } else if (blockNodes[i].tagName === 'LI' && (blockNodes[i].childNodes[0] as Element).tagName !== 'P' &&
+                ((blockNodes[i].childNodes[0] as Element).tagName !== 'OL' &&
+                    (blockNodes[i].childNodes[0] as Element).tagName !== 'UL')) {
+                nodes.push(blockNodes[i]);
+            }
+        }
+        if (nodes.length > 1 || nodes.length && ((range.startOffset === 0 && range.endOffset === 0))) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     private tabSelection(event: KeyboardEvent, selection: NodeSelection, ele: HTMLElement): void {
-        if ((event.keyCode === 37 || event.keyCode === 39) && selection.range.startContainer.nodeType === 3) {
+        let insideList: boolean = this.insideList(selection.range);
+        if ((event.keyCode === 37 || event.keyCode === 39) && selection.range.startContainer.nodeType === 3 ||
+            insideList) {
             return;
         }
         event.preventDefault();
@@ -206,6 +228,9 @@ export class Table {
                     (!isNullOrUndefined(closest(ele, 'table').nextSibling)) ?
                         (closest(ele, 'table').nextSibling.nodeName.toLowerCase() === 'td') ?
                             closest(ele, 'table').nextSibling : ele : ele);
+            if (ele === nextElement && ele.nodeName === 'TH') {
+                nextElement = (closest(ele, 'table') as HTMLTableElement).rows[1].cells[0];
+            }
             if (event.keyCode === 39 && ele === nextElement) {
                 nextElement = closest(ele, 'table').nextSibling;
             }
@@ -228,6 +253,11 @@ export class Table {
                     (!isNullOrUndefined(closest(ele, 'table').previousSibling)) ?
                         (closest(ele, 'table').previousSibling.nodeName.toLowerCase() === 'td') ? closest(ele, 'table').previousSibling :
                             ele : ele);
+            if (ele === prevElement && (ele as HTMLTableDataCellElement).cellIndex === 0 &&
+                (closest(ele, 'table') as HTMLTableElement).tHead) {
+                let clsTble: HTMLTableElement = closest(ele, 'table') as HTMLTableElement;
+                prevElement = clsTble.rows[0].cells[clsTble.rows[0].cells.length - 1];
+            }
             if (event.keyCode === 37 && ele === prevElement) {
                 prevElement = closest(ele, 'table').previousSibling;
             }
@@ -251,13 +281,17 @@ export class Table {
         if (event.keyCode === 40) {
             ele = (!isNullOrUndefined(closest(ele, 'tr').nextSibling)) ?
                 (closest(ele, 'tr').nextSibling as Element).children[(ele as HTMLTableDataCellElement).cellIndex] as HTMLElement :
-                (!isNullOrUndefined(closest(ele, 'table').nextSibling)) ? closest(ele, 'table').nextSibling as HTMLElement :
-                    ele as HTMLElement;
+                ((closest(ele, 'table') as HTMLTableElement).tHead && ele.nodeName === 'TH') ?
+                    (closest(ele, 'table') as HTMLTableElement).rows[1].cells[(ele as HTMLTableDataCellElement).cellIndex] :
+                    (!isNullOrUndefined(closest(ele, 'table').nextSibling)) ? closest(ele, 'table').nextSibling as HTMLElement :
+                        ele as HTMLElement;
         } else {
             ele = (!isNullOrUndefined(closest(ele, 'tr').previousSibling)) ?
                 (closest(ele, 'tr').previousSibling as Element).children[(ele as HTMLTableDataCellElement).cellIndex] as HTMLElement :
-                (!isNullOrUndefined(closest(ele, 'table').previousSibling)) ? closest(ele, 'table').previousSibling as HTMLElement :
-                    ele as HTMLElement;
+                ((closest(ele, 'table') as HTMLTableElement).tHead && ele.nodeName !== 'TH') ?
+                    (closest(ele, 'table') as HTMLTableElement).tHead.rows[0].cells[(ele as HTMLTableDataCellElement).cellIndex] :
+                    (!isNullOrUndefined(closest(ele, 'table').previousSibling)) ? closest(ele, 'table').previousSibling as HTMLElement :
+                        ele as HTMLElement;
         }
         if (ele) {
             selection.setSelectionText(this.contentModule.getDocument(), ele, ele, 0, 0);
@@ -701,7 +735,7 @@ export class Table {
         this.dlgDiv.appendChild(tableDiv);
         this.dlgDiv.appendChild(this.parent.createElement('span', { className: 'e-span-border' }));
         let btnEle: HTMLElement = this.parent.createElement('button', {
-            className: 'e-insert-table-btn', id: this.rteID + '_inserTable',
+            className: 'e-insert-table-btn', id: this.rteID + '_insertTable',
             attrs: { type: 'button' }
         });
         this.dlgDiv.appendChild(btnEle);
@@ -855,7 +889,7 @@ export class Table {
             this.editdlgObj.hide({ returnValue: true } as Event);
             return;
         }
-        let tableDialog: HTMLElement = this.parent.createElement('div', { className: 'e-rte-edit-table', id: this.rteID + '_image' });
+        let tableDialog: HTMLElement = this.parent.createElement('div', { className: 'e-rte-edit-table', id: this.rteID + '_tabledialog' });
         this.parent.element.appendChild(tableDialog);
         let insert: string = this.l10n.getConstant('dialogInsert');
         let cancel: string = this.l10n.getConstant('dialogCancel');
@@ -892,8 +926,10 @@ export class Table {
 
     private customTable(args: ITableNotifyArgs, e: MouseEvent): void {
         let proxy: Table = ((this as ITableNotifyArgs).self) ? (this as ITableNotifyArgs).self : this;
-        let argument: ITableNotifyArgs = ((Browser.isDevice || proxy.parent.inlineMode.enable) ? args : this as ITableNotifyArgs);
-        proxy.tableInsert(proxy.rowTextBox.value, proxy.columnTextBox.value, e, argument);
+        if (proxy.rowTextBox.value && proxy.columnTextBox.value) {
+            let argument: ITableNotifyArgs = ((Browser.isDevice || proxy.parent.inlineMode.enable) ? args : this as ITableNotifyArgs);
+            proxy.tableInsert(proxy.rowTextBox.value, proxy.columnTextBox.value, e, argument);
+        }
     }
 
     private cancelDialog(e: MouseEvent): void {

@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Alignment, TextOverflow } from '../utils/enum';
+import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';import { Alignment, TextOverflow, BorderType } from '../utils/enum';import { Theme } from './theme';
 
 /**
  * Interface for a class Font
@@ -105,6 +105,25 @@ export interface BorderModel {
 }
 
 /**
+ * Interface for a class TooltipBorder
+ */
+export interface TooltipBorderModel {
+
+    /**
+     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     * @default ''
+     */
+    color?: string;
+
+    /**
+     * The width of the border in pixels.
+     * @default 0
+     */
+    width?: number;
+
+}
+
+/**
  * Interface for a class BubbleData
  */
 export interface BubbleDataModel {
@@ -163,6 +182,111 @@ export interface PaletteCollectionModel {
      * @default ''
      */
     label?: string;
+
+}
+
+/**
+ * Interface for a class AxisLabelBorder
+ */
+export interface AxisLabelBorderModel {
+
+    /**
+     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     * @default ''
+     */
+    color?: string;
+
+    /**
+     * The width of the border in pixels.
+     * @default 1
+     */
+    width?: number;
+
+    /**
+     * Border type for labels
+     * * Rectangle 
+     * * Without Top Border
+     * * Without Top/Bottom Border
+     * * Without Border
+     * * Without Bottom Border
+     * * Brace
+     * @default 'Rectangle'
+     */
+    type?: BorderType;
+
+}
+
+/**
+ * Interface for a class MultiLevelCategories
+ */
+export interface MultiLevelCategoriesModel {
+
+    /**
+     * Start value of the multi level labels
+     * @default null
+     * @aspDefaultValueIgnore
+     */
+    start?: number | Date | string;
+
+    /**
+     * End value of the multi level labels
+     * @default null
+     * @aspDefaultValueIgnore
+     */
+    end?: number | Date | string;
+
+    /**
+     * multi level labels text.
+     * @default ''
+     */
+    text?: string;
+
+    /**
+     * Maximum width of the text for multi level labels.
+     * @default null
+     * @aspDefaultValueIgnore
+     */
+    maximumTextWidth?: number;
+
+}
+
+/**
+ * Interface for a class MultiLevelLabels
+ */
+export interface MultiLevelLabelsModel {
+
+    /**
+     * Defines the position of the multi level labels. They are, 
+     * * Near: Places the multi level labels at Near.
+     * * Center: Places the multi level labels at Center.
+     * * Far: Places the multi level labels at Far.
+     * @default 'Center'
+     */
+    alignment?: Alignment;
+
+    /**
+     * Defines the textOverFlow for multi level labels. They are, 
+     * * Trim: Trim textOverflow for multi level labels.
+     * * Wrap: Wrap textOverflow for multi level labels.
+     * * none: None textOverflow for multi level labels.
+     * @default 'Wrap'
+     */
+    overflow?: TextOverflow;
+
+    /**
+     * Options to customize the multi level labels.
+     */
+    textStyle?: FontModel;
+
+    /**
+     * Border of the multi level labels.
+     */
+    border?: AxisLabelBorderModel;
+
+    /**
+     * multi level categories for multi level labels.
+     */
+    categories?: MultiLevelCategoriesModel[];
 
 }
 

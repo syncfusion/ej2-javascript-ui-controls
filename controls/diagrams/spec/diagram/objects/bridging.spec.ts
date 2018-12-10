@@ -6,6 +6,7 @@ import { DiagramElement } from '../../../src/diagram/core/elements/diagram-eleme
 import { ConnectorConstraints, DiagramConstraints } from '../../../src/diagram/enum/enum';
 import { ConnectorBridging } from '../../../src/diagram/objects/connector-bridging';
 import { Connector } from '../../../src/diagram/index';
+import { getLineSegment } from '../../../src/diagram/utility/diagram-util';
 Diagram.Inject(ConnectorBridging);
 /**
  * Bridging spec
@@ -212,7 +213,7 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             let element1: DiagramElement = diagram.connectors[1].wrapper.children[0];
             expect((element1 as PathElement).data == 'M300 100 L300 120 L388 120A 5 5 -168.6900675259798 , 1 1 400,121 L400 120 L400 199.5').toBe(true);
-            diagram.bridgingModule.getLineSegment(undefined, undefined, undefined, undefined);
+            getLineSegment(undefined, undefined, undefined, undefined);
             diagram.bridgingModule.intersect(
                 (diagram.connectors[1] as Connector).intermediatePoints,
                 (diagram.connectors[1] as Connector).intermediatePoints, true, 'Top', true);

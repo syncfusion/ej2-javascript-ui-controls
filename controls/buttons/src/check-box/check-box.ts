@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';
+import { Component, INotifyPropertyChanged , NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';
 import { EmitType, Event, EventHandler, KeyboardEvents } from '@syncfusion/ej2-base';
 import { addClass, detach, getUniqueID, isRippleEnabled, removeClass, rippleEffect } from '@syncfusion/ej2-base';
 import { CheckBoxModel } from './check-box-model';

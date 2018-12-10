@@ -3,7 +3,7 @@
  */
 import { IRichTextEditor } from '../base/interface';
 
-export function setAttributes(htmlAttributes: { [key: string]: string }, rte: IRichTextEditor, isFrame: boolean): void {
+export function setAttributes(htmlAttributes: { [key: string]: string }, rte: IRichTextEditor, isFrame: boolean, initial: boolean): void {
     let target: HTMLElement;
     if (isFrame) {
         let iFrame: HTMLDocument = rte.contentModule.getDocument();
@@ -20,7 +20,7 @@ export function setAttributes(htmlAttributes: { [key: string]: string }, rte: IR
                 rte.setEnable();
             } else if (htmlAttr === 'readonly' && htmlAttributes[htmlAttr] === 'readonly') {
                 rte.readonly = true;
-                rte.setReadOnly();
+                rte.setReadOnly(initial);
             } else if (htmlAttr === 'style') {
                 target.setAttribute('style', htmlAttributes[htmlAttr]);
             } else if (htmlAttr === 'placeholder') {

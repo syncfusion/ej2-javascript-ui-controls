@@ -15,13 +15,13 @@ describe('Diagram Control', () => {
     let height: string = 'height';
 
     let firstOutput: object[] = [{ width: 100, height: 100 },
-    { width: 201, height: 12 }, { width: 100, height: 100 },
+    { width: 201, height: 15 }, { width: 100, height: 100 },
     { width: 100, height: 100 }, { width: 100, height: 100 },
-    { width: 0, height: 12 }];
+    { width: 0, height: 15 }];
 
-    let secondOutput: object[] = [{ width: 100, height: 100 }, { width: 318, height: 12 },
-    { width: 217, height: 36 }, { width: 150, height: 100 }, { width: 150, height: 100 },
-    { width: 100, height: 100 }, { width: 509, height: 36 }, { width: 163, height: 24 }];
+    let secondOutput: object[] = [{ width: 100, height: 100 }, { width: 318, height: 15 },
+    { width: 217, height: 44 }, { width: 150, height: 100 }, { width: 150, height: 100 },
+    { width: 100, height: 100 }, { width: 509, height: 44 }, { width: 163, height: 29 }];
 
     let thirdOutput: object[] = [
         { width: 100, height: 60 }, { width: 100, height: 60 },

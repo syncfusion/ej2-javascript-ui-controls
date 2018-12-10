@@ -1,59 +1,59 @@
 @mixin focused-icon-color {
   & .e-caret {
-    color: $caret-color;
+    color: $cmenu-caret-color;
   }
 
   & .e-menu-icon {
-    color: $menu-icon-color;
+    color: $cmenu-icon-color;
   }
 }
 
 @mixin selected-icon-color {
   & .e-caret {
-    color: $caret-hover-color;
+    color: $cmenu-caret-hover-color;
   }
 
   & .e-menu-icon {
-    color: $menu-hover-icon-color;
+    color: $cmenu-hover-icon-color;
   }
 }
 
 @mixin icon-color {
   &.e-menu-header {
-    border-bottom-color: $li-border-color;
+    border-bottom-color: $cmenu-li-border-color;
   }
   @include focused-icon-color;
 }
 
 @mixin focused-color {
-  background-color: $li-bgcolor;
-  color: $li-selection-font-color;
-  outline: $li-hover-outline;
-  outline-offset: $li-hover-outline-offset;
+  background-color: $cmenu-li-bgcolor;
+  color: $cmenu-li-selection-font-color;
+  outline: $cmenu-li-hover-outline;
+  outline-offset: $cmenu-li-hover-outline-offset;
 }
 
 @mixin selected-color {
-  background-color: $li-selection-bgcolor;
-  color: $selected-color;
-  outline: $li-selected-outline;
-  outline-offset: $li-selected-outline-offset;
+  background-color: $cmenu-li-selection-bgcolor;
+  color: $cmenu-selected-color;
+  outline: $cmenu-li-selected-outline;
+  outline-offset: $cmenu-li-selected-outline-offset;
 }
 
 @mixin disabled-color {
   & .e-disabled {
-    color: $disable-text;
+    color: $cmenu-disable-text;
     opacity: 1;
 
     & .e-menu-icon {
-      color: $menu-icon-disabled-color;
+      color: $cmenu-icon-disabled-color;
     }
 
     & .e-caret {
-      color: $menu-icon-disabled-color;
+      color: $cmenu-icon-disabled-color;
     }
 
     & .e-menu-url {
-      color: $disable-text;
+      color: $cmenu-disable-text;
     }
   }
 }

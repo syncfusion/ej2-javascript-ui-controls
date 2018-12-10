@@ -394,6 +394,7 @@ describe('Group', () => {
         });
 
         it('Copy paste - group', (done: Function) => {
+
             let offsetX = diagram.nodes[2].offsetX;
             let offsetY = diagram.nodes[2].offsetY;
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
@@ -458,7 +459,6 @@ describe('Group', () => {
 
         it('Group With Default along with annotation rotate', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-
             mouseEvents.clickEvent(diagramCanvas, 275, 300);
             mouseEvents.dblclickEvent(diagramCanvas, 400, 400);
             (document.getElementById(diagram.element.id + '_editBox') as HTMLTextAreaElement).value = 'Text';
@@ -534,7 +534,6 @@ describe('Group', () => {
 
         it('Group With crash issue while select all', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-
             diagram.add({ id: 'node', width: 50, height: 50, offsetX: 100, offsetY: 100 });
             diagram.selectAll();
             expect(diagram.selectedItems.nodes.length === 2).toBe(true);
@@ -669,6 +668,7 @@ describe('Group', () => {
 
             diagram = new Diagram({
                 width: '800px', height: '600px', nodes: nodes,
+                scrollSettings:{verticalOffset:20},
                 snapSettings: { constraints: 0 }, contextMenuSettings: { show: true }
             });
             diagram.appendTo('#diagram_group_group_width_height');
@@ -689,5 +689,20 @@ describe('Group', () => {
             expect(diagram.nodes[3].offsetX == 733.3299999999999 && diagram.nodes[3].offsetY == 135).toBe(true);
             done();
         });
+        it('Checking group have width and height in rendering', (done: Function) => {
+            let data 
+            let selArray = [];
+            selArray.push(diagram.nodes[3]);
+            diagram.select(selArray);
+            let selectorElement = document.getElementById('diagram_group_group_width_height_SelectorElement');
+            var children =selectorElement.children[3] as HTMLElement
+            expect(children.getAttribute('cx') ==='699.9966666666667').toBe(true)
+            data = diagram.selectedItems.nodes;
+            diagram.paste(data);
+            
+            expect(diagram.nodes.length===8).toBe(true);
+            done();
+        });
+
     });
 });

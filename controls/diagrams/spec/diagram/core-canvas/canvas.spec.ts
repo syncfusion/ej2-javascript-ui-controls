@@ -372,8 +372,8 @@ describe('Diagram Control', () => {
         });
 
         it('Checking canvas panel with two rotated children in SVG rendering Mode', (done: Function) => {
-            expect(canvas.actualSize.width === 351.41999999999996 && canvas.actualSize.height === 351.41999999999996 && child1.offsetX === 316.07 && child2.offsetX === 470.71 &&
-                child1.offsetY === 216.07 && child2.offsetY === 370.71).toBe(true);
+            expect(canvas.actualSize.width === 351.41999999999996 && canvas.actualSize.height === 351.41999999999996 && child1.offsetX ===  310 && child2.offsetX === 450 &&
+                child1.offsetY === 160 && child2.offsetY === 350).toBe(true);
             done();
         });
     });
@@ -460,8 +460,8 @@ describe('Diagram Control', () => {
         });
 
         it('Checking rotated canvas with rotated children in SVG rendering Mode', (done: Function) => {
-            expect(canvas.actualSize.width === 331.41999999999996 && canvas.actualSize.height === 331.41999999999996 && child1.offsetX === 200 && child2.offsetX === 200 &&
-                child1.offsetY === 264.15 && child2.offsetY === 468.7 && child1.parentTransform === canvas.parentTransform + canvas.rotateAngle &&
+            expect(canvas.actualSize.width === 331.41999999999996 && canvas.actualSize.height === 331.41999999999996 && child1.offsetX === 235.36 && child2.offsetX === 200 &&
+                child1.offsetY === 220.21 && child2.offsetY === 439.41 && child1.parentTransform === canvas.parentTransform + canvas.rotateAngle &&
                 child2.parentTransform === canvas.parentTransform + canvas.rotateAngle).toBe(true);
             done();
         });

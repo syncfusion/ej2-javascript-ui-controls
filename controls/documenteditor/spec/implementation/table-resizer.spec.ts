@@ -37,7 +37,7 @@ describe('Table Resize at simple case in table middle validation', () => {
         document.body.removeChild(document.getElementById('container'));
         setTimeout(function () {
             done();
-        }, 2000);
+        }, 1000);
     });
     it('simple resizeColumn validation', () => {
         viewer = editor.viewer as PageLayoutViewer;
@@ -91,7 +91,7 @@ describe('Table row at simple case validation', () => {
         document.body.removeChild(document.getElementById('container'));
         setTimeout(function () {
             done();
-        }, 2000);
+        }, 1000);
     });
     it('Resize Table Row', () => {
         editor.editor.insertTable(2, 2);
@@ -145,7 +145,7 @@ describe('After resize cell validation without selection', () => {
         document.body.removeChild(document.getElementById('container'));
         setTimeout(function () {
             done();
-        }, 2000);
+        }, 1000);
     });
     it('Resize without selection', () => {
         viewer = editor.viewer as PageLayoutViewer;
@@ -160,7 +160,7 @@ describe('After resize cell validation without selection', () => {
         editor.editorModule.tableResize.resizerPosition = 1;
         editor.editorModule.tableResize.startingPoint = new Point(1075, 124);
         (editor.editorModule.tableResize as any).resizeTableCellColumn(500.5);
-        expect(((editor.editorModule.tableResize.currentResizingTable.childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).cellFormat.cellWidth).toBe(457.2);
+        expect(((editor.editorModule.tableResize.currentResizingTable.childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).cellFormat.cellWidth).toBe(468);
     });
     // it('Resize without selection and merge cell in first column', () => {
     //     viewer = editor.viewer as PageLayoutViewer;
@@ -212,7 +212,7 @@ describe('Table CELL Resizing table cell Selection testing', () => {
         document.body.removeChild(document.getElementById('container'));
         setTimeout(function () {
             done();
-        }, 2000);
+        }, 1000);
     });
     it('Table Cell Resizing With Cell Spacing', () => {
         editor.open(getTableCellSpaceJson());
@@ -263,7 +263,7 @@ describe('Table CELL Resizing table cell Selection testing', () => {
         document.body.removeChild(document.getElementById('container'));
         setTimeout(function () {
             done();
-        }, 2000);
+        }, 1000);
     });
     it('Selection At Row Resizing Tesing', () => {
         editor.open(getTableCellSpaceJson());

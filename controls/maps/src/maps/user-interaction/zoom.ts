@@ -4,6 +4,9 @@ import { RectOption, PolygonOption, createTooltip, calculateScale, getTouchCente
 import { MapLocation, zoomAnimate, smoothTranslate } from '../utils/helper';
 import { isNullOrUndefined, EventHandler, Browser, remove, createElement } from '@syncfusion/ej2-base';
 import { MarkerSettings, LayerSettings, changeBorderWidth } from '../index';
+import { IMapZoomEventArgs, IMapPanEventArgs } from '../model/interface';
+import { zoomIn, zoomOut, pan } from '../model/constants';
+import { PanDirection } from '../utils/enum';
 
 /**
  * Zoom module used to process the zoom for maps
@@ -48,6 +51,8 @@ export class Zoom {
     private pinchFactor: number = 1;
     private startTouches: Object[] = [];
     private templateCount: number;
+    private distanceX: number;
+    private distanceY: number;
     /** @private */
     public layerCollectionEle: Element;
     constructor(maps: Maps) {
@@ -70,9 +75,11 @@ export class Zoom {
     public performZooming(position: Point, newZoomFactor: number, type: string): void {
         let map: Maps = this.maps;
         let prevLevel: number = map.tileZoomLevel;
-        let prevScale: number = map.scale;
+        let scale: number = map.previousScale = map.scale;
         let maxZoom: number = map.zoomSettings.maxZoom;
         let minZoom: number = map.zoomSettings.minZoom;
+        let translatePoint: Point = map.previousPoint = map.translatePoint;
+        let prevTilePoint: Point = map.tileTranslatePoint;
         if ((!map.isTileMap) && (type === 'ZoomIn' ? newZoomFactor >= minZoom && newZoomFactor <= maxZoom : newZoomFactor >= minZoom)) {
             let availSize: Rect = map.mapAreaRect;
             let minBounds: Object = map.baseMapRectBounds['min'] as Object;
@@ -80,23 +87,42 @@ export class Zoom {
             let mapTotalWidth: number = Math.abs(minBounds['x'] - maxBounds['x']);
             let mapTotalHeight: number = Math.abs(minBounds['y'] - maxBounds['y']);
             let point: Point = map.translatePoint;
-            let translatePointX: number = point.x - (((availSize.width / prevScale) - (availSize.width / newZoomFactor)) / (availSize.width / position.x));
-            let translatePointY: number = point.y - (((availSize.height / prevScale) - (availSize.height / newZoomFactor)) / (availSize.height / position.y));
+            let translatePointX: number = point.x - (((availSize.width / scale) - (availSize.width / newZoomFactor)) / (availSize.width / position.x));
+            let translatePointY: number = point.y - (((availSize.height / scale) - (availSize.height / newZoomFactor)) / (availSize.height / position.y));
             let currentHeight: number = Math.abs(map.baseMapRectBounds['max']['y'] - map.baseMapRectBounds['min']['y']) * newZoomFactor;
             translatePointX = (currentHeight < map.mapAreaRect.height) ? (availSize.x + ((-(minBounds['x'])) + ((availSize.width / 2) - (mapTotalWidth / 2)))) : translatePointX;
             translatePointY = (currentHeight < map.mapAreaRect.height) ? (availSize.y + ((-(minBounds['y'])) + ((availSize.height / 2) - (mapTotalHeight / 2)))) : translatePointY;
             map.translatePoint = new Point(translatePointX, translatePointY);
             map.scale = newZoomFactor;
+            this.triggerZoomEvent(prevTilePoint, prevLevel);
         } else if ((map.isTileMap) && (newZoomFactor >= minZoom && newZoomFactor <= maxZoom)) {
             this.getTileTranslatePosition(prevLevel, newZoomFactor, position);
             map.tileZoomLevel = newZoomFactor;
             map.scale = Math.pow(2, newZoomFactor - 1);
+            map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.scale)) / map.scale;
+            map.translatePoint.y = (map.tileTranslatePoint.y - (0.01 * map.scale)) / map.scale;
+            this.triggerZoomEvent(prevTilePoint, prevLevel);
             map.mapLayerPanel.generateTiles(newZoomFactor, map.tileTranslatePoint);
-            map.translatePoint.x = (map.tileTranslatePoint.x - (0.5 * map.scale)) / map.scale;
-            map.translatePoint.y = (map.tileTranslatePoint.y - (0.5 * map.scale)) / map.scale;
         }
         this.applyTransform();
-        map.trigger(doubleClick, this);
+    }
+
+    private triggerZoomEvent(prevTilePoint: Point, prevLevel: number): void {
+        let map: Maps = this.maps; let zoomArgs: IMapZoomEventArgs;
+        if (!map.isTileMap) {
+            zoomArgs = {
+                cancel: false, name: 'zoom', type: map.scale > map.previousScale ? zoomIn : zoomOut, maps: map,
+                tileTranslatePoint: {}, translatePoint: { previous: map.previousPoint, current: map.translatePoint },
+                tileZoomLevel: {}, scale: { previous: map.previousScale, current: map.scale }
+            };
+        } else {
+            zoomArgs = {
+                cancel: false, name: 'zoom', type: map.tileZoomLevel > prevLevel ? zoomIn : zoomOut, maps: map,
+                tileTranslatePoint: { previous: prevTilePoint, current: map.tileTranslatePoint }, translatePoint: { previous: map.previousPoint, current: map.translatePoint },
+                tileZoomLevel: { previous: prevLevel, current: map.tileZoomLevel }, scale: { previous: map.previousScale, current: map.scale }
+            };
+        }
+        map.trigger('zoom', zoomArgs);
     }
 
     private getTileTranslatePosition(prevLevel: number, currentLevel: number, position: Point): void {
@@ -160,10 +186,12 @@ export class Zoom {
     }
 
     public performPinchZooming(e: PointerEvent | TouchEvent): void {
-        let touches: TouchList = null;
         let map: Maps = this.maps;
         let prevLevel: number = map.tileZoomLevel;
         let availSize: Rect = map.mapAreaRect;
+        map.previousScale = map.scale;
+        map.previousPoint = map.translatePoint;
+        let prevTilePoint: Point = map.tileTranslatePoint;
         let scale: number = calculateScale(<ITouches[]>this.touchStartList, <ITouches[]>this.touchMoveList);
         let touchCenter: Point = getTouchCenter(getTouches(<ITouches[]>this.touchMoveList, this.maps));
         let newScale: number = scale / this.lastScale;
@@ -171,7 +199,7 @@ export class Zoom {
         this.pinchFactor *= newScale;
         this.pinchFactor = Math.min(this.maps.zoomSettings.maxZoom, Math.max(this.pinchFactor, this.maps.zoomSettings.minZoom));
         let zoomCalculationFactor: number = this.pinchFactor;
-        let translatePointX: number; let translatePointY: number;
+        let zoomArgs: IMapZoomEventArgs;
         if (!map.isTileMap) {
             let minBounds: Object = map.baseMapRectBounds['min'] as Object;
             let maxBounds: Object = map.baseMapRectBounds['max'] as Object;
@@ -181,20 +209,22 @@ export class Zoom {
             let currentHeight: number = Math.abs(map.baseMapRectBounds['max']['y'] - map.baseMapRectBounds['min']['y']) * zoomCalculationFactor;
             let translatePointX: number = translatePoint.x - (((availSize.width / map.scale) - (availSize.width / zoomCalculationFactor)) / (availSize.width / touchCenter.x));
             let translatePointY: number = translatePoint.y - (((availSize.height / map.scale) - (availSize.height / zoomCalculationFactor)) / (availSize.height / touchCenter.y));
-            // translatePointX = (currentHeight < map.mapAreaRect.height) ? (availSize.x + ((-(minBounds['x'])) + ((availSize.width / 2) - (mapTotalWidth / 2)))) : translatePointX;
-            //translatePointY = (currentHeight < map.mapAreaRect.height) ? (availSize.y + ((-(minBounds['y'])) + ((availSize.height / 2) - (mapTotalHeight / 2)))) : translatePointY;
+            translatePointX = (currentHeight < map.mapAreaRect.height) ? (availSize.x + ((-(minBounds['x'])) + ((availSize.width / 2) - (mapTotalWidth / 2)))) : translatePointX;
+            translatePointY = (currentHeight < map.mapAreaRect.height) ? (availSize.y + ((-(minBounds['y'])) + ((availSize.height / 2) - (mapTotalHeight / 2)))) : translatePointY;
             map.translatePoint = new Point(translatePointX, translatePointY);
             map.scale = zoomCalculationFactor;
+            this.triggerZoomEvent(prevTilePoint, prevLevel);
         } else {
             let newTileFactor: number = zoomCalculationFactor;
             this.getTileTranslatePosition(prevLevel, newTileFactor, { x: touchCenter.x, y: touchCenter.y });
             map.tileZoomLevel = newTileFactor;
-            map.mapLayerPanel.generateTiles(newTileFactor, map.tileTranslatePoint);
             map.translatePoint.x = (map.tileTranslatePoint.x - (0.5 * Math.pow(2, newTileFactor))) /
                 (Math.pow(2, newTileFactor));
             map.translatePoint.y = (map.tileTranslatePoint.y - (0.5 * Math.pow(2, newTileFactor))) /
                 (Math.pow(2, newTileFactor));
             map.scale = (Math.pow(2, newTileFactor));
+            this.triggerZoomEvent(prevTilePoint, prevLevel);
+            map.mapLayerPanel.generateTiles(newTileFactor, map.tileTranslatePoint);
         }
         this.applyTransform();
     }
@@ -415,23 +445,30 @@ export class Zoom {
         }
     }
 
-    public panning(): void {
-        let map: Maps = this.maps;
-        let areaRect: Rect = map.mapAreaRect;
+    public panning(direction: PanDirection, xDifference: number, yDifference: number): void {
+        let map: Maps = this.maps; let panArgs: IMapPanEventArgs;
         let down: Point = this.mouseDownPoints;
         let move: Point = this.mouseMovePoints;
         let scale: number = map.scale;
         let translatePoint: Point = map.translatePoint;
-        let x: number; let y: number; let transY: number; let transX: number;
+        let prevTilePoint: Point = map.tileTranslatePoint;
+        let x: number; let y: number;
+        xDifference = !isNullOrUndefined(xDifference) ? xDifference : (down.x - move.x);
+        yDifference = !isNullOrUndefined(yDifference) ? yDifference : (down.y - move.y);
         if (!map.isTileMap) {
-            let x: number = translatePoint.x - (down.x - move.x) / scale;
-            let y: number = translatePoint.y - (down.y - move.y) / scale;
+            x = translatePoint.x - xDifference / scale;
+            y = translatePoint.y - yDifference / scale;
             let layerRect: ClientRect = getElementByID(map.element.id + '_Layer_Collections').getBoundingClientRect();
             let elementRect: ClientRect = getElementByID(map.element.id + '_svg').getBoundingClientRect();
-            let panningXDirection: boolean = (((down.x - move.x) < 0 ? layerRect.left <= (elementRect.left + map.mapAreaRect.x) :
+            let panningXDirection: boolean = ((xDifference < 0 ? layerRect.left <= (elementRect.left + map.mapAreaRect.x) :
                 ((layerRect.left + layerRect.width) >= (elementRect.left + elementRect.width) + map.mapAreaRect.x + map.margin.left)));
-            let panningYDirection: boolean = (((down.y - move.y) < 0 ? layerRect.top <= (elementRect.top + map.mapAreaRect.y) :
+            let panningYDirection: boolean = ((yDifference < 0 ? layerRect.top <= (elementRect.top + map.mapAreaRect.y) :
                 ((layerRect.top + layerRect.height) >= (elementRect.top + elementRect.height) + map.mapAreaRect.y + map.margin.top)));
+            panArgs = {
+                cancel: false, name: pan, maps: map, tileTranslatePoint: {}, translatePoint: { previous: translatePoint, current: new Point(x, y) },
+                scale: map.scale, tileZoomLevel: map.tileZoomLevel
+            };
+            map.trigger(pan, panArgs);
             if (panningXDirection && panningYDirection) {
                 map.translatePoint = new Point(x, y);
                 this.applyTransform();
@@ -443,16 +480,32 @@ export class Zoom {
                 this.applyTransform();
             }
         } else if (this.maps.tileZoomLevel > 1) {
-            x = map.tileTranslatePoint.x - (down.x - move.x);
-            y = map.tileTranslatePoint.y - (down.y - move.y);
+            x = map.tileTranslatePoint.x - xDifference;
+            y = map.tileTranslatePoint.y - yDifference;
+            this.distanceX = x - map.tileTranslatePoint.x;
+            this.distanceY = y - map.tileTranslatePoint.y;
             map.tileTranslatePoint.x = x;
             map.tileTranslatePoint.y = y;
+            map.translatePoint.x = (map.tileTranslatePoint.x - xDifference) / map.scale;
+            map.translatePoint.y = (map.tileTranslatePoint.y - yDifference) / map.scale;
+            panArgs = {
+                cancel: false, name: pan, maps: map, tileTranslatePoint: { previous: prevTilePoint, current: map.tileTranslatePoint },
+                translatePoint: { previous: translatePoint, current: map.translatePoint }, scale: map.scale,
+                tileZoomLevel: map.tileZoomLevel
+            };
+            map.trigger(pan, panArgs);
             map.mapLayerPanel.generateTiles(map.tileZoomLevel, map.tileTranslatePoint);
-            map.translatePoint.x = (map.tileTranslatePoint.x - (down.x - move.x)) / map.scale;
-            map.translatePoint.y = (map.tileTranslatePoint.y - (down.y - move.y)) / map.scale;
             this.applyTransform();
         }
         this.mouseDownPoints = this.mouseMovePoints;
+    }
+
+    private toAlignSublayer(): void {
+        this.maps.translatePoint.x = !isNullOrUndefined(this.distanceX) ? (this.maps.translatePoint.x -
+            (this.distanceX / this.maps.scale)) : this.maps.translatePoint.x;
+        this.maps.translatePoint.y = !isNullOrUndefined(this.distanceY) ? this.maps.translatePoint.y -
+            (this.distanceY / this.maps.scale) : this.maps.translatePoint.y;
+        this.applyTransform(false);
     }
 
     public toolBarZooming(zoomFactor: number, type: string): void {
@@ -462,9 +515,11 @@ export class Zoom {
         let maxZoom: number = map.zoomSettings.maxZoom;
         let minZoom: number = map.zoomSettings.minZoom;
         let size: Rect = map.mapAreaRect;
+        let translatePoint: Point = map.previousPoint = map.translatePoint;
+        let prevTilePoint: Point = map.tileTranslatePoint;
         zoomFactor = (type === 'ZoomOut') ? (Math.round(zoomFactor) === 1 ? 1 : zoomFactor) : zoomFactor;
+        let zoomArgs: IMapZoomEventArgs;
         if ((!map.isTileMap) && (type === 'ZoomIn' ? zoomFactor >= minZoom && zoomFactor <= maxZoom : zoomFactor >= minZoom)) {
-            let translatePoint: Point = map.previousPoint = map.translatePoint;
             let min: Object = map.baseMapRectBounds['min'] as Object;
             let max: Object = map.baseMapRectBounds['max'] as Object;
             let mapWidth: number = Math.abs(max['x'] - min['x']);
@@ -478,15 +533,17 @@ export class Zoom {
                 : translatePointY;
             map.translatePoint = new Point(translatePointX, translatePointY);
             map.scale = zoomFactor;
+            this.triggerZoomEvent(prevTilePoint, prevLevel);
         } else if ((map.isTileMap) && (zoomFactor >= minZoom && zoomFactor <= maxZoom)) {
             let tileZoomFactor: number = zoomFactor;
             map.scale = Math.pow(2, tileZoomFactor - 1);
             map.tileZoomLevel = tileZoomFactor;
             let position: Point = { x: map.availableSize.width / 2, y: map.availableSize.height / 2 };
             this.getTileTranslatePosition(prevLevel, tileZoomFactor, position);
+            map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.scale)) / map.scale;
+            map.translatePoint.y = (map.tileTranslatePoint.y - (0.01 * map.scale)) / map.scale;
+            this.triggerZoomEvent(prevTilePoint, prevLevel);
             map.mapLayerPanel.generateTiles(tileZoomFactor, map.tileTranslatePoint);
-            map.translatePoint.x = (map.tileTranslatePoint.x - (0.5 * map.scale)) / map.scale;
-            map.translatePoint.y = (map.tileTranslatePoint.y - (0.5 * map.scale)) / map.scale;
         }
         this.applyTransform(true);
     }
@@ -717,7 +774,9 @@ export class Zoom {
         element.style.left = x + 'px';
         element.style.top = y + 'px';
         let color: string = this.maps.zoomSettings.highlightColor;
-        let css: string = ' .e-maps-toolbar:hover > circle { stroke:' + color + '; } .e-maps-toolbar:hover > path { fill: ' + color + ' ;  stroke: ' + color + '; }';
+        let css: string = ' .e-maps-toolbar:hover > circle { stroke:' + color + '; } .e-maps-toolbar:hover > path { fill: ' + color + ' ;  stroke: ' + color + '; }' +
+            '.e-maps-toolbar:hover { cursor: pointer; } .e-maps-cursor-disable:hover { cursor: not-allowed; } .e-maps-panning:hover { cursor: pointer; } ' +
+            '.e-maps-popup-close { display: block; opacity: 0; }';
         let style: HTMLStyleElement = document.createElement('style');
         style.appendChild(document.createTextNode(css));
         element.appendChild(style);
@@ -849,7 +908,7 @@ export class Zoom {
         if (zoom.enable && this.isPanning) {
             e.preventDefault();
             this.maps.element.style.cursor = 'pointer';
-            this.panning();
+            this.panning('None', null, null);
         }
         if (this.isTouch ? (touches.length === 1 && this.rectZoomingStart) : this.rectZoomingStart) {
             e.preventDefault();
@@ -866,6 +925,10 @@ export class Zoom {
         this.touchMoveList = [];
         this.lastScale = 1;
         this.maps.element.style.cursor = 'auto';
+        if (!isNullOrUndefined(this.distanceX) || !isNullOrUndefined(this.distanceY)) {
+            this.toAlignSublayer();
+            this.distanceX = this.distanceY = null;
+        }
         let zoomRectElement: HTMLElement = <HTMLElement>getElementByID(this.maps.element.id + '_Selection_Rect_Zooming');
         if (zoomRectElement && this.maps.zoomSettings.enable) {
             remove(zoomRectElement);

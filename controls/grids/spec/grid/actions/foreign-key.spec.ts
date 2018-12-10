@@ -378,9 +378,9 @@ describe('Foreign Key =>', () => {
     });
 
     describe('Binding datasource dynamically with Foreign key =>', () => {
-        it('Bind the data', () => {
-            expect(gridObj.getDataModule().dataManager.dataSource.json.length).toBe(15);
-        });
+        // it('Bind the data', () => {
+        //     expect(gridObj.getDataModule().dataManager.dataSource.json.length).toBe(15);
+        // });
         it('Check the data', (done: Function) => {
             gridObj.actionComplete = (args) => {
                 if (args.requestType === 'refresh') {

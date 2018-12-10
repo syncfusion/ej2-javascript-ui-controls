@@ -56,6 +56,10 @@ export class Crud {
     }
 
     public addEvent(eventData: Object | Object[]): void {
+        if (this.checkBlockEvents(eventData)) {
+            this.parent.quickPopup.openValidationError('blockAlert');
+            return;
+        }
         let fields: EventFieldsMapping = this.parent.eventFields;
         let promise: Promise<Object> = null;
         let editParms: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
@@ -84,6 +88,10 @@ export class Crud {
     }
 
     public saveEvent(event: Object | Object[], action?: CurrentAction): void {
+        if (this.checkBlockEvents(event)) {
+            this.parent.quickPopup.openValidationError('blockAlert');
+            return;
+        }
         let fields: EventFieldsMapping = this.parent.eventFields;
         let promise: Promise<Object> = null;
         let editParms: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
@@ -264,5 +272,28 @@ export class Crud {
             exceptionDateList = exDate;
         }
         return exceptionDateList;
+    }
+
+    private checkBlockEvents(eventData: Object | Object[]): boolean {
+        let eventCollection: Object[] = (eventData instanceof Array) ? eventData : [eventData];
+        let isBlockAlert: boolean = false;
+        eventCollection.forEach((event: { [key: string]: Object }) => {
+            let dataCol: Object[] = [];
+            if (!isNullOrUndefined(event[this.parent.eventFields.recurrenceRule])) {
+                let parentObj: { [key: string]: Object } = this.parent.eventBase.getRecurrenceEvent(event);
+                dataCol = this.parent.eventBase.generateOccurrence(parentObj || event);
+            } else {
+                dataCol.push(event);
+            }
+            for (let data of dataCol) {
+                let filterBlockEvents: Object[] = this.parent.eventBase.filterBlockEvents(data as { [key: string]: Object });
+                if (filterBlockEvents.length > 0) {
+                    isBlockAlert = true;
+                    break;
+                }
+            }
+        });
+        this.parent.uiStateValues.isBlock = isBlockAlert;
+        return isBlockAlert;
     }
 }

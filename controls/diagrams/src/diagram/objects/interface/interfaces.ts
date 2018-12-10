@@ -7,6 +7,8 @@ import { MarginModel } from '../../core/appearance-model';
 import { Stretch, FileFormats, ExportModes, } from '../../enum/enum';
 import { DiagramRenderer } from '../../rendering/renderer';
 import { BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
+import { ConnectorModel } from '../connector-model';
+import { NodeModel } from '../node-model';
 
 
 /**
@@ -202,4 +204,26 @@ export interface ActiveLabel {
     id: string;
     parentId: string;
     isGroup: boolean;
+}
+
+/** @private */
+export interface IDataSource {
+    dataSource: object;
+    isBinding: boolean;
+    nodes: NodeModel[];
+    connectors: ConnectorModel[];
+}
+
+/** @private */
+export interface IFields {
+    id: string;
+    sourceID: string;
+    targetID: string;
+    sourcePointX: number;
+    sourcePointY: number;
+    targetPointX: number;
+    targetPointY: number;
+    crudAction: {
+        customFields: string[]
+    };
 }

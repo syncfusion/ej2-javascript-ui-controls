@@ -1103,7 +1103,8 @@ export class BpmnDiagrams {
     private clearAnnotations(obj: NodeModel, diagram: Diagram): void {
         let bpmnShape: BpmnShape = obj.shape as BpmnShape;
         if (bpmnShape.annotations.length) {
-            for (let annotation of bpmnShape.annotations) {
+            for (let i: number = bpmnShape.annotations.length - 1; i >= 0; i--) {
+                let annotation: BpmnAnnotationModel = bpmnShape.annotations[i];
                 this.removeAnnotationObjects(obj, annotation, diagram);
             }
         }
@@ -1992,7 +1993,7 @@ export class BpmnDiagrams {
 
     /** @private */
     public updateBPMNConnector(actualObject: Connector, oldObject: Connector, connection: Connector, diagram: Diagram): Connector {
-        let flowType: BpmnFlowModel = connection.shape;
+        let flowType: BpmnFlowModel = connection.shape as BpmnFlowModel;
         if (flowType.sequence !== undefined) {
             actualObject = this.getSequence(actualObject, oldObject, connection, diagram);
         }

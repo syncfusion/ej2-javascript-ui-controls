@@ -2,22 +2,39 @@
  *  Menu spec document
  */
 import { Menu } from '../src/menu/menu';
-import { MenuItemModel } from '../src/common/menu-base-model';
-import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { MenuItemModel, BeforeOpenCloseMenuEventArgs } from '../src/common/index';
+import { closest, createElement, Browser, isNullOrUndefined, select } from '@syncfusion/ej2-base';
+
+function triggerMouseEvent(node: HTMLElement, eventType: string) {
+    let mouseEve: MouseEvent = document.createEvent('MouseEvents');
+    mouseEve.initEvent(eventType, true, true);
+    node.dispatchEvent(mouseEve);
+}
+
+function appendStyles(css: string) {
+    let head: HTMLHeadElement = document.getElementsByTagName('head')[0];
+    let style: HTMLStyleElement = createElement('style') as HTMLStyleElement;
+    style.type = 'text/css';
+    style.appendChild(document.createTextNode(css));
+    head.appendChild(style);
+}
 
 describe('Menu', () => {
     let menu: any;
     let items: MenuItemModel[] = [
         {
             text: 'Home',
+            id: 'home',
             iconCss: 'e-icons e-home'
         },
         {
             text: 'Book Categories',
+            id: 'book',
             iconCss: 'e-icons e-book',
             items: [
                 {
                     text: 'Cookbooks',
+                    id: 'cookbooks',
                     iconCss: 'e-icons e-share',
                     items: [
                         {
@@ -74,18 +91,21 @@ describe('Menu', () => {
         },
         {
             text: 'Purchase',
-            iconCss: 'e-icons e-purchase'
+            iconCss: 'e-icons e-purchase',
+            id: 'purchase'
         },
         {
             text: 'Contact Us',
-            iconCss: 'e-icons e-contact'
+            iconCss: 'e-icons e-contact',
+            id: 'contact'
         },
         {
             separator: true,
         },
         {
             text: 'Login',
-            iconCss: 'e-icons e-login'
+            iconCss: 'e-icons e-login',
+            id: 'login'
         }
     ];
     let flatDatasource: { [key: string]: Object }[] = [
@@ -115,8 +135,8 @@ describe('Menu', () => {
         { title: "Option4" },
         { title: "Option5" }
     ];
-    let ul: HTMLElement =  createElement('ul', { id: 'menu' });
-    let sTag: HTMLElement = createElement('script', { id: 'menuTemplate', attrs:{ type: 'text/x-template' } });
+    let ul: HTMLElement = createElement('ul', { id: 'menu' });
+    let sTag: HTMLElement = createElement('script', { id: 'menuTemplate', attrs: { type: 'text/x-template' } });
     sTag.innerHTML = '<div>${title}</div>';
     let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
         'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
@@ -124,6 +144,68 @@ describe('Menu', () => {
     describe('DOM', () => {
         afterEach(() => {
             menu.destroy();
+        });
+        it('Architecture Checking', () => {
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items }, '#menu');
+            let wrap: HTMLElement = menu.getWrapper();
+            expect(wrap.classList.contains('e-menu-wrapper')).toBeTruthy();
+            expect(wrap.children[0].classList.contains('e-menu')).toBeTruthy();
+            expect(wrap.children[0].getAttribute('role')).toEqual('menubar');
+            expect(wrap.children[0].children[0].classList.contains('e-menu-item')).toBeTruthy();
+            // Sub menu li
+            let li: HTMLElement = ul.children[1] as HTMLElement;
+            expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+            expect(li.getAttribute('aria-haspopup')).toEqual('true');
+            expect(li.getAttribute('aria-expanded')).toEqual('false');
+            triggerMouseEvent(li, 'mouseover');
+            expect(li.getAttribute('aria-expanded')).toEqual('true');
+            let popup: HTMLElement = menu.getPopups()[0];
+            expect(popup.classList.contains('e-menu-popup')).toBeTruthy();
+            expect(popup.children[0].classList.contains('e-ul')).toBeTruthy();
+            triggerMouseEvent(document.body, 'mouseover');
+            expect(menu.getPopups().length).toBe(0);
+        });
+        it('Menu with scroll enabled', () => {
+            appendStyles('#menu { width: 400px; } .e-menu-wrapper { width: 250px; } #cookbooks-menu-popup.e-menu-popup, #book-menu-popup.e-menu-popup{ height: 200px; } #cookbooks-menu-popup.e-menu-popup .e-ul, #book-menu-popup.e-menu-popup .e-ul{ height: 250px; }');
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items, enableScrolling: true }, '#menu');
+            let wrap: HTMLElement = menu.getWrapper();
+            let li: HTMLElement = select('#book', wrap.children[0]) as HTMLElement;
+            triggerMouseEvent(li, 'mouseover');
+            let popup: HTMLElement = menu.getPopups()[0];
+            expect(wrap.children[0].classList.contains('e-menu-hscroll')).toBeTruthy();
+            expect(wrap.children[0].children[0].classList.contains('e-scroll-left-nav')).toBeTruthy();
+            expect(wrap.children[0].lastElementChild.classList.contains('e-scroll-right-nav')).toBeTruthy();
+            expect(ul.parentElement.classList.contains('e-hscroll-content')).toBeTruthy();
+            expect(popup.children[0].classList.contains('e-menu-vscroll')).toBeTruthy();
+            expect(popup.children[0].children[0].classList.contains('e-scroll-up-nav')).toBeTruthy();
+            expect(popup.children[0].lastElementChild.classList.contains('e-scroll-down-nav')).toBeTruthy();
+            expect(select('.e-ul', popup).parentElement.classList.contains('e-vscroll-content')).toBeTruthy();
+            li = select('#cookbooks', popup) as HTMLElement;
+            triggerMouseEvent(li, 'mouseover');
+            expect(menu.navIdx.length).toBe(2);
+            triggerMouseEvent(document.body, 'mouseover');
+        });
+        it('Vertical Menu with scroll enabled', () => {
+            appendStyles('#menu { height: 250px; } .e-menu-wrapper { height: 200px; }');
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items, orientation: 'Vertical', enableScrolling: true }, '#menu');
+            let wrap: HTMLElement = menu.getWrapper();
+            expect(ul.classList.contains('e-vertical')).toBeTruthy();
+            expect(wrap.children[0].classList.contains('e-menu-vscroll')).toBeTruthy();
+            expect(wrap.children[0].children[0].classList.contains('e-scroll-up-nav')).toBeTruthy();
+            expect(wrap.children[0].lastElementChild.classList.contains('e-scroll-down-nav')).toBeTruthy();
+            expect(ul.parentElement.classList.contains('e-vscroll-content')).toBeTruthy();
+        });
+
+        it('Vertical Menu with scroll enabled', () => {
+            document.body.appendChild(createElement('ejs-menu', { id: 'ng-menu' }));
+            menu = new Menu({ items: items }, '#ng-menu');
+            let wrap: HTMLElement = menu.getWrapper();
+            expect(wrap.classList.contains('e-menu-wrapper')).toBeTruthy();
+            expect(wrap.tagName).toEqual('EJS-MENU');
+            expect(wrap.children[0].classList.contains('e-menu')).toBeTruthy();
         });
     });
 
@@ -157,27 +239,83 @@ describe('Menu', () => {
             let wrap: HTMLElement = menu.getWrapper();
             expect(wrap.children[0].children[0].textContent).toEqual('Option1');
         });
-    });
-
-    describe('Mouse events', () => {
-        afterEach(() => {
-            menu.destroy();
-        });
-
-        it('Opening submenu inside relative element Checking', () => {
-            let relativeEle: HTMLElement = createElement('div');
-            relativeEle.style.position = 'relative';
-            document.body.appendChild(relativeEle);
-            relativeEle.appendChild(ul);
-            menu = new Menu({ items: items, showItemOnClick: true }, '#menu');
-            (menu.element.children[1] as HTMLElement).click();
-            expect(menu.getWrapper().childElementCount).toEqual(2);
+        it('enableScrolling Checking', () => {
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items, enableScrolling: true }, '#menu');
+            expect(menu.enableScrolling).toBeTruthy();
         });
     });
 
     describe('Public Methods Checking', () => {
         afterEach(() => {
             menu.destroy();
+        });
+
+        it('Show and Hide items', () => {
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items }, '#menu');
+            menu.hideItems(['Home', 'Purchase']);
+            expect(ul.children[0].classList.contains('e-menu-hide')).toBeTruthy();
+            expect(ul.children[2].classList.contains('e-menu-hide')).toBeTruthy();
+            menu.showItems(['home', 'purchase'], true);
+            expect(ul.children[0].classList.contains('e-menu-hide')).toBeFalsy();
+            expect(ul.children[2].classList.contains('e-menu-hide')).toBeFalsy();
+        });
+
+        it('Enable and Disable items', () => {
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items }, '#menu');
+            menu.enableItems(['login', 'purchase'], false, true);
+            expect(ul.children[2].classList.contains('e-disabled')).toBeTruthy();
+            expect(ul.children[5].classList.contains('e-disabled')).toBeTruthy();
+            menu.enableItems(['Login', 'Purchase'], true);
+            expect(ul.children[2].classList.contains('e-disabled')).toBeFalsy();
+            expect(ul.children[5].classList.contains('e-disabled')).toBeFalsy();
+        });
+
+        it('intertAfter, insertBefore and removeItems', () => {
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items }, '#menu');
+            menu.insertBefore([{ text: 'Blog', id: 'blog' }], 'contact', true);
+            expect(menu.items[3].text).toBe('Blog');
+            expect(menu.items[3].id).toBe('blog');
+            menu.removeItems(['Blog']);
+            expect(menu.items[3].text).toBe('Contact Us');
+            menu.insertAfter([{ text: 'Blog', id: 'blog' }], 'Contact Us');
+            expect(menu.items[4].text).toBe('Blog');
+            expect(menu.items[4].id).toBe('blog');
+            menu.removeItems(['blog'], true);
+            expect(menu.items[4].separator).toBeTruthy();
+        });
+    });
+
+    describe('Events', () => {
+        afterEach(() => {
+            Browser.userAgent = '';
+            menu.destroy();
+        });
+        it('Custom position using beforeOpen', () => {
+            document.body.appendChild(ul);
+            let left: string; let top: string;
+            menu = new Menu({
+                items: items,
+                showItemOnClick: true,
+                beforeOpen: (args: BeforeOpenCloseMenuEventArgs) => {
+                    if (args.parentItem.text = 'Book Categories') {
+                        let position: ClientRect = closest(args.event.target as Element, '.e-menu-item').getBoundingClientRect();
+                        args.left = position.left + pageXOffset;
+                        left = args.left + 'px';
+                        args.element.parentElement.style.display = 'block';
+                        args.top = (position.top + pageYOffset) - args.element.parentElement.offsetHeight;
+                        top = args.top + 'px';
+                    }
+                }
+            }, '#menu');
+            (ul.children[1] as HTMLElement).click();
+            let popup: HTMLElement = menu.getPopups()[0];
+            expect(popup.style.left).toEqual(left);
+            expect(popup.style.top).toEqual(top);
+            (ul.children[2] as HTMLElement).click();
         });
     });
 
@@ -190,8 +328,7 @@ describe('Menu', () => {
             Browser.userAgent = androidUserAgent;
             document.body.appendChild(ul);
             menu = new Menu({ items: items }, '#menu');
-            let wrap: HTMLElement = menu.getWrapper();
-            expect(wrap.children[0].classList.contains('e-scrollable')).toEqual(true);
+            expect(menu.getWrapper().classList.contains('e-scrollable')).toEqual(true);
         });
     });
 
@@ -203,28 +340,75 @@ describe('Menu', () => {
         it('orientation', () => {
             document.body.appendChild(ul);
             menu = new Menu({ items: items }, '#menu');
-            menu.orientation = 'vertical';
+            menu.orientation = 'Vertical';
             menu.dataBind();
-        });
-
-        it('orientation', () => {
-            document.body.appendChild(ul);
-            menu = new Menu({ items: items, orientation: 'Vertical' }, '#menu');
-            menu.orientation = 'horizontal';
+            expect(ul.classList.contains('e-vertical')).toBeTruthy();
+            menu.orientation = 'Horizontal';
             menu.dataBind();
+            expect(ul.classList.contains('e-vertical')).toBeFalsy();
         });
         it('showItemOnClick', () => {
             document.body.appendChild(ul);
             menu = new Menu({ items: items }, '#menu');
+            let li: HTMLElement = ul.children[1] as HTMLElement;
+            triggerMouseEvent(li, 'mouseover');
+            let popup: Element[] = menu.getPopups();
+            expect(popup.length).toBe(1);
+            triggerMouseEvent(document.body, 'mouseover');
+            popup = menu.getPopups();
+            expect(popup.length).toBe(0);
             menu.showItemOnClick = true;
             menu.dataBind();
+            triggerMouseEvent(li, 'mouseover');
+            popup = menu.getPopups();
+            expect(popup.length).toBe(0);
         });
-        it('showItemOnClick', () => {
+        it('cssClass', () => {
             document.body.appendChild(ul);
             menu = new Menu({ items: items }, '#menu');
             menu.cssClass = 'e-test-css';
             menu.dataBind();
             expect(menu.getWrapper().classList.contains('e-test-css')).toEqual(true);
+            menu.cssClass = '';
+            menu.dataBind();
+            expect(menu.getWrapper().classList.contains('e-test-css')).toBeFalsy();
+        });
+        it('enableScrolling', () => {
+            appendStyles('#menu { height: 400px; } .e-menu-wrapper { height: 250px; } #cookbooks-menu-popup.e-menu-popup{ height: 200px; } #cookbooks-menu-popup.e-menu-popup .e-ul{ height: 250px; }');
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items, animationSettings: { effect: 'None' } }, '#menu');
+            let wrap: HTMLElement = menu.getWrapper();
+            let li: HTMLElement = ul.children[1] as HTMLElement;
+            triggerMouseEvent(li, 'mouseover');
+            let popup: HTMLElement = menu.getPopups()[0];
+            menu.enableScrolling = true;
+            menu.dataBind();
+            expect(wrap.children[0].classList.contains('e-menu-hscroll')).toBeTruthy();
+            expect(ul.parentElement.classList.contains('e-hscroll-content')).toBeTruthy();
+            expect(popup.children[0].classList.contains('e-menu-vscroll')).toBeTruthy();
+            expect(select('.e-ul', popup).parentElement.classList.contains('e-vscroll-content')).toBeTruthy();
+            menu.enableScrolling = false;
+            menu.dataBind();
+            expect(wrap.children[0].classList.contains('e-menu-hscroll')).toBeFalsy();
+            expect(ul.parentElement.classList.contains('e-menu-wrapper')).toBeTruthy();
+            expect(popup.children[0].classList.contains('e-menu-vscroll')).toBeFalsy();
+            expect(select('.e-ul', popup).parentElement.classList.contains('e-menu-popup')).toBeTruthy();
+            triggerMouseEvent(document.body, 'mouseover');
+            triggerMouseEvent(li, 'mouseover');
+            menu.orientation = 'Vertical';
+            menu.dataBind();
+            expect(ul.classList.contains('e-vertical')).toBeTruthy();
+            menu.enableScrolling = true;
+            menu.dataBind();
+            popup = menu.getPopups()[0].children[0] as HTMLElement;
+            expect(ul.parentElement.classList.contains('e-vscroll-content')).toBeTruthy();
+            expect(popup.classList.contains('e-menu-vscroll')).toBeTruthy();
+            popup.click();
+            menu.enableScrolling = false;
+            menu.dataBind();
+            expect(ul.parentElement.classList.contains('e-vscroll-content')).toBeFalsy();
+            expect(ul.parentElement.classList.contains('e-menu-wrapper')).toBeTruthy();
+            triggerMouseEvent(document.body, 'mouseover');
         });
     });
 
@@ -303,7 +487,7 @@ describe('Menu', () => {
             menu.keyBoardHandler(rightEventArgs);
             menu.keyBoardHandler(downEventArgs);
             menu.keyBoardHandler(downEventArgs);
-            let subElem: HTMLElement = menu.getWrapper().children[1];
+            let subElem: HTMLElement = menu.getPopups()[0];
             expect(isNullOrUndefined(subElem)).toBe(false);
             menu.keyBoardHandler(leftEventArgs);
         });
@@ -314,9 +498,10 @@ describe('Menu', () => {
             menu.keyBoardHandler(rightEventArgs);
             menu.keyBoardHandler(downEventArgs);
             menu.keyBoardHandler(upEventArgs);
-            let subElem: HTMLElement = menu.getWrapper().children[1];
+            let subElem: HTMLElement = menu.getPopups()[0];
             let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>subElem.querySelectorAll('li');
             expect((li[li.length - 1] as Element).classList.contains('e-focused')).toBe(true);
+            menu.closeMenu(1);
         });
         it('rtl - right arrow action', () => {
             document.body.appendChild(ul);
@@ -333,21 +518,10 @@ describe('Menu', () => {
             menu.keyBoardHandler(downEventArgs);
             menu.keyBoardHandler(downEventArgs);
             menu.keyBoardHandler(leftEventArgs);
-            let subElem: HTMLElement = menu.getWrapper().children[1];
+            let subElem: HTMLElement = menu.getPopups()[0];
             let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>subElem.querySelectorAll('li');
             expect((li[0] as Element).classList.contains('e-focused')).toBe(true);
-        });
-    });
-
-    describe('Methods Checking', () => {
-        afterEach(() => {
-            menu.destroy();
-        });
-    });
-
-    describe('Public events', () => {
-        afterEach(() => {
-            menu.destroy();
+            menu.closeMenu(1);
         });
     });
 });

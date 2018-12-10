@@ -83,7 +83,7 @@ describe('RTE CR issues', () => {
             rteObj = new RichTextEditor({
             });
             rteObj.appendTo(elem);
-            expect((rteObj as any).valueContainer.getAttribute('name') === 'rte_test_div_EJ2_18135').toBe(true);
+            expect((rteObj as any).valueContainer.getAttribute('name') === 'formName').toBe(true);
             done();
         });
 

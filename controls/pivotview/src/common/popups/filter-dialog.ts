@@ -1,4 +1,4 @@
-import { createElement, removeClass, addClass, remove, isNullOrUndefined, setStyleAttribute } from '@syncfusion/ej2-base';
+import { createElement, removeClass, addClass, remove, isNullOrUndefined, setStyleAttribute, EmitType } from '@syncfusion/ej2-base';
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
 import { TreeView, NodeCheckEventArgs, Tab, TabItemModel, EJ2Instance } from '@syncfusion/ej2-navigations';
@@ -66,7 +66,8 @@ export class FilterDialog {
             showCloseIcon: this.allowExcelLikeFilter ? true : false,
             enableRtl: this.parent.enableRtl,
             width: 'auto',
-            height: (this.allowExcelLikeFilter ? '400px' : '350px'),
+            height: this.parent.isDataOverflow ? (this.allowExcelLikeFilter ? '440px' : '400px') :
+                (this.allowExcelLikeFilter ? '400px' : '350px'),
             position: { X: 'center', Y: 'center' },
             buttons: [
                 {
@@ -87,7 +88,13 @@ export class FilterDialog {
                 }],
             closeOnEscape: true,
             target: target,
-            close: this.removeFilterDialog.bind(this)
+            close: this.removeFilterDialog.bind(this),
+            /* tslint:disable-next-line:typedef */
+            open: function (args: EmitType<Object>) {
+                if (this.element.querySelector('.e-editor-label-wrapper')) {
+                    this.element.querySelector('.e-editor-label-wrapper').style.width = this.element.offsetWidth + 'px';
+                }
+            }
         });
         this.dialogPopUp.appendTo(editorDialog);
         if (this.allowExcelLikeFilter) {
@@ -114,6 +121,16 @@ export class FilterDialog {
             className: cls.EDITOR_SEARCH_WRAPPER_CLASS
         });
         let editorSearch: HTMLInputElement = createElement('input', { attrs: { 'type': 'text' } }) as HTMLInputElement;
+        let labelWrapper: HTMLElement = createElement('div', {
+            id: this.parent.parentID + '_LabelDiv', attrs: { 'tabindex': '-1' },
+            className: cls.EDITOR_LABEL_WRAPPER_CLASS
+        });
+        this.parent.editorLabelElement = createElement('label', { className: cls.EDITOR_LABEL_CLASS }) as HTMLLabelElement;
+        this.parent.editorLabelElement.innerText = this.parent.isDataOverflow ?
+            ((this.parent.currentTreeItems.length - this.parent.control.maxNodeLimitInMemberEditor) +
+                this.parent.control.localeObj.getConstant('editorDataLimitMsg')) : '';
+        labelWrapper.style.display = this.parent.isDataOverflow ? 'inline-block' : 'none';
+        labelWrapper.appendChild(this.parent.editorLabelElement);
         searchWrapper.appendChild(editorSearch);
         let selectAllWrapper: HTMLElement = createElement('div', {
             id: this.parent.parentID + '_AllDiv', attrs: { 'tabindex': '-1' },
@@ -134,12 +151,10 @@ export class FilterDialog {
             enableRtl: this.parent.enableRtl,
             cssClass: cls.EDITOR_SEARCH_CLASS,
             change: (e: MaskChangeEventArgs) => {
-                this.parent.eventBase.searchTreeNodes(e, this.memberTreeView);
+                this.parent.eventBase.searchTreeNodes(e, this.memberTreeView, false);
                 let filterDialog: Element = this.dialogPopUp.element;
                 let liList: HTMLElement[] = [].slice.call(this.memberTreeView.element.querySelectorAll('li')) as HTMLElement[];
-                let disabledList: HTMLElement[] =
-                    [].slice.call(this.memberTreeView.element.querySelectorAll('.' + cls.ICON_DISABLE)) as HTMLElement[];
-                if (liList.length === disabledList.length) {
+                if (liList.length === 0) {
                     this.allMemberSelect.disableNodes([this.allMemberSelect.element.querySelector('li')]);
                     filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
                     removeClass([promptDiv], cls.ICON_DISABLE);
@@ -164,9 +179,10 @@ export class FilterDialog {
             fields: { dataSource: treeData, id: 'id', text: 'name', isChecked: 'checkedStatus' },
             showCheckBox: true,
             enableRtl: this.parent.enableRtl,
-            nodeChecking: this.validateTreeNode.bind(this),
+            nodeChecking: this.validateTreeNode.bind(this)
         });
         this.memberTreeView.appendTo(treeViewContainer);
+        editorTreeWrapper.appendChild(labelWrapper);
         return editorTreeWrapper;
     }
 
@@ -423,39 +439,42 @@ export class FilterDialog {
         let filterDialog: Element = this.dialogPopUp.element;
         setStyleAndAttributes(filterDialog, { 'role': 'menu', 'aria-haspopup': 'true' });
         let list: HTMLElement[] = [].slice.call(this.memberTreeView.element.querySelectorAll('li')) as HTMLElement[];
-        let visibleNodes: HTMLElement[] = list.filter((node: HTMLElement) => {
-            return (!node.classList.contains(cls.ICON_DISABLE));
-        });
-        let uncheckedNodes: HTMLElement[] = this.getUnCheckedNodes(visibleNodes);
-        let checkedNodes: HTMLElement[] = this.getCheckedNodes(visibleNodes);
+        let uncheckedNodes: { [key: string]: object }[] = this.getUnCheckedNodes();
+        let checkedNodes: { [key: string]: object }[] = this.getCheckedNodes();
         let firstNode: Element =
             this.allMemberSelect.element.querySelector('li').querySelector('span.' + cls.CHECK_BOX_FRAME_CLASS);
-        if (checkedNodes.length > 0) {
-            if (uncheckedNodes.length > 0) {
-                removeClass([firstNode], cls.NODE_CHECK_CLASS);
-                addClass([firstNode], cls.NODE_STOP_CLASS);
-            } else if (uncheckedNodes.length === 0) {
-                removeClass([firstNode], cls.NODE_STOP_CLASS);
-                addClass([firstNode], cls.NODE_CHECK_CLASS);
+        if (list.length > 0) {
+            if (checkedNodes.length > 0) {
+                if (uncheckedNodes.length > 0) {
+                    removeClass([firstNode], cls.NODE_CHECK_CLASS);
+                    addClass([firstNode], cls.NODE_STOP_CLASS);
+                } else if (uncheckedNodes.length === 0) {
+                    removeClass([firstNode], cls.NODE_STOP_CLASS);
+                    addClass([firstNode], cls.NODE_CHECK_CLASS);
+                }
+                filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS).removeAttribute('disabled');
+            } else if (uncheckedNodes.length > 0 && checkedNodes.length === 0) {
+                removeClass([firstNode], [cls.NODE_CHECK_CLASS, cls.NODE_STOP_CLASS]);
+                if (this.getCheckedNodes().length === checkedNodes.length) {
+                    filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
+                }
             }
-            filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS).removeAttribute('disabled');
-        } else if (uncheckedNodes.length > 0 && checkedNodes.length === 0) {
-            removeClass([firstNode], [cls.NODE_CHECK_CLASS, cls.NODE_STOP_CLASS]);
-            if (this.getCheckedNodes(list).length === checkedNodes.length) {
-                filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
-            }
+        } else {
+            filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
         }
     }
-    private getCheckedNodes(treeNodes: HTMLElement[]): HTMLElement[] {
-        let checkeNodes: HTMLElement[] = treeNodes.filter((node: HTMLElement) => {
-            return (node.querySelector('.' + cls.CHECK_BOX_FRAME_CLASS).classList.contains(cls.NODE_CHECK_CLASS));
-        });
+    private getCheckedNodes(): { [key: string]: object }[] {
+        let checkeNodes: { [key: string]: object }[] =
+            this.parent.currentTreeItems.filter((item: { [key: string]: object }) => {
+                return item.checkedStatus;
+            });
         return checkeNodes;
     }
-    private getUnCheckedNodes(treeNodes: HTMLElement[]): HTMLElement[] {
-        let unCheckeNodes: HTMLElement[] = treeNodes.filter((node: HTMLElement) => {
-            return (!node.querySelector('.' + cls.CHECK_BOX_FRAME_CLASS).classList.contains(cls.NODE_CHECK_CLASS));
-        });
+    private getUnCheckedNodes(): { [key: string]: object }[] {
+        let unCheckeNodes: { [key: string]: object }[] =
+            this.parent.currentTreeItems.filter((item: { [key: string]: object }) => {
+                return !item.checkedStatus;
+            });
         return unCheckeNodes;
     }
     private isExcelFilter(fieldName: string): boolean {
@@ -487,7 +506,7 @@ export class FilterDialog {
                 this.tabObj.destroy();
             }
         }
-        this.dialogPopUp.hide();
+        this.dialogPopUp.close();
     }
     private removeFilterDialog(): void {
         if (this.dialogPopUp && !this.dialogPopUp.isDestroyed) {

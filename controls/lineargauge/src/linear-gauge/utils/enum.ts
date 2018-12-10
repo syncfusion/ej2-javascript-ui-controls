@@ -1,4 +1,4 @@
-/** 
+/**
  * Defines Position of axis. They are
  * * Inside
  * * Outside
@@ -34,10 +34,18 @@ export type LinearGaugeTheme =
     'Material' |
     /**  Render a gauge with Bootstrap theme. */
     'Bootstrap' |
-    /**  Render a gauge with Highcontrast theme. */
-    'Highcontrast'|
+    /**  Render a gauge with Highcontrast Light theme. */
+    'HighcontrastLight'|
     /**  Render a gauge with Fabric theme. */
-    'Fabric';
+    'Fabric'|
+    /**  Render a gauge with Material Dark theme. */
+    'MaterialDark' |
+    /**  Render a gauge with Fabric Dark theme. */
+    'FabricDark' |
+    /**  Render a gauge with HighContrast Dark theme. */
+    'HighcontrastDark' |
+    /**  Render a gauge with Bootstrap Dark theme. */
+    'BootstrapDark' ;
 
 /**
  * Defines the type of marker. They are

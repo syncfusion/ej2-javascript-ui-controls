@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, LinearGradient, Browser, createElement } from '@syncfusion/ej2-base';import { HeatMap } from '../heatmap';import { DrawSvgCanvas, TextOption, TextBasic, PathOption, Line, LineOption, GradientPointer, CurrentLegendRect } from '../utils/helper';import { Size, measureText, getTitle, getElement, CanvasTooltip } from '../utils/helper';import { LegendPosition, Alignment, LabelDisplayType } from '../utils/enum';import { BorderModel, FontModel } from '../model/base-model';import { Font, LegendColorCollection, BubbleTooltipData, ColorCollection } from '../model/base';import { Rect, RectOption, Gradient, GradientColor, showTooltip, stringToNumber } from '../utils/helper';import { Axis } from '../axis/axis';import { Theme } from '../model/theme';import { CurrentRect } from '../utils/helper';import { Tooltip as tool } from '@syncfusion/ej2-svg-base';
+import { Property, ChildProperty, Complex, LinearGradient, Browser, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';import { HeatMap } from '../heatmap';import { DrawSvgCanvas, TextOption, TextBasic, PathOption, Line, LineOption, GradientPointer } from '../utils/helper';import { Size, measureText, getTitle, getElement, CanvasTooltip, formatValue, LegendRange, ToggleVisibility, sum } from '../utils/helper';import { LegendPosition, Alignment, LabelDisplayType } from '../utils/enum';import { BorderModel, FontModel } from '../model/base-model';import { Font, LegendColorCollection, BubbleTooltipData, ColorCollection } from '../model/base';import { Rect, RectOption, Gradient, GradientColor, showTooltip, stringToNumber, CurrentLegendRect, removeElement } from '../utils/helper';import { Axis } from '../axis/axis';import { Theme } from '../model/theme';import { CurrentRect } from '../utils/helper';import { Tooltip as tool } from '@syncfusion/ej2-svg-base';
 
 /**
  * Interface for a class LegendSettings
@@ -67,6 +67,19 @@ export interface LegendSettingsModel {
      * @default ''
      */
     textStyle?: FontModel;
+
+    /**
+     * Specifies the formatting options for the legend label. 
+     * @default ''
+     */
+
+    labelFormat?: string;
+
+    /**
+     * To toggle the visibility of heatmap cells based on legend range selection
+     * @default true
+     */
+    toggleVisibility?: boolean;
 
 }
 

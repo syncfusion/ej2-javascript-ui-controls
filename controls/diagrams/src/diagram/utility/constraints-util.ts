@@ -123,10 +123,32 @@ export function canInConnect(node: NodeModel): number {
 }
 
 /** @private */
+export function canPortInConnect(port: PointPortModel): number {
+    if (port) {
+        if ((port.constraints & PortConstraints.InConnect)) {
+            return port.constraints & PortConstraints.InConnect;
+
+        }
+    }
+    return 0;
+}
+
+/** @private */
 export function canOutConnect(node: NodeModel): number {
     if ((node instanceof Node) && (node.constraints & NodeConstraints.OutConnect)) {
         return node.constraints & NodeConstraints.OutConnect;
 
+    }
+    return 0;
+}
+
+/** @private */
+export function canPortOutConnect(port: PointPortModel): number {
+    if (port) {
+        if ((port.constraints & PortConstraints.OutConnect)) {
+            return port.constraints & PortConstraints.OutConnect;
+
+        }
     }
     return 0;
 }

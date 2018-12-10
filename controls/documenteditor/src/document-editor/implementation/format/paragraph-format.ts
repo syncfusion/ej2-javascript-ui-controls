@@ -150,6 +150,21 @@ export class WParagraphFormat {
     set outlineLevel(value: OutlineLevel) {
         this.setPropertyValue('outlineLevel', value);
     }
+
+    get bidi(): boolean {
+        return this.getPropertyValue('bidi') as boolean;
+    }
+
+    set bidi(value: boolean) {
+        if (this.bidi !== value) {
+            if (this.textAlignment === 'Left') {
+                this.textAlignment = 'Right';
+            } else if (this.textAlignment === 'Right') {
+                this.textAlignment = 'Left';
+            }
+        }
+        this.setPropertyValue('bidi', value);
+    }
     constructor(node?: Object) {
         this.ownerBase = node;
         this.listFormat = new WListFormat(this);
@@ -246,6 +261,7 @@ export class WParagraphFormat {
         this.addUniqueParaFormat('lineSpacing', property, propValue, uniqueParaFormatTemp);
         this.addUniqueParaFormat('lineSpacingType', property, propValue, uniqueParaFormatTemp);
         this.addUniqueParaFormat('outlineLevel', property, propValue, uniqueParaFormatTemp);
+        this.addUniqueParaFormat('bidi', property, propValue, uniqueParaFormatTemp);
         // tslint:disable-next-line:max-line-length
         this.uniqueParagraphFormat = WParagraphFormat.uniqueParagraphFormats.addUniqueFormat(uniqueParaFormatTemp, WParagraphFormat.uniqueFormatType);
     }
@@ -289,6 +305,9 @@ export class WParagraphFormat {
                 break;
             case 'outlineLevel':
                 value = 'BodyText';
+                break;
+            case 'bidi':
+                value = false;
                 break;
         }
         return value;
@@ -415,6 +434,9 @@ export class WParagraphFormat {
         }
         if (isNullOrUndefined(this.getValue('outlineLevel'))) {
             this.outlineLevel = format.getValue('outlineLevel') as OutlineLevel;
+        }
+        if (isNullOrUndefined(this.getValue('bidi'))) {
+            this.bidi = format.getValue('bidi') as boolean;
         }
         if (isNullOrUndefined(this.listFormat)) {
             this.listFormat.mergeFormat(format.listFormat);

@@ -435,6 +435,45 @@
 
       }
     }
+
+    &.e-vertical {
+
+      .e-toolbar-items {
+
+        .e-toolbar-item {
+
+          &:not(.e-separator) {
+            min-height: 38px;
+          }
+
+          &.e-separator {
+            height: auto;
+            margin: $tbar-separator-vertical-bgr-mrgn;
+            min-height: auto;
+          }
+
+          .e-tbar-btn.e-btn {
+            margin: $tbar-v-btn-bgr-mrgn;
+          }
+        }
+
+        &:not(.e-tbar-pos) .e-toolbar-item {
+
+          &:first-child {
+            margin-left: 0;
+          }
+
+          &:last-child {
+            margin-right: 0;
+          }
+        }
+      }
+
+      .e-hor-nav {
+        min-height: 40px;
+        min-width: 50px;
+      }
+    }
   }
 
   #{&}.e-toolbar {
@@ -1282,6 +1321,89 @@
         vertical-align: middle;
         width: auto;
        }
+    }
+
+    &.e-vertical {
+      display: flex;
+      flex-direction: column;
+
+      &.e-rtl.e-tbar-pos {
+
+        .e-toolbar-left {
+          bottom: 0;
+          top: auto;
+        }
+
+        .e-toolbar-right {
+          bottom: auto;
+          top: 0;
+        }
+      }
+
+      .e-toolbar-items {
+
+        &.e-tbar-pos {
+
+          .e-toolbar-left,
+          .e-toolbar-center,
+          .e-toolbar-right {
+            height: auto;
+          }
+
+          .e-toolbar-left {
+            left: auto;
+            right: auto;
+            top: 0;
+          }
+
+          .e-toolbar-right {
+            bottom: 0;
+            left: auto;
+            right: auto;
+          }
+        }
+
+        &:not(.e-tbar-pos) .e-toolbar-item {
+
+          &:first-child {
+            margin-left: 0;
+          }
+
+          &:last-child {
+            margin-right: 0;
+          }
+        }
+
+        .e-toolbar-item {
+          display: flex;
+          height: auto;
+
+          &:not(.e-separator) {
+            min-width: 33px;
+          }
+
+          &.e-separator {
+            height: auto;
+            margin: $tbar-separator-vertical-nrml-mrgn;
+            min-height: auto;
+          }
+
+          .e-tbar-btn.e-btn {
+            margin: $tbar-v-btn-nrml-mrgn;
+          }
+        }
+      }
+
+      .e-hor-nav {
+        bottom: 0;
+        height: auto;
+        left: 0;
+        min-height: 40px;
+        min-width: 50px;
+        right: auto;
+        top: auto;
+        width: auto;
+      }
     }
   }
 }

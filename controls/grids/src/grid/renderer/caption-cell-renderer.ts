@@ -14,7 +14,8 @@ import { GroupedData } from '../services/group-model-generator';
 export class GroupCaptionCellRenderer extends CellRenderer implements ICellRenderer<Column> {
 
     public element: HTMLElement = this.parent
-    .createElement('TD', { className: 'e-groupcaption', attrs: { role: 'gridcell', tabindex: '-1' } });
+    .createElement('TD', { className: 'e-groupcaption',
+    attrs: { id: this.parent.element.id + 'captioncell', role: 'gridcell', tabindex: '-1' } });
 
     /**
      * Function to render the cell content based on Column object.

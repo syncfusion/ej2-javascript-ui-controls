@@ -1,0 +1,226 @@
+$skin-name: 'fabric' !default;
+$tooltip-shadow-color: rgba(0, 0, 0, .25) !default;
+$tooltip-drop-shadow: drop-shadow(1px 1px 3px $tooltip-shadow-color) !default;
+$tooltip-content-bg-color: $neutral-white !default;
+$tooltip-content-border-color: $neutral-light !default;
+$tooltip-content-font-color:  $neutral-light-font !default;
+$tooltip-default-icon-color: $neutral-white !default;
+$tooltip-icon-bg-normal: $base-font !default;
+$tooltip-hover-icon-color: $neutral-light !default;
+$tooltip-icon-bg-hover: $neutral-light-font !default;
+$tooltip-font-size: 11px !default;
+$tooltip-mobile-font-size: 12px !default;
+$tooltip-border-radius: 0 !default;
+$tooltip-opacity: 1 !default;
+$tooltip-arrow-outer-border: 8px !default;
+$tooltip-arrow-inner-border: 7px !default;
+$tooltip-horizontal-padding: 12px !default;
+$tooltip-vertical-padding: 12px !default;
+$tooltip-mobile-horizontal-padding: 15px !default;
+$tooltip-mobile-vertical-padding: 15px !default;
+$tooltip-line-height: 16px !default;
+$tooltip-arrow-icon-font-size: 16px !default;
+$tooltip-icon-border-color: transparent !default;
+@include export-module('tooltip-icons') {
+  /*! component icons */
+  .e-tooltip-close::before {
+    @if $skin-name == 'highcontrast' {
+      color: $tooltip-content-font-color;
+      content: '\e953';
+      font-size: 8px;
+      left: calc(50% - 4px);
+      position: absolute;
+      top: calc(50% - 4px);
+    }
+    @else {
+      content: '\e7e9';
+      font-size: 16px;
+    }
+  }
+
+  .e-arrow-tip-inner.e-tip-right::before {
+    content: '\e848';
+  }
+
+  .e-arrow-tip-inner.e-tip-top::before {
+    content: '\e918';
+  }
+
+  .e-arrow-tip-inner.e-tip-bottom::before {
+    content: '\e919';
+  }
+
+  .e-arrow-tip-inner.e-tip-left::before {
+    content: '\e84b';
+  }
+}
+@include export-module('tooltip-layout') {
+  /*! tooltip layout */
+  #{&}.e-tooltip-wrap {
+    max-width: 350px;
+    min-width: 30px;
+    padding: 0;
+    position: absolute;
+    visibility: visible;
+
+    /*! tooltip arrow */
+    .e-arrow-tip {
+      overflow: hidden;
+      position: absolute;
+
+      &.e-tip-bottom {
+        height: 8px;
+        left: 50%;
+        top: 100%;
+        width: 16px;
+      }
+
+      &.e-tip-top {
+        height: 8px;
+        left: 50%;
+        top: -9px;
+        width: 16px;
+      }
+
+      &.e-tip-left {
+        height: 16px;
+        left: -9px;
+        top: 48%;
+        width: 8px;
+      }
+
+      &.e-tip-right {
+        height: 16px;
+        left: 100%;
+        top: 50%;
+        width: 8px;
+      }
+    }
+
+    /*! tooltip sticky mode close icon */
+    .e-tooltip-close {
+      float: right;
+      position: absolute;
+      right: -9px;
+      top: -9px;
+    }
+
+    /*! tooltip content area */
+    .e-tip-content {
+      background-color: inherit;
+      height: 100%;
+      line-height: $tooltip-line-height;
+      overflow-x: hidden;
+      padding: $tooltip-horizontal-padding $tooltip-vertical-padding;
+      position: relative;
+      white-space: normal;
+      width: 100%;
+    }
+  }
+
+  /*! Bigger Style */
+  .e-bigger #{&}.e-tooltip-wrap .e-tip-content,
+  &#{&}.e-tooltip-wrap.e-bigger .e-tip-content {
+    line-height: 20px;
+    padding: $tooltip-mobile-horizontal-padding $tooltip-mobile-vertical-padding;
+  }
+
+}
+@include export-module('tooltip-theme') {
+  /*! Tooltip theme */
+  #{&}.e-tooltip-wrap {
+    border-radius: $tooltip-border-radius;
+    filter: $tooltip-drop-shadow;
+    opacity: $tooltip-opacity;
+
+    &.e-popup {
+      background-color: $tooltip-content-bg-color;
+      border: $border-size $border-type $tooltip-content-border-color;
+    }
+
+    /*! tooltip arrow */
+    .e-arrow-tip-outer {
+      height: 0;
+      left: 0;
+      position: absolute;
+      top: 0;
+      width: 0;
+
+      &.e-tip-bottom {
+        border-left: $tooltip-arrow-outer-border $border-type transparent;
+        border-right: $tooltip-arrow-outer-border $border-type transparent;
+        border-top: $tooltip-arrow-outer-border $border-type $tooltip-content-border-color;
+      }
+
+      &.e-tip-top {
+        border-bottom: $tooltip-arrow-outer-border $border-type $tooltip-content-border-color;
+        border-left: $tooltip-arrow-outer-border $border-type transparent;
+        border-right: $tooltip-arrow-outer-border $border-type transparent;
+      }
+
+      &.e-tip-left {
+        border-bottom: $tooltip-arrow-outer-border $border-type transparent;
+        border-right: $tooltip-arrow-outer-border $border-type $tooltip-content-border-color;
+        border-top: $tooltip-arrow-outer-border $border-type transparent;
+      }
+
+      &.e-tip-right {
+        border-bottom: $tooltip-arrow-outer-border $border-type transparent;
+        border-left: $tooltip-arrow-outer-border $border-type $tooltip-content-border-color;
+        border-top: $tooltip-arrow-outer-border $border-type transparent;
+      }
+    }
+
+    .e-arrow-tip-inner {
+      height: 0;
+      position: absolute;
+      width: 0;
+      z-index: 10;
+
+      &.e-tip-right,
+      &.e-tip-left,
+      &.e-tip-bottom,
+      &.e-tip-top {
+        color: $tooltip-content-bg-color;
+        font-family: 'e-icons';
+        font-size: $tooltip-arrow-icon-font-size;
+        font-style: normal;
+        font-variant: normal;
+        font-weight: normal;
+        line-height: 1;
+        text-transform: none;
+      }
+  }
+
+    /*! tooltip sticky mode close icon */
+    .e-tooltip-close {
+      background-color: $tooltip-icon-bg-normal;
+      border-color: $tooltip-icon-border-color;
+      border-radius: 8px;
+      color: $tooltip-default-icon-color;
+      @if $skin-name == 'highcontrast' {
+        border: 1px solid $tooltip-hover-icon-color;
+        height: 16px;
+        width: 16px;
+      }
+    }
+
+    .e-tooltip-close:hover {
+      background-color: $tooltip-icon-bg-hover;
+      color: $tooltip-hover-icon-color;
+    }
+
+    /*! tooltip content area */
+    .e-tip-content {
+      color: $tooltip-content-font-color;
+      font-family: $font-family;
+      font-size: $tooltip-font-size;
+    }
+  }
+
+  /*! bigger style */
+  .e-bigger #{&}.e-tooltip-wrap .e-tip-content,
+  &#{&}.e-tooltip-wrap.e-bigger .e-tip-content {
+    font-size: $tooltip-mobile-font-size;
+  }
+}

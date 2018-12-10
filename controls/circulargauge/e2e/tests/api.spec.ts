@@ -6,10 +6,12 @@ if(browser.isDesktop===true){
 describe('CircularGuage API samples test spec', () => {
     it('api testing spec 1', (done: Function) => {
         browser.load("/demos/testing/api-1.html");
-        if(browser.browserName === 'internet explorer') {
-            browser.executeScript('window.onload.call(this);');
-        }
-        browser.compareScreen(element(By.id("static-gauge")), "Annotation-Autoangle");
+        browser.sleep(5000).then(() => {
+            if(browser.browserName === 'internet explorer') {
+                browser.executeScript('window.onload.call(this);');
+            }
+            browser.compareScreen(element(By.id("static-gauge")), "Annotation-Autoangle");
+        });
         done();
     });
     it('api testing spec 2', (done: Function) => {

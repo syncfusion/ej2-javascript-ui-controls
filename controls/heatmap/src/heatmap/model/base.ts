@@ -1,6 +1,7 @@
-import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';
-import { Alignment, TextOverflow } from '../utils/enum';
-import { FontModel } from './base-model';
+import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';
+import { Alignment, TextOverflow, BorderType } from '../utils/enum';
+import { FontModel, MultiLevelCategoriesModel, AxisLabelBorderModel } from './base-model';
+import { Theme } from './theme';
 /**
  * Configures the fonts in heat map.
  */
@@ -118,6 +119,27 @@ export class Border extends ChildProperty<Border> {
     public radius: number;
 
 }
+
+/**
+ * Configures the tooltip borders in the heat map.
+ */
+export class TooltipBorder extends ChildProperty<TooltipBorder> {
+
+    /**
+     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     * @default ''
+     */
+    @Property('')
+    public color: string;
+
+    /**
+     * The width of the border in pixels.
+     * @default 0
+     */
+    @Property(0)
+    public width: number;
+}
+
 /**
  * Configures the mapping name for size and color in SizeAndColor type.
  */
@@ -180,6 +202,119 @@ export class PaletteCollection extends ChildProperty<PaletteCollection> {
     @Property(null)
     public label: string;
 }
+/**
+ * label border properties.
+ */
+export class AxisLabelBorder extends ChildProperty<AxisLabelBorder> {
+
+    /**
+     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     * @default ''
+     */
+    @Property('#b5b5b5')
+    public color: string;
+
+    /**
+     * The width of the border in pixels.
+     * @default 1
+     */
+    @Property(1)
+    public width: number;
+
+    /**
+     * Border type for labels
+     * * Rectangle 
+     * * Without Top Border
+     * * Without Top/Bottom Border
+     * * Without Border
+     * * Without Bottom Border
+     * * Brace
+     * @default 'Rectangle'
+     */
+    @Property('Rectangle')
+    public type: BorderType;
+}
+
+
+/**
+ * categories for multi level labels
+ */
+export class MultiLevelCategories extends ChildProperty<MultiLevelCategories> {
+
+    /**
+     * Start value of the multi level labels
+     * @default null
+     * @aspDefaultValueIgnore
+     */
+    @Property(null)
+    public start: number | Date | string;
+    /**
+     * End value of the multi level labels
+     * @default null
+     * @aspDefaultValueIgnore
+     */
+    @Property(null)
+    public end: number | Date | string;
+    /**
+     * multi level labels text.
+     * @default ''
+     */
+    @Property('')
+    public text: string;
+
+    /**
+     * Maximum width of the text for multi level labels.
+     * @default null
+     * @aspDefaultValueIgnore
+     */
+    @Property(null)
+    public maximumTextWidth: number;
+
+}
+
+/**
+ * MultiLevelLabels properties
+ */
+export class MultiLevelLabels extends ChildProperty<MultiLevelLabels[]> {
+
+    /**
+     * Defines the position of the multi level labels. They are, 
+     * * Near: Places the multi level labels at Near.
+     * * Center: Places the multi level labels at Center.
+     * * Far: Places the multi level labels at Far.
+     * @default 'Center'
+     */
+    @Property('Center')
+    public alignment: Alignment;
+
+    /**
+     * Defines the textOverFlow for multi level labels. They are, 
+     * * Trim: Trim textOverflow for multi level labels.
+     * * Wrap: Wrap textOverflow for multi level labels.
+     * * none: None textOverflow for multi level labels.
+     * @default 'Wrap'
+     */
+    @Property('Wrap')
+    public overflow: TextOverflow;
+    /**
+     * Options to customize the multi level labels.
+     */
+    @Complex<FontModel>(Theme.axisLabelFont, Font)
+    public textStyle: FontModel;
+    /**
+     * Border of the multi level labels.
+     */
+    @Complex<AxisLabelBorderModel>({ color: '#b5b5b5', width: 1, type: 'Rectangle' }, AxisLabelBorder)
+    public border: AxisLabelBorderModel;
+    /**
+     * multi level categories for multi level labels.
+     */
+    @Collection<MultiLevelCategories>([], MultiLevelCategories)
+    public categories: MultiLevelCategoriesModel[];
+}
+
+
+
 /**
  * Internal class used to maintain colorcollection.
  */

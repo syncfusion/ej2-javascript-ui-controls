@@ -3,5 +3,6 @@
  */
 
 export * from './h-scroll';
+export * from './v-scroll';
 export { MenuEventArgs, OpenCloseMenuEventArgs, BeforeOpenCloseMenuEventArgs, MenuAnimationSettings, MenuEffect } from './menu-base';
-export { MenuItemModel, FieldSettingsModel } from './menu-base-model';
+export { MenuItemModel, FieldSettingsModel, MenuAnimationSettingsModel } from './menu-base-model';

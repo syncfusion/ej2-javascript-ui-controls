@@ -1068,7 +1068,7 @@ describe('Close Options pane support testing', () => {
         viewer = editor.viewer as PageLayoutViewer;
         optionsPane.onKeyDown(event);
     });
-    it('selection (tab) \v charatcer testing', () => {
+    it('selection (tab) character testing', () => {
         editor.open(getJson());
         let event: any = { preventDefault: function () { }, target: {}, shiftKey: false, which: 65, ctrlKey: true };
         let optionsPane = editor.optionsPaneModule;

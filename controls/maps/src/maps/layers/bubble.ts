@@ -3,7 +3,7 @@ import { BubbleSettingsModel, ColorMapping, IBubbleRenderingEventArgs, bubbleRen
 import { IBubbleClickEventArgs, bubbleClick, LayerSettings, IBubbleMoveEventArgs, bubbleMouseMove } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { CircleOption, MapLocation, findMidPointOfPolygon, Point, drawCircle, elementAnimate, getTranslate } from '../utils/helper';
-import { RectOption, Rect, drawRectangle } from '../utils/helper';
+import { RectOption, Rect, drawRectangle, checkPropertyPath } from '../utils/helper';
 
 /**
  * Bubble module class
@@ -27,26 +27,28 @@ export class Bubble {
         bubbleSettings: BubbleSettingsModel, shapeData: object, color: string, range: { min: number, max: number },
         bubbleIndex: number, dataIndex: number, layerIndex: number, layer: LayerSettings, group: Element
     ): void {
-        let layerData: object[] = layer.layerData;
-        let colorValuePath: string = bubbleSettings.colorValuePath;
+        let layerData: object[] = layer.layerData; let colorValuePath: string = bubbleSettings.colorValuePath;
         let equalValue: string = shapeData[colorValuePath];
         let colorValue: number = Number(shapeData[colorValuePath]);
         let bubbleValue: number = Number(shapeData[bubbleSettings.valuePath]);
+        let opacity: number; let bubbleColor: string;
         if (isNaN(bubbleValue) && isNaN(colorValue) && isNullOrUndefined(equalValue)) {
             return null;
         }
         let radius: number = this.getRatioOfBubble(bubbleSettings.minRadius, bubbleSettings.maxRadius, bubbleValue, range.min, range.max);
         let colorMapping: ColorMapping = new ColorMapping(this.maps);
-        let shapeColor: string = colorMapping.getColorByValue(bubbleSettings.colorMapping, colorValue, equalValue);
-        shapeColor = shapeColor ? shapeColor : color;
+        let shapeColor: Object = colorMapping.getColorByValue(bubbleSettings.colorMapping, colorValue, equalValue);
+        bubbleColor = (Object.prototype.toString.call(shapeColor) === '[object Object]' &&
+            !isNullOrUndefined(shapeColor['fill'])) ? shapeColor['fill'] : color;
+        opacity = (Object.prototype.toString.call(shapeColor) === '[object Object]' &&
+            !isNullOrUndefined(shapeColor['opacity'])) ? shapeColor['opacity'] : bubbleSettings.opacity;
         let shapePoints: [MapLocation[]] = [[]];
-        let midIndex: number = 0;
-        let pointsLength: number = 0;
-        let currentLength: number = 0;
+        let midIndex: number = 0; let pointsLength: number = 0; let currentLength: number = 0;
         for (let i: number = 0, len: number = layerData.length; i < len; i++) {
             let shape: object = layerData[i];
             shape = shape['property'];
-            if (shapeData[layer.shapeDataPath] === shape[layer.shapePropertyPath]) {
+            let shapePath: string = checkPropertyPath(shapeData[layer.shapeDataPath], layer.shapePropertyPath, shape);
+            if (shapeData[layer.shapeDataPath] === shape[shapePath]) {
                 if (!layerData[i]['_isMultiPolygon']) {
                     shapePoints.push(this.getPoints(layerData[i] as object[], []));
                     currentLength = shapePoints[shapePoints.length - 1].length;
@@ -73,7 +75,7 @@ export class Bubble {
             let centerY: number = this.maps.projectionType === 'Mercator' ? center['y'] : (-center['y']);
             let eventArgs: IBubbleRenderingEventArgs = {
                 cancel: false, name: bubbleRendering, border: bubbleSettings.border,
-                cx: center['x'], cy: centerY, data: shapeData, fill: shapeColor, maps: this.maps,
+                cx: center['x'], cy: centerY, data: shapeData, fill: bubbleColor, maps: this.maps,
                 radius: radius
             };
             this.maps.trigger(bubbleRendering, eventArgs);
@@ -83,14 +85,14 @@ export class Bubble {
             let bubbleElement: Element;
             if (bubbleSettings.bubbleType === 'Circle') {
                 let circle: CircleOption = new CircleOption(
-                    this.id, eventArgs.fill, eventArgs.border, bubbleSettings.opacity,
+                    this.id, eventArgs.fill, eventArgs.border, opacity,
                     0, 0, eventArgs.radius, null
                 );
                 bubbleElement = drawCircle(this.maps, circle, group);
             } else {
                 let y: number = this.maps.projectionType === 'Mercator' ? (eventArgs.cy - radius) : (eventArgs.cy + radius);
                 let rectangle: RectOption = new RectOption(
-                    this.id, eventArgs.fill, eventArgs.border, bubbleSettings.opacity,
+                    this.id, eventArgs.fill, eventArgs.border, opacity,
                     new Rect(0, 0, radius * 2, radius * 2), 2, 2
                 );
                 eventArgs.cx -= radius;
@@ -106,8 +108,7 @@ export class Bubble {
             });
             let animate: boolean = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
             let translate: Object = getTranslate(this.maps, layer, animate);
-            let scale: number = translate['scale'];
-            let transPoint: Point = translate['location'] as Point;
+            let scale: number = translate['scale']; let transPoint: Point = translate['location'] as Point;
             let position: MapLocation = new MapLocation(
                 (this.maps.isTileMap ? (eventArgs.cx) : ((eventArgs.cx + transPoint.x) * scale)),
                 (this.maps.isTileMap ? (eventArgs.cy) : ((eventArgs.cy + transPoint.y) * scale)));

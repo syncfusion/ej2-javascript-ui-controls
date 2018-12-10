@@ -123,7 +123,7 @@ describe('RTE base module', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLElement;
         beforeAll((done: Function) => {
-            rteObj = renderRTE({});
+            rteObj = renderRTE({ value: "<p>RTE</p>" });
             elem = rteObj.element;
             done();
         });
@@ -149,11 +149,7 @@ describe('RTE base module', () => {
         });
         it('selectAll public method', () => {
             rteObj.selectAll();
-            let selection: Selection = rteObj.formatter.editorManager.nodeSelection.get(rteObj.contentModule.getDocument());
-            expect(selection.anchorNode).toBe(rteObj.contentModule.getEditPanel());
-            expect(selection.focusNode).toBe(rteObj.contentModule.getEditPanel());
-            expect(selection.anchorOffset).toBe(0);
-            expect(selection.focusOffset).toBe(rteObj.contentModule.getEditPanel().childNodes.length);
+            expect(rteObj.getSelection() === 'RTE').toBe(true);
         });
         it('selectRange public method', () => {
             let range: Range = rteObj.contentModule.getDocument().createRange();
@@ -1090,22 +1086,23 @@ describe('RTE base module', () => {
         beforeAll((done: Function) => {
             elem = document.createElement('div');
             elem.innerHTML = ` <p><b>Description:</b></p>
-            <p>The Rich Text Editor (RTE) control is an easy to render in
-            client side. Customer easy to edit the contents and get the HTML content for
-            the displayed content. A rich text editor control provides users with a toolbar
-            that helps them to apply rich text formats to the text entered in the text
-            area. </p>
-            <p><b>Functional
-            Specifications/Requirements:</b></p>
-            <ol><li><p>Provide
-            the tool bar support, it’s also customizable.</p></li><li><p>Options
-            to get the HTML elements with styles.</p></li><li><p>Support
-            to insert image from a defined path.</p></li><li><p>Footer
-            elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
-            the editor support.</p></li><li><p>Provide
-            efficient public methods and client side events.</p></li><li><p>Keyboard
-            navigation support.</p></li></ol>`;
+                <p>The Rich Text Editor (RTE) control is an easy to render in
+                client side. Customer easy to edit the contents and get the HTML content for
+                the displayed content. A rich text editor control provides users with a toolbar
+                that helps them to apply rich text formats to the text entered in the text
+                area. </p>
+                <p><b>Functional
+                Specifications/Requirements:</b></p>
+                <ol><li><p>Provide
+                the tool bar support, it’s also customizable.</p></li><li><p>Options
+                to get the HTML elements with styles.</p></li><li><p>Support
+                to insert image from a defined path.</p></li><li><p>Footer
+                elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
+                the editor support.</p></li><li><p>Provide
+                efficient public methods and client side events.</p></li><li><p>Keyboard
+                navigation support.</p></li></ol>`;
             elem.id = 'defaultRTE';
+            elem.setAttribute('name', 'RTEName');
             document.body.appendChild(elem);
             rteObj = new RichTextEditor({
                 created: function (args: any) {
@@ -1116,6 +1113,9 @@ describe('RTE base module', () => {
         });
         it('value property', () => {
             expect(rteObj.value).not.toBe(null);
+        });
+        it('check name attribute in textarea', () => {
+            expect((rteObj as any).inputElement.getAttribute('name') === 'RTEName').not.toBe(null);
         });
         afterAll(() => {
             destroy(rteObj);
@@ -1129,21 +1129,21 @@ describe('RTE base module', () => {
         beforeAll((done: Function) => {
             elem = document.createElement('textarea');
             elem.innerHTML = ` <p><b>Description:</b></p>
-            <p>The Rich Text Editor (RTE) control is an easy to render in
-            client side. Customer easy to edit the contents and get the HTML content for
-            the displayed content. A rich text editor control provides users with a toolbar
-            that helps them to apply rich text formats to the text entered in the text
-            area. </p>
-            <p><b>Functional
-            Specifications/Requirements:</b></p>
-            <ol><li><p>Provide
-            the tool bar support, it’s also customizable.</p></li><li><p>Options
-            to get the HTML elements with styles.</p></li><li><p>Support
-            to insert image from a defined path.</p></li><li><p>Footer
-            elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
-            the editor support.</p></li><li><p>Provide
-            efficient public methods and client side events.</p></li><li><p>Keyboard
-            navigation support.</p></li></ol>`;
+                <p>The Rich Text Editor (RTE) control is an easy to render in
+                client side. Customer easy to edit the contents and get the HTML content for
+                the displayed content. A rich text editor control provides users with a toolbar
+                that helps them to apply rich text formats to the text entered in the text
+                area. </p>
+                <p><b>Functional
+                Specifications/Requirements:</b></p>
+                <ol><li><p>Provide
+                the tool bar support, it’s also customizable.</p></li><li><p>Options
+                to get the HTML elements with styles.</p></li><li><p>Support
+                to insert image from a defined path.</p></li><li><p>Footer
+                elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
+                the editor support.</p></li><li><p>Provide
+                efficient public methods and client side events.</p></li><li><p>Keyboard
+                navigation support.</p></li></ol>`;
             elem.id = 'defaultRTE';
             document.body.appendChild(elem);
             rteObj = new RichTextEditor({
@@ -1177,21 +1177,21 @@ describe('RTE base module', () => {
             document.body.appendChild(elem);
             rteObj = new RichTextEditor({
                 value: ` <p><b>Description:</b></p>
-                <p>The Rich Text Editor (RTE) control is an easy to render in
-                client side. Customer easy to edit the contents and get the HTML content for
-                the displayed content. A rich text editor control provides users with a toolbar
-                that helps them to apply rich text formats to the text entered in the text
-                area. </p>
-                <p><b>Functional
-                Specifications/Requirements:</b></p>
-                <ol><li><p>Provide
-                the tool bar support, it’s also customizable.</p></li><li><p>Options
-                to get the HTML elements with styles.</p></li><li><p>Support
-                to insert image from a defined path.</p></li><li><p>Footer
-                elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
-                the editor support.</p></li><li><p>Provide
-                efficient public methods and client side events.</p></li><li><p>Keyboard
-                navigation support.</p></li></ol>`,
+                    <p>The Rich Text Editor (RTE) control is an easy to render in
+                    client side. Customer easy to edit the contents and get the HTML content for
+                    the displayed content. A rich text editor control provides users with a toolbar
+                    that helps them to apply rich text formats to the text entered in the text
+                    area. </p>
+                    <p><b>Functional
+                    Specifications/Requirements:</b></p>
+                    <ol><li><p>Provide
+                    the tool bar support, it’s also customizable.</p></li><li><p>Options
+                    to get the HTML elements with styles.</p></li><li><p>Support
+                    to insert image from a defined path.</p></li><li><p>Footer
+                    elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
+                    the editor support.</p></li><li><p>Provide
+                    efficient public methods and client side events.</p></li><li><p>Keyboard
+                    navigation support.</p></li></ol>`,
                 created: function (args: any) {
                     done();
                 }
@@ -1219,21 +1219,21 @@ describe('RTE base module', () => {
         beforeAll((done: Function) => {
             rteObj = renderRTE({
                 value: ` <p><b>Description:</b></p>
-                <p>The Rich Text Editor (RTE) control is an easy to render in
-                client side. Customer easy to edit the contents and get the HTML content for
-                the displayed content. A rich text editor control provides users with a toolbar
-                that helps them to apply rich text formats to the text entered in the text
-                area. </p>
-                <p><b>Functional
-                Specifications/Requirements:</b></p>
-                <ol><li><p>Provide
-                the tool bar support, it’s also customizable.</p></li><li><p>Options
-                to get the HTML elements with styles.</p></li><li><p>Support
-                to insert image from a defined path.</p></li><li><p>Footer
-                elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
-                the editor support.</p></li><li><p>Provide
-                efficient public methods and client side events.</p></li><li><p>Keyboard
-                navigation support.</p></li></ol>`,
+                    <p>The Rich Text Editor (RTE) control is an easy to render in
+                    client side. Customer easy to edit the contents and get the HTML content for
+                    the displayed content. A rich text editor control provides users with a toolbar
+                    that helps them to apply rich text formats to the text entered in the text
+                    area. </p>
+                    <p><b>Functional
+                    Specifications/Requirements:</b></p>
+                    <ol><li><p>Provide
+                    the tool bar support, it’s also customizable.</p></li><li><p>Options
+                    to get the HTML elements with styles.</p></li><li><p>Support
+                    to insert image from a defined path.</p></li><li><p>Footer
+                    elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
+                    the editor support.</p></li><li><p>Provide
+                    efficient public methods and client side events.</p></li><li><p>Keyboard
+                    navigation support.</p></li></ol>`,
             });
             elem = rteObj.element;
             done();
@@ -1262,21 +1262,21 @@ describe('RTE base module', () => {
         beforeAll((done: Function) => {
             rteObj = renderRTE({
                 value: ` <p><b>Description:</b></p>
-                <p>The Rich Text Editor (RTE) control is an easy to render in
-                client side. Customer easy to edit the contents and get the HTML content for
-                the displayed content. A rich text editor control provides users with a toolbar
-                that helps them to apply rich text formats to the text entered in the text
-                area. </p>
-                <p><b>Functional
-                Specifications/Requirements:</b></p>
-                <ol><li><p>Provide
-                the tool bar support, it’s also customizable.</p></li><li><p>Options
-                to get the HTML elements with styles.</p></li><li><p>Support
-                to insert image from a defined path.</p></li><li><p>Footer
-                elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
-                the editor support.</p></li><li><p>Provide
-                efficient public methods and client side events.</p></li><li><p>Keyboard
-                navigation support.</p></li></ol>`,
+                    <p>The Rich Text Editor (RTE) control is an easy to render in
+                    client side. Customer easy to edit the contents and get the HTML content for
+                    the displayed content. A rich text editor control provides users with a toolbar
+                    that helps them to apply rich text formats to the text entered in the text
+                    area. </p>
+                    <p><b>Functional
+                    Specifications/Requirements:</b></p>
+                    <ol><li><p>Provide
+                    the tool bar support, it’s also customizable.</p></li><li><p>Options
+                    to get the HTML elements with styles.</p></li><li><p>Support
+                    to insert image from a defined path.</p></li><li><p>Footer
+                    elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
+                    the editor support.</p></li><li><p>Provide
+                    efficient public methods and client side events.</p></li><li><p>Keyboard
+                    navigation support.</p></li></ol>`,
                 iframeSettings: {
                     enable: true
                 }
@@ -1627,21 +1627,21 @@ describe('RTE base module', () => {
         beforeAll((done: Function) => {
             rteObj = renderRTE({
                 value: ` <p><b>Description:</b></p>
-                <p>The Rich Text Editor (RTE) control is an easy to render in
-                client side. Customer easy to edit the contents and get the HTML content for
-                the displayed content. A rich text editor control provides users with a toolbar
-                that helps them to apply rich text formats to the text entered in the text
-                area. </p>
-                <p><b>Functional
-                Specifications/Requirements:</b></p>
-                <ol><li><p>Provide
-                the tool bar support, it’s also customizable.</p></li><li><p>Options
-                to get the HTML elements with styles.</p></li><li><p>Support
-                to insert image from a defined path.</p></li><li><p>Footer
-                elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
-                the editor support.</p></li><li><p>Provide
-                efficient public methods and client side events.</p></li><li><p>Keyboard
-                navigation support.</p></li></ol>`,
+                    <p>The Rich Text Editor (RTE) control is an easy to render in
+                    client side. Customer easy to edit the contents and get the HTML content for
+                    the displayed content. A rich text editor control provides users with a toolbar
+                    that helps them to apply rich text formats to the text entered in the text
+                    area. </p>
+                    <p><b>Functional
+                    Specifications/Requirements:</b></p>
+                    <ol><li><p>Provide
+                    the tool bar support, it’s also customizable.</p></li><li><p>Options
+                    to get the HTML elements with styles.</p></li><li><p>Support
+                    to insert image from a defined path.</p></li><li><p>Footer
+                    elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
+                    the editor support.</p></li><li><p>Provide
+                    efficient public methods and client side events.</p></li><li><p>Keyboard
+                    navigation support.</p></li></ol>`,
             });
             elem = rteObj.element;
             done();
@@ -1664,21 +1664,21 @@ describe('RTE base module', () => {
             rteObj = new RichTextEditor({
                 width: 'auto',
                 value: ` <p><b>Description:</b></p>
-                <p>The Rich Text Editor (RTE) control is an easy to render in
-                client side. Customer easy to edit the contents and get the HTML content for
-                the displayed content. A rich text editor control provides users with a toolbar
-                that helps them to apply rich text formats to the text entered in the text
-                area. </p>
-                <p><b>Functional
-                Specifications/Requirements:</b></p>
-                <ol><li><p>Provide
-                the tool bar support, it’s also customizable.</p></li><li><p>Options
-                to get the HTML elements with styles.</p></li><li><p>Support
-                to insert image from a defined path.</p></li><li><p>Footer
-                elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
-                the editor support.</p></li><li><p>Provide
-                efficient public methods and client side events.</p></li><li><p>Keyboard
-                navigation support.</p></li></ol>`,
+                    <p>The Rich Text Editor (RTE) control is an easy to render in
+                    client side. Customer easy to edit the contents and get the HTML content for
+                    the displayed content. A rich text editor control provides users with a toolbar
+                    that helps them to apply rich text formats to the text entered in the text
+                    area. </p>
+                    <p><b>Functional
+                    Specifications/Requirements:</b></p>
+                    <ol><li><p>Provide
+                    the tool bar support, it’s also customizable.</p></li><li><p>Options
+                    to get the HTML elements with styles.</p></li><li><p>Support
+                    to insert image from a defined path.</p></li><li><p>Footer
+                    elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
+                    the editor support.</p></li><li><p>Provide
+                    efficient public methods and client side events.</p></li><li><p>Keyboard
+                    navigation support.</p></li></ol>`,
                 created: function (args: any) {
                     done();
                 },
@@ -1969,9 +1969,9 @@ describe('RTE base module', () => {
         let editNode: HTMLTextAreaElement;
         let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: false, shiftKey: false, action: '', which: 8 };
         let innerHTML: string = `# Lists are a piece of cake
-        They even auto continue as you type
-        A double enter will end them
-        Tabs and shift-tabs work too`;
+            They even auto continue as you type
+            A double enter will end them
+            Tabs and shift-tabs work too`;
         beforeAll(() => {
             rteObj = renderRTE({ editorMode: 'Markdown' });
             elem = rteObj.element;
@@ -2165,21 +2165,21 @@ describe('RTE base module', () => {
         beforeAll((done: Function) => {
             elem = document.createElement('div');
             let innerHTML = ` <p><b>Description:</b></p>
-            <p>The Rich Text Editor (RTE) control is an easy to render in
-            client side. Customer easy to edit the contents and get the HTML content for
-            the displayed content. A rich text editor control provides users with a toolbar
-            that helps them to apply rich text formats to the text entered in the text
-            area. </p>
-            <p><b>Functional
-            Specifications/Requirements:</b></p>
-            <ol><li><p>Provide
-            the tool bar support, it’s also customizable.</p></li><li><p>Options
-            to get the HTML elements with styles.</p></li><li><p>Support
-            to insert image from a defined path.</p></li><li><p>Footer
-            elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
-            the editor support.</p></li><li><p>Provide
-            efficient public methods and client side events.</p></li><li><p>Keyboard
-            navigation support.</p></li></ol>`;
+                <p>The Rich Text Editor (RTE) control is an easy to render in
+                client side. Customer easy to edit the contents and get the HTML content for
+                the displayed content. A rich text editor control provides users with a toolbar
+                that helps them to apply rich text formats to the text entered in the text
+                area. </p>
+                <p><b>Functional
+                Specifications/Requirements:</b></p>
+                <ol><li><p>Provide
+                the tool bar support, it’s also customizable.</p></li><li><p>Options
+                to get the HTML elements with styles.</p></li><li><p>Support
+                to insert image from a defined path.</p></li><li><p>Footer
+                elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
+                the editor support.</p></li><li><p>Provide
+                efficient public methods and client side events.</p></li><li><p>Keyboard
+                navigation support.</p></li></ol>`;
             elem.id = 'defaultRTE';
             document.body.appendChild(elem);
             rteObj = new RichTextEditor({
@@ -2242,11 +2242,11 @@ describe(' Image selection prevent - msie ', () => {
 
     let innerHTML: string = `<p>First p node-0</p><p>First p node-1</p>
 
-    <p class='first-p-node'>dom node<label class='first-label'>label node</label></p>
-            
-    <p class='second-p-node'><label class='second-label'>label node</label></p>
-    <ul class='ul-third-node'><li>one-node</li><li>two-node</li><li>three-node</li></ul>
-    <img id="rteimg" width="10" height="10" src=" ">`;
+        <p class='first-p-node'>dom node<label class='first-label'>label node</label></p>
+
+        <p class='second-p-node'><label class='second-label'>label node</label></p>
+        <ul class='ul-third-node'><li>one-node</li><li>two-node</li><li>three-node</li></ul>
+        <img id="rteimg" width="10" height="10" src=" ">`;
 
     beforeAll(() => {
         Browser.info.name = 'msie';
@@ -2276,11 +2276,11 @@ describe(' Image selection prevent - mozilla ', () => {
 
     let innerHTML: string = `<p>First p node-0</p><p>First p node-1</p>
 
-    <p class='first-p-node'>dom node<label class='first-label'>label node</label></p>
-            
-    <p class='second-p-node'><label class='second-label'>label node</label></p>
-    <ul class='ul-third-node'><li>one-node</li><li>two-node</li><li>three-node</li></ul>
-    <img id="rteimg" width="10" height="10" src=" ">`;
+        <p class='first-p-node'>dom node<label class='first-label'>label node</label></p>
+
+        <p class='second-p-node'><label class='second-label'>label node</label></p>
+        <ul class='ul-third-node'><li>one-node</li><li>two-node</li><li>three-node</li></ul>
+        <img id="rteimg" width="10" height="10" src=" ">`;
 
     beforeAll(() => {
         Browser.userAgent = 'mozilla/5.0 (windows nt 10.0; win64; x64; rv:60.0) gecko/20100101 firefox/60.0';
@@ -2418,20 +2418,20 @@ describe('RTE Form reset', () => {
         element = createElement('form', {
             id: "form-element", innerHTML:
                 ` <div class="form-group">
-                <textarea id="defaultRTE" name="defaultRTE" required maxlength="100" minlength="20" data-msg-containerid="dateError">
-                </textarea>
-                <div id="dateError"></div>
-            </div>
-            <div class="row">
-                <div style="width: 320px;margin:0px auto;height: 100px;padding-top: 25px;">
-                    <div style="display: inline-block;">
-                        <button id="validateSubmit" class="samplebtn e-control e-btn e-primary" type="submit" style="height:40px;width: 150px;" data-ripple="true">Submit</button>
-                    </div>
-                    <div style="float: right;">
-                        <button id="resetbtn" class="samplebtn e-control e-btn" type="reset" style="height:40px;width: 150px;" data-ripple="true">Clear</button>
-                    </div>
+                    <textarea id="defaultRTE" name="defaultRTE" required maxlength="100" minlength="20" data-msg-containerid="dateError">
+                    </textarea>
+                    <div id="dateError"></div>
                 </div>
-            </div>` });
+                <div class="row">
+                    <div style="width: 320px;margin:0px auto;height: 100px;padding-top: 25px;">
+                        <div style="display: inline-block;">
+                            <button id="validateSubmit" class="samplebtn e-control e-btn e-primary" type="submit" style="height:40px;width: 150px;" data-ripple="true">Submit</button>
+                        </div>
+                        <div style="float: right;">
+                            <button id="resetbtn" class="samplebtn e-control e-btn" type="reset" style="height:40px;width: 150px;" data-ripple="true">Clear</button>
+                        </div>
+                    </div>
+                </div>` });
         document.body.appendChild(element);
         rteObj = new RichTextEditor({
             value: `<div><p class='first-p'>First p node-0</p><p class='second-p'>First p node-1</p></div>`,
@@ -2446,6 +2446,7 @@ describe('RTE Form reset', () => {
         expect(rteObj.value !== null).toBe(true);
         document.getElementById('resetbtn').click();
         expect(rteObj.value === null).toBe(true);
+        expect((rteObj as any).inputElement.innerHTML).toEqual('<p><br></p>');
     });
     afterAll(() => {
         rteObj.destroy();
@@ -2517,11 +2518,11 @@ describe('EJ2-13507: RTE ng feature matrix - Markdown two way binding is not wor
         let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9, key: 'Tab' };
         let innerHTMLStr: string = `<p>First p node-0</p><p>First p node-1</p>
 
-<p class='first-p-node'>dom node<label class='first-label'>label node</label></p>
+    <p class='first-p-node'>dom node<label class='first-label'>label node</label></p>
 
-<p class='second-p-node'><label class='second-label'>label node</label></p>
-<p class='third-p-node'>dom node<label class='third-label'>label node</label></p>
-<ul class='ul-third-node'><li>one-node</li><li>two-node</li><li>three-node</li></ul>`;
+    <p class='second-p-node'><label class='second-label'>label node</label></p>
+    <p class='third-p-node'>dom node<label class='third-label'>label node</label></p>
+    <ul class='ul-third-node'><li>one-node</li><li>two-node</li><li>three-node</li></ul>`;
         let rteObj: RichTextEditor;
         let curDocument: Document;
         let editNode: Element;
@@ -2568,11 +2569,11 @@ describe('EJ2-15017 - Toolbar refresh', () => {
     beforeAll((done: Function) => {
         elem = document.createElement('div');
         elem.innerHTML = ` <p><b>Description:</b></p>
-            <p>The Rich Text Editor (RTE) control is an easy to render in
-            client side. Customer easy to edit the contents and get the HTML content for
-            the displayed content. A rich text editor control provides users with a toolbar
-            that helps them to apply rich text formats to the text entered in the text
-            area. </p>`;
+                <p>The Rich Text Editor (RTE) control is an easy to render in
+                client side. Customer easy to edit the contents and get the HTML content for
+                the displayed content. A rich text editor control provides users with a toolbar
+                that helps them to apply rich text formats to the text entered in the text
+                area. </p>`;
         elem.id = 'defaultRTE';
         elem.style.display = 'none';
         document.body.appendChild(elem);
@@ -2591,5 +2592,172 @@ describe('EJ2-15017 - Toolbar refresh', () => {
     afterAll(() => {
         destroy(rteObj);
         document.body.innerHTML = '';
+    });
+});
+
+describe('EJ2-12731 - RTE -  IFrame heights are not auto adjusted based content', () => {
+    let rteObj: RichTextEditor;
+    let elem: HTMLElement;
+    beforeAll((done: Function) => {
+        elem = document.createElement('div');
+        elem.innerHTML = ` <p><b>Description:</b></p>
+                <p>The Rich Text Editor (RTE) control is an easy to render in
+                client side. Customer easy to edit the contents and get the HTML content for
+                the displayed content. A rich text editor control provides users with a toolbar
+                that helps them to apply rich text formats to the text entered in the text
+                area. 
+                <p>The Rich Text Editor (RTE) control is an easy to render in
+                client side. Customer easy to edit the contents and get the HTML content for
+                the displayed content. A rich text editor control provides users with a toolbar
+                that helps them to apply rich text formats to the text entered in the text
+                area. </p>
+                <p>The Rich Text Editor (RTE) control is an easy to render in
+                client side. Customer easy to edit the contents and get the HTML content for
+                the displayed content. A rich text editor control provides users with a toolbar
+                that helps them to apply rich text formats to the text entered in the text
+                area. </p>
+                <p>The Rich Text Editor (RTE) control is an easy to render in
+                client side. Customer easy to edit the contents and get the HTML content for
+                the displayed content. A rich text editor control provides users with a toolbar
+                that helps them to apply rich text formats to the text entered in the text
+                area. </p>
+                </p>`;
+        elem.id = 'defaultRTE';
+        document.body.appendChild(elem);
+        rteObj = new RichTextEditor({
+            iframeSettings: { enable: true },
+            width: 200,
+        });
+        rteObj.appendTo("#defaultRTE");
+        done();
+    });
+    it(' test the iframe content height', () => {
+        let iframe: HTMLElement = rteObj.element.querySelector('#defaultRTE_rte-view');
+        expect(iframe.style.height !== 'auto').toBe(true);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+        document.body.innerHTML = '';
+    });
+});
+describe('EJ2-12731 - RTE -  Textarea heights are not auto adjusted based content', () => {
+    let rteObj: RichTextEditor;
+    let elem: HTMLElement;
+    beforeAll((done: Function) => {
+        elem = document.createElement('div');
+        elem.innerHTML = ` <p><b>Description:</b></p>
+                <p>The Rich Text Editor (RTE) control is an easy to render in
+                client side. Customer easy to edit the contents and get the HTML content for
+                the displayed content. A rich text editor control provides users with a toolbar
+                that helps them to apply rich text formats to the text entered in the text
+                area. 
+                <p>The Rich Text Editor (RTE) control is an easy to render in
+                client side. Customer easy to edit the contents and get the HTML content for
+                the displayed content. A rich text editor control provides users with a toolbar
+                that helps them to apply rich text formats to the text entered in the text
+                area. </p>
+                <p>The Rich Text Editor (RTE) control is an easy to render in
+                client side. Customer easy to edit the contents and get the HTML content for
+                the displayed content. A rich text editor control provides users with a toolbar
+                that helps them to apply rich text formats to the text entered in the text
+                area. </p>
+                <p>The Rich Text Editor (RTE) control is an easy to render in
+                client side. Customer easy to edit the contents and get the HTML content for
+                the displayed content. A rich text editor control provides users with a toolbar
+                that helps them to apply rich text formats to the text entered in the text
+                area. </p>
+                </p>`;
+        elem.id = 'defaultRTE';
+        document.body.appendChild(elem);
+        rteObj = new RichTextEditor({
+            editorMode: 'Markdown',
+            width: 200,
+        });
+        rteObj.appendTo("#defaultRTE");
+        done();
+    });
+    it(' test the textarea content height', () => {
+        let textarea: HTMLElement = (rteObj as any).inputElement;
+        expect(textarea.style.height !== '').toBe(true);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+        document.body.innerHTML = '';
+    });
+});
+describe('EJ2-18684 - RTE - Focus event not raised in readonly mode', () => {
+    let rteObj: RichTextEditor;
+    let elem: HTMLElement;
+    beforeAll((done: Function) => {
+        elem = document.createElement('div');
+        elem.innerHTML = ` <p><b>Description:</b></p>
+                <p>The Rich Text Editor (RTE) control is an easy to render in
+                client side. Customer easy to edit the contents and get the HTML content for
+                the displayed content. A rich text editor control provides users with a toolbar
+                that helps them to apply rich text formats to the text entered in the text
+                area. 
+                <p>The Rich Text Editor (RTE) control is an easy to render in
+                client side. Customer easy to edit the contents and get the HTML content for
+                the displayed content. A rich text editor control provides users with a toolbar
+                that helps them to apply rich text formats to the text entered in the text
+                area. </p>
+                <p>The Rich Text Editor (RTE) control is an easy to render in
+                client side. Customer easy to edit the contents and get the HTML content for
+                the displayed content. A rich text editor control provides users with a toolbar
+                that helps them to apply rich text formats to the text entered in the text
+                area. </p>
+                <p>The Rich Text Editor (RTE) control is an easy to render in
+                client side. Customer easy to edit the contents and get the HTML content for
+                the displayed content. A rich text editor control provides users with a toolbar
+                that helps them to apply rich text formats to the text entered in the text
+                area. </p>
+                </p>`;
+        elem.id = 'defaultRTE';
+        document.body.appendChild(elem);
+        rteObj = new RichTextEditor({
+            readonly: true,
+            width: 200
+        });
+        rteObj.appendTo("#defaultRTE");
+        done();
+    });
+    it('check focus event trigger', (done) => {
+        rteObj.focus = (args: { [key: string]: string }): void => {
+            expect(args.name).toBe('focus');
+            done();
+        }
+        rteObj.focusIn();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+        document.body.innerHTML = '';
+    });
+});
+describe('RTE textarea with innerText', () => {
+    let rteObj: RichTextEditor;
+    let rteEle: HTMLElement;
+    let element: HTMLElement;
+    beforeAll((done: Function) => {
+        element = createElement('div', {
+            id: "form-element", innerHTML:
+                ` <div class="form-group">
+                    <textarea id="defaultRTE" name="defaultRTE" required maxlength="100" minlength="20" data-msg-containerid="dateError">
+                    <p class='first-p'>First p node-0</p>
+                    </textarea>
+                </div>` });
+        document.body.appendChild(element);
+        rteObj = new RichTextEditor({
+            placeholder: 'Type something'
+        });
+        rteObj.appendTo('#defaultRTE');
+        rteEle = rteObj.element;
+        done();
+    });
+    it(" Set the value decoded text", () => {
+        expect((rteObj as any).inputElement.innerHTML).toEqual('<p class="first-p">First p node-0</p>');
+    });
+    afterAll(() => {
+        rteObj.destroy();
+        detach(element);
     });
 });

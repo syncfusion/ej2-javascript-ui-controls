@@ -474,4 +474,94 @@ describe('Reorder module', () => {
             destroy(gridObj);
         });
     });
+
+    describe('Reorder Multiple Columns by using method', () => {
+        let gridObj: Grid;
+        let headers: any;
+        let columns: Column[];
+
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowSorting: true,
+                    allowReordering: true,
+                    columns: [{ field: 'OrderID' }, 
+                    { field: 'CustomerID' }, 
+                    { field: 'EmployeeID' }, 
+                    { field: 'Freight' },
+                    { field: 'ShipCity' },
+                    {field:'Verified', allowReordering: false}],
+                }, done);
+        });
+
+        it('Reorder Column method testing - 1', () => {
+            gridObj.reorderColumns(['OrderID','CustomerID'], 'EmployeeID');
+            columns = gridObj.getColumns() as Column[];
+            headers = gridObj.getHeaderContent().querySelectorAll('.e-headercell');
+            expect(headers[0].querySelector('.e-headercelldiv').textContent).toBe('EmployeeID');
+            expect(headers[1].querySelector('.e-headercelldiv').textContent).toBe('OrderID');
+            expect(headers[2].querySelector('.e-headercelldiv').textContent).toBe('CustomerID');
+            expect(columns[0].field).toBe('EmployeeID');
+            expect(columns[1].field).toBe('OrderID');
+            expect(columns[2].field).toBe('CustomerID');
+        });
+
+        it('Reorder Column method testing - 2', () => {
+            gridObj.reorderColumns(['OrderID','CustomerID'], 'EmployeeID');
+            columns = gridObj.getColumns() as Column[];
+            headers = gridObj.getHeaderContent().querySelectorAll('.e-headercell');
+            expect(headers[0].querySelector('.e-headercelldiv').textContent).toBe('OrderID');
+            expect(headers[1].querySelector('.e-headercelldiv').textContent).toBe('CustomerID');
+            expect(headers[2].querySelector('.e-headercelldiv').textContent).toBe('EmployeeID');
+            expect(columns[0].field).toBe('OrderID');
+            expect(columns[1].field).toBe('CustomerID');
+            expect(columns[2].field).toBe('EmployeeID');
+        });
+
+        it('Reorder Column method testing - 3', () => {
+            gridObj.reorderColumns(['CustomerID'], 'Freight');
+            columns = gridObj.getColumns() as Column[];
+            headers = gridObj.getHeaderContent().querySelectorAll('.e-headercell');
+            expect(headers[3].querySelector('.e-headercelldiv').textContent).toBe('CustomerID');
+            expect(headers[2].querySelector('.e-headercelldiv').textContent).toBe('Freight');
+            expect(columns[3].field).toBe('CustomerID');
+            expect(columns[2].field).toBe('Freight');
+        });
+
+        it('Reorder Column method testing - 4', () => {
+            gridObj.reorderColumns(['Freight','CustomerID','ShipCity'], 'EmployeeID');
+            columns = gridObj.getColumns() as Column[];
+            headers = gridObj.getHeaderContent().querySelectorAll('.e-headercell');
+            expect(headers[1].querySelector('.e-headercelldiv').textContent).toBe('Freight');
+            expect(headers[2].querySelector('.e-headercelldiv').textContent).toBe('CustomerID');
+            expect(headers[3].querySelector('.e-headercelldiv').textContent).toBe('ShipCity');
+            expect(headers[4].querySelector('.e-headercelldiv').textContent).toBe('EmployeeID');
+            expect(columns[1].field).toBe('Freight');
+            expect(columns[2].field).toBe('CustomerID');
+            expect(columns[3].field).toBe('ShipCity');
+            expect(columns[4].field).toBe('EmployeeID');
+        });
+
+        it('Reorder Column method testing - 5', () => {
+            gridObj.reorderColumns(['CustomerID'], 'Verified');
+            columns = gridObj.getColumns() as Column[];
+            headers = gridObj.getHeaderContent().querySelectorAll('.e-headercell');
+            expect(headers[2].querySelector('.e-headercelldiv').textContent).toBe('CustomerID');
+            expect(headers[5].querySelector('.e-headercelldiv').textContent).toBe('Verified');
+            expect(columns[2].field).toBe('CustomerID');
+            expect(columns[5].field).toBe('Verified');
+        });
+
+        it('Reorder Invalid Column testing - 6', () => {
+            gridObj.reorderColumns(['CustomerID'], 'Verified1');
+            columns = gridObj.getColumns() as Column[];
+            headers = gridObj.getHeaderContent().querySelectorAll('.e-headercell');
+            expect(headers[2].querySelector('.e-headercelldiv').textContent).toBe('CustomerID');
+            expect(columns[2].field).toBe('CustomerID');
+        });
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
 });

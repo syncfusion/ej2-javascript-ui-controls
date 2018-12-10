@@ -70,7 +70,7 @@ describe('smithChart component Spec', () => {
         });
         it(' checking a print', (done: Function) => { 
             smithChart.beforePrint = (args: ISmithchartPrintEventArgs): void => {
-                  //expect(args.htmlContent.outerHTML.indexOf('<div id="container" class="e-control e-smithchart"') > -1).toBe(true);
+                 // expect(args.htmlContent.outerHTML.indexOf('<div id="container" class="e-control e-smithchart"') > -1).toBe(true);
                 done();
             };
             smithChart.print();
@@ -89,7 +89,7 @@ describe('smithChart component Spec', () => {
         it('Checking argument cancel', (done: Function) => {
             smithChart.beforePrint = (args: ISmithchartPrintEventArgs): void => {
                 args.cancel = true;
-                //expect(args.htmlContent.outerHTML.indexOf('<div id="container" class="e-control"') > -1).toBe(true);
+               // expect(args.htmlContent.outerHTML.indexOf('<div id="container" class="e-control"') > -1).toBe(true);
                 done();
             };
             smithChart.print();

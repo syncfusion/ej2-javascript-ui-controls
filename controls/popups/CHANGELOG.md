@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.40-beta (2018-12-10)
+
+### Dialog
+
+#### New Features
+
+- Provided resizable support to the dialog for both modal dialog and modeless dialog (non-modal).
+
 ## 16.3.32 (2018-11-13)
 
 ### Dialog

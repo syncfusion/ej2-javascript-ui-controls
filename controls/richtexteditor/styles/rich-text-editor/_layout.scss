@@ -59,6 +59,7 @@
   }
 
   #{&}.e-richtexteditor {
+    color: $rte-content-color;
     display: block;
     position: relative;
 
@@ -717,7 +718,6 @@
     height: 36px;
     margin: -50px auto;
     padding: 0 18px;
-    width: 90px;
   }
 
   .e-dialog.e-device.e-dlg-modal .e-img-uploadwrap.e-droparea .e-browsebtn {
@@ -1188,5 +1188,9 @@
     left: 4px;
     top: -20px;
     transform: rotate(90deg);
+  }
+
+  .e-rte-overflow {
+    overflow: hidden;
   }
 }

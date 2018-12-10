@@ -1,4 +1,4 @@
-import { Ajax, Animation, Base, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getInstance, getNumericObject, getUniqueID, getValue, isNullOrUndefined, merge, remove, removeClass, rippleEffect, select, selectAll, setStyleAttribute, setValue } from '@syncfusion/ej2-base';
+import { Ajax, Animation, Base, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getInstance, getNumericObject, getUniqueID, getValue, isNullOrUndefined, merge, onIntlChange, remove, removeClass, rippleEffect, select, selectAll, setStyleAttribute, setValue } from '@syncfusion/ej2-base';
 import { Popup, Tooltip, createSpinner, getZindexPartial, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { SplitButton, getModel } from '@syncfusion/ej2-splitbuttons';
 
@@ -639,7 +639,7 @@ let NumericTextBox = class NumericTextBox extends Component {
         this.isCalled = false;
         let ejInstance = getValue('ej2_instances', this.element);
         this.cloneElement = this.element.cloneNode(true);
-        removeClass([this.cloneElement], [CONTROL, COMPONENT]);
+        removeClass([this.cloneElement], [CONTROL, COMPONENT, 'e-lib']);
         this.angularTagName = null;
         if (this.element.tagName === 'EJS-NUMERICTEXTBOX') {
             this.angularTagName = this.element.tagName;
@@ -1736,6 +1736,7 @@ function resetHandler(e) {
     e.preventDefault();
     if (!this.inputObj.clearButton.classList.contains('e-clear-icon-hide')) {
         clear.call(this, e);
+        this.value = '';
     }
 }
 function clear(event) {
@@ -2638,7 +2639,7 @@ let MaskedTextBox = class MaskedTextBox extends Component {
         this.isIosInvalid = false;
         let ejInstance = getValue('ej2_instances', this.element);
         this.cloneElement = this.element.cloneNode(true);
-        removeClass([this.cloneElement], [CONTROL$1, COMPONENT$1]);
+        removeClass([this.cloneElement], [CONTROL$1, COMPONENT$1, 'e-lib']);
         this.angularTagName = null;
         if (this.element.tagName === 'EJS-MASKEDTEXTBOX') {
             this.angularTagName = this.element.tagName;
@@ -3382,12 +3383,15 @@ let Slider = class Slider extends Component {
         let tooltipElement = this.activeHandle === 1 ? this.firstTooltipElement : this.secondTooltipElement;
         if (pos === 0 && this.type !== 'Range') {
             this.getHandle().classList.add(classNames.sliderHandleStart);
-            if (this.isMaterial && this.tooltip.isVisible) {
+            if (this.isMaterial && this.tooltip.isVisible && this.firstMaterialHandle) {
                 this.firstMaterialHandle.classList.add(classNames.sliderHandleStart);
                 if (tooltipElement) {
                     tooltipElement.classList.add(classNames.sliderTooltipStart);
                 }
             }
+        }
+        else {
+            this.getHandle().classList.remove(classNames.sliderHandleStart);
         }
     }
     transitionEnd(e) {
@@ -4638,7 +4642,11 @@ let Slider = class Slider extends Component {
         }
         return value;
     }
-    onResize() {
+    /**
+     * It is used to reposition slider.
+     * @returns void
+     */
+    reposition() {
         this.firstHandle.style.transition = 'none';
         if (this.type !== 'Default') {
             this.rangeBar.style.transition = 'none';
@@ -4698,6 +4706,7 @@ let Slider = class Slider extends Component {
             this.removeElement(this.ul);
             this.renderScale();
         }
+        this.handleStart();
         if (!this.tooltip.isVisible) {
             setTimeout(() => {
                 this.firstHandle.style.transition = this.scaleTransform;
@@ -5257,7 +5266,7 @@ let Slider = class Slider extends Component {
         }
     }
     wireEvents() {
-        this.onresize = this.onResize.bind(this);
+        this.onresize = this.reposition.bind(this);
         window.addEventListener('resize', this.onresize);
         if (this.enabled && !this.readonly) {
             EventHandler.add(this.element, 'mousedown touchstart', this.sliderDown, this);
@@ -5610,7 +5619,7 @@ let Slider = class Slider extends Component {
                 case 'showButtons':
                     if (newProp.showButtons) {
                         this.setButtons();
-                        this.onResize();
+                        this.reposition();
                         if (this.enabled && !this.readonly) {
                             this.wireButtonEvt(false);
                         }
@@ -5632,7 +5641,7 @@ let Slider = class Slider extends Component {
                     break;
                 case 'customValue':
                     this.setValue();
-                    this.onResize();
+                    this.reposition();
                     break;
             }
         }
@@ -5819,6 +5828,8 @@ let FormValidator = FormValidator_1 = class FormValidator extends Base {
         this.infoElement = null;
         this.inputElement = null;
         this.selectQuery = 'input:not([type=reset]):not([type=button]), select, textarea';
+        // tslint:disable-next-line:no-any
+        this.localyMessage = {};
         /**
          * Specifies the default messages for validation rules.
          * @default : { List of validation message };
@@ -5846,6 +5857,11 @@ let FormValidator = FormValidator_1 = class FormValidator extends Base {
         if (typeof this.rules === 'undefined') {
             this.rules = {};
         }
+        this.l10n = new L10n('formValidator', this.defaultMessages, this.locale);
+        if (this.locale) {
+            this.localeFunc();
+        }
+        onIntlChange.on('notifyExternalChange', this.afterLocalization, this);
         element = typeof element === 'string' ? select(element, document) : element;
         // Set novalidate to prevent default HTML5 form validation
         if (this.element != null) {
@@ -5950,19 +5966,44 @@ let FormValidator = FormValidator_1 = class FormValidator extends Base {
             element.remove();
         }
         super.destroy();
+        onIntlChange.off('notifyExternalChange', this.afterLocalization);
     }
     /**
      * @private
      */
     onPropertyChanged(newProp, oldProp) {
-        // No code are needed
+        for (let prop of Object.keys(newProp)) {
+            switch (prop) {
+                case 'locale':
+                    this.localeFunc();
+                    break;
+            }
+        }
     }
     ;
     /**
      * @private
      */
+    localeFunc() {
+        for (let key of Object.keys(this.defaultMessages)) {
+            this.l10n.setLocale(this.locale);
+            let value = this.l10n.getConstant(key);
+            this.localyMessage[key] = value;
+        }
+    }
+    /**
+     * @private
+     */
     getModuleName() {
         return 'formValidator';
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line:no-any
+    afterLocalization(args) {
+        this.locale = args.locale;
+        this.localeFunc();
     }
     clearForm() {
         this.errorRules = [];
@@ -6269,7 +6310,8 @@ let FormValidator = FormValidator_1 = class FormValidator extends Base {
     }
     // Return default error message or custom error message 
     getErrorMessage(ruleValue, rule) {
-        let message = (ruleValue instanceof Array && typeof ruleValue[1] === 'string') ? ruleValue[1] : this.defaultMessages[rule];
+        let message = (ruleValue instanceof Array && typeof ruleValue[1] === 'string') ? ruleValue[1] :
+            (Object.keys(this.localyMessage).length !== 0) ? this.localyMessage[rule] : this.defaultMessages[rule];
         let formats = message.match(/{(\d)}/g);
         if (!isNullOrUndefined(formats)) {
             for (let i = 0; i < formats.length; i++) {
@@ -6438,6 +6480,9 @@ FormValidator.checkValidator = {
     },
 };
 __decorate$3([
+    Property('')
+], FormValidator.prototype, "locale", void 0);
+__decorate$3([
     Property('e-hidden')
 ], FormValidator.prototype, "ignore", void 0);
 __decorate$3([
@@ -6530,6 +6575,7 @@ const ICON_FOCUSED = 'e-clear-icon-focus';
 const PROGRESS_INNER_WRAPPER = 'e-progress-inner-wrap';
 const PAUSE_UPLOAD = 'e-file-pause-btn';
 const RESUME_UPLOAD = 'e-file-play-btn';
+const RESTRICT_SEQUENTIAL = 'e-restrict-sequential';
 class FilesProp extends ChildProperty {
 }
 __decorate$4([
@@ -6596,6 +6642,7 @@ let Uploader = class Uploader extends Component {
         this.pausedData = [];
         this.uploadMetaData = [];
         this.tabIndex = '0';
+        this.count = -1;
     }
     /**
      * Calls internally if any of the property value is changed.
@@ -6638,6 +6685,13 @@ let Uploader = class Uploader extends Component {
                 case 'maxFileSize':
                 case 'template':
                 case 'autoUpload':
+                    if (this.sequentialUpload) {
+                        this.count = -1;
+                    }
+                    this.clearAll();
+                    break;
+                case 'sequentialUpload':
+                    this.count = -1;
                     this.clearAll();
                     break;
                 case 'locale':
@@ -6990,13 +7044,35 @@ let Uploader = class Uploader extends Component {
     }
     checkAutoUpload(fileData) {
         if (this.autoUpload) {
-            this.upload(fileData);
+            if (this.sequentialUpload) {
+                /* istanbul ignore next */
+                this.sequenceUpload(fileData);
+            }
+            else {
+                this.upload(fileData);
+            }
             this.removeActionButtons();
         }
         else if (!this.actionButtons) {
             this.renderActionButtons();
         }
         this.checkActionButtonStatus();
+    }
+    sequenceUpload(fileData) {
+        if (this.filesData.length - fileData.length === 0 ||
+            this.filesData[(this.filesData.length - fileData.length - 1)].statusCode !== '1') {
+            ++this.count;
+            let isFileListCreated = this.showFileList ? false : true;
+            if (typeof this.filesData[this.count] === 'object') {
+                this.upload(this.filesData[this.count], isFileListCreated);
+                if (this.filesData[this.count].statusCode === '0') {
+                    this.sequenceUpload(fileData);
+                }
+            }
+            else {
+                --this.count;
+            }
+        }
     }
     wireEvents() {
         EventHandler.add(this.browseButton, 'click', this.browseButtonClick, this);
@@ -7167,10 +7243,19 @@ let Uploader = class Uploader extends Component {
         this.element.click();
     }
     uploadButtonClick() {
-        this.upload(this.filesData);
+        if (this.sequentialUpload) {
+            this.sequenceUpload(this.filesData);
+        }
+        else {
+            this.upload(this.filesData);
+        }
     }
     clearButtonClick() {
         this.clearAll();
+        /* istanbul ignore next */
+        if (this.sequentialUpload) {
+            this.count = -1;
+        }
     }
     bindDropEvents() {
         if (this.dropZoneElement) {
@@ -7230,6 +7315,10 @@ let Uploader = class Uploader extends Component {
                 createSpinner({ target: spinnerTarget, width: '20px' });
                 showSpinner(spinnerTarget);
             }
+            if (this.sequentialUpload) {
+                /* istanbul ignore next */
+                this.uploadSequential();
+            }
         }
         else {
             this.remove(fileData, false, false, args);
@@ -7258,6 +7347,12 @@ let Uploader = class Uploader extends Component {
             detach(this.listParent);
             this.listParent = null;
             this.removeActionButtons();
+        }
+        if (this.sequentialUpload) {
+            /* istanbul ignore next */
+            if (index <= this.count) {
+                --this.count;
+            }
         }
     }
     removeUploadedFile(file, eventArgs, removeDirectly, custom) {
@@ -7310,8 +7405,9 @@ let Uploader = class Uploader extends Component {
         }
     }
     removeCompleted(e, files, customTemplate) {
+        let response = e && e.currentTarget ? this.getResponse(e) : null;
         let args = {
-            e, operation: 'remove', file: this.updateStatus(files, this.localizedTexts('removedSuccessMessage'), '2')
+            e, response: response, operation: 'remove', file: this.updateStatus(files, this.localizedTexts('removedSuccessMessage'), '2')
         };
         this.trigger('success', args);
         this.removeFilesData(files, customTemplate);
@@ -7320,8 +7416,9 @@ let Uploader = class Uploader extends Component {
         this.trigger('change', { files: this.uploadedFilesData });
     }
     removeFailed(e, files, customTemplate) {
+        let response = e && e.currentTarget ? this.getResponse(e) : null;
         let args = {
-            e, operation: 'remove', file: this.updateStatus(files, this.localizedTexts('removedFailedMessage'), '0')
+            e, response: response, operation: 'remove', file: this.updateStatus(files, this.localizedTexts('removedFailedMessage'), '0')
         };
         if (!customTemplate) {
             let index = this.filesData.indexOf(files);
@@ -7337,6 +7434,7 @@ let Uploader = class Uploader extends Component {
         }
         this.trigger('failure', args);
         let liElement = this.getLiElement(files);
+        /* istanbul ignore next */
         if (!isNullOrUndefined(liElement) && !isNullOrUndefined(liElement.querySelector('.' + DELETE_ICON))) {
             let spinnerTarget = liElement.querySelector('.' + DELETE_ICON);
             hideSpinner(spinnerTarget);
@@ -7445,6 +7543,7 @@ let Uploader = class Uploader extends Component {
             progressInterval: '',
             isCanceled: false
         };
+        /* istanbul ignore next */
         if (targetFiles.length < 1) {
             eventArgs.isCanceled = true;
             this.trigger('selected', eventArgs);
@@ -7850,7 +7949,8 @@ let Uploader = class Uploader extends Component {
             hideSpinner(spinnerTarget);
             detach(liElement.querySelector('.e-spinner-pane'));
         }
-        let args = { event: e, operation: 'cancel', file: file };
+        let requestResponse = e && e.currentTarget ? this.getResponse(e) : null;
+        let args = { event: e, response: requestResponse, operation: 'cancel', file: file };
         this.trigger('success', args);
     }
     renderFailureState(e, file, liElement) {
@@ -7883,6 +7983,10 @@ let Uploader = class Uploader extends Component {
             }
             this.pauseButton = null;
         }
+        if (this.sequentialUpload) {
+            /* istanbul ignore next */
+            liElement.classList.add(RESTRICT_SEQUENTIAL);
+        }
         this.upload([file]);
     }
     /* istanbul ignore next */
@@ -7910,21 +8014,60 @@ let Uploader = class Uploader extends Component {
             this.uploadFailed(e, file);
         }
     }
+    getResponse(e) {
+        // tslint:disable-next-line
+        let target = e.currentTarget;
+        let response = {
+            readyState: target.readyState,
+            statusCode: target.status,
+            statusText: target.statusText,
+            headers: target.getAllResponseHeaders(),
+            withCredentials: target.withCredentials
+        };
+        return response;
+    }
     raiseSuccessEvent(e, file) {
-        let args = { e, operation: 'upload', file: this.updateStatus(file, this.localizedTexts('uploadSuccessMessage'), '2') };
+        let response = e && e.currentTarget ? this.getResponse(e) : null;
+        let args = {
+            e, response: response, operation: 'upload', file: this.updateStatus(file, this.localizedTexts('uploadSuccessMessage'), '2')
+        };
         this.trigger('success', args);
         this.uploadedFilesData.push(file);
         this.trigger('change', { file: this.uploadedFilesData });
         this.checkActionButtonStatus();
+        if (this.sequentialUpload && this.fileList.length > 0) {
+            if ((!(this.getLiElement(file)).classList.contains(RESTRICT_SEQUENTIAL))) {
+                this.uploadSequential();
+            }
+            else {
+                /* istanbul ignore next */
+                (this.getLiElement(file)).classList.remove(RESTRICT_SEQUENTIAL);
+            }
+        }
     }
     uploadFailed(e, file) {
         let li = this.getLiElement(file);
-        let args = { e, operation: 'upload', file: this.updateStatus(file, this.localizedTexts('uploadFailedMessage'), '0') };
+        let response = e && e.currentTarget ? this.getResponse(e) : null;
+        let args = {
+            e, response: response, operation: 'upload', file: this.updateStatus(file, this.localizedTexts('uploadFailedMessage'), '0')
+        };
         if (!isNullOrUndefined(li)) {
             this.renderFailureState(e, file, li);
         }
         this.trigger('failure', args);
         this.checkActionButtonStatus();
+        this.uploadSequential();
+    }
+    uploadSequential() {
+        if (this.sequentialUpload) {
+            if (this.autoUpload) {
+                /* istanbul ignore next */
+                this.checkAutoUpload(this.filesData);
+            }
+            else {
+                this.uploadButtonClick();
+            }
+        }
     }
     updateProgressBarClasses(li, className) {
         let progressBar = li.querySelector('.' + PROGRESSBAR);
@@ -8056,11 +8199,13 @@ let Uploader = class Uploader extends Component {
             chunkSize: this.asyncSettings.chunkSize === 0 ? null : this.asyncSettings.chunkSize
         };
         ajax.beforeSend = (e) => {
-            if (metaData.chunkIndex !== 0) {
-                return;
-            }
             eventArgs.currentRequest = ajax.httpRequest;
-            this.trigger('uploading', eventArgs);
+            eventArgs.currentChunkIndex = metaData.chunkIndex;
+            if (eventArgs.currentChunkIndex === 0) {
+                // This event is currently not required but to avoid breaking changes for previous customer, we have included.
+                this.trigger('uploading', eventArgs);
+            }
+            this.trigger('chunkUploading', eventArgs);
             if (eventArgs.cancel) {
                 this.eventCancelByArgs(e, eventArgs, file);
             }
@@ -8097,13 +8242,15 @@ let Uploader = class Uploader extends Component {
         let response = e.target;
         let liElement;
         if (response.readyState === 4 && response.status >= 200 && response.status < 300) {
+            let requestResponse = e && e.currentTarget ? this.getResponse(e) : null;
             let totalChunk = Math.max(Math.ceil(metaData.file.size / this.asyncSettings.chunkSize), 1);
             let eventArgs = {
                 event: e,
                 file: metaData.file,
                 chunkIndex: metaData.chunkIndex,
                 totalChunk: totalChunk,
-                chunkSize: this.asyncSettings.chunkSize
+                chunkSize: this.asyncSettings.chunkSize,
+                response: requestResponse
             };
             this.trigger('chunkSuccess', eventArgs);
             if (isNullOrUndefined(custom) || !custom) {
@@ -8289,23 +8436,20 @@ let Uploader = class Uploader extends Component {
         if (isNullOrUndefined(this.template) && (isNullOrUndefined(custom) || !custom)) {
             liElement = this.getLiElement(metaData.file);
         }
+        let requestResponse = e && e.currentTarget ? this.getResponse(e) : null;
         let eventArgs = {
             event: e,
             file: metaData.file,
             chunkIndex: metaData.chunkIndex,
             totalChunk: chunkCount,
             chunkSize: this.asyncSettings.chunkSize,
-            cancel: false
+            cancel: false,
+            response: requestResponse
         };
         this.trigger('chunkFailure', eventArgs);
-        /* tslint:disable */
-        let eventArgsData = eventArgs;
-        let values = Object.keys(eventArgsData).map(function (e) {
-            return eventArgsData[e];
-        });
-        /* tslint:enable */
         // To prevent triggering of failure event
-        if (!values[values.length - 2]) {
+        // tslint:disable-next-line
+        if (!eventArgs.cancel) {
             if (metaData.retryCount < this.asyncSettings.retryCount) {
                 setTimeout(() => { this.retryRequest(liElement, metaData, custom); }, this.asyncSettings.retryAfterDelay);
             }
@@ -8336,8 +8480,13 @@ let Uploader = class Uploader extends Component {
                 }
                 metaData.retryCount = 0;
                 let file = metaData.file;
-                let args = { e, operation: 'upload', file: this.updateStatus(file, this.localizedTexts('uploadFailedMessage'), '0') };
+                let args = {
+                    e, response: requestResponse,
+                    operation: 'upload',
+                    file: this.updateStatus(file, this.localizedTexts('uploadFailedMessage'), '0')
+                };
                 this.trigger('failure', args);
+                this.uploadSequential();
             }
         }
     }
@@ -8379,6 +8528,10 @@ let Uploader = class Uploader extends Component {
             metaData.file.statusCode = '1';
             metaData.file.status = this.localizedTexts('readyToUploadMessage');
             this.chunkUpload(metaData.file);
+        }
+        if (this.sequentialUpload) {
+            /* istanbul ignore next */
+            (this.getLiElement(metaData.file)).classList.add(RESTRICT_SEQUENTIAL);
         }
     }
     chunkUploadInProgress(e, metaData, custom) {
@@ -8778,6 +8931,9 @@ __decorate$4([
 ], Uploader.prototype, "asyncSettings", void 0);
 __decorate$4([
     Property(false)
+], Uploader.prototype, "sequentialUpload", void 0);
+__decorate$4([
+    Property(false)
 ], Uploader.prototype, "enableRtl", void 0);
 __decorate$4([
     Property(true)
@@ -8848,6 +9004,9 @@ __decorate$4([
 __decorate$4([
     Event()
 ], Uploader.prototype, "chunkFailure", void 0);
+__decorate$4([
+    Event()
+], Uploader.prototype, "chunkUploading", void 0);
 __decorate$4([
     Event()
 ], Uploader.prototype, "canceling", void 0);
@@ -10818,6 +10977,7 @@ let TextBox = class TextBox extends Component {
         event.preventDefault();
         if (!(this.textboxWrapper.clearButton.classList.contains(HIDE_CLEAR))) {
             Input.setValue('', this.element, this.floatLabelType, this.showClearButton);
+            this.value = '';
         }
     }
     unWireEvents() {

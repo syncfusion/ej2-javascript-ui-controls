@@ -258,6 +258,12 @@ describe('Diagram Control', () => {
             ];
             let connector: ConnectorModel[] = [
                 {
+                    id: 'node4_newnode', sourceID: 'Node4', targetID: 'newnode',
+                },
+                {
+                    id: 'node5_newnode', sourceID: 'Node5', targetID: 'newnode',
+                },
+                {
                     id: 'node1_2', sourceID: 'Node1', targetID: 'Node2',
                 }, {
                     id: 'node2_3', sourceID: 'Node2', targetID: 'Node3',
@@ -313,6 +319,16 @@ describe('Diagram Control', () => {
                 expect(node.visible).toBe(true);
                 done();
 
+            },
+                0);
+        });
+        it('checking icon click issue fix', (done: Function) => {
+            let node = diagram.nodes[3];
+            node.isExpanded = false;
+            setTimeout(() => {
+                var node1 = diagram.nodes[9];
+                expect(node1.visible).toBe(true)
+                 done();
             },
                 0);
         });

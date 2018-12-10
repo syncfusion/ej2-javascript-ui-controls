@@ -2,7 +2,7 @@ import { isNullOrUndefined, removeClass, addClass } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
-import { ISort, IFilter, IAxisSet, IFormatSettings } from '../../base/engine';
+import { ISort, IFilter, IAxisSet, IFormatSettings, IFieldOptions } from '../../base/engine';
 import { MaskChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { TreeView } from '@syncfusion/ej2-navigations';
 
@@ -37,9 +37,14 @@ export class EventBase {
         let isDescending: boolean = target.classList.contains(cls.SORT_DESCEND_CLASS);
         let sortObj: ISort = this.getSortItemByName(fieldName);
         if (!isNullOrUndefined(sortObj)) {
-            sortObj = (<{ [key: string]: Object }>sortObj).properties ?
-                (<{ [key: string]: Object }>sortObj).properties : sortObj;
-            sortObj.order = isDescending ? 'Ascending' : 'Descending';
+            for (let i: number = 0; i < this.parent.dataSource.sortSettings.length; i++) {
+                if (this.parent.dataSource.sortSettings[i].name === fieldName) {
+                    this.parent.dataSource.sortSettings.splice(i, 1);
+                    break;
+                }
+            }
+            let newSortObj: ISort = { name: fieldName, order: isDescending ? 'Ascending' : 'Descending' };
+            this.parent.dataSource.sortSettings.push(newSortObj);
         } else {
             let newSortObj: ISort = { name: fieldName, order: isDescending ? 'Ascending' : 'Descending' };
             this.parent.dataSource.sortSettings.push(newSortObj);
@@ -104,6 +109,17 @@ export class EventBase {
     }
 
     /**
+     * Gets filter object for the given field name from the dataSource.
+     * @method getFieldByName
+     * @param  {string} fieldName - Gets filter settings for the given field name.
+     * @return {Sort}
+     * @hidden
+     */
+    public getFieldByName(fieldName: string, fields: IFieldOptions[] ): IFieldOptions {
+        return new DataManager({ json: fields }).executeLocal(new Query().where('name', 'equal', fieldName))[0] as IFieldOptions;
+    }
+
+    /**
      * Gets format object for the given field name from the dataSource.
      * @method getFilterItemByName
      * @param  {string} fieldName - Gets format settings for the given field name.
@@ -119,33 +135,83 @@ export class EventBase {
      * show tree nodes using search text.
      * @hidden
      */
-    public searchTreeNodes(args: MaskChangeEventArgs, treeObj: TreeView): void {
-        let searchList: HTMLElement[] = [];
-        let nonSearchList: HTMLElement[] = [];
-        let list: HTMLElement[] = [].slice.call(treeObj.element.querySelectorAll('li')) as HTMLElement[];
-        for (let element of list) {
-            if ((element.querySelector('.e-list-text').textContent.toLowerCase()).indexOf(args.value.toLowerCase()) > -1) {
-                searchList.push(element);
-            } else {
-                nonSearchList.push(element);
+    public searchTreeNodes(args: MaskChangeEventArgs, treeObj: TreeView, isFieldCollection: boolean): void {
+        if (isFieldCollection) {
+            let searchList: HTMLElement[] = [];
+            let nonSearchList: HTMLElement[] = [];
+            let list: HTMLElement[] = [].slice.call(treeObj.element.querySelectorAll('li')) as HTMLElement[];
+            for (let element of list) {
+                if ((element.querySelector('.e-list-text').textContent.toLowerCase()).indexOf(args.value.toLowerCase()) > -1) {
+                    searchList.push(element);
+                } else {
+                    nonSearchList.push(element);
+                }
             }
+            treeObj.enableNodes(searchList);
+            treeObj.disableNodes(nonSearchList);
+        } else {
+            let searchList: { [key: string]: Object }[] = [];
+            let memberCount: number = 0;
+            for (let item of this.parent.currentTreeItems) {
+                item.checkedStatus = this.parent.savedTreeFilterPos[memberCount] !== undefined ? false : true;
+                memberCount++;
+            }
+            memberCount = 1;
+            for (let item of this.parent.currentTreeItems) {
+                if ((item.name as string).toLowerCase().indexOf(args.value.toLowerCase()) > -1) {
+                    if (memberCount <= this.parent.control.maxNodeLimitInMemberEditor) {
+                        searchList.push(item);
+                    }
+                    memberCount++;
+                }
+            }
+            memberCount--;
+            if (memberCount > this.parent.control.maxNodeLimitInMemberEditor) {
+                this.parent.editorLabelElement.innerText = (memberCount - this.parent.control.maxNodeLimitInMemberEditor) +
+                    this.parent.control.localeObj.getConstant('editorDataLimitMsg');
+                this.parent.filterDialog.dialogPopUp.height = (this.parent.filterDialog.allowExcelLikeFilter ? '440px' : '400px');
+                this.parent.isDataOverflow = true;
+            } else {
+                this.parent.editorLabelElement.innerText = '';
+                this.parent.filterDialog.dialogPopUp.height = (this.parent.filterDialog.allowExcelLikeFilter ? '400px' : '350px');
+                this.parent.isDataOverflow = false;
+            }
+            this.parent.isDataOverflow = (memberCount > this.parent.control.maxNodeLimitInMemberEditor);
+            this.parent.editorLabelElement.parentElement.style.display = this.parent.isDataOverflow ? 'inline-block' : 'none';
+            treeObj.fields = { dataSource: searchList, id: 'id', text: 'name', isChecked: 'checkedStatus' };
+            treeObj.dataBind();
         }
-        treeObj.enableNodes(searchList);
-        treeObj.disableNodes(nonSearchList);
     }
     private getTreeData(isInclude: boolean, members: IAxisSet[], filterItems: string[]): { [key: string]: Object }[] {
+        this.parent.currentTreeItems = [];
+        this.parent.currentTreeItemsPos = {};
+        this.parent.savedTreeFilterPos = {};
         let list: { [key: string]: Object }[] = [];
+        let memberCount: number = 1;
+        let filterObj: { [key: string]: string } = {};
+        for (let item of filterItems) {
+            filterObj[item] = item;
+        }
         for (let member of members) {
             let obj: { [key: string]: Object } = {
                 id: member.formattedText,
                 name: member.formattedText,
                 checkedStatus: isInclude ? false : true
             };
-            if (filterItems && filterItems.indexOf(member.formattedText) >= 0) {
+            if (filterObj[member.formattedText] !== undefined) {
                 obj.checkedStatus = isInclude ? true : false;
             }
-            list.push(obj);
+            if (memberCount <= this.parent.control.maxNodeLimitInMemberEditor) {
+                list.push(obj);
+            }
+            if (!obj.checkedStatus) {
+                this.parent.savedTreeFilterPos[memberCount - 1] = member.formattedText;
+            }
+            this.parent.currentTreeItems.push(obj);
+            this.parent.currentTreeItemsPos[member.formattedText] = memberCount - 1;
+            memberCount++;
         }
+        this.parent.isDataOverflow = (memberCount > this.parent.control.maxNodeLimitInMemberEditor);
         return list;
     }
 }

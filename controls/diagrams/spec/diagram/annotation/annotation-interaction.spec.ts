@@ -301,55 +301,55 @@ describe('Diagram Control', () => {
             it('Resize North', (done: Function) => {
                 resize(diagram, 'resizeNorth');
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-                expect(label.offsetX == 270 && label.offsetY == 130 && label.width == 92.6875 && label.height == 16 && label.rotateAngle == 0).toBe(true);
+                expect(label.offsetX == 270 && label.offsetY == 130 && label.width == 92.6875 && label.height == 23.199999999999996 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize South', (done: Function) => {
                 resize(diagram, 'resizeSouth');
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-                expect(label.offsetX == 270 && label.offsetY == 140 && label.width == 92.6875 && label.height == 36 && label.rotateAngle == 0).toBe(true);
+                expect(label.offsetX == 270 && label.offsetY == 140 && label.width == 92.6875 && label.height == 43.199999999999996 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize East', (done: Function) => {
                 resize(diagram, 'resizeEast');
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-                expect(label.offsetX == 280 && label.offsetY == 140 && label.width == 112.68750000000001 && label.height == 36 && label.rotateAngle == 0).toBe(true);
+                expect(label.offsetX == 280 && label.offsetY == 140 && label.width == 112.68750000000001 && label.height == 43.199999999999996 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize West', (done: Function) => {
                 resize(diagram, 'resizeWest');
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-                expect(label.offsetX == 290 && label.offsetY == 140 && label.width == 92.68750000000001 && label.height == 36 && label.rotateAngle == 0).toBe(true);
+                expect(label.offsetX == 290 && label.offsetY == 140 && label.width == 92.68750000000001 && label.height == 43.199999999999996 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Rotate', (done: Function) => {
                 rotate(diagram);
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-                expect(label.offsetX == 290 && label.offsetY == 140 && label.width == 92.68750000000001 && label.height == 36 && label.rotateAngle == 35).toBe(true);
+                expect(label.offsetX == 290 && label.offsetY == 140 && label.width == 92.68750000000001 && label.height == 43.199999999999996 && label.rotateAngle == 30).toBe(true);
                 done();
             });
             it('Resize North after annotation rotation', (done: Function) => {
                 resize(diagram, 'resizeNorth');
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-                expect(label.offsetX == 288.59 && label.offsetY == 142.01 && label.width == 92.68750000000001 && label.height == 31.09 && label.rotateAngle == 35).toBe(true);
+                expect(label.offsetX == 288.17 && label.offsetY == 143.17 && label.width == 92.68750000000001 && label.height == 35.879999999999995 && label.rotateAngle == 30).toBe(true);
                 done();
             });
             it('Resize South after annotation rotation', (done: Function) => {
                 resize(diagram, 'resizeSouth');
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-                expect(label.offsetX == 287.18 && label.offsetY == 144.02 && label.width == 92.68750000000001 && label.height == 36 && label.rotateAngle == 35).toBe(true);
+                expect(label.offsetX == 286.34 && label.offsetY == 146.34 && label.width == 92.68750000000001 && label.height == 43.199999999999996 && label.rotateAngle == 30).toBe(true);
                 done();
             });
             it('Resize East after annotation rotation', (done: Function) => {
                 resize(diagram, 'resizeEast');
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-                expect(label.offsetX == 298.59 && label.offsetY == 152.01 && label.width == 120.53750000000001 && label.height == 36 && label.rotateAngle == 35).toBe(true);
+                expect(label.offsetX == 298.17 && label.offsetY == 153.17 && label.width == 120.00750000000002 && label.height == 43.199999999999996 && label.rotateAngle == 30).toBe(true);
                 done();
             });
             it('Resize West after annotation rotation', (done: Function) => {
                 resize(diagram, 'resizeWest');
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-                expect(label.offsetX == 310 && label.offsetY == 160 && label.width == 92.6875 && label.height == 36 && label.rotateAngle == 35).toBe(true);
+                expect(label.offsetX == 310 && label.offsetY == 160 && label.width ==  92.68750000000003 && label.height == 43.199999999999996 && label.rotateAngle == 30).toBe(true);
                 done();
             });
             it('Select and drag after rotation', (done: Function) => {
@@ -360,7 +360,7 @@ describe('Diagram Control', () => {
                 expect((diagram.selectedItems as Selector).annotation !== undefined).toBe(true);
                 drag(diagram);
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-                expect(label.offsetX == 330 && label.offsetY == 180 && label.width == 92.6875 && label.height == 36 && label.rotateAngle == 35).toBe(true);
+                expect(label.offsetX == 330 && label.offsetY == 180 && label.width == 92.68750000000003 && label.height ==  43.199999999999996 && label.rotateAngle == 30).toBe(true);
                 done();
             });
             it('Change node rotation and drag the annotation', (done: Function) => {
@@ -373,20 +373,20 @@ describe('Diagram Control', () => {
                 expect((diagram.selectedItems as Selector).annotation !== undefined).toBe(true);
                 drag(diagram);
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-                expect(label.offsetX == 215.72 && label.offsetY == 272.58 && label.width == 92.6875 && label.height == 36 && label.rotateAngle == 35).toBe(true);
+                expect(label.offsetX == 215.72 && label.offsetY == 272.58 && label.width == 92.68750000000003 && label.height == 43.199999999999996 && label.rotateAngle == 30).toBe(true);
                 done();
             });
             it('Rotation after change node rotation', (done: Function) => {
 
                 rotate(diagram);
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-                expect(label.offsetX == 215.72 && label.offsetY == 272.58 && label.width == 92.6875 && label.height == 36 && label.rotateAngle == 50).toBe(true);
+                expect(label.offsetX == 215.72 && label.offsetY == 272.58 && label.width == 92.68750000000003 && label.height == 43.199999999999996 && label.rotateAngle == 45).toBe(true);
                 done();
             });
             it('Resize after change node rotation', (done: Function) => {
                 resize(diagram, 'resizeSouth');
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-                expect(label.offsetX == 227.76 && label.offsetY == 276.95 && label.width == 92.6875 && label.height == 10.370000000000001 && label.rotateAngle == 50).toBe(true);
+                expect(label.offsetX == 227.55 && label.offsetY == 275.75 && label.width == 92.68750000000003 && label.height == 18.709999999999997 && label.rotateAngle == 45).toBe(true);
                 done();
             });
         });
@@ -642,31 +642,31 @@ describe('Diagram Control', () => {
             it('Resize North', (done: Function) => {
                 resize(diagram, 'resizeNorth');
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-                expect(label.offsetX == 370 && label.offsetY == 180 && label.width == 63.65625 && label.height == 16 && label.rotateAngle == 0).toBe(true);
+                expect(label.offsetX == 370 && label.offsetY == 180 && label.width == 63.65625 && label.height == 23.199999999999996 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize South', (done: Function) => {
                 resize(diagram, 'resizeSouth');
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-                expect(label.offsetX == 369.99999999999994 && label.offsetY == 189.99999999999994 && label.width == 63.65625 && label.height == 36 && label.rotateAngle == 0).toBe(true);
+                expect(label.offsetX == 369.99999999999994 && label.offsetY == 189.99999999999994 && label.width == 63.65625 && label.height == 43.199999999999996 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize East', (done: Function) => {
                 resize(diagram, 'resizeEast');
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-                expect(label.offsetX == 380 && label.offsetY == 190 && label.width == 83.65625 && label.height == 36 && label.rotateAngle == 0).toBe(true);
+                expect(label.offsetX == 380 && label.offsetY == 190 && label.width == 83.65625 && label.height == 43.199999999999996 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize West', (done: Function) => {
                 resize(diagram, 'resizeWest');
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-                expect(label.offsetX == 390 && label.offsetY == 190 && label.width == 63.65625 && label.height == 36 && label.rotateAngle == 0).toBe(true);
+                expect(label.offsetX == 390 && label.offsetY == 190 && label.width == 63.65625 && label.height ==43.199999999999996&& label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Rotate', (done: Function) => {
                 rotate(diagram);
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-                expect(label.offsetX == 390 && label.offsetY == 190 && label.width == 63.65625 && label.height == 36 && label.rotateAngle == 35).toBe(true);
+                expect(label.offsetX == 390 && label.offsetY == 190 && label.width == 63.65625 && label.height == 43.199999999999996 && label.rotateAngle == 30).toBe(true);
                 done();
             });
             it('Select after annotation rotation', (done: Function) => {
@@ -681,25 +681,25 @@ describe('Diagram Control', () => {
             it('Drag after annotation rotation', (done: Function) => {
                 drag(diagram);
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-                expect(label.offsetX == 390 && label.offsetY == 190 && label.width == 63.65625 && label.height == 60 && label.rotateAngle == 35).toBe(true);
+                expect(label.offsetX == 390 && label.offsetY == 190 && label.width == 63.65625 && label.height == 60 && label.rotateAngle == 30).toBe(true);
                 done();
             });
             it('Resize East after annotation rotation', (done: Function) => {
                 resize(diagram, 'resizeEast');
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-                expect(label.offsetX == 401.42 && label.offsetY == 198.01 && label.width == 91.50625 && label.height == 60 && label.rotateAngle == 35).toBe(true);
+                expect(label.offsetX == 401.84 && label.offsetY == 196.83 && label.width == 90.97625 && label.height == 60 && label.rotateAngle == 30).toBe(true);
                 done();
             });
             it('Resize West after annotation rotation', (done: Function) => {
                 resize(diagram, 'resizeWest');
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-                expect(label.offsetX == 412.85 && label.offsetY == 206.02 && label.width == 63.65624999999999 && label.height == 60 && label.rotateAngle == 35).toBe(true);
+                expect(label.offsetX == 413.67 && label.offsetY == 203.66 && label.width == 63.65624999999999 && label.height == 60 && label.rotateAngle == 30).toBe(true);
                 done();
             });
             it('Rotate', (done: Function) => {
                 rotate(diagram);
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-                expect(label.offsetX == 412.85 && label.offsetY == 206.02 && label.width == 63.65624999999999 && label.height == 60 && label.rotateAngle == 60).toBe(true);
+                expect(label.offsetX == 413.67 && label.offsetY == 203.66 && label.width == 63.65624999999999 && label.height == 60 && label.rotateAngle == 55).toBe(true);
                 done();
             });
             it('Add connector and drag the label based on connectors segment', (done: Function) => {
@@ -1131,6 +1131,126 @@ describe('Diagram Control', () => {
                 done();
             });
         });
+        describe('Drag Limit', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            let mouseEvents: MouseEvents = new MouseEvents();
+            let diagramCanvas: HTMLElement; let left: number; let top: number;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'NodesAnnotationInteraction' });
+                document.body.appendChild(ele);
+                diagram = new Diagram({
+                    width: 800, height: 500, connectors: [
+                        {
+                            id: 'connector1', sourcePoint: { x: 100, y: 100 }, targetPoint: { x: 200, y: 200 }, type: 'Orthogonal',
+                            annotations: [{
+                                alignment: 'Center',
+                                content: 'Path Element', constraints: AnnotationConstraints.Interaction,
+                                width: 50, height: 50, dragLimit: { top: 50 }
+                            }]
+                        },
+                        {
+                            id: 'connector2', sourcePoint: { x: 300, y: 100 }, targetPoint: { x: 400, y: 200 }, type: 'Orthogonal',
+                            annotations: [{
+                                alignment: 'Before',
+                                content: 'Path Element', constraints: AnnotationConstraints.Interaction,
+                                width: 50, height: 50
+                            }]
+                        },
+                        {
+                            id: 'connector3', sourcePoint: { x: 500, y: 100 }, targetPoint: { x: 600, y: 200 }, type: 'Orthogonal',
+                            annotations: [{
+                                alignment: 'After',
+                                content: 'Path Element', constraints: AnnotationConstraints.Interaction,
+                                width: 50, height: 50
+                            }]
+                        }
+                    ],
+                });
+                diagram.appendTo('#NodesAnnotationInteraction');
+                diagramCanvas = document.getElementById(diagram.element.id + 'content');
+                mouseEvents.clickEvent(diagramCanvas, 1, 1);
+                left = diagram.element.offsetLeft; top = diagram.element.offsetTop;
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('Drag - alignment(Center)11', function (done) {
+                diagramCanvas = document.getElementById(diagram.element.id + 'content');
+                mouseEvents.clickEvent(diagramCanvas, 180, 120);
+                drag(diagram);
+                let label = (diagram.selectedItems.wrapper).children[0];
+                expect(label.offsetX == 200 && label.offsetY == 140 && label.width == 50 && label.height == 50 && label.rotateAngle == 0).toBe(true);
+                done();
+            });
+            it('Drag - alignment(Center)111', function (done) {
+                // diagramCanvas = document.getElementById(diagram.element.id + 'content');
+                // mouseEvents.clickEvent(diagramCanvas, 180, 120);
+                diagramCanvas = document.getElementById(diagram.element.id + 'content');
+                left = diagram.element.offsetLeft;
+                top = diagram.element.offsetTop;
+                let mouseEvents = new MouseEvents();
+                let textElement = diagram.selectedItems.wrapper.children[0];
+                let centerX = textElement.offsetX;
+                let centerY = textElement.offsetY;
+                mouseEvents.mouseDownEvent(diagramCanvas, centerX + diagram.element.offsetLeft, centerY + diagram.element.offsetTop);
+                mouseEvents.mouseMoveEvent(diagramCanvas, centerX + diagram.element.offsetLeft + 100, centerY + diagram.element.offsetTop);
+                mouseEvents.mouseMoveEvent(diagramCanvas, centerX + diagram.element.offsetLeft + 100, centerY + diagram.element.offsetTop + 100);
+                mouseEvents.mouseUpEvent(diagramCanvas, centerX + diagram.element.offsetLeft + 100, centerY + diagram.element.offsetTop + 100);
+                let label = (diagram.selectedItems.wrapper).children[0];
+                    expect(label.offsetX == 206.25 && label.offsetY == 165 && label.width == 50 && label.height == 50 && label.rotateAngle == 0).toBe(true);
+                    done();
+            });
+
+        
+
+        });
+    });
+    describe('Annotation Issues', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement; let left: number; let top: number;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'NodesAnnotationInteraction' });
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                width: 800, height: 500, nodes: [{
+                    id: 'node', offsetX: 100, offsetY: 100, width: 100, height: 100,
+                    annotations: [{ id: 'label1', content: "Annotation", constraints: AnnotationConstraints.Interaction }]
+                }]
+            });
+            diagram.appendTo('#NodesAnnotationInteraction');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 1, 1);
+            left = diagram.element.offsetLeft; top = diagram.element.offsetTop;
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Select - alignment(Center)', (done: Function) => {
+            diagram.selectAll(); diagram.copy(); diagram.paste();
+            diagram.nodes[1].offsetX = 400;
+            diagram.dataBind();
+            let node: NodeModel = (diagram.nodes[0] as NodeModel);
+            let annotation: DiagramElement = node.wrapper.children[1];
+            mouseEvents.clickEvent(diagramCanvas, annotation.offsetX + left, annotation.offsetY + top);
+            expect((diagram.selectedItems as Selector).nodes.length == 1 &&
+                (diagram.selectedItems as Selector).annotation !== undefined &&
+                diagram.selectedItems.wrapper.children[0].id === annotation.id).toBe(true);
+            let node2: NodeModel = (diagram.nodes[1] as NodeModel);
+            let annotation2: DiagramElement = node2.wrapper.children[1];
+            mouseEvents.clickEvent(diagramCanvas, annotation2.offsetX + left, annotation2.offsetY + top);
+            expect((diagram.selectedItems as Selector).nodes.length == 1 &&
+                (diagram.selectedItems as Selector).annotation !== undefined &&
+                diagram.selectedItems.wrapper.children[0].id === annotation2.id).toBe(true);
+            done();
+        });
     });
     describe('Annotation Issues', () => {
         let diagram: Diagram;
@@ -1264,4 +1384,100 @@ describe('Diagram Control', () => {
             done();
         });
     })
+
+    describe('Annotation with template interaction', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement; let left: number; let top: number;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'templateAnnotationInteraction' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [{
+                id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
+                annotations: [{ offset: { x: 2, y: 1.5 }, template: '<div style="background:green; height:100%;width:100%;"><div/>', constraints: AnnotationConstraints.Interaction, width: 100, height: 100 }]
+            }];
+            diagram = new Diagram({
+                width: 800, height: 500, nodes: nodes,
+            });
+            diagram.appendTo('#templateAnnotationInteraction');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 1, 1);
+            left = diagram.element.offsetLeft; top = diagram.element.offsetTop;
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Select', (done: Function) => {
+            let node: NodeModel = (diagram.nodes[0] as NodeModel);
+            let annotation: DiagramElement = node.wrapper.children[1];
+            mouseEvents.clickEvent(diagramCanvas, annotation.offsetX + left, annotation.offsetY + top);
+            expect((diagram.selectedItems as Selector).annotation !== undefined).toBe(true);
+            done();
+        });
+        it('Drag', (done: Function) => {
+            drag(diagram);
+            drag(diagram);
+            let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+            expect(label.offsetX == 290 && label.offsetY == 240 && label.width == 100 && label.height == 100).toBe(true);
+            done();
+        });
+        it('Resize North', (done: Function) => {
+            resize(diagram, 'resizeNorth');
+            let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+            expect(label.offsetX == 290 && label.offsetY == 255.00000000000003 && label.width == 100 && label.height == 70 && label.rotateAngle == 0).toBe(true);
+            done();
+        });
+        it('Resize South', (done: Function) => {
+            resize(diagram, 'resizeSouth');
+            let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+            expect(label.offsetX == 290 && label.offsetY == 270 && label.width == 100 && label.height == 100 && label.rotateAngle == 0).toBe(true);
+            done();
+        });
+        it('Resize East', (done: Function) => {
+            resize(diagram, 'resizeEast');
+            let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+            expect(label.offsetX == 300 && label.offsetY == 270 && label.width == 120 && label.height == 100 && label.rotateAngle == 0).toBe(true);
+            done();
+        });
+        it('Resize West', (done: Function) => {
+            resize(diagram, 'resizeWest');
+            let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+            expect(label.offsetX == 309.99999999999994 && label.offsetY == 270 && label.width == 100 && label.height == 100 && label.rotateAngle == 0).toBe(true);
+            done();
+        });
+        it('Resize NorthEast', (done: Function) => {
+            resize(diagram, 'resizeNorthEast');
+            let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+            expect(label.offsetX == 320 && label.offsetY == 280 && label.width == 120.00000000000006 && label.height == 80 && label.rotateAngle == 0).toBe(true);
+            done();
+        });
+        it('Resize NorthWest', (done: Function) => {
+            resize(diagram, 'resizeNorthWest');
+            let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+            expect(label.offsetX == 330 && label.offsetY == 290 && label.width == 100.00000000000006 && label.height == 60 && label.rotateAngle == 0).toBe(true);
+            done();
+        });
+        it('Resize SouthEast', (done: Function) => {
+            resize(diagram, 'resizeSouthEast');
+            let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+            expect(label.offsetX == 340 && label.offsetY == 300 && label.width == 120.00000000000006 && label.height == 80 && label.rotateAngle == 0).toBe(true);
+            done();
+        });
+        it('Resize SouthWest', (done: Function) => {
+            resize(diagram, 'resizeSouthWest');
+            let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+            expect(label.offsetX == 350 && label.offsetY == 309.99999999999994 && label.width == 100.00000000000006 && label.height == 100 && label.rotateAngle == 0).toBe(true);
+            done();
+        });
+        it('Rotate', (done: Function) => {
+            rotate(diagram);
+            let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+            expect(label.offsetX == 350 && label.offsetY == 310 && label.width == 100.00000000000006 && label.height == 100 && label.rotateAngle == 20).toBe(true);
+            done();
+        });
+    });
 });

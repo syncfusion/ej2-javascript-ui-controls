@@ -2961,24 +2961,24 @@ var UrlAdaptor = /** @__PURE__ @class */ (function (_super) {
     UrlAdaptor.prototype.processResponse = function (data, ds, query, xhr, request, changes) {
         var requests = request;
         var pvt = requests.pvtData || {};
-        var groupDs = data.groupDs;
+        var groupDs = data ? data.groupDs : [];
         if (xhr && xhr.getResponseHeader('Content-Type') &&
             xhr.getResponseHeader('Content-Type').indexOf('xml') !== -1) {
             return (query.isCountRequired ? { result: [], count: 0 } : []);
         }
         var d = JSON.parse(requests.data);
-        if (d && d.action === 'batch' && data.addedRecords) {
+        if (d && d.action === 'batch' && data && data.addedRecords) {
             changes.addedRecords = data.addedRecords;
             return changes;
         }
-        if (data.d) {
+        if (data && data.d) {
             data = data.d;
         }
         var args = {};
-        if ('count' in data) {
+        if (data && 'count' in data) {
             args.count = data.count;
         }
-        args.result = data.result ? data.result : data;
+        args.result = data && data.result ? data.result : data;
         this.getAggregateResult(pvt, data, args, groupDs, query);
         return DataUtil.isNull(args.count) ? args.result : { result: args.result, count: args.count, aggregates: args.aggregates };
     };
@@ -3577,9 +3577,9 @@ var ODataAdaptor = /** @__PURE__ @class */ (function (_super) {
         var req = '--' + initialGuid + '\n';
         req += 'Content-Type: multipart/mixed; boundary=' + args.cSet.replace('--', '') + '\n';
         this.pvt.changeSet = 0;
-        req += this.generateInsertRequest(changes.addedRecords, args);
-        req += this.generateUpdateRequest(changes.changedRecords, args, original ? original.changedRecords : []);
-        req += this.generateDeleteRequest(changes.deletedRecords, args);
+        req += this.generateInsertRequest(changes.addedRecords, args, dm);
+        req += this.generateUpdateRequest(changes.changedRecords, args, dm, original ? original.changedRecords : []);
+        req += this.generateDeleteRequest(changes.deletedRecords, args, dm);
         req += args.cSet + '--\n';
         req += '--' + initialGuid + '--';
         return {
@@ -3597,7 +3597,7 @@ var ODataAdaptor = /** @__PURE__ @class */ (function (_super) {
      * @param  {RemoteArgs} e
      * @returns this
      */
-    ODataAdaptor.prototype.generateDeleteRequest = function (arr, e) {
+    ODataAdaptor.prototype.generateDeleteRequest = function (arr, e, dm) {
         if (!arr) {
             return '';
         }
@@ -3607,7 +3607,7 @@ var ODataAdaptor = /** @__PURE__ @class */ (function (_super) {
             'url': function (data, i, key) { return '(' + data[i][key] + ')'; },
             'data': function (data, i) { return ''; }
         };
-        req = this.generateBodyContent(arr, e, stat);
+        req = this.generateBodyContent(arr, e, stat, dm);
         return req + '\n';
     };
     /**
@@ -3616,7 +3616,7 @@ var ODataAdaptor = /** @__PURE__ @class */ (function (_super) {
      * @param  {Object[]} arr
      * @param  {RemoteArgs} e
      */
-    ODataAdaptor.prototype.generateInsertRequest = function (arr, e) {
+    ODataAdaptor.prototype.generateInsertRequest = function (arr, e, dm) {
         if (!arr) {
             return '';
         }
@@ -3626,7 +3626,7 @@ var ODataAdaptor = /** @__PURE__ @class */ (function (_super) {
             'url': function (data, i, key) { return ''; },
             'data': function (data, i) { return JSON.stringify(data[i]) + '\n\n'; }
         };
-        req = this.generateBodyContent(arr, e, stat);
+        req = this.generateBodyContent(arr, e, stat, dm);
         return req;
     };
     /**
@@ -3635,7 +3635,7 @@ var ODataAdaptor = /** @__PURE__ @class */ (function (_super) {
      * @param  {Object[]} arr
      * @param  {RemoteArgs} e
      */
-    ODataAdaptor.prototype.generateUpdateRequest = function (arr, e, org) {
+    ODataAdaptor.prototype.generateUpdateRequest = function (arr, e, dm, org) {
         var _this = this;
         if (!arr) {
             return '';
@@ -3647,19 +3647,27 @@ var ODataAdaptor = /** @__PURE__ @class */ (function (_super) {
             'url': function (data, i, key) { return '(' + data[i][key] + ')'; },
             'data': function (data, i) { return JSON.stringify(data[i]) + '\n\n'; }
         };
-        req = this.generateBodyContent(arr, e, stat);
+        req = this.generateBodyContent(arr, e, stat, dm);
         return req;
     };
     ODataAdaptor.getField = function (prop) {
         return prop.replace(/\./g, '/');
     };
-    ODataAdaptor.prototype.generateBodyContent = function (arr, e, stat) {
+    ODataAdaptor.prototype.generateBodyContent = function (arr, e, stat, dm) {
         var req = '';
         for (var i = 0; i < arr.length; i++) {
             req += '\n' + e.cSet + '\n';
             req += this.options.changeSetContent + '\n\n';
             req += stat.method;
-            req += e.url + stat.url(arr, i, e.key) + ' HTTP/1.1\n';
+            if (stat.method === 'POST ') {
+                req += (dm.dataSource.insertUrl || dm.dataSource.crudUrl || e.url) + stat.url(arr, i, e.key) + ' HTTP/1.1\n';
+            }
+            else if (stat.method === 'PUT ' || stat.method === 'PATCH ') {
+                req += (dm.dataSource.updateUrl || dm.dataSource.crudUrl || e.url) + stat.url(arr, i, e.key) + ' HTTP/1.1\n';
+            }
+            else if (stat.method === 'DELETE ') {
+                req += (dm.dataSource.removeUrl || dm.dataSource.crudUrl || e.url) + stat.url(arr, i, e.key) + ' HTTP/1.1\n';
+            }
             req += 'Accept: ' + this.options.accept + '\n';
             req += 'Content-Id: ' + this.pvt.changeSet++ + '\n';
             req += this.options.batchChangeSetContentType + '\n';

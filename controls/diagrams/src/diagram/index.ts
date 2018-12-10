@@ -23,6 +23,7 @@ export * from './core/elements/image-element';
 export * from './core/elements/text-element';
 export * from './core/containers/container';
 export * from './core/containers/canvas';
+export * from './core/containers/grid';
 export * from './core/containers/stack-panel';
 export * from './core/appearance-model';
 
@@ -71,6 +72,7 @@ export * from './interaction/event-handlers';
 export * from './interaction/command-manager';
 export * from './interaction/actions';
 export * from './interaction/connector-editing';
+export * from './interaction/container-interaction';
 
 export * from './diagram/data-source';
 export * from './diagram/grid-lines';

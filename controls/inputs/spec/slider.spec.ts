@@ -2784,10 +2784,10 @@ describe('Slider Control', () => {
         });
 
         it('slider with limits enabled - feeding wrong limit values in range slider', () => {
-            slider = new Slider({ min: 0, max: 5, value: [0, 5], limits: { enabled: true, minStart: -10, minEnd: -1, maxStart: 10, maxEnd: 50 }, 
+            slider = new Slider({ min: 0, max: 5, value: [0, 5], limits: { enabled: true, minStart: -10, minEnd: -1, maxStart: 10, maxEnd: 50 },
                 showButtons: true, type: 'Range' });
             slider.appendTo('#slider');
-            
+
             slider.activeHandle = 1;
             eventArgs = {
                 keyCode: 37, currentTarget: (document.getElementsByClassName("e-handle")[0] as HTMLElement),
@@ -2811,7 +2811,7 @@ describe('Slider Control', () => {
 
         it('slider with limits enabled - in vertical orientation default slider', () => {
             document.getElementById('slider').style.height = '300px';
-            slider = new Slider({ min: 0, max: 10, value: 4, limits: { enabled: true, minStart: 2, minEnd: 5 }, 
+            slider = new Slider({ min: 0, max: 10, value: 4, limits: { enabled: true, minStart: 2, minEnd: 5 },
                 showButtons: true, orientation: 'Vertical', type: 'Default' });
             slider.appendTo('#slider');
 
@@ -2845,7 +2845,7 @@ describe('Slider Control', () => {
 
         it('slider with limits enabled - in vertical orientation range slider', () => {
             document.getElementById('slider').style.height = '300px';
-            slider = new Slider({ min: 0, max: 10, value: [3, 7], limits: { enabled: true, minStart: 2, minEnd: 5, maxStart: 6, maxEnd: 8 }, 
+            slider = new Slider({ min: 0, max: 10, value: [3, 7], limits: { enabled: true, minStart: 2, minEnd: 5, maxStart: 6, maxEnd: 8 },
                 showButtons: true, type: 'Range', orientation: 'Vertical' });
             slider.appendTo('#slider');
 
@@ -2893,7 +2893,7 @@ describe('Slider Control', () => {
             slider.repeatButton(eventArgs);
             slider.repeatHandlerUp();
 
-            expect(slider.value).toBe(4); 
+            expect(slider.value).toBe(4);
         });
 
         it('slider with limits enabled - repeatbutton testing in range slider', () => {
@@ -3049,7 +3049,7 @@ describe('Slider Control', () => {
             mousedown = setMouseCoordinates(mousedown, 350, 144);
             mousedown.target = mousedown.currentTarget = document.getElementsByClassName("e-range")[0];
             EventHandler.trigger(document.getElementsByClassName("e-slider")[0] as HTMLElement, 'mousedown', mousedown);
-            
+
             mousemove = getEventObject('MouseEvents', 'mousemove');
             mousemove = setMouseCoordinates(mousemove, 519, 148);
             mousemove.srcElement = mousemove.target = mousemove.toElement = document.getElementsByClassName("e-slider");
@@ -3082,7 +3082,7 @@ describe('Slider Control', () => {
             mousedown = setMouseCoordinates(mousedown, 350, 144);
             mousedown.target = mousedown.currentTarget = document.getElementsByClassName("e-range")[0];
             EventHandler.trigger(document.getElementsByClassName("e-slider")[0] as HTMLElement, 'mousedown', mousedown);
-            
+
             mousemove = getEventObject('MouseEvents', 'mousemove');
             mousemove = setMouseCoordinates(mousemove, 619, 148);
             mousemove.srcElement = mousemove.target = mousemove.toElement = document.getElementsByClassName("e-slider");
@@ -3115,7 +3115,7 @@ describe('Slider Control', () => {
             mousedown = setMouseCoordinates(mousedown, 350, 144);
             mousedown.target = mousedown.currentTarget = document.getElementsByClassName("e-range")[0];
             EventHandler.trigger(document.getElementsByClassName("e-slider")[0] as HTMLElement, 'mousedown', mousedown);
-            
+
             mousemove = getEventObject('MouseEvents', 'mousemove');
             mousemove = setMouseCoordinates(mousemove, 919, 148);
             mousemove.srcElement = mousemove.target = mousemove.toElement = document.getElementsByClassName("e-slider");
@@ -3148,7 +3148,7 @@ describe('Slider Control', () => {
             mousedown = setMouseCoordinates(mousedown, 350, 144);
             mousedown.target = mousedown.currentTarget = document.getElementsByClassName("e-range")[0];
             EventHandler.trigger(document.getElementsByClassName("e-slider")[0] as HTMLElement, 'mousedown', mousedown);
-            
+
             mousemove = getEventObject('MouseEvents', 'mousemove');
             mousemove = setMouseCoordinates(mousemove, 0, 148);
             mousemove.srcElement = mousemove.target = mousemove.toElement = document.getElementsByClassName("e-slider");
@@ -3181,7 +3181,7 @@ describe('Slider Control', () => {
             mousedown = setMouseCoordinates(mousedown, 350, 144);
             mousedown.target = mousedown.currentTarget = document.getElementsByClassName("e-range")[0];
             EventHandler.trigger(document.getElementsByClassName("e-slider")[0] as HTMLElement, 'mousedown', mousedown);
-            
+
             mousemove = getEventObject('MouseEvents', 'mousemove');
             mousemove = setMouseCoordinates(mousemove, 0, 148);
             mousemove.srcElement = mousemove.target = mousemove.toElement = document.getElementsByClassName("e-slider");
@@ -3214,7 +3214,7 @@ describe('Slider Control', () => {
             mousedown = setMouseCoordinates(mousedown, 350, 144);
             mousedown.target = mousedown.currentTarget = document.getElementsByClassName("e-range")[0];
             EventHandler.trigger(document.getElementsByClassName("e-slider")[0] as HTMLElement, 'mousedown', mousedown);
-            
+
             mousemove = getEventObject('MouseEvents', 'mousemove');
             mousemove = setMouseCoordinates(mousemove, 0, 148);
             mousemove.srcElement = mousemove.target = mousemove.toElement = document.getElementsByClassName("e-slider");
@@ -3257,7 +3257,7 @@ describe('Slider Control', () => {
 
             expect((document.getElementsByClassName('e-handle')[0] as HTMLElement).getAttribute('aria-valuenow')).toBe('70');
             expect((document.getElementsByClassName('e-handle')[1] as HTMLElement).getAttribute('aria-valuenow')).toBe('100');
-            
+
             slider.firstTooltipElement = true;
             slider.secondTooltipElement = true;
             mousemove = getEventObject('MouseEvents', 'mousemove');
@@ -3338,7 +3338,7 @@ describe('Slider Control', () => {
             mousedown = setMouseCoordinates(mousedown, 350, 144);
             mousedown.target = mousedown.currentTarget = document.getElementsByClassName("e-range")[0];
             EventHandler.trigger(document.getElementsByClassName("e-slider")[0] as HTMLElement, 'mousedown', mousedown);
-            
+
             mousemove = getEventObject('MouseEvents', 'mousemove');
             mousemove = setMouseCoordinates(mousemove, 519, 148);
             mousemove.srcElement = mousemove.target = mousemove.toElement = document.getElementsByClassName("e-slider");
@@ -3387,7 +3387,7 @@ describe('Slider Control', () => {
             mousedown = setMouseCoordinates(mousedown, 300, 200);
             mousedown.target = mousedown.currentTarget = document.getElementsByClassName("e-range")[0];
             EventHandler.trigger(document.getElementsByClassName("e-slider")[0] as HTMLElement, 'mousedown', mousedown);
-            
+
             mousemove = getEventObject('MouseEvents', 'mousemove');
             mousemove = setMouseCoordinates(mousemove, 300, 250);
             mousemove.srcElement = mousemove.target = mousemove.toElement = document.getElementsByClassName("e-slider");
@@ -3648,28 +3648,28 @@ describe('Slider Control', () => {
             ele = createElement('div', { id: 'slider' });
             document.body.appendChild(ele);
             let slider: any = new Slider({ value: [10, 20], showButtons: true, type: 'Range', enableRtl: true }, '#slider');
-            slider.onResize();
+            slider.reposition();
         })
         it('Resize method testing', () => {
             let ele: HTMLElement;
             ele = createElement('div', { id: 'slider' });
             document.body.appendChild(ele);
             let slider: any = new Slider({ value: 0, orientation: 'Vertical', showButtons: true, type: 'MinRange', enableRtl: true }, '#slider');
-            slider.onResize();
+            slider.reposition();
         })
         it('Resize method testing', () => {
             let ele: HTMLElement;
             ele = createElement('div', { id: 'slider' });
             document.body.appendChild(ele);
             let slider: any = new Slider({ value: 0, showButtons: true, type: 'MinRange', enableRtl: true }, '#slider');
-            slider.onResize();
+            slider.reposition();
         })
         it('Resize method testing', () => {
             let ele: HTMLElement;
             ele = createElement('div', { id: 'slider' });
             document.body.appendChild(ele);
             let slider: any = new Slider({ value: [10, 20], showButtons: true, type: 'Range' }, '#slider');
-            slider.onResize();
+            slider.reposition();
 
         })
         it('Resize method testing', () => {
@@ -3679,21 +3679,21 @@ describe('Slider Control', () => {
             let slider: any = new Slider({ value: [10, 20], showButtons: true, type: 'Range', enableRtl: true, orientation: 'Vertical' }, '#slider');
             slider.value = [10, 25];
             slider.dataBind();
-            slider.onResize();
+            slider.reposition();
         })
         it('Resize method testing', () => {
             let ele: HTMLElement;
             ele = createElement('div', { id: 'slider' });
             document.body.appendChild(ele);
             let slider: any = new Slider({ type: 'MinRange' }, '#slider');
-            slider.onResize();
+            slider.reposition();
         })
         it('Resize method testing', () => {
             let ele: HTMLElement;
             ele = createElement('div', { id: 'slider' });
             document.body.appendChild(ele);
             let slider: any = new Slider({ type: 'MinRange', orientation: 'Vertical' }, '#slider');
-            slider.onResize();
+            slider.reposition();
         })
         it('Resize method testing', () => {
             let ele: HTMLElement;
@@ -3701,7 +3701,7 @@ describe('Slider Control', () => {
             document.body.appendChild(ele);
             let slider: any = new Slider({ type: 'MinRange', orientation: 'Vertical' }, '#slider');
             slider.handlePos1 = undefined;
-            slider.onResize();
+            slider.reposition();
         })
         it('Resize method testing', () => {
             let ele: HTMLElement;
@@ -3709,7 +3709,7 @@ describe('Slider Control', () => {
             document.body.appendChild(ele);
             let slider: any = new Slider({ type: 'MinRange', orientation: 'Horizontal' }, '#slider');
             slider.handlePos1 = undefined;
-            slider.onResize();
+            slider.reposition();
         })
         it('Resize method testing with RTL enabled', () => {
             let ele: HTMLElement;
@@ -3719,7 +3719,7 @@ describe('Slider Control', () => {
             slider.handlePos1 = undefined;
             slider.isMaterial = true;
             slider.dataBind();
-            slider.onResize();
+            slider.reposition();
         })
         it('Resize method testing with RTL enabled in range', () => {
             let ele: HTMLElement;
@@ -3729,7 +3729,7 @@ describe('Slider Control', () => {
             slider.handlePos1 = undefined;
             slider.isMaterial = true;
             slider.dataBind();
-            slider.onResize();
+            slider.reposition();
         })
         it('Resize method testing with RTL enabled in range with vertical', () => {
             let ele: HTMLElement;
@@ -3739,7 +3739,7 @@ describe('Slider Control', () => {
             slider.handlePos1 = undefined;
             slider.isMaterial = true;
             slider.dataBind();
-            slider.onResize();
+            slider.reposition();
         })
         it('Resize method testing with ticks enabled in range', () => {
             let ele: HTMLElement;
@@ -3748,7 +3748,7 @@ describe('Slider Control', () => {
             let slider: any = new Slider({ type: 'MinRange', orientation: 'Horizontal', ticks: { placement: 'Before' } }, '#slider');
             slider.isMaterial = true;
             slider.dataBind();
-            slider.onResize();
+            slider.reposition();
         })
         it('Resize method testing with ticks enabled in range with RTL', () => {
             setTheme('material');
@@ -3759,7 +3759,7 @@ describe('Slider Control', () => {
                 tooltip: { isVisible: true } }, '#slider');
             slider.isMaterial = true;
             slider.dataBind();
-            slider.onResize();
+            slider.reposition();
         })
         it('Resize method testing with ticks and tooltip enabled in range', () => {
             setTheme('material');
@@ -3770,7 +3770,7 @@ describe('Slider Control', () => {
                 tooltip: { isVisible: true } }, '#slider');
             slider.isMaterial = true;
             slider.dataBind();
-            slider.onResize();
+            slider.reposition();
         })
         it('Resize method testing with ticks enabled in range with RTL in vertical', () => {
             let ele: HTMLElement;
@@ -3779,7 +3779,7 @@ describe('Slider Control', () => {
             let slider: any = new Slider({ type: 'Range', orientation: 'Vertical', ticks: { placement: 'Before' } }, '#slider');
             slider.isMaterial = true;
             slider.dataBind();
-            slider.onResize();
+            slider.reposition();
         })
         it('Resize method testing with tooltip enabled in range with RTL in vertical', () => {
             setTheme('material');
@@ -3788,9 +3788,9 @@ describe('Slider Control', () => {
             document.body.appendChild(ele);
             let slider: any = new Slider({ type: 'Range', orientation: 'Vertical', ticks: { placement: 'Before' },
             tooltip: { isVisible: true } }, '#slider');
-            
+
             slider.dataBind();
-            slider.onResize();
+            slider.reposition();
             slider.openTooltip();
         })
         it('Resize method testing with limits enabled', () => {
@@ -3800,7 +3800,7 @@ describe('Slider Control', () => {
             let slider: any = new Slider({ type: 'MinRange', orientation: 'Horizontal', limits: { enabled: true, minStart: 20, minEnd: 40 } }, '#slider');
             slider.isMaterial = true;
             slider.dataBind();
-            slider.onResize();
+            slider.reposition();
             slider.firstTooltipElement = undefined;
             slider.getTooltipTransformProperties('');
             slider.handleValueAdjust(60, 100, 3);

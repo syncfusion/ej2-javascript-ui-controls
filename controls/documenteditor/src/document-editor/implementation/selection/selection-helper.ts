@@ -54,6 +54,16 @@ export class TextPosition {
         return this.owner.selection.isParagraphLastLine(this.currentWidget)
             && this.offset === this.owner.selection.getLineLength(this.currentWidget);
     }
+
+    /**
+     * @private
+     */
+    get isCurrentParaBidi(): boolean {
+        if (!isNullOrUndefined(this.currentWidget.paragraph)) {
+            return this.currentWidget.paragraph.paragraphFormat.bidi;
+        }
+        return false;
+    }
     /**
      * @private
      */
@@ -81,6 +91,17 @@ export class TextPosition {
         textPosition.offset = this.offset;
         textPosition.location = this.location;
         return textPosition;
+    }
+    /**
+     * @private
+     */
+    public containsRtlText(widget: LineWidget): boolean {
+        for (let i: number = 0; i < widget.children.length; i++) {
+            if (widget.children[i].isRightToLeft) {
+                return true;
+            }
+        }
+        return false;
     }
     /**
      * Set text position for paragraph and inline
@@ -474,7 +495,7 @@ export class TextPosition {
             let nextLineWidget: LineWidget = this.paragraph.childWidgets[lineIndex + 1] as LineWidget;
             if (nextLineWidget) {
                 this.currentWidget = nextLineWidget;
-                this.offset = 0;
+                this.offset = 1;
             }
         } else {
             nextParagraph = this.selection.getNextSelectionBlock(this.paragraph);
@@ -517,7 +538,8 @@ export class TextPosition {
             let prevLineWidget: LineWidget = this.paragraph.childWidgets[lineIndex - 1] as LineWidget;
             if (prevLineWidget) {
                 this.currentWidget = prevLineWidget;
-                this.offset = this.currentWidget.getEndOffset();
+                let endOffset: number = this.currentWidget.getEndOffset();
+                this.offset = endOffset > 0 ? endOffset - 1 : endOffset;
             }
         } else {
             //Moves to owner and get previous paragraph.
@@ -1542,7 +1564,17 @@ export class TextPosition {
             this.offset = this.offset - 1;
         }
         let currentLine: LineWidget = selection.getLineWidgetInternal(this.currentWidget, this.offset, moveToPreviousLine);
-        let firstElement: ElementBox = selection.getFirstElementInternal(currentLine);
+        let firstElement: ElementBox;
+        let isParaBidi: boolean = this.currentWidget.paragraph.paragraphFormat.bidi;
+        if (isParaBidi && currentLine.children.length > 0 && this.containsRtlText(currentLine)) {
+            firstElement = currentLine.children[currentLine.children.length - 1];
+            if (firstElement instanceof ListTextElementBox) {
+                firstElement = undefined;
+            }
+        } else {
+            firstElement = selection.getFirstElementInternal(currentLine);
+        }
+        this.viewer.moveCaretPosition = 1;
         let startOffset: number = selection.getStartOffset(this.currentWidget.paragraph);
         if (isNullOrUndefined(firstElement) && this.offset > startOffset) {
             let index: number = 0;
@@ -1708,11 +1740,23 @@ export class TextPosition {
         }
         let currentLine: LineWidget = selection.getLineWidgetParagraph(this.offset, this.currentWidget);
         let firstElement: ElementBox = selection.getFirstElementInternal(currentLine);
+        let isParaBidi: boolean = this.currentWidget.paragraph.paragraphFormat.bidi;
+        this.viewer.moveCaretPosition = 2;
         if (isNullOrUndefined(firstElement) && this.offset === selection.getStartLineOffset(this.currentWidget)) {
             this.offset = selection.getParagraphLength(this.paragraph) + 1;
             this.updatePhysicalPosition(true);
         } else if (!isNullOrUndefined(firstElement)) {
-            let lastElement: ElementBox = currentLine.children[currentLine.children.length - 1];
+            let lastElement: ElementBox;
+            // As per Microsoft Behavior, when current para is RTL and if line widget contains rtl text or mixed inlines(rtl, normal),
+            // then need to consider the last element and to update offset to last element
+            if (isParaBidi && this.containsRtlText(currentLine)) {
+                lastElement = firstElement;
+            } else {
+                lastElement = currentLine.children[currentLine.children.length - 1];
+                if (lastElement instanceof ListTextElementBox && currentLine.children.length > 2) {
+                    lastElement = currentLine.children[currentLine.children.length - 3];
+                }
+            }
             let index: number = 0;
             index += lastElement instanceof TextElementBox ? (lastElement as TextElementBox).length : 1;
             this.currentWidget = lastElement.line;

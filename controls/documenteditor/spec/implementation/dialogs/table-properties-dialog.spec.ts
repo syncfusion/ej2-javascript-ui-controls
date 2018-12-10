@@ -916,7 +916,7 @@ describe('load table format', () => {
         editor.tablePropertiesDialogModule.loadTableProperties();
 
         expect((dialog.right as HTMLElement).classList.contains('e-de-table-alignment-active'));
-        expect(dialog.tableWidthType.index).toBe(0);
+        expect(dialog.tableWidthType.index).toBe(1);
         editor.tablePropertiesDialogModule.closeTablePropertiesDialog();
 
 
@@ -1421,8 +1421,8 @@ describe('Table dialog Property change validation', () => {
         (dialog as any).cellWidthType.dataBind();
         dialog.onCellWidthTypeChange();
         dialog.applyTableProperties();
-        expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.preferredWidthType).toBe('Point');
-        expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.preferredWidth).not.toBe(0);
+        expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.preferredWidthType).toBe('Percent');
+        expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.preferredWidth).toBe(100);
     })
 });
 
@@ -1464,7 +1464,7 @@ describe('Table vertical alignment - center validation', () => {
         (tablePropertiesDialog as any).center.click();
         tablePropertiesDialog.applyTableProperties();
         expect(editor.selection.tableFormat.tableAlignment).toBe('Center');
-        expect(editor.selection.tableFormat.table.x).toBe(96);
+        expect(editor.selection.tableFormat.table.x).not.toBe(96);
         expect(Math.round(cellWidget.cellFormat.preferredWidth)).toBe(Math.round(previousCellWidth));
     });
 });

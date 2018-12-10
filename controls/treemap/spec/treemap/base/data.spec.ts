@@ -1,6 +1,19 @@
 /**
  * Sports data
  */
+/* tslint:disable */
+export let Metals: Object[] = [
+    { valuePath: "Swimming" ,legendVisibility: true, fill: "#DEB887", Sport: "Swimming", Gold: 16, GameImage: 'Swimming.svg', ItemHeight: "180px", ItemWidth: '180px' },
+    { valuePath: "Swimming" ,legendVisibility: false, fill: "#5F9EA0", Sport: "Athletics", Gold: 13, GameImage: 'Athletics.svg', ItemHeight: "70px", ItemWidth: '70px' },
+    { valuePath: "Gymnastics" ,legendVisibility: true, fill: "#DC143C", Sport: "Gymnastics", Gold: 4, GameImage: 'Gymnastics.svg', ItemHeight: "80px", ItemWidth: '80px' },
+    { valuePath: "Gymnastics" ,legendVisibility: false, fill: "#FF8C00", Sport: "Cycling", Gold: 2, GameImage: 'Cycling.svg', ItemHeight: "50px", ItemWidth: '50px' },
+    { valuePath: "Wrestling" ,legendVisibility: true, fill: "#E9967A", Sport: "Wrestling", Gold: 2, GameImage: 'Wrestling.svg', ItemHeight: "60px", ItemWidth: '50px' },
+    { valuePath: "Basketball" ,legendVisibility: true, fill: "#483D8B", Sport: "Basketball", Gold: 2, GameImage: 'Basketball.svg', ItemHeight: "50px", ItemWidth: '50px' },
+    { valuePath: "Boxing" ,legendVisibility: true, fill: "#DAA520", Sport: "Boxing", Gold: 1, GameImage: 'Boxing.svg', ItemHeight: "40px", ItemWidth: '30px' },
+    { valuePath: "Tennis" ,legendVisibility: true, fill: "#CD5C5C", Sport: "Tennis", Gold: 1, GameImage: 'Tennis.svg', ItemHeight: "40px", ItemWidth: '40px' },
+    { valuePath: "Judo" ,legendVisibility: false, fill: "#556B2F", Sport: "Judo", Gold: 1, GameImage: 'Judo.svg', ItemHeight: "40px", ItemWidth: '40px' },
+    { valuePath: "Rowing" ,legendVisibility: false, fill: "#8FBC8F", Sport: "Rowing", Gold: 1, GameImage: 'Rowing.svg', ItemHeight: "40px", ItemWidth: '40px' },
+];
 export let sportsData: Object[] = [
     {
         Country: 'US', GameName: 'Swimming', GoldMedals: 16, SilverMedals: 9, BronzeMedals: 6,
@@ -656,4 +669,36 @@ export let Country_Population = [
     { Country: "Seychelles", Population: 97539 },
 
     { Country: "Antigua and Barbuda", Population: 93659 },
+];
+export let CarSales: object[] = [
+    { "color": "#DEB887", Continent: "China", Company: "Volkswagen", Sales: 3005994 },
+    { "color": "#DEB887", Continent: "China", Company: "General Motors", Sales: 1230044 },
+    { "color": "#DEB887", Continent: "China", Company: "Honda", Sales: 1197023 },
+    { "color": "#5F9EA0", Continent: "United States", Company: "General Motors", Sales:3042775  },
+    { "color": "#5F9EA0", Continent: "United States", Company: "Ford", Sales:2599193  },
+    { "color": "#5F9EA0", Continent: "United States", Company: "Toyota", Sales:2449587  },
+    { "color": "#DC143C", Continent: "Japan",Company: "Toyota", Sales:1527977  },
+    { "color": "#DC143C", Continent: "Japan", Company: "Honda", Sales:706982 },
+    { "color": "#DC143C", Continent: "Japan", Company: "Suzuki", Sales:623041  },
+    { "color": "#FF8C00", Continent: "Germany",Company: "Volkswagen", Sales:655977  },
+    { "color": "#FF8C00", Continent: "Germany", Company: "Mercedes", Sales:310845  },
+    { "color": "#FF8C00", Continent: "Germany", Company: "BMW", Sales:261931  },
+    { "color": "#E9967A", Continent: "United Kingdom", Company: "Ford ", Sales:319442  },
+	{ "color": "#E9967A", Continent: "United Kingdom", Company: "Vauxhall", Sales: 251146 },
+    { "color": "#E9967A", Continent: "United Kingdom", Company: "Volkswagen", Sales:206994  },
+    { "color": "#483D8B", Continent: "India", Company: "Maruti Suzuki", Sales:1443654  },
+    { "color": "#483D8B", Continent: "India", Company: "Hyundai", Sales:476241  },
+    { "color": "#483D8B", Continent: "India", Company: "Mahindra", Sales:205041  },
+    { "color": "#DAA520", Continent: "France", Company: "Renault", Sales:408183 },
+    { "color": "#DAA520", Continent: "France", Company: "Peugeot", Sales:336242 },
+    { "color": "#DAA520", Continent: "France", Company: "Citroen", Sales:194986  },
+    { "color": "#CD5C5C", Continent: "Brazil", Company: "Flat Chrysler", Sales:368842  },
+    { "color": "#CD5C5C", Continent: "Brazil", Company: "General Motors", Sales: 348351 },
+    { "color": "#CD5C5C", Continent: "Brazil", Company: "Volkswagen", Sales: 245895 },
+    { "color": "#556B2F", Continent: "Italy", Company: "Flat Chrysler", Sales:386260  },
+    { "color": "#556B2F", Continent: "Italy", Company: "Volkswagen", Sales: 138984 },
+    { "color": "#556B2F", Continent: "Italy", Company: "Ford", Sales: 125144 },
+    { "color": "#8FBC8F", Continent: "Canada", Company: "Ford", Sales:  278011},
+    { "color": "#8FBC8F", Continent: "Canada", Company: "FCA", Sales:305086 },
+    { "color": "#8FBC8F", Continent: "Canada", Company: "GM", Sales: 266884 },       
 ];

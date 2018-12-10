@@ -1,4 +1,4 @@
-import { Sparkline, IAxisRenderingEventArgs, ISeriesRenderingEventArgs, SparklineValueType} from '../index';
+import { Sparkline, IAxisRenderingEventArgs, ISeriesRenderingEventArgs, SparklineValueType } from '../index';
 import { ISparklinePointEventArgs, IMarkerRenderingEventArgs, IDataLabelRenderingEventArgs } from '../index';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PathOption, SparkValues, drawPath, drawRectangle, RectOption, Rect, CircleOption, drawCircle } from '../utils/helper';
@@ -59,7 +59,7 @@ export class SparklineRenderer {
 
     /**
      * Sparkline data calculations
-     * @param sparkline 
+     * @param sparkline
      */
     constructor(sparkline: Sparkline) {
         this.sparkline = sparkline;
@@ -125,7 +125,7 @@ export class SparklineRenderer {
             return;
         }
         if (spark.type !== 'Pie' && spark.type !== 'WinLoss' && spark.rangeBandSettings.length) {
-            let group: Element = this.sparkline.renderer.createGroup({id: this.sparkline.element.id + '_sparkline_rangeband_g'});
+            let group: Element = this.sparkline.renderer.createGroup({ id: this.sparkline.element.id + '_sparkline_rangeband_g' });
             for (let i: number = 0; i < spark.rangeBandSettings.length; i++) {
                 if ((spark.axisSettings.minY <= spark.rangeBandSettings[i].startRange) ||
                     (spark.axisSettings.maxY >= spark.rangeBandSettings[i].endRange)) {
@@ -177,8 +177,10 @@ export class SparklineRenderer {
      */
     private renderLine(points: SparkValues[], args: ISeriesRenderingEventArgs): void {
         let spark: Sparkline = this.sparkline;
-        let g: Element = this.sparkline.renderer.createGroup({ id: spark.element.id + '_sparkline_g',
-        'clip-path': 'url(#' + this.clipId + ')' });
+        let g: Element = this.sparkline.renderer.createGroup({
+            id: spark.element.id + '_sparkline_g',
+            'clip-path': 'url(#' + this.clipId + ')'
+        });
         let pathOption: PathOption = new PathOption(
             spark.element.id + '_sparkline_line', 'transparent', args.lineWidth, args.fill, spark.opacity);
         let d: string = '';
@@ -247,7 +249,7 @@ export class SparklineRenderer {
             };
             this.getPieSpecialPoint(points[i], spark, pathOption, i, high, low, points.length);
             let pointArgs: ISparklinePointEventArgs = this.triggerPointRender(
-                'pointRendering', i, pathOption.fill, {color: stroke, width: strokeWidth});
+                'pointRendering', i, pathOption.fill, { color: stroke, width: strokeWidth });
             pathOption.fill = pointArgs.fill; pathOption.stroke = pointArgs.border.color;
             pathOption['stroke-width'] = pointArgs.border.width;
             if (!pointArgs.cancel) {
@@ -266,8 +268,9 @@ export class SparklineRenderer {
     /**
      * To get special point color and option for Pie series.
      */
-    private getPieSpecialPoint(temp: SparkValues, spark: Sparkline, option: PathOption, i: number,
-                               high: number, low: number, length: number): void {
+    private getPieSpecialPoint(
+        temp: SparkValues, spark: Sparkline, option: PathOption, i: number, high: number, low: number, length: number
+    ): void {
         if (temp.yVal < 0 && spark.negativePointColor) {
             option.fill = spark.negativePointColor;
             this.negativePointIndexes.push(i);
@@ -292,8 +295,10 @@ export class SparklineRenderer {
      */
     private renderArea(points: SparkValues[], args: ISeriesRenderingEventArgs): void {
         let spark: Sparkline = this.sparkline;
-        let group: Element = this.sparkline.renderer.createGroup({ id: spark.element.id + '_sparkline_g',
-        'clip-path': 'url(#' + this.clipId + ')' });
+        let group: Element = this.sparkline.renderer.createGroup({
+            id: spark.element.id + '_sparkline_g',
+            'clip-path': 'url(#' + this.clipId + ')'
+        });
         let pathOption: PathOption = new PathOption(
             spark.element.id + '_sparkline_area', args.fill, 0, 'transparent', spark.opacity);
         let d: string = '';
@@ -323,8 +328,10 @@ export class SparklineRenderer {
     private renderColumn(points: SparkValues[], args: ISeriesRenderingEventArgs): void {
         let spark: Sparkline = this.sparkline;
         let locations: SparkValues[] = extend([], [], points) as SparkValues[];
-        let group: Element = this.sparkline.renderer.createGroup({ id: spark.element.id + '_sparkline_g',
-        'clip-path': 'url(#' + this.clipId + ')' });
+        let group: Element = this.sparkline.renderer.createGroup({
+            id: spark.element.id + '_sparkline_g',
+            'clip-path': 'url(#' + this.clipId + ')'
+        });
         let lowPos: number;
         let highPos: number;
         if (this.sparkline.highPointColor || this.sparkline.lowPointColor) {
@@ -348,7 +355,7 @@ export class SparklineRenderer {
             temp.location.x = temp.x + (temp.width / 2);
             rectOptions.stroke = args.border.color ? (args.border.color) : rectOptions.fill;
             let pointArgs: ISparklinePointEventArgs = this.triggerPointRender(
-                'pointRendering', i, rectOptions.fill, {color: rectOptions.stroke, width: args.border.width});
+                'pointRendering', i, rectOptions.fill, { color: rectOptions.stroke, width: args.border.width });
             rectOptions.fill = pointArgs.fill; rectOptions.stroke = pointArgs.border.color;
             rectOptions['stroke-width'] = pointArgs.border.width;
             if (!pointArgs.cancel) {
@@ -363,8 +370,10 @@ export class SparklineRenderer {
      */
     private renderWinLoss(points: SparkValues[], args: ISeriesRenderingEventArgs): void {
         let spark: Sparkline = this.sparkline;
-        let group: Element = this.sparkline.renderer.createGroup({ id: spark.element.id + '_sparkline_g',
-        'clip-path': 'url(#' + this.clipId + ')' });
+        let group: Element = this.sparkline.renderer.createGroup({
+            id: spark.element.id + '_sparkline_g',
+            'clip-path': 'url(#' + this.clipId + ')'
+        });
         let id: string = spark.element.id + '_sparkline_winloss_';
         let options: RectOption = new RectOption(id, '', args.border, spark.opacity, null);
         let temp: SparkValues;
@@ -374,14 +383,14 @@ export class SparklineRenderer {
             temp = points[i];
             options.id = id + i;
             options.fill = (paletteLength) ? spark.palette[i % paletteLength] : ((temp.yVal === this.axisValue) ?
-            (this.sparkline.tiePointColor || '#a216f3') : ((temp.yVal > this.axisValue) ? args.fill :
-            (spark.negativePointColor || '#e20f07')));
+                (this.sparkline.tiePointColor || '#a216f3') : ((temp.yVal > this.axisValue) ? args.fill :
+                    (spark.negativePointColor || '#e20f07')));
             options.stroke = (args.border.color) ? (args.border.color) : options.fill;
             options.rect = new Rect(temp.x, temp.y, temp.width, temp.height);
             temp.location.x = temp.x + (temp.width / 2);
             temp.location.y = (temp.yVal >= this.axisValue) ? (temp.y) : (temp.y + temp.height);
             let pointArgs: ISparklinePointEventArgs = this.triggerPointRender(
-                'pointRendering', i, options.fill, {color: options.stroke, width: args.border.width});
+                'pointRendering', i, options.fill, { color: options.stroke, width: args.border.width });
             options.fill = pointArgs.fill; options.stroke = pointArgs.border.color;
             options['stroke-width'] = pointArgs.border.width;
             if (!pointArgs.cancel) {
@@ -441,8 +450,10 @@ export class SparklineRenderer {
     /**
      * To get special point color and option.
      */
-    private getSpecialPoint(render: boolean, temp: SparkValues, spark: Sparkline, option: PathOption, i: number, highPos: number,
-                            lowPos: number, length: number, visible: string = ''): boolean {
+    private getSpecialPoint(
+        render: boolean, temp: SparkValues, spark: Sparkline, option: PathOption, i: number, highPos: number,
+        lowPos: number, length: number, visible: string = ''
+    ): boolean {
         if (temp.markerPosition > this.axisHeight) {
             option.fill = spark.negativePointColor || option.fill;
             this.negativePointIndexes.push(i);
@@ -474,15 +485,19 @@ export class SparklineRenderer {
     private renderLabel(points: SparkValues[]): void {
         let spark: Sparkline = this.sparkline;
         let dataLabel: SparklineDataLabelSettingsModel = spark.dataLabelSettings;
-        let color: string = (spark.theme === 'Highcontrast') ? '#FFFFFF' : '#424242';
+        let theme: string = spark.theme.toLowerCase();
+        let color: string = theme.indexOf('dark') > -1 || theme === 'highcontrast'
+            ? '#FFFFFF' : '#424242';
         color = (dataLabel.textStyle.color) ? dataLabel.textStyle.color : color;
         if ((spark.type === 'WinLoss' || !dataLabel.visible.length)) {
             return;
         }
         let locations: SparkValues[] = extend([], [], points) as SparkValues[];
         let id: string = spark.element.id + '_sparkline_label_';
-        let group: Element = this.sparkline.renderer.createGroup({ id: spark.element.id + '_sparkline_label_g',
-        style: 'pointer-events: none;' });
+        let group: Element = this.sparkline.renderer.createGroup({
+            id: spark.element.id + '_sparkline_label_g',
+            style: 'pointer-events: none;'
+        });
         let g: Element;
         let temp: SparkValues;
         let textId: string = id + 'text_';
@@ -496,7 +511,7 @@ export class SparklineRenderer {
         let padding: number = (dataLabel.fill !== 'transparent' || dataLabel.border.width) ? 2 : 0;
         let size: Size = measureText('sparkline_measure_text', labelStyle);
         let rectOptions: RectOption = new RectOption('', dataLabel.fill, dataLabel.border, dataLabel.opacity, null);
-        let edgeLabelOption: {x: number, render: boolean};
+        let edgeLabelOption: { x: number, render: boolean };
         for (let i: number = 0, length: number = points.length; i < length; i++) {
             temp = points[i];
             option.id = textId + i;
@@ -504,7 +519,7 @@ export class SparklineRenderer {
             option.y = ((spark.type === 'Pie') ? temp.location.y : ((temp.markerPosition > this.axisHeight) ? (temp.location.y +
                 (size.height / 2) + space + padding) : (temp.location.y - (size.height / 2) - space - padding))) + dataLabel.offset.y;
             option.text = (dataLabel.format !== '') ? this.formatter(dataLabel.format, this.sparkline.dataSource[i]) :
-            temp.yVal.toString();
+                temp.yVal.toString();
             let labelArgs: IDataLabelRenderingEventArgs = {
                 name: 'dataLabelRendering', cancel: false, border: dataLabel.border, fill: dataLabel.fill, pointIndex: i,
                 sparkline: this.sparkline, x: option.x, y: option.y, text: option.text, color: color
@@ -533,9 +548,9 @@ export class SparklineRenderer {
     }
     private arrangeLabelPosition(
         edgeLabel: EdgeLabelMode, render: boolean, x: number, index: number, length: number, size: Size, padding: number
-    ): {x: number, render: boolean} {
+    ): { x: number, render: boolean } {
         if (edgeLabel === 'None') {
-            return {x, render};
+            return { x, render };
         }
         if (index === 0 && ((x - (size.width / 2) - padding) <= 0)) {
             if (edgeLabel === 'Hide') {
@@ -543,20 +558,22 @@ export class SparklineRenderer {
             } else {
                 x = this.sparkline.padding.left + padding + (size.width / 2);
             }
-        } else if (index === length - 1 && ((x + (size.width / 2) + padding)  >= this.sparkline.availableSize.width)) {
+        } else if (index === length - 1 && ((x + (size.width / 2) + padding) >= this.sparkline.availableSize.width)) {
             if (edgeLabel === 'Hide') {
                 render = false;
             } else {
                 x -= (size.width / 2 + padding);
             }
         }
-        return {x, render};
+        return { x, render };
     }
     /**
      * To get special point color and option.
      */
-    private getLabelVisible(render: boolean, temp: SparkValues, i: number, label: SparklineDataLabelSettingsModel, length: number,
-                            highPos: number, lowPos: number): boolean {
+    private getLabelVisible(
+        render: boolean, temp: SparkValues, i: number, label: SparklineDataLabelSettingsModel, length: number,
+        highPos: number, lowPos: number
+    ): boolean {
         let labelVisible: string = label.visible.join().toLowerCase();
         if (temp.markerPosition > this.axisHeight) {
             render = render || (labelVisible.indexOf('negative') > -1);
@@ -596,7 +613,7 @@ export class SparklineRenderer {
      * To find x axis interval.
      */
     private getInterval(data: Object[], x: string, type: SparklineValueType): number {
-        let interval: number  = 1;
+        let interval: number = 1;
         let x1: number = data[0][x];
         let x2: number = isNullOrUndefined(data[1]) ? undefined : data[1][x];
         if (!isNullOrUndefined(x1) && !isNullOrUndefined(x2)) {
@@ -667,7 +684,7 @@ export class SparklineRenderer {
         let y2: number; let height: number; let width: number; let x1: number = 0; let y1: number;
         let padding: PaddingModel = model.padding; let point: SparkValues;
         let axis: AxisSettingsModel = model.axisSettings;
-        let value: number = axis.value;
+        let value: number = axis.value; let theme: string = model.theme.toLowerCase();
         if (model.type !== 'Pie') {
             this.maxLength = maxPointsLength;
             height = model.availableSize.height - (padding.bottom + padding.top);
@@ -676,7 +693,7 @@ export class SparklineRenderer {
             minX = isNullOrUndefined(axis.minX) ? minX : axis.minX;
             max = isNullOrUndefined(axis.maxY) ? max : axis.maxY;
             min = isNullOrUndefined(axis.minY) ? min : axis.minY;
-            let color: string = (model.theme === 'Highcontrast') ? '#FFFFFF' : '#000000';
+            let color: string = theme.indexOf('dark') > -1 || theme === 'highcontrast' ? '#FFFFFF' : '#000000';
             color = (axis.lineSettings.color) ? axis.lineSettings.color : color;
             let eventArgs: IAxisRenderingEventArgs = {
                 name: 'axisRendering', cancel: false, sparkline: model, maxX: maxX, minX: minX, maxY: max, minY: min,
@@ -706,7 +723,7 @@ export class SparklineRenderer {
         let interval: number = this.getInterval(data, model.xName, model.valueType);
         for (let i: number = 0; i < maxPointsLength; i++) {
             if (isNullOrUndefined(data[i][model.xName]) && isNullOrUndefined(data[i][model.yName]) && ((data[i][model.yName]) !== 0)
-            && isNumericArray) {
+                && isNumericArray) {
                 x = i; y = data[i] as number;
             } else if (isNullOrUndefined(data[i][model.xName])) {
                 x = i; y = data[i][model.yName];
@@ -731,8 +748,10 @@ export class SparklineRenderer {
                     let drawHeightFactor: number = 40;
                     y2 = (y > value) ? (height / 4) : (y < value) ? (height * winLossFactor) :
                         ((height * winLossFactor) - (height / drawHeightFactor));
-                    point = { x: x1, y: y2, height: (y !== value) ? (height / 4) : height / 20, width: colWidth,
-                    markerPosition: (y2 > y1) ? (y1 + Math.abs(y2 - y1)) : y2 };
+                    point = {
+                        x: x1, y: y2, height: (y !== value) ? (height / 4) : height / 20, width: colWidth,
+                        markerPosition: (y2 > y1) ? (y1 + Math.abs(y2 - y1)) : y2
+                    };
                 } else {
                     let z: number = ((height / this.unitY) * (y - min));
                     let z1: number = (y === min && y > value) ? ((maxPointsLength !== 1 && this.unitY !== 1) ?
@@ -757,7 +776,7 @@ export class SparklineRenderer {
             if (model.type !== 'WinLoss') {
                 point.markerPosition += padding.top;
             }
-            point.location = {x: point.x, y: point.y};
+            point.location = { x: point.x, y: point.y };
             point.xVal = x; point.yVal = y;
             visiblePoints.push(point);
         }

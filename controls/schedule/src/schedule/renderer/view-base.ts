@@ -39,12 +39,25 @@ export class ViewBase {
     public isTimelineView(): boolean {
         return this.parent.currentView.indexOf('Timeline') !== -1;
     }
+    public getContentRows(): Element[] {
+        return [];
+    }
     public createEventTable(trCount: number): Element {
         let eventTable: Element = createElement('div', { className: cls.EVENT_TABLE_CLASS });
-        for (let row: number = 0; row < trCount; row++) {
-            eventTable.appendChild(createElement('div', { className: cls.APPOINTMENT_CONTAINER_CLASS }));
-        }
+        append(this.getEventRows(trCount), eventTable);
         return eventTable;
+    }
+    public getEventRows(trCount: number): Element[] {
+        let eventRows: Element[] = [];
+        let eventContainer: Element;
+        for (let row: number = 0; row < trCount; row++) {
+            eventContainer = createElement('div', { className: cls.APPOINTMENT_CONTAINER_CLASS });
+            if (!isNullOrUndefined(this.parent.resourceBase) && !this.parent.uiStateValues.isGroupAdaptive) {
+                eventContainer.setAttribute('data-group-index', this.parent.resourceBase.renderedResources[row].groupIndex.toString());
+            }
+            eventRows.push(eventContainer);
+        }
+        return eventRows;
     }
     public collapseRows(wrap: Element): void {
         if (!this.isTimelineView()) {

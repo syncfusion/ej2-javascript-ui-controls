@@ -92,8 +92,16 @@ export class KeyboardInteraction {
     }
     private processEnter(e: Event): void {
         let target: Element = (e.target as HTMLElement);
-        if (target && closest(target, '.' + cls.GRID_CLASS) && target.querySelector('.' + cls.ICON)) {
-            (target.querySelector('.' + cls.ICON) as HTMLElement).click();
+        if (target && closest(target, '.' + cls.GRID_CLASS)) {
+            if (target.querySelector('.' + cls.ICON)) {
+                (target.querySelector('.' + cls.ICON) as HTMLElement).click();
+            } else if (target.classList.contains('e-valuescontent')) {
+                target.dispatchEvent(new MouseEvent('dblclick', {
+                    'view': window,
+                    'bubbles': true,
+                    'cancelable': true
+                }));
+            }
             e.preventDefault();
             return;
         }

@@ -1,5 +1,5 @@
 /// <reference path='../common/menu-base-model.d.ts'/>
-import { NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
+import { attributes, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
 import { Browser, Complex } from '@syncfusion/ej2-base';
 import { MenuBase, FieldSettings } from '../common/menu-base';
 import { MenuItemModel, FieldSettingsModel } from '../common/menu-base-model';
@@ -46,6 +46,13 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
      */
     @Property(null)
     public template: string;
+
+    /**
+     * Specifies whether to enable / disable the scrollable option in Menu.
+     * @default false
+     */
+    @Property(false)
+    public enableScrolling: boolean;
 
     /**
      * Specifies mapping fields from the dataSource.
@@ -99,12 +106,13 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
 
     protected initialize(): void {
         super.initialize();
+        attributes(this.element, <{ [key: string]: string }>{ 'role': 'menubar', 'tabindex': '0' });
         if (this.orientation === 'Vertical') {
             this.element.classList.add(VMENU);
             this.element.setAttribute('aria-orientation', 'vertical');
         } else {
-            if (Browser.isDevice) {
-                this.element.classList.add(SCROLLABLE);
+            if (Browser.isDevice && !this.enableScrolling) {
+                this.element.parentElement.classList.add(SCROLLABLE);
             }
         }
     }

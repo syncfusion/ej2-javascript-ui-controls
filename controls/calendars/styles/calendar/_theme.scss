@@ -102,6 +102,7 @@
         }& td.e-focused-date.e-today span.e-day {
           background: $calendar-focused-today-bg-style;
           border: $calendar-focused-today-border-style;
+          color: $calendar-today-focused-font-color;
 		}& td.e-today:focus span.e-day,
         & td.e-focused-date.e-today:focus span.e-day {
           background-color: $calendar-focus-bg-color;
@@ -113,17 +114,17 @@
         & td.e-focused-date.e-today:focus span.e-day {
           background-color: $calendar-hover-color;
           border: $calendar-today-border-color;
-          color: $calendar-today-color;
+          color: $calendar-today-focus-color;
         }& td.e-today.e-selected span.e-day {
           background-color: $calendar-active-bg-color;
           border: $calendar-active-bg-border-color;
           box-shadow: $calendar-selected-box-shadow;
-          color: $calendar-active-font-color;
+          color: $calendar-active-today-font-color;
         }& td.e-today.e-selected:hover span.e-day,
         & td.e-selected:hover span.e-day,
         & td.e-selected.e-focused-date span.e-day {
           background-color: $calendar-active-hover-bg-color;
-          color: $calendar-active-font-color;
+          color: $calendar-active-today-hover-font-color;
         }& span {
           color: $calendar-text-color;
         }& .e-disabled span.e-day:hover {

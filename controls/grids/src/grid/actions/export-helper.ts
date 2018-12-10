@@ -2,12 +2,12 @@ import { Column } from './../models/column';
 import { Row } from './../models/row';
 import { IGrid, ICell } from '../base/interface';
 import { CellType } from '../base/enum';
-import { isNullOrUndefined, DateFormatOptions, Internationalization, getValue } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, DateFormatOptions, Internationalization, getValue, createElement } from '@syncfusion/ej2-base';
 import { Cell } from '../models/cell';
 import { ValueFormatter } from './../services/value-formatter';
 import { Query, DataManager } from '@syncfusion/ej2-data';
 import { Data } from '../actions/data';
-import { getForeignData } from '../base/util';
+import { getForeignData, measureColumnDepth, getUid } from '../base/util';
 import { ReturnType } from '../base/type';
 import { Grid } from '../base/grid';
 
@@ -34,7 +34,47 @@ export class ExportHelper {
         return foreignKeyData;
     }
 
-    public getColumnData(gridObj: Grid): Promise<Object>  {
+    public getGridRowModel(columns: Column[], dataSource: Object[], gObj: IGrid, startIndex: number = 0): Row<Column>[] {
+        let rows: Row<Column>[] = [];
+        let length: number = dataSource.length;
+        if (length) {
+            for (let i: number = 0; i < length; i++, startIndex++) {
+                let options: { [x: string]: Object } = {isExpand: false};
+                options.data = dataSource[i];
+                options.index = startIndex;
+                if (gObj.childGrid) {
+                    if (gObj.hierarchyPrintMode === 'All') {
+                        options.isExpand = true;
+                    } else if (gObj.hierarchyPrintMode === 'Expanded' &&
+                    this.parent.expandedRows && this.parent.expandedRows[startIndex]) {
+                        options.isExpand = gObj.expandedRows[startIndex].isExpand;
+                    }
+                }
+                let row: Row<Column> = new Row(<{ [x: string]: Object }>options);
+                row.cells = this.generateCells(columns, gObj);
+                rows.push(row);
+            }
+            this.processColumns(rows);
+        }
+        return rows;
+    }
+
+    private generateCells(columns: Column[], gObj: IGrid): Cell<Column>[] {
+        let cells: Cell<Column>[] = [];
+        columns = gObj.enableColumnVirtualization && gObj.getColumns ? gObj.getColumns() : columns;
+        if ((<{childGridLevel?: number}>gObj).childGridLevel) {
+            let len: number = (<{childGridLevel?: number}>gObj).childGridLevel;
+            for (let i: number = 0; len > i; i++) {
+                cells.push(this.generateCell({} as Column, CellType.Indent));
+            }
+        }
+        for (const col of columns) {
+            cells.push(this.generateCell(col, CellType.Data));
+        }
+        return cells;
+    }
+
+    public getColumnData(gridObj: Grid): Promise<Object> {
         let columnPromise: Promise<Object>[] = [];
         let promise: Promise<Object>;
         let fColumns: Column[] = gridObj.getForeignKeyColumns();
@@ -52,129 +92,90 @@ export class ExportHelper {
         return promise;
     }
 
-    /* tslint:disable:no-any */
-    public getHeaders(column: any[], isHideColumnInclude?: boolean): { rows: any[], columns: Column[] } {
+    public getHeaders(columns: Column[], isHideColumnInclude?: boolean): { rows: Row<Column>[], columns: Column[] } {
         if (isHideColumnInclude) {
             this.hideColumnInclude = true;
         } else {
             this.hideColumnInclude = false;
         }
-        let cols: any[] = column;
-        this.colDepth = this.measureColumnDepth(cols);
+        this.colDepth = measureColumnDepth(columns);
         let rows: Row<Column>[] = [];
-        let actualColumns: Column[] = [];
         for (let i: number = 0; i < this.colDepth; i++) {
             rows[i] = new Row<Column>({});
             rows[i].cells = [];
         }
         rows = this.processColumns(rows);
         rows = this.processHeaderCells(rows);
-        for (let row of rows) {
-            for (let i: number = 0; i < row.cells.length; i++) {
-                let cell: any = row.cells[i];
-                if (cell.visible === undefined && cell.cellType !== CellType.StackedHeader) {
-                    row.cells = this.removeCellFromRow(row.cells, i);
-                    i = i - 1;
-                }
-                if ((!isHideColumnInclude) && cell.visible !== undefined && (!cell.visible)) {
-                    row.cells = this.removeCellFromRow(row.cells, i);
-                    i = i - 1;
-                }
-            }
-        }
-        for (let i: number = 0; i < cols.length; i++) {
-            this.generateActualColumns(cols[i], actualColumns);
-        }
-        return { rows: rows, columns: actualColumns };
+        return { rows, columns: this.generateActualColumns(columns) };
     }
     public getConvertedWidth(input: string): number {
         let value: number = parseFloat(input);
-        /* tslint:disable-next-line:max-line-length */
         return (input.indexOf('%') !== -1) ? (this.parent.element.getBoundingClientRect().width * value / 100) : value;
     }
-    private generateActualColumns(column: any, actualColumns: Column[]): void {/* tslint:enable:no-any */
-        if (column.commands) {
-            return;
-        }
-        if (!column.columns) {
-            if (column.visible || this.hideColumnInclude) {
-                actualColumns.push(column);
+
+    private generateActualColumns(columns: Column[], actualColumns: Column[] = []): Column[] {
+        for (const column of columns) {
+            if (column.commands) {
+                continue;
             }
-        } else {
-            if (column.visible || this.hideColumnInclude) {
-                let colSpan: number = this.getCellCount(column, 0);
-                if (colSpan !== 0) {
-                    for (let i: number = 0; i < column.columns.length; i++) {
-                        /* tslint:disable-next-line:max-line-length */
-                        this.generateActualColumns(column.columns[i], actualColumns);
+            if (!column.columns) {
+                if (column.visible || this.hideColumnInclude) {
+                    actualColumns.push(column);
+                }
+            } else {
+                if (column.visible || this.hideColumnInclude) {
+                    let colSpan: number = this.getCellCount(column, 0);
+                    if (colSpan !== 0) {
+                        this.generateActualColumns(<Column[]>column.columns, actualColumns);
                     }
                 }
             }
         }
+        return actualColumns;
     }
-    private removeCellFromRow(cells: Cell<Column>[], cellIndex: number): Cell<Column>[] {
-        let resultCells: Cell<Column>[] = [];
-        for (let i: number = 0; i < cellIndex; i++) {
-            resultCells.push(cells[i]);
-        }
-        for (let i: number = (cellIndex + 1); i < cells.length; i++) {
-            resultCells.push(cells[i]);
-        }
-        return resultCells;
-    }
+
     private processHeaderCells(rows: Row<Column>[]): Row<Column>[] {
         let columns: Column[] = this.parent.enableColumnVirtualization ? this.parent.getColumns() : this.parent.columns as Column[];
         for (let i: number = 0; i < columns.length; i++) {
             if (!columns[i].commands) {
-                rows = this.appendGridCells(columns[i], rows, 0, i === 0, false, i === (columns.length - 1));
+                rows = this.appendGridCells(columns[i], rows, 0);
             }
         }
         return rows;
     }
-    /* tslint:disable */
-    private appendGridCells(
-        cols: Column, gridRows: Row<Column>[], index: number, isFirstObj: boolean, isFirstColumn: boolean, isLastColumn: boolean): Row<Column>[] {
-        /* tslint:enable */
-        let lastCol: string = isLastColumn ? 'e-lastcell' : '';
-        if (!cols.columns) {
+
+    private appendGridCells(cols: Column, gridRows: Row<Column>[], index: number): Row<Column>[] {
+        if (!cols.columns && (cols.visible !== false || this.hideColumnInclude) && !cols.commands) {
             gridRows[index].cells.push(this.generateCell(
-                cols, CellType.Header, this.colDepth - index,
-                (isFirstObj ? '' : (isFirstColumn ? 'e-firstcell' : '')) + lastCol, index, this.parent.getColumnIndexByUid(cols.uid)));
-        } else {
+                cols, CellType.Header, this.colDepth - index, index));
+        } else if (cols.columns) {
             let colSpan: number = this.getCellCount(cols, 0);
             if (colSpan) {
                 gridRows[index].cells.push(new Cell<Column>(<{ [x: string]: Object }>{
                     cellType: CellType.StackedHeader, column: cols, colSpan: colSpan
                 }));
             }
-            let isFirstCell: boolean;
             let isIgnoreFirstCell: boolean;
             for (let i: number = 0, len: number = cols.columns.length; i < len; i++) {
-                isFirstCell = false;
                 if ((cols.columns as Column[])[i].visible && !isIgnoreFirstCell) {
-                    isFirstCell = true;
                     isIgnoreFirstCell = true;
                 }
-                /* tslint:disable-next-line:max-line-length */
-                gridRows = this.appendGridCells((cols.columns as Column[])[i], gridRows, index + 1, isFirstObj, i === 0, i === (len - 1) && isLastColumn);
+                gridRows = this.appendGridCells((cols.columns as Column[])[i], gridRows, index + 1);
             }
         }
         return gridRows;
     }
+
     private generateCell(
-        gridColumn: Column, cellType?: CellType, rowSpan?: number, className?: string,
-        rowIndex?: number, columnIndex?: number): Cell<Column> {
+        gridColumn: Column, cellType?: CellType, rowSpan?: number,
+        rowIndex?: number): Cell<Column> {
         let option: ICell<Column> = {
             'visible': gridColumn.visible,
-            'isDataCell': false,
-            'isTemplate': !isNullOrUndefined(gridColumn.headerTemplate),
-            'rowID': '',
+            'isDataCell':  cellType === CellType.Data,
             'column': gridColumn,
             'cellType': cellType,
             'rowSpan': rowSpan,
-            'className': className,
-            'index': rowIndex,
-            'colIndex': columnIndex
+            'index': rowIndex
         };
         if (!option.rowSpan || option.rowSpan < 2) {
             delete option.rowSpan;
@@ -184,25 +185,25 @@ export class ExportHelper {
     private processColumns(rows: Row<Column>[]): Row<Column>[] {
         //TODO: generate dummy column for group, detail, stacked row here; ensureColumns here
         let gridObj: IGrid = this.parent;
-        let columnIndexes: number[] = this.parent.getColumnIndexesInView();
+        let columnIndexes: number[] = [];
+        if (gridObj.enableColumnVirtualization) {
+            columnIndexes = gridObj.getColumnIndexesInView();
+        }
         for (let i: number = 0, len: number = rows.length; i < len; i++) {
             if (gridObj.allowGrouping) {
                 for (let j: number = 0, len: number = gridObj.groupSettings.columns.length; j < len; j++) {
-                    if (this.parent.enableColumnVirtualization && columnIndexes.indexOf(j) === -1) { continue; }
-                    rows[i].cells.push(this.generateCell({} as Column, CellType.HeaderIndent));
+                    if (gridObj.enableColumnVirtualization && columnIndexes.indexOf(j) === -1) { continue; }
+                    rows[i].cells.splice(0, 0, this.generateCell({} as Column, CellType.HeaderIndent));
                 }
-            }
-            if (gridObj.detailTemplate || gridObj.childGrid) {
-                rows[i].cells.push(this.generateCell({} as Column, CellType.DetailHeader));
             }
         }
         return rows;
     }
-    /* tslint:disable:no-any */
-    private getCellCount(column: any, count: number): number {/* tslint:enable:no-any */
+
+    private getCellCount(column: Column, count: number): number {
         if (column.columns) {
             for (let i: number = 0; i < column.columns.length; i++) {
-                count = this.getCellCount(column.columns[i], count);
+                count = this.getCellCount((<Column>column.columns[i]), count);
             }
         } else {
             if (column.visible || this.hideColumnInclude) {
@@ -211,36 +212,46 @@ export class ExportHelper {
         }
         return count;
     }
-    /* tslint:disable:no-any */
-    private measureColumnDepth(column: any[]): number {/* tslint:enable:no-any */
-        let max: number = 0;
-        for (let i: number = 0; i < column.length; i++) {
-            let depth: number = this.checkDepth(column[i], 0);
-            if (max < depth) {
-                max = depth;
-            }
+
+    public checkAndExport(gridPool: Object, globalResolve: Function): void {
+        let bool: boolean = Object.keys(gridPool).some((key: string) => {
+            return !gridPool[key];
+        });
+        if (!bool) {
+            globalResolve();
         }
-        return max + 1;
     }
-    /* tslint:disable:no-any */
-    private checkDepth(col: any, index: number): number {/* tslint:enable:no-any */
-        let max: number = index;
-        let indices: number[] = [];
-        if (col.columns) {
-            index++;
-            for (let i: number = 0; i < col.columns.length; i++) {
-                indices[i] = this.checkDepth(col.columns[i], index);
-            }
-            for (let j: number = 0; j < indices.length; j++) {
-                if (max < indices[j]) {
-                    max = indices[j];
-                }
-            }
-            index = max;
-        }
-        return index;
-    };
+
+    public failureHandler(gridPool: Object, childGridObj: IGrid, resolve: Function): Function {
+        return () => {
+            gridPool[childGridObj.id] = true;
+            this.checkAndExport(gridPool, resolve);
+        };
+    }
+
+    // tslint:disable-next-line:no-any
+    public createChildGrid(gObj: IGrid, row: any, exportType: string, gridPool: Object): {childGrid: IGrid, element: HTMLElement} {
+        let childGridObj: IGrid = new Grid(this.parent.detailRowModule.getGridModel(gObj, row, exportType));
+        gObj.isPrinting = false;
+        let parent: string = 'parentDetails';
+        childGridObj[parent] = {
+            parentID: gObj.element.id,
+            parentPrimaryKeys: gObj.getPrimaryKeyFieldNames(),
+            parentKeyField: gObj.childGrid.queryString,
+            parentKeyFieldValue: getValue(childGridObj.queryString, row.data),
+            parentRowData: row.data
+        };
+        let exportId: string = getUid('child-grid');
+        let element: HTMLElement = createElement('div', {
+            id: exportId, styles: 'display: none'
+        });
+        document.body.appendChild(element);
+        childGridObj.id = exportId;
+        gridPool[exportId] = false;
+        return {childGrid: childGridObj, element};
+    }
 }
+
 /**
  * @hidden
  * `ExportValueFormatter` for `PdfExport` & `ExcelExport`

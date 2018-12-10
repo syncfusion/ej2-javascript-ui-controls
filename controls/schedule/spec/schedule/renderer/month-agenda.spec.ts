@@ -392,40 +392,40 @@ describe('Schedule month agenda view', () => {
             expect(workCell.getAttribute('aria-selected')).toEqual('false');
         });
 
-        it('cell double click', () => {
-            let cellStartTime: number;
-            let cellEndTime: number;
-            let eventName: string;
-            schObj = new Schedule({
-                cellDoubleClick: (args: CellClickEventArgs) => {
-                    cellStartTime = args.startTime.getTime();
-                    cellEndTime = args.endTime.getTime();
-                    eventName = args.name;
-                },
-                currentView: 'MonthAgenda', selectedDate: new Date(2017, 9, 5),
-                views: ['Day', 'Week', 'MonthAgenda']
-            });
-            schObj.appendTo('#Schedule');
-            triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement, 'click');
-            triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement, 'dblclick');
-            expect(cellStartTime).toEqual(new Date(2017, 9, 4).getTime());
-            expect(cellEndTime).toEqual(new Date(2017, 9, 5).getTime());
-            expect(eventName).toEqual('cellDoubleClick');
-        });
+        // it('cell double click', () => {
+        //     let cellStartTime: number;
+        //     let cellEndTime: number;
+        //     let eventName: string;
+        //     schObj = new Schedule({
+        //         cellDoubleClick: (args: CellClickEventArgs) => {
+        //             cellStartTime = args.startTime.getTime();
+        //             cellEndTime = args.endTime.getTime();
+        //             eventName = args.name;
+        //         },
+        //         currentView: 'MonthAgenda', selectedDate: new Date(2017, 9, 5),
+        //         views: ['Day', 'Week', 'MonthAgenda']
+        //     });
+        //     schObj.appendTo('#Schedule');
+        //     triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement, 'click');
+        //     triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement, 'dblclick');
+        //     expect(cellStartTime).toEqual(new Date(2017, 9, 4).getTime());
+        //     expect(cellEndTime).toEqual(new Date(2017, 9, 5).getTime());
+        //     expect(eventName).toEqual('cellDoubleClick');
+        // });
 
-        it('cancel cell double click', () => {
-            schObj = new Schedule({
-                cellDoubleClick: (args: CellClickEventArgs) => {
-                    args.cancel = true;
-                },
-                currentView: 'MonthAgenda', selectedDate: new Date(2017, 9, 5),
-                views: ['Day', 'Week', 'MonthAgenda']
-            });
-            schObj.appendTo('#Schedule');
-            let workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
-            triggerMouseEvent(workCell, 'click');
-            triggerMouseEvent(workCell, 'dblclick');
-        });
+        // it('cancel cell double click', () => {
+        //     schObj = new Schedule({
+        //         cellDoubleClick: (args: CellClickEventArgs) => {
+        //             args.cancel = true;
+        //         },
+        //         currentView: 'MonthAgenda', selectedDate: new Date(2017, 9, 5),
+        //         views: ['Day', 'Week', 'MonthAgenda']
+        //     });
+        //     schObj.appendTo('#Schedule');
+        //     let workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
+        //     triggerMouseEvent(workCell, 'click');
+        //     triggerMouseEvent(workCell, 'dblclick');
+        // });
 
         it('date navigating', () => {
             let actionBeginArgs: ActionEventArgs = {

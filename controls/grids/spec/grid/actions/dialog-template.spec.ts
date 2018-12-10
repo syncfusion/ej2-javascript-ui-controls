@@ -135,7 +135,7 @@ describe('Dialog Template Editing module', () => {
                         { field: 'ShipRegion', type: 'string' },
                         { field: 'ShipAddress', allowFiltering: true, visible: false },
                         { field: 'OrderDate', format: { skeleton: 'yMd', type: 'date' }, type: 'date', editType: 'datepickeredit' },
-                        { headerText: 'Employee ID', template:"<div>${EmployeeID}</div>" }
+                        { headerText: 'Employee ID', template:"<div>${EmployeeID}</div>" },
                     ],
                     actionBegin: actionBegin,
                     actionComplete: actionComplete

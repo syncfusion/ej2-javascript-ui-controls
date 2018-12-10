@@ -60,7 +60,7 @@ export interface ViewsModel {
 
     /**
      * It is used to allow or disallow the virtual scrolling functionality on Agenda View. This is applicable only on Agenda view.
-     * @default true
+     * @default false
      */
     allowVirtualScrolling?: boolean;
 

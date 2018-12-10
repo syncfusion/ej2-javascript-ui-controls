@@ -2,19 +2,33 @@
 
 ## [Unreleased]
 
+## 16.4.40-beta (2018-12-10)
+
+### DatePicker
+
+#### Bug Fixes
+
+- Selecting a value with the Enter key will not bubble up the event to its ancestor elements.
+
+### TimePicker
+
+#### Bug Fixes
+
+- Selecting a value with the Enter key will not bubble up the event to its ancestor elements.
+
 ## 16.3.31 (2018-11-07)
 
 ### DatePicker
 
 #### Bug Fixes
 
-- Fixed the form rest issue on IE browser.
+- Fixed the form reset issue in Internet Explorer.
 
 ### DateRangePicker
 
 #### Bug Fixes
 
-- Fixed the form rest issue on IE browser.
+- Fixed the form reset issue in Internet Explorer.
 
 ## 16.3.29 (2018-10-31)
 
@@ -42,7 +56,7 @@
 
 #### Bug Fixes
 
-- Fixed the form rest handler issue while destroying the component.
+- Fixed the form reset handler issue while destroying the component.
 
 ## 16.3.25 (2018-10-15)
 

@@ -34,7 +34,7 @@ btnObj1.appendTo('#textbtn');
 let btnObj2: SplitButton = new SplitButton({
     items: data,
     content: 'Autosum',
-    iconCss: 'e-icons e-sum',
+    iconCss: 'e-sb-icons e-sum',
     beforeItemRender: (args: MenuEventArgs) => {
         if (args.item.text === 'Count numbers') {
             args.element.classList.add('e-disabled');
@@ -46,7 +46,7 @@ btnObj2.appendTo('#icontextbtn');
 let btnObj3: SplitButton = new SplitButton({
     items: data,
     content: 'Autosum',
-    iconCss: 'e-icons e-sum',
+    iconCss: 'e-sb-icons e-sum',
     disabled: true
 });
 btnObj3.appendTo('#disabledbtn');
@@ -54,7 +54,7 @@ btnObj3.appendTo('#disabledbtn');
 let btnObj4: SplitButton = new SplitButton({
     items: data,
     content: 'Autosum',
-    iconCss: 'e-icons e-sum',
+    iconCss: 'e-sb-icons e-sum',
     enableRtl: true
 });
 btnObj4.appendTo('#rtlbtn');

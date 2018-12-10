@@ -78,7 +78,9 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
             this.getGeneratedCell(
                 value,
                 summaryRow,
-                index >= indentLength ? this.getCellType() : CellType.Indent, indents[index], isDetailGridAlone)
+                index >= indentLength ? this.getCellType() :
+                index < this.parent.groupSettings.columns.length ? CellType.Indent : CellType.DetailFooterIntent,
+                indents[index], isDetailGridAlone)
         ));
 
         let row: Row<AggregateColumnModel> = new Row<AggregateColumnModel>({ data: data, attributes: { class: 'e-summaryrow' } });

@@ -35,6 +35,24 @@
       border-right-color: $grid-header-border-color;
     }
 
+    .e-autofill,
+    .e-xlsel {
+      background-color: $grid-autofill-color;
+      border-color: $grid-autofill-color;
+    }
+
+    .e-gridcontent tr.e-row:first-child .e-rowcell.e-dragborder,
+    .e-gridcontent .e-rowcell.e-dragborder,
+    .e-gridcontent .e-rowdragdrop.e-dragborder ,
+    & .e-gridheader thead tr th.e-firstrowdragborder,
+    &.e-rtl .e-gridcontent tr.e-row:first-child .e-rowcell.e-dragborder,
+    &.e-rtl .e-gridcontent .e-rowcell.e-dragborder,
+    &.e-rtl .e-gridcontent .e-rowdragdrop.e-dragborder {
+      box-shadow: $grid-dragborder-box-shadow;
+      position: $grid-dragborder-position;
+      z-index: $grid-dragborder-z-index;
+    }
+
     .e-gridheader {
       background-color: $grid-header-bg-color;
       border-bottom-color: $grid-header-border-color;
@@ -109,7 +127,9 @@
 
     .e-rowcell,
     .e-detailrowcollapse,
-    .e-detailrowexpand {
+    .e-detailrowexpand,
+    .e-gridcontent .e-rowdragdrop,
+    .e-emptyrow {
       color: $grid-content-font-color;
       opacity: $grid-conent-font-opacity;
     }
@@ -163,11 +183,17 @@
 
     &.e-gridhover tr[role='row']:not(.e-editedrow):hover .e-rowcell,
     &.e-gridhover tr[role='row']:hover .e-detailrowcollapse,
+    &.e-gridhover tr[role='row']:hover .e-rowdragdrop,
+    &.e-rtl .e-gridhover tr[role='row']:hover .e-rowdragdrop,
     &.e-gridhover tr[role='row']:hover .e-detailrowexpand {
       &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
         background-color: $grid-hover-bg-color;
         color: $grid-hover-content-font-color;
       }
+    }
+
+    & tr[role='row']:hover .e-rowdragdrop {
+      cursor: move;
     }
 
     .e-sortnumber {
@@ -177,6 +203,10 @@
 
     .e-col-menu.e-filter-popup {
       box-shadow: $grid-column-menu-sub-menu-box-shadow;
+    }
+
+    & td.e-active .e-icon-rowdragicon::before {
+      color: $grid-row-selection-color;
     }
 
     td.e-active {
@@ -276,8 +306,15 @@
       border-top: 1px solid $grid-header-border-color;
     }
 
-    .e-draganddrop {
-      opacity: .5;
+    .e-cloneproperties.e-draganddrop {
+      box-shadow: 2px 2px 2px 1px $grid-row-selection-bg-color;
+      opacity: .9;
+      overflow: visible;
+    }
+
+    & .e-row .e-dragstartrow::before,
+    & .e-row .e-selectionbackground .e-dragstartrow::before {
+      color: $grid-clone-dropitemscount-bg-color;
     }
 
     .e-griddragarea {
@@ -372,6 +409,16 @@
 
     }
 
+    .e-cloneproperties.e-draganddrop .e-rowcell {
+      color: $grid-content-font-color;
+    }
+
+    .e-cloneproperties.e-draganddrop table,
+    .e-cloneproperties.e-draganddrop table .e-selectionbackground {
+      background-color: $grid-table-background-color;
+      height: 30px;
+    }
+
     &.e-rtl {
 
       & .e-verticallines tr th:first-child:not(.e-firstcell) {
@@ -418,5 +465,10 @@
   .e-tooltip-wrap.e-griderror .e-tip-content label {
     color: $grid-val-error-color;
   }
+
+  .e-dropitemscount {
+    background-color: $grid-clone-dropitemscount-bg-color;
+    color: $grid-dropitemscount-color;
+   }
 
 }

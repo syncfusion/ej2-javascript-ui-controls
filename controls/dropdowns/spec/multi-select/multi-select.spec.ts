@@ -4633,7 +4633,6 @@ describe('MultiSelect', () => {
         beforeAll(() => {
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
-
             document.body.appendChild(element);
         });
         afterAll(() => {

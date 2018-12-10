@@ -219,3 +219,50 @@ export namespace HighContrastTheme {
         fontFamily: 'Roboto, Noto, Sans-serif'
     };
 }
+
+/**
+ * Dark Theme configuration
+ */
+export namespace DarkTheme {
+    /** @private */
+    export let mapsTitleFont: IFontMapping = {
+        fontFamily: 'Roboto, Noto, Sans-serif',
+        fontWeight: 'Medium',
+        size: '14px',
+        fontStyle: 'Medium',
+        color: '#FFFFFF'
+    };
+    /** @private */
+    export let mapsSubTitleFont: IFontMapping = {
+        size: '13px',
+        color: '#FFFFFF',
+        fontWeight: 'Medium',
+        fontFamily: 'Roboto, Noto, Sans-serif',
+        fontStyle: 'Medium',
+    };
+    /** @private */
+    export let tooltipLabelFont: IFontMapping = {
+        size: '12px',
+        color: '#282727',
+        fontWeight: 'Regular',
+        fontFamily: 'Roboto',
+        fontStyle: 'Regular',
+    };
+    /** @private */
+    export let legendTitleFont: IFontMapping = {
+        size: '14px',
+        fontWeight: 'Regular',
+        color: '#FFFFFF',
+        fontStyle: 'Regular',
+        fontFamily: 'Roboto, Noto, Sans-serif'
+    };
+    /** @private */
+    export let legendLabelFont: IFontMapping = {
+        size: '13px',
+        fontFamily: 'Roboto, Noto, Sans-serif',
+        fontWeight: 'Medium',
+        color: '#DADADA',
+        fontStyle: 'Medium',
+    };
+
+}

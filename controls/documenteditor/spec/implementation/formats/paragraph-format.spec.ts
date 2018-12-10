@@ -48,4 +48,13 @@ describe('Paragraph Validation Testing', () => {
         expect(format.rightIndent).toBe(0);
         expect(format.listFormat.listId).toBe(-1);
     });
+    it('Text alignment right valdiation', () => {
+        let format: WParagraphFormat = new WParagraphFormat();
+        format.textAlignment = 'Right';
+        format.bidi = true;
+        expect(format.textAlignment).toBe("Left");
+    });
+    it('style property default value', () => {
+        expect((WParagraphFormat as any).getPropertyDefaultValue('styleName')).toBe('Normal');
+    });
 });

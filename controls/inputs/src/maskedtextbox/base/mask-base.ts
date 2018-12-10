@@ -167,6 +167,7 @@ function resetHandler(e?: MouseEvent): void {
     e.preventDefault();
     if (!this.inputObj.clearButton.classList.contains('e-clear-icon-hide')) {
         clear.call(this, e);
+        this.value = '';
     }
 }
 function clear(event: MouseEvent): void {

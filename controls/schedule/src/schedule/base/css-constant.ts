@@ -130,6 +130,10 @@ export const APPOINTMENT_CONTAINER_CLASS: string = 'e-appointment-container';
 /** @hidden */
 export const APPOINTMENT_CLASS: string = 'e-appointment';
 /** @hidden */
+export const BLOCK_APPOINTMENT_CLASS: string = 'e-block-appointment';
+/** @hidden */
+export const BLOCK_INDICATOR_CLASS: string = 'e-block-indicator';
+/** @hidden */
 export const APPOINTMENT_BORDER: string = 'e-appointment-border';
 /** @hidden */
 export const APPOINTMENT_DETAILS: string = 'e-appointment-details';
@@ -145,6 +149,8 @@ export const TABLE_WRAP_CLASS: string = 'e-table-wrap';
 export const OUTER_TABLE_CLASS: string = 'e-outer-table';
 /** @hidden */
 export const CONTENT_WRAP_CLASS: string = 'e-content-wrap';
+/** @hidden */
+export const VIRTUAL_TRACK_CLASS: string = 'e-virtual-track';
 /** @hidden */
 export const AGENDA_CELLS_CLASS: string = 'e-agenda-cells';
 /** @hidden */
@@ -191,6 +197,8 @@ export const EVENT_ICON_LEFT_CLASS: string = 'e-left-icon';
 export const EVENT_ICON_RIGHT_CLASS: string = 'e-right-icon';
 /** @hidden */
 export const EVENT_ACTION_CLASS: string = 'e-event-action';
+/** @hidden */
+export const NEW_EVENT_CLASS: string = 'e-new-event';
 /** @hidden */
 export const CLONE_ELEMENT_CLASS: string = 'e-schedule-event-clone';
 /** @hidden */
@@ -405,3 +413,7 @@ export const RESOURCE_ICON_CLASS: string = 'e-resource-icon';
 export const RESOURCE_DETAILS_CLASS: string = 'e-resource-details';
 /** @hidden */
 export const DATE_TIME_ICON_CLASS: string = 'e-date-time-icon';
+/** @hidden */
+export const VIRTUAL_SCROLL_CLASS: string = 'e-virtual-scroll';
+/** @hidden */
+export const ICON_DISABLE_CLASS: string = 'e-icon-disable';

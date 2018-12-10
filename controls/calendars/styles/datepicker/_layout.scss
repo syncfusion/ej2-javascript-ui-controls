@@ -1,7 +1,7 @@
 @include export-module('datepicker-layout') {
   .e-date-wrapper {
     & .e-date-icon.e-icons {
-      box-sizing: $box-sizing;
+      box-sizing: $datepicker-box-sizing;
     }
   }
 
@@ -15,7 +15,7 @@
     }
 
     &.e-popup-wrapper {
-      border-radius: $popup-border-radius;
+      border-radius: $datepicker-popup-border-radius;
       overflow-y: hidden;
       pointer-events: auto;
     }
@@ -33,10 +33,10 @@
 	}
 
     & .e-model-header {
-      background-color: $date-model-header-bg;
-      color: $date-model-header-color;
+      background-color: $datepicker-modal-header-bg;
+      color: $datepicker-modal-header-color;
       cursor: default;
-      display: $date-modal-header-display;
+      display: $datepicker-modal-header-display;
       padding: 10px 10px 10px 15px;
 
       & .e-model-year {
@@ -68,7 +68,7 @@
 
   .e-datepicker .e-calendar .e-month table tbody {
     display: inline-block;
-    height: $calendar-tbody-landscape-height;
+    height: $datepicker-calendar-tbody-landscape-height;
     overflow: auto;
 }
 }

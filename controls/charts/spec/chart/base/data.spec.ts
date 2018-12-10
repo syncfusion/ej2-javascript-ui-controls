@@ -23,11 +23,11 @@ export interface DataValue {
 }
 
 export let piedata: Object[] = [
-    { y: 18, x: 1, name: 'Bald Eagle', text: 'Bald Eagle : 18' }, { y: 23, x: 2, name: 'Bison', text: 'Bison : 23'  },
-    { y: 30, x: 3, name: 'Brown Bear', text: 'Brown Bear : 30' }, { y: 44, x: 4, name: 'Elk', text: 'Elk : 44' },
-    { y: 52, x: 5, name: 'Pronghorn', text: 'Pronghorn : 52' }, { y: 62, x: 6, name: 'Turkey', text: 'Turkey : 62' },
-    { y: 74, x: 7, name: 'Alligator', text: 'Alligator : 74' }, { y: 85, x: 8, name: 'Prairie Dog', text: 'Prairie Dog : 85' },
-    { y: 96, x: 9, name: 'Mountain Lion', text: 'Mountain Lion : 96' }, { y: 102, x: 10, name: 'Beaver', text: 'Beaver : 102' }
+    { y: 18, x: 1, name: 'Bald Eagle', text: 'Bald Eagle : 18', radius: '50%' }, { y: 23, x: 2, name: 'Bison', text: 'Bison : 23', radius: '60%' },
+    { y: 30, x: 3, name: 'Brown Bear', text: 'Brown Bear : 30', radius: '70%' }, { y: 44, x: 4, name: 'Elk', text: 'Elk : 44', radius: '100%' },
+    { y: 52, x: 5, name: 'Pronghorn', text: 'Pronghorn : 52', radius: '80%' }, { y: 62, x: 6, name: 'Turkey', text: 'Turkey : 62', radius: '80%' },
+    { y: 74, x: 7, name: 'Alligator', text: 'Alligator : 74', radius: '80%' }, { y: 85, x: 8, name: 'Prairie Dog', text: 'Prairie Dog : 85', radius: '80%' },
+    { y: 96, x: 9, name: 'Mountain Lion', text: 'Mountain Lion : 96', radius: '80%' }, { y: 102, x: 10, name: 'Beaver', text: 'Beaver : 102', radius: '80%' }
 ];
 export let pieColorMapping: Object[] = [
     { y: 18, x: 1, name: 'Bald Eagle', text: 'Bald Eagle : 18', color:'red' },
@@ -81,7 +81,7 @@ export let data: Object[] = [
     {
         OrderCount: 128, EmployeeID: 15, Freight: 78, Verified: !0
     }];
-export let indexedCategoryData: DataValue[] = [{ x: 'Monday', y: 50 }, { x: 'Tuesday', y: 40 }, 
+export let indexedCategoryData: DataValue[] = [{ x: 'Monday', y: 50 }, { x: 'Tuesday', y: 40 },
     { x: 'Wednesday', y: 70 },
     { x: 'Thursday', y: 60 }, { x: 'Friday', y: 50 },
     { x: 'Monday', y: 40 }, { x: 'Monday', y: 30 }];
@@ -239,7 +239,7 @@ export let thirdSeries: DataValue[] = [{ x: 2005, y: 36 }, { x: 2006, y: 32 }, {
 export let fourthSeries: DataValue[] = [{ x: 2005, y: 39 }, { x: 2006, y: 36 }, { x: 2007, y: 40 }, { x: 2008, y: 44 },
 { x: 2009, y: 45 }, { x: 2010, y: 48 }, { x: 2011, y: 46 }];
 
-export let spline1: DataValue[] = [{ x: 2002, y: 2.2 }, { x: 2003, y: 3.4 }, { x: 2004, y: 2.8 }, { x: 2005, y: 1.6 }, 
+export let spline1: DataValue[] = [{ x: 2002, y: 2.2 }, { x: 2003, y: 3.4 }, { x: 2004, y: 2.8 }, { x: 2005, y: 1.6 },
 { x: 2006, y: 2.3 }, { x: 2007, y: 2.5 }, { x: 2008, y: 2.9 }, { x: 2009, y: 3.8 },{ x: 2010, y: 1.4 }, { x: 2011, y: 3.1 }];
 
 export let rotateData1: DataValue[] = [{ x: new Date(2000, 6, 11), y: 10 }, { x: new Date(2002, 3, 7), y: -30 },

@@ -100,17 +100,6 @@ describe('chart control', () => {
             chartObj.destroy();
             document.getElementById('container').remove();
         });
-
-        it('Animation', (done: Function) => {
-            chartObj.animationComplete = (args: IAnimationCompleteEventArgs): void => {
-                let pathLength: number = (<SVGPathElement>args.series.pathElement).getTotalLength();
-                expect(pathLength >= 200).toBe(true);
-                done();
-            };
-            chartObj.series[0].animation.enable = true;
-            chartObj.refresh();
-
-        });
         it('Checking with axis with opposed position', (done: Function) => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('container1_AxisLabel_0');

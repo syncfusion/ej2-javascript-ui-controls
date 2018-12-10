@@ -1,5 +1,5 @@
 import { addClass, Browser, EventHandler, detach, removeClass, select, selectAll, KeyboardEvents } from '@syncfusion/ej2-base';
-import { isNullOrUndefined as isNOU, KeyboardEventArgs, closest } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, KeyboardEventArgs, closest, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { setStyleAttribute } from '@syncfusion/ej2-base';
 import { Toolbar as tool, OverflowMode } from '@syncfusion/ej2-navigations';
 import * as events from '../base/constant';
@@ -263,7 +263,8 @@ export class Toolbar {
         let trgItem: IToolsItems = model.tools[args.targetItem.toLocaleLowerCase()];
         let index: number = getTBarItemsIndex(getCollection(trgItem.subCommand), args.baseToolbar.toolbarObj.items)[0];
         if (!isNOU(index)) {
-            args.baseToolbar.toolbarObj.items[index].id = this.parent.getID() + '_' + item.id;
+            let prefixId: string = this.parent.inlineMode.enable ? '_quick_' : '_toolbar_';
+            args.baseToolbar.toolbarObj.items[index].id = this.parent.getID() + prefixId + item.id;
             args.baseToolbar.toolbarObj.items[index].prefixIcon = item.icon;
             args.baseToolbar.toolbarObj.items[index].tooltipText = item.tooltip;
             (args.baseToolbar.toolbarObj.items as IToolbarItemModel[])[index].subCommand = item.subCommand;
@@ -317,8 +318,12 @@ export class Toolbar {
     }
 
     public removeTBarItems(items: string | string[]): void {
+        if (isNullOrUndefined(this.baseToolbar.toolbarObj)) {
+            this.baseToolbar = this.parent.getBaseToolbarObject();
+        }
         let trgItems: number[] = getTBarItemsIndex(getCollection(items), this.baseToolbar.toolbarObj.items);
-        this.tbItems = selectAll('.' + classes.CLS_TB_ITEM, this.parent.element);
+        this.tbItems = (this.parent.inlineMode.enable) ? selectAll('.' + classes.CLS_TB_ITEM, this.baseToolbar.toolbarObj.element)
+            : selectAll('.' + classes.CLS_TB_ITEM, this.parent.element);
         for (let i: number = 0; i < trgItems.length; i++) {
             this.baseToolbar.toolbarObj.removeItems(this.tbItems[trgItems[i]]);
         }
@@ -364,6 +369,14 @@ export class Toolbar {
             this.dropDownModule.destroyDropDowns();
             this.baseToolbar.toolbarObj.destroy();
             this.removeEventListener();
+            removeClass([this.parent.element], [classes.CLS_RTE_EXPAND_TB]);
+            let tbWrapper: HTMLElement = <HTMLElement>select('.' + classes.CLS_TB_WRAP, this.parent.element);
+            let tbElement: HTMLElement = <HTMLElement>select('.' + classes.CLS_TOOLBAR, this.parent.element);
+            if (!isNullOrUndefined(tbWrapper)) {
+                detach(tbWrapper);
+            } else if (!isNullOrUndefined(tbElement)) {
+                detach(tbElement);
+            }
         }
     }
 
@@ -483,12 +496,15 @@ export class Toolbar {
      */
     protected onPropertyChanged(e: NotifyArgs): void {
         if (e.module !== this.getModuleName()) { return; }
+        if (isNullOrUndefined(this.baseToolbar.toolbarObj)) {
+            this.baseToolbar = this.parent.getBaseToolbarObject();
+        }
         let tbWrapper: Element = select('.' + classes.CLS_TB_WRAP, this.parent.element);
         let tbElement: Element = select('.' + classes.CLS_TOOLBAR, this.parent.element);
-        if (tbElement) {
+        if (tbElement || tbWrapper) {
             this.destroyToolbar();
-            detach(tbElement);
-            if (tbWrapper) { detach(tbWrapper); }
+        }
+        if (this.parent.toolbarSettings.enable) {
             this.addEventListener();
             this.renderToolbar();
             this.parent.wireScrollElementsEvents();

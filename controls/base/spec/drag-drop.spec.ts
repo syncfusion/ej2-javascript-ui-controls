@@ -52,7 +52,7 @@ describe('draggable', () => {
             events = eventlist.events || [];
         });
         it('class name', () => {
-            expect(element.classList.contains('e-control')).toBe(true);
+            expect(element.classList.contains('e-lib')).toBe(true);
             expect(element.classList.contains('e-draggable')).toBe(true);
         });
         it('check Event bind', () => {
@@ -764,7 +764,7 @@ describe('droppable', () => {
         EventHandler.trigger(dropElem, 'mouseup', mousup);
     });
     it('initialize droppable', () => {
-        expect(dropElem.classList.contains('e-control')).toBe(true);
+        expect(dropElem.classList.contains('e-lib')).toBe(true);
         expect(dropElem.classList.contains('e-droppable')).toBe(true);
     });
     it('check element instance', () => {

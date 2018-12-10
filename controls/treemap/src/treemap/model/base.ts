@@ -187,7 +187,7 @@ export class ColorMapping extends ChildProperty<ColorMapping> {
      * @default null 
      */
     @Property(null)
-    public color: string;
+    public color: string | string[];
     /**
      * Specifies the label text.
      * @default null
@@ -212,6 +212,12 @@ export class ColorMapping extends ChildProperty<ColorMapping> {
      */
     @Property(null)
     public maxOpacity: number;
+    /**
+     * Specifies the visibility of the legend for color mapping
+     * @default true
+     */
+    @Property(true)
+    public showLegend: boolean;
 }
 
 /**
@@ -265,6 +271,12 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
      */
     @Property(null)
     public fill: string;
+    /**
+     * Specifies the legend opacity of shape color
+     * @default 1
+     */
+    @Property(1)
+    public opacity: number;
     /**
      * Customize the shape width.
      * @default 15
@@ -351,6 +363,24 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
      */
     @Property({ x: 0, y: 0 })
     public location: Location;
+    /**
+     * Enable or disable the visibility of the legend.
+     * @default null
+     */
+    @Property(null)
+    public showLegendPath: string;
+    /**
+     * Used to render particular field in dataSource as legend.
+     * @default null
+     */
+    @Property(null)
+    public valuePath: string;
+    /**
+     * Used to remove duplicate of the legend items.
+     * @default false
+     */
+    @Property(false)
+    public removeDuplicateLegend: boolean;
 }
 
 export class InitialDrillSettings extends ChildProperty<InitialDrillSettings> {

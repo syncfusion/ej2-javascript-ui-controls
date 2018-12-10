@@ -3,11 +3,13 @@
   .e-pivotview {
 
     // sass-lint:disable-all
+    .e-value-field-settings,
     .e-member-editor-dialog {
       max-height: 450px !important;
     }
     // sass-lint:enable-all
 
+    .e-value-field-settings,
     .e-member-editor-dialog {
       border-radius: $pivotgrid-default-border-radius;
       max-width: 400px;
@@ -42,6 +44,64 @@
       .e-dlg-content {
         overflow: hidden;
         padding: 0;
+
+        .e-editor-label-wrapper {
+          background-color: $pivotgrid-editor-label-fill;
+          padding: $pivotgrid-editor-label-padding-size;
+          width: 240px;
+
+          .e-editor-label {
+            color: $pivotgrid-editor-label-color;
+            font: $pivotgrid-editor-label-font;
+            opacity: $pivotgrid-editor-label-opacity;
+          }
+        }
+
+        // sass-lint:disable-all
+        .e-value-field-div-content {
+          padding: 0 $pivotgrid-editor-search-padding-size 10px;
+
+          .e-field-option-wrapper {
+            .e-field-name-text-wrapper {
+              display: flex;
+
+              .e-field-name-title,
+              .e-field-name-content {
+                font-size: 13px;
+                font-weight: 500;
+              }
+
+              .e-field-name-title {
+                flex: none;
+              }
+
+              .e-field-name-content {
+                flex: auto;
+                width: 100%;
+              }
+            }
+
+            .e-caption-input-wrapper,
+            .e-type-option-wrapper,
+            .e-base-field-option-wrapper,
+            .e-base-item-option-wrapper {
+              padding-top: $pivotgrid-editor-search-padding-size;
+
+              .e-base-field-option-text,
+              .e-base-item-option-text,
+              .e-type-option-text, {
+                font-size: 13px;
+                font-weight: 500;
+                width: 100%;
+              }
+
+              .e-caption-input-text {
+                font-size: 13px;
+              }
+            }
+          }
+        }
+        // sass-lint:enable-all
 
         .e-member-editor-wrapper {
           .e-editor-search-wrapper {
@@ -142,6 +202,11 @@
 
       &.e-excel-filter {
         min-width: 280px;
+
+        .e-editor-label-wrapper {
+          padding: $pivotgrid-editor-label-excel-padding-size;
+          width: $pivotgrid-editor-label-excel-width;
+        }
       }
 
       &.e-rtl {
@@ -159,6 +224,42 @@
         }
       }
     }
+
+    .e-value-field-settings {
+      min-width: 300px;
+
+      .e-dlg-content {
+        overflow: auto;
+      }
+    }
+  }
+
+  .e-drillthrough-dialog {
+    .e-drillthrough-body-header-container {
+      margin-bottom: 20px;
+    }
+
+    .e-drillthrough-body-header {
+      color: $pivotgrid-editor-label-color;
+      font-weight: $pivotgrid-drillthrough-header-font-weight;
+      opacity: $pivotgrid-editor-label-opacity;
+    }
+
+    .e-drillthrough-body-header-value {
+      color: $pivotview-grid-header-font-color;
+      margin-left: 10px;
+      margin-right: 20px;
+    }
+
+    // sass-lint:disable-all
+    .e-drillthrough-body-header-common {
+      -webkit-flex-wrap: wrap;
+         -moz-flex-wrap: wrap;
+          -ms-flex-wrap: wrap;
+                display: inline-block;
+              flex-wrap: wrap;     
+    }
+    // sass-lint:enable-all
   }
 
   .e-bigger #{&}.e-pivotview,
@@ -169,7 +270,8 @@
       height: $pivotgrid-member-filter-list-bigger-height;
     }
 
-    .e-member-editor-dialog {
+    .e-member-editor-dialog,
+    .e-value-field-settings {
       .e-dlg-header-content {
         .e-clear-filter-button.e-small {
           font-size: 14px;
@@ -224,6 +326,39 @@
         min-width: $pivotgrid-bigger-excel-dialog-min-width;
       }
     }
+
+    // sass-lint:disable-all
+    .e-value-field-settings {
+      .e-value-field-div-content {
+        padding: 0 $pivotgrid-editor-search-padding-size 10px;
+
+        .e-field-option-wrapper {
+          .e-field-name-text-wrapper {
+            display: flex;
+
+            .e-field-name-title,
+            .e-field-name-content {
+              font-size: 14px;
+            }
+          }
+
+          .e-caption-input-wrapper,
+          .e-type-option-wrapper,
+          .e-base-field-option-wrapper,
+          .e-base-item-option-wrapper {
+            padding-top: 24px;
+
+            .e-base-field-option-text,
+            .e-base-item-option-text,
+            .e-type-option-text,
+            .e-caption-input-text {
+              font-size: 14px;
+            }
+          }
+        }
+      }
+    }
+    // sass-lint:enable-all
   }
 }
   

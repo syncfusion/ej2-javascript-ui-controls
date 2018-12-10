@@ -1,7 +1,7 @@
 import { createElement, L10n, remove, EmitType } from '@syncfusion/ej2-base';
 import { HeatMap } from '../../src/heatmap/heatmap';
 import { Title } from '../../src/heatmap/model/base';
-import { ILoadedEventArgs } from '../../src/heatmap/model/interface'
+import { ILoadedEventArgs, ICellEventArgs } from '../../src/heatmap/model/interface'
 import { Adaptor } from '../../src/heatmap/index';
 import { MouseEvents } from '../base/event.spec';
 HeatMap.Inject(Adaptor);
@@ -12,7 +12,7 @@ describe('Heatmap Control', () => {
         let ele: HTMLElement;
         let tempElement: HTMLElement;
         let tooltipElement: HTMLElement;
-        let created: EmitType<ILoadedEventArgs>;
+        let created: EmitType<Object>;
         let trigger: MouseEvents = new MouseEvents();
         let adaptorData: Object = {};
         // let trigger: MouseEvents = new MouseEvents();
@@ -70,7 +70,7 @@ describe('Heatmap Control', () => {
             tempElement = document.getElementById('container_HeatMapRectLabels_0');
             trigger.mousemoveEvent(tempElement, 0, 0, 5, 5);
             tempElement = document.getElementById('container_HeatMapRect_0');
-            expect(tempElement.style.opacity).toBe("");
+            expect(tempElement.getAttribute('opacity')).toBe("1");
         });
         it('Check enableCellHighlighting property', () => {
             heatmap.cellSettings.enableCellHighlighting = true;
@@ -78,7 +78,7 @@ describe('Heatmap Control', () => {
             tempElement = document.getElementById('container_HeatMapRectLabels_0');
             trigger.mousemoveEvent(tempElement, 0, 0, 5, 5);
             tempElement = document.getElementById('container_HeatMapRect_0');
-            expect(tempElement.style.opacity).toBe("0.65");
+            expect(tempElement.getAttribute('opacity')).toBe("0.65");
         });
         it('Check format property', () => {
             heatmap.cellSettings.format = "{value}$";
@@ -113,7 +113,7 @@ describe('Heatmap Control', () => {
             tempElement = document.getElementById('container_HeatMapRect_0');
             trigger.mousemoveEvent(tempElement, 0, 0, 0, 20);
             trigger.mousemoveEvent(tempElement, 0, 0, 60, 20);
-            expect(tempElement.style.opacity).toBe("0.65");
+            expect(tempElement.getAttribute('opacity')).toBe("0.65");
             tooltipElement = document.getElementById('containerCelltooltipcontainer_svg');
             expect(tooltipElement).not.toBe(null);
             setTimeout(done, 1600);
@@ -301,5 +301,20 @@ describe('Heatmap Control', () => {
             expect(heatmap.tooltipModule.tooltipObject.content[0]).toBe("Weekdays : TestX1<br/>YAxis : Jun<br/>Men : 50$<br/>Women : 13$");
             setTimeout(done, 1600);
         });
+        it('Checking cell rendering event', (done: Function) => {
+            heatmap.cellSettings = {
+                format: '',
+                bubbleType: 'Size',
+            },
+                heatmap.cellRender = function (args: ICellEventArgs) {
+                    if (args.value >= 30) {
+                        args.displayText = 'test'
+                    }
+                },
+                heatmap.refresh();
+            tempElement = document.getElementById('container_HeatMapRectLabels_0');
+            expect(tempElement.textContent).toBe("test");
+            done();
+    });
     });
 });

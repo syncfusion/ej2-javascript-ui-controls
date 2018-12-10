@@ -158,7 +158,7 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 svg = document.getElementById('container_ChartAreaBorder');
                 axisLine = document.getElementById('containerAxisLine_0');
-                expect(+svg.getAttribute('x')).toEqual(+axisLine.getAttribute('x1'));
+                expect(+svg.getAttribute('x')).toEqual(+axisLine.getAttribute('d').split(' ')[1]);
                 done();
             };
             chart.loaded = loaded;
@@ -181,7 +181,7 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 svg = document.getElementById('container_ChartAreaBorder');
                 axisLine = document.getElementById('containerAxisLine_0');
-                expect(+svg.getAttribute('y')).toEqual(+axisLine.getAttribute('y1'));
+                expect(+svg.getAttribute('y')).toEqual(+axisLine.getAttribute('d').split(' ')[2]);
                 done();
             };
             chart.loaded = loaded;
@@ -307,14 +307,14 @@ describe('Chart Control', () => {
             chart.primaryXAxis.minorTicksPerInterval = 3;
             chart.loaded = null;
             chart.dataBind();
-            svg = document.getElementById('container_MinorGridLine_0');
-            let path: string = document.getElementById('container_MinorGridLine_0').getAttribute('d');
-            expect(path.match(/M/gi).length).toEqual(6);
+            svg = document.getElementById('container_MinorGridLine_0_0');
+            let path: string = document.getElementById('container_MinorGridLine_0_0').getAttribute('d');
+            expect(path.match(/M/gi).length).toEqual(3);
         });
         it('checking minor grid with changing interval type', (done: Function) => {
             loaded = (args: Object): void => {
-                let path: string = document.getElementById('container_MinorGridLine_0').getAttribute('d');
-                expect(path.match(/M/gi).length).toEqual(15);
+                let path: string = document.getElementById('container_MinorGridLine_0_0').getAttribute('d');
+                expect(path.match(/M/gi).length).toEqual(3);
                 done();
             };
             chart.loaded = loaded;
@@ -323,8 +323,8 @@ describe('Chart Control', () => {
         });
         it('checking multiple axis', (done: Function) => {
             loaded = (args: Object): void => {
-                let path: string = document.getElementById('container_MinorGridLine_0').getAttribute('d');
-                expect(path.match(/M/gi).length).toEqual(15);
+                let path: string = document.getElementById('container_MinorGridLine_0_0').getAttribute('d');
+                expect(path.match(/M/gi).length).toEqual(3);
                 done();
             };
             chart.loaded = loaded;
@@ -366,7 +366,7 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 let svg: any = document.getElementById('containerAxisLabels0').childNodes[0];
                 axisLine = document.getElementById('containerAxisLine_0');
-                expect(+svg.getAttribute('x') < (+axisLine.getAttribute('x1'))).toBe(true);
+                expect(+svg.getAttribute('x') < (+axisLine.getAttribute('d').split(' ')[1])).toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -450,11 +450,11 @@ describe('Chart Control', () => {
         });
         it('checking with strip lines', (done: Function) => {
             loaded = (args: Object) => {
-                let stripLineElement = document.getElementById('container_stripline_Behind_rect_0');
+                let stripLineElement = document.getElementById('container_stripline_Behind_rect_primaryXAxis_0');
                 expect(stripLineElement).not.toEqual(null);
                 expect(stripLineElement.getAttribute('x') == '224' || stripLineElement.getAttribute('x') == '220.8').toBe(true);
                 expect(stripLineElement.getAttribute('y') == '10.25').toBe(true);
-                stripLineElement = document.getElementById('container_stripline_Over_rect_0');
+                stripLineElement = document.getElementById('container_stripline_Over_rect_primaryXAxis_0');
                 expect(stripLineElement.getAttribute('x') == '723.5' || stripLineElement.getAttribute('x') == '722.7').toBe(true);
                 expect(stripLineElement.getAttribute('y') == '10.25').toBe(true);
                 expect(stripLineElement).not.toEqual(null);
@@ -479,7 +479,7 @@ describe('Chart Control', () => {
         });
         it('checking with strip lines', (done: Function) => {
             loaded = (args: Object) => {
-                let stripLineElement: HTMLElement = document.getElementById('container_stripline_Over_rect_0');
+                let stripLineElement: HTMLElement = document.getElementById('container_stripline_Over_rect_primaryXAxis_0');
 
                 expect(stripLineElement).not.toEqual(null);
                 done();

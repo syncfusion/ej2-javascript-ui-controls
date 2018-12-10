@@ -1,7 +1,7 @@
 {
 	"name": "@syncfusion/ej2-lists",
-	"version": "16.3.30",
-	"description": "Essential JS 2 List Components",
+	"version": "16.2.41",
+	"description": "The listview control allows you to select an item or multiple items from a list-like interface and represents the data in interactive hierarchical structure across different layouts or views.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"main": "./dist/ej2-lists.umd.min.js",
@@ -63,7 +63,7 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/syncfusion/ej2-lists"
+		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls/tree/master/controls/lists"
 	},
 	"scripts": {
 		"build": "gulp build",

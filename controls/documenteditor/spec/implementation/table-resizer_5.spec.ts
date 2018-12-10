@@ -35,7 +35,7 @@ describe('Table column resizing validation after merge cell', () => {
         document.body.removeChild(document.getElementById('container'));
         setTimeout(function () {
             done();
-        }, 2000);
+        }, 1000);
     });
     it('resizer position at 1', () => {
         let prevPrefferedWidth: number = editor.selection.start.paragraph.associatedCell.cellFormat.preferredWidth;
@@ -73,7 +73,7 @@ describe('Table column resizing validation after merge cell decrease width', () 
         document.body.removeChild(document.getElementById('container'));
         setTimeout(function () {
             done();
-        }, 2000);
+        }, 1000);
     });
     it('resizer position at 1  decrease width', () => {
         let prevPrefferedWidth: number = editor.selection.start.paragraph.associatedCell.cellFormat.preferredWidth;
@@ -112,7 +112,7 @@ describe('Table column resizing validation after merge cell with selection', () 
         document.body.removeChild(document.getElementById('container'));
         setTimeout(function () {
             done();
-        }, 2000);
+        }, 1000);
     });
     it('resizer position at 1 with selection', () => {
         let prevPrefferedWidth: number = editor.selection.start.paragraph.associatedCell.cellFormat.preferredWidth;

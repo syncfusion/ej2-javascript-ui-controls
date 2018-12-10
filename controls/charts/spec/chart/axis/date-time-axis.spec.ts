@@ -323,8 +323,8 @@ describe('Chart Control', () => {
         });
         it('Checking with minorGridLines and minorTickLines', (done: Function) => {
             loaded1 = (args: Object): void => {
-                svg = document.getElementById('chartContainer_MinorGridLine_0');
-                let axis: HTMLElement = document.getElementById('chartContainer_MajorTickLine_0');
+                svg = document.getElementById('chartContainer_MinorGridLine_0_0');
+                let axis: HTMLElement = document.getElementById('chartContainer_MajorTickLine_0_0');
                 expect(svg !== null).toBe(true);
                 expect(axis !== null).toBe(true);
                 done();

@@ -148,23 +148,19 @@ function weeklyType(startDate: Date, endDate: Date, data: number[], ruleObject: 
     let interval: number = ruleObject.interval;
     let expectedDays: string[] = ruleObject.day;
     let expectedCount: Number = ruleObject.count ? ruleObject.count : maxOccurrence;
-    let state: boolean;
-    let dayCycleData: { [key: string]: number } = processWeekDays(expectedDays);
+    let weekState: boolean;
     while (compareDates(tempDate, endDate)) {
-        state = true;
-        state = validateRules(tempDate, ruleObject);
-        if (state) {
+        weekState = true;
+        weekState = validateRules(tempDate, ruleObject);
+        if (weekState) {
             excludeDateHandler(data, tempDate.getTime());
             if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
                 break;
             }
         }
         if (expectedDays.length > 1) {
-            tempDate.setDate(
-                tempDate.getDate()
-                + dayCycleData[DAYINDEX[tempDate.getDay()]]
-                + ((expectedDays.indexOf(DAYINDEX[tempDate.getDay()]) === expectedDays.length - 1) ?
-                    ((interval - 1) * 7) : 0));
+            let days: number = ((expectedDays.indexOf(DAYINDEX[tempDate.getDay()]) === expectedDays.length - 1) ? ((interval - 1) * 7) : 0);
+            tempDate.setDate(tempDate.getDate() + 1 + days);
         } else {
             tempDate.setDate(
                 tempDate.getDate()

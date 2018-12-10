@@ -3,6 +3,7 @@ import { ColorPicker } from '@syncfusion/ej2-inputs';
 import { RenderType } from '../base/enum';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
+import { RichTextEditorModel } from '../base/rich-text-editor-model';
 import { getIndex } from '../base/util';
 import { templateItems, tools } from '../models/items';
 import { IRichTextEditor, IRenderer, IColorPickerModel, IColorPickerRenderArgs } from '../base/interface';
@@ -119,6 +120,67 @@ export class ColorPickerInput {
         this.parent.on(events.rtlMode, this.setRtl, this);
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.destroyColorPicker, this.destroyColorPicker, this);
+        this.parent.on(events.modelChanged, this.onPropertyChanged, this);
+    }
+
+    private onPropertyChanged(model: { [key: string]: Object }): void {
+        let newProp: RichTextEditorModel = model.newProp;
+        for (let prop of Object.keys(newProp)) {
+            switch (prop) {
+                case 'fontColor':
+                    if (this.fontColorPicker) {
+                        for (let font of Object.keys(newProp.fontColor)) {
+                            switch (font) {
+                                case 'default':
+                                    this.fontColorPicker.setProperties({ value: newProp.fontColor.default });
+                                    let element: HTMLElement = <HTMLElement>this.fontColorDropDown.element;
+                                    let fontBorder: HTMLElement = element.querySelector('.' + tools.fontcolor.icon);
+                                    fontBorder.style.borderBottomColor = newProp.fontColor.default;
+                                    break;
+                                case 'mode':
+                                    this.fontColorPicker.setProperties({ mode: newProp.fontColor.mode });
+                                    break;
+                                case 'columns':
+                                    this.fontColorPicker.setProperties({ columns: newProp.fontColor.columns });
+                                    break;
+                                case 'colorCode':
+                                    this.fontColorPicker.setProperties({ presetColors: newProp.fontColor.colorCode });
+                                    break;
+                                case 'modeSwitcher':
+                                    this.fontColorPicker.setProperties({ modeSwitcher: newProp.fontColor.modeSwitcher });
+                                    break;
+                            }
+                        }
+                    }
+                    break;
+                case 'backgroundColor':
+                    if (this.backgroundColorPicker) {
+                        for (let background of Object.keys(newProp.backgroundColor)) {
+                            switch (background) {
+                                case 'default':
+                                    this.backgroundColorPicker.setProperties({ value: newProp.backgroundColor.default });
+                                    let element: HTMLElement = <HTMLElement>this.backgroundColorDropDown.element;
+                                    let backgroundBorder: HTMLElement = element.querySelector('.' + tools.backgroundcolor.icon);
+                                    backgroundBorder.style.borderBottomColor = newProp.backgroundColor.default;
+                                    break;
+                                case 'mode':
+                                    this.backgroundColorPicker.setProperties({ mode: newProp.backgroundColor.mode });
+                                    break;
+                                case 'columns':
+                                    this.backgroundColorPicker.setProperties({ columns: newProp.backgroundColor.columns });
+                                    break;
+                                case 'colorCode':
+                                    this.backgroundColorPicker.setProperties({ presetColors: newProp.backgroundColor.colorCode });
+                                    break;
+                                case 'modeSwitcher':
+                                    this.backgroundColorPicker.setProperties({ modeSwitcher: newProp.backgroundColor.modeSwitcher });
+                                    break;
+                            }
+                        }
+                    }
+                    break;
+            }
+        }
     }
 
     protected removeEventListener(): void {
@@ -126,6 +188,7 @@ export class ColorPickerInput {
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.rtlMode, this.setRtl);
         this.parent.off(events.destroyColorPicker, this.destroyColorPicker);
+        this.parent.off(events.modelChanged, this.onPropertyChanged);
     }
 
 }

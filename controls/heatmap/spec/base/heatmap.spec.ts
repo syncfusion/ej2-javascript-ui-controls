@@ -13,7 +13,7 @@ describe('Heatmap Control', () => {
         let heatmap: HeatMap;
         let ele: HTMLElement;
         let text: HTMLElement;
-        let created: EmitType<ILoadedEventArgs>;
+        let created: EmitType<Object>;
         let data: number[][] = [
             [1, 2, 3, 4, 5],
             [1, 2, 3, 4, 5],
@@ -237,18 +237,75 @@ describe('Heatmap Control', () => {
             done();
         });
         it('Check title tooltip remove', () => {
-            let tempElement : Element = document.getElementById('container');
+            let tempElement: Element = document.getElementById('container');
             heatmap.heatMapMouseLeave(<PointerEvent>trigger.onTouchStart(tempElement, null, null, null, null, 0, 0));
-            let element : Element = document.getElementById('container_canvas_Tooltip');
+            let element: Element = document.getElementById('container_canvas_Tooltip');
             expect(element == null).toBe(true);
         });
         it('Check title tooltip remove in SVG', () => {
             heatmap.renderingMode = "SVG";
             heatmap.refresh();
-            let tempElement : Element = document.getElementById('container');
+            let tempElement: Element = document.getElementById('container');
             heatmap.heatMapMouseLeave(<PointerEvent>trigger.onTouchStart(tempElement, null, null, null, null, 0, 0));
-            let element : Element = document.getElementById('container_Title_Tooltip');
+            let element: Element = document.getElementById('container_Title_Tooltip');
             expect(element == null).toBe(true);
+        });
+
+        it('Multi Cell Selection in SVG', () => {
+            heatmap.dataSource = [
+                [1, 2, 3, 4, 5],
+                [1, 2, 3, 4, 5],
+                [1, 2, 3, 4, 5],
+                [1, 2, 3, 4, 5],
+                [1, 2, 3, 4, 5],
+            ];
+            heatmap.allowSelection = true;
+            heatmap.multiSelection = true;
+            heatmap.refresh();
+            let element: Element = document.getElementById("container_HeatMapRect_3");
+            let region: ClientRect = element.getBoundingClientRect();
+            heatmap.heatMapMouseMove(<PointerEvent>trigger.onTouchStart(element, null, null, null, null, region.left + 5, region.top + 5));
+            trigger.mousemoveEvent(element, 0, 0, region.left + 50, region.top + 50);
+            heatmap.heatMapMouseLeave(<PointerEvent>trigger.onTouchEnd(element, null, null, null, null, region.left + 50, region.top + 50));
+            let secondelement: Element = document.getElementById("container_HeatMapRect_6");
+            let rect: ClientRect = element.getBoundingClientRect();
+            heatmap.heatMapMouseMove(<PointerEvent>trigger.onTouchStart(secondelement, null, null, null, null, rect.left + 5, rect.top + 5));
+            trigger.mousemoveEvent(element, 0, 0, rect.left + 50, rect.top + 50);
+            heatmap.heatMapMouseLeave(<PointerEvent>trigger.onTouchEnd(element, null, null, null, null, rect.left + 50, rect.top + 50));
+            expect(heatmap.tempMultiCellCollection[0].length).toBe(1);
+            heatmap.clearSelection();
+        });
+
+        it('Multi Cell Selection in SVG', () => {
+            let element: Element = document.getElementById("container_HeatMapRect_13");
+            let region: ClientRect = element.getBoundingClientRect();
+            heatmap.heatMapMouseMove(<PointerEvent>trigger.onTouchStart(element, null, null, null, null, region.left + 5, region.top + 5));
+            trigger.mousemoveEvent(element, 0, 0, region.left - 100, region.top - 100);
+            heatmap.heatMapMouseLeave(<PointerEvent>trigger.onTouchEnd(element, null, null, null, null, region.left - 100, region.top - 100));
+            expect(heatmap.tempMultiCellCollection[0].length).toBe(6);
+        });
+
+        it('Multi Cell Selection in Canvas', () => {
+            heatmap.dataSource = [
+                [1, 2, 3, 4, 5],
+                [1, 2, 3, 4, 5],
+                [1, 2, 3, 4, 5],
+                [1, 2, 3, 4, 5],
+                [1, 2, 3, 4, 5],
+            ];
+            heatmap.renderingMode = 'Canvas';
+            heatmap.allowSelection = true;
+            heatmap.legendSettings.visible = true;
+            heatmap.refresh();
+            let element: Element = document.getElementById("container_canvas");
+            heatmap.heatMapMouseMove(<PointerEvent>trigger.onTouchStart(element, null, null, null, null, 100, 100));
+            trigger.mousemoveEvent(element, 0, 0, 200, 200);
+            heatmap.heatMapMouseLeave(<PointerEvent>trigger.onTouchEnd(element, null, null, null, null, 200, 200));
+            heatmap.heatMapMouseMove(<PointerEvent>trigger.onTouchStart(element, null, null, null, null, 150, 150));
+            trigger.mousemoveEvent(element, 0, 0, 250, 250);
+            heatmap.heatMapMouseLeave(<PointerEvent>trigger.onTouchEnd(element, null, null, null, null, 250, 250));
+            expect(heatmap.selectedCellsRect.x == 52 && heatmap.selectedCellsRect.width == 258.2);
+            heatmap.clearSelection();
         });
         it('Check title tool tip', (done: Function) => {
             heatmap.dataSource = [
@@ -257,6 +314,7 @@ describe('Heatmap Control', () => {
                 [8, 9],
             ];
             heatmap.renderingMode = "Canvas";
+            heatmap.legendSettings.visible = false;
             heatmap.titleSettings.text = "A heat map is a graphical representation of data where the values contained in a matrix are represented as colors.A heat map is a graphical representation of data where the values contained in a matrix are represented as colors.";
             heatmap.titleSettings.textStyle.textOverflow = "Trim";
             heatmap.yAxis.title.text = "yAxis";
@@ -283,7 +341,7 @@ describe('Heatmap Control', () => {
             heatmap.refresh();
             let element: Element = document.getElementById("container_XAxis_Label0");
             let region: ClientRect = element.getBoundingClientRect();
-            trigger.mousemoveEvent(element, 0, 0, region.left + 5, region.height + 5);
+            trigger.mousemoveEvent(element, 0, 0, region.left + 5, region.top + 5);
             element = document.getElementById("container_axis_Tooltip");
             expect(element.textContent == "This my new testing for heat map axis labels This my new testing for heat map axis labels").toBe(true);
             done();
@@ -345,12 +403,12 @@ describe('Heatmap Control', () => {
             heatmap.dataBind();
             let element: Element = document.getElementById("container_Smart_Legend1");
             let region: ClientRect = element.getBoundingClientRect();
-            trigger.mousemoveEvent(element, 5, 5, region.left +5, region.top + 5);
+            trigger.mousemoveEvent(element, 5, 5, region.left + 5, region.top + 5);
             heatmap.heatMapMouseLeave(<PointerEvent>trigger.onTouchStart(element, null, null, null, null, 0, 0));
             let tooltip: HTMLElement = document.getElementById('containerlegendLabelTooltipContainer');
             setTimeout(done, 1600);
             expect(tooltip.style.visibility).toBe("visible");
-      });
+        });
         it('Check heat map with minimum height and width', () => {
             heatmap.dataSource = [
                 [1, 2, 3],
@@ -362,7 +420,7 @@ describe('Heatmap Control', () => {
             heatmap.paletteSettings.type = 'Gradient';
             heatmap.legendSettings.visible = true;
             heatmap.legendSettings.position = "Right";
-            heatmap.dataBind();     
+            heatmap.dataBind();
             expect((heatmap.initialClipRect.height === 4 || heatmap.initialClipRect.height === 5) && (heatmap.initialClipRect.width === -62 || heatmap.initialClipRect.width === -61)).toBe(true);
         });
         it('Check heat map with minimum height and width', () => {

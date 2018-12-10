@@ -4,7 +4,7 @@ import { Size, getActualDesiredIntervalsCount, triggerLabelRender } from '../../
 import { logBase, withIn } from '../../common/utils/helper';
 import { Chart } from '../chart';
 import { RangeNavigator } from '../../range-navigator';
-import { extend, getValue } from '@syncfusion/ej2-base';
+import { extend, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Font } from '../../common/model/base';
 
 /**
@@ -65,7 +65,8 @@ export class Logarithmic extends Double {
             interval: axis.actualRange.interval, max: axis.actualRange.max,
             min: axis.actualRange.min, delta: axis.actualRange.delta
         };
-        if (axis.zoomFactor < 1 || axis.zoomPosition > 0) {
+        let isLazyLoad : boolean = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
+        if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad )  {
             axis.calculateVisibleRange(size);
             axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming) ?
                 this.calculateLogNiceInterval(axis.doubleRange.delta, size, axis)

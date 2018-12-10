@@ -1,6 +1,7 @@
 import { createElement, isVisible, select, selectAll } from '@syncfusion/ej2-base';
 import { EventHandler } from '@syncfusion/ej2-base';
 import { FormValidatorModel } from '../../src/form-validator/form-validator-model';
+import { Event, L10n, setCulture } from '@syncfusion/ej2-base';
 import { FormValidator, ErrorOption } from '../../src/form-validator/form-validator';
 
 /**
@@ -2446,5 +2447,82 @@ describe('FormValidator # ', () => {
         formObj.destroy();
         formObj1.destroy();
         formObj2.destroy();
+    });
+});
+L10n.load({
+    'ar-AR': {
+        'formValidator': {
+            "email": "أدخل بريد إلكتروني صالح"
+        }
+    }
+});
+describe('localization support', () => {
+    beforeAll(() => {
+        let mail: string = "<div>" + createElement("input", { attrs: { id: "Email", type: "text", name: "Email" } }).outerHTML + "</div>";
+        let htmlelement: HTMLFormElement = <HTMLFormElement>createElement('form', { id: 'formId2', innerHTML: mail });
+        let options = {
+            rules: {
+                // User: { required: true},
+                Email: { email: true },
+            },
+            locale: "ar-AR"
+        };
+        formObj = new FormValidator(htmlelement, options);
+
+    });
+    it('ar-br culuture email vaildation #', () => {
+        setInputValue(formObj, 'Email', 'vairam');
+        formObj.validate('Email')
+        let element: HTMLElement = <HTMLElement>formObj.getInputElement('Email').nextSibling;
+        expect(element.innerText).toEqual("أدخل بريد إلكتروني صالح");
+
+
+    });
+
+})
+describe('default localization', () => {
+    beforeAll(() => {
+        let mail: string = "<div>" + createElement("input", { attrs: { id: "Email", type: "text", name: "Email" } }).outerHTML + "</div>";
+        let htmlelement: HTMLFormElement = <HTMLFormElement>createElement('form', { id: 'formId2', innerHTML: mail });
+        let options = {
+            rules: {
+                // User: { required: true},
+                Email: { email: true },
+            },
+
+        };
+        formObj = new FormValidator(htmlelement, options);
+
+    });
+    it('default culture  email vaildation #', () => {
+        setInputValue(formObj, 'Email', 'vairam');
+        formObj.validate('Email')
+        let element: HTMLElement = <HTMLElement>formObj.getInputElement('Email').nextSibling;
+        expect(element.innerText).toEqual("Please enter a valid email address.");
+
+
+    });
+});
+describe('global localization', () => {
+    beforeAll(() => {
+        let mail: string = "<div>" + createElement("input", { attrs: { id: "Email", type: "text", name: "Email" } }).outerHTML + "</div>";
+        let submit: string = "<button id='btn' class='e-btn e-control'>Change culture</button>";
+        let htmlelement: HTMLFormElement = <HTMLFormElement>createElement('form', { id: 'formId2', innerHTML: mail });
+        let options = {
+            rules: {
+                Email: { email: [true, "أدخل بريد إلكتروني صالح"] },
+            },
+
+        };
+        formObj = new FormValidator(htmlelement, options);
+
+    });
+    it(' email vaildation #', () => {
+        setCulture("ar-AR");
+        setInputValue(formObj, 'Email', 'vairam');
+        formObj.validate('Email');
+        let element: HTMLElement = <HTMLElement>formObj.getInputElement('Email').nextSibling;
+        expect(element.innerText).toEqual("أدخل بريد إلكتروني صالح");
+
     });
 });

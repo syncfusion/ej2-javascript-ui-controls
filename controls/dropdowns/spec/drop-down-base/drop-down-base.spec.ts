@@ -684,6 +684,7 @@ describe('DropDownBase', () => {
          */
         it('Boolean Array list initialize', () => {
             let next: HTMLUListElement = listObj.element.nextElementSibling.children[0] as HTMLUListElement;
+            (<any>listObj).updateListValues();
             expect(listObj.getDataByValue(true)).toBe(true);
             //expect();
         });

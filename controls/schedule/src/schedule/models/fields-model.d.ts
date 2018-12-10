@@ -13,6 +13,14 @@ export interface FieldModel {
     id?: string;
 
     /**
+     * The `isBlock` field allows you to block certain time interval on the Scheduler.
+     * It is a boolean type property accepting either true or false values.
+     * When set to true, creates a block range for the specified time interval and disables the event scheduling actions on that time range.
+     * @default null
+     */
+    isBlock?: string;
+
+    /**
      * The `subject` field is optional, and usually assigns the subject text to each of the events.
      * @default { name: null, default: 'Add title', title: null, validation: {}  }
      */
@@ -88,5 +96,11 @@ export interface FieldModel {
      * @default { name: null, default: null, title: null, validation: {} }
      */
     recurrenceException?: FieldOptionsModel;
+
+    /**
+     * The `isReadonly` field is mapped from the dataSource and is used to prevent the CRUD actions on specific events.
+     * @default null
+     */
+    isReadonly?: string;
 
 }

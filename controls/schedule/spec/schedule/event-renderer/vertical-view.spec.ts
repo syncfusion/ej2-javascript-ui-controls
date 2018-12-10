@@ -2,12 +2,15 @@
  * Vertical view appointment rendering spec 
  */
 import { createElement, remove, EmitType, extend } from '@syncfusion/ej2-base';
-import { Schedule, Day, Week, WorkWeek, Month, Agenda, EventRenderedArgs, EJ2Instance } from '../../../src/schedule/index';
+import { Schedule, Day, Week, WorkWeek, Month, Agenda, EventRenderedArgs, EJ2Instance, ScheduleModel } from '../../../src/schedule/index';
 import * as events from '../../../src/schedule/base/constant';
 import { defaultData, resourceData, resourceGroupData } from '../base/datasource.spec';
 import { triggerMouseEvent, disableScheduleAnimation } from '../util.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
 import { RecurrenceEditor } from '../../../src/recurrence-editor/index';
+import * as util from '../util.spec';
+import { MultiSelect } from '@syncfusion/ej2-dropdowns';
+import { DateTimePicker } from '@syncfusion/ej2-calendars';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 describe('Vertical view appointment rendering', () => {
@@ -636,11 +639,8 @@ describe('Vertical view all-day row appointment expand/collapse icon click', () 
 
 describe('Vertical view resource grouping appointment rendering', () => {
     let schObj: Schedule;
-    let elem: HTMLElement = createElement('div', { id: 'Schedule' });
     beforeAll((done: Function) => {
-        let dataBound: EmitType<Object> = () => { done(); };
-        document.body.appendChild(elem);
-        schObj = new Schedule({
+        let schOptions: ScheduleModel = {
             height: '500px',
             selectedDate: new Date(2018, 3, 1),
             group: {
@@ -665,17 +665,12 @@ describe('Vertical view resource grouping appointment rendering', () => {
                     ],
                     textField: 'OwnerText', idField: 'OwnerId', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
                 }
-            ],
-            eventSettings: { dataSource: resourceData },
-            dataBound: dataBound
-        });
-        schObj.appendTo('#Schedule');
+            ]
+        };
+        schObj = util.createSchedule(schOptions, resourceData, done);
     });
     afterAll(() => {
-        if (schObj) {
-            schObj.destroy();
-        }
-        remove(elem);
+        util.destroy(schObj);
     });
 
     it('Checking appointment element', () => {
@@ -691,7 +686,6 @@ describe('Vertical view resource grouping appointment rendering', () => {
     });
 
     it('CRUD add actions checking', (done: Function) => {
-        disableScheduleAnimation(schObj);
         let dataBound: (args: Object) => void = (args: Object) => {
             expect(schObj.eventsData.length).toEqual(10);
             done();
@@ -754,11 +748,8 @@ describe('Vertical view resource grouping appointment rendering', () => {
 
 describe('Vertical view resource grouping appointment rendering byDate', () => {
     let schObj: Schedule;
-    let elem: HTMLElement = createElement('div', { id: 'Schedule' });
     beforeAll((done: Function) => {
-        let dataBound: EmitType<Object> = () => { done(); };
-        document.body.appendChild(elem);
-        schObj = new Schedule({
+        let schOptions: ScheduleModel = {
             height: '500px',
             selectedDate: new Date(2018, 3, 1),
             group: {
@@ -784,32 +775,84 @@ describe('Vertical view resource grouping appointment rendering byDate', () => {
                     ],
                     textField: 'OwnerText', idField: 'OwnerId', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
                 }
-            ],
-            eventSettings: { dataSource: resourceData },
-            dataBound: dataBound
-        });
-        schObj.appendTo('#Schedule');
+            ]
+        };
+        schObj = util.createSchedule(schOptions, resourceData, done);
     });
     afterAll(() => {
-        if (schObj) {
-            schObj.destroy();
-        }
-        remove(elem);
+        util.destroy(schObj);
     });
 
     it('Checking appointment element', () => {
         let appElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
         expect(appElement.length).toBeGreaterThan(0);
     });
+
+    it('CRUD add actions checking', (done: Function) => {
+        let dataBound: (args: Object) => void = (args: Object) => {
+            expect(schObj.eventsData.length).toEqual(10);
+            done();
+        };
+        let workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[427] as HTMLElement;
+        triggerMouseEvent(workCell, 'click');
+        triggerMouseEvent(workCell, 'dblclick');
+        expect(schObj.eventsData.length).toEqual(9);
+        let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+        let recObj: RecurrenceEditor = (dialogElement.querySelector('.e-recurrenceeditor') as EJ2Instance).
+            ej2_instances[0] as RecurrenceEditor;
+        recObj.value = 'FREQ=DAILY;INTERVAL=1;COUNT=5';
+        recObj.dataBind();
+        let saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+        saveButton.click();
+        schObj.dataBound = dataBound;
+    });
+
+    it('CRUD edit actions checking', (done: Function) => {
+        let dataBound: (args: Object) => void = (args: Object) => {
+            expect(schObj.eventsData.length).toEqual(10);
+            done();
+        };
+        let appElement: HTMLElement = schObj.element.querySelectorAll('[data-id ="Appointment_10"]')[1] as HTMLElement;
+        triggerMouseEvent(appElement, 'click');
+        triggerMouseEvent(appElement, 'dblclick');
+        expect(schObj.eventsData.length).toEqual(10);
+        let quickDialog: Element = document.querySelector('.e-quick-dialog');
+        expect(quickDialog.classList).toContain('e-popup-open');
+        triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-edit-series'), 'click');
+        expect(quickDialog.classList).toContain('e-popup-close');
+        let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+        let saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+        saveButton.click();
+        schObj.dataBound = dataBound;
+    });
+
+    it('CRUD delete actions checking', (done: Function) => {
+        let dataBound: (args: Object) => void = (args: Object) => {
+            expect(schObj.eventsData.length).toEqual(9);
+            done();
+        };
+        let appElement: HTMLElement = schObj.element.querySelectorAll('[data-id ="Appointment_10"]')[1] as HTMLElement;
+        triggerMouseEvent(appElement, 'click');
+        triggerMouseEvent(appElement, 'dblclick');
+        expect(schObj.eventsData.length).toEqual(10);
+        let quickDialog: Element = document.querySelector('.e-quick-dialog');
+        expect(quickDialog.classList).toContain('e-popup-open');
+        triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-edit-series'), 'click');
+        expect(quickDialog.classList).toContain('e-popup-close');
+        let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+        let deleteButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_DELETE_BUTTON_CLASS);
+        deleteButton.click();
+        expect(quickDialog.classList).toContain('e-popup-open');
+        triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-delete'), 'click');
+        expect(quickDialog.classList).toContain('e-popup-close');
+        schObj.dataBound = dataBound;
+    });
 });
 
 describe('Vertical view resource grouping appointment rendering allowGroupEdit', () => {
     let schObj: Schedule;
-    let elem: HTMLElement = createElement('div', { id: 'Schedule' });
     beforeAll((done: Function) => {
-        let dataBound: EmitType<Object> = () => { done(); };
-        document.body.appendChild(elem);
-        schObj = new Schedule({
+        let schOptions: ScheduleModel = {
             height: '500px',
             selectedDate: new Date(2018, 3, 1),
             group: {
@@ -835,22 +878,78 @@ describe('Vertical view resource grouping appointment rendering allowGroupEdit',
                     ],
                     textField: 'OwnerText', idField: 'OwnerId', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
                 }
-            ],
-            eventSettings: { dataSource: resourceGroupData },
-            dataBound: dataBound
-        });
-        schObj.appendTo('#Schedule');
+            ]
+        };
+        schObj = util.createSchedule(schOptions, resourceGroupData, done);
     });
     afterAll(() => {
-        if (schObj) {
-            schObj.destroy();
-        }
-        remove(elem);
+        util.destroy(schObj);
     });
 
     it('Checking appointment element', () => {
         let appElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
         expect(appElement.length).toBeGreaterThan(0);
+    });
+
+    it('CRUD add actions checking', (done: Function) => {
+        schObj.dataBound = (args: Object) => {
+            expect(schObj.eventsData.length).toEqual(19);
+            expect((<{ [key: string]: Object }>schObj.eventsData[18]).Subject).toEqual('Add title');
+            expect((<{ [key: string]: Object }>schObj.eventsData[18]).Location).toEqual(undefined);
+            expect(schObj.element.querySelectorAll('[data-id ="Appointment_19"]').length).toEqual(3);
+            done();
+        };
+        let workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[430] as HTMLElement;
+        triggerMouseEvent(workCell, 'click');
+        triggerMouseEvent(workCell, 'dblclick');
+        expect(schObj.eventsData.length).toEqual(18);
+        let dialogElement: Element = schObj.eventWindow.dialogObject.element;
+        let endTimeObj: DateTimePicker = (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+        endTimeObj.value = new Date(2018, 3, 4, 11, 30);
+        endTimeObj.dataBind();
+        let resourceElements: NodeListOf<Element> = dialogElement.querySelectorAll('.e-multiselect.e-control');
+        let roomObj: MultiSelect = (resourceElements[0] as EJ2Instance).ej2_instances[0] as MultiSelect;
+        roomObj.value = [1, 2];
+        roomObj.dataBind();
+        let ownerObj: MultiSelect = (resourceElements[1] as EJ2Instance).ej2_instances[0] as MultiSelect;
+        ownerObj.value = [1, 2, 3];
+        ownerObj.dataBind();
+        (<HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS)).click();
+    });
+
+    it('CRUD edit actions checking', (done: Function) => {
+        schObj.dataBound = (args: Object) => {
+            expect(schObj.eventsData.length).toEqual(19);
+            expect((<{ [key: string]: Object }>schObj.eventsData[18]).Subject).toEqual('Testing');
+            expect((<{ [key: string]: Object }>schObj.eventsData[18]).Location).toEqual('Paris');
+            expect(schObj.element.querySelectorAll('[data-id ="Appointment_19"]').length).toEqual(3);
+            done();
+        };
+        let appElement: HTMLElement = schObj.element.querySelectorAll('[data-id ="Appointment_19"]')[1] as HTMLElement;
+        triggerMouseEvent(appElement, 'click');
+        triggerMouseEvent(appElement, 'dblclick');
+        expect(schObj.eventsData.length).toEqual(19);
+        let dialogElement: Element = schObj.eventWindow.dialogObject.element;
+        (dialogElement.querySelector('.e-subject') as HTMLInputElement).value = 'Testing';
+        (dialogElement.querySelector('.e-location') as HTMLInputElement).value = 'Paris';
+        (<HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS)).click();
+    });
+
+    it('CRUD delete actions checking', (done: Function) => {
+        schObj.dataBound = (args: Object) => {
+            expect(schObj.eventsData.length).toEqual(18);
+            expect(schObj.element.querySelectorAll('[data-id ="Appointment_19"]').length).toEqual(0);
+            done();
+        };
+        let appElement: HTMLElement = schObj.element.querySelectorAll('[data-id ="Appointment_19"]')[1] as HTMLElement;
+        triggerMouseEvent(appElement, 'click');
+        triggerMouseEvent(appElement, 'dblclick');
+        expect(schObj.eventsData.length).toEqual(19);
+        (schObj.eventWindow.dialogObject.element.querySelector('.' + cls.EVENT_WINDOW_DELETE_BUTTON_CLASS) as HTMLInputElement).click();
+        let quickDialog: Element = document.querySelector('.e-quick-dialog');
+        expect(quickDialog.classList).toContain('e-popup-open');
+        triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-delete'), 'click');
+        expect(quickDialog.classList).toContain('e-popup-close');
     });
 });
 

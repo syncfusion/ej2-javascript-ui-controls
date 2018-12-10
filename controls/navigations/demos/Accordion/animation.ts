@@ -12,7 +12,7 @@ import { Accordion, AccordionClickArgs, ExpandEventArgs } from '../../src/accord
         expanded: expanded,
         expanding: expanding,
         items : [
-            { header: 'What is React?', content: ctn1, iconCss: 'e-react e-icons'},
+            { header: 'What is React?', content: ctn1, iconCss: 'e-athletics e-acrdn-icons'},
             { header: 'What is TypeScript?', content: ctn, expanded: true },
             { header: 'What is Angular?' , content: ctn2, expanded: true  }
           ]

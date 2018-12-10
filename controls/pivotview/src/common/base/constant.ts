@@ -32,11 +32,28 @@ export const queryCellInfo: string = 'queryCellInfo';
 /** @hidden */
 export const headerCellInfo: string = 'headerCellInfo';
 /** @hidden */
+export const hyperlinkCellClick: string = 'hyperlinkCellClick';
+/** @hidden */
 export const resizing: string = 'resizing';
 /** @hidden */
 export const resizeStop: string = 'resizeStop';
 /** @hidden */
 export const cellClick: string = 'cellClick';
+/** @hidden */
+export const drillThrough: string = 'drillThrough';
+/** @hidden */
+export const beforeColumnsRender: string = 'beforeColumnsRender';
+/** @hidden */
+export const selected: string = 'selected';
+/** @hidden */
+export const cellSelected: string = 'cellSelected';
+/** @hidden */
+export const cellDeselected: string = 'cellDeselected';
+/** @hidden */
+export const rowSelected: string = 'rowSelected';
+/** @hidden */
+export const rowDeselected: string = 'rowDeselected';
+
 
 /** 
  * Specifies pivot internal events

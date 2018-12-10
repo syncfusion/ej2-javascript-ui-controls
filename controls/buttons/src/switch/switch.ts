@@ -28,6 +28,8 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
     private tagName: string;
     private isKeyPressed: boolean = false;
     private isDrag: boolean = false;
+    private delegateMouseUpHandler: Function;
+    private delegateKeyDownHandler: Function;
     /**
      * Triggers when Switch state has been changed by user interaction.
      * @event
@@ -352,11 +354,13 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
     private wireEvents(): void {
         let wrapper: Element = this.getWrapper();
         let handle: Element = wrapper.querySelector('.e-switch-handle');
+        this.delegateMouseUpHandler = this.switchMouseUp.bind(this);
+        this.delegateKeyDownHandler = this.switchFocusHandler.bind(this);
         EventHandler.add(wrapper, 'click', this.clickHandler, this);
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
-        EventHandler.add(document, 'mouseup', this.switchMouseUp, this);
-        EventHandler.add(document, 'keydown', this.switchFocusHandler, this);
+        EventHandler.add(document, 'mouseup', this.delegateMouseUpHandler, this);
+        EventHandler.add(document, 'keydown', this.delegateKeyDownHandler, this);
         EventHandler.add(wrapper, 'mousedown mouseup', this.rippleHandler, this);
         EventHandler.add(wrapper, 'touchstart touchmove touchend', this.switchMouseUp, this);
     }
@@ -366,8 +370,8 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         EventHandler.remove(wrapper, 'click', this.clickHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
-        EventHandler.remove(document, 'mouseup', this.switchMouseUp);
-        EventHandler.remove(document, 'keydown', this.switchFocusHandler);
+        EventHandler.remove(document, 'mouseup', this.delegateMouseUpHandler);
+        EventHandler.remove(document, 'keydown', this.delegateKeyDownHandler);
         EventHandler.remove(wrapper, 'mousedown mouseup', this.rippleHandler);
         EventHandler.remove(wrapper, 'touchstart touchmove touchend', this.switchMouseUp);
     }

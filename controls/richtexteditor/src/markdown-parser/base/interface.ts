@@ -102,6 +102,8 @@ export interface IMarkdownItemArgs {
     target?: string;
     width?: number | string;
     height?: number | string;
+    headingText?: string;
+    colText?: string;
 }
 /**
  * Specifies IMDKeyboardEvent interfaces.

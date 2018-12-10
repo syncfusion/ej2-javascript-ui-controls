@@ -1,23 +1,290 @@
-// /**
-//  * Grid PDF Export spec document
-//  */
-// /* tslint:disable */
-// import { EmitType, EventHandler } from '@syncfusion/ej2-base';
-// import { extend } from '@syncfusion/ej2-base';
-// import { createElement, remove } from '@syncfusion/ej2-base';
-// import { Grid } from '../../../src/grid/base/grid';
-// import { Page } from '../../../src/grid/actions/page';
-// import { Selection } from '../../../src/grid/actions/selection';
-// import { Group } from '../../../src/grid/actions/group';
-// import { Toolbar } from '../../../src/grid/actions/toolbar';
-// import { ItemModel } from '@syncfusion/ej2-navigations';
-// import { data, image, rData, employeeData } from '../base/datasource.spec';
-// import '../../../node_modules/es6-promise/dist/es6-promise';
-// import { PdfExport } from '../../../src/grid/actions/pdf-export';
-// import { DataManager, Query, ODataV4Adaptor } from '@syncfusion/ej2-data';
-// import { QueryCellInfoEventArgs, PdfExportProperties } from '../../../src/grid/base/interface';
-// import { createGrid, destroy, getKeyUpObj, getClickObj, getKeyActionObj } from '../base/specutil.spec';
-// Grid.Inject(Page, Group, Selection, Toolbar, PdfExport);
+/**
+ * Grid PDF Export spec document
+ */
+/* tslint:disable */
+import { Grid } from '../../../src/grid/base/grid';
+import { Page } from '../../../src/grid/actions/page';
+import { Selection } from '../../../src/grid/actions/selection';
+import { Group } from '../../../src/grid/actions/group';
+import { Toolbar } from '../../../src/grid/actions/toolbar';
+import { DetailRow } from '../../../src/grid/actions/detail-row';
+import { ForeignKey } from '../../../src/grid/actions/foreign-key';
+import { data, employeeData, customerData } from '../base/datasource.spec';
+import '../../../node_modules/es6-promise/dist/es6-promise';
+import { PdfExport } from '../../../src/grid/actions/pdf-export';
+import { createGrid, destroy} from '../base/specutil.spec';
+import { HierarchyGridPrintMode } from '../../../src/grid/base/enum';
+import { PdfDocument, PdfGrid, PdfStandardFont, PdfFontFamily, PdfFontStyle } from '@syncfusion/ej2-pdf-export';
+import { DataManager } from '@syncfusion/ej2-data';
+
+Grid.Inject(Page, Group, Selection, Toolbar, PdfExport, DetailRow, ForeignKey);
+
+describe('pdf Export =>', () => {
+    let exportComplete: () => void = () => true;
+    describe('Single Grid Pdf Export =>', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData,
+                    allowPdfExport: true,
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'FirstName', headerText: 'Name', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 180 },
+                        { field: 'City', headerText: 'city', width: 110 },
+                        { field: 'Country', headerText: 'Country', width: 110 }
+                    ],
+                    pdfExportComplete: exportComplete,
+                    beforePdfExport: (args: any) => {
+                        gridObj.beforePdfExport = undefined;
+                        args.cancel = true;
+                    }
+                }, done);
+        });
+
+        it("Export cancel Check", (done: Function) => {
+            gridObj.pdfExport().then((doc) => {
+                expect(doc).toBeUndefined();
+                done();
+            });
+        });
+
+        it('grid exporting(Check with multiple exporting)', (done) => {
+            spyOn(gridObj, 'pdfExportComplete');
+            gridObj.pdfExport({}, true).then((pdfDoc: PdfDocument) => {
+                expect(gridObj.pdfExportComplete).toHaveBeenCalled();
+                expect(pdfDoc instanceof PdfDocument).toBeTruthy();
+                done();
+            });     
+        });
+        
+        it('Pdf grid Check column length', () => {
+            let pdfGrid: PdfGrid = (<any>gridObj.pdfExportModule).processGridExport(gridObj, {result: gridObj.dataSource } ,{});
+            expect(pdfGrid.columns.count).toBe(5);
+            expect(pdfGrid.rows.count).toBe((<any>gridObj.dataSource).length);
+            expect((<any>pdfGrid.headers).rows.length).toBe(1);
+        });
+
+        it("hide a column", (done) => {
+            gridObj.dataBound = () => {
+                expect(gridObj.getVisibleColumns().length).toBe(4);
+                gridObj.dataBound = null;
+                done();
+            }
+            gridObj.hideColumns('Title');
+        });
+
+        it('visibility check', () => {
+            let pdfGrid: PdfGrid = (<any>gridObj.pdfExportModule).processGridExport(gridObj, {result: gridObj.dataSource } ,{});
+            expect(pdfGrid.columns.count).toBe(4);
+        });
+
+        it('visibility check include hidden column', () => {
+            let pdfGrid: PdfGrid = (<any>gridObj.pdfExportModule).processGridExport(gridObj, {result: gridObj.dataSource } , {includeHiddenColumn: true});
+            expect(pdfGrid.columns.count).toBe(5);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('Stacked Header Grid Pdf Export =>', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPdfExport: true,
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', dataSource: employeeData, foreignKeyValue: 'FirstName', width: 120 },
+                        {
+                            headerText: 'Order Details', columns: [
+                                { field: 'OrderDate', headerText: 'Order Date', textAlign: 'Right', width: 135, format: 'yMd' },
+                                { field: 'Freight', headerText: 'Freight($)', textAlign: 'Right', width: 120, format: 'C2' },
+                            ]
+                        },
+                        {
+                            headerText: 'Ship Details', columns: [
+                                { field: 'ShippedDate', headerText: 'Shipped Date', textAlign: 'Right', width: 145, format: 'yMd' },
+                                { field: 'ShipCountry', headerText: 'Ship Country', width: 140 },
+                            ]
+                        }
+                    ],
+                    pdfExportComplete: exportComplete,
+                }, done);
+        });
+        it('grid exporting(Check with multiple exporting)', (done) => {
+            gridObj.pdfExport({dataSource: data}, true).then((pdfDoc: PdfDocument) => {
+                expect(pdfDoc instanceof PdfDocument).toBeTruthy();
+                done();
+            });     
+        });
+        it('Pdf grid header length', () => {
+            let pdfGrid: PdfGrid = (<any>gridObj.pdfExportModule).processGridExport(gridObj, {result: gridObj.dataSource } ,{});
+            expect(pdfGrid.columns.count).toBe(5);
+            expect(pdfGrid.rows.count).toBe((<any>gridObj.dataSource).length);
+            expect((<any>pdfGrid.headers).rows.length).toBe(2);
+            expect((<any>pdfGrid.headers).rows[0].gridCells.cells.length).toBe(5);
+            expect((<any>pdfGrid.headers).rows[0].gridCells.cells[0].rowSpan).toBe(2);
+            expect((<any>pdfGrid.headers).rows[0].gridCells.cells[1].columnSpan).toBe(2);
+            expect((<any>pdfGrid.headers).rows[1].gridCells.cells.length).toBe(5);
+        });
+
+        it("hide a column", (done) => {
+            gridObj.dataBound = () => {
+                expect(gridObj.getVisibleColumns().length).toBe(4);
+                gridObj.dataBound = null;
+                done();
+            }
+            gridObj.hideColumns('Freight', 'field');
+        });
+        it('stacked header visibility check', () => {
+            let pdfGrid: PdfGrid = (<any>gridObj.pdfExportModule).processGridExport(gridObj, {result: gridObj.dataSource } ,{});
+            expect((<any>pdfGrid.headers).rows[0].gridCells.cells.length).toBe(4);
+            expect((<any>pdfGrid.headers).rows[1].gridCells.cells.length).toBe(4);
+        });
+
+        it('stacked header visibility check for include hidden column', () => {
+            let pdfGrid: PdfGrid = (<any>gridObj.pdfExportModule).processGridExport(gridObj, {result: gridObj.dataSource } , {includeHiddenColumn: true});
+            expect((<any>pdfGrid.headers).rows[0].gridCells.cells.length).toBe(5);
+            expect((<any>pdfGrid.headers).rows[1].gridCells.cells.length).toBe(5);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('Custom font in Grid Pdf Export =>', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData,
+                    allowPdfExport: true,
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'FirstName', headerText: 'Name', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 180 },
+                        { field: 'City', headerText: 'city', width: 110 },
+                        { field: 'Country', headerText: 'Country', width: 110 }
+                    ],
+                    pdfExportComplete: exportComplete,
+                }, done);
+        });
+        it('grid exporting(Check with multiple exporting)', (done) => {
+            gridObj.pdfExport({dataSource: new DataManager(data)}, true).then((pdfDoc: PdfDocument) => {
+                expect(pdfDoc instanceof PdfDocument).toBeTruthy();
+                done();
+            });     
+        });
+        it('Pdf grid Check column length', () => {
+            let pdfGrid: PdfGrid = (<any>gridObj.pdfExportModule).processGridExport(gridObj, {result: gridObj.dataSource }, {
+                theme: {
+                    header: { font: new PdfStandardFont(PdfFontFamily.TimesRoman, 10, PdfFontStyle.Italic) },
+                    caption: { font: new PdfStandardFont(PdfFontFamily.TimesRoman, 11, PdfFontStyle.Italic) },
+                    record: { font: new PdfStandardFont(PdfFontFamily.TimesRoman, 12, PdfFontStyle.Regular) }
+                },
+            });
+            expect((<any>pdfGrid.headers).rows[0].style.font.fontSize).toBe(10);
+            expect((<any>pdfGrid.headers).rows[0].style.font.fontStyle).toBe(PdfFontStyle.Italic);
+            expect((<any>pdfGrid.headers).rows[0].style.font.fontFamily).toBe(PdfFontFamily.TimesRoman);
+            expect((pdfGrid.rows as any).rows[0].style.font.fontFamily).toBe(PdfFontFamily.TimesRoman);
+            expect((pdfGrid.rows as any).rows[0].style.font.fontSize).toBe(12);
+            expect((pdfGrid.rows as any).rows[0].style.font.fontStyle).toBe(PdfFontStyle.Regular);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('Hierarchy pdf export => ', () => {
+        let gridObj: Grid;
+        let exportedMode: HierarchyGridPrintMode = 'Expanded';
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData,
+                    allowSorting: true,
+                    allowFiltering: true,
+                    allowGrouping: true,
+                    allowPaging: true,
+                    pageSettings: {pageSize: 4},
+                    allowPdfExport: true,
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'FirstName', headerText: 'Name', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 180 },
+                        { field: 'City', headerText: 'city', width: 110 },
+                        { field: 'Country', headerText: 'Country', width: 110 }
+                    ],
+                    childGrid: {
+                        dataSource: data,
+                        queryString: 'EmployeeID',
+                        columns: [
+                            { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                            { field: 'ShipCity', headerText: 'Ship City', width: 120 },
+                            { field: 'Freight', headerText: 'Freight', width: 120 },
+                            { field: 'ShipName', headerText: 'Ship Name', width: 150 }
+                        ],
+                        childGrid: {
+                            dataSource: customerData,
+                            queryString: 'CustomerID',
+                            columns: [
+                                { field: 'CustomerID', headerText: 'Customer ID', textAlign: 'Right', width: 75 },
+                                { field: 'Phone', headerText: 'Phone', width: 100 },
+                                { field: 'Address', headerText: 'Address', width: 120 },
+                                { field: 'Country', headerText: 'Country', width: 100 }
+                            ]
+                        }
+                    },
+                    pdfExportComplete: exportComplete,
+                }, done);
+        });
+        it('grid exporting(Check with multiple exporting)', (done) => {
+            gridObj.pdfExport({}, true).then((pdfDoc: PdfDocument) => {
+                expect(pdfDoc instanceof PdfDocument).toBeTruthy();
+                done();
+            });     
+        });
+        it('Expand a detail row', (done) => {
+            gridObj.childGrid.dataBound = () => {
+                expect(gridObj.getRowsObject().filter((row: any) => row.isExpand && !row.isDetailRow).length).toBe(1);
+                done();
+            }
+            gridObj.detailRowModule.expand(0);
+        });
+
+        it('Hierarchy grid exporting', (done) => {
+            gridObj.pdfExport({}, true).then((doc) => {
+                expect(doc).not.toBeUndefined();
+                done();
+            });
+        });
+
+        it('Hierarchy grid exporting', (done) => {
+            gridObj.pdfExport({hierarchyExportMode: 'All'}, true).then((doc) => {
+                expect(doc).not.toBeUndefined();
+                done();
+            });
+        });
+
+        it('Hierarchy grid exporting', (done) => {
+            gridObj.pdfExport({hierarchyExportMode: 'None'}, true).then((doc) => {
+                expect(doc).not.toBeUndefined();
+                done();
+            });
+        });
+    
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+});
+
 
 
 // describe('Blob data pdf export => ', () => {

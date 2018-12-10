@@ -18,6 +18,7 @@ import { dragComplete } from '../../common/model/constants';
 import { BaseSelection } from '../../common/user-interaction/selection';
 /**
  * `Selection` module handles the selection for chart.
+ * @private
  */
 export class Selection extends BaseSelection {
 
@@ -53,7 +54,7 @@ export class Selection extends BaseSelection {
      * Binding events for selection module.
      */
     private addEventListener(): void {
-        if (this.chart.isDestroyed) { return; }
+        if (this.chart.isDestroyed || (this.chart.stockChart && this.chart.stockChart.onPanning)) { return; }
         let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         this.chart.on(Browser.touchMoveEvent, this.mouseMove, this);
         this.chart.on(cancelEvent, this.completeSelection, this);

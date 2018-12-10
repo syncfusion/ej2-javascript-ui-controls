@@ -33,6 +33,13 @@ describe('Data Label checking for the pie doughnut series', () => {
     let i: number = 0;
     let j: number = 0;
     let overlap: boolean;
+    let variousPie: Object[] = [
+        { y: 18, x: 1, name: 'Bald Eagle', text: 'Bald Eagle : 18', radius: '50%' }, { y: 23, x: 2, name: 'Bison', text: 'Bison : 23', radius: '60%'  },
+        { y: 30, x: 3, name: 'Brown Bear', text: 'Brown Bear : 30', radius: '70%' }, { y: 44, x: 4, name: 'Elk', text: 'Elk : 44', radius: '100%' },
+        { y: 52, x: 5, name: 'Pronghorn', text: 'Pronghorn : 52', radius:'80%' }, { y: 62, x: 6, name: 'Turkey', text: 'Turkey : 62', radius:'80%' },
+        { y: 74, x: 7, name: 'Alligator', text: 'Alligator : 74', radius:'80%' }, { y: 85, x: 8, name: 'Prairie Dog', text: 'Prairie Dog : 85', radius:'80%' },
+        { y: 96, x: 9, name: 'Mountain Lion', text: 'Mountain Lion : 96', radius:'80%' }, { y: 102, x: 10, name: 'Beaver', text: 'Beaver : 102', radius:'80%' }
+    ];
     let accumulation: AccumulationChart; let points: AccPoints[];
     let trigger: MouseEvents = new MouseEvents();
     beforeAll((): void => {
@@ -181,7 +188,7 @@ describe('Data Label checking for the pie doughnut series', () => {
         trigger.mousemoveEvent(datalabel, 0, 0, 530, 210);
         let tooltip: Element = getElement('ej2container_EJ2_Datalabel_Tooltip');
         expect(tooltip).not.toBe(null);
-        expect(tooltip.textContent).toBe('Pronghorn : 52');      
+        expect(tooltip.textContent).toBe('Pronghorn : 52');
         datalabel = getElement(labelId + 0);
         trigger.mousemoveEvent(datalabel, 0, 0, 400, 70);
         expect(getElement('ej2container_EJ2_Datalabel_Tooltip')).toBe(null);
@@ -378,6 +385,109 @@ describe('Data Label checking for the pie doughnut series', () => {
         };
         accumulation.series[0].dataLabel.template = '#template1';
         accumulation.series[0].animation.enable = true;
+        accumulation.refresh();
+    });
+    it('Pie series Datalabel count with radius mapping(Datalabel inside)', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs): void => {
+            let element: HTMLElement = document.getElementById('ej2container_datalabel_Series_0');
+            expect(element.childElementCount == 10).toBe(true);
+            done();
+        };
+        accumulation.series[0].dataLabel = {
+            visible : true, position : 'Inside'
+        };
+        accumulation.series[0].dataSource = variousPie;
+        accumulation.series[0].radius = 'radius';
+        accumulation.enableSmartLabels = false;
+        accumulation.refresh();
+    });
+    it('Donut series Datalabel count with radius mapping(Datalabel inside)', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs): void => {
+            let element: HTMLElement = document.getElementById('ej2container_datalabel_Series_0');
+            expect(element.childElementCount == 10).toBe(true);
+            done();
+        };
+        accumulation.series[0].dataLabel = {
+            visible : true, position : 'Inside'
+        };
+        accumulation.series[0].dataSource = piedata;
+        accumulation.series[0].radius = 'radius';
+        accumulation.series[0].innerRadius = '30%';
+        accumulation.enableSmartLabels = false;
+        accumulation.refresh();
+    });
+    it('Pie series Datalabel count with radius mapping(Datalabel outside)', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs): void => {
+            let element: HTMLElement = document.getElementById('ej2container_datalabel_Series_0');
+            expect(element.childElementCount == 10).toBe(true);
+            done();
+        };
+        accumulation.series[0].dataLabel = {
+            visible : true, position : 'Outside'
+        };
+        accumulation.series[0].dataSource = piedata;
+        accumulation.series[0].radius = 'radius';
+        accumulation.enableSmartLabels = false;
+        accumulation.refresh();
+    });
+    it('Donut series Datalabel count with radius mapping(Datalabel outside)', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs): void => {
+            let element: HTMLElement = document.getElementById('ej2container_datalabel_Series_0');
+            expect(element.childElementCount == 10).toBe(true);
+            done();
+        };
+        accumulation.series[0].dataLabel = {
+            visible : true, position : 'Outside'
+        };
+        accumulation.series[0].dataSource = variousPie;
+        accumulation.series[0].radius = 'radius';
+        accumulation.series[0].innerRadius = '30%';
+        accumulation.enableSmartLabels = false;
+        accumulation.refresh();
+    });
+    it('Pie series smart label with radius mapping(Datalabel outside)', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs): void => {
+            let element: HTMLElement = document.getElementById('ej2container_datalabel_Series_0');
+            expect(element.childElementCount == 9).toBe(true);
+            console.log('pie smart labels count :' + element.childElementCount);
+            done();
+        };
+        accumulation.series[0].dataLabel = {
+            visible : true, position : 'Outside'
+        };
+        accumulation.series[0].dataSource = variousPie;
+        accumulation.series[0].radius = 'radius';
+        accumulation.enableSmartLabels = true;
+        accumulation.refresh();
+    });
+    it('Donut series smart label with radius mapping(Datalabel outside)', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs): void => {
+            let element: HTMLElement = document.getElementById('ej2container_datalabel_Series_0');
+            expect(element.childElementCount == 9).toBe(true);
+            console.log('donut smart labels count :' + element.childElementCount);
+            done();
+        };
+        accumulation.series[0].dataLabel = {
+            visible : true, position : 'Outside'
+        };
+        accumulation.series[0].dataSource = variousPie;
+        accumulation.series[0].radius = 'radius';
+        accumulation.series[0].innerRadius = '30%';
+        accumulation.enableSmartLabels = true;
+        accumulation.refresh();
+    });
+    it('Datalabel bounds check with radius mapping', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            points = accumulation.visibleSeries[0].points;
+            expect(withInBounds(
+                points[0].labelRegion.x, points[0].labelRegion.y, accumulation.visibleSeries[0].accumulationBound,
+                points[0].labelRegion.width, points[0].labelRegion.height)).toBe(true);
+            done();
+        };
+        accumulation.series[0].dataSource = variousPie;
+        accumulation.series[0].dataLabel.position = 'Inside';
+        accumulation.series[0].radius = 'radius';
+        accumulation.series[0].innerRadius = '30%';
         accumulation.refresh();
     });
 

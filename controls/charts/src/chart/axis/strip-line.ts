@@ -7,7 +7,7 @@ import { Axis } from '../axis/axis';
 import { StripLineSettingsModel } from '../model/chart-base-model';
 import {
     Rect, TextOption, measureText, valueToCoefficient, textElement, RectOption,
-    Size, PathOption, appendChildElement, appendClipElement, withIn
+    Size, PathOption, appendChildElement, appendClipElement, withIn, getElement
 } from '../../common/utils/helper';
 import { ZIndex, Anchor, sizeType } from '../utils/enum';
 /**
@@ -149,7 +149,7 @@ export class StripLine {
     public renderStripLine(chart: Chart, position: ZIndex, axes: Axis[]): void {
         let id: string = chart.element.id + '_stripline_' + position + '_';
         let seriesClipRect: Rect = chart.chartAxisLayoutPanel.seriesClipRect;
-        let count: number = 0; let end: number = 0;
+        let end: number = 0;
         let limit: number = 0; let startValue: number = 0;
         let segmentAxis: Axis = null; let range: boolean;
         let options: RectOption = new RectOption(
@@ -168,6 +168,7 @@ export class StripLine {
             appendClipElement(chart.redraw, options, chart.renderer)
         );
         for (let axis of axes) {
+            let count: number = 0;
             for (let stripline of axis.stripLines) {
                 if (stripline.visible && stripline.zIndex === position) {
                     if (stripline.isSegmented && stripline.segmentStart != null && stripline.segmentEnd != null &&
@@ -219,15 +220,19 @@ export class StripLine {
     private renderPath(
         stripline: StripLineSettingsModel, rect: Rect, id: string, parent: Element, chart: Chart, axis: Axis
     ): void {
-
+        let element: Element = getElement(id);
+        let direction: string = element ? element.getAttribute('d') : '';
         let d: string = (axis.orientation === 'Vertical') ? ('M' + rect.x + ' ' + rect.y + ' ' + 'L' + (rect.x + rect.width)
             + ' ' + rect.y) :
             ('M' + rect.x + ' ' + rect.y + ' ' + 'L' + rect.x + ' ' + (rect.y + rect.height));
-        parent.appendChild(chart.renderer.drawPath(
-            new PathOption(
-                id, '', stripline.size, stripline.color, stripline.opacity, stripline.dashArray, d
-            )
-        ));
+        appendChildElement(
+            parent, chart.renderer.drawPath(
+                new PathOption(
+                    id, '', stripline.size, stripline.color, stripline.opacity, stripline.dashArray, d
+                )
+            ),
+            chart.redraw, true, 'x', 'y', null, direction, true
+        );
     };
     /**
      * To draw the rectangle
@@ -240,9 +245,20 @@ export class StripLine {
     private renderRectangle(
         stripline: StripLineSettingsModel, rect: Rect, id: string, parent: Element, chart: Chart
     ): void {
-        parent.appendChild(chart.renderer.drawRectangle(
-            new RectOption(id, stripline.color, stripline.border, stripline.opacity, rect, 0, 0, '', stripline.dashArray)
-        ));
+        let element: Element = getElement(id);
+        let previousRect: Rect = element ? new Rect(
+            +element.getAttribute('x'), +element.getAttribute('y'),
+            +element.getAttribute('width'), +element.getAttribute('height')
+        ) : null;
+        appendChildElement(
+            parent, chart.renderer.drawRectangle(
+                new RectOption(
+                    id, stripline.color, stripline.border, stripline.opacity,
+                    rect, 0, 0, '', stripline.dashArray
+                )
+            ),
+            chart.redraw, true, 'x', 'y', null, null, true, true, previousRect
+        );
     }
     /**
      * To create the text on strip line
@@ -269,18 +285,30 @@ export class StripLine {
                 rect.width, stripline.horizontalAlignment
             );
             ty = this.getTextStart(ty - textMid, rect.height, stripline.verticalAlignment);
-            anchor = stripline.horizontalAlignment;
+            anchor = this.invertAlignment(stripline.verticalAlignment);
+
         } else {
             tx = this.getTextStart(tx, rect.width, stripline.horizontalAlignment);
             ty = this.getTextStart(
                 ty + (textMid * this.factor(stripline.verticalAlignment)) - padding,
                 rect.height, stripline.verticalAlignment
             );
-            anchor = stripline.verticalAlignment;
+            anchor = stripline.horizontalAlignment;
         }
         textElement(
             new TextOption(id, tx, ty, anchor, stripline.text, 'rotate(' + rotation + ' ' + tx + ',' + ty + ')', 'middle'),
             stripline.textStyle, stripline.textStyle.color, parent);
+    }
+    private invertAlignment(anchor: Anchor): Anchor {
+        switch (anchor) {
+            case 'Start':
+                anchor = 'End';
+                break;
+            case 'End':
+                anchor = 'Start';
+                break;
+        }
+        return anchor;
     }
     /**
      * To find the next value of the recurrence strip line
@@ -335,14 +363,14 @@ export class StripLine {
     ): void {
         let rect: Rect = this.measureStripLine(axis, stripline, seriesClipRect, startValue, segmentAxis);
         if (stripline.sizeType === 'Pixel') {
-            this.renderPath(stripline, rect, id + 'path_' + count, striplineGroup, chart, axis);
+            this.renderPath(stripline, rect, id + 'path_' + axis.name + '_' + count, striplineGroup, chart, axis);
         } else {
             if (rect.height !== 0 && rect.width !== 0) {
-                this.renderRectangle(stripline, rect, id + 'rect_' + count, striplineGroup, chart);
+                this.renderRectangle(stripline, rect, id + 'rect_' + axis.name + '_' + count, striplineGroup, chart);
             }
         }
         if (stripline.text !== '') {
-            this.renderText(stripline, rect, id + 'text_' + count, striplineGroup, chart, axis);
+            this.renderText(stripline, rect, id + 'text_' + axis.name + '_' + count, striplineGroup, chart, axis);
         }
     }
     /**
@@ -381,12 +409,14 @@ export class StripLine {
     }
     /**
      * To get the module name for `StripLine`.
+     * @private
      */
     public getModuleName(): string {
         return 'StripLine';
     }
     /**
      * To destroy the `StripLine` module.
+     * @private
      */
     public destroy(): void {
         // destroy peform here

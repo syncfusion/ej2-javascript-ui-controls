@@ -1051,7 +1051,7 @@ describe('Tree Layout', () => {
         mouseEvents.clickEvent(diagramCanvas, 648, 127);
         let nodes: Node = diagram.nodes[0] as Node
         diagram.animationComplete = () => {
-            expect(Math.round(nodes.offsetX) === 545 && Math.round(nodes.offsetY) === 55).toBe(true);
+            expect(Math.round(nodes.offsetX) === 545 && Math.round(nodes.offsetY) === 57).toBe(true);
             done();
         };
 
@@ -1062,7 +1062,7 @@ describe('Tree Layout', () => {
         mouseEvents.clickEvent(diagramCanvas, 648, 127);
         let nodes: Node = diagram.nodes[0] as Node
         diagram.animationComplete = () => {
-            expect((Math.round(nodes.offsetX) === 625 || Math.round(nodes.offsetX) === 624) && Math.round(nodes.offsetY) === 40).toBe(true);
+            expect((Math.round(nodes.offsetX) === 625 || Math.round(nodes.offsetX) === 624) && Math.round(nodes.offsetY) === 42).toBe(true);
             done();
         };
     });
@@ -1331,11 +1331,11 @@ describe('Tree Layout', () => {
 
     it('Checking icons positioning based on orinetation', (done: Function) => {
         let nodes: Node = diagram.nodes[0] as Node;
-        expect(Math.ceil(nodes.wrapper.children[2].offsetX) === 625 && Math.ceil(nodes.wrapper.children[2].offsetY) === 54).toBe(true);
+        expect(Math.ceil(nodes.wrapper.children[2].offsetX) === 625 && Math.ceil(nodes.wrapper.children[2].offsetY) === 58).toBe(true);
         diagram.layout.orientation = 'BottomToTop'
         diagram.dataBind();
         let nodes1: Node = diagram.nodes[0] as Node;
-        expect(Math.ceil(nodes1.wrapper.children[2].offsetX) === 625 && Math.ceil(nodes1.wrapper.children[2].offsetY) === 203).toBe(true);
+        expect(Math.ceil(nodes1.wrapper.children[2].offsetX) === 625 && Math.ceil(nodes1.wrapper.children[2].offsetY) === 218).toBe(true);
         diagram.layout.orientation = 'LeftToRight'
         diagram.dataBind();
         let nodes2: Node = diagram.nodes[0] as Node;
@@ -1444,7 +1444,7 @@ describe('Tree Layout', () => {
         mouseEvents.clickEvent(diagramCanvas, 620, 54);
         mouseEvents.clickEvent(diagramCanvas, 648, 54);
         let nodes: Node = diagram1.nodes[1] as Node;
-        expect((Math.round(nodes.offsetX) == 625 || Math.round(nodes.offsetX) == 624) && Math.round(nodes.offsetY) == 109).toBe(true);
+        expect((Math.round(nodes.offsetX) == 625 || Math.round(nodes.offsetX) == 624) && Math.round(nodes.offsetY) == 116).toBe(true);
         done();
     });
 });
@@ -1706,7 +1706,7 @@ describe('Connector Update in Layout Issue', () => {
         let id = diagram.connectors[0].id;
         let x = document.getElementById(id).getAttribute('x');
         let y = document.getElementById(id).getAttribute('y');
-        expect(x == '433.5' && y == '72.5').toBe(true);
+        expect(x == '433.5' && y == '74.9').toBe(true);
         done();
     });
 });

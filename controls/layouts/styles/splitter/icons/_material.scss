@@ -1,0 +1,37 @@
+// sass-lint:disable-all
+@include export-module('splitter-material-icons') {
+    .e-splitter {
+        .e-split-bar {
+            .e-resize-handler:before {
+                content: "\e571";
+                font-family: 'e-icons';
+                font-size: $splitbar-icon-size;
+            }
+
+            &.e-split-bar-vertical {
+                .e-resize-handler:before {
+                    content: "\e573";
+                    font-family: 'e-icons';
+                }
+            }
+        }
+    }
+
+    .e-bigger {
+        .e-splitter {
+            .e-split-bar {
+                .e-resize-handler:before {
+                    font-size: $bigger-splitbar-icon-size;
+                }
+            }
+        }
+
+        &.e-splitter {
+            .e-split-bar {
+                .e-resize-handler:before {
+                    font-size: $bigger-splitbar-icon-size;
+                }
+            }
+        }
+    }
+}

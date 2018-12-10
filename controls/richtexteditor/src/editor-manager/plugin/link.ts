@@ -34,10 +34,12 @@ export class LinkCommand {
             let anchor: HTMLElement = createElement('a', {
                 className: 'e-rte-anchor', attrs: {
                     href: e.item.url,
-                    target: e.item.target,
                     title: e.item.title === '' ? e.item.url : e.item.title
                 }
             });
+            if (!isNullOrUndefined(e.item.target)) {
+                anchor.setAttribute('target', e.item.target);
+            }
             anchor.innerText = e.item.text === '' ? e.item.url : e.item.text;
             e.item.selection.restore();
             InsertHtml.Insert(this.parent.currentDocument, anchor);

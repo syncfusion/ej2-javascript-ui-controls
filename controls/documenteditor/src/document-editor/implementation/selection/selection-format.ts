@@ -1,7 +1,7 @@
 import { Selection } from './selection';
 import {
     TextAlignment, Underline, HighlightColor, BaselineAlignment, WidthType, Strikethrough, LineSpacingType,
-    CellVerticalAlignment, HeightType, TableAlignment
+    CellVerticalAlignment, HeightType, TableAlignment, BiDirectionalOverride
 } from '../../base/types';
 import {
     WSectionFormat, WCharacterFormat, WParagraphFormat, WTableFormat, WRowFormat, WCellFormat, WShading
@@ -34,6 +34,30 @@ export class SelectionCharacterFormat {
     private fontSizeIn: number = 0;
     private fontFamilyIn: string;
     private fontColorIn: string = undefined;
+    /**
+     * @private
+     */
+    public boldBidi: boolean = undefined;
+    /**
+     * @private
+     */
+    public italicBidi: boolean = undefined;
+    /**
+     * @private
+     */
+    public fontSizeBidi: number = 0;
+    /**
+     * @private
+     */
+    public fontFamilyBidi: string;
+    /**
+     * @private
+     */
+    public bidi: boolean = undefined;
+    /**
+     * @private
+     */
+    private bdo: BiDirectionalOverride = undefined;
     /**
      * @private
      */
@@ -155,6 +179,7 @@ export class SelectionCharacterFormat {
         this.highlightColorIn = value;
         this.notifyPropertyChanged('highlightColor');
     }
+
     /**
      * @private
      */
@@ -221,6 +246,12 @@ export class SelectionCharacterFormat {
         this.fontColor = format.fontColor;
         this.highlightColor = format.highlightColor;
         this.strikethrough = format.strikethrough;
+        this.bidi = format.bidi;
+        this.bdo = format.bdo;
+        this.boldBidi = format.boldBidi;
+        this.italicBidi = format.italicBidi;
+        this.fontFamilyBidi = format.fontFamilyBidi;
+        this.fontSizeBidi = format.fontSizeBidi;
     }
     /**
      * Combines the format.
@@ -255,6 +286,24 @@ export class SelectionCharacterFormat {
         if (!isNullOrUndefined(this.strikethrough) && this.strikethrough !== format.strikethrough) {
             this.strikethrough = undefined;
         }
+        if (!isNullOrUndefined(this.boldBidi) && this.boldBidi !== format.boldBidi) {
+            this.boldBidi = undefined;
+        }
+        if (!isNullOrUndefined(this.italicBidi) && this.italicBidi !== format.italicBidi) {
+            this.italicBidi = undefined;
+        }
+        if (this.fontSizeBidi !== 0 && this.fontSizeBidi !== format.fontSizeBidi) {
+            this.fontSizeBidi = 0;
+        }
+        if (!isNullOrUndefined(this.fontFamilyBidi) && this.fontFamilyBidi !== format.fontFamilyBidi) {
+            this.fontFamilyBidi = undefined;
+        }
+        if (!isNullOrUndefined(this.bidi) && this.bidi !== format.bidi) {
+            this.bidi = undefined;
+        }
+        if (!isNullOrUndefined(this.bdo) && this.bdo !== format.bdo) {
+            this.bdo = undefined;
+        }
     }
     /**
      * Clones the format.
@@ -273,6 +322,12 @@ export class SelectionCharacterFormat {
         this.fontFamily = selectionCharacterFormat.fontFamily;
         this.fontColor = selectionCharacterFormat.fontColor;
         this.styleName = selectionCharacterFormat.styleName;
+        this.bidi = selectionCharacterFormat.bidi;
+        this.bdo = selectionCharacterFormat.bdo;
+        this.boldBidi = selectionCharacterFormat.boldBidi;
+        this.italicBidi = selectionCharacterFormat.italicBidi;
+        this.fontSizeBidi = selectionCharacterFormat.fontSizeBidi;
+        this.fontFamilyBidi = selectionCharacterFormat.fontFamilyBidi;
     }
     /**
      * Checks whether current format is equal to the source format or not.
@@ -308,6 +363,12 @@ export class SelectionCharacterFormat {
         this.highlightColorIn = undefined;
         this.baselineAlignmentIn = undefined;
         this.styleName = undefined;
+        this.bidi = undefined;
+        this.bdo = undefined;
+        this.boldBidi = undefined;
+        this.italicBidi = undefined;
+        this.fontFamilyBidi = undefined;
+        this.fontSizeBidi = undefined;
     }
     /**
      * Destroys the maintained resources.
@@ -326,6 +387,12 @@ export class SelectionCharacterFormat {
         this.highlightColorIn = undefined;
         this.selection = undefined;
         this.styleName = undefined;
+        this.bidi = undefined;
+        this.bdo = undefined;
+        this.boldBidi = undefined;
+        this.italicBidi = undefined;
+        this.fontFamilyBidi = undefined;
+        this.fontSizeBidi = undefined;
     }
 }
 /**
@@ -343,6 +410,7 @@ export class SelectionParagraphFormat {
     private firstLineIndentIn: number = 0;
     private lineSpacingIn: number = 1;
     private lineSpacingTypeIn: LineSpacingType = undefined;
+    private bidiIn: boolean = undefined;
     /**
      * @private
      */
@@ -480,6 +548,16 @@ export class SelectionParagraphFormat {
         this.notifyPropertyChanged('listLevelNumber');
     }
     /**
+     * Gets or Sets the bidirectional property for selected paragraphs
+     */
+    get bidi(): boolean {
+        return this.bidiIn;
+    }
+    set bidi(value: boolean) {
+        this.bidiIn = value;
+        this.notifyPropertyChanged('bidi');
+    }
+    /**
      * Gets the list text for selected paragraphs.
      */
     get listText(): string {
@@ -531,6 +609,8 @@ export class SelectionParagraphFormat {
                 return this.lineSpacing;
             case 'lineSpacingType':
                 return this.lineSpacingType;
+            case 'bidi':
+                return this.bidi;
             default:
                 return undefined;
         }
@@ -575,6 +655,7 @@ export class SelectionParagraphFormat {
         this.lineSpacing = format.lineSpacing;
         this.lineSpacingType = format.lineSpacingType;
         this.textAlignment = format.textAlignment;
+        this.bidi = format.bidi;
         if (!isNullOrUndefined(format.listFormat) && !isNullOrUndefined(format.listFormat.listId)) {
             this.listId = format.listFormat.listId;
             this.listLevelNumber = format.listFormat.listLevelNumber;
@@ -617,6 +698,9 @@ export class SelectionParagraphFormat {
         if (!isNullOrUndefined(this.firstLineIndent)) {
             format.firstLineIndent = this.firstLineIndent;
         }
+        if (!isNullOrUndefined(this.bidi)) {
+            format.bidi = this.bidi;
+        }
     }
     /**
      * Combines the format.
@@ -656,6 +740,9 @@ export class SelectionParagraphFormat {
         if (isNullOrUndefined(format.listFormat) || isNullOrUndefined(format.listFormat.listId) || (!isNullOrUndefined(this.listId) && this.listId !== format.listFormat.listId)) {
             this.listId = undefined;
         }
+        if (!isNullOrUndefined(this.bidi) && this.bidi !== format.bidi) {
+            this.bidi = undefined;
+        }
     }
     /**
      * Clears the format.
@@ -674,6 +761,7 @@ export class SelectionParagraphFormat {
         this.listId = undefined;
         this.listLevelNumber = -1;
         this.styleName = undefined;
+        this.bidi = undefined;
     }
     /**
      * Gets the clone of list at current selection.
@@ -780,6 +868,7 @@ export class SelectionParagraphFormat {
         this.viewer = undefined;
         this.selection = undefined;
         this.styleName = undefined;
+        this.bidi = undefined;
     }
 }
 /**
@@ -797,6 +886,10 @@ export class SelectionSectionFormat {
     private topMarginIn: number;
     private rightMarginIn: number;
     private bottomMarginIn: number;
+    /**
+     * private
+     */
+    public bidi: boolean = undefined;
     /**
      * Gets or sets the page height.
      */
@@ -920,6 +1013,7 @@ export class SelectionSectionFormat {
         this.footerDistance = format.footerDistance;
         this.differentFirstPage = format.differentFirstPage;
         this.differentOddAndEvenPages = format.differentOddAndEvenPages;
+        this.bidi = format.bidi;
     }
     private notifyPropertyChanged(propertyName: string): void {
         let selection: Selection = this.selection;
@@ -1021,6 +1115,9 @@ export class SelectionSectionFormat {
         if (!isNullOrUndefined(this.differentOddAndEvenPages) && this.differentOddAndEvenPages !== format.differentOddAndEvenPages) {
             this.differentOddAndEvenPages = undefined;
         }
+        if (!isNullOrUndefined(this.bidi) && this.bidi !== format.bidi) {
+            this.bidi = undefined;
+        }
     }
     /**
      * Clears the format.
@@ -1038,6 +1135,7 @@ export class SelectionSectionFormat {
         this.bottomMargin = -1;
         this.differentFirstPage = undefined;
         this.differentOddAndEvenPages = undefined;
+        this.bidi = undefined;
     }
     /**
      * Destroys the managed resources.
@@ -1056,6 +1154,7 @@ export class SelectionSectionFormat {
         this.differentFirstPageIn = undefined;
         this.differentOddAndEvenPagesIn = undefined;
         this.selection = undefined;
+        this.bidi = undefined;
     }
 }
 /**
@@ -1074,6 +1173,7 @@ export class SelectionTableFormat {
     private bottomMarginIn: number = 0;
     private preferredWidthIn: number = 0;
     private preferredWidthTypeIn: WidthType;
+    private bidiIn: boolean = undefined;
     /**
      * Gets or sets the table.
      * @private
@@ -1225,6 +1325,16 @@ export class SelectionTableFormat {
         this.notifyPropertyChanged('preferredWidthType');
     }
     /**
+     * Gets or sets the bidi property
+     */
+    get bidi(): boolean {
+        return this.bidiIn;
+    }
+    set bidi(value: boolean) {
+        this.bidiIn = value;
+        this.notifyPropertyChanged('bidi');
+    }
+    /**
      * @private
      */
     constructor(selection: Selection) {
@@ -1254,6 +1364,8 @@ export class SelectionTableFormat {
                 return this.preferredWidth;
             case 'preferredWidthType':
                 return this.preferredWidthType;
+            case 'bidi':
+                return this.bidi;
             default:
                 return undefined;
         }
@@ -1291,6 +1403,7 @@ export class SelectionTableFormat {
         this.cellSpacing = format.cellSpacing;
         this.preferredWidth = format.preferredWidth;
         this.preferredWidthType = format.preferredWidthType;
+        this.bidi = format.bidi;
     }
     /**
      * Clears the format.
@@ -1308,6 +1421,7 @@ export class SelectionTableFormat {
         this.bottomMargin = 0;
         this.cellSpacing = 0;
         this.tableAlignment = undefined;
+        this.bidi = undefined;
     }
     /**
      * Destroys the managed resources.
@@ -1326,6 +1440,7 @@ export class SelectionTableFormat {
         this.tableAlignmentIn = undefined;
         this.tableIn = undefined;
         this.selection = undefined;
+        this.bidi = undefined;
     }
 }
 /**

@@ -29,6 +29,8 @@ import { DetailHeaderIndentCellRenderer } from '../renderer/detail-header-indent
 import { DetailExpandCellRenderer } from '../renderer/detail-expand-cell-renderer';
 import { AriaService } from '../services/aria-service';
 import { PredicateModel } from '../base/grid-model';
+import { RowDragDropRenderer } from './row-drag-drop-renderer';
+import { RowDragDropHeaderRenderer } from '../renderer/row-drag-header-indent-render';
 
 /**
  * Content module is used to render grid content
@@ -168,9 +170,9 @@ export class Render {
 
     private sendBulkRequest(args?: NotifyArgs): void {
         args.requestType = 'batchsave';
-        let promise: Promise<Object> = this.data.saveChanges((<{ changes?: Object }>args).changes,
-                                                             this.parent.getPrimaryKeyFieldNames()[0],
-                                                             (<{ original?: Object }>args).original);
+        let promise: Promise<Object> = this.data.saveChanges(
+            (<{ changes?: Object }>args).changes, this.parent.getPrimaryKeyFieldNames()[0],
+            (<{ original?: Object }>args).original);
         let query: Query = this.data.generateQuery().requiresCount();
         if (this.data.dataManager.dataSource.offline) {
             this.refreshDataManager({ requestType: 'batchsave' });
@@ -235,10 +237,18 @@ export class Render {
     private updateColumnType(record: Object): void {
         let columns: Column[] = this.parent.getColumns() as Column[];
         let value: Date;
+        let cFormat: string = 'customFormat';
+        let equalTo: string = 'equalTo';
         let data: Object = record && (<{ items: Object[] }>record).items ? (<{ items: Object[] }>record).items[0] : record;
         let fmtr: IValueFormatter = this.locator.getService<IValueFormatter>('valueFormatter');
         for (let i: number = 0, len: number = columns.length; i < len; i++) {
             value = getObject(columns[i].field || '', data);
+            if (!isNullOrUndefined(columns[i][cFormat])) {
+                columns[i].format = columns[i][cFormat];
+            }
+            if (!isNullOrUndefined(columns[i].validationRules) && !isNullOrUndefined(columns[i].validationRules[equalTo])) {
+                columns[i].validationRules[equalTo][0] = this.parent.element.id + columns[i].validationRules[equalTo][0];
+            }
             if (columns[i].isForeignColumn() && columns[i].columnData) {
                 value = getObject(columns[i].foreignKeyValue || '', columns[i].columnData[0]);
             }
@@ -269,6 +279,9 @@ export class Render {
     public dataManagerSuccess(e: ReturnType, args?: NotifyArgs): void {
         let gObj: IGrid = this.parent;
         gObj.trigger(events.beforeDataBound, e);
+        if ((<{ cancel?: boolean }>e).cancel) {
+            return;
+        }
         let len: number = Object.keys(e.result).length;
         if (this.parent.isDestroyed) { return; }
         if ((!gObj.getColumns().length && !len) && !(gObj.columns.length && gObj.columns[0] instanceof Column)) {
@@ -291,6 +304,10 @@ export class Render {
         if (!this.isColTypeDef && gObj.getCurrentViewRecords()) {
             this.updateColumnType(gObj.getCurrentViewRecords()[0]);
         }
+        if (!this.parent.isInitialLoad && this.parent.groupSettings.disablePageWiseAggregates &&
+            !this.parent.groupSettings.columns.length) {
+            e.result = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.currentViewData;
+        }
         this.parent.notify(events.dataReady, extend({ count: e.count, result: e.result, aggregates: e.aggregates }, args));
         if (gObj.groupSettings.columns.length || (args && args.requestType === 'ungrouping')) {
             this.headerRenderer.refreshUI();
@@ -305,6 +322,7 @@ export class Render {
             }
             this.contentRenderer.setRowElements([]);
             this.contentRenderer.setRowObjects([]);
+            this.ariaService.setBusy(<HTMLElement>this.parent.getContent().firstChild, false);
             this.renderEmptyRow();
             if (args) {
                 let action: string = (args.requestType || '').toLowerCase() + '-complete';
@@ -365,13 +383,16 @@ export class Render {
         cellrender.addCellRenderer(CellType.HeaderIndent, new HeaderIndentCellRenderer(this.parent, this.locator));
         cellrender.addCellRenderer(CellType.StackedHeader, new StackedHeaderCellRenderer(this.parent, this.locator));
         cellrender.addCellRenderer(CellType.DetailHeader, new DetailHeaderIndentCellRenderer(this.parent, this.locator));
+        cellrender.addCellRenderer(CellType.RowDragHIcon, new RowDragDropHeaderRenderer(this.parent, this.locator));
         cellrender.addCellRenderer(CellType.DetailExpand, new DetailExpandCellRenderer(this.parent, this.locator));
-
+        cellrender.addCellRenderer(CellType.DetailFooterIntent, new IndentCellRenderer(this.parent, this.locator));
+        cellrender.addCellRenderer(CellType.RowDragIcon, new RowDragDropRenderer(this.parent, this.locator));
     }
 
     private addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.on(events.initialLoad, this.instantiateRenderer, this);
+        this.parent.on('refreshdataSource', this.dataManagerSuccess, this);
         this.parent.on(events.modelChanged, this.refresh, this);
         this.parent.on(events.refreshComplete, this.refreshComplete, this);
         this.parent.on(events.bulkSave, this.sendBulkRequest, this);

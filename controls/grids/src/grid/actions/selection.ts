@@ -1,4 +1,4 @@
-import { Browser, EventHandler, MouseEventArgs } from '@syncfusion/ej2-base';
+import { Browser, EventHandler, MouseEventArgs, createElement } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, isUndefined, addClass, removeClass } from '@syncfusion/ej2-base';
 import { remove, closest, classList } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
@@ -21,7 +21,7 @@ import { iterateExtend } from '../base/util';
  * The `Selection` module is used to handle cell and row selection.
  */
 export class Selection implements IAction {
-    //Internal variables       
+    //Internal letiables       
     /**
      * @hidden
      */
@@ -42,18 +42,29 @@ export class Selection implements IAction {
      * @hidden
      */
     public isCellSelected: boolean;
+    /**
+     * @hidden
+     */
+    public preventFocus: boolean = false;
     private selectionSettings: SelectionSettings;
     private prevRowIndex: number;
     private prevCIdxs: IIndex;
     private prevECIdxs: IIndex;
-    private preventFocus: boolean = false;
     private selectedRowIndex: number;
     private isMultiShiftRequest: boolean = false;
     private isMultiCtrlRequest: boolean = false;
     private enableSelectMultiTouch: boolean = false;
     private element: HTMLElement;
+    private autofill: HTMLElement;
+    private isAutoFillSel: boolean;
+    private startCell: Element;
+    private endCell: Element;
+    private startAFCell: Element;
+    private endAFCell: Element;
     private startIndex: number;
     private startCellIndex: number;
+    private startDIndex: number;
+    private startDCellIndex: number;
     private currentIndex: number;
     private isDragged: boolean;
     private isCellDrag: boolean;
@@ -76,6 +87,16 @@ export class Selection implements IAction {
     private actionBeginFunction: Function;
     private actionCompleteFunction: Function;
     private actionCompleteFunc: Function;
+    private resizeEndFn: Function;
+    private mUPTarget: Element;
+    private bdrLeft: HTMLElement;
+    private bdrRight: HTMLElement;
+    private bdrTop: HTMLElement;
+    private bdrBottom: HTMLElement;
+    private bdrAFLeft: HTMLElement;
+    private bdrAFRight: HTMLElement;
+    private bdrAFTop: HTMLElement;
+    private bdrAFBottom: HTMLElement;
     //Module declarations
     private parent: IGrid;
     private focus: FocusStrategy;
@@ -149,7 +170,7 @@ export class Selection implements IAction {
     }
 
     private isEditing(): boolean {
-        return (this.parent.editSettings.mode === 'Normal' || (this.parent.editSettings.mode === 'Batch' && this.parent.editModule &&
+        return (this.parent.editSettings.mode === 'Normal' || (this.parent.editSettings.mode === 'Batch' &&
             this.parent.editModule.formObj && !this.parent.editModule.formObj.validate())) &&
             this.parent.isEdit && !this.parent.isPersistSelection;
     }
@@ -166,7 +187,7 @@ export class Selection implements IAction {
         let gObj: IGrid = this.parent;
         let added: string = 'addedRecords';
         let deleted: string = 'deletedRecords';
-        if (gObj.editSettings.mode === 'Batch' && gObj.editModule) {
+        if (gObj.editSettings.mode === 'Batch') {
             let currentRecords: Object[] = iterateExtend(this.parent.getCurrentViewRecords());
             currentRecords = this.parent.editModule.getBatchChanges()[added].concat(currentRecords);
             let deletedRecords: Object[] = this.parent.editModule.getBatchChanges()[deleted];
@@ -515,7 +536,9 @@ export class Selection implements IAction {
             let currentViewData: Object[] = this.parent.getCurrentViewRecords();
 
             for (let i: number = 0, len: number = this.selectedRowIndexes.length; i < len; i++) {
-                let currentRow: Element = this.parent.getDataRows()[this.selectedRowIndexes[i]];
+                let currentRow: Element = this.parent.editSettings.mode === 'Batch' ?
+                    this.parent.getRows()[this.selectedRowIndexes[i]]
+                    : this.parent.getDataRows()[this.selectedRowIndexes[i]];
                 let rowObj: Row<Column> = this.getRowObj(currentRow);
                 if (rowObj) {
                     data.push(rowObj.data);
@@ -557,8 +580,7 @@ export class Selection implements IAction {
         }
     }
 
-    private rowDeselect
-        (
+    private rowDeselect(
         type: string, rowIndex: number[], data: Object, row: Element[],
         foreignKeyData: Object[], target: Element, mRow?: Element[]): void {
         let cancl: string = 'cancel';
@@ -698,7 +720,7 @@ export class Selection implements IAction {
             endIndex = temp;
         }
         for (let i: number = startIndex.rowIndex; i <= endIndex.rowIndex; i++) {
-            if (this.selectionSettings.cellSelectionMode !== 'Box') {
+            if (this.selectionSettings.cellSelectionMode.indexOf('Box') < 0) {
                 min = i === startIndex.rowIndex ? (startIndex.cellIndex) : 0;
                 max = i === endIndex.rowIndex ? (endIndex.cellIndex) : this.getLastColIndex(i);
             } else {
@@ -812,6 +834,7 @@ export class Selection implements IAction {
         if (this.isSingleSel() || !this.isCellType() || this.isEditing()) {
             return;
         }
+        this.hideAutoFill();
         let rowObj: Row<Column>;
         if (frzCols && cellIndexes[0].cellIndex >= frzCols) {
             rowObj = gObj.getMovableRowsObject()[cellIndexes[0].rowIndex];
@@ -988,6 +1011,7 @@ export class Selection implements IAction {
             let selectedTable: NodeListOf<Element>;
             let frzCols: number = gObj.getFrozenColumns();
 
+            this.hideAutoFill();
             for (let i: number = 0, len: number = rowCell.length; i < len; i++) {
                 data.push(currentViewData[rowCell[i].rowIndex]);
                 let rowObj: Row<Column> = this.getRowObj(rowCell[i].rowIndex);
@@ -1068,21 +1092,297 @@ export class Selection implements IAction {
         if (target && !e.ctrlKey && !e.shiftKey) {
             let rowIndex: number = parseInt(target.getAttribute('aria-rowindex'), 10);
             if (!this.isCellDrag) {
-                this.selectRowsByRange(this.startIndex, rowIndex);
+                this.hideAutoFill();
+                this.selectRowsByRange(this.startDIndex, rowIndex);
             } else {
                 let td: Element = parentsUntil(e.target as HTMLElement, 'e-rowcell');
                 if (td) {
-                    this.selectLikeExcel(rowIndex, parseInt(td.getAttribute('aria-colindex'), 10));
+                    this.startAFCell = this.startCell;
+                    this.endAFCell = parentsUntil(e.target as Element, 'e-rowcell');
+                    this.selectLikeExcel(e, rowIndex, parseInt(td.getAttribute('aria-colindex'), 10));
                 }
             }
         }
     }
 
-    private selectLikeExcel(rowIndex: number, cellIndex: number): void {
-        this.clearCellSelection();
-        this.selectCellsByRange(
-            { rowIndex: this.startIndex, cellIndex: this.startCellIndex },
-            { rowIndex: rowIndex, cellIndex: cellIndex });
+    private selectLikeExcel(e: MouseEvent, rowIndex: number, cellIndex: number): void {
+        if (!this.isAutoFillSel) {
+            this.clearCellSelection();
+            this.selectCellsByRange(
+                { rowIndex: this.startDIndex, cellIndex: this.startDCellIndex },
+                { rowIndex: rowIndex, cellIndex: cellIndex });
+            this.drawBorders();
+        } else { //Autofill
+            this.showAFBorders();
+            this.selectLikeAutoFill(e);
+        }
+    }
+
+    private drawBorders(): void {
+        if (this.selectionSettings.cellSelectionMode === 'BoxWithBorder' && this.selectedRowCellIndexes.length && !this.parent.isEdit) {
+            if (!this.bdrBottom) {
+                this.createBorders();
+            }
+            this.positionBorders();
+        } else {
+            this.hideBorders();
+        }
+    }
+
+    private positionBorders(): void {
+        this.updateStartEndCells();
+        if (!this.startCell || !this.bdrLeft || !this.selectedRowCellIndexes.length) {
+            return;
+        }
+        this.showBorders();
+        let stOff: ClientRect = this.startCell.getBoundingClientRect();
+        let endOff: ClientRect = this.endCell.getBoundingClientRect();
+        let parentOff: ClientRect = (this.startCell as HTMLElement).offsetParent.getBoundingClientRect();
+        this.bdrLeft.style.left = stOff.left - parentOff.left + 'px';
+        this.bdrLeft.style.top = stOff.top - parentOff.top + 'px';
+        this.bdrLeft.style.height = endOff.top - stOff.top > 0 ?
+            (endOff.top - parentOff.top + endOff.height + 1) - (stOff.top - parentOff.top) + 'px' : endOff.height + 'px';
+
+        this.bdrRight.style.left = endOff.left - parentOff.left + endOff.width + 'px';
+        this.bdrRight.style.top = this.bdrLeft.style.top;
+        this.bdrRight.style.height = this.bdrLeft.style.height;
+
+        this.bdrTop.style.left = this.bdrLeft.style.left;
+        this.bdrTop.style.top = this.bdrRight.style.top;
+        this.bdrTop.style.width = parseInt(this.bdrRight.style.left, 10) - parseInt(this.bdrLeft.style.left, 10) + 1 + 'px';
+
+        this.bdrBottom.style.left = this.bdrLeft.style.left;
+        this.bdrBottom.style.top = parseInt(this.bdrLeft.style.top, 10) + parseInt(this.bdrLeft.style.height, 10) + 'px';
+        this.bdrBottom.style.width = this.bdrTop.style.width;
+    }
+
+    private createBorders(): void {
+        if (!this.bdrLeft) {
+            this.bdrLeft = this.parent.getContentTable().parentElement.appendChild(
+                createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrleft', styles: 'width: 2px;' }));
+            this.bdrRight = this.parent.getContentTable().parentElement.appendChild(
+                createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrright', styles: 'width: 2px;' }));
+            this.bdrBottom = this.parent.getContentTable().parentElement.appendChild(
+                createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrbottom', styles: 'height: 2px;' }));
+            this.bdrTop = this.parent.getContentTable().parentElement.appendChild(
+                createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrtop', styles: 'height: 2px;' }));
+        }
+    }
+
+    private showBorders(): void {
+        if (this.bdrLeft) {
+            this.bdrLeft.style.display = '';
+            this.bdrRight.style.display = '';
+            this.bdrBottom.style.display = '';
+            this.bdrTop.style.display = '';
+        }
+    }
+
+    private hideBorders(): void {
+        if (this.bdrLeft) {
+            this.bdrLeft.style.display = 'none';
+            this.bdrRight.style.display = 'none';
+            this.bdrBottom.style.display = 'none';
+            this.bdrTop.style.display = 'none';
+        }
+    }
+
+    private drawAFBorders(): void {
+        if (!this.bdrAFBottom) {
+            this.createAFBorders();
+        }
+        this.positionAFBorders();
+    }
+
+    private positionAFBorders(): void {
+        if (!this.startCell || !this.bdrAFLeft) {
+            return;
+        }
+        this.showBorders();
+        let stOff: ClientRect = this.startAFCell.getBoundingClientRect();
+        let endOff: ClientRect = this.endAFCell.getBoundingClientRect();
+        let parentOff: ClientRect = (this.startAFCell as HTMLElement).offsetParent.getBoundingClientRect();
+        this.bdrAFLeft.style.left = stOff.left - parentOff.left + 'px';
+        this.bdrAFLeft.style.top = stOff.top - parentOff.top + 'px';
+        this.bdrAFLeft.style.height = endOff.top - stOff.top > 0 ?
+            (endOff.top - parentOff.top + endOff.height + 1) - (stOff.top - parentOff.top) + 'px' : endOff.height + 'px';
+
+        this.bdrAFRight.style.left = endOff.left - parentOff.left + endOff.width + 'px';
+        this.bdrAFRight.style.top = this.bdrAFLeft.style.top;
+        this.bdrAFRight.style.height = this.bdrAFLeft.style.height;
+
+        this.bdrAFTop.style.left = this.bdrAFLeft.style.left;
+        this.bdrAFTop.style.top = this.bdrAFRight.style.top;
+        this.bdrAFTop.style.width = parseInt(this.bdrAFRight.style.left, 10) - parseInt(this.bdrAFLeft.style.left, 10) + 1 + 'px';
+
+        this.bdrAFBottom.style.left = this.bdrAFLeft.style.left;
+        this.bdrAFBottom.style.top = parseInt(this.bdrAFLeft.style.top, 10) + parseInt(this.bdrAFLeft.style.height, 10) + 'px';
+        this.bdrAFBottom.style.width = this.bdrAFTop.style.width;
+    }
+
+    private createAFBorders(): void {
+        if (!this.bdrAFLeft) {
+            this.bdrAFLeft = this.parent.getContentTable().parentElement.appendChild(
+                createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrafleft', styles: 'width: 2px;' }));
+            this.bdrAFRight = this.parent.getContentTable().parentElement.appendChild(
+                createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrafright', styles: 'width: 2px;' }));
+            this.bdrAFBottom = this.parent.getContentTable().parentElement.appendChild(
+                createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdrafbottom', styles: 'height: 2px;' }));
+            this.bdrAFTop = this.parent.getContentTable().parentElement.appendChild(
+                createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_bdraftop', styles: 'height: 2px;' }));
+        }
+    }
+
+    private showAFBorders(): void {
+        if (this.bdrAFLeft) {
+            this.bdrAFLeft.style.display = '';
+            this.bdrAFRight.style.display = '';
+            this.bdrAFBottom.style.display = '';
+            this.bdrAFTop.style.display = '';
+        }
+    }
+
+    private hideAFBorders(): void {
+        if (this.bdrAFLeft) {
+            this.bdrAFLeft.style.display = 'none';
+            this.bdrAFRight.style.display = 'none';
+            this.bdrAFBottom.style.display = 'none';
+            this.bdrAFTop.style.display = 'none';
+        }
+    }
+
+    private updateValue(rIdx: number, cIdx: number, cell: HTMLElement): void {
+        let col: Column = this.parent.getColumnByIndex(cIdx);
+        if (this.parent.editModule && cell) {
+            if (col.type === 'number') {
+                this.parent.editModule.updateCell(rIdx, col.field, parseInt(cell.textContent, 10));
+            } else {
+                this.parent.editModule.updateCell(rIdx, col.field, cell.textContent);
+            }
+        }
+    }
+
+    /* tslint:disable-next-line:max-func-body-length */
+    private selectLikeAutoFill(e: MouseEvent, isApply?: boolean): void {
+        let startrowIdx: number = parseInt(parentsUntil(this.startAFCell, 'e-row').getAttribute('aria-rowindex'), 10);
+        let startCellIdx: number = parseInt(this.startAFCell.getAttribute('aria-colindex'), 10);
+        let endrowIdx: number = parseInt(parentsUntil(this.endAFCell, 'e-row').getAttribute('aria-rowindex'), 10);
+        let endCellIdx: number = parseInt(this.endAFCell.getAttribute('aria-colindex'), 10);
+        let rowLen: number = this.selectedRowCellIndexes.length - 1;
+        let colLen: number = this.selectedRowCellIndexes[0].cellIndexes.length - 1;
+        let col: Column;
+        switch (true) { //direction         
+            case !isApply && this.endAFCell.classList.contains('e-cellselectionbackground') &&
+                !!parentsUntil(e.target as Element, 'e-rowcell')
+                :
+                this.startAFCell = this.parent.getCellFromIndex(startrowIdx, startCellIdx);
+                this.endAFCell = this.parent.getCellFromIndex(startrowIdx + rowLen, startCellIdx + colLen);
+                this.drawAFBorders();
+                break;
+            case startCellIdx + colLen < endCellIdx && //right
+                endCellIdx - startCellIdx - colLen + 1 > endrowIdx - startrowIdx - rowLen // right bottom
+                && endCellIdx - startCellIdx - colLen + 1 > startrowIdx - endrowIdx: //right top
+                this.endAFCell = this.parent.getCellFromIndex(startrowIdx + rowLen, endCellIdx);
+                endrowIdx = parseInt(parentsUntil(this.endAFCell, 'e-row').getAttribute('aria-rowindex'), 10);
+                endCellIdx = parseInt(this.endAFCell.getAttribute('aria-colindex'), 10);
+                if (!isApply) {
+                    this.drawAFBorders();
+                } else {
+                    let cellIdx: number = parseInt(this.endCell.getAttribute('aria-colindex'), 10);
+                    for (let i: number = startrowIdx; i <= endrowIdx; i++) {
+                        let cells: HTMLElement[] = [].slice.call(
+                            this.parent.getDataRows()[i].querySelectorAll('.e-cellselectionbackground'));
+                        let c: number = 0;
+                        for (let j: number = cellIdx + 1; j <= endCellIdx; j++) {
+                            if (c > colLen) {
+                                c = 0;
+                            }
+                            this.updateValue(i, j, cells[c]);
+                            c++;
+                        }
+                    }
+                    this.selectCellsByRange(
+                        { rowIndex: startrowIdx, cellIndex: this.startCellIndex },
+                        { rowIndex: endrowIdx, cellIndex: endCellIdx });
+                }
+                break;
+            case startCellIdx > endCellIdx && // left
+                startCellIdx - endCellIdx + 1 > endrowIdx - startrowIdx - rowLen && //left top
+                startCellIdx - endCellIdx + 1 > startrowIdx - endrowIdx: // left bottom
+                this.startAFCell = this.parent.getCellFromIndex(startrowIdx, endCellIdx);
+                this.endAFCell = this.endCell;
+                if (!isApply) {
+                    this.drawAFBorders();
+                } else {
+                    for (let i: number = startrowIdx; i <= startrowIdx + rowLen; i++) {
+                        let cells: HTMLElement[] = [].slice.call(
+                            this.parent.getDataRows()[i].querySelectorAll('.e-cellselectionbackground'));
+                        cells.reverse();
+                        let c: number = 0;
+                        for (let j: number = this.startCellIndex - 1; j >= endCellIdx; j--) {
+                            if (c > colLen) {
+                                c = 0;
+                            }
+                            this.updateValue(i, j, cells[c]);
+                            c++;
+                        }
+                    }
+                    this.selectCellsByRange(
+                        { rowIndex: startrowIdx, cellIndex: endCellIdx },
+                        { rowIndex: startrowIdx + rowLen, cellIndex: this.startCellIndex + colLen });
+                }
+                break;
+            case startrowIdx > endrowIdx: //up
+                this.startAFCell = this.parent.getCellFromIndex(endrowIdx, startCellIdx);
+                this.endAFCell = this.endCell;
+                if (!isApply) {
+                    this.drawAFBorders();
+                } else {
+                    let trIdx: number = parseInt(this.endCell.parentElement.getAttribute('aria-rowindex'), 10);
+                    let r: number = trIdx;
+                    for (let i: number = startrowIdx - 1; i >= endrowIdx; i--) {
+                        if (r === this.startIndex - 1) {
+                            r = trIdx;
+                        }
+                        let cells: HTMLElement[] = [].slice.call(
+                            this.parent.getDataRows()[r].querySelectorAll('.e-cellselectionbackground'));
+                        let c: number = 0;
+                        r--;
+                        for (let j: number = this.startCellIndex; j <= this.startCellIndex + colLen; j++) {
+                            this.updateValue(i, j, cells[c]);
+                            c++;
+                        }
+                    }
+                    this.selectCellsByRange(
+                        { rowIndex: endrowIdx, cellIndex: startCellIdx + colLen },
+                        { rowIndex: startrowIdx + rowLen, cellIndex: startCellIdx });
+                }
+                break;
+            default:                //down
+                this.endAFCell = this.parent.getCellFromIndex(endrowIdx, startCellIdx + colLen);
+                if (!isApply) {
+                    this.drawAFBorders();
+                } else {
+                    let trIdx: number = parseInt(this.endCell.parentElement.getAttribute('aria-rowindex'), 10);
+                    let r: number = this.startIndex;
+                    for (let i: number = trIdx + 1; i <= endrowIdx; i++) {
+                        if (r === trIdx + 1) {
+                            r = this.startIndex;
+                        }
+                        let cells: HTMLElement[] = [].slice.call(
+                            this.parent.getDataRows()[r].querySelectorAll('.e-cellselectionbackground'));
+                        r++;
+                        let c: number = 0;
+                        for (let m: number = this.startCellIndex; m <= this.startCellIndex + colLen; m++) {
+                            this.updateValue(i, m, cells[c]);
+                            c++;
+                        }
+                    }
+                    this.selectCellsByRange(
+                        { rowIndex: trIdx - rowLen, cellIndex: startCellIdx }, { rowIndex: endrowIdx, cellIndex: startCellIdx + colLen });
+                }
+                break;
+        }
     }
 
     private mouseUpHandler(e: MouseEventArgs): void {
@@ -1090,9 +1390,55 @@ export class Selection implements IAction {
         if (this.element) {
             remove(this.element);
         }
+        if (this.isDragged && this.selectedRowCellIndexes.length === 1 && this.selectedRowCellIndexes[0].cellIndexes.length === 1) {
+            this.mUPTarget = parentsUntil(e.target as Element, 'e-rowcell');
+        } else {
+            this.mUPTarget = null;
+        }
+        this.isDragged = false;
+        this.updateAutoFillPosition();
+        if (this.isAutoFillSel) {
+            this.startAFCell = this.startCell;
+            this.endAFCell = parentsUntil(e.target as Element, 'e-rowcell');
+            this.updateStartCellsIndex();
+            this.selectLikeAutoFill(e, true);
+            this.updateAutoFillPosition();
+            this.hideAFBorders();
+            this.positionBorders();
+            this.isAutoFillSel = false;
+        }
         EventHandler.remove(this.parent.getContent(), 'mousemove', this.mouseMoveHandler);
         EventHandler.remove(document.body, 'mouseup', this.mouseUpHandler);
-        this.isDragged = false;
+    }
+
+    private hideAutoFill(): void {
+        if (this.autofill) {
+            this.autofill.style.display = 'none';
+        }
+    }
+
+    public updateAutoFillPosition(): void {
+        if (this.parent.enableAutoFill && !this.parent.isEdit &&
+            this.selectionSettings.cellSelectionMode.indexOf('Box') > -1 && !this.isRowType() && !this.isSingleSel()
+            && this.selectedRowCellIndexes.length) {
+            let cells: Element[] = [].slice.call(this.parent.getDataRows()[
+                this.selectedRowCellIndexes[
+                    this.selectedRowCellIndexes.length - 1].rowIndex].querySelectorAll('.e-cellselectionbackground'));
+            if (!this.parent.element.querySelector('#' + this.parent.element.id + '_autofill')) {
+                this.autofill = this.parent.getContentTable().parentElement.appendChild(createElement(
+                    'div', { className: 'e-autofill', id: this.parent.element.id + '_autofill' }));
+            }
+            let cell: HTMLElement = cells[cells.length - 1] as HTMLElement;
+            if (cell && cell.offsetParent) {
+                let clientRect: ClientRect = cell.getBoundingClientRect();
+                let parentOff: ClientRect = cell.offsetParent.getBoundingClientRect();
+                this.autofill.style.left = clientRect.left - parentOff.left + clientRect.width - 3 + 'px';
+                this.autofill.style.top = clientRect.top - parentOff.top + clientRect.height - 3 + 'px';
+            }
+            this.autofill.style.display = '';
+        } else {
+            this.hideAutoFill();
+        }
     }
 
     private mouseDownHandler(e: MouseEventArgs): void {
@@ -1108,7 +1454,7 @@ export class Selection implements IAction {
         }
         if (parentsUntil(target, 'e-rowcell') && !e.shiftKey && !e.ctrlKey) {
 
-            if (gObj.selectionSettings.cellSelectionMode === 'Box' && !this.isRowType() && !this.isSingleSel()) {
+            if (gObj.selectionSettings.cellSelectionMode.indexOf('Box') > -1 && !this.isRowType() && !this.isSingleSel()) {
                 this.isCellDrag = true;
                 isDrag = true;
             } else if (gObj.allowRowDragAndDrop) {
@@ -1121,20 +1467,51 @@ export class Selection implements IAction {
                 gObj.getContent().appendChild(this.element);
             }
             if (isDrag) {
-                let tr: Element = closest(e.target as Element, 'tr');
-                this.startIndex = parseInt(tr.getAttribute('aria-rowindex'), 10);
-                this.startCellIndex = parseInt(parentsUntil(target, 'e-rowcell').getAttribute('aria-colindex'), 10);
-
-                document.body.classList.add('e-disableuserselect');
-                let gBRect: ClientRect = gObj.element.getBoundingClientRect();
-                let postion: IPosition = getPosition(e);
-                this.x = postion.x - gBRect.left;
-                this.y = postion.y - gBRect.top;
-
-                EventHandler.add(gObj.getContent(), 'mousemove', this.mouseMoveHandler, this);
-                EventHandler.add(document.body, 'mouseup', this.mouseUpHandler, this);
+                this.enableDrag(e, true);
             }
         }
+        this.updateStartEndCells();
+        if (target.classList.contains('e-autofill')) {
+            this.isCellDrag = true;
+            this.isAutoFillSel = true;
+            this.enableDrag(e);
+        }
+    }
+
+    private updateStartEndCells(): void {
+        let cells: Element[] = [].slice.call(this.parent.element.querySelectorAll('.e-cellselectionbackground'));
+        this.startCell = cells[0];
+        this.endCell = cells[cells.length - 1];
+        if (this.startCell) {
+            this.startIndex = parseInt(this.startCell.parentElement.getAttribute('aria-rowindex'), 10);
+            this.startCellIndex = parseInt(parentsUntil(this.startCell, 'e-rowcell').getAttribute('aria-colindex'), 10);
+        }
+    }
+
+    private updateStartCellsIndex(): void {
+        if (this.startCell) {
+            this.startIndex = parseInt(this.startCell.parentElement.getAttribute('aria-rowindex'), 10);
+            this.startCellIndex = parseInt(parentsUntil(this.startCell, 'e-rowcell').getAttribute('aria-colindex'), 10);
+        }
+    }
+
+    private enableDrag(e: MouseEventArgs, isUpdate?: boolean): void {
+        let gObj: IGrid = this.parent;
+
+        if (isUpdate) {
+            let tr: Element = closest(e.target as Element, 'tr');
+            this.startDIndex = parseInt(tr.getAttribute('aria-rowindex'), 10);
+            this.startDCellIndex = parseInt(parentsUntil(e.target as Element, 'e-rowcell').getAttribute('aria-colindex'), 10);
+        }
+
+        document.body.classList.add('e-disableuserselect');
+        let gBRect: ClientRect = gObj.element.getBoundingClientRect();
+        let postion: IPosition = getPosition(e);
+        this.x = postion.x - gBRect.left;
+        this.y = postion.y - gBRect.top;
+
+        EventHandler.add(gObj.getContent(), 'mousemove', this.mouseMoveHandler, this);
+        EventHandler.add(document.body, 'mouseup', this.mouseUpHandler, this);
     }
 
     private clearSelAfterRefresh(e: { requestType: string }): void {
@@ -1249,6 +1626,7 @@ export class Selection implements IAction {
         if (checkboxColumn.length) {
             gObj.isCheckBoxSelection = !(this.selectionSettings.checkboxMode === 'ResetOnRowClick');
         }
+        this.drawBorders();
     }
 
     private hidePopUp(): void {
@@ -1597,6 +1975,7 @@ export class Selection implements IAction {
             checkBox = checkWrap.querySelector('input[type="checkbox"]') as HTMLInputElement;
             chkSelect = true;
         }
+        this.drawBorders();
         target = parentsUntil(target, 'e-rowcell') as HTMLElement;
         if ((target && target.parentElement.classList.contains('e-row') && !this.parent.selectionSettings.checkboxOnly) || chkSelect) {
             if (this.parent.isCheckBoxSelection) {
@@ -1615,7 +1994,9 @@ export class Selection implements IAction {
                 if (this.parent.isPersistSelection && this.parent.element.querySelectorAll('.e-addedrow').length > 0) {
                     ++rIndex;
                 }
-                this.rowCellSelectionHandler(rIndex, parseInt(target.getAttribute('aria-colindex'), 10));
+                if (!this.mUPTarget || !this.mUPTarget.isEqualNode(target)) {
+                    this.rowCellSelectionHandler(rIndex, parseInt(target.getAttribute('aria-colindex'), 10));
+                }
                 if (this.parent.isCheckBoxSelection) {
                     this.moveIntoUncheckCollection(closest(target, '.e-row') as HTMLElement);
                     this.setCheckAllState();
@@ -1666,19 +2047,26 @@ export class Selection implements IAction {
                 this.selectRow(rowIndex, true);
             }
             this.selectCell({ rowIndex: rowIndex, cellIndex: cellIndex }, true);
+            if (this.selectedRowCellIndexes.length) {
+                this.updateAutoFillPosition();
+            }
+            this.drawBorders();
         } else if (this.isMultiShiftRequest) {
             if (this.parent.isCheckBoxSelection || (!this.parent.isCheckBoxSelection &&
                 !closest(this.target, '.e-rowcell').classList.contains('e-gridchkbox'))) {
-                     this.selectRowsByRange(isUndefined(this.prevRowIndex) ? rowIndex : this.prevRowIndex, rowIndex);
+                this.selectRowsByRange(isUndefined(this.prevRowIndex) ? rowIndex : this.prevRowIndex, rowIndex);
             } else {
                 this.addRowsToSelection([rowIndex]);
             }
             this.selectCellsByRange(
                 isUndefined(this.prevCIdxs) ? { rowIndex: rowIndex, cellIndex: cellIndex } : this.prevCIdxs,
                 { rowIndex: rowIndex, cellIndex: cellIndex });
+            this.updateAutoFillPosition();
+            this.drawBorders();
         } else {
             this.addRowsToSelection([rowIndex]);
             this.addCellsToSelection([{ rowIndex: rowIndex, cellIndex: cellIndex }]);
+            this.hideBorders();
         }
         this.isDragged = false;
     }
@@ -1771,6 +2159,8 @@ export class Selection implements IAction {
                 break;
         }
         this.preventFocus = false;
+        this.positionBorders();
+        this.updateAutoFillPosition();
     }
 
     /**
@@ -1900,7 +2290,8 @@ export class Selection implements IAction {
     private addRemoveClassesForRow(row: Element, isAdd: boolean, clearAll: boolean, ...args: string[]): void {
         if (row) {
             let cells: Element[] = [].slice.call(row.querySelectorAll('.e-rowcell'));
-            let cell: Element = row.querySelector('.e-detailrowcollapse') || row.querySelector('.e-detailrowexpand');
+            let cell: Element = row.querySelector('.e-detailrowcollapse') || row.querySelector('.e-detailrowexpand')
+            || row.querySelector('.e-rowdragdrop');
             if (cell) {
                 cells.push(cell);
             }
@@ -1951,6 +2342,12 @@ export class Selection implements IAction {
         this.actionCompleteFunc = this.actionCompleteHandler.bind(this);
         this.parent.addEventListener(events.actionComplete, this.actionCompleteFunc);
         this.parent.on(events.click, this.clickHandler, this);
+        this.resizeEndFn = () => {
+            this.updateAutoFillPosition();
+            this.drawBorders();
+        };
+        this.resizeEndFn.bind(this);
+        this.parent.addEventListener(events.resizeStop, this.resizeEndFn);
     }
 
     public removeEventListener_checkbox(): void {

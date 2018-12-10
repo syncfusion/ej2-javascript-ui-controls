@@ -27,29 +27,29 @@
       & .e-label {
         display: inline-block;
         font-family: $font-family;
-        font-size: $font-size;
+        font-size: $radio-btn-font-size;
         font-weight: normal;
-        line-height: $line-height;
-        padding-left: $padding;
+        line-height: $radio-btn-line-height;
+        padding-left: $radio-btn-padding-left;
         vertical-align: text-top;
         white-space: normal;
       }
 
       &::before {
-        border: $border;
+        border: $radio-btn-border;
         border-radius: 50%;
         box-sizing: border-box;
         content: '';
-        height: $height;
+        height: $radio-btn-height;
         left: 0;
         position: absolute;
         top: 0;
-        width: $width;
+        width: $radio-btn-width;
       }
 
       &:focus {
         &::before {
-          box-shadow: $focussed-box-shadow;
+          box-shadow: $radio-btn-focussed-box-shadow;
         }
       }
 
@@ -58,21 +58,21 @@
         border-radius: 50%;
         box-sizing: border-box;
         content: '';
-        height: $icon-height;
-        left: $icon-left;
+        height: $radio-btn-icon-height;
+        left: $radio-btn-icon-left;
         position: absolute;
-        top: $icon-top;
+        top: $radio-btn-icon-top;
         transform: scale(0);
-        width: $icon-width;
+        width: $radio-btn-icon-width;
       }
 
       & .e-ripple-container {
         border-radius: 50%;
-        height: $ripple-size;
-        left: $ripple-position;
+        height: $radio-btn-ripple-size;
+        left: $radio-btn-ripple-position;
         position: absolute;
-        top:  $ripple-position;
-        width: $ripple-size;
+        top:  $radio-btn-ripple-position;
+        width: $radio-btn-ripple-size;
         z-index: 1;
       }
 
@@ -80,7 +80,7 @@
       &.e-rtl {
         & .e-label {
           padding-left: 0;
-          padding-right: $padding;
+          padding-right: $radio-btn-padding-left;
         }
 
         &::before {
@@ -90,19 +90,19 @@
 
         &::after {
           left: auto;
-          right: $icon-right;
+          right: $radio-btn-icon-right;
         }
 
         & .e-ripple-container {
           left: auto;
-          right: $ripple-position;
+          right: $radio-btn-ripple-position;
         }
       }
 
       &.e-right {
         &.e-rtl {
           & .e-label {
-            padding-left: $padding;
+            padding-left: $radio-btn-padding-left;
             padding-right: 0;
           }
 
@@ -112,7 +112,7 @@
           }
 
           &::after {
-            left: $icon-right;
+            left: $radio-btn-icon-right;
             right: auto;
           }
 
@@ -126,54 +126,54 @@
       &.e-small {
 
         & .e-label {
-          line-height: $small-line-height;
-          padding-left: $small-padding;
+          line-height: $radio-btn-small-line-height;
+          padding-left: $radio-btn-small-padding;
         }
 
         &::before {
-          height: $small-height;
-          width: $small-width;
+          height: $radio-btn-small-height;
+          width: $radio-btn-small-width;
         }
 
         &::after {
-          height: $small-icon-height;
-          left: $small-icon-left;
-          top: $small-icon-top;
-          width: $small-icon-width;
+          height: $radio-btn-small-icon-height;
+          left: $radio-btn-small-icon-left;
+          top: $radio-btn-small-icon-top;
+          width: $radio-btn-small-icon-width;
         }
 
         & .e-ripple-container {
-          left: $small-ripple-position;
-          top: $small-ripple-position;
+          left: $radio-btn-small-ripple-position;
+          top: $radio-btn-small-ripple-position;
         }
 
         &.e-right,
         &.e-rtl {
           & .e-label {
             padding-left: 0;
-            padding-right: $small-padding;
+            padding-right: $radio-btn-small-padding;
           }
 
           &::after {
             left: auto;
-            right: $small-icon-right;
+            right: $radio-btn-small-icon-right;
           }
 
           & .e-ripple-container {
             left: auto;
-            right: $small-ripple-position;
+            right: $radio-btn-small-ripple-position;
           }
         }
 
         &.e-right {
           &.e-rtl {
             & .e-label {
-              padding-left: $small-padding;
+              padding-left: $radio-btn-small-padding;
               padding-right: 0;
             }
 
             &::after {
-              left: $small-icon-right;
+              left: $radio-btn-small-icon-right;
               right: auto;
             }
 
@@ -190,7 +190,7 @@
       +label {
         &::after {
           transform: scale(1);
-          transition: $check-transition;
+          transition: $radio-btn-check-transition;
         }
       }
     }
@@ -200,57 +200,57 @@
   #{&}.e-radio+label.e-bigger {
 
     & .e-label {
-      font-size: $bigger-font-size;
-      line-height: $bigger-line-height;
-      padding-left: $bigger-padding;
+      font-size: $radio-btn-bigger-font-size;
+      line-height: $radio-btn-bigger-line-height;
+      padding-left: $radio-btn-bigger-padding;
     }
 
     &::before {
-      height: $bigger-height;
-      width: $bigger-width;
+      height: $radio-btn-bigger-height;
+      width: $radio-btn-bigger-width;
     }
 
     &::after {
-      height: $bigger-icon-height;
-      left: $bigger-icon-left;
-      top: $bigger-icon-top;
-      width: $bigger-icon-width;
+      height: $radio-btn-bigger-icon-height;
+      left: $radio-btn-bigger-icon-left;
+      top: $radio-btn-bigger-icon-top;
+      width: $radio-btn-bigger-icon-width;
     }
 
     & .e-ripple-container {
-      height: $bigger-ripple-size;
-      left: $bigger-ripple-position;
-      top: $bigger-ripple-position;
-      width: $bigger-ripple-size;
+      height: $radio-btn-bigger-ripple-size;
+      left: $radio-btn-bigger-ripple-position;
+      top: $radio-btn-bigger-ripple-position;
+      width: $radio-btn-bigger-ripple-size;
     }
 
     &.e-right,
     &.e-rtl {
       & .e-label {
         padding-left: 0;
-        padding-right: $bigger-padding;
+        padding-right: $radio-btn-bigger-padding;
       }
 
       &::after {
         left: auto;
-        right: $bigger-icon-right;
+        right: $radio-btn-bigger-icon-right;
       }
 
       & .e-ripple-container {
         left: auto;
-        right: $bigger-ripple-position;
+        right: $radio-btn-bigger-ripple-position;
       }
     }
 
     &.e-right {
       &.e-rtl {
         & .e-label {
-          padding-left: $bigger-padding;
+          padding-left: $radio-btn-bigger-padding;
           padding-right: 0;
         }
 
         &::after {
-          left: $bigger-icon-right;
+          left: $radio-btn-bigger-icon-right;
           right: auto;
         }
 
@@ -264,56 +264,56 @@
     &.e-small {
 
       & .e-label {
-        line-height: $bigger-small-line-height;
-        padding-left: $bigger-small-padding;
+        line-height: $radio-btn-bigger-small-line-height;
+        padding-left: $radio-btn-bigger-small-padding;
       }
 
       &::before {
-        height: $bigger-small-height;
-        width: $bigger-small-width;
+        height: $radio-btn-bigger-small-height;
+        width: $radio-btn-bigger-small-width;
       }
 
       &::after {
-        height: $bigger-small-icon-height;
-        left: $bigger-small-icon-left;
-        top: $bigger-small-icon-top;
-        width: $bigger-small-icon-width;
+        height: $radio-btn-bigger-small-icon-height;
+        left: $radio-btn-bigger-small-icon-left;
+        top: $radio-btn-bigger-small-icon-top;
+        width: $radio-btn-bigger-small-icon-width;
       }
 
       & .e-ripple-container {
-        height: $bigger-small-ripple-size;
-        left: $bigger-ripple-position;
-        top: $bigger-ripple-position;
-        width: $bigger-small-ripple-size;
+        height: $radio-btn-bigger-small-ripple-size;
+        left: $radio-btn-bigger-ripple-position;
+        top: $radio-btn-bigger-ripple-position;
+        width: $radio-btn-bigger-small-ripple-size;
       }
 
       &.e-right,
       &.e-rtl {
         & .e-label {
           padding-left: 0;
-          padding-right: $bigger-small-padding;
+          padding-right: $radio-btn-bigger-small-padding;
         }
 
         &::after {
           left: auto;
-          right: $bigger-small-icon-right;
+          right: $radio-btn-bigger-small-icon-right;
         }
 
         & .e-ripple-container {
           left: auto;
-          right: $small-ripple-position;
+          right: $radio-btn-small-ripple-position;
         }
       }
 
       &.e-right {
         &.e-rtl {
           & .e-label {
-            padding-left: $bigger-small-padding;
+            padding-left: $radio-btn-bigger-small-padding;
             padding-right: 0;
           }
 
           &::after {
-            left: $bigger-small-icon-right;
+            left: $radio-btn-bigger-small-icon-right;
             right: auto;
           }
 

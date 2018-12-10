@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 16.4.40-beta (2018-12-10)
+
+### Schedule
+
+#### New Features
+
+- A specific time range can be blocked on Scheduler now, to prevent the creation of appointments in that time slot.
+- Specific events can be made read-only, restricting any CRUD actions.
+- Load resources and appointments of timeline views virtually on every scroll action.
+
+#### Bug Fixes
+
+- An issue that occurs with BYDAY rule option, while defining day names in different order has been fixed.
+- An issue with `eventClick` client-side event not triggering, while selecting multiple appointments by pressing `ctrl` key and mouse click combination has been fixed.
+- An issue with wrong display of + more count indicator in all-day row has been fixed.
+
+#### Breaking Changes
+
+- The default value of `allowVirtualScrolling` has been changed to `false`.
+
 ## 16.3.32 (2018-11-13)
 
 ### Schedule

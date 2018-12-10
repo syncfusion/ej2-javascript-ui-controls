@@ -1,6 +1,6 @@
 import { ContextMenu as Menu, ContextMenuModel, MenuItemModel, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { LayoutViewer } from './viewer';
-import { isNullOrUndefined, L10n, setCulture, classList } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, L10n, classList } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../document-editor';
 import { Selection } from './index';
 import { TextPosition } from './selection/selection-helper';
@@ -29,6 +29,10 @@ const CONTEXTMENU_COMPLETE_DELETE_TABLE: string = '_contextmenu_complete_table_d
 const CONTEXTMENU_DELETE_ROW: string = '_contextmenu_delete_row';
 const CONTEXTMENU_DELETE_COLUMN: string = '_contextmenu_delete_column';
 const CONTEXTMENU_MERGE_CELL: string = '_contextmenu_merge_cell';
+const CONTEXTMENU_AUTO_FIT: string = '_contextmenu_auto_fit';
+const CONTEXTMENU_AUTO_FIT_TO_CONTENTS: string = '_contextmenu_auto_fit_contents';
+const CONTEXTMENU_AUTO_FIT_TO_WINDOW: string = '_contextmenu_auto_fit_window';
+const CONTEXTMENU_FIXED_COLUMN_WIDTH: string = '_contextmenu_fixed_column_width';
 const CONTEXTMENU_CONTINUE_NUMBERING: string = '_contextmenu_continue_numbering';
 const CONTEXTMENU_RESTART_AT: string = '_contextmenu_restart_at';
 /**
@@ -51,8 +55,7 @@ export class ContextMenu {
         this.viewer = viewer;
         let locale: L10n = new L10n('documenteditor', this.viewer.owner.defaultLocale);
         locale.setLocale(this.viewer.owner.locale);
-        setCulture(this.viewer.owner.locale);
-        this.initContextMenu(locale);
+        this.initContextMenu(locale, this.viewer.owner.enableRtl);
     }
     /**
      * Gets module name.
@@ -66,7 +69,7 @@ export class ContextMenu {
      * @private
      */
     // tslint:disable:max-func-body-length
-    public initContextMenu(localValue: L10n): void {
+    public initContextMenu(localValue: L10n, isRtl?: boolean): void {
         let id: string = this.viewer.owner.element.id;
         this.contextMenu = document.createElement('div');
         this.contextMenu.id = this.viewer.owner.containerId + 'e-de-contextmenu';
@@ -171,7 +174,29 @@ export class ContextMenu {
             {
                 text: localValue.getConstant('Merge Cells'),
                 id: id + CONTEXTMENU_MERGE_CELL,
-                iconCss: 'e-icons e-de-icon-table-merge-cells'
+                iconCss: 'e-icons e-de-ctnr-mergecell'
+            },
+            {
+                text: localValue.getConstant('AutoFit'),
+                id: id + CONTEXTMENU_AUTO_FIT,
+                iconCss: 'e-icons',
+                items: [
+                    {
+                        text: localValue.getConstant('AutoFit to Contents'),
+                        id: id + CONTEXTMENU_AUTO_FIT_TO_CONTENTS,
+                        iconCss: 'e-icons e-de-icon-autofit e-de-autofit-contents'
+                    },
+                    {
+                        text: localValue.getConstant('AutoFit to Window'),
+                        id: id + CONTEXTMENU_AUTO_FIT_TO_WINDOW,
+                        iconCss: 'e-icons e-de-icon-auto-fitwindow e-de-autofit-window'
+                    },
+                    {
+                        text: localValue.getConstant('Fixed Column Width'),
+                        id: id + CONTEXTMENU_FIXED_COLUMN_WIDTH,
+                        iconCss: 'e-icons e-de-icon-fixed-columnwidth e-de-fixed-column'
+                    }
+                ]
             },
             {
                 text: localValue.getConstant('Insert'),
@@ -225,6 +250,7 @@ export class ContextMenu {
         ];
         let menuOptions: ContextMenuModel = {
             target: '#' + this.viewer.owner.containerId + 'e-de-contextmenu',
+            enableRtl: isRtl,
             items: menuItems,
             select: (args: MenuEventArgs) => {
                 let item: string = args.element.id;
@@ -338,6 +364,15 @@ export class ContextMenu {
             case id + CONTEXTMENU_RESTART_AT:
                 this.viewer.owner.editorModule.applyRestartNumbering(this.viewer.selection);
                 break;
+            case id + CONTEXTMENU_AUTO_FIT_TO_CONTENTS:
+                this.viewer.owner.editor.autoFitTable('FitToContents');
+                break;
+            case id + CONTEXTMENU_AUTO_FIT_TO_WINDOW:
+                this.viewer.owner.editor.autoFitTable('FitToWindow');
+                break;
+            case id + CONTEXTMENU_FIXED_COLUMN_WIDTH:
+                this.viewer.owner.editor.autoFitTable('FixedColumnWidth');
+                break;
         }
     }
     /**
@@ -352,6 +387,10 @@ export class ContextMenu {
         }
     }
     private showHideElements(selection: Selection): boolean {
+        if (isNullOrUndefined(selection)) {
+            return false;
+        }
+        selection.hideToolTip();
         let owner: DocumentEditor = this.viewer.owner;
         let id: string = owner.element.id;
         let copy: HTMLElement = document.getElementById(id + CONTEXTMENU_COPY);
@@ -372,6 +411,7 @@ export class ContextMenu {
         let removeHyperlink: HTMLElement = document.getElementById(id + CONTEXTMENU_REMOVE_HYPERLINK);
         let continueNumbering: HTMLElement = document.getElementById(id + CONTEXTMENU_CONTINUE_NUMBERING);
         let restartAt: HTMLElement = document.getElementById(id + CONTEXTMENU_RESTART_AT);
+        let autoFitTable: HTMLElement = document.getElementById(id + CONTEXTMENU_AUTO_FIT);
 
         cut.style.display = 'none';
         paste.style.display = 'none';
@@ -383,6 +423,7 @@ export class ContextMenu {
         removeHyperlink.style.display = 'none';
         (removeHyperlink.nextSibling as HTMLElement).style.display = 'none';
         mergeCells.style.display = 'none';
+        autoFitTable.style.display = 'none';
         font.style.display = 'none';
         paragraph.style.display = 'none';
         (paragraph.nextSibling as HTMLElement).style.display = 'none';
@@ -395,36 +436,25 @@ export class ContextMenu {
         restartAt.style.display = 'none';
         (restartAt.nextSibling as HTMLElement).style.display = 'none';
 
-        if (isNullOrUndefined(selection)) {
-            return false;
-        }
-        selection.hideToolTip();
-        if (selection.isEmpty) {
-            cut.classList.add('e-disabled');
-            copy.classList.add('e-disabled');
-        } else {
-            cut.classList.remove('e-disabled');
-            copy.classList.remove('e-disabled');
-        }
+        let isSelectionEmpty: boolean = selection.isEmpty;
+        classList(cut, isSelectionEmpty ? ['e-disabled'] : [], !isSelectionEmpty ? ['e-disabled'] : []);
+        classList(copy, isSelectionEmpty ? ['e-disabled'] : [], !isSelectionEmpty ? ['e-disabled'] : []);
         if (owner.isReadOnlyMode) {
             return true;
         }
         cut.style.display = 'block';
         paste.style.display = 'block';
         (paste.nextSibling as HTMLElement).style.display = 'block';
-        insertTable.classList.add('e-blankicon');
-        deleteTable.classList.add('e-blankicon');
-        updateField.classList.add('e-blankicon');
-        editField.classList.add('e-blankicon');
-        if (owner.enableLocalPaste && !isNullOrUndefined(owner.editor.copiedData)) {
-            paste.classList.remove('e-disabled');
-        } else {
-            paste.classList.add('e-disabled');
-        }
+        classList(insertTable, ['e-blankicon'], []);
+        classList(deleteTable, ['e-blankicon'], []);
+        classList(updateField, ['e-blankicon'], []);
+        classList(editField, ['e-blankicon'], []);
+        classList(autoFitTable, ['e-blankicon'], []);
+        let enablePaste: boolean = (owner.enableLocalPaste && !isNullOrUndefined(owner.editor.copiedData));
+        classList(paste, enablePaste ? [] : ['e-disabled'], enablePaste ? ['e-disabled'] : []);
         if (selection.contextType === 'TableOfContents') {
             updateField.style.display = 'block';
             editField.style.display = 'block';
-            (restartAt.nextSibling as HTMLElement).style.display = 'block';
         } else {
             let start: TextPosition = selection.start;
             let end: TextPosition = selection.end;
@@ -470,6 +500,7 @@ export class ContextMenu {
             if (this.viewer.owner.editor.canMergeCells()) {
                 mergeCells.style.display = 'block';
             }
+            autoFitTable.style.display = this.viewer.selection.isTableSelected() ? 'block' : 'none';
         } else {
             if (this.viewer.owner.fontDialogModule) {
                 font.style.display = 'block';
@@ -494,10 +525,8 @@ export class ContextMenu {
         if (this.contextMenuInstance) {
             this.contextMenuInstance.destroy();
         }
-        if (this.contextMenu) {
-            if (this.contextMenu.parentElement) {
-                this.contextMenu.parentElement.removeChild(this.contextMenu);
-            }
+        if (this.contextMenu && this.contextMenu.parentElement) {
+            this.contextMenu.parentElement.removeChild(this.contextMenu);
             this.contextMenu.innerHTML = '';
         }
         this.contextMenu = undefined;

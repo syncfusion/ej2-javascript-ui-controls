@@ -196,9 +196,9 @@ describe('Chart Control', () => {
         });
         it('Checking x axis gridLines and tickLines for radar axis', (done: Function) => {
             loaded = (args: Object): void => {
-                let element = document.getElementById('chartContainer_MajorGridLine_0');
+                let element = document.getElementById('chartContainer_MajorGridLine_0_0');
                 expect(element.getAttribute('d') !== null).toBe(true);
-                element = document.getElementById('chartContainer_MajorTickLine_0');
+                element = document.getElementById('chartContainer_MajorTickLine_0_0');
                 expect(element.getAttribute('d') !== null).toBe(true);
                 done();
 
@@ -208,9 +208,9 @@ describe('Chart Control', () => {
         });
         it('Checking x axis gridLines and tickLines for polar axis', (done: Function) => {
             loaded = (args: Object): void => {
-                let element = document.getElementById('chartContainer_MajorGridLine_0');
+                let element = document.getElementById('chartContainer_MajorGridLine_0_0');
                 expect(element.getAttribute('d') !== null).toBe(true);
-                element = document.getElementById('chartContainer_MajorTickLine_0');
+                element = document.getElementById('chartContainer_MajorTickLine_0_0');
                 expect(element.getAttribute('d') !== null).toBe(true);
                 done();
 
@@ -221,9 +221,9 @@ describe('Chart Control', () => {
         });
          it('Checking both axis tickLines inside for polar axis', (done: Function) => {
             loaded = (args: Object): void => {
-                let element = document.getElementById('chartContainer_MajorGridLine_0');
+                let element = document.getElementById('chartContainer_MajorGridLine_0_0');
                 expect(element.getAttribute('d') !== null).toBe(true);
-                element = document.getElementById('chartContainer_MajorTickLine_0');
+                element = document.getElementById('chartContainer_MajorTickLine_0_0');
                 expect(element.getAttribute('d') !== null).toBe(true);
                 done();
 
@@ -236,9 +236,9 @@ describe('Chart Control', () => {
         });
         it('Checking x axis minorGridLines and TickLines for polar axis', (done: Function) => {
             loaded = (args: Object): void => {
-                let element = document.getElementById('chartContainer_MinorGridLine_0');
+                let element = document.getElementById('chartContainer_MinorGridLine_0_0');
                 expect(element.getAttribute('d') !== null).toBe(true);
-                element = document.getElementById('chartContainer_MinorTickLine_0');
+                element = document.getElementById('chartContainer_MinorTickLine_0_0');
                 expect(element.getAttribute('d') !== null).toBe(true);
                 done();
             };
@@ -248,9 +248,9 @@ describe('Chart Control', () => {
         });
         it('Checking x axis minorGridLines and TickLines for radar axis', (done: Function) => {
             loaded = (args: Object): void => {
-                let element = document.getElementById('chartContainer_MinorGridLine_0');
+                let element = document.getElementById('chartContainer_MinorGridLine_0_0');
                 expect(element.getAttribute('d') !== null).toBe(true);
-                element = document.getElementById('chartContainer_MinorTickLine_0');
+                element = document.getElementById('chartContainer_MinorTickLine_0_0');
                 expect(element.getAttribute('d') !== null).toBe(true);
                 done();
             };
@@ -260,9 +260,9 @@ describe('Chart Control', () => {
         });
         it('Checking startAngle with TickLines for y Axis for radar axis', (done: Function) => {
             loaded = (args: Object): void => {
-                let element = document.getElementById('chartContainer_MajorGridLine_1');
+                let element = document.getElementById('chartContainer_MajorGridLine_1_1');
                 expect(element !== null).toBe(true);
-                element = document.getElementById('chartContainer_MajorTickLine_1');
+                element = document.getElementById('chartContainer_MajorTickLine_1_1');
                 expect(element !== null).toBe(true);
                 done();
 
@@ -273,9 +273,9 @@ describe('Chart Control', () => {
         });
         it('Checking startAngle with TickLines for y Axis for polar axis', (done: Function) => {
             loaded = (args: Object): void => {
-                let element = document.getElementById('chartContainer_MajorGridLine_1');
+                let element = document.getElementById('chartContainer_MajorGridLine_1_1');
                 expect(element !== null).toBe(true);
-                element = document.getElementById('chartContainer_MajorTickLine_1');
+                element = document.getElementById('chartContainer_MajorTickLine_1_1');
                 expect(element !== null).toBe(true);
                 done();
 
@@ -444,7 +444,7 @@ describe('Chart Control', () => {
         });
         it('Checking majorGridLines visible false for polar axis', (done: Function) => {
             loaded = (args: Arg): void => {
-                let element = document.getElementById('chartContainer_MajorGridLine_0');
+                let element = document.getElementById('chartContainer_MajorGridLine_0_0');
                 expect(element === null).toBe(true);
                 done();
 
@@ -457,9 +457,9 @@ describe('Chart Control', () => {
         });
         it('Checking majorGridLines and majorticklines visible false for polar axis', (done: Function) => {
             loaded = (args: Arg): void => {
-                let element: HTMLElement = document.getElementById('chartContainer_MajorGridLine_0');
+                let element: HTMLElement = document.getElementById('chartContainer_MajorGridLine_0_0');
                 expect(element === null).toBe(true);
-                element = document.getElementById('chartContainer_MajorTickLine_0');
+                element = document.getElementById('chartContainer_MajorTickLine_0_0');
                 done();
 
             };
@@ -470,9 +470,9 @@ describe('Chart Control', () => {
         });
         it('Checking y axis majorGridLines and majorticklines visible false for polar axis', (done: Function) => {
             loaded = (args: Arg): void => {
-                let element = document.getElementById('chartContainer_MajorGridLine_1');
+                let element = document.getElementById('chartContainer_MajorGridLine_1_1');
                 expect(element === null).toBe(true);
-                element = document.getElementById('chartContainer_MajorTickLine_1');
+                element = document.getElementById('chartContainer_MajorTickLine_1_1');
                 done();
 
             };
@@ -485,9 +485,9 @@ describe('Chart Control', () => {
         });
         it('Checking minorGridLines and minorTicklines visible false', (done: Function) => {
             loaded = (args: Arg): void => {
-                let element: HTMLElement = document.getElementById('chartContainer_MinorGridLine_0');
+                let element: HTMLElement = document.getElementById('chartContainer_MinorGridLine_0_0');
                 expect(element === null).toBe(true);
-                element = document.getElementById('chartContainer_MinorTickLine_0');
+                element = document.getElementById('chartContainer_MinorTickLine_0_0');
                 expect(element === null).toBe(true);
                 done();
             };

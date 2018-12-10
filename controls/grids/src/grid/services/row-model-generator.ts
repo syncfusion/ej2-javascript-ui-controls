@@ -40,13 +40,16 @@ export class RowModelGenerator implements IModelGenerator<Column> {
             cols.push(this.generateCell({} as Column, null, CellType.DetailExpand));
         }
 
+        if (this.parent.isRowDragable()) {
+            cols.push(this.generateCell({} as Column, null, CellType.RowDragIcon));
+        }
+
         return cols;
 
     }
 
     protected generateRow(data: Object, index: number, cssClass?: string, indent?: number): Row<Column> {
         let options: IRow<Column> = {};
-
         options.foreignKeyData = {};
         options.uid = getUid('grid-row');
         options.data = data;
@@ -54,6 +57,13 @@ export class RowModelGenerator implements IModelGenerator<Column> {
         options.indent = indent;
         options.isDataRow = true;
         options.isExpand = false;
+        if (this.parent.isPrinting) {
+            if (this.parent.hierarchyPrintMode === 'All') {
+                options.isExpand = true;
+            } else if (this.parent.hierarchyPrintMode === 'Expanded' && this.parent.expandedRows && this.parent.expandedRows[index]) {
+                options.isExpand = this.parent.expandedRows[index].isExpand;
+            }
+        }
         options.cssClass = cssClass;
         options.isAltRow = this.parent.enableAltRow ? index % 2 !== 0 : false;
         options.isSelected = this.parent.getSelectedRowIndexes().indexOf(index) > -1;
@@ -62,7 +72,6 @@ export class RowModelGenerator implements IModelGenerator<Column> {
         let cells: Cell<Column>[] = this.ensureColumns();
         let row: Row<Column> = new Row<Column>(<{ [x: string]: Object }>options);
         row.cells = cells.concat(this.generateCells(options));
-
         return row;
     }
 

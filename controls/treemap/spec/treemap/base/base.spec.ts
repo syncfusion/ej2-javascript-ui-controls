@@ -1,4 +1,3 @@
-
 import { TreeMap } from '../../../src/treemap/treemap';
 import { ILoadedEventArgs, IResizeEventArgs } from '../../../src/treemap/model/interface';
 import { createElement, remove } from '@syncfusion/ej2-base';
@@ -246,6 +245,52 @@ describe('TreeMap Component Base Spec', () => {
                 labelPath: 'Country',
                 autoFill: true
             };
+            treemap.refresh();
+        });
+		it('Checking with tree map data', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout');
+                expect(element.childElementCount).toBeGreaterThan(1);
+            };
+            treemap.dataSource = jobData;
+            treemap.weightValuePath = 'EmployeesCount';
+            treemap.leafItemSettings = {
+                labelPath: 'JobGroup',
+                fill: '#6699cc',
+                border: { color: 'black', width: 2 }
+            };
+            treemap.levels = [
+                { groupPath: 'Country', fill: '#336699', border: { color: 'black', width: 2 } },
+                { groupPath: 'JobDescription', fill: '#336699', border: { color: 'black', width: 2 } }
+            ];
+            treemap.titleSettings.textStyle.color = null;
+            treemap.titleSettings.subtitleSettings.textStyle.color = null;
+            treemap.legendSettings.textStyle.color = null;
+            treemap.legendSettings.titleStyle.color = null;
+            treemap.theme = 'FabricDark';
+            treemap.refresh();
+        });
+		it('Checking with tree map data', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout');
+                expect(element.childElementCount).toBeGreaterThan(1);
+            };
+            treemap.dataSource = jobData;
+            treemap.weightValuePath = 'EmployeesCount';
+            treemap.leafItemSettings = {
+                labelPath: 'JobGroup',
+                fill: '#6699cc',
+                border: { color: 'black', width: 2 }
+            };
+            treemap.levels = [
+                { groupPath: 'Country', fill: '#336699', border: { color: 'black', width: 2 } },
+                { groupPath: 'JobDescription', fill: '#336699', border: { color: 'black', width: 2 } }
+            ];
+            treemap.titleSettings.textStyle.color = null;
+            treemap.titleSettings.subtitleSettings.textStyle.color = null;
+            treemap.legendSettings.textStyle.color = null;
+            treemap.legendSettings.titleStyle.color = null;
+            treemap.theme = 'Fabric';
             treemap.refresh();
         });
     });

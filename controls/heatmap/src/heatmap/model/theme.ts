@@ -46,13 +46,22 @@ export namespace Theme {
         fontFamily: 'Segoe UI',
         textOverflow: 'None',
     };
+    /** @private */
+    export let tooltipFont: IFontMapping = {
+        size: '13px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI',
+        textOverflow: 'None',
+    };
 }
 
 /** @private */
 export function getThemeColor(theme: HeatMapTheme): IThemeStyle {
     let style: IThemeStyle;
-    switch (theme) {
-        case 'Highcontrast':
+    switch (theme.toLowerCase()) {
+        case 'highcontrastlight':
             style = {
                 heatMapTitle: '#ffffff',
                 axisTitle: '#ffffff',
@@ -60,6 +69,26 @@ export function getThemeColor(theme: HeatMapTheme): IThemeStyle {
                 cellBorder: '#EEEEEE',
                 background: '#000000',
                 cellTextColor: '#000000',
+                toggledColor: '#000000',
+                emptyCellColor: '#EEEEEE',
+                legendLabel: '#ffffff',
+                palette: [{ 'color': '#BEE7EE' },
+                { 'color': '#85c4cf' },
+                { 'color': '#4CA1AF' }]
+            };
+            break;
+        case 'materialdark':
+        case 'fabricdark':
+        case 'bootstrapdark':
+        case 'highcontrastdark':
+            style = {
+                heatMapTitle: '#ffffff',
+                axisTitle: '#ffffff',
+                axisLabel: '#DADADA',
+                cellBorder: '#EEEEEE',
+                background: '#000000',
+                cellTextColor: '#000000',
+                toggledColor: '#000000',
                 emptyCellColor: '#EEEEEE',
                 legendLabel: '#ffffff',
                 palette: [{ 'color': '#BEE7EE' },
@@ -74,6 +103,7 @@ export function getThemeColor(theme: HeatMapTheme): IThemeStyle {
                 axisLabel: '#686868',
                 cellBorder: '#EEEEEE',
                 cellTextColor: '#000000',
+                toggledColor: '#ffffff',
                 background: '#FFFFFF',
                 emptyCellColor: '#EEEEEE',
                 legendLabel: '#353535',

@@ -2434,6 +2434,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 if (this.isCalendar()) {
                     e.preventDefault();
                 }
+                e.stopPropagation();
                 break;
             case 'tab':
                 this.strictModeUpdate();
@@ -3137,6 +3138,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property(true)
     ], DatePicker.prototype, "enabled", void 0);
+    __decorate$1([
+        Property(false)
+    ], DatePicker.prototype, "isMultiSelection", void 0);
     __decorate$1([
         Property(true)
     ], DatePicker.prototype, "showClearButton", void 0);
@@ -7468,6 +7472,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                     this.hide();
                     addClass([this.inputWrapper.container], FOCUS);
                     this.isNavigate = false;
+                    event.stopPropagation();
                     break;
                 case 'open':
                     this.show(event);
@@ -8120,7 +8125,9 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
             this.prevValue = this.getValue(date);
         }
         this.prevDate = this.valueWithMinutes = date;
-        this.setProperties({ value: date }, true);
+        if ((this.value && +new Date(+this.value).setMilliseconds(0)) !== +date) {
+            this.setProperties({ value: date }, true);
+        }
     };
     TimePicker.prototype.setActiveDescendant = function () {
         if (!isNullOrUndefined(this.selectedElement)) {
@@ -8496,7 +8503,9 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                         newProp.value = this.value;
                     }
                     else {
-                        newProp.value = this.checkDateValue(new Date('' + newProp.value));
+                        if ((newProp.value && +new Date(+newProp.value).setMilliseconds(0)) !== +this.value) {
+                            newProp.value = this.checkDateValue(new Date('' + newProp.value));
+                        }
                     }
                     this.initValue = newProp.value;
                     newProp.value = this.compareFormatChange(this.checkValue(newProp.value));
@@ -9827,6 +9836,9 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
     __decorate$4([
         Property(false)
     ], DateTimePicker.prototype, "enablePersistence", void 0);
+    __decorate$4([
+        Property(false)
+    ], DateTimePicker.prototype, "isMultiSelection", void 0);
     __decorate$4([
         Property(true)
     ], DateTimePicker.prototype, "showClearButton", void 0);

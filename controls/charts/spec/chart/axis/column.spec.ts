@@ -287,7 +287,7 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 let xLine1: HTMLElement = document.getElementById('chartContainerAxisLine_0');
                 let area: HTMLElement = document.getElementById('chartContainer_ChartAreaBorder');
-                expect((xLine1.getAttribute('y1') === area.getAttribute('y'))).toBe(true);
+                expect((xLine1.getAttribute('d').split(' ')[2] === area.getAttribute('y'))).toBe(true);
                 done();
             };
             chartEle.loaded = loaded;
@@ -297,7 +297,8 @@ describe('Chart Control', () => {
         it('Checking the axis size for far with opposed position and axis cross ', (done: Function) => {
             loaded = (args: Object): void => {
                 let xLine1: HTMLElement = document.getElementById('chartContainerAxisLine_0');
-                expect((xLine1.getAttribute('y1') === '195.05' || xLine1.getAttribute('y1').indexOf('194.45') > -1)).toBe(true);
+                let value: string = xLine1.getAttribute('d').split(' ')[2];
+                expect((value === '195.05' || value.indexOf('194.45') > -1)).toBe(true);
                 done();
             };
             chartEle.loaded = loaded;

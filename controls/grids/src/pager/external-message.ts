@@ -1,4 +1,4 @@
-import { createElement, remove } from '@syncfusion/ej2-base';
+import { createElement, remove, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Pager, IRender } from './pager';
 
 /**
@@ -55,7 +55,9 @@ export class ExternalMessage implements IRender {
      * Hides the external message of Pager. 
      */
     public hideMessage(): void {
-        this.element.style.display = 'none';
+        if (!isNullOrUndefined(this.element)) {
+            this.element.style.display = 'none';
+        }
     }
 
     /**

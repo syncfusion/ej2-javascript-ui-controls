@@ -5,6 +5,7 @@ import { stopTimer } from '../../common/utils/helper';
 import { RangeTooltipSettingsModel, firstToLowerCase, Axis, FontModel } from '../../index';
 import { RangeValueType, IRangeTooltipRenderEventArgs, measureText, createTemplate } from '../../index';
 import { createElement } from '@syncfusion/ej2-base';
+import { StockChart } from '../../stock-chart/stock-chart';
 
 
 /**
@@ -91,7 +92,14 @@ export class RangeTooltip {
             element.id = this.elementId + id;
             element.className = 'ejSVGTooltip';
             element.setAttribute('style', 'pointer-events:none; position:absolute;z-index: 1');
-            getElement(this.elementId + '_Secondary_Element').appendChild(element);
+            if (!this.control.stockChart) {
+                getElement(this.elementId + '_Secondary_Element').appendChild(element);
+            } else {
+                let stockChart: StockChart = this.control.stockChart;
+                getElement(stockChart.element.id + '_Secondary_Element').appendChild(element);
+                element.style.transform = 'translateY(' +   (((stockChart.availableSize.height - stockChart.toolbarHeight - 80) +
+                                                                     stockChart.toolbarHeight) + stockChart.titleSize.height) + 'px)';
+            }
             return element;
         }
     }

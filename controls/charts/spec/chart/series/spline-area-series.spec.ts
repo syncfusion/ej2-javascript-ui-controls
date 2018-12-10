@@ -413,11 +413,11 @@ describe('Chart Control', () => {
         it('Checking with category axis with multiple panes- column', (done: Function) => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('containerAxisLine_0');
-                expect(svg.getAttribute('x2') == '457.5' || svg.getAttribute('x2') == '453.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[4] == '457.5' || svg.getAttribute('d').split(' ')[4] == '453.5').toBe(true);
                 let svg1: HTMLElement = document.getElementById('container_AxisBottom_Column0');
                 expect(svg1.getAttribute('stroke') == 'red').toBe(true);
                 svg = document.getElementById('containerAxisLine_1');
-                expect(svg.getAttribute('x1') == '57.5' || svg.getAttribute('x1') == '53.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[1] == '57.5' || svg.getAttribute('d').split(' ')[1] == '53.5').toBe(true);
                 svg1 = document.getElementById('container_AxisBottom_Column1');
                 expect(svg1.getAttribute('stroke') == 'blue').toBe(true);
                 done();
@@ -454,11 +454,9 @@ describe('Chart Control', () => {
         it('Checking with category axis with multiple panes- rows', (done: Function) => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('containerAxisLine_0');
-
-                expect(svg.getAttribute('y1') == '589.5' || svg.getAttribute('y1') == '593.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '589.5' || svg.getAttribute('d').split(' ')[2] == '593.5').toBe(true);
                 svg = document.getElementById('containerAxisLine_1');
-
-                expect(svg.getAttribute('y1') == '334.375' || svg.getAttribute('y1') == '499.375').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '334.375' || svg.getAttribute('d').split(' ')[2] == '499.375').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -1013,7 +1011,7 @@ describe('Chart Control', () => {
                     primaryXAxis: { title: 'PrimaryXAxis', },
                     primaryYAxis: { title: 'PrimaryYAxis' },
                     series: [{
-                        animation: { enable: true, duration: 1500 }, name: 'Gold',
+                        animation: { enable: true, duration: 100 }, name: 'Gold',
                         dataSource: [{ x: 1000, y: 70 }, { x: 2000, y: 40 },
                         { x: 3000, y: 70 }, { x: 4000, y: -60 },
                         { x: 5000, y: 50 }, { x: 6000, y: 40 },
@@ -1022,7 +1020,7 @@ describe('Chart Control', () => {
                         type: 'SplineArea', fill: 'rgba(135,206,235,1)',
                         marker: { visible: true }
                     }, {
-                        animation: { enable: true, duration: 1500 }, name: 'Silver',
+                        animation: { enable: true, duration: 100 }, name: 'Silver',
                         dataSource: [{ x: 1000, y: 70 }, { x: 2000, y: 40 },
                         { x: 3000, y: 70 }, { x: 4000, y: -60 },
                         { x: 5000, y: 50 }, { x: 6000, y: 40 },
@@ -1031,7 +1029,7 @@ describe('Chart Control', () => {
                         type: 'SplineArea', fill: 'rgba(135,206,235,1)',
                         marker: { visible: true }
                     }, {
-                        animation: { enable: true, duration: 1500 }, name: 'Bronze',
+                        animation: { enable: true, duration: 100 }, name: 'Bronze',
                         dataSource: [{ x: 1000, y: 70 }, { x: 2000, y: 40 },
                         { x: 3000, y: 70 }, { x: 4000, y: -60 },
                         { x: 5000, y: 50 }, { x: 6000, y: 40 },
@@ -1055,15 +1053,6 @@ describe('Chart Control', () => {
             document.getElementById('container').remove();
         });
 
-        it('Default animation', (done: Function) => {
-            let animate: EmitType<IAnimationCompleteEventArgs> = (args: Series1): void => {
-                let series: Series = args.series;
-                let element: HTMLElement = document.getElementById('container_ChartSeriesClipRect_0').childNodes[0] as HTMLElement;
-                expect(series.clipRect.width === parseFloat(element.getAttribute('width'))).toBe(true);
-                done();
-            };
-            chartObj.animationComplete = animate;
-        });
         it('Checking vertical mode', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 let element: HTMLElement = document.getElementById('container_Series_0');

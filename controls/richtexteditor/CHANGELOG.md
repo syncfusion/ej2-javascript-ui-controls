@@ -2,23 +2,18 @@
 
 ## [Unreleased]
 
-## 16.3.27 (2018-10-23)
+## 16.4.40-beta (2018-12-10)
 
 ### RichTextEditor
 
-#### Bug Fixes
+#### New Features
 
-- Model Binding is not working with `value` property, that issue has been fixed.
-
-## 16.3.22 (2018-09-25)
-
-### RichTextEditor
+- Insert table support has provided for MarkDown Editor.
 
 #### Bug Fixes
 
-- The fontColor, backgroundColor properties default value is not an active state in ColorPicker which has been fixed.
-
-- ITextAreaElement interface issue in TypeScript 3.0.0 has been fixed.
+- Dynamic enabling and disabling support for toolbar items has been provided.
+- Image dialog's Browse button width is not adjusted based on the text issue has been resolved.
 
 ## 16.3.17 (2018-09-12)
 

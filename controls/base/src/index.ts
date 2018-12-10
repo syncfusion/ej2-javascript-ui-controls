@@ -22,6 +22,7 @@ export * from './notify-property-change';
 export * from './svg-canvas-interface';
 export * from './svg-renderer';
 export * from './touch';
+export * from './hijri-parser';
 export * from './touch-model';
 export * from './template-engine';
 export * from './util';

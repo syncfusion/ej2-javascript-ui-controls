@@ -226,7 +226,7 @@ describe('Diagram Control', () => {
             };
             diagram.dataBind();
             let value: HTMLElement = document.getElementById('node1_content_groupElement');
-            expect((value.childNodes[1] as HTMLElement).attributes[8].nodeValue === 'https://www.w3schools.com/images/w3schools_green.jpg').toBe(true);
+            expect((value.childNodes[1] as HTMLElement).attributes[9].nodeValue === 'https://www.w3schools.com/images/w3schools_green.jpg').toBe(true);
             done();
         });
         it('Changing path shape at run time', (done: Function) => {

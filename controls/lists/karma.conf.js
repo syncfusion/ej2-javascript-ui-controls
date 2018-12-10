@@ -18,7 +18,7 @@ module.exports = function (config) {
             "test-main.js",
             { pattern: "src/**/*.js", included: false },
             { pattern: "spec/**/*.spec.js", included: false },
-            { pattern: "spec/img/img1.jpg", included: false },
+            { pattern: "spec/img/*.jpg", included: false },
             { pattern: 'node_modules/es6-promise/dist/es6-promise.js', included: false },
             { pattern: "node_modules/@syncfusion/ej2-base/**/*.js", included: false },
             { pattern: "node_modules/@syncfusion/ej2-data/**/*.js", included: false },

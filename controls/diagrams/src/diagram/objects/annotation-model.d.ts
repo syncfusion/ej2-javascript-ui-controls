@@ -47,6 +47,12 @@ export interface AnnotationModel {
     content?: string;
 
     /**
+     * Sets the textual description of the node/connector
+     * @default undefined
+     */
+    template?: string | HTMLElement;
+
+    /**
      * Defines the visibility of the label
      * @default true
      */
@@ -146,6 +152,12 @@ export interface AnnotationModel {
      * @default new Margin(0,0,0,0)
      */
     margin?: MarginModel;
+
+    /**
+     * Sets the space to be left between an annotation and its parent node/connector
+     * @default new Margin(20,20,20,20)
+     */
+    dragLimit?: MarginModel;
 
     /**
      * Sets the type of the annotation

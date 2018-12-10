@@ -1,4 +1,4 @@
-import { isUndefined, getValue, isNullOrUndefined, setValue, uniqueID } from './util';import { ModuleLoader, ModuleDeclaration } from './module-loader';import { Base } from './base';import { Observer, BoundOptions } from './observer';import { ChildProperty } from './child-property';import { Property, NotifyPropertyChanges } from './notify-property-change';import { onIntlChange, rightToLeft, defaultCulture } from './internationalization';import { createElement } from './dom';
+import { isUndefined, getValue, isNullOrUndefined, setValue, uniqueID } from './util';import { ModuleLoader, ModuleDeclaration } from './module-loader';import { Base } from './base';import { Observer, BoundOptions } from './observer';import { ChildProperty } from './child-property';import { Property, NotifyPropertyChanges } from './notify-property-change';import { onIntlChange, rightToLeft, defaultCulture } from './internationalization';import { createElement, addClass, removeClass } from './dom';
 
 /**
  * Interface for a class Component

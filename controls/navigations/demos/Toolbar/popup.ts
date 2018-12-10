@@ -99,8 +99,8 @@ document.getElementById('btn_mouse').onclick = (e: Event) => {
     toolbarObj.refreshOverflow();
 };
 document.getElementById('btn_boot').onclick = (e : Event) => {
-    document.getElementsByTagName('link')[0].href = '../../styles/bootstrap.css';
+    document.getElementsByTagName('link')[0].href = './theme-files/bootstrap.css';
 };
 document.getElementById('btn_fabric').onclick = (e : Event) => {
-    document.getElementsByTagName('link')[0].href = '../../styles/fabric.css';
+    document.getElementsByTagName('link')[0].href = './theme-files/fabric.css';
 };

@@ -1,7 +1,7 @@
 import { Property, Event, Component, EmitType, Internationalization, extend } from '@syncfusion/ej2-base';
 import { L10n, remove, addClass, Browser, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';
-import { NotifyPropertyChanges, INotifyPropertyChanged, removeClass } from '@syncfusion/ej2-base';
-import { PivotEngine, IFieldListOptions, IPageSettings } from '../../base/engine';
+import { NotifyPropertyChanges, INotifyPropertyChanged, removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { PivotEngine, IFieldListOptions, IPageSettings, IDataOptions } from '../../base/engine';
 import { PivotFieldListModel } from './field-list-model';
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
@@ -49,6 +49,12 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     public isDragging: boolean;
     /** @hidden */
     public fieldListSpinnerElement: Element;
+    /** @hidden */
+    public clonedDataSource: DataSourceModel;
+    /** @hidden */
+    public clonedFieldList: IFieldListOptions;
+    /** @hidden */
+    public isRequiredUpdate: boolean = true;
     private defaultLocale: Object;
     private captionData: FieldOptionsModel[][];
 
@@ -120,6 +126,20 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      */
     @Property(false)
     public showValuesButton: boolean;
+
+    /**
+     * If `allowDeferLayoutUpdate` is set to true, then it will enable defer layout update to pivotfieldlist.
+     * @default false
+     */
+    @Property(false)
+    public allowDeferLayoutUpdate: boolean;
+
+    /**
+     * It allows to set the maximum number of nodes to be displayed in the member editor.
+     * @default 1000    
+     */
+    @Property(1000)
+    public maxNodeLimitInMemberEditor: number;
 
     //Event Declarations
     /**
@@ -282,8 +302,38 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             dateTextContent: 'Show the items for which the date',
             valueTextContent: 'Show the items for which',
             And: 'and',
+            Sum: 'Sum',
+            Count: 'Count',
+            DistinctCount: 'Distinct Count',
+            Product: 'Product',
+            Avg: 'Avg',
+            Min: 'Min',
+            Max: 'Max',
+            Index: 'Index',
+            SampleStDev: 'Sample StDev',
+            PopulationStDev: 'Population StDev',
+            SampleVar: 'Sample Var',
+            PopulationVar: 'Population Var',
+            RunningTotals: 'Running Totals',
+            DifferenceFrom: 'Difference From',
+            PercentageOfDifferenceFrom: '% of Difference From',
+            PercentageOfGrandTotal: '% of Grand Total',
+            PercentageOfColumnTotal: '% of Column Total',
+            PercentageOfRowTotal: '% of Row Total',
+            PercentageOfParentTotal: '% of Parent Total',
+            PercentageOfParentColumnTotal: '% of Parent Column Total',
+            PercentageOfParentRowTotal: '% of Parent Row Total',
             /* tslint:enable */
-            apply: 'APPLY'
+            apply: 'APPLY',
+            valueFieldSettings: 'Value field settings',
+            sourceName: 'Field name :',
+            sourceCaption: 'Field caption :',
+            summarizeValuesBy: 'Summarize values by :',
+            baseField: 'Base field :',
+            baseItem: 'Base item :',
+            example: 'e.g:',
+            editorDataLimitMsg: ' more items. Search to refine further.',
+            deferLayoutUpdate: 'Defer Layout Update'
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.isDragging = false;
@@ -384,8 +434,10 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         if (this.dataSource && this.dataSource.data) {
             this.trigger(events.enginePopulating, { 'dataSource': this.dataSource });
             let pageSettings: IPageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined;
+            let isDrillThrough: boolean = this.pivotGridModule ?
+                (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true;
             let enableValueSorting: boolean = this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined;
-            this.engineModule = new PivotEngine(this.dataSource, '', undefined, pageSettings, enableValueSorting);
+            this.engineModule = new PivotEngine(this.dataSource, '', undefined, pageSettings, enableValueSorting, isDrillThrough);
             this.pivotFieldList = this.engineModule.fieldList;
             let eventArgs: EnginePopulatedEventArgs = {
                 pivotFieldList: this.pivotFieldList,
@@ -418,6 +470,11 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             localeObj: this.localeObj
         };
         this.pivotCommon = new PivotCommon(args);
+        this.pivotCommon.control = this;
+        if (this.allowDeferLayoutUpdate) {
+            this.clonedDataSource = extend({}, this.dataSource, null, true) as IDataOptions;
+            this.clonedFieldList = extend({}, this.pivotFieldList, null, true) as IFieldListOptions;
+        }
     }
     private getFieldCaption(dataSource: DataSourceModel): void {
         this.getFields(dataSource);
@@ -453,15 +510,24 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      * @return {void}
      * @hidden
      */
-    public updateDataSource(isTreeViewRefresh?: boolean): void {
+    public updateDataSource(isTreeViewRefresh?: boolean, isEngineRefresh?: boolean): void {
         if (this.pivotGridModule) {
             showSpinner(this.pivotGridModule.element);
         }
         showSpinner(this.fieldListSpinnerElement as HTMLElement);
-        let pageSettings: IPageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined;
-        let enableValueSorting: boolean = this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined;
-        this.engineModule = new PivotEngine(this.dataSource, '', this.pivotFieldList, pageSettings, enableValueSorting);
-        this.getFieldCaption(this.dataSource);
+        if (isNullOrUndefined(isEngineRefresh)) {
+            let pageSettings: IPageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined;
+            let enableValueSorting: boolean = this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined;
+            let isDrillThrough: boolean =
+                this.pivotGridModule ?
+                    (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : undefined;
+            this.engineModule =
+                new PivotEngine(this.dataSource, '', this.pivotFieldList, pageSettings, enableValueSorting, isDrillThrough);
+            this.getFieldCaption(this.dataSource);
+        } else {
+            this.axisFieldModule.render();
+            this.isRequiredUpdate = false;
+        }
         let eventArgs: EnginePopulatedEventArgs = {
             dataSource: this.dataSource,
             pivotFieldList: this.pivotFieldList,
@@ -474,7 +540,20 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         if (!isTreeViewRefresh && this.treeViewModule.fieldTable && !this.isAdaptive) {
             this.notify(events.treeViewUpdate, {});
         }
-        this.updateView(this.pivotGridModule);
+        if (this.isRequiredUpdate) {
+            if (this.allowDeferLayoutUpdate) {
+                this.clonedDataSource = extend({}, this.dataSource, null, true) as IDataOptions;
+                this.clonedFieldList = extend({}, this.pivotFieldList, null, true) as IFieldListOptions;
+            }
+            this.updateView(this.pivotGridModule);
+        } else if (this.renderMode === 'Popup' && this.allowDeferLayoutUpdate) {
+            this.pivotGridModule.engineModule = this.engineModule;
+            this.pivotGridModule.
+                setProperties({ dataSource: (<{ [key: string]: Object }>this.dataSource).properties as IDataOptions }, true);
+            this.pivotGridModule.notify(events.uiUpdate, this);
+            hideSpinner(this.fieldListSpinnerElement as HTMLElement);
+        }
+        this.isRequiredUpdate = true;
         if (!this.pivotGridModule) {
             hideSpinner(this.fieldListSpinnerElement as HTMLElement);
         } else {
@@ -493,14 +572,21 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             this.setProperties({ dataSource: control.dataSource }, true);
             this.engineModule = control.engineModule;
             this.pivotFieldList = control.engineModule.fieldList;
-            this.pivotGridModule = control;
+            if (this.renderMode === 'Popup') {
+                this.pivotGridModule = control;
+            }
             this.getFieldCaption(control.dataSource);
             this.pivotCommon.engineModule = this.engineModule;
             this.pivotCommon.dataSource = this.dataSource;
+            this.pivotCommon.control = control;
             if (this.treeViewModule.fieldTable && !this.isAdaptive) {
                 this.notify(events.treeViewUpdate, {});
             }
             this.axisFieldModule.render();
+            if (this.renderMode === 'Fixed' && this.allowDeferLayoutUpdate) {
+                this.clonedDataSource = extend({}, this.dataSource, null, true) as IDataOptions;
+                this.clonedFieldList = extend({}, this.pivotFieldList, null, true) as IFieldListOptions;
+            }
         }
     }
 
@@ -517,6 +603,19 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             control.pivotValues = this.engineModule.pivotValues;
             control.dataBind();
         }
+    }
+
+    /**
+     * Called internally to trigger populate event.
+     * @hidden
+     */
+    public triggerPopulateEvent(): void {
+        let eventArgs: EnginePopulatedEventArgs = {
+            dataSource: this.dataSource,
+            pivotFieldList: this.pivotFieldList,
+            pivotValues: this.engineModule.pivotValues
+        };
+        this.trigger(events.enginePopulated, eventArgs);
     }
 
     /**

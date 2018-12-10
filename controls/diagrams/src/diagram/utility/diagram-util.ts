@@ -7,7 +7,7 @@ import { Container } from './../core/containers/container';
 import { StrokeStyle } from './../core/appearance';
 import { TextStyleModel } from './../core/appearance-model';
 import { Point } from './../primitives/point';
-import { PortVisibility, ConnectorConstraints, NodeConstraints, Shapes } from './../enum/enum';
+import { PortVisibility, ConnectorConstraints, NodeConstraints, Shapes, UmlActivityShapes, PortConstraints } from './../enum/enum';
 import { FlowShapes, SelectorConstraints, ThumbsConstraints } from './../enum/enum';
 import { Alignment, SegmentInfo } from '../rendering/canvas-interface';
 import { PathElement } from './../core/elements/path-element';
@@ -15,10 +15,13 @@ import { DiagramNativeElement } from './../core/elements/native-element';
 import { TextElement } from '../core/elements/text-element';
 import { ImageElement } from '../core/elements/image-element';
 import { PathAnnotation } from './../objects/annotation';
-import { PathModel, TextModel, ImageModel, FlowShapeModel, BasicShapeModel, NativeModel, HtmlModel } from './../objects/node-model';
-import { Node, FlowShape, BasicShape, Native, Html } from './../objects/node';
+import {
+    PathModel, TextModel, ImageModel, FlowShapeModel, BasicShapeModel,
+    NativeModel, HtmlModel, UmlActivityShapeModel
+} from './../objects/node-model';
+import { Node, FlowShape, BasicShape, Native, Html, UmlActivityShape } from './../objects/node';
 import { NodeModel } from './../objects/node-model';
-import { Connector, bezierPoints, BezierSegment } from './../objects/connector';
+import { Connector, bezierPoints, BezierSegment, ActivityFlow } from './../objects/connector';
 import { ConnectorModel } from './../objects/connector-model';
 import { DecoratorModel } from './../objects/connector-model';
 import { getBasicShape } from './../objects/dictionary/basic-shapes';
@@ -40,6 +43,8 @@ import { SymbolPalette } from '../../symbol-palette/symbol-palette';
 import { canResize } from './constraints-util';
 import { Selector } from '../interaction/selector';
 import { contains } from '../interaction/actions';
+import { getUMLActivityShape } from '../objects/dictionary/umlactivity-shapes';
+import { Canvas } from '../core/containers/canvas';
 
 
 
@@ -56,6 +61,16 @@ export function completeRegion(region: Rect, selectedObjects: (NodeModel | Conne
     return collection;
 }
 
+/** @private */
+export function findNodeByName(nodes: (NodeModel | ConnectorModel)[], name: string): boolean {
+    for (let i: number = 0; i < nodes.length; i++) {
+        if (nodes[i].id === name) {
+            return true;
+        }
+    }
+    return false;
+}
+
 /**
  * @private
  */
@@ -69,6 +84,73 @@ export function findObjectType(drawingObject: NodeModel | ConnectorModel): strin
         }
     }
     return type;
+}
+
+/**
+ * @private
+ */
+export function setUMLActivityDefaults(child: NodeModel | ConnectorModel, node: NodeModel | ConnectorModel): void {
+    if (node instanceof Node) {
+        switch ((child.shape as UmlActivityShape).shape) {
+            case 'JoinNode':
+                if (!(child as NodeModel).width) {
+                    node.width = 20;
+                }
+                if (!(child as NodeModel).height) {
+                    node.height = 90;
+                }
+                if (!child.style || !child.style.fill) {
+                    node.style.fill = 'black';
+                }
+                break;
+            case 'ForkNode':
+                if (!(child as NodeModel).width) {
+                    node.width = 90;
+                }
+                if (!(child as NodeModel).height) {
+                    node.height = 20;
+                }
+                if (!child.style || !child.style.fill) {
+                    node.style.fill = 'black';
+                }
+                break;
+            case 'InitialNode':
+                if (!child.style || !child.style.fill) {
+                    node.style.fill = 'black';
+                }
+                break;
+            case 'FinalNode':
+                if (!child.style || !child.style.fill) {
+                    node.style.fill = 'black';
+                }
+                break;
+        }
+    } else {
+        switch ((child.shape as ActivityFlow).flow) {
+            case 'Object':
+                if (!child.style || !child.style.strokeDashArray) {
+                    node.style.strokeDashArray = '8 4';
+                }
+                if (!child.style || !child.style.strokeWidth) {
+                    node.style.strokeWidth = 2;
+                }
+                if (!(child as ConnectorModel).targetDecorator || !(child as ConnectorModel).targetDecorator.shape) {
+                    (node as ConnectorModel).targetDecorator.shape = 'OpenArrow';
+                }
+                break;
+            case 'Control':
+                if (!child.style || !child.style.strokeWidth) {
+                    node.style.strokeWidth = 2;
+                }
+                if (!(child as ConnectorModel).targetDecorator || !(child as ConnectorModel).targetDecorator.shape) {
+                    (node as ConnectorModel).targetDecorator.shape = 'OpenArrow';
+                }
+                if (!(child as ConnectorModel).sourceDecorator || !(child as ConnectorModel).sourceDecorator.shape) {
+                    (node as ConnectorModel).sourceDecorator.shape = 'None';
+                }
+                break;
+        }
+    }
 }
 
 /** @private */
@@ -116,6 +198,7 @@ function pointsForBezier(connector: ConnectorModel): PointModel[] {
     return points;
 }
 
+/** @private */
 export function isDiagramChild(htmlLayer: HTMLElement): boolean {
     let element: HTMLElement = htmlLayer.parentElement;
     do {
@@ -128,6 +211,7 @@ export function isDiagramChild(htmlLayer: HTMLElement): boolean {
     return false;
 }
 
+/** @private */
 export function groupHasType(node: NodeModel, type: Shapes, nameTable: {}): boolean {
     let contains: boolean = false;
     if (node && node.children && node.children.length > 0) {
@@ -210,6 +294,23 @@ export function intersect3(lineUtil1: Segment, lineUtil2: Segment): Intersection
     return { enabled: false, intersectPt: point };
 }
 
+/** @private */
+export function intersect2(start1: PointModel, end1: PointModel, start2: PointModel, end2: PointModel): PointModel {
+    let point: PointModel = { x: 0, y: 0 };
+    let lineUtil1: Segment = getLineSegment(start1.x, start1.y, end1.x, end1.y);
+    let lineUtil2: Segment = getLineSegment(start2.x, start2.y, end2.x, end2.y);
+    let line3: Intersection = intersect3(lineUtil1, lineUtil2);
+    if (line3.enabled) {
+        return line3.intersectPt;
+    } else {
+        return point;
+    }
+
+}
+/** @private */
+export function getLineSegment(x1: number, y1: number, x2: number, y2: number): Segment {
+    return { 'x1': Number(x1) || 0, 'y1': Number(y1) || 0, 'x2': Number(x2) || 0, 'y2': Number(y2) || 0 };
+}
 /** @private */
 export function getPoints(element: DiagramElement, corners: Corners): PointModel[] {
     let line: PointModel[] = [];
@@ -738,6 +839,8 @@ export function updateContent(newValues: Node, actualObject: Node, diagram: Diag
             let shapes: FlowShapes = (actualObject.shape as FlowShapeModel).shape;
             let flowshapedata: string = getFlowShape(shapes.toString());
             (actualObject.wrapper.children[0] as PathModel).data = flowshapedata;
+        } else if (actualObject.shape.type === 'UmlActivity' && (newValues.shape as UmlActivityShapeModel).shape !== undefined) {
+            updateUmlActivityNode(actualObject, newValues);
         } else if ((newValues.shape as BasicShapeModel).cornerRadius !== undefined) {
             (actualObject.wrapper.children[0] as BasicShapeModel).cornerRadius = (newValues.shape as BasicShapeModel).cornerRadius;
         } else if ((newValues.shape as FlowShapeModel).shape !== undefined) {
@@ -745,10 +848,84 @@ export function updateContent(newValues: Node, actualObject: Node, diagram: Diag
             let shapes: string = (actualObject.shape as BasicShapeModel).shape;
             let basicShapeData: string = getBasicShape(shapes.toString());
             (actualObject.wrapper.children[0] as PathModel).data = basicShapeData;
-
         }
     }
 }
+/** @private */
+export function updateUmlActivityNode(actualObject: Node, newValues: Node): void {
+    (actualObject.shape as UmlActivityShapeModel).shape = (newValues.shape as UmlActivityShapeModel).shape;
+    let shapes: UmlActivityShapes = (actualObject.shape as UmlActivityShapeModel).shape;
+    let umlActivityShapeData: string = getUMLActivityShape(shapes.toString());
+    if ((actualObject.shape as UmlActivityShapeModel).shape === 'InitialNode') {
+        actualObject.wrapper.children[0].style.fill = 'black';
+    } else if ((actualObject.shape as UmlActivityShapeModel).shape === 'ForkNode' ||
+        (actualObject.shape as UmlActivityShapeModel).shape === 'JoinNode') {
+        actualObject.wrapper.children[0].style.fill = 'black';
+    } else if ((actualObject.shape as UmlActivityShapeModel).shape === 'FinalNode') {
+        if (actualObject instanceof Node) {
+            actualObject.wrapper = getUMLFinalNode(actualObject);
+        }
+        (actualObject.wrapper.children[0] as PathModel).data = umlActivityShapeData;
+    }
+}
+
+/** @private */
+export function getUMLFinalNode(node: Node): Canvas {
+    let finalNodeShape: Canvas = new Canvas();
+    finalNodeShape.style.fill = 'transparent';
+    //childNode0
+    let pathData: string = 'M 25 50 C 11.21 50 0 38.79 0 25 C 0 11.21 11.21 0 25 0 C 38.78 0 50 11.21 50 25' +
+        ' C 50 38.79 38.78 50 25 50';
+    let innerFinalNode: PathElement = new PathElement();
+    innerFinalNode.data = pathData;
+    innerFinalNode.id = node.id + '_0_finalNode';
+    innerFinalNode.horizontalAlignment = 'Center';
+    innerFinalNode.verticalAlignment = 'Center';
+    innerFinalNode.relativeMode = 'Object';
+    innerFinalNode.style.strokeColor = node.style.strokeColor;
+    innerFinalNode.style.strokeWidth = node.style.strokeWidth;
+    //childNode1
+    let outerFinalNode: PathElement = new PathElement();
+    outerFinalNode.data = pathData;
+    outerFinalNode.id = node.id + '_1_finalNode';
+    outerFinalNode.horizontalAlignment = 'Center';
+    outerFinalNode.verticalAlignment = 'Center';
+    outerFinalNode.relativeMode = 'Object';
+    outerFinalNode.style.fill = node.style.fill;
+    outerFinalNode.style.strokeColor = node.style.strokeColor;
+    outerFinalNode.style.strokeWidth = node.style.strokeWidth;
+    //append child and set style
+    finalNodeShape.children = [innerFinalNode, outerFinalNode];
+    finalNodeShape.children[0].width = node.width;
+    finalNodeShape.children[0].height = node.height;
+    finalNodeShape.children[1].height = node.height / 1.5;
+    finalNodeShape.children[1].width = node.width / 1.5;
+    finalNodeShape.style.strokeWidth = 0;
+    finalNodeShape.style.strokeColor = 'transparent';
+    return finalNodeShape;
+}
+
+/** @private */
+export function getUMLActivityShapes(umlActivityShape: PathElement, content: DiagramElement, node: Node): DiagramElement {
+    let umlActivityShapeData: string = getUMLActivityShape((node.shape as UmlActivityShape).shape);
+    umlActivityShape.data = umlActivityShapeData;
+    content = umlActivityShape;
+    switch ((node.shape as UmlActivityShape).shape) {
+        case 'StructuredNode':
+            if (node.annotations) {
+                for (let i: number = 0; i < node.annotations.length; i++) {
+                    node.annotations[i].content = '<<' + node.annotations[i].content + '>>';
+                }
+            }
+            content = umlActivityShape;
+            break;
+        case 'FinalNode':
+            content = getUMLFinalNode(node);
+            break;
+    }
+    return content;
+}
+
 /** @private */
 export function removeItem(array: String[], item: string): void {
     let index: number = array.indexOf(item);
@@ -772,8 +949,10 @@ export function updateConnector(connector: Connector, points: PointModel[]): voi
         anglePoint = connector.intermediatePoints;
     }
     points = connector.clipDecorators(connector, points);
-    let element: DiagramElement = connector.wrapper.children[1];
-    connector.updateDecoratorElement(element, points[0], anglePoint[1], srcDecorator, );
+    let element: DiagramElement = connector.wrapper.children[0];
+    (element as PathElement).canMeasurePath = true;
+    element = connector.wrapper.children[1];
+    connector.updateDecoratorElement(element, points[0], anglePoint[1], srcDecorator);
     targetPoint = connector.targetPoint; tarDecorator = connector.targetDecorator;
     element = connector.wrapper.children[2];
     connector.updateDecoratorElement(element, points[points.length - 1], anglePoint[anglePoint.length - 2], tarDecorator);
@@ -902,6 +1081,28 @@ export function findPort(node: NodeModel | ConnectorModel, id: string): PointPor
 }
 
 /** @private */
+export function getInOutConnectPorts(node: NodeModel, isInConnect: boolean): PointPortModel {
+    let port: PointPortModel = {};
+    let i: number = 0;
+    if (node.ports) {
+        let ports: PointPortModel[] = node.ports;
+        for (i = 0; i < ports.length; i++) {
+            if (isInConnect) {
+                if ((ports[i].constraints & PortConstraints.InConnect)) {
+                    port = ports[i];
+                }
+            } else {
+                if ((ports[i].constraints & PortConstraints.OutConnect)) {
+                    port = ports[i];
+                }
+            }
+        }
+    }
+    return port;
+}
+
+
+/** @private */
 export function findObjectIndex(node: NodeModel | ConnectorModel, id: string, annotation?: boolean): string {
     let index: number;
     let collection: (PointPortModel | ShapeAnnotationModel | PathAnnotationModel)[] = (annotation) ? node.annotations : node.ports;
@@ -956,6 +1157,8 @@ export function scaleElement(element: DiagramElement, sw: number, sh: number, re
         }
     }
 }
+
+/** @private */
 export function arrangeChild(obj: Node, x: number, y: number, nameTable: {}, drop: boolean, diagram: Diagram | SymbolPalette): void {
     let child: string[] = obj.children;
     let node: Node;
@@ -1030,7 +1233,13 @@ export function getElement(element: DiagramHtmlElement | DiagramNativeElement): 
     let length: string = 'length';
     for (let i: number = 0; nodes && i < nodes[length]; i++) {
         if (nodes[i].id === element.nodeId) {
-            return nodes[i];
+            return getAnnotation(nodes[i], element);
+        }
+    }
+    let connectors: Object = diagramElement[instance][0].connectors;
+    for (let i: number = 0; connectors && i < connectors[length]; i++) {
+        if (connectors[i].id === element.nodeId) {
+            return getAnnotation(connectors[i], element);
         }
     }
     let enterObject: {} = diagramElement[instance][0].enterObject;
@@ -1042,6 +1251,18 @@ export function getElement(element: DiagramHtmlElement | DiagramNativeElement): 
         }
     }
     return null;
+}
+
+function getAnnotation(obj: Object, element: DiagramHtmlElement | DiagramNativeElement): Object {
+    let annotations: Object = (obj as NodeModel | ConnectorModel).annotations;
+    let length: string = 'length';
+    let j: number;
+    for (j = 0; annotations && j < annotations[length]; j++) {
+        if ((element as DiagramHtmlElement).annotationId && annotations[j].id === (element as DiagramHtmlElement).annotationId) {
+            return annotations[j];
+        }
+    }
+    return obj;
 }
 
 /** @private */

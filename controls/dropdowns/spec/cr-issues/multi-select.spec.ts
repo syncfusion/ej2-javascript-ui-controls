@@ -1,6 +1,6 @@
 
 import { createElement, isVisible, isNullOrUndefined, Browser, EmitType } from '@syncfusion/ej2-base';
-import { MultiSelect } from '../../src/multi-select/index';
+import { MultiSelect, ISelectAllEventArgs } from '../../src/multi-select/index';
 import { FilteringEventArgs } from '../../src/drop-down-base';
 import { DataManager, Query, ODataV4Adaptor, ODataAdaptor } from '@syncfusion/ej2-data';
 import { extend } from '@syncfusion/ej2-base';
@@ -867,6 +867,7 @@ describe('MultiSelect', () => {
             }, 400);
         });
     });
+
     describe(' EJ2-18283 - selectAll eventArgs', () => {
         let listObj: any;
         let popupObj: any;
@@ -904,6 +905,43 @@ describe('MultiSelect', () => {
                 expect(!isNullOrUndefined(selectEle)).toBe(true);
                 done();
             }, 400);
+        });
+    });
+    describe('EJ2-18758 - UnSelectAll issue', () => {
+        let listObj: MultiSelect;
+        let data: string[] = ['JAVA', 'C#']
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let originalTimeout: number;
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: data,
+                mode: 'CheckBox',
+                fields: { text: "text", value: "text" },
+                showSelectAll: true
+            });
+            listObj.appendTo(element);
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+
+        it(' click on unselectAll element', (done) => {
+            listObj.selectAll(true);
+            listObj.open = (): void => {
+                (<any>listObj).dispatchEvent((<any>listObj).checkBoxSelectionModule.checkAllParent, "mousedown");
+            };
+            listObj.selectedAll = (args: ISelectAllEventArgs): void => {
+                expect(isNullOrUndefined(args.items[0].querySelector('.e-check'))).toBe(true);
+                done();
+            };
+            listObj.showPopup();
         });
     });
 });

@@ -77,7 +77,7 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('container0_AxisLabel_0');
                 let svg1: HTMLElement = document.getElementById('containerAxisLine_1');
-                expect(parseFloat(svg.getAttribute('x')) < parseFloat(svg1.getAttribute('x1'))).toBe(true);
+                expect(parseFloat(svg.getAttribute('x')) < parseFloat(svg1.getAttribute('d').split(' ')[1])).toBe(true);
                 done();
             };
             chart.loaded = loaded;

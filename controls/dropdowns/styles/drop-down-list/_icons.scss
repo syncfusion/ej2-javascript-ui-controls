@@ -1,10 +1,10 @@
 @include export-module('dropdownlist-icons') {
   .e-ddl .e-search-icon::before {
-    content: $search-icon-content;
+    content: $ddl-search-icon-content;
   }
 
   .e-ddl .e-back-icon::before {
-    content: $back-icon-content;
+    content: $ddl-back-icon-content;
     font-size: 20px;
   }
 

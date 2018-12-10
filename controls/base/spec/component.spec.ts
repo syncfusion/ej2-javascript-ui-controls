@@ -775,12 +775,12 @@ describe('Component', () => {
             refComponent.appendTo(elem);
         });
         it('before refresh', () => {
-            expect(elem.classList.contains('e-control')).toBe(true);
+            expect(elem.classList.contains('e-lib')).toBe(true);
             expect(elem.classList.contains('e-styler')).toBe(true);
         });
         it('after refresh', () => {
             refComponent.refresh();
-            expect(elem.classList.contains('e-control')).toBe(true);
+            expect(elem.classList.contains('e-lib')).toBe(true);
             expect(elem.classList.contains('e-styler')).toBe(true);
         });
     });

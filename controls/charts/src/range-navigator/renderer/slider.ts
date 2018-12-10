@@ -1,5 +1,5 @@
 import { RangeNavigator, RangeValueType } from '../index';
-import { SvgRenderer, Browser, createElement } from '@syncfusion/ej2-base';
+import { SvgRenderer, Browser, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Rect, RectOption } from '../../common/utils/helper';
 import { getXLocation, getExactData, getRangeValueXByPoint, DataPoint, getNearestValue } from '../utils/helper';
 import { drawSymbol, PathOption, VisibleRangeModel, linear, VisibleLabels, Axis } from '../../chart/index';
@@ -358,10 +358,10 @@ export class RangeSlider {
             (this.rightSlider.childNodes[2] as Element).setAttribute('fill', this.thumbColor);
             return 'UnSelectedArea';
         } else if (id.indexOf(this.elementId + '_AxisLabel_') > -1 && this.control.valueType === 'DateTime') {
-            this.labelIndex = +id.split('_')[2];
+            this.labelIndex = +id.substring(id.lastIndexOf('_') + 1 , id.length);
             return 'firstLevelLabels';
         } else if (id.indexOf(this.elementId + '_SecondaryLabel') > -1 && this.control.valueType === 'DateTime') {
-            this.labelIndex = +id.split('_')[2];
+            this.labelIndex = +id.substring(id.lastIndexOf('_') + 1 , id.length);
             return 'secondLevelLabels';
         } else {
             (this.leftSlider.childNodes[2] as Element).setAttribute('fill', this.thumbColor);
@@ -381,6 +381,9 @@ export class RangeSlider {
         let range: VisibleRangeModel = control.chartSeries.xAxis.actualRange;
         let trigger: boolean = control.enableDeferredUpdate;
         let endbledTooltip: boolean = control.tooltip.enable;
+        if (control.stockChart) {
+            control.stockChart.zoomChange = false;
+        }
         if (this.currentSlider === 'UnSelectedArea') {
             let value: number; let start: number; let end: number;
             let isRtl: boolean = control.enableRtl;
@@ -452,13 +455,13 @@ export class RangeSlider {
      * @param start 
      * @param end
      */
-    public performAnimation(start: number, end: number, control: RangeNavigator): void {
+    public performAnimation(start: number, end: number, control: RangeNavigator, animationDuration ?: number): void {
         let currentStart: number = this.currentStart;
         let currentEnd: number = this.currentEnd;
         let isDeffered: boolean = control.enableDeferredUpdate;
         let enableTooltip: boolean = control.tooltip.enable;
         new Animation({}).animate(createElement('div'), {
-            duration: this.control.animationDuration,
+            duration: !isNullOrUndefined(animationDuration) ? animationDuration : this.control.animationDuration,
             progress: (args: AnimationOptions): void => {
                 this.setSlider(
                     linear(args.timeStamp, 0, start - currentStart, args.duration) + currentStart,

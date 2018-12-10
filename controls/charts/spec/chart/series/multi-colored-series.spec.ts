@@ -682,7 +682,7 @@ describe('Chart Control Multi Colored Series', () => {
     /**
      * Multi Colored Area Segments
      */
-    describe('Area series Segments - Empty poinys', () => {
+    describe('Area series Segments - Empty points', () => {
         let chartObj: Chart;
         let loaded: EmitType<ILoadedEventArgs>;
         let element: Element;
@@ -770,16 +770,6 @@ describe('Chart Control Multi Colored Series', () => {
             chartObj.refresh();
         });
 
-        it('Animation', (done: Function) => {
-            chartObj.animationComplete = (args: IAnimationCompleteEventArgs): void => {
-                let pathLength: number = (<SVGPathElement>args.series.pathElement).getTotalLength();
-                expect(pathLength >= 200).toBe(true);
-                done();
-            };
-            chartObj.series[0].animation.enable = true;
-            chartObj.refresh();
-
-        });
     });
 
 
@@ -871,16 +861,6 @@ describe('Chart Control Multi Colored Series', () => {
             };
             chartObj.loaded = loaded;
             chartObj.series[0].emptyPointSettings.mode = 'Zero';
-            chartObj.refresh();
-        });
-
-        it('Animation', (done: Function) => {
-            chartObj.animationComplete = (args: IAnimationCompleteEventArgs): void => {
-                let pathLength: number = (<SVGPathElement>args.series.pathElement).getTotalLength();
-                expect(pathLength >= 50).toBe(true);
-                done();
-            };
-            chartObj.series[0].animation.enable = true;
             chartObj.refresh();
         });
     });

@@ -1,4 +1,4 @@
-import { HeatMap } from '../heatmap';import { isNullOrUndefined, DateFormatOptions, Complex } from '@syncfusion/ej2-base';import { Property, ChildProperty } from '@syncfusion/ej2-base';import { AdaptorType } from '../utils/enum';import { DataUtil } from '@syncfusion/ej2-data';import { increaseDateTimeInterval } from '../utils/helper';import { AxisModel } from '../axis/axis-model';import { BubbleDataModel } from '../model/base-model';import { BubbleData } from '../model/base';
+import { HeatMap } from '../heatmap';import { isNullOrUndefined, DateFormatOptions, Complex } from '@syncfusion/ej2-base';import { Property, ChildProperty } from '@syncfusion/ej2-base';import { AdaptorType } from '../utils/enum';import { DataUtil } from '@syncfusion/ej2-data';import { increaseDateTimeInterval } from '../utils/helper';import { AxisModel } from '../axis/axis-model';import { BubbleDataModel } from '../model/base-model';import { BubbleData } from '../model/base';import { Axis } from '../axis/axis';
 
 /**
  * Interface for a class Data

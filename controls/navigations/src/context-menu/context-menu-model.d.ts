@@ -1,4 +1,4 @@
-import { Collection, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';import { MenuBase, MenuItem } from '../common/menu-base';import { MenuItemModel } from './../common/menu-base-model';
+import { attributes, Collection, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';import { getZindexPartial } from '@syncfusion/ej2-popups';import { MenuBase, MenuItem } from '../common/menu-base';import { MenuItemModel } from './../common/menu-base-model';
 import {MenuBaseModel} from "../common/menu-base-model";
 
 /**
@@ -21,6 +21,7 @@ export interface ContextMenuModel extends MenuBaseModel{
     /**
      * Specifies menu items with its properties which will be rendered as ContextMenu.
      * @default []
+     * @aspType object
      */
     items?: MenuItemModel[];
 

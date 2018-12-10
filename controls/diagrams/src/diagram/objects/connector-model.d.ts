@@ -1,4 +1,4 @@
-import { Property, Complex, Collection, ChildProperty, ComplexFactory, CollectionFactory } from '@syncfusion/ej2-base';import { ShapeStyle, StrokeStyle } from '../core/appearance';import { StrokeStyleModel, ShapeStyleModel } from '../core/appearance-model';import { Point } from '../primitives/point';import { TextElement } from '../core/elements/text-element';import { PointModel } from '../primitives/point-model';import { Segments, DecoratorShapes, Transform, ConnectorConstraints, Direction, LayoutOrientation } from '../enum/enum';import { Rect } from '../primitives/rect';import { Size } from '../primitives/size';import { findAngle, findConnectorPoints, Bridge, getOuterBounds } from '../utility/connector';import { getAnnotationPosition, alignLabelOnSegments, updateConnector } from '../utility/diagram-util';import { randomId, getFunction } from './../utility/base-util';import { PathElement } from '../core/elements/path-element';import { PathAnnotation } from './annotation';import { Canvas } from '../core/containers/canvas';import { getDecoratorShape } from './dictionary/common';import { IElement } from './interface/IElement';import { Container } from '../core/containers/container';import { DiagramElement } from '../core/elements/diagram-element';import { HorizontalAlignment, VerticalAlignment } from '../enum/enum';import { ConnectionShapes, BpmnFlows, BpmnMessageFlows, BpmnSequenceFlows, BpmnAssociationFlows } from '../enum/enum';import { SegmentInfo, Alignment } from '../rendering/canvas-interface';import { PathAnnotationModel } from './annotation-model';import { NodeBase } from './node-base';import { DiagramTooltipModel } from './tooltip-model';import { DiagramTooltip } from './tooltip';import { Matrix, identityMatrix, rotateMatrix, scaleMatrix, transformPointsByMatrix } from '../primitives/matrix';
+import { Property, Complex, Collection, ChildProperty, ComplexFactory, CollectionFactory } from '@syncfusion/ej2-base';import { ShapeStyle, StrokeStyle } from '../core/appearance';import { StrokeStyleModel, ShapeStyleModel } from '../core/appearance-model';import { Point } from '../primitives/point';import { TextElement } from '../core/elements/text-element';import { PointModel } from '../primitives/point-model';import { Segments, DecoratorShapes, Transform, ConnectorConstraints, Direction, LayoutOrientation, Status } from '../enum/enum';import { Rect } from '../primitives/rect';import { Size } from '../primitives/size';import { findAngle, findConnectorPoints, Bridge, getOuterBounds } from '../utility/connector';import { getAnnotationPosition, alignLabelOnSegments, updateConnector, setUMLActivityDefaults } from '../utility/diagram-util';import { randomId, getFunction } from './../utility/base-util';import { PathElement } from '../core/elements/path-element';import { PathAnnotation } from './annotation';import { Canvas } from '../core/containers/canvas';import { getDecoratorShape } from './dictionary/common';import { IElement } from './interface/IElement';import { Container } from '../core/containers/container';import { DiagramElement } from '../core/elements/diagram-element';import { HorizontalAlignment, VerticalAlignment, AssociationFlow, ClassifierShape, Multiplicity } from '../enum/enum';import { ConnectionShapes, UmlActivityFlows, BpmnFlows, BpmnMessageFlows, BpmnSequenceFlows, BpmnAssociationFlows } from '../enum/enum';import { SegmentInfo, Alignment } from '../rendering/canvas-interface';import { PathAnnotationModel } from './annotation-model';import { NodeBase } from './node-base';import { DiagramTooltipModel } from './tooltip-model';import { DiagramTooltip } from './tooltip';import { Matrix, identityMatrix, rotateMatrix, scaleMatrix, transformPointsByMatrix, transformPointByMatrix } from '../primitives/matrix';import { DiagramHtmlElement } from '../core/elements/html-element';
 import {NodeBaseModel} from "./node-base-model";
 
 /**
@@ -93,6 +93,29 @@ export interface ConnectorShapeModel {
      * @default 'None'
      */
     type?: ConnectionShapes;
+
+}
+
+/**
+ * Interface for a class ActivityFlow
+ */
+export interface ActivityFlowModel extends ConnectorShapeModel{
+
+    /**
+     * Defines the type of the UMLActivity flows
+     * Object - Sets the type of the UMLActivity Flow as Object
+     * Control - Sets the type of the UMLActivity Flow as Control
+     * Exception - Sets the type of the UMLActivity Flow as Exception
+     * @default 'Object'
+     * @IgnoreSingular
+     */
+    flow?: UmlActivityFlows;
+
+    /**
+     * Defines the height of the exception flow.
+     * @default '50'
+     */
+    exceptionFlowHeight?: number;
 
 }
 
@@ -265,6 +288,97 @@ export interface OrthogonalSegmentModel extends ConnectorSegmentModel{
 }
 
 /**
+ * Interface for a class MultiplicityLabel
+ */
+export interface MultiplicityLabelModel {
+
+    /**
+     * Defines the type of the Classifier Multiplicity
+     * @default ''
+     * @IgnoreSingular
+     */
+    optional?: boolean;
+
+    /**
+     * Defines the type of the Classifier Multiplicity
+     * @default ''
+     * @IgnoreSingular
+     */
+    lowerBounds?: string;
+
+    /**
+     * Defines the type of the Classifier Multiplicity
+     * @default ''
+     * @IgnoreSingular
+     */
+    upperBounds?: string;
+
+}
+
+/**
+ * Interface for a class ClassifierMultiplicity
+ */
+export interface ClassifierMultiplicityModel {
+
+    /**
+     * Defines the type of the Classifier Multiplicity
+     * @default ''
+     * @IgnoreSingular
+     */
+    type?: Multiplicity;
+
+    /**
+     * Defines the type of the Classifier Multiplicity
+     * @default ''
+     * @IgnoreSingular
+     */
+    target?: MultiplicityLabelModel;
+
+    /**
+     * Defines the type of the Classifier Multiplicity
+     * @default ''
+     * @IgnoreSingular
+     */
+    source?: MultiplicityLabelModel;
+
+}
+
+/**
+ * Interface for a class RelationShip
+ */
+export interface RelationShipModel extends ConnectorShapeModel{
+
+    /**
+     * Defines the type of the  UMLConnector
+     * @default ''
+     * @IgnoreSingular
+     */
+    type?: ConnectionShapes;
+
+    /**
+     * Defines the association direction
+     * @default ''
+     * @IgnoreSingular
+     */
+    relationship?: ClassifierShape;
+
+    /**
+     * Defines the association direction
+     * @default ''
+     * @IgnoreSingular
+     */
+    associationType?: AssociationFlow;
+
+    /**
+     * Defines the type of the Classifier Multiplicity
+     * @default ''
+     * @IgnoreSingular
+     */
+    multiplicity?: ClassifierMultiplicityModel;
+
+}
+
+/**
  * Interface for a class Connector
  */
 export interface ConnectorModel extends NodeBaseModel{
@@ -274,7 +388,7 @@ export interface ConnectorModel extends NodeBaseModel{
      * @default 'Bpmn'
      * @aspType object
      */
-    shape?: ConnectorShapeModel | BpmnFlowModel;
+    shape?: ConnectorShapeModel | BpmnFlowModel | RelationShipModel;
 
     /**
      * Defines the constraints of connector

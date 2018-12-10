@@ -66,6 +66,27 @@ describe("Accordion Testing", () => {
             expect(ele.classList.contains("e-control")).toEqual(true);
         });
     });
+    describe("Accordion Destroyed Class Testing",() =>{
+        let accordion:Accordion;
+        beforeEach(():void => {
+         let ele: HTMLElement = document.createElement("div");
+         ele.id="accordion";
+         document.body.appendChild(ele);
+         accordion=new Accordion({},ele);   
+        });
+        afterEach(():void =>{
+            if(accordion)
+            {
+                accordion.destroy();
+                let ele:HTMLElement = document.getElementById("accordion");
+                expect(ele.classList.contains("e-acrdn-root")).toEqual(false);
+            }
+            document.body.innerHTML="";
+        });
+        it("Accordion Base class Testing",() =>{
+
+        });
+    });
 
     describe("Accordion Base property Testing ", () => {
         let accordion: Accordion;
@@ -2522,6 +2543,8 @@ describe("Accordion Testing", () => {
             expect(curObject.EventArgs[2].isExpanded).toBe(true);
             expect(curObject.EventArgs[1].element === curObject.EventArgs[2].element).toBe(true);
             expect(curObject.EventArgs[1].item === curObject.EventArgs[2].item).toBe(true);
+            expect(curObject.EventArgs[1].index === curObject.EventArgs[2].index).toBe(true);
+            expect(curObject.EventArgs[1].content === curObject.EventArgs[2].content).toBe(true);
             curObject.EventArgs = null;
             (<HTMLElement>ele.children[0].children[0]).click();
             setTimeout(() => { done(); }, TIME_DELAY);
@@ -3094,6 +3117,119 @@ describe("Accordion Testing", () => {
                 expect(document.activeElement === elefirst).toBe(true);
                 done();
             }, 1000);
+        }); 
+    });
+    describe("onPropertyChange - value Testing", () => {
+        let accordion: Accordion;
+        document.body.innerHTML = "";
+        beforeEach(() => {
+            let ele: HTMLElement = document.createElement("div");
+            ele.id = "accordion";
+            document.body.appendChild(ele);
+        })
+        afterEach((): void => {
+            if (accordion) {
+                accordion.destroy();
+            }
+            document.body.innerHTML = "";
+        });
+        it("header without content Testing", () => {
+            let ele : HTMLElement = document.getElementById('accordion');
+            accordion = new Accordion (
+                {
+                    items : [
+                        { header :"sample", content : ""},
+                        { header :"sample", content : "sample content"}
+                    ]
+                }, ele); 
+            accordion.dataBind();
+            expect((ele.children[0]).querySelector('e-acrdn-header .e-toggle-icon')).toEqual(null);
+            expect((ele.children[1]).querySelector('e-acrdn-header .e-toggle-icon')).not.toEqual(undefined);
+        });
+        it("empty header with empty content Testing" , () => {
+            let ele : HTMLElement = document.getElementById('accordion');
+            accordion = new Accordion (
+                {
+                    items : [
+                        { header : "", content : ""},
+                        { header : "sample2", content : "sample content2"}
+                    ]
+                }, ele);
+            accordion.items[0].header = "sample1";
+            accordion.dataBind();
+            expect(accordion.items[0].header).toEqual('sample1');
+            expect((ele.children[0]).querySelector('e-acrdn-header .e-toggle-icon')).toEqual(null);
+            accordion.items[0].content = "sample content1";
+            accordion.dataBind();
+            expect(accordion.items[0].content).toEqual('sample content1');
+            expect((ele.children[0]).querySelector('e-acrdn-header .e-toggle-icon')).not.toEqual(undefined);
+            expect((ele.children[1]).querySelector('e-acrdn-header .e-toggle-icon')).not.toEqual(undefined);
+        });
+    });
+    describe("Accordion Event Flow testing for collapsing and collapse ", () => {
+        let accordion: any;
+        function argsPushing(e: any, curObject: any): void {
+            if (curObject.EventArgs) {
+                curObject.EventArgs.push(e);
+            } else {
+                curObject.EventArgs = [];
+                curObject.EventArgs.push(e);
+            }
+        }
+        function click(e: AccordionClickArgs): void {
+            accordion.EventArgs = [];
+            accordion.EventArgs.push(e);
+        }
+        function collapsing(e: any): void {
+            argsPushing(clone(e), this);
+        }
+        function collapse(e: any): void {
+            argsPushing(clone(e), this);
+        }
+        afterEach((): void => {
+            let ele: HTMLElement = document.getElementById('accordion');
+            let curObject: any = (<any>ele).ej2_instances[0];
+            expect(curObject.EventArgs[0].name).toBe('clicked');
+            expect(curObject.EventArgs[1].name).toBe('expanding');
+            expect(curObject.EventArgs[2].name).toBe('expanded');
+            expect(curObject.EventArgs[1].isExpanded).toBe(false);
+            expect(curObject.EventArgs[2].isExpanded).toBe(false);
+            expect(curObject.EventArgs[1].element === curObject.EventArgs[2].element).toBe(true);
+            expect(curObject.EventArgs[1].item === curObject.EventArgs[2].item).toBe(true);
+            if (accordion) {
+                accordion.destroy();
+            }
+            document.body.innerHTML = "";
+        });
+        beforeEach((done: Function) => {
+            let ele: HTMLElement = document.createElement("div");
+            ele.id = "accordion";
+            document.body.appendChild(ele);
+            accordion = new Accordion(
+                {
+                    clicked: click,
+                    expanding: collapsing,
+                    expanded: collapse,
+                    items: [
+                        { header: "Item1", content: "Content of Item1" },
+                        { header: "Item2", content: "Content of Item2" }
+                    ]
+                }, ele);
+            (<HTMLElement>ele.children[0].children[0]).click();
+            setTimeout(() => { done(); }, TIME_DELAY);
+        });
+        it("Accordion collapsing and collapse Testing", (done: Function) => {
+            let ele: HTMLElement = document.getElementById('accordion');
+            let curObject: any = (<any>ele).ej2_instances[0];
+            expect(curObject.EventArgs[0].name).toBe('clicked');
+            expect(curObject.EventArgs[1].name).toBe('expanding');
+            expect(curObject.EventArgs[2].name).toBe('expanded');
+            expect(curObject.EventArgs[1].element === curObject.EventArgs[2].element).toBe(true);
+            expect(curObject.EventArgs[1].item === curObject.EventArgs[2].item).toBe(true);
+            expect(curObject.EventArgs[1].index === curObject.EventArgs[2].index).toBe(true);
+            expect(curObject.EventArgs[1].content === curObject.EventArgs[2].content).toBe(true);
+            (<HTMLElement>ele.children[0].children[0]).click();
+            setTimeout(() => { done(); }, TIME_DELAY);
         });
     });
 });

@@ -175,7 +175,7 @@ export interface ColorMappingModel {
      * specifies the color
      * @default null 
      */
-    color?: string;
+    color?: string | string[];
 
     /**
      * Specifies the label text.
@@ -200,6 +200,12 @@ export interface ColorMappingModel {
      * @default null 
      */
     maxOpacity?: number;
+
+    /**
+     * Specifies the visibility of the legend for color mapping
+     * @default true
+     */
+    showLegend?: boolean;
 
 }
 
@@ -254,6 +260,12 @@ export interface LegendSettingsModel {
      * @default null
      */
     fill?: string;
+
+    /**
+     * Specifies the legend opacity of shape color
+     * @default 1
+     */
+    opacity?: number;
 
     /**
      * Customize the shape width.
@@ -339,6 +351,24 @@ export interface LegendSettingsModel {
      * Customize the legend placed by given x and y values. 
      */
     location?: Location;
+
+    /**
+     * Enable or disable the visibility of the legend.
+     * @default null
+     */
+    showLegendPath?: string;
+
+    /**
+     * Used to render particular field in dataSource as legend.
+     * @default null
+     */
+    valuePath?: string;
+
+    /**
+     * Used to remove duplicate of the legend items.
+     * @default false
+     */
+    removeDuplicateLegend?: boolean;
 
 }
 

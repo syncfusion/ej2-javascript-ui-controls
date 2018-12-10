@@ -19,3 +19,7 @@ export const LINK_COMMAND: string = 'link-commands';
  * @hidden
  */
 export const CLEAR_COMMAND: string = 'clear-commands';
+/* Table plugin events
+ * @hidden
+ */
+export const MD_TABLE: string = 'insert-table';

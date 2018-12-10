@@ -41,6 +41,8 @@ export const columnDrag: string = 'columnDrag';
 /** @hidden */
 export const columnDrop: string = 'columnDrop';
 /** @hidden */
+export const rowDragStartHelper: string = 'rowDragStartHelper';
+/** @hidden */
 export const rowDragStart: string = 'rowDragStart';
 /** @hidden */
 export const rowDrag: string = 'rowDrag';
@@ -263,6 +265,8 @@ export const excelQueryCellInfo: string = 'excelQueryCellInfo';
 /** @hidden */
 export const excelHeaderQueryCellInfo: string = 'excelHeaderQueryCellInfo';
 /** @hidden */
+export const exportDetailDataBound: string = 'exportdetaildatabound';
+/** @hidden */
 export const beforePdfExport: string = 'beforePdfExport';
 /** @hidden */
 export const pdfExportComplete: string = 'pdfExportComplete';
@@ -317,6 +321,12 @@ export const cancelBegin: string = 'cancel-Begin';
 /** @hidden */
 export const editNextValCell: string = 'editNextValCell';
 /** @hidden */
+export const hierarchyPrint: string = 'hierarchyprint';
+/** @hidden */
+export const expandChildGrid: string = 'expandchildgrid';
+/** @hidden */
 export const printGridInit: string = 'printGrid-Init';
 /** @hidden */
 export const exportRowDataBound: string = 'export-RowDataBound';
+/** @hidden */
+export const rowPositionChanged: string = 'row-position-changed';

@@ -113,6 +113,7 @@ export class Formatter {
                 elements: args.elements
             } as IShowPopupArgs);
         }
+        self.autoResize();
     }
     /**
      * Save the data for undo and redo action.

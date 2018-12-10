@@ -20,6 +20,7 @@ import { LineAttributes, PathAttributes } from '../rendering/canvas-interface';
 import { getAdornerLayerSvg } from './../utility/dom-util';
 import { isSelected } from '../interaction/actions';
 import { TextElement } from '../core/elements/text-element';
+import { DiagramHtmlElement } from '../core/elements/html-element';
 
 /**
  * Snapping
@@ -510,7 +511,8 @@ export class Snapping {
             this.snapSize(this.diagram, horizontalSnap, verticalSnap, snapLine, deltaX, y, this.diagram.selectedItems, ended);
         }
         let bounds: Rect;
-        bounds = (shape instanceof TextElement) ? getBounds(shape as DiagramElement) : getBounds((shape as SelectorModel).wrapper);
+        bounds = ((shape instanceof TextElement) || (shape instanceof DiagramHtmlElement)) ? getBounds(shape as DiagramElement) :
+            getBounds((shape as SelectorModel).wrapper);
         if (!verticalSnap.snapped) {
             if (this.diagram.snapSettings.constraints & SnapConstraints.SnapToHorizontalLines) {
                 let bottom: number = initialRect.y + initialRect.height * (1 - shape.pivot.y);

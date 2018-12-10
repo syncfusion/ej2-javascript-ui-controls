@@ -1,9 +1,10 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor } from '../../src/index';
+import { Editor, TableCellWidget } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 import { Selection, PageLayoutViewer } from '../../src/index';
 import { EditorHistory } from '../../src/document-editor/implementation/editor-history/editor-history';
+import { BorderSettings } from '../../src/document-editor/implementation/editor/editor';
 /**
  * Section Break Validation
  */
@@ -146,7 +147,7 @@ describe('List document with multilevel layouting validation', () => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
-        DocumentEditor.Inject(Editor, Selection); 
+        DocumentEditor.Inject(Editor, Selection);
         (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
         (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
         (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
@@ -176,4 +177,541 @@ describe('List document with multilevel layouting validation', () => {
         expect(editor.selection.paragraphFormat.leftIndent).toBe(108);
         expect(editor.selection.paragraphFormat.firstLineIndent).toBe(-9);
     });
+});
+
+describe('Apply Borders Validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor.enableEditorHistory = true;
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        editor.openBlank();
+        editor.editor.insertTable(2, 2);
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    describe('Apply OutsideBorder', () => {
+        it('On empty selection', () => {
+            let settings: BorderSettings = { type: 'OutsideBorders', borderColor: 'green', lineWidth: 1, borderStyle: 'Single' };
+            editor.editor.applyBorders(settings);
+            let cell = editor.selection.start.paragraph.associatedCell;
+            expect(cell.cellFormat.borders.left.color).toBe('green');
+            expect(cell.cellFormat.borders.top.color).toBe('green');
+            expect(cell.cellFormat.borders.right.color).toBe('green');
+            expect(cell.cellFormat.borders.bottom.color).toBe('green');
+            expect(cell.cellFormat.borders.vertical.color).not.toBe('green');
+            expect(cell.cellFormat.borders.horizontal.color).not.toBe('green');
+
+        });
+        it('Undo action', () => {
+            editor.editorHistory.undo();
+            let cell = editor.selection.start.paragraph.associatedCell;
+            expect(cell.cellFormat.borders.left.color).not.toBe('green');
+            expect(cell.cellFormat.borders.top.color).not.toBe('green');
+            expect(cell.cellFormat.borders.right.color).not.toBe('green');
+            expect(cell.cellFormat.borders.bottom.color).not.toBe('green');
+            expect(cell.cellFormat.borders.vertical.color).not.toBe('green');
+            expect(cell.cellFormat.borders.horizontal.color).not.toBe('green');
+
+        });
+        // it('Redo action', () => {
+        //     editor.editorHistory.redo();
+        //     let cell = editor.selection.start.paragraph.associatedCell;
+        //     expect(cell.cellFormat.borders.left.color).toBe('green');
+        //     expect(cell.cellFormat.borders.top.color).toBe('green');
+        //     expect(cell.cellFormat.borders.right.color).toBe('green');
+        //     expect(cell.cellFormat.borders.bottom.color).toBe('green');
+        //     expect(cell.cellFormat.borders.vertical.color).not.toBe('green');
+        //     expect(cell.cellFormat.borders.horizontal.color).not.toBe('green');
+        // });
+    })
+});
+
+describe('Apply AllBorders', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor.enableEditorHistory = true;
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        editor.openBlank();
+        editor.editor.insertTable(2, 2);
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('On empty selection', () => {
+        let settings: BorderSettings = { type: 'AllBorders', borderColor: 'red', lineWidth: 1, borderStyle: 'Single' };
+        editor.editor.applyBorders(settings);
+        let cell = editor.selection.start.paragraph.associatedCell;
+        expect(cell.cellFormat.borders.left.color).toBe('red');
+        expect(cell.cellFormat.borders.top.color).toBe('red');
+        expect(cell.cellFormat.borders.right.color).toBe('red');
+        expect(cell.cellFormat.borders.bottom.color).toBe('red');
+        expect(cell.cellFormat.borders.vertical.color).toBe('red');
+        expect(cell.cellFormat.borders.horizontal.color).toBe('red');
+
+    });
+    it('Undo action', () => {
+        editor.editorHistory.undo();
+        let cell = editor.selection.start.paragraph.associatedCell;
+        expect(cell.cellFormat.borders.left.color).not.toBe('red');
+        expect(cell.cellFormat.borders.top.color).not.toBe('red');
+        expect(cell.cellFormat.borders.right.color).not.toBe('red');
+        expect(cell.cellFormat.borders.bottom.color).not.toBe('red');
+        expect(cell.cellFormat.borders.vertical.color).not.toBe('red');
+        expect(cell.cellFormat.borders.horizontal.color).not.toBe('red');
+
+    });
+    // it('Redo action', () => {
+    //     editor.editorHistory.redo();
+    //     let cell = editor.selection.start.paragraph.associatedCell;
+    //     expect(cell.cellFormat.borders.left.color).toBe('red');
+    //     expect(cell.cellFormat.borders.top.color).toBe('red');
+    //     expect(cell.cellFormat.borders.right.color).toBe('red');
+    //     expect(cell.cellFormat.borders.bottom.color).toBe('red');
+    //     expect(cell.cellFormat.borders.vertical.color).toBe('red');
+    //     expect(cell.cellFormat.borders.horizontal.color).toBe('red');
+    // });
+})
+
+describe('Apply Single border', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor.enableEditorHistory = true;
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+
+    beforeEach(() => {
+        editor.openBlank();
+        editor.editor.insertTable(2, 2);
+    });
+
+    it('Apply LeftBorder', () => {
+        let settings: BorderSettings = { type: 'LeftBorder', borderColor: 'Yellow', lineWidth: 1, borderStyle: 'Single' };
+        editor.editor.applyBorders(settings);
+        let cell = editor.selection.start.paragraph.associatedCell;
+        expect(cell.cellFormat.borders.left.color).toBe('Yellow');
+        expect(cell.cellFormat.borders.top.color).not.toBe('Yellow');
+        expect(cell.cellFormat.borders.right.color).not.toBe('Yellow');
+        expect(cell.cellFormat.borders.bottom.color).not.toBe('Yellow');
+        expect(cell.cellFormat.borders.vertical.color).not.toBe('Yellow');
+        expect(cell.cellFormat.borders.horizontal.color).not.toBe('Yellow');
+    });
+    it('Apply RightBorder', () => {
+        let settings: BorderSettings = { type: 'RightBorder', borderColor: 'gray', lineWidth: 1, borderStyle: 'Single' };
+        editor.editor.applyBorders(settings);
+        let cell = editor.selection.start.paragraph.associatedCell;
+        expect(cell.cellFormat.borders.left.color).not.toBe('gray');
+        expect(cell.cellFormat.borders.top.color).not.toBe('gray');
+        expect(cell.cellFormat.borders.right.color).toBe('gray');
+        expect(cell.cellFormat.borders.bottom.color).not.toBe('gray');
+        expect(cell.cellFormat.borders.vertical.color).not.toBe('gray');
+        expect(cell.cellFormat.borders.horizontal.color).not.toBe('gray');
+    });
+    it('Apply TopBorder', () => {
+        let settings: BorderSettings = { type: 'TopBorder', borderColor: 'blue', lineWidth: 1, borderStyle: 'Single' };
+        editor.editor.applyBorders(settings);
+        let cell = editor.selection.start.paragraph.associatedCell;
+        expect(cell.cellFormat.borders.left.color).not.toBe('blue');
+        expect(cell.cellFormat.borders.top.color).toBe('blue');
+        expect(cell.cellFormat.borders.right.color).not.toBe('blue');
+        expect(cell.cellFormat.borders.bottom.color).not.toBe('blue');
+        expect(cell.cellFormat.borders.vertical.color).not.toBe('blue');
+        expect(cell.cellFormat.borders.horizontal.color).not.toBe('blue');
+    });
+    it('Apply BottomBorder', () => {
+        let settings: BorderSettings = { type: 'BottomBorder', borderColor: 'orange', lineWidth: 1, borderStyle: 'Single' };
+        editor.editor.applyBorders(settings);
+        let cell = editor.selection.start.paragraph.associatedCell;
+        expect(cell.cellFormat.borders.left.color).not.toBe('orange');
+        expect(cell.cellFormat.borders.top.color).not.toBe('orange');
+        expect(cell.cellFormat.borders.right.color).not.toBe('orange');
+        expect(cell.cellFormat.borders.bottom.color).toBe('orange');
+        expect(cell.cellFormat.borders.vertical.color).not.toBe('orange');
+        expect(cell.cellFormat.borders.horizontal.color).not.toBe('orange');
+    });
+    it('Apply NoBorder', () => {
+        let settings: BorderSettings = { type: 'NoBorder', borderColor: 'red', lineWidth: 1, borderStyle: 'Single' };
+        editor.editor.applyBorders(settings);
+        let cell = editor.selection.start.paragraph.associatedCell;
+        expect(cell.cellFormat.borders.left.lineStyle).toBe('Cleared');
+        expect(cell.cellFormat.borders.top.lineStyle).toBe('Cleared');
+        expect(cell.cellFormat.borders.right.lineStyle).toBe('Cleared');
+        expect(cell.cellFormat.borders.bottom.lineStyle).toBe('Cleared');
+        expect(cell.cellFormat.borders.vertical.lineStyle).toBe('Cleared');
+        expect(cell.cellFormat.borders.horizontal.lineStyle).toBe('Cleared');
+    });
+    it('Apply InsideHorizontalBorder', () => {
+        let settings: BorderSettings = { type: 'InsideHorizontalBorder', borderColor: 'green', lineWidth: 1, borderStyle: 'Single' };
+        editor.editor.applyBorders(settings);
+        let cell = editor.selection.start.paragraph.associatedCell;
+        expect(cell.cellFormat.borders.left.color).not.toBe('green');
+        expect(cell.cellFormat.borders.top.color).not.toBe('green');
+        expect(cell.cellFormat.borders.right.color).not.toBe('green');
+        expect(cell.cellFormat.borders.bottom.color).not.toBe('green');
+        expect(cell.cellFormat.borders.vertical.color).not.toBe('green');
+        expect(cell.cellFormat.borders.horizontal.color).toBe('green');
+    });
+    it('Apply InsideVerticalBorder', () => {
+        let settings: BorderSettings = { type: 'InsideVerticalBorder', borderColor: 'green', lineWidth: 1, borderStyle: 'Single' };
+        editor.editor.applyBorders(settings);
+        let cell = editor.selection.start.paragraph.associatedCell;
+        expect(cell.cellFormat.borders.left.color).not.toBe('green');
+        expect(cell.cellFormat.borders.top.color).not.toBe('green');
+        expect(cell.cellFormat.borders.right.color).not.toBe('green');
+        expect(cell.cellFormat.borders.bottom.color).not.toBe('green');
+        expect(cell.cellFormat.borders.vertical.color).toBe('green');
+        expect(cell.cellFormat.borders.horizontal.color).not.toBe('green');
+    });
+    // it('Apply InsideBorders', () => {
+    //     let settings: BorderSettings = { type: 'InsideBorders', borderColor: 'green', lineWidth: 1, borderStyle: 'Single' };
+    //     editor.editor.applyBorders(settings);
+    // });
+});
+
+describe('Apply Borders Validation with selection', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableSelection: true, enableEditor: true, enableEditorHistory: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor.enableEditorHistory = true;
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        editor.openBlank();
+        editor.editor.insertTable(2, 2);
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    describe('Apply OutsideBorder', () => {
+        it('On empty selection', () => {
+            editor.selection.selectColumn();
+
+            let settings: BorderSettings = { type: 'OutsideBorders', borderColor: 'green', lineWidth: 1, borderStyle: 'Single' };
+            editor.editor.applyBorders(settings);
+            let cells: TableCellWidget[] = editor.selection.getSelectedCells();
+            let cell1: TableCellWidget = cells[0];
+            expect(cell1.cellFormat.borders.left.color).toBe('green');
+            expect(cell1.cellFormat.borders.top.color).toBe('green');
+            expect(cell1.cellFormat.borders.right.color).toBe('green');
+            expect(cell1.cellFormat.borders.bottom.color).not.toBe('green');
+            expect(cell1.cellFormat.borders.vertical.color).not.toBe('green');
+            expect(cell1.cellFormat.borders.horizontal.color).not.toBe('green');
+
+            let cell2: TableCellWidget = cells[1];
+            expect(cell2.cellFormat.borders.left.color).toBe('green');
+            expect(cell2.cellFormat.borders.top.color).not.toBe('green');
+            expect(cell2.cellFormat.borders.right.color).toBe('green');
+            expect(cell2.cellFormat.borders.bottom.color).toBe('green');
+            expect(cell2.cellFormat.borders.vertical.color).not.toBe('green');
+            expect(cell2.cellFormat.borders.horizontal.color).not.toBe('green');
+        });
+        it('Undo action', () => {
+            editor.editorHistory.undo();
+            let cells: TableCellWidget[] = editor.selection.getSelectedCells();
+            for (let i: number = 0; i < cells.length; i++) {
+                let cell: TableCellWidget = cells[i];
+                expect(cell.cellFormat.borders.left.color).not.toBe('green');
+                expect(cell.cellFormat.borders.top.color).not.toBe('green');
+                expect(cell.cellFormat.borders.right.color).not.toBe('green');
+                expect(cell.cellFormat.borders.bottom.color).not.toBe('green');
+                expect(cell.cellFormat.borders.vertical.color).not.toBe('green');
+                expect(cell.cellFormat.borders.horizontal.color).not.toBe('green');
+            }
+
+        });
+        // it('Redo action', () => {
+        //     editor.editorHistory.redo();
+        //     let cells: TableCellWidget[] = editor.selection.getSelectedCells();
+        //     for (let i: number = 0; i < cells.length; i++) {
+        //         let cell: TableCellWidget = cells[i];
+        //         expect(cell.cellFormat.borders.left.color).toBe('green');
+        //         expect(cell.cellFormat.borders.top.color).toBe('green');
+        //         expect(cell.cellFormat.borders.right.color).toBe('green');
+        //         expect(cell.cellFormat.borders.bottom.color).toBe('green');
+        //         expect(cell.cellFormat.borders.vertical.color).not.toBe('green');
+        //         expect(cell.cellFormat.borders.horizontal.color).not.toBe('green');
+        //     }
+        // });
+    })
+});
+
+describe('Apply AllBorders with selection', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableSelection: true, enableEditor: true, enableEditorHistory: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor.enableEditorHistory = true;
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        editor.openBlank();
+        editor.editor.insertTable(2, 2);
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('On empty selection', () => {
+        let settings: BorderSettings = { type: 'AllBorders', borderColor: 'red', lineWidth: 1, borderStyle: 'Single' };
+        editor.editor.applyBorders(settings);
+        let cells: TableCellWidget[] = editor.selection.getSelectedCells();
+        for (let i: number = 0; i < cells.length; i++) {
+            let cell: TableCellWidget = cells[i];
+            expect(cell.cellFormat.borders.left.color).toBe('red');
+            expect(cell.cellFormat.borders.top.color).toBe('red');
+            expect(cell.cellFormat.borders.right.color).toBe('red');
+            expect(cell.cellFormat.borders.bottom.color).toBe('red');
+            expect(cell.cellFormat.borders.vertical.color).toBe('red');
+            expect(cell.cellFormat.borders.horizontal.color).toBe('red');
+        }
+
+    });
+    it('Undo action', () => {
+        editor.editorHistory.undo();
+        let cells: TableCellWidget[] = editor.selection.getSelectedCells();
+        for (let i: number = 0; i < cells.length; i++) {
+            let cell: TableCellWidget = cells[i];
+            expect(cell.cellFormat.borders.left.color).not.toBe('red');
+            expect(cell.cellFormat.borders.top.color).not.toBe('red');
+            expect(cell.cellFormat.borders.right.color).not.toBe('red');
+            expect(cell.cellFormat.borders.bottom.color).not.toBe('red');
+            expect(cell.cellFormat.borders.vertical.color).not.toBe('red');
+            expect(cell.cellFormat.borders.horizontal.color).not.toBe('red');
+        }
+
+    });
+    //     it('Redo action', () => {
+    //         editor.editorHistory.redo();
+    //         let cells: TableCellWidget[] = editor.selection.getSelectedCells();
+    //         for (let i: number = 0; i < cells.length; i++) {
+    //             let cell: TableCellWidget = cells[i];
+    //             expect(cell.cellFormat.borders.left.color).toBe('red');
+    //             expect(cell.cellFormat.borders.top.color).toBe('red');
+    //             expect(cell.cellFormat.borders.right.color).toBe('red');
+    //             expect(cell.cellFormat.borders.bottom.color).toBe('red');
+    //             expect(cell.cellFormat.borders.vertical.color).toBe('red');
+    //             expect(cell.cellFormat.borders.horizontal.color).toBe('red');
+    //         }
+    //     });
+});
+
+describe('Apply Single border with selection', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableSelection: true, enableEditor: true, enableEditorHistory: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor.enableEditorHistory = true;
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+
+    beforeEach(() => {
+        editor.openBlank();
+        editor.editor.insertTable(2, 2);
+        editor.selection.selectColumn();
+    });
+
+    it('Apply LeftBorder', () => {
+        let settings: BorderSettings = { type: 'LeftBorder', borderColor: 'Yellow', lineWidth: 1, borderStyle: 'Single' };
+        editor.editor.applyBorders(settings);
+        let cells: TableCellWidget[] = editor.selection.getSelectedCells();
+        for (let i: number = 0; i < cells.length; i++) {
+            let cell: TableCellWidget = cells[i];
+            expect(cell.cellFormat.borders.left.color).toBe('Yellow');
+            expect(cell.cellFormat.borders.top.color).not.toBe('Yellow');
+            expect(cell.cellFormat.borders.right.color).not.toBe('Yellow');
+            expect(cell.cellFormat.borders.bottom.color).not.toBe('Yellow');
+            expect(cell.cellFormat.borders.vertical.color).not.toBe('Yellow');
+            expect(cell.cellFormat.borders.horizontal.color).not.toBe('Yellow');
+        }
+    });
+    it('Apply RightBorder', () => {
+        let settings: BorderSettings = { type: 'RightBorder', borderColor: 'gray', lineWidth: 1, borderStyle: 'Single' };
+        editor.editor.applyBorders(settings);
+        let cells: TableCellWidget[] = editor.selection.getSelectedCells();
+        for (let i: number = 0; i < cells.length; i++) {
+            let cell: TableCellWidget = cells[i];
+            expect(cell.cellFormat.borders.left.color).not.toBe('gray');
+            expect(cell.cellFormat.borders.top.color).not.toBe('gray');
+            expect(cell.cellFormat.borders.right.color).toBe('gray');
+            expect(cell.cellFormat.borders.bottom.color).not.toBe('gray');
+            expect(cell.cellFormat.borders.vertical.color).not.toBe('gray');
+            expect(cell.cellFormat.borders.horizontal.color).not.toBe('gray');
+        }
+    });
+    it('Apply TopBorder', () => {
+        let settings: BorderSettings = { type: 'TopBorder', borderColor: 'blue', lineWidth: 1, borderStyle: 'Single' };
+        editor.editor.applyBorders(settings);
+        let cells: TableCellWidget[] = editor.selection.getSelectedCells();
+        let cell: TableCellWidget = cells[0];
+        expect(cell.cellFormat.borders.left.color).not.toBe('blue');
+        expect(cell.cellFormat.borders.top.color).toBe('blue');
+        expect(cell.cellFormat.borders.right.color).not.toBe('blue');
+        expect(cell.cellFormat.borders.bottom.color).not.toBe('blue');
+        expect(cell.cellFormat.borders.vertical.color).not.toBe('blue');
+        expect(cell.cellFormat.borders.horizontal.color).not.toBe('blue');
+        let cell1: TableCellWidget = cells[1];
+        expect(cell1.cellFormat.borders.left.color).not.toBe('blue');
+        expect(cell1.cellFormat.borders.top.color).not.toBe('blue');
+        expect(cell1.cellFormat.borders.right.color).not.toBe('blue');
+        expect(cell1.cellFormat.borders.bottom.color).not.toBe('blue');
+        expect(cell1.cellFormat.borders.vertical.color).not.toBe('blue');
+        expect(cell1.cellFormat.borders.horizontal.color).not.toBe('blue');
+    });
+    it('Apply BottomBorder', () => {
+        let settings: BorderSettings = { type: 'BottomBorder', borderColor: 'orange', lineWidth: 1, borderStyle: 'Single' };
+        editor.editor.applyBorders(settings);
+        let cells: TableCellWidget[] = editor.selection.getSelectedCells();
+        let cell: TableCellWidget = cells[1];
+        expect(cell.cellFormat.borders.left.color).not.toBe('orange');
+        expect(cell.cellFormat.borders.top.color).not.toBe('orange');
+        expect(cell.cellFormat.borders.right.color).not.toBe('orange');
+        expect(cell.cellFormat.borders.bottom.color).toBe('orange');
+        expect(cell.cellFormat.borders.vertical.color).not.toBe('orange');
+        expect(cell.cellFormat.borders.horizontal.color).not.toBe('orange');
+        let cell1: TableCellWidget = cells[0];
+        expect(cell1.cellFormat.borders.left.color).not.toBe('orange');
+        expect(cell1.cellFormat.borders.top.color).not.toBe('orange');
+        expect(cell1.cellFormat.borders.right.color).not.toBe('orange');
+        expect(cell1.cellFormat.borders.bottom.color).not.toBe('orange');
+        expect(cell1.cellFormat.borders.vertical.color).not.toBe('orange');
+        expect(cell1.cellFormat.borders.horizontal.color).not.toBe('orange');
+    });
+    it('Apply NoBorder', () => {
+        let settings: BorderSettings = { type: 'NoBorder', borderColor: 'red', lineWidth: 1, borderStyle: 'Single' };
+        editor.editor.applyBorders(settings);
+        let cells: TableCellWidget[] = editor.selection.getSelectedCells();
+        for (let i: number = 0; i < cells.length; i++) {
+            let cell: TableCellWidget = cells[i];
+            expect(cell.cellFormat.borders.left.lineStyle).toBe('Cleared');
+            expect(cell.cellFormat.borders.top.lineStyle).toBe('Cleared');
+            expect(cell.cellFormat.borders.right.lineStyle).toBe('Cleared');
+            expect(cell.cellFormat.borders.bottom.lineStyle).toBe('Cleared');
+        }
+    });
+    it('Apply InsideHorizontalBorder', () => {
+        let settings: BorderSettings = { type: 'InsideHorizontalBorder', borderColor: 'green', lineWidth: 1, borderStyle: 'Single' };
+        editor.editor.applyBorders(settings);
+        let cells: TableCellWidget[] = editor.selection.getSelectedCells();
+
+        let cell: TableCellWidget = cells[0];
+        expect(cell.cellFormat.borders.left.color).not.toBe('green');
+        expect(cell.cellFormat.borders.top.color).not.toBe('green');
+        expect(cell.cellFormat.borders.right.color).not.toBe('green');
+        expect(cell.cellFormat.borders.bottom.color).toBe('green');
+        expect(cell.cellFormat.borders.vertical.color).not.toBe('green');
+        expect(cell.cellFormat.borders.horizontal.color).not.toBe('green');
+
+        let cell1: TableCellWidget = cells[1];
+        expect(cell1.cellFormat.borders.left.color).not.toBe('green');
+        expect(cell1.cellFormat.borders.top.color).toBe('green');
+        expect(cell1.cellFormat.borders.right.color).not.toBe('green');
+        expect(cell1.cellFormat.borders.bottom.color).not.toBe('green');
+        expect(cell1.cellFormat.borders.vertical.color).not.toBe('green');
+        expect(cell1.cellFormat.borders.horizontal.color).not.toBe('green');
+
+    });
+    it('Apply InsideVerticalBorder', () => {
+        let settings: BorderSettings = { type: 'InsideVerticalBorder', borderColor: 'green', lineWidth: 1, borderStyle: 'Single' };
+        editor.editor.applyBorders(settings);
+        let cells: TableCellWidget[] = editor.selection.getSelectedCells();
+        for (let i: number = 0; i < cells.length; i++) {
+            let cell: TableCellWidget = cells[i];
+            expect(cell.cellFormat.borders.left.color).not.toBe('green');
+            expect(cell.cellFormat.borders.top.color).not.toBe('green');
+            expect(cell.cellFormat.borders.right.color).not.toBe('green');
+            expect(cell.cellFormat.borders.bottom.color).not.toBe('green');
+            expect(cell.cellFormat.borders.vertical.color).not.toBe('green');
+            expect(cell.cellFormat.borders.horizontal.color).not.toBe('green');
+        }
+    });
+    // it('Apply InsideBorders', () => {
+    //     let settings: BorderSettings = { type: 'InsideBorders', borderColor: 'green', lineWidth: 1, borderStyle: 'Single' };
+    //     editor.editor.applyBorders(settings);
+    // });
 });

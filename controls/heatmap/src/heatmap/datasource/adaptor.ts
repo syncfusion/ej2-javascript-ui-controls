@@ -11,6 +11,7 @@ import { increaseDateTimeInterval } from '../utils/helper';
 import { AxisModel } from '../axis/axis-model';
 import { BubbleDataModel } from '../model/base-model';
 import { BubbleData } from '../model/base';
+import { Axis } from '../axis/axis';
 /**
  * Configures the Adaptor Property in the Heatmap.
  */
@@ -98,15 +99,7 @@ export class Adaptor {
      * @private
      */
     public constructDatasource(adaptData: DataModel): void {
-        if (adaptData && adaptData.data === undefined) {
-            this.heatMap.completeAdaptDataSource = adaptData;
-        } else if (!adaptData.isJsonData && adaptData.adaptorType === 'Table' || adaptData.data === null) {
-            this.heatMap.completeAdaptDataSource = adaptData.data;
-        } else if (adaptData.isJsonData && adaptData.adaptorType === 'Table') {
-            this.heatMap.completeAdaptDataSource = this.processJsonTableData(adaptData);
-        } else if (adaptData.isJsonData && adaptData.adaptorType === 'Cell') {
-            this.heatMap.completeAdaptDataSource = this.processJsonCellData(adaptData);
-        } else if (!adaptData.isJsonData && adaptData.adaptorType === 'Cell') {
+        if (adaptData.adaptorType === 'Cell') {
             let xAxis: AxisModel = this.heatMap.xAxis;
             let yAxis: AxisModel = this.heatMap.yAxis;
             this.adaptiveXMinMax.min = xAxis.minimum;
@@ -117,8 +110,19 @@ export class Adaptor {
                 (isNullOrUndefined(xAxis.minimum) || isNullOrUndefined(xAxis.maximum))) ||
                 ((yAxis.valueType === 'Numeric' || yAxis.valueType === 'DateTime') &&
                     (isNullOrUndefined(yAxis.minimum) || isNullOrUndefined(yAxis.maximum)))) {
-                this.getMinMaxValue(<Object[][]>adaptData.data, xAxis, yAxis);
+                this.getMinMaxValue(adaptData, xAxis, yAxis);
             }
+            this.heatMap.isCellData = true;
+        }
+        if (adaptData && adaptData.data === undefined) {
+            this.heatMap.completeAdaptDataSource = adaptData;
+        } else if (!adaptData.isJsonData && adaptData.adaptorType === 'Table' || adaptData.data === null) {
+            this.heatMap.completeAdaptDataSource = adaptData.data;
+        } else if (adaptData.isJsonData && adaptData.adaptorType === 'Table') {
+            this.heatMap.completeAdaptDataSource = this.processJsonTableData(adaptData);
+        } else if (adaptData.isJsonData && adaptData.adaptorType === 'Cell') {
+            this.heatMap.completeAdaptDataSource = this.processJsonCellData(adaptData);
+        } else if (!adaptData.isJsonData && adaptData.adaptorType === 'Cell') {
             this.constructAdaptiveAxis();
             this.heatMap.completeAdaptDataSource = this.processCellData(adaptData);
             this.heatMap.isCellData = true;
@@ -196,25 +200,39 @@ export class Adaptor {
      * @return {void}
      * @private
      */
-    private getMinMaxValue(data: Object[][], xAxis: AxisModel, yAxis: AxisModel): void {
+    private getMinMaxValue(adapData: DataModel, xAxis: AxisModel, yAxis: AxisModel): void {
+        let data: Object[][] = <Object[][]>adapData.data;
+        let label: string[] = Object.keys(data[0]);
         if (data.length > 0) {
-            this.adaptiveXMinMax.min = !isNullOrUndefined(xAxis.minimum) ? xAxis.minimum : data[0][0];
-            this.adaptiveYMinMax.min = !isNullOrUndefined(yAxis.minimum) ? yAxis.minimum : data[0][1];
-            this.adaptiveXMinMax.max = !isNullOrUndefined(xAxis.maximum) ? xAxis.maximum : data[0][0];
-            this.adaptiveYMinMax.max = !isNullOrUndefined(yAxis.maximum) ? yAxis.maximum : data[0][1];
+            this.adaptiveXMinMax.min = !isNullOrUndefined(xAxis.minimum) ? xAxis.minimum : adapData.isJsonData ?
+            // tslint:disable-next-line:no-any
+                data[0][<any>label[0]] : data[0][0];
+            this.adaptiveYMinMax.min = !isNullOrUndefined(yAxis.minimum) ? yAxis.minimum : adapData.isJsonData ?
+            // tslint:disable-next-line:no-any
+                data[0][<any>label[1]] : data[0][1];
+            this.adaptiveXMinMax.max = !isNullOrUndefined(xAxis.maximum) ? xAxis.maximum : adapData.isJsonData ?
+            // tslint:disable-next-line:no-any
+                data[0][<any>label[0]] : data[0][0];
+            this.adaptiveYMinMax.max = !isNullOrUndefined(yAxis.maximum) ? yAxis.maximum : adapData.isJsonData ?
+            // tslint:disable-next-line:no-any
+                data[0][<any>label[1]] : data[0][1];
         }
         for (let dataIndex: number = 0; dataIndex < data.length; dataIndex++) {
-            if (data[dataIndex][0] < this.adaptiveXMinMax.min && isNullOrUndefined(xAxis.minimum)) {
-                this.adaptiveXMinMax.min = data[dataIndex][0];
+            // tslint:disable-next-line:no-any
+            let xDataIndex: Object = adapData.isJsonData ? data[dataIndex][<any>label[0]] : data[dataIndex][0];
+            // tslint:disable-next-line:no-any
+            let yDataIndex: Object = adapData.isJsonData ? data[dataIndex][<any>label[1]] : data[dataIndex][1];
+            if (xDataIndex < this.adaptiveXMinMax.min && isNullOrUndefined(xAxis.minimum)) {
+                this.adaptiveXMinMax.min = xDataIndex;
             }
-            if (data[dataIndex][0] > this.adaptiveXMinMax.max && isNullOrUndefined(xAxis.maximum)) {
-                this.adaptiveXMinMax.max = data[dataIndex][0];
+            if (xDataIndex > this.adaptiveXMinMax.max && isNullOrUndefined(xAxis.maximum)) {
+                this.adaptiveXMinMax.max = xDataIndex;
             }
-            if (data[dataIndex][1] < this.adaptiveYMinMax.min && isNullOrUndefined(yAxis.minimum)) {
-                this.adaptiveYMinMax.min = data[dataIndex][1];
+            if (yDataIndex < this.adaptiveYMinMax.min && isNullOrUndefined(yAxis.minimum)) {
+                this.adaptiveYMinMax.min = yDataIndex;
             }
-            if (data[dataIndex][1] > this.adaptiveYMinMax.max && isNullOrUndefined(yAxis.maximum)) {
-                this.adaptiveYMinMax.max = data[dataIndex][1];
+            if (yDataIndex > this.adaptiveYMinMax.max && isNullOrUndefined(yAxis.maximum)) {
+                this.adaptiveYMinMax.max = yDataIndex;
             }
         }
     }
@@ -269,21 +287,29 @@ export class Adaptor {
     private processJsonCellData(adaptordata: DataModel): Object {
         // tslint:disable-next-line:no-any 
         let tempDataCollection: any = adaptordata.data;
-        let xLabels: string[] = this.heatMap.xAxis.labels ? this.heatMap.xAxis.labels : [];
-        let yLabels: string[] = this.heatMap.yAxis.labels ? this.heatMap.yAxis.labels : [];
+        let xAxisLabels : string[] = this.heatMap.xAxis.labels ?  this.heatMap.xAxis.labels : [];
+        let yAxisLabels : string[] = this.heatMap.yAxis.labels ? this.heatMap.yAxis.labels : [];
+        let axisCollections : Axis[] = this.heatMap.axisCollections;
+        if ( xAxisLabels.length === 0 || yAxisLabels.length === 0) {
+            this.generateAxisLabels(adaptordata);
+        }
+        let xLabels: (string | Number | Date)[] = (this.heatMap.xAxis.valueType === 'Category') ? (xAxisLabels.length > 0 ?
+            this.heatMap.xAxis.labels : axisCollections[0].jsonCellLabel) : axisCollections[0].labelValue;
+        let yLabels: (string | Number | Date)[] = (this.heatMap.yAxis.valueType === 'Category') ? (yAxisLabels.length > 0 ?
+            this.heatMap.yAxis.labels : axisCollections[1].jsonCellLabel) : axisCollections[1].labelValue;
         let currentDataXIndex: number | string = 0;
         let currentDataYIndex: number | string = 0;
         if (tempDataCollection.length) {
             this.reconstructData = [];
             for (let index: number = 0; index < tempDataCollection.length; index++) {
                 currentDataXIndex = this.getSplitDataValue(
-                    tempDataCollection[index], adaptordata, xLabels, adaptordata.xDataMapping.split('.'));
+                    tempDataCollection[index], adaptordata, xLabels, adaptordata.xDataMapping.split('.'), this.heatMap.xAxis.valueType);
                 if (currentDataXIndex !== -1) {
                     while (!this.reconstructData[currentDataXIndex as number]) {
                         this.reconstructData.push([]);
                     }
                     currentDataYIndex = this.getSplitDataValue(
-                        tempDataCollection[index], adaptordata, yLabels, adaptordata.yDataMapping.split('.'));
+                        tempDataCollection[index], adaptordata, yLabels, adaptordata.yDataMapping.split('.'), this.heatMap.yAxis.valueType);
                     if (currentDataYIndex !== -1) {
                         while (isNullOrUndefined(this.reconstructData[currentDataXIndex as number][currentDataYIndex as number])) {
                             this.reconstructData[currentDataXIndex as number].push('');
@@ -291,12 +317,12 @@ export class Adaptor {
                         if (this.heatMap.bubbleSizeWithColor) {
                             this.reconstructData[currentDataXIndex as number][currentDataYIndex as number] = [
                                 this.getSplitDataValue(
-                                    tempDataCollection[index], adaptordata, null, adaptordata.bubbleDataMapping.size.split('.')),
+                                    tempDataCollection[index], adaptordata, null, adaptordata.bubbleDataMapping.size.split('.'), ''),
                                 this.getSplitDataValue(
-                                    tempDataCollection[index], adaptordata, null, adaptordata.bubbleDataMapping.color.split('.'))];
+                                    tempDataCollection[index], adaptordata, null, adaptordata.bubbleDataMapping.color.split('.'), '')];
                         } else {
                             this.reconstructData[currentDataXIndex as number][currentDataYIndex as number] = this.getSplitDataValue(
-                                tempDataCollection[index], adaptordata, null, adaptordata.valueMapping.split('.'));
+                                tempDataCollection[index], adaptordata, null, adaptordata.valueMapping.split('.'), '');
                         }
                     }
                 }
@@ -306,17 +332,69 @@ export class Adaptor {
     }
 
     /**
+     * Method to generate axis labels when labels are not given.
+     * @return {string}
+     * @private
+     */
+    private generateAxisLabels(adaptordata: DataModel) : void {
+        // tslint:disable-next-line:no-any 
+        let tempDataCollection: any = adaptordata.data;
+        let xLabels: string[] = this.heatMap.xAxis.labels ? this.heatMap.xAxis.labels : [];
+        let yLabels: string[] = this.heatMap.yAxis.labels ? this.heatMap.yAxis.labels : [];
+        let hasXLabels: boolean = xLabels.length > 0 ? true : false;
+        let hasYLabels: boolean = yLabels.length > 0 ? true : false;
+        let axisCollection: Axis[] = this.heatMap.axisCollections;
+        for (let index: number = 0; index < axisCollection.length; index++) {
+            let valueType: string = axisCollection[index].valueType;
+            let axis: Axis = axisCollection[index];
+            if (valueType === 'Category') {
+                let hasLabels: boolean;
+                let dataMapping: string;
+                let labels: string[];
+                if (axis.orientation === 'Horizontal') {
+                    hasLabels = hasXLabels;
+                    dataMapping = adaptordata.xDataMapping;
+                    axis.jsonCellLabel = labels = [];
+                } else {
+                    hasLabels = hasYLabels;
+                    dataMapping = adaptordata.yDataMapping;
+                    axis.jsonCellLabel = labels = [];
+                }
+                if (!hasLabels) {
+                    for (let i: number = 0; i < tempDataCollection.length; i++) {
+                        if (dataMapping in tempDataCollection[i]) {
+                            let xValue: string = tempDataCollection[i][dataMapping].toString();
+                            if (labels.indexOf(xValue.toString()) === -1) {
+                                labels.push(xValue);
+                            }
+                        }
+                    }
+                }
+            } else if (valueType === 'DateTime') {
+                axis.clearAxisLabel();
+                axis.calculateDateTimeAxisLabel(this.heatMap);
+            } else {
+                axis.clearAxisLabel();
+                axis.calculateNumericAxisLabels(this.heatMap);
+            }
+        }
+    }
+
+    /**
      * Method to get data from complex mapping.
      * @return {number|string}
      * @private
      */
     private getSplitDataValue(
         // tslint:disable-next-line:no-any 
-        tempSplitDataCollection: any, adaptordata: DataModel, labels: string[], tempSplitData: string[]): number | string {
+        tempSplitDataCollection: any, adaptordata: DataModel, labels: (string | Number | Date)[],
+        tempSplitData: string[], valueType: string): number | string {
         let value: number | string = -1;
         this.tempSplitDataCollection = tempSplitDataCollection;
         for (let splitIndex: number = 0; splitIndex < tempSplitData.length; splitIndex++) {
-            value = !isNullOrUndefined(labels) ? labels.indexOf(this.tempSplitDataCollection[tempSplitData[splitIndex]]) : null;
+            value = !isNullOrUndefined(labels) ? (!(valueType === 'DateTime') ?
+                labels.indexOf(this.tempSplitDataCollection[tempSplitData[splitIndex]]) :
+                labels.map(Number).indexOf(+this.tempSplitDataCollection[tempSplitData[splitIndex]])) : null;
             if (!isNullOrUndefined(this.tempSplitDataCollection)) {
                 this.tempSplitDataCollection = value !== -1 && !isNullOrUndefined(labels) ?
                     this.tempSplitDataCollection : this.tempSplitDataCollection[tempSplitData[splitIndex]];
@@ -347,7 +425,7 @@ export class Adaptor {
             this.reconstructData = [];
             for (let xindex: number = 0; xindex < tempDataCollection.length; xindex++) {
                 currentDataXIndex = this.getSplitDataValue(
-                    tempDataCollection[xindex], adaptordata, xLabels, adaptordata.xDataMapping.split('.'));
+                    tempDataCollection[xindex], adaptordata, xLabels, adaptordata.xDataMapping.split('.'), this.heatMap.xAxis.valueType);
                 if (currentDataXIndex !== -1) {
                     while (!this.reconstructData[currentDataXIndex as number]) {
                         this.reconstructData.push([]);

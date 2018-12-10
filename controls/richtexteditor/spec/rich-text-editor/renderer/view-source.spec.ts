@@ -188,4 +188,50 @@ describe('Toolbar - view html', () => {
             destroy(rteObj);
         });
     });
+    describe(' SourceCode item changes - ', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                value: '<span id="rte">RTE</span>'
+            });
+            rteObj.toolbarSettings.items = ['Undo', 'Redo', '|',
+                'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
+                'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
+                'SubScript', 'SuperScript', '|',
+                'LowerCase', 'UpperCase', '|',
+                'Formats', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|',
+                'Indent', 'Outdent', '|', 'CreateLink', '|', 'Image', '|', 'SourceCode',
+                '|', 'ClearFormat'];
+
+            rteObj.dataBind();
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+
+        it(' Test - Click the SourceCode item', () => {
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_SourceCode');
+            item.click();
+            expect((rteObj as any).inputElement.style.display === 'none').toBe(true);
+            let tag: HTMLTextAreaElement = rteObj.element.querySelector('.e-rte-srctextarea');
+            expect(tag.value === '<span id="rte">RTE</span>').toBe(true);
+            tag.value = '<p id="rte">RTE</p>';
+            expect(rteObj.element.querySelectorAll(".e-toolbar-item:not(.e-overlay):not(.e-separator)").length === 1).toBe(true);
+            item = rteObj.element.querySelector('#' + controlId + '_toolbar_Preview');
+            item.click();
+            expect((rteObj as any).inputElement.innerHTML === '<p id="rte">RTE</p>').toBe(true);
+            (rteObj as any).inputElement.innerHTML = '<div id="rte">RTE</div>'
+            item = rteObj.element.querySelector('#' + controlId + '_toolbar_SourceCode');
+            item.click();
+            tag = rteObj.element.querySelector('.e-rte-srctextarea');
+            expect(tag.value === '<div id="rte">RTE</div>').toBe(true);
+        });
+    });
+
 });

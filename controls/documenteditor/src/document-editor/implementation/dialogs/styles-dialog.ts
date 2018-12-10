@@ -1,7 +1,7 @@
 import { ListView } from '@syncfusion/ej2-lists';
 import { Button } from '@syncfusion/ej2-buttons';
 import { LayoutViewer } from '../index';
-import { createElement, L10n, setCulture } from '@syncfusion/ej2-base';
+import { createElement, L10n } from '@syncfusion/ej2-base';
 
 /**
  * The Styles dialog is used to create or modify styles.
@@ -30,7 +30,7 @@ export class StylesDialog {
     /**
      * @private
      */
-    public initStylesDialog(localValue: L10n, styles: string[]): void {
+    public initStylesDialog(localValue: L10n, styles: string[], isRtl?: boolean): void {
         let instance: StylesDialog = this;
         let id: string = this.owner.owner.containerId + '_insert_styles';
         this.target = createElement('div', { id: id, className: 'e-de-styles' });
@@ -43,6 +43,9 @@ export class StylesDialog {
 
         let searchDiv: HTMLElement = createElement('div', { className: 'e-styles-list' });
         commonDiv.appendChild(searchDiv);
+        if (isRtl) {
+            searchDiv.classList.add('e-de-rtl');
+        }
 
         let listviewDiv: HTMLElement = createElement('div', { className: 'e-styles-listViewDiv', id: 'styles_listview' });
         searchDiv.appendChild(listviewDiv);
@@ -79,16 +82,15 @@ export class StylesDialog {
      * @private
      */
     public show(): void {
-        let styles: string[] = this.updateStyleNames();
         let localValue: L10n = new L10n('documenteditor', this.owner.owner.defaultLocale);
         localValue.setLocale(this.owner.owner.locale);
-        setCulture(this.owner.owner.locale);
+        let styles: string[] = this.updateStyleNames(localValue);
         this.localValue = localValue;
-        this.initStylesDialog(localValue, styles);
+        this.initStylesDialog(localValue, styles, this.owner.owner.enableRtl);
         this.owner.dialog.content = this.target;
         this.owner.dialog.beforeOpen = this.owner.updateFocus;
         this.owner.dialog.close = this.owner.updateFocus;
-        this.owner.dialog.header = 'Styles';
+        this.owner.dialog.header = localValue.getConstant('Styles');
         this.owner.dialog.height = 'auto';
         this.owner.dialog.width = 'auto';
         this.owner.dialog.buttons = [{
@@ -98,11 +100,19 @@ export class StylesDialog {
         this.owner.dialog.dataBind();
         this.owner.dialog.show();
     }
-    private updateStyleNames = (): string[] => {
+    private updateStyleNames = (localValue: L10n): string[] => {
         let collection: string[] = this.owner.owner.viewer.styles.getStyleNames('Paragraph');
-        let defaultStyleNames: string[] = ['Normal', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'Heading 5', 'Heading 6'];
+        let styleNames: string[] = ['Normal', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'Heading 5', 'Heading 6'];
+        let defaultStyleNames: string[] = this.defaultStyleName(styleNames, localValue);
         let finalList: string[] = collection.concat(defaultStyleNames).filter((v: string, i: number, a: string[]) => a.indexOf(v) === i);
         return finalList;
+    }
+    private defaultStyleName = (styleNames: string[], localValue: L10n): string[] => {
+        let styleName: string[] = [];
+        for (let index: number = 0; index < styleNames.length; index++) {
+            styleName.push(localValue.getConstant(styleNames[index]));
+        }
+        return styleName;
     }
     private modifyStyles = (): void => {
         this.owner.dialog.hide();

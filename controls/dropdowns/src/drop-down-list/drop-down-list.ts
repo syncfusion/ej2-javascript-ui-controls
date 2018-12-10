@@ -1084,21 +1084,28 @@ export class DropDownList extends DropDownBase implements IInput {
         li.classList.add(dropDownBaseClasses.selected);
         this.removeHover();
         let value: string | number | boolean = this.getFormattedValue(li.getAttribute('data-value'));
-        this.item = li as HTMLLIElement;
-        this.itemData = this.getDataByValue(value);
+        let selectedData: string | number | boolean | {
+            [key: string]: Object;
+        } = this.getDataByValue(value);
         if (!this.initial && !preventSelect) {
-            let items: FieldSettingsModel = this.detachChanges();
+            let items: FieldSettingsModel = this.detachChanges(selectedData);
             this.isSelected = true;
             let eventArgs: SelectEventArgs = {
                 e: e,
-                item: this.item,
+                item: li as HTMLLIElement,
                 itemData: items,
                 isInteracted: e ? true : false,
                 cancel: false
             };
             this.trigger('select', eventArgs);
-            if (eventArgs.cancel) { return true; }
+            if (eventArgs.cancel) {
+                li.classList.remove(dropDownBaseClasses.selected);
+                return true;
+            }
         }
+        this.previousItemData = (!isNullOrUndefined(this.itemData)) ? this.itemData : null;
+        this.item = li as HTMLLIElement;
+        this.itemData = selectedData;
         let focusedItem: Element = this.list.querySelector('.' + dropDownBaseClasses.focus);
         if (focusedItem) { removeClass([focusedItem], dropDownBaseClasses.focus); }
         li.setAttribute('aria-selected', 'true');
@@ -1143,7 +1150,6 @@ export class DropDownList extends DropDownBase implements IInput {
 
     protected setSelection(li: Element, e: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         if (this.isValidLI(li) && !li.classList.contains(dropDownBaseClasses.selected)) {
-            this.previousItemData = (!isNullOrUndefined(this.itemData)) ? this.itemData : null;
             let argsCancel: boolean = this.updateSelectedItem(li, e, false);
             if (argsCancel) { return; }
         }
@@ -1219,23 +1225,25 @@ export class DropDownList extends DropDownBase implements IInput {
         this.detachChangeEvent(eve);
     };
 
-    private detachChanges(): FieldSettingsModel {
+    private detachChanges(value: string | number | boolean | {
+        [key: string]: Object;
+    }): FieldSettingsModel {
         let items: FieldSettingsModel;
-        if (typeof this.itemData === 'string' ||
-            typeof this.itemData === 'boolean' ||
-            typeof this.itemData === 'number') {
+        if (typeof value === 'string' ||
+            typeof value === 'boolean' ||
+            typeof value === 'number') {
             items = Object.defineProperties({}, {
                 value: {
-                    value: this.itemData,
+                    value: value,
                     enumerable: true
                 },
                 text: {
-                    value: this.itemData,
+                    value: value,
                     enumerable: true
                 }
             });
         } else {
-            items = this.itemData;
+            items = value;
         }
         return items;
     }
@@ -1246,7 +1254,7 @@ export class DropDownList extends DropDownBase implements IInput {
         this.activeIndex = this.index;
         this.typedString = !isNullOrUndefined(this.text) ? this.text : '';
         if (!this.initial) {
-            let items: FieldSettingsModel = this.detachChanges();
+            let items: FieldSettingsModel = this.detachChanges(this.itemData);
             let preItems: FieldSettingsModel;
             if (typeof this.previousItemData === 'string' ||
                 typeof this.previousItemData === 'boolean' ||
@@ -1292,8 +1300,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * Filter bar implementation
      */
     protected onFilterUp(e: KeyboardEventArgs): void {
-        this.isValidKey = e.keyCode === 40 || e.keyCode === 38 || this.isValidKey;
-        if (this.isValidKey) {
+        if (this.isValidKey || e.keyCode === 40 || e.keyCode === 38) {
             this.isValidKey = false;
             switch (e.keyCode) {
                 case 38:  //up arrow 
@@ -1328,6 +1335,8 @@ export class DropDownList extends DropDownBase implements IInput {
                     this.searchLists(e);
                     break;
             }
+        } else {
+            this.isValidKey = false;
         }
     }
 
@@ -1526,8 +1535,8 @@ export class DropDownList extends DropDownBase implements IInput {
                 if (!this.actionCompleteData.isUpdated || ((!this.isCustomFilter
                     && !this.isFilterFocus)
                     && ((this.dataSource instanceof DataManager)
-                        || (!isNullOrUndefined(this.dataSource) &&
-                            !isNullOrUndefined(this.dataSource.length) && this.dataSource.length !== 0)))) {
+                        || (!isNullOrUndefined(this.dataSource) && !isNullOrUndefined(this.dataSource.length) &&
+                            this.dataSource.length !== 0)))) {
                     this.actionCompleteData = { ulElement: ulElement.cloneNode(true) as HTMLElement, list: list, isUpdated: true };
                 }
                 this.addNewItem(list, selectedItem);
@@ -2101,8 +2110,7 @@ export class DropDownList extends DropDownBase implements IInput {
                     break;
                 case 'htmlAttributes': this.setHTMLAttributes();
                     break;
-                case 'width':
-                    setStyleAttribute(this.inputWrapper.container, { 'width': formatUnit(newProp.width) });
+                case 'width': setStyleAttribute(this.inputWrapper.container, { 'width': formatUnit(newProp.width) });
                     break;
                 case 'placeholder': Input.setPlaceholder(newProp.placeholder, this.inputElement as HTMLInputElement);
                     break;
@@ -2122,21 +2130,22 @@ export class DropDownList extends DropDownBase implements IInput {
                     break;
                 case 'enabled': this.setEnable();
                     break;
-                case 'text':
-                    if (newProp.text === null) { this.clear(); break; }
+                case 'text': if (newProp.text === null) { this.clear(); break; }
                     if (!this.list) {
                         if (this.dataSource instanceof DataManager) { this.initRemoteRender = true; }
                         this.renderList();
                     }
                     if (!this.initRemoteRender) {
                         let li: Element = this.getElementByText(newProp.text);
-                        if (this.isValidLI(li)) {
-                            this.setSelection(li, null);
-                        } else { this.setOldText(oldProp.text); }
+                        if (!this.checkValidLi(li)) {
+                            if (this.liCollections.length === 100 &&
+                                this.getModuleName() === 'autocomplete' && this.listData.length > 100) {
+                                this.setSelectionData(newProp.text, oldProp.text, 'text');
+                            } else { this.setOldText(oldProp.text); }
+                        }
                     }
                     break;
-                case 'value':
-                    if (newProp.value === null) { this.clear(); break; }
+                case 'value': if (newProp.value === null) { this.clear(); break; }
                     this.notify('beforeValueChange', { newProp: newProp }); // gird component value type change
                     if (!this.list) {
                         if (this.dataSource instanceof DataManager) { this.initRemoteRender = true; }
@@ -2144,29 +2153,32 @@ export class DropDownList extends DropDownBase implements IInput {
                     }
                     if (!this.initRemoteRender) {
                         let item: Element = this.getElementByValue(newProp.value);
-                        if (this.isValidLI(item)) {
-                            this.setSelection(item, null);
-                        } else { this.setOldValue(oldProp.value); }
+                        if (!this.checkValidLi(item)) {
+                            if (this.liCollections.length === 100 &&
+                                this.getModuleName() === 'autocomplete' && this.listData.length > 100) {
+                                this.setSelectionData(newProp.value, oldProp.value, 'value');
+                            } else { this.setOldValue(oldProp.value); }
+                        }
                     }
                     break;
-                case 'index':
-                    if (newProp.index === null) { this.clear(); break; }
+                case 'index': if (newProp.index === null) { this.clear(); break; }
                     if (!this.list) {
                         if (this.dataSource instanceof DataManager) { this.initRemoteRender = true; }
                         this.renderList();
                     }
                     if (!this.initRemoteRender) {
                         let element: Element = this.liCollections[newProp.index] as Element;
-                        if (this.isValidLI(element)) {
-                            this.setSelection(element, null);
-                        } else { this.index = oldProp.index; }
+                        if (!this.checkValidLi(element)) {
+                            if (this.liCollections.length === 100 &&
+                                this.getModuleName() === 'autocomplete' && this.listData.length > 100) {
+                                this.setSelectionData(newProp.index, oldProp.index, 'index');
+                            } else { this.index = oldProp.index; }
+                        }
                     }
                     break;
-                case 'footerTemplate':
-                    if (this.popupObj) { this.setFooterTemplate(this.popupObj.element); }
+                case 'footerTemplate': if (this.popupObj) { this.setFooterTemplate(this.popupObj.element); }
                     break;
-                case 'headerTemplate':
-                    if (this.popupObj) { this.setHeaderTemplate(this.popupObj.element); }
+                case 'headerTemplate': if (this.popupObj) { this.setHeaderTemplate(this.popupObj.element); }
                     break;
                 case 'valueTemplate':
                     if (!isNullOrUndefined(this.itemData) && this.valueTemplate != null) { this.setValueTemplate(); }
@@ -2186,6 +2198,46 @@ export class DropDownList extends DropDownBase implements IInput {
                     break;
             }
         }
+    }
+
+    private checkValidLi(element: Element): boolean {
+        if (this.isValidLI(element)) {
+            this.setSelection(element, null);
+            return true;
+        }
+        return false;
+    }
+
+    private setSelectionData(
+        newProp: number | string | boolean,
+        oldProp: number | string | boolean,
+        prop: string,
+    ): void {
+        let li: Element;
+        this.updateListValues = (): void => {
+            if (prop === 'text') {
+                li = this.getElementByText(newProp as string);
+                if (!this.checkValidLi(li)) {
+                    this.setOldText(oldProp as string);
+                } else {
+                    this.setScrollPosition();
+                }
+            } else if (prop === 'value') {
+                li = this.getElementByValue(newProp);
+                if (!this.checkValidLi(li)) {
+                    this.setOldValue(oldProp);
+                } else {
+                    this.setScrollPosition();
+                }
+            } else if (prop === 'index') {
+                li = this.liCollections[newProp as number] as Element;
+                if (!this.checkValidLi(li)) {
+                    this.index = oldProp as number;
+                } else {
+                    this.setScrollPosition();
+                }
+            }
+        };
     }
 
     private setCssClass(newProp: DropDownListModel, oldProp: DropDownListModel): void {

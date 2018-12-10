@@ -1,0 +1,761 @@
+import { createElement, isNullOrUndefined, classList, L10n } from '@syncfusion/ej2-base';
+import { DocumentEditor } from '../../document-editor/index';
+import { DropDownList } from '@syncfusion/ej2-dropdowns';
+import { Button } from '@syncfusion/ej2-buttons';
+import { ItemModel, DropDownButton, SplitButton, SplitButtonModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
+import { Query } from '@syncfusion/ej2-data';
+import { DocumentEditorContainer } from '../document-editor-container';
+/**
+ * Paragraph Properties
+ * @private
+ */
+export class Paragraph {
+    private container: DocumentEditorContainer;
+    private textProperties: HTMLElement;
+    private leftAlignment: HTMLElement;
+    private rightAlignment: HTMLElement;
+    private centerAlignment: HTMLElement;
+    private justify: HTMLElement;
+    private increaseIndent: HTMLElement;
+    private decreaseIndent: HTMLElement;
+    private lineSpacing: DropDownButton;
+    private style: DropDownList;
+    private isRetrieving: boolean = false;
+    private styleName: string;
+    public appliedBulletStyle: string = 'dot';
+    public appliedNumberingStyle: string = 'arabic';
+    public appliedLineSpacing: string = '';
+    private noneNumberTag: HTMLElement;
+    private numberList: HTMLElement;
+    private lowLetter: HTMLElement;
+    private upLetter: HTMLElement;
+    private lowRoman: HTMLElement;
+    private upRoman: HTMLElement;
+    private noneBulletTag: HTMLElement;
+    private dotBullet: HTMLElement;
+    private circleBullet: HTMLElement;
+    private squareBullet: HTMLElement;
+    private flowerBullet: HTMLElement;
+    private arrowBullet: HTMLElement;
+    private tickBullet: HTMLElement;
+    public localObj: L10n;
+    private isRtl: boolean;
+    private splitButtonClass: string = 'e-de-prop-splitbutton';
+    get documentEditor(): DocumentEditor {
+        return this.container.documentEditor;
+    }
+    constructor(container: DocumentEditorContainer) {
+        this.container = container;
+    }
+
+    public initializeParagraphPropertiesDiv(wholeDiv: HTMLElement, isRtl?: boolean): void {
+        this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
+        this.isRtl = isRtl;
+        if (this.isRtl) {
+            this.splitButtonClass = 'e-rtl ' + this.splitButtonClass;
+        }
+        this.textProperties = wholeDiv;
+        let element: string = 'font_properties';
+        let paragraphDiv: HTMLElement = this.createDivElement(element + '_paragraph', wholeDiv, '');
+        classList(paragraphDiv, ['e-de-cntr-pane-padding'], []);
+        let label: HTMLElement = createElement('label', { styles: 'width:26px;', className: 'e-de-ctnr-prop-label' });
+        label.innerHTML = this.localObj.getConstant('Paragraph');
+        paragraphDiv.appendChild(label);
+        let styleDiv: HTMLElement = this.createDivElement(element + '_styleDiv', paragraphDiv);
+        styleDiv.classList.add('e-de-ctnr-segment');
+        // tslint:disable-next-line:max-line-length
+        let styleSelect: HTMLSelectElement = createElement('input', { id: element + '_style', styles: 'width:248px;font-size: 12px;letter-spacing: 0.05px;' }) as HTMLSelectElement;
+        styleDiv.appendChild(styleSelect);
+        this.createStyleDropDownList(styleSelect);
+        let indentWholeDiv: HTMLElement = this.createDivElement(element + '_indentWholeDiv', paragraphDiv);
+        indentWholeDiv.style.display = 'flex';
+        indentWholeDiv.classList.add('e-de-ctnr-segment');
+        if (isRtl) {
+            classList(indentWholeDiv, ['e-de-ctnr-segment-rtl'], []);
+        }
+        // tslint:disable-next-line:max-line-length
+        let indentDiv: HTMLElement = this.createDivElement(element + '_indentDiv', indentWholeDiv, 'display:flex;');
+        let indentClassName: string = 'e-de-ctnr-group-btn e-de-char-fmt-btn-left e-btn-group';
+        if (isRtl) {
+            indentClassName = 'e-rtl ' + indentClassName;
+        }
+        indentDiv.className = indentClassName;
+        // tslint:disable-next-line:max-line-length
+        this.leftAlignment = this.createButtonTemplate(element + '_leftIndent', 'e-de-ctnr-alignleft e-icons', indentDiv, 'e-de-prop-indent-button', '40.5', this.localObj.getConstant('Align left (Ctrl+L)'));
+        // tslint:disable-next-line:max-line-length
+        this.centerAlignment = this.createButtonTemplate(element + '_centerIndent', 'e-de-ctnr-aligncenter e-icons', indentDiv, 'e-de-prop-indent-button', '40.5', this.localObj.getConstant('Center (Ctrl+E)'));
+        // tslint:disable-next-line:max-line-length
+        this.rightAlignment = this.createButtonTemplate(element + '_rightIndent', 'e-de-ctnr-alignright e-icons', indentDiv, 'e-de-prop-indent-button', '40.5', this.localObj.getConstant('Align right (Ctrl+R)'));
+        // tslint:disable-next-line:max-line-length
+        this.justify = this.createButtonTemplate(element + '_justify', 'e-de-ctnr-justify e-icons', indentDiv, 'e-de-prop-indent-last-button', '40.5', this.localObj.getConstant('Justify (Ctrl+J)'));
+        let incDecIndentDiv: HTMLElement = this.createDivElement(element + '_indentDiv', indentWholeDiv, 'display:flex;');
+        indentClassName = 'e-de-ctnr-group-btn e-de-char-fmt-btn-right e-btn-group';
+        if (isRtl) {
+            indentClassName = 'e-rtl ' + indentClassName;
+        }
+        incDecIndentDiv.className = indentClassName;
+        // tslint:disable-next-line:max-line-length
+        this.decreaseIndent = this.createButtonTemplate(element + '_decreaseIndent', 'e-de-ctnr-decreaseindent e-icons', incDecIndentDiv, 'e-de-prop-indent-button', '37', this.localObj.getConstant('Decrease indent'));
+        // tslint:disable-next-line:max-line-length
+        this.increaseIndent = this.createButtonTemplate(element + '_increaseIndent', 'e-de-ctnr-increaseindent e-icons', incDecIndentDiv, 'e-de-prop-indent-last-button', '37', this.localObj.getConstant('Increase indent'));
+        let listDiv: HTMLElement = this.createDivElement(element + '_listDiv', paragraphDiv, 'display:flex;');
+        classList(listDiv, ['e-de-ctnr-segment'], []);
+        if (isRtl) {
+            classList(listDiv, ['e-de-ctnr-segment-rtl'], []);
+        }
+        let lineHeight: HTMLElement = createElement('button', { id: element + '_lineHeight' });
+        listDiv.appendChild(lineHeight);
+        this.lineSpacing = this.createLineSpacingDropdown(lineHeight);
+
+        let listDropDown: HTMLElement = this.createDivElement(element + '_listDropDiv', listDiv);
+        listDropDown.className = 'de-split-button';
+        let bulletButton: HTMLElement = createElement('button', { id: element + '_bullet' });
+        listDropDown.appendChild(bulletButton);
+        let numberingList: HTMLElement = createElement('button', { id: element + '_numberingList' });
+        listDropDown.appendChild(numberingList);
+        this.createBulletListDropButton('e-de-ctnr-bullets e-icons', bulletButton);
+        this.createNumberListDropButton('e-de-ctnr-numbering e-icons', numberingList);
+    }
+    private createSeperator(parentDiv: HTMLElement): void {
+        let seperator: HTMLElement = createElement('div', { className: 'e-de-prop-vline' });
+        parentDiv.appendChild(seperator);
+    }
+    private createDivElement(id: string, parentDiv: HTMLElement, style?: string): HTMLElement {
+        let element: HTMLElement;
+        if (style) {
+            element = createElement('div', { id: id, styles: style });
+        } else {
+            element = createElement('div', { id: id });
+        }
+        parentDiv.appendChild(element);
+        return element;
+
+    }
+    // tslint:disable-next-line:max-line-length
+    private createButtonTemplate(id: string, iconcss: string, div: HTMLElement, buttonClass: string, width: string, toolTipText: string): HTMLButtonElement {
+        let buttonElement: HTMLButtonElement = createElement('Button', { id: id }) as HTMLButtonElement;
+        // buttonElement.style.width = width + 'px';
+        // buttonElement.style.height = 32 + 'px';
+        div.appendChild(buttonElement);
+        let btn: Button = new Button({
+            cssClass: buttonClass, iconCss: iconcss
+        });
+        btn.appendTo(buttonElement);
+        buttonElement.setAttribute('title', toolTipText);
+        return buttonElement;
+    }
+    private createLineSpacingDropdown(button: HTMLElement): DropDownButton {
+        let items: ItemModel[] = [{
+            text: 'Single'
+        }, {
+            text: '1.15'
+        }, {
+            text: '1.5'
+        }, {
+            text: 'Double'
+        }];
+        let dropdown: DropDownButton = new DropDownButton({
+            items: items,
+            iconCss: 'e-de-ctnr-linespacing e-icons',
+            enableRtl: this.isRtl,
+            select: this.lineSpacingAction,
+            cssClass: this.splitButtonClass,
+            beforeItemRender: (args: MenuEventArgs) => {
+                args.element.innerHTML = '<span></span>' + args.item.text;
+                let span: HTMLElement = args.element.children[0] as HTMLElement;
+                if (args.item.text === this.appliedLineSpacing) {
+                    span.style.marginRight = '10px';
+                    span.setAttribute('class', 'e-de-selected-item e-icons');
+                } else {
+                    (args.element.children[0] as HTMLElement).style.marginRight = '25px';
+                    (args.element.children[0] as HTMLElement).classList.remove('e-de-selected-item');
+                }
+            }
+        });
+        dropdown.appendTo(button);
+        button.setAttribute('title', this.localObj.getConstant('Line spacing'));
+        return dropdown;
+    }
+
+    private createNumberListDropButton(iconcss: string, button: HTMLElement): void {
+        // tslint:disable-next-line:max-line-length
+        let div: HTMLElement = createElement('div', { id: 'target', styles: 'width: 211px;height: auto;display:none' });
+        let ulTag: HTMLElement = createElement('ul', {
+            styles: 'display: block; outline: 0px;',
+            id: 'listMenu',
+            className: 'e-de-floating-menu e-de-bullets-menu e-de-list-container e-de-list-thumbnail'
+        });
+        div.appendChild(ulTag);
+        this.noneNumberTag = this.createNumberNoneListTag(ulTag);
+        this.noneNumberTag.addEventListener('click', this.numberedNoneClick);
+        this.numberList = this.createNumberListTag(ulTag, '1.', '2.', '3.');
+        this.numberList.addEventListener('click', this.numberedNumberDotClick);
+        this.lowLetter = this.createNumberListTag(ulTag, 'a.', 'b.', 'c.');
+        this.lowLetter.addEventListener('click', this.numberedLowLetterClick);
+        this.upLetter = this.createNumberListTag(ulTag, 'A.', 'B.', 'C.');
+        this.upLetter.addEventListener('click', this.numberedUpLetterClick);
+        this.lowRoman = this.createNumberListTag(ulTag, 'i.', 'ii.', 'iii.');
+        this.lowRoman.addEventListener('click', this.numberedLowRomanClick);
+        this.upRoman = this.createNumberListTag(ulTag, 'I.', 'II.', 'III.');
+        this.upRoman.addEventListener('click', this.numberedUpRomanClick);
+        let menuOptions: SplitButtonModel = {
+            target: div,
+            iconCss: iconcss,
+            cssClass: this.splitButtonClass,
+            beforeOpen: (): void => {
+                div.style.display = 'block';
+                this.updateSelectedNumberedListType(this.documentEditor.selection.paragraphFormat.listText);
+            },
+            beforeClose: (): void => {
+                div.style.display = 'none';
+                this.removeSelectedList();
+            }
+        };
+        let dropdown: SplitButton = new SplitButton(menuOptions);
+        dropdown.click = (): void => {
+            this.applyLastAppliedNumbering();
+        };
+        dropdown.appendTo(button);
+        button.parentElement.setAttribute('title', this.localObj.getConstant('Numbering'));
+    }
+    private updateSelectedBulletListType = (listText: string): void => {
+        switch (listText) {
+            case '\uf0b7':
+                this.dotBullet.classList.add('de-list-item-selected');
+                break;
+            case '\uf06f' + '\u0020':
+                this.circleBullet.classList.add('de-list-item-selected');
+                break;
+            case '\uf0a7':
+                this.squareBullet.classList.add('de-list-item-selected');
+                break;
+            case '\uf076':
+                this.flowerBullet.classList.add('de-list-item-selected');
+                break;
+            case '\uf0d8':
+                this.arrowBullet.classList.add('de-list-item-selected');
+                break;
+            case '\uf0fc':
+                this.tickBullet.classList.add('de-list-item-selected');
+                break;
+            default:
+                this.noneBulletTag.classList.add('de-list-item-selected');
+                break;
+        }
+    }
+    private updateSelectedNumberedListType = (listText: string): void => {
+        switch (listText) {
+            case '1.':
+                this.numberList.classList.add('de-list-item-selected');
+                break;
+            case 'I.':
+                this.upRoman.classList.add('de-list-item-selected');
+                break;
+            case 'A.':
+                this.upLetter.classList.add('de-list-item-selected');
+                break;
+            case 'a.':
+                this.lowLetter.classList.add('de-list-item-selected');
+                break;
+            case 'i.':
+                this.lowRoman.classList.add('de-list-item-selected');
+                break;
+            default:
+                this.noneNumberTag.classList.add('de-list-item-selected');
+                break;
+        }
+    }
+    private removeSelectedList = (): void => {
+        let className: string = 'de-list-item-selected';
+        this.noneNumberTag.classList.remove(className);
+        this.numberList.classList.remove(className);
+        this.lowLetter.classList.remove(className);
+        this.upLetter.classList.remove(className);
+        this.lowRoman.classList.remove(className);
+        this.upRoman.classList.remove(className);
+        this.noneBulletTag.classList.remove(className);
+
+        this.dotBullet.classList.remove(className);
+        this.circleBullet.classList.remove(className);
+        this.squareBullet.classList.remove(className);
+        this.flowerBullet.classList.remove(className);
+        this.arrowBullet.classList.remove(className);
+        this.tickBullet.classList.remove(className);
+
+    }
+    private applyLastAppliedNumbering = (): void => {
+        switch (this.appliedNumberingStyle) {
+            case 'arabic': this.numberedNumberDotClick(); break;
+            case 'lowletter': this.numberedLowLetterClick(); break;
+            case 'upletter': this.numberedUpLetterClick(); break;
+            case 'lowroman': this.numberedLowRomanClick(); break;
+            case 'uproman': this.numberedUpRomanClick(); break;
+        }
+    }
+    private applyLastAppliedBullet = (): void => {
+        switch (this.appliedBulletStyle) {
+            case 'dot': this.bulletDotClick(); break;
+            case 'circle': this.bulletCircleClick(); break;
+            case 'square': this.bulletSquareClick(); break;
+            case 'arrow': this.bulletArrowClick(); break;
+            case 'tick': this.bulletTickClick(); break;
+            case 'flower': this.bulletFlowerClick(); break;
+        }
+    }
+    private createBulletListDropButton(iconcss: string, button: HTMLElement): void {
+        // tslint:disable-next-line:max-line-length
+        let div: HTMLElement = createElement('div', { id: 'bullet_list', styles: 'width: 196px;height: auto;display:none' });
+        let ulTag: HTMLElement = createElement('ul', {
+            styles: 'display: block; outline: 0px;', id: 'listMenu',
+            className: 'e-de-floating-menu e-de-bullets-menu e-de-list-container e-de-list-thumbnail'
+        });
+        div.appendChild(ulTag);
+        this.noneBulletTag = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-none e-icons e-de-ctnr-list');
+        this.noneBulletTag.addEventListener('click', this.numberedNoneClick);
+        this.dotBullet = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-dot e-icons e-de-ctnr-list');
+        this.dotBullet.addEventListener('click', this.bulletDotClick);
+        this.circleBullet = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-circle e-icons e-de-ctnr-list');
+        this.circleBullet.addEventListener('click', this.bulletCircleClick);
+        this.squareBullet = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-square e-icons e-de-ctnr-list');
+        this.squareBullet.addEventListener('click', this.bulletSquareClick);
+        this.flowerBullet = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-flower e-icons e-de-ctnr-list');
+        this.flowerBullet.addEventListener('click', this.bulletFlowerClick);
+        this.arrowBullet = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-arrow e-icons e-de-ctnr-list');
+        this.arrowBullet.addEventListener('click', this.bulletArrowClick);
+        this.tickBullet = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-tick e-icons e-de-ctnr-list');
+        this.tickBullet.addEventListener('click', this.bulletTickClick);
+        let menuOptions: SplitButtonModel = {
+            target: div,
+            iconCss: iconcss,
+            cssClass: this.splitButtonClass,
+            beforeOpen: (): void => {
+                div.style.display = 'block';
+                this.updateSelectedBulletListType(this.documentEditor.selection.paragraphFormat.listText);
+            },
+            beforeClose: (): void => {
+                div.style.display = 'none';
+                this.removeSelectedList();
+            }
+        };
+        let dropdown: SplitButton = new SplitButton(menuOptions);
+        dropdown.click = (): void => {
+            this.applyLastAppliedBullet();
+        };
+        dropdown.appendTo(button);
+        button.parentElement.setAttribute('title', this.localObj.getConstant('Bullets'));
+    }
+    private createNumberListTag(ulTag: HTMLElement, text1: string, text2: string, text3: string): HTMLElement {
+        let liTag: HTMLElement = createElement('li', {
+            styles: 'display:block',
+            className: 'e-de-floating-menuitem e-de-floating-menuitem-md e-de-list-items  e-de-list-item-size'
+        });
+        ulTag.appendChild(liTag);
+        // tslint:disable-next-line:max-line-length
+        let innerHTML: string = '<div>' + text1 + '<span class="e-de-list-line"></span></div><div>' + text2 + '<span class="e-de-list-line">';
+        innerHTML += '</span></div><div>' + text3 + '<span class="e-de-list-line"> </span></div >';
+        let liInnerDiv: HTMLElement = createElement('div', {
+            className: 'e-de-list-header-presetmenu',
+            id: 'ui-zlist0', innerHTML: innerHTML
+        });
+        liTag.appendChild(liInnerDiv);
+        return liTag;
+    }
+    private createNumberNoneListTag(ulTag: HTMLElement): HTMLElement {
+        let liTag: HTMLElement = createElement('li', {
+            styles: 'display:block;',
+            className: 'e-de-floating-menuitem e-de-floating-menuitem-md e-de-list-items  e-de-list-item-size'
+        });
+        ulTag.appendChild(liTag);
+        let innerHTML: string = '<div class="e-de-list-items-size"><span class="e-de-bullets e-de-list-items-size"' +
+            'style="display:table-cell; text-align: center; vertical-align:middle">None</span></div>';
+        let liInnerDiv: HTMLElement = createElement('div', {
+            className: 'e-de-list-header-presetmenu e-de-list-items-size', styles: 'position:relative;left:11px;top:13px',
+            id: 'ui-zlist0', innerHTML: innerHTML
+        });
+        liTag.appendChild(liInnerDiv);
+        return liTag;
+    }
+    private createBulletListTag(ulTag: HTMLElement, iconCss: string): HTMLElement {
+        let liTag: HTMLElement = createElement('li', {
+            styles: 'display:block;',
+            className: 'e-de-floating-menuitem e-de-floating-bullet-menuitem-md e-de-list-items  e-de-list-item-size'
+        });
+        ulTag.appendChild(liTag);
+        let liInnerDiv: HTMLElement = createElement('div', { className: 'e-de-bullet-list-header-presetmenu', id: 'ui-zlist0' });
+        let spanDiv: HTMLElement = createElement('div');
+        liInnerDiv.appendChild(spanDiv);
+        let span: HTMLElement = createElement('span', { className: iconCss });
+        spanDiv.appendChild(span);
+        liTag.appendChild(liInnerDiv);
+        return liTag;
+    }
+    private createStyleDropDownList(selectElement: HTMLElement): void {
+        this.style = new DropDownList({
+            dataSource: [{ StyleName: 'Normal', Class: 'e-icons e-edit-font' }],
+            cssClass: 'e-de-prop-dropdown',
+            popupHeight: '240px',
+            enableRtl: this.isRtl,
+            query: new Query().select(['StyleName', 'Style']),
+            fields: { text: 'StyleName', value: 'StyleName' },
+            open: this.updateOptions,
+            change: this.selectStyleValue,
+            close: this.closeStyleValue,
+            itemTemplate: '<span style="${Style}">${StyleName}</span>',
+            footerTemplate: '<span class="e-de-ctnr-dropdown-ftr">' + this.localObj.getConstant('Manage Styles') + '</span>'
+        });
+        this.style.appendTo(selectElement);
+        selectElement.parentElement.setAttribute('title', this.localObj.getConstant('Styles'));
+    }
+    /* tslint:disable:no-any */
+    private updateOptions = (args: any): void => {
+        this.updateStyleNames();
+        args.popup.element.getElementsByClassName('e-de-ctnr-dropdown-ftr')[0].addEventListener('click', this.createStyle);
+    }
+    public updateStyleNames(): void {
+        this.styleName = !isNullOrUndefined((this.style as any).itemData) ? (this.style as any).itemData.StyleName : undefined;
+        this.style.dataSource = this.constructStyleDropItems(this.documentEditor.getStyles('Paragraph'));
+        this.style.dataBind();
+        this.onSelectionChange();
+    }
+    private closeStyleValue = (args: any): void => {
+        if (!isNullOrUndefined(this.styleName)) {
+            this.style.value = this.styleName;
+            this.style.dataBind();
+        }
+    }
+    private createStyle = (): void => {
+        this.style.hidePopup();
+        if (!this.documentEditor.isReadOnly) {
+            this.documentEditor.showDialog('Styles');
+        }
+    }
+    private constructStyleDropItems(styles: Object[]): any {
+        let collection: any = [];
+        for (let styleObj of styles) {
+            let obj: any = {};
+            obj.StyleName = (styleObj as any).name;
+            obj.Style = this.parseStyle((styleObj as any).style as string);
+            collection.push(obj);
+        }
+        return collection;
+    }
+    private parseStyle(style: string): string {
+        let domStyle: string = '';
+        let styleObj: any = JSON.parse(style);
+        let textDecoration: string = '';
+        if (!isNullOrUndefined(styleObj.characterFormat.baselineAlignment) && styleObj.characterFormat.baselineAlignment !== 'Normal') {
+            let vAlign: string = '';
+            switch (styleObj.characterFormat.baselineAlignment) {
+                case 'Superscript':
+                    vAlign = 'super';
+                    break;
+                case 'Subscript':
+                    vAlign = 'sub';
+                    break;
+            }
+            if (vAlign.length > 1) {
+                domStyle += 'vertical-align:' + vAlign + ';';
+            }
+        }
+        if (!isNullOrUndefined(styleObj.characterFormat.underline) && styleObj.characterFormat.underline !== 'None') {
+            textDecoration += 'underline ';
+        }
+        if (!isNullOrUndefined(styleObj.characterFormat.strikethrough) && styleObj.characterFormat.strikethrough !== 'None') {
+            textDecoration += 'line-through ';
+        }
+        if (!isNullOrUndefined(styleObj.characterFormat.fontSize)) {
+            domStyle += 'font-size:' + styleObj.characterFormat.fontSize + 'px;';
+        }
+        if (!isNullOrUndefined(styleObj.characterFormat.fontFamily)) {
+            domStyle += 'font-family:' + styleObj.characterFormat.fontFamily + ';';
+        }
+        if (!isNullOrUndefined(styleObj.characterFormat.bold) && styleObj.characterFormat.bold) {
+            domStyle += 'font-weight:bold;';
+        }
+        if (!isNullOrUndefined(styleObj.characterFormat.italic) && styleObj.characterFormat.italic) {
+            domStyle += 'font-style:italic;';
+        }
+        // if (!isNullOrUndefined(styleObj.characterFormat.fontColor)) {
+        //     domStyle += 'color: ' + styleObj.characterFormat.fontColor + ';';
+        // }
+        if (textDecoration.length > 1) {
+            domStyle += 'text-decoration:' + textDecoration + ';';
+        }
+        return domStyle;
+    }
+    public wireEvent(): void {
+        this.leftAlignment.addEventListener('click', (): void => { this.leftAlignmentAction(); });
+        this.rightAlignment.addEventListener('click', (): void => { this.rightAlignmentAction(); });
+        this.centerAlignment.addEventListener('click', (): void => { this.centerAlignmentAction(); });
+        this.justify.addEventListener('click', (): void => { this.justifyAction(); });
+        this.increaseIndent.addEventListener('click', (): void => { this.increaseIndentAction(); });
+        this.decreaseIndent.addEventListener('click', (): void => { this.decreaseIndentAction(); });
+        /* tslint:disable-next-line:max-line-length */
+        this.lineSpacing.addEventListener('select', (args: MenuEventArgs): void => { this.lineSpacingAction(args); });
+    }
+    public unwireEvents(): void {
+        this.leftAlignment.click = undefined;
+        this.rightAlignment.click = undefined;
+        this.centerAlignment.click = undefined;
+        this.justify.click = undefined;
+        this.increaseIndent.click = undefined;
+        this.decreaseIndent.click = undefined;
+        this.lineSpacing.select = undefined;
+        this.style.select = undefined;
+    }
+    private leftAlignmentAction = (): void => {
+        if (this.isRetrieving) {
+            return;
+        }
+        if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
+            this.documentEditor.editor.toggleTextAlignment('Left');
+        }
+    }
+    private lineSpacingAction = (args: any) => {
+        if (this.isRetrieving) {
+            return;
+        }
+        let text: string = args.item.text;
+        switch (text) {
+            case 'Single':
+                this.documentEditor.selection.paragraphFormat.lineSpacing = 1;
+                break;
+            case '1.15':
+                this.documentEditor.selection.paragraphFormat.lineSpacing = 1.15;
+                break;
+            case '1.5':
+                this.documentEditor.selection.paragraphFormat.lineSpacing = 1.5;
+                break;
+            case 'Double':
+                this.documentEditor.selection.paragraphFormat.lineSpacing = 2;
+                break;
+        }
+        setTimeout((): void => { this.documentEditor.focusIn(); }, 30);
+    }
+    private setLineSpacing(): void {
+        let lineSpacing: number = this.documentEditor.selection.paragraphFormat.lineSpacing;
+        if (lineSpacing === 1) {
+            this.appliedLineSpacing = 'Single';
+        } else if (lineSpacing === 1.15) {
+            this.appliedLineSpacing = '1.15';
+        } else if (lineSpacing === 1.5) {
+            this.appliedLineSpacing = '1.5';
+        } else if (lineSpacing === 2) {
+            this.appliedLineSpacing = 'Double';
+        } else {
+            this.appliedLineSpacing = '';
+        }
+    }
+    private selectStyleValue = (args: any): void => {
+        if (this.isRetrieving || !args.isInteracted) {
+            return;
+        }
+        setTimeout((): void => { this.applyStyleValue(args); }, 10);
+    }
+    private applyStyleValue(args: any): void {
+        if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
+            this.documentEditor.editor.applyStyle(args.itemData.StyleName);
+        }
+    }
+    /* tslint:enable:no-any */
+    private rightAlignmentAction = (): void => {
+        if (this.isRetrieving) {
+            return;
+        }
+        if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
+            this.documentEditor.editor.toggleTextAlignment('Right');
+        }
+    }
+    private centerAlignmentAction = (): void => {
+        if (this.isRetrieving) {
+            return;
+        }
+        if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
+            this.documentEditor.editor.toggleTextAlignment('Center');
+        }
+    }
+
+    private justifyAction = (): void => {
+        if (this.isRetrieving) {
+            return;
+        }
+        if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
+            this.documentEditor.editor.toggleTextAlignment('Justify');
+        }
+    }
+    private increaseIndentAction = (): void => {
+        if (this.isRetrieving) {
+            return;
+        }
+        if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
+            this.documentEditor.editor.increaseIndent();
+        }
+    }
+    private decreaseIndentAction = (): void => {
+        if (this.isRetrieving) {
+            return;
+        }
+        if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
+            this.documentEditor.editor.decreaseIndent();
+        }
+    }
+    private numberedNoneClick = (): void => {
+        if (this.isRetrieving) {
+            return;
+        }
+        if (this.documentEditor.editor) {
+            this.documentEditor.editor.clearList();
+            setTimeout((): void => { this.documentEditor.focusIn(); }, 30);
+        }
+    }
+    private numberedNumberDotClick = (): void => {
+        if (this.isRetrieving) {
+            return;
+        }
+        if (this.documentEditor.editor) {
+            this.appliedNumberingStyle = 'arabic';
+            this.documentEditor.editor.applyNumbering('%1.', 'Arabic');
+            setTimeout((): void => { this.documentEditor.focusIn(); }, 30);
+        }
+    }
+    private numberedUpRomanClick = (): void => {
+        if (this.isRetrieving) {
+            return;
+        }
+        if (this.documentEditor.editor) {
+            this.appliedNumberingStyle = 'uproman';
+            this.documentEditor.editor.applyNumbering('%1.', 'UpRoman');
+            setTimeout((): void => { this.documentEditor.focusIn(); }, 30);
+        }
+    }
+    private numberedUpLetterClick = (): void => {
+        if (this.isRetrieving) {
+            return;
+        }
+        if (this.documentEditor.editor) {
+            this.appliedNumberingStyle = 'upletter';
+            this.documentEditor.editor.applyNumbering('%1.', 'UpLetter');
+            setTimeout((): void => { this.documentEditor.focusIn(); }, 30);
+        }
+    }
+    private numberedLowLetterClick = (): void => {
+        if (this.isRetrieving) {
+            return;
+        }
+        if (this.documentEditor.editor) {
+            this.appliedNumberingStyle = 'lowletter';
+            this.documentEditor.editor.applyNumbering('%1.', 'LowLetter');
+            setTimeout((): void => { this.documentEditor.focusIn(); }, 30);
+        }
+    }
+    private numberedLowRomanClick = (): void => {
+        if (this.isRetrieving) {
+            return;
+        }
+        if (this.documentEditor.editor) {
+            this.appliedNumberingStyle = 'lowroman';
+            this.documentEditor.editor.applyNumbering('%1.', 'LowRoman');
+            setTimeout((): void => { this.documentEditor.focusIn(); }, 30);
+        }
+    }
+    private bulletDotClick = (): void => {
+        if (this.isRetrieving) {
+            return;
+        }
+        if (this.documentEditor.editor) {
+            this.appliedBulletStyle = 'dot';
+            this.documentEditor.editor.applyBullet('\uf0b7', 'Symbol');
+            setTimeout((): void => { this.documentEditor.focusIn(); }, 30);
+        }
+    }
+    private bulletCircleClick = (): void => {
+        if (this.isRetrieving) {
+            return;
+        }
+        if (this.documentEditor.editor) {
+            this.appliedBulletStyle = 'circle';
+            this.documentEditor.editor.applyBullet('\uf06f' + '\u0020', 'Symbol');
+            setTimeout((): void => { this.documentEditor.focusIn(); }, 30);
+        }
+    }
+    private bulletSquareClick = (): void => {
+        if (this.isRetrieving) {
+            return;
+        }
+        if (this.documentEditor.editor) {
+            this.appliedBulletStyle = 'square';
+            this.documentEditor.editor.applyBullet('\uf0a7', 'Wingdings');
+            setTimeout((): void => { this.documentEditor.focusIn(); }, 30);
+        }
+    }
+    private bulletFlowerClick = (): void => {
+        if (this.isRetrieving) {
+            return;
+        }
+        if (this.documentEditor.editor) {
+            this.appliedBulletStyle = 'flower';
+            this.documentEditor.editor.applyBullet('\uf076', 'Wingdings');
+            setTimeout((): void => { this.documentEditor.focusIn(); }, 30);
+        }
+    }
+    private bulletArrowClick = (): void => {
+        if (this.isRetrieving) {
+            return;
+        }
+        if (this.documentEditor.editor) {
+            this.appliedBulletStyle = 'arrow';
+            this.documentEditor.editor.applyBullet('\uf0d8', 'Wingdings');
+            setTimeout((): void => { this.documentEditor.focusIn(); }, 30);
+        }
+    }
+    private bulletTickClick = (): void => {
+        if (this.isRetrieving) {
+            return;
+        }
+        if (this.documentEditor.editor) {
+            this.appliedBulletStyle = 'tick';
+            this.documentEditor.editor.applyBullet('\uf0fc', 'Wingdings');
+            setTimeout((): void => { this.documentEditor.focusIn(); }, 30);
+        }
+    }
+    public onSelectionChange(): void {
+        this.isRetrieving = true;
+        if (this.documentEditor.editor) {
+            //#region paragraph format
+            let style: string = this.documentEditor.selection.paragraphFormat.styleName;
+            if (style) {
+                this.style.value = style;
+                this.style.dataBind();
+            } else {
+                this.style.value = '';
+            }
+            classList(this.leftAlignment, [], ['e-btn-toggle']);
+            classList(this.rightAlignment, [], ['e-btn-toggle']);
+            classList(this.centerAlignment, [], ['e-btn-toggle']);
+            classList(this.justify, [], ['e-btn-toggle']);
+            if (this.documentEditor.selection.paragraphFormat.textAlignment === 'Left') {
+                classList(this.leftAlignment, ['e-btn-toggle'], []);
+            } else if (this.documentEditor.selection.paragraphFormat.textAlignment === 'Right') {
+                classList(this.rightAlignment, ['e-btn-toggle'], []);
+            } else if (this.documentEditor.selection.paragraphFormat.textAlignment === 'Center') {
+                classList(this.centerAlignment, ['e-btn-toggle'], []);
+            } else if (this.documentEditor.selection.paragraphFormat.textAlignment === 'Justify') {
+                classList(this.justify, ['e-btn-toggle'], []);
+            }
+            //#endregion
+        }
+        this.setLineSpacing();
+        this.isRetrieving = false;
+    }
+    public destroy(): void {
+        this.container = undefined;
+        if (this.lineSpacing) {
+            this.lineSpacing.destroy();
+            this.lineSpacing = undefined;
+        }
+        if (this.style) {
+            this.style.destroy();
+            this.style = undefined;
+        }
+    }
+}

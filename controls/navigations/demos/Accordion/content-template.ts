@@ -10,7 +10,7 @@ import { Accordion } from '../../src/accordion/index';
     let acrdnObj: Accordion = new Accordion( {
         expandMode: 'Multiple',
         items : [
-            { header: 'What is React?', content: ctn1, iconCss: 'e-react e-icons'},
+            { header: 'What is React?', content: ctn1, iconCss: 'e-athletics e-acrdn-icons'},
             { header: 'What is Typescript?', content: ctn, expanded: true },
             { header: 'What is Angular?' , content: ctn3,}
           ]

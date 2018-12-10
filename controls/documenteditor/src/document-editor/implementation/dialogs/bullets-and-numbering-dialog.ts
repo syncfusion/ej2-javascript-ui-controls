@@ -1,5 +1,5 @@
 import { LayoutViewer } from '../index';
-import { createElement, isNullOrUndefined, L10n, setCulture } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { Tab } from '@syncfusion/ej2-navigations';
 import { ListLevelPattern } from '../../base/types';
 import { WList } from '../list/list';
@@ -63,7 +63,6 @@ export class BulletsAndNumberingDialog {
         });
         //Render initialized Tab component
         tabObj.appendTo(tabTarget);
-        this.owner.owner.element.appendChild(this.target);
         tabObj.refresh();
     }
     private createNumberList(id: string): void {
@@ -136,7 +135,7 @@ export class BulletsAndNumberingDialog {
         ulTag.appendChild(liTag);
         /* tslint:disable-next-line:max-line-length */
         let liInnerDiv: HTMLElement = createElement('div', { className: 'e-de-ui-bullet-list-header-presetmenu e-de-bullet-icon-size', id: 'e-de-ui-zlist0' });
-        let liNextDiv: HTMLElement = createElement('div', { className: iconCss});
+        let liNextDiv: HTMLElement = createElement('div', { className: iconCss });
         liInnerDiv.appendChild(liNextDiv);
         liTag.appendChild(liInnerDiv);
         return liTag;
@@ -189,7 +188,6 @@ export class BulletsAndNumberingDialog {
         }
         let locale: L10n = new L10n('documenteditor', this.owner.owner.defaultLocale);
         locale.setLocale(this.owner.owner.locale);
-        setCulture(this.owner.owner.locale);
         if (!this.target) {
             this.initNumberingBulletDialog(locale);
         }

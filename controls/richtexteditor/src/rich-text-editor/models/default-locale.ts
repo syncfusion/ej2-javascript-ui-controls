@@ -103,7 +103,9 @@ export let defaultLocale: { [key: string]: string } = {
     'insertRowBefore': 'Insert Row Before',
     'insertRowAfter': 'Insert Row After',
     'deleteRow': 'Delete Row',
-    'tableEditHeader': 'Edit Table'
+    'tableEditHeader': 'Edit Table',
+    'TableHeadingText': 'Heading',
+    'TableColText': 'Col'
 };
 
 export let toolsLocale: { [key: string]: string } = {

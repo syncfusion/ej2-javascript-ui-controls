@@ -1,7 +1,8 @@
-import { Browser, KeyboardEventArgs, isNullOrUndefined, select, setStyleAttribute } from '@syncfusion/ej2-base';
+import { Browser, KeyboardEventArgs, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { getScrollableParent } from '@syncfusion/ej2-popups';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
+import { addClass, removeClass } from '@syncfusion/ej2-base';
 import { IRichTextEditor, NotifyArgs } from '../base/interface';
 
 /**
@@ -29,6 +30,9 @@ export class FullScreen {
             this.toggleParentOverflow(true);
             this.parent.setContentHeight();
             if (this.parent.toolbarModule) {
+                if (!(this.parent.getBaseToolbarObject().toolbarObj.items[0] as { [key: string]: string }).properties) {
+                    this.parent.getBaseToolbarObject().toolbarObj.removeItems(0);
+                }
                 if (Browser.isDevice) { this.parent.toolbarModule.removeFixedTBarClass(); }
                 this.parent.toolbarModule.updateItem({
                     targetItem: 'Maximize',
@@ -43,10 +47,16 @@ export class FullScreen {
     public hideFullScreen(event?: MouseEvent | KeyboardEventArgs): void {
         if (this.parent.element.classList.contains(classes.CLS_FULL_SCREEN)) {
             this.parent.element.classList.remove(classes.CLS_FULL_SCREEN);
+            let elem: NodeListOf<Element> = document.querySelectorAll('.e-overflow');
+            for (let i: number = 0; i < elem.length; i++) {
+                removeClass([elem[i]], ['e-rte-overflow']);
+            }
             this.parent.trigger(events.actionBegin, { requestType: 'Minimize', targetItem: 'Minimize', args: event });
-            this.toggleParentOverflow(false);
             this.parent.setContentHeight();
             if (this.parent.toolbarModule) {
+                if (!(this.parent.getBaseToolbarObject().toolbarObj.items[0] as { [key: string]: string }).properties) {
+                    this.parent.getBaseToolbarObject().toolbarObj.removeItems(0);
+                }
                 this.parent.toolbarModule.updateItem({
                     targetItem: 'Minimize',
                     updateItem: 'Maximize',
@@ -60,16 +70,13 @@ export class FullScreen {
 
     private toggleParentOverflow(isAdd: boolean): void {
         if (isNullOrUndefined(this.scrollableParent)) { return; }
-        let overflow: string = (isAdd) ? 'hidden' : '';
         for (let i: number = 0; i < this.scrollableParent.length; i++) {
             if (this.scrollableParent[i].nodeName === '#document') {
-                setStyleAttribute((<HTMLElement>select('body', this.scrollableParent[i])), {
-                    overflow: overflow
-                });
+                let elem: HTMLElement = document.querySelector('body');
+                addClass([elem], ['e-rte-overflow']);
             } else {
-                setStyleAttribute(this.scrollableParent[i], {
-                    overflow: overflow
-                });
+                let elem: HTMLElement = document.querySelector('#' + this.scrollableParent[i].id);
+                addClass([elem], ['e-rte-overflow']);
             }
         }
     }

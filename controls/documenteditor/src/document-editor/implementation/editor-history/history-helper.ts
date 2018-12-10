@@ -157,6 +157,7 @@ export class TableHistoryInfo {
             this.tableFormat.leftIndent = table.tableFormat.leftIndent;
             this.tableFormat.preferredWidth = table.tableFormat.preferredWidth;
             this.tableFormat.preferredWidthType = table.tableFormat.preferredWidthType;
+            this.tableFormat.allowAutoFit = table.tableFormat.allowAutoFit;
         }
         for (let i: number = 0; i < table.childWidgets.length; i++) {
             let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
@@ -202,6 +203,7 @@ export class TableFormatHistoryInfo {
     public leftIndent: number;
     public preferredWidth: number;
     public preferredWidthType: WidthType;
+    public allowAutoFit: boolean;
     constructor() {
         /* tslint:disable:no-empty */
     }

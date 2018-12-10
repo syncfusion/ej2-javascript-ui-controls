@@ -8,6 +8,7 @@ import { FontModel, BorderModel } from '../model/base-model';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
 import { getElement, GaugeLocation, Size, textFormatter, formatValue, Rect } from '../utils/helper';
 import { getPointer } from '../utils/helper';
+import { TooltipTheme } from '@syncfusion/ej2-svg-base/src/tooltip/enum';
 
 /**
  * Represent the tooltip rendering for gauge 
@@ -89,7 +90,8 @@ export class GaugeTooltip {
                 template = template[Object.keys(template)[0]];
             }
             if (!args.cancel) {
-                args['tooltip']['properties']['textStyle']['color'] = (this.gauge.theme === 'Highcontrast') ? '#00000' : '#FFFFFF';
+                args['tooltip']['properties']['textStyle']['color'] =
+                (this.gauge.theme.toLowerCase().indexOf('dark') > -1) ? '#00000' : '#FFFFFF';
                 this.svgTooltip = new Tooltip({
                     enable: true,
                     header: '',
@@ -101,7 +103,7 @@ export class GaugeTooltip {
                     palette: [],
                     inverted: !(args.gauge.orientation === 'Horizontal'),
                     enableAnimation: args.tooltip.enableAnimation,
-                    fill: (this.gauge.theme === 'Highcontrast') ? '#FFFFFF' : args.tooltip.fill,
+                    fill: (this.gauge.theme.toLowerCase().indexOf('dark') > -1) ? '#FFFFFF' : args.tooltip.fill,
                     areaBounds: new Rect(
                         areaRect.left,
                         tooltipPos === 'Bottom' ? location.y : areaRect.top,
@@ -110,7 +112,7 @@ export class GaugeTooltip {
                     ),
                     textStyle: args.tooltip.textStyle,
                     border: args.tooltip.border,
-                    theme: args.gauge.theme
+                    theme: args.gauge.theme as TooltipTheme
                 });
                 this.svgTooltip.appendTo(tooltipEle);
             }

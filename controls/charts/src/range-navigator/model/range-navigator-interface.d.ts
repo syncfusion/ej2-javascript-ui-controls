@@ -4,7 +4,6 @@
 import { RangeNavigator } from '../index';
 import { DataPoint } from '../utils/helper';
 import { FontModel, Rect } from '../../chart/index';
-import { ItemModel } from '@syncfusion/ej2-navigations';
 /**
  * interface for load event
  */
@@ -28,14 +27,6 @@ export interface IRangeTooltipRenderEventArgs extends IRangeEventArgs {
     text?: string[];
     /** Defines tooltip text style */
     textStyle?: FontModel;
-}
-export interface IRangeSelectorRenderEventArgs extends IRangeEventArgs {
-    /** Defines selector collections */
-    selector: ItemModel[];
-    /** enable custom format for calendar */
-    enableCustomFormat: boolean;
-    /** content fro calendar format */
-    content: string;
 }
 /**
  * Interface for label render event

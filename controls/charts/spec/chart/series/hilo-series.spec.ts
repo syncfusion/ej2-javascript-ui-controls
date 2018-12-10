@@ -225,7 +225,7 @@ describe('Chart', () => {
                 let axisLabel: Element = document.getElementById('container0_AxisLabel_0');
                 expect(axisLabel.textContent == 'USA').toBe(true);
                 let axisStart = document.getElementById('containerAxisLine_0');
-                expect(parseInt(axisLabel.getAttribute('x')) > parseInt(axisStart.getAttribute('x1'))).toBe(true);
+                expect(parseInt(axisLabel.getAttribute('x')) > parseInt(axisStart.getAttribute('d').split(' ')[1])).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -245,7 +245,7 @@ describe('Chart', () => {
                 let axisLabel: Element = document.getElementById('container0_AxisLabel_0');
                 expect(axisLabel.textContent == 'USA').toBe(true);
                 let axisStart: Element = document.getElementById('containerAxisLine_0');
-                expect(parseInt(axisLabel.getAttribute('x')) < parseInt(axisStart.getAttribute('x1'))).toBe(true);
+                expect(parseInt(axisLabel.getAttribute('x')) < parseInt(axisStart.getAttribute('d').split(' ')[1])).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -937,11 +937,11 @@ describe('Chart', () => {
         it('Checking with category axis with multiple panes- column', (done: Function) => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('containerAxisLine_0');
-                expect(svg.getAttribute('x1') == '101' || svg.getAttribute('x1') == '95').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[1] == '101' || svg.getAttribute('d').split(' ')[1] == '95').toBe(true);
                 let svg1: HTMLElement = document.getElementById('container_AxisBottom_Column0');
                 expect(svg1.getAttribute('stroke') == 'red').toBe(true);
                 svg = document.getElementById('containerAxisLine_1');
-                expect(svg.getAttribute('x1') == '845.5' || svg.getAttribute('x1') == '854.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[1] == '845.5' || svg.getAttribute('d').split(' ')[1] == '854.5').toBe(true);
                 svg1 = document.getElementById('container_AxisBottom_Column1');
                 expect(svg1.getAttribute('stroke') == 'blue').toBe(true);
                 done();
@@ -978,9 +978,9 @@ describe('Chart', () => {
         it('Checking with category axis with multiple panes- rows', (done: Function) => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('containerAxisLine_0');
-                expect(svg.getAttribute('y1') == '851.5' || svg.getAttribute('y1') == '842.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '851.5' || svg.getAttribute('d').split(' ')[2] == '842.5').toBe(true);
                 svg = document.getElementById('containerAxisLine_1');
-                expect(svg.getAttribute('y1') == '498.375' || svg.getAttribute('y1') == '499.375').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '498.375' || svg.getAttribute('d').split(' ')[2] == '499.375').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

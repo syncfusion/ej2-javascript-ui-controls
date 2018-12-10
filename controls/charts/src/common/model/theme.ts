@@ -78,13 +78,16 @@ export function getSeriesColor(theme: ChartTheme | AccumulationTheme): string[] 
     let palette: string[];
     switch (theme) {
         case 'Fabric':
+        case 'FabricDark':
             palette = ['#4472c4', '#ed7d31', '#ffc000', '#70ad47', '#5b9bd5',
                 '#c1c1c1', '#6f6fe2', '#e269ae', '#9e480e', '#997300'];
             break;
         case 'Bootstrap':
+        case 'BootstrapDark':
             palette = ['#a16ee5', '#f7ce69', '#55a5c2', '#7ddf1e', '#ff6ea6',
                 '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
             break;
+        case 'HighcontrastLight':
         case 'Highcontrast':
             palette = ['#79ECE4', '#E98272', '#DFE6B6', '#C6E773', '#BA98FF',
                 '#FA83C3', '#00C27A', '#43ACEF', '#D681EF', '#D8BC6E'];
@@ -100,6 +103,7 @@ export function getSeriesColor(theme: ChartTheme | AccumulationTheme): string[] 
 export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyle {
     let style: IThemeStyle;
     switch (theme) {
+        case 'HighcontrastLight':
         case 'Highcontrast':
             style = {
                 axisLabel: '#ffffff',
@@ -125,6 +129,35 @@ export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyl
                 selectionRectFill: 'rgba(255, 217, 57, 0.3)',
                 selectionRectStroke: '#ffffff',
                 selectionCircleStroke: '#FFD939'
+            };
+            break;
+        case 'MaterialDark':
+        case 'FabricDark':
+        case 'BootstrapDark':
+            style = {
+                axisLabel: '#DADADA',
+                axisTitle: '#ffffff',
+                axisLine: ' #6F6C6C',
+                majorGridLine: '#414040',
+                minorGridLine: '#514F4F',
+                majorTickLine: '#414040',
+                minorTickLine: ' #4A4848',
+                chartTitle: '#ffffff',
+                legendLabel: '#DADADA',
+                background: '#000000',
+                areaBorder: ' #9A9A9A',
+                errorBar: '#ffffff',
+                crosshairLine: '#F4F4F4',
+                crosshairFill: '#F4F4F4',
+                crosshairLabel: '#282727',
+                tooltipFill: '#F4F4F4',
+                tooltipBoldLabel: '#282727',
+                tooltipLightLabel: '#333232',
+                tooltipHeaderLine: '#9A9A9A',
+                markerShadow: '#BFBFBF',
+                selectionRectFill: 'rgba(255, 217, 57, 0.3)',
+                selectionRectStroke: '#38A9FF',
+                selectionCircleStroke: '#282727'
             };
             break;
         default:
@@ -162,7 +195,7 @@ export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyl
 export function getScrollbarThemeColor(theme: ChartTheme): IScrollbarThemeStyle {
     let scrollStyle: IScrollbarThemeStyle;
     switch (theme) {
-        case 'Highcontrast':
+        case 'HighcontrastLight':
             scrollStyle = {
                 backRect: '#333',
                 thumb: '#bfbfbf',

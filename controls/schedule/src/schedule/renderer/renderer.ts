@@ -4,6 +4,7 @@ import { View, ReturnType } from '../base/type';
 import { EventTooltip } from '../popups/event-tooltip';
 import * as events from '../base/constant';
 import * as cls from '../base/css-constant';
+import { VirtualScroll } from '../actions/virtual-scroll';
 
 /**
  * Schedule DOM rendering
@@ -81,6 +82,19 @@ export class Render {
         this.parent.activeView.getRenderDates();
         this.parent.uiStateValues.isGroupAdaptive = this.parent.isAdaptive && this.parent.activeViewOptions.group.resources.length > 0 &&
             this.parent.activeViewOptions.group.enableCompactView;
+        if (this.parent.virtualScrollModule) {
+            this.parent.virtualScrollModule.destroy();
+            this.parent.virtualScrollModule = null;
+        }
+        if (this.parent.currentView.indexOf('Timeline') !== -1 && this.parent.activeViewOptions.allowVirtualScrolling
+            && this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
+            this.parent.virtualScrollModule = new VirtualScroll(this.parent);
+            this.parent.uiStateValues.top = 0;
+        }
+        if (this.parent.headerModule) {
+            this.parent.headerModule.updateDateRange(this.parent.activeView.getDateRangeText());
+            this.parent.headerModule.updateHeaderItems('remove');
+        }
         this.parent.activeView.renderLayout(cls.CURRENT_PANEL_CLASS);
         if (this.parent.eventTooltip) {
             this.parent.eventTooltip.destroy();
@@ -89,9 +103,6 @@ export class Render {
         if (this.parent.eventSettings.enableTooltip || (this.parent.activeViewOptions.group.resources.length > 0
             && this.parent.activeViewOptions.group.headerTooltipTemplate)) {
             this.parent.eventTooltip = new EventTooltip(this.parent);
-        }
-        if (this.parent.headerModule) {
-            this.parent.headerModule.updateDateRange(this.parent.activeView.getDateRangeText());
         }
     }
 
@@ -111,8 +122,10 @@ export class Render {
     private dataManagerSuccess(e: ReturnType): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.trigger(events.dataBinding, e);
-        this.parent.eventsData = <Object[]>extend([], e.result, null, true);
-        let processed: Object[] = this.parent.eventBase.processData(this.parent.eventsData as { [key: string]: Object }[]);
+        let resultData: Object[] = <Object[]>extend([], e.result, null, true);
+        this.parent.eventsData = resultData.filter((data: { [key: string]: Object }) => !data[this.parent.eventFields.isBlock]);
+        this.parent.blockData = resultData.filter((data: { [key: string]: Object }) => data[this.parent.eventFields.isBlock]);
+        let processed: Object[] = this.parent.eventBase.processData(resultData as { [key: string]: Object }[]);
         this.parent.notify(events.dataReady, { processedData: processed });
         if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
             this.parent.dragAndDropModule.navigationWrapper();

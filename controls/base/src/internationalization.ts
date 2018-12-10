@@ -16,6 +16,7 @@ export let rightToLeft: boolean = false;
 
 /**
  * Interface for dateFormatOptions 
+ *
  */
 export interface DateFormatOptions {
     /**
@@ -30,9 +31,14 @@ export interface DateFormatOptions {
      * Specifies custom date formatting to be used.
      */
     format?: string;
+    /**
+     * Specifies the calendar mode other than gregorian
+     */
+    calendar?: string;
 }
 /**
  * Interface for numberFormatOptions
+ * 
  */
 export interface NumberFormatOptions {
     /**
@@ -282,8 +288,8 @@ export function enableRtl(status: boolean = true): void {
  */
 export function getNumericObject(locale: string, type?: string): Object {
     /* tslint:disable no-any */
-    let numObject: Object = (<any>IntlBase.getDependables(cldrData, locale, true))[mapper[0]];
-    let dateObject: Object = (<any>IntlBase.getDependables(cldrData, locale))[mapper[1]];
+    let numObject: Object = (<any>IntlBase.getDependables(cldrData, locale, '', true))[mapper[0]];
+    let dateObject: Object = (<any>IntlBase.getDependables(cldrData, locale, ''))[mapper[1]];
     let numSystem: string = getValue('defaultNumberingSystem', numObject);
     let symbPattern: Object = getValue('symbols-numberSystem-' + numSystem, numObject);
     let pattern: string = IntlBase.getSymbolPattern(type || 'decimal', numSystem, numObject, false);
@@ -294,6 +300,6 @@ export function getNumericObject(locale: string, type?: string): Object {
  * @ignore
  * @private
  */
-export function getDefaultDateObject(): Object {
-    return (<any>IntlBase.getDependables(cldrData, '', false))[mapper[1]];
+export function getDefaultDateObject(mode?: string): Object {
+    return (<any>IntlBase.getDependables(cldrData, '', mode, false))[mapper[1]];
 }

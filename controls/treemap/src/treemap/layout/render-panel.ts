@@ -35,6 +35,9 @@ export class LayoutPanel {
                 !isNullOrUndefined(this.treemap.initialDrillDown.groupName)) ?
                 this.getDrilldownData(this.treemap.levelsOfData[0], [])[0] : this.treemap.levelsOfData[0];
             totalRect = extend({}, this.treemap.areaRect, totalRect, false) as Rect;
+            if (!isNullOrUndefined(this.treemap.treeMapLegendModule) && !isNullOrUndefined(this.treemap.totalRect)) {
+                totalRect = this.treemap.totalRect;
+            }
             this.calculateLayoutItems(data || this.treemap.levelsOfData[0], totalRect);
             this.renderLayoutItems(data || this.treemap.levelsOfData[0]);
         }
@@ -483,12 +486,14 @@ export class LayoutPanel {
             let option: object = colorMap(
                 colorMapping, item['data'][this.treemap.equalColorValuePath],
                 item['data'][this.treemap.rangeColorValuePath], item['data'][this.treemap.weightValuePath]);
-            itemFill = option['fill'];
+            itemFill = !isNullOrUndefined(option['fill']) ? option['fill'] : treemap.leafItemSettings.fill;
             itemOpacity = option['opacity'];
         } else {
             for (let i: number = 0; i < parentData.length; i++) {
                 if ((parentData[i]['levelOrderName'] as string) === (item['levelOrderName'] as string).split('_')[0]) {
-                    itemFill = treemap.palette.length > 0 ? treemap.palette[i % treemap.palette.length] : itemFill;
+                    itemFill = treemap.palette.length > 0 ? treemap.palette[i % treemap.palette.length] :
+                    !isNullOrUndefined(treemap.colorValuePath) ?
+                    parentData[i]['data'][treemap.colorValuePath] : itemFill;
                 }
             }
         }

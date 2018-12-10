@@ -1,4 +1,4 @@
-import { isNullOrUndefined, createElement, prepend, extend, formatUnit } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, createElement, prepend, extend, formatUnit, append } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { VerticalView } from './vertical-view';
 import { TimelineEvent } from '../event-renderer/timeline-view';
@@ -149,16 +149,19 @@ export class TimelineViews extends VerticalView {
         this.collapseRows(wrap);
         workTd.appendChild(wrap);
         tr.appendChild(workTd);
+        if (this.parent.virtualScrollModule) {
+            this.parent.virtualScrollModule.renderVirtualTrack(wrap);
+        }
         this.element.querySelector('tbody').appendChild(tr);
     }
     private getRowCount(): number {
         if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
-            return this.parent.resourceBase.lastResourceLevel.length;
+            return this.parent.resourceBase.renderedResources.length;
         }
         return 1;
     }
     private getResourceTdData(i: number, tdData: TdData): TdData {
-        let resLevel: TdData = this.parent.resourceBase.lastResourceLevel[i];
+        let resLevel: TdData = this.parent.resourceBase.renderedResources[i];
         let resSHr: string = (resLevel.resourceData[resLevel.resource.startHourField] as string) || this.parent.workHours.start;
         let resEHr: string = (resLevel.resourceData[resLevel.resource.endHourField] as string) || this.parent.workHours.end;
         tdData.startHour = this.parent.globalize.parseDate(resSHr, { skeleton: 'Hm' });
@@ -170,8 +173,12 @@ export class TimelineViews extends VerticalView {
         return tdData;
     }
     public renderContentTable(table: Element): void {
-        let tr: Element = createElement('tr', { attrs: { role: 'row' } });
         let tBody: Element = table.querySelector('tbody');
+        append(this.getContentRows(), tBody);
+    }
+    public getContentRows(): Element[] {
+        let rows: Element[] = [];
+        let tr: Element = createElement('tr', { attrs: { role: 'row' } });
         let td: Element = createElement('td', { attrs: { role: 'gridcell', 'aria-selected': 'false' } });
         let trCount: number = this.getRowCount();
         for (let i: number = 0; i < trCount; i++) {
@@ -183,9 +190,9 @@ export class TimelineViews extends VerticalView {
                 let ntd: Element = this.createContentTd(tdData, <TimeSlotData>tdData, td);
                 ntr.appendChild(ntd);
             }
-            tBody.appendChild(ntr);
+            rows.push(ntr);
         }
-        table.appendChild(tBody);
+        return rows;
     }
     public getContentTdClass(r: TimeSlotData): string[] {
         return (r.first || !this.parent.activeViewOptions.timeScale.enable) ? [cls.WORK_CELLS_CLASS] :

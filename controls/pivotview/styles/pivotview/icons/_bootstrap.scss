@@ -1,0 +1,46 @@
+@include export-module('pivotview-bootstrap-icons') {
+  .e-pivotview {
+    .e-expand::before {
+      content: '\e207';
+    }
+
+    .e-collapse::before {
+      content: '\e95d';
+    }
+
+    &.e-rtl {
+      .e-expand::before {
+        content: '\e990';
+      }
+    }
+
+    .e-sort::before {
+      content: '\ea79';
+    }
+
+    .e-pv-filter::before {
+      content: '\ebb0';
+    }
+
+    .e-pv-filtered::before {
+      color: $pivotgrid-active-color;
+      content: '\ebb2';
+    }
+
+    .e-remove::before {
+      content: '\ea7b';
+    }
+
+    .e-selected-option-icon::before {
+      content: '\ea84';
+    }
+
+    .e-clear-filter-icon::before {
+      content: '\ebab';
+    }
+
+    .e-dropdown-icon::before {
+      content: '\e95d';
+    }
+  }
+}

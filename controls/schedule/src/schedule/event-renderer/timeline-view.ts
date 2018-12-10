@@ -1,12 +1,13 @@
-import { isNullOrUndefined, setStyleAttribute, extend, EventHandler } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, setStyleAttribute, extend, EventHandler, createElement } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import * as cls from '../base/css-constant';
-import * as events from '../base/constant';
 import * as util from '../base/util';
 import { MonthEvent } from './month';
 import { TdData } from '../base/interface';
 
 const EVENT_GAP: number = 2;
+const BLOCK_INDICATOR_WIDTH: number = 22;
+const BLOCK_INDICATOR_HEIGHT: number = 18;
 /**
  * Timeline view events render
  */
@@ -16,11 +17,11 @@ export class TimelineEvent extends MonthEvent {
     private slotCount: number = this.parent.activeViewOptions.timeScale.slotCount;
     private interval: number = this.parent.activeViewOptions.timeScale.interval;
     private day: number = 0;
-    private renderType: string;
     private appContainers: HTMLElement[];
     private dayLength: number;
     private slotsPerDay: number;
     private content: HTMLElement;
+    private rowIndex: number = 0;
     /**
      * Constructor for timeline views
      */
@@ -35,6 +36,14 @@ export class TimelineEvent extends MonthEvent {
     public getSlotDates(): void {
         this.slots = [];
         this.slots.push(this.parent.activeView.renderDates.map((date: Date) => { return +date; }));
+        if (this.parent.headerRows.length > 0 &&
+            this.parent.headerRows[this.parent.headerRows.length - 1].option !== 'Hour') {
+            this.renderType = 'day';
+            this.cellWidth = this.content.offsetWidth / this.dateRender.length;
+            this.slotsPerDay = 1;
+        } else {
+            this.slotsPerDay = (this.dayLength / this.dateRender.length);
+        }
     }
 
     public getOverlapEvents(date: Date, appointments: { [key: string]: Object }[]): Object[] {
@@ -61,22 +70,14 @@ export class TimelineEvent extends MonthEvent {
     public renderResourceEvents(): void {
         let resources: TdData[] = this.parent.uiStateValues.isGroupAdaptive ?
             [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] :
-            this.parent.resourceBase.lastResourceLevel;
+            this.parent.resourceBase.renderedResources;
         for (let i: number = 0; i < resources.length; i++) {
+            this.rowIndex = i;
             this.renderEventsHandler(this.parent.activeView.renderDates, this.parent.activeViewOptions.workDays, resources[i]);
         }
     }
 
     public renderEvents(event: { [key: string]: Object }, resIndex: number): void {
-        if (this.parent.headerRows.length > 0 &&
-            this.parent.headerRows[this.parent.headerRows.length - 1].option !== 'Hour') {
-            this.renderType = 'day';
-            this.cellWidth = this.content.offsetWidth / this.dateRender.length;
-            this.slotsPerDay = 1;
-        } else {
-            this.slotsPerDay = (this.dayLength / this.dateRender.length);
-        }
-        let wrapIndex: number = this.parent.uiStateValues.isGroupAdaptive ? 0 : resIndex;
         let eventData: { [key: string]: Object } = event.data as { [key: string]: Object };
         let startTime: Date = this.getStartTime(event, eventData);
         let endTime: Date = this.getEndTime(event, eventData);
@@ -84,29 +85,19 @@ export class TimelineEvent extends MonthEvent {
         if (this.day < 0) {
             return;
         }
-        let currentDate: Date = util.resetTime(new Date(this.dateRender[this.day].getTime()));
-        let schedule: { [key: string]: Date } = util.getStartEndHours(currentDate, this.startHour, this.endHour);
+        let cellTd: HTMLElement = this.getCellTd();
         let overlapCount: number = this.getIndex(startTime);
         event.Index = overlapCount;
         let appHeight: number = this.eventHeight;
         let diffInDays: number = eventData.count as number;
         if (startTime <= endTime) {
-            let appWidth: number = 0;
+            let appWidth: number = this.getEventWidth(startTime, endTime, event[this.fields.isAllDay] as boolean, diffInDays);
+            appWidth = this.renderType === 'day' ? appWidth - 2 : appWidth;
             let appLeft: number = 0;
             let appRight: number = 0;
-            let position: number = 0;
-            if (this.renderType === 'day' || event[this.fields.isAllDay]) {
-                appWidth = this.renderType === 'day' ? (((diffInDays * this.slotsPerDay) * this.cellWidth) - 2) :
-                    ((diffInDays * this.slotsPerDay) * this.cellWidth);
-                position = ((this.day * this.slotsPerDay) * this.cellWidth);
-            } else {
-                appWidth = this.getNormalEventsWidth(startTime, endTime, diffInDays);
-                position = this.getPosition(schedule, startTime, endTime, this.day);
-                position = position * this.cellWidth;
-            }
-            appWidth = (appWidth === 0) ? this.cellWidth : appWidth; // appWidth 0 when start and end time as same
+            let position: number = this.getPosition(startTime, endTime, event[this.fields.isAllDay] as boolean, this.day);
+            appWidth = (appWidth <= 0) ? this.cellWidth : appWidth; // appWidth 0 when start and end time as same
             this.renderedEvents.push(extend({}, event, null, true));
-            let cellTd: Element = this.appContainers[wrapIndex];
             let top: number = this.getRowTop(resIndex);
             let appTop: number = (top + EVENT_GAP) + (overlapCount * (appHeight + EVENT_GAP));
             appLeft = (this.parent.enableRtl) ? 0 : position;
@@ -114,14 +105,13 @@ export class TimelineEvent extends MonthEvent {
             if (this.cellHeight > ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight) {
                 let appointmentElement: HTMLElement = this.createAppointmentElement(event, resIndex);
                 this.applyResourceColor(appointmentElement, event, 'backgroundColor', this.groupOrder);
-                this.wireAppointmentEvents(appointmentElement);
                 setStyleAttribute(appointmentElement, {
                     'width': appWidth + 'px', 'left': appLeft + 'px', 'right': appRight + 'px', 'top': appTop + 'px'
                 });
+                this.wireAppointmentEvents(appointmentElement, false, event[this.fields.isReadonly] as boolean);
                 this.renderEventElement(event, appointmentElement, cellTd);
             } else {
                 for (let i: number = 0; i < diffInDays; i++) {
-                    let cellTd: HTMLElement = this.appContainers[wrapIndex] as HTMLElement;
                     let moreIndicator: HTMLElement = cellTd.querySelector('.' + cls.MORE_INDICATOR_CLASS) as HTMLElement;
                     let appPos: number = (this.parent.enableRtl) ? appRight : appLeft;
                     appPos = (Math.floor(appPos / this.cellWidth) * this.cellWidth);
@@ -162,7 +152,7 @@ export class TimelineEvent extends MonthEvent {
         }
     }
 
-    private getStartTime(event: { [key: string]: Object }, eventData: { [key: string]: Object }): Date {
+    public getStartTime(event: { [key: string]: Object }, eventData: { [key: string]: Object }): Date {
         let startTime: Date = event[this.fields.startTime] as Date;
         let schedule: { [key: string]: Date } = util.getStartEndHours(startTime, this.startHour, this.endHour);
         if (schedule.startHour.getTime() >= eventData[this.fields.startTime]) {
@@ -190,7 +180,8 @@ export class TimelineEvent extends MonthEvent {
         }
         return startDate;
     }
-    private getEndTime(event: { [key: string]: Object }, eventData: { [key: string]: Object }): Date {
+
+    public getEndTime(event: { [key: string]: Object }, eventData: { [key: string]: Object }): Date {
         let endTime: Date = event[this.fields.endTime] as Date;
         let schedule: { [key: string]: Date } = util.getStartEndHours(endTime, this.startHour, this.endHour);
         if (schedule.endHour.getTime() <= eventData[this.fields.endTime]) {
@@ -205,11 +196,14 @@ export class TimelineEvent extends MonthEvent {
         return endTime;
     }
 
-    private getNormalEventsWidth(startDate: Date, endDate: Date, diffInDays: number): number {
+    public getEventWidth(startDate: Date, endDate: Date, isAllDay: boolean, count: number): number {
+        if (this.renderType === 'day' || isAllDay) {
+            return (count * this.slotsPerDay) * this.cellWidth;
+        }
         if (this.isSameDay(startDate, endDate)) {
             return this.getSameDayEventsWidth(startDate, endDate);
         } else {
-            return this.getSpannedEventsWidth(startDate, endDate, diffInDays);
+            return this.getSpannedEventsWidth(startDate, endDate, count);
         }
     }
 
@@ -242,7 +236,7 @@ export class TimelineEvent extends MonthEvent {
         return (startDay === endDay);
     }
 
-    private getAppointmentLeft(schedule: { [key: string]: Date }, startTime: Date, endTime: Date, day: number): number {
+    private getAppointmentLeft(schedule: { [key: string]: Date }, startTime: Date, day: number): number {
         let slotTd: number = (this.isSameDay(startTime, schedule.startHour as Date)) ?
             ((startTime.getTime() - schedule.startHour.getTime()) / ((60 * 1000) * this.interval)) * this.slotCount : 0;
         if (day === 0) {
@@ -254,16 +248,23 @@ export class TimelineEvent extends MonthEvent {
         }
     }
 
-    private getPosition(schedule: { [key: string]: Date }, startTime: Date, endTime: Date, day: number): number {
-        if (schedule.endHour.getTime() <= endTime.getTime() && schedule.startHour.getTime() >= startTime.getTime()) {
-            return this.getAppointmentLeft(schedule, schedule.startHour, schedule.endHour, day);
-        } else if (schedule.endHour.getTime() <= endTime.getTime()) {
-            return this.getAppointmentLeft(schedule, startTime, schedule.endHour, day);
-        } else if (schedule.startHour.getTime() >= startTime.getTime()) {
-            return this.getAppointmentLeft(schedule, schedule.startHour, endTime, day);
-        } else {
-            return this.getAppointmentLeft(schedule, startTime, endTime, day);
+    public getPosition(startTime: Date, endTime: Date, isAllDay: boolean, day: number): number {
+        if (this.renderType === 'day' || isAllDay) {
+            return (day * this.slotsPerDay) * this.cellWidth;
         }
+        let currentDate: Date = util.resetTime(new Date(this.dateRender[day].getTime()));
+        let schedule: { [key: string]: Date } = util.getStartEndHours(currentDate, this.startHour, this.endHour);
+        let cellIndex: number;
+        if (schedule.endHour.getTime() <= endTime.getTime() && schedule.startHour.getTime() >= startTime.getTime()) {
+            cellIndex = this.getAppointmentLeft(schedule, schedule.startHour, day);
+        } else if (schedule.endHour.getTime() <= endTime.getTime()) {
+            cellIndex = this.getAppointmentLeft(schedule, startTime, day);
+        } else if (schedule.startHour.getTime() >= startTime.getTime()) {
+            cellIndex = this.getAppointmentLeft(schedule, schedule.startHour, day);
+        } else {
+            cellIndex = this.getAppointmentLeft(schedule, startTime, day);
+        }
+        return cellIndex * this.cellWidth;
     }
 
     private getFilterEvents(startDate: Date, endDate: Date, startTime: Date, endTime: Date, gIndex: string): Object[] {
@@ -288,12 +289,38 @@ export class TimelineEvent extends MonthEvent {
         return false;
     }
 
-    private getRowTop(resIndex: number): number {
+    public getRowTop(resIndex: number): number {
         if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
-            let tr: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS +
-                ' tbody tr:nth-child(' + (resIndex + 1) + ')') as HTMLElement;
-            return tr.offsetTop;
+            let td: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' ' + 'tbody td[data-group-index="'
+                + resIndex.toString() + '"]') as HTMLElement;
+            return td.offsetTop;
         }
         return 0;
+    }
+
+
+    public getCellTd(): HTMLElement {
+        let wrapIndex: number = this.parent.uiStateValues.isGroupAdaptive ? 0 : this.rowIndex;
+        return this.appContainers[wrapIndex] as HTMLElement;
+    }
+
+    public renderBlockIndicator(cellTd: HTMLElement, position: number, resIndex: number): void {
+        // No need to render block icon for Year, Month and Week header rows
+        if (this.parent.headerRows.length > 0 &&
+            (this.parent.headerRows[this.parent.headerRows.length - 1].option !== 'Hour' ||
+                this.parent.headerRows[this.parent.headerRows.length - 1].option !== 'Date')) {
+            return;
+        }
+        position = (Math.floor(position / this.cellWidth) * this.cellWidth) + this.cellWidth - BLOCK_INDICATOR_WIDTH;
+        if (!this.isAlreadyAvail(position, cellTd)) {
+            let blockIndicator: HTMLElement = createElement('div', { className: 'e-icons ' + cls.BLOCK_INDICATOR_CLASS });
+            if (this.parent.enableRtl) {
+                blockIndicator.style.right = position + 'px';
+            } else {
+                blockIndicator.style.left = position + 'px';
+            }
+            blockIndicator.style.top = this.getRowTop(resIndex) + this.cellHeight - BLOCK_INDICATOR_HEIGHT + 'px';
+            this.renderElement(cellTd, blockIndicator);
+        }
     }
 }

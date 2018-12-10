@@ -71,7 +71,7 @@ export interface MaskedTextBoxModel extends ComponentModel{
      * </a></b>, <b><a href="../maskedtextbox/mask-configuration.html#custom-characters" target="_blank">custom characters</a></b> and
      * <b><a href="../maskedtextbox/mask-configuration.html#regular-expression" target="_blank">regular expression</a></b> as mask elements.
      * For more information on mask, refer to
-     * [mask](./mask-configuration.html#standard-mask-elements).
+     * [mask](../maskedtextbox/mask-configuration#standard-mask-elements/).
      * * If the mask value is empty, the MaskedTextBox will behave as an input element with text type.
      * @default null
      */
@@ -81,7 +81,7 @@ export interface MaskedTextBoxModel extends ComponentModel{
      * Gets or sets a value that will be shown as a prompting symbol for the masked value.
      * The symbol used to show input positions in the MaskedTextBox.
      * For more information on prompt-character, refer to
-     * [prompt-character](./mask-configuration.html#prompt-character).
+     * [prompt-character](../maskedtextbox/mask-configuration#prompt-character/).
      * @default _
      */
     promptChar?: string;
@@ -118,7 +118,7 @@ export interface MaskedTextBoxModel extends ComponentModel{
      * </script>
      * ```
      * For more information on customCharacters, refer to
-     * [customCharacters](./mask-configuration.html#custom-characters).
+     * [customCharacters](../maskedtextbox/mask-configuration#custom-characters/).
      * @default null
      */
     customCharacters?: { [x: string]: Object };

@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 16.4.40-beta (2018-12-10)
+
+### ProgressButton
+
+#### Breaking Changes
+
+- Type changes done for the following property.
+
+Property Name | Old Return Type | New Return Type
+-----|-----|-----
+`animationSettings` | AnimationSettings | AnimationSettingsModel
+`spinSettings` | SpinSettings | SpinSettingsModel
+
 ## 16.3.22 (2018-09-25)
 
 ### ProgressButton

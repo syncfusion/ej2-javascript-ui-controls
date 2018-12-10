@@ -1,4 +1,4 @@
-import { Property, ChildProperty, EmitType, Event } from '@syncfusion/ej2-base';import { ExcelHeaderQueryCellInfoEventArgs, GridLine, ClipMode, BeforeCopyEventArgs, PrintMode } from '@syncfusion/ej2-grids';import { ExcelQueryCellInfoEventArgs, PdfHeaderQueryCellInfoEventArgs, SelectionSettingsModel } from '@syncfusion/ej2-grids';import { QueryCellInfoEventArgs, HeaderCellInfoEventArgs, CellSelectEventArgs, RowSelectEventArgs } from '@syncfusion/ej2-grids';import { CellSelectingEventArgs, CellDeselectEventArgs, ResizeArgs, PrintEventArgs } from '@syncfusion/ej2-grids';import { ContextMenuItemModel, RowDeselectEventArgs, PdfQueryCellInfoEventArgs, ColumnDragEventArgs } from '@syncfusion/ej2-grids';import { BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
+import { Property, ChildProperty, EmitType, Event } from '@syncfusion/ej2-base';import { ExcelHeaderQueryCellInfoEventArgs, GridLine, ClipMode, BeforeCopyEventArgs, PrintMode } from '@syncfusion/ej2-grids';import { ExcelQueryCellInfoEventArgs, PdfHeaderQueryCellInfoEventArgs, SelectionSettingsModel } from '@syncfusion/ej2-grids';import { QueryCellInfoEventArgs, HeaderCellInfoEventArgs, CellSelectEventArgs, RowSelectEventArgs } from '@syncfusion/ej2-grids';import { CellSelectingEventArgs, CellDeselectEventArgs, ResizeArgs, PrintEventArgs } from '@syncfusion/ej2-grids';import { ContextMenuItemModel, RowDeselectEventArgs, PdfQueryCellInfoEventArgs, ColumnDragEventArgs } from '@syncfusion/ej2-grids';import { BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';import { BeforeColumnRenderEventArgs } from '../../common';
 
 /**
  * Interface for a class GridSettings
@@ -245,5 +245,11 @@ export interface GridSettingsModel {
      * @event  
      */
     columnDrop?: EmitType<ColumnDragEventArgs>;
+
+    /**
+     * This allows to configure the column before it renders.
+     * @event 
+     */
+    beforeColumnsRender?: EmitType<BeforeColumnRenderEventArgs>;
 
 }

@@ -105,7 +105,7 @@ describe('Chart Control', () => {
         });
         it('checking axis labels for primaryXAxis with minorGridLine', (done: Function) => {
             loaded = (args: Object): void => {
-                svg = document.getElementById("container_MinorGridLine_0");
+                svg = document.getElementById("container_MinorGridLine_0_1");
                 expect(svg.getAttribute("stroke") == "#eaeaea").toBe(true);
                 expect(svg.getAttribute("stroke-width") == "2").toBe(true);
                 done();
@@ -197,7 +197,7 @@ describe('Chart Control', () => {
         });
         it('checking axis labels for primary YAxis with minorGridLine', (done: Function) => {
             loaded = (args: Object): void => {
-                svg = document.getElementById("container_MinorGridLine_1");
+                svg = document.getElementById("container_MinorGridLine_1_1");
                 expect(svg.getAttribute("stroke") == "#eaeaea").toBe(true);
                 expect(svg.getAttribute("stroke-width") == "2").toBe(true);
                 done();

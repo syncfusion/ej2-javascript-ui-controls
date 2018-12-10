@@ -20,7 +20,7 @@ export class HelperMethods {
      */
     public static wordSplitCharacters: string[] = [' ', ',', '.', ':', ';', '<', '>', '=',
         '+', '-', '_', '{', '}', '[', ']', '`', '~', '!', '@', '#', '$', '%', '^', '&',
-        '*', '(', ')', '"', '?', '/', '|', '\\', '”'];
+        '*', '(', ')', '"', '?', '/', '|', '\\', '”', '　', '،', '؟', '؛', '’', '‘'];
     /**
      * Inserts text at specified index in string.
      * @param {string} spanText 
@@ -226,6 +226,19 @@ export class HelperMethods {
         return false;
     }
     /**
+     * Return specified number of string count
+     * @private
+     */
+    public static addSpace(length: number): string {
+        let str: string = '';
+        if (length > 0) {
+            for (let i: number = 0; i < length; i++) {
+                str += ' ';
+            }
+        }
+        return str;
+    }
+    /**
      * @private
      * Write Characterformat
      * @param {any} characterFormat 
@@ -243,6 +256,12 @@ export class HelperMethods {
         characterFormat.highlightColor = isInline ? format.highlightColor : format.getValue('highlightColor');
         characterFormat.fontColor = isInline ? format.fontColor : format.getValue('fontColor');
         characterFormat.styleName = !isNullOrUndefined(format.baseCharStyle) ? format.baseCharStyle.name : undefined;
+        characterFormat.bidi = isInline ? format.bidi : format.getValue('bidi');
+        characterFormat.bdo = isInline ? format.bdo : format.getValue('bdo');
+        characterFormat.boldBidi = isInline ? format.boldBidi : format.getValue('boldBidi');
+        characterFormat.italicBidi = isInline ? format.italicBidi : format.getValue('italicBidi');
+        characterFormat.fontSizeBidi = isInline ? format.fontSizeBidi : format.getValue('fontSizeBidi');
+        characterFormat.fontFamilyBidi = isInline ? format.fontFamilyBidi : format.getValue('fontFamilyBidi');
     }
     /* tslint:enable:no-any */
     /**
@@ -262,6 +281,18 @@ export class HelperMethods {
         }
         return temp;
     }
+    public static ReverseString(text: string): string {
+        if (!isNullOrUndefined(text) && text !== '') {
+            // return a new array
+            let splitString: string[] = text.split('');
+            // reverse the new created array
+            let reverseString: string[] = splitString.reverse();
+            // join all elements of the array into a string
+            text = reverseString.join('');
+        }
+        return text;
+    }
+
 }
 /** 
  * @private
@@ -444,4 +475,18 @@ export interface CellCountInfo {
 export interface BlockInfo {
     node: Widget;
     position: IndexInfo;
+}
+/**
+ * @private
+ */
+export interface WidthInfo {
+    minimumWordWidth: number;
+    maximumWordWidth: number;
+}
+/**
+ * @private
+ */
+export interface RtlInfo {
+    isRtl: boolean;
+    id: number;
 }

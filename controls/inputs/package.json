@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-inputs",
-	"version": "16.3.30",
+	"version": "16.3.21",
 	"description": "A package of Essential JS 2 input components such as Textbox, Color-picker, Masked-textbox, Numeric-textbox, Slider, Upload, and Form-validator that is used to get input from the users.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -92,7 +92,7 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/syncfusion/ej2-inputs.git"
+		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls/tree/master/controls/inputs"
 	},
 	"scripts": {
 		"build": "gulp build",

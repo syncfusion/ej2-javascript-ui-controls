@@ -106,7 +106,7 @@ export interface LabelBorderModel {
 
     /**
      * Border type for labels
-     * * Rectangle 
+     * * Rectangle
      * * Without Top Border
      * * Without Top and BottomBorder
      * * Without Border
@@ -277,7 +277,7 @@ export interface StripLineSettingsModel {
     rotation?: number;
 
     /**
-     * Defines the position of the strip line text horizontally. They are, 
+     * Defines the position of the strip line text horizontally. They are,
      * * Start: Places the strip line text at the start.
      * * Middle: Places the strip line text in the middle.
      * * End: Places the strip line text at the end.
@@ -286,7 +286,7 @@ export interface StripLineSettingsModel {
     horizontalAlignment?: Anchor;
 
     /**
-     * Defines the position of the strip line text vertically. They are, 
+     * Defines the position of the strip line text vertically. They are,
      * * Start: Places the strip line text at the start.
      * * Middle: Places the strip line text in the middle.
      * * End: Places the strip line text at the end.
@@ -321,7 +321,7 @@ export interface StripLineSettingsModel {
 export interface MultiLevelLabelsModel {
 
     /**
-     * Defines the position of the multi level labels. They are, 
+     * Defines the position of the multi level labels. They are,
      * * Near: Places the multi level labels at Near.
      * * Center: Places the multi level labels at Center.
      * * Far: Places the multi level labels at Far.
@@ -330,7 +330,7 @@ export interface MultiLevelLabelsModel {
     alignment?: Alignment;
 
     /**
-     * Defines the textOverFlow for multi level labels. They are, 
+     * Defines the textOverFlow for multi level labels. They are,
      * * Trim: Trim textOverflow for multi level labels.
      * * Wrap: Wrap textOverflow for multi level labels.
      * * none: None textOverflow for multi level labels.
@@ -352,5 +352,50 @@ export interface MultiLevelLabelsModel {
      * multi level categories for multi level labels.
      */
     categories?: MultiLevelCategoriesModel[];
+
+}
+
+/**
+ * Interface for a class ScrollbarSettingsRange
+ */
+export interface ScrollbarSettingsRangeModel {
+
+    /**
+     * Specifies the minimum range of an scrollbar.
+     * @default null
+     */
+
+    minimum?: Date | string | number;
+
+    /**
+      * Specifies the maximum range of an scrollbar.
+      * @default null
+      */
+
+    maximum?: Date | string | number;
+
+}
+
+/**
+ * Interface for a class ScrollbarSettings
+ */
+export interface ScrollbarSettingsModel {
+
+    /**
+       * Enables the scrollbar for lazy loading.
+       * @default false
+       */
+    enable?: boolean;
+
+    /**
+       * Defines the length of the points for numeric and logarithmic values.
+       * @default null
+       */
+    pointsLength?: number;
+
+    /**
+      * Specifies the range for date time values alone.
+      */
+    range?: ScrollbarSettingsRangeModel;
 
 }

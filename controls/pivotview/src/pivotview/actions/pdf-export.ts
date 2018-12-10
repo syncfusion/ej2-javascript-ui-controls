@@ -75,7 +75,7 @@ export class PDFExport {
                                         if (isColHeader && pivotCell.rowSpan && pivotCell.rowSpan > 1) {
                                             pdfGridRow.cells.getCell(localCnt).rowSpan = pivotCell.rowSpan ? pivotCell.rowSpan : 1;
                                         }
-                                        pdfGridRow.cells.getCell(localCnt).value = cellValue.toString();
+                                        pdfGridRow.cells.getCell(localCnt).value = cellValue ? cellValue.toString() : '';
                                     }
                                     if (cellValue !== '') {
                                         isEmptyRow = false;

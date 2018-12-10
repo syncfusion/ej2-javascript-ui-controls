@@ -26,7 +26,7 @@ export interface DatePickerModel extends CalendarModel{
      * it allows invalid or out-of-range date value with highlighted error class.
      * @default false
      * > For more details refer to 
-     * [`Strict Mode`](./datepicker/strict-mode.html) documentation.
+     * [`Strict Mode`](../datepicker/strict-mode/) documentation.
      */
     strictMode?: boolean;
 
@@ -41,6 +41,13 @@ export interface DatePickerModel extends CalendarModel{
      * @default true
      */
     enabled?: boolean;
+
+    /**
+     * Specifies the option to enable the multiple dates selection of the calendar.
+     * @default false
+     * @private
+     */
+    isMultiSelection?: boolean;
 
     /**
      * Specifies whether to show or hide the clear icon in textbox.

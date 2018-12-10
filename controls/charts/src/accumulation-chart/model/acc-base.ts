@@ -5,7 +5,7 @@ import { Property, ChildProperty, Complex, createElement } from '@syncfusion/ej2
 import { isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Border, Font, Animation, Index, EmptyPointSettings, Connector } from '../../common/model/base';
-import { Rect, ChartLocation, stringToNumber, PathOption, Size, appendChildElement } from '../../common/utils/helper';
+import { Rect, ChartLocation, stringToNumber, PathOption, Size, appendChildElement} from '../../common/utils/helper';
 import { AccumulationType, AccumulationLabelPosition, PyramidModes } from '../model/enum';
 import { IAccSeriesRenderEventArgs, IAccPointRenderEventArgs } from '../model/pie-interface';
 import { LegendShape } from '../../chart/utils/enum';
@@ -184,6 +184,27 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
 }
 
 /**
+ * Center value of the Pie series.
+ */
+export class PieCenter extends ChildProperty<PieCenter> {
+
+    /**
+     * X value of the center.
+     * @default '50%'
+     */
+    @Property('50%')
+    public x: string;
+
+    /**
+     * Y value of the center.
+     * @default '50%'
+     */
+    @Property('50%')
+    public y: string;
+
+}
+
+/**
  * Points model for the series.
  */
 
@@ -194,6 +215,7 @@ export class AccPoints {
     public visible: boolean = true;
     public text: string;
     public tooltip: string;
+    public sliceRadius: string;
     public originalText: string;
     /** @private */
     public label: string;
@@ -292,7 +314,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public name: string;
 
     /**
-     * The provided value will be considered as a Tooltip Mapping name 
+     * The provided value will be considered as a Tooltip Mapping name
      * @default ''
      */
     @Property('')
@@ -640,6 +662,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         clubPoint.x = 'Others';
         clubPoint.y = this.sumOfClub;
         clubPoint.text = clubPoint.originalText = clubPoint.x + ': ' + this.sumOfClub;
+        clubPoint.sliceRadius = '80%';
         return clubPoint;
     }
     /**
@@ -688,6 +711,8 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         point.color = getValue(this.pointColorMapping, data[i]);
         point.text = point.originalText = getValue(this.dataLabel.name || '', data[i]);
         point.tooltip = getValue(this.tooltipMappingName || '', data[i]);
+        point.sliceRadius = getValue(this.radius, data[i]);
+        point.sliceRadius =  isNullOrUndefined(point.sliceRadius) ? '80%' : point.sliceRadius;
         this.setAccEmptyPoint(point, i, data, colors);
         return point;
     }

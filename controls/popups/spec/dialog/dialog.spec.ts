@@ -93,7 +93,8 @@ describe('alert utility dialog with closeICon and custom footer button', () => {
         DialogUtility.alert({
             isModal: false,
             showCloseIcon: true,
-            okButton: {text: 'Ok btn', click: footerbtnClick}
+            okButton: {text: 'Ok btn', click: footerbtnClick},
+            animationSettings: { effect: 'Zoom'}
          });
          function footerbtnClick(){
              // your code here
@@ -135,6 +136,7 @@ describe('confirm utility dialog without modal and default button actions', () =
             isModal: false,
             showCloseIcon: false,
             okButton: {text: 'Ok btn', click: footerbtnClick},
+            animationSettings: { effect: 'Zoom'},
             cancelButton: {text: 'cancel button', click: function() {
                 // test dialog
             }}
@@ -303,7 +305,13 @@ describe('closeOnEscape property', () => {
 describe('closeOnEscape property', () => {
     let events: any;
     let ele: HTMLElement = createElement('div', { id: 'dialog2' });
+    let inputField: HTMLElement = createElement('input', {id : 'dialogInput'});
+    ele.appendChild(inputField);
+    inputField.onblur = function() {
+        expect(document.activeElement).not.toEqual(inputField);
+    }
     document.body.appendChild(ele);
+
     let eventArgs: any;
     beforeAll(() => {
         events = new Dialog({header:'Demo', zIndex: 1200, content:'First demo content', animationSettings: { effect: 'None' }, closeOnEscape: true });
@@ -312,6 +320,7 @@ describe('closeOnEscape property', () => {
     });
 
     it('Esc key press to hide testing ', () => {
+        (document.getElementById('dialogInput') as HTMLInputElement).focus();
         eventArgs = { keyCode: 27, altKey: false, ctrlKey: false, shiftKey: false };
         events.keyDown(eventArgs);
         expect(document.getElementById("dialog2").classList.contains('e-popup-close')).toEqual(true);
@@ -494,6 +503,36 @@ describe('Dialog Control', () => {
             expect((dialog.element as HTMLElement).style.top).toBe('200px');
         });
 
+        it('position property offset value for x and y testing', () => {
+            dialog = new Dialog({ header: "Dialog", position: { X: '100', Y: '200' } }, '#dialog');
+            expect((dialog.element as HTMLElement).style.left).toBe('100px');
+            expect((dialog.element as HTMLElement).style.top).toBe('200px');
+        });
+
+        it('position property offset value for x and y testing', () => {
+            dialog = new Dialog({ header: "Dialog", position: { X: '100.5', Y: '200' } }, '#dialog');
+            expect((dialog.element as HTMLElement).style.left).toBe('100.5px');
+            expect((dialog.element as HTMLElement).style.top).toBe('200px');
+        });
+
+        it('position property offset value for x and y testing', () => {
+            dialog = new Dialog({ header: "Dialog", position: { X: '100', Y: '200.8' } }, '#dialog');
+            expect((dialog.element as HTMLElement).style.left).toBe('100px');
+            expect((dialog.element as HTMLElement).style.top).toBe('200.8px');
+        });
+
+        it('position property offset value for x and y testing', () => {
+            dialog = new Dialog({ header: "Dialog", position: { X: 'left', Y: '300' } }, '#dialog');
+            expect(dialog.position.X).toBe('left');
+            expect(dialog.position.Y).toBe(300);
+        });
+
+        it('position property offset value for x and y testing', () => {
+            dialog = new Dialog({ header: "Dialog", position: { X: '300', Y: 'top' } }, '#dialog');
+            expect(dialog.position.X).toBe(300);
+            expect(dialog.position.Y).toBe('top');
+        });
+
         it('dynamic change on position property value testing', () => {
             dialog = new Dialog({ header: "Dialog", position: { X: 100, Y: 200 } }, '#dialog');
             expect((dialog.element as HTMLElement).style.left).toBe('100px');
@@ -521,10 +560,10 @@ describe('Dialog Control', () => {
             dialog = new Dialog({ content: "Your information is updated successfully", footerTemplate: footerTemplateContent }, '#dialog');
             expect(document.getElementById('dialog').querySelectorAll('.e-footer-content').length).toBe(1);
             dialog.footerTemplate = '';
-            dialog.dataBind();            
+            dialog.dataBind();
             expect(isNullOrUndefined(document.getElementById('dialog').querySelector('.e-footer-content'))).toBe(true);
             dialog.footerTemplate = null;
-            dialog.dataBind();            
+            dialog.dataBind();
             expect(isNullOrUndefined(document.getElementById('dialog').querySelector('.e-footer-content'))).toBe(true);
         });
 
@@ -1906,6 +1945,7 @@ describe("Dialog with animation", function () {
     });
 });
 
+
 describe('Maximum Zindex value testing for modal dialog', () => {
     let dialog: any;
     beforeAll(() => {
@@ -1922,7 +1962,7 @@ describe('Maximum Zindex value testing for modal dialog', () => {
     afterAll(() => {
         document.body.innerHTML = '';
     });
-    it('dialog zindex', () => {
+    it('dialog Zindex', () => {
         expect(dialog.zIndex).toEqual(2147483647);
         expect(dialog.element.style.zIndex).toEqual('2147483647');
         expect((document.querySelector('.e-dlg-container .e-dlg-overlay') as HTMLElement).style.zIndex).toEqual('2147483646');
@@ -1947,9 +1987,205 @@ describe('Maximum Zindex value testing for non modal dialog', () => {
     afterAll(() => {
         document.body.innerHTML = '';
     });
-    it('dialog z-index', () => {
+    it('dialog Zindex', () => {
         expect(dialog.zIndex).toEqual(2147483647);
         expect(dialog.element.style.zIndex).toEqual('2147483647');
     });
 });
 
+describe('Testing resizing option with target body', () => {
+    let dialog: any;
+    
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'dialog1' });
+        document.body.appendChild(ele);
+        dialog = new Dialog({header:'Demo', visible: false, content:'First demo content', enableResize: true });
+        dialog.appendTo('#dialog1');
+    });
+
+    afterAll(() => {
+        document.body.innerHTML = '';
+    });
+    it('Checking handlers', () => {
+        expect(!isNullOrUndefined(document.querySelector('.e-south-east'))).toBe(true);
+        dialog.enableResize = false;
+        dialog.show();
+        dialog.dataBind();
+        expect(isNullOrUndefined(document.querySelector('.e-south-east'))).toBe(true);
+    });
+
+    it('Enabling resize through onproperty change', () => {
+        dialog.enableResize = true;
+        dialog.dataBind();
+        expect(!isNullOrUndefined(document.querySelector('.e-south-east'))).toBe(true);
+    });
+});
+
+
+describe('Testing resizing option with selected target', () => {
+    let dialog: any;
+    
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'dialog1' });
+        document.body.appendChild(ele);
+        let resizeTarget = createElement('div', { id: 'resizeTarget' });
+        document.body.appendChild(resizeTarget);
+        resizeTarget.style.width = '500px';
+        resizeTarget.style.height = '500px';
+        resizeTarget.style.position = 'relative';
+        dialog = new Dialog({header:'Demo', target: '#resizeTarget', content:'First demo content', enableResize: true, animationSettings: {effect: 'Zoom'} });
+        dialog.appendTo('#dialog1');
+    });
+
+    afterAll(() => {
+        document.body.innerHTML = '';
+    });
+    it('Checking handlers', () => {
+        expect(!isNullOrUndefined(document.querySelector('.e-south-east'))).toBe(true);
+        expect(dialog.element.classList.contains('e-dlg-resizable')).toBe(true);
+        dialog.enableResize = false;
+        dialog.dataBind();
+        expect(isNullOrUndefined(document.querySelector('.e-south-east'))).toBe(true);
+        expect(dialog.element.classList.contains('e-dlg-resizable')).toBe(false);
+    });
+
+    it('Enabling resize through onproperty change', () => {
+        dialog.enableResize = true;
+        dialog.dataBind();
+        expect(!isNullOrUndefined(document.querySelector('.e-south-east'))).toBe(true);
+        expect(dialog.element.classList.contains('e-dlg-resizable')).toBe(true);
+        dialog.enableRtl = true;
+        dialog.dataBind();
+        expect(!isNullOrUndefined(document.querySelector('.e-south-west'))).toBe(true);
+        expect(isNullOrUndefined(document.querySelector('.e-south-east'))).toBe(true);
+    });
+});
+
+describe('Testing resizing option without animation effects', () => {
+    let dialog: any;
+    
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'dialog1' });
+        document.body.appendChild(ele);
+        dialog = new Dialog({header:'Demo',
+        content:'First demo content',
+        open: function() {
+            expect(isNullOrUndefined(document.querySelector('.e-south-east'))).toBe(true);
+        },
+        enableResize: true,
+        animationSettings: {effect: 'None'}
+         });
+        dialog.appendTo('#dialog1');
+    });
+
+    afterAll(() => {
+        document.body.innerHTML = '';
+    });
+    it('check handler element in DOM', (done) => {
+        setTimeout(() => {
+            expect(isNullOrUndefined(document.querySelector('.e-south-east'))).toBe(false);
+            done()
+        }, 100);
+        
+    });
+});
+
+describe('Testing resizing option with animation effects', () => {
+    let dialog: any;
+    
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'dialog1' });
+        document.body.appendChild(ele);
+        dialog = new Dialog({header:'Demo',
+        content:'First demo content',
+        open: function() {
+            expect(isNullOrUndefined(document.querySelector('.e-south-east'))).toBe(false);
+        },
+        enableResize: true,
+        animationSettings: {effect: 'Zoom'}
+         });
+        dialog.appendTo('#dialog1');
+    });
+
+    afterAll(() => {
+        document.body.innerHTML = '';
+    });
+});
+
+
+describe('Testing resizing option with RTL mode', () => {
+    let dialog: any;
+    
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'dialog1' });
+        document.body.appendChild(ele);
+        let resizeTarget = createElement('div', { id: 'resizeTarget' });
+        document.body.appendChild(resizeTarget);
+        resizeTarget.style.width = '500px';
+        resizeTarget.style.height = '500px';
+        resizeTarget.style.position = 'relative';
+        dialog = new Dialog({header:'Demo', target: document.body, isModal: true, content:'First demo content', enableResize: true });
+        dialog.appendTo('#dialog1');
+    });
+
+    afterAll(() => {
+        document.body.innerHTML = '';
+    });
+    it('RTL Mode', (done) => {
+        expect(!isNullOrUndefined(dialog.element.classList.contains('e-viewport'))).toBe(true);
+        dialog.enableRtl = true;
+        dialog.dataBind();
+        expect(!isNullOrUndefined(dialog.element.classList.contains('e-resize-left'))).toBe(true);
+        dialog.enableRtl = false;
+        dialog.dataBind();
+        expect(!isNullOrUndefined(dialog.element.classList.contains('e-viewport'))).toBe(true);
+        done();
+
+    });
+});
+
+
+describe('Testing resize Events', () => {
+    let dialog: any;
+    
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'dialog1' });
+        document.body.appendChild(ele);
+        let resizeTarget = createElement('div', { id: 'resizeTarget' });
+        document.body.appendChild(resizeTarget);
+        resizeTarget.style.width = '500px';
+        resizeTarget.style.height = '500px';
+        resizeTarget.style.position = 'relative';
+        dialog = new Dialog({
+            header:'Demo',
+            target: document.body,
+            content:'First demo content',
+            enableResize: true,
+            resizeStart: function () {
+                expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(true)
+            }, 
+            resizing: function () {
+                expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(true)
+            },
+            resizeStop : function () {
+                expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(false)
+            }
+
+         });
+        dialog.appendTo('#dialog1');
+    });
+
+    afterAll(() => {
+        document.body.innerHTML = '';
+    });
+    it('Mouse events', (done) => {
+        let mouseEvent = document.createEvent ('MouseEvents');
+        mouseEvent.initEvent ('mousedown', true, true);
+        (document.querySelector('.e-south-east') as HTMLElement).dispatchEvent (mouseEvent);
+        mouseEvent.initEvent ('mousemove', true, true);
+        (document.querySelector('.e-south-east') as HTMLElement).dispatchEvent(mouseEvent);
+        mouseEvent.initEvent ('mouseup', true, true);
+        document.dispatchEvent(mouseEvent);
+        done()
+    });
+});

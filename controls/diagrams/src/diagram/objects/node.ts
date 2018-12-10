@@ -5,7 +5,7 @@ import { ShapeStyleModel, TextStyleModel, ShadowModel, } from '../core/appearanc
 import { Point } from '../primitives/point';
 import { Size } from '../primitives/size';
 import { PointModel } from '../primitives/point-model';
-import { Shapes, BasicShapes, FlowShapes, Scale, ImageAlignment } from '../enum/enum';
+import { Shapes, BasicShapes, FlowShapes, UmlActivityShapes, Scale, ImageAlignment, Status } from '../enum/enum';
 import { IElement } from './interface/IElement';
 import { Container } from '../core/containers/container';
 import { Canvas } from '../core/containers/canvas';
@@ -23,18 +23,19 @@ import { getPortShape, getIconShape } from './dictionary/common';
 import { getFlowShape } from './dictionary/flow-shapes';
 import { HorizontalAlignment, VerticalAlignment, BpmnShapes, BpmnEvents, BpmnTriggers, BpmnGateways, NodeConstraints } from '../enum/enum';
 import { BpmnDataObjects, BpmnTasks, BpmnSubProcessTypes, BpmnLoops } from '../enum/enum';
-import { BpmnBoundary, BpmnActivities } from '../enum/enum';
+import { BpmnBoundary, BpmnActivities, UmlScope } from '../enum/enum';
 import { MarginModel } from '../core/appearance-model';
+import { UmlActivityShapeModel, MethodArgumentsModel, UmlClassModel } from './node-model';
 import { BpmnEventModel, BpmnSubEventModel, BpmnAnnotationModel, BpmnActivityModel } from './node-model';
 import { BpmnTaskModel, BpmnSubProcessModel, BpmnGatewayModel } from './node-model';
 import { ShapeModel, BasicShapeModel, FlowShapeModel, ImageModel, PathModel, BpmnShapeModel, BpmnDataObjectModel } from './node-model';
 import { TextModel, NativeModel, HtmlModel } from './node-model';
 import { LayoutModel } from '../layout/layout-base-model';
-import { checkPortRestriction } from './../utility/diagram-util';
+import { checkPortRestriction, setUMLActivityDefaults, getUMLActivityShapes } from './../utility/diagram-util';
 import { randomId, getFunction } from './../utility/base-util';
 import { NodeBase } from './node-base';
 import { canShadow } from './../utility/constraints-util';
-import { NodeModel, BpmnTransactionSubProcessModel } from '../objects/node-model';
+import { NodeModel, BpmnTransactionSubProcessModel, SwimLaneModel, LaneModel, HeaderModel, PhaseModel } from '../objects/node-model';
 import { PortVisibility, Stretch } from '../enum/enum';
 import { IconShapeModel } from './icon-model';
 import { IconShape } from './icon';
@@ -42,6 +43,15 @@ import { measurePath } from './../utility/dom-util';
 import { Rect } from '../primitives/rect';
 import { getPolygonPath } from './../utility/path-util';
 import { DiagramHtmlElement } from '../core/elements/html-element';
+import { ChildContainerModel, UmlClassMethodModel, UmlClassAttributeModel, UmlClassifierShapeModel } from './node-model';
+import { UmlEnumerationModel, UmlInterfaceModel, UmlEnumerationMemberModel } from './node-model';
+import { StackPanel } from '../core/containers/stack-panel';
+import { GridPanel, RowDefinition, ColumnDefinition } from '../core/containers/grid';
+import { Orientation, ContainerTypes, ClassifierShape } from '../enum/enum';
+import { getULMClassifierShapes } from '../utility/uml-util';
+import { initSwimLane } from '../interaction/container-interaction';
+import { AnnotationModel } from './annotation-model';
+
 
 let getShapeType: Function = (obj: Shape): Object => {
     switch (obj.type) {
@@ -61,6 +71,12 @@ let getShapeType: Function = (obj: Shape): Object => {
             return Native;
         case 'HTML':
             return Html;
+        case 'UmlActivity':
+            return UmlActivityShape;
+        case 'UmlClassifier':
+            return UmlClassifierShape;
+        case 'SwimLane':
+            return SwimLane;
         default:
             return BasicShape;
     }
@@ -80,6 +96,7 @@ export class Shape extends ChildProperty<Shape> {
      * * Bpmn - Sets the type of the node as Bpmn
      * * Native - Sets the type of the node as Native
      * * HTML - Sets the type of the node as HTML
+     * * UMLActivity - Sets the type of the node as UMLActivity
      * @default 'Basic'
      */
     @Property('Basic')
@@ -141,7 +158,7 @@ export class Native extends Shape {
      * let nodes: NodeModel[] = [{
      * id: 'node1', width: 100, height: 100,
      * shape: { scale: 'Stretch', 
-     *   type: 'Native', content: '<g><path d="M90,43.841c0,24.213-19.779,43.841-44.182,43.841c-7.747,0-15.025-1.98-21.357-5.455'+
+     *   type: 'Native', content: '<g><path d='M90,43.841c0,24.213-19.779,43.841-44.182,43.841c-7.747,0-15.025-1.98-21.357-5.455'+
      * 'L0,90l7.975-23.522' +
      * 'c-4.023-6.606-6.34-14.354-6.34-22.637C1.635,19.628,21.416,0,45.818,0C70.223,0,90,19.628,90,43.841z M45.818,6.982' +
      * 'c-20.484,0-37.146,16.535-37.146,36.859c0,8.065,2.629,15.534,7.076,21.61L11.107,79.14l14.275-4.537' +
@@ -152,7 +169,7 @@ export class Native extends Shape {
      * 'c0.543-0.628,0.723-1.075,1.082-1.793c0.363-0.717,0.182-1.344-0.09-1.883c-0.27-0.537-2.438-5.825-3.34-7.977' +
      * 'c-0.902-2.15-1.803-1.792-2.436-1.792c-0.631,0-1.354-0.09-2.076-0.09c-0.722,0-1.896,0.269-2.889,1.344' +
      * 'c-0.992,1.076-3.789,3.676-3.789,8.963c0,5.288,3.879,10.397,4.422,11.113c0.541,0.716,7.49,11.92,18.5,16.223' +
-     * 'C58.2,65.771,58.2,64.336,60.186,64.156c1.984-0.179,6.406-2.599,7.312-5.107C68.398,56.537,68.398,54.386,68.129,53.938z">'+
+     * 'C58.2,65.771,58.2,64.336,60.186,64.156c1.984-0.179,6.406-2.599,7.312-5.107C68.398,56.537,68.398,54.386,68.129,53.938z'>'+
      * '</path></g>',
      *        }
      * }];
@@ -200,7 +217,7 @@ export class Html extends Shape {
      * let nodes: NodeModel[] = [{
      * id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 100,
      * shape: { type: 'HTML', 
-     * content: '<div style="background:red;height:100%;width:100%;"><input type="button" value="{{:value}}" /></div>' }
+     * content: '<div style='background:red;height:100%;width:100%;'><input type='button' value='{{:value}}' /></div>' }
      * }];
      * let diagram: Diagram = new Diagram({
      * ...
@@ -1135,6 +1152,276 @@ export class BpmnShape extends Shape {
 }
 
 /**
+ * Defines the behavior of the UMLActivity shape
+ */
+export class UmlActivityShape extends Shape {
+    /**
+     * Defines the type of node shape
+     * ```html
+     * <div id='diagram'></div>
+     * ```
+     * ```typescript
+     * let shape: UmlActivityShapeModel = { type: 'UMLActivity', shape: 'Action' };
+     * let nodes: NodeModel[] = [{
+     * id: 'node', width: 100, height: 100, offsetX: 100, offsetY: 100, shape: shape
+     * }];
+     * let diagram: Diagram = new Diagram({
+     * ...
+     * nodes : nodes,
+     * ...
+     * });
+     * diagram.appendTo('#diagram');
+     * ```
+     * @default 'Basic'
+     */
+    @Property('UmlActivity')
+    public type: Shapes;
+    /**
+     * Defines the type of the UMLActivity shape
+     * * Action - Sets the type of the UMLActivity Shape as Action
+     * * Decision - Sets the type of the UMLActivity Shape as Decision
+     * * MergeNode - Sets the type of the UMLActivity Shape as MergeNode
+     * * InitialNode - Sets the type of the UMLActivity Shape as InitialNode
+     * * FinalNode - Sets the type of the UMLActivity Shape as FinalNode
+     * * ForkNode - Sets the type of the UMLActivity Shape as ForkNode
+     * * JoinNode - Sets the type of the UMLActivity Shape as JoinNode
+     * * TimeEvent - Sets the type of the UMLActivity Shape as TimeEvent
+     * * AcceptingEvent - Sets the type of the UMLActivity Shape as AcceptingEvent
+     * * SendSignal - Sets the type of the UMLActivity Shape as SendSignal
+     * * ReceiveSignal - Sets the type of the UMLActivity Shape as ReceiveSignal
+     * * StructuredNode - Sets the type of the UMLActivity Shape as StructuredNode
+     * * Note - Sets the type of the UMLActivity Shape as Note
+     * @default 'Rectangle'
+     * @IgnoreSingular
+     */
+    @Property('Action')
+    public shape: UmlActivityShapes;
+}
+
+
+/**
+ * Defines the behavior of the uml class method
+ */
+export class MethodArguments extends ChildProperty<MethodArguments> {
+    /**
+     * Defines the name of the attributes
+     * @default ''
+     * @IgnoreSingular
+     */
+    @Property('')
+    public name: string;
+    /**
+     * Defines the type of the attributes
+     * @default ''
+     * @IgnoreSingular
+     */
+    @Property('')
+    public type: string;
+    /**
+     * Sets the shape style of the node
+     * @default new ShapeStyle()
+     * @aspType object
+     */
+    @Complex<ShapeStyleModel | TextStyleModel>({}, TextStyle)
+    public style: ShapeStyleModel | TextStyleModel;
+}
+/**
+ * Defines the behavior of the uml class attributes
+ */
+export class UmlClassAttribute extends MethodArguments {
+    /**
+     * Defines the type of the attributes
+     * @default ''
+     * @IgnoreSingular
+     */
+    @Property('Public')
+    public scope: UmlScope;
+    /**
+     * Defines the separator of the attributes
+     * @default ''
+     * @IgnoreSingular
+     */
+    @Property(false)
+    public isSeparator: boolean;
+}
+
+/**
+ * Defines the behavior of the uml class method
+ */
+export class UmlClassMethod extends UmlClassAttribute {
+    /**
+     * Defines the type of the arguments
+     * @default ''
+     * @IgnoreSingular
+     */
+
+    @Collection<MethodArgumentsModel>([], MethodArguments)
+    public parameters: MethodArgumentsModel[];
+}
+
+/**
+ * Defines the behavior of the uml class shapes
+ */
+export class UmlClass extends ChildProperty<UmlClass> {
+    /**
+     * Defines the name of the attributes
+     * @default ''
+     * @IgnoreSingular
+     */
+    @Property('')
+    public name: string;
+    /**
+     * Defines the text of the bpmn annotation collection
+     * @default 'None'
+     */
+
+    @Collection<UmlClassAttributeModel>([], UmlClassAttribute)
+    public attributes: UmlClassAttributeModel[];
+    /**
+     * Defines the text of the bpmn annotation collection
+     * @default 'None'
+     */
+
+    @Collection<UmlClassMethodModel>([], UmlClassMethod)
+    public methods: UmlClassMethodModel[];
+
+    /**
+     * Sets the shape style of the node
+     * @default new ShapeStyle()
+     * @aspType object
+     */
+    @Complex<TextStyleModel>({}, TextStyle)
+    public style: TextStyleModel;
+}
+
+/**
+ * Defines the behavior of the uml interface shapes
+ */
+export class UmlInterface extends UmlClass {
+    /**
+     * Defines the separator of the attributes
+     * @default ''
+     * @IgnoreSingular
+     */
+    @Property(false)
+    public isSeparator: boolean;
+}
+
+/**
+ * Defines the behavior of the uml interface shapes
+ */
+export class UmlEnumerationMember extends ChildProperty<UmlEnumerationMember> {
+    /**
+     * Defines the value of the member
+     * @default ''
+     * @IgnoreSingular
+     */
+    @Property('')
+    public name: string;
+    /**
+     * Defines the value of the member
+     * @default ''
+     * @IgnoreSingular
+     */
+    @Property('')
+    public value: string;
+    /**
+     * Defines the separator of the attributes
+     * @default ''
+     * @IgnoreSingular
+     */
+    @Property(false)
+    public isSeparator: boolean;
+    /**
+     * Sets the shape style of the node
+     * @default new ShapeStyle()
+     * @aspType object
+     */
+    @Complex<ShapeStyleModel | TextStyleModel>({}, TextStyle)
+    public style: ShapeStyleModel | TextStyleModel;
+}
+
+/**
+ * Defines the behavior of the uml interface shapes
+ */
+export class UmlEnumeration extends ChildProperty<UmlEnumeration> {
+    /**
+     * Defines the name of the attributes
+     * @default ''
+     * @IgnoreSingular
+     */
+    @Property('')
+    public name: string;
+    /**
+     * Defines the text of the bpmn annotation collection
+     * @default 'None'
+     */
+
+    @Collection<UmlEnumerationMemberModel>([], UmlEnumerationMember)
+    public members: UmlEnumerationMemberModel[];
+    /**
+     * Sets the shape style of the node
+     * @default new ShapeStyle()
+     * @aspType object
+     */
+    @Complex<ShapeStyleModel | TextStyleModel>({}, TextStyle)
+    public style: ShapeStyleModel | TextStyleModel;
+}
+
+/**
+ * Defines the behavior of the UMLActivity shape
+ */
+export class UmlClassifierShape extends Shape {
+    /**
+     * Defines the type of node shape
+     * ```html
+     * <div id='diagram'></div>
+     * ```
+     * ```typescript
+     * let shape: UmlActivityShapeModel = { type: 'UMLActivity', shape: 'Action' };
+     * let nodes: NodeModel[] = [{
+     * id: 'node', width: 100, height: 100, offsetX: 100, offsetY: 100, shape: shape
+     * }];
+     * let diagram: Diagram = new Diagram({
+     * ...
+     * nodes : nodes,
+     * ...
+     * });
+     * diagram.appendTo('#diagram');
+     * ```
+     * @default 'Basic'
+     */
+    @Property('UmlClassifier')
+    public type: Shapes;
+
+    /**
+     * Defines the text of the bpmn annotation collection
+     * @default 'None'
+     */
+    @Complex<UmlClassModel>({} as UmlClass, UmlClass)
+    public class: UmlClassModel;
+    /**
+     * Defines the text of the bpmn annotation collection
+     * @default 'None'
+     */
+    @Complex<UmlInterfaceModel>({} as UmlInterface, UmlInterface)
+    public interface: UmlInterfaceModel;
+    /**
+     * Defines the text of the bpmn annotation collection
+     * @default 'None'
+     */
+    @Complex<UmlEnumerationModel>({} as UmlEnumeration, UmlEnumeration)
+    public enumeration: UmlEnumerationModel;
+    /**
+     * Defines the type of classifier
+     * @default 'Class'
+     * @IgnoreSingular
+     */
+    @Property('Class')
+    public classifier: ClassifierShape;
+}
+
+/**
  * Defines the behavior of nodes
  */
 export class Node extends NodeBase implements IElement {
@@ -1264,7 +1551,7 @@ export class Node extends NodeBase implements IElement {
      * @aspType object
      */
     @ComplexFactory(getShapeType)
-    public shape: ShapeModel | FlowShapeModel | BasicShapeModel | ImageModel | PathModel | TextModel | BpmnShapeModel | NativeModel | HtmlModel;
+    public shape: ShapeModel | FlowShapeModel | BasicShapeModel | ImageModel | PathModel | TextModel | BpmnShapeModel | NativeModel | HtmlModel | UmlActivityShapeModel | UmlClassifierShapeModel | SwimLaneModel;
     /* tslint:enable */
 
 
@@ -1325,14 +1612,99 @@ export class Node extends NodeBase implements IElement {
     @Property()
     public children: string[];
 
+    /**
+     * Defines the type of the container
+     * @aspDefaultValueIgnore
+     * @default null
+     */
+
+    @Property(null)
+    public container: ChildContainerModel;
+
+    /**
+     * Sets the horizontalAlignment of the node
+     * @default 'Stretch'
+     */
+    @Property('Left')
+    public horizontalAlignment: HorizontalAlignment;
+    /**
+     * Sets the verticalAlignment of the node
+     * @default 'Stretch'
+     */
+    @Property('Top')
+    public verticalAlignment: VerticalAlignment;
+    /**
+     * Used to define the rows for the grid container
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+
+    @Property()
+    public rows: RowDefinition[];
+
+    /**
+     * Used to define the column for the grid container
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+
+    @Property()
+    public columns: ColumnDefinition[];
+
+    /**
+     * Used to define a index of row in the grid
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+
+    @Property()
+    public rowIndex: number;
+
+    /**
+     * Used to define a index of column in the grid
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+
+    @Property()
+    public columnIndex: number;
+
+    /**
+     * Merge the row use the property in the grid container
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+    @Property()
+    public rowSpan: number;
+
+    /**
+     * Merge the column use the property in the grid container
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+    @Property()
+    public columnSpan: number;
+
+    /** @private */
+    public isCanvasUpdate: boolean = false;
+    /** @private */
+    public status: Status = 'None';
     /** @private */
     public parentId: string = '';
     /** @private */
     public processId: string = '';
     /** @private */
+    public umlIndex: number = -1;
+    /** @private */
     public outEdges: string[] = [];
     /** @private */
     public inEdges: string[] = [];
+    /** @private */
+    public isHeader: boolean = false;
+    /** @private */
+    public isLane: boolean = false;
+    /** @private */
+    public isPhase: boolean = false;
     /** @private */
     public get actualSize(): Size {
         if (this.wrapper !== null) {
@@ -1345,14 +1717,18 @@ export class Node extends NodeBase implements IElement {
     // tslint:disable-next-line:no-any
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);
+        let nodeDefault: NodeModel;
         if (this.children && this.children.length > 0) {
-            let nodeDefault: NodeModel = defaultValue;
+            nodeDefault = defaultValue;
             if (!nodeDefault.style || !nodeDefault.style.fill) {
                 this.style.fill = 'transparent';
             }
             if (!nodeDefault.style || !nodeDefault.style.strokeColor) {
                 this.style.strokeColor = 'transparent';
             }
+        }
+        if (this.shape && this.shape.type === 'UmlActivity') {
+            setUMLActivityDefaults(defaultValue, this);
         }
     }
 
@@ -1362,7 +1738,12 @@ export class Node extends NodeBase implements IElement {
     /** @private */
     /* tslint:disable */
     public init(diagram: any): DiagramElement {
-        let content: DiagramElement = new DiagramElement();
+        let content: DiagramElement | GridPanel;
+        if (this.shape.type != 'SwimLane') {
+            content = new DiagramElement();
+        } else {
+            content = new GridPanel();
+        }
         let textStyle: TextStyle;
         let changedProperties: string = 'changedProperties';
         let oldProperties: string = 'oldProperties';
@@ -1402,6 +1783,10 @@ export class Node extends NodeBase implements IElement {
                 let flowshapedata: string = getFlowShape((this.shape as FlowShape).shape);
                 flowshape.data = flowshapedata; content = flowshape;
                 break;
+            case 'UmlActivity':
+                let umlactivityshape: PathElement = new PathElement();
+                content = getUMLActivityShapes(umlactivityshape, content, this);
+                break;
             case 'Bpmn':
                 if (diagram.bpmnModule) {
                     content = diagram.bpmnModule.initBPMNContent(content, this, diagram);
@@ -1431,6 +1816,18 @@ export class Node extends NodeBase implements IElement {
                 let htmlContent: DiagramHtmlElement = new DiagramHtmlElement(this.id, diagram.element.id);
                 htmlContent.content = (this.shape as Html).content;
                 content = htmlContent;
+                break;
+            case 'UmlClassifier':
+                //   let umlClassifierShape: StackPanel = new StackPanel();
+                content = getULMClassifierShapes(content, this, diagram);
+                break;
+            case 'SwimLane':
+                (content as GridPanel).cellStyle.fill = "none";
+                (content as GridPanel).cellStyle.strokeColor = "none";
+                this.container = { type: 'Grid', orientation: (this.shape as SwimLaneModel).orientation };
+                content.id = this.id;
+                this.container.orientation = (this.shape as SwimLaneModel).orientation;
+                initSwimLane(content as GridPanel, diagram, this);
                 break;
         }
         content.id = this.id + '_content'; content.relativeMode = 'Object';
@@ -1465,8 +1862,10 @@ export class Node extends NodeBase implements IElement {
                 content.shadow = this.shadow;
             }
         }
-        if (this.shape.type !== 'Bpmn' || (this.shape as BpmnShape).shape === 'Message' ||
-            (this.shape as BpmnShape).shape === 'DataSource') {
+        if ((this.shape.type !== 'Bpmn' || (this.shape as BpmnShape).shape === 'Message' ||
+            (this.shape as BpmnShape).shape === 'DataSource') && (
+                (this.shape.type !== 'UmlActivity' || (this.shape as UmlActivityShape).shape !== 'FinalNode'
+                ))) {
             if (this.shape.type !== 'Text') {
                 content.style = this.style;
             }
@@ -1480,11 +1879,37 @@ export class Node extends NodeBase implements IElement {
             this.id = randomId();
         }
         // Creates canvas element
-        let canvas: Container = this.children ? new Container() : new Canvas();
+        let canvas: Container;
+        if (!this.container) {
+            canvas = this.children ? new Container() : new Canvas();
+        } else {
+            switch (this.container.type) {
+                case 'Canvas':
+                    canvas = new Canvas();
+                    break;
+                case 'Stack':
+                    canvas = new StackPanel();
+                    break;
+                case 'Grid':
+                    canvas = new GridPanel();
+                    (canvas as GridPanel).setDefinitions(this.rows, this.columns);
+                    break;
+            }
+        }
+
         canvas.id = this.id;
         canvas.offsetX = this.offsetX;
         canvas.offsetY = this.offsetY;
         canvas.visible = this.visible;
+        canvas.horizontalAlignment = this.horizontalAlignment;
+        canvas.verticalAlignment = this.verticalAlignment;
+        if (this.container) {
+            canvas.width = this.width;
+            canvas.height = this.height;
+            if (this.container.type === 'Stack') {
+                (canvas as ChildContainerModel).orientation = this.container.orientation;
+            }
+        }
         canvas.style.fill = this.backgroundColor;
         canvas.style.strokeColor = this.borderColor;
         canvas.style.strokeWidth = this.borderWidth;
@@ -1498,6 +1923,7 @@ export class Node extends NodeBase implements IElement {
         this.wrapper = canvas;
         return canvas;
     }
+
     /** @private */
     public initPorts(accessibilityContent: Function | string, container: Container): void {
         let canvas: Container = this.wrapper;
@@ -1568,10 +1994,10 @@ export class Node extends NodeBase implements IElement {
     }
 
     /** @private */
-    public initAnnotations(accessibilityContent: Function | string, container: Container): void {
+    public initAnnotations(accessibilityContent: Function | string, container: Container, diagramId: string, virtualize?: boolean): void {
         let annotation: DiagramElement;
         for (let i: number = 0; this.annotations !== undefined, i < this.annotations.length; i++) {
-            annotation = this.initAnnotationWrapper(this.annotations[i] as Annotation);
+            annotation = this.initAnnotationWrapper(this.annotations[i] as Annotation, diagramId, virtualize);
             // tslint:disable-next-line:no-any
             let wrapperContent: any;
             let contentAccessibility: Function = getFunction(accessibilityContent);
@@ -1610,31 +2036,40 @@ export class Node extends NodeBase implements IElement {
         return portContent;
     }
     /** @private */
-    public initAnnotationWrapper(annotation: Annotation): DiagramElement {
+    public initAnnotationWrapper(annotation: Annotation, diagramId?: string, virtualize?: boolean): DiagramElement {
         annotation.id = annotation.id || randomId();
         let label: ShapeAnnotation = annotation as ShapeAnnotation;
-        let annotationcontent: TextElement = new TextElement();
+        let annotationcontent: TextElement | DiagramHtmlElement;
+        if (diagramId && annotation.template) {
+            annotationcontent = new DiagramHtmlElement(this.id, diagramId, annotation.id);
+            annotationcontent.content = annotation.template;
+        } else {
+            annotationcontent = new TextElement();
+            (annotationcontent as TextElement).canMeasure = !virtualize;
+            let style: TextStyleModel = annotation.style;
+            let link: HyperlinkModel = annotation.hyperlink.link ? annotation.hyperlink : undefined;
+            (annotationcontent as TextElement).style = {
+                fill: style.fill, strokeColor: style.strokeColor, strokeWidth: style.strokeWidth,
+                bold: style.bold, textWrapping: style.textWrapping,
+                color: link ? link.color || (annotationcontent as TextElement).hyperlink.color : style.color, whiteSpace: style.whiteSpace,
+                fontFamily: style.fontFamily, fontSize: style.fontSize, italic: style.italic, gradient: null, opacity: style.opacity,
+                strokeDashArray: style.strokeDashArray, textAlign: style.textAlign, textOverflow: annotation.style.textOverflow,
+                textDecoration: link ? link.textDecoration ||
+                    (annotationcontent as TextElement).hyperlink.textDecoration : style.textDecoration,
+            };
+            (annotationcontent as TextElement).hyperlink.link = annotation.hyperlink.link || undefined;
+            (annotationcontent as TextElement).hyperlink.content = annotation.hyperlink.content || undefined;
+            (annotationcontent as TextElement).hyperlink.textDecoration = annotation.hyperlink.textDecoration || undefined;
+            (annotationcontent as TextElement).content = link ? link.content ||
+                (annotationcontent as TextElement).hyperlink.link : annotation.content;
+        }
         annotationcontent.constraints = annotation.constraints;
         annotationcontent.height = annotation.height;
         annotationcontent.width = annotation.width;
         annotationcontent.visible = annotation.visibility;
         annotationcontent.rotateAngle = annotation.rotateAngle;
         annotationcontent.id = this.id + '_' + annotation.id;
-        let style: TextStyleModel = annotation.style;
-        let link: HyperlinkModel = annotation.hyperlink.link ? annotation.hyperlink : undefined;
-        annotationcontent.style = {
-            fill: style.fill, strokeColor: style.strokeColor, strokeWidth: style.strokeWidth,
-            bold: style.bold, textWrapping: style.textWrapping,
-            color: link ? link.color || annotationcontent.hyperlink.color : style.color, whiteSpace: style.whiteSpace,
-            fontFamily: style.fontFamily, fontSize: style.fontSize, italic: style.italic, gradient: null, opacity: style.opacity,
-            strokeDashArray: style.strokeDashArray, textAlign: style.textAlign, textOverflow: annotation.style.textOverflow,
-            textDecoration: link ? link.textDecoration || annotationcontent.hyperlink.textDecoration : style.textDecoration,
-        };
-        annotationcontent.hyperlink.link = annotation.hyperlink.link || undefined;
-        annotationcontent.hyperlink.content = annotation.hyperlink.content || undefined;
-        annotationcontent.hyperlink.textDecoration = annotation.hyperlink.textDecoration || undefined;
-        annotationcontent.content = link ? link.content || annotationcontent.hyperlink.link : annotation.content;
-        if (this.width !== undefined) {
+        if (this.width !== undefined && !annotation.template) {
             if (annotation.width === undefined || (annotation.width > this.width &&
                 (annotation.style.textWrapping === 'Wrap' || annotation.style.textWrapping === 'WrapWithOverflow'))) {
                 annotationcontent.width = this.width;
@@ -1703,4 +2138,231 @@ export class Node extends NodeBase implements IElement {
         iconContent.description = iconContainer.description || 'Click here to expand or collapse';
         iconContainer.children.push(iconContent);
     }
+}
+
+/**
+ * Defines the behavior of header in swimLane
+ */
+export class Header extends ChildProperty<Shape> {
+
+    /**
+     * Sets the id of the header
+     * @default ''
+     */
+    @Property('')
+    public id: string;
+
+    /**
+     * Sets the content of the header
+     * @default ''
+     */
+    @Complex<AnnotationModel>({}, Annotation)
+    public content: Annotation;
+
+    /**
+     * Sets the style of the header
+     * @default ''
+     */
+    @Property('')
+    public style: TextStyleModel;
+
+    /**
+     * Sets the height of the header
+     * @default 25
+     */
+    @Property(25)
+    public height: number;
+
+    /**
+     * Sets the width of the header
+     * @default 25
+     */
+    @Property(25)
+    public width: number;
+
+}
+
+/**
+ * Defines the behavior of lane in swimLane
+ */
+export class Lane extends ChildProperty<Shape> {
+
+    /**
+     * Sets the id of the lane
+     * @default ''
+     */
+    @Property('')
+    public id: string;
+
+    /**
+     * Sets style of the lane
+     * @default ''
+     */
+    @Property('')
+    public style: ShapeStyleModel;
+
+    /**
+     * Defines the collection of child nodes
+     * @default []
+     */
+    @Collection<NodeModel>([], Node)
+    public childNodes: NodeModel[];
+
+    /**
+     * Defines the height of the phase
+     * @default 25
+     */
+    @Property(25)
+    public height: number;
+
+    /**
+     * Defines the height of the phase
+     * @default 25
+     */
+    @Property(25)
+    public width: number;
+
+    /**
+     * Defines the collection of header in the phase.
+     * @default undefined
+     */
+    @Complex<HeaderModel>({}, Header)
+    public header: HeaderModel;
+
+}
+
+/**
+ * Defines the behavior of phase in swimLane
+ */
+export class Phase extends ChildProperty<Shape> {
+    /**
+     * Sets the id of the phase
+     * @default ''
+     */
+    @Property('')
+    public id: string;
+
+    /**
+     * Sets the style of the lane
+     * @default ''
+     */
+    @Property('')
+    public style: ShapeStyleModel;
+
+    /**
+     * Sets the header collection of the phase
+     * @default 'undefined'
+     */
+    @Complex<HeaderModel>({}, Header)
+    public header: HeaderModel;
+
+    /**
+     * Sets the height of the lane
+     * @default 30
+     */
+    @Property(30)
+    public height: number;
+
+    /**
+     * Sets the width of the lane
+     * @default 30
+     */
+    @Property(30)
+    public width: number;
+
+    /**
+     * Sets the offset of the lane
+     * @default 100
+     */
+    @Property(100)
+    public offset: number;
+}
+
+/**
+ * Defines the behavior of swimLane shape
+ */
+export class SwimLane extends Shape {
+    /**
+     * Defines the type of node shape.
+     * @default 'Basic'
+     */
+    @Property('SwimLane')
+    public type: Shapes;
+
+    /**
+     * Defines the size of phase.
+     * @default '10'
+     */
+    @Property('10')
+    public phaseSize: number;
+
+    /**
+     * Defines the collection of phases.
+     * @default undefined
+     */
+    @Collection<PhaseModel>([], Phase)
+    public phases: PhaseModel[];
+
+    /**
+     * Defines the orientation of the swimLane
+     * @default 'Horizontal'
+     */
+    @Property('Horizontal')
+    public orientation: Orientation;
+
+    /**
+     * Defines the collection of lanes
+     * @default undefined
+     */
+    @Collection<LaneModel>([], Lane)
+    public lanes: LaneModel[];
+
+    /**
+     * Defines the collection of header
+     * @default undefined
+     */
+    @Complex<HeaderModel>({}, Header)
+    public header: HeaderModel;
+
+    /**
+     * Defines the style of shape
+     * @default ''
+     */
+    @Property('')
+    public lineStyle: ShapeStyleModel | TextStyleModel;
+
+    /**
+     * Defines the whether the shape is a lane or not
+     * @default false
+     */
+    @Property(false)
+    public isLane: boolean;
+
+    /**
+     * Defines the whether the shape is a phase or not
+     * @default false
+     */
+    @Property(false)
+    public isPhase: boolean;
+}
+
+/**
+ * Defines the behavior of container
+ */
+/** @private */
+export class ChildContainer {
+    /**
+     * Defines the type of the container
+     * @aspDefaultValueIgnore
+     * @default Canvas
+     */
+    @Property('Canvas')
+    public type: ContainerTypes;
+    /**
+     * Defines the type of the swimLane orientation.
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+    @Property('Vertical')
+    public orientation: Orientation;
 }

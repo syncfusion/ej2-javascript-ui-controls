@@ -49,10 +49,10 @@ document.getElementById('btn_mouse').onclick = (e : Event) => {
     (<HTMLElement>document.getElementsByClassName('e-bigger')[0]).classList.remove('e-bigger');
 };
 document.getElementById('btn_fabric').onclick = (e : Event) => {
-    document.getElementsByTagName('link')[0].href = '../../styles/fabric.css';
+    document.getElementsByTagName('link')[0].href = './theme-files/fabric.css';
 };
 document.getElementById('btn_material').onclick = (e : Event) => {
-    document.getElementsByTagName('link')[0].href = '../../styles/material.css';
+    document.getElementsByTagName('link')[0].href = './theme-files/material.css';
 };
 document.getElementById('btn_closeButton').onclick = (e : Event) => {
     if(tabObj.showCloseButton) {

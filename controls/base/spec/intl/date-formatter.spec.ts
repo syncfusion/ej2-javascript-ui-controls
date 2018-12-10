@@ -6,7 +6,7 @@ import { DateParser } from '../../src/intl/date-parser';
 import { dateMatched, dupCulObject } from './date-parser.spec';
 import { loadCldr, cldrData } from '../../src/internationalization';
 import { ParserBase } from '../../src/intl/parser-base';
-
+import {HijriParser} from '../../src/hijri-parser';
 loadCldr(dupCulObject, {});
 const parseCultures: string[] = ['en', 'ar-QA', 'ja'];
 export function getTimeZoneString(date: Date, ishour?: boolean): string {
@@ -592,5 +592,23 @@ describe('dateformat', () => {
             expect(result.numericPair).toBe(undefined);
             expect(result.numberParseRegex).toBe(undefined);
         });
+    });
+    describe('Islamic calendar mode evaluation', ()=> {
+        describe('check formtting with default value',()=>{
+            it('default format with no skeleton returns proper value',()=>{
+                let iFormatter: string = DateFormat.dateFormat('en', { skeleton: 'short',calendar:'islamic' }, cldrData)(new Date('1/1/2015'));
+                expect(iFormatter).toBe('3/10/1436 AH');
+            });
+            it('format to maximum year range returns proper value',()=>{
+                HijriParser.toGregorian(2015,13,3);
+                let iFormatter: string = DateFormat.dateFormat('en', { skeleton: 'short',calendar:'islamic' }, cldrData)(new Date('12/1/2100'));
+                expect(iFormatter).toBe('9/30/1524 AH');
+            });
+            
+            it('default format with full date  skeleton returns proper value',()=>{
+                let iFormatter: string = DateFormat.dateFormat('en', { skeleton: 'full',calendar:'islamic' }, cldrData)(new Date('12/1/2015'));
+                expect(iFormatter).toBe('Tuesday, Safar 19, 1437 AH');
+            });
+        })
     });
 })

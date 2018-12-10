@@ -179,7 +179,7 @@ export abstract class Base<ElementType extends HTMLElement> {
     protected addInstance(): void {
         // Add module class to the root element
         let moduleClass: string = 'e-' + this.getModuleName().toLowerCase();
-        addClass([this.element], ['e-control', moduleClass]);
+        addClass([this.element], ['e-lib', moduleClass]);
         if (!isNullOrUndefined((<DomElements>(this.element as HTMLElement)).ej2_instances)) {
             (<DomElements>(this.element as HTMLElement)).ej2_instances.push(this);
         } else {
@@ -195,7 +195,7 @@ export abstract class Base<ElementType extends HTMLElement> {
         removeClass([this.element], ['e-' + this.getModuleName()]);
         if ((<DomElements>(this.element as HTMLElement)).ej2_instances.length === 0) {
             // Remove module class from the root element
-            removeClass([this.element], ['e-control']);
+            removeClass([this.element], ['e-lib']);
         }
         this.clearChanges();
         this.modelObserver.destroy();

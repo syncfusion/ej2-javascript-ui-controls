@@ -15,6 +15,7 @@ export const ICON_DISABLE: string = 'e-disable';
 /** @hidden */
 export const ICON_HIDDEN: string = 'e-hide';
 /** @hidden */
+export const AXISFIELD_ICON_CLASS: string = 'e-dropdown-icon';
 export const WRAPPER_CLASS: string = 'e-pivotfieldlist-wrapper';
 /** @hidden */
 export const CONTAINER_CLASS: string = 'e-field-list-container';
@@ -88,6 +89,24 @@ export const MEMBER_EDITOR_DIALOG_CLASS: string = 'e-member-editor-dialog';
 export const EDITOR_TREE_WRAPPER_CLASS: string = 'e-member-editor-wrapper';
 /** @hidden */
 export const EDITOR_TREE_CONTAINER_CLASS: string = 'e-member-editor-container';
+/** @hidden */
+export const DRILLTHROUGH_GRID_CLASS: string = 'e-drillthrough-grid';
+/** @hidden */
+export const DRILLTHROUGH_BODY_CLASS: string = 'e-drillthrough-body';
+/** @hidden */
+export const DRILLTHROUGH_BODY_HEADER_CONTAINER_CLASS: string = 'e-drillthrough-body-header-container';
+/** @hidden */
+export const DRILLTHROUGH_BODY_HEADER_CLASS: string = 'e-drillthrough-body-header';
+/** @hidden */
+export const DRILLTHROUGH_BODY_HEADER_COMMON_CLASS: string = 'e-drillthrough-body-header-common';
+/** @hidden */
+export const DRILLTHROUGH_BODY_HEADER_VALUE_CLASS: string = 'e-drillthrough-body-header-value';
+/** @hidden */
+export const DRILLTHROUGH_DIALOG: string = 'e-drillthrough-dialog';
+/** @hidden */
+export const EDITOR_LABEL_WRAPPER_CLASS: string = 'e-editor-label-wrapper';
+/** @hidden */
+export const EDITOR_LABEL_CLASS: string = 'e-editor-label';
 /** @hidden */
 export const CHECK_BOX_FRAME_CLASS: string = 'e-frame';
 /** @hidden */
@@ -383,3 +402,21 @@ export const FROZENCONTENT_DIV: string = 'e-frozencontent';
 export const MOVABLEHEADER_DIV: string = 'e-movableheader';
 /** @hidden */
 export const FROZENHEADER_DIV: string = 'e-frozenheader';
+/** @hidden */
+export const DEFER_APPLY_BUTTON: string = 'e-defer-apply-button';
+/** @hidden */
+export const DEFER_CANCEL_BUTTON: string = 'e-defer-cancel-button';
+/** @hidden */
+export const LAYOUT_FOOTER: string = 'e-layout-footer';
+/** @hidden */
+export const CELL_SELECTED_BGCOLOR: string = 'e-cellselectionbackground';
+/** @hidden */
+export const SELECTED_BGCOLOR: string = 'e-selectionbackground';
+/** @hidden */
+export const BUTTON_LAYOUT: string = 'e-button-layout';
+/** @hidden */
+export const CHECKBOX_LAYOUT: string = 'e-checkbox-layout';
+/** @hidden */
+export const DEFER_UPDATE_BUTTON: string = 'e-defer-update-btn';
+/** @hidden */
+export const HEADERCONTENT: string = 'e-headercontent';

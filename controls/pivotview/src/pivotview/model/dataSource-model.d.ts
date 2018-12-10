@@ -39,6 +39,22 @@ export interface FieldOptionsModel {
      */
     showNoDataItems?: boolean;
 
+    /**
+     * It allows to set the base field to aggregate the values.
+     */
+    baseField?: string;
+
+    /**
+     * It allows to set the base item to aggregate the values.
+     */
+    baseItem?: string;
+
+    /**
+     * It allows to disable or enable sub totals in row/column axis.
+     * @default true
+     */
+    showSubTotals?: boolean;
+
 }
 
 /**
@@ -374,6 +390,42 @@ export interface DataSourceModel {
      * @default false
      */
     allowValueFilter?: boolean;
+
+    /**
+     * It allows enable/disable sub total in pivot table.
+     * @default true
+     */
+    showSubTotals?: boolean;
+
+    /**
+     * It allows enable/disable row sub total in pivot table.
+     * @default true
+     */
+    showRowSubTotals?: boolean;
+
+    /**
+     * It allows enable/disable column sub total in pivot table.
+     * @default true
+     */
+    showColumnSubTotals?: boolean;
+
+    /**
+     * It allows enable/disable grand total in pivot table.
+     * @default true
+     */
+    showGrandTotals?: boolean;
+
+    /**
+     * It allows enable/disable row grand total in pivot table.
+     * @default true
+     */
+    showRowGrandTotals?: boolean;
+
+    /**
+     * It allows enable/disable column grand total in pivot table.
+     * @default true
+     */
+    showColumnGrandTotals?: boolean;
 
     /**
      * It allows to set the settings of number formatting.

@@ -49,7 +49,9 @@ export class VerticalView extends ViewBase implements IRenderer {
         }
     }
     private onContentScroll(e: Event): void {
+        this.parent.removeNewEventElement();
         let target: HTMLElement = <HTMLElement>e.target;
+        this.parent.notify(event.virtualScroll, e);
         this.scrollLeftPanel(target);
         this.scrollTopPanel(target);
         if (!this.parent.isAdaptive) {
@@ -66,6 +68,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         }
     }
     private onApaptiveScroll(e: Event): void {
+        this.parent.removeNewEventElement();
         this.parent.uiStateValues.top = (<HTMLElement>e.target).scrollTop;
     }
     public scrollLeftPanel(target: HTMLElement): void {
@@ -303,6 +306,9 @@ export class VerticalView extends ViewBase implements IRenderer {
         if (!this.parent.activeViewOptions.timeScale.enable) {
             addClass([this.element], [cls.TIMESCALE_DISABLE, this.viewClass]);
         }
+        if (this.parent.activeViewOptions.allowVirtualScrolling) {
+            clsList.push(cls.VIRTUAL_SCROLL_CLASS);
+        }
         this.renderPanel(type);
         addClass([this.element], clsList);
         this.element.appendChild(this.createTableLayout(cls.OUTER_TABLE_CLASS) as HTMLElement);
@@ -444,8 +450,7 @@ export class VerticalView extends ViewBase implements IRenderer {
             if (!isNullOrUndefined(td.groupIndex)) {
                 tdEle.setAttribute('data-group-index', '' + td.groupIndex);
             }
-            EventHandler.add(tdEle, 'click', this.workCellAction.cellClick, this.workCellAction);
-            EventHandler.add(tdEle, 'dblclick', this.workCellAction.cellDblClick, this.workCellAction);
+            this.wireMouseEvents(tdEle);
         }
         let args: RenderCellEventArgs = { elementType: td.type, element: tdEle, date: td.date, groupIndex: td.groupIndex };
         this.parent.trigger(event.renderCell, args);
@@ -453,8 +458,11 @@ export class VerticalView extends ViewBase implements IRenderer {
     }
     private wireCellEvents(element: Element): void {
         EventHandler.add(element, 'mousedown', this.workCellAction.cellMouseDown, this.workCellAction);
+        this.wireMouseEvents(element);
+    }
+    private wireMouseEvents(element: Element): void {
         EventHandler.add(element, 'click', this.workCellAction.cellClick, this.workCellAction);
-        EventHandler.add(element, 'dblclick', this.workCellAction.cellDblClick, this.workCellAction);
+        if (!this.parent.isAdaptive) { EventHandler.add(element, 'dblclick', this.workCellAction.cellDblClick, this.workCellAction); }
     }
     private renderTimeCells(): HTMLElement {
         let wrap: HTMLElement = createElement('div', { className: cls.TIME_CELLS_WRAP_CLASS });

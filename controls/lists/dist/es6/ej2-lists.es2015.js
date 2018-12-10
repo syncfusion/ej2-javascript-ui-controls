@@ -1883,7 +1883,7 @@ let ListView = class ListView extends Component {
     destroy() {
         this.unWireEvents();
         let classAr = [classNames.root, classNames.disable, 'e-rtl',
-            'e-has-header', 'e-control'].concat(this.cssClass.split(' ').filter((css) => css));
+            'e-has-header', 'e-lib'].concat(this.cssClass.split(' ').filter((css) => css));
         removeClass([this.element], classAr);
         this.rippleFn();
         this.element.removeAttribute('role');
@@ -2012,7 +2012,7 @@ let ListView = class ListView extends Component {
         return parentId;
     }
     /**
-     * It is used to get the currently [here](./api-selectedItem.html)
+     * It is used to get the currently [here](./api-selectedItem)
      *  item details from the list items.
      */
     getSelectedItems() {
@@ -2381,10 +2381,18 @@ class Virtualization {
     constructor(instance) {
         this.listViewInstance = instance;
     }
+    /**
+     * For internal use only.
+     * @private
+     */
     isNgTemplate() {
         return !isNullOrUndefined(this.listViewInstance.templateRef) && typeof this.listViewInstance.templateRef !== 'string'
             && isNullOrUndefined(this.listViewInstance.fields.groupBy);
     }
+    /**
+     * For internal use only.
+     * @private
+     */
     uiVirtualization() {
         let curViewDS = this.listViewInstance.curViewDS;
         let firstDs = curViewDS.slice(0, 1);

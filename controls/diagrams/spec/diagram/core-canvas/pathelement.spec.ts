@@ -136,8 +136,11 @@ describe('Diagram Control', () => {
         });
 
         it('Checking stack panel without children in SVG rendering Mode', (done: Function) => {
+
+            
+
             expect(element1.absolutePath === "M 0 0 Q 9.55 3.13 17.27 25 T 50 50" &&
-                element2.absolutePath === 'M 50 50 H 0 A 50 49.999994913737495 0 1 0 50 0 Z' &&
+                (element2.absolutePath === 'M 50 50 H 0 A 50 49.999994913737495 0 1 0 50 0 Z' || element2.absolutePath ==="M 50 50 H 0 A 50 50 0 1 0 50 0 Z") &&
                 element3.absolutePath === "M 70.49 50 L 45.44 100 L 45.44 0 L 70.49 50 Z M 45.44 50 L 0 50 M 70.49 99.28 L 70.49 0.72 M 70.49 50 L 100 50" &&
                 element4.absolutePath === "M 0 50 C 0 -16.67 50 -16.67 50 50 S 100 116.67 100 50" &&
                 element5.absolutePath === "M 91.01 64.56 C 84.28 26.83 67.13 0 47.03 0 C 21.06 0 0 44.77 0 100 L 9.41 100 C 9.41 55.81 26.25 20 47.03 20 C 61.82 20 74.62 38.15 80.77 64.56 L 73.43 64.56 L 80.07 82.27 L 86.71 100 L 93.36 82.27 L 100 64.56 L 91.01 64.56 Z" &&
@@ -228,6 +231,8 @@ describe('Diagram Control', () => {
             ele.remove();
         });
         it('Checking stack panel without children in SVG rendering Mode', (done: Function) => {
+
+           
             expect(element1.absolutePath === "M 0 0 L 100 0 M 100 0 L 100 100 M 100 100 L 0 100 M 0 100 L 0 0 Z" &&
                 element2.absolutePath === "M 150 150 H 0 A 150 150 0 1 0 150 0 Z" &&
                 element3.absolutePath === "M 35.25 24.99 L 22.72 49.99 L 22.72 0 L 35.25 24.99 Z M 22.72 24.99 L 0 24.99 M 35.25 49.63 L 35.25 0.36 M 35.25 24.99 L 50 24.99" &&

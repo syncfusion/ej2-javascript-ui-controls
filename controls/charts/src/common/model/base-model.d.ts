@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';import { EmptyPointMode} from '../../chart/utils/enum';import { AccEmptyPointMode, ConnectorType} from '../../accumulation-chart/model/enum';import { Alignment, TextOverflow } from '../utils/enum';import {  Theme } from '../model/theme';
+import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';import { EmptyPointMode} from '../../chart/utils/enum';import { AccEmptyPointMode, ConnectorType} from '../../accumulation-chart/model/enum';import { Alignment, TextOverflow } from '../utils/enum';import { RangeIntervalType, PeriodSelectorPosition } from '../utils/enum';import {  Theme } from '../model/theme';
 
 /**
  * Interface for a class Connector
@@ -197,6 +197,7 @@ export interface AnimationModel {
 
 /**
  * Interface for a class Indexes
+ * @private
  */
 export interface IndexesModel {
 
@@ -293,6 +294,13 @@ export interface TooltipSettingsModel {
     enable?: boolean;
 
     /**
+     * Enables / Disables the visibility of the marker.
+     * @default true.
+     */
+
+    enableMarker?: boolean;
+
+    /**
      * If set to true, a single ToolTip will be displayed for every index.
      * @default false.
      */
@@ -350,5 +358,60 @@ export interface TooltipSettingsModel {
      * Options to customize tooltip borders.
      */
     border?: BorderModel;
+
+}
+
+/**
+ * Interface for a class Periods
+ */
+export interface PeriodsModel {
+
+    /**
+     * IntervalType of button
+     * @default 'Years'
+     */
+    intervalType?: RangeIntervalType;
+
+    /**
+     * Count value for the button
+     * @default 1
+     */
+    interval?: number;
+
+    /**
+     * Text to be displayed on the button
+     * @default null
+     */
+    text?: string;
+
+    /**
+     * To select the default period
+     * @default false
+     */
+    selected?: boolean;
+
+}
+
+/**
+ * Interface for a class PeriodSelectorSettings
+ */
+export interface PeriodSelectorSettingsModel {
+
+    /**
+     * Height for the period selector
+     * @default 43
+     */
+    height?: number;
+
+    /**
+     * vertical position of the period selector
+     * @default 'Bottom'
+     */
+    position?: PeriodSelectorPosition;
+
+    /**
+     * Buttons
+     */
+    periods?: PeriodsModel[];
 
 }

@@ -577,10 +577,101 @@
     .e-gridheader {
       user-select: none;
     }
+    
+    .e-gridheader .e-firstrow-dragborder,
+    &.e-rtl .e-gridheader .e-firstrow-dragborder,
+    .e-gridcontent .e-lastrow-dragborder,
+    &.e-rtl .e-gridcontent .e-lastrow-dragborder {
+      bottom: 0;
+      background-color: $grid-e-firstrow-dragborder-bcolor;
+      height: 2px;
+      position: absolute;
+      z-index: 10;
+    }
+
+    .e-grid-relative {
+      position: relative;
+    }
+
+    .e-dropitemscount {   
+        border: 1px solid $grid-clone-dropitemscount-color;
+        border-radius: 14px;
+        box-sizing: content-box;
+        font-size: 13px;
+        line-height: normal;
+        margin-left: -8px;
+        min-width: 12px;
+        padding: 3px 7px 4px;
+        position: absolute;
+        text-align: center;
+        top: -10px;
+        z-index: 5;
+    }
+
+    .e-cloneproperties.e-draganddrop .e-rowdragdrop {
+        border-top: 1px solid $grid-clone-row-border-color;
+        border-right: 1px solid $grid-clone-row-border-color;
+        border-bottom: 0;
+    }
+
+    .e-gridcontent tr.e-row:first-child .e-rowcell.e-dragborder,
+    .e-gridcontent .e-rowcell.e-dragborder,
+    .e-gridcontent .e-rowdragdrop.e-dragborder ,
+    & .e-gridheader thead tr th.e-firstrowdragborder,
+    &.e-rtl .e-gridcontent tr.e-row:first-child .e-rowcell.e-dragborder,
+    &.e-rtl .e-gridcontent .e-rowcell.e-dragborder,
+    &.e-rtl .e-gridcontent .e-rowdragdrop.e-dragborder {
+      box-shadow: $grid-dragborder-box-shadow;
+      position: $grid-dragborder-position;
+      z-index: $grid-dragborder-z-index;
+    }
 
     .e-gridheader thead .e-icons {
       font-size: $grid-icon-font-size;
     }
+
+    .e-row .e-icon-rowdragicon::before {
+        display: block;
+        text-indent: 10px;
+        font-size: $grid-drag-font-size;
+        font-weight: $grid-drag-icon-font-weight;
+        color: $grid-drap-drop-icon-color;
+        opacity: 0.54;
+      }
+  
+      .e-row .e-icon-rowdragmoveicon::before {
+          font-size: $grid-drag-font-size;
+          font-weight: $grid-drag-icon-font-weight;
+      }
+  
+      .e-row .e-icon-rowdragmoveicon {
+          padding-left: $grid-drag-move-icon;
+      }
+     
+      .e-draganddrop .e-rowcell, &.e-rtl .e-draganddrop .e-rowcell {
+          padding-left: 6px;
+          padding-right: 6px;   
+      }
+      
+      .e-gridcontent .e-rowdragdrop {
+          border-style: $grid-dragcell-border-style;
+          border-width: $grid-dragicon-cell-border;
+          border-color: $grid-dragcell-border-color;
+      }
+  
+      .e-gridcontent .e-rowdragdrop.e-lastrowcell {
+          border-bottom-width: $grid-border-bottom-width;
+      }
+
+      & .e-cloneproperties.e-draganddrop .e-row .e-icon-rowdragicon::before {
+        position: relative;
+        left: -5px;
+      }
+
+      .e-icon-rowdragicon {
+        font-size: $grid-group-right-arrow-icon-font-size;
+        text-indent: $group-expand-icon-text-indent;
+      }
 
     .e-toolbar {
       border-bottom: 0;
@@ -1111,6 +1202,28 @@
       cursor: pointer;
     }
 
+    &.e-print-grid-layout {
+      .e-pager, .e-filterbar, .e-icons:not(.e-frame), .e-grouptopleftcell, .e-recordpluscollapse, .e-indentcell, .e-recordplusexpand {
+        display: none;
+      }
+
+      .e-indentcell.e-detailindentcelltop {
+        display: table-cell;
+      }
+
+      .e-content {
+        overflow-y: hidden;
+      }
+
+      .e-grouptext {
+        width: auto;
+      }
+
+      .e-detailcell {
+        padding: .8em .6em;
+      }
+    }
+
     &.e-print-grid {
       left: -1000px;
       top: -1000px;
@@ -1504,6 +1617,17 @@
       z-index: 10;
     }
 
+    .e-cloneproperties.e-draganddrop {
+      border-spacing: 0;
+      font-size: $grid-header-font-size;
+      font-weight: normal;
+      overflow: visible;
+    }
+
+    .e-cloneproperties.e-draganddrop table {
+      border-spacing: 0;
+    }
+
     .e-defaultcur {
       cursor: default;
     }
@@ -1512,7 +1636,7 @@
       cursor: not-allowed;
     }
 
-    .e-cloneproperties table {
+    .e-cloneproperties.e-headerclone table {
       border-spacing: 0;
     }
 
@@ -1530,7 +1654,7 @@
     }
 
     .e-draganddrop .e-rowcell {
-      opacity: .8;
+      opacity: .9;
     }
 
     &.e-default .e-gridheader th.e-firstcell {
@@ -1756,6 +1880,20 @@
       padding: $grid-content-padding $grid-content-right-padding;
     }
 
+    .e-autofill {
+      border: 1px solid;
+      height: 8px;
+      position: absolute;
+      user-select: none;
+      width: 8px;
+    }
+
+    .e-xlsel {
+      border: 0 solid;
+      position: absolute;
+      user-select: none;
+    }
+
     .e-headercontent {
       border-style: solid;
       border-width: 0;
@@ -1850,9 +1988,7 @@
     .e-dialog .e-gridform .e-rowcell {
       border: 0;
       padding: 0;
-    }
-
-    .e-row .e-input-group .e-input.e-field,
+    }.e-row .e-input-group .e-input.e-field,
     .e-row .e-input-focus .e-input.e-field {
       font-family: $grid-font-family;
       font-size: $grid-font-size;
@@ -1889,7 +2025,7 @@
 
     .e-ccdlg {
 
-      .e-dlg-header-content + .e-dlg-content {
+      .e-dlg-content {
         margin: $grid-columnchooser-content-margin;
         overflow: visible;
         padding: $grid-columnchooser-content-padding;
@@ -2482,6 +2618,10 @@
       line-height: $grid-wrap-line-height;
     }
 
+    & .e-columnheader.e-wrap .e-filtermenudiv {
+      line-height: $grid-wrap-line-height;
+    }
+
     & .e-columnheader.e-wrap .e-headercelldiv,
     & .e-columnheader.e-wrap .e-stackedheadercelldiv,
     & .e-gridcontent.e-wrap .e-rowcell,
@@ -2539,6 +2679,37 @@
       resize: none;
       top: -1000px;
       width: 1px;
+    }
+
+    &.e-resize-lines,
+    &.e-resize-lines.e-rtl {
+
+      & th.e-headercell.e-stackedheadercell,
+      & th.e-headercell.e-firstcell {
+        border-left: 0;
+        border-right: 0;
+        border-top: 0;
+      }
+
+      & tr.e-columnheader th:last-child.e-stackedheadercell .e-rhandler.e-rcursor {
+        border-right: 0;
+      }
+
+      &.e-default table th[rowspan] {
+        border-left: 0;
+      }
+    }
+
+    &.e-resize-lines.e-rtl {
+
+      & tr.e-columnheader th:last-child.e-stackedheadercell .e-rhandler.e-rcursor,
+      & tr.e-columnheader th.e-lastcell .e-rhandler.e-rcursor {
+        border-left: 0;
+      }
+
+      &.e-default table th[rowspan] {
+        border-right: 0;
+      }
     }
   }
 }

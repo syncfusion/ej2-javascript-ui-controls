@@ -700,8 +700,8 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     }
     private getMousePosition(evt: MouseEvent & TouchEvent): PositionModel {
         let intCoord: Coordinates = this.getCoordinates(evt);
-        let pageX: number = this.clone ? intCoord.pageX : intCoord.pageX - this.relativeXPosition;
-        let pageY: number = this.clone ? intCoord.pageY : intCoord.pageY - this.relativeYPosition;
+        let pageX: number = this.clone ? intCoord.pageX : (intCoord.pageX + window.scrollX) - this.relativeXPosition;
+        let pageY: number = this.clone ? intCoord.pageY : (intCoord.pageY + window.scrollY) - this.relativeYPosition;
         return {
             left: pageX - (this.margin.left + this.cursorAt.left),
             top: pageY - (this.margin.top + this.cursorAt.top)

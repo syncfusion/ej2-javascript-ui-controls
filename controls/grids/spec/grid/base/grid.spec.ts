@@ -624,7 +624,7 @@ describe('Grid base module', () => {
                     filterSettings: { type: 'Menu' },
                     columns: [{ field: 'OrderID', type: 'number', isPrimaryKey: true },
                     { field: 'CustomerID', type: 'string' },
-                    { field: 'Freight', format: 'C2', template:'#template', type: 'number', allowFiltering: false },
+                    { field: 'Freight', format: 'C2', type: 'number', template:'#template', allowFiltering: false },
                     { field: 'OrderDate', format: 'yMd' },
                     { field: 'Verified' }
                     ],
@@ -643,7 +643,7 @@ describe('Grid base module', () => {
             let selRow: any = gridObj.contentModule.getRows()[2];
             expect((<any>selRow).data.CustomerID).toEqual('new value');
         });
-        it('update template cell', () => {
+         it('update template cell', () => {
             gridObj.setCellValue(10249, 'Freight', 1);
             let selRow: any = gridObj.contentModule.getRows()[1];
             expect((<any>selRow).data.Freight).toEqual(1);

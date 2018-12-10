@@ -103,7 +103,7 @@ export class DateTimePicker extends DatePicker {
     @Property(1000)
     public zIndex: number;
     /** 
-     * When set to true, enables RTL mode of the component that displays the content in the       right-to-left direction.
+     * When set to true, enables RTL mode of the component that displays the content in the right-to-left direction.
      * @default false
      */
     @Property(false)
@@ -115,6 +115,19 @@ export class DateTimePicker extends DatePicker {
      */
     @Property(false)
     public enablePersistence: boolean;
+    /**
+     * Specifies the option to enable the multiple dates selection of the calendar.
+     * @default false
+     * @private
+     */
+    @Property(false)
+    public isMultiSelection: boolean;
+    /**
+     * Gets or sets multiple selected dates of the calendar.
+     * @default null
+     * @private
+     */
+    public values: Date[];
     /**
      * Specifies whether to show or hide the clear icon in textbox.
      * @default true
@@ -134,7 +147,7 @@ export class DateTimePicker extends DatePicker {
      * it allows invalid or out-of-range value with highlighted error class.
      * @default false
      * > For more details refer to 
-     * [`Strict Mode`](./datetimepicker/strict-mode.html) documentation.
+     * [`Strict Mode`](../datetimepicker/strict-mode/) documentation.
      */
     @Property(false)
     public strictMode: boolean;

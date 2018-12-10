@@ -14,13 +14,11 @@ import { flip, fit, isCollide , CollisionCoordinates } from '../common/collision
 export class PositionData extends ChildProperty<PositionData> {
     /**
      * specify the offset left value
-     * @asptype object
      */
     @Property('left')
     public X: string | number;
     /**
      * specify the offset top value.
-     * @asptype object
      */
     @Property('top')
     public Y: string | number;

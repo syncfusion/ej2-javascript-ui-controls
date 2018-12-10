@@ -165,6 +165,18 @@ btnObj.appendTo('#bootstrap');
 btnObj = new Button();
 btnObj.appendTo('#highcontrast');
 
+btnObj = new Button();
+btnObj.appendTo('#materialdark');
+
+btnObj = new Button();
+btnObj.appendTo('#fabricdark');
+
+btnObj = new Button();
+btnObj.appendTo('#bootstrapdark');
+
+// btnObj = new Button();
+// btnObj.appendTo('#highcontrastlight');
+
 document.getElementById('material').onclick = (e : Event) => {
     document.body.classList.remove('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/material.css');
@@ -181,6 +193,26 @@ document.getElementById('highcontrast').onclick = (e : Event) => {
     document.body.classList.add('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/highcontrast.css');
 };
+
+document.getElementById('materialdark').onclick = (e : Event) => {
+    document.body.classList.add('darkBG');
+    document.getElementById('theme').setAttribute('href', '../../theme-files/material-dark.css');
+};
+
+document.getElementById('fabricdark').onclick = (e : Event) => {
+    document.body.classList.add('darkBG');
+    document.getElementById('theme').setAttribute('href', '../../theme-files/fabric-dark.css');
+};
+
+document.getElementById('bootstrapdark').onclick = (e : Event) => {
+    document.body.classList.add('darkBG');
+    document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap-dark.css');
+};
+
+// document.getElementById('highcontrastlight').onclick = (e : Event) => {
+//     document.body.classList.remove('darkBG');
+//     document.getElementById('theme').setAttribute('href', '../../theme-files/highcontrast-light.css');
+// };
 
 
 

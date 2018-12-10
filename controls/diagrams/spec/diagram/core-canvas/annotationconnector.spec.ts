@@ -60,8 +60,8 @@ describe('Diagram Control', () => {
                 let element2: DiagramElement = diagram.connectors[1].wrapper.children[3];
                 let element3: DiagramElement = diagram.connectors[2].wrapper.children[3];
                 expect(Math.ceil(element1.offsetX) === 188 && Math.ceil(element1.offsetY) === 100 &&
-                    Math.ceil(element2.offsetX) === 388 && element2.offsetY === 94 &&
-                    Math.ceil(element3.offsetX) === 588 && element3.offsetY === 106).toBe(true);
+                    Math.ceil(element2.offsetX) === 388 && Math.ceil(element2.offsetY)===93 &&
+                    Math.ceil(element3.offsetX) === 588 && Math.ceil(element3.offsetY )=== 108).toBe(true);
             }
             done();
         });

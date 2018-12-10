@@ -1,7 +1,7 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, classList, closest, compile, detach, formatUnit, getInstance, getUniqueID, getValue, isNullOrUndefined, isUndefined, isVisible, matches, removeClass, rippleEffect, select, selectAll, setStyleAttribute, setValue } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, classList, closest, compile, createElement, detach, formatUnit, getInstance, getUniqueID, getValue, isNullOrUndefined, isUndefined, isVisible, matches, removeClass, rippleEffect, select, selectAll, setStyleAttribute, setValue } from '@syncfusion/ej2-base';
+import { ListBase } from '@syncfusion/ej2-lists';
 import { Popup, calculatePosition, createSpinner, fit, getScrollableParent, getZindexPartial, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Button, createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';
-import { ListBase } from '@syncfusion/ej2-lists';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Input } from '@syncfusion/ej2-inputs';
 
@@ -84,7 +84,7 @@ var HScroll = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * To Initialize the control rendering
+     * To Initialize the horizontal scroll  rendering
      * @private
      */
     HScroll.prototype.render = function () {
@@ -141,7 +141,7 @@ var HScroll = /** @__PURE__ @class */ (function (_super) {
         ele.classList.remove(CLS_DEVICE);
         var nav = selectAll('.e-' + ele.id + '_nav.' + CLS_HSCROLLNAV, ele);
         var overlay = selectAll('.' + CLS_OVERLAY, ele);
-        overlay.forEach(function (ele) {
+        [].slice.call(overlay).forEach(function (ele) {
             detach(ele);
         });
         for (var _i = 0, _a = [].slice.call(this.scrollItems.children); _i < _a.length; _i++) {
@@ -172,7 +172,7 @@ var HScroll = /** @__PURE__ @class */ (function (_super) {
     HScroll.prototype.disable = function (value) {
         var navEles = selectAll('.e-scroll-nav:not(.' + CLS_DISABLE + ')', this.element);
         value ? this.element.classList.add(CLS_DISABLE) : this.element.classList.remove(CLS_DISABLE);
-        navEles.forEach(function (el) {
+        [].slice.call(navEles).forEach(function (el) {
             el.setAttribute('tabindex', !value ? '0' : '-1');
         });
     };
@@ -239,7 +239,7 @@ var HScroll = /** @__PURE__ @class */ (function (_super) {
     };
     HScroll.prototype.eventBinding = function (ele) {
         var _this = this;
-        ele.forEach(function (el) {
+        [].slice.call(ele).forEach(function (el) {
             new Touch(el, { tapHold: _this.tabHoldHandler.bind(_this), tapHoldThreshold: 500 });
             el.addEventListener('keydown', _this.onKeyPress.bind(_this));
             el.addEventListener('keyup', _this.onKeyUp.bind(_this));
@@ -344,7 +344,7 @@ var HScroll = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         if (!this.customStep) {
-            selectAll('.' + CLS_OVERLAY, this.element).forEach(function (el) {
+            [].slice.call(selectAll('.' + CLS_OVERLAY, this.element)).forEach(function (el) {
                 scrollVal -= el.offsetWidth;
             });
         }
@@ -478,10 +478,6 @@ var HScroll = /** @__PURE__ @class */ (function (_super) {
     return HScroll;
 }(Component));
 
-/**
- * Navigation Common modules
- */
-
 var __extends$1 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -501,14 +497,1985 @@ var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var CLS_ROOT$1 = 'e-vscroll';
+var CLS_RTL$1 = 'e-rtl';
+var CLS_DISABLE$1 = 'e-overlay';
+var CLS_VSCROLLBAR = 'e-vscroll-bar';
+var CLS_VSCROLLCON = 'e-vscroll-content';
+var CLS_NAVARROW$1 = 'e-nav-arrow';
+var CLS_NAVUPARROW = 'e-nav-up-arrow';
+var CLS_NAVDOWNARROW = 'e-nav-down-arrow';
+var CLS_VSCROLLNAV = 'e-scroll-nav';
+var CLS_VSCROLLNAVUP = 'e-scroll-up-nav';
+var CLS_VSCROLLNAVDOWN = 'e-scroll-down-nav';
+var CLS_DEVICE$1 = 'e-scroll-device';
+var CLS_OVERLAY$1 = 'e-scroll-overlay';
+var CLS_UPOVERLAY = 'e-scroll-up-overlay';
+var CLS_DOWNOVERLAY = 'e-scroll-down-overlay';
+var OVERLAY_MAXWID$1 = 40;
+/**
+ * VScroll module is introduces vertical scroller when content exceeds the current viewing area.
+ * It can be useful for the components like Toolbar, Tab which needs vertical scrolling alone.
+ * Hidden content can be view by touch moving or icon click.
+ * ```html
+ * <div id="scroll"/>
+ * <script>
+ *   var scrollObj = new VScroll();
+ *   scrollObj.appendTo("#scroll");
+ * </script>
+ * ```
+ */
+var VScroll = /** @__PURE__ @class */ (function (_super) {
+    __extends$1(VScroll, _super);
+    /**
+     * Initializes a new instance of the VScroll class.
+     * @param options  - Specifies VScroll model properties as options.
+     * @param element  - Specifies the element for which vertical scrolling applies.
+     */
+    function VScroll(options, element) {
+        return _super.call(this, options, element) || this;
+    }
+    /**
+     * Initialize the event handler
+     * @private
+     */
+    VScroll.prototype.preRender = function () {
+        this.browser = Browser.info.name;
+        this.browserCheck = this.browser === 'mozilla';
+        this.isDevice = Browser.isDevice;
+        this.customStep = true;
+        var ele = this.element;
+        this.ieCheck = this.browser === 'edge' || this.browser === 'msie';
+        this.initialize();
+        if (ele.id === '') {
+            ele.id = getUniqueID('vscroll');
+            this.uniqueId = true;
+        }
+        ele.style.display = 'block';
+        if (this.enableRtl) {
+            ele.classList.add(CLS_RTL$1);
+        }
+    };
+    /**
+     * To Initialize the vertical scroll rendering
+     * @private
+     */
+    VScroll.prototype.render = function () {
+        this.touchModule = new Touch(this.element, { scroll: this.touchHandler.bind(this), swipe: this.swipeHandler.bind(this) });
+        EventHandler.add(this.scrollEle, 'scroll', this.scrollEventHandler, this);
+        if (!this.isDevice) {
+            this.createNavIcon(this.element);
+        }
+        else {
+            this.element.classList.add(CLS_DEVICE$1);
+            this.createOverlayElement(this.element);
+        }
+        if (isNullOrUndefined(this.scrollStep) || this.scrollStep < 0) {
+            this.scrollStep = this.scrollEle.offsetHeight;
+            this.customStep = false;
+        }
+        EventHandler.add(this.element, 'wheel', this.wheelEventHandler, this);
+    };
+    VScroll.prototype.initialize = function () {
+        var scrollCnt = createElement('div', { className: CLS_VSCROLLCON });
+        var scrollBar = createElement('div', { className: CLS_VSCROLLBAR });
+        scrollBar.setAttribute('tabindex', '-1');
+        var ele = this.element;
+        var innerEle = [].slice.call(ele.children);
+        for (var _i = 0, innerEle_1 = innerEle; _i < innerEle_1.length; _i++) {
+            var ele_1 = innerEle_1[_i];
+            scrollCnt.appendChild(ele_1);
+        }
+        scrollBar.appendChild(scrollCnt);
+        ele.appendChild(scrollBar);
+        scrollBar.style.overflowY = 'hidden';
+        this.scrollEle = scrollBar;
+        this.scrollItems = scrollCnt;
+    };
+    VScroll.prototype.getPersistData = function () {
+        var keyEntity = ['scrollStep'];
+        return this.addOnPersist(keyEntity);
+    };
+    /**
+     * Returns the current module name.
+     * @returns string
+     * @private
+     */
+    VScroll.prototype.getModuleName = function () {
+        return 'vScroll';
+    };
+    /**
+     * Removes the control from the DOM and also removes all its related events.
+     * @returns void
+     */
+    VScroll.prototype.destroy = function () {
+        var el = this.element;
+        el.style.display = '';
+        removeClass([this.element], [CLS_ROOT$1, CLS_DEVICE$1]);
+        var navs = selectAll('.e-' + el.id + '_nav.' + CLS_VSCROLLNAV, el);
+        var overlays = selectAll('.' + CLS_OVERLAY$1, el);
+        [].slice.call(overlays).forEach(function (ele) {
+            detach(ele);
+        });
+        for (var _i = 0, _a = [].slice.call(this.scrollItems.children); _i < _a.length; _i++) {
+            var elem = _a[_i];
+            el.appendChild(elem);
+        }
+        if (this.uniqueId) {
+            this.element.removeAttribute('id');
+        }
+        detach(this.scrollEle);
+        if (navs.length > 0) {
+            detach(navs[0]);
+            if (!isNullOrUndefined(navs[1])) {
+                detach(navs[1]);
+            }
+        }
+        EventHandler.remove(this.scrollEle, 'scroll', this.scrollEventHandler);
+        this.touchModule.destroy();
+        this.touchModule = null;
+        _super.prototype.destroy.call(this);
+    };
+    /**
+     * Specifies the value to disable/enable the VScroll component.
+     * When set to `true`, the component will be disabled.
+     * @param  {boolean} value - Based on this Boolean value, VScroll will be enabled (false) or disabled (true).
+     * @returns void.
+     */
+    VScroll.prototype.disable = function (value) {
+        var navEle = selectAll('.e-scroll-nav:not(.' + CLS_DISABLE$1 + ')', this.element);
+        value ? this.element.classList.add(CLS_DISABLE$1) : this.element.classList.remove(CLS_DISABLE$1);
+        [].slice.call(navEle).forEach(function (el) {
+            el.setAttribute('tabindex', !value ? '0' : '-1');
+        });
+    };
+    VScroll.prototype.createOverlayElement = function (element) {
+        var id = element.id.concat('_nav');
+        var downOverlayEle = createElement('div', { className: CLS_OVERLAY$1 + ' ' + CLS_DOWNOVERLAY });
+        var clsDown = 'e-' + element.id.concat('_nav ' + CLS_VSCROLLNAV + ' ' + CLS_VSCROLLNAVDOWN);
+        var downEle = createElement('div', { id: id.concat('down'), className: clsDown });
+        var navItem = createElement('div', { className: CLS_NAVDOWNARROW + ' ' + CLS_NAVARROW$1 + ' e-icons' });
+        downEle.appendChild(navItem);
+        var upEle = createElement('div', { className: CLS_OVERLAY$1 + ' ' + CLS_UPOVERLAY });
+        if (this.ieCheck) {
+            downEle.classList.add('e-ie-align');
+        }
+        element.appendChild(downOverlayEle);
+        element.appendChild(downEle);
+        element.insertBefore(upEle, element.firstChild);
+        this.eventBinding([downEle]);
+    };
+    VScroll.prototype.createNavIcon = function (element) {
+        var id = element.id.concat('_nav');
+        var clsDown = 'e-' + element.id.concat('_nav ' + CLS_VSCROLLNAV + ' ' + CLS_VSCROLLNAVDOWN);
+        var nav = createElement('div', { id: id.concat('_down'), className: clsDown });
+        nav.setAttribute('aria-disabled', 'false');
+        var navItem = createElement('div', { className: CLS_NAVDOWNARROW + ' ' + CLS_NAVARROW$1 + ' e-icons' });
+        var clsUp = 'e-' + element.id.concat('_nav ' + CLS_VSCROLLNAV + ' ' + CLS_VSCROLLNAVUP);
+        var navElement = createElement('div', { id: id.concat('_up'), className: clsUp + ' ' + CLS_DISABLE$1 });
+        navElement.setAttribute('aria-disabled', 'true');
+        var navUpItem = createElement('div', { className: CLS_NAVUPARROW + ' ' + CLS_NAVARROW$1 + ' e-icons' });
+        navElement.appendChild(navUpItem);
+        nav.appendChild(navItem);
+        nav.setAttribute('tabindex', '0');
+        element.appendChild(nav);
+        element.insertBefore(navElement, element.firstChild);
+        if (this.ieCheck) {
+            nav.classList.add('e-ie-align');
+            navElement.classList.add('e-ie-align');
+        }
+        this.eventBinding([nav, navElement]);
+    };
+    VScroll.prototype.onKeyPress = function (ev) {
+        var _this = this;
+        if (ev.key === 'Enter') {
+            var timeoutFun_1 = function () {
+                _this.keyTimeout = true;
+                _this.eleScrolling(10, ev.target, true);
+            };
+            this.keyTimer = window.setTimeout(function () { timeoutFun_1(); }, 100);
+        }
+    };
+    VScroll.prototype.onKeyUp = function (ev) {
+        if (ev.key !== 'Enter') {
+            return;
+        }
+        if (this.keyTimeout) {
+            this.keyTimeout = false;
+        }
+        else {
+            ev.target.click();
+        }
+        clearTimeout(this.keyTimer);
+    };
+    VScroll.prototype.eventBinding = function (element) {
+        var _this = this;
+        [].slice.call(element).forEach(function (ele) {
+            new Touch(ele, { tapHold: _this.tabHoldHandler.bind(_this), tapHoldThreshold: 500 });
+            ele.addEventListener('keydown', _this.onKeyPress.bind(_this));
+            ele.addEventListener('keyup', _this.onKeyUp.bind(_this));
+            ele.addEventListener('mouseup', _this.repeatScroll.bind(_this));
+            ele.addEventListener('touchend', _this.repeatScroll.bind(_this));
+            ele.addEventListener('contextmenu', function (e) {
+                e.preventDefault();
+            });
+            EventHandler.add(ele, 'click', _this.clickEventHandler, _this);
+        });
+    };
+    VScroll.prototype.repeatScroll = function () {
+        clearInterval(this.timeout);
+    };
+    VScroll.prototype.tabHoldHandler = function (ev) {
+        var _this = this;
+        var trgt = ev.originalEvent.target;
+        trgt = this.contains(trgt, CLS_VSCROLLNAV) ? trgt.firstElementChild : trgt;
+        var scrollDistance = 10;
+        var timeoutFun = function () {
+            _this.eleScrolling(scrollDistance, trgt, true);
+        };
+        this.timeout = window.setInterval(function () { timeoutFun(); }, 50);
+    };
+    VScroll.prototype.contains = function (element, className) {
+        return element.classList.contains(className);
+    };
+    VScroll.prototype.eleScrolling = function (scrollDis, trgt, isContinuous) {
+        var rootElement = this.element;
+        var classList$$1 = trgt.classList;
+        if (classList$$1.contains(CLS_VSCROLLNAV)) {
+            classList$$1 = trgt.querySelector('.' + CLS_NAVARROW$1).classList;
+        }
+        if (classList$$1.contains(CLS_NAVDOWNARROW)) {
+            this.frameScrollRequest(scrollDis, 'add', isContinuous);
+        }
+        else if (classList$$1.contains(CLS_NAVUPARROW)) {
+            this.frameScrollRequest(scrollDis, '', isContinuous);
+        }
+    };
+    VScroll.prototype.clickEventHandler = function (event) {
+        this.eleScrolling(this.scrollStep, event.target, false);
+    };
+    VScroll.prototype.wheelEventHandler = function (e) {
+        e.preventDefault();
+        this.frameScrollRequest(this.scrollStep, (e.deltaY > 0 ? 'add' : ''), false);
+    };
+    VScroll.prototype.swipeHandler = function (e) {
+        var swipeElement = this.scrollEle;
+        var distance;
+        if (e.velocity <= 1) {
+            distance = e.distanceY / (e.velocity * 10);
+        }
+        else {
+            distance = e.distanceY / e.velocity;
+        }
+        var start = 0.5;
+        var animate = function () {
+            var step = Math.sin(start);
+            if (step <= 0) {
+                window.cancelAnimationFrame(step);
+            }
+            else {
+                if (e.swipeDirection === 'Up') {
+                    swipeElement.scrollTop += distance * step;
+                }
+                else if (e.swipeDirection === 'Down') {
+                    swipeElement.scrollTop -= distance * step;
+                }
+                start -= 0.02;
+                window.requestAnimationFrame(animate);
+            }
+        };
+        animate();
+    };
+    VScroll.prototype.scrollUpdating = function (scrollVal, action) {
+        if (action === 'add') {
+            this.scrollEle.scrollTop += scrollVal;
+        }
+        else {
+            this.scrollEle.scrollTop -= scrollVal;
+        }
+    };
+    VScroll.prototype.frameScrollRequest = function (scrollValue, action, isContinuous) {
+        var _this = this;
+        var step = 10;
+        if (isContinuous) {
+            this.scrollUpdating(scrollValue, action);
+            return;
+        }
+        if (!this.customStep) {
+            [].slice.call(selectAll('.' + CLS_OVERLAY$1, this.element)).forEach(function (el) {
+                scrollValue -= el.offsetHeight;
+            });
+        }
+        var animate = function () {
+            if (scrollValue < step) {
+                window.cancelAnimationFrame(step);
+            }
+            else {
+                _this.scrollUpdating(step, action);
+                scrollValue -= step;
+                window.requestAnimationFrame(animate);
+            }
+        };
+        animate();
+    };
+    VScroll.prototype.touchHandler = function (e) {
+        var el = this.scrollEle;
+        var distance;
+        distance = e.distanceY;
+        if (e.scrollDirection === 'Up') {
+            el.scrollTop = el.scrollTop + distance;
+        }
+        else if (e.scrollDirection === 'Down') {
+            el.scrollTop = el.scrollTop - distance;
+        }
+    };
+    VScroll.prototype.arrowDisabling = function (addDisableCls, removeDisableCls) {
+        if (this.isDevice) {
+            var arrowEle = isNullOrUndefined(addDisableCls) ? removeDisableCls : addDisableCls;
+            var arrowIcon = arrowEle.querySelector('.' + CLS_NAVARROW$1);
+            if (isNullOrUndefined(addDisableCls)) {
+                classList(arrowIcon, [CLS_NAVDOWNARROW], [CLS_NAVUPARROW]);
+            }
+            else {
+                classList(arrowIcon, [CLS_NAVUPARROW], [CLS_NAVDOWNARROW]);
+            }
+        }
+        else {
+            addDisableCls.classList.add(CLS_DISABLE$1);
+            addDisableCls.setAttribute('aria-disabled', 'true');
+            addDisableCls.removeAttribute('tabindex');
+            removeDisableCls.classList.remove(CLS_DISABLE$1);
+            removeDisableCls.setAttribute('aria-disabled', 'false');
+            removeDisableCls.setAttribute('tabindex', '0');
+        }
+        this.repeatScroll();
+    };
+    VScroll.prototype.scrollEventHandler = function (e) {
+        var target = e.target;
+        var height = target.offsetHeight;
+        var rootEle = this.element;
+        var navUpEle = this.element.querySelector('.' + CLS_VSCROLLNAVUP);
+        var navDownEle = this.element.querySelector('.' + CLS_VSCROLLNAVDOWN);
+        var upOverlay = this.element.querySelector('.' + CLS_UPOVERLAY);
+        var downOverlay = this.element.querySelector('.' + CLS_DOWNOVERLAY);
+        var scrollTop = target.scrollTop;
+        if (scrollTop <= 0) {
+            scrollTop = -scrollTop;
+        }
+        if (this.isDevice) {
+            if (scrollTop < OVERLAY_MAXWID$1) {
+                upOverlay.style.height = scrollTop + 'px';
+            }
+            else {
+                upOverlay.style.height = '40px';
+            }
+            if ((target.scrollHeight - Math.ceil(height + scrollTop)) < OVERLAY_MAXWID$1) {
+                downOverlay.style.height = (target.scrollHeight - Math.ceil(height + scrollTop)) + 'px';
+            }
+            else {
+                downOverlay.style.height = '40px';
+            }
+        }
+        if (scrollTop === 0) {
+            this.arrowDisabling(navUpEle, navDownEle);
+        }
+        else if (Math.ceil(height + scrollTop + .1) >= target.scrollHeight) {
+            this.arrowDisabling(navDownEle, navUpEle);
+        }
+        else {
+            var disEle = this.element.querySelector('.' + CLS_VSCROLLNAV + '.' + CLS_DISABLE$1);
+            if (disEle) {
+                disEle.classList.remove(CLS_DISABLE$1);
+                disEle.setAttribute('aria-disabled', 'false');
+                disEle.setAttribute('tabindex', '0');
+            }
+        }
+    };
+    /**
+     * Gets called when the model property changes.The data that describes the old and new values of property that changed.
+     * @param  {VScrollModel} newProp
+     * @param  {VScrollModel} oldProp
+     * @returns void
+     * @private
+     */
+    VScroll.prototype.onPropertyChanged = function (newProp, oldProp) {
+        for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
+            var prop = _a[_i];
+            switch (prop) {
+                case 'scrollStep':
+                    break;
+                case 'enableRtl':
+                    newProp.enableRtl ? this.element.classList.add(CLS_RTL$1) : this.element.classList.remove(CLS_RTL$1);
+                    break;
+            }
+        }
+    };
+    __decorate$1([
+        Property(null)
+    ], VScroll.prototype, "scrollStep", void 0);
+    VScroll = __decorate$1([
+        NotifyPropertyChanges
+    ], VScroll);
+    return VScroll;
+}(Component));
+
+var __extends$2 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var ENTER = 'enter';
+var ESCAPE = 'escape';
+var FOCUSED = 'e-focused';
+var HEADER = 'e-menu-header';
+var SELECTED = 'e-selected';
+var SEPARATOR = 'e-separator';
+var UPARROW = 'uparrow';
+var DOWNARROW = 'downarrow';
+var LEFTARROW = 'leftarrow';
+var RIGHTARROW = 'rightarrow';
+var HOME = 'home';
+var END = 'end';
+var CARET = 'e-caret';
+var ITEM = 'e-menu-item';
+var DISABLED = 'e-disabled';
+var HIDE = 'e-menu-hide';
+var ICONS = 'e-icons';
+var RTL = 'e-rtl';
+var POPUP = 'e-menu-popup';
+/**
+ * Configures the field options of the Menu.
+ */
+var FieldSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$2(FieldSettings, _super);
+    function FieldSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$2([
+        Property('id')
+    ], FieldSettings.prototype, "itemId", void 0);
+    __decorate$2([
+        Property('parentId')
+    ], FieldSettings.prototype, "parentId", void 0);
+    __decorate$2([
+        Property('text')
+    ], FieldSettings.prototype, "text", void 0);
+    __decorate$2([
+        Property('iconCss')
+    ], FieldSettings.prototype, "iconCss", void 0);
+    __decorate$2([
+        Property('url')
+    ], FieldSettings.prototype, "url", void 0);
+    __decorate$2([
+        Property('separator')
+    ], FieldSettings.prototype, "separator", void 0);
+    __decorate$2([
+        Property('items')
+    ], FieldSettings.prototype, "children", void 0);
+    return FieldSettings;
+}(ChildProperty));
+/**
+ * Specifies menu items.
+ */
+var MenuItem = /** @__PURE__ @class */ (function (_super) {
+    __extends$2(MenuItem, _super);
+    function MenuItem() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$2([
+        Property(null)
+    ], MenuItem.prototype, "iconCss", void 0);
+    __decorate$2([
+        Property('')
+    ], MenuItem.prototype, "id", void 0);
+    __decorate$2([
+        Property(false)
+    ], MenuItem.prototype, "separator", void 0);
+    __decorate$2([
+        Collection([], MenuItem)
+    ], MenuItem.prototype, "items", void 0);
+    __decorate$2([
+        Property('')
+    ], MenuItem.prototype, "text", void 0);
+    __decorate$2([
+        Property('')
+    ], MenuItem.prototype, "url", void 0);
+    return MenuItem;
+}(ChildProperty));
+/**
+ * Animation configuration settings.
+ */
+var MenuAnimationSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$2(MenuAnimationSettings, _super);
+    function MenuAnimationSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$2([
+        Property('SlideDown')
+    ], MenuAnimationSettings.prototype, "effect", void 0);
+    __decorate$2([
+        Property(400)
+    ], MenuAnimationSettings.prototype, "duration", void 0);
+    __decorate$2([
+        Property('ease')
+    ], MenuAnimationSettings.prototype, "easing", void 0);
+    return MenuAnimationSettings;
+}(ChildProperty));
+/**
+ * @private
+ * Base class for Menu and ContextMenu components.
+ */
+var MenuBase = /** @__PURE__ @class */ (function (_super) {
+    __extends$2(MenuBase, _super);
+    /**
+     * Constructor for creating the widget.
+     * @private
+     */
+    function MenuBase(options, element) {
+        var _this = _super.call(this, options, element) || this;
+        _this.navIdx = [];
+        _this.animation = new Animation({});
+        _this.isTapHold = false;
+        return _this;
+    }
+    /**
+     * Initialized third party configuration settings.
+     * @private
+     */
+    MenuBase.prototype.preRender = function () {
+        if (this.element.tagName === 'EJS-CONTEXTMENU') {
+            this.element.style.display = 'none';
+            this.element.classList.remove('e-' + this.getModuleName());
+            this.element.classList.remove('e-control');
+            var ejInst = getValue('ej2_instances', this.element);
+            var ul = this.createElement('ul');
+            this.ngElement = this.element;
+            this.element = ul;
+            this.element.classList.add('e-control');
+            this.element.classList.add('e-' + this.getModuleName());
+            setValue('ej2_instances', ejInst, this.element);
+            if (!this.element.id) {
+                this.element.id = getUniqueID(this.getModuleName());
+            }
+        }
+        if (this.element.tagName === 'EJS-MENU') {
+            var ele = this.element;
+            var ejInstance = getValue('ej2_instances', ele);
+            var ul = this.createElement('ul');
+            var wrapper = this.createElement('EJS-MENU', { className: 'e-' + this.getModuleName() + '-wrapper' });
+            for (var idx = 0, len = ele.attributes.length; idx < len; idx++) {
+                ul.setAttribute(ele.attributes[idx].nodeName, ele.attributes[idx].nodeValue);
+            }
+            ele.parentNode.insertBefore(wrapper, ele);
+            detach(ele);
+            ele = ul;
+            wrapper.appendChild(ele);
+            setValue('ej2_instances', ejInstance, ele);
+            this.ngElement = wrapper;
+            this.element = ele;
+            if (!this.element.id) {
+                this.element.id = getUniqueID(this.getModuleName());
+            }
+        }
+    };
+    /**
+     * Initialize the control rendering
+     * @private
+     */
+    MenuBase.prototype.render = function () {
+        this.initialize();
+        this.renderItems();
+        this.wireEvents();
+    };
+    MenuBase.prototype.initialize = function () {
+        var wrapper = this.getWrapper();
+        if (!wrapper) {
+            wrapper = this.createElement('div', { className: 'e-' + this.getModuleName() + '-wrapper' });
+            if (this.isMenu) {
+                this.element.parentElement.insertBefore(wrapper, this.element);
+            }
+            else {
+                document.body.appendChild(wrapper);
+            }
+        }
+        if (this.cssClass) {
+            addClass([wrapper], this.cssClass.split(' '));
+        }
+        if (this.enableRtl) {
+            wrapper.classList.add(RTL);
+        }
+        wrapper.appendChild(this.element);
+    };
+    MenuBase.prototype.renderItems = function () {
+        if (!this.items.length) {
+            var items = ListBase.createJsonFromElement(this.element, { fields: { child: 'items' } });
+            this.setProperties({ items: items }, true);
+            this.element.innerHTML = '';
+        }
+        var ul = this.createItems(this.items);
+        append(Array.prototype.slice.call(ul.children), this.element);
+        this.element.classList.add('e-menu-parent');
+        var wrapper = this.getWrapper();
+        this.element.classList.contains('e-vertical') ?
+            this.addScrolling(wrapper, this.element, 'vscroll', wrapper.offsetHeight, this.element.offsetHeight)
+            : this.addScrolling(wrapper, this.element, 'hscroll', wrapper.offsetWidth, this.element.offsetWidth);
+    };
+    MenuBase.prototype.wireEvents = function () {
+        var wrapper = this.getWrapper();
+        if (this.target) {
+            var target = void 0;
+            var targetElems = selectAll(this.target);
+            for (var i = 0, len = targetElems.length; i < len; i++) {
+                target = targetElems[i];
+                if (Browser.isIos) {
+                    new Touch(target, { tapHold: this.touchHandler.bind(this) });
+                }
+                else {
+                    EventHandler.add(target, 'contextmenu', this.cmenuHandler, this);
+                }
+            }
+            this.targetElement = target;
+            for (var _i = 0, _a = getScrollableParent(this.targetElement); _i < _a.length; _i++) {
+                var parent_1 = _a[_i];
+                EventHandler.add(parent_1, 'scroll', this.scrollHandler, this);
+            }
+        }
+        if (!Browser.isDevice) {
+            this.delegateMoverHandler = this.moverHandler.bind(this);
+            this.delegateMouseDownHandler = this.mouseDownHandler.bind(this);
+            EventHandler.add(this.isMenu ? document : wrapper, 'mouseover', this.delegateMoverHandler, this);
+            EventHandler.add(document, 'mousedown', this.delegateMouseDownHandler, this);
+        }
+        this.delegateClickHandler = this.clickHandler.bind(this);
+        EventHandler.add(document, 'click', this.delegateClickHandler, this);
+        this.wireKeyboardEvent(wrapper);
+        this.rippleFn = rippleEffect(wrapper, { selector: '.' + ITEM });
+    };
+    MenuBase.prototype.wireKeyboardEvent = function (element) {
+        var keyConfigs = {
+            downarrow: DOWNARROW,
+            uparrow: UPARROW,
+            enter: ENTER,
+            leftarrow: LEFTARROW,
+            rightarrow: RIGHTARROW,
+            escape: ESCAPE
+        };
+        if (this.isMenu) {
+            keyConfigs.home = HOME;
+            keyConfigs.end = END;
+        }
+        new KeyboardEvents(element, {
+            keyAction: this.keyBoardHandler.bind(this),
+            keyConfigs: keyConfigs
+        });
+    };
+    MenuBase.prototype.mouseDownHandler = function (e) {
+        if (closest(e.target, '.e-' + this.getModuleName() + '-wrapper') !== this.getWrapper()
+            && !closest(e.target, '.e-' + this.getModuleName() + '-popup')) {
+            this.closeMenu(this.navIdx.length, e);
+        }
+    };
+    MenuBase.prototype.keyBoardHandler = function (e) {
+        var actionName = '';
+        var trgt = e.target;
+        var actionNeeded = this.isMenu && !this.element.classList.contains('e-vertical') && this.navIdx.length < 1;
+        e.preventDefault();
+        if (this.enableScrolling && e.keyCode === 13 && trgt.classList.contains('e-scroll-nav')) {
+            this.removeLIStateByClass([FOCUSED, SELECTED], [closest(trgt, '.e-' + this.getModuleName() + '-wrapper')]);
+        }
+        if (actionNeeded) {
+            switch (e.action) {
+                case RIGHTARROW:
+                    actionName = RIGHTARROW;
+                    e.action = DOWNARROW;
+                    break;
+                case LEFTARROW:
+                    actionName = LEFTARROW;
+                    e.action = UPARROW;
+                    break;
+                case DOWNARROW:
+                    actionName = DOWNARROW;
+                    e.action = RIGHTARROW;
+                    break;
+                case UPARROW:
+                    actionName = UPARROW;
+                    e.action = '';
+                    break;
+            }
+        }
+        else if (this.enableRtl) {
+            switch (e.action) {
+                case LEFTARROW:
+                    actionNeeded = true;
+                    actionName = LEFTARROW;
+                    e.action = RIGHTARROW;
+                    break;
+                case RIGHTARROW:
+                    actionNeeded = true;
+                    actionName = RIGHTARROW;
+                    e.action = LEFTARROW;
+                    break;
+            }
+        }
+        switch (e.action) {
+            case DOWNARROW:
+            case UPARROW:
+            case END:
+            case HOME:
+                this.upDownKeyHandler(e);
+                break;
+            case RIGHTARROW:
+                this.rightEnterKeyHandler(e);
+                break;
+            case LEFTARROW:
+                this.leftEscKeyHandler(e);
+                break;
+            case ENTER:
+                this.rightEnterKeyHandler(e);
+                break;
+            case ESCAPE:
+                this.leftEscKeyHandler(e);
+                break;
+        }
+        if (actionNeeded) {
+            e.action = actionName;
+        }
+    };
+    MenuBase.prototype.upDownKeyHandler = function (e) {
+        var cul = this.getUlByNavIdx();
+        var defaultIdx = (e.action === DOWNARROW || e.action === HOME) ? 0 : cul.childElementCount - 1;
+        var fliIdx = defaultIdx;
+        var fli = this.getLIByClass(cul, FOCUSED);
+        if (fli) {
+            if (e.action !== END && e.action !== HOME) {
+                fliIdx = this.getIdx(cul, fli);
+            }
+            fli.classList.remove(FOCUSED);
+            if (e.action !== END && e.action !== HOME) {
+                e.action === DOWNARROW ? fliIdx++ : fliIdx--;
+                if (fliIdx === (e.action === DOWNARROW ? cul.childElementCount : -1)) {
+                    fliIdx = defaultIdx;
+                }
+            }
+        }
+        var cli = cul.children[fliIdx];
+        fliIdx = this.isValidLI(cli, fliIdx, e.action);
+        cul.children[fliIdx].classList.add(FOCUSED);
+        cul.children[fliIdx].focus();
+    };
+    MenuBase.prototype.isValidLI = function (cli, index, action) {
+        var wrapper = this.getWrapper();
+        var cul = this.getUlByNavIdx();
+        if (cli.classList.contains(SEPARATOR) || cli.classList.contains(DISABLED) || cli.classList.contains(HIDE)) {
+            ((action === DOWNARROW) || (action === RIGHTARROW)) ? index++ : index--;
+        }
+        cli = cul.children[index];
+        if (cli.classList.contains(SEPARATOR) || cli.classList.contains(DISABLED) || cli.classList.contains(HIDE)) {
+            index = this.isValidLI(cli, index, action);
+        }
+        return index;
+    };
+    MenuBase.prototype.getUlByNavIdx = function (navIdxLen) {
+        if (navIdxLen === void 0) { navIdxLen = this.navIdx.length; }
+        if (this.isMenu) {
+            var popup = [this.getWrapper()].concat([].slice.call(selectAll('.' + POPUP)))[navIdxLen];
+            return isNullOrUndefined(popup) ? null : select('.e-menu-parent', popup);
+        }
+        else {
+            return this.getWrapper().children[navIdxLen];
+        }
+    };
+    MenuBase.prototype.rightEnterKeyHandler = function (e) {
+        var eventArgs;
+        var cul = this.getUlByNavIdx();
+        var fli = this.getLIByClass(cul, FOCUSED);
+        if (fli) {
+            var fliIdx = this.getIdx(cul, fli);
+            var navIdx = this.navIdx.concat(fliIdx);
+            var index = void 0;
+            var item = this.getItem(navIdx);
+            if (item.items.length) {
+                this.navIdx.push(fliIdx);
+                this.openMenu(fli, item, null, null, e);
+                fli.classList.remove(FOCUSED);
+                if (this.isMenu && this.navIdx.length === 1) {
+                    this.removeLIStateByClass([SELECTED], [this.getWrapper()]);
+                }
+                fli.classList.add(SELECTED);
+                if (e.action === ENTER) {
+                    eventArgs = { element: fli, item: item };
+                    this.trigger('select', eventArgs);
+                }
+                fli.focus();
+                cul = this.getUlByNavIdx();
+                index = this.isValidLI(cul.children[0], 0, e.action);
+                cul.children[index].classList.add(FOCUSED);
+                cul.children[index].focus();
+            }
+            else {
+                if (e.action === ENTER) {
+                    if (this.isMenu && this.navIdx.length === 0) {
+                        this.removeLIStateByClass([SELECTED], [this.getWrapper()]);
+                    }
+                    else {
+                        fli.classList.remove(FOCUSED);
+                    }
+                    fli.classList.add(SELECTED);
+                    eventArgs = { element: fli, item: item };
+                    this.trigger('select', eventArgs);
+                    this.closeMenu(null, e);
+                }
+            }
+        }
+    };
+    MenuBase.prototype.leftEscKeyHandler = function (e) {
+        if (this.navIdx.length) {
+            this.closeMenu(this.navIdx.length, e);
+            var cul = this.getUlByNavIdx();
+            var sli = this.getLIByClass(cul, SELECTED);
+            if (sli) {
+                sli.setAttribute('aria-expanded', 'false');
+                sli.classList.remove(SELECTED);
+                sli.classList.add(FOCUSED);
+                sli.focus();
+            }
+        }
+        else {
+            if (e.action === ESCAPE) {
+                this.closeMenu(null, e);
+            }
+        }
+    };
+    MenuBase.prototype.scrollHandler = function (e) {
+        this.closeMenu(null, e);
+    };
+    MenuBase.prototype.touchHandler = function (e) {
+        this.isTapHold = true;
+        this.cmenuHandler(e.originalEvent);
+    };
+    MenuBase.prototype.cmenuHandler = function (e) {
+        e.preventDefault();
+        this.closeMenu(null, e);
+        if (this.canOpen(e.target)) {
+            if (e.changedTouches) {
+                this.openMenu(null, null, e.changedTouches[0].pageY + 1, e.changedTouches[0].pageX + 1, e);
+            }
+            else {
+                this.openMenu(null, null, e.pageY + 1, e.pageX + 1, e);
+            }
+        }
+    };
+    MenuBase.prototype.closeMenu = function (ulIndex, e) {
+        if (ulIndex === void 0) { ulIndex = 0; }
+        if (e === void 0) { e = null; }
+        if (this.isMenuVisible()) {
+            var ul = void 0;
+            var sli = void 0;
+            var item = void 0;
+            var items = void 0;
+            var closeArgs = void 0;
+            var beforeCloseArgs = void 0;
+            var popupEle = void 0;
+            var popupObj = void 0;
+            var wrapper = this.getWrapper();
+            var popups = this.getPopups();
+            for (var cnt = this.isMenu ? popups.length + 1 : wrapper.childElementCount; cnt > ulIndex; cnt--) {
+                ul = this.isMenu && cnt !== 1 ? select('.e-ul', popups[cnt - 2])
+                    : selectAll('.e-menu-parent', wrapper)[cnt - 1];
+                if (this.isMenu && ul.classList.contains('e-menu')) {
+                    sli = this.getLIByClass(ul, SELECTED);
+                    if (sli) {
+                        sli.classList.remove(SELECTED);
+                    }
+                    break;
+                }
+                item = this.navIdx.length ? this.getItem(this.navIdx) : null;
+                items = item ? item.items : this.items;
+                beforeCloseArgs = { element: ul, parentItem: item, items: items, event: e, cancel: false };
+                this.trigger('beforeClose', beforeCloseArgs);
+                if (!beforeCloseArgs.cancel) {
+                    if (this.isMenu) {
+                        popupEle = closest(ul, '.' + POPUP);
+                        this.unWireKeyboardEvent(popupEle);
+                        this.destroyScrollObj(getInstance(popupEle.children[0], VScroll), popupEle.children[0]);
+                        popupObj = getInstance(popupEle, Popup);
+                        popupObj.hide();
+                        popupObj.destroy();
+                        detach(popupEle);
+                    }
+                    else {
+                        this.toggleAnimation(ul, false);
+                    }
+                    this.navIdx.length = ulIndex ? ulIndex - 1 : ulIndex;
+                    closeArgs = { element: ul, parentItem: item, items: items };
+                    this.trigger('onClose', closeArgs);
+                }
+            }
+        }
+    };
+    MenuBase.prototype.destroyScrollObj = function (scrollObj, scrollEle) {
+        if (scrollObj) {
+            scrollObj.destroy();
+            scrollEle.parentElement.appendChild(select('.e-menu-parent', scrollEle));
+            detach(scrollEle);
+        }
+    };
+    MenuBase.prototype.getPopups = function () {
+        return [].slice.call(document.querySelectorAll('.' + POPUP));
+    };
+    MenuBase.prototype.isMenuVisible = function () {
+        return (this.navIdx.length > 0 || (this.element.classList.contains('e-contextmenu') && isVisible(this.element).valueOf()));
+    };
+    MenuBase.prototype.canOpen = function (target) {
+        var canOpen = true;
+        if (this.filter) {
+            canOpen = false;
+            var filter = this.filter.split(' ');
+            for (var i = 0, len = filter.length; i < len; i++) {
+                if (closest(target, '.' + filter[i])) {
+                    canOpen = true;
+                    break;
+                }
+            }
+        }
+        return canOpen;
+    };
+    MenuBase.prototype.openMenu = function (li, item, top, left, e, target) {
+        var _this = this;
+        if (top === void 0) { top = 0; }
+        if (left === void 0) { left = 0; }
+        if (e === void 0) { e = null; }
+        if (target === void 0) { target = this.targetElement; }
+        var ul;
+        var popupObj;
+        var popupWrapper;
+        var eventArgs;
+        var wrapper = this.getWrapper();
+        if (li) {
+            ul = this.createItems(item[this.getField('children', this.navIdx.length - 1)]);
+            if (!this.isMenu && Browser.isDevice) {
+                wrapper.lastChild.style.display = 'none';
+                var data = {
+                    text: item[this.getField('text')].toString(), iconCss: ICONS + ' e-previous'
+                };
+                var hdata = new MenuItem(this.items[0], null, data, true);
+                var hli = this.createItems([hdata]).children[0];
+                hli.classList.add(HEADER);
+                ul.insertBefore(hli, ul.children[0]);
+            }
+            if (this.isMenu) {
+                popupWrapper = this.createElement('div', {
+                    className: 'e-' + this.getModuleName() + '-wrapper ' + POPUP, id: li.id + '-menu-popup'
+                });
+                document.body.appendChild(popupWrapper);
+                var isNestedOrVerticalMenu = this.element.classList.contains('e-vertical') || this.navIdx.length !== 1;
+                popupObj = new Popup(popupWrapper, {
+                    relateTo: li,
+                    collision: { X: isNestedOrVerticalMenu || this.enableRtl ? 'none' : 'flip', Y: 'fit' },
+                    position: isNestedOrVerticalMenu ? { X: 'right', Y: 'top' } : { X: 'left', Y: 'bottom' },
+                    targetType: 'relative',
+                    enableRtl: this.enableRtl,
+                    content: ul,
+                    open: function () {
+                        var scrollEle = select('.e-menu-vscroll', popupObj.element);
+                        if (scrollEle) {
+                            scrollEle.style.height = 'inherit';
+                            scrollEle.style.maxHeight = '';
+                        }
+                        var ul = select('.e-ul', popupObj.element);
+                        popupObj.element.style.maxHeight = '';
+                        ul.focus();
+                        _this.triggerOpen(ul);
+                    }
+                });
+                if (this.cssClass) {
+                    addClass([popupWrapper], this.cssClass.split(' '));
+                }
+                popupObj.hide();
+                eventArgs = this.triggerBeforeOpen(li, ul, item, e, 0, 0);
+                top = eventArgs.top;
+                left = eventArgs.left;
+                popupWrapper.style.display = 'block';
+                popupWrapper.style.maxHeight = popupWrapper.getBoundingClientRect().height + 'px';
+                this.addScrolling(popupWrapper, ul, 'vscroll', popupWrapper.offsetHeight, ul.offsetHeight);
+                this.checkScrollOffset(e);
+                var collide = void 0;
+                if (!left && !top) {
+                    popupObj.refreshPosition(li, true);
+                    left = parseInt(popupWrapper.style.left, 10);
+                    top = parseInt(popupWrapper.style.top, 10);
+                    if (this.enableRtl) {
+                        left = isNestedOrVerticalMenu ? left - popupWrapper.offsetWidth - li.parentElement.offsetWidth
+                            : left - popupWrapper.offsetWidth + li.offsetWidth;
+                    }
+                    collide = isCollide(popupWrapper, null, left, top);
+                    if ((isNestedOrVerticalMenu || this.enableRtl) && (collide.indexOf('right') > -1 || collide.indexOf('left') > -1)) {
+                        popupObj.collision.X = 'none';
+                        left = this.enableRtl ? calculatePosition(li, isNestedOrVerticalMenu ? 'right' : 'left', 'top').left : left -
+                            popupWrapper.offsetWidth - closest(li, '.e-' + this.getModuleName() + '-wrapper').offsetWidth;
+                    }
+                    collide = isCollide(popupWrapper, null, left, top);
+                    if (collide.indexOf('left') > -1 || collide.indexOf('right') > -1) {
+                        left = this.callFit(popupWrapper, true, false, top, left).left;
+                    }
+                    popupWrapper.style.left = left + 'px';
+                }
+                else {
+                    popupObj.collision = { X: 'none', Y: 'none' };
+                }
+                popupWrapper.style.display = '';
+            }
+            else {
+                ul.style.zIndex = this.element.style.zIndex;
+                wrapper.appendChild(ul);
+                eventArgs = this.triggerBeforeOpen(li, ul, item, e, top, left);
+                top = eventArgs.top;
+                left = eventArgs.left;
+            }
+        }
+        else {
+            ul = this.element;
+            ul.style.zIndex = getZindexPartial(target ? target : this.element).toString();
+            eventArgs = this.triggerBeforeOpen(li, ul, item, e, top, left);
+            top = eventArgs.top;
+            left = eventArgs.left;
+        }
+        if (eventArgs.cancel) {
+            this.navIdx.pop();
+        }
+        else {
+            if (this.isMenu) {
+                this.wireKeyboardEvent(popupWrapper);
+                rippleEffect(popupWrapper, { selector: '.' + ITEM });
+                popupWrapper.style.left = left + 'px';
+                popupWrapper.style.top = top + 'px';
+                var animationOptions = this.animationSettings.effect !== 'None' ? {
+                    name: this.animationSettings.effect, duration: this.animationSettings.duration,
+                    timingFunction: this.animationSettings.easing
+                } : null;
+                popupObj.show(animationOptions, li);
+            }
+            else {
+                this.setPosition(li, ul, top, left);
+                this.toggleAnimation(ul);
+            }
+        }
+    };
+    MenuBase.prototype.callFit = function (element, x, y, top, left) {
+        return fit(element, null, { X: x, Y: y }, { top: top, left: left });
+    };
+    MenuBase.prototype.triggerBeforeOpen = function (li, ul, item, e, top, left) {
+        var navIdx = this.getIndex(li ? li.id : null, true);
+        var items = li ? item[this.getField('children', this.navIdx.length - 1)] : this.items;
+        var eventArgs = {
+            element: ul, items: items, parentItem: item, event: e, cancel: false, top: top, left: left
+        };
+        this.trigger('beforeOpen', eventArgs);
+        return eventArgs;
+    };
+    MenuBase.prototype.checkScrollOffset = function (e) {
+        var wrapper = this.getWrapper();
+        if (wrapper.children[0].classList.contains('e-menu-hscroll') && this.navIdx.length === 1) {
+            var trgt = isNullOrUndefined(e) ? this.element : closest(e.target, '.' + ITEM);
+            var offsetEle = select('.e-hscroll-bar', wrapper);
+            var offsetLeft = void 0;
+            var offsetRight = void 0;
+            if (offsetEle.scrollLeft > trgt.offsetLeft) {
+                offsetEle.scrollLeft -= (offsetEle.scrollLeft - trgt.offsetLeft);
+            }
+            offsetLeft = offsetEle.scrollLeft + offsetEle.offsetWidth;
+            offsetRight = trgt.offsetLeft + trgt.offsetWidth;
+            if (offsetLeft < offsetRight) {
+                offsetEle.scrollLeft += (offsetRight - offsetLeft);
+            }
+        }
+    };
+    MenuBase.prototype.addScrolling = function (wrapper, ul, scrollType, wrapperOffset, contentOffset) {
+        if (this.enableScrolling && wrapperOffset < contentOffset) {
+            var scrollEle = this.createElement('div', { className: 'e-menu-' + scrollType });
+            wrapper.appendChild(scrollEle);
+            scrollEle.appendChild(ul);
+            scrollEle.style.maxHeight = wrapper.style.maxHeight;
+            var scrollObj = void 0;
+            wrapper.style.overflow = 'hidden';
+            if (scrollType === 'vscroll') {
+                scrollObj = new VScroll({ enableRtl: this.enableRtl }, scrollEle);
+                scrollObj.scrollStep = select('.e-' + scrollType + '-bar', wrapper).offsetHeight / 2;
+            }
+            else {
+                scrollObj = new HScroll({ enableRtl: this.enableRtl }, scrollEle);
+                scrollObj.scrollStep = select('.e-' + scrollType + '-bar', wrapper).offsetWidth;
+            }
+        }
+    };
+    MenuBase.prototype.setPosition = function (li, ul, top, left) {
+        var px = 'px';
+        this.toggleVisiblity(ul);
+        if (ul === this.element || (!isNullOrUndefined(left) && !isNullOrUndefined(top))) {
+            var collide = isCollide(ul, null, left, top);
+            if (collide.indexOf('right') > -1) {
+                left = left - ul.offsetWidth;
+            }
+            if (collide.indexOf('bottom') > -1) {
+                var offset = this.callFit(ul, false, true, top, left);
+                top = offset.top - 20;
+            }
+            collide = isCollide(ul, null, left, top);
+            if (collide.indexOf('left') > -1) {
+                var offset = this.callFit(ul, true, false, top, left);
+                left = offset.left;
+            }
+        }
+        else {
+            if (Browser.isDevice) {
+                top = Number(this.element.style.top.replace(px, ''));
+                left = Number(this.element.style.left.replace(px, ''));
+            }
+            else {
+                var x = this.enableRtl ? 'left' : 'right';
+                var offset = calculatePosition(li, x, 'top');
+                top = offset.top;
+                left = offset.left;
+                var collide = isCollide(ul, null, this.enableRtl ? left - ul.offsetWidth : left, top);
+                var xCollision = collide.indexOf('left') > -1 || collide.indexOf('right') > -1;
+                if (xCollision) {
+                    offset = calculatePosition(li, this.enableRtl ? 'right' : 'left', 'top');
+                    left = offset.left;
+                }
+                if (this.enableRtl || xCollision) {
+                    left = (this.enableRtl && xCollision) ? left : left - ul.offsetWidth;
+                }
+                if (collide.indexOf('bottom') > -1) {
+                    offset = this.callFit(ul, false, true, top, left);
+                    top = offset.top;
+                }
+            }
+        }
+        this.toggleVisiblity(ul, false);
+        ul.style.top = top + px;
+        ul.style.left = left + px;
+    };
+    MenuBase.prototype.toggleVisiblity = function (ul, isVisible$$1) {
+        if (isVisible$$1 === void 0) { isVisible$$1 = true; }
+        ul.style.visibility = isVisible$$1 ? 'hidden' : '';
+        ul.style.display = isVisible$$1 ? 'block' : 'none';
+    };
+    MenuBase.prototype.createItems = function (items) {
+        var _this = this;
+        var level = this.navIdx ? this.navIdx.length : 0;
+        var showIcon = this.hasField(items, this.getField('iconCss', level));
+        var id = 'id';
+        var listBaseOptions = {
+            showIcon: showIcon,
+            moduleName: 'menu',
+            fields: this.getFields(level),
+            template: this.template,
+            itemCreating: function (args) {
+                if (!args.curData[args.fields[id]]) {
+                    args.curData[args.fields[id]] = getUniqueID('menuitem');
+                    _this.clearChanges();
+                }
+                args.curData.htmlAttributes = {
+                    role: 'menuitem',
+                    tabindex: '-1'
+                };
+                if (_this.isMenu && !args.curData[_this.getField('separator', level)]) {
+                    args.curData.htmlAttributes['aria-label'] = args.curData[args.fields.text];
+                }
+            },
+            itemCreated: function (args) {
+                if (args.curData[_this.getField('separator', level)]) {
+                    args.item.classList.add(SEPARATOR);
+                    args.item.removeAttribute('role');
+                }
+                if (showIcon && !args.curData[args.fields.iconCss]
+                    && !args.curData[_this.getField('separator', level)]) {
+                    args.item.classList.add('e-blankicon');
+                }
+                if (args.curData[args.fields.child]
+                    && args.curData[args.fields.child].length) {
+                    var span = _this.createElement('span', { className: ICONS + ' ' + CARET });
+                    args.item.appendChild(span);
+                    args.item.setAttribute('aria-haspopup', 'true');
+                    args.item.setAttribute('aria-expanded', 'false');
+                    if (!_this.isMenu) {
+                        args.item.removeAttribute('role');
+                    }
+                    args.item.classList.add('e-menu-caret-icon');
+                }
+                if (_this.isMenu && _this.template) {
+                    args.item.setAttribute('id', args.curData[args.fields.id].toString());
+                    args.item.removeAttribute('data-uid');
+                }
+                var eventArgs = { item: args.curData, element: args.item };
+                _this.trigger('beforeItemRender', eventArgs);
+            }
+        };
+        var ul = ListBase.createList(this.createElement, items, listBaseOptions, !this.template);
+        ul.setAttribute('tabindex', '0');
+        if (this.isMenu) {
+            ul.setAttribute('role', 'menu');
+        }
+        return ul;
+    };
+    MenuBase.prototype.moverHandler = function (e) {
+        var wrapper = this.getWrapper();
+        var trgt = e.target;
+        var cli = this.getLI(trgt);
+        if (cli && closest(cli, '.e-' + this.getModuleName() + '-wrapper')) {
+            this.removeLIStateByClass([FOCUSED], this.isMenu ? [wrapper].concat(this.getPopups()) : [wrapper]);
+            cli.classList.add(FOCUSED);
+            if (!this.showItemOnClick) {
+                this.clickHandler(e);
+            }
+        }
+        if (this.isMenu) {
+            if ((trgt.parentElement !== wrapper && !closest(trgt, '.e-' + this.getModuleName() + '-popup')) && !cli) {
+                this.removeLIStateByClass([FOCUSED, SELECTED], [wrapper]);
+                if (this.navIdx.length) {
+                    this.closeMenu(null, e);
+                }
+            }
+            wrapper = closest(trgt, '.e-menu-vscroll');
+            if (trgt.tagName === 'DIV' && wrapper) {
+                this.removeLIStateByClass([FOCUSED, SELECTED], [wrapper]);
+            }
+        }
+    };
+    MenuBase.prototype.removeLIStateByClass = function (classList$$1, element) {
+        var li;
+        var _loop_1 = function (i) {
+            classList$$1.forEach(function (className) {
+                li = select('.' + className, element[i]);
+                if (li) {
+                    li.classList.remove(className);
+                }
+            });
+        };
+        for (var i = 0; i < element.length; i++) {
+            _loop_1(i);
+        }
+    };
+    MenuBase.prototype.getField = function (propName, level) {
+        if (level === void 0) { level = 0; }
+        var fieldName = this.fields[propName];
+        return typeof fieldName === 'string' ? fieldName :
+            (!fieldName[level] ? fieldName[fieldName.length - 1].toString()
+                : fieldName[level].toString());
+    };
+    MenuBase.prototype.getFields = function (level) {
+        if (level === void 0) { level = 0; }
+        return {
+            id: this.getField('itemId', level),
+            iconCss: this.getField('iconCss', level),
+            text: this.getField('text', level),
+            url: this.getField('url', level),
+            child: this.getField('children', level),
+            separator: this.getField('separator', level)
+        };
+    };
+    MenuBase.prototype.hasField = function (items, field) {
+        for (var i = 0, len = items.length; i < len; i++) {
+            if (items[i][field]) {
+                return true;
+            }
+        }
+        return false;
+    };
+    MenuBase.prototype.clickHandler = function (e) {
+        if (this.isTapHold) {
+            this.isTapHold = false;
+        }
+        else {
+            var wrapper = this.getWrapper();
+            var trgt = e.target;
+            var cli = this.getLI(trgt);
+            var cliWrapper = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : null;
+            var isInstLI = cli && cliWrapper && (wrapper.firstElementChild.id === cliWrapper.firstElementChild.id || this.isMenu);
+            if (isInstLI && e.type === 'click' && !cli.classList.contains(HEADER)) {
+                this.setLISelected(cli);
+                var navIdx = this.getIndex(cli.id, true);
+                var item = this.getItem(navIdx);
+                var eventArgs = { element: cli, item: item };
+                this.trigger('select', eventArgs);
+            }
+            if (isInstLI && (e.type === 'mouseover' || Browser.isDevice || this.showItemOnClick)) {
+                var ul = void 0;
+                if (cli.classList.contains(HEADER)) {
+                    ul = wrapper.children[this.navIdx.length - 1];
+                    this.toggleAnimation(ul);
+                    var sli = this.getLIByClass(ul, SELECTED);
+                    if (sli) {
+                        sli.classList.remove(SELECTED);
+                    }
+                    detach(cli.parentNode);
+                    this.navIdx.pop();
+                }
+                else {
+                    if (!cli.classList.contains(SEPARATOR)) {
+                        var showSubMenu = true;
+                        var cul = cli.parentNode;
+                        var cliIdx = this.getIdx(cul, cli);
+                        if (this.isMenu || !Browser.isDevice) {
+                            var culIdx = this.isMenu ? Array.prototype.indexOf.call([wrapper].concat(this.getPopups()), closest(cul, '.' + 'e-' + this.getModuleName() + '-wrapper'))
+                                : this.getIdx(wrapper, cul);
+                            if (this.navIdx[culIdx] === cliIdx) {
+                                showSubMenu = false;
+                            }
+                            if (culIdx !== this.navIdx.length && (e.type !== 'mouseover' || showSubMenu)) {
+                                var sli = this.getLIByClass(cul, SELECTED);
+                                if (sli) {
+                                    sli.classList.remove(SELECTED);
+                                }
+                                this.closeMenu(culIdx + 1, e);
+                            }
+                        }
+                        if (showSubMenu) {
+                            var idx = this.navIdx.concat(cliIdx);
+                            var item = this.getItem(idx);
+                            if (item[this.getField('children', idx.length - 1)] &&
+                                item[this.getField('children', idx.length - 1)].length) {
+                                if (e.type === 'mouseover' || (Browser.isDevice && this.isMenu)) {
+                                    this.setLISelected(cli);
+                                }
+                                cli.setAttribute('aria-expanded', 'true');
+                                this.navIdx.push(cliIdx);
+                                this.openMenu(cli, item, null, null, e);
+                            }
+                            else {
+                                if (e.type !== 'mouseover') {
+                                    this.closeMenu(null, e);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else {
+                if (this.isMenu && trgt.tagName === 'DIV' && this.navIdx.length && closest(trgt, '.e-menu-vscroll')) {
+                    var popupEle = closest(trgt, '.' + POPUP);
+                    var cIdx = Array.prototype.indexOf.call(this.getPopups(), popupEle) + 1;
+                    if (cIdx < this.navIdx.length) {
+                        this.closeMenu(cIdx + 1, e);
+                        this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]);
+                    }
+                }
+                else {
+                    if (trgt.tagName !== 'UL' || trgt.parentElement !== wrapper) {
+                        if (!cli || !cli.querySelector('.' + CARET)) {
+                            this.closeMenu(null, e);
+                        }
+                    }
+                }
+            }
+        }
+    };
+    MenuBase.prototype.setLISelected = function (li) {
+        var sli = this.getLIByClass(li.parentElement, SELECTED);
+        if (sli) {
+            sli.classList.remove(SELECTED);
+        }
+        if (!this.isMenu) {
+            li.classList.remove(FOCUSED);
+        }
+        li.classList.add(SELECTED);
+    };
+    MenuBase.prototype.getLIByClass = function (ul, classname) {
+        for (var i = 0, len = ul.children.length; i < len; i++) {
+            if (ul.children[i].classList.contains(classname)) {
+                return ul.children[i];
+            }
+        }
+        return null;
+    };
+    MenuBase.prototype.getItem = function (navIdx) {
+        navIdx = navIdx.slice();
+        var idx = navIdx.pop();
+        var items = this.getItems(navIdx);
+        return items[idx];
+    };
+    MenuBase.prototype.getItems = function (navIdx) {
+        var items = this.items;
+        for (var i = 0; i < navIdx.length; i++) {
+            items = items[navIdx[i]][this.getField('children', i)];
+        }
+        return items;
+    };
+    MenuBase.prototype.getIdx = function (ul, li, skipHdr) {
+        if (skipHdr === void 0) { skipHdr = true; }
+        var idx = Array.prototype.indexOf.call(ul.children, li);
+        if (skipHdr && ul.children[0].classList.contains(HEADER)) {
+            idx--;
+        }
+        return idx;
+    };
+    MenuBase.prototype.getLI = function (elem) {
+        if (elem.tagName === 'LI' && elem.classList.contains('e-menu-item')) {
+            return elem;
+        }
+        return closest(elem, 'li.e-menu-item');
+    };
+    /**
+     * Called internally if any of the property value changed
+     * @private
+     * @param {MenuBaseModel} newProp
+     * @param {MenuBaseModel} oldProp
+     * @returns void
+     */
+    MenuBase.prototype.onPropertyChanged = function (newProp, oldProp) {
+        var _this = this;
+        var wrapper = this.getWrapper();
+        var _loop_2 = function (prop) {
+            switch (prop) {
+                case 'cssClass':
+                    if (oldProp.cssClass) {
+                        removeClass([wrapper], oldProp.cssClass.split(' '));
+                    }
+                    if (newProp.cssClass) {
+                        addClass([wrapper], newProp.cssClass.split(' '));
+                    }
+                    break;
+                case 'enableRtl':
+                    wrapper.classList.toggle(RTL);
+                    break;
+                case 'showItemOnClick':
+                    this_1.unWireEvents();
+                    this_1.showItemOnClick = newProp.showItemOnClick;
+                    this_1.wireEvents();
+                    break;
+                case 'enableScrolling':
+                    if (newProp.enableScrolling) {
+                        var ul_1;
+                        this_1.element.classList.contains('e-vertical') ?
+                            this_1.addScrolling(wrapper, this_1.element, 'vscroll', wrapper.offsetHeight, this_1.element.offsetHeight)
+                            : this_1.addScrolling(wrapper, this_1.element, 'hscroll', wrapper.offsetWidth, this_1.element.offsetWidth);
+                        this_1.getPopups().forEach(function (wrapper) {
+                            ul_1 = select('.e-ul', wrapper);
+                            _this.addScrolling(wrapper, ul_1, 'vscroll', wrapper.offsetHeight, ul_1.offsetHeight);
+                        });
+                    }
+                    else {
+                        var ul_2 = wrapper.children[0];
+                        this_1.element.classList.contains('e-vertical') ? this_1.destroyScrollObj(getInstance(ul_2, VScroll), ul_2)
+                            : this_1.destroyScrollObj(getInstance(ul_2, HScroll), ul_2);
+                        wrapper.style.overflow = '';
+                        wrapper.appendChild(this_1.element);
+                        this_1.getPopups().forEach(function (wrapper) {
+                            ul_2 = wrapper.children[0];
+                            _this.destroyScrollObj(getInstance(ul_2, VScroll), ul_2);
+                            wrapper.style.overflow = '';
+                        });
+                    }
+                    break;
+                case 'items':
+                    var idx = void 0;
+                    var navIdx = void 0;
+                    var item = void 0;
+                    if (!Object.keys(oldProp.items).length) {
+                        var ul_3 = this_1.element;
+                        ul_3.innerHTML = '';
+                        var lis = [].slice.call(this_1.createItems(newProp.items).children);
+                        lis.forEach(function (li) {
+                            ul_3.appendChild(li);
+                        });
+                        for (var i = 1, count = wrapper.childElementCount; i < count; i++) {
+                            detach(wrapper.lastElementChild);
+                        }
+                        this_1.navIdx = [];
+                    }
+                    else {
+                        var keys = Object.keys(newProp.items);
+                        for (var i = 0; i < keys.length; i++) {
+                            navIdx = this_1.getChangedItemIndex(newProp, [], Number(keys[i]));
+                            if (navIdx.length <= this_1.getWrapper().children.length) {
+                                idx = navIdx.pop();
+                                item = this_1.getItems(navIdx);
+                                this_1.insertAfter([item[idx]], item[idx].text);
+                                this_1.removeItem(item, navIdx, idx);
+                            }
+                            navIdx.length = 0;
+                        }
+                    }
+                    break;
+            }
+        };
+        var this_1 = this;
+        for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
+            var prop = _a[_i];
+            _loop_2(prop);
+        }
+    };
+    MenuBase.prototype.getChangedItemIndex = function (newProp, index, idx) {
+        index.push(idx);
+        var key = Object.keys(newProp.items[idx]).pop();
+        if (key === 'items') {
+            var item = newProp.items[idx];
+            this.getChangedItemIndex(item, index, Number(Object.keys(item.items).pop()));
+        }
+        else {
+            if (key === 'isParentArray' && index.length > 1) {
+                index.pop();
+            }
+        }
+        return index;
+    };
+    MenuBase.prototype.removeItem = function (item, navIdx, idx) {
+        item.splice(idx, 1);
+        var uls = this.getWrapper().children;
+        if (navIdx.length < uls.length) {
+            detach(uls[navIdx.length].children[idx]);
+        }
+    };
+    /**
+     * Used to unwire the bind events.
+     * @private
+     */
+    MenuBase.prototype.unWireEvents = function () {
+        var wrapper = this.getWrapper();
+        if (this.target) {
+            var target = void 0;
+            var touchModule = void 0;
+            var targetElems = selectAll(this.target);
+            for (var i = 0, len = targetElems.length; i < len; i++) {
+                target = targetElems[i];
+                if (Browser.isIos) {
+                    touchModule = getInstance(target, Touch);
+                    if (touchModule) {
+                        touchModule.destroy();
+                    }
+                }
+                else {
+                    EventHandler.remove(target, 'contextmenu', this.cmenuHandler);
+                }
+            }
+            for (var _i = 0, _a = getScrollableParent(this.targetElement); _i < _a.length; _i++) {
+                var parent_2 = _a[_i];
+                EventHandler.remove(parent_2, 'scroll', this.scrollHandler);
+            }
+        }
+        if (!Browser.isDevice) {
+            EventHandler.remove(this.isMenu ? document : wrapper, 'mouseover', this.delegateMoverHandler);
+            EventHandler.remove(document, 'mousedown', this.delegateMouseDownHandler);
+        }
+        EventHandler.remove(document, 'click', this.delegateClickHandler);
+        this.unWireKeyboardEvent(wrapper);
+        this.rippleFn();
+    };
+    MenuBase.prototype.unWireKeyboardEvent = function (element) {
+        var keyboardModule = getInstance(element, KeyboardEvents);
+        if (keyboardModule) {
+            keyboardModule.destroy();
+        }
+    };
+    MenuBase.prototype.toggleAnimation = function (ul, isMenuOpen) {
+        var _this = this;
+        if (isMenuOpen === void 0) { isMenuOpen = true; }
+        if (this.animationSettings.effect === 'None' || !isMenuOpen) {
+            this.end(ul, isMenuOpen);
+        }
+        else {
+            this.animation.animate(ul, {
+                name: this.animationSettings.effect,
+                duration: this.animationSettings.duration,
+                timingFunction: this.animationSettings.easing,
+                begin: function (options) {
+                    options.element.style.display = 'block';
+                    options.element.style.maxHeight = options.element.getBoundingClientRect().height + 'px';
+                },
+                end: function (options) {
+                    _this.end(options.element, isMenuOpen);
+                }
+            });
+        }
+    };
+    MenuBase.prototype.triggerOpen = function (ul) {
+        var item = this.navIdx.length ? this.getItem(this.navIdx) : null;
+        var eventArgs = {
+            element: ul, parentItem: item, items: item ? item.items : this.items
+        };
+        this.trigger('onOpen', eventArgs);
+    };
+    MenuBase.prototype.end = function (ul, isMenuOpen) {
+        if (isMenuOpen) {
+            ul.style.display = 'block';
+            ul.style.maxHeight = '';
+            this.triggerOpen(ul);
+            if (ul.querySelector('.' + FOCUSED)) {
+                ul.querySelector('.' + FOCUSED).focus();
+            }
+            else {
+                var ele = void 0;
+                ele = this.getWrapper().children[this.getIdx(this.getWrapper(), ul) - 1];
+                if (ele) {
+                    ele.querySelector('.' + SELECTED).focus();
+                }
+                else {
+                    this.element.focus();
+                }
+            }
+        }
+        else {
+            if (ul === this.element) {
+                var fli = this.getLIByClass(this.element, FOCUSED);
+                if (fli) {
+                    fli.classList.remove(FOCUSED);
+                }
+                var sli = this.getLIByClass(this.element, SELECTED);
+                if (sli) {
+                    sli.classList.remove(SELECTED);
+                }
+                ul.style.display = 'none';
+            }
+            else {
+                detach(ul);
+            }
+        }
+    };
+    /**
+     * Get the properties to be maintained in the persisted state.
+     * @returns string
+     */
+    MenuBase.prototype.getPersistData = function () {
+        return '';
+    };
+    /**
+     * Get wrapper element.
+     * @returns Element
+     * @private
+     */
+    MenuBase.prototype.getWrapper = function () {
+        return closest(this.element, '.e-' + this.getModuleName() + '-wrapper');
+    };
+    MenuBase.prototype.getIndex = function (data, isUniqueId, items, nIndex, isCallBack, level) {
+        if (items === void 0) { items = this.items; }
+        if (nIndex === void 0) { nIndex = []; }
+        if (isCallBack === void 0) { isCallBack = false; }
+        if (level === void 0) { level = 0; }
+        var item;
+        level = isCallBack ? level + 1 : 0;
+        for (var i = 0, len = items.length; i < len; i++) {
+            item = items[i];
+            if ((isUniqueId ? item[this.getField('itemId', level)] : item[this.getField('text', level)]) === data) {
+                nIndex.push(i);
+                break;
+            }
+            else if (item[this.getField('children', level)]
+                && item[this.getField('children', level)].length) {
+                nIndex = this.getIndex(data, isUniqueId, item[this.getField('children', level)], nIndex, true, level);
+                if (nIndex[nIndex.length - 1] === -1) {
+                    if (i !== len - 1) {
+                        nIndex.pop();
+                    }
+                }
+                else {
+                    nIndex.unshift(i);
+                    break;
+                }
+            }
+            else {
+                if (i === len - 1) {
+                    nIndex.push(-1);
+                }
+            }
+        }
+        return (!isCallBack && nIndex[0] === -1) ? [] : nIndex;
+    };
+    /**
+     * This method is used to enable or disable the menu items in the Menu based on the items and enable argument.
+     * @param items Text items that needs to be enabled/disabled.
+     * @param enable Set `true`/`false` to enable/disable the list items.
+     * @param isUniqueId - Set `true` if it is a unique id.
+     * @returns void
+     */
+    MenuBase.prototype.enableItems = function (items, enable, isUniqueId) {
+        if (enable === void 0) { enable = true; }
+        var ul;
+        var idx;
+        var navIdx;
+        var disabled = DISABLED;
+        for (var i = 0; i < items.length; i++) {
+            navIdx = this.getIndex(items[i], isUniqueId);
+            idx = navIdx.pop();
+            ul = this.getUlByNavIdx(navIdx.length);
+            if (ul) {
+                if (enable) {
+                    if (this.isMenu) {
+                        ul.children[idx].classList.remove(disabled);
+                        ul.children[idx].removeAttribute('aria-disabled');
+                    }
+                    else {
+                        if (Browser.isDevice && !ul.classList.contains('e-contextmenu')) {
+                            ul.children[idx + 1].classList.remove(disabled);
+                        }
+                        else {
+                            ul.children[idx].classList.remove(disabled);
+                        }
+                    }
+                }
+                else {
+                    if (this.isMenu) {
+                        ul.children[idx].classList.add(disabled);
+                        ul.children[idx].setAttribute('aria-disabled', 'true');
+                    }
+                    else {
+                        if (Browser.isDevice && !ul.classList.contains('e-contextmenu')) {
+                            ul.children[idx + 1].classList.add(disabled);
+                        }
+                        else {
+                            ul.children[idx].classList.add(disabled);
+                        }
+                    }
+                }
+            }
+        }
+    };
+    /**
+     * This method is used to show the menu items in the Menu based on the items text.
+     * @param items Text items that needs to be shown.
+     * @param isUniqueId - Set `true` if it is a unique id.
+     * @returns void
+     */
+    MenuBase.prototype.showItems = function (items, isUniqueId) {
+        this.showHideItems(items, false, isUniqueId);
+    };
+    /**
+     * This method is used to hide the menu items in the Menu based on the items text.
+     * @param items Text items that needs to be hidden.
+     * @returns void
+     */
+    MenuBase.prototype.hideItems = function (items, isUniqueId) {
+        this.showHideItems(items, true, isUniqueId);
+    };
+    MenuBase.prototype.showHideItems = function (items, ishide, isUniqueId) {
+        var ul;
+        var index;
+        var navIdx;
+        for (var i = 0; i < items.length; i++) {
+            navIdx = this.getIndex(items[i], isUniqueId);
+            index = navIdx.pop();
+            ul = this.getUlByNavIdx(navIdx.length);
+            if (ul) {
+                if (ishide) {
+                    if (Browser.isDevice && !ul.classList.contains('e-contextmenu')) {
+                        ul.children[index + 1].classList.add(HIDE);
+                    }
+                    else {
+                        ul.children[index].classList.add(HIDE);
+                    }
+                }
+                else {
+                    if (Browser.isDevice && !ul.classList.contains('e-contextmenu')) {
+                        ul.children[index + 1].classList.remove(HIDE);
+                    }
+                    else {
+                        ul.children[index].classList.remove(HIDE);
+                    }
+                }
+            }
+        }
+    };
+    /**
+     * It is used to remove the menu items from the Menu based on the items text.
+     * @param items Text items that needs to be removed.
+     * @returns void
+     */
+    MenuBase.prototype.removeItems = function (items, isUniqueId) {
+        var idx;
+        var navIdx;
+        var iitems;
+        for (var i = 0; i < items.length; i++) {
+            navIdx = this.getIndex(items[i], isUniqueId);
+            idx = navIdx.pop();
+            iitems = this.getItems(navIdx);
+            this.removeItem(iitems, navIdx, idx);
+        }
+    };
+    /**
+     * It is used to insert the menu items after the specified menu item text.
+     * @param items Items that needs to be inserted.
+     * @param text Text item after that the element to be inserted.
+     * @returns void
+     */
+    MenuBase.prototype.insertAfter = function (items, text, isUniqueId) {
+        this.insertItems(items, text, isUniqueId);
+    };
+    /**
+     * It is used to insert the menu items before the specified menu item text.
+     * @param items Items that needs to be inserted.
+     * @param text Text item before that the element to be inserted.
+     * @param isUniqueId - Set `true` if it is a unique id.
+     * @returns void
+     */
+    MenuBase.prototype.insertBefore = function (items, text, isUniqueId) {
+        this.insertItems(items, text, isUniqueId, false);
+    };
+    MenuBase.prototype.insertItems = function (items, text, isUniqueId, isAfter) {
+        if (isAfter === void 0) { isAfter = true; }
+        var li;
+        var idx;
+        var navIdx;
+        var iitems;
+        var menuitem;
+        var showIcon;
+        for (var i = 0; i < items.length; i++) {
+            navIdx = this.getIndex(text, isUniqueId);
+            idx = navIdx.pop();
+            iitems = this.getItems(navIdx);
+            menuitem = new MenuItem(iitems[0], 'items', items[i], true);
+            iitems.splice(isAfter ? idx + 1 : idx, 0, menuitem);
+            var uls = this.isMenu ? [this.getWrapper()].concat(this.getPopups()) : [].slice.call(this.getWrapper().children);
+            if (navIdx.length < uls.length) {
+                idx = isAfter ? idx + 1 : idx;
+                showIcon = this.hasField(iitems, this.getField('iconCss', navIdx.length - 1));
+                li = this.createItems(iitems).children[idx];
+                var ul = this.isMenu ? select('.e-menu-parent', uls[navIdx.length]) : uls[navIdx.length];
+                ul.insertBefore(li, ul.children[idx]);
+            }
+        }
+    };
+    /**
+     * Destroys the widget.
+     * @returns void
+     */
+    MenuBase.prototype.destroy = function () {
+        var _this = this;
+        var wrapper = this.getWrapper();
+        if (wrapper) {
+            _super.prototype.destroy.call(this);
+            this.unWireEvents();
+            if (this.ngElement && !this.isMenu) {
+                this.ngElement.style.display = 'block';
+            }
+            else {
+                this.closeMenu();
+                this.element.innerHTML = '';
+                ['top', 'left', 'display', 'z-index'].forEach(function (key) {
+                    _this.element.style.removeProperty(key);
+                });
+                ['role', 'tabindex', 'class', 'style'].forEach(function (key) {
+                    if (key === 'class' && _this.element.classList.contains('e-menu-parent')) {
+                        _this.element.classList.remove('e-menu-parent');
+                    }
+                    if (['class', 'style'].indexOf(key) === -1 || !_this.element.getAttribute(key)) {
+                        _this.element.removeAttribute(key);
+                    }
+                    if (_this.isMenu && key === 'class' && _this.element.classList.contains('e-vertical')) {
+                        _this.element.classList.remove('e-vertical');
+                    }
+                });
+                wrapper.parentNode.insertBefore(this.element, wrapper);
+            }
+            if (this.isMenu && this.ngElement) {
+                detach(this.element);
+                wrapper.style.display = '';
+                wrapper.classList.remove('e-' + this.getModuleName() + '-wrapper');
+                wrapper.removeAttribute('data-ripple');
+            }
+            else {
+                detach(wrapper);
+            }
+        }
+    };
+    __decorate$2([
+        Event()
+    ], MenuBase.prototype, "beforeItemRender", void 0);
+    __decorate$2([
+        Event()
+    ], MenuBase.prototype, "beforeOpen", void 0);
+    __decorate$2([
+        Event()
+    ], MenuBase.prototype, "onOpen", void 0);
+    __decorate$2([
+        Event()
+    ], MenuBase.prototype, "beforeClose", void 0);
+    __decorate$2([
+        Event()
+    ], MenuBase.prototype, "onClose", void 0);
+    __decorate$2([
+        Event()
+    ], MenuBase.prototype, "select", void 0);
+    __decorate$2([
+        Event()
+    ], MenuBase.prototype, "created", void 0);
+    __decorate$2([
+        Property('')
+    ], MenuBase.prototype, "cssClass", void 0);
+    __decorate$2([
+        Property(false)
+    ], MenuBase.prototype, "showItemOnClick", void 0);
+    __decorate$2([
+        Property('')
+    ], MenuBase.prototype, "target", void 0);
+    __decorate$2([
+        Property('')
+    ], MenuBase.prototype, "filter", void 0);
+    __decorate$2([
+        Property(null)
+    ], MenuBase.prototype, "template", void 0);
+    __decorate$2([
+        Property(false)
+    ], MenuBase.prototype, "enableScrolling", void 0);
+    __decorate$2([
+        Complex({}, FieldSettings)
+    ], MenuBase.prototype, "fields", void 0);
+    __decorate$2([
+        Collection([], MenuItem)
+    ], MenuBase.prototype, "items", void 0);
+    __decorate$2([
+        Complex({}, MenuAnimationSettings)
+    ], MenuBase.prototype, "animationSettings", void 0);
+    MenuBase = __decorate$2([
+        NotifyPropertyChanges
+    ], MenuBase);
+    return MenuBase;
+}(Component));
+
+/**
+ * Navigation Common modules
+ */
+
+var __extends$3 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var CLS_VERTICAL = 'e-vertical';
 var CLS_ITEMS = 'e-toolbar-items';
 var CLS_ITEM = 'e-toolbar-item';
-var CLS_RTL$1 = 'e-rtl';
+var CLS_RTL$2 = 'e-rtl';
 var CLS_SEPARATOR = 'e-separator';
 var CLS_POPUPICON = 'e-popup-up-icon';
 var CLS_POPUPDOWN = 'e-popup-down-icon';
 var CLS_TEMPLATE = 'e-template';
-var CLS_DISABLE$1 = 'e-overlay';
+var CLS_DISABLE$2 = 'e-overlay';
 var CLS_POPUPTEXT = 'e-toolbar-text';
 var CLS_TBARTEXT = 'e-popup-text';
 var CLS_TBAROVERFLOW = 'e-overflow-show';
@@ -520,7 +2487,8 @@ var CLS_TBARRIGHT = 'e-toolbar-right';
 var CLS_TBARLEFT = 'e-toolbar-left';
 var CLS_TBARCENTER = 'e-toolbar-center';
 var CLS_TBARPOS = 'e-tbar-pos';
-var CLS_TBARSCROLL = 'e-hscroll-content';
+var CLS_HSCROLLCNT = 'e-hscroll-content';
+var CLS_VSCROLLCNT = 'e-vscroll-content';
 var CLS_POPUPNAV = 'e-hor-nav';
 var CLS_POPUPCLASS = 'e-toolbar-pop';
 var CLS_POPUP = 'e-toolbar-popup';
@@ -540,53 +2508,53 @@ var CLS_EXTENDEDPOPOPEN = 'e-tbar-extended';
  * An item object that is used to configure Toolbar commands.
  */
 var Item = /** @__PURE__ @class */ (function (_super) {
-    __extends$1(Item, _super);
+    __extends$3(Item, _super);
     function Item() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$1([
+    __decorate$3([
         Property('')
     ], Item.prototype, "id", void 0);
-    __decorate$1([
+    __decorate$3([
         Property('')
     ], Item.prototype, "text", void 0);
-    __decorate$1([
+    __decorate$3([
         Property('auto')
     ], Item.prototype, "width", void 0);
-    __decorate$1([
+    __decorate$3([
         Property('')
     ], Item.prototype, "cssClass", void 0);
-    __decorate$1([
+    __decorate$3([
         Property(false)
     ], Item.prototype, "showAlwaysInPopup", void 0);
-    __decorate$1([
+    __decorate$3([
         Property('')
     ], Item.prototype, "prefixIcon", void 0);
-    __decorate$1([
+    __decorate$3([
         Property('')
     ], Item.prototype, "suffixIcon", void 0);
-    __decorate$1([
+    __decorate$3([
         Property('None')
     ], Item.prototype, "overflow", void 0);
-    __decorate$1([
+    __decorate$3([
         Property('')
     ], Item.prototype, "template", void 0);
-    __decorate$1([
+    __decorate$3([
         Property('Button')
     ], Item.prototype, "type", void 0);
-    __decorate$1([
+    __decorate$3([
         Property('Both')
     ], Item.prototype, "showTextOn", void 0);
-    __decorate$1([
+    __decorate$3([
         Property(null)
     ], Item.prototype, "htmlAttributes", void 0);
-    __decorate$1([
+    __decorate$3([
         Property('')
     ], Item.prototype, "tooltipText", void 0);
-    __decorate$1([
+    __decorate$3([
         Property('Left')
     ], Item.prototype, "align", void 0);
-    __decorate$1([
+    __decorate$3([
         Event()
     ], Item.prototype, "click", void 0);
     return Item;
@@ -602,7 +2570,7 @@ var Item = /** @__PURE__ @class */ (function (_super) {
  * ```
  */
 var Toolbar = /** @__PURE__ @class */ (function (_super) {
-    __extends$1(Toolbar, _super);
+    __extends$3(Toolbar, _super);
     /**
      * Initializes a new instance of the Toolbar class.
      * @param options  - Specifies Toolbar model properties as options.
@@ -668,9 +2636,10 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         this.popObj = null;
         this.tempId = [];
         this.tbarItemsCol = this.items;
+        this.isVertical = this.element.classList.contains(CLS_VERTICAL) ? true : false;
         this.popupPriCount = 0;
         if (this.enableRtl) {
-            this.add(this.element, CLS_RTL$1);
+            this.add(this.element, CLS_RTL$2);
         }
     };
     Toolbar.prototype.wireEvents = function () {
@@ -698,7 +2667,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     };
     Toolbar.prototype.unwireEvents = function () {
         EventHandler.remove(this.element, 'click', this.clickHandler);
-        this.destroyHScroll();
+        this.destroyScroll();
         this.keyModule.destroy();
         EventHandler.remove(document, 'scroll', this.docEvent);
         EventHandler.remove(this.element, 'keydown', this.docKeyDown);
@@ -714,7 +2683,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             this.popObj.hide({ name: 'FadeOut', duration: 100 });
         }
     };
-    Toolbar.prototype.destroyHScroll = function () {
+    Toolbar.prototype.destroyScroll = function () {
         if (this.scrollModule) {
             if (this.tbarAlign) {
                 this.add(this.scrollModule.element, CLS_TBARPOS);
@@ -739,10 +2708,15 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     };
     Toolbar.prototype.destroyMode = function () {
         if (this.scrollModule) {
-            this.remove(this.scrollModule.element, CLS_RTL$1);
-            this.destroyHScroll();
+            this.remove(this.scrollModule.element, CLS_RTL$2);
+            this.destroyScroll();
         }
         this.remove(this.element, CLS_EXTENDEDPOPOPEN);
+        this.remove(this.element, CLS_EXTEANDABLE_TOOLBAR);
+        var tempEle = this.element.querySelector('.e-toolbar-multirow');
+        if (tempEle) {
+            this.remove(tempEle, CLS_MULTIROW);
+        }
         if (this.popObj) {
             this.popupRefresh(this.popObj.element, true);
         }
@@ -769,7 +2743,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             clst = this.popObj.element.querySelector('.' + CLS_ITEM);
         }
         else if (this.element === trgt || tbrNavChk) {
-            clst = this.element.querySelector('.' + CLS_ITEM + ':not(.' + CLS_DISABLE$1 + ' ):not(.' + CLS_SEPARATOR + ' )');
+            clst = this.element.querySelector('.' + CLS_ITEM + ':not(.' + CLS_DISABLE$2 + ' ):not(.' + CLS_SEPARATOR + ' )');
         }
         else {
             clst = closest(trgt, '.' + CLS_ITEM);
@@ -782,6 +2756,9 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         var popAnimate = { name: 'FadeOut', duration: 100 };
         switch (e.action) {
             case 'moveRight':
+                if (this.isVertical) {
+                    return;
+                }
                 if (rootEle === trgt) {
                     this.elementFocus(clst);
                 }
@@ -790,6 +2767,9 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
                 }
                 break;
             case 'moveLeft':
+                if (this.isVertical) {
+                    return;
+                }
                 if (!navChk) {
                     this.eleFocus(clst, 'previous');
                 }
@@ -828,18 +2808,28 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             case 'moveUp':
             case 'moveDown':
                 var value = e.action === 'moveUp' ? 'previous' : 'next';
-                if (popObj && closest(trgt, '.e-popup')) {
-                    var popEle = popObj.element;
-                    var popFrstEle = popEle.firstElementChild;
-                    if ((value === 'previous' && popFrstEle === clst) || (value === 'next' && popEle.lastElementChild === clst)) {
-                        return;
+                if (!this.isVertical) {
+                    if (popObj && closest(trgt, '.e-popup')) {
+                        var popEle = popObj.element;
+                        var popFrstEle = popEle.firstElementChild;
+                        if ((value === 'previous' && popFrstEle === clst) || (value === 'next' && popEle.lastElementChild === clst)) {
+                            return;
+                        }
+                        else {
+                            this.eleFocus(clst, value);
+                        }
                     }
-                    else {
-                        this.eleFocus(clst, value);
+                    else if (e.action === 'moveDown' && popObj && isVisible(popObj.element)) {
+                        this.elementFocus(clst);
                     }
                 }
-                else if (e.action === 'moveDown' && popObj && isVisible(popObj.element)) {
-                    this.elementFocus(clst);
+                else {
+                    if (e.action === 'moveUp') {
+                        this.eleFocus(clst, 'previous');
+                    }
+                    else {
+                        this.eleFocus(clst, 'next');
+                    }
                 }
                 break;
             case 'tab':
@@ -878,7 +2868,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     };
     Toolbar.prototype.keyActionHandler = function (e) {
         var trgt = e.target;
-        if (trgt.tagName === 'INPUT' || trgt.tagName === 'TEXTAREA' || this.element.classList.contains(CLS_DISABLE$1)) {
+        if (trgt.tagName === 'INPUT' || trgt.tagName === 'TEXTAREA' || this.element.classList.contains(CLS_DISABLE$2)) {
             return;
         }
         e.preventDefault();
@@ -898,7 +2888,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
      */
     Toolbar.prototype.disable = function (value) {
         var rootEle = this.element;
-        value ? rootEle.classList.add(CLS_DISABLE$1) : rootEle.classList.remove(CLS_DISABLE$1);
+        value ? rootEle.classList.add(CLS_DISABLE$2) : rootEle.classList.remove(CLS_DISABLE$2);
         rootEle.setAttribute('tabindex', !value ? '0' : '-1');
         if (this.activeEle) {
             this.activeEle.setAttribute('tabindex', !value ? '0' : '-1');
@@ -916,7 +2906,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     Toolbar.prototype.eleFocus = function (closest$$1, pos) {
         var sib = Object(closest$$1)[pos + 'ElementSibling'];
         var contains = function (el) {
-            return el.classList.contains(CLS_SEPARATOR) || el.classList.contains(CLS_DISABLE$1);
+            return el.classList.contains(CLS_SEPARATOR) || el.classList.contains(CLS_DISABLE$2);
         };
         if (sib) {
             var skipEle = contains(sib);
@@ -972,15 +2962,16 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         if (!popupNav) {
             popupNav = trgt;
         }
-        if (!ele.children[0].classList.contains('e-hscroll') && (clsList.contains(CLS_TBARNAV))) {
+        if (!ele.children[0].classList.contains('e-hscroll') && !ele.children[0].classList.contains('e-vscroll')
+            && (clsList.contains(CLS_TBARNAV))) {
             clsList = trgt.querySelector('.e-icons').classList;
         }
         if (clsList.contains(CLS_POPUPICON) || clsList.contains(CLS_POPUPDOWN)) {
-            this.popupClickHandler(ele, popupNav, CLS_RTL$1);
+            this.popupClickHandler(ele, popupNav, CLS_RTL$2);
         }
         var itemObj;
         var clst = closest(e.target, '.' + CLS_ITEM);
-        if ((isNullOrUndefined(clst) || clst.classList.contains(CLS_DISABLE$1)) && !popupNav.classList.contains(CLS_TBARNAV)) {
+        if ((isNullOrUndefined(clst) || clst.classList.contains(CLS_DISABLE$2)) && !popupNav.classList.contains(CLS_TBARNAV)) {
             return;
         }
         if (clst) {
@@ -1041,7 +3032,8 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         }
         setStyleAttribute(this.element, { 'width': width });
         var ariaAttr = {
-            'role': 'toolbar', 'aria-disabled': 'false', 'aria-haspopup': 'false', 'aria-orientation': 'horizontal',
+            'role': 'toolbar', 'aria-disabled': 'false', 'aria-haspopup': 'false',
+            'aria-orientation': !this.isVertical ? 'horizontal' : 'vertical',
         };
         attributes(this.element, ariaAttr);
     };
@@ -1057,41 +3049,78 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             this.popupRefresh(this.popObj.element, false);
         }
     };
-    Toolbar.prototype.initHScroll = function (element, innerItems) {
+    /** @hidden */
+    Toolbar.prototype.changeOrientation = function () {
+        var ele = this.element;
+        if (this.isVertical) {
+            ele.classList.remove(CLS_VERTICAL);
+            this.isVertical = false;
+            if (this.height === 'auto' || this.height === '100%') {
+                ele.style.height = this.height;
+            }
+            ele.setAttribute('aria-orientation', 'horizontal');
+        }
+        else {
+            ele.classList.add(CLS_VERTICAL);
+            this.isVertical = true;
+            ele.setAttribute('aria-orientation', 'vertical');
+            setStyleAttribute(this.element, { 'height': formatUnit(this.height), 'width': formatUnit(this.width) });
+        }
+        this.destroyMode();
+        this.refreshOverflow();
+    };
+    Toolbar.prototype.initScroll = function (element, innerItems) {
         if (!this.scrollModule && this.checkOverflow(element, innerItems[0])) {
             if (this.tbarAlign) {
                 this.element.querySelector('.' + CLS_ITEMS + ' .' + CLS_TBARCENTER).removeAttribute('style');
             }
-            this.scrollModule = new HScroll({ scrollStep: this.scrollStep, enableRtl: this.enableRtl });
-            this.scrollModule.createElement = this.createElement;
-            this.scrollModule.appendTo(innerItems[0]);
+            if (this.isVertical) {
+                this.scrollModule = new VScroll({ scrollStep: this.scrollStep, enableRtl: this.enableRtl }, innerItems[0]);
+            }
+            else {
+                this.scrollModule = new HScroll({ scrollStep: this.scrollStep, enableRtl: this.enableRtl }, innerItems[0]);
+            }
             this.remove(this.scrollModule.element, CLS_TBARPOS);
             setStyleAttribute(this.element, { overflow: 'hidden' });
         }
     };
     Toolbar.prototype.itemWidthCal = function (items) {
+        var _this = this;
         var width = 0;
         var style;
         [].slice.call(selectAll('.' + CLS_ITEM, items)).forEach(function (el) {
             if (isVisible(el)) {
                 style = window.getComputedStyle(el);
-                width += (el.offsetWidth + parseFloat(style.marginRight) + parseFloat(style.marginLeft));
+                width += _this.isVertical ? el.offsetHeight : el.offsetWidth;
+                width += parseFloat(_this.isVertical ? style.marginTop : style.marginRight);
+                width += parseFloat(_this.isVertical ? style.marginBottom : style.marginLeft);
             }
         });
         return width;
+    };
+    Toolbar.prototype.getScrollCntEle = function (innerItem) {
+        var trgClass = (this.isVertical) ? '.e-vscroll-content' : '.e-hscroll-content';
+        return innerItem.querySelector(trgClass);
     };
     Toolbar.prototype.checkOverflow = function (element, innerItem) {
         if (isNullOrUndefined(element) || isNullOrUndefined(innerItem) || !isVisible(element)) {
             return false;
         }
-        var eleWidth = element.offsetWidth;
-        var itemWidth = innerItem.offsetWidth;
+        var eleWidth = this.isVertical ? element.offsetHeight : element.offsetWidth;
+        var itemWidth = this.isVertical ? innerItem.offsetHeight : innerItem.offsetWidth;
         if (this.tbarAlign || this.scrollModule || (eleWidth === itemWidth)) {
-            itemWidth = this.itemWidthCal(this.scrollModule ? innerItem.querySelector('.e-hscroll-content') : innerItem);
+            itemWidth = this.itemWidthCal(this.scrollModule ? this.getScrollCntEle(innerItem) : innerItem);
         }
         var popNav = element.querySelector('.' + CLS_TBARNAV);
         var scrollNav = element.querySelector('.' + CLS_TBARSCRLNAV);
-        if (itemWidth > eleWidth - (popNav ? popNav.offsetWidth : (scrollNav ? scrollNav.offsetWidth * 2 : 0))) {
+        var navEleWidth = 0;
+        if (popNav) {
+            navEleWidth = this.isVertical ? popNav.offsetHeight : popNav.offsetWidth;
+        }
+        else if (scrollNav) {
+            navEleWidth = this.isVertical ? (scrollNav.offsetHeight * (2)) : (scrollNav.offsetWidth * 2);
+        }
+        if (itemWidth > eleWidth - navEleWidth) {
             return true;
         }
         else {
@@ -1120,7 +3149,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             switch (this.overflowMode) {
                 case 'Scrollable':
                     if (isNullOrUndefined(this.scrollModule)) {
-                        this.initHScroll(ele, ele.getElementsByClassName(CLS_ITEMS));
+                        this.initScroll(ele, ele.getElementsByClassName(CLS_ITEMS));
                     }
                     break;
                 case 'Popup':
@@ -1183,11 +3212,13 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     };
     Toolbar.prototype.createPopupEle = function (ele, innerEle) {
         var innerNav = ele.querySelector('.' + CLS_TBARNAV);
+        var vertical = this.isVertical;
         if (!innerNav) {
             this.createPopupIcon(ele);
         }
         innerNav = ele.querySelector('.' + CLS_TBARNAV);
-        var eleWidth = (ele.offsetWidth - (innerNav.offsetWidth));
+        var innerNavDom = (vertical ? innerNav.offsetHeight : innerNav.offsetWidth);
+        var eleWidth = ((vertical ? ele.offsetHeight : ele.offsetWidth) - (innerNavDom));
         this.element.classList.remove('e-rtl');
         setStyleAttribute(this.element, { direction: 'initial' });
         this.checkPriority(ele, innerEle, eleWidth, true);
@@ -1261,11 +3292,11 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         var sepHeight;
         var sepItem;
         if (this.overflowMode === 'Extended') {
-            sepItem = element.querySelector('.' + CLS_SEPARATOR + ':not(.' + CLS_POPUP + ' )');
+            sepItem = element.querySelector('.' + CLS_SEPARATOR + ':not(.' + CLS_POPUP + ')');
             sepHeight = (element.style.height === 'auto' || element.style.height === '') ? null : sepItem.offsetHeight;
         }
-        eleItem = element.querySelector('.' + CLS_ITEM + ':not(.' + CLS_SEPARATOR + ' ):not(.' + CLS_POPUP + ' )');
-        eleHeight = (element.style.height === 'auto' || element.style.height === '') ? null : eleItem.offsetHeight;
+        eleItem = element.querySelector('.' + CLS_ITEM + ':not(.' + CLS_SEPARATOR + '):not(.' + CLS_POPUP + ')');
+        eleHeight = (element.style.height === 'auto' || element.style.height === '') ? null : (eleItem && eleItem.offsetHeight);
         var ele;
         var popupPri = [];
         if (element.querySelector('#' + element.id + '_popup.' + CLS_POPUPCLASS)) {
@@ -1292,7 +3323,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             var eleStyles = window.getComputedStyle(this.element);
             var popup = new Popup(null, {
                 relateTo: this.element,
-                offsetY: this.getElementOffsetY(),
+                offsetY: (this.isVertical) ? 0 : this.getElementOffsetY(),
                 enableRtl: this.enableRtl,
                 open: this.popupOpen.bind(this),
                 close: this.popupClose.bind(this),
@@ -1307,6 +3338,9 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             EventHandler.add(document, 'scroll', this.docEvent.bind(this));
             EventHandler.add(document, 'click ', this.docEvent.bind(this));
             popup.element.style.maxHeight = popup.element.offsetHeight + 'px';
+            if (this.isVertical) {
+                popup.element.style.visibility = 'hidden';
+            }
             popup.hide();
             this.popObj = popup;
             this.element.setAttribute('aria-haspopup', 'true');
@@ -1324,8 +3358,10 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     };
     Toolbar.prototype.popupOpen = function (e) {
         var popObj = this.popObj;
-        popObj.offsetY = this.getElementOffsetY();
-        popObj.dataBind();
+        if (!this.isVertical) {
+            popObj.offsetY = this.getElementOffsetY();
+            popObj.dataBind();
+        }
         var popupEle = this.popObj.element;
         var toolEle = this.popObj.element.parentElement;
         var popupNav = toolEle.querySelector('.' + CLS_TBARNAV);
@@ -1340,7 +3376,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         classList(popIcon, [CLS_POPUPICON], [CLS_POPUPDOWN]);
         this.tbarPopupHandler(true);
         var scrollVal = isNullOrUndefined(window.scrollY) ? 0 : window.scrollY;
-        if (((window.innerHeight + scrollVal) < popupElePos) && (this.element.offsetTop < popupEle.offsetHeight)) {
+        if (!this.isVertical && ((window.innerHeight + scrollVal) < popupElePos) && (this.element.offsetTop < popupEle.offsetHeight)) {
             var overflowHeight = (popupEle.offsetHeight - ((popupElePos - window.innerHeight - scrollVal) + 5));
             popObj.height = overflowHeight + 'px';
             for (var i = 0; i <= popupEle.childElementCount; i++) {
@@ -1351,6 +3387,10 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             setStyleAttribute(popObj.element, { maxHeight: overflowHeight + 'px' });
+        }
+        else if (this.isVertical) {
+            var tbEleData = this.element.getBoundingClientRect();
+            setStyleAttribute(popObj.element, { maxHeight: (tbEleData.top + this.element.offsetHeight) + 'px', bottom: 0, visibility: '' });
         }
     };
     Toolbar.prototype.popupClose = function (e) {
@@ -1365,6 +3405,8 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         var popPriority = this.popupPriCount > 0;
         var len = inEle.length;
         var eleWid = eleWidth;
+        var eleOffset;
+        var checkoffset;
         var sepCheck = 0;
         var itemCount = 0;
         var itemPopCount = 0;
@@ -1378,19 +3420,39 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             return rVal;
         };
         for (var i = len - 1; i >= 0; i--) {
-            var mrgn = parseFloat((window.getComputedStyle(inEle[i])).marginRight);
-            mrgn += parseFloat((window.getComputedStyle(inEle[i])).marginLeft);
+            var mrgn = void 0;
+            var compuStyle = window.getComputedStyle(inEle[i]);
+            if (this.isVertical) {
+                mrgn = parseFloat((compuStyle).marginTop);
+                mrgn += parseFloat((compuStyle).marginBottom);
+            }
+            else {
+                mrgn = parseFloat((compuStyle).marginRight);
+                mrgn += parseFloat((compuStyle).marginLeft);
+            }
             var fstEleCheck = inEle[i] === this.tbarEle[0];
             if (fstEleCheck) {
                 this.tbarEleMrgn = mrgn;
             }
-            var eleWid_1 = fstEleCheck ? (inEle[i].offsetWidth + mrgn) : inEle[i].offsetWidth;
+            eleOffset = this.isVertical ? inEle[i].offsetHeight : inEle[i].offsetWidth;
+            var eleWid_1 = fstEleCheck ? (eleOffset + mrgn) : eleOffset;
             if (checkClass(inEle[i], [CLS_POPPRI]) && popPriority) {
                 inEle[i].classList.add(CLS_POPUP);
-                setStyleAttribute(inEle[i], { display: 'none', minWidth: eleWid_1 + 'px' });
+                if (this.isVertical) {
+                    setStyleAttribute(inEle[i], { display: 'none', minHeight: eleWid_1 + 'px' });
+                }
+                else {
+                    setStyleAttribute(inEle[i], { display: 'none', minWidth: eleWid_1 + 'px' });
+                }
                 itemPopCount++;
             }
-            if ((inEle[i].offsetLeft + inEle[i].offsetWidth + mrgn) > eleWidth) {
+            if (this.isVertical) {
+                checkoffset = (inEle[i].offsetTop + inEle[i].offsetHeight + mrgn) > eleWidth;
+            }
+            else {
+                checkoffset = (inEle[i].offsetLeft + inEle[i].offsetWidth + mrgn) > eleWidth;
+            }
+            if (checkoffset) {
                 if (inEle[i].classList.contains(CLS_SEPARATOR)) {
                     if (this.overflowMode === 'Extended') {
                         if (itemCount === itemPopCount) {
@@ -1418,15 +3480,20 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
                     itemCount++;
                 }
                 if (inEle[i].classList.contains(CLS_TBAROVERFLOW) && pre) {
-                    eleWidth -= (inEle[i].offsetWidth + (mrgn));
+                    eleWidth -= ((this.isVertical ? inEle[i].offsetHeight : inEle[i].offsetWidth) + (mrgn));
                 }
                 else if (!checkClass(inEle[i], [CLS_SEPARATOR, CLS_TBARIGNORE])) {
                     inEle[i].classList.add(CLS_POPUP);
-                    setStyleAttribute(inEle[i], { display: 'none', minWidth: eleWid_1 + 'px' });
+                    if (this.isVertical) {
+                        setStyleAttribute(inEle[i], { display: 'none', minHeight: eleWid_1 + 'px' });
+                    }
+                    else {
+                        setStyleAttribute(inEle[i], { display: 'none', minWidth: eleWid_1 + 'px' });
+                    }
                     itemPopCount++;
                 }
                 else {
-                    eleWidth -= (inEle[i].offsetWidth + (mrgn));
+                    eleWidth -= ((this.isVertical ? inEle[i].offsetHeight : inEle[i].offsetWidth) + (mrgn));
                 }
             }
         }
@@ -1488,6 +3555,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     Toolbar.prototype.popupRefresh = function (popupEle, destroy) {
         var _this = this;
         var ele = this.element;
+        var isVer = this.isVertical;
         var popNav = ele.querySelector('.' + CLS_TBARNAV);
         var innerEle = ele.querySelector('.' + CLS_ITEMS);
         if (isNullOrUndefined(popNav)) {
@@ -1495,16 +3563,22 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         }
         innerEle.removeAttribute('style');
         popupEle.style.display = 'block';
-        var width = ele.offsetWidth - (popNav.offsetWidth + innerEle.offsetWidth);
+        var dimension;
+        if (isVer) {
+            dimension = ele.offsetHeight - (popNav.offsetHeight + innerEle.offsetHeight);
+        }
+        else {
+            dimension = ele.offsetWidth - (popNav.offsetWidth + innerEle.offsetWidth);
+        }
         var popupEleWidth = 0;
         [].slice.call(popupEle.children).forEach(function (el) {
             popupEleWidth += _this.popupEleWidth(el);
             setStyleAttribute(el, { 'position': '' });
         });
-        if ((width + popNav.offsetWidth) > (popupEleWidth) && this.popupPriCount === 0) {
+        if ((dimension + (isVer ? popNav.offsetHeight : popNav.offsetWidth)) > (popupEleWidth) && this.popupPriCount === 0) {
             destroy = true;
         }
-        this.popupEleRefresh(width, popupEle, destroy);
+        this.popupEleRefresh(dimension, popupEle, destroy);
         popupEle.style.display = '';
         if (popupEle.children.length === 0 && popNav && this.popObj) {
             detach(popNav);
@@ -1549,7 +3623,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     };
     Toolbar.prototype.popupEleWidth = function (el) {
         el.style.position = 'absolute';
-        var elWidth = el.offsetWidth;
+        var elWidth = this.isVertical ? el.offsetHeight : el.offsetWidth;
         var btnText = el.querySelector('.' + CLS_TBARBTNTEXT);
         if (el.classList.contains('e-tbtn-align') || el.classList.contains(CLS_TBARTEXT)) {
             var btn = el.children[0];
@@ -1560,8 +3634,9 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
                 btnText.style.display = 'block';
             }
             btn.style.minWidth = '0%';
-            elWidth = parseFloat(el.style.minWidth);
+            elWidth = parseFloat(!this.isVertical ? el.style.minWidth : el.style.minHeight);
             btn.style.minWidth = '';
+            btn.style.minHeight = '';
             if (!isNullOrUndefined(btnText)) {
                 btnText.style.display = '';
             }
@@ -1586,7 +3661,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             }
             el.style.position = '';
             if (elWidth < width || destroy) {
-                el.style.minWidth = '';
+                setStyleAttribute(el, { minWidth: '', height: '', minHeight: '' });
                 if (!el.classList.contains(CLS_POPOVERFLOW)) {
                     el.classList.remove(CLS_POPUP);
                 }
@@ -1658,32 +3733,49 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     };
     Toolbar.prototype.itemPositioning = function () {
         var item = this.element.querySelector('.' + CLS_ITEMS);
+        var margin;
         if (isNullOrUndefined(item) || !item.classList.contains(CLS_TBARPOS)) {
             return;
         }
         var popupNav = this.element.querySelector('.' + CLS_TBARNAV);
         var innerItem;
         if (this.scrollModule) {
-            innerItem = [].slice.call(item.querySelector('.' + CLS_TBARSCROLL).children);
+            var trgClass = (this.isVertical) ? CLS_VSCROLLCNT : CLS_HSCROLLCNT;
+            innerItem = [].slice.call(item.querySelector('.' + trgClass).children);
         }
         else {
             innerItem = [].slice.call(item.childNodes);
         }
-        var margin = innerItem[0].offsetWidth + innerItem[2].offsetWidth;
-        var tbarWid = this.element.offsetWidth;
+        if (this.isVertical) {
+            margin = innerItem[0].offsetHeight + innerItem[2].offsetHeight;
+        }
+        else {
+            margin = innerItem[0].offsetWidth + innerItem[2].offsetWidth;
+        }
+        var tbarWid = this.isVertical ? this.element.offsetHeight : this.element.offsetWidth;
         if (popupNav) {
-            tbarWid -= popupNav.offsetWidth;
-            var popWid = popupNav.offsetWidth + 'px';
+            tbarWid -= (this.isVertical ? popupNav.offsetHeight : popupNav.offsetWidth);
+            var popWid = (this.isVertical ? popupNav.offsetHeight : popupNav.offsetWidth) + 'px';
             innerItem[2].removeAttribute('style');
-            this.enableRtl ? innerItem[2].style.left = popWid : innerItem[2].style.right = popWid;
+            if (this.isVertical) {
+                this.enableRtl ? innerItem[2].style.top = popWid : innerItem[2].style.bottom = popWid;
+            }
+            else {
+                this.enableRtl ? innerItem[2].style.left = popWid : innerItem[2].style.right = popWid;
+            }
         }
         if (tbarWid <= margin) {
             return;
         }
-        var value = (((tbarWid - margin)) - innerItem[1].offsetWidth) / 2;
+        var value = (((tbarWid - margin)) - (!this.isVertical ? innerItem[1].offsetWidth : innerItem[1].offsetHeight)) / 2;
         innerItem[1].removeAttribute('style');
-        var mrgn = (innerItem[0].offsetWidth + value) + 'px';
-        this.enableRtl ? innerItem[1].style.marginRight = mrgn : innerItem[1].style.marginLeft = mrgn;
+        var mrgn = ((!this.isVertical ? innerItem[0].offsetWidth : innerItem[0].offsetHeight) + value) + 'px';
+        if (this.isVertical) {
+            this.enableRtl ? innerItem[1].style.marginBottom = mrgn : innerItem[1].style.marginTop = mrgn;
+        }
+        else {
+            this.enableRtl ? innerItem[1].style.marginRight = mrgn : innerItem[1].style.marginLeft = mrgn;
+        }
     };
     Toolbar.prototype.tbarItemAlign = function (item, itemEle, pos) {
         var _this = this;
@@ -1790,11 +3882,11 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         }
         var enable = function (isEnable, ele) {
             if (isEnable) {
-                ele.classList.remove(CLS_DISABLE$1);
+                ele.classList.remove(CLS_DISABLE$2);
                 ele.setAttribute('aria-disabled', 'false');
             }
             else {
-                ele.classList.add(CLS_DISABLE$1);
+                ele.classList.add(CLS_DISABLE$2);
                 ele.setAttribute('aria-disabled', 'true');
             }
         };
@@ -1803,7 +3895,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
                 var ele = _a[_i];
                 enable(isEnable, ele);
             }
-            isEnable ? removeClass(elements, CLS_DISABLE$1) : addClass(elements, CLS_DISABLE$1);
+            isEnable ? removeClass(elements, CLS_DISABLE$2) : addClass(elements, CLS_DISABLE$2);
         }
         else {
             var ele = void 0;
@@ -2117,7 +4209,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         }
         var checkOverflow = this.checkOverflow(ele, ele.getElementsByClassName(CLS_ITEMS)[0]);
         if (!checkOverflow) {
-            this.destroyHScroll();
+            this.destroyScroll();
         }
         if (checkOverflow && this.scrollModule && (this.offsetWid === ele.offsetWidth)) {
             return;
@@ -2203,17 +4295,17 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
                     this.destroyMode();
                     this.renderOverflowMode();
                     if (this.enableRtl) {
-                        this.add(tEle, CLS_RTL$1);
+                        this.add(tEle, CLS_RTL$2);
                     }
                     this.refreshOverflow();
                     break;
                 case 'enableRtl':
-                    newProp.enableRtl ? this.add(tEle, CLS_RTL$1) : this.remove(tEle, CLS_RTL$1);
+                    newProp.enableRtl ? this.add(tEle, CLS_RTL$2) : this.remove(tEle, CLS_RTL$2);
                     if (!isNullOrUndefined(this.scrollModule)) {
-                        newProp.enableRtl ? this.add(this.scrollModule.element, CLS_RTL$1) : this.remove(this.scrollModule.element, CLS_RTL$1);
+                        newProp.enableRtl ? this.add(this.scrollModule.element, CLS_RTL$2) : this.remove(this.scrollModule.element, CLS_RTL$2);
                     }
                     if (!isNullOrUndefined(this.popObj)) {
-                        newProp.enableRtl ? this.add(this.popObj.element, CLS_RTL$1) : this.remove(this.popObj.element, CLS_RTL$1);
+                        newProp.enableRtl ? this.add(this.popObj.element, CLS_RTL$2) : this.remove(this.popObj.element, CLS_RTL$2);
                     }
                     if (this.tbarAlign) {
                         this.itemPositioning();
@@ -2240,34 +4332,34 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             this.refreshOverflow();
         }
     };
-    __decorate$1([
+    __decorate$3([
         Collection([], Item)
     ], Toolbar.prototype, "items", void 0);
-    __decorate$1([
+    __decorate$3([
         Property('auto')
     ], Toolbar.prototype, "width", void 0);
-    __decorate$1([
+    __decorate$3([
         Property('auto')
     ], Toolbar.prototype, "height", void 0);
-    __decorate$1([
+    __decorate$3([
         Property('Scrollable')
     ], Toolbar.prototype, "overflowMode", void 0);
-    __decorate$1([
+    __decorate$3([
         Property(false)
     ], Toolbar.prototype, "enableRtl", void 0);
-    __decorate$1([
+    __decorate$3([
         Event()
     ], Toolbar.prototype, "clicked", void 0);
-    __decorate$1([
+    __decorate$3([
         Event()
     ], Toolbar.prototype, "created", void 0);
-    __decorate$1([
+    __decorate$3([
         Event()
     ], Toolbar.prototype, "destroyed", void 0);
-    __decorate$1([
+    __decorate$3([
         Event()
     ], Toolbar.prototype, "beforeCreate", void 0);
-    Toolbar = __decorate$1([
+    Toolbar = __decorate$3([
         NotifyPropertyChanges
     ], Toolbar);
     return Toolbar;
@@ -2277,7 +4369,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
  * Toolbar modules
  */
 
-var __extends$2 = (undefined && undefined.__extends) || (function () {
+var __extends$4 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -2290,14 +4382,14 @@ var __extends$2 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 var CLS_ACRDN_ROOT = 'e-acrdn-root';
-var CLS_ROOT$1 = 'e-accordion';
+var CLS_ROOT$2 = 'e-accordion';
 var CLS_ITEM$1 = 'e-acrdn-item';
 var CLS_ITEMFOCUS = 'e-item-focus';
 var CLS_ITEMHIDE = 'e-hide';
@@ -2309,41 +4401,41 @@ var CLS_CTENT = 'e-acrdn-content';
 var CLS_TOOGLEICN = 'e-toggle-icon';
 var CLS_COLLAPSEICN = 'e-tgl-collapse-icon e-icons';
 var CLS_EXPANDICN = 'e-expand-icon';
-var CLS_RTL$2 = 'e-rtl';
+var CLS_RTL$3 = 'e-rtl';
 var CLS_CTNHIDE = 'e-content-hide';
 var CLS_SLCT = 'e-select';
 var CLS_SLCTED = 'e-selected';
 var CLS_ACTIVE = 'e-active';
 var CLS_ANIMATE = 'e-animate';
-var CLS_DISABLE$2 = 'e-overlay';
+var CLS_DISABLE$3 = 'e-overlay';
 var CLS_TOGANIMATE = 'e-toggle-animation';
 var CLS_NEST = 'e-nested';
 var CLS_EXPANDSTATE = 'e-expand-state';
 var AccordionActionSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$2(AccordionActionSettings, _super);
+    __extends$4(AccordionActionSettings, _super);
     function AccordionActionSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$2([
+    __decorate$4([
         Property('SlideDown')
     ], AccordionActionSettings.prototype, "effect", void 0);
-    __decorate$2([
+    __decorate$4([
         Property(400)
     ], AccordionActionSettings.prototype, "duration", void 0);
-    __decorate$2([
+    __decorate$4([
         Property('linear')
     ], AccordionActionSettings.prototype, "easing", void 0);
     return AccordionActionSettings;
 }(ChildProperty));
 var AccordionAnimationSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$2(AccordionAnimationSettings, _super);
+    __extends$4(AccordionAnimationSettings, _super);
     function AccordionAnimationSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$2([
+    __decorate$4([
         Complex({ effect: 'SlideUp', duration: 400, easing: 'linear' }, AccordionActionSettings)
     ], AccordionAnimationSettings.prototype, "collapse", void 0);
-    __decorate$2([
+    __decorate$4([
         Complex({ effect: 'SlideDown', duration: 400, easing: 'linear' }, AccordionActionSettings)
     ], AccordionAnimationSettings.prototype, "expand", void 0);
     return AccordionAnimationSettings;
@@ -2352,23 +4444,23 @@ var AccordionAnimationSettings = /** @__PURE__ @class */ (function (_super) {
  * An item object that is used to configure Accordion items.
  */
 var AccordionItem = /** @__PURE__ @class */ (function (_super) {
-    __extends$2(AccordionItem, _super);
+    __extends$4(AccordionItem, _super);
     function AccordionItem() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$2([
+    __decorate$4([
         Property(undefined)
     ], AccordionItem.prototype, "content", void 0);
-    __decorate$2([
+    __decorate$4([
         Property(undefined)
     ], AccordionItem.prototype, "header", void 0);
-    __decorate$2([
+    __decorate$4([
         Property(undefined)
     ], AccordionItem.prototype, "cssClass", void 0);
-    __decorate$2([
+    __decorate$4([
         Property(undefined)
     ], AccordionItem.prototype, "iconCss", void 0);
-    __decorate$2([
+    __decorate$4([
         Property(false)
     ], AccordionItem.prototype, "expanded", void 0);
     return AccordionItem;
@@ -2384,7 +4476,7 @@ var AccordionItem = /** @__PURE__ @class */ (function (_super) {
  * ```
  */
 var Accordion = /** @__PURE__ @class */ (function (_super) {
-    __extends$2(Accordion, _super);
+    __extends$4(Accordion, _super);
     /**
      * Initializes a new instance of the Accordion class.
      * @param options  - Specifies Accordion model properties as options.
@@ -2428,8 +4520,9 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                 ele.appendChild(this.ctrlTem.firstChild);
             }
         }
+        ele.classList.remove(CLS_ACRDN_ROOT);
         ele.removeAttribute('style');
-        ['aria-disabled', 'aria-multiselectable', 'role'].forEach(function (attrb) {
+        ['aria-disabled', 'aria-multiselectable', 'role', 'data-ripple'].forEach(function (attrb) {
             _this.element.removeAttribute(attrb);
         });
     };
@@ -2448,7 +4541,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             this.element.classList.add(CLS_ACRDN_ROOT);
         }
         if (this.enableRtl) {
-            this.add(this.element, CLS_RTL$2);
+            this.add(this.element, CLS_RTL$3);
         }
         if (!this.enablePersistence || isNullOrUndefined(this.expandedItems)) {
             this.expandedItems = [];
@@ -2599,7 +4692,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         var eventArgs = {};
         var index;
         var tglIcon;
-        var acrdEle = closest(trgt, '.' + CLS_ROOT$1);
+        var acrdEle = closest(trgt, '.' + CLS_ROOT$2);
         if (acrdEle !== this.element) {
             return;
         }
@@ -2631,7 +4724,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         }
         this.trigger('clicked', eventArgs);
         var cntclkCheck = (acrdnCtn && !isNullOrUndefined(select('.e-target', acrdnCtn)));
-        cntclkCheck = cntclkCheck && (isNullOrUndefined(select('.' + CLS_ROOT$1, acrdnCtn)) || !(closest(trgt, '.' + CLS_ROOT$1) === this.element));
+        cntclkCheck = cntclkCheck && (isNullOrUndefined(select('.' + CLS_ROOT$2, acrdnCtn)) || !(closest(trgt, '.' + CLS_ROOT$2) === this.element));
         trgt.classList.remove('e-target');
         if (trgt.classList.contains(CLS_CONTENT) || trgt.classList.contains(CLS_CTENT) || cntclkCheck) {
             return;
@@ -2694,7 +4787,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
     Accordion.prototype.keyActionHandler = function (e) {
         var trgt = e.target;
         var header = closest(e.target, CLS_HEADER);
-        if (isNullOrUndefined(header) && !trgt.classList.contains(CLS_ROOT$1) && !trgt.classList.contains(CLS_HEADER)) {
+        if (isNullOrUndefined(header) && !trgt.classList.contains(CLS_ROOT$2) && !trgt.classList.contains(CLS_HEADER)) {
             return;
         }
         var clst;
@@ -2830,7 +4923,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
     Accordion.prototype.expand = function (trgt) {
         var eventArgs;
         var trgtItemEle = closest(trgt, '.' + CLS_ITEM$1);
-        if (isNullOrUndefined(trgt) || (isVisible(trgt) && trgt.getAttribute('e-animate') !== 'true') || trgtItemEle.classList.contains(CLS_DISABLE$2)) {
+        if (isNullOrUndefined(trgt) || (isVisible(trgt) && trgt.getAttribute('e-animate') !== 'true') || trgtItemEle.classList.contains(CLS_DISABLE$3)) {
             return;
         }
         var acrdnRoot = closest(trgtItemEle, '.' + CLS_ACRDN_ROOT);
@@ -2843,6 +4936,8 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         var icon = select('.' + CLS_TOOGLEICN, trgtItemEle).firstElementChild;
         eventArgs = { element: trgtItemEle,
             item: this.items[this.getIndexByItem(trgtItemEle)],
+            index: this.getIndexByItem(trgtItemEle),
+            content: trgtItemEle.querySelector('.' + CLS_CONTENT),
             isExpanded: true };
         var eff = animation.name;
         this.trigger('expanding', eventArgs);
@@ -2923,7 +5018,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
     Accordion.prototype.collapse = function (trgt) {
         var eventArgs;
         var trgtItemEle = closest(trgt, '.' + CLS_ITEM$1);
-        if (isNullOrUndefined(trgt) || !isVisible(trgt) || trgtItemEle.classList.contains(CLS_DISABLE$2)) {
+        if (isNullOrUndefined(trgt) || !isVisible(trgt) || trgtItemEle.classList.contains(CLS_DISABLE$3)) {
             return;
         }
         var animation = {
@@ -2934,6 +5029,8 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         var icon = select('.' + CLS_TOOGLEICN, trgtItemEle).firstElementChild;
         eventArgs = { element: trgtItemEle,
             item: this.items[this.getIndexByItem(trgtItemEle)],
+            index: this.getIndexByItem(trgtItemEle),
+            content: trgtItemEle.querySelector('.' + CLS_CONTENT),
             isExpanded: false };
         var eff = animation.name;
         this.trigger('expanding', eventArgs);
@@ -3115,7 +5212,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         }
         var eleHeader = ele.firstElementChild;
         if (isEnable) {
-            this.remove(ele, CLS_DISABLE$2);
+            this.remove(ele, CLS_DISABLE$3);
             attributes(eleHeader, { 'tabindex': '0', 'aria-disabled': 'false' });
             eleHeader.focus();
         }
@@ -3124,7 +5221,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                 this.expandItem(false, index);
                 this.eleMoveFocus('movedown', this.element, eleHeader);
             }
-            this.add(ele, CLS_DISABLE$2);
+            this.add(ele, CLS_DISABLE$3);
             eleHeader.setAttribute('aria-disabled', 'true');
             eleHeader.removeAttribute('tabindex');
         }
@@ -3174,7 +5271,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
     };
     Accordion.prototype.itemExpand = function (isExpand, ele, index) {
         var ctn = ele.children[1];
-        if (ele.classList.contains(CLS_DISABLE$2)) {
+        if (ele.classList.contains(CLS_DISABLE$3)) {
             return;
         }
         if (isNullOrUndefined(ctn) && isExpand) {
@@ -3223,7 +5320,8 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                             var item = selectAll('.' + CLS_ITEM$1, this.element)[index];
                             var oldVal = Object(oldProp.items[index])[property];
                             var newVal = Object(newProp.items[index])[property];
-                            if (property === 'header' || property === 'iconCss' || property === 'expanded') {
+                            var temp = property;
+                            if (temp === 'header' || temp === 'iconCss' || temp === 'expanded' || ((temp === 'content') && (oldVal === ''))) {
                                 this.updateItem(item, index);
                             }
                             if (property === 'cssClass' && !isNullOrUndefined(item)) {
@@ -3245,7 +5343,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                     }
                     break;
                 case 'enableRtl':
-                    newProp.enableRtl ? this.add(acrdn, CLS_RTL$2) : this.remove(acrdn, CLS_RTL$2);
+                    newProp.enableRtl ? this.add(acrdn, CLS_RTL$3) : this.remove(acrdn, CLS_RTL$3);
                     break;
                 case 'height':
                     setStyleAttribute(this.element, { 'height': formatUnit(newProp.height) });
@@ -3267,37 +5365,37 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    __decorate$2([
+    __decorate$4([
         Collection([], AccordionItem)
     ], Accordion.prototype, "items", void 0);
-    __decorate$2([
+    __decorate$4([
         Property('100%')
     ], Accordion.prototype, "width", void 0);
-    __decorate$2([
+    __decorate$4([
         Property('auto')
     ], Accordion.prototype, "height", void 0);
-    __decorate$2([
+    __decorate$4([
         Property('Multiple')
     ], Accordion.prototype, "expandMode", void 0);
-    __decorate$2([
+    __decorate$4([
         Complex({}, AccordionAnimationSettings)
     ], Accordion.prototype, "animation", void 0);
-    __decorate$2([
+    __decorate$4([
         Event()
     ], Accordion.prototype, "clicked", void 0);
-    __decorate$2([
+    __decorate$4([
         Event()
     ], Accordion.prototype, "expanding", void 0);
-    __decorate$2([
+    __decorate$4([
         Event()
     ], Accordion.prototype, "expanded", void 0);
-    __decorate$2([
+    __decorate$4([
         Event()
     ], Accordion.prototype, "created", void 0);
-    __decorate$2([
+    __decorate$4([
         Event()
     ], Accordion.prototype, "destroyed", void 0);
-    Accordion = __decorate$2([
+    Accordion = __decorate$4([
         NotifyPropertyChanges
     ], Accordion);
     return Accordion;
@@ -3307,7 +5405,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
  * Accordion all modules
  */
 
-var __extends$4 = (undefined && undefined.__extends) || (function () {
+var __extends$5 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -3320,1301 +5418,7 @@ var __extends$4 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var ENTER = 'enter';
-var ESCAPE = 'escape';
-var FOCUSED = 'e-focused';
-var HEADER = 'e-menu-header';
-var SELECTED = 'e-selected';
-var SEPARATOR = 'e-separator';
-var UPARROW = 'uparrow';
-var DOWNARROW = 'downarrow';
-var LEFTARROW = 'leftarrow';
-var RIGHTARROW = 'rightarrow';
-var HOME = 'home';
-var END = 'end';
-var CARET = 'e-caret';
-var ITEM = 'e-menu-item';
-var DISABLED = 'e-disabled';
-var HIDE = 'e-menu-hide';
-var ICONS = 'e-icons';
-var RTL = 'e-rtl';
-/**
- * Configures the field options of the Menu.
- */
-var FieldSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$4(FieldSettings, _super);
-    function FieldSettings() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$4([
-        Property('id')
-    ], FieldSettings.prototype, "itemId", void 0);
-    __decorate$4([
-        Property('parentId')
-    ], FieldSettings.prototype, "parentId", void 0);
-    __decorate$4([
-        Property('text')
-    ], FieldSettings.prototype, "text", void 0);
-    __decorate$4([
-        Property('iconCss')
-    ], FieldSettings.prototype, "iconCss", void 0);
-    __decorate$4([
-        Property('url')
-    ], FieldSettings.prototype, "url", void 0);
-    __decorate$4([
-        Property('separator')
-    ], FieldSettings.prototype, "separator", void 0);
-    __decorate$4([
-        Property('items')
-    ], FieldSettings.prototype, "children", void 0);
-    return FieldSettings;
-}(ChildProperty));
-/**
- * Specifies menu items.
- */
-var MenuItem = /** @__PURE__ @class */ (function (_super) {
-    __extends$4(MenuItem, _super);
-    function MenuItem() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$4([
-        Property(null)
-    ], MenuItem.prototype, "iconCss", void 0);
-    __decorate$4([
-        Property('')
-    ], MenuItem.prototype, "id", void 0);
-    __decorate$4([
-        Property(false)
-    ], MenuItem.prototype, "separator", void 0);
-    __decorate$4([
-        Collection([], MenuItem)
-    ], MenuItem.prototype, "items", void 0);
-    __decorate$4([
-        Property('')
-    ], MenuItem.prototype, "text", void 0);
-    __decorate$4([
-        Property('')
-    ], MenuItem.prototype, "url", void 0);
-    return MenuItem;
-}(ChildProperty));
-/**
- * @private
- * Base class for Menu and ContextMenu components.
- */
-var MenuBase = /** @__PURE__ @class */ (function (_super) {
-    __extends$4(MenuBase, _super);
-    /**
-     * Constructor for creating the widget.
-     * @private
-     */
-    function MenuBase(options, element) {
-        var _this = _super.call(this, options, element) || this;
-        _this.navIdx = [];
-        _this.animation = new Animation({});
-        _this.isTapHold = false;
-        return _this;
-    }
-    /**
-     * Initialized third party configuration settings.
-     * @private
-     */
-    MenuBase.prototype.preRender = function () {
-        if (this.element.tagName === 'EJS-CONTEXTMENU') {
-            this.element.style.display = 'none';
-            this.element.classList.remove('e-' + this.getModuleName());
-            this.element.classList.remove('e-control');
-            var ejInst = getValue('ej2_instances', this.element);
-            var ul = this.createElement('ul');
-            this.ngElement = this.element;
-            this.element = ul;
-            this.element.classList.add('e-control');
-            this.element.classList.add('e-' + this.getModuleName());
-            setValue('ej2_instances', ejInst, this.element);
-            if (!this.element.id) {
-                this.element.id = getUniqueID(this.getModuleName());
-            }
-        }
-        if (this.element.tagName === 'EJS-MENU') {
-            var ele = this.element;
-            var ejInstance = getValue('ej2_instances', ele);
-            var ul = this.createElement('ul');
-            var wrapper = this.createElement('EJS-MENU', { className: 'e-' + this.getModuleName() + '-wrapper' });
-            wrapper.style.display = 'block';
-            for (var idx = 0, len = ele.attributes.length; idx < len; idx++) {
-                ul.setAttribute(ele.attributes[idx].nodeName, ele.attributes[idx].nodeValue);
-            }
-            ele.parentNode.insertBefore(wrapper, ele);
-            detach(ele);
-            ele = ul;
-            wrapper.appendChild(ele);
-            setValue('ej2_instances', ejInstance, ele);
-            this.ngElement = wrapper;
-            this.element = ele;
-            if (!this.element.id) {
-                this.element.id = getUniqueID(this.getModuleName());
-            }
-        }
-    };
-    /**
-     * Initialize the control rendering
-     * @private
-     */
-    MenuBase.prototype.render = function () {
-        this.initialize();
-        this.renderItems();
-        this.wireEvents();
-    };
-    MenuBase.prototype.initialize = function () {
-        var wrapper = this.getWrapper();
-        if (!wrapper) {
-            wrapper = this.createElement('div', { className: 'e-' + this.getModuleName() + '-wrapper' });
-            if (this.isMenu) {
-                this.element.parentElement.insertBefore(wrapper, this.element);
-            }
-            else {
-                document.body.appendChild(wrapper);
-            }
-        }
-        if (this.cssClass) {
-            addClass([wrapper], this.cssClass.split(' '));
-        }
-        if (this.enableRtl) {
-            wrapper.classList.add(RTL);
-        }
-        attributes(this.element, { 'role': this.isMenu ? 'menubar' : 'menu', 'tabindex': '0' });
-        wrapper.appendChild(this.element);
-        this.element.style.zIndex = getZindexPartial(this.element).toString();
-    };
-    MenuBase.prototype.renderItems = function () {
-        if (!this.items.length) {
-            var items = ListBase.createJsonFromElement(this.element, { fields: { child: 'items' } });
-            this.setProperties({ items: items }, true);
-            this.element.innerHTML = '';
-        }
-        var ul = this.createItems(this.items);
-        append(Array.prototype.slice.call(ul.children), this.element);
-        this.element.classList.add('e-menu-parent');
-    };
-    MenuBase.prototype.wireEvents = function () {
-        var wrapper = this.getWrapper();
-        if (this.target) {
-            var target = void 0;
-            var targetElems = selectAll(this.target);
-            for (var i = 0, len = targetElems.length; i < len; i++) {
-                target = targetElems[i];
-                if (Browser.isIos) {
-                    new Touch(target, { tapHold: this.touchHandler.bind(this) });
-                }
-                else {
-                    EventHandler.add(target, 'contextmenu', this.cmenuHandler, this);
-                }
-            }
-            this.targetElement = target;
-            for (var _i = 0, _a = getScrollableParent(this.targetElement); _i < _a.length; _i++) {
-                var parent_1 = _a[_i];
-                EventHandler.add(parent_1, 'scroll', this.scrollHandler, this);
-            }
-        }
-        if (!Browser.isDevice) {
-            this.delegateMoverHandler = this.moverHandler.bind(this);
-            this.delegateMouseDownHandler = this.mouseDownHandler.bind(this);
-            EventHandler.add(this.isMenu ? document : wrapper, 'mouseover', this.delegateMoverHandler, this);
-            EventHandler.add(document, 'mousedown', this.delegateMouseDownHandler, this);
-        }
-        this.delegateClickHandler = this.clickHandler.bind(this);
-        EventHandler.add(document, 'click', this.delegateClickHandler, this);
-        var keyConfigs = {
-            downarrow: DOWNARROW,
-            uparrow: UPARROW,
-            enter: ENTER,
-            leftarrow: LEFTARROW,
-            rightarrow: RIGHTARROW,
-            escape: ESCAPE
-        };
-        if (this.isMenu) {
-            keyConfigs.home = HOME;
-            keyConfigs.end = END;
-        }
-        new KeyboardEvents(wrapper, {
-            keyAction: this.keyBoardHandler.bind(this),
-            keyConfigs: keyConfigs
-        });
-        this.rippleFn = rippleEffect(wrapper, { selector: '.' + ITEM });
-    };
-    MenuBase.prototype.mouseDownHandler = function (e) {
-        if (closest(e.target, '.e-' + this.getModuleName() + '-wrapper') !== this.getWrapper()) {
-            this.closeMenu(this.navIdx.length, e);
-        }
-    };
-    MenuBase.prototype.keyBoardHandler = function (e) {
-        var actionName = '';
-        var actionNeeded = this.isMenu && !this.element.classList.contains('e-vertical') && this.navIdx.length < 1;
-        e.preventDefault();
-        if (actionNeeded) {
-            switch (e.action) {
-                case RIGHTARROW:
-                    actionName = RIGHTARROW;
-                    e.action = DOWNARROW;
-                    break;
-                case LEFTARROW:
-                    actionName = LEFTARROW;
-                    e.action = UPARROW;
-                    break;
-                case DOWNARROW:
-                    actionName = DOWNARROW;
-                    e.action = RIGHTARROW;
-                    break;
-                case UPARROW:
-                    actionName = UPARROW;
-                    e.action = '';
-                    break;
-            }
-        }
-        else if (this.enableRtl) {
-            switch (e.action) {
-                case LEFTARROW:
-                    actionNeeded = true;
-                    actionName = LEFTARROW;
-                    e.action = RIGHTARROW;
-                    break;
-                case RIGHTARROW:
-                    actionNeeded = true;
-                    actionName = RIGHTARROW;
-                    e.action = LEFTARROW;
-                    break;
-            }
-        }
-        switch (e.action) {
-            case DOWNARROW:
-            case UPARROW:
-            case END:
-            case HOME:
-                this.upDownKeyHandler(e);
-                break;
-            case RIGHTARROW:
-                this.rightEnterKeyHandler(e);
-                break;
-            case LEFTARROW:
-                this.leftEscKeyHandler(e);
-                break;
-            case ENTER:
-                this.rightEnterKeyHandler(e);
-                break;
-            case ESCAPE:
-                this.leftEscKeyHandler(e);
-                break;
-        }
-        if (actionNeeded) {
-            e.action = actionName;
-        }
-    };
-    MenuBase.prototype.upDownKeyHandler = function (e) {
-        var wrapper = this.getWrapper();
-        var cul = wrapper.children[this.navIdx.length];
-        var defaultIdx = (e.action === DOWNARROW || e.action === HOME) ? 0 : cul.childElementCount - 1;
-        var fliIdx = defaultIdx;
-        var fli = this.getLIByClass(cul, FOCUSED);
-        if (fli) {
-            if (e.action !== END && e.action !== HOME) {
-                fliIdx = this.getIdx(cul, fli);
-            }
-            fli.classList.remove(FOCUSED);
-            if (e.action !== END && e.action !== HOME) {
-                e.action === DOWNARROW ? fliIdx++ : fliIdx--;
-                if (fliIdx === (e.action === DOWNARROW ? cul.childElementCount : -1)) {
-                    fliIdx = defaultIdx;
-                }
-            }
-        }
-        var cli = cul.children[fliIdx];
-        fliIdx = this.isValidLI(cli, fliIdx, e.action);
-        cul.children[fliIdx].classList.add(FOCUSED);
-        cul.children[fliIdx].focus();
-    };
-    MenuBase.prototype.isValidLI = function (cli, index, action) {
-        var wrapper = this.getWrapper();
-        var cul = wrapper.children[this.navIdx.length];
-        if (cli.classList.contains(SEPARATOR) || cli.classList.contains(DISABLED) || cli.classList.contains(HIDE)) {
-            ((action === DOWNARROW) || (action === RIGHTARROW)) ? index++ : index--;
-        }
-        cli = cul.children[index];
-        if (cli.classList.contains(SEPARATOR) || cli.classList.contains(DISABLED) || cli.classList.contains(HIDE)) {
-            index = this.isValidLI(cli, index, action);
-        }
-        return index;
-    };
-    MenuBase.prototype.rightEnterKeyHandler = function (e) {
-        var eventArgs;
-        var wrapper = this.getWrapper();
-        var cul = wrapper.children[this.navIdx.length];
-        var fli = this.getLIByClass(cul, FOCUSED);
-        if (fli) {
-            var fliIdx = this.getIdx(cul, fli);
-            var navIdx = this.navIdx.concat(fliIdx);
-            var index = void 0;
-            var item = this.getItem(navIdx);
-            if (item.items.length) {
-                this.navIdx.push(fliIdx);
-                this.openMenu(fli, item, null, null, e);
-                fli.classList.remove(FOCUSED);
-                fli.classList.add(SELECTED);
-                if (e.action === ENTER) {
-                    eventArgs = { element: fli, item: item };
-                    this.trigger('select', eventArgs);
-                }
-                fli.focus();
-                cul = wrapper.children[this.navIdx.length];
-                index = this.isValidLI(cul.children[0], 0, e.action);
-                cul.children[index].classList.add(FOCUSED);
-                cul.children[index].focus();
-            }
-            else {
-                if (e.action === ENTER) {
-                    fli.classList.remove(FOCUSED);
-                    fli.classList.add(SELECTED);
-                    eventArgs = { element: fli, item: item };
-                    this.trigger('select', eventArgs);
-                    this.closeMenu(null, e);
-                }
-            }
-        }
-    };
-    MenuBase.prototype.leftEscKeyHandler = function (e) {
-        if (this.navIdx.length) {
-            var wrapper = this.getWrapper();
-            this.closeMenu(this.navIdx.length, e);
-            var cul = wrapper.children[this.navIdx.length];
-            var sli = this.getLIByClass(cul, SELECTED);
-            if (sli) {
-                sli.setAttribute('aria-expanded', 'false');
-                sli.classList.remove(SELECTED);
-                sli.classList.add(FOCUSED);
-                sli.focus();
-            }
-        }
-        else {
-            if (e.action === ESCAPE) {
-                this.closeMenu(null, e);
-            }
-        }
-    };
-    MenuBase.prototype.scrollHandler = function (e) {
-        this.closeMenu(null, e);
-    };
-    MenuBase.prototype.touchHandler = function (e) {
-        this.isTapHold = true;
-        this.cmenuHandler(e.originalEvent);
-    };
-    MenuBase.prototype.cmenuHandler = function (e) {
-        e.preventDefault();
-        this.closeMenu(null, e);
-        if (this.canOpen(e.target)) {
-            if (e.changedTouches) {
-                this.openMenu(null, null, e.changedTouches[0].pageY + 1, e.changedTouches[0].pageX + 1, e);
-            }
-            else {
-                this.openMenu(null, null, e.pageY + 1, e.pageX + 1, e);
-            }
-        }
-    };
-    MenuBase.prototype.closeMenu = function (ulIndex, e) {
-        if (ulIndex === void 0) { ulIndex = 0; }
-        if (e === void 0) { e = null; }
-        if (this.isMenuVisible()) {
-            var ul = void 0;
-            var sli = void 0;
-            var item = void 0;
-            var items = void 0;
-            var closeArgs = void 0;
-            var beforeCloseArgs = void 0;
-            var wrapper = this.getWrapper();
-            for (var cnt = wrapper.childElementCount; cnt > ulIndex; cnt--) {
-                ul = wrapper.children[cnt - 1];
-                if (this.isMenu && ul.classList.contains('e-menu')) {
-                    sli = this.getLIByClass(ul, SELECTED);
-                    if (sli) {
-                        sli.classList.remove(SELECTED);
-                    }
-                    break;
-                }
-                item = this.navIdx.length ? this.getItem(this.navIdx) : null;
-                items = item ? item.items : this.items;
-                beforeCloseArgs = { element: ul, parentItem: item, items: items, event: e, cancel: false };
-                this.trigger('beforeClose', beforeCloseArgs);
-                if (!beforeCloseArgs.cancel) {
-                    this.toggleAnimation(ul, false);
-                    this.navIdx.length = ulIndex ? ulIndex - 1 : ulIndex;
-                    closeArgs = { element: ul, parentItem: item, items: items };
-                    this.trigger('onClose', closeArgs);
-                }
-            }
-        }
-    };
-    MenuBase.prototype.isMenuVisible = function () {
-        return (this.navIdx.length > 0 || (this.element.classList.contains('e-contextmenu') && isVisible(this.element).valueOf()));
-    };
-    MenuBase.prototype.canOpen = function (target) {
-        var canOpen = true;
-        if (this.filter) {
-            canOpen = false;
-            var filter = this.filter.split(' ');
-            for (var i = 0, len = target.classList.length; i < len; i++) {
-                if (filter.indexOf(target.classList[i]) > -1) {
-                    canOpen = true;
-                    break;
-                }
-            }
-        }
-        return canOpen;
-    };
-    MenuBase.prototype.openMenu = function (li, item, top, left, e, target) {
-        if (top === void 0) { top = 0; }
-        if (left === void 0) { left = 0; }
-        if (e === void 0) { e = null; }
-        if (target === void 0) { target = this.targetElement; }
-        var ul;
-        var navIdx;
-        var wrapper = this.getWrapper();
-        if (li) {
-            ul = this.createItems(item[this.getField('children', this.navIdx.length - 1)]);
-            if (!this.isMenu && Browser.isDevice) {
-                wrapper.lastChild.style.display = 'none';
-                var data = {
-                    text: item[this.getField('text')].toString(), iconCss: ICONS + ' e-previous'
-                };
-                var hdata = new MenuItem(this.items[0], null, data, true);
-                var hli = this.createItems([hdata]).children[0];
-                hli.classList.add(HEADER);
-                ul.insertBefore(hli, ul.children[0]);
-            }
-            ul.style.zIndex = this.element.style.zIndex;
-            wrapper.appendChild(ul);
-        }
-        else {
-            ul = this.element;
-            ul.style.zIndex = getZindexPartial(target ? target : this.element).toString();
-        }
-        navIdx = this.getIndex(li ? li.id : null, true);
-        var items = li ? item[this.getField('children', this.navIdx.length - 1)] : this.items;
-        var eventArgs = {
-            element: ul, items: items, parentItem: item, event: e, cancel: false, top: top, left: left
-        };
-        this.trigger('beforeOpen', eventArgs);
-        top = eventArgs.top;
-        left = eventArgs.left;
-        if (eventArgs.cancel) {
-            this.navIdx.pop();
-        }
-        else {
-            this.setPosition(li, ul, top, left);
-            this.toggleAnimation(ul);
-        }
-    };
-    MenuBase.prototype.setPosition = function (li, ul, top, left) {
-        var px = 'px';
-        this.toggleVisiblity(ul);
-        if (ul === this.element || (!isNullOrUndefined(left) && !isNullOrUndefined(top))) {
-            var collide = isCollide(ul, null, left, top);
-            if (collide.indexOf('right') > -1) {
-                left = left - ul.offsetWidth;
-            }
-            if (collide.indexOf('bottom') > -1) {
-                var offset = fit(ul, null, { X: false, Y: true }, { top: top, left: left });
-                top = offset.top - 20;
-            }
-            collide = isCollide(ul, null, left, top);
-            if (collide.indexOf('left') > -1) {
-                var offset = fit(ul, null, { X: true, Y: false }, { top: top, left: left });
-                left = offset.left;
-            }
-        }
-        else {
-            var offset = void 0;
-            var isRelative = this.isMenu && this.element.offsetParent.tagName !== 'BODY';
-            if (!this.isMenu && Browser.isDevice) {
-                top = Number(this.element.style.top.replace(px, ''));
-                left = Number(this.element.style.left.replace(px, ''));
-            }
-            else {
-                var x = 'right';
-                var y = 'top';
-                if (this.isMenu && !this.element.classList.contains('e-vertical') && this.navIdx.length < 2) {
-                    x = this.enableRtl ? 'right' : 'left';
-                    y = 'bottom';
-                }
-                else {
-                    x = this.enableRtl ? 'left' : 'right';
-                }
-                offset = calculatePosition(li, x, y);
-                top = offset.top;
-                left = offset.left;
-            }
-            var collide = isCollide(ul, null, this.enableRtl ? left - ul.offsetWidth : left, top);
-            var xCollision = collide.indexOf('left') > -1 || collide.indexOf('right') > -1;
-            var yCollision = collide.indexOf('bottom') > -1;
-            if (xCollision) {
-                offset = calculatePosition(li, this.enableRtl ? 'right' : 'left', 'top');
-                left = offset.left;
-            }
-            if (this.enableRtl || xCollision) {
-                left = (this.enableRtl && xCollision) ? left : left - ul.offsetWidth;
-                if (this.isMenu && xCollision && !this.element.classList.contains('e-vertical') && this.navIdx && this.navIdx.length < 2) {
-                    left = this.enableRtl ? left - li.getBoundingClientRect().width : left + li.getBoundingClientRect().width;
-                }
-            }
-            if (yCollision) {
-                offset = fit(ul, null, { X: false, Y: true }, { top: top, left: left });
-                top = offset.top;
-            }
-            collide = isCollide(ul, null, left, top);
-            xCollision = collide.indexOf('left') > -1 || collide.indexOf('right') > -1;
-            if (xCollision) {
-                offset = fit(ul, null, { X: true, Y: false }, { top: top, left: left });
-                top = offset.top;
-                left = offset.left;
-            }
-            if (isRelative) {
-                var boundRect = ul.offsetParent.getBoundingClientRect();
-                top -= boundRect.top + pageYOffset;
-                left -= boundRect.left + pageXOffset;
-            }
-        }
-        this.toggleVisiblity(ul, false);
-        if (this.isMenu) {
-            if (this.element.classList.contains('e-vertical') && this.navIdx && this.navIdx[this.navIdx.length - 1] === 0) {
-                top = top - 1;
-            }
-            else {
-                if (this.navIdx && this.navIdx[this.navIdx.length - 1] === 0) {
-                    if (this.navIdx.length === 1) {
-                        left = left - 1;
-                    }
-                    else {
-                        top = top - 1;
-                    }
-                }
-            }
-        }
-        ul.style.top = top + px;
-        ul.style.left = left + px;
-    };
-    MenuBase.prototype.toggleVisiblity = function (ul, isVisible$$1) {
-        if (isVisible$$1 === void 0) { isVisible$$1 = true; }
-        ul.style.visibility = isVisible$$1 ? 'hidden' : '';
-        ul.style.display = isVisible$$1 ? 'block' : 'none';
-    };
-    MenuBase.prototype.createItems = function (items) {
-        var _this = this;
-        var level = this.navIdx ? this.navIdx.length : 0;
-        var showIcon = this.hasField(items, this.getField('iconCss', level));
-        var id = 'id';
-        var listBaseOptions = {
-            showIcon: showIcon,
-            moduleName: 'menu',
-            fields: this.getFields(level),
-            template: this.template,
-            itemCreating: function (args) {
-                if (!args.curData[args.fields[id]]) {
-                    args.curData[args.fields[id]] = getUniqueID('menuitem');
-                    _this.clearChanges();
-                }
-                args.curData.htmlAttributes = {
-                    role: 'menuitem',
-                    tabindex: '-1'
-                };
-                if (_this.isMenu && !args.curData[_this.getField('separator', level)]) {
-                    args.curData.htmlAttributes['aria-label'] = args.curData[args.fields.text];
-                }
-            },
-            itemCreated: function (args) {
-                if (args.curData[_this.getField('separator', level)]) {
-                    args.item.classList.add(SEPARATOR);
-                    args.item.removeAttribute('role');
-                }
-                if (showIcon && !args.curData[args.fields.iconCss]
-                    && !args.curData[_this.getField('separator', level)]) {
-                    args.item.classList.add('e-blankicon');
-                }
-                if (args.curData[args.fields.child]
-                    && args.curData[args.fields.child].length) {
-                    var span = _this.createElement('span', { className: ICONS + ' ' + CARET });
-                    args.item.appendChild(span);
-                    args.item.setAttribute('aria-haspopup', 'true');
-                    args.item.setAttribute('aria-expanded', 'false');
-                    if (!_this.isMenu) {
-                        args.item.removeAttribute('role');
-                    }
-                    args.item.classList.add('e-menu-caret-icon');
-                }
-                if (_this.isMenu && _this.template) {
-                    args.item.setAttribute('id', args.curData[args.fields.id].toString());
-                    args.item.removeAttribute('data-uid');
-                }
-                var eventArgs = { item: args.curData, element: args.item };
-                _this.trigger('beforeItemRender', eventArgs);
-            }
-        };
-        var ul = ListBase.createList(this.createElement, items, listBaseOptions, !this.template);
-        ul.setAttribute('tabindex', '0');
-        if (this.isMenu) {
-            ul.setAttribute('role', 'menu');
-        }
-        return ul;
-    };
-    MenuBase.prototype.moverHandler = function (e) {
-        var wrapper = this.getWrapper();
-        var trgt = e.target;
-        var cli = this.getLI(trgt);
-        if (cli && closest(cli, '.e-' + this.getModuleName() + '-wrapper')) {
-            var fli = select('.' + FOCUSED, wrapper);
-            if (fli) {
-                fli.classList.remove(FOCUSED);
-            }
-            cli.classList.add(FOCUSED);
-            if (!this.showItemOnClick) {
-                this.clickHandler(e);
-            }
-        }
-        if (this.isMenu && trgt.parentElement !== wrapper && !cli && this.navIdx.length) {
-            this.closeMenu(null, e);
-        }
-    };
-    MenuBase.prototype.getField = function (propName, level) {
-        if (level === void 0) { level = 0; }
-        var fieldName = this.fields[propName];
-        return typeof fieldName === 'string' ? fieldName :
-            (!fieldName[level] ? fieldName[fieldName.length - 1].toString() : fieldName[level].toString());
-    };
-    MenuBase.prototype.getFields = function (level) {
-        if (level === void 0) { level = 0; }
-        return {
-            id: this.getField('itemId', level),
-            iconCss: this.getField('iconCss', level),
-            text: this.getField('text', level),
-            url: this.getField('url', level),
-            child: this.getField('children', level),
-            separator: this.getField('separator', level)
-        };
-    };
-    MenuBase.prototype.hasField = function (items, field) {
-        for (var i = 0, len = items.length; i < len; i++) {
-            if (items[i][field]) {
-                return true;
-            }
-        }
-        return false;
-    };
-    MenuBase.prototype.clickHandler = function (e) {
-        if (this.isTapHold) {
-            this.isTapHold = false;
-        }
-        else {
-            var wrapper = this.getWrapper();
-            var trgt = e.target;
-            var cli = this.getLI(trgt);
-            var cliWrapper = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : null;
-            var isInstLI = cli && cliWrapper && wrapper.firstElementChild.id === cliWrapper.firstElementChild.id;
-            if (isInstLI && e.type === 'click' && !cli.classList.contains(HEADER)) {
-                this.setLISelected(cli);
-                var navIdx = this.getIndex(cli.id, true);
-                var item = this.getItem(navIdx);
-                var eventArgs = { element: cli, item: item };
-                this.trigger('select', eventArgs);
-            }
-            if (isInstLI && (e.type === 'mouseover' || Browser.isDevice || this.showItemOnClick)) {
-                var ul = void 0;
-                if (cli.classList.contains(HEADER)) {
-                    ul = wrapper.children[this.navIdx.length - 1];
-                    this.toggleAnimation(ul);
-                    var sli = this.getLIByClass(ul, SELECTED);
-                    if (sli) {
-                        sli.classList.remove(SELECTED);
-                    }
-                    detach(cli.parentNode);
-                    this.navIdx.pop();
-                }
-                else {
-                    if (!cli.classList.contains(SEPARATOR)) {
-                        var showSubMenu = true;
-                        var cul = cli.parentNode;
-                        var cliIdx = this.getIdx(cul, cli);
-                        if (this.isMenu || !Browser.isDevice) {
-                            var culIdx = this.getIdx(wrapper, cul);
-                            if (this.navIdx[culIdx] === cliIdx) {
-                                showSubMenu = false;
-                            }
-                            if (culIdx !== this.navIdx.length && (e.type !== 'mouseover' || showSubMenu)) {
-                                var sli = this.getLIByClass(cul, SELECTED);
-                                if (sli) {
-                                    sli.classList.remove(SELECTED);
-                                }
-                                this.closeMenu(culIdx + 1, e);
-                            }
-                        }
-                        if (showSubMenu) {
-                            var idx = this.navIdx.concat(cliIdx);
-                            var item = this.getItem(idx);
-                            if (item[this.getField('children', idx.length - 1)] &&
-                                item[this.getField('children', idx.length - 1)].length) {
-                                if (e.type === 'mouseover' || (Browser.isDevice && this.isMenu)) {
-                                    this.setLISelected(cli);
-                                }
-                                cli.setAttribute('aria-expanded', 'true');
-                                this.navIdx.push(cliIdx);
-                                if (this.isMenu && !this.element.classList.contains('e-vertical') && this.navIdx.length < 2) {
-                                    var collision = isCollide(cli, this.element);
-                                    if (collision.length) {
-                                        var boundRect = cli.getBoundingClientRect();
-                                        this.element.scroll((collision.indexOf('right') > -1 ? boundRect.right : boundRect.left), 0);
-                                    }
-                                }
-                                this.openMenu(cli, item, null, null, e);
-                            }
-                            else {
-                                if (e.type !== 'mouseover') {
-                                    this.closeMenu(null, e);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            else {
-                if (trgt.tagName !== 'UL' || trgt.parentElement !== wrapper) {
-                    if (!cli || !cli.querySelector('.' + CARET)) {
-                        this.closeMenu(null, e);
-                    }
-                }
-            }
-        }
-    };
-    MenuBase.prototype.setLISelected = function (li) {
-        var sli = this.getLIByClass(li.parentElement, SELECTED);
-        if (sli) {
-            sli.classList.remove(SELECTED);
-        }
-        li.classList.remove(FOCUSED);
-        li.classList.add(SELECTED);
-    };
-    MenuBase.prototype.getLIByClass = function (ul, classname) {
-        for (var i = 0, len = ul.children.length; i < len; i++) {
-            if (ul.children[i].classList.contains(classname)) {
-                return ul.children[i];
-            }
-        }
-        return null;
-    };
-    MenuBase.prototype.getItem = function (navIdx) {
-        navIdx = navIdx.slice();
-        var idx = navIdx.pop();
-        var items = this.getItems(navIdx);
-        return items[idx];
-    };
-    MenuBase.prototype.getItems = function (navIdx) {
-        var items = this.items;
-        for (var i = 0; i < navIdx.length; i++) {
-            items = items[navIdx[i]][this.getField('children', i)];
-        }
-        return items;
-    };
-    MenuBase.prototype.getIdx = function (ul, li, skipHdr) {
-        if (skipHdr === void 0) { skipHdr = true; }
-        var idx = Array.prototype.indexOf.call(ul.children, li);
-        if (skipHdr && ul.children[0].classList.contains(HEADER)) {
-            idx--;
-        }
-        return idx;
-    };
-    MenuBase.prototype.getLI = function (elem) {
-        if (elem.tagName === 'LI' && elem.classList.contains('e-menu-item')) {
-            return elem;
-        }
-        return closest(elem, 'li.e-menu-item');
-    };
-    /**
-     * Called internally if any of the property value changed
-     * @private
-     * @param {MenuBaseModel} newProp
-     * @param {MenuBaseModel} oldProp
-     * @returns void
-     */
-    MenuBase.prototype.onPropertyChanged = function (newProp, oldProp) {
-        var wrapper = this.getWrapper();
-        for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
-            var prop = _a[_i];
-            switch (prop) {
-                case 'cssClass':
-                    if (oldProp.cssClass) {
-                        removeClass([wrapper], oldProp.cssClass.split(' '));
-                    }
-                    if (newProp.cssClass) {
-                        addClass([wrapper], newProp.cssClass.split(' '));
-                    }
-                    break;
-                case 'enableRtl':
-                    wrapper.classList.toggle(RTL);
-                    break;
-                case 'showItemOnClick':
-                    this.unWireEvents();
-                    this.showItemOnClick = newProp.showItemOnClick;
-                    this.wireEvents();
-                    break;
-                case 'items':
-                    var idx = void 0;
-                    var navIdx = void 0;
-                    var item = void 0;
-                    var keys = Object.keys(newProp.items);
-                    for (var i = 0; i < keys.length; i++) {
-                        navIdx = this.getChangedItemIndex(newProp, [], Number(keys[i]));
-                        if (navIdx.length <= this.getWrapper().children.length) {
-                            idx = navIdx.pop();
-                            item = this.getItems(navIdx);
-                            this.insertAfter([item[idx]], item[idx].text);
-                            this.removeItem(item, navIdx, idx);
-                        }
-                        navIdx.length = 0;
-                    }
-                    break;
-            }
-        }
-    };
-    MenuBase.prototype.getChangedItemIndex = function (newProp, index, idx) {
-        index.push(idx);
-        var key = Object.keys(newProp.items[idx]).pop();
-        if (key === 'items') {
-            var item = newProp.items[idx];
-            this.getChangedItemIndex(item, index, Number(Object.keys(item.items).pop()));
-        }
-        else {
-            if (key === 'isParentArray' && index.length > 1) {
-                index.pop();
-            }
-        }
-        return index;
-    };
-    MenuBase.prototype.removeItem = function (item, navIdx, idx) {
-        item.splice(idx, 1);
-        var uls = this.getWrapper().children;
-        if (navIdx.length < uls.length) {
-            detach(uls[navIdx.length].children[idx]);
-        }
-    };
-    /**
-     * Used to unwire the bind events.
-     * @private
-     */
-    MenuBase.prototype.unWireEvents = function () {
-        var wrapper = this.getWrapper();
-        if (this.target) {
-            var target = void 0;
-            var touchModule = void 0;
-            var targetElems = selectAll(this.target);
-            for (var i = 0, len = targetElems.length; i < len; i++) {
-                target = targetElems[i];
-                if (Browser.isIos) {
-                    touchModule = getInstance(target, Touch);
-                    if (touchModule) {
-                        touchModule.destroy();
-                    }
-                }
-                else {
-                    EventHandler.remove(target, 'contextmenu', this.cmenuHandler);
-                }
-            }
-            for (var _i = 0, _a = getScrollableParent(this.targetElement); _i < _a.length; _i++) {
-                var parent_2 = _a[_i];
-                EventHandler.remove(parent_2, 'scroll', this.scrollHandler);
-            }
-        }
-        if (!Browser.isDevice) {
-            EventHandler.remove(this.isMenu ? document : wrapper, 'mouseover', this.delegateMoverHandler);
-            EventHandler.remove(document, 'mousedown', this.delegateMouseDownHandler);
-        }
-        EventHandler.remove(document, 'click', this.delegateClickHandler);
-        var keyboardModule = getInstance(wrapper, KeyboardEvents);
-        if (keyboardModule) {
-            keyboardModule.destroy();
-        }
-        this.rippleFn();
-    };
-    MenuBase.prototype.toggleAnimation = function (ul, isMenuOpen) {
-        var _this = this;
-        if (isMenuOpen === void 0) { isMenuOpen = true; }
-        if (this.animationSettings.effect === 'None' || !isMenuOpen) {
-            this.end(ul, isMenuOpen);
-        }
-        else {
-            this.animation.animate(ul, {
-                name: this.animationSettings.effect,
-                duration: this.animationSettings.duration,
-                timingFunction: this.animationSettings.easing,
-                begin: function (options) {
-                    options.element.style.display = 'block';
-                    options.element.style.maxHeight = options.element.getBoundingClientRect().height + 'px';
-                },
-                end: function (options) {
-                    _this.end(options.element, isMenuOpen);
-                }
-            });
-        }
-    };
-    MenuBase.prototype.end = function (ul, isMenuOpen) {
-        if (isMenuOpen) {
-            ul.style.display = 'block';
-            ul.style.maxHeight = '';
-            var item = this.navIdx.length ? this.getItem(this.navIdx) : null;
-            var eventArgs = {
-                element: ul, parentItem: item, items: item ? item.items : this.items
-            };
-            this.trigger('onOpen', eventArgs);
-            if (ul.querySelector('.' + FOCUSED)) {
-                ul.querySelector('.' + FOCUSED).focus();
-            }
-            else {
-                var ele = void 0;
-                ele = this.getWrapper().children[this.getIdx(this.getWrapper(), ul) - 1];
-                if (ele) {
-                    ele.querySelector('.' + SELECTED).focus();
-                }
-                else {
-                    this.element.focus();
-                }
-            }
-        }
-        else {
-            if (ul === this.element) {
-                var fli = this.getLIByClass(this.element, FOCUSED);
-                if (fli) {
-                    fli.classList.remove(FOCUSED);
-                }
-                var sli = this.getLIByClass(this.element, SELECTED);
-                if (sli) {
-                    sli.classList.remove(SELECTED);
-                }
-                ul.style.display = 'none';
-            }
-            else {
-                detach(ul);
-            }
-        }
-    };
-    /**
-     * Get the properties to be maintained in the persisted state.
-     * @returns string
-     */
-    MenuBase.prototype.getPersistData = function () {
-        return '';
-    };
-    /**
-     * Get wrapper element.
-     * @returns Element
-     * @private
-     */
-    MenuBase.prototype.getWrapper = function () {
-        return closest(this.element, '.e-' + this.getModuleName() + '-wrapper');
-    };
-    MenuBase.prototype.getIndex = function (data, isUniqueId, items, nIndex, isCallBack, level) {
-        if (items === void 0) { items = this.items; }
-        if (nIndex === void 0) { nIndex = []; }
-        if (isCallBack === void 0) { isCallBack = false; }
-        if (level === void 0) { level = 0; }
-        var item;
-        level = isCallBack ? level + 1 : 0;
-        for (var i = 0, len = items.length; i < len; i++) {
-            item = items[i];
-            if ((isUniqueId ? item[this.getField('itemId', level)] : item[this.getField('text', level)]) === data) {
-                nIndex.push(i);
-                break;
-            }
-            else if (item[this.getField('children', level)]
-                && item[this.getField('children', level)].length) {
-                nIndex = this.getIndex(data, isUniqueId, item[this.getField('children', level)], nIndex, true, level);
-                if (nIndex[nIndex.length - 1] === -1) {
-                    if (i !== len - 1) {
-                        nIndex.pop();
-                    }
-                }
-                else {
-                    nIndex.unshift(i);
-                    break;
-                }
-            }
-            else {
-                if (i === len - 1) {
-                    nIndex.push(-1);
-                }
-            }
-        }
-        return (!isCallBack && nIndex[0] === -1) ? [] : nIndex;
-    };
-    /**
-     * This method is used to enable or disable the menu items in the Menu based on the items and enable argument.
-     * @param items Text items that needs to be enabled/disabled.
-     * @param enable Set `true`/`false` to enable/disable the list items.
-     * @param isUniqueId - Set `true` if it is a unique id.
-     * @returns void
-     */
-    MenuBase.prototype.enableItems = function (items, enable, isUniqueId) {
-        if (enable === void 0) { enable = true; }
-        var ul;
-        var idx;
-        var navIdx;
-        var disabled = DISABLED;
-        var wrapper = this.getWrapper();
-        for (var i = 0; i < items.length; i++) {
-            navIdx = this.getIndex(items[i], isUniqueId);
-            idx = navIdx.pop();
-            ul = wrapper.children[navIdx.length];
-            if (ul) {
-                if (enable) {
-                    if (this.isMenu) {
-                        ul.children[idx].classList.remove(disabled);
-                        ul.children[idx].removeAttribute('aria-disabled');
-                    }
-                    else {
-                        if (Browser.isDevice && !ul.classList.contains('e-contextmenu')) {
-                            ul.children[idx + 1].classList.remove(disabled);
-                        }
-                        else {
-                            ul.children[idx].classList.remove(disabled);
-                        }
-                    }
-                }
-                else {
-                    if (this.isMenu) {
-                        ul.children[idx].classList.add(disabled);
-                        ul.children[idx].setAttribute('aria-disabled', 'true');
-                    }
-                    else {
-                        if (Browser.isDevice && !ul.classList.contains('e-contextmenu')) {
-                            ul.children[idx + 1].classList.add(disabled);
-                        }
-                        else {
-                            ul.children[idx].classList.add(disabled);
-                        }
-                    }
-                }
-            }
-        }
-    };
-    /**
-     * This method is used to show the menu items in the Menu based on the items text.
-     * @param items Text items that needs to be shown.
-     * @param isUniqueId - Set `true` if it is a unique id.
-     * @returns void
-     */
-    MenuBase.prototype.showItems = function (items, isUniqueId) {
-        this.showHideItems(items, false, isUniqueId);
-    };
-    /**
-     * This method is used to hide the menu items in the Menu based on the items text.
-     * @param items Text items that needs to be hidden.
-     * @returns void
-     */
-    MenuBase.prototype.hideItems = function (items, isUniqueId) {
-        this.showHideItems(items, true, isUniqueId);
-    };
-    MenuBase.prototype.showHideItems = function (items, ishide, isUniqueId) {
-        var ul;
-        var index;
-        var navIdx;
-        var wrapper = this.getWrapper();
-        for (var i = 0; i < items.length; i++) {
-            navIdx = this.getIndex(items[i], isUniqueId);
-            index = navIdx.pop();
-            ul = wrapper.children[navIdx.length];
-            if (ul) {
-                if (ishide) {
-                    if (Browser.isDevice && !ul.classList.contains('e-contextmenu')) {
-                        ul.children[index + 1].classList.add(HIDE);
-                    }
-                    else {
-                        ul.children[index].classList.add(HIDE);
-                    }
-                }
-                else {
-                    if (Browser.isDevice && !ul.classList.contains('e-contextmenu')) {
-                        ul.children[index + 1].classList.remove(HIDE);
-                    }
-                    else {
-                        ul.children[index].classList.remove(HIDE);
-                    }
-                }
-            }
-        }
-    };
-    /**
-     * It is used to remove the menu items from the Menu based on the items text.
-     * @param items Text items that needs to be removed.
-     * @returns void
-     */
-    MenuBase.prototype.removeItems = function (items, isUniqueId) {
-        var idx;
-        var navIdx;
-        var iitems;
-        for (var i = 0; i < items.length; i++) {
-            navIdx = this.getIndex(items[i], isUniqueId);
-            idx = navIdx.pop();
-            iitems = this.getItems(navIdx);
-            this.removeItem(iitems, navIdx, idx);
-        }
-    };
-    /**
-     * It is used to insert the menu items after the specified menu item text.
-     * @param items Items that needs to be inserted.
-     * @param text Text item after that the element to be inserted.
-     * @returns void
-     */
-    MenuBase.prototype.insertAfter = function (items, text, isUniqueId) {
-        this.insertItems(items, text, isUniqueId);
-    };
-    /**
-     * It is used to insert the menu items before the specified menu item text.
-     * @param items Items that needs to be inserted.
-     * @param text Text item before that the element to be inserted.
-     * @param isUniqueId - Set `true` if it is a unique id.
-     * @returns void
-     */
-    MenuBase.prototype.insertBefore = function (items, text, isUniqueId) {
-        this.insertItems(items, text, isUniqueId, false);
-    };
-    MenuBase.prototype.insertItems = function (items, text, isUniqueId, isAfter) {
-        if (isAfter === void 0) { isAfter = true; }
-        var li;
-        var idx;
-        var navIdx;
-        var iitems;
-        var menuitem;
-        var showIcon;
-        for (var i = 0; i < items.length; i++) {
-            navIdx = this.getIndex(text, isUniqueId);
-            idx = navIdx.pop();
-            iitems = this.getItems(navIdx);
-            menuitem = new MenuItem(iitems[0], 'items', items[i], true);
-            iitems.splice(isAfter ? idx + 1 : idx, 0, menuitem);
-            var uls = this.getWrapper().children;
-            if (navIdx.length < uls.length) {
-                idx = isAfter ? idx + 1 : idx;
-                showIcon = this.hasField(iitems, this.getField('iconCss', navIdx.length - 1));
-                li = this.createItems(iitems).children[idx];
-                uls[navIdx.length].insertBefore(li, uls[navIdx.length].children[idx]);
-            }
-        }
-    };
-    /**
-     * Destroys the widget.
-     * @returns void
-     */
-    MenuBase.prototype.destroy = function () {
-        var _this = this;
-        var wrapper = this.getWrapper();
-        if (wrapper) {
-            _super.prototype.destroy.call(this);
-            this.unWireEvents();
-            if (this.ngElement && !this.isMenu) {
-                this.ngElement.style.display = 'block';
-            }
-            else {
-                this.closeMenu();
-                this.element.innerHTML = '';
-                ['top', 'left', 'display', 'z-index'].forEach(function (key) {
-                    _this.element.style.removeProperty(key);
-                });
-                ['role', 'tabindex', 'class', 'style'].forEach(function (key) {
-                    if (key === 'class' && _this.element.classList.contains('e-menu-parent')) {
-                        _this.element.classList.remove('e-menu-parent');
-                    }
-                    if (['class', 'style'].indexOf(key) === -1 || !_this.element.getAttribute(key)) {
-                        _this.element.removeAttribute(key);
-                    }
-                    if (_this.isMenu && key === 'class' && _this.element.classList.contains('e-vertical')) {
-                        _this.element.classList.remove('e-vertical');
-                    }
-                });
-                wrapper.parentNode.insertBefore(this.element, wrapper);
-            }
-            if (this.isMenu && this.ngElement) {
-                detach(this.element);
-                wrapper.style.display = '';
-                wrapper.classList.remove('e-' + this.getModuleName() + '-wrapper');
-                wrapper.removeAttribute('data-ripple');
-            }
-            else {
-                detach(wrapper);
-            }
-        }
-    };
-    __decorate$4([
-        Event()
-    ], MenuBase.prototype, "beforeItemRender", void 0);
-    __decorate$4([
-        Event()
-    ], MenuBase.prototype, "beforeOpen", void 0);
-    __decorate$4([
-        Event()
-    ], MenuBase.prototype, "onOpen", void 0);
-    __decorate$4([
-        Event()
-    ], MenuBase.prototype, "beforeClose", void 0);
-    __decorate$4([
-        Event()
-    ], MenuBase.prototype, "onClose", void 0);
-    __decorate$4([
-        Event()
-    ], MenuBase.prototype, "select", void 0);
-    __decorate$4([
-        Event()
-    ], MenuBase.prototype, "created", void 0);
-    __decorate$4([
-        Property('')
-    ], MenuBase.prototype, "cssClass", void 0);
-    __decorate$4([
-        Property(false)
-    ], MenuBase.prototype, "showItemOnClick", void 0);
-    __decorate$4([
-        Property('')
-    ], MenuBase.prototype, "target", void 0);
-    __decorate$4([
-        Property('')
-    ], MenuBase.prototype, "filter", void 0);
-    __decorate$4([
-        Property(null)
-    ], MenuBase.prototype, "template", void 0);
-    __decorate$4([
-        Complex({}, FieldSettings)
-    ], MenuBase.prototype, "fields", void 0);
-    __decorate$4([
-        Collection([], MenuItem)
-    ], MenuBase.prototype, "items", void 0);
-    __decorate$4([
-        Property({ duration: 400, easing: 'ease', effect: 'SlideDown' })
-    ], MenuBase.prototype, "animationSettings", void 0);
-    MenuBase = __decorate$4([
-        NotifyPropertyChanges
-    ], MenuBase);
-    return MenuBase;
-}(Component));
-
-var __extends$3 = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -4634,7 +5438,7 @@ var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, 
  * ```
  */
 var ContextMenu = /** @__PURE__ @class */ (function (_super) {
-    __extends$3(ContextMenu, _super);
+    __extends$5(ContextMenu, _super);
     /**
      * Constructor for creating the widget.
      * @private
@@ -4649,6 +5453,11 @@ var ContextMenu = /** @__PURE__ @class */ (function (_super) {
     ContextMenu.prototype.preRender = function () {
         this.isMenu = false;
         _super.prototype.preRender.call(this);
+    };
+    ContextMenu.prototype.initialize = function () {
+        _super.prototype.initialize.call(this);
+        attributes(this.element, { 'role': 'menu', 'tabindex': '0' });
+        this.element.style.zIndex = getZindexPartial(this.element).toString();
     };
     /**
      * This method is used to open the ContextMenu in specified position.
@@ -4699,16 +5508,16 @@ var ContextMenu = /** @__PURE__ @class */ (function (_super) {
     ContextMenu.prototype.getModuleName = function () {
         return 'contextmenu';
     };
-    __decorate$3([
+    __decorate$5([
         Property('')
     ], ContextMenu.prototype, "target", void 0);
-    __decorate$3([
+    __decorate$5([
         Property('')
     ], ContextMenu.prototype, "filter", void 0);
-    __decorate$3([
+    __decorate$5([
         Collection([], MenuItem)
     ], ContextMenu.prototype, "items", void 0);
-    ContextMenu = __decorate$3([
+    ContextMenu = __decorate$5([
         NotifyPropertyChanges
     ], ContextMenu);
     return ContextMenu;
@@ -4718,7 +5527,7 @@ var ContextMenu = /** @__PURE__ @class */ (function (_super) {
  * ContextMenu modules
  */
 
-var __extends$5 = (undefined && undefined.__extends) || (function () {
+var __extends$6 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -4731,7 +5540,7 @@ var __extends$5 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -4753,7 +5562,7 @@ var SCROLLABLE = 'e-scrollable';
  * ```
  */
 var Menu = /** @__PURE__ @class */ (function (_super) {
-    __extends$5(Menu, _super);
+    __extends$6(Menu, _super);
     /**
      * Constructor for creating the component.
      * @private
@@ -4799,13 +5608,14 @@ var Menu = /** @__PURE__ @class */ (function (_super) {
     };
     Menu.prototype.initialize = function () {
         _super.prototype.initialize.call(this);
+        attributes(this.element, { 'role': 'menubar', 'tabindex': '0' });
         if (this.orientation === 'Vertical') {
             this.element.classList.add(VMENU);
             this.element.setAttribute('aria-orientation', 'vertical');
         }
         else {
-            if (Browser.isDevice) {
-                this.element.classList.add(SCROLLABLE);
+            if (Browser.isDevice && !this.enableScrolling) {
+                this.element.parentElement.classList.add(SCROLLABLE);
             }
         }
     };
@@ -4862,16 +5672,19 @@ var Menu = /** @__PURE__ @class */ (function (_super) {
             this.items.push(record);
         }
     };
-    __decorate$5([
+    __decorate$6([
         Property('Horizontal')
     ], Menu.prototype, "orientation", void 0);
-    __decorate$5([
+    __decorate$6([
         Property(null)
     ], Menu.prototype, "template", void 0);
-    __decorate$5([
+    __decorate$6([
+        Property(false)
+    ], Menu.prototype, "enableScrolling", void 0);
+    __decorate$6([
         Complex({}, FieldSettings)
     ], Menu.prototype, "fields", void 0);
-    Menu = __decorate$5([
+    Menu = __decorate$6([
         NotifyPropertyChanges
     ], Menu);
     return Menu;
@@ -4881,7 +5694,7 @@ var Menu = /** @__PURE__ @class */ (function (_super) {
  * Menu modules
  */
 
-var __extends$6 = (undefined && undefined.__extends) || (function () {
+var __extends$7 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -4894,7 +5707,7 @@ var __extends$6 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$7 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -4907,13 +5720,14 @@ var CLS_NEST$1 = 'e-nested';
 var CLS_ITEMS$1 = 'e-items';
 var CLS_ITEM$2 = 'e-item';
 var CLS_TEMPLATE$1 = 'e-template';
-var CLS_RTL$3 = 'e-rtl';
+var CLS_RTL$4 = 'e-rtl';
 var CLS_ACTIVE$1 = 'e-active';
-var CLS_DISABLE$3 = 'e-disable';
+var CLS_DISABLE$4 = 'e-disable';
 var CLS_HIDDEN$1 = 'e-hidden';
 var CLS_FOCUS = 'e-focused';
 var CLS_ICONS = 'e-icons';
 var CLS_ICON = 'e-icon';
+var CLS_ICON_TAB = 'e-icon-tab';
 var CLS_ICON_CLOSE = 'e-close-icon';
 var CLS_CLOSE_SHOW = 'e-close-show';
 var CLS_TEXT = 'e-tab-text';
@@ -4925,36 +5739,43 @@ var CLS_TB_ITEMS = 'e-toolbar-items';
 var CLS_TB_ITEM = 'e-toolbar-item';
 var CLS_TB_POP = 'e-toolbar-pop';
 var CLS_TB_POPUP = 'e-toolbar-popup';
+var CLS_HOR_NAV = 'e-hor-nav';
 var CLS_POPUP_OPEN = 'e-popup-open';
 var CLS_POPUP_CLOSE = 'e-popup-close';
 var CLS_PROGRESS = 'e-progress';
 var CLS_IGNORE = 'e-ignore';
-var CLS_OVERLAY$1 = 'e-overlay';
+var CLS_OVERLAY$2 = 'e-overlay';
+var CLS_HSCRCNT = 'e-hscroll-content';
+var CLS_VSCRCNT = 'e-vscroll-content';
+var CLS_VTAB = 'e-vertical-tab';
+var CLS_VERTICAL$1 = 'e-vertical';
+var CLS_VLEFT = 'e-vertical-left';
+var CLS_VRIGHT = 'e-vertical-right';
 var TabActionSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$6(TabActionSettings, _super);
+    __extends$7(TabActionSettings, _super);
     function TabActionSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$6([
+    __decorate$7([
         Property('SlideLeftIn')
     ], TabActionSettings.prototype, "effect", void 0);
-    __decorate$6([
+    __decorate$7([
         Property(600)
     ], TabActionSettings.prototype, "duration", void 0);
-    __decorate$6([
+    __decorate$7([
         Property('ease')
     ], TabActionSettings.prototype, "easing", void 0);
     return TabActionSettings;
 }(ChildProperty));
 var TabAnimationSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$6(TabAnimationSettings, _super);
+    __extends$7(TabAnimationSettings, _super);
     function TabAnimationSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$6([
+    __decorate$7([
         Complex({ effect: 'SlideLeftIn', duration: 600, easing: 'ease' }, TabActionSettings)
     ], TabAnimationSettings.prototype, "previous", void 0);
-    __decorate$6([
+    __decorate$7([
         Complex({ effect: 'SlideRightIn', duration: 600, easing: 'ease' }, TabActionSettings)
     ], TabAnimationSettings.prototype, "next", void 0);
     return TabAnimationSettings;
@@ -4963,17 +5784,17 @@ var TabAnimationSettings = /** @__PURE__ @class */ (function (_super) {
  * Objects used for configuring the Tab item header properties.
  */
 var Header = /** @__PURE__ @class */ (function (_super) {
-    __extends$6(Header, _super);
+    __extends$7(Header, _super);
     function Header() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$6([
+    __decorate$7([
         Property('')
     ], Header.prototype, "text", void 0);
-    __decorate$6([
+    __decorate$7([
         Property('')
     ], Header.prototype, "iconCss", void 0);
-    __decorate$6([
+    __decorate$7([
         Property('left')
     ], Header.prototype, "iconPosition", void 0);
     return Header;
@@ -4982,20 +5803,20 @@ var Header = /** @__PURE__ @class */ (function (_super) {
  * An array of object that is used to configure the Tab.
  */
 var TabItem = /** @__PURE__ @class */ (function (_super) {
-    __extends$6(TabItem, _super);
+    __extends$7(TabItem, _super);
     function TabItem() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$6([
+    __decorate$7([
         Complex({}, Header)
     ], TabItem.prototype, "header", void 0);
-    __decorate$6([
+    __decorate$7([
         Property('')
     ], TabItem.prototype, "content", void 0);
-    __decorate$6([
+    __decorate$7([
         Property('')
     ], TabItem.prototype, "cssClass", void 0);
-    __decorate$6([
+    __decorate$7([
         Property(false)
     ], TabItem.prototype, "disabled", void 0);
     return TabItem;
@@ -5012,7 +5833,7 @@ var TabItem = /** @__PURE__ @class */ (function (_super) {
  * ```
  */
 var Tab = /** @__PURE__ @class */ (function (_super) {
-    __extends$6(Tab, _super);
+    __extends$7(Tab, _super);
     /**
      * Initializes a new instance of the Tab class.
      * @param options  - Specifies Tab model properties as options.
@@ -5020,13 +5841,15 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
      */
     function Tab(options, element) {
         var _this = _super.call(this, options, element) || this;
-        _this.show = { name: 'SlideDown', duration: 100 };
-        _this.hide = { name: 'SlideUp', duration: 100 };
+        _this.show = {};
+        _this.hide = {};
         _this.animateOptions = {};
         _this.animObj = new Animation(_this.animateOptions);
         _this.maxHeight = 0;
         _this.title = 'Close';
         _this.lastIndex = 0;
+        _this.isAdd = false;
+        _this.isIconAlone = false;
         /**
          * Contains the keyboard configuration of the Tab.
          */
@@ -5094,6 +5917,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         this.setCssClass(this.element, this.cssClass, true);
         attributes(this.element, { role: 'tablist', 'aria-disabled': 'false', 'aria-activedescendant': '' });
         this.setCssClass(this.element, css, true);
+        this.updatePopAnimationConfig();
     };
     /**
      * Initialize the component rendering
@@ -5128,9 +5952,10 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             }
             this.renderContent();
             if (selectAll('.' + CLS_TB_ITEM, this.element).length > 0) {
+                var scrCnt = void 0;
                 this.tbItems = select('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEMS, this.element);
                 this.bdrLine = this.createElement('div', { className: CLS_INDICATOR + ' ' + CLS_HIDDEN$1 + ' ' + CLS_IGNORE });
-                var scrCnt = select('.e-hscroll-content', this.tbItems);
+                scrCnt = select('.' + this.scrCntClass, this.tbItems);
                 if (!isNullOrUndefined(scrCnt)) {
                     scrCnt.insertBefore(this.bdrLine, scrCnt.firstChild);
                 }
@@ -5145,12 +5970,17 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
     };
     Tab.prototype.renderHeader = function () {
         var _this = this;
+        var hdrPlace = this.headerPlacement;
         var tabItems = [];
         this.hdrEle = select('.' + CLS_HEADER$1, this.element);
+        this.addVerticalClass();
         if (!this.isTemplate) {
             tabItems = this.parseObject(this.items, 0);
         }
         else {
+            if (this.element.children.length > 1 && this.element.children[1].classList.contains(CLS_HEADER$1)) {
+                this.setProperties({ headerPlacement: 'Bottom' }, true);
+            }
             var count = this.hdrEle.children.length;
             var hdrItems = [];
             for (var i = 0; i < count; i++) {
@@ -5178,16 +6008,16 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             }
         }
         this.tbObj = new Toolbar({
-            width: '100%',
+            width: (hdrPlace === 'Left' || hdrPlace === 'Right') ? 'auto' : '100%',
+            height: (hdrPlace === 'Left' || hdrPlace === 'Right') ? '100%' : 'auto',
             overflowMode: this.overflowMode,
             items: (tabItems.length !== 0) ? tabItems : [],
             clicked: this.clickHandler.bind(this)
         });
         this.tbObj.createElement = this.createElement;
         this.tbObj.appendTo(this.hdrEle);
-        attributes(this.element, { 'aria-orientation': 'horizontal' });
+        this.updateOrientationAttribute();
         this.setCloseButton(this.showCloseButton);
-        this.setProperties({ headerPlacement: (this.element.children.item(0).classList.contains(CLS_HEADER$1)) ? 'Top' : 'Bottom' }, true);
     };
     Tab.prototype.renderContent = function () {
         this.cntEle = select('.' + CLS_CONTENT$1, this.element);
@@ -5215,16 +6045,17 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         var tbCount = selectAll('.' + CLS_TB_ITEM, this.element).length;
         var tItems = [];
         var txtWrapEle;
+        var spliceArray = [];
         items.forEach(function (item, i) {
-            if (isNullOrUndefined(item.header) || isNullOrUndefined(item.header.text)) {
-                _this.items.splice(i, 0);
-                return;
-            }
             var pos = (isNullOrUndefined(item.header.iconPosition)) ? '' : item.header.iconPosition;
             var css = (isNullOrUndefined(item.header.iconCss)) ? '' : item.header.iconCss;
+            if (isNullOrUndefined(item.header) || isNullOrUndefined(item.header.text) || ((item.header.text.length === 0) && (css === ''))) {
+                spliceArray.push(i);
+                return;
+            }
             var txt = item.header.text;
             _this.lastIndex = ((tbCount === 0) ? i : ((_this.isReplace) ? (index + i) : (_this.lastIndex + 1)));
-            var disabled = (item.disabled) ? ' ' + CLS_DISABLE$3 + ' ' + CLS_OVERLAY$1 : '';
+            var disabled = (item.disabled) ? ' ' + CLS_DISABLE$4 + ' ' + CLS_OVERLAY$2 : '';
             txtWrapEle = _this.createElement('div', { className: CLS_TEXT, attrs: { 'role': 'presentation' } });
             var tHtml = ((txt instanceof Object) ? txt.outerHTML : txt);
             var txtEmpty = (!isNullOrUndefined(tHtml) && tHtml !== '');
@@ -5240,25 +6071,22 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             });
             var tCont = _this.createElement('div', { className: CLS_TEXT_WRAP });
             tCont.appendChild(txtWrapEle);
-            if ((txt === '' || txt === undefined) && css === '') {
-                return;
-            }
-            else {
-                if ((txt !== '' && txt !== undefined) && css !== '') {
-                    if ((pos === 'left' || pos === 'top')) {
-                        tCont.insertBefore(icon, tCont.firstElementChild);
-                    }
-                    else {
-                        tCont.appendChild(icon);
-                    }
-                    tEle = txtWrapEle;
+            if ((txt !== '' && txt !== undefined) && css !== '') {
+                if ((pos === 'left' || pos === 'top')) {
+                    tCont.insertBefore(icon, tCont.firstElementChild);
                 }
                 else {
-                    tEle = ((css === '') ? txtWrapEle : icon);
-                    if (tEle === icon) {
-                        detach(txtWrapEle);
-                        tCont.appendChild(icon);
-                    }
+                    tCont.appendChild(icon);
+                }
+                tEle = txtWrapEle;
+                _this.isIconAlone = false;
+            }
+            else {
+                tEle = ((css === '') ? txtWrapEle : icon);
+                if (tEle === icon) {
+                    detach(txtWrapEle);
+                    tCont.appendChild(icon);
+                    _this.isIconAlone = true;
                 }
             }
             var wrapAttrs = (item.disabled) ? {} : { tabIndex: '-1' };
@@ -5280,7 +6108,14 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                 _this.element.classList.add('e-vertical-icon');
             }
             tItems.push(tItem);
+            i++;
         });
+        if (!this.isAdd) {
+            spliceArray.forEach(function (spliceItemIndex) {
+                _this.items.splice(spliceItemIndex, 1);
+            });
+        }
+        (this.isIconAlone) ? this.element.classList.add(CLS_ICON_TAB) : this.element.classList.remove(CLS_ICON_TAB);
         return tItems;
     };
     Tab.prototype.removeActiveClass = function (id) {
@@ -5290,16 +6125,22 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         }
         if (!isNullOrUndefined(hdrActEle)) {
             hdrActEle.classList.remove(CLS_ACTIVE$1);
-            var no = this.extIndex(hdrActEle.id);
-            var trg = this.findEle(select('.' + CLS_CONTENT$1, this.element).children, CLS_CONTENT$1 + '_' + no);
         }
     };
     Tab.prototype.checkPopupOverflow = function (ele) {
         this.tbPop = select('.' + CLS_TB_POP, this.element);
         var popIcon = select('.e-hor-nav', this.element);
         var tbrItems = select('.' + CLS_TB_ITEMS, this.element);
-        if ((this.enableRtl && ((popIcon.offsetLeft + popIcon.offsetWidth) > tbrItems.offsetLeft))
-            || (!this.enableRtl && popIcon.offsetLeft < tbrItems.offsetWidth)) {
+        var lastChild = tbrItems.lastChild;
+        var isOverflow = false;
+        if (!this.isVertical() && ((this.enableRtl && ((popIcon.offsetLeft + popIcon.offsetWidth) > tbrItems.offsetLeft))
+            || (!this.enableRtl && popIcon.offsetLeft < tbrItems.offsetWidth))) {
+            isOverflow = true;
+        }
+        else if (this.isVertical() && (popIcon.offsetTop < lastChild.offsetTop + lastChild.offsetHeight)) {
+            isOverflow = true;
+        }
+        if (isOverflow) {
             ele.classList.add(CLS_TB_POPUP);
             this.tbPop.insertBefore(ele.cloneNode(true), selectAll('.' + CLS_TB_POPUP, this.tbPop)[0]);
             ele.outerHTML = '';
@@ -5316,6 +6157,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         var lastChild = this.tbItem[this.tbItem.length - 1];
         if (this.tbItem.length !== 0) {
             target.classList.remove(CLS_TB_POPUP);
+            target.removeAttribute('style');
             this.tbItems.appendChild(target.cloneNode(true));
             this.actEleId = target.id;
             target.outerHTML = '';
@@ -5327,6 +6169,9 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         }
         return selectAll('.' + CLS_TB_ITEM, this.tbItems).length - 1;
     };
+    Tab.prototype.updateOrientationAttribute = function () {
+        attributes(this.element, { 'aria-orientation': (this.isVertical() ? 'vertical' : 'horizontal') });
+    };
     Tab.prototype.setCloseButton = function (val) {
         var trg = select('.' + CLS_HEADER$1, this.element);
         (val === true) ? trg.classList.add(CLS_CLOSE_SHOW) : trg.classList.remove(CLS_CLOSE_SHOW);
@@ -5335,7 +6180,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
     };
     Tab.prototype.prevCtnAnimation = function (prev, current) {
         var animation;
-        var checkRTL = this.enableRtl || this.element.classList.contains(CLS_RTL$3);
+        var checkRTL = this.enableRtl || this.element.classList.contains(CLS_RTL$4);
         if (this.isPopup || prev <= current) {
             if (this.animation.previous.effect === 'SlideLeftIn') {
                 animation = { name: 'SlideLeftOut',
@@ -5551,8 +6396,43 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         }
         return ele;
     };
+    Tab.prototype.isVertical = function () {
+        var isVertical = (this.headerPlacement === 'Left' || this.headerPlacement === 'Right') ? true : false;
+        this.scrCntClass = (isVertical) ? CLS_VSCRCNT : CLS_HSCRCNT;
+        return isVertical;
+    };
+    Tab.prototype.addVerticalClass = function () {
+        if (this.isVertical()) {
+            var tbPos = (this.headerPlacement === 'Left') ? CLS_VLEFT : CLS_VRIGHT;
+            addClass([this.hdrEle], [CLS_VERTICAL$1, tbPos]);
+            this.element.classList.add(CLS_VTAB);
+        }
+    };
+    Tab.prototype.updatePopAnimationConfig = function () {
+        this.show = { name: (this.isVertical() ? 'FadeIn' : 'SlideDown'), duration: 100 };
+        this.hide = { name: (this.isVertical() ? 'FadeOut' : 'SlideUp'), duration: 100 };
+    };
+    Tab.prototype.changeOrientation = function (place) {
+        this.setOrientation(place, this.hdrEle);
+        var isVertical = this.hdrEle.classList.contains(CLS_VERTICAL$1) ? true : false;
+        removeClass([this.element], [CLS_VTAB]);
+        removeClass([this.hdrEle], [CLS_VERTICAL$1, CLS_VLEFT, CLS_VRIGHT]);
+        if (isVertical !== this.isVertical()) {
+            this.tbObj.setProperties({ height: (this.isVertical() ? '100%' : 'auto'), width: (this.isVertical() ? 'auto' : '100%') }, true);
+            this.tbObj.changeOrientation();
+            this.updatePopAnimationConfig();
+        }
+        this.addVerticalClass();
+        this.updateOrientationAttribute();
+        this.select(this.selectedItem);
+    };
     Tab.prototype.setOrientation = function (place, ele) {
-        (place === 'Bottom') ? this.element.appendChild(ele) : this.element.insertBefore(ele, select('.' + CLS_CONTENT$1, this.element));
+        if (place === 'Bottom' && Array.prototype.indexOf.call(this.element.children, ele) !== 1) {
+            this.element.appendChild(ele);
+        }
+        else {
+            this.element.insertBefore(ele, select('.' + CLS_CONTENT$1, this.element));
+        }
     };
     Tab.prototype.setCssClass = function (ele, cls, val) {
         if (cls === '') {
@@ -5578,7 +6458,9 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                 return;
             }
             else {
-                setStyleAttribute(this.cntEle, { 'height': (this.element.offsetHeight - hdrEle.offsetHeight) + 'px' });
+                if (!this.isVertical()) {
+                    setStyleAttribute(this.cntEle, { 'height': (this.element.offsetHeight - hdrEle.offsetHeight) + 'px' });
+                }
             }
         }
         else if (this.heightAdjustMode === 'Fill') {
@@ -5627,9 +6509,17 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             parseFloat(cs.getPropertyValue('margin-top')) + parseFloat(cs.getPropertyValue('margin-bottom'));
     };
     Tab.prototype.setActiveBorder = function () {
-        var trg = select('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1, this.element);
+        var trg;
+        var bar;
+        var scrollCnt;
+        var trgHdrEle;
         if (this.headerPlacement === 'Bottom') {
+            trgHdrEle = this.element.children[1];
             trg = select('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1, this.element.children[1]);
+        }
+        else {
+            trgHdrEle = this.element.children[0];
+            trg = select('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1, this.element);
         }
         if (trg === null) {
             return;
@@ -5638,18 +6528,28 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         if (this.element !== root) {
             return;
         }
-        var hsCnt = select('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEMS + ' .e-hscroll-content', this.element.children[0]);
-        this.tbItems = select('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEMS, this.element);
-        var bar = select('.' + CLS_HEADER$1 + ' .' + CLS_INDICATOR, this.element);
-        if (this.headerPlacement === 'Bottom') {
-            hsCnt = select('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEMS + ' .e-hscroll-content', this.element.children[1]);
-        }
-        var tbWidth = (isNullOrUndefined(hsCnt)) ? this.tbItems.offsetWidth : hsCnt.offsetWidth;
-        if (tbWidth !== 0) {
-            setStyleAttribute(bar, { 'left': trg.offsetLeft + 'px', 'right': tbWidth - (trg.offsetLeft + trg.offsetWidth) + 'px' });
+        this.tbItems = select('.' + CLS_TB_ITEMS, trgHdrEle);
+        bar = select('.' + CLS_INDICATOR, trgHdrEle);
+        scrollCnt = select('.' + CLS_TB_ITEMS + ' .' + this.scrCntClass, trgHdrEle);
+        if (this.isVertical()) {
+            setStyleAttribute(bar, { 'left': '', 'right': '' });
+            var tbHeight = (isNullOrUndefined(scrollCnt)) ? this.tbItems.offsetHeight : scrollCnt.offsetHeight;
+            if (tbHeight !== 0) {
+                setStyleAttribute(bar, { 'top': trg.offsetTop + 'px', 'height': trg.offsetHeight + 'px' });
+            }
+            else {
+                setStyleAttribute(bar, { 'top': 0, 'height': 0 });
+            }
         }
         else {
-            setStyleAttribute(bar, { 'left': 'auto', 'right': 'auto' });
+            setStyleAttribute(bar, { 'top': '', 'height': '' });
+            var tbWidth = (isNullOrUndefined(scrollCnt)) ? this.tbItems.offsetWidth : scrollCnt.offsetWidth;
+            if (tbWidth !== 0) {
+                setStyleAttribute(bar, { 'left': trg.offsetLeft + 'px', 'right': tbWidth - (trg.offsetLeft + trg.offsetWidth) + 'px' });
+            }
+            else {
+                setStyleAttribute(bar, { 'left': 'auto', 'right': 'auto' });
+            }
         }
         if (!isNullOrUndefined(this.bdrLine)) {
             this.bdrLine.classList.remove(CLS_HIDDEN$1);
@@ -5719,6 +6619,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             previousIndex: this.prevIndex,
             selectedItem: trg,
             selectedIndex: value,
+            selectedContent: select('#' + CLS_CONTENT$1 + '_' + this.selectedID, this.content),
             isSwiped: this.isSwipeed
         };
         if (!this.initRender || this.selectedItem !== 0) {
@@ -5735,7 +6636,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
     Tab.prototype.setRTL = function (value) {
         this.tbObj.enableRtl = value;
         this.tbObj.dataBind();
-        this.setCssClass(this.element, CLS_RTL$3, value);
+        this.setCssClass(this.element, CLS_RTL$4, value);
         this.refreshActiveBorder();
     };
     Tab.prototype.refreshActiveBorder = function () {
@@ -5743,6 +6644,15 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             this.bdrLine.classList.add(CLS_HIDDEN$1);
         }
         this.setActiveBorder();
+    };
+    Tab.prototype.showPopup = function (config) {
+        var tbPop = select('.e-popup.e-toolbar-pop', this.hdrEle);
+        if (tbPop.classList.contains('e-popup-close')) {
+            var tbPopObj = (tbPop && tbPop.ej2_instances[0]);
+            tbPopObj.position.X = (this.headerPlacement === 'Left') ? 'left' : 'right';
+            tbPopObj.dataBind();
+            tbPopObj.show(config);
+        }
     };
     Tab.prototype.wireEvents = function () {
         window.addEventListener('resize', this.refreshActElePosition.bind(this));
@@ -5766,6 +6676,8 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         }
         window.removeEventListener('resize', this.refreshActElePosition.bind(this));
         this.element.removeEventListener('mouseover', this.hoverHandler.bind(this));
+        this.element.classList.remove(CLS_RTL$4);
+        this.element.classList.remove(CLS_FOCUS);
     };
     Tab.prototype.clickHandler = function (args) {
         this.element.classList.remove(CLS_FOCUS);
@@ -5774,6 +6686,9 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         var trgIndex = this.getEleIndex(trgParent);
         if (trg.classList.contains(CLS_ICON_CLOSE)) {
             this.removeTab(trgIndex);
+        }
+        else if (this.isVertical() && closest(trg, '.' + CLS_HOR_NAV)) {
+            this.showPopup(this.show);
         }
         else {
             this.isPopup = false;
@@ -5789,7 +6704,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         this.isSwipeed = true;
         if (e.swipeDirection === 'Right' && this.selectedItem !== 0) {
             for (var k = this.selectedItem - 1; k >= 0; k--) {
-                if (!this.tbItem[k].classList.contains('e-hidden')) {
+                if (!this.tbItem[k].classList.contains(CLS_HIDDEN$1)) {
                     this.select(k);
                     break;
                 }
@@ -5797,7 +6712,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         }
         else if (e.swipeDirection === 'Left' && (this.selectedItem !== selectAll('.' + CLS_TB_ITEM, this.element).length - 1)) {
             for (var i = this.selectedItem + 1; i < this.tbItem.length; i++) {
-                if (!this.tbItem[i].classList.contains('e-hidden')) {
+                if (!this.tbItem[i].classList.contains(CLS_HIDDEN$1)) {
                     this.select(i);
                     break;
                 }
@@ -5814,7 +6729,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Tab.prototype.keyHandler = function (e) {
-        if (this.element.classList.contains(CLS_DISABLE$3)) {
+        if (this.element.classList.contains(CLS_DISABLE$4)) {
             return;
         }
         this.element.classList.add(CLS_FOCUS);
@@ -5828,10 +6743,11 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         switch (e.action) {
             case 'space':
             case 'enter':
-                if (trg.parentElement.classList.contains(CLS_DISABLE$3)) {
+                if (trg.parentElement.classList.contains(CLS_DISABLE$4)) {
                     return;
                 }
                 if (e.action === 'enter' && trg.classList.contains('e-hor-nav')) {
+                    this.showPopup(this.show);
                     break;
                 }
                 this.keyPressed(trg);
@@ -5881,8 +6797,8 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         this.refreshActiveBorder();
     };
     Tab.prototype.refreshItemVisibility = function (target) {
-        var scrCnt = select('.e-hscroll-content', this.tbItems);
-        if (!isNullOrUndefined(scrCnt)) {
+        var scrCnt = select('.' + this.scrCntClass, this.tbItems);
+        if (!this.isVertical() && !isNullOrUndefined(scrCnt)) {
             var scrBar = select('.e-hscroll-bar', this.tbItems);
             var scrStart = scrBar.scrollLeft;
             var scrEnd = scrStart + scrBar.offsetWidth;
@@ -5910,6 +6826,84 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             trg.setAttribute('title', new L10n('tab', { closeButtonTitle: this.title }, this.locale).getConstant('closeButtonTitle'));
         }
     };
+    Tab.prototype.evalOnPropertyChangeItems = function (newProp, oldProp) {
+        if (!(newProp.items instanceof Array && oldProp.items instanceof Array)) {
+            var changedProp = Object.keys(newProp.items);
+            for (var i = 0; i < changedProp.length; i++) {
+                var index = parseInt(Object.keys(newProp.items)[i], 10);
+                var property = Object.keys(newProp.items[index])[0];
+                var oldVal = Object(oldProp.items[index])[property];
+                var newVal = Object(newProp.items[index])[property];
+                var hdrItem = select('.' + CLS_TB_ITEMS + ' #' + CLS_ITEM$2 + '_' + index, this.element);
+                var cntItem = select('.' + CLS_CONTENT$1 + ' #' + CLS_CONTENT$1 + '_' + index, this.element);
+                if (property === 'header') {
+                    var icon = this.items[index].header.iconCss;
+                    var textVal = this.items[index].header.text;
+                    if ((textVal === '') && (icon === '')) {
+                        this.removeTab(index);
+                    }
+                    else {
+                        var arr = [];
+                        arr.push(this.items[index]);
+                        this.items.splice(index, 1);
+                        this.itemIndexArray.splice(index, 1);
+                        this.tbObj.items.splice(index, 1);
+                        var isHiddenEle = hdrItem.classList.contains(CLS_HIDDEN$1);
+                        detach(hdrItem);
+                        this.isReplace = true;
+                        this.addTab(arr, index);
+                        if (isHiddenEle) {
+                            this.hideTab(index);
+                        }
+                        this.isReplace = false;
+                    }
+                }
+                if (property === 'content' && !isNullOrUndefined(cntItem)) {
+                    var strVal = typeof newVal === 'string' || isNullOrUndefined(newVal.innerHTML);
+                    if (strVal && (newVal[0] === '.' || newVal[0] === '#') && newVal.length) {
+                        var eleVal = document.querySelector(newVal);
+                        cntItem.appendChild(eleVal);
+                        eleVal.style.display = '';
+                    }
+                    else if (newVal === '' && oldVal[0] === '#') {
+                        document.body.appendChild(this.element.querySelector(oldVal)).style.display = 'none';
+                        cntItem.innerHTML = newVal;
+                    }
+                    else {
+                        cntItem.innerHTML = newVal;
+                    }
+                }
+                if (property === 'cssClass') {
+                    if (!isNullOrUndefined(hdrItem)) {
+                        hdrItem.classList.remove(oldVal);
+                        hdrItem.classList.add(newVal);
+                    }
+                    if (!isNullOrUndefined(cntItem)) {
+                        cntItem.classList.remove(oldVal);
+                        cntItem.classList.add(newVal);
+                    }
+                }
+                if (property === 'disabled') {
+                    this.enableTab(index, ((newVal === true) ? false : true));
+                }
+            }
+        }
+        else {
+            this.lastIndex = 0;
+            if (isNullOrUndefined(this.tbObj)) {
+                this.reRenderItems();
+            }
+            else {
+                this.setItems(newProp.items);
+                if (this.templateEle.length > 0) {
+                    this.expTemplateContent();
+                }
+                this.templateEle = [];
+                select('.' + CLS_TAB + ' > .' + CLS_CONTENT$1, this.element).innerHTML = '';
+                this.select(this.selectedItem);
+            }
+        }
+    };
     /**
      * Enables or disables the specified Tab item. On passing value as `false`, the item will be disabled.
      * @param  {number} index - Index value of target Tab item.
@@ -5923,11 +6917,11 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         if (value === true) {
-            tbItems.classList.remove(CLS_DISABLE$3, CLS_OVERLAY$1);
+            tbItems.classList.remove(CLS_DISABLE$4, CLS_OVERLAY$2);
             tbItems.firstChild.setAttribute('tabindex', '-1');
         }
         else {
-            tbItems.classList.add(CLS_DISABLE$3, CLS_OVERLAY$1);
+            tbItems.classList.add(CLS_DISABLE$4, CLS_OVERLAY$2);
             tbItems.firstChild.removeAttribute('tabindex');
             if (tbItems.classList.contains(CLS_ACTIVE$1)) {
                 this.select(index + 1);
@@ -5974,9 +6968,17 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             this.bdrLine.classList.add(CLS_HIDDEN$1);
         }
         this.tbItems = select('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEMS, this.element);
+        this.isAdd = true;
         var tabItems = this.parseObject(items, index);
+        this.isAdd = false;
+        var i = 0;
+        var textValue;
         items.forEach(function (item, place) {
-            _this.items.splice((index + place), 0, item);
+            textValue = item.header.text;
+            if (!((isNullOrUndefined(item.header) || isNullOrUndefined(textValue) || (textValue.length === 0) && isNullOrUndefined(item.header.iconCss)))) {
+                _this.items.splice((index + i), 0, item);
+                i++;
+            }
             if (_this.isTemplate && !isNullOrUndefined(item.header) && !isNullOrUndefined(item.header.text)) {
                 var no = lastEleIndex + place;
                 var ele = _this.createElement('div', {
@@ -6052,13 +7054,13 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             if (items.length !== 0 && item.classList.contains(CLS_ACTIVE$1)) {
                 if (index !== 0) {
                     for (var i = index - 1; i >= 0; i--) {
-                        if (!this.tbItem[i].classList.contains('e-hidden')) {
+                        if (!this.tbItem[i].classList.contains(CLS_HIDDEN$1)) {
                             this.select(i);
                             break;
                         }
                         else if (i === 0) {
                             for (var k = index + 1; k < this.tbItem.length; k++) {
-                                if (!this.tbItem[k].classList.contains('e-hidden')) {
+                                if (!this.tbItem[k].classList.contains(CLS_HIDDEN$1)) {
                                     this.select(k);
                                     break;
                                 }
@@ -6068,7 +7070,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                 }
                 else {
                     for (var k = index + 1; k < this.tbItem.length; k++) {
-                        if (!this.tbItem[k].classList.contains('e-hidden')) {
+                        if (!this.tbItem[k].classList.contains(CLS_HIDDEN$1)) {
                             this.select(k);
                             break;
                         }
@@ -6098,9 +7100,22 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
     Tab.prototype.select = function (args) {
         this.tbItems = select('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEMS, this.element);
         this.tbItem = selectAll('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEM, this.element);
+        this.content = select('.' + CLS_CONTENT$1, this.element);
         this.prevItem = this.tbItem[this.prevIndex];
+        if (isNullOrUndefined(this.selectedItem) || (this.selectedItem < 0) || (this.tbItem.length <= this.selectedItem) || isNaN(this.selectedItem)) {
+            this.selectedItem = 0;
+        }
+        else {
+            this.selectedID = this.extIndex(this.tbItem[this.selectedItem].id);
+        }
         var trg = this.tbItem[args];
-        if (!isNullOrUndefined(this.prevItem) && !this.prevItem.classList.contains(CLS_DISABLE$3)) {
+        if (isNullOrUndefined(trg)) {
+            this.selectedID = '0';
+        }
+        else {
+            this.selectingID = this.extIndex(trg.id);
+        }
+        if (!isNullOrUndefined(this.prevItem) && !this.prevItem.classList.contains(CLS_DISABLE$4)) {
             this.prevItem.children.item(0).setAttribute('tabindex', '-1');
         }
         var eventArg = {
@@ -6108,8 +7123,10 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             previousIndex: this.prevIndex,
             selectedItem: this.tbItem[this.selectedItem],
             selectedIndex: this.selectedItem,
+            selectedContent: !isNullOrUndefined(this.content) ? select('#' + CLS_CONTENT$1 + '_' + this.selectedID, this.content) : null,
             selectingItem: trg,
             selectingIndex: args,
+            selectingContent: !isNullOrUndefined(this.content) ? select('#' + CLS_CONTENT$1 + '_' + this.selectingID, this.content) : null,
             isSwiped: this.isSwipeed
         };
         if (!this.initRender || this.selectedItem !== 0) {
@@ -6119,7 +7136,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         if (typeof args === 'number') {
-            if (!isNullOrUndefined(this.tbItem[args]) && this.tbItem[args].classList.contains(CLS_DISABLE$3)) {
+            if (!isNullOrUndefined(this.tbItem[args]) && this.tbItem[args].classList.contains(CLS_DISABLE$4)) {
                 for (var i = args + 1; i < this.items.length; i++) {
                     if (this.items[i].disabled === false) {
                         args = i;
@@ -6154,7 +7171,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
      * @returns void.
      */
     Tab.prototype.disable = function (value) {
-        this.setCssClass(this.element, CLS_DISABLE$3, value);
+        this.setCssClass(this.element, CLS_DISABLE$4, value);
         this.element.setAttribute('aria-disabled', '' + value);
     };
     /**
@@ -6194,75 +7211,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                     this.setCssClass(this.element, newProp.cssClass, true);
                     break;
                 case 'items':
-                    if (!(newProp.items instanceof Array && oldProp.items instanceof Array)) {
-                        var changedProp = Object.keys(newProp.items);
-                        for (var i = 0; i < changedProp.length; i++) {
-                            var index = parseInt(Object.keys(newProp.items)[i], 10);
-                            var property = Object.keys(newProp.items[index])[0];
-                            var oldVal = Object(oldProp.items[index])[property];
-                            var newVal = Object(newProp.items[index])[property];
-                            var hdrItem = select('.' + CLS_TB_ITEMS + ' #' + CLS_ITEM$2 + '_' + index, this.element);
-                            var cntItem = select('.' + CLS_CONTENT$1 + ' #' + CLS_CONTENT$1 + '_' + index, this.element);
-                            if (property === 'header') {
-                                var arr = [];
-                                arr.push(this.items[index]);
-                                this.items.splice(index, 1);
-                                this.itemIndexArray.splice(index, 1);
-                                this.tbObj.items.splice(index, 1);
-                                var isHiddenEle = hdrItem.classList.contains(CLS_HIDDEN$1);
-                                detach(hdrItem);
-                                this.isReplace = true;
-                                this.addTab(arr, index);
-                                if (isHiddenEle) {
-                                    this.hideTab(index);
-                                }
-                                this.isReplace = false;
-                            }
-                            if (property === 'content' && !isNullOrUndefined(cntItem)) {
-                                var strVal = typeof newVal === 'string' || isNullOrUndefined(newVal.innerHTML);
-                                if (strVal && (newVal[0] === '.' || newVal[0] === '#') && newVal.length) {
-                                    var eleVal = document.querySelector(newVal);
-                                    cntItem.appendChild(eleVal);
-                                    eleVal.style.display = '';
-                                }
-                                else if (newVal === '' && oldVal[0] === '#') {
-                                    document.body.appendChild(this.element.querySelector(oldVal)).style.display = 'none';
-                                    cntItem.innerHTML = newVal;
-                                }
-                                else {
-                                    cntItem.innerHTML = newVal;
-                                }
-                            }
-                            if (property === 'cssClass') {
-                                if (!isNullOrUndefined(hdrItem)) {
-                                    hdrItem.classList.remove(oldVal);
-                                    hdrItem.classList.add(newVal);
-                                }
-                                if (!isNullOrUndefined(cntItem)) {
-                                    cntItem.classList.remove(oldVal);
-                                    cntItem.classList.add(newVal);
-                                }
-                            }
-                            if (property === 'disabled') {
-                                this.enableTab(index, ((newVal === true) ? false : true));
-                            }
-                        }
-                    }
-                    else {
-                        this.lastIndex = 0;
-                        if (isNullOrUndefined(this.tbObj)) {
-                            this.reRenderItems();
-                        }
-                        else {
-                            this.setItems(newProp.items);
-                            if (this.templateEle.length > 0) {
-                                this.expTemplateContent();
-                            }
-                            this.templateEle = [];
-                            select('.' + CLS_TAB + ' > .' + CLS_CONTENT$1, this.element).innerHTML = '';
-                            this.select(this.selectedItem);
-                        }
-                    }
+                    this.evalOnPropertyChangeItems(newProp, oldProp);
                     break;
                 case 'showCloseButton':
                     this.setCloseButton(newProp.showCloseButton);
@@ -6272,9 +7221,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                     this.select(newProp.selectedItem);
                     break;
                 case 'headerPlacement':
-                    var tempHdrEle = select('.' + CLS_HEADER$1, this.element);
-                    this.setOrientation(newProp.headerPlacement, tempHdrEle);
-                    this.select(this.selectedItem);
+                    this.changeOrientation(newProp.headerPlacement);
                     break;
                 case 'enableRtl':
                     this.setRTL(newProp.enableRtl);
@@ -6291,67 +7238,67 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    __decorate$6([
+    __decorate$7([
         Collection([], TabItem)
     ], Tab.prototype, "items", void 0);
-    __decorate$6([
+    __decorate$7([
         Property('100%')
     ], Tab.prototype, "width", void 0);
-    __decorate$6([
+    __decorate$7([
         Property('auto')
     ], Tab.prototype, "height", void 0);
-    __decorate$6([
+    __decorate$7([
         Property('')
     ], Tab.prototype, "cssClass", void 0);
-    __decorate$6([
+    __decorate$7([
         Property(0)
     ], Tab.prototype, "selectedItem", void 0);
-    __decorate$6([
+    __decorate$7([
         Property('Top')
     ], Tab.prototype, "headerPlacement", void 0);
-    __decorate$6([
+    __decorate$7([
         Property('Content')
     ], Tab.prototype, "heightAdjustMode", void 0);
-    __decorate$6([
+    __decorate$7([
         Property('Scrollable')
     ], Tab.prototype, "overflowMode", void 0);
-    __decorate$6([
+    __decorate$7([
         Property(false)
     ], Tab.prototype, "enableRtl", void 0);
-    __decorate$6([
+    __decorate$7([
         Property(false)
     ], Tab.prototype, "enablePersistence", void 0);
-    __decorate$6([
+    __decorate$7([
         Property(false)
     ], Tab.prototype, "showCloseButton", void 0);
-    __decorate$6([
+    __decorate$7([
         Complex({}, TabAnimationSettings)
     ], Tab.prototype, "animation", void 0);
-    __decorate$6([
+    __decorate$7([
         Event()
     ], Tab.prototype, "created", void 0);
-    __decorate$6([
+    __decorate$7([
         Event()
     ], Tab.prototype, "adding", void 0);
-    __decorate$6([
+    __decorate$7([
         Event()
     ], Tab.prototype, "added", void 0);
-    __decorate$6([
+    __decorate$7([
         Event()
     ], Tab.prototype, "selecting", void 0);
-    __decorate$6([
+    __decorate$7([
         Event()
     ], Tab.prototype, "selected", void 0);
-    __decorate$6([
+    __decorate$7([
         Event()
     ], Tab.prototype, "removing", void 0);
-    __decorate$6([
+    __decorate$7([
         Event()
     ], Tab.prototype, "removed", void 0);
-    __decorate$6([
+    __decorate$7([
         Event()
     ], Tab.prototype, "destroyed", void 0);
-    Tab = __decorate$6([
+    Tab = __decorate$7([
         NotifyPropertyChanges
     ], Tab);
     return Tab;
@@ -6361,7 +7308,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
  * Tab modules
  */
 
-var __extends$7 = (undefined && undefined.__extends) || (function () {
+var __extends$8 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -6374,7 +7321,7 @@ var __extends$7 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$7 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$8 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -6433,56 +7380,56 @@ var treeAriaAttr = {
  * Configures the fields to bind to the properties of node in the TreeView component.
  */
 var FieldsSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$7(FieldsSettings, _super);
+    __extends$8(FieldsSettings, _super);
     function FieldsSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$7([
+    __decorate$8([
         Property('child')
     ], FieldsSettings.prototype, "child", void 0);
-    __decorate$7([
+    __decorate$8([
         Property([])
     ], FieldsSettings.prototype, "dataSource", void 0);
-    __decorate$7([
+    __decorate$8([
         Property('expanded')
     ], FieldsSettings.prototype, "expanded", void 0);
-    __decorate$7([
+    __decorate$8([
         Property('hasChildren')
     ], FieldsSettings.prototype, "hasChildren", void 0);
-    __decorate$7([
+    __decorate$8([
         Property('htmlAttributes')
     ], FieldsSettings.prototype, "htmlAttributes", void 0);
-    __decorate$7([
+    __decorate$8([
         Property('iconCss')
     ], FieldsSettings.prototype, "iconCss", void 0);
-    __decorate$7([
+    __decorate$8([
         Property('id')
     ], FieldsSettings.prototype, "id", void 0);
-    __decorate$7([
+    __decorate$8([
         Property('imageUrl')
     ], FieldsSettings.prototype, "imageUrl", void 0);
-    __decorate$7([
+    __decorate$8([
         Property('isChecked')
     ], FieldsSettings.prototype, "isChecked", void 0);
-    __decorate$7([
+    __decorate$8([
         Property('parentID')
     ], FieldsSettings.prototype, "parentID", void 0);
-    __decorate$7([
+    __decorate$8([
         Property(null)
     ], FieldsSettings.prototype, "query", void 0);
-    __decorate$7([
+    __decorate$8([
         Property('selected')
     ], FieldsSettings.prototype, "selected", void 0);
-    __decorate$7([
+    __decorate$8([
         Property(null)
     ], FieldsSettings.prototype, "tableName", void 0);
-    __decorate$7([
+    __decorate$8([
         Property('text')
     ], FieldsSettings.prototype, "text", void 0);
-    __decorate$7([
+    __decorate$8([
         Property('tooltip')
     ], FieldsSettings.prototype, "tooltip", void 0);
-    __decorate$7([
+    __decorate$8([
         Property('navigateUrl')
     ], FieldsSettings.prototype, "navigateUrl", void 0);
     return FieldsSettings;
@@ -6491,17 +7438,17 @@ var FieldsSettings = /** @__PURE__ @class */ (function (_super) {
  * Configures animation settings for the TreeView component.
  */
 var ActionSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$7(ActionSettings, _super);
+    __extends$8(ActionSettings, _super);
     function ActionSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$7([
+    __decorate$8([
         Property('SlideDown')
     ], ActionSettings.prototype, "effect", void 0);
-    __decorate$7([
+    __decorate$8([
         Property(400)
     ], ActionSettings.prototype, "duration", void 0);
-    __decorate$7([
+    __decorate$8([
         Property('linear')
     ], ActionSettings.prototype, "easing", void 0);
     return ActionSettings;
@@ -6510,14 +7457,14 @@ var ActionSettings = /** @__PURE__ @class */ (function (_super) {
  * Configures the animation settings for expanding and collapsing nodes in TreeView.
  */
 var NodeAnimationSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$7(NodeAnimationSettings, _super);
+    __extends$8(NodeAnimationSettings, _super);
     function NodeAnimationSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$7([
+    __decorate$8([
         Complex({ effect: 'SlideUp', duration: 400, easing: 'linear' }, ActionSettings)
     ], NodeAnimationSettings.prototype, "collapse", void 0);
-    __decorate$7([
+    __decorate$8([
         Complex({ effect: 'SlideDown', duration: 400, easing: 'linear' }, ActionSettings)
     ], NodeAnimationSettings.prototype, "expand", void 0);
     return NodeAnimationSettings;
@@ -6534,11 +7481,12 @@ var NodeAnimationSettings = /** @__PURE__ @class */ (function (_super) {
  * ```
  */
 var TreeView = /** @__PURE__ @class */ (function (_super) {
-    __extends$7(TreeView, _super);
+    __extends$8(TreeView, _super);
     function TreeView(options, element) {
         var _this = _super.call(this, options, element) || this;
         _this.preventExpand = false;
         _this.checkedElement = [];
+        _this.disableNode = [];
         _this.mouseDownStatus = false;
         return _this;
     }
@@ -6789,7 +7737,17 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         this.listBaseOption.ariaAttributes.level = 1;
         this.ulElement = ListBase.createList(this.createElement, isSorted ? this.rootData : this.getSortedData(this.rootData), this.listBaseOption);
         this.element.appendChild(this.ulElement);
-        this.finalizeNode(this.element);
+        if (this.loadOnDemand === false) {
+            var rootNodes = this.ulElement.querySelectorAll('.e-list-item');
+            var i = 0;
+            while (i < rootNodes.length) {
+                this.renderChildNodes(rootNodes[i], true, null, true);
+                i++;
+            }
+        }
+        else {
+            this.finalizeNode(this.element);
+        }
     };
     TreeView.prototype.beforeNodeCreate = function (e) {
         if (this.showCheckBox) {
@@ -7250,7 +8208,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         };
         this.trigger('nodeClicked', eventArgs);
     };
-    TreeView.prototype.expandNode = function (currLi, icon) {
+    TreeView.prototype.expandNode = function (currLi, icon, loaded) {
         var _this = this;
         if (icon.classList.contains(LOAD)) {
             this.hideSpinner(icon);
@@ -7258,37 +8216,39 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         if (!this.initialRender) {
             icon.classList.add('interaction');
         }
-        if (this.preventExpand !== true) {
-            removeClass([icon], EXPANDABLE);
-            addClass([icon], COLLAPSIBLE);
-            var start_1 = 0;
-            var end_1 = 0;
-            var proxy_1 = this;
-            var ul_1 = select('.' + PARENTITEM, currLi);
-            var liEle_1 = currLi;
-            this.setHeight(liEle_1, ul_1);
-            if (this.isAnimate) {
-                this.aniObj.animate(ul_1, {
-                    name: this.animation.expand.effect,
-                    duration: this.animation.expand.duration,
-                    timingFunction: this.animation.expand.easing,
-                    begin: function (args) {
-                        liEle_1.style.overflow = 'hidden';
-                        start_1 = liEle_1.offsetHeight;
-                        end_1 = select('.' + TEXTWRAP, currLi).offsetHeight;
-                    },
-                    progress: function (args) {
-                        args.element.style.display = 'block';
-                        proxy_1.animateHeight(args, start_1, end_1);
-                    },
-                    end: function (args) {
-                        args.element.style.display = 'block';
-                        _this.expandedNode(liEle_1, ul_1, icon);
-                    }
-                });
-            }
-            else {
-                this.expandedNode(liEle_1, ul_1, icon);
+        if (loaded !== true || (loaded === true && currLi.classList.contains('e-expanded'))) {
+            if (this.preventExpand !== true) {
+                removeClass([icon], EXPANDABLE);
+                addClass([icon], COLLAPSIBLE);
+                var start_1 = 0;
+                var end_1 = 0;
+                var proxy_1 = this;
+                var ul_1 = select('.' + PARENTITEM, currLi);
+                var liEle_1 = currLi;
+                this.setHeight(liEle_1, ul_1);
+                if (this.isAnimate) {
+                    this.aniObj.animate(ul_1, {
+                        name: this.animation.expand.effect,
+                        duration: this.animation.expand.duration,
+                        timingFunction: this.animation.expand.easing,
+                        begin: function (args) {
+                            liEle_1.style.overflow = 'hidden';
+                            start_1 = liEle_1.offsetHeight;
+                            end_1 = select('.' + TEXTWRAP, currLi).offsetHeight;
+                        },
+                        progress: function (args) {
+                            args.element.style.display = 'block';
+                            proxy_1.animateHeight(args, start_1, end_1);
+                        },
+                        end: function (args) {
+                            args.element.style.display = 'block';
+                            _this.expandedNode(liEle_1, ul_1, icon);
+                        }
+                    });
+                }
+                else {
+                    this.expandedNode(liEle_1, ul_1, icon);
+                }
             }
         }
         else {
@@ -7407,7 +8367,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         var currentHeight = (end - start) * remaining + start;
         args.element.parentElement.style.height = currentHeight + 'px';
     };
-    TreeView.prototype.renderChildNodes = function (parentLi, expandChild, callback) {
+    TreeView.prototype.renderChildNodes = function (parentLi, expandChild, callback, loaded) {
         var _this = this;
         var eicon = select('div.' + ICON, parentLi);
         if (isNullOrUndefined(eicon)) {
@@ -7427,13 +8387,13 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             if (this.fields.dataSource instanceof DataManager && (this.fields.dataSource.dataSource.offline)) {
                 this.treeList.pop();
                 childItems = this.getChildNodes(this.treeData, parentLi.getAttribute('data-uid'));
-                this.loadChild(childItems, mapper_1, eicon, parentLi, expandChild, callback);
+                this.loadChild(childItems, mapper_1, eicon, parentLi, expandChild, callback, loaded);
             }
             else {
                 mapper_1.dataSource.executeQuery(this.getQuery(mapper_1, parentLi.getAttribute('data-uid'))).then(function (e) {
                     _this.treeList.pop();
                     childItems = e.result;
-                    _this.loadChild(childItems, mapper_1, eicon, parentLi, expandChild, callback);
+                    _this.loadChild(childItems, mapper_1, eicon, parentLi, expandChild, callback, loaded);
                 });
             }
         }
@@ -7448,14 +8408,15 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             else {
                 this.listBaseOption.ariaAttributes.level = parseFloat(parentLi.getAttribute('aria-level')) + 1;
                 parentLi.appendChild(ListBase.createList(this.createElement, this.getSortedData(childItems), this.listBaseOption));
-                this.expandNode(parentLi, eicon);
+                this.expandNode(parentLi, eicon, loaded);
                 this.ensureCheckNode(parentLi);
                 this.finalizeNode(parentLi);
-                this.renderSubChild(parentLi, expandChild);
+                this.disableTreeNodes(childItems);
+                this.renderSubChild(parentLi, expandChild, loaded);
             }
         }
     };
-    TreeView.prototype.loadChild = function (childItems, mapper, eicon, parentLi, expandChild, callback) {
+    TreeView.prototype.loadChild = function (childItems, mapper, eicon, parentLi, expandChild, callback, loaded) {
         this.currentLoadData = childItems;
         if (isNullOrUndefined(childItems) || childItems.length === 0) {
             detach(eicon);
@@ -7470,16 +8431,27 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             }
             this.listBaseOption.ariaAttributes.level = parseFloat(parentLi.getAttribute('aria-level')) + 1;
             parentLi.appendChild(ListBase.createList(this.createElement, childItems, this.listBaseOption));
-            this.expandNode(parentLi, eicon);
+            this.expandNode(parentLi, eicon, loaded);
             this.ensureCheckNode(parentLi);
             this.finalizeNode(parentLi);
-            this.renderSubChild(parentLi, expandChild);
+            this.disableTreeNodes(childItems);
+            this.renderSubChild(parentLi, expandChild, loaded);
         }
         if (callback) {
             callback();
         }
         if (this.treeList.length === 0 && !this.isLoaded) {
             this.finalize();
+        }
+    };
+    TreeView.prototype.disableTreeNodes = function (childItems) {
+        var i = 0;
+        while (i < childItems.length) {
+            var id = childItems[i][this.fields.id].toString();
+            if (this.disableNode !== undefined && this.disableNode.indexOf(id) !== -1) {
+                this.doDisableAction([id]);
+            }
+            i++;
         }
     };
     TreeView.prototype.ensureCheckNode = function (element) {
@@ -7558,15 +8530,19 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         }
         return childNodes;
     };
-    TreeView.prototype.renderSubChild = function (element, expandChild) {
+    TreeView.prototype.renderSubChild = function (element, expandChild, loaded) {
         if (expandChild) {
             var cIcons = selectAll('.' + EXPANDABLE, element);
             for (var i = 0, len = cIcons.length; i < len; i++) {
                 var icon = cIcons[i];
-                var curLi = closest(icon, '.' + LISTITEM);
-                this.expandArgs = this.getExpandEvent(curLi, null);
-                this.trigger('nodeExpanding', this.expandArgs);
-                this.renderChildNodes(curLi, expandChild);
+                if (element.querySelector('.e-icons') !== cIcons[i]) {
+                    var curLi = closest(icon, '.' + LISTITEM);
+                    this.expandArgs = this.getExpandEvent(curLi, null);
+                    if (loaded !== true) {
+                        this.trigger('nodeExpanding', this.expandArgs);
+                    }
+                    this.renderChildNodes(curLi, expandChild, null, loaded);
+                }
             }
         }
     };
@@ -8102,7 +9078,8 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
     };
     
     TreeView.prototype.getNodeData = function (currLi, fromDS) {
-        if (!isNullOrUndefined(currLi) && currLi.classList.contains(LISTITEM) && closest(currLi, '.' + CONTROL).classList.contains(ROOT)) {
+        if (!isNullOrUndefined(currLi) && currLi.classList.contains(LISTITEM) &&
+            !isNullOrUndefined(closest(currLi, '.' + CONTROL)) && closest(currLi, '.' + CONTROL).classList.contains(ROOT)) {
             var id = currLi.getAttribute('data-uid');
             var text = this.getText(currLi, fromDS);
             var pNode = closest(currLi.parentNode, '.' + LISTITEM);
@@ -8637,15 +9614,28 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             this.renderChildNodes(dropLi);
         }
         dropUl = select('.' + PARENTITEM, dropLi);
+        if (!isNullOrUndefined(dropUl) && this.preventExpand === true) {
+            dropUl.style.display = 'none';
+        }
+        if (!isNullOrUndefined(dropUl) && this.preventExpand === false) {
+            dropUl.style.display = 'block';
+        }
         if (isNullOrUndefined(dropUl) && this.preventExpand === true) {
             if (isNullOrUndefined(dropIcon)) {
                 ListBase.generateIcon(this.createElement, dropLi, EXPANDABLE, this.listBaseOption);
             }
             var icon = select('div.' + ICON, dropLi);
-            icon.classList.add('e-icon-expandable');
+            if (icon) {
+                icon.classList.add('e-icon-expandable');
+            }
             dropUl = ListBase.generateUL(this.createElement, [], null, this.listBaseOption);
             dropLi.appendChild(dropUl);
-            removeClass([icon], COLLAPSIBLE);
+            if (icon) {
+                removeClass([icon], COLLAPSIBLE);
+            }
+            else {
+                ListBase.generateIcon(this.createElement, dropLi, EXPANDABLE, this.listBaseOption);
+            }
             dropLi.setAttribute('aria-expanded', 'false');
             dropUl.style.display = 'none';
         }
@@ -8655,7 +9645,14 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 ListBase.generateIcon(this.createElement, dropLi, COLLAPSIBLE, this.listBaseOption);
             }
             var icon = select('div.' + ICON, dropLi);
-            removeClass([icon], EXPANDABLE);
+            if (icon) {
+                removeClass([icon], EXPANDABLE);
+            }
+            else {
+                ListBase.generateIcon(this.createElement, dropLi, COLLAPSIBLE, this.listBaseOption);
+                icon = select('div.' + ICON, dropLi);
+                removeClass([icon], EXPANDABLE);
+            }
             dropUl = ListBase.generateUL(this.createElement, [], null, this.listBaseOption);
             dropLi.appendChild(dropUl);
             this.addExpand(dropLi);
@@ -8957,6 +9954,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     TreeView.prototype.addGivenNodes = function (nodes, dropLi, index, isRemote, dropEle) {
+        if (nodes.length === 0) {
+            return;
+        }
         var sNodes = this.getSortedData(nodes);
         var level = dropLi ? parseFloat(dropLi.getAttribute('aria-level')) + 1 : 1;
         if (isRemote) {
@@ -9076,6 +10076,11 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         for (var i = 0, len = nodes.length; i < len; i++) {
             var liEle = this.getElement(nodes[i]);
             if (isNullOrUndefined(liEle)) {
+                var id = void 0;
+                id = (nodes[i]) ? nodes[i].toString() : null;
+                if (id && this.disableNode.indexOf(nodes[i].toString()) === -1) {
+                    this.disableNode.push(nodes[i].toString());
+                }
                 continue;
             }
             liEle.setAttribute('aria-disabled', 'true');
@@ -9086,6 +10091,10 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         for (var i = 0, len = nodes.length; i < len; i++) {
             var liEle = this.getElement(nodes[i]);
             if (isNullOrUndefined(liEle)) {
+                var id = (nodes[i]) ? nodes[i].toString() : null;
+                if (id && this.disableNode.indexOf(id) !== -1) {
+                    this.disableNode.splice(this.disableNode.indexOf(id), 1);
+                }
                 continue;
             }
             liEle.removeAttribute('aria-disabled');
@@ -9408,6 +10417,17 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                     this.setFullRow(this.fullRowSelect);
                     this.addFullRow(this.fullRowSelect);
                     break;
+                case 'loadOnDemand':
+                    if (this.loadOnDemand === false && !this.onLoaded) {
+                        var nodes = this.element.querySelectorAll('li');
+                        var i = 0;
+                        while (i < nodes.length) {
+                            this.renderChildNodes(nodes[i], true, null, true);
+                            i++;
+                        }
+                        this.onLoaded = true;
+                    }
+                    break;
                 case 'nodeTemplate':
                     this.nodeTemplateFn = this.templateComplier(this.nodeTemplate);
                     this.reRenderNodes();
@@ -9704,6 +10724,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 }
                 this.removeNode(liEle);
             }
+            if (this.dataType === 1) {
+                this.groupedData = this.getGroupedData(this.treeData, this.fields.parentID);
+            }
             this.triggerEvent();
         }
     };
@@ -9740,121 +10763,124 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     var TreeView_1;
-    __decorate$7([
+    __decorate$8([
         Property(false)
     ], TreeView.prototype, "allowDragAndDrop", void 0);
-    __decorate$7([
+    __decorate$8([
         Property(false)
     ], TreeView.prototype, "allowEditing", void 0);
-    __decorate$7([
+    __decorate$8([
         Property(false)
     ], TreeView.prototype, "allowMultiSelection", void 0);
-    __decorate$7([
+    __decorate$8([
         Complex({}, NodeAnimationSettings)
     ], TreeView.prototype, "animation", void 0);
-    __decorate$7([
+    __decorate$8([
         Property()
     ], TreeView.prototype, "checkedNodes", void 0);
-    __decorate$7([
+    __decorate$8([
         Property('')
     ], TreeView.prototype, "cssClass", void 0);
-    __decorate$7([
+    __decorate$8([
         Property(false)
     ], TreeView.prototype, "enablePersistence", void 0);
-    __decorate$7([
+    __decorate$8([
         Property(false)
     ], TreeView.prototype, "enableRtl", void 0);
-    __decorate$7([
+    __decorate$8([
         Property()
     ], TreeView.prototype, "expandedNodes", void 0);
-    __decorate$7([
+    __decorate$8([
         Property('Auto')
     ], TreeView.prototype, "expandOn", void 0);
-    __decorate$7([
+    __decorate$8([
         Complex({}, FieldsSettings)
     ], TreeView.prototype, "fields", void 0);
-    __decorate$7([
+    __decorate$8([
         Property(true)
     ], TreeView.prototype, "fullRowSelect", void 0);
-    __decorate$7([
+    __decorate$8([
+        Property(true)
+    ], TreeView.prototype, "loadOnDemand", void 0);
+    __decorate$8([
         Property()
     ], TreeView.prototype, "nodeTemplate", void 0);
-    __decorate$7([
+    __decorate$8([
         Property()
     ], TreeView.prototype, "selectedNodes", void 0);
-    __decorate$7([
+    __decorate$8([
         Property('None')
     ], TreeView.prototype, "sortOrder", void 0);
-    __decorate$7([
+    __decorate$8([
         Property(false)
     ], TreeView.prototype, "showCheckBox", void 0);
-    __decorate$7([
+    __decorate$8([
         Property(true)
     ], TreeView.prototype, "autoCheck", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], TreeView.prototype, "created", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], TreeView.prototype, "dataBound", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], TreeView.prototype, "dataSourceChanged", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], TreeView.prototype, "drawNode", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], TreeView.prototype, "destroyed", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], TreeView.prototype, "keyPress", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], TreeView.prototype, "nodeChecked", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], TreeView.prototype, "nodeChecking", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], TreeView.prototype, "nodeClicked", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], TreeView.prototype, "nodeCollapsed", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], TreeView.prototype, "nodeCollapsing", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], TreeView.prototype, "nodeDragging", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], TreeView.prototype, "nodeDragStart", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], TreeView.prototype, "nodeDragStop", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], TreeView.prototype, "nodeDropped", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], TreeView.prototype, "nodeEdited", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], TreeView.prototype, "nodeEditing", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], TreeView.prototype, "nodeExpanded", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], TreeView.prototype, "nodeExpanding", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], TreeView.prototype, "nodeSelected", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], TreeView.prototype, "nodeSelecting", void 0);
-    TreeView = TreeView_1 = __decorate$7([
+    TreeView = TreeView_1 = __decorate$8([
         NotifyPropertyChanges
     ], TreeView);
     return TreeView;
@@ -9864,7 +10890,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
  * TreeView modules
  */
 
-var __extends$8 = (undefined && undefined.__extends) || (function () {
+var __extends$9 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -9877,7 +10903,7 @@ var __extends$8 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$8 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$9 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -9917,7 +10943,7 @@ var SIDEBARABSOLUTE = 'e-sidebar-absolute';
  * ```
  */
 var Sidebar = /** @__PURE__ @class */ (function (_super) {
-    __extends$8(Sidebar, _super);
+    __extends$9(Sidebar, _super);
     function Sidebar(options, element) {
         return _super.call(this, options, element) || this;
     }
@@ -10028,14 +11054,8 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
      * Hide the Sidebar component, if it is in an open state.
      * @returns void
      */
-    Sidebar.prototype.hide = function (e) {
-        var closeArguments = {
-            model: this,
-            element: this.element,
-            cancel: false,
-            isInteracted: !isNullOrUndefined(e),
-            event: (e || null)
-        };
+    Sidebar.prototype.hide = function () {
+        var closeArguments = { model: this, element: this.element, cancel: false };
         this.trigger('close', closeArguments);
         if (!closeArguments.cancel) {
             if (this.element.classList.contains(CLOSE)) {
@@ -10070,14 +11090,8 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
      * Shows the Sidebar component, if it is in closed state.
      * @returns void
      */
-    Sidebar.prototype.show = function (e) {
-        var openArguments = {
-            model: this,
-            element: this.element,
-            cancel: false,
-            isInteracted: !isNullOrUndefined(e),
-            event: (e || null)
-        };
+    Sidebar.prototype.show = function () {
+        var openArguments = { model: this, element: this.element, cancel: false };
         this.trigger('open', openArguments);
         if (!openArguments.cancel) {
             removeClass([this.element], VISIBILITY);
@@ -10179,7 +11193,7 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
         if (closest(e.target, '.' + CONTROL$1 + '' + '.' + ROOT$1)) {
             return;
         }
-        this.hide(e);
+        this.hide();
     };
     Sidebar.prototype.enableGestureHandler = function (args) {
         if (this.position === 'Left' && args.swipeDirection === 'Right' &&
@@ -10393,73 +11407,73 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
         }
         this.unWireEvents();
     };
-    __decorate$8([
+    __decorate$9([
         Property('auto')
     ], Sidebar.prototype, "dockSize", void 0);
-    __decorate$8([
+    __decorate$9([
         Property(null)
     ], Sidebar.prototype, "mediaQuery", void 0);
-    __decorate$8([
+    __decorate$9([
         Property(false)
     ], Sidebar.prototype, "enableDock", void 0);
-    __decorate$8([
+    __decorate$9([
         Property('en-US')
     ], Sidebar.prototype, "locale", void 0);
-    __decorate$8([
+    __decorate$9([
         Property(false)
     ], Sidebar.prototype, "enablePersistence", void 0);
-    __decorate$8([
+    __decorate$9([
         Property(true)
     ], Sidebar.prototype, "enableGestures", void 0);
-    __decorate$8([
+    __decorate$9([
         Property(false)
     ], Sidebar.prototype, "isOpen", void 0);
-    __decorate$8([
+    __decorate$9([
         Property(false)
     ], Sidebar.prototype, "enableRtl", void 0);
-    __decorate$8([
+    __decorate$9([
         Property(true)
     ], Sidebar.prototype, "animate", void 0);
-    __decorate$8([
+    __decorate$9([
         Property('auto')
     ], Sidebar.prototype, "height", void 0);
-    __decorate$8([
+    __decorate$9([
         Property(false)
     ], Sidebar.prototype, "closeOnDocumentClick", void 0);
-    __decorate$8([
+    __decorate$9([
         Property('Left')
     ], Sidebar.prototype, "position", void 0);
-    __decorate$8([
+    __decorate$9([
         Property(null)
     ], Sidebar.prototype, "target", void 0);
-    __decorate$8([
+    __decorate$9([
         Property(false)
     ], Sidebar.prototype, "showBackdrop", void 0);
-    __decorate$8([
+    __decorate$9([
         Property('Auto')
     ], Sidebar.prototype, "type", void 0);
-    __decorate$8([
+    __decorate$9([
         Property('auto')
     ], Sidebar.prototype, "width", void 0);
-    __decorate$8([
+    __decorate$9([
         Property(1000)
     ], Sidebar.prototype, "zIndex", void 0);
-    __decorate$8([
+    __decorate$9([
         Event()
     ], Sidebar.prototype, "created", void 0);
-    __decorate$8([
+    __decorate$9([
         Event()
     ], Sidebar.prototype, "close", void 0);
-    __decorate$8([
+    __decorate$9([
         Event()
     ], Sidebar.prototype, "open", void 0);
-    __decorate$8([
+    __decorate$9([
         Event()
     ], Sidebar.prototype, "change", void 0);
-    __decorate$8([
+    __decorate$9([
         Event()
     ], Sidebar.prototype, "destroyed", void 0);
-    Sidebar = __decorate$8([
+    Sidebar = __decorate$9([
         NotifyPropertyChanges
     ], Sidebar);
     return Sidebar;
@@ -10473,5 +11487,5 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
  * Navigation all modules
  */
 
-export { HScroll, Item, Toolbar, AccordionActionSettings, AccordionAnimationSettings, AccordionItem, Accordion, ContextMenu, Menu, TabActionSettings, TabAnimationSettings, Header, TabItem, Tab, FieldsSettings, ActionSettings, NodeAnimationSettings, TreeView, Sidebar };
+export { MenuAnimationSettings, HScroll, VScroll, Item, Toolbar, AccordionActionSettings, AccordionAnimationSettings, AccordionItem, Accordion, ContextMenu, Menu, TabActionSettings, TabAnimationSettings, Header, TabItem, Tab, FieldsSettings, ActionSettings, NodeAnimationSettings, TreeView, Sidebar };
 //# sourceMappingURL=ej2-navigations.es5.js.map

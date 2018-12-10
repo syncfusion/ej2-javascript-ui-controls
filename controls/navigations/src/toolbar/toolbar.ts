@@ -7,6 +7,7 @@ import { Popup } from '@syncfusion/ej2-popups';
 import { calculatePosition } from '@syncfusion/ej2-popups';
 import { Button, IconPosition } from '@syncfusion/ej2-buttons';
 import { HScroll } from '../common/h-scroll';
+import { VScroll } from '../common/v-scroll';
 import { ToolbarModel, ItemModel } from './toolbar-model';
 /**
  * Specifies the options for supporting element types of Toolbar command.
@@ -31,6 +32,7 @@ type ItmAlign = 'lefts' | 'centers' | 'rights';
 
 export type ItemAlign = 'Left' | 'Center' | 'Right';
 
+const CLS_VERTICAL: Str = 'e-vertical';
 const CLS_ITEMS: Str = 'e-toolbar-items';
 const CLS_ITEM: Str = 'e-toolbar-item';
 const CLS_RTL: Str = 'e-rtl';
@@ -50,7 +52,8 @@ const CLS_TBARRIGHT: Str = 'e-toolbar-right';
 const CLS_TBARLEFT: Str = 'e-toolbar-left';
 const CLS_TBARCENTER: Str = 'e-toolbar-center';
 const CLS_TBARPOS: Str = 'e-tbar-pos';
-const CLS_TBARSCROLL: Str = 'e-hscroll-content';
+const CLS_HSCROLLCNT: Str = 'e-hscroll-content';
+const CLS_VSCROLLCNT: Str = 'e-vscroll-content';
 const CLS_POPUPNAV: Str = 'e-hor-nav';
 const CLS_POPUPCLASS: Str = 'e-toolbar-pop';
 const CLS_POPUP: Str = 'e-toolbar-popup';
@@ -254,12 +257,13 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     private tbResize: boolean;
     private offsetWid: number;
     private keyModule: KeyboardEvents;
-    private scrollModule: HScroll;
+    private scrollModule: HScroll | VScroll;
     private activeEle: HTEle;
     private popupPriCount: number;
     private tbarItemsCol: ItemModel[];
     private enableCollision: boolean;
     private scrollStep: number;
+    private isVertical: boolean;
     private tempId: string[];
 
     /**
@@ -376,6 +380,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         this.popObj = null;
         this.tempId = [];
         this.tbarItemsCol = this.items;
+        this.isVertical = this.element.classList.contains(CLS_VERTICAL) ? true : false;
         this.popupPriCount = 0;
         if (this.enableRtl) {
             this.add(this.element, CLS_RTL);
@@ -414,7 +419,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private unwireEvents(): void {
         EventHandler.remove(this.element, 'click', this.clickHandler);
-        this.destroyHScroll();
+        this.destroyScroll();
         this.keyModule.destroy();
         EventHandler.remove(document, 'scroll', this.docEvent);
         EventHandler.remove(this.element, 'keydown', this.docKeyDown);
@@ -430,7 +435,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             this.popObj.hide({ name: 'FadeOut', duration: 100 });
         }
     }
-    private destroyHScroll(): void {
+    private destroyScroll(): void {
         if (this.scrollModule) {
             if (this.tbarAlign) { this.add(this.scrollModule.element, CLS_TBARPOS); }
             this.scrollModule.destroy(); this.scrollModule = null;
@@ -453,9 +458,12 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     private destroyMode(): void {
         if (this.scrollModule) {
             this.remove(this.scrollModule.element, CLS_RTL);
-            this.destroyHScroll();
+            this.destroyScroll();
         }
         this.remove(this.element, CLS_EXTENDEDPOPOPEN);
+        this.remove(this.element, CLS_EXTEANDABLE_TOOLBAR);
+        let tempEle : HTMLElement = this.element.querySelector('.e-toolbar-multirow');
+        if (tempEle) { this.remove(tempEle, CLS_MULTIROW); }
         if (this.popObj) {
             this.popupRefresh(this.popObj.element, true);
         }
@@ -492,6 +500,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         let popAnimate: Object = { name: 'FadeOut', duration: 100 };
         switch (e.action) {
             case 'moveRight':
+                if (this.isVertical) { return; }
                 if (rootEle === trgt) {
                     this.elementFocus(clst);
                 } else if (!navChk) {
@@ -499,6 +508,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 }
                 break;
             case 'moveLeft':
+                if (this.isVertical) { return; }
                 if (!navChk) {
                     this.eleFocus(clst, 'previous');
                 }
@@ -534,16 +544,24 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             case 'moveUp':
             case 'moveDown':
                 let value: Str = e.action === 'moveUp' ? 'previous' : 'next';
-                if (popObj && closest(trgt, '.e-popup')) {
-                    let popEle: HTEle = popObj.element;
-                    let popFrstEle: HTEle = popEle.firstElementChild as HTEle;
-                    if ((value === 'previous' && popFrstEle === clst) || (value === 'next' && popEle.lastElementChild === clst)) {
-                        return;
-                    } else {
-                        this.eleFocus(clst, value);
+                if (!this.isVertical) {
+                    if (popObj && closest(trgt, '.e-popup')) {
+                        let popEle: HTEle = popObj.element;
+                        let popFrstEle: HTEle = popEle.firstElementChild as HTEle;
+                        if ((value === 'previous' && popFrstEle === clst) || (value === 'next' && popEle.lastElementChild === clst)) {
+                            return;
+                        } else {
+                            this.eleFocus(clst, value);
+                        }
+                    } else if (e.action === 'moveDown' && popObj && isVisible(popObj.element)) {
+                        this.elementFocus(clst);
                     }
-                } else if (e.action === 'moveDown' && popObj && isVisible(popObj.element)) {
-                    this.elementFocus(clst);
+                } else {
+                    if (e.action === 'moveUp') {
+                        this.eleFocus(clst, 'previous');
+                    } else {
+                        this.eleFocus(clst, 'next');
+                    }
                 }
                 break;
             case 'tab':
@@ -566,9 +584,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 }
                 break;
             case 'popupOpen':
-                if (!navChk) {
-                    return;
-                }
+                if (!navChk) { return; }
                 if (popObj && !isVisible(popObj.element)) {
                     popObj.element.style.top = rootEle.offsetHeight + 'px';
                     popObj.show({ name: 'FadeIn', duration: 100 });
@@ -665,7 +681,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         if (!popupNav) {
             popupNav = trgt;
         }
-        if (!ele.children[0].classList.contains('e-hscroll') && (clsList.contains(CLS_TBARNAV))) {
+        if (!ele.children[0].classList.contains('e-hscroll') && !ele.children[0].classList.contains('e-vscroll')
+            && (clsList.contains(CLS_TBARNAV))) {
             clsList = trgt.querySelector('.e-icons').classList;
         }
         if (clsList.contains(CLS_POPUPICON) || clsList.contains(CLS_POPUPDOWN)) {
@@ -688,7 +705,6 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             this.popObj.hide({ name: 'FadeOut', duration: 100 });
         }
     };
-
     private popupClickHandler(ele: HTMLElement, popupNav: HTMLElement, CLS_RTL: Str): void {
         let popObj: Popup = this.popObj;
         if (isVisible(popObj.element)) {
@@ -729,7 +745,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         setStyle(this.element, { 'width': width });
         let ariaAttr: { [key: string]: Str } = {
-            'role': 'toolbar', 'aria-disabled': 'false', 'aria-haspopup': 'false', 'aria-orientation': 'horizontal',
+            'role': 'toolbar', 'aria-disabled': 'false', 'aria-haspopup': 'false',
+            'aria-orientation': !this.isVertical ? 'horizontal' : 'vertical',
         };
         attributes(this.element, ariaAttr);
     }
@@ -743,14 +760,34 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             this.popupRefresh(this.popObj.element, false);
         }
     }
-    private initHScroll(element: HTEle, innerItems: NodeList): void {
+    /** @hidden */
+    public changeOrientation(): void {
+        let ele: HTEle = this.element;
+        if (this.isVertical) {
+            ele.classList.remove(CLS_VERTICAL);
+            this.isVertical = false;
+            if (this.height === 'auto' || this.height === '100%') {
+                ele.style.height = this.height; }
+            ele.setAttribute('aria-orientation', 'horizontal');
+        } else {
+            ele.classList.add(CLS_VERTICAL);
+            this.isVertical = true;
+            ele.setAttribute('aria-orientation', 'vertical');
+            setStyle(this.element, { 'height': formatUnit(this.height), 'width': formatUnit(this.width) });
+        }
+        this.destroyMode();
+        this.refreshOverflow();
+    }
+    private initScroll(element: HTEle, innerItems: NodeList): void {
         if (!this.scrollModule && this.checkOverflow(element, <HTEle>innerItems[0])) {
             if (this.tbarAlign) {
                 this.element.querySelector('.' + CLS_ITEMS + ' .' + CLS_TBARCENTER).removeAttribute('style');
             }
-            this.scrollModule = new HScroll({ scrollStep: this.scrollStep, enableRtl: this.enableRtl });
-            this.scrollModule.createElement = this.createElement;
-            this.scrollModule.appendTo( <HTEle>innerItems[0]);
+            if (this.isVertical) {
+                this.scrollModule = new VScroll({ scrollStep: this.scrollStep, enableRtl: this.enableRtl }, <HTEle>innerItems[0]);
+            } else {
+                this.scrollModule = new HScroll({ scrollStep: this.scrollStep, enableRtl: this.enableRtl }, <HTEle>innerItems[0]);
+            }
             this.remove(this.scrollModule.element, CLS_TBARPOS);
             setStyle(this.element, { overflow: 'hidden' });
         }
@@ -761,23 +798,35 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         [].slice.call(selectAll('.' + CLS_ITEM, items)).forEach((el: HTEle) => {
             if (isVisible(el)) {
                 style = window.getComputedStyle(el);
-                width += (el.offsetWidth + parseFloat(style.marginRight) + parseFloat(style.marginLeft) );
+                width += this.isVertical ? el.offsetHeight : el.offsetWidth;
+                width += parseFloat(this.isVertical ? style.marginTop : style.marginRight);
+                width += parseFloat(this.isVertical ? style.marginBottom : style.marginLeft);
             }
         });
         return width;
+    }
+    private getScrollCntEle(innerItem: HTEle): HTEle {
+        let trgClass: Str = (this.isVertical) ? '.e-vscroll-content' : '.e-hscroll-content';
+        return <HTEle>innerItem.querySelector(trgClass);
     }
     private checkOverflow(element: HTEle, innerItem: HTEle): boolean {
         if (isNOU(element) || isNOU(innerItem) || !isVisible(element)) {
             return false;
         }
-        let eleWidth: number = element.offsetWidth;
-        let itemWidth: number = innerItem.offsetWidth;
+        let eleWidth: number = this.isVertical ? element.offsetHeight : element.offsetWidth;
+        let itemWidth: number = this.isVertical ? innerItem.offsetHeight : innerItem.offsetWidth;
         if (this.tbarAlign || this.scrollModule || (eleWidth === itemWidth)) {
-            itemWidth = this.itemWidthCal(this.scrollModule ? <HTEle>innerItem.querySelector('.e-hscroll-content') : innerItem);
+            itemWidth = this.itemWidthCal(this.scrollModule ? this.getScrollCntEle(innerItem) : innerItem);
         }
         let popNav: HTEle = <HTEle>element.querySelector('.' + CLS_TBARNAV);
         let scrollNav: HTEle = <HTEle>element.querySelector('.' + CLS_TBARSCRLNAV);
-        if (itemWidth > eleWidth - (popNav ? popNav.offsetWidth : (scrollNav ? scrollNav.offsetWidth * 2 : 0))) {
+        let navEleWidth: number = 0;
+        if (popNav) {
+          navEleWidth = this.isVertical ? popNav.offsetHeight : popNav.offsetWidth;
+         } else if (scrollNav) {
+           navEleWidth = this.isVertical ? (scrollNav.offsetHeight * (2)) : (scrollNav.offsetWidth * 2);
+        }
+        if (itemWidth > eleWidth - navEleWidth) {
             return true;
         } else { return false; }
     }
@@ -803,7 +852,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             switch (this.overflowMode) {
                 case 'Scrollable':
                     if (isNOU(this.scrollModule)) {
-                      this.initHScroll(ele, ele.getElementsByClassName(CLS_ITEMS)); }
+                      this.initScroll(ele, ele.getElementsByClassName(CLS_ITEMS)); }
                     break;
                 case 'Popup':
                     this.add(this.element, 'e-toolpop');
@@ -863,11 +912,13 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
 
     private createPopupEle(ele: HTMLElement, innerEle: HTMLElement[]): void {
         let innerNav: HTEle = <HTEle>ele.querySelector('.' + CLS_TBARNAV);
+        let vertical: boolean = this.isVertical;
         if (!innerNav) {
             this.createPopupIcon(ele);
         }
         innerNav = <HTEle>ele.querySelector('.' + CLS_TBARNAV);
-        let eleWidth: number = (ele.offsetWidth - (innerNav.offsetWidth));
+        let innerNavDom: number = (vertical ? innerNav.offsetHeight : innerNav.offsetWidth);
+        let eleWidth: number = ((vertical ? ele.offsetHeight : ele.offsetWidth) - (innerNavDom));
         this.element.classList.remove('e-rtl');
         setStyle(this.element, { direction: 'initial' });
         this.checkPriority(ele, innerEle, eleWidth, true);
@@ -926,11 +977,11 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         let sepHeight: number;
         let sepItem: Element;
         if (this.overflowMode === 'Extended') {
-            sepItem = element.querySelector('.' + CLS_SEPARATOR + ':not(.' + CLS_POPUP + ' )');
+            sepItem = element.querySelector('.' + CLS_SEPARATOR + ':not(.' + CLS_POPUP + ')');
             sepHeight = (element.style.height === 'auto' || element.style.height === '') ? null : (sepItem as HTEle).offsetHeight;
         }
-        eleItem = element.querySelector('.' + CLS_ITEM + ':not(.' + CLS_SEPARATOR + ' ):not(.' + CLS_POPUP + ' )');
-        eleHeight = (element.style.height === 'auto' || element.style.height === '') ? null : (eleItem as HTEle).offsetHeight;
+        eleItem = element.querySelector('.' + CLS_ITEM + ':not(.' + CLS_SEPARATOR + '):not(.' + CLS_POPUP + ')');
+        eleHeight = (element.style.height === 'auto' || element.style.height === '') ? null : (eleItem && (eleItem as HTEle).offsetHeight);
         let ele: HTEle;
         let popupPri: Element[] = [];
         if (element.querySelector('#' + element.id + '_popup.' + CLS_POPUPCLASS)) {
@@ -956,7 +1007,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             let eleStyles: CSSStyleDeclaration = window.getComputedStyle(this.element);
             let popup: Popup = new Popup(null, {
                 relateTo: this.element,
-                offsetY: this.getElementOffsetY(),
+                offsetY: (this.isVertical) ? 0 : this.getElementOffsetY(),
                 enableRtl: this.enableRtl,
                 open: this.popupOpen.bind(this),
                 close: this.popupClose.bind(this),
@@ -970,6 +1021,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             EventHandler.add(document, 'scroll', this.docEvent.bind(this));
             EventHandler.add(document, 'click ', this.docEvent.bind(this));
             popup.element.style.maxHeight = popup.element.offsetHeight + 'px';
+            if (this.isVertical) { popup.element.style.visibility = 'hidden'; }
             popup.hide();
             this.popObj = popup;
             this.element.setAttribute('aria-haspopup', 'true');
@@ -986,8 +1038,10 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private popupOpen(e: Event): void {
         let popObj: Popup = this.popObj;
-        popObj.offsetY = this.getElementOffsetY();
-        popObj.dataBind();
+        if (!this.isVertical) {
+            popObj.offsetY = this.getElementOffsetY();
+            popObj.dataBind();
+        }
         let popupEle: HTEle = this.popObj.element;
         let toolEle: HTEle = this.popObj.element.parentElement;
         let popupNav: HTEle = <HTEle>toolEle.querySelector('.' + CLS_TBARNAV);
@@ -1000,7 +1054,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         classList(popIcon, [CLS_POPUPICON], [CLS_POPUPDOWN]);
         this.tbarPopupHandler(true);
         let scrollVal: number = isNOU(window.scrollY) ? 0 : window.scrollY;
-        if (((window.innerHeight + scrollVal) < popupElePos) && (this.element.offsetTop < popupEle.offsetHeight)) {
+        if (!this.isVertical && ((window.innerHeight + scrollVal) < popupElePos) && (this.element.offsetTop < popupEle.offsetHeight)) {
             let overflowHeight: number = (popupEle.offsetHeight - ((popupElePos - window.innerHeight - scrollVal) + 5));
             popObj.height = overflowHeight + 'px';
             for (let i: number = 0; i <= popupEle.childElementCount; i++) {
@@ -1011,6 +1065,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
             setStyle(popObj.element, { maxHeight: overflowHeight + 'px' });
+        } else if (this.isVertical) {
+            let tbEleData: ClientRect = this.element.getBoundingClientRect();
+            setStyle(popObj.element, { maxHeight: (tbEleData.top + this.element.offsetHeight) + 'px', bottom: 0, visibility: '' });
         }
     }
 
@@ -1026,6 +1083,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         let popPriority: boolean = this.popupPriCount > 0;
         let len: number = inEle.length;
         let eleWid: number = eleWidth;
+        let eleOffset: number;
+        let checkoffset: boolean;
         let sepCheck: number = 0; let itemCount: number = 0; let itemPopCount: number = 0;
         let checkClass: Function = (ele: HTEle, val: Str[]) => {
             let rVal: Boolean = false;
@@ -1037,17 +1096,32 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             return rVal;
         };
         for (let i: number = len - 1; i >= 0; i--) {
-            let mrgn: number = parseFloat((window.getComputedStyle(inEle[i])).marginRight);
-            mrgn += parseFloat((window.getComputedStyle(inEle[i])).marginLeft);
+            let mrgn: number;
+            let compuStyle: CSSStyleDeclaration = window.getComputedStyle(inEle[i]);
+            if (this.isVertical) {
+                mrgn = parseFloat((compuStyle).marginTop);
+                mrgn += parseFloat((compuStyle).marginBottom);
+            } else {
+                mrgn = parseFloat((compuStyle).marginRight);
+                mrgn += parseFloat((compuStyle).marginLeft);
+            }
             let fstEleCheck: Boolean = inEle[i] === this.tbarEle[0];
             if (fstEleCheck) { this.tbarEleMrgn = mrgn; }
-            let eleWid: number = fstEleCheck ? (inEle[i].offsetWidth + mrgn) : inEle[i].offsetWidth;
+            eleOffset = this.isVertical ? inEle[i].offsetHeight : inEle[i].offsetWidth;
+            let eleWid: number = fstEleCheck ? (eleOffset + mrgn) : eleOffset;
             if (checkClass(inEle[i], [CLS_POPPRI]) && popPriority) {
                 inEle[i].classList.add(CLS_POPUP);
-                setStyle(inEle[i], { display: 'none', minWidth: eleWid + 'px' });
+                if (this.isVertical) {
+                    setStyle(inEle[i], { display: 'none', minHeight: eleWid + 'px' });
+                } else {
+                    setStyle(inEle[i], { display: 'none', minWidth: eleWid + 'px' }); }
                 itemPopCount++;
             }
-            if ((inEle[i].offsetLeft + inEle[i].offsetWidth + mrgn) > eleWidth) {
+            if (this.isVertical) {
+                checkoffset = (inEle[i].offsetTop + inEle[i].offsetHeight + mrgn) > eleWidth;
+            } else {
+                checkoffset = (inEle[i].offsetLeft + inEle[i].offsetWidth + mrgn) > eleWidth; }
+            if (checkoffset) {
                 if (inEle[i].classList.contains(CLS_SEPARATOR)) {
                     if (this.overflowMode === 'Extended') {
                         if (itemCount === itemPopCount) {
@@ -1071,13 +1145,17 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                     itemCount++;
                 }
                 if (inEle[i].classList.contains(CLS_TBAROVERFLOW) && pre) {
-                    eleWidth -= (inEle[i].offsetWidth + (mrgn));
+                    eleWidth -= (( this.isVertical ? inEle[i].offsetHeight : inEle[i].offsetWidth) + (mrgn));
                 } else if (!checkClass(inEle[i], [CLS_SEPARATOR, CLS_TBARIGNORE])) {
                     inEle[i].classList.add(CLS_POPUP);
-                    setStyle(inEle[i], { display: 'none', minWidth: eleWid + 'px' });
+                    if (this.isVertical) {
+                        setStyle(inEle[i], { display: 'none', minHeight: eleWid + 'px' });
+                    } else {
+                        setStyle(inEle[i], { display: 'none', minWidth: eleWid + 'px' });
+                    }
                     itemPopCount++;
                 } else {
-                    eleWidth -= (inEle[i].offsetWidth + (mrgn));
+                    eleWidth -= (( this.isVertical ? inEle[i].offsetHeight : inEle[i].offsetWidth) + (mrgn));
                 }
             }
         }
@@ -1138,6 +1216,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
 
     private popupRefresh(popupEle: HTMLElement, destroy: boolean): void {
         let ele: HTEle = this.element;
+        let isVer: boolean = this.isVertical;
         let popNav: HTEle = <HTEle>ele.querySelector('.' + CLS_TBARNAV);
         let innerEle: HTEle = <HTEle>ele.querySelector('.' + CLS_ITEMS);
         if (isNOU(popNav)) {
@@ -1145,14 +1224,18 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         innerEle.removeAttribute('style');
         popupEle.style.display = 'block';
-        let width: number = ele.offsetWidth - (popNav.offsetWidth + innerEle.offsetWidth);
+        let dimension: number;
+        if (isVer) {
+          dimension = ele.offsetHeight - (popNav.offsetHeight + innerEle.offsetHeight);
+        } else {
+            dimension = ele.offsetWidth - (popNav.offsetWidth + innerEle.offsetWidth); }
         let popupEleWidth: number = 0;
         [].slice.call(popupEle.children).forEach((el: HTMLElement): void => {
           popupEleWidth += this.popupEleWidth(el);
           setStyle(el, {'position': ''});  });
-        if ((width + popNav.offsetWidth) > (popupEleWidth) && this.popupPriCount === 0 ) {
+        if ((dimension + (isVer ? popNav.offsetHeight : popNav.offsetWidth)) > (popupEleWidth) && this.popupPriCount === 0 ) {
           destroy = true; }
-        this.popupEleRefresh(width, popupEle, destroy);
+        this.popupEleRefresh(dimension, popupEle, destroy);
         popupEle.style.display = '';
         if (popupEle.children.length === 0 && popNav && this.popObj) {
             detach(popNav);
@@ -1194,7 +1277,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private popupEleWidth(el: HTEle): number {
         el.style.position = 'absolute';
-        let elWidth: number = el.offsetWidth;
+        let elWidth: number = this.isVertical ? el.offsetHeight : el.offsetWidth;
         let btnText: HTEle = <HTEle>el.querySelector('.' + CLS_TBARBTNTEXT);
         if (el.classList.contains('e-tbtn-align') || el.classList.contains(CLS_TBARTEXT)) {
             let btn: HTEle = <HTEle>el.children[0];
@@ -1204,8 +1287,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 btnText.style.display = 'block';
             }
             btn.style.minWidth = '0%';
-            elWidth = parseFloat(el.style.minWidth);
+            elWidth = parseFloat( !this.isVertical ? el.style.minWidth : el.style.minHeight);
             btn.style.minWidth = '';
+            btn.style.minHeight = '';
             if (!isNOU(btnText)) {
                 btnText.style.display = '';
             }
@@ -1228,7 +1312,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             if (el === this.tbarEle[0]) { elWidth += this.tbarEleMrgn; }
             el.style.position = '';
             if (elWidth < width || destroy) {
-                el.style.minWidth = '';
+                setStyle(el, { minWidth: '', height: '', minHeight: '' });
                 if (!el.classList.contains(CLS_POPOVERFLOW)) {
                     el.classList.remove(CLS_POPUP);
                 }
@@ -1287,27 +1371,38 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private itemPositioning(): void {
         let item: HTEle = this.element.querySelector('.' + CLS_ITEMS) as HTEle;
+        let margin: number;
         if (isNOU(item) || !item.classList.contains(CLS_TBARPOS)) { return; }
         let popupNav: HTEle = <HTEle>this.element.querySelector('.' + CLS_TBARNAV);
         let innerItem: HTEle[];
         if (this.scrollModule) {
-            innerItem = [].slice.call(item.querySelector('.' + CLS_TBARSCROLL).children);
+            let trgClass: Str = (this.isVertical) ? CLS_VSCROLLCNT : CLS_HSCROLLCNT;
+            innerItem = [].slice.call(item.querySelector('.' + trgClass).children);
         } else {
             innerItem = [].slice.call(item.childNodes);
         }
-        let margin: number = innerItem[0].offsetWidth + innerItem[2].offsetWidth;
-        let tbarWid: number = this.element.offsetWidth;
+        if (this.isVertical) {
+          margin = innerItem[0].offsetHeight + innerItem[2].offsetHeight;
+        } else {
+           margin = innerItem[0].offsetWidth + innerItem[2].offsetWidth; }
+        let tbarWid: number = this.isVertical ? this.element.offsetHeight : this.element.offsetWidth;
         if (popupNav) {
-            tbarWid -= popupNav.offsetWidth;
-            let popWid: string = popupNav.offsetWidth + 'px';
+            tbarWid -= (this.isVertical ? popupNav.offsetHeight : popupNav.offsetWidth);
+            let popWid: string = (this.isVertical ? popupNav.offsetHeight : popupNav.offsetWidth) + 'px';
             innerItem[2].removeAttribute('style');
-            this.enableRtl ? innerItem[2].style.left = popWid : innerItem[2].style.right = popWid;
+            if (this.isVertical) {
+              this.enableRtl ? innerItem[2].style.top = popWid : innerItem[2].style.bottom = popWid;
+            } else {
+                this.enableRtl ? innerItem[2].style.left = popWid : innerItem[2].style.right = popWid; }
         }
         if (tbarWid <= margin) { return; }
-        let value: number = (((tbarWid - margin)) - innerItem[1].offsetWidth) / 2;
+        let value: number = (((tbarWid - margin)) - (!this.isVertical ? innerItem[1].offsetWidth : innerItem[1].offsetHeight)) / 2;
         innerItem[1].removeAttribute('style');
-        let mrgn: Str = (innerItem[0].offsetWidth + value) + 'px';
-        this.enableRtl ? innerItem[1].style.marginRight = mrgn : innerItem[1].style.marginLeft = mrgn;
+        let mrgn: Str = ((!this.isVertical ? innerItem[0].offsetWidth : innerItem[0].offsetHeight) + value) + 'px';
+        if (this.isVertical) {
+            this.enableRtl ? innerItem[1].style.marginBottom = mrgn : innerItem[1].style.marginTop = mrgn;
+        } else {
+        this.enableRtl ? innerItem[1].style.marginRight = mrgn : innerItem[1].style.marginLeft = mrgn; }
     }
     private tbarItemAlign(item: ItemModel, itemEle: HTEle, pos: number): void {
         if (item.showAlwaysInPopup && item.overflow !== 'Show') { return; }
@@ -1712,7 +1807,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         let checkOverflow: boolean = this.checkOverflow(ele, ele.getElementsByClassName(CLS_ITEMS)[0] as HTEle);
         if (!checkOverflow) {
-            this.destroyHScroll();
+            this.destroyScroll();
         }
         if (checkOverflow && this.scrollModule && (this.offsetWid === ele.offsetWidth)) { return; }
         if (this.offsetWid > ele.offsetWidth || checkOverflow) {

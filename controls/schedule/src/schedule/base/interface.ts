@@ -62,6 +62,8 @@ export interface EventRenderedArgs extends BaseEventArgs {
     element: HTMLElement;
     /** Defines the cancel option. */
     cancel: boolean;
+    /** Returns the type of the event element which is currently being rendered on the Scheduler. */
+    type?: string;
 }
 
 export interface PopupOpenEventArgs extends BaseEventArgs {
@@ -215,6 +217,8 @@ export interface ResourceDetails {
     resource: ResourcesModel;
     /** Returns the child resource data. */
     resourceData: { [key: string]: Object };
+    /** Returns the respective resource fields data. */
+    groupData?: { [key: string]: Object };
 }
 
 /** @hidden */
@@ -241,6 +245,8 @@ export interface IRenderer {
     addEventListener(): void;
     removeEventListener(): void;
     getRenderDates(workDays?: number[]): Date[];
+    getContentRows(): Element[];
+    getEventRows(trCount: number): Element[];
     getDateSlots(renderDates: Date[], workDays: number[]): TdData[];
     getNextPreviousDate(type: string): Date;
     renderLayout(type: string): void;
@@ -292,6 +298,7 @@ export interface PopupEventArgs {
 /** @hidden */
 export interface EventFieldsMapping {
     id?: string;
+    isBlock?: string;
     subject?: string;
     startTime?: string;
     endTime?: string;
@@ -303,6 +310,7 @@ export interface EventFieldsMapping {
     recurrenceID?: string;
     recurrenceRule?: string;
     recurrenceException?: string;
+    isReadonly?: string;
 }
 
 /** @hidden */
@@ -332,6 +340,7 @@ export interface UIStateArgs {
     isGroupAdaptive?: boolean;
     groupIndex?: number;
     action?: boolean;
+    isBlock?: boolean;
 }
 
 /** @hidden */

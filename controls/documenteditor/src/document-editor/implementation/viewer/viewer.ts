@@ -23,7 +23,7 @@ import { TextPosition } from '../selection/selection-helper';
 import { Zoom } from './zooming';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { ImageResizer } from '../editor/image-resizer';
-import { HeaderFooterType, PageFitType } from '../../base/types';
+import { HeaderFooterType, PageFitType, TableAlignment } from '../../base/types';
 import { Editor } from '../index';
 import { CaretHeightInfo } from '../editor/editor-helper';
 import { DocumentEditorKeyDownEventArgs } from '../../base/events-helper';
@@ -312,6 +312,13 @@ export abstract class LayoutViewer {
     protected zoomY: number;
     private zoomFactorInternal: number = 1;
 
+    /**
+     * If movecaretposition is 1, Home key is pressed
+     * If moveCaretPosition is 2, End key is pressed
+     * @private
+     */
+    public moveCaretPosition: number = 0;
+
     //#region Properties
     /**
      * Gets container canvas.
@@ -423,7 +430,7 @@ export abstract class LayoutViewer {
      */
     get dialog(): Dialog {
         if (!this.dialogInternal) {
-            this.initDialog();
+            this.initDialog(this.owner.enableRtl);
         }
         return this.dialogInternal;
     }
@@ -433,7 +440,7 @@ export abstract class LayoutViewer {
      */
     get dialog2(): Dialog {
         if (!this.dialogInternal2) {
-            this.initDialog2();
+            this.initDialog2(this.owner.enableRtl);
         }
         return this.dialogInternal2;
     }
@@ -596,8 +603,13 @@ export abstract class LayoutViewer {
             className: 'e-documenteditor-optionspane'
         }) as HTMLDivElement;
         element.appendChild(this.optionsPaneContainer);
+        let isRtl: boolean = this.owner.enableRtl;
+        let viewerContainerStyle: string;
+        if (isRtl) {
+            viewerContainerStyle = 'direction:ltr;';
+        }
         this.viewerContainer = createElement('div', { id: this.owner.containerId + '_viewerContainer' });
-        this.viewerContainer.style.cssText = 'position:relative;backgroundColor:#FBFBFB;overflow:auto';
+        this.viewerContainer.style.cssText = 'position:relative;backgroundColor:#FBFBFB;overflow:auto;' + viewerContainerStyle;
         this.optionsPaneContainer.appendChild(this.viewerContainer);
         this.viewerContainer.tabIndex = 0;
         this.viewerContainer.style.outline = 'none';
@@ -620,9 +632,6 @@ export abstract class LayoutViewer {
         this.layout = new Layout(this);
         this.textHelper = new TextHelper(this);
         this.zoomModule = new Zoom(this);
-        // let locale: L10n = new L10n('documenteditor', this.owner.defaultLocale);
-        // locale.setLocale(this.owner.locale);
-        // setCulture(this.owner.locale);
         this.initTouchEllipse();
         this.wireEvent();
     }
@@ -853,13 +862,17 @@ export abstract class LayoutViewer {
     /**
      * Initializes dialog template.
      */
-    private initDialog(): void {
+    private initDialog(isRtl?: boolean): void {
         if (!this.dialogInternal) {
             this.dialogTarget = createElement('div', { className: 'e-de-dlg-target' });
             document.body.appendChild(this.dialogTarget);
+            if (isRtl) {
+                this.dialogTarget.classList.add('e-de-rtl');
+            }
             this.dialogInternal = new Dialog({
                 target: document.body, showCloseIcon: true,
-                allowDragging: true, visible: false, width: '1px', isModal: true, position: { X: 'center', Y: 'center' }, zIndex: 20
+                allowDragging: true, enableRtl: isRtl, visible: false,
+                width: '1px', isModal: true, position: { X: 'center', Y: 'center' }, zIndex: 20
             });
             this.dialogInternal.open = this.selection.hideCaret;
             this.dialogInternal.beforeClose = this.updateFocus;
@@ -869,13 +882,17 @@ export abstract class LayoutViewer {
     /**
      * Initializes dialog template.
      */
-    private initDialog2(): void {
+    private initDialog2(isRtl?: boolean): void {
         if (!this.dialogInternal2) {
             let target: HTMLElement = createElement('div', { className: 'e-de-dlg-target' });
             document.body.appendChild(target);
+            if (isRtl) {
+                target.classList.add('e-de-rtl');
+            }
             this.dialogInternal2 = new Dialog({
                 target: document.body, showCloseIcon: true,
-                allowDragging: true, visible: false, width: '1px', isModal: true, position: { X: 'center', Y: 'Top' }, zIndex: 10
+                allowDragging: true, enableRtl: isRtl, visible: false,
+                width: '1px', isModal: true, position: { X: 'center', Y: 'Top' }, zIndex: 10
             });
             this.dialogInternal2.appendTo(target);
         }
@@ -971,8 +988,8 @@ export abstract class LayoutViewer {
 
         /* tslint:disable:align */
         resizeTimer = setTimeout((): void => {
-            if (!isNullOrUndefined(viewer.owner) && !isNullOrUndefined(this.owner.element)) {
-                viewer.updateViewerSizeInternal(document.getElementById(viewer.owner.element.id));
+            if (!isNullOrUndefined(viewer.owner) && !isNullOrUndefined(viewer.owner.element)) {
+                viewer.updateViewerSizeInternal(viewer.owner.element);
                 viewer.updateScrollBars();
                 if (!isNullOrUndefined(this.selection)) {
                     this.selection.updateCaretPosition();
@@ -985,7 +1002,7 @@ export abstract class LayoutViewer {
                     clearTimeout(resizeTimer);
                 }
             }
-        }, 100);
+        }, 200);
     }
     /**
      * @private
@@ -1647,6 +1664,8 @@ export abstract class LayoutViewer {
     public updateClientAreaForBlock(block: BlockWidget, beforeLayout: boolean, tableCollection?: TableWidget[]): void {
         let leftIndent: number = HelperMethods.convertPointToPixel((block as BlockWidget).leftIndent);
         let rightIndent: number = HelperMethods.convertPointToPixel((block as BlockWidget).rightIndent);
+        let bidi: boolean = block.bidi;
+        let width: number = 0;
         if (beforeLayout) {
             if (block instanceof TableWidget && tableCollection) {
                 let tableWidget: TableWidget = tableCollection[0];
@@ -1656,53 +1675,78 @@ export abstract class LayoutViewer {
                 tableWidget = tableCollection[tableCollection.length - 1] as TableWidget;
                 tableWidget.x = this.clientActiveArea.x;
                 tableWidget.y = this.clientActiveArea.y;
-                this.clientArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
-                // tslint:disable-next-line:max-line-length
-                this.clientActiveArea = new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height);
             } else {
                 // tslint:disable-next-line:max-line-length
-                if (block instanceof TableWidget && !isNullOrUndefined((block as TableWidget).tableFormat) && (block as TableWidget).tableFormat.tableAlignment !== 'Left') {
+                if (block instanceof TableWidget && !isNullOrUndefined((block as TableWidget).tableFormat)) {
                     if (!block.isGridUpdated) {
                         block.buildTableColumns();
                         block.isGridUpdated = true;
                     }
-                    let tableWidth: number = block.getMaxRowWidth(block.getTableClientWidth(block.getOwnerWidth(false)));
-                    // Fore resizing table, the tableholder table width taken for updated width. 
-                    // Since, the columns will be cleared if we performed resizing.
-                    if (this.owner.editor && this.owner.editor.tableResize.currentResizingTable === block
-                        && this.owner.editor.tableResize.resizerPosition === 0) {
-                        tableWidth = block.tableHolder.tableWidth;
+                    let tableAlignment: TableAlignment = this.tableAlignmentForBidi(block, bidi);
+                    if (tableAlignment !== 'Left') {
+                        let tableWidth: number = 0;
+                        // If the grid is calculated, we can direclty get the width from the grid.
+                        // Otherwise, calculate the width.
+                        tableWidth = HelperMethods.convertPointToPixel(block.tableHolder.getTotalWidth(0));
+                        tableWidth = tableWidth === 0 ? block.tableHolder.tableWidth === 0 ?
+                            block.getTableClientWidth(block.getOwnerWidth(false)) : block.tableHolder.tableWidth : tableWidth;
+                        // Fore resizing table, the tableholder table width taken for updated width. 
+                        // Since, the columns will be cleared if we performed resizing.
+                        if (this.owner.editor && this.owner.editor.tableResize.currentResizingTable === block
+                            && this.owner.editor.tableResize.resizerPosition === 0) {
+                            tableWidth = HelperMethods.convertPointToPixel(block.tableHolder.tableWidth);
+                        }
+                        if (tableAlignment === 'Center') {
+                            leftIndent = (this.clientArea.width - tableWidth) / 2;
+                        } else {
+                            leftIndent = this.clientArea.width - tableWidth;
+                        }
+                        if (bidi) {
+                            leftIndent = leftIndent - HelperMethods.convertPointToPixel(block.leftIndent);
+                            rightIndent = leftIndent;
+                        }
+                        this.tableLefts.push(leftIndent);
                     }
-                    tableWidth = HelperMethods.convertPointToPixel(tableWidth);
-                    if ((block as TableWidget).tableFormat.tableAlignment === 'Center') {
-                        leftIndent = (this.clientArea.width - tableWidth) / 2;
-                    } else {
-                        leftIndent = this.clientArea.width - tableWidth;
-                    }
-                    this.tableLefts.push(leftIndent);
                 }
-                this.clientActiveArea.x = this.clientArea.x = this.clientArea.x + leftIndent;
-                let width: number = this.clientArea.width - (leftIndent + rightIndent);
+
+                width = this.clientArea.width - (leftIndent + HelperMethods.convertPointToPixel(block.rightIndent));
+                this.clientActiveArea.x = this.clientArea.x = this.clientArea.x + (bidi ? rightIndent : leftIndent);
                 this.clientActiveArea.width = this.clientArea.width = width > 0 ? width : 0;
-
-                // tslint:disable-next-line:max-line-length
-                this.clientArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
-                // tslint:disable-next-line:max-line-length
-                this.clientActiveArea = new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height);
-
             }
         } else {
-            // tslint:disable-next-line:max-line-length
-            if (block instanceof TableWidget && (block as TableWidget).tableFormat.tableAlignment !== 'Left' && this.tableLefts.length > 0) {
-                leftIndent = this.tableLefts.pop();
+            // Clears table left for table with right or center alignment.
+            if (block instanceof TableWidget && !isNullOrUndefined((block as TableWidget).tableFormat)) {
+                let tableAlignment: TableAlignment = this.tableAlignmentForBidi(block, bidi);
+                if (!block.isGridUpdated) {
+                    block.buildTableColumns();
+                    block.isGridUpdated = true;
+                }
+                if (tableAlignment !== 'Left' && this.tableLefts.length > 0) {
+                    leftIndent = this.tableLefts.pop();
+                    if (bidi) {
+                        rightIndent = leftIndent;
+                    }
+                }
             }
-            this.clientActiveArea.x = this.clientArea.x = this.clientArea.x - leftIndent;
-            let width: number = this.clientArea.width + leftIndent + rightIndent;
+            width = this.clientArea.width + leftIndent + HelperMethods.convertPointToPixel(block.rightIndent);
             this.clientActiveArea.width = this.clientArea.width = width > 0 ? width : 0;
-            this.clientArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
-            // tslint:disable-next-line:max-line-length
-            this.clientActiveArea = new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height);
+            this.clientActiveArea.x = this.clientArea.x = this.clientArea.x - (bidi ? rightIndent : leftIndent);
         }
+        this.clientArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
+        // tslint:disable-next-line:max-line-length
+        this.clientActiveArea = new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height);
+    }
+
+    private tableAlignmentForBidi(block: TableWidget, bidi: boolean): TableAlignment {
+        let tableAlignment: TableAlignment = block.tableFormat.tableAlignment;
+        if (bidi) {
+            if (tableAlignment === 'Left') {
+                tableAlignment = 'Right';
+            } else if (tableAlignment === 'Right') {
+                tableAlignment = 'Left';
+            }
+        }
+        return tableAlignment;
     }
     /**
      * Updates client active area left.

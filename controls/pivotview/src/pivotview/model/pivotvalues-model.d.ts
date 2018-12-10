@@ -80,4 +80,14 @@ export interface AxisSetModel {
      */
     isSum?: boolean;
 
+    /**
+     * Specifies the column header of a value cell.
+     */
+    columnHeaders?: string | number | Date;
+
+    /**
+     * Specifies the row header of a value cell.
+     */
+    rowHeaders?: string | number | Date;
+
 }

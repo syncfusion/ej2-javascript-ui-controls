@@ -55,7 +55,7 @@ const IFRAMEHEADER: string = `
                 h3+h4, h4+h5, h5+h6{margin-top: 00.6em;}
                 ul:last-child{margin-bottom: 0;}
                 table.e-rte-table { border-collapse: collapse; empty-cells: show;}
-                table.e-rte-table td,table.e-rte-table th {background-color: #ffffff;border: 1px solid #BDBDBD; height: 20px; vertical-align: middle;}
+                table.e-rte-table td,table.e-rte-table th {border: 1px solid #BDBDBD; height: 20px; vertical-align: middle;}
                 table.e-alternate-border tbody tr:nth-child(2n) {background-color: #F5F5F5;}
                 table.e-rte-table th {background-color: #E0E0E0;}
                 table.e-dashed-border td,table.e-dashed-border th { border: 1px dashed #BDBDBD} 
@@ -105,8 +105,14 @@ export class IframeContentRender extends ContentRender {
         rteObj.element.appendChild(iframe);
         iframe.contentDocument.body.id = this.parent.getID() + '_rte-edit-view';
         iframe.contentDocument.open();
+        iFrameContent = this.setThemeColor(iFrameContent, { color: '#333' });
         iframe.contentDocument.write(iFrameContent);
         iframe.contentDocument.close();
+
+    }
+    private setThemeColor(content: string, styles: { [key: string]: string }): string {
+        let fontColor: string = getComputedStyle(this.parent.element, '.e-richtexteditor').getPropertyValue('color');
+        return content.replace(styles.color, fontColor);
     }
     /**
      * Get the editable element of RichTextEditor

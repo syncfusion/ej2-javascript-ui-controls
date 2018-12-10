@@ -212,7 +212,6 @@ describe('Chart Control Series', () => {
                 expect(direction.indexOf('z') <= -1).toBe(true); done();
             };
             chartObj.loaded = loaded;
-
             chartObj.series[0].marker.shape = 'Pentagon';
             chartObj.series[1].marker.shape = 'Rectangle';
             chartObj.series[2].marker.shape = 'Triangle';

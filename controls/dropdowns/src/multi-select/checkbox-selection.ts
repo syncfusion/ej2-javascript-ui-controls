@@ -170,7 +170,9 @@ export class CheckBoxSelection {
         let target: EventTarget;
         if (!isNullOrUndefined(args.e)) {
             target = !isNullOrUndefined(args.e.target) ?
-                (args.e.target as HTMLElement).classList.contains('e-frame') ?
+                ((args.e.target as HTMLElement).classList.contains('e-frame')
+                && (!this.parent.showSelectAll
+                    || ( this.checkAllParent && !this.checkAllParent.contains(args.e.target as Element)))) ?
                     args.e.target : args.li.querySelector('.e-checkbox-wrapper').childNodes[1]
                 : args.li.querySelector('.e-checkbox-wrapper').childNodes[1];
         } else {

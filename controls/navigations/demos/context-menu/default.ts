@@ -9,27 +9,27 @@ import { MenuEventArgs, MenuItemModel } from '../../src/common/index';
 let listItems: { [key: string]: Object }[] = [
     {
         text: 'The Avengers',
-        iconCss: 'e-icons e-video',
+        iconCss: 'e-cm-icons e-video',
         id: 'movie1'
     },
     {
         text: 'Back to the Future',
-        iconCss: 'e-icons e-video',
+        iconCss: 'e-cm-icons e-video',
         id: 'movie2'
     },
     {
         text: 'Fight Club',
-        iconCss: 'e-icons e-video',
+        iconCss: 'e-cm-icons e-video',
         id: 'movie3'
     },
     {
         text: 'The Godfather',
-        iconCss: 'e-icons e-video',
+        iconCss: 'e-cm-icons e-video',
         id: 'movie4'
     },
     {
         text: 'The Dark Knight',
-        iconCss: 'e-icons e-video',
+        iconCss: 'e-cm-icons e-video',
         id: 'movie5'
     }];
 
@@ -41,15 +41,15 @@ let menuItems: MenuItemModel[] = [
     },
     {
         text: 'Share',
-        iconCss: 'e-icons e-share',
+        iconCss: 'e-cm-icons e-share',
         items: [
             {
                 text: 'Facebook',
-                iconCss: 'e-icons e-share',
+                iconCss: 'e-cm-icons e-share',
             },
             {
                 text: 'Whatsapp',
-                iconCss: 'e-icons e-share',
+                iconCss: 'e-cm-icons e-share',
             }
         ]
     },
@@ -69,7 +69,7 @@ let menuItems: MenuItemModel[] = [
     },
     {
         text: 'Remove',
-        iconCss: 'e-icons e-delete'
+        iconCss: 'e-cm-icons e-delete'
     }];
 
 let listOptions: ListViewModel = {

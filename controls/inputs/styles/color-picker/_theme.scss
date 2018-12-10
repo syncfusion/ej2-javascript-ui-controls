@@ -1,12 +1,12 @@
 @include export-module('color-picker-theme') {
   .e-container {
-    background-color: $color-picker-color;
+    background-color: $cpicker-color;
 
     & .e-palette {
       & .e-tile {
         &:hover,
         &.e-selected {
-          border-color: $tile-active-border-color;
+          border-color: $cpicker-tile-active-border-color;
         }
       }
     }
@@ -25,20 +25,20 @@
     & .e-slider.e-hue-slider,
     & .e-slider.e-opacity-slider {
       & .e-handle:not(.e-tab-handle) {
-        background-color: $slider-handler-color;
-        border-color: $slider-handler-color;
+        background-color: $cpicker-slider-handler-color;
+        border-color: $cpicker-slider-handler-color;
 
         &.e-handle-start:not(.e-tab-handle) {
-          background-color: $slider-handler-color;
-          border-color: $slider-handler-color;
+          background-color: $cpicker-slider-handler-color;
+          border-color: $cpicker-slider-handler-color;
         }
       }
 
       & .e-handle {
         &.e-tab-handle {
-          background-color: $slider-tab-handler-color;
-          border-color: $slider-handler-focus-color;
-          box-shadow: $slider-tab-shadow;
+          background-color: $cpicker-slider-tab-handler-color;
+          border-color: $cpicker-slider-handler-focus-color;
+          box-shadow: $cpicker-slider-tab-shadow;
         }
       }
     }
@@ -67,8 +67,8 @@
 
   .e-popup.e-tooltip-wrap {
     &.e-color-picker-tooltip {
-      background-color: $handler-tooltip-color;
-      border-color: $handler-tooltip-color;
+      background-color: $cpicker-handler-tooltip-color;
+      border-color: $cpicker-handler-tooltip-color;
     }
   }
 }

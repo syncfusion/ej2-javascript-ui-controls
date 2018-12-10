@@ -20,7 +20,7 @@ npm install @syncfusion/ej2-treemap
 
 * [Getting Started](https://ej2.syncfusion.com/documentation/treemap/getting-started.html?lang=typescript)
 * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=treemap#/material/treemap/default.html)
-* [Product Page](https://www.syncfusion.com/javascript-ui-controls/treemap)
+* [Product Page](https://www.syncfusion.com/products/javascript/treemap)
 
 ## Supported Frameworks
 
@@ -31,7 +31,7 @@ TreeMap component is also offered in following list of frameworks.
 3. [Vue.js](https://www.npmjs.com/package/@syncfusion/ej2-vue-treemap?utm_source=npm&utm_campaign=treemap)
 4. [ASP.NET Core](https://aspdotnetcore.syncfusion.com/TreeMap/Default#/material)
 5. [ASP.NET MVC](https://aspnetmvc.syncfusion.com/TreeMap/Default#/material)
-6. [JavaScript (ES5)](https://www.syncfusion.com/javascript-ui-controls/treemap)
+6. [JavaScript (ES5)](https://www.syncfusion.com/products/javascript/treemap)
 
 ## Use case samples
 

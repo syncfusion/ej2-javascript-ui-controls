@@ -10,7 +10,7 @@ import { PathElement } from '../../../src/diagram/core/elements/path-element';
 import { ImageElement } from '../../../src/diagram/core/elements/image-element';
 import { DiagramNativeElement } from '../../../src/diagram/core/elements/native-element';
 import { TextElement } from '../../../src/diagram/core/elements/text-element';
-import { Native, NodeConstraints, accessibilityElement, HtmlModel, Ruler } from '../../../src/index';
+import { Native, NodeConstraints, accessibilityElement, HtmlModel, Ruler, ComplexHierarchicalTree } from '../../../src/index';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { SnapConstraints, PointPort, Annotation, IconShapes, Decorator, PortVisibility, ConnectorModel } from '../../../src/diagram/index';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
@@ -18,6 +18,7 @@ import { IconShape } from '../../../src/diagram/objects/icon';
 import { DiagramHtmlElement } from '../../../src/diagram/core/elements/html-element';
 import { getDiagramLayerSvg } from '../../../src/diagram/utility/dom-util';
 import { LayerModel } from '../../../src/diagram/diagram/layer-model';
+Diagram.Inject(ComplexHierarchicalTree);
 
 /**
  * Test cases to check different kind of nodes
@@ -100,7 +101,7 @@ describe('Diagram Control', () => {
         it('Checking default node creation with minWith value', (done: Function) => {
             let node = diagram.nodes[2];
             expect(node.wrapper.children[0].height === 10
-                && diagram.nodes[3].wrapper.actualSize.height === 12 && diagram.nodes[3].wrapper.actualSize.width === 50).toBe(true);
+                && diagram.nodes[3].wrapper.actualSize.height === 14.399999999999999 && diagram.nodes[3].wrapper.actualSize.width === 50).toBe(true);
             done()
         })
         it('Checking default node creation', (done: Function) => {
@@ -1090,6 +1091,164 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             visible = document.getElementById('node3').getAttribute('visibility');
             expect(diagram.nodes[0].visible == false && visible == 'hidden');
+            done();
+        });
+    });
+    describe('Layout Initial Rendering isExpanded False', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramLayout' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'Node1', width: 50, height: 50, annotations: [{ content: 'Node1' }],
+                    expandIcon: {
+                        shape: 'Minus',
+                        width: 10,
+                        height: 10
+                    },
+                    collapseIcon: {
+                        shape: 'Plus',
+                        width: 10,
+                        height: 10
+                    },
+                    isExpanded: false
+                }, {
+                    id: 'Node2', width: 50, height: 50, annotations: [{ content: 'Node2' }],
+                    expandIcon: {
+                        shape: 'Minus',
+                        width: 10,
+                        height: 10
+                    },
+                    collapseIcon: {
+                        shape: 'Plus',
+                        width: 10,
+                        height: 10
+                    },
+                }, {
+                    id: 'Node3', width: 50, height: 50, annotations: [{ content: 'Node3' }],
+                },
+                {
+                    id: 'Node4', width: 50, height: 50, annotations: [{ content: 'Node4' }],
+                    expandIcon: {
+                        shape: 'Minus',
+                        width: 10,
+                        height: 10
+                    },
+                    collapseIcon: {
+                        shape: 'Plus',
+                        width: 10,
+                        height: 10
+                    },
+                },
+                {
+                    id: 'Node5', width: 50, height: 50, annotations: [{ content: 'Node5' }],
+                },
+                {
+                    id: 'Node6', width: 50, height: 50, annotations: [{ content: 'Node6' }]
+                },
+                {
+                    id: 'Node7', width: 50, height: 50, annotations: [{ content: 'Node7' }]
+                },
+                {
+                    id: 'Node8', width: 50, height: 50, annotations: [{ content: 'Node8' }],
+                    expandIcon: {
+                        shape: 'Minus',
+                        width: 10,
+                        height: 10
+                    },
+                    collapseIcon: {
+                        shape: 'Plus',
+                        width: 10,
+                        height: 10
+                    },
+                },
+            ];
+            let connector: ConnectorModel[] = [
+                {
+                    id: 'node1_2', sourceID: 'Node1', targetID: 'Node2',
+                }, {
+                    id: 'node2_3', sourceID: 'Node2', targetID: 'Node3',
+                },
+                {
+                    id: 'node2_4', sourceID: 'Node2', targetID: 'Node4',
+                },
+                {
+                    id: 'node2_5', sourceID: 'Node2', targetID: 'Node5',
+                },
+                {
+                    id: 'node2_6', sourceID: 'Node2', targetID: 'Node6',
+                },
+                {
+                    id: 'node2_7', sourceID: 'Node2', targetID: 'Node7',
+                },
+                {
+                    id: 'node2_8', sourceID: 'Node2', targetID: 'Node8',
+                },
+            ];
+            diagram = new Diagram(
+                {
+                width: 1000, height: 800, nodes: nodes, connectors: connector, layout: { type: 'ComplexHierarchicalTree' } 
+            });
+            diagram.appendTo('#diagramLayout');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking Layout after collapsed', (done: Function) => {
+            let visible = document.getElementById('Node2').getAttribute('visibility');
+            expect(diagram.nodes[1].visible == false && visible == 'hidden');
+            expect(diagram.nodes[0].isExpanded === false);
+            done();
+        });
+    });
+    describe('Without Layout - Is Expanded', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramNode' });
+            document.body.appendChild(ele);
+            let node: NodeModel = {
+                id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100, annotations: [ { content: 'Node1'}],
+                expandIcon: {
+                    shape: 'ArrowDown',
+                    width: 10,
+                    height: 10
+                },
+                collapseIcon: {
+                    shape: 'ArrowUp',
+                    width: 10,
+                    height: 10
+                },
+                isExpanded: false
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 100, height: 100, offsetX: 100, offsetY: 400, annotations: [ { content: 'Node2'}]
+            };
+            let connector: ConnectorModel = {
+                id: 'connector1', sourceID: 'node1', targetID: 'node2', annotations: [ {content: 'Connector'}]
+            };
+            diagram = new Diagram({ width: 400, height: 400, nodes: [node, node2], connectors: [connector] });
+            diagram.appendTo('#diagramNode');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking node After collapsed', (done: Function) => {
+            let visible = document.getElementById('node2').getAttribute('visibility');
+            expect(diagram.nodes[1].visible === false && visible === 'hidden');
+            expect(diagram.nodes[0].isExpanded === false);
             done();
         });
     });

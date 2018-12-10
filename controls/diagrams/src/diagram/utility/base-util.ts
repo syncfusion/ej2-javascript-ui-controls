@@ -150,7 +150,7 @@ export function cloneObject(obj: Object, additionalProp?: Function | string, key
 export function getInternalProperties(propName: string): string[] {
     switch (propName) {
         case 'nodes':
-            return ['inEdges', 'outEdges', 'parentId', 'processId', 'nodeId'];
+            return ['inEdges', 'outEdges', 'parentId', 'processId', 'nodeId', 'umlIndex'];
         case 'connectors':
             return ['parentId'];
         case 'annotation':

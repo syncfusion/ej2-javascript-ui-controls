@@ -2,7 +2,7 @@ import { Property, ChildProperty, Collection, ComplexFactory } from '@syncfusion
 import { GradientModel, RadialGradientModel, LinearGradientModel, StopModel } from './appearance-model';
 import { TextDecoration, WhiteSpace, TextWrap, TextAlign, GradientType, TextOverflow } from '../enum/enum';
 
-
+/**   @private  */
 let getGradientType: Function = (obj: Gradient): Object => {
     switch (obj.type) {
         case 'Linear':
@@ -318,9 +318,9 @@ export class RadialGradient extends Gradient {
 export class ShapeStyle extends ChildProperty<ShapeStyle> {
     /**
      * Sets the fill color of a shape/path
-     * @default 'white'
+     * @default 'transparent'
      */
-    @Property('white')
+    @Property('transparent')
     public fill: string;
 
     /**

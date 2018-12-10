@@ -94,16 +94,10 @@
                         <td class="td-title"> <b> Methods: </b></td>
                 </tr>
                 <tr>
-                    <td class="td-title"> Key : <input type="text" id="key"/></td>
-                    <td class="td-title"> Value: <input type="text" id="valueAttr"/> </td>
-                    <td class="td-title"> <button id="addAttr" class="e-btn" onclick="addAtributes(this)">Add attributes</button></td>
-                </tr>
-                <tr>
-                    <td class="td-title"> Key : <input type="text" id="key1"/></td>
-                    <td class="td-title"> Value: <input type="text" id="valueAttr1"/> </td>
+                    <td class="td-title"> <button id="addAttr" class="e-btn" onclick="addAttributes(this)">Add attributes</button>
+                    <div> (disabled attribute added by using addAttributes method) </div></td>
+                    <td class="td-title"> Attribute name:<input type="text" id="attrName"/></td>
                     <td class="td-title"> <button id="removeAttr" class="e-btn" onclick="removeAttributes(this)">Remove attributes</button></td>
-                </tr>                    
-                <tr>
                     <td class="td-title"> <button id="destroy" class="e-btn e-buttons" onclick="destroy(this)">Destroy</button></td>
                 </tr>
             </tbody>
@@ -111,7 +105,7 @@
 
     </div> 
     
-    <div class="col-lg-4 control-section">
+    <div class="col-lg-4 control-section eventsArgs">
         <div class="events"> Events:
             <span id='events'>
         </div>
@@ -146,10 +140,10 @@
         }
         if (args.value !== "") {
             if (args.id === 'cssClass') {
-                obj.allowedExtensions = args.value;
+                obj.cssClass = args.value;
             }
             if (args.id === 'type') {
-                obj.dropArea = args.value;
+                obj.type = args.value;
             }
             if (args.id === 'placeholder') {
                 obj.placeholder = args.value;
@@ -157,21 +151,14 @@
         }
     }
 
-    function addAtributes(args) {
+    function addAttributes(args) {
         var obj = document.getElementById('textbox').ej2_instances[0];
-        var key = document.getElementById('key').value;
-        var value = document.getElementById('valueAttr').value;
-        if (key !== '' && value !== '') {
-            obj.addAttributes({key: value});
-        }
+        obj.addAttributes({disabled: 'disabled'});
     }
-    function removeAtributes(args) {
+    function removeAttributes(args) {
         var obj = document.getElementById('textbox').ej2_instances[0];
-        var key = document.getElementById('key1').value;
-        var value = document.getElementById('valueAttr1').value;
-        if (key !== '' && value !== '') {
-            obj.removeAttributes({key: value});
-        }
+        var attr = document.getElementById('attrName').value;
+        obj.removeAttributes([attr]);
     }
 
     function destroy(args) {
@@ -202,7 +189,8 @@
         width: auto;
     }
     .fm_textbox {
-        margin: 50px 100px;
+        margin: 20px 100px;
+        padding: 20px;
     }
     
     td.td-title {
@@ -241,6 +229,9 @@
     }
     .events {
         margin: 10px;
+    }
+    .eventsArgs {
+        display: none;
     }
 </style>
 </body>

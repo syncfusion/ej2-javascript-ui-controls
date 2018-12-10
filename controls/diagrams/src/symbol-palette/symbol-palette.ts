@@ -1,16 +1,16 @@
 import { Component, Property, Complex, CollectionFactory, ChildProperty, Event } from '@syncfusion/ej2-base';
 import { Browser, EventHandler, Draggable, INotifyPropertyChanged, Collection, ModuleDeclaration } from '@syncfusion/ej2-base';
-import { remove, classList, EmitType } from '@syncfusion/ej2-base';
+import { remove, EmitType } from '@syncfusion/ej2-base';
 import { Accordion, AccordionItemModel, ExpandMode, ExpandEventArgs } from '@syncfusion/ej2-navigations';
-import { NodeModel, ConnectorModel, Node, Connector, Shape, Size, Transform } from '../diagram/index';
-import { DiagramRenderer, Container, StackPanel, Margin, BpmnDiagrams } from '../diagram/index';
+import { NodeModel, ConnectorModel, Node, Connector, Shape, Size, Transform, SwimLane, PathModel, HeaderModel } from '../diagram/index';
+import { DiagramRenderer, Container, StackPanel, Margin, BpmnDiagrams, ShapeStyleModel, TextStyleModel } from '../diagram/index';
 import { DiagramElement, TextElement, MarginModel, Canvas, BpmnShape, PointModel, IElement } from '../diagram/index';
 import { SymbolPaletteModel, SymbolPreviewModel, PaletteModel } from './symbol-palette-model';
 import { TextWrap, TextOverflow, IPaletteSelectionChangeArgs } from '../diagram/index';
 import { SvgRenderer } from '../diagram/rendering/svg-renderer';
 import { parentsUntil, createSvgElement, createHtmlElement, createMeasureElements } from '../diagram/utility/dom-util';
-import { scaleElement, arrangeChild, groupHasType } from '../diagram/utility/diagram-util';
-import { getFunction } from '../diagram/utility/base-util';
+import { scaleElement, arrangeChild, groupHasType, setUMLActivityDefaults } from '../diagram/utility/diagram-util';
+import { getFunction, randomId } from '../diagram/utility/base-util';
 import { getOuterBounds } from '../diagram/utility/connector';
 import { Point } from '../diagram/primitives/point';
 import { CanvasRenderer } from '../diagram/rendering/canvas-renderer';
@@ -317,6 +317,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     private info: string = 'info';
     private timer: Object;
     private draggable: Draggable;
+    private laneTable: {} = {};
 
     //region - protected methods 
 
@@ -326,6 +327,17 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      */
     constructor(options?: SymbolPaletteModel, element?: Element) {
         super(options, <HTMLButtonElement | string>element);
+        let child: NodeModel;
+        let node: NodeModel;
+        for (let i: number = 0; this && this.palettes && i < this.palettes.length; i++) {
+            for (let j: number = 0; j < this.palettes[i].symbols.length; j++) {
+                child = this.palettes[i].symbols[j] as NodeModel;
+                node = options.palettes[i].symbols[j] as NodeModel;
+                if (child && child.shape.type === 'UmlActivity') {
+                    setUMLActivityDefaults(node, child);
+                    }
+                }
+            }
     }
 
     /**
@@ -519,7 +531,52 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      */
     private initSymbols(symbolGroup: PaletteModel): void {
         let group: NodeModel[] = [];
+        let laneHeight: number = 0; let laneWidth: number = 0;
         for (let symbol of symbolGroup.symbols) {
+            if (symbol.shape.type === 'SwimLane') {
+                let swimLaneObj: NodeModel = symbol as NodeModel;
+                let swimLaneShape: SwimLane = symbol.shape as SwimLane;
+                let isHorizontal: boolean = (swimLaneShape.orientation === 'Horizontal') ? true : false;
+                if (swimLaneShape.isLane) {
+                    laneHeight = isHorizontal ? this.symbolHeight - this.symbolHeight / 2 : this.symbolHeight - this.symbolHeight / 4;
+                    laneWidth = isHorizontal ? this.symbolWidth - this.symbolWidth / 4 : this.symbolWidth - this.symbolWidth / 2;
+                    this.laneTable[symbol.id] = { height: laneHeight, width: laneWidth };
+                    let header: HeaderModel = swimLaneShape.lanes[0].header;
+                    let laneStyle: ShapeStyleModel = swimLaneShape.lanes[0].style;
+                    let headerStyle: TextStyleModel = header.style;
+                    let headerObj: NodeModel = {
+                        id: 'header' + randomId(), shape: { type: 'Basic', shape: 'Rectangle' },
+                        width: isHorizontal ? header.width : swimLaneObj.width,
+                        height: isHorizontal ? swimLaneObj.height : header.height,
+                        style: headerStyle,
+                        annotations: [{ content: header.content.content}]
+                    };
+                    headerObj.offsetX = headerObj.width / 2;
+                    headerObj.offsetY = headerObj.height / 2;
+                    this.addPaletteItem(symbolGroup.id, headerObj);
+                    let laneObj: NodeModel = {
+                        id: 'lane' + randomId(), shape: { type: 'Basic', shape: 'Rectangle' },
+                        width: isHorizontal ? (swimLaneObj.width - header.width) : swimLaneObj.width,
+                        height: isHorizontal ? swimLaneObj.height : (swimLaneObj.height - header.height),
+                        style: laneStyle
+                    };
+                    laneObj.offsetX = isHorizontal ? (headerObj.width + (laneObj.width / 2)) : laneObj.width / 2;
+                    laneObj.offsetY = isHorizontal ? laneObj.height / 2 : (headerObj.height + (laneObj.height / 2));
+                    this.addPaletteItem(symbolGroup.id, laneObj);
+                    swimLaneObj.children = [headerObj.id, laneObj.id];
+                } else if (swimLaneShape.isPhase) {
+                    laneHeight = swimLaneObj.height ? swimLaneObj.height : this.symbolHeight;
+                    laneWidth = swimLaneObj.width ? swimLaneObj.width : this.symbolWidth;
+                    symbol.shape.type = 'Path';
+                    if (isHorizontal) {
+                        (symbol.shape as PathModel).data =
+                            'M' + 20 + ',' + (laneHeight / 2) + ' L' + (laneWidth - 20) + ',' + (laneHeight / 2) + 'z';
+                    } else {
+                        (symbol.shape as PathModel).data =
+                            'M' + (laneWidth / 2) + ',' + 20 + ' L' + (laneWidth / 2) + ',' + (laneHeight - 20) + 'z';
+                    }
+                }
+            }
             if (symbol instanceof Node) {
                 let getNodeDefaults: Function = getFunction(this.getNodeDefaults);
                 if (getNodeDefaults) {
@@ -595,7 +652,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 }
                 this.symbolTable[obj.id] = obj;
                 let paletteDiv: HTMLElement = document.getElementById(symbolPaletteGroup.id);
-                paletteDiv.appendChild(this.getSymbolContainer(obj, paletteDiv));
+                if (paletteDiv) {
+                    paletteDiv.appendChild(this.getSymbolContainer(obj, paletteDiv));
+                }
                 break;
             }
         }
@@ -680,29 +739,29 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             height = symbolInfo.height = symbolInfo.height ||
                 (obj.height !== undefined ? content.actualSize.height : undefined) || this.symbolHeight;
             if (width !== undefined && height !== undefined) {
-                let actualWidth: number = width;
-                let actualHeight: number = height;
+                let actualWidth: number = width; let actualHeight: number = height;
+                let isLane: boolean = (symbol.shape as SwimLane).isLane ? true : false;
                 if (this.symbolWidth !== undefined) {
-                    actualWidth = this.symbolWidth - this.symbolMargin.left - this.symbolMargin.right;
+                    actualWidth = isLane ? this.laneTable[obj.id].width :
+                    this.symbolWidth - this.symbolMargin.left - this.symbolMargin.right;
                 } else {
                     width += obj.style.strokeWidth;
                 }
                 if (this.symbolHeight !== undefined) {
-                    actualHeight = this.symbolHeight - this.symbolMargin.top - this.symbolMargin.bottom;
+                    actualHeight = isLane ? this.laneTable[obj.id].height :
+                    this.symbolHeight - this.symbolMargin.top - this.symbolMargin.bottom;
                 } else {
                     height += obj.style.strokeWidth;
                 }
                 if (symbolInfo.description && symbolInfo.description.text !== '') {
                     actualHeight -= 20; // default height of the text have been reduced from the container.
                 }
-                sw = actualWidth / (content.width || width);
-                sh = actualHeight / (content.height || height);
+                sw = actualWidth / (content.width || width); sh = actualHeight / (content.height || height);
                 if (symbolInfo.fit) {
                     sw = actualWidth / symbolInfo.width;
                     sh = actualHeight / symbolInfo.height;
                 }
-                width = actualWidth;
-                height = actualHeight;
+                width = actualWidth; height = actualHeight;
                 sw = sh = Math.min(sw, sh);
                 symbolContainer.width = width;
                 symbolContainer.height = height;
@@ -973,14 +1032,14 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             'div', {
                 'id': item.id + (isPreview ? '_htmlLayer_preview' : '_htmlLayer'),
                 'style': 'width:' + Math.ceil(width + 1) + 'px;' +
-                'height:' + Math.ceil(height + 1) + 'px;position:absolute',
+                    'height:' + Math.ceil(height + 1) + 'px;position:absolute',
                 'class': 'e-html-layer'
             });
         let htmlLayerDiv: HTMLElement = createHtmlElement(
             'div', {
                 'id': item.id + (isPreview ? '_htmlLayer_div_preview' : '_htmlLayer_div'),
                 'style': 'width:' + Math.ceil(width + 1) + 'px;' +
-                'height:' + Math.ceil(height + 1) + 'px;position:absolute',
+                    'height:' + Math.ceil(height + 1) + 'px;position:absolute',
             });
         htmlLayer.appendChild(htmlLayerDiv);
         div.appendChild(htmlLayer);
@@ -1005,14 +1064,14 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             'div', {
                 'id': symbol.id + (isPreview ? '_htmlLayer_preview' : '_htmlLayer'),
                 'style': 'width:' + Math.ceil(width + 1) + 'px;' +
-                'height:' + Math.ceil(height + 1) + 'px;position:absolute',
+                    'height:' + Math.ceil(height + 1) + 'px;position:absolute',
                 'class': 'e-html-layer'
             });
         let htmlLayerDiv: HTMLElement = createHtmlElement(
             'div', {
                 'id': symbol.id + (isPreview ? '_htmlLayer_div_preview' : '_htmlLayer_div'),
                 'style': 'width:' + Math.ceil(width + 1) + 'px;' +
-                'height:' + Math.ceil(height + 1) + 'px;position:absolute',
+                    'height:' + Math.ceil(height + 1) + 'px;position:absolute',
             });
         htmlLayer.appendChild(htmlLayerDiv);
         div.appendChild(htmlLayer);

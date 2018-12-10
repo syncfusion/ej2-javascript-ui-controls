@@ -1,0 +1,191 @@
+@include export-module('splitter-layout') {
+  #{&}.e-splitter {
+
+    &.e-splitter-horizontal,
+    &.e-splitter-vertical {
+      border-width: 1px;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+      touch-action: none;
+      width: 100%;
+
+      &.e-pane {
+        &.e-scrollable {
+          overflow: hidden;
+        }
+      }
+
+      .e-pane {
+        flex: 1 1 auto;
+        font-family: $splitpane-font-family;
+        font-size: $splitpane-font-size;
+        font-weight: $splitpane-font-weight;
+
+        &.e-scrollable {
+          overflow: auto;
+        }
+
+        &.e-static-pane {
+          flex-grow: 0;
+          flex-shrink: 0;
+        }
+
+        &.e-pane-horizontal {
+          overflow: auto;
+        }
+      }
+    }
+
+    &.e-splitter-horizontal {
+      flex-direction: row;
+
+      &.e-pane {
+        &.e-scrollable {
+          overflow: hidden;
+        }
+      }
+    }
+
+    &.e-splitter-vertical {
+      flex-direction: column;
+
+      &.e-pane {
+        &.e-scrollable {
+          overflow: hidden;
+        }
+      }
+
+      .e-pane-vertical {
+        overflow: auto;
+      }
+    }
+
+    .e-split-bar {
+
+      &.e-split-bar-horizontal {
+        align-items: center;
+        border: $split-bar-border;
+        display: flex;
+        flex: 0 0 auto;
+        flex-direction: column;
+        justify-content: center;
+        min-width: 1px;
+
+        .e-hidden {
+          display: none;
+        }
+
+        &.e-resizable-split-bar {
+          cursor: col-resize;
+        }
+
+        &.e-resizable-split-bar::after {
+          content: '';
+          cursor: col-resize;
+          display: block;
+          height: 100%;
+          position: absolute;
+          width: 16px;
+          z-index: 10;
+        }
+
+        .e-resize-handler {
+          align-items: center;
+          display: flex;
+          height: $splitbar-icon-gap;
+          justify-content: center;
+          min-width: 1px;
+          position: relative;
+          width: 1px;
+
+          &.e-hide-handler {
+            display: none;
+          }
+        }
+      }
+
+      &.e-split-bar-vertical {
+        align-items: center;
+        border: $split-bar-border;
+        display: flex;
+        flex: 0 0 auto;
+        justify-content: center;
+        min-height: 1px;
+
+        .e-hidden {
+          display: none;
+        }
+
+        &.e-resizable-split-bar {
+          cursor: row-resize;
+        }
+
+        &.e-resizable-split-bar::after {
+          content: '';
+          cursor: row-resize;
+          display: block;
+          height: 16px;
+          position: absolute;
+          width: 100%;
+          z-index: 12;
+        }
+
+        .e-resize-handler {
+          align-items: center;
+          display: flex;
+          height: 1px;
+          justify-content: center;
+          min-height: 1px;
+          width: $splitbar-icon-gap;
+
+          &.e-hide-handler {
+            display: none;
+          }
+        }
+      }
+    }
+  }
+
+  .e-bigger#{&}.e-splitter {
+
+    .e-pane {
+      font-size: $bigger-splitpane-font-size;
+    }
+
+    .e-split-bar {
+      &.e-split-bar-horizontal {
+        .e-resize-handler {
+          height: $bigger-splitbar-icon-gap;
+        }
+      }
+
+      &.e-split-bar-vertical {
+        .e-resize-handler {
+          width: $bigger-splitbar-icon-gap;
+        }
+      }
+    }
+  }
+
+  .e-bigger  #{&}.e-splitter {
+    .e-pane {
+      font-size: $bigger-splitpane-font-size;
+    }
+
+    .e-split-bar {
+
+      &.e-split-bar-horizontal {
+        .e-resize-handler {
+          height: $bigger-splitbar-icon-gap;
+        }
+      }
+
+      &.e-split-bar-vertical {
+        .e-resize-handler {
+          width: $bigger-splitbar-icon-gap;
+        }
+      }
+    }
+  }
+}

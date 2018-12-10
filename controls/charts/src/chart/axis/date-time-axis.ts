@@ -1,15 +1,16 @@
 import { DateFormatOptions } from '@syncfusion/ej2-base';
 import { Axis, VisibleLabels } from '../axis/axis';
 import { Size, setRange, triggerLabelRender } from '../../common/utils/helper';
+import { RangeIntervalType } from '../../common/utils/enum';
 import { DoubleRange } from '../utils/double-range';
 import { IntervalType, ChartRangePadding } from '../utils/enum';
 import { withIn, firstToLowerCase } from '../../common/utils/helper';
 import { Chart } from '../chart';
 import { DataUtil } from '@syncfusion/ej2-data';
 import { NiceInterval } from '../axis/axis-helper';
-import { extend, getValue } from '@syncfusion/ej2-base';
+import { extend, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Font } from '../../common/model/base';
-import { RangeNavigator, RangeIntervalType } from '../../range-navigator';
+import { RangeNavigator } from '../../range-navigator';
 
 
 /**
@@ -258,7 +259,8 @@ export class DateTime extends NiceInterval {
             interval: axis.actualRange.interval,
             delta: axis.actualRange.delta,
         };
-        if (axis.zoomFactor < 1 || axis.zoomPosition > 0) {
+        let isLazyLoad : boolean = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
+        if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad ) {
             axis.calculateVisibleRange(size);
             axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming) ?
                 this.calculateDateTimeNiceInterval(axis, size, axis.visibleRange.min, axis.visibleRange.max)

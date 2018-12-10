@@ -203,6 +203,67 @@ export class DiagramRenderer {
         this.svgRenderer.drawRectangle(canvas, options, this.diagramId);
     }
 
+    /**
+     * @private
+     */
+    public renderStackHighlighter(
+        element: DiagramElement, canvas: SVGElement, transform: Transforms, isVertical: Boolean, position: PointModel, isUml?: boolean
+    ): void {
+        let width: number = element.actualSize.width || 2;
+        let x: number = element.offsetX - width * element.pivot.x;
+        let height: number = element.actualSize.height || 2;
+        let y: number = element.offsetY - height * element.pivot.y;
+        x = (x + transform.tx) * transform.scale;
+        let data: string;
+        let bounds: Rect = element.bounds;
+        let newPathString: string = '';
+
+        y = (y + transform.ty) * transform.scale;
+        if (!isVertical) {
+            let d: number = height * transform.scale;
+            data = 'M 10 -10 L 0 0 Z M -10 -10 L 0 0 Z M 0 0 L 0 ' + (d) + ' Z M 0  ' + (d) +
+                ' L -10  ' + (d + 10) + ' Z L 10  ' + (d + 10) + ' Z';
+            if (position.x >= element.offsetX) {
+                x += width;
+            }
+        } else {
+            if (isUml) {
+                let d: number = width * transform.scale;
+                data = 'M 0 0 L ' + (d + 2) + ' 0 Z';
+                let scaleX: number = - bounds.x;
+                let scaleY: number = - bounds.y;
+                let arrayCollection: Object[] = [];
+                scaleX = element.actualSize.width / Number(bounds.width ? bounds.width : 1) * transform.scale;
+                scaleY = element.actualSize.height / Number(bounds.height ? bounds.height : 1) * transform.scale;
+                let umlData: string = 'M7,4 L8,4 8,7 11,7 11,8 8,8 8,11 7,11 7,8 4,8 4,7 7,7 z M7.5,0.99999994' +
+                    'C3.9160004,1 1,3.9160004 0.99999994,7.5 1,11.084 3.9160004,14 7.5,14 11.084,14 14,11.084 14,7.5 14,' +
+                    '3.9160004 11.084,1 7.5,0.99999994 z M7.5,0 C11.636002,0 15,3.3639984 15,7.5 15,11.636002 11.636002,15 7.5,' +
+                    '15 3.3640003,15 0,11.636002 0,7.5 0,3.3639984 3.3640003,0 7.5,0 z';
+                arrayCollection = processPathData(umlData);
+                arrayCollection = splitArrayCollection(arrayCollection);
+                newPathString = transformPath(arrayCollection, scaleX + d + 2, scaleY - 8, false, bounds.x, bounds.y, 0, 0);
+                if (position.y >= element.offsetY) {
+                    y += height;
+                }
+            } else {
+                let d: number = width * transform.scale;
+                data = 'M -10 -10 L 0 0 Z M -10 10 L 0 0 Z M 0 0 L ' + (d) + ' 0 Z M ' + (d) + ' 0 L ' +
+                    (d + 10) + ' 10 Z L ' + (d + 10) + ' -10 Z';
+
+            }
+        }
+
+
+        let options: PathAttributes = {
+            data: data + newPathString,
+            width: width * transform.scale, height: height * transform.scale,
+            x: x, y: y, fill: 'transparent', stroke: '#8CC63F', angle: element.rotateAngle,
+            pivotX: element.pivot.x, pivotY: element.pivot.y, strokeWidth: 1,
+            dashArray: '', opacity: 1,
+            visible: true, id: canvas.id + '_stack_highlighter', class: 'e-diagram-highlighter',
+        };
+        (this.svgRenderer as SvgRenderer).drawPath(canvas, options, this.diagramId);
+    }
     /**   @private  */
     public drawLine(canvas: SVGElement, options: LineAttributes): void {
         (this.svgRenderer as SvgRenderer).drawLine(canvas, options);
@@ -216,7 +277,8 @@ export class DiagramRenderer {
     /**   @private  */
     public renderResizeHandle(
         element: DiagramElement, canvas: HTMLCanvasElement | SVGElement, constraints: ThumbsConstraints, currentZoom: number,
-        selectorConstraints?: SelectorConstraints, transform?: Transforms, canMask?: boolean, enableNode?: number)
+        selectorConstraints?: SelectorConstraints, transform?: Transforms, canMask?: boolean, enableNode?: number,
+        nodeConstraints?: boolean)
         :
         void {
         let left: number = element.offsetX - element.actualSize.width * element.pivot.x;
@@ -227,71 +289,71 @@ export class DiagramRenderer {
             this.renderPivotLine(element, canvas, transform, selectorConstraints, canMask);
             this.renderRotateThumb(element, canvas, transform, selectorConstraints, canMask);
         }
-        this.renderBorder(element, canvas, transform, enableNode);
-
+        this.renderBorder(
+            element, canvas, transform, enableNode, nodeConstraints);
         let nodeWidth: number = element.actualSize.width * currentZoom;
         let nodeHeight: number = element.actualSize.height * currentZoom;
-
-        if (nodeWidth >= 40 && nodeHeight >= 40) {
-
-            //Hide corners when the size is less than 40
-            if (selectorConstraints & SelectorConstraints.ResizeNorthWest) {
-                this.renderCircularHandle(
-                    'resizeNorthWest', element, left, top, canvas, canShowCorner(selectorConstraints, 'ResizeNorthWest'),
-                    constraints & ThumbsConstraints.ResizeNorthWest, transform, undefined,
-                    canMask, { 'aria-label': 'Thumb to resize the selected object on top left side direction' },
-                    undefined, 'e-diagram-resize-handle e-northwest');
+        if (!nodeConstraints) {
+            if (nodeWidth >= 40 && nodeHeight >= 40) {
+                //Hide corners when the size is less than 40
+                if (selectorConstraints & SelectorConstraints.ResizeNorthWest) {
+                    this.renderCircularHandle(
+                        'resizeNorthWest', element, left, top, canvas, canShowCorner(selectorConstraints, 'ResizeNorthWest'),
+                        constraints & ThumbsConstraints.ResizeNorthWest, transform, undefined,
+                        canMask, { 'aria-label': 'Thumb to resize the selected object on top left side direction' },
+                        undefined, 'e-diagram-resize-handle e-northwest');
+                }
+                if (selectorConstraints & SelectorConstraints.ResizeNorthEast) {
+                    this.renderCircularHandle(
+                        'resizeNorthEast', element, left + width, top, canvas, canShowCorner(selectorConstraints, 'ResizeNorthEast'),
+                        constraints & ThumbsConstraints.ResizeNorthEast, transform, undefined,
+                        canMask, { 'aria-label': 'Thumb to resize the selected object on top right side direction' },
+                        undefined, 'e-diagram-resize-handle e-northeast');
+                }
+                if (selectorConstraints & SelectorConstraints.ResizeSouthWest) {
+                    this.renderCircularHandle(
+                        'resizeSouthWest', element, left, top + height, canvas, canShowCorner(selectorConstraints, 'ResizeSouthWest'),
+                        constraints & ThumbsConstraints.ResizeSouthWest, transform, undefined,
+                        canMask, { 'aria-label': 'Thumb to resize the selected object on bottom left side direction' },
+                        undefined,
+                        'e-diagram-resize-handle e-southwest');
+                }
+                if (selectorConstraints & SelectorConstraints.ResizeSouthEast) {
+                    this.renderCircularHandle(
+                        'resizeSouthEast', element, left + width, top + height, canvas,
+                        canShowCorner(selectorConstraints, 'ResizeSouthEast'), constraints & ThumbsConstraints.ResizeSouthEast, transform,
+                        undefined, canMask, { 'aria-label': 'Thumb to resize the selected object on bottom right side direction' },
+                        undefined, 'e-diagram-resize-handle e-southeast');
+                }
             }
-            if (selectorConstraints & SelectorConstraints.ResizeNorthEast) {
+            if (selectorConstraints & SelectorConstraints.ResizeNorth) {
                 this.renderCircularHandle(
-                    'resizeNorthEast', element, left + width, top, canvas, canShowCorner(selectorConstraints, 'ResizeNorthEast'),
-                    constraints & ThumbsConstraints.ResizeNorthEast, transform, undefined,
-                    canMask, { 'aria-label': 'Thumb to resize the selected object on top right side direction' },
-                    undefined, 'e-diagram-resize-handle e-northeast');
+                    'resizeNorth', element, left + width / 2, top, canvas,
+                    canShowCorner(selectorConstraints, 'ResizeNorth'), constraints & ThumbsConstraints.ResizeNorth, transform, undefined,
+                    canMask, { 'aria-label': 'Thumb to resize the selected object on top side direction' }, undefined,
+                    'e-diagram-resize-handle e-north');
             }
-            if (selectorConstraints & SelectorConstraints.ResizeSouthWest) {
+            if (selectorConstraints & SelectorConstraints.ResizeSouth) {
                 this.renderCircularHandle(
-                    'resizeSouthWest', element, left, top + height, canvas, canShowCorner(selectorConstraints, 'ResizeSouthWest'),
-                    constraints & ThumbsConstraints.ResizeSouthWest, transform, undefined,
-                    canMask, { 'aria-label': 'Thumb to resize the selected object on bottom left side direction' },
-                    undefined,
-                    'e-diagram-resize-handle e-southwest');
+                    'resizeSouth', element, left + width / 2, top + height, canvas,
+                    canShowCorner(selectorConstraints, 'ResizeSouth'), constraints & ThumbsConstraints.ResizeSouth, transform, undefined,
+                    canMask, { 'aria-label': 'Thumb to resize the selected object on bottom side direction' }, undefined,
+                    'e-diagram-resize-handle e-south');
             }
-            if (selectorConstraints & SelectorConstraints.ResizeSouthEast) {
+            if (selectorConstraints & SelectorConstraints.ResizeWest) {
                 this.renderCircularHandle(
-                    'resizeSouthEast', element, left + width, top + height, canvas, canShowCorner(selectorConstraints, 'ResizeSouthEast'),
-                    constraints & ThumbsConstraints.ResizeSouthEast, transform, undefined,
-                    canMask, { 'aria-label': 'Thumb to resize the selected object on bottom right side direction' },
-                    undefined, 'e-diagram-resize-handle e-southeast');
+                    'resizeWest', element, left, top + height / 2, canvas, canShowCorner(selectorConstraints, 'ResizeWest'),
+                    constraints & ThumbsConstraints.ResizeWest, transform, undefined,
+                    canMask, { 'aria-label': 'Thumb to resize the selected object on left side direction' }, undefined,
+                    'e-diagram-resize-handle e-west');
             }
-        }
-        if (selectorConstraints & SelectorConstraints.ResizeNorth) {
-            this.renderCircularHandle(
-                'resizeNorth', element, left + width / 2, top, canvas,
-                canShowCorner(selectorConstraints, 'ResizeNorth'), constraints & ThumbsConstraints.ResizeNorth, transform, undefined,
-                canMask, { 'aria-label': 'Thumb to resize the selected object on top side direction' }, undefined,
-                'e-diagram-resize-handle e-north');
-        }
-        if (selectorConstraints & SelectorConstraints.ResizeSouth) {
-            this.renderCircularHandle(
-                'resizeSouth', element, left + width / 2, top + height, canvas,
-                canShowCorner(selectorConstraints, 'ResizeSouth'), constraints & ThumbsConstraints.ResizeSouth, transform, undefined,
-                canMask, { 'aria-label': 'Thumb to resize the selected object on bottom side direction' }, undefined,
-                'e-diagram-resize-handle e-south');
-        }
-        if (selectorConstraints & SelectorConstraints.ResizeWest) {
-            this.renderCircularHandle(
-                'resizeWest', element, left, top + height / 2, canvas, canShowCorner(selectorConstraints, 'ResizeWest'),
-                constraints & ThumbsConstraints.ResizeWest, transform, undefined,
-                canMask, { 'aria-label': 'Thumb to resize the selected object on left side direction' }, undefined,
-                'e-diagram-resize-handle e-west');
-        }
-        if (selectorConstraints & SelectorConstraints.ResizeEast) {
-            this.renderCircularHandle(
-                'resizeEast', element, left + width, top + height / 2, canvas, canShowCorner(selectorConstraints, 'ResizeEast'),
-                constraints & ThumbsConstraints.ResizeEast, transform, undefined,
-                canMask, { 'aria-label': 'Thumb to resize the selected object on right side direction' }, undefined,
-                'e-diagram-resize-handle e-east');
+            if (selectorConstraints & SelectorConstraints.ResizeEast) {
+                this.renderCircularHandle(
+                    'resizeEast', element, left + width, top + height / 2, canvas, canShowCorner(selectorConstraints, 'ResizeEast'),
+                    constraints & ThumbsConstraints.ResizeEast, transform, undefined,
+                    canMask, { 'aria-label': 'Thumb to resize the selected object on right side direction' }, undefined,
+                    'e-diagram-resize-handle e-east');
+            }
         }
     }
 
@@ -497,7 +559,8 @@ export class DiagramRenderer {
 
     /**   @private  */
     public renderBorder(
-        selector: DiagramElement, canvas: HTMLCanvasElement | SVGElement, transform?: Transforms, enableNode?: number)
+        selector: DiagramElement, canvas: HTMLCanvasElement | SVGElement, transform?: Transforms, enableNode?: number,
+        isBorderTickness?: boolean)
         :
         void {
         let wrapper: DiagramElement = selector;
@@ -513,6 +576,9 @@ export class DiagramRenderer {
         options.id = 'borderRect';
         if (!enableNode) {
             options.class += ' e-disabled';
+        }
+        if (isBorderTickness) {
+            options.class += ' e-thick-border';
         }
         (options as RectAttributes).cornerRadius = 0;
         let parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector');
@@ -869,7 +935,7 @@ export class DiagramRenderer {
         (options as TextAttributes).doWrap = element.doWrap;
         (options as TextAttributes).wrapBounds = element.wrapBounds;
         (options as TextAttributes).childNodes = element.childNodes;
-        options.dashArray = ''; options.strokeWidth = 0; options.fill = 'transparent';
+        options.dashArray = ''; options.strokeWidth = 0; options.fill = element.style.fill;
         let ariaLabel: Object = element.description ? element.description : element.content ? element.content : element.id;
         this.renderer.drawRectangle(canvas, options as RectAttributes, this.diagramId, undefined, undefined, parentSvg);
         this.renderer.drawText(canvas, options as TextAttributes, parentSvg, ariaLabel, this.diagramId);

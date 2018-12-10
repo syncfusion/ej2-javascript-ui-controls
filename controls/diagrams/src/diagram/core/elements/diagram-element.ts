@@ -158,11 +158,13 @@ export class DiagramElement {
      */
     public parentTransform: number = 0;
 
+    /** @private */
+    public preventContainer: boolean = false;
+
     /**
      * Gets/Set the boolean value for the element
      */
     public isSvgRender: boolean = false;
-
     /**
      * Gets/Sets the boundary of the element
      */
@@ -193,9 +195,12 @@ export class DiagramElement {
      */
     public isRectElement: boolean = false;
 
-    public constructor() {
-        this.id = randomId();
-    }
+    /** @private */
+    public isCalculateDesiredSize: boolean = true;
+
+    // public constructor() {
+    //     this.id = randomId();
+    // }
     /**
      * Sets the offset of the element with respect to its parent
      * @param x 
@@ -229,7 +234,6 @@ export class DiagramElement {
     private unitMode: UnitMode = undefined;
     /**   @private  */
     public float: boolean = false;
-    /**   @private  */
     public get outerBounds(): Rect {
         return this.floatingBounds || this.bounds;
     }
@@ -252,7 +256,9 @@ export class DiagramElement {
         let width: number = this.width !== undefined ? this.width : (availableSize.width || 0) - this.margin.left - this.margin.right;
         let height: number = this.height !== undefined ? this.height : (availableSize.height || 0) - this.margin.top - this.margin.bottom;
         this.desiredSize = new Size(width, height);
-        this.desiredSize = this.validateDesiredSize(this.desiredSize, availableSize);
+        if (this.isCalculateDesiredSize) {
+            this.desiredSize = this.validateDesiredSize(this.desiredSize, availableSize);
+        }
         return this.desiredSize;
     }
 

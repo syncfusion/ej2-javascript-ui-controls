@@ -2,6 +2,8 @@ import { DateFormatOptions } from '../internationalization';
 import { ParserBase as parser, NumberMapper } from './parser-base';
 import { IntlBase as base } from './intl-base';
 import { isUndefined, throwError, getValue } from '../util';
+import { HijriParser } from '../hijri-parser';
+import { isNullOrUndefined } from '../util';
 const abbreviateRegexGlobal: RegExp = /\/MMMMM|MMMM|MMM|a|LLL|EEEEE|EEEE|E|K|ccc|G+|z+/gi;
 const standalone: string = 'stand-alone';
 const weekdayKey: string[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
@@ -20,6 +22,7 @@ export interface FormatOptions {
     hour12?: boolean;
     numMapper?: NumberMapper;
     dateSeperator?: string;
+    isIslamic?: boolean;
 }
 const timeSetter: Object = {
     m: 'getMinutes',
@@ -28,7 +31,7 @@ const timeSetter: Object = {
     s: 'getSeconds',
     d: 'getDate',
 };
-export const datePartMatcher: {[key: string]: Object } = {
+export const datePartMatcher: { [key: string]: Object } = {
     'M': 'month',
     'd': 'day',
     'E': 'weekday',
@@ -44,6 +47,7 @@ export const datePartMatcher: {[key: string]: Object } = {
     'Z': 'timeZone',
     'G': 'era'
 };
+
 const timeSeparator: string = 'timeSeparator';
 
 /**
@@ -60,8 +64,8 @@ export class DateFormat {
      * @return Function.  
      */
     public static dateFormat(culture: string, option: DateFormatOptions, cldr: Object): Function {
-        let dependable: base.Dependables = base.getDependables(cldr, culture);
-        let formatOptions: FormatOptions = {};
+        let dependable: base.Dependables = base.getDependables(cldr, culture, option.calendar);
+        let formatOptions: FormatOptions = { isIslamic: base.islamicRegex.test(option.calendar) };
         let resPattern: string = option.format || base.getResultantPattern(option.skeleton, dependable.dateObject, option.type);
         formatOptions.dateSeperator = base.getDateSeparator(dependable.dateObject);
         if (isUndefined(resPattern)) {
@@ -116,6 +120,7 @@ export class DateFormat {
         let pattern: string = options.pattern;
         let ret: string = '';
         let matches: string[] = pattern.match(base.dateParseRegex);
+        let dObject: base.DateObject = this.getCurrentDateValue(value, options.isIslamic);
         for (let match of matches) {
             let length: number = match.length;
             let char: string = match[0];
@@ -126,10 +131,11 @@ export class DateFormat {
             let isNumber: boolean;
             let processNumber: boolean;
             let curstr: string = '';
+
             switch (char) {
                 case 'M':
                 case 'L':
-                    curval = value.getMonth() + 1;
+                    curval = dObject.month;
                     if (length > 2) {
                         ret += (<any>options.month)[curval];
                     } else {
@@ -146,14 +152,19 @@ export class DateFormat {
                 case 's':
                 case 'd':
                     isNumber = true;
-                    curval = (<any>value)[(<any>timeSetter)[char]]();
+                    if (char === 'd') {
+                        curval = dObject.date;
+                    } else {
+                        curval = (<any>value)[(<any>timeSetter)[char]]();
+                    }
+
                     if (char === 'h') {
                         curval = curval % 12 || 12;
                     }
                     break;
                 case 'y':
                     processNumber = true;
-                    curstr += value.getFullYear();
+                    curstr += dObject.year;
                     if (length === 2) {
                         curstr = curstr.substr(curstr.length - 2);
                     }
@@ -164,7 +175,11 @@ export class DateFormat {
                     break;
                 case 'G':
                     let dec: number = value.getFullYear() < 0 ? 0 : 1;
-                    ret += (<any>options).era[dec];
+                    let retu: String = (<any>options).era[dec];
+                    if (isNullOrUndefined(retu)) {
+                        retu = (<any>options).era[dec ? 0 : 1];
+                    }
+                    ret += retu || '';
                     break;
                 case '\'':
                     ret += (match === '\'\'') ? '\'' : match.replace(/\'/g, '');
@@ -183,8 +198,8 @@ export class DateFormat {
                     break;
                 case ':':
                     ret += (<any>options).numMapper.numberSymbols[timeSeparator];
-                /* tslint:enable no-any */
-                break;
+                    /* tslint:enable no-any */
+                    break;
                 case '/':
                     ret += options.dateSeperator;
                     break;
@@ -200,6 +215,12 @@ export class DateFormat {
             }
         }
         return ret;
+    }
+    private static getCurrentDateValue(value: Date, isIslamic?: boolean): base.DateObject {
+        if (isIslamic) {
+            return HijriParser.getHijriDate(value);
+        }
+        return { year: value.getFullYear(), month: value.getMonth() + 1, date: value.getDate() };
     }
     /**
      * Returns two digit numbers for given value and length

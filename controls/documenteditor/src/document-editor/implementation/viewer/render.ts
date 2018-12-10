@@ -1,5 +1,5 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { WCharacterFormat } from '../index';
+import { WCharacterFormat, WParagraphFormat } from '../index';
 import { WCellFormat } from '../index';
 import { WBorder } from '../index';
 import { WBorders } from '../index';
@@ -391,8 +391,10 @@ export class Renderer {
         if (!this.isPrinting && page.viewer.owner.selection && page.viewer.owner.selection.selectedWidgets.length > 0) {
             page.viewer.owner.selection.addSelectionHighlight(this.selectionContext, lineWidget, top);
         }
-        if (lineWidget.isFirstLine()) {
-            left += HelperMethods.convertPointToPixel(lineWidget.paragraph.paragraphFormat.firstLineIndent);
+
+        let paraFormat: WParagraphFormat = lineWidget.paragraph.paragraphFormat;
+        if (lineWidget.isFirstLine() && !paraFormat.bidi) {
+            left += HelperMethods.convertPointToPixel(paraFormat.firstLineIndent);
         }
         if (this.viewer.owner.searchModule) {
             // tslint:disable-next-line:max-line-length
@@ -424,6 +426,7 @@ export class Renderer {
                     left += elementBox.width + elementBox.margin.left;
                     continue;
                 }
+
             }
             if (elementBox instanceof ListTextElementBox) {
                 this.renderListTextElementBox(elementBox, left, top, underlineY);
@@ -508,9 +511,14 @@ export class Renderer {
         if (baselineAlignment === 'Subscript') {
             topMargin += elementBox.height - elementBox.height / 1.5;
         }
+        let text: string = elementBox.text;
+        let followCharacter: boolean = text === '\t' || text === ' ';
+        if (!followCharacter && (format.bidi || elementBox.line.paragraph.paragraphFormat.bidi)) {
+            this.pageCanvas.setAttribute('dir', 'rtl');
+        }
         this.pageContext.fillStyle = this.getColor(color);
         // tslint:disable-next-line:max-line-length
-        this.pageContext.fillText(elementBox.text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width));
+        this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width));
 
         if (format.underline !== 'None' && !isNullOrUndefined(format.underline)) {
             this.renderUnderline(elementBox, left, top, underlineY, color, format.underline, baselineAlignment);
@@ -518,6 +526,7 @@ export class Renderer {
         if (strikethrough !== 'None') {
             this.renderStrikeThrough(elementBox, left, top, format.strikethrough, color, baselineAlignment);
         }
+        this.pageCanvas.setAttribute('dir', 'ltr');
     }
     /**
      * Renders text element box.
@@ -565,7 +574,6 @@ export class Renderer {
 
         let scaledWidth: number = this.getScaledValue(elementBox.width);
         let text: string = elementBox.text;
-        // tslint:disable-next-line:max-line-length
         if (elementBox instanceof TabElementBox) {
             let tabElement: TabElementBox = elementBox as TabElementBox;
             if (tabElement.tabText === '' && !isNullOrUndefined(tabElement.tabLeader) && tabElement.tabLeader !== 'None') {
@@ -575,6 +583,8 @@ export class Renderer {
                 text = tabElement.tabText;
             }
         }
+        let isRTL: boolean = format.bidi || this.viewer.textHelper.isRTLText(elementBox.text);
+        text = this.viewer.textHelper.setText(text, isRTL, format.bdo, true);
         // tslint:disable-next-line:max-line-length
         this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), scaledWidth);
         if (format.underline !== 'None' && !isNullOrUndefined(format.underline)) {
@@ -740,7 +750,9 @@ export class Renderer {
         let layout: Layout = new Layout(this.viewer);
         let table: TableWidget = tableWidget;
         tableWidget.width = this.viewer.layout.getTableWidth(table);
-        let border: WBorder = layout.getTableTopBorder(table.tableFormat.borders);
+        let border: WBorder = !table.isBidiTable ? layout.getTableLeftBorder(table.tableFormat.borders)
+            : layout.getTableRightBorder(table.tableFormat.borders);
+
         let lineWidth: number = 0;
         //ToDo: Need to draw the borders based on the line style.
         // if (!isNullOrUndefined(border )) {
@@ -756,7 +768,8 @@ export class Renderer {
         // tslint:disable-next-line:max-line-length
         this.renderSingleBorder(border, tableWidget.x - tableWidget.margin.left - lineWidth, tableWidget.y - lineWidth / 2, tableWidget.x + tableWidget.width + lineWidth + tableWidget.margin.right, tableWidget.y - lineWidth / 2, lineWidth);
         // }
-        border = layout.getTableRightBorder(table.tableFormat.borders);
+        border = !table.isBidiTable ? layout.getTableRightBorder(table.tableFormat.borders)
+            : layout.getTableLeftBorder(table.tableFormat.borders);
         lineWidth = 0;
         // if (!isNullOrUndefined(border )) {
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
@@ -776,6 +789,7 @@ export class Renderer {
      * @param {LayoutViewer} viewer 
      * @param {TableCellWidget} cellWidget 
      */
+    // tslint:disable: max-func-body-length
     private renderTableCellOutline(viewer: LayoutViewer, cellWidget: TableCellWidget): void {
         let layout: Layout = viewer.layout;
         let borders: WBorders = undefined;
@@ -785,6 +799,7 @@ export class Renderer {
         let cellLeftMargin: number = 0;
         let cellRightMargin: number = 0;
         let height: number = 0;
+        let isBidiTable: boolean = cellWidget.ownerTable.isBidiTable;
         borders = tableCell.cellFormat.borders;
         if (cellWidget.containerWidget instanceof TableRowWidget) {
             cellBottomMargin = cellWidget.margin.bottom - (cellWidget.containerWidget as TableRowWidget).bottomBorderWidth;
@@ -803,7 +818,7 @@ export class Renderer {
             }
         }
         this.renderCellBackground(height, cellWidget);
-        let border: WBorder = TableCellWidget.getCellLeftBorder(tableCell);
+        let border: WBorder = !isBidiTable ? TableCellWidget.getCellLeftBorder(tableCell) : TableCellWidget.getCellRightBorder(tableCell);
         let lineWidth: number = 0;
         // if (!isNullOrUndefined(border )) {       
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth()); //Renders the cell left border.
@@ -816,8 +831,15 @@ export class Renderer {
         // tslint:disable-next-line:max-line-length
         this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left, cellWidget.y - cellWidget.margin.top + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y - cellWidget.margin.top + lineWidth / 2, lineWidth);
         // }
-        if (tableCell.ownerTable.tableFormat.cellSpacing > 0 || tableCell.cellIndex === tableCell.ownerRow.childWidgets.length - 1) {
-            border = TableCellWidget.getCellRightBorder(tableCell);
+
+        let isLastCell: boolean = false;
+        if (!isBidiTable) {
+            isLastCell = tableCell.cellIndex === tableCell.ownerRow.childWidgets.length - 1;
+        } else {
+            isLastCell = tableCell.cellIndex === 0;
+        }
+        if (tableCell.ownerTable.tableFormat.cellSpacing > 0 || isLastCell) {
+            border = isBidiTable ? TableCellWidget.getCellRightBorder(tableCell) : TableCellWidget.getCellLeftBorder(tableCell);
             // if (!isNullOrUndefined(border )) { //Renders the cell right border.           
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
             // tslint:disable-next-line:max-line-length

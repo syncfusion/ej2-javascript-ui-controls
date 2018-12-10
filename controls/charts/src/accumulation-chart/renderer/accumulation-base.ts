@@ -1,4 +1,4 @@
-/** 
+/**
  * Defines the common functionalities of accumulation series
  */
 import { isNullOrUndefined, Animation, createElement, AnimationOptions } from '@syncfusion/ej2-base';
@@ -74,13 +74,22 @@ export class AccumulationBase {
     /** @private */
     protected accumulation: AccumulationChart;
 
-    /** 
+    /**
      * Checks whether the series is circular or not
      * @private
      */
     protected isCircular(): boolean {
         return this.accumulation.type === 'Pie';
     }
+
+    /**
+     * To check various radius pie
+     * @private
+     */
+    protected isVariousRadius(): boolean {
+        return this.accumulation.pieSeriesModule.isRadiusMapped;
+    }
+
 
     /**
      * To process the explode on accumulation chart loading
@@ -203,9 +212,9 @@ export class AccumulationBase {
     }
     /**
      * To Explode points
-     * @param index 
-     * @param point 
-     * @param explode 
+     * @param index
+     * @param point
+     * @param explode
      */
     private pointExplode(index: number, point: AccPoints, duration: number, explode?: boolean): void {
         let translate: ChartLocation;
@@ -290,11 +299,11 @@ export class AccumulationBase {
 
     /**
      * To Perform animation point explode
-     * @param index 
-     * @param sliceId 
-     * @param start 
-     * @param endX 
-     * @param endY 
+     * @param index
+     * @param sliceId
+     * @param start
+     * @param endX
+     * @param endY
      */
     private performAnimation(
         index: number, sliceId: string, startX: number, startY: number, endX: number, endY: number,

@@ -74,9 +74,9 @@ export class EditRender {
         for (let col of cols) {
             if (this.parent.editSettings.template && !isNullOrUndefined(col.field)) {
                 let cellArgs: Object = extend({}, args);
-                (<{ element: Element }>cellArgs).element = form.querySelector('[name=' + getComplexFieldID(col.field) + ']');
-                if (isNullOrUndefined((<{ element: Element }>cellArgs).element) && frzCols) {
-                    (<{ element: Element }>cellArgs).element = fForm.querySelector('[name=' + getComplexFieldID(col.field) + ']');
+                (<{element: Element}>cellArgs).element = form.querySelector('[name=' + getComplexFieldID(col.field) + ']');
+                if (isNullOrUndefined((<{element: Element}>cellArgs).element) && frzCols) {
+                    (<{element: Element}>cellArgs).element = fForm.querySelector('[name=' + getComplexFieldID(col.field) + ']');
                 }
                 if (typeof col.edit.write === 'string') {
                     getObject(col.edit.write, window)(cellArgs);

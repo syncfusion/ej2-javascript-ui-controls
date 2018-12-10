@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+## 16.4.40-beta (2018-12-10)
+
+### Pivot Grid
+
+#### Bug Fixes
+
+- #219623 - Text in the field list tab gets completely displayed in mobile layout.
+- #219625 - Scrolling works properly in touch mode when virtual scroll option is enabled.
+- #219625 - In mobile device, virtual scrolling sample is loaded properly from the sample browser.
+- #219625 - In mobile device, last column cells are displayed properly.
+
+#### New Features
+
+- Raw items in the control can be edited and updated at runtime.
+- Provided support to list the raw items for a particular value cell.
+- In the filter pop-up, provided support to set the limit the display field values and search option for refining the values from large data.
+- Provided hyperlink support to perform any custom operation programmatically.
+- Defer update option has been provided to refresh the control on-demand and not during every UI interaction for better performance.
+- Provided support to show or hide subtotals and grand totals for rows and columns.
+- More aggregation types like – Distinct Count, Product, Running Totals, Percentage of Column Total, Percentage of Parent Column Total, Population Var are added.
+
 ## 16.3.21 (2018-09-22)
 
 ### Pivot Grid

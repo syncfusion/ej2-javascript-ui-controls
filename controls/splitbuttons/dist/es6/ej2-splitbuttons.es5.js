@@ -1,4 +1,4 @@
-import { Animation, ChildProperty, Collection, Component, Event, EventHandler, KeyboardEvents, NotifyPropertyChanges, Property, addClass, attributes, classList, closest, createElement, deleteObject, detach, extend, getInstance, getUniqueID, getValue, isNullOrUndefined, remove, removeClass, rippleEffect, select, setValue } from '@syncfusion/ej2-base';
+import { Animation, ChildProperty, Collection, Complex, Component, Event, EventHandler, KeyboardEvents, NotifyPropertyChanges, Property, addClass, attributes, classList, closest, createElement, deleteObject, detach, extend, getInstance, getUniqueID, getValue, isNullOrUndefined, remove, removeClass, rippleEffect, select, setValue } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 import { Popup, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 
@@ -999,6 +999,38 @@ var HIDESPINNER = 'e-hide-spinner';
 var PROGRESS = 'e-progress';
 var PROGRESSACTIVE = 'e-progress-active';
 var CONTENTCLS = 'e-btn-content';
+var SpinSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(SpinSettings, _super);
+    function SpinSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(null)
+    ], SpinSettings.prototype, "template", void 0);
+    __decorate$3([
+        Property(16)
+    ], SpinSettings.prototype, "width", void 0);
+    __decorate$3([
+        Property('Left')
+    ], SpinSettings.prototype, "position", void 0);
+    return SpinSettings;
+}(ChildProperty));
+var AnimationSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(AnimationSettings, _super);
+    function AnimationSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(400)
+    ], AnimationSettings.prototype, "duration", void 0);
+    __decorate$3([
+        Property('None')
+    ], AnimationSettings.prototype, "effect", void 0);
+    __decorate$3([
+        Property('ease')
+    ], AnimationSettings.prototype, "easing", void 0);
+    return AnimationSettings;
+}(ChildProperty));
 /**
  * The ProgressButton visualizes the progression of an operation to indicate the user
  * that a process is happening in the background with visual representation.
@@ -1103,6 +1135,12 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
             target: spinner, width: this.spinSettings.width || 16, template: this.spinSettings.template
         }, this.createElement);
     };
+    ProgressButton.prototype.getSpinner = function () {
+        return this.element.getElementsByClassName('e-spinner')[0];
+    };
+    ProgressButton.prototype.getProgress = function () {
+        return this.element.getElementsByClassName(PROGRESS)[0];
+    };
     ProgressButton.prototype.setSpinPosition = function (ele) {
         var position = this.spinSettings.position || 'Left';
         if (position === 'Left' || position === 'Top') {
@@ -1128,22 +1166,13 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
         this.startProgress();
     };
     ProgressButton.prototype.startProgress = function (percent, progressTime) {
-        var _this = this;
         var clsList = this.element.classList;
         var isVertical = clsList.contains('e-vertical');
         clsList.add(PROGRESSACTIVE);
         if (!(clsList.contains(HIDESPINNER))) {
             showSpinner(this.element);
-            if (!this.enableProgress) {
-                setTimeout(function () {
-                    _this.hideSpin();
-                    // tslint:disable-next-line
-                }, this.duration);
-            }
         }
-        if (this.enableProgress) {
-            this.startAnimate(Date.now(), progressTime ? progressTime : 0, progressTime ? Date.now() - (this.duration * 1 / 100) : Date.now(), percent ? percent : 0, 0, this.step, 0, isVertical);
-        }
+        this.startAnimate(Date.now(), progressTime ? progressTime : 0, progressTime ? Date.now() - (this.duration * 1 / 100) : Date.now(), percent ? percent : 0, 0, this.step, 0, isVertical);
         this.startContAnimate();
     };
     ProgressButton.prototype.startAnimate = function (timestamp, progressTime, prevTime, percent, prevPercent, step, prevProgressTime, isVertical) {
@@ -1174,8 +1203,9 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
             this.step = args_1.step;
             if ((progressTime - prevProgressTime) % (this.duration * args_1.step / 100) === 0 || percent === 100) {
                 this.timerId = requestAnimationFrame(function () {
-                    _this.element.getElementsByClassName(PROGRESS)[0]
-                        .style[isVertical ? 'height' : 'width'] = percent + '%';
+                    if (_this.enableProgress) {
+                        _this.getProgress().style[isVertical ? 'height' : 'width'] = percent + '%';
+                    }
                     _this.element.setAttribute('aria-valuenow', percent.toString());
                 });
                 prevPercent = percent;
@@ -1191,7 +1221,9 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
                 else {
                     setTimeout(function () {
                         _this.progressTime = _this.percent = 0;
-                        _this.element.getElementsByClassName(PROGRESS)[0].style[isVertical ? 'height' : 'width'] = '0%';
+                        if (_this.enableProgress) {
+                            _this.getProgress().style[isVertical ? 'height' : 'width'] = '0%';
+                        }
                         _this.element.setAttribute('aria-valuenow', '0');
                         _this.hideSpin();
                         // tslint:disable-next-line
@@ -1228,7 +1260,7 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
     };
     ProgressButton.prototype.setSpinnerSize = function () {
         var ele = this.element.getElementsByClassName(CONTENTCLS)[0];
-        var spinner = this.element.getElementsByClassName('e-spinner')[0];
+        var spinner = this.getSpinner();
         spinner.style.width = Math.max(spinner.offsetWidth, ele.offsetWidth) + 'px';
         spinner.style.height = Math.max(spinner.offsetHeight, ele.offsetHeight) + 'px';
         ele.classList.add('e-cont-animate');
@@ -1243,7 +1275,7 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
             cont.classList.remove('e-animate-end');
         }
         if (this.spinSettings.position === 'Center') {
-            var ele = this.element.getElementsByClassName('e-spinner')[0];
+            var ele = this.getSpinner();
             cont.classList.remove('e-cont-animate');
             ele.style.width = 'auto';
             ele.style.height = 'auto';
@@ -1278,6 +1310,7 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     ProgressButton.prototype.onPropertyChanged = function (newProp, oldProp) {
+        var ele = this.element;
         _super.prototype.onPropertyChanged.call(this, newProp, oldProp);
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
@@ -1288,7 +1321,7 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
                     if (this.enableProgress) {
                         this.createProgress();
                     }
-                    this.element.setAttribute('aria-label', this.element.textContent + ' progress');
+                    ele.setAttribute('aria-label', ele.textContent + ' progress');
                     break;
                 case 'iconCss':
                     if (!oldProp.iconCss) {
@@ -1303,7 +1336,17 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
                         this.createProgress();
                     }
                     else {
-                        remove(this.element.getElementsByClassName(PROGRESS)[0]);
+                        remove(this.getProgress());
+                    }
+                    break;
+                case 'spinSettings':
+                    if (newProp.spinSettings.position) {
+                        ele.classList.remove('e-spin-' + oldProp.spinSettings.position.toLowerCase());
+                        this.setSpinPosition(this.getSpinner());
+                    }
+                    if (newProp.spinSettings.template || newProp.spinSettings.width) {
+                        ele.removeChild(this.getSpinner());
+                        this.createSpinner();
                     }
                     break;
             }
@@ -1337,10 +1380,10 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], ProgressButton.prototype, "isToggle", void 0);
     __decorate$3([
-        Property({ template: null, width: 16, position: 'Left' })
+        Complex({}, SpinSettings)
     ], ProgressButton.prototype, "spinSettings", void 0);
     __decorate$3([
-        Property({ duration: 400, effect: 'None', easing: 'ease' })
+        Complex({}, AnimationSettings)
     ], ProgressButton.prototype, "animationSettings", void 0);
     __decorate$3([
         Event()
@@ -1371,5 +1414,5 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
  * SplitButton all module
  */
 
-export { getModel, Item, DropDownButton, SplitButton, createButtonGroup, ProgressButton };
+export { getModel, Item, DropDownButton, SplitButton, createButtonGroup, SpinSettings, AnimationSettings, ProgressButton };
 //# sourceMappingURL=ej2-splitbuttons.es5.js.map

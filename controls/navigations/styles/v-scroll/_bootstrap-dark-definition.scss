@@ -1,0 +1,50 @@
+//default 
+$skin-name: 'bootstrap';
+$vscroll-nav-nrml-height: 40px;
+$vscroll-hover-font: $hover-font-color ;
+$vscroll-active-font-color: $active-font-color ;
+$vscroll-border-size: $border-size;
+$vscroll-border-type: solid;
+
+$vscroll-default-bg: $grey-f8;
+$vscroll-nav-nrml-minheight: 40px;
+$vscroll-nav-bgr-minheight: 50px;
+$vscroll-nav-nrml-width: 40px;
+$vscroll-nav-bgr-width: 50px;
+$vscroll-nrml-padding: 0 $vscroll-nav-nrml-width;
+$vscroll-bgr-padding: $vscroll-nav-bgr-width 0;
+$vscroll-box-shadow: none;
+$vscroll-overlay-opacity: .5;
+$vscroll-overlay-bg: $grey-white;
+$vscroll-overlay-start: rgba($vscroll-overlay-bg, 0);
+$vscroll-overlay-end: rgba($vscroll-overlay-bg, 1);
+$vscroll-right-bg: linear-gradient(-270deg, $vscroll-overlay-start 0%, $vscroll-overlay-end 100%);
+$vscroll-left-bg:  linear-gradient(-270deg, $vscroll-overlay-end 0%, $vscroll-overlay-start 100%);
+
+$vscroll-device-arrow-box-shadow: -4px 0 8px 0 rgba($shadow, .06);
+$vscroll-device-arrow-rtl-box-shadow: 4px 0 8px 0 rgba($shadow, .06);
+$vscroll-device-arrow-bg: $grey-f8;
+$vscroll-device-arrow-border-size: 1px;
+$vscroll-device-arrow-border-color: $grey-cc;
+$vscroll-device-arrow-color: $brand-primary;
+$vscroll-device-arrow-size: 14px;
+$vscroll-device-arrow-width: 52px;
+
+$vscroll-default-icon-color: $grey-light-font;
+$vscroll-hover-bg: $grey-e6;
+$vscroll-press-bg: $grey-e6;
+$vscroll-default-border: $grey-cc;
+$vscroll-focus-border: '';
+$vscroll-active-border: '';
+$vscroll-hover-border: '';
+$vscroll-hover-border-color: '';
+$vscroll-active-box-shadow: inset 0 3px 5px rgba(0 , 0 , 0 , .125);
+
+@mixin vscroll-btn-animation {
+  content: '';
+}
+
+@mixin vscroll-btn-animation-after {
+  content: '';
+}
+//enddefault

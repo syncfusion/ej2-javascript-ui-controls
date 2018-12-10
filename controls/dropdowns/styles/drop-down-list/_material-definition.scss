@@ -1,29 +1,30 @@
-@import 'definition.scss';
+$ddl-input-font-size: 14px !default;
+$ddl-zero-value: 0 !default;
 
-$default-border-color: $grey-300;
-$input-border: $border-size $border-type;
-$input-font-family: $font-family;
-$input-margin-bottom: 4px;
-$input-padding: 8px $zero-value 4px;
-$input-group-border-width: $zero-value;
-$active-font-color: $accent;
-$list-search-icon-padding: 12px 8px 8px;
-$list-filter-text-indent: 8px 16px 8px;
-$bigger-list-font-size: 14px;
-$list-box-shadow-color: rgba(0, 0, 0, .21);
-$filter-box-shadow-color: rgba(0, 0, 0, .3);
-$popup-background-color: $grey-white;
-$filter-border: 0;
-$filter-top-border: 0;
-$filter-padding: 0;
-$filter-box-shadow: 0 1.5px 5px -2px $filter-box-shadow-color;
-$filter-background-color: $grey-100;
-$clear-icon-margin-right: 66px;
-$back-icon-margin: 2.5px 10px 0 -52px;
-$back-icon-padding: 8px 16px;
-$search-icon-content: '\e993';
-$back-icon-content: '\e977';
-$ddl-icon-content: '\e969';
+$ddl-default-border-color: $grey-300 !default;
+$ddl-input-border: $border-size $border-type !default;
+$ddl-input-font-family: $font-family !default;
+$ddl-input-margin-bottom: 4px !default;
+$ddl-input-padding: 8px $ddl-zero-value 4px !default;
+$ddl-input-group-border-width: $ddl-zero-value !default;
+$ddl-active-font-color: $accent !default;
+$ddl-list-search-icon-padding: 12px 8px 8px !default;
+$ddl-list-filter-text-indent: 8px 16px 8px !default;
+$ddl-bigger-list-font-size: 14px !default;
+$ddl-list-box-shadow-color: rgba(0, 0, 0, .21) !default;
+$ddl-filter-box-shadow-color: rgba(0, 0, 0, .3) !default;
+$ddl-popup-background-color: $grey-white !default;
+$ddl-filter-border: 0 !default;
+$ddl-filter-top-border: 0 !default;
+$ddl-filter-padding: 0 !default;
+$ddl-filter-box-shadow: 0 1.5px 5px -2px $ddl-filter-box-shadow-color !default;
+$ddl-filter-background-color: $grey-100 !default;
+$ddl-clear-icon-margin-right: 66px !default;
+$ddl-back-icon-margin: 2.5px 10px 0 -52px !default;
+$ddl-back-icon-padding: 8px 16px !default;
+$ddl-search-icon-content: '\e993' !default;
+$ddl-back-icon-content: '\e977' !default;
+$ddl-icon-content: '\e969' !default;
 
 @include export-module('dropdownlist-material') {
   .e-ddl.e-control-wrapper .e-ddl-icon::before {
@@ -37,7 +38,7 @@ $ddl-icon-content: '\e969';
   }
 
   .e-dropdownbase .e-list-item.e-active.e-hover {
-    color: $active-font-color;
+    color: $ddl-active-font-color;
   }
 
   .e-input-group:not(.e-disabled) .e-control#{&}.e-dropdownlist ~ .e-ddl-icon:active,
@@ -55,12 +56,12 @@ $ddl-icon-content: '\e969';
 
   .e-ddl#{&}.e-popup {
     border: 0;
-    box-shadow: 0 2px 3px 1px $list-box-shadow-color;
+    box-shadow: 0 2px 3px 1px $ddl-list-box-shadow-color;
     margin-top: 2px;
   }
 
   .e-bigger #{&}.e-popup.e-ddl-device-filter .e-input-group.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) {
-    border-color: $default-border-color;
+    border-color: $ddl-default-border-color;
   }
 
   .e-bigger #{&}.e-popup.e-ddl-device-filter {

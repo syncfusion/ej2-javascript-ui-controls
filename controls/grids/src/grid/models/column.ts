@@ -382,6 +382,13 @@ export class Column {
      */
     public filterTemplate: string;
 
+    /**    
+     * Defines the mapping column name of the foreign data source.
+     * If it is not defined then the `columns.field` will be considered as mapping column name 
+     * @default false         
+     */
+    public lockColumn: boolean;
+
     constructor(options: ColumnModel) {
         merge(this, options);
         this.uid = getUid('grid-column');
@@ -394,6 +401,11 @@ export class Column {
             this.allowFiltering = false;
             this.allowGrouping = false;
             this.allowSorting = false;
+            if (this.columns) {
+                this.allowResizing = (this.columns as Column[]).some((col: Column) => {
+                    return col.allowResizing;
+                });
+            }
         }
         if (this.commands && !this.textAlign) {
             this.textAlign = 'Right';
@@ -974,4 +986,11 @@ export interface ColumnModel {
      * @aspIgnore
      */
     filterTemplate?: string;
+
+    /**
+     * Defines the mapping column name of the foreign data source.
+     * If it is not defined then the `columns.field` will be considered as mapping column name 
+     * @default false         
+     */
+    lockColumn?: boolean;
 }

@@ -138,7 +138,13 @@ export enum CellType {
     /**  Defines CellType as DetailExpand */
     DetailExpand,
     /**  Defines CellType as CommandColumn */
-    CommandColumn
+    CommandColumn,
+    /**  Defines CellType as DetailFooterIntent */
+    DetailFooterIntent,
+    /**  Defines CellType as RowDrag */
+    RowDragIcon,
+    /**  Defines CellType as RowDragHeader */
+    RowDragHIcon
 }
 
 /** 
@@ -198,6 +204,20 @@ export type PrintMode =
     'AllPages' |
     /**  Defines PrintMode as CurrentPage */
     'CurrentPage';
+
+/** 
+ * Hierarchy Grid Print modes are
+ * * `Expanded` - Prints the master grid with expanded child grids.
+ * * `All` - Prints the master grid with all the child grids.
+ * * `None` - Prints the master grid alone.
+ */
+export type HierarchyGridPrintMode =
+    /**  Defines Hierarchy PrintMode as Expanded */
+    'Expanded' |
+    /**  Defines Hierarchy PrintMode as All */
+    'All' |
+    /** Defines Hierarchy PrintMode as None */
+    'None';
 
 /** 
  * Defines types of Filter 
@@ -542,20 +562,23 @@ export type CheckState = 'Check' | 'Uncheck' | 'Intermediate' | 'None';
 
 /** 
  * Defines mode of cell selection.
- * * Ascending
- * * Descending 
+ * * Flow
+ * * Box 
  */
 export type CellSelectionMode =
     /**  Defines CellSelectionMode as Flow */
     'Flow' |
     /**  Defines CellSelectionMode as Box */
-    'Box';
+    'Box' |
+    /**  Defines CellSelectionMode as Box with border */
+    'BoxWithBorder';
 
 
 /** 
  * Defines modes of editing.
- * * Ascending
- * * Descending 
+ * * Normal
+ * * Dialog 
+ * * Batch
  */
 export type EditMode =
     /**  Defines EditMode as Normal */
@@ -564,3 +587,14 @@ export type EditMode =
     'Dialog' |
     /**  Defines EditMode as Batch */
     'Batch';
+
+/** 
+ * Defines adding new row position.
+ * * Top
+ * * Bottom
+ */
+export type NewRowPosition =
+    /**  Defines row adding position as Top */
+    'Top' |
+    /**  Defines row adding position as Top */
+    'Bottom';

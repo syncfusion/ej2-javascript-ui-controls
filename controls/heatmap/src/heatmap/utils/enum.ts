@@ -24,8 +24,16 @@ export type HeatMapTheme =
     'Fabric' |
     /**  Render a HeatMap with Bootstrap theme. */
     'Bootstrap' |
+    /**  Render a HeatMap with Highcontrast Light theme. */
+    'HighcontrastLight'|
+    /**  Render a HeatMap with Material Dark theme. */
+    'MaterialDark' |
+    /**  Render a HeatMap with Fabric Dark theme. */
+    'FabricDark' |
     /**  Render a HeatMap with Highcontrast theme. */
-    'Highcontrast';
+    'Highcontrast'|
+    /**  Render a HeatMap with Bootstrap Dark theme. */
+    'BootstrapDark';
 
 export type Orientation =
     /**  Horizontal Axis. */
@@ -201,3 +209,27 @@ export type LabelType =
     'Days' |
     /** Define the axis labels display in every hour. */
     'Hours';
+
+
+/**
+ * Defines border type for multi level labels.
+ *  * Rectangle
+ *  * Brace
+ *  * WithoutBorder
+ *  * Without top Border
+ *  * Without top and bottom border
+ *  * Without bottom Border
+ */
+export type BorderType =
+    /** Rectangle */
+    'Rectangle' |
+    /** WithoutTopBorder */
+    'WithoutTopBorder' |
+    /** WithoutBottomBorder */
+    'WithoutBottomBorder' |
+    /** WithoutBorder */
+    'WithoutBorder' |
+    /** WithoutTopandBottomBorder */
+    'WithoutTopandBottomBorder' |
+    /** CurlyBrace */
+    'Brace';

@@ -72,8 +72,8 @@ export class AccumulationTooltip extends BaseTooltip {
         this.currentPoints = [];
         if (data.point && (!this.previousPoints[0] || (this.previousPoints[0].point !== data.point))) {
             if (this.pushData(data, isFirst, tooltipDiv, false)) {
-                if (this.triggerEvent(data, isFirst, this.getTooltipText(data, chart.tooltip), this.findHeader(data))) {
-                    this.createTooltip(chart, isFirst, data.point.symbolLocation,
+                if (this.triggerEvent(data, isFirst, this.getTooltipText(data, chart.tooltip))) {
+                    this.createTooltip(chart, isFirst, this.findHeader(data), data.point.symbolLocation,
                                        data.series.clipRect, data.point, ['Circle'], 0, rect, null, data.point);
                 } else {
                     this.removeHighlight(this.control);

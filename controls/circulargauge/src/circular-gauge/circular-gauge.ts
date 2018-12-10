@@ -332,9 +332,23 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         this.wireEvents();
     }
     private themeEffect(): void {
-        if (this.theme === 'Highcontrast') {
+        let themes: string = this.theme.toLowerCase();
+        if (themes === 'highcontrast') {
             this.titleStyle.color = this.titleStyle.color || '#FFFFFF';
             this.setThemeColors('#FFFFFF', '#FFFFFF');
+        } else if (themes.indexOf('dark') > -1) {
+            for (let axis of this.axes) {
+                axis.labelStyle.font.color = axis.labelStyle.font.color || '#DADADA ';
+                axis.majorTicks.color = axis.majorTicks.color || '#C8C8C8';
+                axis.minorTicks.color = axis.minorTicks.color || '#9A9A9A';
+                for (let pointer of axis.pointers) {
+                    pointer.color = pointer.color || '#DADADA';
+                    pointer.needleTail.color = pointer.needleTail.color || '#9A9A9A';
+                    pointer.needleTail.border.color = pointer.needleTail.border.color || '#9A9A9A';
+                    pointer.cap.color = pointer.cap.color || '#9A9A9A';
+                    pointer.cap.border.color = pointer.cap.border.color || '#9A9A9A';
+                }
+            }
         } else {
             this.titleStyle.color = this.titleStyle.color || '#424242';
             this.setThemeColors('#212121', '#757575');

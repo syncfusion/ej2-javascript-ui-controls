@@ -1,15 +1,16 @@
 import { Property, ChildProperty, extend, merge, Complex, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { HeatMap } from '../heatmap';
 import { Rect, TextBasic, Path, PathAttributes, RectOption, CircleOption, TextOption, CurrentRect, DrawSvgCanvas } from '../utils/helper';
-import { convertHexToColor, colorNameToHex } from '../utils/helper';
+import { convertHexToColor, colorNameToHex, formatValue } from '../utils/helper';
 import { CellColor, RgbColor } from '../utils/colorMapping';
 import { BorderModel, FontModel } from '../model/base-model';
 import { Border, Font, BubbleTooltipData } from '../model/base';
-import { IThemeStyle } from '../model/interface';
+import { IThemeStyle, ICellEventArgs } from '../model/interface';
 import { Theme } from '../model/theme';
 import { CellType, BubbleType } from '../utils/enum';
 import { CellSettingsModel } from './series-model';
 import { DataModel } from '../datasource/adaptor-model';
+import { Axis } from '../axis/axis';
 
 /**
  * Configures the CellSettings property in the Heatmap.
@@ -98,9 +99,9 @@ export class Series {
         this.cellColor = new CellColor(this.heatMap);
     }
     /** @private */
-    private containerRectObject: Element;
+    public containerRectObject: Element;
     /** @private */
-    private containerTextObject: Element;
+    public containerTextObject: Element;
     /** @private */
     public format: Function;
 
@@ -113,37 +114,28 @@ export class Series {
      * @return {void}
      * @private
      */
+    //tslint:disable:max-line-length
     public renderRectSeries(): void {
-        this.createSeriesGroup();
-        let heatMap: HeatMap = this.heatMap;
+        this.createSeriesGroup(); let heatMap: HeatMap = this.heatMap;
         heatMap.xLength = heatMap.axisCollections[0].axisLabelSize;
         heatMap.yLength = heatMap.axisCollections[1].axisLabelSize; // Series Part
         let tempX: number = Math.round(heatMap.initialClipRect.x * 100) / 100;
         let tempY: number = Math.round(heatMap.initialClipRect.y * 100) / 100;
-        let dataXIndex: number = 0;
-        let dataYIndex: number = 0;
-        let cellSetting: CellSettingsModel = heatMap.cellSettings;
+        let dataXIndex: number = 0; let dataYIndex: number = 0; let cellSetting: CellSettingsModel = heatMap.cellSettings;
         let tempWidth: number = Math.round(((heatMap.initialClipRect.width -
             (cellSetting.border.width / 2)) / heatMap.xLength) * 100) / 100;
         let tempHeight: number = Math.round(((heatMap.initialClipRect.height -
             (cellSetting.border.width / 2)) / heatMap.yLength) * 100) / 100;
-        let tempVal: number = 0;
-        let themeStyle: IThemeStyle = heatMap.themeStyle;
-        let tempBorder: BorderModel;
-        let tempRectPosition: CurrentRect[] = [];
-        let circleRadius: number;
-        tempBorder = cellSetting.border;
-        let borderColor: string;
-        this.rectPositionCollection = [];
-        this.color = '';
-        this.bubbleColorValue = [];
+        let tempVal: number = 0; let themeStyle: IThemeStyle = heatMap.themeStyle; let tempBorder: BorderModel;
+        let tempRectPosition: CurrentRect[] = []; let circleRadius: number; tempBorder = cellSetting.border; let borderColor: string;
+        let displayText: string; this.rectPositionCollection = []; this.color = ''; this.bubbleColorValue = [];
         if (heatMap.yAxis.opposedPosition) {
             tempX = Math.round((heatMap.initialClipRect.x + (parseFloat(tempBorder.width.toString()) / 2)) * 100) / 100;
         }
         circleRadius = this.getBubbleRadius(tempWidth, tempHeight);
         for (let x: number = 0; x < (heatMap.xLength * heatMap.yLength); x++) {
             this.setTextAndColor(dataXIndex, dataYIndex);
-            let rectPosition: CurrentRect = new CurrentRect(0, 0, 0, 0, 0, '');
+            let rectPosition: CurrentRect = new CurrentRect(0, 0, 0, 0, 0, '', 0, 0, 0, 0, true, '', '');
             borderColor = tempBorder.color;
             if ((heatMap.renderingMode === 'Canvas' && parseFloat(tempBorder.width.toString()) === 0) || (!borderColor &&
                 cellSetting.tileType === 'Bubble' && cellSetting.bubbleType === 'Sector')) {
@@ -152,23 +144,31 @@ export class Series {
             if (this.heatMap.bubbleSizeWithColor) {
                 this.updateRectDetails(
                     rectPosition, tempX, tempY, tempWidth, tempHeight,
-                    <BubbleTooltipData[]>extend('', this.bubbleColorValue, null, true), x);
+                    <BubbleTooltipData[]>extend('', this.bubbleColorValue, null, true), x, dataYIndex, dataXIndex);
             } else {
-                this.updateRectDetails(rectPosition, tempX, tempY, tempWidth, tempHeight, this.text, x);
+                this.updateRectDetails(rectPosition, tempX, tempY, tempWidth, tempHeight, this.text, x, dataYIndex, dataXIndex);
+            }
+            if (cellSetting.showLabel) {
+                displayText = this.getFormatedText(this.text, cellSetting.format);
+                rectPosition.displayText = displayText;
+                if (!isNullOrUndefined(this.heatMap.cellRender)) {
+                    displayText = this.cellRendering(rectPosition, displayText);
+                }
             }
             if (cellSetting.tileType === 'Rect') { // Rectangle/Tile Series
                 this.renderTileCell(rectPosition, tempBorder, x, this.color, borderColor);
-                this.updateLabelVisibleStatus(tempWidth, tempHeight);
+                this.updateLabelVisibleStatus(tempWidth, tempHeight, displayText);
             } else {
                 if (cellSetting.bubbleType === 'Color') { // Bubble by same size and different color Series
                     this.renderBubbleCell(rectPosition, tempBorder, x, this.color, borderColor, circleRadius);
-                    this.updateLabelVisibleStatus((circleRadius * 2) - 12, (circleRadius * 2) - 6); // 6, 12 - circle padding
+                    this.updateLabelVisibleStatus(
+                        (circleRadius * 2) - 12, (circleRadius * 2) - 6, displayText); // 6, 12 - circle padding
                 } else if (!isNullOrUndefined(this.text) && (cellSetting.bubbleType === 'Size' || cellSetting.bubbleType === 'SizeAndColor')
                     && this.text.toString() !== '') { // Bubble by same color and different size Series
                     let tempCircleRadius: number = this.getRadiusBypercentage(
                         parseFloat(this.text.toString()), heatMap.dataSourceMinValue, heatMap.dataSourceMaxValue, circleRadius);
                     this.renderBubbleCell(rectPosition, tempBorder, x, this.color, borderColor, tempCircleRadius);
-                    this.updateLabelVisibleStatus((tempCircleRadius * 2) - 12, (tempCircleRadius * 2) - 6);
+                    this.updateLabelVisibleStatus((tempCircleRadius * 2) - 12, (tempCircleRadius * 2) - 6, displayText);
                 } else if (cellSetting.bubbleType === 'Sector' && !isNullOrUndefined(this.text) && this.text.toString() !== '') {
                     this.renderSectorCell(rectPosition, tempBorder, x.toString(), this.color, borderColor, circleRadius, this.text);
                     this.checkLabelXDisplay = false;
@@ -177,13 +177,16 @@ export class Series {
             }
             tempRectPosition.push(rectPosition);
             if (cellSetting.showLabel && this.checkLabelYDisplay && this.checkLabelXDisplay) {
-                let displayText: string = this.getFormatedText(this.text, cellSetting.format);
                 let themeCellTextStyle: FontModel = cellSetting.textStyle;
                 let options: TextOption = new TextOption(
                     heatMap.element.id + '_HeatMapRectLabels_' + x, new TextBasic(
                         Math.round((tempX + tempWidth / 2) * 100) / 100, Math.round((tempY + tempHeight / 2) * 100) / 100,
                         'middle', displayText, null, null, 'middle'),
                     themeCellTextStyle, themeCellTextStyle.color || this.getSaturatedColor(this.color));
+                rectPosition.textId = options.id;
+                if (heatMap.rangeSelection && heatMap.paletteSettings.type === 'Fixed') {
+                    this.toggleCellTextColor(rectPosition, options);
+                }
                 if (Browser.isIE && !heatMap.enableCanvasRendering) {
                     options.dy = this.heatMap.cellSettings.tileType === 'Bubble' ? '0.5ex' : '1ex';
                 }
@@ -191,8 +194,7 @@ export class Series {
             }
             if (tempVal === heatMap.xLength - 1) {
                 tempY = Math.round((tempY + tempHeight) * 100) / 100;
-                tempVal = 0;
-                dataYIndex = 0;
+                tempVal = 0; dataYIndex = 0;
                 if (heatMap.yAxis.opposedPosition) {
                     tempX = Math.round((heatMap.initialClipRect.x + (parseFloat(tempBorder.width.toString()) / 2)) * 100) / 100;
                 } else {
@@ -213,6 +215,53 @@ export class Series {
                 heatMap.svgObject.appendChild(this.containerTextObject as HTMLElement);
             }
         }
+    }
+
+    /**
+     * To toggle the cell text color based on legend selection.
+     */
+    private toggleCellTextColor(rectPosition: CurrentRect, options: TextOption): void {
+        for (let i: number = 0; i < this.heatMap.toggleValue.length; i++) {
+            let minValue: number = (i === 0) ? this.heatMap.dataSourceMinValue : this.heatMap.toggleValue[i].value;
+            let maxValue: number = (i === this.heatMap.toggleValue.length - 1) ? this.heatMap.dataSourceMaxValue :
+                this.heatMap.toggleValue[i + 1].value - 0.01;
+            if (this.text >= minValue && this.text <= maxValue) {
+                if (!this.heatMap.toggleValue[i].visible) {
+                    options.fill = this.color === '#EEEEEE' ? '#EEEEEE' : this.heatMap.themeStyle.toggledColor;
+                    rectPosition.visible = false;
+                    break;
+                } else {
+                    options.fill = options.fill;
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * To customize the cell.
+     * @return {void}
+     * @private
+     */
+    public cellRendering(rectPosition: CurrentRect, text: string): string {
+        let xAxis: Axis = this.heatMap.axisCollections[0];
+        let yAxis: Axis = this.heatMap.axisCollections[1];
+        let xLabels: string[] = xAxis.tooltipLabels;
+        let yLabels: string[] = yAxis.tooltipLabels.slice().reverse();
+        let yLabelValue: (string | number | Date)[] = yAxis.labelValue.slice().reverse();
+        let argData: ICellEventArgs = {
+            heatmap: this.heatMap,
+            cancel: false,
+            name: 'cellRender',
+            value: rectPosition.value,
+            xLabel: xLabels[rectPosition.xIndex].toString(),
+            yLabel: yLabels[rectPosition.yIndex].toString(),
+            displayText: text,
+            xValue: xAxis.labelValue[rectPosition.xIndex],
+            yValue: yLabelValue[rectPosition.yIndex]
+        };
+        this.heatMap.trigger('cellRender', argData);
+        return argData.displayText;
     }
 
     /**
@@ -275,13 +324,15 @@ export class Series {
      */
     private updateRectDetails(
         rectPosition: CurrentRect, tempX: number, tempY: number, tempWidth: number,
-        tempHeight: number, text: number|BubbleTooltipData[], x: number): void {
+        tempHeight: number, text: number | BubbleTooltipData[], x: number, dataXIndex: number, dataYIndex: number): void {
         rectPosition.x = tempX;
         rectPosition.y = tempY;
         rectPosition.width = tempWidth;
         rectPosition.height = tempHeight;
         rectPosition.value = text;
         rectPosition.id = this.heatMap.element.id + '_HeatMapRect_' + x;
+        rectPosition.xIndex = dataXIndex;
+        rectPosition.yIndex = dataYIndex;
     }
 
     /**
@@ -296,7 +347,7 @@ export class Series {
             new Rect(
                 rectPosition.x, rectPosition.y, rectPosition.width, rectPosition.height),
             borderColor || this.heatMap.themeStyle.cellBorder,
-            tempBorder.radius, tempBorder.radius, );
+            tempBorder.radius, tempBorder.radius);
         this.drawSvgCanvas.drawRectangle(rect, this.containerRectObject, true);
     }
 
@@ -326,8 +377,8 @@ export class Series {
         let cY: number;
         let X1: number;
         let Y1: number;
-        let tempcX : number;
-        let tempcY : number;
+        let tempcX: number;
+        let tempcY: number;
         let pathBorderWidth: number;
         let centerX: number = Math.round((bubblePosition.x + (bubblePosition.width / 2)) * 100) / 100;
         let centerY: number = Math.round((bubblePosition.y + (bubblePosition.height / 2)) * 100) / 100;
@@ -431,13 +482,13 @@ export class Series {
      * To find whether the X,Y Label need to display or not.
      * @private
      */
-    private updateLabelVisibleStatus(tempWidth: number, tempHeight: number): void {
-        let tempMaxString: string = this.getFormatedText(
-            this.text, this.heatMap.cellSettings.format);
-        this.checkLabelYDisplay = tempHeight > parseInt(
-            this.heatMap.cellSettings.textStyle.size, 10) ? true : false;
-        this.checkLabelXDisplay = tempWidth > (tempMaxString.length *
-            (parseInt(this.heatMap.cellSettings.textStyle.size, 10) / 2)) ? true : false;
+    private updateLabelVisibleStatus(tempWidth: number, tempHeight: number, displayText: string): void {
+        if (this.heatMap.cellSettings.showLabel) {
+            this.checkLabelYDisplay = tempHeight > parseInt(
+                this.heatMap.cellSettings.textStyle.size, 10) ? true : false;
+            this.checkLabelXDisplay = tempWidth > (displayText.length *
+                (parseInt(this.heatMap.cellSettings.textStyle.size, 10) / 2)) ? true : false;
+        }
     }
 
     /**
@@ -483,11 +534,11 @@ export class Series {
                 if (this.heatMap.tempRectHoverClass !== tempID) {
                     if (this.heatMap.cellSettings.enableCellHighlighting) {
                         let oldElement: HTMLElement = document.getElementById(this.heatMap.tempRectHoverClass);
-                        if (oldElement) {
-                            oldElement.style.opacity = '1';
+                        if (oldElement && !this.heatMap.rectSelected) {
+                            oldElement.setAttribute('opacity', '1');
                         }
-                        if (element) {
-                        element.style.opacity = '0.65';
+                        if (element && !this.heatMap.rectSelected) {
+                            element.setAttribute('opacity', '0.65');
                         }
                     }
                     this.heatMap.tempRectHoverClass = tempID;
@@ -495,8 +546,8 @@ export class Series {
             } else {
                 if (this.heatMap.cellSettings.enableCellHighlighting) {
                     let oldElement: HTMLElement = document.getElementById(this.heatMap.tempRectHoverClass);
-                    if (oldElement) {
-                        oldElement.style.opacity = '1';
+                    if (oldElement && !this.heatMap.rectSelected) {
+                        oldElement.setAttribute('opacity', '1');
                         this.heatMap.tempRectHoverClass = '';
                     }
                 }
@@ -517,7 +568,7 @@ export class Series {
         });
         let value: string = '';
         if (val.toString() !== '') {
-            value = this.formatValue(isCustom, format, val);
+            value = formatValue(isCustom, format, val, this.format);
         }
         return value;
     }
@@ -551,14 +602,5 @@ export class Series {
         this.hoverYAxisValue = this.heatMap.axisCollections[1].labelValue[(
             this.heatMap.axisCollections[1].labelValue.length - 1) - rectY];
         return currentRect;
-    }
-
-    /**
-     * Format the cell label.
-     * @private
-     */
-    private formatValue(isCustom: boolean, format: string, tempInterval: number): string {
-        return isCustom ? format.replace('{value}', this.format(tempInterval))
-            : this.format(tempInterval);
     }
 }

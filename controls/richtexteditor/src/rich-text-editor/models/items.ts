@@ -474,8 +474,8 @@ export let imageAlignItems: IDropDownItemModel[] = [
 ];
 
 export let imageDisplayItems: IDropDownItemModel[] = [
-    { text: 'Inline', class: 'e-inline', command: 'Images', subCommand: 'Inline' },
-    { text: 'Break', class: 'e-break', command: 'Images', subCommand: 'Break' },
+    { text: 'Inline', cssClass: 'e-inline', command: 'Images', subCommand: 'Inline' },
+    { text: 'Break', cssClass: 'e-break', command: 'Images', subCommand: 'Break' },
 ];
 
 export let tableRowsItems: IDropDownItemModel[] = [
@@ -497,8 +497,8 @@ export let TableCellVerticalAlignItems: IDropDownItemModel[] = [
 ];
 
 export let TableStyleItems: IDropDownItemModel[] = [
-    { text: 'Dashed Borders', class: 'e-dashed-borders', command: 'Table', subCommand: 'Dashed' },
-    { text: 'Alternate Rows', class: 'e-alternate-rows', command: 'Table', subCommand: 'Alternate' }
+    { text: 'Dashed Borders', cssClass: 'e-dashed-borders', command: 'Table', subCommand: 'Dashed' },
+    { text: 'Alternate Rows', cssClass: 'e-alternate-rows', command: 'Table', subCommand: 'Alternate' }
 ];
 
 

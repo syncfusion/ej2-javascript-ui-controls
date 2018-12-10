@@ -1,4 +1,4 @@
-import { Animation, ChildProperty, Collection, Component, Event, EventHandler, KeyboardEvents, NotifyPropertyChanges, Property, addClass, attributes, classList, closest, createElement, deleteObject, detach, extend, getInstance, getUniqueID, getValue, isNullOrUndefined, remove, removeClass, rippleEffect, select, setValue } from '@syncfusion/ej2-base';
+import { Animation, ChildProperty, Collection, Complex, Component, Event, EventHandler, KeyboardEvents, NotifyPropertyChanges, Property, addClass, attributes, classList, closest, createElement, deleteObject, detach, extend, getInstance, getUniqueID, getValue, isNullOrUndefined, remove, removeClass, rippleEffect, select, setValue } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 import { Popup, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 
@@ -930,6 +930,28 @@ const HIDESPINNER = 'e-hide-spinner';
 const PROGRESS = 'e-progress';
 const PROGRESSACTIVE = 'e-progress-active';
 const CONTENTCLS = 'e-btn-content';
+class SpinSettings extends ChildProperty {
+}
+__decorate$3([
+    Property(null)
+], SpinSettings.prototype, "template", void 0);
+__decorate$3([
+    Property(16)
+], SpinSettings.prototype, "width", void 0);
+__decorate$3([
+    Property('Left')
+], SpinSettings.prototype, "position", void 0);
+class AnimationSettings extends ChildProperty {
+}
+__decorate$3([
+    Property(400)
+], AnimationSettings.prototype, "duration", void 0);
+__decorate$3([
+    Property('None')
+], AnimationSettings.prototype, "effect", void 0);
+__decorate$3([
+    Property('ease')
+], AnimationSettings.prototype, "easing", void 0);
 /**
  * The ProgressButton visualizes the progression of an operation to indicate the user
  * that a process is happening in the background with visual representation.
@@ -1031,6 +1053,12 @@ let ProgressButton = class ProgressButton extends Button {
             target: spinner, width: this.spinSettings.width || 16, template: this.spinSettings.template
         }, this.createElement);
     }
+    getSpinner() {
+        return this.element.getElementsByClassName('e-spinner')[0];
+    }
+    getProgress() {
+        return this.element.getElementsByClassName(PROGRESS)[0];
+    }
     setSpinPosition(ele) {
         let position = this.spinSettings.position || 'Left';
         if (position === 'Left' || position === 'Top') {
@@ -1061,16 +1089,8 @@ let ProgressButton = class ProgressButton extends Button {
         clsList.add(PROGRESSACTIVE);
         if (!(clsList.contains(HIDESPINNER))) {
             showSpinner(this.element);
-            if (!this.enableProgress) {
-                setTimeout(() => {
-                    this.hideSpin();
-                    // tslint:disable-next-line
-                }, this.duration);
-            }
         }
-        if (this.enableProgress) {
-            this.startAnimate(Date.now(), progressTime ? progressTime : 0, progressTime ? Date.now() - (this.duration * 1 / 100) : Date.now(), percent ? percent : 0, 0, this.step, 0, isVertical);
-        }
+        this.startAnimate(Date.now(), progressTime ? progressTime : 0, progressTime ? Date.now() - (this.duration * 1 / 100) : Date.now(), percent ? percent : 0, 0, this.step, 0, isVertical);
         this.startContAnimate();
     }
     startAnimate(timestamp, progressTime, prevTime, percent, prevPercent, step, prevProgressTime, isVertical) {
@@ -1100,8 +1120,9 @@ let ProgressButton = class ProgressButton extends Button {
             this.step = args.step;
             if ((progressTime - prevProgressTime) % (this.duration * args.step / 100) === 0 || percent === 100) {
                 this.timerId = requestAnimationFrame(() => {
-                    this.element.getElementsByClassName(PROGRESS)[0]
-                        .style[isVertical ? 'height' : 'width'] = percent + '%';
+                    if (this.enableProgress) {
+                        this.getProgress().style[isVertical ? 'height' : 'width'] = percent + '%';
+                    }
                     this.element.setAttribute('aria-valuenow', percent.toString());
                 });
                 prevPercent = percent;
@@ -1117,7 +1138,9 @@ let ProgressButton = class ProgressButton extends Button {
                 else {
                     setTimeout(() => {
                         this.progressTime = this.percent = 0;
-                        this.element.getElementsByClassName(PROGRESS)[0].style[isVertical ? 'height' : 'width'] = '0%';
+                        if (this.enableProgress) {
+                            this.getProgress().style[isVertical ? 'height' : 'width'] = '0%';
+                        }
                         this.element.setAttribute('aria-valuenow', '0');
                         this.hideSpin();
                         // tslint:disable-next-line
@@ -1153,7 +1176,7 @@ let ProgressButton = class ProgressButton extends Button {
     }
     setSpinnerSize() {
         let ele = this.element.getElementsByClassName(CONTENTCLS)[0];
-        let spinner = this.element.getElementsByClassName('e-spinner')[0];
+        let spinner = this.getSpinner();
         spinner.style.width = Math.max(spinner.offsetWidth, ele.offsetWidth) + 'px';
         spinner.style.height = Math.max(spinner.offsetHeight, ele.offsetHeight) + 'px';
         ele.classList.add('e-cont-animate');
@@ -1168,7 +1191,7 @@ let ProgressButton = class ProgressButton extends Button {
             cont.classList.remove('e-animate-end');
         }
         if (this.spinSettings.position === 'Center') {
-            let ele = this.element.getElementsByClassName('e-spinner')[0];
+            let ele = this.getSpinner();
             cont.classList.remove('e-cont-animate');
             ele.style.width = 'auto';
             ele.style.height = 'auto';
@@ -1203,6 +1226,7 @@ let ProgressButton = class ProgressButton extends Button {
      * @private
      */
     onPropertyChanged(newProp, oldProp) {
+        let ele = this.element;
         super.onPropertyChanged(newProp, oldProp);
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -1212,7 +1236,7 @@ let ProgressButton = class ProgressButton extends Button {
                     if (this.enableProgress) {
                         this.createProgress();
                     }
-                    this.element.setAttribute('aria-label', this.element.textContent + ' progress');
+                    ele.setAttribute('aria-label', ele.textContent + ' progress');
                     break;
                 case 'iconCss':
                     if (!oldProp.iconCss) {
@@ -1227,7 +1251,17 @@ let ProgressButton = class ProgressButton extends Button {
                         this.createProgress();
                     }
                     else {
-                        remove(this.element.getElementsByClassName(PROGRESS)[0]);
+                        remove(this.getProgress());
+                    }
+                    break;
+                case 'spinSettings':
+                    if (newProp.spinSettings.position) {
+                        ele.classList.remove('e-spin-' + oldProp.spinSettings.position.toLowerCase());
+                        this.setSpinPosition(this.getSpinner());
+                    }
+                    if (newProp.spinSettings.template || newProp.spinSettings.width) {
+                        ele.removeChild(this.getSpinner());
+                        this.createSpinner();
                     }
                     break;
             }
@@ -1262,10 +1296,10 @@ __decorate$3([
     Property(false)
 ], ProgressButton.prototype, "isToggle", void 0);
 __decorate$3([
-    Property({ template: null, width: 16, position: 'Left' })
+    Complex({}, SpinSettings)
 ], ProgressButton.prototype, "spinSettings", void 0);
 __decorate$3([
-    Property({ duration: 400, effect: 'None', easing: 'ease' })
+    Complex({}, AnimationSettings)
 ], ProgressButton.prototype, "animationSettings", void 0);
 __decorate$3([
     Event()
@@ -1294,5 +1328,5 @@ ProgressButton = __decorate$3([
  * SplitButton all module
  */
 
-export { getModel, Item, DropDownButton, SplitButton, createButtonGroup, ProgressButton };
+export { getModel, Item, DropDownButton, SplitButton, createButtonGroup, SpinSettings, AnimationSettings, ProgressButton };
 //# sourceMappingURL=ej2-splitbuttons.es2015.js.map

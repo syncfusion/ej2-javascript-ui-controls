@@ -1,8 +1,8 @@
 /**
- * 
+ *
  */
-import { ISmithchartThemeStyle, ISmithchartFontMapping} from '../model/interface';
-import { SmithchartTheme} from '../utils/enum';
+import { ISmithchartThemeStyle, ISmithchartFontMapping } from '../model/interface';
+import { SmithchartTheme } from '../utils/enum';
 
 export namespace Theme {
     /** @private */
@@ -49,16 +49,16 @@ export namespace Theme {
 /** @private */
 export function getSeriesColor(theme: SmithchartTheme): string[] {
     let palette: string[];
-    switch (theme) {
-        case 'Highcontrast':
+    switch (theme.toLowerCase()) {
+        case 'highcontrastlight':
             palette = ['#79ECE4', '#E98272', '#DFE6B6', '#C6E773', '#BA98FF',
                 '#FA83C3', '#00C27A', '#43ACEF', '#D681EF', '#D8BC6E'];
             break;
-        case 'Fabric':
+        case 'fabric':
             palette = ['#4472c4', '#ed7d31', '#ffc000', '#70ad47', '#5b9bd5',
                 '#c1c1c1', '#6f6fe2', '#e269ae', '#9e480e', '#997300'];
             break;
-        case 'Bootstrap':
+        case 'bootstrap':
             palette = ['#a16ee5', '#f7ce69', '#55a5c2', '#7ddf1e', '#ff6ea6',
                 '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
             break;
@@ -73,8 +73,9 @@ export function getSeriesColor(theme: SmithchartTheme): string[] {
 /** @private */
 export function getThemeColor(theme: SmithchartTheme): ISmithchartThemeStyle {
     let style: ISmithchartThemeStyle;
-    switch (theme) {
-        case 'Highcontrast':
+    let themes: string = theme.toLowerCase();
+    switch (themes) {
+        case 'highcontrast':
             style = {
                 axisLabel: '#ffffff',
                 axisLine: '#ffffff',
@@ -89,6 +90,25 @@ export function getThemeColor(theme: SmithchartTheme): ISmithchartThemeStyle {
                 tooltipBoldLabel: '#000000',
                 tooltipLightLabel: '#000000',
                 tooltipHeaderLine: '#969696',
+            };
+            break;
+        case 'materialdark':
+        case 'bootstrapdark':
+        case 'fabricdark':
+            style = {
+                axisLabel: '#DADADA',
+                axisLine: ' #6F6C6C',
+                majorGridLine: '#414040',
+                minorGridLine: '#514F4F',
+                chartTitle: '#ffffff',
+                legendLabel: '#DADADA',
+                background: '#000000',
+                areaBorder: ' #9A9A9A',
+                tooltipFill: '#F4F4F4',
+                dataLabel: '#DADADA',
+                tooltipBoldLabel: '#282727',
+                tooltipLightLabel: '#333232',
+                tooltipHeaderLine: '#9A9A9A'
             };
             break;
         default:

@@ -1,11 +1,11 @@
-import { Schedule, Day, Week, WorkWeek, Month } from '../../src/schedule/index';
+import { Schedule, Day, Week, WorkWeek, Month, Agenda } from '../../src/schedule/index';
 import { resourceData } from '../../spec/schedule/base/datasource.spec';
 import '../../node_modules/es6-promise/dist/es6-promise';
 
 /**
  * schedule editor template sample
  */
-Schedule.Inject(Day, Week, WorkWeek, Month);
+Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 
 (window as TemplateFunction).getResourceName = (value: { [key: string]: Object }) => {
     let resourceNames: string[] = ['nancy', 'steven', 'michael'];

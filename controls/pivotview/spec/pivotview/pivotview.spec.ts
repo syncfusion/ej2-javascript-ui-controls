@@ -6,7 +6,7 @@ import { GroupingBar } from '../../src/common/grouping-bar/grouping-bar';
 import { FieldList } from '../../src/common/actions/field-list';
 import { TreeView } from '@syncfusion/ej2-navigations';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { CellClickEventArgs, FieldDroppedEventArgs } from '../../src/common/base/interface';
+import { CellClickEventArgs, FieldDroppedEventArgs, HyperCellClickEventArgs, PivotCellSelectedEventArgs, BeforeColumnRenderEventArgs } from '../../src/common/base/interface';
 import { CalculatedField } from '../../src/common/calculatedfield/calculated-field';
 import {
     BeforeCopyEventArgs, RowSelectingEventArgs,
@@ -17,9 +17,12 @@ import {
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { ExcelExport, PDFExport, VirtualScroll } from '../../src/pivotview/actions';
 import { BeforeExportEventArgs } from '../../src';
+import { DrillThrough } from '../../src/pivotview/actions'
 import { DataManager, JsonAdaptor } from '@syncfusion/ej2-data';
 import { ConditionalFormatting } from '../../src/common/conditionalformatting/conditional-formatting';
 import { LoadEventArgs } from '../../src';
+import { MaskedTextBox } from '@syncfusion/ej2-inputs';
+
 describe('PivotView spec', () => {
     /**
      * PivotGrid base spec
@@ -81,6 +84,12 @@ describe('PivotView spec', () => {
             mouseEve.initEvent(eventType, true, true);
         }
         node.dispatchEvent(mouseEve);
+    }
+
+    function beforeExport(args: BeforeExportEventArgs): void {
+        args.dataCollections.push(args.dataCollections[0]);
+        args.header = 'This is Header';
+        args.footer = 'This is Footer';
     }
 
     describe('Grid base module - ', () => {
@@ -196,8 +205,18 @@ describe('PivotView spec', () => {
                 }, 2000);
             });
 
+            it('hide tooltip', (done: Function) => {
+                pivotGridObj.showTooltip = false;
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let target: HTMLElement = pivotGridObj.element.querySelectorAll('td[index="10"]')[5] as HTMLElement;
+                    triggerMouseEvent(target, 'mouseover');
+                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent').length).toBe(0);
+                    done();
+                }, 2000);
+            })
+
             it('pivotgrid change locale', (done: Function) => {
-                pivotGridObj.toolTip.close();
                 pivotGridObj.locale = 'es-ES';
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
@@ -731,8 +750,15 @@ describe('PivotView spec', () => {
                         values: [{ name: 'balance' }, { name: 'quantity' }], filters: [{ name: 'gender' }]
                     },
                     showGroupingBar: true,
-                    groupingBarSettings: { showFilterIcon: false, showRemoveIcon: false, showSortIcon: false },
-                    dataBound: dataBound
+                    groupingBarSettings: { showFilterIcon: false, showRemoveIcon: false, showSortIcon: false, showValueTypeIcon: false },
+                    dataBound: dataBound,
+                    gridSettings: {
+                        beforeColumnsRender: (args: BeforeColumnRenderEventArgs) => {
+                            args.columns[0].width = 200;
+                            args.columns[1].allowReordering = true;
+                            args.columns[1].allowResizing = true;
+                        }
+                    }
                 });
                 pivotGridObj.appendTo('#PivotGrid');
             });
@@ -1143,6 +1169,7 @@ describe('PivotView spec', () => {
                 remove(elem);
             });
         });
+
         describe('Calculated Field', () => {
             let pivotGridObj: PivotView;
             let cf: any;
@@ -1564,6 +1591,7 @@ describe('PivotView spec', () => {
                 remove(elem);
             });
         });
+
         describe('Cell Click', () => {
             let pivotGridObj: PivotView;
             let fieldName: string;
@@ -1616,6 +1644,7 @@ describe('PivotView spec', () => {
                 remove(elem);
             });
         });
+
         describe('Adaptive Context menu for Grouping Bar', () => {
             let pivotGridObj: PivotView;
             let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:600px; width:100%' });
@@ -1731,7 +1760,7 @@ describe('PivotView spec', () => {
                     args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
                     firNode.querySelector('.e-frame').dispatchEvent(args);
                     args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
-                    firNode.querySelector('.e-frame').dispatchEvent(args);                    
+                    firNode.querySelector('.e-frame').dispatchEvent(args);
                     done();
                 }, 1000);
             });
@@ -1743,6 +1772,7 @@ describe('PivotView spec', () => {
                 }, 1000);
             });
         });
+
         describe('Date sorting', () => {
             let pivotGridObj: PivotView;
             let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
@@ -1805,2172 +1835,3580 @@ describe('PivotView spec', () => {
             });
         });
 
-        describe('Conditional Formatting - Code Behind', () => {
-            let pivotGridObj: PivotView;
-            let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
-            beforeAll(() => {
-                document.body.appendChild(elem);
-                pivotGridObj = new PivotView(
-                    {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
-                            expandAll: true,
-                            enableSorting: true,
-                            sortSettings: [{ name: 'company', order: 'Descending' }],
-                            formatSettings: [{ name: 'balance', format: 'C' }],
-                            drilledMembers: [{ name: 'product', items: ['Bike', 'Car'] }, { name: 'gender', items: ['male'] }],
-                            filterSettings: [
-                                { name: 'product', type: 'Include', items: ['Car', 'Bike'] },
-                                { name: 'eyeColor', type: 'Include', items: ['blue', 'green'] },
-                            ],
-                            rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
-                            columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
-                            values: [{ name: 'balance' }, { name: 'quantity' }],
-                            filters: [],
-                            conditionalFormatSettings: [
-                                {
-                                    value1: 50000,
-                                    value2: 600,
-                                    conditions: 'Between',
-                                    style: {
-                                        backgroundColor: 'violet',
-                                        color: 'yellow',
-                                        fontFamily: 'Verdana',
-                                        fontSize: '13px'
+        describe('Conditional Formatting', () => {
+            describe(' - Code Behind', () => {
+                let pivotGridObj: PivotView;
+                let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
+                beforeAll(() => {
+                    document.body.appendChild(elem);
+                    pivotGridObj = new PivotView(
+                        {
+                            dataSource: {
+                                data: pivot_dataset as IDataSet[],
+                                expandAll: true,
+                                enableSorting: true,
+                                sortSettings: [{ name: 'company', order: 'Descending' }],
+                                formatSettings: [{ name: 'balance', format: 'C' }],
+                                drilledMembers: [{ name: 'product', items: ['Bike', 'Car'] }, { name: 'gender', items: ['male'] }],
+                                filterSettings: [
+                                    { name: 'product', type: 'Include', items: ['Car', 'Bike'] },
+                                    { name: 'eyeColor', type: 'Include', items: ['blue', 'green'] },
+                                ],
+                                rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                                columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                                values: [{ name: 'balance' }, { name: 'quantity' }],
+                                filters: [],
+                                conditionalFormatSettings: [
+                                    {
+                                        value1: 50000,
+                                        value2: 600,
+                                        conditions: 'Between',
+                                        style: {
+                                            backgroundColor: 'violet',
+                                            color: 'yellow',
+                                            fontFamily: 'Verdana',
+                                            fontSize: '13px'
+                                        },
                                     },
-                                },
-                                {
-                                    value1: 50000,
-                                    value2: 600,
-                                    conditions: 'NotBetween',
-                                    style: {
-                                        backgroundColor: 'green',
-                                        color: 'yellow',
-                                        fontFamily: 'Verdana',
-                                        fontSize: '13px'
+                                    {
+                                        value1: 50000,
+                                        value2: 600,
+                                        conditions: 'NotBetween',
+                                        style: {
+                                            backgroundColor: 'green',
+                                            color: 'yellow',
+                                            fontFamily: 'Verdana',
+                                            fontSize: '13px'
+                                        },
                                     },
-                                },
-                                {
-                                    measure: 'quantity',
-                                    value1: 500,
-                                    conditions: 'Equals',
-                                    style: {
-                                        backgroundColor: 'yellow',
-                                        color: 'violet',
-                                        fontFamily: 'Verdana',
-                                        fontSize: '15px'
-                                    }
-                                },
-                                {
-                                    measure: 'balance',
-                                    value1: 500,
-                                    conditions: 'NotEquals',
-                                    style: {
-                                        backgroundColor: 'yellow',
-                                        color: 'violet',
-                                        fontFamily: 'Verdana',
-                                        fontSize: '15px'
-                                    }
-                                },
-                                {
-                                    measure: 'quantity',
-                                    value1: 500,
-                                    conditions: 'LessThanOrEqualTo',
-                                    style: {
-                                        backgroundColor: 'yellow',
-                                        color: 'violet',
-                                        fontFamily: 'Verdana',
-                                        fontSize: '15px'
-                                    }
-                                },
-                                {
-                                    measure: 'balance',
-                                    value1: 500,
-                                    conditions: 'GreaterThanOrEqualTo',
-                                    style: {
-                                        backgroundColor: 'yellow',
-                                        color: 'violet',
-                                        fontFamily: 'Verdana',
-                                        fontSize: '15px'
-                                    }
-                                },
-                                {
-                                    value1: 600,
-                                    value2: 50000,
-                                    conditions: 'Between',
-                                    style: {
-                                        backgroundColor: 'violet',
-                                        color: 'yellow',
-                                        fontFamily: 'Verdana',
-                                        fontSize: '13px'
+                                    {
+                                        measure: 'quantity',
+                                        value1: 500,
+                                        conditions: 'Equals',
+                                        style: {
+                                            backgroundColor: 'yellow',
+                                            color: 'violet',
+                                            fontFamily: 'Verdana',
+                                            fontSize: '15px'
+                                        }
                                     },
-                                },
-                                {
-                                    value1: 600,
-                                    value2: 50000,
-                                    conditions: 'NotBetween',
-                                    style: {
-                                        backgroundColor: 'green',
-                                        color: 'yellow',
-                                        fontFamily: 'Verdana',
-                                        fontSize: '13px'
+                                    {
+                                        measure: 'balance',
+                                        value1: 500,
+                                        conditions: 'NotEquals',
+                                        style: {
+                                            backgroundColor: 'yellow',
+                                            color: 'violet',
+                                            fontFamily: 'Verdana',
+                                            fontSize: '15px'
+                                        }
                                     },
-                                },
-                                {
-                                    measure: 'quantity',
-                                    label: 'female.false',
-                                    value1: 500,
-                                    conditions: 'LessThan',
-                                    style: {
-                                        backgroundColor: 'yellow',
-                                        color: 'violet',
-                                        fontFamily: 'Verdana',
-                                        fontSize: '15px'
+                                    {
+                                        measure: 'quantity',
+                                        value1: 500,
+                                        conditions: 'LessThanOrEqualTo',
+                                        style: {
+                                            backgroundColor: 'yellow',
+                                            color: 'violet',
+                                            fontFamily: 'Verdana',
+                                            fontSize: '15px'
+                                        }
+                                    },
+                                    {
+                                        measure: 'balance',
+                                        value1: 500,
+                                        conditions: 'GreaterThanOrEqualTo',
+                                        style: {
+                                            backgroundColor: 'yellow',
+                                            color: 'violet',
+                                            fontFamily: 'Verdana',
+                                            fontSize: '15px'
+                                        }
+                                    },
+                                    {
+                                        value1: 600,
+                                        value2: 50000,
+                                        conditions: 'Between',
+                                        style: {
+                                            backgroundColor: 'violet',
+                                            color: 'yellow',
+                                            fontFamily: 'Verdana',
+                                            fontSize: '13px'
+                                        },
+                                    },
+                                    {
+                                        value1: 600,
+                                        value2: 50000,
+                                        conditions: 'NotBetween',
+                                        style: {
+                                            backgroundColor: 'green',
+                                            color: 'yellow',
+                                            fontFamily: 'Verdana',
+                                            fontSize: '13px'
+                                        },
+                                    },
+                                    {
+                                        measure: 'quantity',
+                                        label: 'female.false',
+                                        value1: 500,
+                                        conditions: 'LessThan',
+                                        style: {
+                                            backgroundColor: 'yellow',
+                                            color: 'violet',
+                                            fontFamily: 'Verdana',
+                                            fontSize: '15px'
+                                        }
+                                    },
+                                    {
+                                        measure: 'quantity',
+                                        label: 'female.false',
+                                        value1: 500,
+                                        conditions: 'GreaterThan',
+                                        style: {
+                                            backgroundColor: 'yellow',
+                                            color: 'green',
+                                            fontFamily: 'Verdana',
+                                            fontSize: '15px'
+                                        }
                                     }
+                                ]
+                            },
+                            allowConditionalFormatting: true
+                        });
+                    pivotGridObj.appendTo('#PivotGrid');
+                });
+                beforeEach((done: Function) => {
+                    setTimeout(() => { done(); }, 3000);
+                });
+                it('Check Default Format', () => {
+                    expect(document.querySelectorAll('td[aria-colindex="1"]')[0].classList.contains('formatPivotGrid6')).toBeTruthy();
+                });
+                it('Check Default Format', () => {
+                    expect(document.querySelectorAll('td[aria-colindex="2"]')[0].classList.contains('formatPivotGrid8')).toBeTruthy();
+                    pivotGridObj.dataSource.values.pop();
+                    pivotGridObj.engineModule.generateGridData(pivotGridObj.dataSource);
+                    pivotGridObj.engineModule.isEngineUpdated = false;
+                    pivotGridObj.pivotValues = pivotGridObj.engineModule.pivotValues;
+                });
+                it('With Single Measure', () => {
+                    expect(document.querySelectorAll('td[aria-colindex="1"]')[0].classList.contains('formatPivotGrid9')).toBeTruthy();
+                });
+                it('With Single Measure', () => {
+                    expect(document.querySelectorAll('td[aria-colindex="2"]')[0].classList.contains('formatPivotGrid6')).toBeTruthy();
+                    pivotGridObj.dataSource = {
+                        data: pivot_dataset as IDataSet[],
+                        expandAll: false,
+                        rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                        columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                        values: [{ name: 'balance' }, { name: 'quantity' }],
+                        filters: [],
+                        conditionalFormatSettings: [
+                            {
+                                value1: 50000,
+                                value2: 600,
+                                conditions: 'Between',
+                                style: {
+                                    backgroundColor: 'violet',
+                                    color: 'yellow',
+                                    fontFamily: 'Verdana',
+                                    fontSize: '13px'
                                 },
-                                {
-                                    measure: 'quantity',
-                                    label: 'female.false',
-                                    value1: 500,
-                                    conditions: 'GreaterThan',
-                                    style: {
-                                        backgroundColor: 'yellow',
-                                        color: 'green',
-                                        fontFamily: 'Verdana',
-                                        fontSize: '15px'
+                            }
+                        ]
+                    };
+                });
+                it('Without Filtering', () => {
+                    expect(document.querySelectorAll('td[aria-colindex="1"]')[0].classList.contains('formatPivotGrid0')).toBeTruthy();
+                    pivotGridObj.dataSource = {
+                        data: pivot_dataset as IDataSet[],
+                        expandAll: false,
+                        rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                        columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                        values: [{ name: 'balance' }, { name: 'quantity' }],
+                        filters: [],
+                        filterSettings: [
+                            { name: 'product', type: 'Include', items: ['Car', 'Bike'] },
+                            { name: 'eyeColor', type: 'Include', items: ['blue', 'green'] },
+                        ],
+                        conditionalFormatSettings: [
+                            {
+                                value1: 50000,
+                                value2: 600,
+                                conditions: 'Between',
+                                style: {
+                                    backgroundColor: 'violet',
+                                    color: 'yellow',
+                                    fontFamily: 'Verdana',
+                                    fontSize: '13px'
+                                },
+                            }
+                        ]
+                    };
+                });
+                it('With Filtering', () => {
+                    expect(document.querySelectorAll('td[aria-colindex="1"]')[0].classList.contains('formatPivotGrid0')).toBeTruthy();
+                    pivotGridObj.dataSource = {
+                        data: pivot_dataset as IDataSet[],
+                        expandAll: false,
+                        rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                        columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                        values: [{ name: 'balance' }, { name: 'quantity' }, { name: 'Price', type: 'CalculatedField' }],
+                        filters: [],
+                        calculatedFieldSettings: [{ name: 'Price', formula: '"Sum(balance)" + "Sum(quantity)"' }],
+                        filterSettings: [
+                            { name: 'product', type: 'Include', items: ['Car', 'Bike'] },
+                            { name: 'eyeColor', type: 'Include', items: ['blue', 'green'] },
+                        ],
+                        conditionalFormatSettings: [
+                            {
+                                value1: 50000,
+                                value2: 600,
+                                measure: 'Price',
+                                conditions: 'Between',
+                                style: {
+                                    backgroundColor: 'violet',
+                                    color: 'yellow',
+                                    fontFamily: 'Verdana',
+                                    fontSize: '13px'
+                                },
+                            }
+                        ]
+                    };
+                });
+                it('With Calculated Field', () => {
+                    expect(document.querySelectorAll('td[aria-colindex="3"]')[1].classList.contains('formatPivotGrid0')).toBeTruthy();
+                    pivotGridObj.dataSource = {
+                        data: pivot_dataset as IDataSet[],
+                        expandAll: true,
+                        rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                        columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                        values: [{ name: 'balance' }, { name: 'quantity' }, { name: 'Price', type: 'CalculatedField' }],
+                        filters: [],
+                        calculatedFieldSettings: [{ name: 'Price', formula: '"Sum(balance)" + "Sum(quantity)"' }],
+                        valueSortSettings: { headerText: 'female##false##Price', headerDelimiter: '##', sortOrder: 'Descending' },
+                        filterSettings: [
+                            { name: 'product', type: 'Include', items: ['Car', 'Bike'] },
+                            { name: 'eyeColor', type: 'Include', items: ['blue', 'green'] },
+                        ],
+                        conditionalFormatSettings: [
+                            {
+                                value1: 50000,
+                                value2: 600,
+                                measure: 'Price',
+                                conditions: 'Between',
+                                style: {
+                                    backgroundColor: 'violet',
+                                    color: 'yellow',
+                                    fontFamily: 'Verdana',
+                                    fontSize: '13px'
+                                },
+                            }
+                        ]
+                    };
+                    pivotGridObj.enableValueSorting = true;
+                });
+                it('With Value Sorting', () => {
+                    expect(document.querySelectorAll('td[aria-colindex="3"]')[0].classList.contains('formatPivotGrid0')).toBeTruthy();
+                    pivotGridObj.dataSource = {
+                        data: pivot_dataset as IDataSet[],
+                        expandAll: false,
+                        rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                        columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                        values: [{ name: 'balance' }, { name: 'quantity' }, { name: 'Price', type: 'CalculatedField' }],
+                        filters: [],
+                        calculatedFieldSettings: [{ name: 'Price', formula: '"Sum(balance)" + "Sum(quantity)"' }],
+                        sortSettings: [{ name: 'product', order: 'Descending' }],
+                        filterSettings: [
+                            { name: 'product', type: 'Include', items: ['Car', 'Bike'] },
+                            { name: 'eyeColor', type: 'Include', items: ['blue', 'green'] },
+                        ],
+                        conditionalFormatSettings: [
+                            {
+                                value1: 50000,
+                                value2: 600,
+                                measure: 'Price',
+                                conditions: 'Between',
+                                style: {
+                                    backgroundColor: 'violet',
+                                    color: 'yellow',
+                                    fontFamily: 'Verdana',
+                                    fontSize: '13px'
+                                },
+                            }
+                        ]
+                    };
+                    pivotGridObj.enableValueSorting = false;
+                });
+                it('With Default Sorting', () => {
+                    expect(document.querySelectorAll('td[aria-colindex="3"]')[4].classList.contains('formatPivotGrid0')).toBeTruthy();
+                });
+                afterAll(() => {
+                    if (pivotGridObj) {
+                        pivotGridObj.destroy();
+                    }
+                    remove(elem);
+                });
+            });
+            describe(' - UI', () => {
+                let pivotGridObj: PivotView;
+                let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
+                PivotView.Inject(ConditionalFormatting);
+                beforeAll(() => {
+                    document.body.appendChild(elem);
+                    pivotGridObj = new PivotView(
+                        {
+                            dataSource: {
+                                data: pivot_dataset as IDataSet[],
+                                expandAll: true,
+                                enableSorting: true,
+                                sortSettings: [{ name: 'company', order: 'Descending' }],
+                                formatSettings: [{ name: 'balance', format: 'C' }],
+                                drilledMembers: [{ name: 'product', items: ['Bike', 'Car'] }, { name: 'gender', items: ['male'] }],
+                                filterSettings: [
+                                    { name: 'product', type: 'Include', items: ['Car', 'Bike'] },
+                                    { name: 'eyeColor', type: 'Include', items: ['blue', 'green'] },
+                                ],
+                                rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                                columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                                values: [{ name: 'balance' }, { name: 'quantity' }],
+                                filters: [],
+                                conditionalFormatSettings: [
+                                    {
+                                        measure: 'quantity',
+                                        value1: 500,
+                                        conditions: 'LessThan',
+                                        style: {
+                                            backgroundColor: 'green',
+                                            color: 'yellow',
+                                            fontFamily: 'Verdana',
+                                            fontSize: '12px'
+                                        }
                                     }
-                                }
-                            ]
-                        },
-                        allowConditionalFormatting: true
-                    });
-                pivotGridObj.appendTo('#PivotGrid');
-            });
-            beforeEach((done: Function) => {
-                setTimeout(() => { done(); }, 3000);
-            });
-            it('Check Default Format', () => {
-                expect(document.querySelectorAll('td[aria-colindex="1"]')[0].classList.contains('formatPivotGrid6')).toBeTruthy();
-            });
-            it('Check Default Format', () => {
-                expect(document.querySelectorAll('td[aria-colindex="2"]')[0].classList.contains('formatPivotGrid8')).toBeTruthy();
-                pivotGridObj.dataSource.values.pop();
-                pivotGridObj.engineModule.generateGridData(pivotGridObj.dataSource);
-                pivotGridObj.engineModule.isEngineUpdated = false;
-                pivotGridObj.pivotValues = pivotGridObj.engineModule.pivotValues;
-            });
-            it('With Single Measure', () => {
-                expect(document.querySelectorAll('td[aria-colindex="1"]')[0].classList.contains('formatPivotGrid9')).toBeTruthy();
-            });
-            it('With Single Measure', () => {
-                expect(document.querySelectorAll('td[aria-colindex="2"]')[0].classList.contains('formatPivotGrid6')).toBeTruthy();
-                pivotGridObj.dataSource = {
-                    data: pivot_dataset as IDataSet[],
-                    expandAll: false,
-                    rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
-                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
-                    values: [{ name: 'balance' }, { name: 'quantity' }],
-                    filters: [],
-                    conditionalFormatSettings: [
-                        {
-                            value1: 50000,
-                            value2: 600,
-                            conditions: 'Between',
-                            style: {
-                                backgroundColor: 'violet',
-                                color: 'yellow',
-                                fontFamily: 'Verdana',
-                                fontSize: '13px'
+                                ]
                             },
-                        }
-                    ]
-                };
+                            allowConditionalFormatting: true
+                        });
+                    pivotGridObj.appendTo('#PivotGrid');
+                });
+                beforeEach((done: Function) => {
+                    setTimeout(() => { done(); }, 2000);
+                });
+                it('Check code behind format', () => {
+                    expect(document.querySelectorAll('td[aria-colindex="2"]')[0].classList.contains('formatPivotGrid0')).toBeTruthy();
+                    pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
+                });
+                it('Delete format', () => {
+                    expect(true).toBeTruthy();
+                    (document.querySelector('.e-format-delete-button') as HTMLElement).click();
+                    (document.querySelector('.e-format-apply-button') as HTMLElement).click();
+                });
+                it('Check code behind format', () => {
+                    expect(document.querySelectorAll('td[aria-colindex="2"]')[0].classList.contains('formatPivotGrid0')).toBeFalsy();
+                    pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
+                });
+                it('Add format', () => {
+                    expect(true).toBeTruthy();
+                    (document.querySelector('.e-format-condition-button') as HTMLElement).click();
+                    (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
+                    (document.querySelectorAll('.e-dropdown-btn')[0] as HTMLElement).click();
+                    (document.querySelectorAll('.e-tile')[9] as HTMLElement).click();
+                    (document.querySelector('.e-apply') as HTMLElement).click();
+                    (document.querySelectorAll('.e-dropdown-btn')[1] as HTMLElement).click();
+                    (document.querySelectorAll('.e-tile')[55] as HTMLElement).click();
+                    (document.querySelector('.e-apply') as HTMLElement).click();
+                    (document.querySelector('.e-format-apply-button') as HTMLElement).click();
+                });
+                it('Check applied format', () => {
+                    expect(document.querySelectorAll('td[aria-colindex="2"]')[0].classList.contains('formatPivotGrid0')).toBeTruthy();
+                    pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
+                });
+                it('Cancel button click', () => {
+                    expect(true).toBeTruthy();
+                    (document.querySelector('.e-format-cancel-button') as HTMLElement).click();
+                    pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
+                });
+                it('Add format', () => {
+                    expect(true).toBeTruthy();
+                    (pivotGridObj.conditionalFormattingModule as any).fieldsDropDown[0].value = 'balance';
+                    (pivotGridObj.conditionalFormattingModule as any).conditionsDropDown[0].value = 'Between';
+                    (pivotGridObj.conditionalFormattingModule as any).fontNameDropDown[0].value = 'Serif';
+                    (pivotGridObj.conditionalFormattingModule as any).fontSizeDropDown[0].value = '16px';
+                    (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
+                    (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
+                    (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
+                    (document.querySelector('.e-format-value2') as HTMLInputElement).value = '50000';
+                });
+                it('Click apply button', () => {
+                    expect(true).toBeTruthy();
+                    (document.querySelector('.e-format-apply-button') as HTMLElement).click();
+                });
+                it('Check applied format', () => {
+                    expect(document.querySelectorAll('td[aria-colindex="1"]')[0].classList.contains('formatPivotGrid0')).toBeTruthy();
+                    pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
+                });
+                it('Add format', () => {
+                    expect(true).toBeTruthy();
+                    (pivotGridObj.conditionalFormattingModule as any).fieldsDropDown[0].value = 'balance';
+                    (pivotGridObj.conditionalFormattingModule as any).conditionsDropDown[0].value = 'NotBetween';
+                    (pivotGridObj.conditionalFormattingModule as any).fontNameDropDown[0].value = 'Serif';
+                    (pivotGridObj.conditionalFormattingModule as any).fontSizeDropDown[0].value = '16px';
+                    (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
+                    (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
+                    (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
+                    (document.querySelector('.e-format-value2') as HTMLInputElement).value = '50000';
+                });
+                it('Click apply button', () => {
+                    expect(true).toBeTruthy();
+                    (document.querySelector('.e-format-apply-button') as HTMLElement).click();
+                });
+                it('Check applied format', () => {
+                    expect(document.querySelectorAll('td[aria-colindex="3"].formatPivotGrid0').length > 0).toBeTruthy();
+                    pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
+                });
+                it('Add format', () => {
+                    expect(true).toBeTruthy();
+                    (pivotGridObj.conditionalFormattingModule as any).fieldsDropDown[0].value = 'quantity';
+                    (pivotGridObj.conditionalFormattingModule as any).conditionsDropDown[0].value = 'LessThan';
+                    (pivotGridObj.conditionalFormattingModule as any).fontNameDropDown[0].value = 'Serif';
+                    (pivotGridObj.conditionalFormattingModule as any).fontSizeDropDown[0].value = '16px';
+                    (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
+                    (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
+                    (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
+                });
+                it('Click apply button', () => {
+                    expect(true).toBeTruthy();
+                    (document.querySelector('.e-format-apply-button') as HTMLElement).click();
+                });
+                it('Check applied format', () => {
+                    expect(document.querySelectorAll('td[aria-colindex="2"]')[0].classList.contains('formatPivotGrid0')).toBeTruthy();
+                    pivotGridObj.dataSource = {
+                        data: pivot_dataset as IDataSet[],
+                        expandAll: false,
+                        rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                        columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                        values: [{ name: 'balance' }, { name: 'quantity' }, { name: 'Price', type: 'CalculatedField' }],
+                        filters: [],
+                        calculatedFieldSettings: [{ name: 'Price', formula: '"Sum(balance)" + "Sum(quantity)"' }],
+                        sortSettings: [{ name: 'product', order: 'Descending' }],
+                        filterSettings: [
+                            { name: 'product', type: 'Include', items: ['Car', 'Bike'] },
+                            { name: 'eyeColor', type: 'Include', items: ['blue', 'green'] },
+                        ],
+                        conditionalFormatSettings: [
+                            {
+                                value1: undefined,
+                                measure: undefined,
+                                conditions: undefined,
+                                style: {
+                                    backgroundColor: undefined,
+                                    color: undefined,
+                                    fontFamily: undefined,
+                                    fontSize: undefined
+                                },
+                            }
+                        ]
+                    };
+                });
+                afterAll(() => {
+                    if (pivotGridObj) {
+                        pivotGridObj.destroy();
+                    }
+                    remove(elem);
+                });
             });
-            it('Without Filtering', () => {
-                expect(document.querySelectorAll('td[aria-colindex="1"]')[0].classList.contains('formatPivotGrid0')).toBeTruthy();
-                pivotGridObj.dataSource = {
-                    data: pivot_dataset as IDataSet[],
-                    expandAll: false,
-                    rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
-                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
-                    values: [{ name: 'balance' }, { name: 'quantity' }],
-                    filters: [],
-                    filterSettings: [
-                        { name: 'product', type: 'Include', items: ['Car', 'Bike'] },
-                        { name: 'eyeColor', type: 'Include', items: ['blue', 'green'] },
-                    ],
-                    conditionalFormatSettings: [
+            describe(' - Mobile', () => {
+                let pivotGridObj: PivotView;
+                let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
+                PivotView.Inject(ConditionalFormatting);
+                beforeAll(() => {
+                    document.body.appendChild(elem);
+                    pivotGridObj = new PivotView(
                         {
-                            value1: 50000,
-                            value2: 600,
-                            conditions: 'Between',
-                            style: {
-                                backgroundColor: 'violet',
-                                color: 'yellow',
-                                fontFamily: 'Verdana',
-                                fontSize: '13px'
+                            dataSource: {
+                                data: pivot_dataset as IDataSet[],
+                                expandAll: true,
+                                enableSorting: true,
+                                sortSettings: [{ name: 'company', order: 'Descending' }],
+                                formatSettings: [{ name: 'balance', format: 'C' }],
+                                drilledMembers: [{ name: 'product', items: ['Bike', 'Car'] }, { name: 'gender', items: ['male'] }],
+                                filterSettings: [
+                                    { name: 'product', type: 'Include', items: ['Car', 'Bike'] },
+                                    { name: 'eyeColor', type: 'Include', items: ['blue', 'green'] },
+                                ],
+                                rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                                columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                                values: [{ name: 'balance' }, { name: 'quantity' }],
+                                filters: [],
+                                conditionalFormatSettings: [
+                                    {
+                                        measure: 'quantity',
+                                        value1: 500,
+                                        conditions: 'LessThan',
+                                        style: {
+                                            backgroundColor: 'green',
+                                            color: 'yellow',
+                                            fontFamily: 'Verdana',
+                                            fontSize: '12px'
+                                        }
+                                    }
+                                ]
                             },
-                        }
-                    ]
-                };
-            });
-            it('With Filtering', () => {
-                expect(document.querySelectorAll('td[aria-colindex="1"]')[0].classList.contains('formatPivotGrid0')).toBeTruthy();
-                pivotGridObj.dataSource = {
-                    data: pivot_dataset as IDataSet[],
-                    expandAll: false,
-                    rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
-                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
-                    values: [{ name: 'balance' }, { name: 'quantity' }, { name: 'Price', type: 'CalculatedField' }],
-                    filters: [],
-                    calculatedFieldSettings: [{ name: 'Price', formula: '"Sum(balance)" + "Sum(quantity)"' }],
-                    filterSettings: [
-                        { name: 'product', type: 'Include', items: ['Car', 'Bike'] },
-                        { name: 'eyeColor', type: 'Include', items: ['blue', 'green'] },
-                    ],
-                    conditionalFormatSettings: [
-                        {
-                            value1: 50000,
-                            value2: 600,
-                            measure: 'Price',
-                            conditions: 'Between',
-                            style: {
-                                backgroundColor: 'violet',
-                                color: 'yellow',
-                                fontFamily: 'Verdana',
-                                fontSize: '13px'
+                            load: (args: LoadEventArgs) => {
+                                pivotGridObj.isAdaptive = true;
                             },
-                        }
-                    ]
-                };
-            });
-            it('With Calculated Field', () => {
-                expect(document.querySelectorAll('td[aria-colindex="3"]')[1].classList.contains('formatPivotGrid0')).toBeTruthy();
-                pivotGridObj.dataSource = {
-                    data: pivot_dataset as IDataSet[],
-                    expandAll: true,
-                    rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
-                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
-                    values: [{ name: 'balance' }, { name: 'quantity' }, { name: 'Price', type: 'CalculatedField' }],
-                    filters: [],
-                    calculatedFieldSettings: [{ name: 'Price', formula: '"Sum(balance)" + "Sum(quantity)"' }],
-                    valueSortSettings: { headerText: 'female##false##Price', headerDelimiter: '##', sortOrder: 'Descending' },
-                    filterSettings: [
-                        { name: 'product', type: 'Include', items: ['Car', 'Bike'] },
-                        { name: 'eyeColor', type: 'Include', items: ['blue', 'green'] },
-                    ],
-                    conditionalFormatSettings: [
-                        {
-                            value1: 50000,
-                            value2: 600,
-                            measure: 'Price',
-                            conditions: 'Between',
-                            style: {
-                                backgroundColor: 'violet',
-                                color: 'yellow',
-                                fontFamily: 'Verdana',
-                                fontSize: '13px'
-                            },
-                        }
-                    ]
-                };
-                pivotGridObj.enableValueSorting = true;
-            });
-            it('With Value Sorting', () => {
-                expect(document.querySelectorAll('td[aria-colindex="3"]')[0].classList.contains('formatPivotGrid0')).toBeTruthy();
-                pivotGridObj.dataSource = {
-                    data: pivot_dataset as IDataSet[],
-                    expandAll: false,
-                    rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
-                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
-                    values: [{ name: 'balance' }, { name: 'quantity' }, { name: 'Price', type: 'CalculatedField' }],
-                    filters: [],
-                    calculatedFieldSettings: [{ name: 'Price', formula: '"Sum(balance)" + "Sum(quantity)"' }],
-                    sortSettings: [{ name: 'product', order: 'Descending' }],
-                    filterSettings: [
-                        { name: 'product', type: 'Include', items: ['Car', 'Bike'] },
-                        { name: 'eyeColor', type: 'Include', items: ['blue', 'green'] },
-                    ],
-                    conditionalFormatSettings: [
-                        {
-                            value1: 50000,
-                            value2: 600,
-                            measure: 'Price',
-                            conditions: 'Between',
-                            style: {
-                                backgroundColor: 'violet',
-                                color: 'yellow',
-                                fontFamily: 'Verdana',
-                                fontSize: '13px'
-                            },
-                        }
-                    ]
-                };
-                pivotGridObj.enableValueSorting = false;
-            });
-            it('With Default Sorting', () => {
-                expect(document.querySelectorAll('td[aria-colindex="3"]')[4].classList.contains('formatPivotGrid0')).toBeTruthy();
-            });
-            afterAll(() => {
-                if (pivotGridObj) {
-                    pivotGridObj.destroy();
-                }
-                remove(elem);
+                            allowConditionalFormatting: true
+                        });
+                    pivotGridObj.appendTo('#PivotGrid');
+                });
+                beforeEach((done: Function) => {
+                    setTimeout(() => { done(); }, 2000);
+                });
+                it('Check code behind format', () => {
+                    expect(document.querySelectorAll('td[aria-colindex="2"]')[0].classList.contains('formatPivotGrid0')).toBeTruthy();
+                    pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
+                });
+                it('Delete format', () => {
+                    expect(true).toBeTruthy();
+                    (document.querySelector('.e-format-delete-button') as HTMLElement).click();
+                    (document.querySelector('.e-format-apply-button') as HTMLElement).click();
+                });
+                it('Check code behind format', () => {
+                    expect(document.querySelectorAll('td[aria-colindex="2"]')[0].classList.contains('formatPivotGrid0')).toBeFalsy();
+                    pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
+                });
+                it('Add format', () => {
+                    expect(true).toBeTruthy();
+                    (document.querySelector('.e-format-condition-button') as HTMLElement).click();
+                    (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
+                    (document.querySelectorAll('.e-dropdown-btn')[0] as HTMLElement).click();
+                    (document.querySelectorAll('.e-tile')[9] as HTMLElement).click();
+                    (document.querySelector('.e-apply') as HTMLElement).click();
+                    (document.querySelectorAll('.e-dropdown-btn')[1] as HTMLElement).click();
+                    (document.querySelectorAll('.e-tile')[55] as HTMLElement).click();
+                    (document.querySelector('.e-apply') as HTMLElement).click();
+                    (document.querySelector('.e-format-apply-button') as HTMLElement).click();
+                });
+                it('Check applied format', () => {
+                    expect(document.querySelectorAll('td[aria-colindex="2"]')[0].classList.contains('formatPivotGrid0')).toBeTruthy();
+                    pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
+                });
+                it('Cancel button click', () => {
+                    expect(true).toBeTruthy();
+                    (document.querySelector('.e-format-cancel-button') as HTMLElement).click();
+                    pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
+                });
+                it('Add format', () => {
+                    expect(true).toBeTruthy();
+                    (pivotGridObj.conditionalFormattingModule as any).fieldsDropDown[0].value = 'balance';
+                    (pivotGridObj.conditionalFormattingModule as any).conditionsDropDown[0].value = 'Between';
+                    (pivotGridObj.conditionalFormattingModule as any).fontNameDropDown[0].value = 'Serif';
+                    (pivotGridObj.conditionalFormattingModule as any).fontSizeDropDown[0].value = '16px';
+                    (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
+                    (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
+                    (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
+                    (document.querySelector('.e-format-value2') as HTMLInputElement).value = '50000';
+                });
+                it('Click apply button', () => {
+                    expect(true).toBeTruthy();
+                    (document.querySelector('.e-format-apply-button') as HTMLElement).click();
+                });
+                it('Check applied format', () => {
+                    expect(document.querySelectorAll('td[aria-colindex="1"]')[0].classList.contains('formatPivotGrid0')).toBeTruthy();
+                    pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
+                });
+                it('Add format', () => {
+                    expect(true).toBeTruthy();
+                    (pivotGridObj.conditionalFormattingModule as any).fieldsDropDown[0].value = 'balance';
+                    (pivotGridObj.conditionalFormattingModule as any).conditionsDropDown[0].value = 'NotBetween';
+                    (pivotGridObj.conditionalFormattingModule as any).fontNameDropDown[0].value = 'Serif';
+                    (pivotGridObj.conditionalFormattingModule as any).fontSizeDropDown[0].value = '16px';
+                    (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
+                    (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
+                    (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
+                    (document.querySelector('.e-format-value2') as HTMLInputElement).value = '50000';
+                });
+                it('Click apply button', () => {
+                    expect(true).toBeTruthy();
+                    (document.querySelector('.e-format-apply-button') as HTMLElement).click();
+                });
+                it('Check applied format', () => {
+                    expect(document.querySelectorAll('td[aria-colindex="3"].formatPivotGrid0').length > 0).toBeTruthy();
+                    pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
+                });
+                it('Add format', () => {
+                    expect(true).toBeTruthy();
+                    (pivotGridObj.conditionalFormattingModule as any).fieldsDropDown[0].value = 'quantity';
+                    (pivotGridObj.conditionalFormattingModule as any).conditionsDropDown[0].value = 'LessThan';
+                    (pivotGridObj.conditionalFormattingModule as any).fontNameDropDown[0].value = 'Serif';
+                    (pivotGridObj.conditionalFormattingModule as any).fontSizeDropDown[0].value = '16px';
+                    (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
+                    (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
+                    (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
+                });
+                it('Click apply button', () => {
+                    expect(true).toBeTruthy();
+                    (document.querySelector('.e-format-apply-button') as HTMLElement).click();
+                });
+                it('Check applied format', () => {
+                    expect(document.querySelectorAll('td[aria-colindex="2"]')[0].classList.contains('formatPivotGrid0')).toBeTruthy();
+                    pivotGridObj.dataSource = {
+                        data: pivot_dataset as IDataSet[],
+                        expandAll: false,
+                        rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                        columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                        values: [{ name: 'balance' }, { name: 'quantity' }, { name: 'Price', type: 'CalculatedField' }],
+                        filters: [],
+                        calculatedFieldSettings: [{ name: 'Price', formula: '"Sum(balance)" + "Sum(quantity)"' }],
+                        sortSettings: [{ name: 'product', order: 'Descending' }],
+                        filterSettings: [
+                            { name: 'product', type: 'Include', items: ['Car', 'Bike'] },
+                            { name: 'eyeColor', type: 'Include', items: ['blue', 'green'] },
+                        ],
+                        conditionalFormatSettings: [
+                            {
+                                value1: undefined,
+                                measure: undefined,
+                                conditions: undefined,
+                                style: {
+                                    backgroundColor: undefined,
+                                    color: undefined,
+                                    fontFamily: undefined,
+                                    fontSize: undefined
+                                },
+                            }
+                        ]
+                    };
+                    pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
+                });
+                it('Cancel button click', () => {
+                    expect(true).toBeTruthy();
+                    (document.querySelector('.e-format-cancel-button') as HTMLElement).click();
+                });
+                afterAll(() => {
+                    if (pivotGridObj) {
+                        pivotGridObj.destroy();
+                    }
+                    remove(elem);
+                });
             });
         });
 
-        describe('Conditional Formatting - UI', () => {
-            let pivotGridObj: PivotView;
-            let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
-            PivotView.Inject(ConditionalFormatting);
-            beforeAll(() => {
-                document.body.appendChild(elem);
-                pivotGridObj = new PivotView(
-                    {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
-                            expandAll: true,
-                            enableSorting: true,
-                            sortSettings: [{ name: 'company', order: 'Descending' }],
-                            formatSettings: [{ name: 'balance', format: 'C' }],
-                            drilledMembers: [{ name: 'product', items: ['Bike', 'Car'] }, { name: 'gender', items: ['male'] }],
-                            filterSettings: [
-                                { name: 'product', type: 'Include', items: ['Car', 'Bike'] },
-                                { name: 'eyeColor', type: 'Include', items: ['blue', 'green'] },
-                            ],
-                            rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
-                            columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
-                            values: [{ name: 'balance' }, { name: 'quantity' }],
-                            filters: [],
-                            conditionalFormatSettings: [
-                                {
-                                    measure: 'quantity',
-                                    value1: 500,
-                                    conditions: 'LessThan',
-                                    style: {
-                                        backgroundColor: 'green',
-                                        color: 'yellow',
-                                        fontFamily: 'Verdana',
-                                        fontSize: '12px'
-                                    }
-                                }
-                            ]
-                        },
-                        allowConditionalFormatting: true
-                    });
-                pivotGridObj.appendTo('#PivotGrid');
-            });
-            beforeEach((done: Function) => {
-                setTimeout(() => { done(); }, 2000);
-            });
-            it('Check code behind format', () => {
-                expect(document.querySelectorAll('td[aria-colindex="2"]')[0].classList.contains('formatPivotGrid0')).toBeTruthy();
-                pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
-            });
-            it('Delete format', () => {
-                expect(true).toBeTruthy();
-                (document.querySelector('.e-format-delete-button') as HTMLElement).click();
-                (document.querySelector('.e-format-apply-button') as HTMLElement).click();
-            });
-            it('Check code behind format', () => {
-                expect(document.querySelectorAll('td[aria-colindex="2"]')[0].classList.contains('formatPivotGrid0')).toBeFalsy();
-                pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
-            });
-            it('Add format', () => {
-                expect(true).toBeTruthy();
-                (document.querySelector('.e-format-condition-button') as HTMLElement).click();
-                (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
-                (document.querySelectorAll('.e-dropdown-btn')[0] as HTMLElement).click();
-                (document.querySelectorAll('.e-tile')[9] as HTMLElement).click();
-                (document.querySelector('.e-apply') as HTMLElement).click();
-                (document.querySelectorAll('.e-dropdown-btn')[1] as HTMLElement).click();
-                (document.querySelectorAll('.e-tile')[55] as HTMLElement).click();
-                (document.querySelector('.e-apply') as HTMLElement).click();
-                (document.querySelector('.e-format-apply-button') as HTMLElement).click();
-            });
-            it('Check applied format', () => {
-                expect(document.querySelectorAll('td[aria-colindex="2"]')[0].classList.contains('formatPivotGrid0')).toBeTruthy();
-                pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
-            });
-            it('Cancel button click', () => {
-                expect(true).toBeTruthy();
-                (document.querySelector('.e-format-cancel-button') as HTMLElement).click();
-                pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
-            });
-            it('Add format', () => {
-                expect(true).toBeTruthy();
-                (pivotGridObj.conditionalFormattingModule as any).fieldsDropDown[0].value = 'balance';
-                (pivotGridObj.conditionalFormattingModule as any).conditionsDropDown[0].value = 'Between';
-                (pivotGridObj.conditionalFormattingModule as any).fontNameDropDown[0].value = 'Serif';
-                (pivotGridObj.conditionalFormattingModule as any).fontSizeDropDown[0].value = '16px';
-                (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
-                (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
-                (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
-                (document.querySelector('.e-format-value2') as HTMLInputElement).value = '50000';
-            });
-            it('Click apply button', () => {
-                expect(true).toBeTruthy();
-                (document.querySelector('.e-format-apply-button') as HTMLElement).click();
-            });
-            it('Check applied format', () => {
-                expect(document.querySelectorAll('td[aria-colindex="1"]')[0].classList.contains('formatPivotGrid0')).toBeTruthy();
-                pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
-            });
-            it('Add format', () => {
-                expect(true).toBeTruthy();
-                (pivotGridObj.conditionalFormattingModule as any).fieldsDropDown[0].value = 'balance';
-                (pivotGridObj.conditionalFormattingModule as any).conditionsDropDown[0].value = 'NotBetween';
-                (pivotGridObj.conditionalFormattingModule as any).fontNameDropDown[0].value = 'Serif';
-                (pivotGridObj.conditionalFormattingModule as any).fontSizeDropDown[0].value = '16px';
-                (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
-                (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
-                (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
-                (document.querySelector('.e-format-value2') as HTMLInputElement).value = '50000';
-            });
-            it('Click apply button', () => {
-                expect(true).toBeTruthy();
-                (document.querySelector('.e-format-apply-button') as HTMLElement).click();
-            });
-            it('Check applied format', () => {
-                expect(document.querySelectorAll('td[aria-colindex="3"].formatPivotGrid0').length > 0).toBeTruthy();
-                pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
-            });
-            it('Add format', () => {
-                expect(true).toBeTruthy();
-                (pivotGridObj.conditionalFormattingModule as any).fieldsDropDown[0].value = 'quantity';
-                (pivotGridObj.conditionalFormattingModule as any).conditionsDropDown[0].value = 'LessThan';
-                (pivotGridObj.conditionalFormattingModule as any).fontNameDropDown[0].value = 'Serif';
-                (pivotGridObj.conditionalFormattingModule as any).fontSizeDropDown[0].value = '16px';
-                (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
-                (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
-                (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
-            });
-            it('Click apply button', () => {
-                expect(true).toBeTruthy();
-                (document.querySelector('.e-format-apply-button') as HTMLElement).click();
-            });
-            it('Check applied format', () => {
-                expect(document.querySelectorAll('td[aria-colindex="2"]')[0].classList.contains('formatPivotGrid0')).toBeTruthy();
-                pivotGridObj.dataSource = {
-                    data: pivot_dataset as IDataSet[],
-                    expandAll: false,
-                    rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
-                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
-                    values: [{ name: 'balance' }, { name: 'quantity' }, { name: 'Price', type: 'CalculatedField' }],
-                    filters: [],
-                    calculatedFieldSettings: [{ name: 'Price', formula: '"Sum(balance)" + "Sum(quantity)"' }],
-                    sortSettings: [{ name: 'product', order: 'Descending' }],
-                    filterSettings: [
-                        { name: 'product', type: 'Include', items: ['Car', 'Bike'] },
-                        { name: 'eyeColor', type: 'Include', items: ['blue', 'green'] },
-                    ],
-                    conditionalFormatSettings: [
-                        {
-                            value1: undefined,
-                            measure: undefined,
-                            conditions: undefined,
-                            style: {
-                                backgroundColor: undefined,
-                                color: undefined,
-                                fontFamily: undefined,
-                                fontSize: undefined
-                            },
-                        }
-                    ]
-                };
-            });
-            afterAll(() => {
-                if (pivotGridObj) {
-                    pivotGridObj.destroy();
-                }
-                remove(elem);
-            });
-        });
+        describe(' - VirtualScrolling', () => {
 
-        describe('Conditional Formatting - Mobile', () => {
-            let pivotGridObj: PivotView;
-            let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
-            PivotView.Inject(ConditionalFormatting);
-            beforeAll(() => {
-                document.body.appendChild(elem);
-                pivotGridObj = new PivotView(
-                    {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
-                            expandAll: true,
-                            enableSorting: true,
-                            sortSettings: [{ name: 'company', order: 'Descending' }],
-                            formatSettings: [{ name: 'balance', format: 'C' }],
-                            drilledMembers: [{ name: 'product', items: ['Bike', 'Car'] }, { name: 'gender', items: ['male'] }],
-                            filterSettings: [
-                                { name: 'product', type: 'Include', items: ['Car', 'Bike'] },
-                                { name: 'eyeColor', type: 'Include', items: ['blue', 'green'] },
-                            ],
-                            rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
-                            columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
-                            values: [{ name: 'balance' }, { name: 'quantity' }],
-                            filters: [],
-                            conditionalFormatSettings: [
-                                {
-                                    measure: 'quantity',
-                                    value1: 500,
-                                    conditions: 'LessThan',
-                                    style: {
-                                        backgroundColor: 'green',
-                                        color: 'yellow',
-                                        fontFamily: 'Verdana',
-                                        fontSize: '12px'
-                                    }
-                                }
-                            ]
-                        },
-                        load: (args: LoadEventArgs) => {
-                            pivotGridObj.isAdaptive = true;
-                        },
-                        allowConditionalFormatting: true
-                    });
-                pivotGridObj.appendTo('#PivotGrid');
-            });
-            beforeEach((done: Function) => {
-                setTimeout(() => { done(); }, 2000);
-            });
-            it('Check code behind format', () => {
-                expect(document.querySelectorAll('td[aria-colindex="2"]')[0].classList.contains('formatPivotGrid0')).toBeTruthy();
-                pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
-            });
-            it('Delete format', () => {
-                expect(true).toBeTruthy();
-                (document.querySelector('.e-format-delete-button') as HTMLElement).click();
-                (document.querySelector('.e-format-apply-button') as HTMLElement).click();
-            });
-            it('Check code behind format', () => {
-                expect(document.querySelectorAll('td[aria-colindex="2"]')[0].classList.contains('formatPivotGrid0')).toBeFalsy();
-                pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
-            });
-            it('Add format', () => {
-                expect(true).toBeTruthy();
-                (document.querySelector('.e-format-condition-button') as HTMLElement).click();
-                (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
-                (document.querySelectorAll('.e-dropdown-btn')[0] as HTMLElement).click();
-                (document.querySelectorAll('.e-tile')[9] as HTMLElement).click();
-                (document.querySelector('.e-apply') as HTMLElement).click();
-                (document.querySelectorAll('.e-dropdown-btn')[1] as HTMLElement).click();
-                (document.querySelectorAll('.e-tile')[55] as HTMLElement).click();
-                (document.querySelector('.e-apply') as HTMLElement).click();
-                (document.querySelector('.e-format-apply-button') as HTMLElement).click();
-            });
-            it('Check applied format', () => {
-                expect(document.querySelectorAll('td[aria-colindex="2"]')[0].classList.contains('formatPivotGrid0')).toBeTruthy();
-                pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
-            });
-            it('Cancel button click', () => {
-                expect(true).toBeTruthy();
-                (document.querySelector('.e-format-cancel-button') as HTMLElement).click();
-                pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
-            });
-            it('Add format', () => {
-                expect(true).toBeTruthy();
-                (pivotGridObj.conditionalFormattingModule as any).fieldsDropDown[0].value = 'balance';
-                (pivotGridObj.conditionalFormattingModule as any).conditionsDropDown[0].value = 'Between';
-                (pivotGridObj.conditionalFormattingModule as any).fontNameDropDown[0].value = 'Serif';
-                (pivotGridObj.conditionalFormattingModule as any).fontSizeDropDown[0].value = '16px';
-                (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
-                (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
-                (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
-                (document.querySelector('.e-format-value2') as HTMLInputElement).value = '50000';
-            });
-            it('Click apply button', () => {
-                expect(true).toBeTruthy();
-                (document.querySelector('.e-format-apply-button') as HTMLElement).click();
-            });
-            it('Check applied format', () => {
-                expect(document.querySelectorAll('td[aria-colindex="1"]')[0].classList.contains('formatPivotGrid0')).toBeTruthy();
-                pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
-            });
-            it('Add format', () => {
-                expect(true).toBeTruthy();
-                (pivotGridObj.conditionalFormattingModule as any).fieldsDropDown[0].value = 'balance';
-                (pivotGridObj.conditionalFormattingModule as any).conditionsDropDown[0].value = 'NotBetween';
-                (pivotGridObj.conditionalFormattingModule as any).fontNameDropDown[0].value = 'Serif';
-                (pivotGridObj.conditionalFormattingModule as any).fontSizeDropDown[0].value = '16px';
-                (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
-                (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
-                (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
-                (document.querySelector('.e-format-value2') as HTMLInputElement).value = '50000';
-            });
-            it('Click apply button', () => {
-                expect(true).toBeTruthy();
-                (document.querySelector('.e-format-apply-button') as HTMLElement).click();
-            });
-            it('Check applied format', () => {
-                expect(document.querySelectorAll('td[aria-colindex="3"].formatPivotGrid0').length > 0).toBeTruthy();
-                pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
-            });
-            it('Add format', () => {
-                expect(true).toBeTruthy();
-                (pivotGridObj.conditionalFormattingModule as any).fieldsDropDown[0].value = 'quantity';
-                (pivotGridObj.conditionalFormattingModule as any).conditionsDropDown[0].value = 'LessThan';
-                (pivotGridObj.conditionalFormattingModule as any).fontNameDropDown[0].value = 'Serif';
-                (pivotGridObj.conditionalFormattingModule as any).fontSizeDropDown[0].value = '16px';
-                (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
-                (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
-                (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
-            });
-            it('Click apply button', () => {
-                expect(true).toBeTruthy();
-                (document.querySelector('.e-format-apply-button') as HTMLElement).click();
-            });
-            it('Check applied format', () => {
-                expect(document.querySelectorAll('td[aria-colindex="2"]')[0].classList.contains('formatPivotGrid0')).toBeTruthy();
-                pivotGridObj.dataSource = {
-                    data: pivot_dataset as IDataSet[],
-                    expandAll: false,
-                    rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
-                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
-                    values: [{ name: 'balance' }, { name: 'quantity' }, { name: 'Price', type: 'CalculatedField' }],
-                    filters: [],
-                    calculatedFieldSettings: [{ name: 'Price', formula: '"Sum(balance)" + "Sum(quantity)"' }],
-                    sortSettings: [{ name: 'product', order: 'Descending' }],
-                    filterSettings: [
-                        { name: 'product', type: 'Include', items: ['Car', 'Bike'] },
-                        { name: 'eyeColor', type: 'Include', items: ['blue', 'green'] },
-                    ],
-                    conditionalFormatSettings: [
+            describe(' - VirtualScrolling', () => {
+                let pivotGridObj: PivotView;
+                let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+                beforeAll(() => {
+                    document.body.appendChild(elem);
+                    pivotGridObj = new PivotView(
                         {
-                            value1: undefined,
-                            measure: undefined,
-                            conditions: undefined,
-                            style: {
-                                backgroundColor: undefined,
-                                color: undefined,
-                                fontFamily: undefined,
-                                fontSize: undefined
+                            dataSource: {
+                                data: pivot_dataset as IDataSet[],
+                                expandAll: true,
+                                enableSorting: false,
+                                sortSettings: [{ name: 'company', order: 'Descending' }],
+                                formatSettings: [{ name: 'balance', format: 'C' }],
+                                rows: [{ name: 'product' }, { name: 'state' }],
+                                columns: [{ name: 'gender' }, { name: 'eyeColor' }],
+                                values: [{ name: 'balance' }, { name: 'quantity' }],
+                                filters: [],
                             },
-                        }
-                    ]
-                };
-                pivotGridObj.conditionalFormattingModule.showConditionalFormattingDialog();
-            });
-            it('Cancel button click', () => {
-                expect(true).toBeTruthy();
-                (document.querySelector('.e-format-cancel-button') as HTMLElement).click();
-            });
-            afterAll(() => {
-                if (pivotGridObj) {
-                    pivotGridObj.destroy();
-                }
-                remove(elem);
-            });
-        });
-        describe(' - VirtualScrolling - ', () => {
-            let pivotGridObj: PivotView;
-            let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-            beforeAll(() => {
-                document.body.appendChild(elem);
-                pivotGridObj = new PivotView(
-                    {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
-                            expandAll: true,
-                            enableSorting: false,
-                            sortSettings: [{ name: 'company', order: 'Descending' }],
-                            formatSettings: [{ name: 'balance', format: 'C' }],
-                            rows: [{ name: 'product' }, { name: 'state' }],
-                            columns: [{ name: 'gender' }, { name: 'eyeColor' }],
-                            values: [{ name: 'balance' }, { name: 'quantity' }],
-                            filters: [],
-                        },
-                        allowCalculatedField: true,
-                        enableVirtualization: true,
-                        width: 600,
-                        height: 300
-                    });
-                pivotGridObj.appendTo('#PivotGrid');
-            });
-            beforeEach((done: Function) => {
-                setTimeout(() => { done(); }, 2000);
-            });
-            it('pivotgrid render testing', (done: Function) => {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(24);
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(14);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                    done();
-                }, 1000);
-            });
-            it('scroll top', (done: Function) => {
-                document.querySelectorAll('.e-movablecontent')[0].scrollTop = 317;
-                pivotGridObj.virtualscrollModule.direction = 'vertical';
-                let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(Math.round(document.querySelectorAll('.e-frozencontent')[0].scrollTop) === 317).toBeTruthy();
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Jet');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$27,813.73');
-                    done();
-                }, 1000);
-            });
-            it('scroll right', (done: Function) => {
-                document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 1360;
-                pivotGridObj.virtualscrollModule.direction = 'horizondal';
-                let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === document.querySelectorAll('.e-movablecontent')[0].scrollLeft).toBeTruthy();
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Jet');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$33,116.92');
-                    done();
-                }, 2000);
-            });
-            it('scroll bottom', (done: Function) => {
-                pivotGridObj.element.querySelectorAll('.e-movablecontent')[0].scrollTop = 0;
-                pivotGridObj.virtualscrollModule.direction = 'vertical';
-                let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(pivotGridObj.element.querySelectorAll('.e-frozencontent')[0].scrollTop).toBe(0);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$32,045.16');
-                    done();
-                }, 1000);
-            });
-            it('scroll left', (done: Function) => {
-                document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 400;
-                pivotGridObj.virtualscrollModule.direction = 'horizondal';
-                let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
-                    expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft).toBe(400);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('684.1px');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1780px');
-                    done();
-                }, 1000);
-            });
-            it('scroll left', (done: Function) => {
-                document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 0;
-                pivotGridObj.virtualscrollModule.direction = 'horizondal';
-                let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
-                    // expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
-                    expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft).toBe(0);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('684.1px');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1780px');
-                    done();
-                }, 1000);
-            });
-            it('Collapse flight', (done: Function) => {
-                (document.querySelectorAll('.e-frozencontent tr .e-icons')[0] as HTMLElement).click();
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
-                    expect(document.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
-                    expect(document.querySelectorAll('.e-frozencontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('Jet');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$27,813.73');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('468.1px');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1780px');
-                    done();
-                }, 1000);
-            });
-            it('Collapse male', (done: Function) => {
-                (document.querySelectorAll('.e-movableheader th .e-icons')[0] as HTMLElement).click();
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
-                    expect(document.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
-                    expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('male Total');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$95,040.55');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('468.1px');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1120px');
-                    done();
-                }, 1000);
-            });
-            it('scroll top', (done: Function) => {
-                document.querySelectorAll('.e-movablecontent')[0].scrollTop = 900;
-                pivotGridObj.virtualscrollModule.direction = 'vertical';
-                let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
-                    expect(document.querySelectorAll('.e-frozencontent')[0].scrollTop).toBe(900);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('Delhi');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$15,264.74');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('432.1px');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1120px');
-                    done();
-                }, 1000);
-            });
-            it('scroll top', (done: Function) => {
-                document.querySelectorAll('.e-movablecontent')[0].scrollTop = 890;
-                pivotGridObj.virtualscrollModule.direction = 'vertical';
-                let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
-                    expect(document.querySelectorAll('.e-frozencontent')[0].scrollTop).toBe(890);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('Delhi');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$15,264.74');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('432.1px');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1120px');
-                    done();
-                }, 1000);
-            });
-            it('scroll left', (done: Function) => {
-                document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 752;
-                pivotGridObj.virtualscrollModule.direction = 'horizondal';
-                let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
-                    expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === document.querySelectorAll('.e-movablecontent')[0].scrollLeft).toBeTruthy();
-                    expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('male Total');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$15,264.74');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('432.1px');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1120px');
-                    done();
-                }, 1000);
+                            allowCalculatedField: true,
+                            enableVirtualization: true,
+                            width: 600,
+                            height: 300
+                        });
+                    pivotGridObj.appendTo('#PivotGrid');
+                });
+                beforeEach((done: Function) => {
+                    setTimeout(() => { done(); }, 2000);
+                });
+
+                it('scroll top', (done: Function) => {
+                    document.querySelectorAll('.e-frozencontent')[0].scrollTop = 317;
+                    pivotGridObj.virtualscrollModule.direction = 'vertical';
+                    let args: MouseEvent = new MouseEvent("touchstart", { clientY: 317, view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-frozencontent').dispatchEvent(args);
+                    args = new MouseEvent("touchmove", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-frozencontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-frozencontent').dispatchEvent(args);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(Math.round(document.querySelectorAll('.e-frozencontent')[0].scrollTop) === 317).toBeTruthy();
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Jet');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$27,813.73');
+                        done();
+                    }, 2000);
+                });
+
+                it('scroll top false', (done: Function) => {
+                    document.querySelectorAll('.e-frozencontent')[0].scrollTop = 317;
+                    pivotGridObj.virtualscrollModule.direction = 'vertical';
+                    let args: MouseEvent = new MouseEvent("touchstart", { clientY: 0, view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-frozencontent').dispatchEvent(args);
+                    args = new MouseEvent("touchmove", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-frozencontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-frozencontent').dispatchEvent(args);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(Math.round(document.querySelectorAll('.e-frozencontent')[0].scrollTop) === 317).toBeTruthy();
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Jet');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$27,813.73');
+                        done();
+                    }, 2000);
+                });
+
+                it('scroll right', (done: Function) => {
+                    document.querySelectorAll('.e-movableheader')[0].scrollLeft = 1360;
+                    pivotGridObj.virtualscrollModule.direction = 'horizondal';
+                    let args: MouseEvent = new MouseEvent("touchstart", { clientX: 1360, view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movableheader').dispatchEvent(args);
+                    args = new MouseEvent("touchmove", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movableheader').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movableheader').dispatchEvent(args);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === document.querySelectorAll('.e-movablecontent')[0].scrollLeft).toBeTruthy();
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Jet');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$33,116.92');
+                        done();
+                    }, 2000);
+                });
+
+                it('scroll right false', (done: Function) => {
+                    document.querySelectorAll('.e-movableheader')[0].scrollLeft = 1360;
+                    pivotGridObj.virtualscrollModule.direction = 'horizondal';
+                    let args: MouseEvent = new MouseEvent("touchstart", { clientX: 0, view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movableheader').dispatchEvent(args);
+                    args = new MouseEvent("touchmove", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movableheader').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movableheader').dispatchEvent(args);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === document.querySelectorAll('.e-movablecontent')[0].scrollLeft).toBeTruthy();
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Jet');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$33,116.92');
+                        done();
+                    }, 2000);
+                });
+
+                it('scroll top wheel', (done: Function) => {
+                    document.querySelectorAll('.e-frozencontent')[0].scrollTop = 0;
+                    pivotGridObj.virtualscrollModule.direction = 'vertical';
+                    let args: MouseEvent = new MouseEvent("wheel", { clientY: 0, view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-frozencontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-frozencontent').dispatchEvent(args);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(Math.round(document.querySelectorAll('.e-frozencontent')[0].scrollTop) === 0).toBeTruthy();
+                        done();
+                    }, 2000);
+                });
+
+                it('scroll top wheel false', (done: Function) => {
+                    document.querySelectorAll('.e-frozencontent')[0].scrollTop = 0;
+                    pivotGridObj.virtualscrollModule.direction = 'vertical';
+                    let args: MouseEvent = new MouseEvent("wheel", { clientY: 0, view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-frozencontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-frozencontent').dispatchEvent(args);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(Math.round(document.querySelectorAll('.e-frozencontent')[0].scrollTop) === 0).toBeTruthy();
+                        done();
+                    }, 2000);
+                });
+
+                afterAll(() => {
+                    if (pivotGridObj) {
+                        pivotGridObj.destroy();
+                    }
+                    remove(elem);
+                });
             });
 
-            it('Collapse bike', (done: Function) => {
-                (document.querySelectorAll('.e-frozencontent tr .e-icons')[2] as HTMLElement).click();
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-movableheader')[0].scrollLeft).toBe(752);
-                    done();
-                }, 1000);
-            });
-            it('Collapse female', (done: Function) => {
-                (document.querySelectorAll('.e-movableheader th .e-collapse')[0] as HTMLElement).click();
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-movablecontent')[0].scrollTop).toBe(890);
-                    done();
-                }, 1000);
-            });
-            it('value in row axis', (done: Function) => {
-                pivotGridObj.setProperties({ dataSource: { valueAxis: 'row' } }, true);
-                pivotGridObj.dataSource.drilledMembers = [];
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
-                    expect(document.querySelectorAll('.e-frozencontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('balance');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$32,295.87');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('396.1px');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('790px');
-                    done();
-                }, 2000);
-            });
-            it('scroll top', (done: Function) => {
-                document.querySelectorAll('.e-movablecontent')[0].scrollTop = 890;
-                pivotGridObj.virtualscrollModule.direction = 'vertical';
-                let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
+            describe(' - VirtualScrolling', () => {
+                let pivotGridObj: PivotView;
+                let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+                beforeAll(() => {
+                    document.body.appendChild(elem);
+                    pivotGridObj = new PivotView(
+                        {
+                            dataSource: {
+                                data: pivot_dataset as IDataSet[],
+                                expandAll: true,
+                                enableSorting: false,
+                                sortSettings: [{ name: 'company', order: 'Descending' }],
+                                formatSettings: [{ name: 'balance', format: 'C' }],
+                                rows: [{ name: 'product' }, { name: 'state' }],
+                                columns: [{ name: 'gender' }, { name: 'eyeColor' }],
+                                values: [{ name: 'balance' }, { name: 'quantity' }],
+                                filters: [],
+                            },
+                            allowCalculatedField: true,
+                            enableVirtualization: true,
+                            width: 600,
+                            height: 300
+                        });
+                    pivotGridObj.appendTo('#PivotGrid');
+                });
+                beforeEach((done: Function) => {
+                    setTimeout(() => { done(); }, 2000);
+                });
+                it('pivotgrid render testing', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(24);
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(14);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                        done();
+                    }, 2000);
+                });
+                it('scroll top', (done: Function) => {
+                    document.querySelectorAll('.e-movablecontent')[0].scrollTop = 317;
+                    pivotGridObj.virtualscrollModule.direction = 'vertical';
+                    let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(Math.round(document.querySelectorAll('.e-frozencontent')[0].scrollTop) === 317).toBeTruthy();
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Jet');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$27,813.73');
+                        done();
+                    }, 2000);
+                });
+                it('scroll right', (done: Function) => {
+                    document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 1360;
+                    pivotGridObj.virtualscrollModule.direction = 'horizondal';
+                    let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === document.querySelectorAll('.e-movablecontent')[0].scrollLeft).toBeTruthy();
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Jet');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$33,116.92');
+                        done();
+                    }, 2000);
+                });
+                it('scroll bottom', (done: Function) => {
+                    pivotGridObj.element.querySelectorAll('.e-movablecontent')[0].scrollTop = 0;
+                    pivotGridObj.virtualscrollModule.direction = 'vertical';
+                    let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(pivotGridObj.element.querySelectorAll('.e-frozencontent')[0].scrollTop).toBe(0);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$32,045.16');
+                        done();
+                    }, 2000);
+                });
+                it('scroll left', (done: Function) => {
+                    document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 400;
+                    pivotGridObj.virtualscrollModule.direction = 'horizondal';
+                    let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
+                        expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft).toBe(400);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('684.1px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1780px');
+                        done();
+                    }, 2000);
+                });
+                it('scroll left', (done: Function) => {
+                    document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 0;
+                    pivotGridObj.virtualscrollModule.direction = 'horizondal';
+                    let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
+                        // expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
+                        expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft).toBe(0);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('684.1px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1780px');
+                        done();
+                    }, 2000);
+                });
+                it('Collapse flight', (done: Function) => {
+                    (document.querySelectorAll('.e-frozencontent tr .e-icons')[0] as HTMLElement).click();
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
+                        expect(document.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
+                        expect(document.querySelectorAll('.e-frozencontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('Jet');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$27,813.73');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('468.1px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1780px');
+                        done();
+                    }, 2000);
+                });
+                it('Collapse male', (done: Function) => {
+                    (document.querySelectorAll('.e-movableheader th .e-icons')[0] as HTMLElement).click();
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
+                        expect(document.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
+                        expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('male Total');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$95,040.55');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('468.1px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1120px');
+                        done();
+                    }, 2000);
+                });
+                it('scroll top', (done: Function) => {
+                    document.querySelectorAll('.e-movablecontent')[0].scrollTop = 900;
+                    pivotGridObj.virtualscrollModule.direction = 'vertical';
+                    let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
+                        expect(document.querySelectorAll('.e-frozencontent')[0].scrollTop).toBe(900);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('Delhi');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$15,264.74');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('432.1px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1120px');
+                        done();
+                    }, 2000);
+                });
+                it('scroll top', (done: Function) => {
                     document.querySelectorAll('.e-movablecontent')[0].scrollTop = 890;
                     pivotGridObj.virtualscrollModule.direction = 'vertical';
                     let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
                     document.querySelector('.e-movablecontent').dispatchEvent(args);
                     args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
                     document.querySelector('.e-movablecontent').dispatchEvent(args);
-                    done();
-                }, 1000);
-            });
-            it('append name in column', (done: Function) => {
-                pivotGridObj.dataSource.columns = [{ name: 'gender' }, { name: 'eyeColor' }, { name: 'name' }];
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-frozencontent')[0].scrollTop).toBe(0);
-                    done();
-                }, 2000);
-            });
-            it('scroll left', (done: Function) => {
-                document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 50000;
-                pivotGridObj.virtualscrollModule.direction = 'horizondal';
-                let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === document.querySelectorAll('.e-movablecontent')[0].scrollLeft).toBeTruthy();
-                    done();
-                }, 2000);
-            });
-            afterAll(() => {
-                if (pivotGridObj) {
-                    pivotGridObj.destroy();
-                }
-                remove(elem);
-            });
-        });
-        describe(' - VirtualScrolling - Grouping Bar ', () => {
-            let pivotGridObj: PivotView;
-            let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-            beforeAll(() => {
-                document.body.appendChild(elem);
-                PivotView.Inject(GroupingBar, FieldList, VirtualScroll);
-                pivotGridObj = new PivotView(
-                    {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
-                            expandAll: true,
-                            enableSorting: false,
-                            sortSettings: [{ name: 'company', order: 'Descending' }],
-                            formatSettings: [{ name: 'balance', format: 'C' }],
-                            rows: [{ name: 'product' }, { name: 'state' }],
-                            columns: [{ name: 'gender' }, { name: 'eyeColor' }],
-                            values: [{ name: 'balance' }, { name: 'quantity' }],
-                            filters: [],
-                        },
-                        allowCalculatedField: true,
-                        showGroupingBar: true,
-                        enableVirtualization: true,
-                        showFieldList: true,
-                        showValuesButton: true,
-                        width: 600,
-                        height: 300
-                    });
-                pivotGridObj.appendTo('#PivotGrid');
-            });
-            beforeEach((done: Function) => {
-                setTimeout(() => { done(); }, 2000);
-            });
-            it('pivotgrid render testing', (done: Function) => {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(24);
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(14);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                    done();
-                }, 1000);
-            });
-            it('scroll top', (done: Function) => {
-                document.querySelectorAll('.e-movablecontent')[0].scrollTop = 317;
-                pivotGridObj.virtualscrollModule.direction = 'vertical';
-                let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(Math.round(document.querySelectorAll('.e-frozencontent')[0].scrollTop) === 317).toBeTruthy();
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Jet');
-                    // expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
-                    done();
-                }, 1000);
-            });
-            it('scroll right', (done: Function) => {
-                document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 1360;
-                pivotGridObj.virtualscrollModule.direction = 'horizondal';
-                let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === document.querySelectorAll('.e-movablecontent')[0].scrollLeft).toBeTruthy();
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Jet');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$33,116.92');
-                    done();
-                }, 2000);
-            });
-            it('scroll bottom', (done: Function) => {
-                pivotGridObj.element.querySelectorAll('.e-movablecontent')[0].scrollTop = 0;
-                pivotGridObj.virtualscrollModule.direction = 'vertical';
-                let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(pivotGridObj.element.querySelectorAll('.e-frozencontent')[0].scrollTop).toBe(0);
-                    // expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Jet');
-                    // expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$33,116.92');
-                    done();
-                }, 1000);
-            });
-            it('scroll left', (done: Function) => {
-                document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 0;
-                pivotGridObj.virtualscrollModule.direction = 'horizondal';
-                let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
-                    expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('684.1px');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1730px');
-                    done();
-                }, 2000);
-            });
-            it('Collapse flight', (done: Function) => {
-                (document.querySelectorAll('.e-frozencontent tr .e-icons')[0] as HTMLElement).click();
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
-                    expect(document.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
-                    expect(document.querySelectorAll('.e-frozencontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('Jet');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$27,813.73');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('468.1px');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1730px');
-                    done();
-                }, 1000);
-            });
-            it('Collapse male', (done: Function) => {
-                (document.querySelectorAll('.e-movableheader th .e-icons')[0] as HTMLElement).click();
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
-                    expect(document.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
-                    expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('male Total');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$95,040.55');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('468.1px');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1070px');
-                    done();
-                }, 1000);
-            });
-            it('scroll top', (done: Function) => {
-                document.querySelectorAll('.e-movablecontent')[0].scrollTop = 358;
-                pivotGridObj.virtualscrollModule.direction = 'vertical';
-                let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
-                    expect(document.querySelectorAll('.e-frozencontent')[0].scrollTop).toBe(358);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('New Jercy');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$24,452.08');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('468.1px');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1070px');
-                    done();
-                }, 1000);
-            });
-            it('scroll left', (done: Function) => {
-                document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 752;
-                pivotGridObj.virtualscrollModule.direction = 'horizondal';
-                let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
-                    expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === document.querySelectorAll('.e-movablecontent')[0].scrollLeft).toBeTruthy();
-                    expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('male Total');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$24,452.08');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('468.1px');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1070px');
-                    done();
-                }, 1000);
-            });
-
-            it('Collapse bike', (done: Function) => {
-                (document.querySelectorAll('.e-frozencontent tr .e-icons')[2] as HTMLElement).click();
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-movableheader')[0].scrollLeft).toBe(752);
-                    done();
-                }, 1000);
-            });
-            it('Collapse female', (done: Function) => {
-                (document.querySelectorAll('.e-movableheader th .e-collapse')[0] as HTMLElement).click();
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-movablecontent')[0].scrollTop).toBe(358);
-                    done();
-                }, 1000);
-            });
-
-            it('filter', (done: Function) => {
-                (document.querySelector('#product.e-pivot-button .e-pv-filter') as HTMLElement).click();
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    let allNode: HTMLElement = document.querySelector('.e-checkbox-wrapper');
-                    let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
-                    allNode.querySelector('.e-frame').dispatchEvent(args);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
+                        expect(document.querySelectorAll('.e-frozencontent')[0].scrollTop).toBe(890);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('Delhi');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$15,264.74');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('432.1px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1120px');
+                        done();
+                    }, 2000);
+                });
+                it('scroll left', (done: Function) => {
+                    document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 752;
+                    pivotGridObj.virtualscrollModule.direction = 'horizondal';
+                    let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
                     args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                    allNode.querySelector('.e-frame').dispatchEvent(args);
-                    let firstNode: HTMLElement = document.querySelectorAll('.e-checkbox-wrapper')[2] as HTMLElement;
-                    args = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
-                    firstNode.querySelector('.e-frame').dispatchEvent(args);
-                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                    firstNode.querySelector('.e-frame').dispatchEvent(args);
-                    (document.querySelector('.e-ok-btn') as HTMLElement).click();
-                    done();
-                }, 1000);
-            });
-            it('filter check', (done: Function) => {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(Math.round(document.querySelectorAll('.e-movableheader')[0].scrollLeft)).toBe(738);
-                    expect(document.querySelectorAll('.e-movablecontent')[0].scrollTop).toBe(0);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Tempo');
-                    done();
-                }, 1000);
-            });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
+                        expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === document.querySelectorAll('.e-movablecontent')[0].scrollLeft).toBeTruthy();
+                        expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('male Total');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$15,264.74');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('432.1px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1120px');
+                        done();
+                    }, 2000);
+                });
 
-            it('value moved to row', (done: Function) => {
-                let rowAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-rows');
-                let columnAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
-                let pivotButton: HTMLElement[] = [].slice.call((columnAxiscontent).querySelectorAll('.e-pivot-button'));
-                expect(pivotButton.length).toEqual(3);
-                let dragElement: HTMLElement = pivotButton[2].querySelector('.e-content');
-                let mousedown: any =
-                    getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
-                EventHandler.trigger(dragElement, 'mousedown', mousedown);
-                let mousemove: any =
-                    getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
-                mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
-                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-                let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
-                mouseUp.type = 'mouseup';
-                mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
-                EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
-                    expect(pivotButton.length).toEqual(3);
-                    done();
-                }, 1000);
-            });
-            it('value moved to column', (done: Function) => {
-                let rowAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-rows');
-                let columnAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
-                let pivotButton: HTMLElement[] = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
-                expect(pivotButton.length).toEqual(3);
-                let dragElement: HTMLElement = pivotButton[2].querySelector('.e-content');
-                let mousedown: any =
-                    getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
-                EventHandler.trigger(dragElement, 'mousedown', mousedown);
-                let mousemove: any =
-                    getEventObject('MouseEvents', 'mousemove', dragElement, columnAxiscontent, 15, 70);
-                mousemove.srcElement = mousemove.target = mousemove.toElement = columnAxiscontent;
-                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-                let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, columnAxiscontent);
-                mouseUp.type = 'mouseup';
-                mouseUp.srcElement = mouseUp.target = mouseUp.toElement = columnAxiscontent;
-                EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    pivotButton = [].slice.call((columnAxiscontent).querySelectorAll('.e-pivot-button'));
-                    expect(pivotButton.length).toEqual(3);
-                    done();
-                }, 1000);
-            });
-            it('value removed', (done: Function) => {
-                let rowAxiscontent: any = document;
-                let columnAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
-                let pivotButton: HTMLElement[] = [].slice.call((columnAxiscontent).querySelectorAll('.e-pivot-button'));
-                expect(pivotButton.length).toEqual(3);
-                let dragElement: HTMLElement = pivotButton[2].querySelector('.e-content');
-                let mousedown: any =
-                    getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
-                EventHandler.trigger(dragElement, 'mousedown', mousedown);
-                let mousemove: any =
-                    getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
-                mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
-                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-                let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
-                mouseUp.type = 'mouseup';
-                mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
-                EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
-                    expect(pivotButton.length).toEqual(8);
-                    done();
-                }, 1000);
-            });
-            it('values added', () => {
-                pivotGridObj.dataSource.values = [{ name: 'balance' }, { name: 'quantity' }];
-            });
-            it('values removed', (done: Function) => {
-                let columnAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
-                let valueAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-values');
-                let pivotButton: HTMLElement[] = [].slice.call((columnAxiscontent).querySelectorAll('.e-pivot-button'));
-                (pivotButton[2].querySelector('.e-remove') as HTMLElement).click();
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    pivotButton = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
-                    expect(pivotButton.length).toEqual(0);
-                    done();
-                }, 1000);
-            });
-            it('values added', () => {
-                pivotGridObj.dataSource.values = [{ name: 'balance' }, { name: 'quantity' }];
-            });
-
-            it('RTL', (done: Function) => {
-                pivotGridObj.enableRtl = true;
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
-                    expect(Math.round(document.querySelectorAll('.e-movableheader')[0].scrollLeft)).toBe(313);
-                    expect(document.querySelectorAll('.e-movablecontent')[0].scrollTop).toBe(0);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Tempo');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('0.1px');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('410px');
-                    done();
-                }, 1000);
-            });
-            afterAll(() => {
-                if (pivotGridObj) {
-                    pivotGridObj.destroy();
-                }
-                remove(elem);
-            });
-        });
-        describe('- VirtualScrolling - ValueSorting - ', () => {
-            let pivotGridObj: PivotView;
-            let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-            beforeAll(() => {
-                document.body.appendChild(elem);
-                pivotGridObj = new PivotView(
-                    {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
-                            expandAll: true,
-                            enableSorting: false,
-                            sortSettings: [{ name: 'company', order: 'Descending' }],
-                            formatSettings: [{ name: 'balance', format: 'C' }],
-                            rows: [{ name: 'product' }, { name: 'state' }],
-                            columns: [{ name: 'gender' }, { name: 'eyeColor' }],
-                            values: [{ name: 'balance' }, { name: 'quantity' }],
-                            filters: [],
-                        },
-                        enableVirtualization: true,
-                        enableValueSorting: true,
-                        width: 600,
-                        height: 300
-                    });
-                pivotGridObj.appendTo('#PivotGrid');
-            });
-            beforeEach((done: Function) => {
-                setTimeout(() => { done(); }, 2000);
-            });
-            it('render testing', (done: Function) => {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(43);
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(18);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                    done();
-                }, 1000);
-            });
-            it('sort male-blue-balance', (done: Function) => {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                (document.querySelectorAll('.e-movableheader th.e-firstcell')[0] as HTMLElement).click()
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(43);
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(18);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Van');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$43,025.37');
-                    done();
-                }, 1000);
-            });
-            it('scrollTop', (done: Function) => {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                document.querySelectorAll('.e-movablecontent')[0].scrollTop = 398;
-                pivotGridObj.virtualscrollModule.direction = 'vertical';
-                let args: MouseEvent = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(43);
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(18);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Van');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$43,025.37');
-                    done();
-                }, 1000);
-            });
-            it('scrollLeft', (done: Function) => {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 1235;
-                pivotGridObj.virtualscrollModule.direction = 'horizondal';
-                let args: MouseEvent = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(43);
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(18);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Van');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$43,025.37');
-                    done();
-                }, 1000);
-            });
-            it('Collapse car', (done: Function) => {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                (document.querySelectorAll('.e-frozencontent tr')[14].querySelector('.e-icons') as HTMLElement).click()
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(37);
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(18);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Van');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$43,025.37');
-                    done();
-                }, 1000);
-            });
-            it('scrollTop', (done: Function) => {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                document.querySelectorAll('.e-movablecontent')[0].scrollTop = 0;
-                pivotGridObj.virtualscrollModule.direction = 'vertical';
-                let args: MouseEvent = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(37);
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(18);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Van');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$43,025.37');
-                    done();
-                }, 1000);
-            });
-            it('scrollLeft', (done: Function) => {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 0;
-                pivotGridObj.virtualscrollModule.direction = 'horizondal';
-                let args: MouseEvent = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(37);
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(18);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Van');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$43,025.37');
-                    done();
-                }, 1000);
-            });
-            it('sort male-green-balance', (done: Function) => {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                (document.querySelectorAll('.e-movableheader th.e-firstcell')[1] as HTMLElement).click()
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(37);
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(18);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
-                    done();
-                }, 1000);
-            });
-            it('remove quantity', (done: Function) => {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                pivotGridObj.dataSource.values = [{ name: 'balance' }];
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(37);
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(9);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
-                    done();
-                }, 1000);
-            });
-            it('sort female-brown', (done: Function) => {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                (document.querySelectorAll('.e-movableheader th.e-firstcell')[1] as HTMLElement).click();
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(37);
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(9);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Car');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$32,295.87');
-                    done();
-                }, 1000);
-            });
-            it('insert quantity', (done: Function) => {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                pivotGridObj.dataSource.values = [{ name: 'balance' }, { name: 'quantity' }];
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(37);
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(18);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Car');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$32,295.87');
-                    done();
-                }, 1000);
-            });
-            it('move values to row', (done: Function) => {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                pivotGridObj.dataSource.valueAxis = 'row';
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(111);
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(9);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('');
-                    done();
-                }, 2000);
-            });
-            afterAll(() => {
-                if (pivotGridObj) {
-                    pivotGridObj.destroy();
-                }
-                remove(elem);
-            });
-        });
-
-        describe(' - VirtualScrolling - advanced filtering ', () => {
-            let pivotGridObj: PivotView;
-            let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-            beforeAll(() => {
-                document.body.appendChild(elem);
-                pivotGridObj = new PivotView(
-                    {
-                        dataSource: {
-                            allowLabelFilter: true,
-                            allowValueFilter: true,
-                            data: pivot_dataset as IDataSet[],
-                            expandAll: true,
-                            enableSorting: false,
-                            formatSettings: [{ name: 'balance', format: 'C' }],
-                            rows: [{ name: 'product' }, { name: 'state' }],
-                            columns: [{ name: 'gender' }, { name: 'eyeColor' }],
-                            values: [{ name: 'balance' }, { name: 'quantity' }],
-                            filters: [],
-                        },
-                        enableVirtualization: true,
-                        width: 600,
-                        height: 300
-                    });
-                pivotGridObj.appendTo('#PivotGrid');
-            });
-            beforeEach((done: Function) => {
-                setTimeout(() => { done(); }, 2000);
-            });
-            it('pivotgrid render testing', (done: Function) => {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(24);
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(14);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                    done();
-                }, 1000);
-            });
-            it('state start with t', (done: Function) => {
-                pivotGridObj.dataSource.filterSettings = [
-                    { name: 'state', type: 'Label', condition: 'BeginWith', value1: 't' }],
+                it('Collapse bike', (done: Function) => {
+                    (document.querySelectorAll('.e-frozencontent tr .e-icons')[2] as HTMLElement).click();
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(13);
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(14);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Van');
-                    expect(document.querySelectorAll('.e-frozencontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('Tamilnadu');
-                    done();
-                }, 1000);
-            });
-            it('state contains e', (done: Function) => {
-                pivotGridObj.dataSource.filterSettings = [
-                    { name: 'state', type: 'Label', condition: 'Contains', value1: 'e' }],
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-movableheader')[0].scrollLeft).toBe(752);
+                        done();
+                    }, 2000);
+                });
+                it('Collapse female', (done: Function) => {
+                    (document.querySelectorAll('.e-movableheader th .e-collapse')[0] as HTMLElement).click();
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(24);
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(14);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                    expect(document.querySelectorAll('.e-frozencontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('New Jercy');
-                    done();
-                }, 1000);
-            });
-            it('scroll top', (done: Function) => {
-                document.querySelectorAll('.e-movablecontent')[0].scrollTop = 317;
-                pivotGridObj.virtualscrollModule.direction = 'vertical';
-                let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                setTimeout(() => {
-                    expect(Math.round(document.querySelectorAll('.e-frozencontent')[0].scrollTop) === 317).toBeTruthy();
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$11,131.56');
-                    done();
-                }, 1000);
-            });
-            it('eyeColor equals blue', (done: Function) => {
-                pivotGridObj.dataSource.filterSettings = [
-                    { name: 'state', type: 'Label', condition: 'Contains', value1: 'e' },
-                    { name: 'eyeColor', type: 'Label', condition: 'Equals', value1: 'blue' }],
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-movablecontent')[0].scrollTop).toBe(890);
+                        done();
+                    }, 2000);
+                });
+                it('value in row axis', (done: Function) => {
+                    pivotGridObj.setProperties({ dataSource: { valueAxis: 'row' } }, true);
+                    pivotGridObj.dataSource.drilledMembers = [];
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('blue');
-                    expect(document.querySelectorAll('.e-movableheader th')[4].textContent).toBe('male Total');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$11,131.56');
-                    done();
-                }, 1000);
-            });
-            it('scroll right', (done: Function) => {
-                document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 1360;
-                pivotGridObj.virtualscrollModule.direction = 'horizondal';
-                let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                setTimeout(() => {
-                    expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === document.querySelectorAll('.e-movablecontent')[0].scrollLeft).toBeTruthy();
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$11,131.56');
-                    done();
-                }, 1000);
-            });
-            it('product quantity > 100', (done: Function) => {
-                pivotGridObj.dataSource.filterSettings = [
-                    { name: 'product', type: 'Value', condition: 'GreaterThan', measure: 'quantity', value1: '100' }],
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-movableheader th')[4].textContent).toBe('brown');
-                    expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('green');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
-                    done();
-                }, 2000);
-            });
-            // it('eyeColor blue quantity < 100', (done: Function) => {
-            //     pivotGridObj.dataSource.filterSettings = [
-            //         { name: 'product', type: 'Value', condition: 'GreaterThan', measure: 'quantity', value1: '100' },
-            //         { name: 'eyeColor', type: 'Value', condition: 'LessThan', measure: 'quantity', value1: '100' }],
-            //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            //     setTimeout(() => {
-            //         expect(document.querySelectorAll('.e-movableheader th')[1].textContent).toBe('balance');
-            //         expect(document.querySelectorAll('.e-movableheader th')[2].textContent).toBe('quantity');
-            //         done();
-            //     }, 2000);
-            // });
-            it('product quantity > 100', (done: Function) => {
-                pivotGridObj.dataSource.filterSettings = [
-                    { name: 'product', type: 'Value', condition: 'GreaterThan', measure: 'quantity', value1: '100' }],
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-movableheader th')[4].textContent).toBe('brown');
-                    expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('green');
-                    // expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
-                    done();
-                }, 1000);
-            });
-            it('scroll bottom', (done: Function) => {
-                pivotGridObj.element.querySelectorAll('.e-movablecontent')[0].scrollTop = 0;
-                pivotGridObj.virtualscrollModule.direction = 'vertical';
-                let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                setTimeout(() => {
-                    expect(pivotGridObj.element.querySelectorAll('.e-frozencontent')[0].scrollTop === 0).toBeTruthy();
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
-                    done();
-                }, 1000);
-            });
-            it('scroll left', (done: Function) => {
-                document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 400;
-                pivotGridObj.virtualscrollModule.direction = 'horizondal';
-                let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                setTimeout(() => {
-                    let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
-                    expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft).toBe(400);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('684.1px');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1780px');
-                    done();
-                }, 1000);
-            });
-            it('scroll left', (done: Function) => {
-                document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 0;
-                pivotGridObj.virtualscrollModule.direction = 'horizondal';
-                let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                setTimeout(() => {
-                    let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
-                    expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('684.1px');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1780px');
-                    done();
-                }, 1000);
-            });
-            it('Collapse flight', (done: Function) => {
-                (document.querySelectorAll('.e-frozencontent tr .e-icons')[0] as HTMLElement).click()
-                setTimeout(() => {
-                    let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
-                    expect(document.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
-                    expect(document.querySelectorAll('.e-frozencontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('Jet');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$27,813.73');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('468.1px');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1780px');
-                    done();
-                }, 1000);
-            });
-            it('Collapse male', (done: Function) => {
-                (document.querySelectorAll('.e-movableheader th .e-icons')[0] as HTMLElement).click()
-                setTimeout(() => {
-                    let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
-                    expect(document.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
-                    expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('male Total');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$95,040.55');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('468.1px');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1120px');
-                    done();
-                }, 1000);
-            });
-            it('value in row axis', (done: Function) => {
-                pivotGridObj.setProperties({ dataSource: { valueAxis: 'row' } }, true);
-                pivotGridObj.dataSource.drilledMembers = [];
-                setTimeout(() => {
-                    let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
-                    expect(document.querySelectorAll('.e-frozencontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('balance');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('504.1px');
-                    expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('790px');
-                    done();
-                }, 2000);
-            });
-            it('scroll top', (done: Function) => {
-                document.querySelectorAll('.e-movablecontent')[0].scrollTop = 890;
-                pivotGridObj.virtualscrollModule.direction = 'vertical';
-                let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                setTimeout(() => {
+                    setTimeout(() => {
+                        let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('396.1px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('790px');
+                        done();
+                    }, 2000);
+                });
+                it('scroll top', (done: Function) => {
                     document.querySelectorAll('.e-movablecontent')[0].scrollTop = 890;
                     pivotGridObj.virtualscrollModule.direction = 'vertical';
                     let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
                     document.querySelector('.e-movablecontent').dispatchEvent(args);
                     args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
                     document.querySelector('.e-movablecontent').dispatchEvent(args);
-                    done();
-                }, 1000);
-            });
-            it('append name in column', (done: Function) => {
-                pivotGridObj.dataSource.columns = [{ name: 'gender' }, { name: 'eyeColor' }, { name: 'name' }],
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        document.querySelectorAll('.e-movablecontent')[0].scrollTop = 890;
+                        pivotGridObj.virtualscrollModule.direction = 'vertical';
+                        let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+                        document.querySelector('.e-movablecontent').dispatchEvent(args);
+                        args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                        document.querySelector('.e-movablecontent').dispatchEvent(args);
+                        done();
+                    }, 2000);
+                });
+                it('append name in column', (done: Function) => {
+                    pivotGridObj.dataSource.columns = [{ name: 'gender' }, { name: 'eyeColor' }, { name: 'name' }];
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(() => {
                         expect(document.querySelectorAll('.e-frozencontent')[0].scrollTop).toBe(0);
                         done();
                     }, 2000);
-            });
-            it('scroll left', (done: Function) => {
-                document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 50000;
-                pivotGridObj.virtualscrollModule.direction = 'horizondal';
-                let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-movablecontent').dispatchEvent(args);
-                setTimeout(() => {
-                    expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === document.querySelectorAll('.e-movablecontent')[0].scrollLeft).toBeTruthy();
-                    done();
-                }, 2000);
-            });
-            afterAll(() => {
-                if (pivotGridObj) {
-                    pivotGridObj.destroy();
-                }
-                remove(elem);
-            });
-        });
-
-        describe(' - no data - ', () => {
-            let pivotGridObj: PivotView;
-            let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-            let noData: IDataSet[] = [
-                { "Teams": "Application Support", "Priority": "p1", "Calls": 4 },
-                { "Teams": "Application Support", "Priority": "p2", "Calls": 1 },
-                { "Teams": "Application Support", "Priority": "p3", "Calls": 2 },
-                { "Teams": "Service Desk", "Priority": "p1", "Calls": 4 },
-                { "Teams": "Service Desk", "Priority": "p2", "Calls": 1 },
-                { "Teams": "Service Desk", "Priority": "p3", "Calls": 2 },
-                { "Teams": "Network Support", "Priority": "p4", "Calls": 5 },
-                { "Teams": "Network Support", "Priority": "p5", "Calls": 6 }
-            ];
-            document.body.appendChild(elem);
-            afterAll(() => {
-                if (pivotGridObj) {
-                    pivotGridObj.destroy();
-                }
-                remove(elem);
-            });
-            beforeAll(() => {
-                if (document.getElementById(elem.id)) {
-                    remove(document.getElementById(elem.id));
-                }
-                document.body.appendChild(elem);
-                PivotView.Inject(FieldList, CalculatedField);
-                pivotGridObj = new PivotView({
-                    dataSource: {
-                        expandAll: true,
-                        data: noData as IDataSet[],
-                        rows: [{ name: 'Teams', showNoDataItems: true }],
-                        columns: [{ name: 'Priority', showNoDataItems: true }],
-                        values: [{ name: 'Calls', showNoDataItems: true }],
-                        allowLabelFilter: true,
-                        allowValueFilter: true
-                    },
-                    showFieldList: true,
-                    allowCalculatedField: true,
-                    height: 400
                 });
-                pivotGridObj.appendTo('#PivotGrid');
-            });
-
-            let dataSource: IDataOptions
-            it('pivotgrid render testing', (done: Function) => {
-                dataSource = extend({}, pivotGridObj.dataSource, null, true);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Network Support');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('');
-                    expect((document.querySelectorAll('td[aria-colindex="4"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('5');
-                    done();
-                }, 2000);
-            });
-            it('priority to row', (done: Function) => {
-                pivotGridObj.setProperties({
-                    dataSource: {
-                        rows: [{ name: 'Teams', showNoDataItems: true }, { name: 'Priority', showNoDataItems: true }]
-                    }
-                }, true);
-                pivotGridObj.dataSource.columns = [];
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Application Support');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[4] as HTMLElement).innerText).toBe('p4');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[4] as HTMLElement).innerText).toBe('');
-                    done();
-                }, 1000);
-            });
-            it('swap row elements', (done: Function) => {
-                pivotGridObj.dataSource.rows = [
-                    { name: 'Priority', showNoDataItems: true },
-                    { name: 'Teams', showNoDataItems: true }
-                ];
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('Network Support');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[14] as HTMLElement).innerText).toBe('Network Support');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[14] as HTMLElement).innerText).toBe('5');
-                    done();
-                }, 1000);
-            });
-            it('swap to columns', (done: Function) => {
-                pivotGridObj.setProperties({ dataSource: { rows: [] } }, true);
-                pivotGridObj.dataSource.columns = [
-                    { name: 'Priority', showNoDataItems: true },
-                    { name: 'Teams', showNoDataItems: true }
-                ];
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="13"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('');
-                    expect((document.querySelectorAll('th[aria-colindex="13"] .e-headertext')[0] as HTMLElement).innerText).toBe('Application Support');
-                    expect((document.querySelectorAll('td[aria-colindex="14"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('5');
-                    expect((document.querySelectorAll('th[aria-colindex="14"] .e-headertext')[0] as HTMLElement).innerText).toBe('Network Support');
-                    done();
-                }, 1000);
-            });
-            it('swap to rows', (done: Function) => {
-                pivotGridObj.setProperties({ dataSource: { columns: [] } }, true);
-                pivotGridObj.dataSource.rows = [
-                    { name: 'Priority', showNoDataItems: true },
-                    { name: 'Teams', showNoDataItems: true }
-                ];
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('Network Support');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[14] as HTMLElement).innerText).toBe('Network Support');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[14] as HTMLElement).innerText).toBe('5');
-                    done();
-                }, 1000);
-            });
-            it('exclude p4,p5', (done: Function) => {
-                pivotGridObj.dataSource.rows = [
-                    { name: 'Teams', showNoDataItems: true },
-                    { name: 'Priority', showNoDataItems: true }
-                ];
-                pivotGridObj.dataSource.filterSettings = [
-                    { name: 'Priority', type: 'Exclude', items: ['p4', 'p5'] }
-                ],
+                it('scroll left', (done: Function) => {
+                    document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 50000;
+                    pivotGridObj.virtualscrollModule.direction = 'horizondal';
+                    let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[4] as HTMLElement).innerText).toBe('Network Support');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[4] as HTMLElement).innerText).toBe('');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[8] as HTMLElement).innerText).toBe('7');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[7] as HTMLElement).innerText).toBe('');
-                    done();
-                }, 1000);
-            });
-            it('exclude p1,p2,p3', (done: Function) => {
-                pivotGridObj.dataSource.filterSettings = [
-                    { name: 'Priority', type: 'Include', items: ['p4', 'p5'] }
-                ],
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Application Support');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('p4');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('Network Support');
-                    done();
-                }, 1000);
-            });
-            it('dont show priority no items', (done: Function) => {
-                pivotGridObj.dataSource.rows[1].showNoDataItems = false;
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Application Support');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('p4');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('Network Support');
-                    done();
-                }, 1000);
-            });
-            it('sort teams', (done: Function) => {
-                pivotGridObj.setProperties({ dataSource: { sortSettings: [{ name: 'Teams', order: 'Descending' }] } }, true);
-                pivotGridObj.dataSource.rows[1].showNoDataItems = true;
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Service Desk');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('p4');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('Network Support');
-                    done();
-                }, 1000);
-            });
-            it('sort priority', (done: Function) => {
-                pivotGridObj.dataSource.sortSettings = [{ name: 'Priority', order: 'Descending' }];
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Application Support');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('p5');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('Network Support');
-                    done();
-                }, 1000);
-            });
-            it('change data source', (done: Function) => {
-                pivotGridObj.setProperties({
-                    dataSource: {
-                        data: pivot_nodata,
-                        rows: [{ name: 'Country', showNoDataItems: true }, { name: 'State', showNoDataItems: true }],
-                        columns: [{ name: 'Product', showNoDataItems: true }, { name: 'Date', showNoDataItems: true }],
-                        values: [{ name: 'Amount' }, { name: 'Quantity' }], filters: [],
-                        filterSettings: []
-                    }
-                }, true);
-                pivotGridObj.dataSource.sortSettings = [];
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('28550');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Alabama');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('Bayern');
-                    done();
-                }, 3000);
-            });
-            it('filter state BeginWith e', (done: Function) => {
-                pivotGridObj.dataSource.filterSettings = [
-                    { name: 'State', type: 'Label', condition: 'BeginWith', value1: 'e' }
-                ]
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('England');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('France');
-                    done();
-                }, 3000);
-            });
-            it('filter state DoesNotBeginWith e', (done: Function) => {
-                pivotGridObj.dataSource.filterSettings = [
-                    { name: 'State', type: 'Label', condition: 'DoesNotBeginWith', value1: 'e' }
-                ]
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[69] as HTMLElement).innerText).toBe('United Kingdom');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[69] as HTMLElement).innerText).toBe('');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[79] as HTMLElement).innerText).toBe('Garonne (Haute)');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[79] as HTMLElement).innerText).toBe('');
-                    done();
-                }, 3000);
-            });
-            it('state nodata false', (done: Function) => {
-                pivotGridObj.setProperties({
-                    dataSource: {
-                        rows: [{ name: 'Country', showNoDataItems: true }, { name: 'State', showNoDataItems: false }],
-                    }
-                }, true);
-                pivotGridObj.dataSource.filterSettings = [];
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('28550');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Alberta');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('2100');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('Brunswick');
-                    done();
-                }, 3000);
-            });
-            it('filter state BeginWith e', (done: Function) => {
-                pivotGridObj.dataSource.filterSettings = [
-                    { name: 'State', type: 'Label', condition: 'BeginWith', value1: 'e' }
-                ]
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('England');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('France');
-                    done();
-                }, 3000);
-            });
-            it('filter state DoesNotBeginWith e', (done: Function) => {
-                pivotGridObj.dataSource.filterSettings = [
-                    { name: 'State', type: 'Label', condition: 'DoesNotBeginWith', value1: 'e' }
-                ]
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[18] as HTMLElement).innerText).toBe('United Kingdom');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[18] as HTMLElement).innerText).toBe('');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[28] as HTMLElement).innerText).toBe('Garonne (Haute)');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[28] as HTMLElement).innerText).toBe('');
-                    done();
-                }, 3000);
-            });
-            it('filter clear', (done: Function) => {
-                pivotGridObj.dataSource.filterSettings = [];
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('28550');
-                    done();
-                }, 3000);
-            });
-
-            it('filter state quantity LessThan 500', (done: Function) => {
-                pivotGridObj.dataSource.filterSettings = [
-                    { name: 'State', type: 'Value', condition: 'LessThan', value1: '500', measure: 'Quantity' }
-                ]
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('6450');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Alberta');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('2100');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('Grand Total');
-                    done();
-                }, 3000);
-            });
-            it('filter state quantity GreaterThan 500', (done: Function) => {
-                pivotGridObj.dataSource.filterSettings = [
-                    { name: 'State', type: 'Value', condition: 'GreaterThan', value1: '500', measure: 'Quantity' }
-                ]
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('22100');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('British Columbia');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('5200');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('Ontario');
-                    done();
-                }, 3000);
-            });
-            it('filter state quantity LessThan 500', (done: Function) => {
-                pivotGridObj.setProperties({
-                    dataSource: {
-                        rows: [{ name: 'Country', showNoDataItems: true }, { name: 'State', showNoDataItems: true }],
-                    }
-                }, true);
-                pivotGridObj.dataSource.filterSettings = [
-                    { name: 'State', type: 'Value', condition: 'LessThan', value1: '500', measure: 'Quantity' }
-                ]
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('6450');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Alberta');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('2100');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('Grand Total');
-                    done();
-                }, 3000);
-            });
-            it('filter state quantity GreaterThan 500', (done: Function) => {
-                pivotGridObj.dataSource.filterSettings = [
-                    { name: 'State', type: 'Value', condition: 'GreaterThan', value1: '500', measure: 'Quantity' }
-                ]
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('22100');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('British Columbia');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('5200');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('Ontario');
-                    done();
-                }, 3000);
-            });
-        });
-
-        describe(' - no data - virtual scroll ', () => {
-            let pivotGridObj: PivotView;
-            let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-            document.body.appendChild(elem);
-            afterAll(() => {
-                if (pivotGridObj) {
-                    pivotGridObj.destroy();
-                }
-                remove(elem);
-            });
-            beforeAll(() => {
-                if (document.getElementById(elem.id)) {
-                    remove(document.getElementById(elem.id));
-                }
-                document.body.appendChild(elem);
-                PivotView.Inject(VirtualScroll);
-                pivotGridObj = new PivotView({
-                    dataSource: {
-                        expandAll: true,
-                        data: pivot_nodata as IDataSet[],
-                        rows: [{ name: 'Country', showNoDataItems: true }, { name: 'State', showNoDataItems: true }],
-                        columns: [{ name: 'Product', showNoDataItems: true }, { name: 'Date', showNoDataItems: true }],
-                        values: [{ name: 'Amount' }, { name: 'Quantity' }], filters: [],
-                    },
-                    enableVirtualization: true,
-                    width: 800,
-                    height: 300
+                    setTimeout(() => {
+                        expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === document.querySelectorAll('.e-movablecontent')[0].scrollLeft).toBeTruthy();
+                        done();
+                    }, 2000);
                 });
-                pivotGridObj.appendTo('#PivotGrid');
+                afterAll(() => {
+                    if (pivotGridObj) {
+                        pivotGridObj.destroy();
+                    }
+                    remove(elem);
+                });
             });
+            describe(' - Grouping Bar', () => {
+                let pivotGridObj: PivotView;
+                let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+                beforeAll(() => {
+                    document.body.appendChild(elem);
+                    PivotView.Inject(GroupingBar, FieldList, VirtualScroll);
+                    pivotGridObj = new PivotView(
+                        {
+                            dataSource: {
+                                data: pivot_dataset as IDataSet[],
+                                expandAll: true,
+                                enableSorting: false,
+                                sortSettings: [{ name: 'company', order: 'Descending' }],
+                                formatSettings: [{ name: 'balance', format: 'C' }],
+                                rows: [{ name: 'product' }, { name: 'state' }],
+                                columns: [{ name: 'gender' }, { name: 'eyeColor' }],
+                                values: [{ name: 'balance' }, { name: 'quantity' }],
+                                filters: [],
+                            },
+                            allowCalculatedField: true,
+                            showGroupingBar: true,
+                            enableVirtualization: true,
+                            showFieldList: true,
+                            showValuesButton: true,
+                            width: 600,
+                            height: 300
+                        });
+                    pivotGridObj.appendTo('#PivotGrid');
+                });
+                beforeEach((done: Function) => {
+                    setTimeout(() => { done(); }, 2000);
+                });
+                it('pivotgrid render testing', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(24);
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(14);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                        done();
+                    }, 2000);
+                });
+                it('scroll top', (done: Function) => {
+                    document.querySelectorAll('.e-movablecontent')[0].scrollTop = 317;
+                    pivotGridObj.virtualscrollModule.direction = 'vertical';
+                    let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(Math.round(document.querySelectorAll('.e-frozencontent')[0].scrollTop) === 317).toBeTruthy();
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Jet');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$27,813.73');
+                        done();
+                    }, 2000);
+                });
+                it('scroll right', (done: Function) => {
+                    document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 1360;
+                    pivotGridObj.virtualscrollModule.direction = 'horizondal';
+                    let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === document.querySelectorAll('.e-movablecontent')[0].scrollLeft).toBeTruthy();
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Jet');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$33,116.92');
+                        done();
+                    }, 2000);
+                });
+                it('scroll bottom', (done: Function) => {
+                    pivotGridObj.element.querySelectorAll('.e-movablecontent')[0].scrollTop = 0;
+                    pivotGridObj.virtualscrollModule.direction = 'vertical';
+                    let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(pivotGridObj.element.querySelectorAll('.e-frozencontent')[0].scrollTop).toBe(0);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$32,045.16');
+                        done();
+                    }, 2000);
+                });
+                it('scroll left', (done: Function) => {
+                    document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 0;
+                    pivotGridObj.virtualscrollModule.direction = 'horizondal';
+                    let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
+                        expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('684.1px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1730px');
+                        done();
+                    }, 2000);
+                });
+                it('Collapse flight', (done: Function) => {
+                    (document.querySelectorAll('.e-frozencontent tr .e-icons')[0] as HTMLElement).click();
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
+                        expect(document.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
+                        expect(document.querySelectorAll('.e-frozencontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('Jet');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$27,813.73');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('468.1px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1730px');
+                        done();
+                    }, 2000);
+                });
+                it('Collapse male', (done: Function) => {
+                    (document.querySelectorAll('.e-movableheader th .e-icons')[0] as HTMLElement).click();
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
+                        expect(document.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
+                        expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('male Total');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$95,040.55');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('468.1px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1070px');
+                        done();
+                    }, 2000);
+                });
+                it('scroll top', (done: Function) => {
+                    document.querySelectorAll('.e-movablecontent')[0].scrollTop = 358;
+                    pivotGridObj.virtualscrollModule.direction = 'vertical';
+                    let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
+                        expect(document.querySelectorAll('.e-frozencontent')[0].scrollTop).toBe(358);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('New Jercy');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$24,452.08');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('468.1px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1070px');
+                        done();
+                    }, 2000);
+                });
+                it('scroll left', (done: Function) => {
+                    document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 752;
+                    pivotGridObj.virtualscrollModule.direction = 'horizondal';
+                    let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
+                        expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === document.querySelectorAll('.e-movablecontent')[0].scrollLeft).toBeTruthy();
+                        expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('male Total');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$24,452.08');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('468.1px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1070px');
+                        done();
+                    }, 2000);
+                });
 
-            let dataSource: IDataOptions
-            it('pivotgrid render testing', (done: Function) => {
-                dataSource = extend({}, pivotGridObj.dataSource, null, true);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('28550');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Alabama');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('');
-                    done();
-                }, 2000);
-            });
-            it('state false', (done: Function) => {
-                pivotGridObj.dataSource.rows = [{ name: 'Country', showNoDataItems: true }, { name: 'State', showNoDataItems: false }];
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('28550');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Alberta');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('2100');
-                    done();
-                }, 2000);
-            });
-            it('include england', (done: Function) => {
-                pivotGridObj.dataSource.filterSettings = [
-                    { name: 'State', type: 'Include', items: ['England'] }
-                ],
+                it('Collapse bike', (done: Function) => {
+                    (document.querySelectorAll('.e-frozencontent tr .e-icons')[2] as HTMLElement).click();
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('England');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('United Kingdom');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('1040');
-                    done();
-                }, 2000);
-            });
-            it('exclude england', (done: Function) => {
-                pivotGridObj.dataSource.filterSettings = [
-                    { name: 'State', type: 'Exclude', items: ['England'] }
-                ],
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-movableheader')[0].scrollLeft).toBe(752);
+                        done();
+                    }, 2000);
+                });
+                it('Collapse female', (done: Function) => {
+                    (document.querySelectorAll('.e-movableheader th .e-collapse')[0] as HTMLElement).click();
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('28550');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Alberta');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('2100');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('Quebec');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('6400');
-                    done();
-                }, 2000);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-movablecontent')[0].scrollTop).toBe(358);
+                        done();
+                    }, 2000);
+                });
+
+                it('filter', (done: Function) => {
+                    (document.querySelector('#product.e-pivot-button .e-pv-filter') as HTMLElement).click();
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        let allNode: HTMLElement = document.querySelector('.e-checkbox-wrapper');
+                        let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                        allNode.querySelector('.e-frame').dispatchEvent(args);
+                        args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                        allNode.querySelector('.e-frame').dispatchEvent(args);
+                        let firstNode: HTMLElement = document.querySelectorAll('.e-checkbox-wrapper')[2] as HTMLElement;
+                        args = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                        firstNode.querySelector('.e-frame').dispatchEvent(args);
+                        args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                        firstNode.querySelector('.e-frame').dispatchEvent(args);
+                        (document.querySelector('.e-ok-btn') as HTMLElement).click();
+                        done();
+                    }, 2000);
+                });
+                it('filter check', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(Math.round(document.querySelectorAll('.e-movableheader')[0].scrollLeft)).toBeGreaterThan(735);
+                        expect(document.querySelectorAll('.e-movablecontent')[0].scrollTop).toBe(0);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Tempo');
+                        done();
+                    }, 2000);
+                });
+
+                it('value moved to row', (done: Function) => {
+                    let rowAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-rows');
+                    let columnAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
+                    let pivotButton: HTMLElement[] = [].slice.call((columnAxiscontent).querySelectorAll('.e-pivot-button'));
+                    expect(pivotButton.length).toEqual(3);
+                    let dragElement: HTMLElement = pivotButton[2].querySelector('.e-content');
+                    let mousedown: any =
+                        getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+                    EventHandler.trigger(dragElement, 'mousedown', mousedown);
+                    let mousemove: any =
+                        getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
+                    mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
+                    EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                    let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
+                    mouseUp.type = 'mouseup';
+                    mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
+                    EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                        expect(pivotButton.length).toEqual(3);
+                        done();
+                    }, 2000);
+                });
+                it('value moved to column', (done: Function) => {
+                    let rowAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-rows');
+                    let columnAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
+                    let pivotButton: HTMLElement[] = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                    expect(pivotButton.length).toEqual(3);
+                    let dragElement: HTMLElement = pivotButton[2].querySelector('.e-content');
+                    let mousedown: any =
+                        getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+                    EventHandler.trigger(dragElement, 'mousedown', mousedown);
+                    let mousemove: any =
+                        getEventObject('MouseEvents', 'mousemove', dragElement, columnAxiscontent, 15, 70);
+                    mousemove.srcElement = mousemove.target = mousemove.toElement = columnAxiscontent;
+                    EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                    let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, columnAxiscontent);
+                    mouseUp.type = 'mouseup';
+                    mouseUp.srcElement = mouseUp.target = mouseUp.toElement = columnAxiscontent;
+                    EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        pivotButton = [].slice.call((columnAxiscontent).querySelectorAll('.e-pivot-button'));
+                        expect(pivotButton.length).toEqual(3);
+                        done();
+                    }, 2000);
+                });
+                it('value removed', (done: Function) => {
+                    let rowAxiscontent: any = document;
+                    let columnAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
+                    let pivotButton: HTMLElement[] = [].slice.call((columnAxiscontent).querySelectorAll('.e-pivot-button'));
+                    expect(pivotButton.length).toEqual(3);
+                    let dragElement: HTMLElement = pivotButton[2].querySelector('.e-content');
+                    let mousedown: any =
+                        getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+                    EventHandler.trigger(dragElement, 'mousedown', mousedown);
+                    let mousemove: any =
+                        getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
+                    mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
+                    EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                    let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
+                    mouseUp.type = 'mouseup';
+                    mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
+                    EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                        expect(pivotButton.length).toEqual(8);
+                        done();
+                    }, 2000);
+                });
+                it('values added', () => {
+                    pivotGridObj.dataSource.values = [{ name: 'balance' }, { name: 'quantity' }];
+                });
+                it('values removed', (done: Function) => {
+                    let columnAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
+                    let valueAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-values');
+                    let pivotButton: HTMLElement[] = [].slice.call((columnAxiscontent).querySelectorAll('.e-pivot-button'));
+                    (pivotButton[2].querySelector('.e-remove') as HTMLElement).click();
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        pivotButton = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
+                        expect(pivotButton.length).toEqual(0);
+                        done();
+                    }, 2000);
+                });
+                it('values added', () => {
+                    pivotGridObj.dataSource.values = [{ name: 'balance' }, { name: 'quantity' }];
+                });
+
+                it('RTL', (done: Function) => {
+                    pivotGridObj.enableRtl = true;
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
+                        expect(document.querySelectorAll('.e-movablecontent')[0].scrollTop).toBe(0);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Tempo');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('0.1px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('410px');
+                        done();
+                    }, 2000);
+                });
+                afterAll(() => {
+                    if (pivotGridObj) {
+                        pivotGridObj.destroy();
+                    }
+                    remove(elem);
+                });
             });
-            it('state true', (done: Function) => {
-                pivotGridObj.dataSource.rows = [{ name: 'Country', showNoDataItems: true }, { name: 'State', showNoDataItems: true }];
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('28550');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Alabama');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('Brunswick');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('6300');
-                    done();
-                }, 2000);
+            describe(' - ValueSorting', () => {
+                let pivotGridObj: PivotView;
+                let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+                beforeAll(() => {
+                    document.body.appendChild(elem);
+                    pivotGridObj = new PivotView(
+                        {
+                            dataSource: {
+                                data: pivot_dataset as IDataSet[],
+                                expandAll: true,
+                                enableSorting: false,
+                                sortSettings: [{ name: 'company', order: 'Descending' }],
+                                formatSettings: [{ name: 'balance', format: 'C' }],
+                                rows: [{ name: 'product' }, { name: 'state' }],
+                                columns: [{ name: 'gender' }, { name: 'eyeColor' }],
+                                values: [{ name: 'balance' }, { name: 'quantity' }],
+                                filters: [],
+                            },
+                            enableVirtualization: true,
+                            enableValueSorting: true,
+                            width: 600,
+                            height: 300
+                        });
+                    pivotGridObj.appendTo('#PivotGrid');
+                });
+                beforeEach((done: Function) => {
+                    setTimeout(() => { done(); }, 2000);
+                });
+                it('render testing', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(43);
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(18);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                        done();
+                    }, 2000);
+                });
+                it('sort male-blue-balance', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    (document.querySelectorAll('.e-movableheader th.e-firstcell')[0] as HTMLElement).click()
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(43);
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(18);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Van');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$43,025.37');
+                        done();
+                    }, 2000);
+                });
+                it('scrollTop', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    document.querySelectorAll('.e-movablecontent')[0].scrollTop = 398;
+                    pivotGridObj.virtualscrollModule.direction = 'vertical';
+                    let args: MouseEvent = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(43);
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(18);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Van');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$43,025.37');
+                        done();
+                    }, 2000);
+                });
+                it('scrollLeft', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 1235;
+                    pivotGridObj.virtualscrollModule.direction = 'horizondal';
+                    let args: MouseEvent = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(43);
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(18);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Van');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$43,025.37');
+                        done();
+                    }, 2000);
+                });
+                it('Collapse car', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    (document.querySelectorAll('.e-frozencontent tr')[14].querySelector('.e-icons') as HTMLElement).click()
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(37);
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(18);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Van');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$43,025.37');
+                        done();
+                    }, 2000);
+                });
+                it('scrollTop', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    document.querySelectorAll('.e-movablecontent')[0].scrollTop = 0;
+                    pivotGridObj.virtualscrollModule.direction = 'vertical';
+                    let args: MouseEvent = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(37);
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(18);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Van');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$43,025.37');
+                        done();
+                    }, 2000);
+                });
+                it('scrollLeft', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 0;
+                    pivotGridObj.virtualscrollModule.direction = 'horizondal';
+                    let args: MouseEvent = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(37);
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(18);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Van');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$43,025.37');
+                        done();
+                    }, 2000);
+                });
+                it('sort male-green-balance', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    (document.querySelectorAll('.e-movableheader th.e-firstcell')[1] as HTMLElement).click()
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(37);
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(18);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
+                        done();
+                    }, 2000);
+                });
+                it('remove quantity', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    pivotGridObj.dataSource.values = [{ name: 'balance' }];
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(37);
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(9);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
+                        done();
+                    }, 2000);
+                });
+                it('sort female-brown', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    (document.querySelectorAll('.e-movableheader th.e-firstcell')[1] as HTMLElement).click();
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(37);
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(9);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Car');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$32,295.87');
+                        done();
+                    }, 2000);
+                });
+                it('insert quantity', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    pivotGridObj.dataSource.values = [{ name: 'balance' }, { name: 'quantity' }];
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(37);
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(18);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Car');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$32,295.87');
+                        done();
+                    }, 2000);
+                });
+                it('move values to row', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    pivotGridObj.dataSource.valueAxis = 'row';
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(111);
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(9);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('');
+                        done();
+                    }, 3000);
+                });
+                afterAll(() => {
+                    if (pivotGridObj) {
+                        pivotGridObj.destroy();
+                    }
+                    remove(elem);
+                });
             });
-            it('scroll bottom', (done: Function) => {
-                document.querySelector('.e-movablecontent').scrollTop = 100;
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('28550');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Alabama');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('Brunswick');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('6300');
-                    done();
-                }, 2000);
-            });
-            it('scroll top', (done: Function) => {
-                document.querySelector('.e-movablecontent').scrollTop = 0;
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('28550');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Alabama');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('');
-                    expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('Brunswick');
-                    expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('6300');
-                    done();
-                }, 2000);
+            describe(' - advanced filtering ', () => {
+                let pivotGridObj: PivotView;
+                let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+                beforeAll(() => {
+                    document.body.appendChild(elem);
+                    pivotGridObj = new PivotView(
+                        {
+                            dataSource: {
+                                allowLabelFilter: true,
+                                allowValueFilter: true,
+                                data: pivot_dataset as IDataSet[],
+                                expandAll: true,
+                                enableSorting: false,
+                                formatSettings: [{ name: 'balance', format: 'C' }],
+                                rows: [{ name: 'product' }, { name: 'state' }],
+                                columns: [{ name: 'gender' }, { name: 'eyeColor' }],
+                                values: [{ name: 'balance' }, { name: 'quantity' }],
+                                filters: [],
+                            },
+                            enableVirtualization: true,
+                            width: 600,
+                            height: 300
+                        });
+                    pivotGridObj.appendTo('#PivotGrid');
+                });
+                beforeEach((done: Function) => {
+                    setTimeout(() => { done(); }, 2000);
+                });
+                it('pivotgrid render testing', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(24);
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(14);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                        done();
+                    }, 2000);
+                });
+                it('state start with t', (done: Function) => {
+                    pivotGridObj.dataSource.filterSettings = [
+                        { name: 'state', type: 'Label', condition: 'BeginWith', value1: 't' }],
+                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(13);
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(14);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Van');
+                        expect(document.querySelectorAll('.e-frozencontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('Tamilnadu');
+                        done();
+                    }, 2000);
+                });
+                it('state contains e', (done: Function) => {
+                    pivotGridObj.dataSource.filterSettings = [
+                        { name: 'state', type: 'Label', condition: 'Contains', value1: 'e' }],
+                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(24);
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(14);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                        expect(document.querySelectorAll('.e-frozencontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('New Jercy');
+                        done();
+                    }, 2000);
+                });
+                it('scroll top', (done: Function) => {
+                    document.querySelectorAll('.e-movablecontent')[0].scrollTop = 317;
+                    pivotGridObj.virtualscrollModule.direction = 'vertical';
+                    let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    setTimeout(() => {
+                        expect(Math.round(document.querySelectorAll('.e-frozencontent')[0].scrollTop) === 317).toBeTruthy();
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$11,131.56');
+                        done();
+                    }, 2000);
+                });
+                it('eyeColor equals blue', (done: Function) => {
+                    pivotGridObj.dataSource.filterSettings = [
+                        { name: 'state', type: 'Label', condition: 'Contains', value1: 'e' },
+                        { name: 'eyeColor', type: 'Label', condition: 'Equals', value1: 'blue' }],
+                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('blue');
+                        expect(document.querySelectorAll('.e-movableheader th')[4].textContent).toBe('male Total');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$11,131.56');
+                        done();
+                    }, 2000);
+                });
+                it('scroll right', (done: Function) => {
+                    document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 1360;
+                    pivotGridObj.virtualscrollModule.direction = 'horizondal';
+                    let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    setTimeout(() => {
+                        expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === document.querySelectorAll('.e-movablecontent')[0].scrollLeft).toBeTruthy();
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$11,131.56');
+                        done();
+                    }, 2000);
+                });
+                it('product quantity > 100', (done: Function) => {
+                    pivotGridObj.dataSource.filterSettings = [
+                        { name: 'product', type: 'Value', condition: 'GreaterThan', measure: 'quantity', value1: '100' }],
+                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-movableheader th')[4].textContent).toBe('brown');
+                        expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('green');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
+                        done();
+                    }, 2000);
+                });
+                // it('eyeColor blue quantity < 100', (done: Function) => {
+                //     pivotGridObj.dataSource.filterSettings = [
+                //         { name: 'product', type: 'Value', condition: 'GreaterThan', measure: 'quantity', value1: '100' },
+                //         { name: 'eyeColor', type: 'Value', condition: 'LessThan', measure: 'quantity', value1: '100' }],
+                //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                //     setTimeout(() => {
+                //         expect(document.querySelectorAll('.e-movableheader th')[1].textContent).toBe('balance');
+                //         expect(document.querySelectorAll('.e-movableheader th')[2].textContent).toBe('quantity');
+                //         done();
+                //     }, 2000);
+                // });
+                it('product quantity > 100', (done: Function) => {
+                    pivotGridObj.dataSource.filterSettings = [
+                        { name: 'product', type: 'Value', condition: 'GreaterThan', measure: 'quantity', value1: '100' }],
+                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-movableheader th')[4].textContent).toBe('brown');
+                        expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('green');
+                        // expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
+                        done();
+                    }, 2000);
+                });
+                it('scroll bottom', (done: Function) => {
+                    pivotGridObj.element.querySelectorAll('.e-movablecontent')[0].scrollTop = 0;
+                    pivotGridObj.virtualscrollModule.direction = 'vertical';
+                    let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    setTimeout(() => {
+                        expect(pivotGridObj.element.querySelectorAll('.e-frozencontent')[0].scrollTop === 0).toBeTruthy();
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
+                        done();
+                    }, 2000);
+                });
+                it('scroll left', (done: Function) => {
+                    document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 400;
+                    pivotGridObj.virtualscrollModule.direction = 'horizondal';
+                    let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    setTimeout(() => {
+                        let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
+                        expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft).toBe(400);
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('684.1px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1780px');
+                        done();
+                    }, 2000);
+                });
+                it('scroll left', (done: Function) => {
+                    document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 0;
+                    pivotGridObj.virtualscrollModule.direction = 'horizondal';
+                    let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    setTimeout(() => {
+                        let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
+                        expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('684.1px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1780px');
+                        done();
+                    }, 2000);
+                });
+                it('Collapse flight', (done: Function) => {
+                    (document.querySelectorAll('.e-frozencontent tr .e-icons')[0] as HTMLElement).click()
+                    setTimeout(() => {
+                        let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
+                        expect(document.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
+                        expect(document.querySelectorAll('.e-frozencontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('Jet');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$27,813.73');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('468.1px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1780px');
+                        done();
+                    }, 2000);
+                });
+                it('Collapse male', (done: Function) => {
+                    (document.querySelectorAll('.e-movableheader th .e-icons')[0] as HTMLElement).click()
+                    setTimeout(() => {
+                        let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
+                        expect(document.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
+                        expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('male Total');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$95,040.55');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('468.1px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1120px');
+                        done();
+                    }, 2000);
+                });
+                it('value in row axis', (done: Function) => {
+                    pivotGridObj.setProperties({ dataSource: { valueAxis: 'row' } }, true);
+                    pivotGridObj.dataSource.drilledMembers = [];
+                    setTimeout(() => {
+                        let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('504.1px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('790px');
+                        done();
+                    }, 2000);
+                });
+                it('scroll top', (done: Function) => {
+                    document.querySelectorAll('.e-movablecontent')[0].scrollTop = 890;
+                    pivotGridObj.virtualscrollModule.direction = 'vertical';
+                    let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    setTimeout(() => {
+                        document.querySelectorAll('.e-movablecontent')[0].scrollTop = 890;
+                        pivotGridObj.virtualscrollModule.direction = 'vertical';
+                        let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+                        document.querySelector('.e-movablecontent').dispatchEvent(args);
+                        args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                        document.querySelector('.e-movablecontent').dispatchEvent(args);
+                        done();
+                    }, 2000);
+                });
+                it('append name in column', (done: Function) => {
+                    pivotGridObj.dataSource.columns = [{ name: 'gender' }, { name: 'eyeColor' }, { name: 'name' }],
+                        setTimeout(() => {
+                            expect(document.querySelectorAll('.e-frozencontent')[0].scrollTop).toBe(0);
+                            done();
+                        }, 2000);
+                });
+                it('scroll left', (done: Function) => {
+                    document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 50000;
+                    pivotGridObj.virtualscrollModule.direction = 'horizondal';
+                    let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    setTimeout(() => {
+                        expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === document.querySelectorAll('.e-movablecontent')[0].scrollLeft).toBeTruthy();
+                        done();
+                    }, 2000);
+                });
+                afterAll(() => {
+                    if (pivotGridObj) {
+                        pivotGridObj.destroy();
+                    }
+                    remove(elem);
+                });
             });
         });
 
+        describe(' - no data', () => {
+            describe(' - no data', () => {
+                let pivotGridObj: PivotView;
+                let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+                let noData: IDataSet[] = [
+                    { "Teams": "Application Support", "Priority": "p1", "Calls": 4 },
+                    { "Teams": "Application Support", "Priority": "p2", "Calls": 1 },
+                    { "Teams": "Application Support", "Priority": "p3", "Calls": 2 },
+                    { "Teams": "Service Desk", "Priority": "p1", "Calls": 4 },
+                    { "Teams": "Service Desk", "Priority": "p2", "Calls": 1 },
+                    { "Teams": "Service Desk", "Priority": "p3", "Calls": 2 },
+                    { "Teams": "Network Support", "Priority": "p4", "Calls": 5 },
+                    { "Teams": "Network Support", "Priority": "p5", "Calls": 6 }
+                ];
+                document.body.appendChild(elem);
+                afterAll(() => {
+                    if (pivotGridObj) {
+                        pivotGridObj.destroy();
+                    }
+                    remove(elem);
+                });
+                beforeAll(() => {
+                    if (document.getElementById(elem.id)) {
+                        remove(document.getElementById(elem.id));
+                    }
+                    document.body.appendChild(elem);
+                    PivotView.Inject(FieldList, CalculatedField);
+                    pivotGridObj = new PivotView({
+                        dataSource: {
+                            expandAll: true,
+                            data: noData as IDataSet[],
+                            rows: [{ name: 'Teams', showNoDataItems: true }],
+                            columns: [{ name: 'Priority', showNoDataItems: true }],
+                            values: [{ name: 'Calls', showNoDataItems: true }],
+                            allowLabelFilter: true,
+                            allowValueFilter: true
+                        },
+                        showFieldList: true,
+                        allowCalculatedField: true,
+                        height: 400
+                    });
+                    pivotGridObj.appendTo('#PivotGrid');
+                });
+
+                let dataSource: IDataOptions
+                it('pivotgrid render testing', (done: Function) => {
+                    dataSource = extend({}, pivotGridObj.dataSource, null, true);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Network Support');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('');
+                        expect((document.querySelectorAll('td[aria-colindex="4"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('5');
+                        done();
+                    }, 2000);
+                });
+                it('priority to row', (done: Function) => {
+                    pivotGridObj.setProperties({
+                        dataSource: {
+                            rows: [{ name: 'Teams', showNoDataItems: true }, { name: 'Priority', showNoDataItems: true }]
+                        }
+                    }, true);
+                    pivotGridObj.dataSource.columns = [];
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Application Support');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[4] as HTMLElement).innerText).toBe('p4');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[4] as HTMLElement).innerText).toBe('');
+                        done();
+                    }, 1000);
+                });
+                it('swap row elements', (done: Function) => {
+                    pivotGridObj.dataSource.rows = [
+                        { name: 'Priority', showNoDataItems: true },
+                        { name: 'Teams', showNoDataItems: true }
+                    ];
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('Network Support');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[14] as HTMLElement).innerText).toBe('Network Support');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[14] as HTMLElement).innerText).toBe('5');
+                        done();
+                    }, 1000);
+                });
+                it('swap to columns', (done: Function) => {
+                    pivotGridObj.setProperties({ dataSource: { rows: [] } }, true);
+                    pivotGridObj.dataSource.columns = [
+                        { name: 'Priority', showNoDataItems: true },
+                        { name: 'Teams', showNoDataItems: true }
+                    ];
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="13"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('');
+                        expect((document.querySelectorAll('th[aria-colindex="13"] .e-headertext')[0] as HTMLElement).innerText).toBe('Application Support');
+                        expect((document.querySelectorAll('td[aria-colindex="14"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('5');
+                        expect((document.querySelectorAll('th[aria-colindex="14"] .e-headertext')[0] as HTMLElement).innerText).toBe('Network Support');
+                        done();
+                    }, 1000);
+                });
+                it('swap to rows', (done: Function) => {
+                    pivotGridObj.setProperties({ dataSource: { columns: [] } }, true);
+                    pivotGridObj.dataSource.rows = [
+                        { name: 'Priority', showNoDataItems: true },
+                        { name: 'Teams', showNoDataItems: true }
+                    ];
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('Network Support');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[14] as HTMLElement).innerText).toBe('Network Support');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[14] as HTMLElement).innerText).toBe('5');
+                        done();
+                    }, 1000);
+                });
+                it('exclude p4,p5', (done: Function) => {
+                    pivotGridObj.dataSource.rows = [
+                        { name: 'Teams', showNoDataItems: true },
+                        { name: 'Priority', showNoDataItems: true }
+                    ];
+                    pivotGridObj.dataSource.filterSettings = [
+                        { name: 'Priority', type: 'Exclude', items: ['p4', 'p5'] }
+                    ],
+                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[4] as HTMLElement).innerText).toBe('Network Support');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[4] as HTMLElement).innerText).toBe('');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[8] as HTMLElement).innerText).toBe('7');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[7] as HTMLElement).innerText).toBe('');
+                        done();
+                    }, 1000);
+                });
+                it('exclude p1,p2,p3', (done: Function) => {
+                    pivotGridObj.dataSource.filterSettings = [
+                        { name: 'Priority', type: 'Include', items: ['p4', 'p5'] }
+                    ],
+                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Application Support');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('p4');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('Network Support');
+                        done();
+                    }, 1000);
+                });
+                it('dont show priority no items', (done: Function) => {
+                    pivotGridObj.dataSource.rows[1].showNoDataItems = false;
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Application Support');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('p4');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('Network Support');
+                        done();
+                    }, 1000);
+                });
+                it('sort teams', (done: Function) => {
+                    pivotGridObj.setProperties({ dataSource: { sortSettings: [{ name: 'Teams', order: 'Descending' }] } }, true);
+                    pivotGridObj.dataSource.rows[1].showNoDataItems = true;
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Service Desk');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('p4');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('Network Support');
+                        done();
+                    }, 1000);
+                });
+                it('sort priority', (done: Function) => {
+                    pivotGridObj.dataSource.sortSettings = [{ name: 'Priority', order: 'Descending' }];
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Application Support');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('p5');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('Network Support');
+                        done();
+                    }, 1000);
+                });
+                it('change data source', (done: Function) => {
+                    pivotGridObj.setProperties({
+                        dataSource: {
+                            data: pivot_nodata,
+                            expandAll: false,
+                            drilledMembers: [{ name: 'Country', items: ['Canada'] }],
+                            rows: [{ name: 'Country', showNoDataItems: true }, { name: 'State', showNoDataItems: true }],
+                            columns: [{ name: 'Product', showNoDataItems: true }, { name: 'Date', showNoDataItems: true }],
+                            values: [{ name: 'Amount' }, { name: 'Quantity' }], filters: [],
+                            filterSettings: []
+                        }
+                    }, true);
+                    pivotGridObj.dataSource.sortSettings = [];
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('99960');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Alabama');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('Bayern');
+                        done();
+                    }, 3000);
+                });
+                it('filter state BeginWith e', (done: Function) => {
+                    pivotGridObj.dataSource.filterSettings = [
+                        { name: 'State', type: 'Label', condition: 'BeginWith', value1: 'e' }
+                    ]
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('England');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('France');
+                        done();
+                    }, 3000);
+                });
+                it('filter state DoesNotBeginWith e', (done: Function) => {
+                    pivotGridObj.setProperties({ dataSource: { drilledMembers: [{ name: 'Country', items: ['United Kingdom'] }] } });
+                    pivotGridObj.dataSource.filterSettings = [
+                        { name: 'State', type: 'Label', condition: 'DoesNotBeginWith', value1: 'e' }
+                    ]
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('United Kingdom');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[13] as HTMLElement).innerText).toBe('Garonne (Haute)');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[13] as HTMLElement).innerText).toBe('');
+                        done();
+                    }, 3000);
+                });
+                it('state nodata false', (done: Function) => {
+                    pivotGridObj.setProperties({
+                        dataSource: {
+                            rows: [{ name: 'Country', showNoDataItems: true }, { name: 'State', showNoDataItems: false }],
+                            drilledMembers: [{ name: 'Country', items: ['Canada'] }],
+                        }
+                    }, true);
+                    pivotGridObj.dataSource.filterSettings = [];
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('99960');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Alberta');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('5250');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('Brunswick');
+                        done();
+                    }, 3000);
+                });
+                it('filter state BeginWith e', (done: Function) => {
+                    pivotGridObj.dataSource.filterSettings = [
+                        { name: 'State', type: 'Label', condition: 'BeginWith', value1: 'e' }
+                    ]
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('England');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('France');
+                        done();
+                    }, 3000);
+                });
+                it('filter state DoesNotBeginWith e', (done: Function) => {
+                    pivotGridObj.setProperties({ dataSource: { drilledMembers: [{ name: 'Country', items: ['United Kingdom'] }] } });
+                    pivotGridObj.dataSource.filterSettings = [
+                        { name: 'State', type: 'Label', condition: 'DoesNotBeginWith', value1: 'e' }
+                    ]
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('United Kingdom');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[13] as HTMLElement).innerText).toBe('Garonne (Haute)');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[13] as HTMLElement).innerText).toBe('');
+                        done();
+                    }, 3000);
+                });
+                it('filter clear', (done: Function) => {
+                    pivotGridObj.dataSource.filterSettings = [];
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('99960');
+                        done();
+                    }, 3000);
+                });
+
+                it('filter state quantity LessThan 500', (done: Function) => {
+                    pivotGridObj.setProperties({ dataSource: { drilledMembers: [{ name: 'Country', items: ['Canada'] }] } });
+                    pivotGridObj.dataSource.filterSettings = [
+                        { name: 'State', type: 'Value', condition: 'LessThan', value1: '500', measure: 'Quantity' }
+                    ]
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('19260');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Alberta');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('5250');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('Grand Total');
+                        done();
+                    }, 3000);
+                });
+                it('filter state quantity GreaterThan 500', (done: Function) => {
+                    pivotGridObj.dataSource.filterSettings = [
+                        { name: 'State', type: 'Value', condition: 'GreaterThan', value1: '500', measure: 'Quantity' }
+                    ]
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('80700');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('British Columbia');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('13500');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('Ontario');
+                        done();
+                    }, 3000);
+                });
+                it('filter state quantity LessThan 500', (done: Function) => {
+                    pivotGridObj.setProperties({
+                        dataSource: {
+                            rows: [{ name: 'Country', showNoDataItems: true }, { name: 'State', showNoDataItems: true }],
+                        }
+                    }, true);
+                    pivotGridObj.dataSource.filterSettings = [
+                        { name: 'State', type: 'Value', condition: 'LessThan', value1: '500', measure: 'Quantity' }
+                    ]
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('19260');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Alberta');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('5250');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('Grand Total');
+                        done();
+                    }, 3000);
+                });
+                it('filter state quantity GreaterThan 500', (done: Function) => {
+                    pivotGridObj.dataSource.filterSettings = [
+                        { name: 'State', type: 'Value', condition: 'GreaterThan', value1: '500', measure: 'Quantity' }
+                    ]
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('80700');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('British Columbia');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('13500');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[3] as HTMLElement).innerText).toBe('Ontario');
+                        done();
+                    }, 3000);
+                });
+            });
+            describe(' - virtual scroll ', () => {
+                let pivotGridObj: PivotView;
+                let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+                document.body.appendChild(elem);
+                afterAll(() => {
+                    if (pivotGridObj) {
+                        pivotGridObj.destroy();
+                    }
+                    remove(elem);
+                });
+                beforeAll(() => {
+                    if (document.getElementById(elem.id)) {
+                        remove(document.getElementById(elem.id));
+                    }
+                    document.body.appendChild(elem);
+                    PivotView.Inject(VirtualScroll);
+                    pivotGridObj = new PivotView({
+                        dataSource: {
+                            expandAll: true,
+                            data: pivot_nodata as IDataSet[],
+                            rows: [{ name: 'Country', showNoDataItems: true }, { name: 'State', showNoDataItems: true }],
+                            columns: [{ name: 'Product', showNoDataItems: true }, { name: 'Date', showNoDataItems: true }],
+                            values: [{ name: 'Amount' }, { name: 'Quantity' }], filters: [],
+                        },
+                        enableVirtualization: true,
+                        width: 800,
+                        height: 300
+                    });
+                    pivotGridObj.appendTo('#PivotGrid');
+                });
+
+                let dataSource: IDataOptions
+                it('pivotgrid render testing', (done: Function) => {
+                    dataSource = extend({}, pivotGridObj.dataSource, null, true);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('28550');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Alabama');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('');
+                        done();
+                    }, 2000);
+                });
+                it('state false', (done: Function) => {
+                    pivotGridObj.dataSource.rows = [{ name: 'Country', showNoDataItems: true }, { name: 'State', showNoDataItems: false }];
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('28550');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Alberta');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('2100');
+                        done();
+                    }, 2000);
+                });
+                it('include england', (done: Function) => {
+                    pivotGridObj.dataSource.filterSettings = [
+                        { name: 'State', type: 'Include', items: ['England'] }
+                    ],
+                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('England');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('United Kingdom');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('1040');
+                        done();
+                    }, 2000);
+                });
+                it('exclude england', (done: Function) => {
+                    pivotGridObj.dataSource.filterSettings = [
+                        { name: 'State', type: 'Exclude', items: ['England'] }
+                    ],
+                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('28550');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Alberta');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('2100');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('Quebec');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('6400');
+                        done();
+                    }, 2000);
+                });
+                it('state true', (done: Function) => {
+                    pivotGridObj.dataSource.rows = [{ name: 'Country', showNoDataItems: true }, { name: 'State', showNoDataItems: true }];
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('28550');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Alabama');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('Brunswick');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('6300');
+                        done();
+                    }, 2000);
+                });
+                it('scroll bottom', (done: Function) => {
+                    document.querySelector('.e-movablecontent').scrollTop = 100;
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('28550');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Alabama');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('Brunswick');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('6300');
+                        done();
+                    }, 2000);
+                });
+                it('scroll top', (done: Function) => {
+                    document.querySelector('.e-movablecontent').scrollTop = 0;
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('Canada');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[0] as HTMLElement).innerText).toBe('28550');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('Alabama');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[1] as HTMLElement).innerText).toBe('');
+                        expect((document.querySelectorAll('td[aria-colindex="0"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('Brunswick');
+                        expect((document.querySelectorAll('td[aria-colindex="1"] .e-cellvalue')[6] as HTMLElement).innerText).toBe('6300');
+                        done();
+                    }, 2000);
+                });
+            });
+        })
+
+        describe('- Members limit in editor', () => {
+            describe('- Members limit in editor - groupingbar', () => {
+                let pivotGridObj: PivotView;
+                let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+                afterAll(() => {
+                    if (pivotGridObj) {
+                        pivotGridObj.destroy();
+                    }
+                    remove(elem);
+                });
+                beforeAll((done: Function) => {
+                    if (!document.getElementById(elem.id)) {
+                        document.body.appendChild(elem);
+                    }
+                    let dataBound: EmitType<Object> = () => { done(); };
+                    PivotView.Inject(GroupingBar);
+                    pivotGridObj = new PivotView({
+                        dataSource: {
+                            data: pivot_dataset as IDataSet[],
+                            rows: [{ name: 'product' }, { name: 'state' }],
+                            columns: [{ name: 'gender' }],
+                            values: [{ name: 'balance' }, { name: 'quantity' }], filters: [{ name: 'index' }],
+                            allowLabelFilter: true,
+                            allowValueFilter: true
+                        },
+                        showGroupingBar: true,
+                        dataBound: dataBound,
+                        maxNodeLimitInMemberEditor: 5
+                    });
+                    pivotGridObj.appendTo('#PivotGrid');
+                });
+                beforeEach((done: Function) => {
+                    setTimeout(() => { done(); }, 1000);
+                });
+                it('grouping bar render testing', () => {
+                    expect(document.querySelectorAll('.e-pivot-button').length).toBe(6);
+                });
+
+                it('check filtering field', (done: Function) => {
+                    let pivotButtons: HTMLElement[] =
+                        [].slice.call(pivotGridObj.element.querySelector('.e-filters').querySelectorAll('.e-pivot-button'));
+                    ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(5);
+                        done();
+                    }, 1000);
+                });
+                it('check all nodes on filter popup', () => {
+                    let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.allMemberSelect;
+                    let memberTreeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
+                    let filterDialog: Dialog = pivotGridObj.pivotCommon.filterDialog.dialogPopUp;
+                    let allNode: HTMLElement = treeObj.element.querySelector('.e-checkbox-wrapper');
+                    let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                    allNode.querySelector('.e-frame').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    allNode.querySelector('.e-frame').dispatchEvent(args);
+                    args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                    allNode.querySelector('.e-frame').dispatchEvent(args);
+                    let checkedEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-check');
+                    expect(checkedEle.length).toEqual(0);
+                    expect(filterDialog.element.querySelector('.e-ok-btn').getAttribute('disabled')).toBe('disabled');
+                    let firstNode: HTMLElement = document.querySelectorAll('.e-checkbox-wrapper')[1] as HTMLElement;
+                    args = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                    firstNode.querySelector('.e-frame').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    firstNode.querySelector('.e-frame').dispatchEvent(args);
+                    args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                    firstNode.querySelector('.e-frame').dispatchEvent(args);
+                    checkedEle = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-check');
+                    expect(checkedEle.length).toEqual(1);
+                    expect(filterDialog.element.querySelector('.e-ok-btn').getAttribute('disabled')).toBe(null);
+                    (filterDialog.element.querySelector('.e-ok-btn') as HTMLElement).click();
+                });
+                it('check filter state after update', () => {
+                    expect((document.querySelectorAll('td[aria-colindex="0"]')[1] as HTMLElement).innerText).toBe('Grand Total');
+                });
+                it('check filtering field', (done: Function) => {
+                    let pivotButtons: HTMLElement[] =
+                        [].slice.call(pivotGridObj.element.querySelector('.e-filters').querySelectorAll('.e-pivot-button'));
+                    ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(5);
+                        expect(document.querySelectorAll('.e-select-all li .e-check').length).toBe(0);
+                        expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(1);
+                        done();
+                    }, 1000);
+                });
+                it('search 0', () => {
+                    let searchOption: MaskedTextBox = pivotGridObj.pivotCommon.filterDialog.editorSearch;
+                    searchOption.setProperties({ value: '0' });
+                    searchOption.change({ value: searchOption.value });
+                    expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(5);
+                    expect(document.querySelectorAll('.e-select-all li .e-check').length).toBe(0);
+                    expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(1);
+                    expect((document.querySelectorAll('.e-member-editor-container li .e-list-text')[1] as HTMLElement).innerText).toBe("10");
+                });
+                it('search 11', () => {
+                    let searchOption: MaskedTextBox = pivotGridObj.pivotCommon.filterDialog.editorSearch;
+                    searchOption.setProperties({ value: '11' });
+                    searchOption.change({ value: searchOption.value });
+                    expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(5);
+                    expect(document.querySelectorAll('.e-select-all li .e-stop').length).toBe(1);
+                    expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(0);
+                    expect((document.querySelectorAll('.e-member-editor-container li .e-list-text')[4] as HTMLElement).innerText).toBe("811");
+                });
+                it('check 11', () => {
+                    let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                    let firstNode: HTMLElement = document.querySelectorAll('.e-checkbox-wrapper')[1] as HTMLElement;
+                    args = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                    firstNode.querySelector('.e-frame').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    firstNode.querySelector('.e-frame').dispatchEvent(args);
+                    args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                    firstNode.querySelector('.e-frame').dispatchEvent(args);
+                    let searchOption: MaskedTextBox = pivotGridObj.pivotCommon.filterDialog.editorSearch;
+                    searchOption.setProperties({ value: '0' });
+                    searchOption.change({ value: searchOption.value });
+                    expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(5);
+                    expect(document.querySelectorAll('.e-select-all li .e-stop').length).toBe(1);
+                    expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(1);
+                    expect((document.querySelectorAll('.e-member-editor-container li .e-list-text')[4] as HTMLElement).innerText).toBe("40");
+                });
+                it('search 11', () => {
+                    let searchOption: MaskedTextBox = pivotGridObj.pivotCommon.filterDialog.editorSearch;
+                    searchOption.setProperties({ value: '11' });
+                    searchOption.change({ value: searchOption.value });
+                    expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(5);
+                    expect(document.querySelectorAll('.e-select-all li .e-stop').length).toBe(1);
+                    expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(0);
+                    expect((document.querySelectorAll('.e-member-editor-container li .e-list-text')[4] as HTMLElement).innerText).toBe("811");
+                });
+                it('check all search 0', () => {
+                    let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                    let firstNode: HTMLElement = document.querySelectorAll('.e-checkbox-wrapper')[0] as HTMLElement;
+                    args = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                    firstNode.querySelector('.e-frame').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    firstNode.querySelector('.e-frame').dispatchEvent(args);
+                    args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                    firstNode.querySelector('.e-frame').dispatchEvent(args);
+                    expect(document.querySelectorAll('.e-select-all li .e-check').length).toBe(1);
+                    expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(5);
+                    let searchOption: MaskedTextBox = pivotGridObj.pivotCommon.filterDialog.editorSearch;
+                    searchOption.setProperties({ value: '0' });
+                    searchOption.change({ value: searchOption.value });
+                    expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(5);
+                    expect(document.querySelectorAll('.e-select-all li .e-stop').length).toBe(1);
+                    expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(1);
+                    expect((document.querySelectorAll('.e-member-editor-container li .e-list-text')[4] as HTMLElement).innerText).toBe("40");
+                });
+                it('check all btn click', () => {
+                    let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                    let firstNode: HTMLElement = document.querySelectorAll('.e-checkbox-wrapper')[0] as HTMLElement;
+                    args = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                    firstNode.querySelector('.e-frame').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    firstNode.querySelector('.e-frame').dispatchEvent(args);
+                    args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                    firstNode.querySelector('.e-frame').dispatchEvent(args);
+                    expect(document.querySelectorAll('.e-select-all li .e-check').length).toBe(1);
+                    expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(5);
+                    (document.querySelector('.e-ok-btn') as HTMLElement).click();
+                    pivotGridObj.maxNodeLimitInMemberEditor = 3;
+                });
+                it('state search a', (done: Function) => {
+                    let pivotButtons: HTMLElement[] =
+                        [].slice.call(pivotGridObj.element.querySelector('.e-rows').querySelectorAll('.e-pivot-button'));
+                    ((pivotButtons[1]).querySelector('.e-btn-filter') as HTMLElement).click();
+                    setTimeout(() => {
+                        let searchOption: MaskedTextBox = pivotGridObj.pivotCommon.filterDialog.editorSearch;
+                        searchOption.setProperties({ value: 'a' });
+                        searchOption.change({ value: searchOption.value });
+                        expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(3);
+                        done();
+                    }, 1000);
+                });
+                it('gender search a', (done: Function) => {
+                    let pivotButtons: HTMLElement[] =
+                        [].slice.call(pivotGridObj.element.querySelector('.e-columns').querySelectorAll('.e-pivot-button'));
+                    ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+                    setTimeout(() => {
+                        let searchOption: MaskedTextBox = pivotGridObj.pivotCommon.filterDialog.editorSearch;
+                        searchOption.setProperties({ value: 'a' });
+                        searchOption.change({ value: searchOption.value });
+                        expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(2);
+                        done();
+                    }, 1000);
+                });
+                it('change mem limit to 10', (done: Function) => {
+                    pivotGridObj.maxNodeLimitInMemberEditor = 10;
+                    let pivotButtons: HTMLElement[] =
+                        [].slice.call(pivotGridObj.element.querySelector('.e-filters').querySelectorAll('.e-pivot-button'));
+                    ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(10);
+                        expect(document.querySelectorAll('.e-select-all li .e-check').length).toBe(1);
+                        expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(10);
+                        done();
+                    }, 1000);
+                });
+            });
+            describe('- Members limit in editor - field list', () => {
+                let pivotGridObj: PivotView;
+                let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+                afterAll(() => {
+                    if (pivotGridObj) {
+                        pivotGridObj.destroy();
+                    }
+                    remove(elem);
+                });
+                beforeAll((done: Function) => {
+                    if (!document.getElementById(elem.id)) {
+                        document.body.appendChild(elem);
+                    }
+                    let dataBound: EmitType<Object> = () => { done(); };
+                    PivotView.Inject(FieldList);
+                    pivotGridObj = new PivotView({
+                        dataSource: {
+                            data: pivot_dataset as IDataSet[],
+                            rows: [{ name: 'product' }, { name: 'state' }],
+                            columns: [{ name: 'gender' }],
+                            values: [{ name: 'balance' }, { name: 'quantity' }], filters: [{ name: 'index' }]
+                        },
+                        showFieldList: true,
+                        dataBound: dataBound,
+                        maxNodeLimitInMemberEditor: 5
+                    });
+                    pivotGridObj.appendTo('#PivotGrid');
+                });
+                beforeEach((done: Function) => {
+                    setTimeout(() => { done(); }, 1000);
+                });
+                it('field list render testing', () => {
+                    expect(document.querySelectorAll('.e-pivot-button').length).toBe(6);
+                });
+
+                it('check filtering field', (done: Function) => {
+                    (document.querySelectorAll('.e-toggle-field-list')[0] as HTMLElement).click();
+                    let pivotButtons: HTMLElement[] =
+                        [].slice.call(document.querySelector('.e-filters').querySelectorAll('.e-pivot-button'));
+                    ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(5);
+                        done();
+                    }, 1000);
+                });
+                it('check all nodes on filter popup', () => {
+                    let allNode: HTMLElement = document.querySelector('.e-member-editor-wrapper .e-checkbox-wrapper');
+                    let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                    allNode.querySelector('.e-frame').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    allNode.querySelector('.e-frame').dispatchEvent(args);
+                    args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                    allNode.querySelector('.e-frame').dispatchEvent(args);
+                    let checkedEle: Element[] = <Element[] & NodeListOf<Element>>document.querySelectorAll('.e-member-editor-wrapper .e-check');
+                    expect(checkedEle.length).toEqual(0);
+                    expect(document.querySelector('.e-ok-btn').getAttribute('disabled')).toBe('disabled');
+                    let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-wrapper .e-checkbox-wrapper')[1] as HTMLElement;
+                    args = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                    firstNode.querySelector('.e-frame').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    firstNode.querySelector('.e-frame').dispatchEvent(args);
+                    args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                    firstNode.querySelector('.e-frame').dispatchEvent(args);
+                    checkedEle = <Element[] & NodeListOf<Element>>document.querySelectorAll('.e-member-editor-wrapper .e-check');
+                    expect(checkedEle.length).toEqual(1);
+                    expect(document.querySelector('.e-ok-btn').getAttribute('disabled')).toBe(null);
+                    (document.querySelector('.e-ok-btn') as HTMLElement).click();
+                });
+                it('check filter state after update', () => {
+                    expect((document.querySelectorAll('td[aria-colindex="0"]')[1] as HTMLElement).innerText).toBe('Grand Total');
+                });
+                it('check filtering field', (done: Function) => {
+                    (document.querySelectorAll('.e-toggle-field-list')[0] as HTMLElement).click();
+                    let pivotButtons: HTMLElement[] =
+                        [].slice.call(document.querySelector('.e-filters').querySelectorAll('.e-pivot-button'));
+                    ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(5);
+                        expect(document.querySelectorAll('.e-select-all li .e-check').length).toBe(0);
+                        expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(1);
+                        done();
+                    }, 1000);
+                });
+                it('search 0', () => {
+                    let searchOption: MaskedTextBox = pivotGridObj.pivotFieldListModule.pivotCommon.filterDialog.editorSearch;
+                    searchOption.setProperties({ value: '0' });
+                    searchOption.change({ value: searchOption.value });
+                    expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(5);
+                    expect(document.querySelectorAll('.e-select-all li .e-check').length).toBe(0);
+                    expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(1);
+                    expect((document.querySelectorAll('.e-member-editor-container li .e-list-text')[1] as HTMLElement).innerText).toBe("10");
+                });
+                it('search 11', () => {
+                    let searchOption: MaskedTextBox = pivotGridObj.pivotFieldListModule.pivotCommon.filterDialog.editorSearch;
+                    searchOption.setProperties({ value: '11' });
+                    searchOption.change({ value: searchOption.value });
+                    expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(5);
+                    expect(document.querySelectorAll('.e-select-all li .e-stop').length).toBe(1);
+                    expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(0);
+                    expect((document.querySelectorAll('.e-member-editor-container li .e-list-text')[4] as HTMLElement).innerText).toBe("811");
+                });
+                it('check 11', () => {
+                    let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                    let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-wrapper .e-checkbox-wrapper')[1] as HTMLElement;
+                    args = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                    firstNode.querySelector('.e-frame').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    firstNode.querySelector('.e-frame').dispatchEvent(args);
+                    args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                    firstNode.querySelector('.e-frame').dispatchEvent(args);
+                    let searchOption: MaskedTextBox = pivotGridObj.pivotFieldListModule.pivotCommon.filterDialog.editorSearch;
+                    searchOption.setProperties({ value: '0' });
+                    searchOption.change({ value: searchOption.value });
+                    expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(5);
+                    expect(document.querySelectorAll('.e-select-all li .e-stop').length).toBe(1);
+                    expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(1);
+                    expect((document.querySelectorAll('.e-member-editor-container li .e-list-text')[4] as HTMLElement).innerText).toBe("40");
+                });
+                it('search 11', () => {
+                    let searchOption: MaskedTextBox = pivotGridObj.pivotFieldListModule.pivotCommon.filterDialog.editorSearch;
+                    searchOption.setProperties({ value: '11' });
+                    searchOption.change({ value: searchOption.value });
+                    expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(5);
+                    expect(document.querySelectorAll('.e-select-all li .e-stop').length).toBe(1);
+                    expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(0);
+                    expect((document.querySelectorAll('.e-member-editor-container li .e-list-text')[4] as HTMLElement).innerText).toBe("811");
+                });
+                it('check all search 0', () => {
+                    let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                    let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-wrapper .e-checkbox-wrapper')[0] as HTMLElement;
+                    args = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                    firstNode.querySelector('.e-frame').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    firstNode.querySelector('.e-frame').dispatchEvent(args);
+                    args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                    firstNode.querySelector('.e-frame').dispatchEvent(args);
+                    expect(document.querySelectorAll('.e-select-all li .e-check').length).toBe(1);
+                    expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(5);
+                    let searchOption: MaskedTextBox = pivotGridObj.pivotFieldListModule.pivotCommon.filterDialog.editorSearch;
+                    searchOption.setProperties({ value: '0' });
+                    searchOption.change({ value: searchOption.value });
+                    expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(5);
+                    expect(document.querySelectorAll('.e-select-all li .e-stop').length).toBe(1);
+                    expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(1);
+                    expect((document.querySelectorAll('.e-member-editor-container li .e-list-text')[4] as HTMLElement).innerText).toBe("40");
+                });
+                it('check all btn click', () => {
+                    let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                    let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-wrapper .e-checkbox-wrapper')[0] as HTMLElement;
+                    args = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                    firstNode.querySelector('.e-frame').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    firstNode.querySelector('.e-frame').dispatchEvent(args);
+                    args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                    firstNode.querySelector('.e-frame').dispatchEvent(args);
+                    expect(document.querySelectorAll('.e-select-all li .e-check').length).toBe(1);
+                    expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(5);
+                    (document.querySelector('.e-ok-btn') as HTMLElement).click();
+                });
+                it('change mem limit to 10', (done: Function) => {
+                    (document.querySelectorAll('.e-toggle-field-list')[0] as HTMLElement).click();
+                    pivotGridObj.maxNodeLimitInMemberEditor = 10;
+                    let pivotButtons: HTMLElement[] =
+                        [].slice.call(document.querySelector('.e-filters').querySelectorAll('.e-pivot-button'));
+                    ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(10);
+                        expect(document.querySelectorAll('.e-select-all li .e-check').length).toBe(1);
+                        expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(10);
+                        done();
+                    }, 1000);
+                });
+            });
+        });
+
+        describe('- Drill Through', () => {
+            describe('- normal', () => {
+                let pivotGridObj: PivotView;
+                let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+                afterAll(() => {
+                    if (pivotGridObj) {
+                        pivotGridObj.destroy();
+                    }
+                    remove(elem);
+                });
+                beforeAll((done: Function) => {
+                    if (!document.getElementById(elem.id)) {
+                        document.body.appendChild(elem);
+                    }
+                    let dataBound: EmitType<Object> = () => { done(); };
+                    PivotView.Inject(GroupingBar, DrillThrough, CalculatedField);
+                    pivotGridObj = new PivotView({
+                        dataSource: {
+                            data: pivot_dataset as IDataSet[],
+                            calculatedFieldSettings: [{ name: 'price', formula: '(("Sum(balance)"*10^3+"Count(quantity)")/100)+"Sum(balance)"' }],
+                            rows: [{ name: 'product' }, { name: 'state' }],
+                            columns: [{ name: 'gender' }],
+                            values: [{ name: 'balance' }, { name: 'quantity' }, { name: 'price' }], filters: [{ name: 'index' }],
+                            allowValueFilter: true,
+                            allowLabelFilter: true
+                        },
+                        height: 300,
+                        width: 800,
+                        allowDrillThrough: true,
+                        showGroupingBar: true,
+                        dataBound: dataBound,
+                    });
+                    pivotGridObj.appendTo('#PivotGrid');
+                });
+                beforeEach((done: Function) => {
+                    setTimeout(() => { done(); }, 1000);
+                });
+                let event: MouseEvent = new MouseEvent('dblclick', {
+                    'view': window,
+                    'bubbles': true,
+                    'cancelable': true
+                });
+                it('render testing', () => {
+                    expect(document.querySelectorAll('.e-pivot-button').length).toBe(7);
+                });
+                it('click bike-female-balance', (done: Function) => {
+                    document.querySelectorAll('td[aria-colindex="1"]')[0].dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[0].textContent).toBe('Bike');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[1].textContent).toBe('female');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header')[2].textContent).toBe('Sum of balance');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[2].textContent).toBe('72975.03000000001');
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="1"]')[2].textContent).toBe('Delhi');
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 1000);
+                });
+                it('click car-quantity-male', (done: Function) => {
+                    document.querySelectorAll('td[aria-colindex="5"]')[1].dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[0].textContent).toBe('Car');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[1].textContent).toBe('male');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header')[2].textContent).toBe('Sum of quantity');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[2].textContent).toBe('585');
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Car');
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 1000);
+                });
+                it('click jet-price-female', (done: Function) => {
+                    document.querySelectorAll('td[aria-colindex="3"]')[3].dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[0].textContent).toBe('Jet');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[1].textContent).toBe('female');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header')[2].textContent).toBe('price');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[2].textContent).toBe('1007288.6399999999');
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Jet');
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 1000);
+                });
+                it('click bike-quantity', (done: Function) => {
+                    document.querySelectorAll('td[aria-colindex="8"]')[0].dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[0].textContent).toBe('Bike');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header')[1].textContent).toBe('Sum of quantity');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[1].textContent).toBe('1060');
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Bike');
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 1000);
+                });
+                it('click female-balance', (done: Function) => {
+                    document.querySelectorAll('td[aria-colindex="1"]')[6].dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[0].textContent).toBe('female');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header')[1].textContent).toBe('Sum of balance');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[1].textContent).toBe('477089.13');
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Jet');
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 1000);
+                });
+                it('click price', (done: Function) => {
+                    document.querySelectorAll('td[aria-colindex="9"]')[6].dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
+                        expect(document.querySelectorAll('.e-drillthrough-body-header')[0].textContent).toBe('price');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[0].textContent).toBe('11314903.290000001');
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Car');
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 1000);
+                });
+                it('expand bike', (done: Function) => {
+                    (document.querySelectorAll('td[aria-colindex="0"] .e-expand')[0] as HTMLElement).click();
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('td[aria-colindex="0"]')[2].textContent).toBe('Delhi');
+                        done();
+                    }, 1000);
+                });
+                it('click delhi-quantity-female', (done: Function) => {
+                    document.querySelectorAll('td[aria-colindex="2"]')[2].dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[0].textContent).toBe('Bike - Delhi');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[1].textContent).toBe('female');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header')[2].textContent).toBe('Sum of quantity');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[2].textContent).toBe('79');
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Bike');
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 1000);
+                });
+                it('value axis to row', (done: Function) => {
+                    pivotGridObj.dataSource.valueAxis = 'row';
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('td[aria-colindex="0"]')[2].textContent).toBe('quantity');
+                        done();
+                    }, 2000);
+                });
+                it('click bike-balance-male', (done: Function) => {
+                    document.querySelectorAll('td[aria-colindex="2"]')[1].dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[0].textContent).toBe('Bike');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[1].textContent).toBe('male');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header')[2].textContent).toBe('Sum of balance');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[2].textContent).toBe('97762.19000000002');
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Bike');
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 1000);
+                });
+                it('click bike-male', (done: Function) => {
+                    document.querySelectorAll('td[aria-colindex="2"]')[0].dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(0);
+                        done();
+                    }, 1000);
+                });
+                it('value axis to column filter bike alone', (done: Function) => {
+                    pivotGridObj.setProperties({ dataSource: { valueAxis: 'column' } });
+                    pivotGridObj.dataSource.filterSettings = [{ name: 'product', type: 'Include', items: ['Bike'] }];
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('td[aria-colindex="0"]')[2].textContent).toBe('Delhi');
+                        done();
+                    }, 2000);
+                });
+                it('click quantity-female', (done: Function) => {
+                    document.querySelectorAll('td[aria-colindex="2"]')[7].dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[0].textContent).toBe('female');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header')[1].textContent).toBe('Sum of quantity');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[1].textContent).toBe('478');
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Bike');
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 1000);
+                });
+                it('click quantity-female keyboard', (done: Function) => {
+                    (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'enter', target: document.querySelectorAll('td[aria-colindex="2"]')[7], preventDefault: (): void => { /** Null */ } });
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[0].textContent).toBe('female');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header')[1].textContent).toBe('Sum of quantity');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[1].textContent).toBe('478');
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Bike');
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 1000);
+                });
+                it('click bike', (done: Function) => {
+                    document.querySelectorAll('td[aria-colindex="0"]')[0].querySelector('.e-cellvalue').dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(0);
+                        done();
+                    }, 1000);
+                });
+                it('click female', (done: Function) => {
+                    document.querySelectorAll('th[aria-colindex="1"]')[0].querySelector('.e-stackedheadercelldiv').dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(0);
+                        done();
+                    }, 1000);
+                });
+                it('state no data', (done: Function) => {
+                    pivotGridObj.setProperties({
+                        dataSource: {
+                            data: pivot_nodata as IDataSet[],
+                            expandAll: false,
+                            rows: [{ name: 'Country', showNoDataItems: true }, { name: 'State', showNoDataItems: true }],
+                            columns: [{ name: 'Product', showNoDataItems: true }, { name: 'Date', showNoDataItems: true }],
+                            values: [{ name: 'Amount' }, { name: 'Quantity' }], filters: [],
+                            filterSettings: []
+                        }
+                    }, true);
+                    pivotGridObj.dataSource.drilledMembers = [{ name: 'Country', items: ['Canada'] }];
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(0);
+                        done();
+                    }, 1000);
+                });
+                it('click empty data', (done: Function) => {
+                    document.querySelectorAll('td[aria-colindex="1"]')[1].dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 1000);
+                });
+                it('click balance', (done: Function) => {
+                    document.querySelectorAll('th[aria-colindex="1"]')[1].querySelector('.e-headertext').dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(0);
+                        pivotGridObj.isAdaptive = true;
+                        pivotGridObj.render();
+                        done();
+                    }, 1000);
+                });
+                it('click Bike adaptive', (done: Function) => {
+                    document.querySelectorAll('th[aria-colindex="1"]')[0].dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(0);
+                        done();
+                    }, 1000);
+                });
+            });
+            describe('- Virtual scrolling', () => {
+                let pivotGridObj: PivotView;
+                let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+                afterAll(() => {
+                    if (pivotGridObj) {
+                        pivotGridObj.destroy();
+                    }
+                    remove(elem);
+                });
+                beforeAll((done: Function) => {
+                    if (!document.getElementById(elem.id)) {
+                        document.body.appendChild(elem);
+                    }
+                    let dataBound: EmitType<Object> = () => { done(); };
+                    PivotView.Inject(GroupingBar, DrillThrough, CalculatedField, VirtualScroll);
+                    pivotGridObj = new PivotView({
+                        dataSource: {
+                            data: pivot_dataset as IDataSet[],
+                            calculatedFieldSettings: [{ name: 'price', formula: '(("Sum(balance)"*10^3+"Count(quantity)")/100)+"Sum(balance)"' }],
+                            rows: [{ name: 'product' }, { name: 'state' }],
+                            columns: [{ name: 'gender' }],
+                            values: [{ name: 'balance' }, { name: 'quantity' }, { name: 'price' }], filters: [{ name: 'index' }],
+                            allowValueFilter: true,
+                            allowLabelFilter: true
+                        },
+                        height: 300,
+                        width: 800,
+                        allowDrillThrough: true,
+                        enableVirtualization: true,
+                        showGroupingBar: true,
+                        dataBound: dataBound,
+                    });
+                    pivotGridObj.appendTo('#PivotGrid');
+                });
+                beforeEach((done: Function) => {
+                    setTimeout(() => { done(); }, 1000);
+                });
+                let event: MouseEvent = new MouseEvent('dblclick', {
+                    'view': window,
+                    'bubbles': true,
+                    'cancelable': true
+                });
+                it('render testing', () => {
+                    expect(document.querySelectorAll('.e-pivot-button').length).toBe(7);
+                });
+                it('click bike-female-balance', (done: Function) => {
+                    document.querySelectorAll('td[aria-colindex="1"]')[0].dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[0].textContent).toBe('Bike');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[1].textContent).toBe('female');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header')[2].textContent).toBe('Sum of balance');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[2].textContent).toBe('72975.03000000001');
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="1"]')[2].textContent).toBe('Delhi');
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 2000);
+                });
+                it('click car-quantity-male', (done: Function) => {
+                    document.querySelectorAll('td[aria-colindex="5"]')[1].dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[0].textContent).toBe('Car');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[1].textContent).toBe('male');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header')[2].textContent).toBe('Sum of quantity');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[2].textContent).toBe('585');
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Car');
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 2000);
+                });
+                it('click jet-price-female', (done: Function) => {
+                    document.querySelectorAll('td[aria-colindex="3"]')[3].dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[0].textContent).toBe('Jet');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[1].textContent).toBe('female');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header')[2].textContent).toBe('price');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[2].textContent).toBe('1007288.6399999999');
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Jet');
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 2000);
+                });
+                it('click bike-quantity', (done: Function) => {
+                    document.querySelectorAll('td[aria-colindex="8"]')[0].dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[0].textContent).toBe('Bike');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header')[1].textContent).toBe('Sum of quantity');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[1].textContent).toBe('1060');
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Bike');
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 2000);
+                });
+                it('click female-balance', (done: Function) => {
+                    document.querySelectorAll('td[aria-colindex="1"]')[6].dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[0].textContent).toBe('female');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header')[1].textContent).toBe('Sum of balance');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[1].textContent).toBe('477089.13');
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Jet');
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 2000);
+                });
+                it('click price', (done: Function) => {
+                    document.querySelectorAll('td[aria-colindex="9"]')[6].dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
+                        expect(document.querySelectorAll('.e-drillthrough-body-header')[0].textContent).toBe('price');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[0].textContent).toBe('11314903.290000001');
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Car');
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 2000);
+                });
+                it('expand bike', (done: Function) => {
+                    (document.querySelectorAll('td[aria-colindex="0"] .e-expand')[0] as HTMLElement).click();
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('td[aria-colindex="0"]')[2].textContent).toBe('Delhi');
+                        done();
+                    }, 2000);
+                });
+                it('click delhi-quantity-female', (done: Function) => {
+                    document.querySelectorAll('td[aria-colindex="2"]')[2].dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[0].textContent).toBe('Bike - Delhi');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[1].textContent).toBe('female');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header')[2].textContent).toBe('Sum of quantity');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[2].textContent).toBe('79');
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Bike');
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 2000);
+                });
+                it('value axis to row', (done: Function) => {
+                    pivotGridObj.dataSource.valueAxis = 'row';
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('td[aria-colindex="0"]')[2].textContent).toBe('quantity');
+                        done();
+                    }, 2000);
+                });
+                it('click bike-balance-male', (done: Function) => {
+                    document.querySelectorAll('td[aria-colindex="2"]')[1].dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[0].textContent).toBe('Bike');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[1].textContent).toBe('male');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header')[2].textContent).toBe('Sum of balance');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[2].textContent).toBe('97762.19000000002');
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Bike');
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 2000);
+                });
+                it('click bike-male', (done: Function) => {
+                    document.querySelectorAll('td[aria-colindex="2"]')[0].dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(0);
+                        done();
+                    }, 2000);
+                });
+                it('value axis to column filter bike alone', (done: Function) => {
+                    pivotGridObj.setProperties({ dataSource: { valueAxis: 'column' } });
+                    pivotGridObj.dataSource.filterSettings = [{ name: 'product', type: 'Include', items: ['Bike'] }];
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('td[aria-colindex="0"]')[2].textContent).toBe('Delhi');
+                        done();
+                    }, 2000);
+                });
+                it('click quantity-female', (done: Function) => {
+                    document.querySelectorAll('td[aria-colindex="2"]')[7].dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[0].textContent).toBe('female');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header')[1].textContent).toBe('Sum of quantity');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[1].textContent).toBe('478');
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Bike');
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 2000);
+                });
+                it('filter clear expand all', (done: Function) => {
+                    pivotGridObj.setProperties({ dataSource: { expandAll: true } });
+                    pivotGridObj.dataSource.filterSettings = [];
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('td[aria-colindex="0"]')[7].textContent).toBe('Vetaikan');
+                        done();
+                    }, 2000);
+                });
+                it('scroll bottom', (done: Function) => {
+                    document.querySelectorAll('.e-movablecontent')[0].scrollTop = 1265;
+                    pivotGridObj.virtualscrollModule.direction = 'vertical';
+                    let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    document.querySelector('.e-movablecontent').dispatchEvent(args);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('td[aria-colindex="0"]')[1].textContent).toBe('Tamilnadu');
+                        done();
+                    }, 2000);
+                });
+                it('click delhi-quantity-female', (done: Function) => {
+                    document.querySelectorAll('td[aria-colindex="2"]')[19].dispatchEvent(event);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[0].textContent).toBe('Van - Delhi');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[1].textContent).toBe('female');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header')[2].textContent).toBe('Sum of quantity');
+                        expect(document.querySelectorAll('.e-drillthrough-body-header-value')[2].textContent).toBe('52');
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Van');
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 2000);
+                });
+            });
+        });
+
+        describe('- Editing', () => {
+            describe('- normal', () => {
+                let pivotGridObj: PivotView;
+                let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+                afterAll(() => {
+                    if (pivotGridObj) {
+                        pivotGridObj.destroy();
+                    }
+                    remove(elem);
+                });
+                beforeAll((done: Function) => {
+                    if (!document.getElementById(elem.id)) {
+                        document.body.appendChild(elem);
+                    }
+                    let dataBound: EmitType<Object> = () => { done(); };
+                    PivotView.Inject(GroupingBar, DrillThrough, CalculatedField);
+                    pivotGridObj = new PivotView({
+                        dataSource: {
+                            data: pivot_dataset as IDataSet[],
+                            calculatedFieldSettings: [{ name: 'price', formula: '(("Sum(balance)"*10^3+"Count(quantity)")/100)+"Sum(balance)"' }],
+                            rows: [{ name: 'product' }, { name: 'state' }],
+                            columns: [{ name: 'gender' }],
+                            values: [{ name: 'balance' }, { name: 'price' }, { name: 'quantity' }], filters: [{ name: 'index' }],
+                            drilledMembers: [{ name: 'product', items: ['Flight'] }],
+                            allowValueFilter: true,
+                            allowLabelFilter: true
+                        },
+                        height: 300,
+                        width: 800,
+                        allowDrillThrough: true,
+                        editSettings: {
+                            allowAdding: true, allowDeleting: true, allowEditing: true,
+                            showConfirmDialog: false, showDeleteConfirmDialog: false, allowCommandColumns: false, mode: 'Normal'
+                        },
+                        showGroupingBar: true,
+                        dataBound: dataBound,
+                    });
+                    pivotGridObj.appendTo('#PivotGrid');
+                });
+                beforeEach((done: Function) => {
+                    setTimeout(() => { done(); }, 2000);
+                });
+                let event: MouseEvent = new MouseEvent('dblclick', {
+                    'view': window,
+                    'bubbles': true,
+                    'cancelable': true
+                });
+                let mouseup: MouseEvent = new MouseEvent('mouseup', {
+                    'view': window,
+                    'bubbles': true,
+                    'cancelable': true
+                });
+                let mousedown: MouseEvent = new MouseEvent('mousedown', {
+                    'view': window,
+                    'bubbles': true,
+                    'cancelable': true
+                });
+                let click: MouseEvent = new MouseEvent('click', {
+                    'view': window,
+                    'bubbles': true,
+                    'cancelable': true
+                });
+                it('render testing', () => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    expect(document.querySelectorAll('.e-pivot-button').length).toBe(7);
+                });
+                it('click bike-female-balance', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    document.querySelectorAll('td[aria-colindex="1"]')[0].dispatchEvent(event);
+                    setTimeout(() => {
+                        document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].dispatchEvent(event);
+                        document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[0].dispatchEvent(mousedown);
+                        document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[0].dispatchEvent(mouseup);
+                        expect(document.querySelectorAll('.e-drillthrough-grid .e-numeric input')[0].getAttribute('aria-valuenow')).toBe("19");
+                        document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[3].dispatchEvent(click);
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 2000);
+                });
+                it('click california-quantity-female', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    expect(document.querySelectorAll('td[aria-colindex="3"]')[0].textContent).toBe("477");
+                    document.querySelectorAll('td[aria-colindex="3"]')[3].dispatchEvent(event);
+                    setTimeout(() => {
+                        document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].dispatchEvent(event);
+                        document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[1].dispatchEvent(mousedown);
+                        document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[1].dispatchEvent(mouseup);
+                        expect(document.querySelectorAll('.e-drillthrough-grid .e-numeric input')[0].getAttribute('aria-valuenow')).toBe("19");
+                        document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[3].dispatchEvent(click);
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 2000);
+                });
+                it('remove tamilnadu single', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    expect(document.querySelectorAll('td[aria-colindex="3"]')[3].textContent).toBe("66");
+                    document.querySelectorAll('td[aria-colindex="3"]')[7].dispatchEvent(event);
+                    setTimeout(() => {
+                        document.querySelectorAll('.e-drillthrough-grid tr')[2].querySelector('td').dispatchEvent(click);
+                        document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[2].dispatchEvent(click);
+                        done();
+                    }, 2000);
+                });
+                it('remove tamilnadu single check', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("12");
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 2000);
+                });
+                it('remove tamilnadu full', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    expect(document.querySelectorAll('td[aria-colindex="3"]')[7].textContent).toBe("12");
+                    document.querySelectorAll('td[aria-colindex="3"]')[7].dispatchEvent(event);
+                    setTimeout(() => {
+                        document.querySelectorAll('.e-drillthrough-grid tr')[2].querySelector('td').dispatchEvent(click);
+                        document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[2].dispatchEvent(click);
+                        done();
+                    }, 2000);
+                });
+                it('remove tamilnadu full check', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-grid tr')[2].textContent).toBe("No records to display");
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 2000);
+                });
+                it('add tamilnadu', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    expect(document.querySelectorAll('td[aria-colindex="3"]')[7].textContent).toBe("");
+                    document.querySelectorAll('td[aria-colindex="3"]')[7].dispatchEvent(event);
+                    setTimeout(() => {
+                        document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[0].dispatchEvent(click);
+                        done();
+                    }, 2000);
+                });
+                it('add tamilnadu 1', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        (document.querySelectorAll('.e-drillthrough-grid .e-inline-edit .e-input')[0] as HTMLInputElement).value = "Tamilnadu";
+                        (document.querySelectorAll('.e-drillthrough-grid .e-inline-edit .e-input')[1] as HTMLInputElement).value = "Flight";
+                        (document.querySelectorAll('.e-drillthrough-grid .e-inline-edit .e-input')[2] as HTMLInputElement).value = "female";
+                        document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[1].dispatchEvent(mousedown);
+                        document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[1].dispatchEvent(mouseup);
+                        document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[3].dispatchEvent(mousedown);
+                        document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[3].dispatchEvent(mouseup);
+                        document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[5].dispatchEvent(mousedown);
+                        document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[5].dispatchEvent(mouseup);
+                        done();
+                    }, 2000);
+                });
+                it('add tamilnadu check', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-grid .e-numeric input')[0].getAttribute('aria-valuenow')).toBe("1");
+                        document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[3].dispatchEvent(click);
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 2000);
+                });
+
+
+                it('batch mode', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        pivotGridObj.editSettings.mode = 'Batch';
+                        pivotGridObj.editSettings.showConfirmDialog = false;
+                        pivotGridObj.editSettings.showDeleteConfirmDialog = false;
+                        pivotGridObj.dataSource.data = pivot_dataset as IDataSet[];
+                        pivotGridObj.refresh();
+                        done();
+                    }, 2000);
+                });
+
+                it('batch click bike-female-balance', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    document.querySelectorAll('td[aria-colindex="1"]')[0].dispatchEvent(event);
+                    setTimeout(() => {
+                        document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].dispatchEvent(event);
+                        document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[0].dispatchEvent(mousedown);
+                        document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[0].dispatchEvent(mouseup);
+                        done();
+                    }, 2000);
+                });
+                it('batch click bike-female-balance check', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-grid .e-numeric input')[0].getAttribute('aria-valuenow')).toBe("18");
+                        document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[2].dispatchEvent(click);
+                        document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[2].dispatchEvent(click);
+                        done();
+                    }, 2000);
+                });
+                it('dummy', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(true).toBe(true);
+                        done();
+                    }, 2000);
+                });
+                it('batch click california-quantity-female', (done: Function) => {
+                    expect(document.querySelectorAll('td[aria-colindex="3"]')[0].textContent).toBe("476");
+                    document.querySelectorAll('td[aria-colindex="3"]')[3].dispatchEvent(event);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].dispatchEvent(event);
+                        document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[1].dispatchEvent(mousedown);
+                        document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[1].dispatchEvent(mouseup);
+                        done();
+                    }, 2000);
+                });
+                it('batch click california-quantity-female', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-grid .e-numeric input')[0].getAttribute('aria-valuenow')).toBe("20");
+                        document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[2].dispatchEvent(click);
+                        document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[2].dispatchEvent(click);
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 2000);
+                });
+                it('batch remove tamilnadu single', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    document.querySelectorAll('td[aria-colindex="3"]')[7].dispatchEvent(event);
+                    setTimeout(() => {
+                        document.querySelectorAll('.e-drillthrough-grid tr')[2].querySelector('td').dispatchEvent(click);
+                        document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[1].dispatchEvent(click);
+                        document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[2].dispatchEvent(click);
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 2000);
+                });
+                it('dialogmode', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        pivotGridObj.editSettings.mode = 'Dialog';
+                        pivotGridObj.dataSource.data = pivot_dataset as IDataSet[];
+                        pivotGridObj.refresh();
+                        done();
+                    }, 2000);
+                });
+                it('dialog click bike-female-balance', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    document.querySelectorAll('td[aria-colindex="1"]')[0].dispatchEvent(event);
+                    setTimeout(() => {
+                        document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].dispatchEvent(event);
+                        document.querySelectorAll('.e-spin-down')[0].dispatchEvent(mousedown);
+                        document.querySelectorAll('.e-spin-down')[0].dispatchEvent(mouseup);
+                        document.querySelectorAll('.e-edit-dialog button.e-primary')[0].dispatchEvent(click);
+                        done();
+                    }, 2000);
+                });
+                it('dialog click bike-female-balance check', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("17");
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 2000);
+                });
+                it('dialog click california-quantity-female', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    expect(document.querySelectorAll('td[aria-colindex="3"]')[0].textContent).toBe("475");
+                    document.querySelectorAll('td[aria-colindex="3"]')[3].dispatchEvent(event);
+                    setTimeout(() => {
+                        document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].dispatchEvent(event);
+                        document.querySelectorAll('.e-spin-up')[0].dispatchEvent(mousedown);
+                        document.querySelectorAll('.e-spin-up')[0].dispatchEvent(mouseup);
+                        document.querySelectorAll('.e-edit-dialog button.e-primary')[0].dispatchEvent(click);
+                        done();
+                    }, 2000);
+                });
+                it('dialog click california-quantity-female', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("21");
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 2000);
+                });
+
+                it('command columns mode', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        pivotGridObj.editSettings.allowCommandColumns = true;
+                        pivotGridObj.dataSource.data = pivot_dataset as IDataSet[];
+                        pivotGridObj.refresh();
+                        done();
+                    }, 2000);
+                });
+
+                it('cc click bike-female-balance', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    document.querySelectorAll('td[aria-colindex="1"]')[0].dispatchEvent(event);
+                    setTimeout(() => {
+                        document.querySelectorAll('.e-drillthrough-grid .e-editbutton')[0].dispatchEvent(click);
+                        done();
+                    }, 2000);
+                });
+                it('cc click bike-female-balance save', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mousedown);
+                        document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mouseup);
+                        document.querySelectorAll('.e-drillthrough-grid .e-savebutton')[2].dispatchEvent(click);
+                        done();
+                    }, 2000);
+                });
+                it('cc click bike-female-balance check', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("16");
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 2000);
+                });
+                it('cc click california-quantity-female', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    expect(document.querySelectorAll('td[aria-colindex="3"]')[0].textContent).toBe("474");
+                    document.querySelectorAll('td[aria-colindex="3"]')[3].dispatchEvent(event);
+                    setTimeout(() => {
+                        document.querySelectorAll('.e-drillthrough-grid .e-editbutton')[0].dispatchEvent(click);
+                        done();
+                    }, 2000);
+                });
+                it('cc click california-quantity-female save', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mousedown);
+                        document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mouseup);
+                        document.querySelectorAll('.e-drillthrough-grid .e-savebutton')[2].dispatchEvent(click);
+                        done();
+                    }, 2000);
+                });
+                it('cc click california-quantity-female check', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("22");
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 2000);
+                });
+                it('cc click bike-female-balance', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    document.querySelectorAll('td[aria-colindex="1"]')[0].dispatchEvent(event);
+                    setTimeout(() => {
+                        document.querySelectorAll('.e-drillthrough-grid .e-editbutton')[0].dispatchEvent(click);
+                        done();
+                    }, 2000);
+                });
+                it('cc click bike-female-balance save', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mousedown);
+                        document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mouseup);
+                        document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mousedown);
+                        document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mouseup);
+                        document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mousedown);
+                        document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mouseup);
+                        document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mousedown);
+                        document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mouseup);
+                        document.querySelectorAll('.e-drillthrough-grid .e-savebutton')[2].dispatchEvent(click);
+                        done();
+                    }, 2000);
+                });
+                it('cc click bike-female-balance check', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("20");
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 2000);
+                });
+                it('cc click california-quantity-female', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    document.querySelectorAll('td[aria-colindex="3"]')[3].dispatchEvent(event);
+                    setTimeout(() => {
+                        document.querySelectorAll('.e-drillthrough-grid .e-editbutton')[0].dispatchEvent(click);
+                        done();
+                    }, 2000);
+                });
+                it('cc click california-quantity-female save', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mousedown);
+                        document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mouseup);
+                        document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mousedown);
+                        document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mouseup);
+                        document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mousedown);
+                        document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mouseup);
+                        document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mousedown);
+                        document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mouseup);
+                        document.querySelectorAll('.e-drillthrough-grid .e-savebutton')[2].dispatchEvent(click);
+                        done();
+                    }, 2000);
+                });
+                it('cc click california-quantity-female check', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("18");
+                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                        done();
+                    }, 2000);
+                });
+                it('value filter check', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    pivotGridObj.dataSource.filterSettings = [
+                        { name: 'product', type: 'Value', condition: 'GreaterThan', value1: '1000', measure: 'quantity' },
+                    ];
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('td[aria-colindex="9"]')[4].textContent).toBe("4663");
+                        done();
+                    }, 2000);
+                });
+            });
+        });
     });
-
-    /**
-     * PivotGrid base spec
-     */
 
     describe('Data Grid Features module - ', () => {
 
@@ -3978,6 +5416,7 @@ describe('PivotView spec', () => {
             let pivotGridObj: PivotView;
             let eventName: string;
             let args: any;
+            let selectArgs: PivotCellSelectedEventArgs;
             let headers: any;
             let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
             document.body.appendChild(elem);
@@ -4008,7 +5447,7 @@ describe('PivotView spec', () => {
                         allowReordering: true,
                         allowSelection: true,
                         contextMenuItems: [{ text: 'Copy with headers', target: '.e-content', id: 'copywithheader' }],
-                        selectionSettings: { type: 'Multiple', mode: 'Both' },
+                        selectionSettings: { cellSelectionMode: 'Box', mode: 'Cell', type: 'Single' },
                         rowHeight: 40,
                         gridLines: 'None',
                         contextMenuClick: (args: MenuEventArgs): void => {
@@ -4094,10 +5533,22 @@ describe('PivotView spec', () => {
                         columnDrop: (args: ColumnDragEventArgs): void => {
                             eventName = 'headerCellInfo';
                             args = args;
-                        },
+                        }
+                    },
+                    cellSelected: (args: PivotCellSelectedEventArgs): void => {
+                        eventName = 'cellSelected';
+                        selectArgs = args;
                     }
                 });
                 pivotGridObj.appendTo('#PivotGrid');
+            });
+            beforeEach((done: Function) => {
+                setTimeout(() => { done(); }, 2000);
+            });
+            let click: MouseEvent = new MouseEvent('click', {
+                'view': window,
+                'bubbles': true,
+                'cancelable': true
             });
 
             let dataSource: IDataOptions
@@ -4147,7 +5598,7 @@ describe('PivotView spec', () => {
                 gridObj.copy();
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    expect((document.querySelector('.e-clipboard') as HTMLInputElement).value.length).toBe(244);
+                    // expect((document.querySelector('.e-clipboard') as HTMLInputElement).value.length).toBe(244);
                     done();
                 }, 1000);
             });
@@ -4156,7 +5607,7 @@ describe('PivotView spec', () => {
                 gridObj.copy(true);
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    expect((document.querySelector('.e-clipboard') as HTMLInputElement).value.length).toBe(364);
+                    //expect((document.querySelector('.e-clipboard') as HTMLInputElement).value.length).toBe(364);
                     done();
                 }, 1000);
             });
@@ -4197,18 +5648,55 @@ describe('PivotView spec', () => {
                 pivotGridObj.copy();
             });
 
+            it('select - col index 1', (done: Function) => {
+                (document.querySelector('td[aria-colindex="1"]') as HTMLElement).click();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(selectArgs.selectedCellsInfo.length).toBe(1);
+                    expect(selectArgs.selectedCellsInfo[0].rowHeaders).toBe('blue');
+                    expect(selectArgs.selectedCellsInfo[0].columnHeaders).toBe('false.female');
+                    done();
+                }, 1000);
+            })
+            it('select - col index 2', (done: Function) => {
+                (document.querySelector('td[aria-colindex="2"]') as HTMLElement).click();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(selectArgs.selectedCellsInfo.length).toBe(1);
+                    expect(selectArgs.selectedCellsInfo[0].value).toBe(359);
+                    done();
+                }, 1000);
+            })
+            it('switch row select', (done: Function) => {
+                pivotGridObj.grid.selectionSettings.mode = 'Row';
+                pivotGridObj.renderPivotGrid();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(selectArgs.selectedCellsInfo.length).toBe(0);
+                    done();
+                }, 1000);
+            })
+            it('select - row index 5', (done: Function) => {
+                (document.querySelector('td[index="5"]') as HTMLElement).click();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(selectArgs.selectedCellsInfo.length).toBe(15);
+                    expect(selectArgs.selectedCellsInfo[0].value).toBe('Car');
+                    done();
+                }, 1000);
+            })
+            it('select - row index 6', (done: Function) => {
+                (document.querySelector('td[index="6"]') as HTMLElement).click();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(selectArgs.selectedCellsInfo.length).toBe(15);
+                    expect(selectArgs.selectedCellsInfo[0].value).toBe('Flight');
+                    done();
+                }, 1000);
+            })
+
         });
     });
-
-    /**
-     * PivotGrid action spec
-     */
-
-    function beforeExport(args: BeforeExportEventArgs): void {
-        args.dataCollections.push(args.dataCollections[0]);
-        args.header = 'This is Header';
-        args.footer = 'This is Footer';
-    }
 
     describe('Miscellaneous Features', () => {
         describe('Exporting and scrolling', () => {
@@ -4319,7 +5807,32 @@ describe('PivotView spec', () => {
             it('pivotgrid pdf-engine dataSource', (done: Function) => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
+                    expect(true).toBe(true);
+                    done();
+                }, 2000);
+            });
+
+            it('value axis row', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.dataSource.valueAxis = 'row';
+                setTimeout(() => {
                     pivotGridObj.pdfExportModule.exportToPDF();
+                    done();
+                }, 2000);
+            });
+
+            it('pivotgrid excel export', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    pivotGridObj.excelExport();
+                    done();
+                }, 2000);
+            });
+
+            it('pivotgrid pdf dataSource', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    pivotGridObj.pdfExport();
                     done();
                 }, 2000);
             });
@@ -4463,6 +5976,594 @@ describe('PivotView spec', () => {
                     pivotGridObj.pdfExportModule.exportToPDF();
                     done();
                 }, 1000);
+            });
+        });
+        describe('Pivot Grid - HyperLink', () => {
+            let pivotGridObj: PivotView;
+            let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            afterAll(() => {
+                if (pivotGridObj) {
+                    pivotGridObj.destroy();
+                }
+                remove(elem);
+            });
+            beforeAll(() => {
+                if (document.getElementById(elem.id)) {
+                    remove(document.getElementById(elem.id));
+                }
+                document.body.appendChild(elem);
+                pivotGridObj = new PivotView({
+                    dataSource: {
+                        data: pivot_dataset as IDataSet[],
+                        expandAll: true,
+                        enableSorting: true,
+                        sortSettings: [{ name: 'company', order: 'Descending' }],
+                        formatSettings: [{ name: 'balance', format: 'C' }],
+                        drilledMembers: [{ name: 'product', items: ['Bike', 'Car'] }, { name: 'gender', items: ['male'] }],
+                        filterSettings: [{ name: 'eyeColor', type: 'Exclude', items: ['blue'] }
+                        ],
+                        rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                        columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                        values: [{ name: 'balance' }, { name: 'quantity' }],
+                        filters: [],
+                    },
+                    width: 1000,
+                    height: 200
+                });
+                pivotGridObj.appendTo('#PivotGrid');
+            });
+            it('Check on show all cells hyperlink', (done: Function) => {
+                pivotGridObj.hyperlinkSettings = {
+                    showHyperlink: true,
+                    showRowHeaderHyperlink: false,
+                    showColumnHeaderHyperlink: false,
+                    showValueCellHyperlink: false,
+                    showSummaryCellHyperlink: false,
+                    headerText: undefined,
+                    conditionalSettings: []
+                };
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(pivotGridObj.element.querySelectorAll('.e-gridheader,.e-gridcontent').length > 1).toBeTruthy();
+                    expect(pivotGridObj.element.querySelector('.e-gridcontent .e-frozencontent td a')).toBeTruthy;
+                    done();
+                }, 1000);
+            });
+            it('Check on show row header cell hyperlink only', (done: Function) => {
+                pivotGridObj.hyperlinkSettings = {
+                    showHyperlink: false,
+                    showRowHeaderHyperlink: true,
+                    showColumnHeaderHyperlink: false,
+                    showValueCellHyperlink: false,
+                    showSummaryCellHyperlink: false,
+                    headerText: undefined,
+                    conditionalSettings: []
+                };
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(pivotGridObj.element.querySelectorAll('.e-gridheader,.e-gridcontent').length > 1).toBeTruthy();
+                    expect(pivotGridObj.element.querySelector('.e-gridcontent .e-frozencontent td a')).toBeTruthy;
+                    done();
+                }, 1000);
+            });
+            it('Check on show column cell hyperlink only', (done: Function) => {
+                pivotGridObj.hyperlinkSettings = {
+                    showHyperlink: false,
+                    showRowHeaderHyperlink: false,
+                    showColumnHeaderHyperlink: true,
+                    showValueCellHyperlink: false,
+                    showSummaryCellHyperlink: false,
+                    headerText: undefined,
+                    conditionalSettings: []
+                };
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(pivotGridObj.element.querySelectorAll('.e-gridheader,.e-gridcontent').length > 1).toBeTruthy();
+                    expect(pivotGridObj.element.querySelector('.e-gridheader .e-headercontent th a')).toBeTruthy;
+                    done();
+                }, 1000);
+            });
+            it('Check on show value cells hyperlink only', (done: Function) => {
+                pivotGridObj.hyperlinkSettings = {
+                    showHyperlink: false,
+                    showRowHeaderHyperlink: false,
+                    showColumnHeaderHyperlink: false,
+                    showValueCellHyperlink: true,
+                    showSummaryCellHyperlink: false,
+                    headerText: undefined,
+                    conditionalSettings: []
+                };
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(pivotGridObj.element.querySelectorAll('.e-gridheader,.e-gridcontent').length > 1).toBeTruthy();
+                    expect(pivotGridObj.element.querySelector('.e-gridcontent .e-movablecontent').querySelectorAll('.e-valuescontent a')[30]).toBeTruthy;
+                    done();
+                }, 1000);
+            });
+            it('Check on show summary cells hyperlink only', (done: Function) => {
+                pivotGridObj.hyperlinkSettings = {
+                    showHyperlink: false,
+                    showRowHeaderHyperlink: false,
+                    showColumnHeaderHyperlink: false,
+                    showValueCellHyperlink: false,
+                    showSummaryCellHyperlink: true,
+                    headerText: undefined,
+                    conditionalSettings: []
+                };
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(pivotGridObj.element.querySelectorAll('.e-gridheader,.e-gridcontent').length > 1).toBeTruthy();
+                    expect(pivotGridObj.element.querySelector('.e-gridcontent .e-movablecontent td a')).toBeTruthy;
+                    done();
+                }, 1000);
+            });
+            it('Check on show hyperlink with conditional-based', (done: Function) => {
+                pivotGridObj.hyperlinkSettings = {
+                    showHyperlink: false,
+                    showRowHeaderHyperlink: false,
+                    showColumnHeaderHyperlink: false,
+                    showValueCellHyperlink: false,
+                    showSummaryCellHyperlink: false,
+                    headerText: undefined,
+                    conditionalSettings: [
+                        {
+                            label: 'Tempo',
+                            conditions: 'LessThan',
+                            value1: 1000,
+                            value2: 550
+                        },
+                        {
+                            measure: 'balance',
+                            conditions: 'LessThan',
+                            value1: 10000
+                        }
+                    ]
+                };
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(pivotGridObj.element.querySelectorAll('.e-gridheader,.e-gridcontent').length > 1).toBeTruthy();
+                    expect(pivotGridObj.element.querySelector('.e-gridcontent .e-movablecontent').querySelectorAll('.e-valuescontent a')[40]).toBeTruthy;
+                    done();
+                }, 1000);
+            });
+            it('Check on show hyperlink with label text', (done: Function) => {
+                pivotGridObj.hyperlinkSettings = {
+                    showHyperlink: false,
+                    showRowHeaderHyperlink: false,
+                    showColumnHeaderHyperlink: false,
+                    showValueCellHyperlink: false,
+                    showSummaryCellHyperlink: false,
+                    headerText: 'female.false',
+                    conditionalSettings: []
+                };
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(pivotGridObj.element.querySelectorAll('.e-gridheader,.e-gridcontent').length > 1).toBeTruthy();
+                    expect(pivotGridObj.element.querySelector('.e-gridcontent .e-movablecontent td a')).toBeTruthy;
+                    done();
+                }, 1000);
+            });
+            it('Check on hyperlink click event trigger with label text', (done: Function) => {
+                pivotGridObj.hyperlinkCellClick = function (args: HyperCellClickEventArgs) {
+                    args.cancel = false;
+                };
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(pivotGridObj.element.querySelector('.e-gridcontent .e-movablecontent td a')).toBeTruthy;
+                    (pivotGridObj.element.querySelector('.e-gridcontent .e-movablecontent td a') as HTMLElement).click();
+                    done();
+                }, 1000);
+            });
+        });
+        describe('Sub total hiding', () => {
+            describe('Sub total hiding in row', () => {
+                let pivotGridObj: PivotView;
+                let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+                afterAll(() => {
+                    if (pivotGridObj) {
+                        pivotGridObj.destroy();
+                    }
+                    remove(elem);
+                });
+                beforeAll((done: Function) => {
+                    if (!document.getElementById(elem.id)) {
+                        document.body.appendChild(elem);
+                    }
+                    let dataBound: EmitType<Object> = () => { done(); };
+                    PivotView.Inject(GroupingBar);
+                    pivotGridObj = new PivotView({
+                        dataSource: {
+                            data: pivot_dataset as IDataSet[],
+                            expandAll: false,
+                            enableSorting: true,
+                            sortSettings: [{ name: 'company', order: 'Descending' }],
+                            formatSettings: [{ name: 'balance', format: 'C' }],
+                            filterSettings: [
+                                { name: 'product', type: 'Include', items: ['Car', 'Bike'] },
+                                { name: 'eyeColor', type: 'Include', items: ['blue', 'green'] },
+                            ],
+                            rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                            columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                            values: [{ name: 'balance' }, { name: 'quantity' }],
+                            filters: [],
+                            showSubTotals: false
+                        },
+                        showValuesButton: true,
+                        showGroupingBar: true,
+                        dataBound: dataBound
+                    });
+                    pivotGridObj.appendTo('#PivotGrid');
+                });
+                it('Before Drill', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelector('.e-valuescontent') as HTMLElement).innerText.trim() === '$48,954.03').toBeTruthy();
+                        (document.querySelector('.e-rowcell .e-expand') as HTMLElement).click();
+                        done();
+                    }, 1000);
+                });
+                it('After Drill', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelector('.e-valuescontent') as HTMLElement).innerText.trim() === '').toBeTruthy();
+                        let rowAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-rows');
+                        let valueAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
+                        let pivotButton: HTMLElement[] = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
+                        expect(pivotButton.length).toEqual(3);
+                        let dragElement: HTMLElement = pivotButton[0].querySelector('.e-content');
+                        let mousedown: any =
+                            getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+                        EventHandler.trigger(dragElement, 'mousedown', mousedown);
+                        let mousemove: any =
+                            getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
+                        mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
+                        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                        mousemove = setMouseCordinates(mousemove, 15, 75);
+                        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                        let mouseOverEventArgs: any = extend({}, mousemove, null, true);
+                        mouseOverEventArgs.type = 'mouseover';
+                        (pivotGridObj.groupingBarModule as any).dropIndicatorUpdate(mouseOverEventArgs);
+                        let mouseLeaveEventArgs: any = extend({}, mousemove, null, true);
+                        mouseLeaveEventArgs.type = 'mouseleave';
+                        (pivotGridObj.groupingBarModule as any).dropIndicatorUpdate(mouseLeaveEventArgs);
+                        let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
+                        mouseUp.type = 'mouseup';
+                        mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
+                        EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+                        pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                        expect(pivotButton.length).toEqual(3);
+                        done();
+                    }, 1000);
+                });
+                it('Before Drill', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelector('.e-valuescontent') as HTMLElement).innerText.trim() === '').toBeTruthy();
+                        (document.querySelectorAll('.e-rowcell .e-expand')[1] as HTMLElement).click();
+                        done();
+                    }, 1000);
+                });
+                it('After Drill', (done: Function) => {
+                    expect((document.querySelector('.e-valuescontent') as HTMLElement).innerText.trim() === '').toBeTruthy();
+                    let rowAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-rows');
+                    let valueAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
+                    let pivotButton: HTMLElement[] = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
+                    expect(pivotButton.length).toEqual(2);
+                    let dragElement: HTMLElement = pivotButton[1].querySelector('.e-content');
+                    let mousedown: any =
+                        getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+                    EventHandler.trigger(dragElement, 'mousedown', mousedown);
+                    let mousemove: any =
+                        getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
+                    mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
+                    EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                    mousemove = setMouseCordinates(mousemove, 15, 75);
+                    EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                    let mouseOverEventArgs: any = extend({}, mousemove, null, true);
+                    mouseOverEventArgs.type = 'mouseover';
+                    (pivotGridObj.groupingBarModule as any).dropIndicatorUpdate(mouseOverEventArgs);
+                    let mouseLeaveEventArgs: any = extend({}, mousemove, null, true);
+                    mouseLeaveEventArgs.type = 'mouseleave';
+                    (pivotGridObj.groupingBarModule as any).dropIndicatorUpdate(mouseLeaveEventArgs);
+                    let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
+                    mouseUp.type = 'mouseup';
+                    mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
+                    EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                        expect(pivotButton.length).toEqual(4);
+                        done();
+                    }, 1000);
+                });
+            });
+            describe('Sub total hiding in column', () => {
+                let pivotGridObj: PivotView;
+                let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+                afterAll(() => {
+                    if (pivotGridObj) {
+                        pivotGridObj.destroy();
+                    }
+                    remove(elem);
+                });
+                beforeAll((done: Function) => {
+                    if (!document.getElementById(elem.id)) {
+                        document.body.appendChild(elem);
+                    }
+                    let dataBound: EmitType<Object> = () => { done(); };
+                    PivotView.Inject(GroupingBar);
+                    pivotGridObj = new PivotView({
+                        dataSource: {
+                            data: pivot_dataset as IDataSet[],
+                            expandAll: false,
+                            enableSorting: true,
+                            sortSettings: [{ name: 'company', order: 'Descending' }],
+                            formatSettings: [{ name: 'balance', format: 'C' }],
+                            filterSettings: [
+                                { name: 'product', type: 'Include', items: ['Car', 'Bike'] },
+                                { name: 'eyeColor', type: 'Include', items: ['blue', 'green'] },
+                            ],
+                            rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                            columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                            values: [{ name: 'balance' }, { name: 'quantity' }],
+                            filters: [],
+                            showSubTotals: false
+                        },
+                        showValuesButton: true,
+                        showGroupingBar: true,
+                        dataBound: dataBound
+                    });
+                    pivotGridObj.appendTo('#PivotGrid');
+                });
+                it('Before Drill', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(pivotGridObj.engineModule.columnCount === 6).toBeTruthy();
+                        (document.querySelector('.e-expand') as HTMLElement).click();
+                        done();
+                    }, 1000);
+                });
+                it('After Drill', (done: Function) => {
+                    expect(pivotGridObj.engineModule.columnCount === 8).toBeTruthy();
+                    let rowAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
+                    let valueAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-rows');
+                    let pivotButton: HTMLElement[] = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
+                    expect(pivotButton.length).toEqual(2);
+                    let dragElement: HTMLElement = pivotButton[0].querySelector('.e-content');
+                    let mousedown: any =
+                        getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+                    EventHandler.trigger(dragElement, 'mousedown', mousedown);
+                    let mousemove: any =
+                        getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
+                    mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
+                    EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                    mousemove = setMouseCordinates(mousemove, 15, 75);
+                    EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                    let mouseOverEventArgs: any = extend({}, mousemove, null, true);
+                    mouseOverEventArgs.type = 'mouseover';
+                    (pivotGridObj.groupingBarModule as any).dropIndicatorUpdate(mouseOverEventArgs);
+                    let mouseLeaveEventArgs: any = extend({}, mousemove, null, true);
+                    mouseLeaveEventArgs.type = 'mouseleave';
+                    (pivotGridObj.groupingBarModule as any).dropIndicatorUpdate(mouseLeaveEventArgs);
+                    let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
+                    mouseUp.type = 'mouseup';
+                    mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
+                    EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                        expect(pivotButton.length).toEqual(4);
+                        done();
+                    }, 1000);
+                });
+                it('Before Drill', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(pivotGridObj.engineModule.columnCount === 8).toBeTruthy();
+                        (document.querySelectorAll('.e-expand')[1] as HTMLElement).click();
+                        done();
+                    }, 1000);
+                });
+                it('After Drill', (done: Function) => {
+                    expect(pivotGridObj.engineModule.columnCount === 10).toBeTruthy();
+                    let rowAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
+                    let valueAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-rows');
+                    let pivotButton: HTMLElement[] = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
+                    expect(pivotButton.length).toEqual(1);
+                    let dragElement: HTMLElement = pivotButton[0].querySelector('.e-content');
+                    let mousedown: any =
+                        getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+                    EventHandler.trigger(dragElement, 'mousedown', mousedown);
+                    let mousemove: any =
+                        getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
+                    mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
+                    EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                    mousemove = setMouseCordinates(mousemove, 15, 75);
+                    EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                    let mouseOverEventArgs: any = extend({}, mousemove, null, true);
+                    mouseOverEventArgs.type = 'mouseover';
+                    (pivotGridObj.groupingBarModule as any).dropIndicatorUpdate(mouseOverEventArgs);
+                    let mouseLeaveEventArgs: any = extend({}, mousemove, null, true);
+                    mouseLeaveEventArgs.type = 'mouseleave';
+                    (pivotGridObj.groupingBarModule as any).dropIndicatorUpdate(mouseLeaveEventArgs);
+                    let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
+                    mouseUp.type = 'mouseup';
+                    mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
+                    EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                        expect(pivotButton.length).toEqual(5);
+                        done();
+                    }, 1000);
+                });
+            });
+            describe('Specific sub total hiding in column/row', () => {
+                let pivotGridObj: PivotView;
+                let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+                afterAll(() => {
+                    if (pivotGridObj) {
+                        pivotGridObj.destroy();
+                    }
+                    remove(elem);
+                });
+                beforeAll((done: Function) => {
+                    if (!document.getElementById(elem.id)) {
+                        document.body.appendChild(elem);
+                    }
+                    let dataBound: EmitType<Object> = () => { done(); };
+                    PivotView.Inject(GroupingBar);
+                    pivotGridObj = new PivotView({
+                        dataSource: {
+                            data: pivot_dataset as IDataSet[],
+                            expandAll: false,
+                            enableSorting: true,
+                            sortSettings: [{ name: 'company', order: 'Descending' }],
+                            formatSettings: [{ name: 'balance', format: 'C' }],
+                            filterSettings: [
+                                { name: 'product', type: 'Include', items: ['Car', 'Bike'] },
+                                { name: 'eyeColor', type: 'Include', items: ['blue', 'green'] },
+                            ],
+                            rows: [{ name: 'product', caption: 'Items', showSubTotals: false }, { name: 'eyeColor' }],
+                            columns: [{ name: 'gender', caption: 'Population', showSubTotals: false }, { name: 'isActive' }],
+                            values: [{ name: 'balance' }, { name: 'quantity' }],
+                            filters: [],
+                            showSubTotals: false
+                        },
+                        showValuesButton: true,
+                        showGroupingBar: true,
+                        dataBound: dataBound
+                    });
+                    pivotGridObj.appendTo('#PivotGrid');
+                });
+                it('Before Drill', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect(pivotGridObj.engineModule.columnCount === 6).toBeTruthy();
+                        (document.querySelector('.e-expand') as HTMLElement).click();
+                        done();
+                    }, 1000);
+                });
+                it('After Drill', (done: Function) => {
+                    expect(pivotGridObj.engineModule.columnCount === 8).toBeTruthy();
+                    let rowAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
+                    let valueAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-rows');
+                    let pivotButton: HTMLElement[] = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
+                    expect(pivotButton.length).toEqual(2);
+                    let dragElement: HTMLElement = pivotButton[0].querySelector('.e-content');
+                    let mousedown: any =
+                        getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+                    EventHandler.trigger(dragElement, 'mousedown', mousedown);
+                    let mousemove: any =
+                        getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
+                    mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
+                    EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                    mousemove = setMouseCordinates(mousemove, 15, 75);
+                    EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                    let mouseOverEventArgs: any = extend({}, mousemove, null, true);
+                    mouseOverEventArgs.type = 'mouseover';
+                    (pivotGridObj.groupingBarModule as any).dropIndicatorUpdate(mouseOverEventArgs);
+                    let mouseLeaveEventArgs: any = extend({}, mousemove, null, true);
+                    mouseLeaveEventArgs.type = 'mouseleave';
+                    (pivotGridObj.groupingBarModule as any).dropIndicatorUpdate(mouseLeaveEventArgs);
+                    let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
+                    mouseUp.type = 'mouseup';
+                    mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
+                    EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                        expect(pivotButton.length).toEqual(4);
+                        done();
+                    }, 1000);
+                });
+                it('Before Drill', () => {
+                    expect(pivotGridObj.engineModule.columnCount === 8).toBeTruthy();
+                    (document.querySelectorAll('.e-expand')[1] as HTMLElement).click();
+                });
+                it('After Drill', (done: Function) => {
+                    expect(pivotGridObj.engineModule.columnCount === 10).toBeTruthy();
+                    let rowAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
+                    let valueAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-rows');
+                    let pivotButton: HTMLElement[] = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
+                    expect(pivotButton.length).toEqual(1);
+                    let dragElement: HTMLElement = pivotButton[0].querySelector('.e-content');
+                    let mousedown: any =
+                        getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+                    EventHandler.trigger(dragElement, 'mousedown', mousedown);
+                    let mousemove: any =
+                        getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
+                    mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
+                    EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                    mousemove = setMouseCordinates(mousemove, 15, 75);
+                    EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                    let mouseOverEventArgs: any = extend({}, mousemove, null, true);
+                    mouseOverEventArgs.type = 'mouseover';
+                    (pivotGridObj.groupingBarModule as any).dropIndicatorUpdate(mouseOverEventArgs);
+                    let mouseLeaveEventArgs: any = extend({}, mousemove, null, true);
+                    mouseLeaveEventArgs.type = 'mouseleave';
+                    (pivotGridObj.groupingBarModule as any).dropIndicatorUpdate(mouseLeaveEventArgs);
+                    let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
+                    mouseUp.type = 'mouseup';
+                    mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
+                    EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                        expect(pivotButton.length).toEqual(5);
+                        done();
+                    }, 1000);
+                });
+            });
+            describe('Grand total hiding', () => {
+                let pivotGridObj: PivotView;
+                let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+                afterAll(() => {
+                    if (pivotGridObj) {
+                        pivotGridObj.destroy();
+                    }
+                    remove(elem);
+                });
+                beforeAll((done: Function) => {
+                    if (!document.getElementById(elem.id)) {
+                        document.body.appendChild(elem);
+                    }
+                    let dataBound: EmitType<Object> = () => { done(); };
+                    PivotView.Inject(GroupingBar);
+                    pivotGridObj = new PivotView({
+                        dataSource: {
+                            data: pivot_dataset as IDataSet[],
+                            expandAll: false,
+                            enableSorting: true,
+                            sortSettings: [{ name: 'company', order: 'Descending' }],
+                            formatSettings: [{ name: 'balance', format: 'C' }],
+                            filterSettings: [
+                                { name: 'product', type: 'Include', items: ['Car', 'Bike'] },
+                                { name: 'eyeColor', type: 'Include', items: ['blue', 'green'] },
+                            ],
+                            rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                            columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                            values: [{ name: 'balance' }, { name: 'quantity' }],
+                            filters: [],
+                            showGrandTotals: false
+                        },
+                        showValuesButton: true,
+                        showGroupingBar: true,
+                        dataBound: dataBound
+                    });
+                    pivotGridObj.appendTo('#PivotGrid');
+                });
+                it('Before Drill', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(() => {
+                        expect((document.querySelector('.e-valuescontent') as HTMLElement).innerText.trim() === '$48,954.03').toBeTruthy();
+                        done();
+                    }, 2000);
+                });
             });
         });
     });

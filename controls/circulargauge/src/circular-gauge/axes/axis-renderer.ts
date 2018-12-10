@@ -1,8 +1,10 @@
 import { CircularGauge } from '../circular-gauge';
 import { Axis, Label, Range, Tick } from './axis';
 import { getLocationFromAngle, PathOption, stringToNumber, TextOption, textElement, appendPath, toPixel } from '../utils/helper';
-import { GaugeLocation, VisibleLabels, getAngleFromValue, isCompleteAngle, getPathArc,
-    getRoundedPathArc, getRangeColor } from '../utils/helper';
+import {
+    GaugeLocation, VisibleLabels, getAngleFromValue, isCompleteAngle, getPathArc,
+    getRoundedPathArc, getRangeColor
+} from '../utils/helper';
 import { TickModel } from './axis-model';
 import { getRangePalette } from '../model/theme';
 
@@ -243,9 +245,15 @@ export class AxisRenderer {
             this.calculateRangeRadius(axis, range);
             startValue = Math.min(Math.max(range.start, min), range.end);
             endValue = Math.min(Math.max(range.start, range.end), max);
-            if (startValue !== endValue) {
-                startAngle = getAngleFromValue(startValue, max, min, axis.startAngle, axis.endAngle, isClockWise);
-                endAngle = getAngleFromValue(endValue, max, min, axis.startAngle, axis.endAngle, isClockWise);
+            startAngle = getAngleFromValue(startValue, max, min, axis.startAngle, axis.endAngle, isClockWise);
+            endAngle = getAngleFromValue(endValue, max, min, axis.startAngle, axis.endAngle, isClockWise);
+            let isAngleCross360: boolean = (startAngle > endAngle);
+            if (axis.rangeGap != null && axis.rangeGap > 0) {
+                startAngle = (rangeIndex === 0 && !axis.startAndEndRangeGap) ? startAngle : startAngle + (axis.rangeGap / Math.PI);
+                endAngle = (rangeIndex === axis.ranges.length - 1 && !axis.startAndEndRangeGap) ? endAngle : endAngle -
+                    (axis.rangeGap / Math.PI);
+            }
+            if ((startValue !== endValue) && (isAngleCross360 ? startAngle < (endAngle + 360) : (startAngle < endAngle))) {
                 if ((<string>range.startWidth).length > 0) {
                     startWidth = toPixel(<string>range.startWidth, range.currentRadius);
                 } else {

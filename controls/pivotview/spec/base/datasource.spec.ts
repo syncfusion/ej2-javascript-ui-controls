@@ -1,3 +1,64 @@
+export let excel_data: object[] = [
+  {
+    "Date": "9-Jul",
+    "Product": "File Folder",
+    "Qty 1": 8,
+    "Qty 2": 8
+  },
+  {
+    "Date": "11-Jul",
+    "Product": "File Folder",
+    "Qty 1": 97,
+    "Qty 2": 97
+  },
+  {
+    "Date": "4-Jul",
+    "Product": "Paper",
+    "Qty 1": 20,
+    "Qty 2": 20
+  },
+  {
+    "Date": "7-Jul",
+    "Product": "Paper",
+    "Qty 1": 10,
+    "Qty 2": 10
+  },
+  {
+    "Date": "12-Jul",
+    "Product": "Paper",
+    "Qty 1": 20,
+    "Qty 2": 20
+  },
+  {
+    "Date": "6-Jul",
+    "Product": "Pens"
+  },
+  {
+    "Date": "8-Jul",
+    "Product": "Pens",
+    "Qty 1": 95,
+    "Qty 2": 95
+  },
+  {
+    "Date": "5-Jul",
+    "Product": "Staplers",
+    "Qty 1": 42,
+    "Qty 2": 42
+  },
+  {
+    "Date": "10-Jul",
+    "Product": "Staplers",
+    "Qty 1": 25,
+    "Qty 2": 25
+  },
+  {
+    "Date": "4-Jul",
+    "Product": "Staplers",
+    "Qty 1": 25,
+    "Qty 2": 26
+  }
+];
+
 export let pivot_dataset: object[] = [
   {
     "_id": "5a940692c2d185d9fde50e5e",

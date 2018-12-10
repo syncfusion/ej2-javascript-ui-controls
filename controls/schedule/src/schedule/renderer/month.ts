@@ -44,6 +44,8 @@ export class Month extends ViewBase implements IRenderer {
         // Here cell click
     }
     public onContentScroll(e: Event): void {
+        this.parent.removeNewEventElement();
+        this.parent.notify(event.virtualScroll, e);
         this.scrollTopPanel(<HTMLElement>e.target);
         this.scrollLeftPanel(<HTMLElement>e.target);
     }
@@ -132,6 +134,9 @@ export class Month extends ViewBase implements IRenderer {
         if (this.parent.activeViewOptions.group.byDate) {
             clsList.push('e-by-date');
         }
+        if (this.parent.activeViewOptions.allowVirtualScrolling) {
+            clsList.push(cls.VIRTUAL_SCROLL_CLASS);
+        }
         addClass([this.element], clsList);
         this.renderPanel(type);
         this.element.appendChild(this.createTableLayout(cls.OUTER_TABLE_CLASS) as HTMLElement);
@@ -144,10 +149,10 @@ export class Month extends ViewBase implements IRenderer {
         }
         this.parent.notify(event.contentReady, {});
     }
-    public wireCellEvents(element: Element): void {
+    private wireCellEvents(element: Element): void {
         EventHandler.add(element, 'mousedown', this.workCellAction.cellMouseDown, this.workCellAction);
         EventHandler.add(element, 'click', this.workCellAction.cellClick, this.workCellAction);
-        EventHandler.add(element, 'dblclick', this.workCellAction.cellDblClick, this.workCellAction);
+        if (!this.parent.isAdaptive) { EventHandler.add(element, 'dblclick', this.workCellAction.cellDblClick, this.workCellAction); }
     }
     public renderHeader(): void {
         let tr: Element = createElement('tr');
@@ -326,12 +331,13 @@ export class Month extends ViewBase implements IRenderer {
             start: util.firstDateOfMonth(monthDate),
             end: util.lastDateOfMonth(util.addMonths(monthDate, this.parent.activeViewOptions.interval - 1))
         };
-        this.renderContentTable(tbl);
-        this.wireCellEvents(tbl.querySelector('tbody'));
+        let tBody: Element = tbl.querySelector('tbody');
+        append(this.getContentRows(), tBody);
+        this.wireCellEvents(tBody);
         return tbl;
     }
-    public renderContentTable(table: Element): void {
-        let tbody: Element = table.querySelector('tbody');
+    public getContentRows(): Element[] {
+        let trows: Element[] = [];
         let tr: Element = createElement('tr', { attrs: { role: 'row' } });
         let td: Element = createElement('td', { attrs: { role: 'gridcell', 'aria-selected': 'false' } });
         let slotDatas: TdData[][] = this.getContentSlots();
@@ -341,8 +347,9 @@ export class Month extends ViewBase implements IRenderer {
                 let ntd: Element = this.createContentTd(slotDatas[row][col], td);
                 ntr.appendChild(ntd);
             }
-            tbody.appendChild(ntr);
+            trows.push(ntr);
         }
+        return trows;
     }
     public createContentTd(data: TdData, td: Element): Element {
         let ntd: Element = td.cloneNode() as Element;

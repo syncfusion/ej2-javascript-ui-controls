@@ -99,7 +99,7 @@ let diagram = new Diagram({
     contextMenuSettings: {
         show: true, items: [{
             text: 'delete', id: 'delete', target: '.e-diagramcontent',
-            iconCss: 'e-copy'
+            iconCss: 'e-syncfusion'
         }],
         showCustomMenuOnly: false,
     },

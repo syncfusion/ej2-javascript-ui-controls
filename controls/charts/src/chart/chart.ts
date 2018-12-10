@@ -97,6 +97,7 @@ import { MultiColoredAreaSeries } from './series/multi-colored-area-series';
 import { ScrollBar } from '../common/scrollbar/scrollbar';
 import { AccumulationChart, RangeNavigator } from '..';
 import { DataManager } from '@syncfusion/ej2-data';
+import { StockChart } from '../stock-chart/stock-chart';
 /**
  * Configures the crosshair in the chart.
  */
@@ -107,6 +108,13 @@ export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
      */
     @Property(false)
     public enable: boolean;
+
+    /**
+     * DashArray for crosshair.
+     * @default ''
+     */
+    @Property('')
+    public dashArray: string;
 
     /**
      * Options to customize the crosshair line.
@@ -960,6 +968,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     private getElement: MethodDecorator;
     private elementSize: Size;
     private isLegend: boolean;
+    /** @private */
+    public stockChart: StockChart;
 
     /**
      * localization object
@@ -1071,7 +1081,11 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public themeStyle: IThemeStyle;
     /** @private */
     public scrollElement: Element;
+    /** @private */
+    public scrollSettingEnabled: boolean;
     private chartid: number = 57723;
+    /** @private */
+    public svgId: string;
 
     /**
      * Constructor for creating the widget
@@ -1086,6 +1100,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
 
     protected preRender(): void {
+        //seperate ID to differentiate chart and stock chart
+        this.svgId = this.stockChart ? this.stockChart.element.id + '_stockChart_chart' : this.element.id + '_svg';
         this.unWireEvents();
         this.initPrivateVariable();
         this.setCulture();
@@ -1230,7 +1246,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             this.legendModule.renderLegend(this, this.legendSettings, this.legendModule.legendBounds);
         }
         if (!this.redraw) {
-            this.element.appendChild(this.svgObject);
+            if (!this.stockChart) {
+                this.element.appendChild(this.svgObject);
+            } else  {
+                if (!getElement(this.stockChart.chartObject.id)) {
+                    this.stockChart.mainObject.appendChild(this.svgObject);
+                }
+            }
         }
     }
     /**
@@ -1242,7 +1264,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             return;
         }
         let rect: ClientRect = this.element.getBoundingClientRect();
-        let svgRect: ClientRect = getElement(this.element.id + '_svg').getBoundingClientRect();
+        let svgRect: ClientRect =  getElement(this.svgId).getBoundingClientRect();
         element.style.left = Math.max(svgRect.left - rect.left, 0) + 'px';
         element.style.top = Math.max(svgRect.top - rect.top, 0) + 'px';
     }
@@ -1271,11 +1293,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     private renderSeriesElements(axisElement: Element): void {
         // Initialize the series elements values
         this.initializeModuleElements();
-        let tooltipDiv: Element = redrawElement(this.redraw, this.element.id + '_Secondary_Element') ||
-            this.createElement('div');
-        tooltipDiv.id = this.element.id + '_Secondary_Element';
-        tooltipDiv.setAttribute('style', 'position: relative');
-        appendChildElement(this.element, tooltipDiv, this.redraw);
+        if (this.element.tagName !== 'g') {
+            let tooltipDiv: Element = redrawElement(this.redraw, this.element.id + '_Secondary_Element') ||
+                this.createElement('div');
+            tooltipDiv.id = this.element.id + '_Secondary_Element';
+            tooltipDiv.setAttribute('style', 'position: relative');
+            appendChildElement(this.element, tooltipDiv, this.redraw);
+        }
         // For userInteraction
         if (this.tooltip.enable) {
             appendChildElement(
@@ -1354,7 +1378,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
 
         appendChildElement(this.svgObject, axisElement, this.redraw);
-        if (this.zoomModule && this.zoomSettings.enableScrollbar && this.scrollElement.childElementCount) {
+        if ((this.zoomModule && this.zoomSettings.enableScrollbar && this.scrollElement.childElementCount) ||
+            (this.scrollElement && this.scrollElement.childElementCount)) {
             appendChildElement(getElement(this.element.id + '_Secondary_Element'), this.scrollElement, this.redraw);
         }
 
@@ -1485,7 +1510,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public export(
         type: ExportType, fileName: string,
-        orientation?: PdfPageOrientation, controls?: (Chart | AccumulationChart | RangeNavigator)[],
+        orientation?: PdfPageOrientation, controls?: (Chart | AccumulationChart | RangeNavigator | StockChart)[],
         width?: number, height?: number
     ): void {
         let exportChart: ExportUtils = new ExportUtils(this);
@@ -1522,6 +1547,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     private calculateAreaType(): void {
         let series: SeriesModel = this.series[0];
+        this.chartArea.border.width = this.stockChart ? 0 : this.chartArea.border.width;
         if (series) {
             this.requireInvertedAxis = ((series.type.indexOf('Bar') !== -1) && !this.isTransposed) ||
                 ((series.type.indexOf('Bar') === -1) && this.isTransposed && this.chartAreaType !== 'PolarRadar');
@@ -1548,6 +1574,11 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 this.scrollBarModule.axes = <Axis[]>axes;
             }
         }
+        if (this.scrollSettingEnabled) {
+            if (this.scrollBarModule) {
+                this.scrollBarModule.axes = <Axis[]> axes;
+            }
+        }
         for (let i: number = 0, len: number = axes.length; i < len; i++) {
             axis = <Axis>axes[i]; axis.series = [];
             axis.labels = [];
@@ -1557,7 +1588,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             for (let indicator of this.indicators) {
                 this.initAxis(indicator as SeriesBase, axis, false);
             }
-            if (this.scrollBarModule) {
+            if (this.scrollBarModule && !axis.zoomingScrollBar) {
                 this.scrollBarModule.injectTo(axis, this);
             }
             if (axis.orientation != null) {
@@ -1736,18 +1767,24 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * @private
      */
     public renderAreaBorder(): void {
-
         if (this.chartAreaType === 'PolarRadar') {
             return null;
         } else {
+            let element: Element = getElement(this.element.id + '_ChartAreaBorder');
+            let previousRect: Rect = element ?
+                new Rect(
+                    +element.getAttribute('x'), +element.getAttribute('y'),
+                    +element.getAttribute('width'), +element.getAttribute('height')
+                ) : null;
             let rect: RectOption = new RectOption(
                 this.element.id + '_ChartAreaBorder', this.chartArea.background,
                 { width: this.chartArea.border.width, color: this.chartArea.border.color || this.themeStyle.areaBorder },
                 this.chartArea.opacity, this.chartAxisLayoutPanel.seriesClipRect);
-
             this.htmlObject = this.renderer.drawRectangle(rect) as HTMLElement;
-
-            appendChildElement(this.svgObject, this.htmlObject, this.redraw);
+            appendChildElement(
+                this.svgObject, this.htmlObject, this.redraw, true, 'x', 'y',
+                null, null, true, true, previousRect
+            );
         }
     }
 
@@ -1812,7 +1849,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * Method to create SVG element.
      */
 
-    private createChartSvg(): void {
+    public createChartSvg(): void {
         this.removeSvg();
         createSvg(this);
     }
@@ -1917,7 +1954,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * To find mouse x, y for aligned chart element svg position
      */
     private setMouseXY(pageX: number, pageY: number): void {
-        let svgRect: ClientRect = getElement(this.element.id + '_svg').getBoundingClientRect();
+        let svgRect: ClientRect = getElement(this.svgId).getBoundingClientRect();
         let rect: ClientRect = this.element.getBoundingClientRect();
         this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
         this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
@@ -1944,7 +1981,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
         this.resizeTo = setTimeout(
             (): void => {
-                if (this.isDestroyed) {
+                if (this.isDestroyed || this.stockChart) {
                     clearTimeout(this.resizeTo);
                     return;
                 }
@@ -2130,7 +2167,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             pageY = e.clientY;
             target = <Element>e.target;
         }
-        let svgRect: ClientRect = getElement(this.element.id + '_svg').getBoundingClientRect();
+        let svgRect: ClientRect = getElement(this.svgId).getBoundingClientRect();
         this.mouseDownX = this.previousMouseMoveX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
         this.mouseDownY = this.previousMouseMoveY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
 
@@ -2311,7 +2348,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 args: [this]
             });
         }
-        if (this.chartAreaType !== 'PolarRadar' && (zooming.enableSelectionZooming
+        if (this.chartAreaType !== 'PolarRadar' && !this.scrollSettingEnabled && (zooming.enableSelectionZooming
             || zooming.enableMouseWheelZooming || zooming.enablePinchZooming || zooming.enablePan)) {
             modules.push({
                 member: 'Zoom',
@@ -2369,6 +2406,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             dateTimeCategoryEnabled = axis.valueType === 'DateTimeCategory' || dateTimeCategoryEnabled;
             striplineEnabled = this.findStriplineVisibility(axis.stripLines) || striplineEnabled;
             multiLevelEnabled = axis.multiLevelLabels.length > 0 || multiLevelEnabled;
+            this.scrollSettingEnabled = axis.scrollbarSettings.enable ? true : this.scrollSettingEnabled;
         }
 
         if (datetimeEnabled) {
@@ -2408,6 +2446,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 args: [this]
             });
         }
+        if (this.scrollSettingEnabled) {
+            modules.push({
+                member: 'ScrollBar',
+                args: [this]
+            });
+        }
+
         return modules;
 
     }
@@ -2519,8 +2564,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             while (this.svgObject.childNodes.length > removeLength) {
                 this.svgObject.removeChild(this.svgObject.firstChild);
             }
-            if (!this.svgObject.hasChildNodes() && this.svgObject.parentNode) {
-                remove(this.svgObject);
+            if (!this.svgObject.hasChildNodes() && this.svgObject.parentNode && !(this.stockChart)) {
+                 remove(this.svgObject);
             }
         }
     }

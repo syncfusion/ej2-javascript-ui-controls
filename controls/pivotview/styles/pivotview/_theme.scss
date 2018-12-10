@@ -39,12 +39,12 @@
     // sass-lint:disable-all
 
     .e-sortfilterdiv {
-      margin: $pivotgird-vsort-mouse-margin !important;
+      margin: $pivotgrid-vsort-mouse-margin !important;
     }
 
     .e-grid .e-columnheader.e-wrap .e-sortfilterdiv,
     .e-grid.e-wrap .e-columnheader .e-sortfilterdiv {
-      margin: $pivotgird-vsort-mouse-wrap-margin !important;
+      margin: $pivotgrid-vsort-mouse-wrap-margin !important;
     }
 
     .e-grid .e-icons {
@@ -91,7 +91,27 @@
       color: $pivotview-grid-header-font-color !important;
       font-size: $pivotview-grid-header-font-size !important;
       font-weight: $pivotview-grid-header-font-weight !important;
-    }    
+
+      .e-hyperlinkcell {
+      //   color: $pivotview-grid-header-font-color;
+        cursor: pointer;
+
+      //   &:hover {
+      //     color: $pivotgrid-active-color;
+      //   }    
+      }
+    }
+
+    .e-valuescontent .e-cellvalue {
+      .e-hyperlinkcell {
+    //     color: $pivotgrid-default-font-color;
+        cursor: pointer;
+
+    //     &:hover {
+    //       color: $pivotgrid-active-color;
+    //     }
+      }
+    }
 
     .e-valuescontent {
       opacity: $pivotview-grid-content-opacity !important;
@@ -100,6 +120,15 @@
 
     .e-rowcell {
       opacity: 1;
+
+      // sass-lint:disable-all
+      .e-cellvalue {
+        -webkit-user-select: none;
+           -moz-user-select: none;
+            -ms-user-select: none;
+                user-select: none;
+      }
+      // sass-lint:enable-all
     }
 
     .e-grouping-bar {
@@ -112,7 +141,6 @@
       .e-left-axis-fields,
       .e-right-axis-fields {
         height: auto;
-        min-width: 200px;
       }
 
       .e-left-axis-fields {
@@ -156,7 +184,7 @@
       }
 
       .e-draggable-prompt {
-        color: $pivotgird-default-font-color;
+        color: $pivotgrid-prompt-default-font-color;
         line-height: $pivotgrid-prompt-line-height;
         padding-left: $pivotgrid-horizontal-button-padding;
         pointer-events: none;
@@ -174,7 +202,6 @@
       flex: auto;
       height: $pivotgrid-grouping-height;
       min-height: $pivotgrid-grouping-height;
-      min-width: 150px;
       overflow: hidden;
       padding-left: $pivotview-axis-indent-padding;
       scroll-behavior: smooth;
@@ -229,6 +256,7 @@
             color: $pivotgrid-button-acitve-font-color;
 
             .e-sort,
+            .e-dropdown-icon,
             .e-pv-filter,
             .e-pv-filtered,
             .e-remove {
@@ -256,6 +284,7 @@
           }
 
           .e-sort,
+          .e-dropdown-icon,
           .e-pv-filter,
           .e-pv-filtered,
           .e-remove {
@@ -285,6 +314,11 @@
               transform: rotateX(180deg);
             }
           }
+
+          .e-dropdown-icon {
+            margin-top: 1px;
+          }
+
         }
       }
     }
@@ -325,6 +359,7 @@
               color: $pivotgrid-button-acitve-font-color;
   
               .e-sort,
+              .e-dropdown-icon,
               .e-pv-filter,
               .e-pv-filtered,
               .e-remove {
@@ -333,6 +368,7 @@
             }
 
             .e-sort,
+            .e-dropdown-icon,
             .e-pv-filter,
             .e-pv-filtered,
             .e-remove {
@@ -359,6 +395,9 @@
                 transform: rotateX(180deg);
               }
             }
+            .e-dropdown-icon {
+              margin-top: 1px;
+            }
           }
         }
       }
@@ -375,7 +414,50 @@
       }
     }
 
+    .e-icons {
+      height: auto;
+      width: auto;
+    }
+
+    .e-collapse::before {
+      font-size: $pivotgrid-collapse-icon-fonsize;
+    }
+
+    .e-expand,
+    .e-collapse {
+      cursor: pointer;
+      display: inline-block;
+      height: 16px;
+      text-align: center;
+      width: 24px;
+    }
+
+    // sass-lint:disable-all
+    th .e-expand,
+    th .e-collapse {
+      float: left;
+      font-size: $pivotgrid-expcoldiv-fontsize !important;
+      margin-left: -6px;
+      margin-top: $pivotgrid-drill-margintop;
+    }
+    // sass-lint:enable-all
+
+    .e-expand::before {
+      font-size: $pivotgrid-expand-icon-fontsize;
+    }
+
     &.e-rtl {
+      .e-expand::before,
+      .e-collapse::before {
+        margin-left: 0;
+      }
+
+      th .e-expand,
+      th .e-collapse {
+        float: right;
+        margin-right: -8px;
+      }
+
       // sass-lint:disable-all
       .e-grid .e-rowsheader {
         padding-right: 8px !important;
@@ -384,7 +466,7 @@
       .e-grid .e-columnsheader {
         padding-right: 12px !important;
       }
-      // sass-lint:disable-all
+      // sass-lint:enable-all
 
       .e-rowsheader .e-cellvalue {
         margin-left: 0;
@@ -422,6 +504,7 @@
               }
 
               .e-sort,
+              .e-dropdown-icon,
               .e-pv-filter,
               .e-pv-filtered,
               .e-remove {
@@ -439,6 +522,7 @@
           padding-right: $pivotview-axis-indent-padding;
 
           .e-pvt-btn-div {
+            // sass-lint:disable-all
             padding-left: $pivotgrid-horizontal-button-padding;
             padding-right: 0;
 
@@ -448,6 +532,7 @@
               }
 
               .e-sort,
+              .e-dropdown-icon,
               .e-pv-filter,
               .e-pv-filtered,
               .e-remove {
@@ -455,10 +540,10 @@
                 padding-right: 7px;
               }
             }
+            // sass-lint:enable-all
           }
         }
       }
-      
 
       // sass-lint:disable-all
       .e-stackedheadercelldiv.e-cellvalue {
@@ -484,14 +569,14 @@
 
   .e-pivottooltip {
     border-radius: 2px;
-    padding: $pivotgird-tooltip-padding;
+    padding: $pivotgrid-tooltip-padding;
   }
 
   .e-pivottooltip p {
-    color: $pivotgird-tooltip-fontcolor;
+    color: $pivotgrid-tooltip-fontcolor;
     display: inline-block;
-    font-family: $pivotgird-tooltip-fontfamily;
-    font-size: $pivotgird-tooltip-fontsize;
+    font-family: $pivotgrid-tooltip-fontfamily;
+    font-size: $pivotgrid-tooltip-fontsize;
     line-height: 21px;
     margin: 0;
   }
@@ -532,6 +617,7 @@
           }
 
           .e-sort,
+          .e-dropdown-icon,
           .e-pv-filter,
           .e-pv-filtered,
           .e-remove {
@@ -542,6 +628,10 @@
 
           .e-sort {
             height: $pivotgrid-bigger-button-icon-size;
+          }
+
+          .e-dropdown-icon {
+            margin-top: 1px;
           }
         }
       }
@@ -585,6 +675,7 @@
           }
 
           .e-sort,
+          .e-dropdown-icon,
           .e-pv-filter,
           .e-pv-filtered,
           .e-remove {
@@ -596,18 +687,22 @@
           .e-sort {
             height: $pivotgrid-bigger-button-icon-size;
           }
+
+          .e-dropdown-icon {
+            margin-top: 1px;
+          }
         }
       }
     }
 
     // sass-lint:disable-all
     .e-sortfilterdiv {
-      margin: $pivotgird-vsort-touch-margin !important;
+      margin: $pivotgrid-vsort-touch-margin !important;
     }
 
     .e-grid .e-columnheader.e-wrap .e-sortfilterdiv,
     .e-grid.e-wrap .e-columnheader .e-sortfilterdiv {
-      margin: $pivotgird-vsort-touch-wrap-margin !important;
+      margin: $pivotgrid-vsort-touch-wrap-margin !important;
     }
     // sass-lint:enable-all
 

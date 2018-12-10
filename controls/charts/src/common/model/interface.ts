@@ -8,13 +8,27 @@ import { BorderModel, FontModel } from './base-model';
 import { ChartLocation, Size } from '../utils/helper';
 import { AccPoints, AccumulationSeries } from '../../accumulation-chart/model/acc-base';
 import { AccumulationChart } from '../../accumulation-chart';
-import { RangeNavigator } from '../../range-navigator';
+import { RangeNavigator, RangeSlider, PeriodsModel } from '../../range-navigator';
+import { StockChart } from '../../stock-chart/stock-chart';
+import { ItemModel } from '@syncfusion/ej2-navigations';
+import { ScrollbarSettingsRangeModel } from '../../chart/model/chart-base-model';
 
 export interface IChartEventArgs {
     /** Defines the name of the event */
     name: string;
     /** Defines the event cancel status */
     cancel: boolean;
+}
+
+export interface ISelectorRenderArgs {
+    /** Defines the thumb size of the slider */
+    thumbSize: number;
+    /** Defines the selector appending element */
+    element: HTMLElement;
+    /** Defines the selector width */
+    width: number;
+    /** Defines the selector height */
+    height: number;
 }
 export interface ILegendRenderEventArgs extends IChartEventArgs {
     /** Defines the current legend text */
@@ -133,8 +147,6 @@ export interface ITooltipRenderEventArgs extends IChartEventArgs {
     series: Series | AccumulationSeries;
     /** Defines current tooltip point */
     point: Points | AccPoints;
-    /** Defines the header text for tooltip */
-    headerText?: string;
 }
 export interface IMouseEventArgs extends IChartEventArgs {
     /** Defines current mouse event target id */
@@ -144,6 +156,7 @@ export interface IMouseEventArgs extends IChartEventArgs {
     /** Defines current mouse y location */
     y: number;
 }
+
 export interface IPointEventArgs extends IChartEventArgs {
     /** Defines the current series */
     series: SeriesModel;
@@ -212,7 +225,7 @@ export interface IResizeEventArgs  {
     /** Defines the current size of the accumulation chart */
     currentSize: Size;
     /** Defines the accumulation chart instance */
-    chart: Chart | AccumulationChart;
+    chart: Chart | AccumulationChart | StockChart;
     /** Defines the name of event */
 }
 export interface IResizeRangeNavigatorEventArgs  {
@@ -285,13 +298,13 @@ export interface IScrollbarThemeStyle {
  */
 export interface IScrollEventArgs {
     /** Defines the name of the event */
-    name: string;
+    name?: string;
     /** Defines the current Zoom Position */
-    zoomPosition: number;
+    zoomPosition?: number;
     /** Defines the current Zoom Factor */
-    zoomFactor: number;
+    zoomFactor?: number;
     /** Defines the current range */
-    range: VisibleRangeModel;
+    range?: VisibleRangeModel;
     /** Defines the previous Zoom Position */
     previousZoomPosition?: number;
     /** Defines the previous Zoom Factor */
@@ -299,5 +312,61 @@ export interface IScrollEventArgs {
     /** Defines the previous range */
     previousRange?: VisibleRangeModel;
     /** Defines the current scroll axis */
-    axis: Axis;
+    axis?: Axis;
+     /** Defines axis previous range */
+    previousAxisRange?: ScrollbarSettingsRangeModel;
+     /** Defines axis current range */
+    currentRange? : ScrollbarSettingsRangeModel;
+}
+
+export interface IRangeSelectorRenderEventArgs extends IChartEventArgs {
+    /** Defines selector collections */
+    selector: ItemModel[];
+    /** enable custom format for calendar */
+    enableCustomFormat: boolean;
+    /** content fro calendar format */
+    content: string;
+}
+
+/**
+ * Period selector component interface
+ * @private
+ */
+export interface IPeriodSelectorControl {
+    /**
+     * Element for the control
+     */
+    element: HTMLElement;
+    /**
+     * Series min value.
+     */
+    seriesXMin: number;
+    /**
+     * Series max value.
+     */
+    seriesXMax: number;
+    /**
+     * Start value for the axis.
+     */
+    startValue: number;
+    /**
+     * End value for the axis.
+     */
+    endValue: number;
+    /**
+     * Range slider instance.
+     */
+    rangeSlider: RangeSlider;
+    /**
+     * To disable the range selector.
+     */
+    disableRangeSelector: boolean;
+    /**
+     * To config period selector settings.
+     */
+    periods: PeriodsModel[];
+    /**
+     * Range navigator
+     */
+    rangeNavigatorControl: RangeNavigator;
 }

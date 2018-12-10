@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty, DateFormatOptions, isNullOrUndefined } from '@syncfusion/ej2-base';import { DataUtil } from '@syncfusion/ej2-data';import { Orientation } from '../utils/enum';import { FontModel, TitleModel } from '../model/base-model';import { Font, Title } from '../model/base';import { Theme } from '../model/theme';import { Rect, measureText, Size, rotateTextSize, increaseDateTimeInterval } from '../utils/helper';import { ValueType, IntervalType, LabelIntersectAction, LabelType } from '../utils/enum';import { HeatMap } from '../heatmap'
+import { Property, Complex, ChildProperty, DateFormatOptions, isNullOrUndefined, Collection } from '@syncfusion/ej2-base';import { DataUtil } from '@syncfusion/ej2-data';import { Orientation } from '../utils/enum';import { FontModel, TitleModel, AxisLabelBorderModel, MultiLevelLabelsModel, MultiLevelCategoriesModel } from '../model/base-model';import { Font, Title, AxisLabelBorder, MultiLevelLabels, MultiLevelCategories } from '../model/base';import { Theme } from '../model/theme';import { Rect, measureText, Size, rotateTextSize, increaseDateTimeInterval, formatValue } from '../utils/helper';import { MultiLevelPosition, textWrap } from '../utils/helper';import { ValueType, IntervalType, LabelIntersectAction, LabelType } from '../utils/enum';import { HeatMap } from '../heatmap'
 
 /**
  * Interface for a class Axis
@@ -121,5 +121,15 @@ export interface AxisModel {
      */
 
     labelIntersectAction?: LabelIntersectAction;
+
+    /**
+     * Border of the axis labels.
+     */
+    border?: AxisLabelBorderModel;
+
+    /**
+     * Specifies the multi level labels collection for the axis
+     */
+    multiLevelLabels?: MultiLevelLabelsModel[];
 
 }

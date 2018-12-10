@@ -1,10 +1,11 @@
 import * as events from '../base/constant';
 import { IRichTextEditor, IToolbarItemModel, IRenderer, NotifyArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, addClass, removeClass } from '@syncfusion/ej2-base';
 import { MarkdownFormatter } from '../formatter/markdown-formatter';
 import { RendererFactory } from '../services/renderer-factory';
 import { RenderType } from '../base/enum';
+import * as classes from '../base/classes';
 import { MarkdownToolbarStatus } from './markdown-toolbar-status';
 import { MarkdownRender } from '../renderer/markdown-renderer';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -49,7 +50,18 @@ export class MarkdownEditor {
         this.parent.on(events.getSelectedHtml, this.getSelectedHtml, this);
         this.parent.on(events.selectionSave, this.onSelectionSave, this);
         this.parent.on(events.selectionRestore, this.onSelectionRestore, this);
+        this.parent.on(events.readOnlyMode, this.updateReadOnly, this);
     }
+    private updateReadOnly(): void {
+        if (this.parent.readonly) {
+            this.parent.contentModule.getEditPanel().setAttribute('readonly', 'readonly');
+            addClass([this.parent.element], classes.CLS_RTE_READONLY);
+        } else {
+            this.parent.contentModule.getEditPanel().removeAttribute('readonly');
+            removeClass([this.parent.element], classes.CLS_RTE_READONLY);
+        }
+    }
+
     private onSelectionSave(): void {
         let textArea: HTMLTextAreaElement = this.parent.contentModule.getEditPanel() as HTMLTextAreaElement;
         this.saveSelection.save(textArea.selectionStart, textArea.selectionEnd);
@@ -86,6 +98,13 @@ export class MarkdownEditor {
             case 'Image':
                 this.parent.notify(events.insertImage, { member: 'image', args: args, text: text, module: 'Markdown' });
                 break;
+            case 'CreateTable':
+                let tableConstant: {} = {
+                    'headingText': this.parent.localeObj.getConstant('TableHeadingText'),
+                    'colText': this.parent.localeObj.getConstant('TableColText')
+                };
+                this.parent.formatter.process(this.parent, args, args.originalEvent, tableConstant);
+                break;
             default:
                 this.parent.formatter.process(this.parent, args, args.originalEvent, null);
                 break;
@@ -105,6 +124,7 @@ export class MarkdownEditor {
         this.parent.off(events.getSelectedHtml, this.getSelectedHtml);
         this.parent.off(events.selectionSave, this.onSelectionSave);
         this.parent.off(events.selectionRestore, this.onSelectionRestore);
+        this.parent.off(events.readOnlyMode, this.updateReadOnly);
     }
 
     private render(): void {

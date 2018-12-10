@@ -1,5 +1,5 @@
 import { LayoutViewer } from '../index';
-import { L10n, setCulture, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { L10n, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { CheckBox, Button } from '@syncfusion/ej2-buttons';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
@@ -47,30 +47,38 @@ export class TableOfContentsDialog {
     /**
      * @private
      */
-    public initTableOfContentDialog(locale: L10n): void {
+    public initTableOfContentDialog(locale: L10n, isRtl?: boolean): void {
         let instance: TableOfContentsDialog = this;
         let ownerId: string = this.owner.owner.containerId;
         let id: string = ownerId + '_toc_dialog';
         this.target = createElement('div', { id: id, className: 'e-de-toc-dlg-container' });
-        this.owner.owner.element.appendChild(this.target);
         // tslint:disable-next-line:max-line-length
         let generalDiv: HTMLDivElement = createElement('div', { id: 'general_div', className: 'e-de-toc-dlg-sub-container' }) as HTMLDivElement;
         this.target.appendChild(generalDiv);
         // tslint:disable-next-line:max-line-length
         let genLabel: HTMLElement = createElement('div', { id: ownerId + '_genLabel', className: 'e-de-toc-dlg-main-heading', styles: 'margin-bottom: 13px;', innerHTML: locale.getConstant('General') });
         generalDiv.appendChild(genLabel);
+        let leftGeneralDivStyles: string;
+        let rightBottomGeneralDivStyles: string;
+        if (isRtl) {
+            leftGeneralDivStyles = 'float:right;'
+            rightBottomGeneralDivStyles = 'float:left;position:relative;';
+        } else {
+            leftGeneralDivStyles = 'float:left;'
+            rightBottomGeneralDivStyles = 'float:right;';
+        }
 
         // tslint:disable-next-line:max-line-length
-        let leftGeneralDiv: HTMLDivElement = createElement('div', { id: 'left_general', styles: 'float:left;position:relative;' }) as HTMLDivElement;
+        let leftGeneralDiv: HTMLDivElement = createElement('div', { id: 'left_general', styles: leftGeneralDivStyles + 'position:relative;' }) as HTMLDivElement;
         generalDiv.appendChild(leftGeneralDiv);
         // tslint:disable-next-line:max-line-length
-        let rightGeneralDiv: HTMLDivElement = createElement('div', { styles: 'position:relative;', className: 'e-de-toc-dlg-right-general-div' }) as HTMLDivElement;
+        let rightGeneralDiv: HTMLDivElement = createElement('div', { styles: 'position:absolute;', className: 'e-de-toc-dlg-right-general-div' }) as HTMLDivElement;
         generalDiv.appendChild(rightGeneralDiv);
         // tslint:disable-next-line:max-line-length
         let leftBottomGeneralDiv: HTMLDivElement = createElement('div', { id: 'leftBottom_general', styles: 'float:left;position:absolute;top:210px;' }) as HTMLDivElement;
         generalDiv.appendChild(leftBottomGeneralDiv);
         // tslint:disable-next-line:max-line-length
-        let rightBottomGeneralDiv: HTMLDivElement = createElement('div', { className: 'e-de-toc-dlg-right-sub-container', styles: 'float:right;' }) as HTMLDivElement;
+        let rightBottomGeneralDiv: HTMLDivElement = createElement('div', { className: 'e-de-toc-dlg-right-sub-container', styles: rightBottomGeneralDivStyles }) as HTMLDivElement;
         generalDiv.appendChild(rightBottomGeneralDiv);
 
         // tslint:disable-next-line:max-line-length
@@ -87,9 +95,9 @@ export class TableOfContentsDialog {
         rightAlignDiv.appendChild(rightAlign);
 
         // tslint:disable-next-line:max-line-length
-        this.pageNumber = new CheckBox({ label: locale.getConstant('Show page numbers'), checked: true, change: this.changePageNumberValue });
+        this.pageNumber = new CheckBox({ label: locale.getConstant('Show page numbers'), enableRtl: isRtl, checked: true, change: this.changePageNumberValue });
         // tslint:disable-next-line:max-line-length
-        this.rightAlign = new CheckBox({ label: locale.getConstant('Right align page numbers'), checked: true, change: this.changeRightAlignValue });
+        this.rightAlign = new CheckBox({ label: locale.getConstant('Right align page numbers'), enableRtl: isRtl, checked: true, change: this.changeRightAlignValue });
         this.pageNumber.appendTo(pageNumber); this.rightAlign.appendTo(rightAlign);
 
         let tabDiv: HTMLDivElement = createElement('div', { id: 'tab_div', className: 'e-de-toc-dlg-tab-div' }) as HTMLDivElement;
@@ -112,13 +120,14 @@ export class TableOfContentsDialog {
         leftGeneralDiv.appendChild(rightAlignDiv);
         leftGeneralDiv.appendChild(tabDiv);
 
-        this.tabLeader = new DropDownList({ width: 210 }); this.tabLeader.appendTo(tabLeader);
+        this.tabLeader = new DropDownList({ width: 210, enableRtl: isRtl }); this.tabLeader.appendTo(tabLeader);
 
         let hyperlink: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'checkbox' }, id: this.target.id + '_hyperlink'
         });
         rightGeneralDiv.appendChild(hyperlink);
-        this.hyperlink = new CheckBox({ label: locale.getConstant('Use hyperlinks instead of page numbers'), checked: true });
+        //tslint:disable-next-line:max-line-length
+        this.hyperlink = new CheckBox({ label: locale.getConstant('Use hyperlinks instead of page numbers'), cssClass: 'e-de-toc-label', enableRtl: isRtl, checked: true });
         this.hyperlink.appendTo(hyperlink);
         // tslint:disable-next-line:max-line-length
         let showDiv: HTMLDivElement = createElement('div', { id: 'show_div', className: 'e-de-toc-dlg-style-label' }) as HTMLDivElement;
@@ -135,6 +144,12 @@ export class TableOfContentsDialog {
         rightGeneralDiv.appendChild(showDiv);
         this.showLevel = new NumericTextBox({ format: '#', value: 3, min: 1, max: 9, width: 210, change: this.changeShowLevelValue });
         this.showLevel.appendTo(showLevel);
+        if (isRtl) {
+            this.hyperlink.cssClass = 'e-de-toc-label-rtl';
+            showLevelLabelDiv.classList.add('e-de-rtl');
+            showLevelDiv.classList.add('e-de-rtl');
+            rightBottomGeneralDiv.classList.add('e-de-rtl');
+        }
 
         // tslint:disable-next-line:max-line-length
         let buildTableDiv: HTMLDivElement = createElement('div', { id: 'buildTable_div', className: 'e-de-toc-dlg-sub-container' }) as HTMLDivElement;
@@ -147,7 +162,7 @@ export class TableOfContentsDialog {
             attrs: { 'type': 'checkbox' }, id: this.target.id + '_style',
         });
         leftBottomGeneralDiv.appendChild(style);
-        this.style = new CheckBox({ label: locale.getConstant('Styles'), checked: true, change: this.changeStyleValue });
+        this.style = new CheckBox({ label: locale.getConstant('Styles'), enableRtl: isRtl, checked: true, change: this.changeStyleValue });
         this.style.appendTo(style);
 
         let table: HTMLTableElement = <HTMLTableElement>createElement('TABLE', { styles: 'margin-top:3px;' });
@@ -302,6 +317,18 @@ export class TableOfContentsDialog {
         this.normal.addEventListener('keyup', this.changeHeadingStyle);
         td24.appendChild(this.normal);
         tr12.appendChild(td23); tr12.appendChild(td24);
+        if (isRtl) {
+            this.normal.classList.add('e-de-rtl');
+            this.heading1.classList.add('e-de-rtl');
+            this.heading2.classList.add('e-de-rtl');
+            this.heading3.classList.add('e-de-rtl');
+            this.heading4.classList.add('e-de-rtl');
+            this.heading5.classList.add('e-de-rtl');
+            this.heading6.classList.add('e-de-rtl');
+            this.heading7.classList.add('e-de-rtl');
+            this.heading8.classList.add('e-de-rtl');
+            this.heading9.classList.add('e-de-rtl');
+        }
 
         table1.appendChild(tr2); table1.appendChild(tr3); table1.appendChild(tr4); table1.appendChild(tr5);
         table1.appendChild(tr6); table1.appendChild(tr7); table1.appendChild(tr8); table1.appendChild(tr9);
@@ -324,12 +351,15 @@ export class TableOfContentsDialog {
         outlineDiv.appendChild(outline);
         outDiv.appendChild(outlineDiv);
         fieldsDiv.appendChild(outDiv);
-        this.outline = new CheckBox({ label: locale.getConstant('Outline levels'), checked: true });
+        this.outline = new CheckBox({
+            label: locale.getConstant('Outline levels'),
+            enableRtl: isRtl, checked: true, cssClass: 'e-de-outline-rtl'
+        });
         this.outline.appendTo(outline);
 
         let resetButtonDiv: HTMLElement = createElement('div', { className: 'e-de-toc-reset-button' });
         fieldsDiv.appendChild(resetButtonDiv);
-        let resetElement: HTMLElement = createElement('button', { innerHTML: 'Reset', id: 'reset' });
+        let resetElement: HTMLElement = createElement('button', { innerHTML: locale.getConstant('Reset'), id: 'reset' });
         resetButtonDiv.appendChild(resetElement);
         let resetButton: Button = new Button({ cssClass: 'e-btn e-flat' });
         resetButton.appendTo(resetElement);
@@ -352,7 +382,8 @@ export class TableOfContentsDialog {
         textBoxDiv.appendChild(this.textBoxInput);
 
         let listViewDiv: HTMLElement = createElement('div', { className: 'e-de-toc-list-view' });
-        let styleValues: string[] = ['TOC 1', 'TOC 2', 'TOC 3', 'TOC 4', 'TOC 5', 'TOC 6', 'TOC 7', 'TOC 8', 'TOC 9'];
+        let styleLocale: string[] = ['TOC 1', 'TOC 2', 'TOC 3', 'TOC 4', 'TOC 5', 'TOC 6', 'TOC 7', 'TOC 8', 'TOC 9'];
+        let styleValues: string[] = this.styleLocaleValue(styleLocale, locale);
         this.listViewInstance = new ListView({ dataSource: styleValues, cssClass: 'e-toc-list-view' });
         this.listViewInstance.appendTo(listViewDiv);
         this.listViewInstance.addEventListener('select', this.selectHandler);
@@ -360,11 +391,25 @@ export class TableOfContentsDialog {
 
         let modifyButtonDiv: HTMLElement = createElement('div', { className: 'e-de-toc-modify-button' });
         rightBottomGeneralDiv.appendChild(modifyButtonDiv);
-        let modifyElement: HTMLElement = createElement('button', { innerHTML: 'Modify', id: 'modify' });
+        let modifyElement: HTMLElement = createElement('button', { innerHTML: locale.getConstant('Modify'), id: 'modify' });
         modifyButtonDiv.appendChild(modifyElement);
         let modifyButton: Button = new Button({ cssClass: 'e-btn e-flat' });
         modifyButton.appendTo(modifyElement);
         modifyElement.addEventListener('click', this.showStyleDialog);
+        if (isRtl) {
+            resetButtonDiv.classList.add('e-de-rtl');
+            tocStylesLabel.classList.add('e-de-rtl');
+            textBoxDiv.classList.add('e-de-rtl');
+            listViewDiv.classList.add('e-de-rtl');
+            modifyButtonDiv.classList.add('e-de-rtl');
+        }
+    }
+    private styleLocaleValue = (styleLocale: string[], localValue: L10n): string[] => {
+        let styleName: string[] = [];
+        for (let index: number = 0; index < styleLocale.length; index++) {
+            styleName.push(localValue.getConstant(styleLocale[index]));
+        }
+        return styleName;
     }
     /**
      * @private
@@ -372,9 +417,8 @@ export class TableOfContentsDialog {
     public show(): void {
         let localValue: L10n = new L10n('documenteditor', this.owner.owner.defaultLocale);
         localValue.setLocale(this.owner.owner.locale);
-        setCulture(this.owner.owner.locale);
         if (!this.target) {
-            this.initTableOfContentDialog(localValue);
+            this.initTableOfContentDialog(localValue, this.owner.owner.enableRtl);
         }
         this.owner.dialog.header = localValue.getConstant('Table of Contents');
         this.owner.dialog.width = 'auto';

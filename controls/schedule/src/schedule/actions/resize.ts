@@ -215,9 +215,10 @@ export class Resize extends ActionBase {
                 cellIndex = (cellIndex < 0) ? 0 : (cellIndex >= noOfDays) ? noOfDays - 1 : cellIndex;
             } else {
                 let cellWidth: number = this.parent.currentView === 'TimelineMonth' || !this.parent.activeViewOptions.timeScale.enable ?
-                    this.actionObj.cellWidth - 2 : 0;
-                cellIndex = Math.floor(isLeft ? (this.actionObj.clone.offsetLeft / this.actionObj.cellWidth) :
-                    (this.actionObj.clone.offsetLeft + (this.actionObj.clone.offsetWidth - cellWidth)) / this.actionObj.cellWidth);
+                    this.actionObj.cellWidth : 0;
+                cellIndex = isLeft ? Math.floor(this.actionObj.clone.offsetLeft / this.actionObj.cellWidth) :
+                    Math.ceil((this.actionObj.clone.offsetLeft + (this.actionObj.clone.offsetWidth - cellWidth)) /
+                        this.actionObj.cellWidth);
                 if (this.parent.enableRtl) {
                     let cellOffsetWidth: number = 0;
                     if (headerName === 'TimelineMonth' || (!this.parent.activeViewOptions.timeScale.enable &&

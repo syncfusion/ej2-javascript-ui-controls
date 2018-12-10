@@ -411,8 +411,7 @@ describe('insert Link', () => {
             action: ''
         };
         beforeAll(() => {
-            rteObj = renderRTE({
-                value: '<p>syncfusion</p>',
+            rteObj = renderRTE({ value: '<p>syncfusion</p>' ,
                 toolbarSettings: {
                     items: ['CreateLink', 'Bold']
                 }
@@ -424,44 +423,49 @@ describe('insert Link', () => {
         });
         it('check link text', () => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            let selObj: any = new NodeSelection();
+            let selObj:any = new NodeSelection();
             selObj.setSelectionNode(rteObj.contentModule.getDocument(), rteObj.contentModule.getEditPanel().childNodes[0]);
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-            (rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
-            expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value === 'syncfusion').toBe(true);
+            (rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value  = 'https://www.syncfusion.com';
+             expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value === 'syncfusion').toBe(true);
             let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
-            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
+            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({target: target, preventDefault: function(){}});
             expect(rteObj.contentModule.getEditPanel().querySelector('a').text === 'syncfusion').toBe(true);
-            keyboardEventArgs.ctrlKey = true;
+             keyboardEventArgs.ctrlKey = true;
             keyboardEventArgs.keyCode = 90;
             keyboardEventArgs.action = 'undo';
             (<any>rteObj).formatter.editorManager.undoRedoManager.keyDown({ event: keyboardEventArgs });
             expect(rteObj.contentModule.getEditPanel().querySelector('a')).toBe(null);
         });
     });
-    describe('markdown link insert', () => {
-        let rteEle: HTMLElement;
+    describe(' toolbarSettings property - Items - ', () => {
         let rteObj: RichTextEditor;
-        beforeAll(() => {
+        let controlId: string;
+        beforeEach((done: Function) => {
             rteObj = renderRTE({
-                value: 'syncfusion',
-                toolbarSettings: {
-                    items: ['CreateLink', 'Bold']
-                },
-                editorMode: 'Markdown',
+                value: '<span id="rte">RTE</span>'
             });
-            rteEle = rteObj.element;
+            controlId = rteObj.element.id;
+            done();
         });
-        afterAll(() => {
+        afterEach((done: Function) => {
             destroy(rteObj);
+            done();
         });
-        it('check link text', () => {
-            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-            (rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
-            expect((rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl')).not.toBe(null);
-            let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
-            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
+        it(' Test - Click the CreateLink item - set the disable the new window option', () => {
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_CreateLink');
+            item.click();
+            let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-rte-linkurl') as HTMLInputElement).value = 'https://ej2.syncfusion.com';
+            let check: HTMLInputElement = dialogEle.querySelector('.e-rte-linkTarget');
+            check.click();
+            (document.querySelector('.e-insertLink.e-primary') as HTMLElement).click();
+            pEle = rteObj.element.querySelector('#rte');
+            let anchor: HTMLAnchorElement = pEle.querySelector('a');
+            expect(anchor.hasAttribute('target')).toBe(false);
         });
-    });
+
+    })
 });

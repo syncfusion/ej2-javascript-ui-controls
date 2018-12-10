@@ -9,7 +9,7 @@
   .e-bigger .e-ddl#{&}.e-popup {
     & .e-list-item,
     & .e-list-group-item {
-      font-size: $bigger-list-font-size;
+      font-size: $ddl-bigger-list-font-size;
     }
 
     & .e-input-group {
@@ -40,11 +40,11 @@
   }
 
   .e-bigger .e-ddl-device .e-input-group .e-clear-icon {
-    margin-right: $clear-icon-margin-right;
+    margin-right: $ddl-clear-icon-margin-right;
   }
 
   .e-ddl-device-filter .e-filter-parent {
-    background-color: $filter-background-color;
+    background-color: $ddl-filter-background-color;
   }
 
   // sass-lint:disable no-vendor-prefixes
@@ -58,11 +58,11 @@
   // sass-lint:enable no-vendor-prefixes
 
   .e-filter-parent {
-    border: $filter-border;
-    border-top-width: $filter-top-border;
-    box-shadow: $filter-box-shadow;
+    border: $ddl-filter-border;
+    border-top-width: $ddl-filter-top-border;
+    box-shadow: $ddl-filter-box-shadow;
     display: block;
-    padding: $filter-padding;
+    padding: $ddl-filter-padding;
   }
 
   .e-ddl.e-input-group:not(.e-disabled) {
@@ -79,26 +79,26 @@
    }
 
   .e-ddl#{&}.e-popup {
-    background: $popup-background-color;
-    border: 1px solid $default-border-color;
+    background: $ddl-popup-background-color;
+    border: 1px solid $ddl-default-border-color;
     position: absolute;
     @at-root {
       & .e-search-icon {
         margin: 0;
         opacity: .57;
-        padding: $list-search-icon-padding;
+        padding: $ddl-list-search-icon-padding;
       }
 
       & .e-filter-parent .e-back-icon {
-        margin: $back-icon-margin;
-        padding: $back-icon-padding;
+        margin: $ddl-back-icon-margin;
+        padding: $ddl-back-icon-padding;
         position: absolute;
       }
 
       &.e-rtl .e-filter-parent .e-input-group.e-control-wrapper .e-input-filter,
       & .e-filter-parent .e-input-filter,
       & .e-filter-parent .e-input-filter:focus {
-        padding: $list-filter-text-indent;
+        padding: $ddl-list-filter-text-indent;
       }
 
       & .e-input-group {
@@ -137,17 +137,16 @@
   .e-ddl.e-input-group input[readonly] ~ .e-clear-icon:not(.e-clear-icon-hide),
   .e-float-input input[readonly] ~ .e-clear-icon:not(.e-clear-icon-hide),
   .e-float-input.e-input-group input[readonly] ~ .e-clear-icon:not(.e-clear-icon-hide) {
-    display: block;
     opacity: 1;
   }
 
   .e-ddl.e-input-group {
     .e-input-value,
     .e-input-value:focus {
-      font-family: $input-font-family;
-      font-size: $input-font-size;
+      font-family: $ddl-input-font-family;
+      font-size: $ddl-input-font-size;
       height: auto;
-      margin: $zero-value;
+      margin: $ddl-zero-value;
       outline: none;
       width: 100%;
     }

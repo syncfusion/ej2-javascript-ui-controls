@@ -20,7 +20,7 @@ npm install @syncfusion/ej2-maps
 
 * [Getting Started](https://ej2.syncfusion.com/documentation/maps/getting-started.html?lang=typescript)
 * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=maps#/material/maps/default.html)
-* [Product Page](https://www.syncfusion.com/javascript-ui-controls/maps)
+* [Product Page](https://www.syncfusion.com/products/javascript/maps)
 
 ## Supported Frameworks
 
@@ -31,7 +31,7 @@ Maps component is also offered in following list of frameworks.
 3. [Vue.js](https://www.npmjs.com/package/@syncfusion/ej2-vue-maps?utm_source=npm&utm_campaign=maps)
 4. [ASP.NET Core](https://aspdotnetcore.syncfusion.com/Maps/Default#/material)
 5. [ASP.NET MVC](https://aspnetmvc.syncfusion.com/Maps/Default#/material)
-6. [JavaScript (ES5)](https://www.syncfusion.com/javascript-ui-controls/maps)
+6. [JavaScript (ES5)](https://www.syncfusion.com/products/javascript/maps)
 
 ## Use case samples
 

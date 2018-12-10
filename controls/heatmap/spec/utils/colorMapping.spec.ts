@@ -12,7 +12,7 @@ describe('Heatmap Control', () => {
         let heatmap: HeatMap;
         let ele: HTMLElement;
         let tempElement: HTMLElement;
-        let created: EmitType<ILoadedEventArgs>;
+        let created: EmitType<Object>;
         beforeAll((): void => {
             ele = createElement('div', { id: 'container' });
             document.body.appendChild(ele);

@@ -747,6 +747,9 @@ describe('ContextMenu', () => {
             contextMenu.items[1].text = "Copy";
             contextMenu.items[2].text = "Paste"
             contextMenu.dataBind();
+            contextMenu.items = [{text:'Paste'},{text:'Special'}];
+            contextMenu.dataBind();
+            expect(contextMenu.items[0].text).toEqual('Paste');
         });
     });
 

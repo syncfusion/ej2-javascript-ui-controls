@@ -42,12 +42,12 @@ export class VerticalEvent extends EventBase {
     }
 
     public renderAppointments(): void {
-        let wrapperElements: HTMLElement[] =
-            [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS + ',.' + cls.ROW_COUNT_WRAPPER_CLASS));
+        let wrapperElements: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.BLOCK_APPOINTMENT_CLASS +
+            ',.' + cls.APPOINTMENT_CLASS + ',.' + cls.ROW_COUNT_WRAPPER_CLASS));
         wrapperElements.forEach((element: HTMLElement) => remove(element));
         this.allDayElement = [].slice.call(this.element.querySelectorAll('.' + cls.ALLDAY_CELLS_CLASS));
         this.setAllDayRowHeight(0);
-        if (this.parent.eventsProcessed.length === 0) {
+        if (this.parent.eventsProcessed.length === 0 && this.parent.blockProcessed.length === 0) {
             return;
         }
         let expandCollapse: HTMLElement = this.element.querySelector('.' + cls.ALLDAY_APPOINTMENT_SECTION_CLASS) as HTMLElement;
@@ -55,14 +55,8 @@ export class VerticalEvent extends EventBase {
         EventHandler.add(expandCollapse, 'click', this.rowExpandCollapse, this);
         this.renderedEvents = [];
         this.renderedAllDayEvents = [];
-        this.resources = (this.parent.activeViewOptions.group.resources.length > 0) ? this.parent.uiStateValues.isGroupAdaptive ?
-            [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] :
-            this.parent.resourceBase.lastResourceLevel : [];
-        this.cellHeight = (this.element.querySelector('.' + cls.WORK_CELLS_CLASS) as HTMLElement).offsetHeight;
-        this.dateRender[0] = this.parent.activeView.renderDates;
-        if (this.parent.activeViewOptions.group.resources.length > 0) {
-            this.resources.forEach((resource: TdData, index: number) => this.dateRender[index] = resource.renderDates);
-        }
+        this.initializeValues();
+        this.processBlockEvents();
         this.renderEvents('normalEvents');
         if (this.allDayEvents.length > 0) {
             this.allDayEvents = this.allDayEvents.filter((item: { [key: string]: Object }, index: number, arr: Object[]) => {
@@ -74,6 +68,93 @@ export class VerticalEvent extends EventBase {
         }
         this.parent.notify(events.contentReady, {});
         addClass(this.allDayElement, cls.ALLDAY_ROW_ANIMATE_CLASS);
+    }
+
+    private initializeValues(): void {
+        this.resources = (this.parent.activeViewOptions.group.resources.length > 0) ? this.parent.uiStateValues.isGroupAdaptive ?
+            [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] :
+            this.parent.resourceBase.lastResourceLevel : [];
+        this.cellHeight = (this.element.querySelector('.' + cls.WORK_CELLS_CLASS) as HTMLElement).offsetHeight;
+        this.dateRender[0] = this.parent.activeView.renderDates;
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            this.resources.forEach((resource: TdData, index: number) => this.dateRender[index] = resource.renderDates);
+        }
+    }
+
+    private isValidEvent(eventObj: { [key: string]: Object }, start: Date, end: Date, schedule: { [key: string]: Date }): boolean {
+        let isHourRange: boolean = end.getTime() > schedule.startHour.getTime() && start.getTime() < schedule.endHour.getTime();
+        let isSameRange: boolean = schedule.startHour.getTime() <= start.getTime() &&
+            (<Date>eventObj[this.fields.startTime]).getTime() >= schedule.startHour.getTime() &&
+            (<Date>eventObj[this.fields.endTime]).getTime() < schedule.endHour.getTime() && start.getTime() === end.getTime();
+        return isHourRange || isSameRange;
+    }
+
+    private getHeight(start: Date, end: Date): number {
+        let appHeight: number = (end.getTime() - start.getTime()) / (60 * 1000) * (this.cellHeight * this.slotCount) / this.interval;
+        appHeight = (appHeight < this.cellHeight) ? this.cellHeight : appHeight;
+        return appHeight;
+    }
+
+    private appendEvent(eventObj: { [key: string]: Object }, appointmentElement: HTMLElement, index: number, appLeft: string): void {
+        let appointmentWrap: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.APPOINTMENT_WRAPPER_CLASS));
+        if (this.parent.enableRtl) {
+            setStyleAttribute(appointmentElement, { 'right': appLeft });
+        } else {
+            setStyleAttribute(appointmentElement, { 'left': appLeft });
+        }
+        let eventType: string = appointmentElement.classList.contains(cls.BLOCK_APPOINTMENT_CLASS) ? 'blockEvent' : 'event';
+        let args: EventRenderedArgs = { data: eventObj, element: appointmentElement, cancel: false, type: eventType };
+        this.parent.trigger(events.eventRendered, args);
+        if (args.cancel) {
+            return;
+        }
+        appointmentWrap[index].appendChild(appointmentElement);
+    }
+
+    private processBlockEvents(): void {
+        let resources: number[] = this.getResourceList();
+        let dateCount: number = 0;
+        for (let resource of resources) {
+            let renderDates: Date[] = this.dateRender[resource];
+            for (let day: number = 0, length: number = renderDates.length; day < length; day++) {
+                let startDate: Date = new Date(renderDates[day].getTime());
+                let endDate: Date = util.addDays(renderDates[day], 1);
+                let filterEvents: Object[] = this.filterEvents(startDate, endDate, this.parent.blockProcessed, this.resources[resource]);
+                for (let event of filterEvents) {
+                    if (this.parent.resourceBase) {
+                        this.setValues(event as { [key: string]: Object }, resource);
+                    }
+                    this.renderBlockEvents(<{ [key: string]: Object }>event, day, resource, dateCount);
+                    this.cssClass = null;
+                    this.groupOrder = null;
+                }
+                dateCount += 1;
+            }
+        }
+    }
+
+    private renderBlockEvents(eventObj: { [key: string]: Object }, dayIndex: number, resource: number, dayCount: number): void {
+        let spannedData: { [key: string]: Object } = this.isSpannedEvent(eventObj, dayIndex, resource);
+        let eStart: Date = spannedData[this.fields.startTime] as Date;
+        let eEnd: Date = spannedData[this.fields.endTime] as Date;
+        let currentDate: Date = util.resetTime(new Date(this.dateRender[resource][dayIndex].getTime()));
+        let schedule: { [key: string]: Date } = util.getStartEndHours(currentDate, this.startHour, this.endHour);
+        if (eStart <= eEnd && this.isValidEvent(eventObj, eStart, eEnd, schedule)) {
+            let blockTop: string;
+            let blockHeight: string;
+            if (spannedData[this.fields.isAllDay]) {
+                let contentWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table') as HTMLElement;
+                blockHeight = formatUnit(contentWrap.offsetHeight);
+                blockTop = formatUnit(0);
+            } else {
+                blockHeight = formatUnit(this.getHeight(eStart, eEnd));
+                blockTop = formatUnit(this.getTopValue(eStart, dayIndex, resource));
+            }
+            let appointmentElement: HTMLElement = this.createBlockAppointmentElement(eventObj, resource);
+            setStyleAttribute(appointmentElement, { 'width': '100%', 'height': blockHeight, 'top': blockTop });
+            let index: number = this.parent.activeViewOptions.group.byDate ? (this.resources.length * dayIndex) + resource : dayCount;
+            this.appendEvent(eventObj, appointmentElement, index, '0px');
+        }
     }
 
     private renderEvents(eventType: string): void {
@@ -136,12 +217,15 @@ export class VerticalEvent extends EventBase {
                 'data-guid': record.Guid as string,
                 'role': 'button',
                 'tabindex': '0',
-                'aria-readonly': 'false',
+                'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record),
                 'aria-selected': 'false',
                 'aria-grabbed': 'true',
                 'aria-label': recordSubject
             }
         });
+        if (record[this.fields.isReadonly]) {
+            addClass([appointmentWrapper], 'e-read-only');
+        }
         let appointmentDetails: HTMLElement = createElement('div', { className: cls.APPOINTMENT_DETAILS });
         appointmentWrapper.appendChild(appointmentDetails);
         if (this.parent.activeViewOptions.group.resources.length > 0) {
@@ -202,7 +286,7 @@ export class VerticalEvent extends EventBase {
             addClass([appointmentWrapper], this.cssClass);
         }
         this.applyResourceColor(appointmentWrapper, record, 'backgroundColor', this.groupOrder);
-        this.renderResizeHandler(appointmentWrapper, eventData);
+        this.renderResizeHandler(appointmentWrapper, eventData, record[this.fields.isReadonly] as boolean);
         return appointmentWrapper;
     }
 
@@ -226,7 +310,7 @@ export class VerticalEvent extends EventBase {
             let countCell: HTMLElement = countWrapper.querySelector('.' + cls.MORE_INDICATOR_CLASS) as HTMLElement;
             let moreCount: number = parseInt(countCell.getAttribute('data-count'), 10) + 1;
             countCell.setAttribute('data-count', moreCount.toString());
-            countCell.innerHTML = countCell.innerHTML.replace(/[0-9]/g, moreCount.toString());
+            countCell.innerHTML = '+' + moreCount + '&nbsp;' + (this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant('more'));
         }
     }
 
@@ -337,7 +421,7 @@ export class VerticalEvent extends EventBase {
                     (3 * appHeight) : ((this.allDayLevel + 1) * appHeight)) + 4;
                 this.setAllDayRowHeight(allDayRowHeight);
                 this.addOrRemoveClass();
-                this.wireAppointmentEvents(appointmentElement, true);
+                this.wireAppointmentEvents(appointmentElement, true, eventObj[this.fields.isReadonly] as boolean);
             }
         }
     }
@@ -349,13 +433,9 @@ export class VerticalEvent extends EventBase {
         let appWidth: string = '0%'; let appLeft: string = '0%'; let topValue: number = 0;
         let currentDate: Date = util.resetTime(new Date(this.dateRender[resource][dayIndex].getTime()));
         let schedule: { [key: string]: Date } = util.getStartEndHours(currentDate, this.startHour, this.endHour);
-        let isHourRange: boolean = eEnd.getTime() > schedule.startHour.getTime() && eStart.getTime() < schedule.endHour.getTime();
-        let isSameRange: boolean = schedule.startHour.getTime() <= eStart.getTime() &&
-            (<Date>eventObj[this.fields.startTime]).getTime() >= schedule.startHour.getTime() &&
-            (<Date>eventObj[this.fields.endTime]).getTime() < schedule.endHour.getTime() && eStart.getTime() === eEnd.getTime();
-        if (eStart <= eEnd && (isHourRange || isSameRange)) {
-            let appHeight: number = (eEnd.getTime() - eStart.getTime()) / (60 * 1000) * (this.cellHeight * this.slotCount) / this.interval;
-            appHeight = (appHeight < this.cellHeight) ? this.cellHeight : appHeight;
+        let isValidEvent: boolean = this.isValidEvent(eventObj, eStart, eEnd, schedule);
+        if (eStart <= eEnd && isValidEvent) {
+            let appHeight: number = this.getHeight(eStart, eEnd);
             if (eStart.getTime() > schedule.startHour.getTime()) {
                 topValue = this.getTopValue(eStart, dayIndex, resource);
             }
@@ -383,7 +463,6 @@ export class VerticalEvent extends EventBase {
                 this.renderedEvents[resource] = [];
             }
             this.renderedEvents[resource].push(extend({}, record, null, true));
-            let appointmentWrap: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.APPOINTMENT_WRAPPER_CLASS));
             let appointmentElement: HTMLElement = this.createAppointmentElement(eventObj, false, record.isSpanned, resource);
             setStyleAttribute(appointmentElement, { 'width': tempData.appWidth, 'height': appHeight + 'px', 'top': topValue + 'px' });
             let iconHeight: number = appointmentElement.querySelectorAll('.' + cls.EVENT_INDICATOR_CLASS).length * 15;
@@ -392,19 +471,9 @@ export class VerticalEvent extends EventBase {
             if (!this.parent.isAdaptive && subjectElement) {
                 subjectElement.style.maxHeight = formatUnit(maxHeight);
             }
-            if (this.parent.enableRtl) {
-                setStyleAttribute(appointmentElement, { 'right': tempData.appLeft });
-            } else {
-                setStyleAttribute(appointmentElement, { 'left': tempData.appLeft });
-            }
             let index: number = this.parent.activeViewOptions.group.byDate ? (this.resources.length * dayIndex) + resource : dayCount;
-            let args: EventRenderedArgs = { data: eventObj, element: appointmentElement, cancel: false };
-            this.parent.trigger(events.eventRendered, args);
-            if (args.cancel) {
-                return;
-            }
-            appointmentWrap[index].appendChild(appointmentElement);
-            this.wireAppointmentEvents(appointmentElement, false);
+            this.appendEvent(eventObj, appointmentElement, index, tempData.appLeft as string);
+            this.wireAppointmentEvents(appointmentElement, false, eventObj[this.fields.isReadonly] as boolean);
         }
     }
 
@@ -536,7 +605,7 @@ export class VerticalEvent extends EventBase {
         let eventWrapper: Element = this.element.querySelector('.' + cls.ALLDAY_APPOINTMENT_WRAPPER_CLASS + ':first-child');
         eventWrapper.appendChild(eventElement);
         let height: number = eventElement.offsetHeight;
-        eventElement.remove();
+        remove(eventElement);
         return height;
     }
 

@@ -7,6 +7,8 @@ import { ZoomMode } from '../utils/enum';
 import { removeElement, measureText, RectOption, Rect, PolygonOption, PathOption, createTooltip, minMax } from '../../common/utils/helper';
 import { Size, textElement, TextOption } from '../../common/utils/helper';
 import { Zoom } from './zooming';
+import { zoomComplete } from '../../common/model/constants';
+import { IZoomCompleteEventArgs } from '../../common/model/interface';
 
 /**
  * Zooming Toolkit created here
@@ -209,13 +211,23 @@ export class Toolkit {
         if (!chart.zoomModule.isDevice) {
             remove(chart.zoomModule.toolkitElements);
         }
+        let argsData: IZoomCompleteEventArgs;
         this.removeTooltip();
         chart.svgObject.setAttribute('cursor', 'auto');
         chart.axisCollections.forEach((axis: Axis) => {
+            argsData = {
+                cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
+                currentZoomFactor: 1, currentZoomPosition: 0
+            };
             axis.zoomFactor = 1;
             axis.zoomPosition = 0;
             if (axis.zoomingScrollBar) {
                 axis.zoomingScrollBar.isScrollUI = false;
+            }
+            chart.trigger(zoomComplete, argsData);
+            if (!argsData.cancel) {
+                axis.zoomFactor = argsData.currentZoomFactor;
+                axis.zoomPosition = argsData.currentZoomPosition;
             }
         });
         chart.disableTrackTooltip = false;
@@ -270,7 +282,12 @@ export class Toolkit {
             let cumulative: number;
             chart.disableTrackTooltip = true;
             chart.delayRedraw = true;
+            let argsData: IZoomCompleteEventArgs;
             axes.forEach((axis: Axis) => {
+                argsData = {
+                    cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
+                    previousZoomPosition: axis.zoomPosition, currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
+                };
                 if ((axis.orientation === 'Horizontal' && mode !== 'Y') ||
                     (axis.orientation === 'Vertical' && mode !== 'X')) {
                     cumulative = Math.max(Math.max(1 / minMax(axis.zoomFactor, 0, 1), 1) + (0.25 * scale), 1);
@@ -279,8 +296,13 @@ export class Toolkit {
                     if (axis.zoomPosition !== zoomPosition || axis.zoomFactor !== zoomFactor) {
                         zoomFactor = (zoomPosition + zoomFactor) > 1 ? (1 - zoomPosition) : zoomFactor;
                     }
-                    axis.zoomFactor = zoomFactor;
-                    axis.zoomPosition = zoomPosition;
+                    argsData.currentZoomFactor = zoomFactor;
+                    argsData.currentZoomPosition = zoomPosition;
+                    chart.trigger(zoomComplete, argsData);
+                    if (!argsData.cancel) {
+                        axis.zoomFactor = argsData.currentZoomFactor;
+                        axis.zoomPosition = argsData.currentZoomPosition;
+                    }
                 }
             });
         }

@@ -2,12 +2,6 @@
 
 ## [Unreleased]
 
-## 16.3.29 (2018-10-31)
-
-### New Features
-
-- Upgraded TypeScript version to 3.0.
-
 ## 16.2.41 (2018-06-25)
 
 ### New Features

@@ -22,7 +22,7 @@ describe('Heatmap Control', () => {
         let ele: HTMLElement;
         let tempElement: HTMLElement;
         let legendElement: Element;
-        let created: EmitType<ILoadedEventArgs>;
+        let created: EmitType<Object>;
         let trigger: MouseEvents = new MouseEvents();
           beforeAll((): void => {
             ele = createElement('div', { id: 'heatmapContainer' });
@@ -152,22 +152,24 @@ describe('Heatmap Control', () => {
 
         it('Checking wrap support in horizontal direction', function () {
             tempElement = document.getElementById('heatmapContainer_LegendBound');
-            expect(tempElement.getAttribute('height') == '50' || tempElement.getAttribute('height') == '57').toBe(true);
+            expect(tempElement.getAttribute('height') == '58' || tempElement.getAttribute('height') == '57').toBe(true);
             heatmap.legendSettings.textStyle.textOverflow = 'Wrap';
             heatmap.refresh();
             tempElement = document.getElementById('heatmapContainer_LegendBound');
-            expect(tempElement.getAttribute('height') == '58' || tempElement.getAttribute('height') == '87').toBe(true);
+            expect(tempElement.getAttribute('height') == '90' || tempElement.getAttribute('height') == '87').toBe(true);
         });
         it('Checking wrap support in top position', function () {
             heatmap.legendSettings.position = 'Top';
             heatmap.refresh();
             tempElement = document.getElementById('heatmapContainer_LegendBound');
-			expect(tempElement.getAttribute('height') == '58' || tempElement.getAttribute('height') == '87').toBe(true);
+			expect(tempElement.getAttribute('height') == '90' || tempElement.getAttribute('height') == '87').toBe(true);
         });
         it('Checking legend label tooltip', () => {
             heatmap.legendSettings.textStyle.textOverflow = 'Trim';
             heatmap.refresh();
             legendElement = document.getElementById('heatmapContainer_Legend_Label1');
+            trigger.mousemoveEvent(legendElement, 5, 5, 715, 73);
+            trigger.mousemoveEvent(legendElement, 5, 5, 715, 100);
             trigger.mousemoveEvent(legendElement, 5, 5, 715, 73);
             expect(document.getElementById('heatmapContainer_LegendLabel_Tooltip').textContent == 'average').toBe(true);
         });
@@ -214,7 +216,7 @@ describe('Heatmap Control', () => {
             heatmap.legendSettings.position = 'Bottom';
             heatmap.refresh();
             tempElement = document.getElementById('heatmapContainer_LegendBound');
-            expect(tempElement.getAttribute('width') == '208.8' || tempElement.getAttribute('width') == '212.4' ).toBe(true);
+            expect(tempElement.getAttribute('width') == '211.5' || tempElement.getAttribute('width') == '212.4' ).toBe(true);
         });
         it('List type legend with paging', () => {
             heatmap.paletteSettings.type = 'Fixed';
@@ -337,6 +339,8 @@ describe('Heatmap Control', () => {
             heatmap.dataBind();
             legendElement = document.getElementById('heatmapContainer_Smart_Legend0');
             trigger.mousemoveEvent(legendElement, 5, 5, 30,35);
+            trigger.mousemoveEvent(legendElement, 5, 5, 130,135);
+            trigger.mousemoveEvent(legendElement, 5, 5, 30,35);
             let tooltip: Element = document.getElementById('heatmapContainerlegendLabelTooltipContainer_text');
             expect(tooltip.textContent == 'text1 text1');
       });
@@ -362,5 +366,59 @@ describe('Heatmap Control', () => {
             legendElement = document.getElementById('heatmapContainer_Smart_Legend0');
             expect(legendElement.getAttribute('width') == '55.375' );
       });
+        it('Checking label format', function () {
+            heatmap.paletteSettings.palette = [
+                { 'value': 100, 'color': 'rgb(255, 255, 153)'},
+                { 'value': 70, 'color': 'rgb(153, 255, 187)' },
+                { 'value': 25, 'color': 'rgb(153, 153, 255)' },
+                { 'value': 0, 'color': 'rgb(255, 159, 128)' },
+            ];
+            heatmap.legendSettings.labelFormat = '{value} %'
+            heatmap.dataBind();
+            legendElement = document.getElementById('heatmapContainer_Legend_Label3');
+            expect(legendElement.textContent == '100 %');
+        });
+        it('Checking cell toggle for smart legend', function () {
+            legendElement = document.getElementById('heatmapContainer_Smart_Legend1');
+            let element:ClientRect = legendElement.getBoundingClientRect();
+            trigger.clickEvent(legendElement, 0, 0, element.left + 2, element.top + 2);
+            expect(legendElement.getAttribute('fill') == 'rgb(153, 153, 255)');
+        });
+        it('Checking cell toggle based on legend selection', function () {
+            heatmap.legendSettings.enableSmartLegend = false;
+            heatmap.refresh();
+            legendElement = document.getElementById('heatmapContainer_legend_list3');
+            let element:ClientRect = legendElement.getBoundingClientRect();
+            trigger.clickEvent(legendElement, 0, 0, element.left + 2, element.top + 2);
+            expect(heatmap.legendModule.visibilityCollections[3]).toBe(false);
+        });
+        it('Checking toggled cell color after resizing', (done: Function) => {
+            heatmap.heatMapResize(event);
+            expect(heatmap.legendModule.visibilityCollections[3]).toBe(false);
+            setTimeout(done, 1600);
+        });
+        it('Checking cell toggle based on legend selection in canvas rendering', function () {
+            heatmap.renderingMode = 'Canvas';
+            heatmap.refresh();
+            legendElement = document.getElementById('heatmapContainer_canvas');
+            trigger.clickEvent(legendElement, 0, 0, 317, 266);
+            expect(heatmap.legendModule.visibilityCollections[3]).toBe(false);
+        });
+        it('Checking cell toggle when only colors are given in the palette collections', function () {
+            heatmap.renderingMode = 'SVG';
+            heatmap.legendSettings.enableSmartLegend = true;
+            heatmap.legendSettings.labelDisplayType = 'All';
+            heatmap.paletteSettings.palette = [
+                    { color: '#DCD57E' },
+                    { color: '#A6DC7E' },
+                    { color: '#7EDCA2' },
+                    { color: '#6EB5D0' }
+                ],
+            heatmap.refresh();
+            legendElement = document.getElementById('heatmapContainer_Legend_Label3');
+            let region:ClientRect = legendElement.getBoundingClientRect();
+            trigger.clickEvent(legendElement, 0, 0, region.left + 2, region.top +5);
+            expect(heatmap.legendModule.visibilityCollections[4]).toBe(false);
+    });
     });
 });

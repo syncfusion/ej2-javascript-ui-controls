@@ -1150,8 +1150,9 @@ describe('Datepicker', () => {
             expect(datepicker.inputElement.getAttribute('name')).toBe('angular');
             expect(datepicker.element.classList.contains('e-datepicker')).toEqual(true);
             expect(datepicker.element.classList.contains('e-control')).toEqual(true);
+            expect(datepicker.element.classList.contains('e-lib')).toEqual(true);
             expect(datepicker.inputWrapper.container.classList.contains('e-date-wrapper')).toEqual(true);
-            expect(datepicker.inputWrapper.container.children[0].classList.contains('e-control')).toEqual(true);
+            expect(datepicker.inputWrapper.container.children[0].classList.contains('e-lib')).toEqual(true);
             expect(datepicker.inputElement.id).toEqual(datepicker.element.id + '_input');
         });
     });
@@ -1696,6 +1697,7 @@ describe('Datepicker', () => {
         let datePicker: any;
         let keyEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
+            stopPropagation:(): void=>{},
             action: 'altDownArrow'
         };
         beforeEach(() => {

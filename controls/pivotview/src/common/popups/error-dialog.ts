@@ -42,6 +42,7 @@ export class ErrorDialog {
             enableRtl: this.parent.enableRtl,
             width: 'auto',
             height: 'auto',
+            zIndex: 1000001,
             position: { X: 'center', Y: 'center' },
             buttons: [
                 {
@@ -56,9 +57,14 @@ export class ErrorDialog {
         this.errorPopUp.appendTo(errorDialog);
     }
     private closeErrorDialog(): void {
-        this.errorPopUp.hide();
+        this.errorPopUp.close();
     }
     private removeErrorDialog(): void {
-        remove(document.getElementById(this.parent.parentID + '_ErrorDialog').parentElement);
+        if (this.errorPopUp && !this.errorPopUp.isDestroyed) {
+            this.errorPopUp.destroy();
+        }
+        if (document.getElementById(this.parent.parentID + '_ErrorDialog')) {
+            remove(document.getElementById(this.parent.parentID + '_ErrorDialog'));
+        }
     }
 }

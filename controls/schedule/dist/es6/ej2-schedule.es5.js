@@ -61,6 +61,8 @@ var contentReady = 'content-ready';
 /** @hidden */
 var scroll = 'scroll';
 /** @hidden */
+var virtualScroll = 'virtual-scroll';
+/** @hidden */
 var scrollUiUpdate = 'scroll-ui-update';
 /** @hidden */
 var uiUpdate = 'ui-update';
@@ -68,8 +70,6 @@ var uiUpdate = 'ui-update';
 var documentClick = 'document-click';
 /** @hidden */
 var cellMouseDown = 'cell-mouse-down';
-/** @hidden */
-var tapHoldReady = 'tap-hold-ready';
 
 /**
  * Schedule common utilities
@@ -86,6 +86,11 @@ function getElementHeightFromClass(container, elementClass) {
     height = getOuterHeight(el);
     remove(el);
     return height;
+}
+function getTranslateY(element) {
+    var style = getComputedStyle(element);
+    return window.WebKitCSSMatrix ?
+        new WebKitCSSMatrix(style.webkitTransform).m42 : 0;
 }
 function getWeekFirstDate(date1, firstDayOfWeek) {
     var date = new Date(date1.getTime());
@@ -327,6 +332,10 @@ var APPOINTMENT_CONTAINER_CLASS = 'e-appointment-container';
 /** @hidden */
 var APPOINTMENT_CLASS = 'e-appointment';
 /** @hidden */
+var BLOCK_APPOINTMENT_CLASS = 'e-block-appointment';
+/** @hidden */
+var BLOCK_INDICATOR_CLASS = 'e-block-indicator';
+/** @hidden */
 var APPOINTMENT_BORDER = 'e-appointment-border';
 /** @hidden */
 var APPOINTMENT_DETAILS = 'e-appointment-details';
@@ -342,6 +351,8 @@ var TABLE_WRAP_CLASS = 'e-table-wrap';
 var OUTER_TABLE_CLASS = 'e-outer-table';
 /** @hidden */
 var CONTENT_WRAP_CLASS = 'e-content-wrap';
+/** @hidden */
+var VIRTUAL_TRACK_CLASS = 'e-virtual-track';
 /** @hidden */
 var AGENDA_CELLS_CLASS = 'e-agenda-cells';
 /** @hidden */
@@ -388,6 +399,8 @@ var EVENT_ICON_LEFT_CLASS = 'e-left-icon';
 var EVENT_ICON_RIGHT_CLASS = 'e-right-icon';
 /** @hidden */
 var EVENT_ACTION_CLASS = 'e-event-action';
+/** @hidden */
+var NEW_EVENT_CLASS = 'e-new-event';
 /** @hidden */
 var CLONE_ELEMENT_CLASS = 'e-schedule-event-clone';
 /** @hidden */
@@ -602,6 +615,10 @@ var RESOURCE_ICON_CLASS = 'e-resource-icon';
 var RESOURCE_DETAILS_CLASS = 'e-resource-details';
 /** @hidden */
 var DATE_TIME_ICON_CLASS = 'e-date-time-icon';
+/** @hidden */
+var VIRTUAL_SCROLL_CLASS = 'e-virtual-scroll';
+/** @hidden */
+var ICON_DISABLE_CLASS = 'e-icon-disable';
 
 /**
  * Header module
@@ -1176,20 +1193,8 @@ var ScheduleTouch = /** @__PURE__ @class */ (function () {
     };
     ScheduleTouch.prototype.tapHoldHandler = function (e) {
         var target = closest(e.originalEvent.target, '.' + APPOINTMENT_CLASS);
-        if (!isNullOrUndefined(target)) {
-            if (this.parent.isAdaptive) {
-                var event_1 = e.originalEvent;
-                this.parent.notify(tapHoldReady, { event: event_1 });
-            }
-            return;
-        }
-        target = closest(e.originalEvent.target, '.' + WORK_CELLS_CLASS + ',.' + ALLDAY_CELLS_CLASS + ',.'
-            + HEADER_CELLS_CLASS);
-        if (!isNullOrUndefined(target)) {
-            this.parent.activeCellsData = this.parent.getCellDetails(target);
-            if (!this.parent.activeViewOptions.readonly) {
-                this.parent.eventWindow.openEditor(this.parent.activeCellsData, 'Add');
-            }
+        if (!isNullOrUndefined(target) && this.parent.isAdaptive) {
+            this.parent.quickPopup.tapHoldEventPopup(e.originalEvent);
             return;
         }
     };
@@ -1424,6 +1429,22 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
         }
     };
     KeyboardInteraction.prototype.onMouseSelection = function (e) {
+        var selectionEdges = this.parent.boundaryValidation(e.pageY, e.pageX);
+        if (selectionEdges.bottom || selectionEdges.top || selectionEdges.left || selectionEdges.right) {
+            var parent_1 = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
+            var yInBounds = parent_1.offsetHeight <= parent_1.scrollHeight && parent_1.scrollTop >= 0 &&
+                parent_1.scrollTop + parent_1.offsetHeight <= parent_1.scrollHeight;
+            var xInBounds = parent_1.offsetWidth <= parent_1.scrollWidth && parent_1.scrollLeft >= 0 &&
+                parent_1.scrollLeft + parent_1.offsetWidth <= parent_1.scrollWidth;
+            if (yInBounds && (selectionEdges.top || selectionEdges.bottom)) {
+                parent_1.scrollTop += selectionEdges.top ?
+                    -e.target.offsetHeight : e.target.offsetHeight;
+            }
+            if (xInBounds && (selectionEdges.left || selectionEdges.right)) {
+                parent_1.scrollLeft += selectionEdges.left ?
+                    -e.target.offsetWidth : e.target.offsetWidth;
+            }
+        }
         var target = this.getClosestCell(e);
         if (target) {
             this.selectCells(true, target);
@@ -1431,10 +1452,6 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
     };
     KeyboardInteraction.prototype.getClosestCell = function (e) {
         return closest(e.target, '.' + WORK_CELLS_CLASS + ',.' + ALLDAY_CELLS_CLASS);
-    };
-    KeyboardInteraction.prototype.onAppointmentSelection = function (e) {
-        var target = closest(e.target, '.' + APPOINTMENT_CLASS);
-        this.parent.eventBase.getSelectedEventElements(target);
     };
     KeyboardInteraction.prototype.onMoveup = function (e) {
         if (e.target.classList.contains(WORK_CELLS_CLASS)) {
@@ -2489,22 +2506,19 @@ function weeklyType(startDate, endDate, data, ruleObject) {
     var interval = ruleObject.interval;
     var expectedDays = ruleObject.day;
     var expectedCount = ruleObject.count ? ruleObject.count : maxOccurrence;
-    var state;
-    var dayCycleData = processWeekDays(expectedDays);
+    var weekState;
     while (compareDates(tempDate, endDate)) {
-        state = true;
-        state = validateRules(tempDate, ruleObject);
-        if (state) {
+        weekState = true;
+        weekState = validateRules(tempDate, ruleObject);
+        if (weekState) {
             excludeDateHandler(data, tempDate.getTime());
             if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
                 break;
             }
         }
         if (expectedDays.length > 1) {
-            tempDate.setDate(tempDate.getDate()
-                + dayCycleData[DAYINDEX[tempDate.getDay()]]
-                + ((expectedDays.indexOf(DAYINDEX[tempDate.getDay()]) === expectedDays.length - 1) ?
-                    ((interval - 1) * 7) : 0));
+            var days = ((expectedDays.indexOf(DAYINDEX[tempDate.getDay()]) === expectedDays.length - 1) ? ((interval - 1) * 7) : 0);
+            tempDate.setDate(tempDate.getDate() + 1 + days);
         }
         else {
             tempDate.setDate(tempDate.getDate()
@@ -2984,6 +2998,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
         this.timezone = new Timezone();
     }
     EventBase.prototype.processData = function (events, timeZonePropChanged, oldTimezone) {
+        var _this = this;
         var start = this.parent.activeView.startDate();
         var end = this.parent.activeView.endDate();
         var fields = this.parent.eventFields;
@@ -3019,8 +3034,11 @@ var EventBase = /** @__PURE__ @class */ (function () {
                 processed.push(event_1);
             }
         }
-        this.parent.eventsProcessed = this.filterEvents(start, end, processed);
-        return processed;
+        var eventData = processed.filter(function (data) { return !data[_this.parent.eventFields.isBlock]; });
+        this.parent.eventsProcessed = this.filterEvents(start, end, eventData);
+        var blockData = processed.filter(function (data) { return data[_this.parent.eventFields.isBlock]; });
+        this.parent.blockProcessed = this.filterEvents(start, end, blockData);
+        return eventData;
     };
     EventBase.prototype.timezonePropertyChange = function (oldTimezone) {
         var processed = this.processData(this.parent.eventsData, true, oldTimezone);
@@ -3072,6 +3090,16 @@ var EventBase = /** @__PURE__ @class */ (function () {
             event[fields.startTime] = this.timezone.add(event[fields.startTime], this.parent.timezone);
             event[fields.endTime] = this.timezone.add(event[fields.endTime], this.parent.timezone);
         }
+    };
+    EventBase.prototype.filterBlockEvents = function (eventObj) {
+        var eStart = eventObj[this.parent.eventFields.startTime];
+        var eEnd = eventObj[this.parent.eventFields.endTime];
+        var resourceData;
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            var data = this.getGroupIndexFromEvent(eventObj);
+            resourceData = this.parent.resourceBase.lastResourceLevel[data];
+        }
+        return this.filterEvents(eStart, eEnd, this.parent.blockProcessed, resourceData);
     };
     EventBase.prototype.filterEvents = function (startDate, endDate, appointments, resourceTdData) {
         if (appointments === void 0) { appointments = this.parent.eventsProcessed; }
@@ -3411,11 +3439,14 @@ var EventBase = /** @__PURE__ @class */ (function () {
             this.removeSelectedAppointmentClass();
         }
     };
-    EventBase.prototype.wireAppointmentEvents = function (element, isAllDay) {
+    EventBase.prototype.wireAppointmentEvents = function (element, isAllDay, isReadOnly) {
         if (isAllDay === void 0) { isAllDay = false; }
+        if (isReadOnly === void 0) { isReadOnly = false; }
         EventHandler.add(element, 'click', this.eventClick, this);
-        EventHandler.add(element, 'dblclick', this.eventDoubleClick, this);
-        if (!this.parent.activeViewOptions.readonly && ['Agenda', 'MonthAgenda'].indexOf(this.parent.currentView) === -1) {
+        if (!this.parent.isAdaptive && !this.parent.activeViewOptions.readonly && !isReadOnly) {
+            EventHandler.add(element, 'dblclick', this.eventDoubleClick, this);
+        }
+        if (!this.parent.activeViewOptions.readonly && !isReadOnly && ['Agenda', 'MonthAgenda'].indexOf(this.parent.currentView) === -1) {
             if (this.parent.resizeModule) {
                 this.parent.resizeModule.wireResizeEvent(element);
             }
@@ -3424,8 +3455,8 @@ var EventBase = /** @__PURE__ @class */ (function () {
             }
         }
     };
-    EventBase.prototype.renderResizeHandler = function (element, spanEvent) {
-        if (!this.parent.resizeModule || !this.parent.allowResizing || this.parent.activeViewOptions.readonly) {
+    EventBase.prototype.renderResizeHandler = function (element, spanEvent, isReadOnly) {
+        if (!this.parent.resizeModule || !this.parent.allowResizing || this.parent.activeViewOptions.readonly || isReadOnly) {
             return;
         }
         for (var _i = 0, _a = Object.keys(spanEvent); _i < _a.length; _i++) {
@@ -3464,38 +3495,43 @@ var EventBase = /** @__PURE__ @class */ (function () {
         }
     };
     EventBase.prototype.eventClick = function (eventData) {
+        var _this = this;
         var target = eventData.target;
         if (target.classList.contains(DRAG_CLONE_CLASS) || target.classList.contains(RESIZE_CLONE_CLASS)) {
             return;
         }
+        var raiseClickEvent = function (isMultiple) {
+            _this.activeEventData(eventData, isMultiple);
+            var args = extend(_this.parent.activeEventData, { cancel: false, originalEvent: eventData });
+            _this.parent.trigger(eventClick, args);
+            return args.cancel;
+        };
         if (eventData.ctrlKey && eventData.which === 1 && this.parent.keyboardInteractionModule) {
             this.parent.quickPopup.quickPopup.hide();
             this.parent.selectedElements = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_BORDER));
-            this.parent.keyboardInteractionModule.onAppointmentSelection(eventData);
+            var target_1 = closest(eventData.target, '.' + APPOINTMENT_CLASS);
+            this.getSelectedEventElements(target_1);
+            raiseClickEvent(false);
             return;
         }
         this.removeSelectedAppointmentClass();
-        this.activeEventData(eventData);
-        var args = extend(this.parent.activeEventData, { cancel: false });
-        this.parent.trigger(eventClick, args);
-        if (args.cancel) {
+        if (raiseClickEvent(true)) {
             this.removeSelectedAppointmentClass();
             return;
         }
         if (this.parent.currentView === 'Agenda' || this.parent.currentView === 'MonthAgenda') {
-            addClass([args.element], AGENDA_SELECTED_CELL);
+            addClass([this.parent.activeEventData.element], AGENDA_SELECTED_CELL);
         }
         this.parent.notify(eventClick, this.parent.activeEventData);
     };
     EventBase.prototype.eventDoubleClick = function (e) {
         this.parent.quickPopup.quickPopupHide(true);
         if (e.type === 'touchstart') {
-            this.activeEventData(e);
+            this.activeEventData(e, true);
         }
         this.removeSelectedAppointmentClass();
-        var fieldMapping = this.parent.eventFields;
         if (!isNullOrUndefined(this.parent.activeEventData.event) &&
-            isNullOrUndefined(this.parent.activeEventData.event[fieldMapping.recurrenceID])) {
+            isNullOrUndefined(this.parent.activeEventData.event[this.parent.eventFields.recurrenceID])) {
             this.parent.currentAction = 'Save';
             this.parent.eventWindow.openEditor(this.parent.activeEventData.event, 'Save');
         }
@@ -3515,11 +3551,17 @@ var EventBase = /** @__PURE__ @class */ (function () {
         });
     };
     EventBase.prototype.getEventIDType = function () {
-        return typeof (this.parent.eventsData[0][this.parent.eventFields.id]);
+        if (this.parent.eventsData.length !== 0) {
+            return typeof (this.parent.eventsData[0][this.parent.eventFields.id]);
+        }
+        if (this.parent.blockData.length !== 0) {
+            return typeof (this.parent.blockData[0][this.parent.eventFields.id]);
+        }
+        return 'string';
     };
     EventBase.prototype.getEventMaxID = function (resourceId) {
         var _this = this;
-        if (this.parent.eventsData.length < 1) {
+        if (this.parent.eventsData.length < 1 && this.parent.blockData.length < 1) {
             return 1;
         }
         var eventId;
@@ -3528,17 +3570,20 @@ var EventBase = /** @__PURE__ @class */ (function () {
             eventId = uniqueID().toString();
         }
         if (idType === 'number') {
-            var maxId = Math.max.apply(Math, this.parent.eventsData.map(function (event) { return event[_this.parent.eventFields.id]; }));
+            var datas = this.parent.eventsData.concat(this.parent.blockData);
+            var maxId = Math.max.apply(Math, datas.map(function (event) { return event[_this.parent.eventFields.id]; }));
             maxId = isNullOrUndefined(resourceId) ? maxId : maxId + resourceId;
             eventId = maxId + 1;
         }
         return eventId;
     };
-    EventBase.prototype.activeEventData = function (eventData) {
+    EventBase.prototype.activeEventData = function (eventData, isMultiple) {
         var _this = this;
         var target = closest(eventData.target, '.' + APPOINTMENT_CLASS);
         var guid = target.getAttribute('data-guid');
-        this.addSelectedAppointments([].slice.call(this.parent.element.querySelectorAll('div[data-guid="' + guid + '"]')));
+        if (isMultiple) {
+            this.addSelectedAppointments([].slice.call(this.parent.element.querySelectorAll('div[data-guid="' + guid + '"]')));
+        }
         var eventObject = this.getEventByGuid(guid);
         if (eventObject && eventObject.isSpanned) {
             eventObject = this.parent.eventsData.filter(function (obj) {
@@ -3631,6 +3676,41 @@ var EventBase = /** @__PURE__ @class */ (function () {
             element.style[type] = !isNullOrUndefined(alpha) ? alphaColor(color, alpha) : color;
         }
     };
+    EventBase.prototype.createBlockAppointmentElement = function (record, resIndex) {
+        var eventSubject = (record[this.parent.eventFields.subject] || this.parent.eventSettings.fields.subject.default);
+        var appointmentWrapper = createElement('div', {
+            className: BLOCK_APPOINTMENT_CLASS,
+            attrs: {
+                'data-id': 'Appointment_' + record[this.parent.eventFields.id],
+                'aria-readonly': 'true', 'aria-selected': 'false', 'aria-label': eventSubject
+            }
+        });
+        var templateElement;
+        if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
+            templateElement = this.parent.getAppointmentTemplate()(record);
+        }
+        else {
+            var appointmentSubject = createElement('div', {
+                className: SUBJECT_CLASS, innerHTML: eventSubject
+            });
+            templateElement = [appointmentSubject];
+        }
+        append(templateElement, appointmentWrapper);
+        this.setWrapperAttributes(appointmentWrapper, resIndex);
+        return appointmentWrapper;
+    };
+    EventBase.prototype.setWrapperAttributes = function (appointmentWrapper, resIndex) {
+        if (!isNullOrUndefined(this.cssClass)) {
+            addClass([appointmentWrapper], this.cssClass);
+        }
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            appointmentWrapper.setAttribute('data-group-index', resIndex.toString());
+        }
+    };
+    EventBase.prototype.getReadonlyAttribute = function (event) {
+        return (event[this.parent.eventFields.isReadonly]) ?
+            event[this.parent.eventFields.isReadonly] : 'false';
+    };
     return EventBase;
 }());
 
@@ -3681,6 +3761,10 @@ var Crud = /** @__PURE__ @class */ (function () {
         }
     };
     Crud.prototype.addEvent = function (eventData) {
+        if (this.checkBlockEvents(eventData)) {
+            this.parent.quickPopup.openValidationError('blockAlert');
+            return;
+        }
         var fields = this.parent.eventFields;
         var promise = null;
         var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
@@ -3710,6 +3794,10 @@ var Crud = /** @__PURE__ @class */ (function () {
         this.refreshData(crudArgs);
     };
     Crud.prototype.saveEvent = function (event, action) {
+        if (this.checkBlockEvents(event)) {
+            this.parent.quickPopup.openValidationError('blockAlert');
+            return;
+        }
         var fields = this.parent.eventFields;
         var promise = null;
         var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
@@ -3899,6 +3987,31 @@ var Crud = /** @__PURE__ @class */ (function () {
         }
         return exceptionDateList;
     };
+    Crud.prototype.checkBlockEvents = function (eventData) {
+        var _this = this;
+        var eventCollection = (eventData instanceof Array) ? eventData : [eventData];
+        var isBlockAlert = false;
+        eventCollection.forEach(function (event) {
+            var dataCol = [];
+            if (!isNullOrUndefined(event[_this.parent.eventFields.recurrenceRule])) {
+                var parentObj = _this.parent.eventBase.getRecurrenceEvent(event);
+                dataCol = _this.parent.eventBase.generateOccurrence(parentObj || event);
+            }
+            else {
+                dataCol.push(event);
+            }
+            for (var _i = 0, dataCol_1 = dataCol; _i < dataCol_1.length; _i++) {
+                var data = dataCol_1[_i];
+                var filterBlockEvents = _this.parent.eventBase.filterBlockEvents(data);
+                if (filterBlockEvents.length > 0) {
+                    isBlockAlert = true;
+                    break;
+                }
+            }
+        });
+        this.parent.uiStateValues.isBlock = isBlockAlert;
+        return isBlockAlert;
+    };
     return Crud;
 }());
 
@@ -3971,7 +4084,7 @@ var FieldValidator = /** @__PURE__ @class */ (function () {
                 remove(elem);
             }
         }
-        if (this.formObj) {
+        if (this.formObj && this.formObj.element) {
             this.formObj.reset();
         }
     };
@@ -4028,7 +4141,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
             collision: (this.parent.isAdaptive ? { X: 'fit', Y: 'fit' } : { X: 'none', Y: 'fit' }),
             position: (this.parent.isAdaptive ? { X: 'left', Y: 'top' } : { X: 'right', Y: 'top' }),
             viewPortElement: (this.parent.isAdaptive ? document.body : this.parent.element),
-            zIndex: (this.parent.isAdaptive ? 1000 : 1)
+            zIndex: (this.parent.isAdaptive ? 1000 : 3)
         });
     };
     QuickPopups.prototype.renderMorePopup = function () {
@@ -4050,7 +4163,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
             close: this.morePopupClose.bind(this),
             collision: { X: 'flip', Y: 'flip' },
             viewPortElement: this.parent.element.querySelector('.' + TABLE_CONTAINER_CLASS),
-            zIndex: 0
+            zIndex: 2
         });
         var closeButton = this.morePopup.element.querySelector('.' + MORE_EVENT_CLOSE_CLASS);
         this.renderButton('e-round', ICON + ' ' + CLOSE_ICON_CLASS, false, closeButton, this.closeClick);
@@ -4087,7 +4200,13 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         }
     };
     QuickPopups.prototype.renderButton = function (className, iconName, isDisabled, element, clickEvent) {
-        new Button({ cssClass: className, disabled: isDisabled, enableRtl: this.parent.enableRtl, iconCss: iconName }, element);
+        var buttonObj = new Button({
+            cssClass: className,
+            disabled: isDisabled,
+            enableRtl: this.parent.enableRtl,
+            iconCss: iconName
+        });
+        buttonObj.appendTo(element);
         EventHandler.add(element, 'click', clickEvent, this);
     };
     QuickPopups.prototype.quickDialogClass = function (action) {
@@ -4230,7 +4349,8 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
                     className: APPOINTMENT_CLASS,
                     attrs: {
                         'data-id': '' + eventData[fields.id],
-                        'data-guid': eventData.Guid, 'role': 'button', 'tabindex': '0', 'aria-readonly': 'false',
+                        'data-guid': eventData.Guid, 'role': 'button', 'tabindex': '0',
+                        'aria-readonly': this.parent.eventBase.getReadonlyAttribute(eventData),
                         'aria-selected': 'false', 'aria-grabbed': 'true', 'aria-label': eventText
                     }
                 });
@@ -4255,8 +4375,8 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         moreEventContentEle.appendChild(moreEventWrapperEle);
         return moreEventContentEle;
     };
-    QuickPopups.prototype.tapHoldEventPopup = function (args) {
-        var target = closest(args.event.target, '.' + APPOINTMENT_CLASS);
+    QuickPopups.prototype.tapHoldEventPopup = function (e) {
+        var target = closest(e.target, '.' + APPOINTMENT_CLASS);
         this.isMultipleEventSelect = false;
         this.parent.selectedElements = [];
         this.isMultipleEventSelect = true;
@@ -4280,8 +4400,22 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         this.beforeQuickPopupOpen(target);
     };
     QuickPopups.prototype.cellClick = function (args) {
-        if (!this.parent.showQuickInfo || this.parent.currentView === 'MonthAgenda' || this.parent.isAdaptive) {
+        if (!this.parent.showQuickInfo || this.parent.currentView === 'MonthAgenda') {
             this.quickPopupHide();
+            return;
+        }
+        if (this.parent.isAdaptive) {
+            this.quickPopupHide();
+            if (isNullOrUndefined(this.newEventClone)) {
+                this.newEventClone = createElement('div', {
+                    className: NEW_EVENT_CLASS,
+                    innerHTML: '<div class="e-title"> + </div>'
+                });
+            }
+            if (args.event.target.classList.contains(WORK_CELLS_CLASS) ||
+                args.event.target.classList.contains(ALLDAY_CELLS_CLASS)) {
+                args.event.target.appendChild(this.newEventClone);
+            }
             return;
         }
         var target = closest(args.event.target, '.' + WORK_CELLS_CLASS + ',.' + ALLDAY_CELLS_CLASS + ',.' +
@@ -4460,10 +4594,10 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
                 });
                 quickEventPopup.appendChild(footerTemplate);
             }
-            var readonly = this.parent.activeViewOptions.readonly;
+            var readonly = this.parent.activeViewOptions.readonly || eventData[this.parent.eventFields.isReadonly];
             var editIcon = quickEventPopup.querySelector('.' + EDIT_CLASS);
             if (editIcon) {
-                this.renderButton('e-flat e-round e-small', ICON + ' ' + EDIT_ICON_CLASS, false, editIcon, this.editClick);
+                this.renderButton('e-flat e-round e-small', ICON + ' ' + EDIT_ICON_CLASS, readonly, editIcon, this.editClick);
             }
             var deleteIcon = quickEventPopup.querySelector('.' + DELETE_CLASS);
             if (deleteIcon) {
@@ -4475,7 +4609,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
             }
             var editButton = quickEventPopup.querySelector('.' + EDIT_EVENT_CLASS);
             if (editButton) {
-                this.renderButton('e-flat e-primary', '', false, editButton, this.editClick);
+                this.renderButton('e-flat e-primary', '', readonly, editButton, this.editClick);
             }
             var deleteButton = quickEventPopup.querySelector('.' + DELETE_EVENT_CLASS);
             if (deleteButton) {
@@ -4593,9 +4727,15 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         }
         if (this.parent.currentView.indexOf('Timeline') !== -1) {
             var gIndex = target.getAttribute('data-group-index');
-            var index = (isNullOrUndefined(gIndex)) ? 0 : parseInt(gIndex, 10);
-            this.morePopup.relateTo = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS +
-                ' tbody tr:nth-child(' + (index + 1) + ') td[data-date="' + target.getAttribute('data-start-date') + '"]');
+            var startDate = target.getAttribute('data-start-date');
+            if (isNullOrUndefined(gIndex)) {
+                this.morePopup.relateTo = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS +
+                    ' tbody tr td[data-date="' + startDate + '"]');
+            }
+            else {
+                this.morePopup.relateTo = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS +
+                    ' tbody tr td[data-group-index="' + gIndex + '"][data-date="' + startDate + '"]');
+            }
         }
         else {
             this.morePopup.relateTo = closest(target, '.' + WORK_CELLS_CLASS);
@@ -4747,8 +4887,8 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         return zoneDetails;
     };
     QuickPopups.prototype.getRecurrenceSummary = function (event) {
-        var recurrenceEditor = this.parent.eventWindow.getRecurrenceEditorInstance();
-        var ruleSummary = recurrenceEditor.getRuleSummary(event[this.parent.eventFields.recurrenceRule]);
+        var recurrenceRule = event[this.parent.eventFields.recurrenceRule];
+        var ruleSummary = generateSummary(recurrenceRule, this.parent.localeObj, this.parent.locale);
         return ruleSummary.charAt(0).toUpperCase() + ruleSummary.slice(1);
     };
     QuickPopups.prototype.getDateFormat = function (date, formatString) {
@@ -4803,6 +4943,12 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
                     this.quickPopup.offsetX = -(this.quickPopup.element.offsetWidth / 2);
                     this.quickPopup.dataBind();
                 }
+            }
+            if (this.parent.virtualScrollModule && (collide.indexOf('top') > -1 || collide.indexOf('bottom') > -1)) {
+                var element = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS + ' table');
+                var translateY = getTranslateY(element);
+                this.quickPopup.offsetY = translateY;
+                this.quickPopup.dataBind();
             }
         }
         if (isEventPopup) {
@@ -4865,7 +5011,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
     QuickPopups.prototype.morePopupClose = function () {
         var moreWrapper = this.parent.element.querySelector('.' + MORE_EVENT_WRAPPER_CLASS);
         if (moreWrapper) {
-            moreWrapper.remove();
+            remove(moreWrapper);
         }
     };
     QuickPopups.prototype.quickPopupHide = function (hideAnimation) {
@@ -4897,8 +5043,12 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         var target = e.event.target;
         var classNames = '.' + POPUP_WRAPPER_CLASS + ',.' + HEADER_CELLS_CLASS + ',.' + ALLDAY_CELLS_CLASS +
             ',.' + WORK_CELLS_CLASS + ',.' + APPOINTMENT_CLASS;
+        if (closest(target, '.' + APPOINTMENT_CLASS + ',.' + HEADER_CELLS_CLASS)) {
+            this.parent.removeNewEventElement();
+        }
         if (!closest(target, classNames)) {
             this.quickPopupHide();
+            this.parent.removeNewEventElement();
         }
         if (!closest(target, '.' + MORE_POPUP_WRAPPER_CLASS) && !target.classList.contains(MORE_INDICATOR_CLASS)
             && (!closest(target, '.' + POPUP_OPEN))) {
@@ -4914,14 +5064,12 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         this.parent.on(eventClick, this.eventClick, this);
         this.parent.on(documentClick, this.documentClick, this);
         this.parent.on(dataReady, this.updateMoreEventContent, this);
-        this.parent.on(tapHoldReady, this.tapHoldEventPopup, this);
     };
     QuickPopups.prototype.removeEventListner = function () {
         this.parent.off(cellClick, this.cellClick);
         this.parent.off(eventClick, this.eventClick);
         this.parent.off(documentClick, this.documentClick);
         this.parent.off(dataReady, this.updateMoreEventContent);
-        this.parent.off(tapHoldReady, this.tapHoldEventPopup);
     };
     QuickPopups.prototype.destroyButtons = function () {
         var buttonCollections = [].slice.call(this.quickPopup.element.querySelectorAll('.e-control.e-btn'));
@@ -5267,6 +5415,7 @@ var RecurrenceEditor = /** @__PURE__ @class */ (function (_super) {
         }
     };
     RecurrenceEditor.prototype.initialize = function () {
+        addClass([this.element], 'e-' + this.getModuleName());
         this.renderComponent();
         if (!isNullOrUndefined(this.value)) {
             this.setRecurrenceRule(this.value);
@@ -6179,7 +6328,15 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         this.destroy();
         this.renderEventWindow();
     };
-    EventWindow.prototype.openEditor = function (data, type, isEventData) {
+    EventWindow.prototype.refreshRecurrenceEditor = function () {
+        if (this.recurrenceEditor) {
+            var recurrenceEditor = this.recurrenceEditor.element;
+            this.recurrenceEditor.destroy();
+            this.createRecurrenceEditor(recurrenceEditor);
+        }
+    };
+    EventWindow.prototype.openEditor = function (data, type, isEventData, repeatType) {
+        this.parent.removeNewEventElement();
         this.parent.quickPopup.quickPopupHide(true);
         if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
             removeClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], DISABLE_CLASS);
@@ -6188,7 +6345,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             case 'Add':
                 this.cellClickAction = !isEventData;
                 this.parent.activeCellsData = data;
-                this.onCellDetailsUpdate(data);
+                this.onCellDetailsUpdate(data, repeatType);
                 break;
             case 'Save':
             case 'EditOccurrence':
@@ -6298,7 +6455,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         if (this.parent.resources.length > 0) {
             var resourceParentDiv = this.createDivElement(EVENT_WINDOW_RESOURCES_DIV_CLASS);
             for (var i = 0; i < this.parent.resourceBase.resourceCollection.length; i++) {
-                resourceParentDiv.appendChild(this.renderMultiSelect(i));
+                resourceParentDiv.appendChild(this.renderResourceDetails(i));
             }
             parentDiv.appendChild(resourceParentDiv);
         }
@@ -6372,7 +6529,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             endObj.dataBind();
         }
     };
-    EventWindow.prototype.renderMultiSelect = function (index) {
+    EventWindow.prototype.renderResourceDetails = function (index) {
         var resourceData = this.parent.resourceBase.resourceCollection[index];
         var fieldName = resourceData.field;
         var value = 'e-' + fieldName;
@@ -6429,7 +6586,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         timezoneDiv.appendChild(timezoneInput);
         var drowDownList = new DropDownList({
             allowFiltering: true,
-            change: this.onTimezoneChange,
+            change: this.onTimezoneChange.bind(this),
             cssClass: this.parent.cssClass || '',
             dataSource: timezoneData,
             enableRtl: this.parent.enableRtl,
@@ -6453,8 +6610,9 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             return;
         }
         var resourceCollection = this.parent.resourceBase.resourceCollection;
+        var fieldName = args.element.getAttribute('name') || this.getColumnName(args.element);
         for (var i = 0; i < resourceCollection.length; i++) {
-            if (resourceCollection[i].field === args.element.getAttribute('name') && i < resourceCollection.length - 1) {
+            if (resourceCollection[i].field === fieldName && i < resourceCollection.length - 1) {
                 var resObject = this.createInstance(i);
                 var datasource = [];
                 for (var j = 0; j < args.value.length; j++) {
@@ -6480,9 +6638,10 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         if (!args.value || this.parent.resources.length <= 1 || !this.parent.activeViewOptions.group.byGroupID) {
             return;
         }
+        var fieldName = args.element.getAttribute('name') || this.getColumnName(args.element);
         var resourceCollection = this.parent.resourceBase.resourceCollection;
         for (var i = 0; i < resourceCollection.length; i++) {
-            if ((i < resourceCollection.length - 1) && resourceCollection[i].field === args.element.getAttribute('name')) {
+            if ((i < resourceCollection.length - 1) && resourceCollection[i].field === fieldName) {
                 var resObj = this.createInstance(i);
                 var groupId = args.itemData[resourceCollection[i].idField];
                 resObj.dataSource = this.filterDatasource(i, groupId);
@@ -6499,10 +6658,11 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         var filter = new DataManager({ json: resourceData.dataSource }).executeLocal(query);
         return filter;
     };
-    EventWindow.prototype.onTimezoneChange = function () {
-        if (this.element.getAttribute('name') === 'StartTimezone') {
-            var startTimezoneObj = document.querySelector('.' + EVENT_WINDOW_START_TZ_CLASS).ej2_instances[0];
-            var endTimezoneObj = document.querySelector('.' + EVENT_WINDOW_END_TZ_CLASS).ej2_instances[0];
+    EventWindow.prototype.onTimezoneChange = function (args) {
+        var fieldName = args.element.getAttribute('name') || this.getColumnName(args.element);
+        if (fieldName === this.parent.eventFields.startTimezone) {
+            var startTimezoneObj = this.getInstance(EVENT_WINDOW_START_TZ_CLASS);
+            var endTimezoneObj = this.getInstance(EVENT_WINDOW_END_TZ_CLASS);
             endTimezoneObj.value = startTimezoneObj.value;
             endTimezoneObj.dataBind();
         }
@@ -6704,7 +6864,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
     EventWindow.prototype.repeatOpenDialog = function () {
         this.repeatTempRule = this.recurrenceEditor.getRecurrenceRule();
     };
-    EventWindow.prototype.onCellDetailsUpdate = function (event) {
+    EventWindow.prototype.onCellDetailsUpdate = function (event, repeatType) {
         this.element.querySelector('.' + FORM_CLASS).removeAttribute('data-id');
         this.element.querySelector('.' + EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML = this.l10n.getConstant('newEvent');
         var eventObj = {};
@@ -6738,12 +6898,16 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             addClass([deleteButton], DISABLE_CLASS);
         }
         if (this.recurrenceEditor) {
-            this.recurrenceEditor.setProperties({ startDate: eventObj[this.fields.startTime], selectedType: 0 });
+            this.recurrenceEditor.setProperties({ startDate: eventObj[this.fields.startTime], selectedType: repeatType || 0 });
         }
         if (this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
             var element = this.element.querySelector('.' + REPEAT_CONTAINER_CLASS);
             addClass([element], HIDE_STYLE_CLASS);
             this.updateRepeatLabel(this.repeatRule);
+        }
+        else {
+            var saveButton = this.element.querySelector('.' + EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            this.disableButton(saveButton, false);
         }
         this.dialogObject.show();
     };
@@ -6767,14 +6931,8 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         var keyNames = Object.keys(eventObj);
         for (var _i = 0, formelement_1 = formelement; _i < formelement_1.length; _i++) {
             var curElement = formelement_1[_i];
-            var columnName = curElement.name;
-            var isCustomElement = (curElement.classList.contains('e-multiselect') ||
-                curElement.classList.contains('e-dropdownlist'));
-            if (!isNullOrUndefined(columnName) || isCustomElement) {
-                if (columnName === '' && isCustomElement) {
-                    columnName = this.getColumnName(curElement);
-                    curElement.setAttribute('name', columnName);
-                }
+            var columnName = curElement.name || this.getColumnName(curElement);
+            if (!isNullOrUndefined(columnName) && columnName !== '') {
                 if (keyNames.indexOf(columnName) !== -1) {
                     this.setValueToElement(curElement, eventObj[columnName]);
                 }
@@ -6795,11 +6953,37 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         }
     };
     EventWindow.prototype.getColumnName = function (element) {
-        var isDropDownList = element.classList.contains('e-dropdownlist');
-        var inputCollection = isDropDownList ? [].slice.call(element.parentElement.children) :
-            [].slice.call(element.parentElement.parentElement.children);
-        var collection = inputCollection.filter(function (item) { return item.name; });
-        return (collection.length > 0) ? collection[0].name : '';
+        var attrName = element.getAttribute('data-name') || '';
+        if (attrName === '') {
+            var isDropDowns = false;
+            var fieldSelector = '';
+            if (element.classList.contains('e-dropdownlist')) {
+                fieldSelector = 'e-ddl';
+                isDropDowns = true;
+            }
+            else if (element.classList.contains('e-multiselect')) {
+                fieldSelector = 'e-multiselect';
+                isDropDowns = true;
+            }
+            else if (element.classList.contains('e-datetimepicker')) {
+                fieldSelector = 'e-datetimepicker';
+            }
+            else if (element.classList.contains('e-datepicker')) {
+                fieldSelector = 'e-datepicker';
+            }
+            else if (element.classList.contains('e-checkbox')) {
+                fieldSelector = 'e-checkbox';
+            }
+            var classSelector = isDropDowns ? "." + fieldSelector + ":not(.e-control)" : "." + fieldSelector;
+            var control = closest(element, classSelector) || element.querySelector("." + fieldSelector);
+            if (control) {
+                var attrEle = control.querySelector('[name]');
+                if (attrEle) {
+                    attrName = attrEle.name;
+                }
+            }
+        }
+        return attrName;
     };
     EventWindow.prototype.onAllDayChange = function (allDayStatus) {
         var startObj = this.getInstance(EVENT_WINDOW_START_CLASS);
@@ -6919,13 +7103,30 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             }
             this.updateRepeatLabel(this.repeatRule);
         }
-        if (this.parent.readonly && !this.parent.isAdaptive) {
+        var isDisable = (this.parent.readonly || eventObj[this.fields.isReadonly]);
+        if (!this.parent.isAdaptive) {
             var saveButton = this.element.querySelector('.' + EVENT_WINDOW_SAVE_BUTTON_CLASS);
-            saveButton.ej2_instances[0].disabled = true;
             var deleteButton = this.element.querySelector('.' + EVENT_WINDOW_DELETE_BUTTON_CLASS);
-            deleteButton.ej2_instances[0].disabled = true;
+            this.disableButton(saveButton, isDisable);
+            this.disableButton(deleteButton, isDisable);
+        }
+        else {
+            var saveIcon = this.element.querySelector('.' + EVENT_WINDOW_SAVE_ICON_CLASS);
+            if (saveIcon) {
+                if (isDisable) {
+                    addClass([saveIcon], ICON_DISABLE_CLASS);
+                }
+                else {
+                    removeClass([saveIcon], ICON_DISABLE_CLASS);
+                }
+            }
         }
         this.dialogObject.show();
+    };
+    EventWindow.prototype.disableButton = function (element, value) {
+        if (element) {
+            element.ej2_instances[0].disabled = value;
+        }
     };
     EventWindow.prototype.renderRecurrenceEditor = function () {
         return new RecurrenceEditor({
@@ -6945,6 +7146,8 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         this.repeatStatus.setProperties({ label: data });
     };
     EventWindow.prototype.dialogClose = function () {
+        this.parent.activeEventData = { event: undefined, element: undefined };
+        this.parent.currentAction = null;
         this.dialogObject.hide();
         this.fieldValidator.destroyToolTip();
         this.resetFormFields();
@@ -6989,6 +7192,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         }
     };
     EventWindow.prototype.eventSave = function (alert) {
+        this.parent.uiStateValues.isBlock = false;
         var alertType;
         var formElement = this.element.querySelector('.' + FORM_CLASS);
         if (formElement && formElement.classList.contains('e-formvalidator') &&
@@ -7034,6 +7238,9 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             var editedData = new DataManager({ json: this.parent.eventsData }).executeLocal(new Query().
                 where(this.fields.id, 'equal', eveId))[0];
             eventObj = extend({}, editedData, eventObj);
+            if (eventObj[this.fields.isReadonly]) {
+                return;
+            }
             var currentAction = void 0;
             if (!isNullOrUndefined(editedData[this.fields.recurrenceRule])) {
                 currentAction = this.parent.currentAction;
@@ -7072,6 +7279,9 @@ var EventWindow = /** @__PURE__ @class */ (function () {
                 this.parent.addEvent(eventObj);
             }
         }
+        if (this.parent.uiStateValues.isBlock) {
+            return;
+        }
         this.dialogObject.hide();
     };
     EventWindow.prototype.getObjectFromFormData = function (className) {
@@ -7079,7 +7289,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         var eventObj = {};
         for (var _i = 0, formElement_1 = formElement; _i < formElement_1.length; _i++) {
             var currentElement = formElement_1[_i];
-            var columnName = currentElement.name;
+            var columnName = currentElement.name || this.getColumnName(currentElement);
             if (!isNullOrUndefined(columnName) && columnName !== '') {
                 eventObj[columnName] = this.getValueFromElement(currentElement);
             }
@@ -7107,8 +7317,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
                 alertMessage = 'seriesChangeAlert';
             }
             if (this.getInstance('e-end-on-left .e-ddl .e-dropdownlist').value === 'until' &&
-                this.getInstance('e-end-on-date .e-datepicker').value
-                    < recEditor.startDate) {
+                this.getInstance('e-end-on-date .e-datepicker').value < startDate) {
                 alertMessage = 'wrongPattern';
             }
             if (isNullOrUndefined(alertMessage)) {
@@ -7124,8 +7333,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
                         var temp = [];
                         var tempDiff = [];
                         for (var index = 0; index < types.length * (interval + 1); index++) {
-                            temp[index] =
-                                (types.length > index) ? obj[types[index]] : temp[index - types.length] + (7 * interval);
+                            temp[index] = (types.length > index) ? obj[types[index]] : temp[index - types.length] + (7 * interval);
                         }
                         var tempvalue = temp.sort(function (a, b) { return a - b; });
                         for (var index = 1; index < tempvalue.length; index++) {
@@ -7443,12 +7651,6 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         this.dialogObject.hide();
         this.parent.quickPopup.openDeleteAlert();
     };
-    EventWindow.prototype.getRecurrenceEditorInstance = function () {
-        if (this.parent.isAdaptive && !this.repeatDialogObject) {
-            this.renderRepeatDialog();
-        }
-        return this.recurrenceEditor;
-    };
     EventWindow.prototype.destroyComponents = function () {
         var formelement = this.getFormElements(EVENT_WINDOW_DIALOG_CLASS);
         for (var _i = 0, formelement_2 = formelement; _i < formelement_2.length; _i++) {
@@ -7502,6 +7704,150 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         }
     };
     return EventWindow;
+}());
+
+/**
+ * Virtual Scroll
+ */
+var VirtualScroll = /** @__PURE__ @class */ (function () {
+    function VirtualScroll(parent) {
+        this.translateY = 0;
+        this.itemSize = 60;
+        this.bufferCount = 3;
+        this.renderedLength = 0;
+        this.parent = parent;
+        this.addEventListener();
+    }
+    VirtualScroll.prototype.addEventListener = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.on(virtualScroll, this.virtualScrolling, this);
+    };
+    VirtualScroll.prototype.removeEventListener = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.off(virtualScroll, this.virtualScrolling);
+    };
+    VirtualScroll.prototype.getRenderedCount = function () {
+        this.setItemSize();
+        return Math.ceil(this.parent.element.clientHeight / this.itemSize) + this.bufferCount;
+    };
+    VirtualScroll.prototype.renderVirtualTrack = function (contentWrap) {
+        var wrap = createElement('div', { className: VIRTUAL_TRACK_CLASS });
+        wrap.style.height = (this.parent.resourceBase.expandedResources.length * this.itemSize) + 'px';
+        contentWrap.appendChild(wrap);
+    };
+    VirtualScroll.prototype.updateVirtualTrackHeight = function (wrap) {
+        var resourceCount = this.parent.resourceBase.renderedResources.length;
+        if (resourceCount !== this.getRenderedCount()) {
+            wrap.style.height = this.parent.element.querySelector('.e-content-wrap').clientHeight + 'px';
+            var resWrap = this.parent.element.querySelector('.' + RESOURCE_COLUMN_WRAP_CLASS);
+            var conWrap = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
+            var eventWrap = this.parent.element.querySelector('.' + EVENT_TABLE_CLASS);
+            this.translateY = 0;
+            this.setTranslate(resWrap, conWrap, eventWrap);
+        }
+        else {
+            var lastRenderIndex = this.parent.resourceBase.renderedResources[resourceCount - 1].groupIndex;
+            var lastCollIndex = this.parent.resourceBase.expandedResources[this.parent.resourceBase.expandedResources.length - 1].groupIndex;
+            var renderedResConut = resourceCount + (lastCollIndex - lastRenderIndex);
+            renderedResConut = (renderedResConut > this.parent.resourceBase.expandedResources.length) ?
+                this.parent.resourceBase.expandedResources.length : renderedResConut;
+            wrap.style.height = (renderedResConut * this.itemSize) + 'px';
+        }
+    };
+    VirtualScroll.prototype.setItemSize = function () {
+        this.itemSize = getElementHeightFromClass(this.parent.activeView.element, WORK_CELLS_CLASS) || this.itemSize;
+    };
+    VirtualScroll.prototype.virtualScrolling = function () {
+        this.parent.quickPopup.quickPopupHide();
+        this.parent.quickPopup.morePopup.hide();
+        var resWrap = this.parent.element.querySelector('.' + RESOURCE_COLUMN_WRAP_CLASS);
+        var conWrap = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
+        var eventWrap = this.parent.element.querySelector('.' + EVENT_TABLE_CLASS);
+        this.renderedLength = resWrap.querySelector('tbody').children.length;
+        addClass([conWrap], 'e-transition');
+        var resCollection = [];
+        if ((conWrap.scrollTop) - this.translateY < 0) {
+            resCollection = this.upScroll(resWrap, conWrap);
+        }
+        else if ((conWrap.scrollTop - this.translateY > this.bufferCount * this.itemSize)) {
+            resCollection = this.downScroll(conWrap);
+        }
+        if (!isNullOrUndefined(resCollection) && resCollection.length > 0) {
+            this.updateContent(resWrap, conWrap, eventWrap, resCollection);
+            this.parent.notify(dataReady, {});
+            if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
+                this.parent.dragAndDropModule.navigationWrapper();
+            }
+            this.setTranslate(resWrap, conWrap, eventWrap);
+        }
+    };
+    VirtualScroll.prototype.upScroll = function (resWrap, conWrap) {
+        var index = (~~(conWrap.scrollTop / this.itemSize) + Math.ceil(conWrap.clientHeight / this.itemSize)) - this.renderedLength;
+        index = (index > 0) ? index : 0;
+        var prevSetCollection = this.getBufferCollection(index, index + this.renderedLength);
+        this.parent.resourceBase.renderedResources = prevSetCollection;
+        var firstTDIndex = parseInt(resWrap.querySelector('tbody td').getAttribute('data-group-index'), 10);
+        if (firstTDIndex === 0) {
+            this.translateY = conWrap.scrollTop;
+        }
+        else {
+            this.translateY = (conWrap.scrollTop - (this.bufferCount * this.itemSize) > 0) ?
+                conWrap.scrollTop - (this.bufferCount * this.itemSize) : 0;
+        }
+        return prevSetCollection;
+    };
+    VirtualScroll.prototype.downScroll = function (conWrap) {
+        var lastResource = this.parent.resourceBase.
+            renderedResources[this.parent.resourceBase.renderedResources.length - 1].groupIndex;
+        var lastResourceIndex = this.parent.resourceBase.expandedResources[this.parent.resourceBase.expandedResources.length - 1].groupIndex;
+        if (lastResource === lastResourceIndex) {
+            return null;
+        }
+        var nextSetResIndex = ~~(conWrap.scrollTop / this.itemSize);
+        var lastIndex = nextSetResIndex + this.renderedLength;
+        lastIndex = (lastIndex > this.parent.resourceBase.expandedResources.length) ?
+            nextSetResIndex + (this.parent.resourceBase.expandedResources.length - nextSetResIndex) : lastIndex;
+        var nextSetCollection = this.getBufferCollection(lastIndex - this.renderedLength, lastIndex);
+        this.translateY = conWrap.scrollTop;
+        return nextSetCollection;
+    };
+    VirtualScroll.prototype.updateContent = function (resWrap, conWrap, eventWrap, resCollection) {
+        var renderedLenth = resWrap.querySelector('tbody').children.length;
+        for (var i = 0; i < renderedLenth; i++) {
+            remove(resWrap.querySelector('tbody tr'));
+            remove(conWrap.querySelector('tbody tr'));
+            remove(eventWrap.querySelector('div'));
+        }
+        this.parent.resourceBase.renderedResources = resCollection;
+        var resourceRows = this.parent.resourceBase.getContentRows(resCollection);
+        var contentRows = this.parent.activeView.getContentRows();
+        var eventRows = this.parent.activeView.getEventRows(resCollection.length);
+        append(resourceRows, resWrap.querySelector('tbody'));
+        append(contentRows, conWrap.querySelector('tbody'));
+        append(eventRows, eventWrap);
+    };
+    VirtualScroll.prototype.getBufferCollection = function (startIndex, endIndex) {
+        return this.parent.resourceBase.expandedResources.slice(startIndex, endIndex);
+    };
+    VirtualScroll.prototype.setTranslate = function (resWrap, conWrap, eventWrap) {
+        setStyleAttribute(resWrap.querySelector('table'), {
+            transform: "translateY(" + this.translateY + "px)"
+        });
+        setStyleAttribute(conWrap.querySelector('table'), {
+            transform: "translateY(" + this.translateY + "px)"
+        });
+        setStyleAttribute(eventWrap, {
+            transform: "translateY(" + this.translateY + "px)"
+        });
+    };
+    VirtualScroll.prototype.destroy = function () {
+        this.removeEventListener();
+    };
+    return VirtualScroll;
 }());
 
 /**
@@ -7578,6 +7924,19 @@ var Render = /** @__PURE__ @class */ (function () {
         this.parent.activeView.getRenderDates();
         this.parent.uiStateValues.isGroupAdaptive = this.parent.isAdaptive && this.parent.activeViewOptions.group.resources.length > 0 &&
             this.parent.activeViewOptions.group.enableCompactView;
+        if (this.parent.virtualScrollModule) {
+            this.parent.virtualScrollModule.destroy();
+            this.parent.virtualScrollModule = null;
+        }
+        if (this.parent.currentView.indexOf('Timeline') !== -1 && this.parent.activeViewOptions.allowVirtualScrolling
+            && this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
+            this.parent.virtualScrollModule = new VirtualScroll(this.parent);
+            this.parent.uiStateValues.top = 0;
+        }
+        if (this.parent.headerModule) {
+            this.parent.headerModule.updateDateRange(this.parent.activeView.getDateRangeText());
+            this.parent.headerModule.updateHeaderItems('remove');
+        }
         this.parent.activeView.renderLayout(CURRENT_PANEL_CLASS);
         if (this.parent.eventTooltip) {
             this.parent.eventTooltip.destroy();
@@ -7586,9 +7945,6 @@ var Render = /** @__PURE__ @class */ (function () {
         if (this.parent.eventSettings.enableTooltip || (this.parent.activeViewOptions.group.resources.length > 0
             && this.parent.activeViewOptions.group.headerTooltipTemplate)) {
             this.parent.eventTooltip = new EventTooltip(this.parent);
-        }
-        if (this.parent.headerModule) {
-            this.parent.headerModule.updateDateRange(this.parent.activeView.getDateRangeText());
         }
     };
     Render.prototype.updateLabelText = function (view) {
@@ -7604,12 +7960,15 @@ var Render = /** @__PURE__ @class */ (function () {
         dataManager.then(function (e) { return _this.dataManagerSuccess(e); }).catch(function (e) { return _this.dataManagerFailure(e); });
     };
     Render.prototype.dataManagerSuccess = function (e) {
+        var _this = this;
         if (this.parent.isDestroyed) {
             return;
         }
         this.parent.trigger(dataBinding, e);
-        this.parent.eventsData = extend([], e.result, null, true);
-        var processed = this.parent.eventBase.processData(this.parent.eventsData);
+        var resultData = extend([], e.result, null, true);
+        this.parent.eventsData = resultData.filter(function (data) { return !data[_this.parent.eventFields.isBlock]; });
+        this.parent.blockData = resultData.filter(function (data) { return data[_this.parent.eventFields.isBlock]; });
+        var processed = this.parent.eventBase.processData(resultData);
         this.parent.notify(dataReady, { processedData: processed });
         if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
             this.parent.dragAndDropModule.navigationWrapper();
@@ -7863,6 +8222,9 @@ var Field = /** @__PURE__ @class */ (function (_super) {
         Property('Id')
     ], Field.prototype, "id", void 0);
     __decorate$7([
+        Property('IsBlock')
+    ], Field.prototype, "isBlock", void 0);
+    __decorate$7([
         Complex({ name: 'Subject', default: 'Add title' }, FieldOptions)
     ], Field.prototype, "subject", void 0);
     __decorate$7([
@@ -7895,6 +8257,9 @@ var Field = /** @__PURE__ @class */ (function (_super) {
     __decorate$7([
         Complex({ name: 'RecurrenceException' }, FieldOptions)
     ], Field.prototype, "recurrenceException", void 0);
+    __decorate$7([
+        Property('IsReadonly')
+    ], Field.prototype, "isReadonly", void 0);
     return Field;
 }(ChildProperty));
 
@@ -8089,7 +8454,7 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
         tr.appendChild(resColTd);
     };
     ResourceBase.prototype.hideResourceRows = function (tBody) {
-        if (this.resourceCollection.length <= 1) {
+        if (this.resourceCollection.length <= 1 || this.parent.virtualScrollModule) {
             return;
         }
         var trCount = this.lastResourceLevel.length;
@@ -8111,11 +8476,30 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
         var tBody = tbl.querySelector('tbody');
         var resData = this.generateTreeData(true);
         this.countCalculation(resColl.slice(0, -2), resColl.slice(0, -1));
+        this.renderedResources = this.lastResourceLevel;
+        if (this.parent.virtualScrollModule) {
+            var resourceCount = this.parent.virtualScrollModule.getRenderedCount();
+            this.setExpandedResources();
+            resData = this.expandedResources.slice(0, resourceCount);
+            this.renderedResources = resData;
+        }
         append(this.getContentRows(resData), tBody);
         this.hideResourceRows(tBody);
         tbl.appendChild(tBody);
         resDiv.appendChild(tbl);
         return resDiv;
+    };
+    ResourceBase.prototype.setExpandedResources = function () {
+        var resources = [];
+        for (var i = 0; i < this.lastResourceLevel.length; i++) {
+            var resource = this.lastResourceLevel[i].resourceData;
+            var count = resource.Count;
+            resources.push(this.lastResourceLevel[i]);
+            if (!isNullOrUndefined(resource.Expand) && !resource.Expand && count > 0) {
+                i = i + count;
+            }
+        }
+        this.expandedResources = resources;
     };
     ResourceBase.prototype.getContentRows = function (resData) {
         var resRows = [];
@@ -8129,11 +8513,11 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
             rIndex = findIndexInData(resColl, 'name', resData[i].resource.name);
             if (rIndex === resColl.length - 1) {
                 extend(resData[i].resourceData, { ClassName: RESOURCE_CHILD_CLASS });
-                this.lastResourceLevel[i].className = [RESOURCE_CHILD_CLASS];
+                this.renderedResources[i].className = [RESOURCE_CHILD_CLASS];
             }
             else {
                 extend(resData[i].resourceData, { ClassName: RESOURCE_PARENT_CLASS });
-                this.lastResourceLevel[i].className = [RESOURCE_PARENT_CLASS];
+                this.renderedResources[i].className = [RESOURCE_PARENT_CLASS];
             }
             left = (rIndex * this.leftPixel) + 'px';
             if (resData[i].resourceData.ClassName === RESOURCE_PARENT_CLASS) {
@@ -8207,7 +8591,7 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
         var hide;
         var trElement = closest(target, '.' + RESOURCE_PARENT_CLASS)
             .parentElement;
-        var index = trElement.rowIndex;
+        var index = parseInt(trElement.children[0].getAttribute('data-group-index'), 10);
         var args = {
             cancel: false, event: e, groupIndex: index,
             requestType: !target.classList.contains(RESOURCE_COLLAPSE_CLASS) ? 'resourceExpand' : 'resourceCollapse',
@@ -8224,6 +8608,26 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
             classList(target, [RESOURCE_COLLAPSE_CLASS], [RESOURCE_EXPAND_CLASS]);
             hide = false;
         }
+        var eventElements = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_CLASS));
+        for (var i = 0; i < eventElements.length; i++) {
+            remove(eventElements[i]);
+        }
+        if (this.parent.virtualScrollModule) {
+            this.updateVirtualContent(index, hide);
+        }
+        else {
+            this.updateContent(index, hide);
+        }
+        var data = { cssProperties: this.parent.getCssProperties(), module: 'scroll' };
+        this.parent.notify(scrollUiUpdate, data);
+        args = {
+            cancel: false, event: e, groupIndex: index,
+            requestType: target.classList.contains(RESOURCE_COLLAPSE_CLASS) ? 'resourceExpanded' : 'resourceCollapsed',
+        };
+        this.parent.notify(dataReady, {});
+        this.parent.trigger(actionComplete, args);
+    };
+    ResourceBase.prototype.updateContent = function (index, hide) {
         var rowCollection = [];
         var workCellCollection = [];
         var headerRowCollection = [];
@@ -8232,10 +8636,6 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
         var resRows = [].slice.call(this.parent.element.querySelectorAll('.' + RESOURCE_COLUMN_WRAP_CLASS + ' ' + 'tr'));
         var contentRows = [].slice.call(this.parent.element.querySelectorAll('.' + CONTENT_WRAP_CLASS + ' ' + 'tbody tr'));
         var eventRows = [].slice.call(this.parent.element.querySelectorAll('.' + CONTENT_WRAP_CLASS + ' .' + APPOINTMENT_CONTAINER_CLASS));
-        var eventElements = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_CLASS));
-        for (var i = 0; i < eventElements.length; i++) {
-            remove(eventElements[i]);
-        }
         for (var j = 0; j < clickedRes.Count; j++) {
             rowCollection.push(resRows[index + j + 1]);
             workCellCollection.push(contentRows[index + j + 1]);
@@ -8275,14 +8675,24 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
                 }
             }
         }
-        var data = { cssProperties: this.parent.getCssProperties(), module: 'scroll' };
-        this.parent.notify(scrollUiUpdate, data);
-        args = {
-            cancel: false, event: e, groupIndex: index,
-            requestType: target.classList.contains(RESOURCE_COLLAPSE_CLASS) ? 'resourceExpanded' : 'resourceCollapsed',
-        };
-        this.parent.notify(dataReady, {});
-        this.parent.trigger(actionComplete, args);
+    };
+    ResourceBase.prototype.updateVirtualContent = function (index, expand) {
+        this.lastResourceLevel[index].resourceData[this.lastResourceLevel[index].resource.expandedField] = !expand;
+        this.setExpandedResources();
+        var resourceCount = this.parent.virtualScrollModule.getRenderedCount();
+        var startIndex = this.expandedResources.indexOf(this.renderedResources[0]);
+        this.renderedResources = this.expandedResources.slice(startIndex, startIndex + resourceCount);
+        if (this.renderedResources.length < resourceCount) {
+            var sIndex = this.expandedResources.length - resourceCount;
+            sIndex = (sIndex > 0) ? sIndex : 0;
+            this.renderedResources = this.expandedResources.slice(sIndex, this.expandedResources.length);
+        }
+        var virtualTrack = this.parent.element.querySelector('.' + VIRTUAL_TRACK_CLASS);
+        this.parent.virtualScrollModule.updateVirtualTrackHeight(virtualTrack);
+        var resTable = this.parent.element.querySelector('.' + RESOURCE_COLUMN_WRAP_CLASS + ' ' + 'table');
+        var contentTable = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS + ' ' + 'table');
+        var eventTable = this.parent.element.querySelector('.' + EVENT_TABLE_CLASS);
+        this.parent.virtualScrollModule.updateContent(resTable, contentTable, eventTable, this.renderedResources);
     };
     ResourceBase.prototype.renderResourceHeader = function () {
         var resourceWrapper = createElement('div', { className: RESOURCE_TOOLBAR_CONTAINER });
@@ -8685,7 +9095,7 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
         dateHeaderLevels.unshift(datesColumn);
         return dateHeaderLevels;
     };
-    ResourceBase.prototype.setResourceValues = function (eventObj, isCrud) {
+    ResourceBase.prototype.setResourceValues = function (eventObj, isCrud, groupIndex) {
         var _this = this;
         var setValues = function (index, field, value) {
             if (_this.resourceCollection[index].allowMultiple && (!isCrud || isCrud && _this.parent.activeViewOptions.group.allowGroupEdit)) {
@@ -8695,8 +9105,10 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
                 eventObj[field] = value;
             }
         };
-        var groupIndex = this.parent.uiStateValues.isGroupAdaptive ? this.parent.uiStateValues.groupIndex :
-            this.parent.activeCellsData.groupIndex;
+        if (groupIndex === void 0) {
+            groupIndex = this.parent.uiStateValues.isGroupAdaptive ? this.parent.uiStateValues.groupIndex :
+                this.parent.activeCellsData.groupIndex;
+        }
         if (this.parent.activeViewOptions.group.resources.length > 0 && !isNullOrUndefined(groupIndex)) {
             var groupOrder = this.lastResourceLevel[groupIndex].groupOrder;
             for (var index = 0; index < this.resourceCollection.length; index++) {
@@ -9009,7 +9421,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             option: null,
             readonly: this.readonly,
             startHour: this.startHour,
-            allowVirtualScrolling: true,
+            allowVirtualScrolling: false,
             cellTemplate: this.cellTemplate,
             eventTemplate: this.eventSettings.template,
             dateHeaderTemplate: this.dateHeaderTemplate,
@@ -9028,6 +9440,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
     Schedule.prototype.initializeDataModule = function () {
         this.eventFields = {
             id: this.eventSettings.fields.id,
+            isBlock: this.eventSettings.fields.isBlock,
             subject: this.eventSettings.fields.subject.name,
             startTime: this.eventSettings.fields.startTime.name,
             endTime: this.eventSettings.fields.endTime.name,
@@ -9038,7 +9451,8 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             isAllDay: this.eventSettings.fields.isAllDay.name,
             recurrenceID: this.eventSettings.fields.recurrenceID.name,
             recurrenceRule: this.eventSettings.fields.recurrenceRule.name,
-            recurrenceException: this.eventSettings.fields.recurrenceException.name
+            recurrenceException: this.eventSettings.fields.recurrenceException.name,
+            isReadonly: this.eventSettings.fields.isReadonly
         };
         this.editorTitles = {
             subject: this.eventSettings.fields.subject.title || this.localeObj.getConstant('title'),
@@ -9199,7 +9613,16 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
     Schedule.prototype.preRender = function () {
         this.isAdaptive = Browser.isDevice;
         this.globalize = new Internationalization(this.locale);
-        this.uiStateValues = { expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false, groupIndex: 0, action: false };
+        this.uiStateValues = {
+            expand: false,
+            isInitial: true,
+            left: 0,
+            top: 0,
+            isGroupAdaptive: false,
+            groupIndex: 0,
+            action: false,
+            isBlock: false
+        };
         this.activeCellsData = { startTime: new Date(), endTime: new Date(), isAllDay: false };
         this.activeEventData = { event: undefined, element: undefined };
         this.defaultLocale = {
@@ -9263,6 +9686,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             alert: 'Alert',
             startEndError: 'The selected end date occurs before the start date.',
             invalidDateError: 'The entered date value is invalid.',
+            blockAlert: 'Events cannot be scheduled within the blocked time range.',
             ok: 'Ok',
             occurrence: 'Occurrence',
             series: 'Series',
@@ -9277,6 +9701,8 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         this.setCldrTimeFormat();
         this.eventsData = [];
         this.eventsProcessed = [];
+        this.blockData = [];
+        this.blockProcessed = [];
         this.currentAction = null;
         this.selectedElements = [];
         this.setViewOptions();
@@ -9393,6 +9819,12 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         };
         return cssProps;
     };
+    Schedule.prototype.removeNewEventElement = function () {
+        var eventClone = this.element.querySelector('.' + NEW_EVENT_CLASS);
+        if (!isNullOrUndefined(eventClone)) {
+            remove(eventClone);
+        }
+    };
     Schedule.prototype.onDocumentClick = function (args) {
         this.notify(documentClick, { event: args });
     };
@@ -9416,6 +9848,28 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             }
         }
         return undefined;
+    };
+    Schedule.prototype.boundaryValidation = function (pageY, pageX) {
+        var autoScrollDistance = 30;
+        var scrollEdges = { left: false, right: false, top: false, bottom: false };
+        var viewBoundaries = this.element.querySelector('.' + CONTENT_WRAP_CLASS).getBoundingClientRect();
+        if ((pageY < viewBoundaries.top + autoScrollDistance + window.pageYOffset) &&
+            (pageY > viewBoundaries.top + window.pageYOffset)) {
+            scrollEdges.top = true;
+        }
+        if ((pageY > (viewBoundaries.bottom - autoScrollDistance) + window.pageYOffset) &&
+            (pageY < viewBoundaries.bottom + window.pageYOffset)) {
+            scrollEdges.bottom = true;
+        }
+        if ((pageX < viewBoundaries.left + autoScrollDistance + window.pageXOffset) &&
+            (pageX > viewBoundaries.left + window.pageXOffset)) {
+            scrollEdges.left = true;
+        }
+        if ((pageX > (viewBoundaries.right - autoScrollDistance) + window.pageXOffset) &&
+            (pageX < viewBoundaries.right + window.pageXOffset)) {
+            scrollEdges.right = true;
+        }
+        return scrollEdges;
     };
     /**
      * Unbinding events from the element on widget destroy.
@@ -9511,6 +9965,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
                     if (this.headerModule) {
                         this.headerModule.setDayOfWeek(newProp.firstDayOfWeek);
                     }
+                    this.eventWindow.refreshRecurrenceEditor();
                     requireRefresh = true;
                     break;
                 case 'showTimeIndicator':
@@ -9781,7 +10236,9 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
                 return undefined;
             }
             var data = this.resourceBase.lastResourceLevel[index];
-            return { resource: data.resource, resourceData: data.resourceData };
+            var groupData = {};
+            this.resourceBase.setResourceValues(groupData, false, index);
+            return { resource: data.resource, resourceData: data.resourceData, groupData: groupData };
         }
         return undefined;
     };
@@ -9920,10 +10377,17 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * @param {CurrentAction} action Defines the action for which the editor needs to be opened such as either for new event creation or
      *  for editing of existing events. The applicable action names that can be used here are `Add`, `Save`, `EditOccurrence`
      *  and `EditSeries`.
+     * @param {boolean} isEventData It allows to decide whether the editor needs to be opened with the clicked cell details or with the
+     *  passed event details.
+     * @param {number} repeatType It opens the editor with the recurrence options based on the provided repeat type.
      * @returns {void}
      */
-    Schedule.prototype.openEditor = function (data, action, isEventData) {
-        this.eventWindow.openEditor(data, action, isEventData);
+    Schedule.prototype.openEditor = function (data, action, isEventData, repeatType) {
+        this.currentAction = action;
+        if (action !== 'Add') {
+            this.activeEventData.event = data;
+        }
+        this.eventWindow.openEditor(data, action, isEventData, repeatType);
     };
     /**
      * This method has been added to adjust the size of the outer event wrapper class that holds the collection of events,
@@ -10388,35 +10852,12 @@ var ActionBase = /** @__PURE__ @class */ (function () {
         }
     };
     ActionBase.prototype.autoScrollValidation = function (e) {
-        if (!this.actionObj.scroll.enable || closest(e.target, '.' + DATE_HEADER_WRAP_CLASS)) {
+        if (!this.actionObj.scroll.enable) {
             return false;
         }
-        var pages = this.getPageCoordinates(e);
-        var allowScroll = false;
-        var autoScrollDistance = 30;
-        this.scrollEdges = { left: false, right: false, top: false, bottom: false };
-        var viewBoundaries = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS).getBoundingClientRect();
-        if ((this.actionObj.pageY < viewBoundaries.top + autoScrollDistance + window.pageYOffset) &&
-            (this.actionObj.pageY > viewBoundaries.top + window.pageYOffset)) {
-            allowScroll = true;
-            this.scrollEdges.top = true;
-        }
-        if ((this.actionObj.pageY > (viewBoundaries.bottom - autoScrollDistance) + window.pageYOffset) &&
-            (this.actionObj.pageY < viewBoundaries.bottom + window.pageYOffset)) {
-            allowScroll = true;
-            this.scrollEdges.bottom = true;
-        }
-        if ((this.actionObj.pageX < viewBoundaries.left + autoScrollDistance + window.pageXOffset) &&
-            (this.actionObj.pageX > viewBoundaries.left + window.pageXOffset)) {
-            allowScroll = true;
-            this.scrollEdges.left = true;
-        }
-        if ((this.actionObj.pageX > (viewBoundaries.right - autoScrollDistance) + window.pageXOffset) &&
-            (this.actionObj.pageX < viewBoundaries.right + window.pageXOffset)) {
-            allowScroll = true;
-            this.scrollEdges.right = true;
-        }
-        return allowScroll;
+        var res = this.parent.boundaryValidation(this.actionObj.pageY, this.actionObj.pageX);
+        this.scrollEdges = res;
+        return res.bottom || res.top || res.left || res.right;
     };
     ActionBase.prototype.actionClass = function (type) {
         if (type === 'addClass') {
@@ -10687,9 +11128,10 @@ var Resize = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 var cellWidth = this.parent.currentView === 'TimelineMonth' || !this.parent.activeViewOptions.timeScale.enable ?
-                    this.actionObj.cellWidth - 2 : 0;
-                cellIndex = Math.floor(isLeft ? (this.actionObj.clone.offsetLeft / this.actionObj.cellWidth) :
-                    (this.actionObj.clone.offsetLeft + (this.actionObj.clone.offsetWidth - cellWidth)) / this.actionObj.cellWidth);
+                    this.actionObj.cellWidth : 0;
+                cellIndex = isLeft ? Math.floor(this.actionObj.clone.offsetLeft / this.actionObj.cellWidth) :
+                    Math.ceil((this.actionObj.clone.offsetLeft + (this.actionObj.clone.offsetWidth - cellWidth)) /
+                        this.actionObj.cellWidth);
                 if (this.parent.enableRtl) {
                     var cellOffsetWidth = 0;
                     if (headerName === 'TimelineMonth' || (!this.parent.activeViewOptions.timeScale.enable &&
@@ -10878,7 +11320,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     DragAndDrop.prototype.wireDragEvent = function (element, isAllDay) {
-        var dragAreaTarget = isAllDay ? DATE_HEADER_WRAP_CLASS : CONTENT_WRAP_CLASS;
+        var dragAreaTarget = CURRENT_PANEL_CLASS;
         new Draggable(element, {
             abort: '.' + EVENT_RESIZE_CLASS,
             clone: true,
@@ -10920,29 +11362,37 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
             this.actionObj.interval : this.actionObj.cellWidth;
         var cellHeight = (this.actionObj.cellHeight / slotInterval) * this.actionObj.interval;
         var leftOffset = this.parent.enableRtl ? parseInt(e.left, 10) : Math.abs(parseInt(e.left, 10));
-        var leftValue;
-        if (this.parent.currentView === 'Month' || this.actionObj.clone.classList.contains(ALLDAY_APPOINTMENT_CLASS)) {
+        var leftValue = formatUnit(0);
+        if (this.parent.currentView === 'Month') {
             leftValue = e.left;
         }
-        else {
+        if (this.parent.activeView.isTimelineView()) {
             leftValue = formatUnit(Math.floor(leftOffset / cellWidth) * cellWidth);
         }
         var topValue;
         if ((this.parent.activeView.isTimelineView() || !this.parent.timeScale.enable ||
-            this.actionObj.clone.offsetParent.classList.contains(MORE_EVENT_POPUP_CLASS))) {
+            (!isNullOrUndefined(this.actionObj.clone.offsetParent) &&
+                this.actionObj.clone.offsetParent.classList.contains(MORE_EVENT_POPUP_CLASS)))) {
             topValue = formatUnit(this.actionObj.clone.offsetTop);
         }
         else if (this.parent.currentView === 'Month') {
             topValue = formatUnit(0);
         }
-        else if (this.actionObj.element.classList.contains(ALLDAY_APPOINTMENT_CLASS) &&
-            !this.actionObj.clone.classList.contains(ALLDAY_APPOINTMENT_CLASS)) {
-            topValue = formatUnit(this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS).scrollTop);
-        }
         else if (this.actionObj.clone.classList.contains(ALLDAY_APPOINTMENT_CLASS)) {
             topValue = formatUnit(this.parent.element.querySelector('.' + ALLDAY_ROW_CLASS).offsetTop);
+            setStyleAttribute(this.actionObj.clone, {
+                width: formatUnit(Math.ceil(this.actionObj.clone.offsetWidth / this.actionObj.cellWidth) * this.actionObj.cellWidth)
+            });
         }
         else {
+            if (this.actionObj.element.classList.contains(ALLDAY_APPOINTMENT_CLASS) &&
+                !this.actionObj.clone.classList.contains(ALLDAY_APPOINTMENT_CLASS)) {
+                setStyleAttribute(this.actionObj.clone, {
+                    height: formatUnit(this.actionObj.cellHeight),
+                    width: formatUnit(this.actionObj.cellWidth),
+                    pointerEvents: 'none'
+                });
+            }
             topValue = formatUnit(Math.ceil(parseInt(e.top, 10) / cellHeight) * cellHeight);
             var scrollHeight = this.parent.element.querySelector('.e-content-wrap').scrollHeight;
             var cloneBottom = parseInt(topValue, 10) + this.actionObj.clone.offsetHeight;
@@ -11015,6 +11465,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
             }
         }
         this.updateScrollPosition(e);
+        this.updateNavigatingPosition(e);
         this.updateDraggingDateTime(e);
         var dragArgs = { data: eventObj, event: e, element: this.actionObj.element };
         this.parent.trigger(drag, dragArgs);
@@ -11038,7 +11489,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
         }
         this.saveChangedData(dragArgs);
     };
-    DragAndDrop.prototype.updateDraggingDateTime = function (e) {
+    DragAndDrop.prototype.updateNavigatingPosition = function (e) {
         var _this = this;
         if (this.actionObj.navigation.enable) {
             var currentDate_1 = new Date();
@@ -11052,12 +11503,16 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
                         if (start === end) {
                             currentDate_1 = new Date();
                             _this.viewNavigation(e);
+                            _this.updateDraggingDateTime(e);
                         }
                     }
                 }, this.actionObj.navigation.timeDelay);
             }
         }
-        if (this.actionObj.clone.offsetParent.classList.contains(MORE_EVENT_POPUP_CLASS)) {
+    };
+    DragAndDrop.prototype.updateDraggingDateTime = function (e) {
+        if (!isNullOrUndefined(this.actionObj.clone.offsetParent) &&
+            this.actionObj.clone.offsetParent.classList.contains(MORE_EVENT_POPUP_CLASS)) {
             this.morePopupEventDragging(e);
         }
         else if (this.parent.activeView.isTimelineView()) {
@@ -11175,7 +11630,10 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
         this.appendCloneElement(eventWrapper);
     };
     DragAndDrop.prototype.calculateVerticalTime = function (e) {
-        if (isNullOrUndefined(e.target) || (e.target && isNullOrUndefined(closest(e.target, 'tr')))) {
+        if (isNullOrUndefined(this.actionObj.target) ||
+            (this.actionObj.target && isNullOrUndefined(closest(this.actionObj.target, 'tr'))) ||
+            (!(closest(this.actionObj.target, 'td').classList.contains(WORK_CELLS_CLASS)) &&
+                !(closest(this.actionObj.target, 'td').classList.contains(ALLDAY_CELLS_CLASS)))) {
             return;
         }
         if (this.parent.activeViewOptions.timeScale.enable) {
@@ -11186,7 +11644,8 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
         var eventStart = eventObj[this.parent.eventFields.startTime];
         var eventEnd = eventObj[this.parent.eventFields.endTime];
         var eventDuration = eventEnd.getTime() - eventStart.getTime();
-        var offsetTop = Math.floor(this.actionObj.clone.offsetTop / this.actionObj.cellHeight) * this.actionObj.cellHeight;
+        var offsetTop = Math.floor(parseInt(this.actionObj.clone.style.top, 0) / this.actionObj.cellHeight)
+            * this.actionObj.cellHeight;
         offsetTop = offsetTop < 0 ? 0 : offsetTop;
         if (this.scrollEdges.top || this.scrollEdges.bottom) {
             offsetTop = this.scrollEdges.top ? dragArea.scrollTop :
@@ -11196,7 +11655,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
         }
         var rowIndex = offsetTop / this.actionObj.cellHeight;
         var heightPerMinute = this.actionObj.cellHeight / this.actionObj.slotInterval;
-        var diffInMinutes = this.actionObj.clone.offsetTop - offsetTop;
+        var diffInMinutes = parseInt(this.actionObj.clone.style.top, 0) - offsetTop;
         var isAllDayDrag = this.actionObj.clone.classList.contains(ALLDAY_APPOINTMENT_CLASS);
         var tr;
         if (isAllDayDrag) {
@@ -11206,7 +11665,11 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
             var trCollections = this.parent.getContentTable().querySelectorAll('tr');
             tr = trCollections.item(rowIndex);
         }
-        var index = closest(this.actionObj.target, 'td').cellIndex;
+        var index;
+        if (closest(this.actionObj.target, 'td').classList.contains(WORK_CELLS_CLASS) ||
+            closest(this.actionObj.target, 'td').classList.contains(ALLDAY_CELLS_CLASS)) {
+            index = closest(this.actionObj.target, 'td').cellIndex;
+        }
         var colIndex = isNullOrUndefined(index) ? closest(this.actionObj.clone, 'td').cellIndex : index;
         this.actionObj.index = colIndex;
         var td = tr.childNodes.item(colIndex);
@@ -11251,22 +11714,12 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
         this.updateTimePosition(this.actionObj.start);
     };
     DragAndDrop.prototype.swapDragging = function (e) {
-        var _this = this;
-        var colIndex = closest(e.target, 'td').cellIndex;
-        var setDragArea = function (isAllDay) {
-            var dragAreaTarget = isAllDay ? DATE_HEADER_WRAP_CLASS : CONTENT_WRAP_CLASS;
-            var dragObj = _this.actionObj.element.ej2_instances[0];
-            dragObj.dragArea = _this.parent.eventDragArea ?
-                document.querySelector(_this.parent.eventDragArea) :
-                _this.parent.element.querySelector('.' + dragAreaTarget);
-            dragObj.dataBind();
-        };
-        if (closest(e.target, '.' + DATE_HEADER_WRAP_CLASS) &&
+        var colIndex = closest(this.actionObj.target, 'td').cellIndex;
+        if (closest(this.actionObj.target, '.' + DATE_HEADER_WRAP_CLASS) &&
             !closest(this.actionObj.clone, '.' + ALLDAY_APPOINTMENT_WRAPPER_CLASS)) {
             addClass([this.actionObj.clone], ALLDAY_APPOINTMENT_CLASS);
             this.appendCloneElement(this.getEventWrapper(colIndex));
             this.actionObj.isAllDay = true;
-            setDragArea(this.actionObj.isAllDay);
             var eventHeight_1 = this.getAllDayEventHeight();
             var allDayElement = [].slice.call(this.parent.element.querySelectorAll('.' + ALLDAY_CELLS_CLASS + ':first-child'));
             if (allDayElement[0].offsetHeight < eventHeight_1) {
@@ -11278,16 +11731,14 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
                 top: formatUnit(this.parent.element.querySelector('.' + ALLDAY_ROW_CLASS).offsetTop)
             });
         }
-        if (closest(e.target, '.' + WORK_CELLS_CLASS) && !closest(this.actionObj.clone, '.' + DAY_WRAPPER_CLASS)) {
+        if (closest(this.actionObj.target, '.' + WORK_CELLS_CLASS) &&
+            !closest(this.actionObj.clone, '.' + DAY_WRAPPER_CLASS)) {
             removeClass([this.actionObj.clone], ALLDAY_APPOINTMENT_CLASS);
             this.appendCloneElement(this.getEventWrapper(colIndex));
             this.actionObj.isAllDay = false;
-            setDragArea(this.actionObj.isAllDay);
-            var cursorElement = this.getCursorElement(e);
             var height = (this.actionObj.element.offsetHeight === 0) ? this.actionObj.height : this.actionObj.element.offsetHeight;
             setStyleAttribute(this.actionObj.clone, {
                 left: formatUnit(0),
-                top: formatUnit(cursorElement.offsetTop),
                 height: formatUnit(height),
                 width: formatUnit(this.actionObj.cellWidth)
             });
@@ -11301,7 +11752,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
         var eventObj = extend({}, this.actionObj.event, null, true);
         var eventDuration = eventObj[this.parent.eventFields.endTime].getTime() -
             eventObj[this.parent.eventFields.startTime].getTime();
-        var td = closest(e.target, 'td');
+        var td = closest(this.actionObj.target, 'td');
         var tr = td.parentElement;
         var colIndex = (tr.rowIndex * tr.childNodes.length) + td.cellIndex;
         this.actionObj.index = colIndex;
@@ -11325,7 +11776,8 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
         if (!targetWrapper.querySelector('.' + CLONE_ELEMENT_CLASS)) {
             this.appendCloneElement(targetWrapper);
         }
-        var timeString = td.getAttribute('data-date') || eventObj[this.parent.eventFields.startTime].getTime().toString();
+        var timeString = outerWrapper.item(colIndex).getAttribute('data-date') ||
+            eventObj[this.parent.eventFields.startTime].getTime().toString();
         var dragStart$$1 = new Date(parseInt(timeString, 10));
         var dragEnd = new Date(dragStart$$1.getTime());
         if (this.parent.enableRtl) {
@@ -11394,17 +11846,30 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
     };
     DragAndDrop.prototype.calculateTimelineDate = function (e) {
         var cloneIndex = 0;
+        var rightOffset;
+        var leftOffset;
+        var viewEle = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
         var eventObj = extend({}, this.actionObj.event, null, true);
         var eventDuration = eventObj[this.parent.eventFields.endTime].getTime() -
             eventObj[this.parent.eventFields.startTime].getTime();
         if (this.parent.enableRtl) {
             cloneIndex = (Math.floor(parseInt(this.actionObj.clone.style.right, 10))) / this.actionObj.cellWidth;
-            var rightOffset = Math.abs(parseInt(this.actionObj.clone.style.left, 10)) - this.actionObj.clone.offsetWidth;
+            rightOffset = Math.abs(parseInt(this.actionObj.clone.style.left, 10)) - this.actionObj.clone.offsetWidth;
+            if (this.scrollEdges.left || this.scrollEdges.right) {
+                rightOffset = viewEle.scrollWidth - viewEle.scrollLeft - this.actionObj.clone.offsetWidth;
+                if (this.scrollEdges.right) {
+                    rightOffset = rightOffset - viewEle.offsetWidth + this.actionObj.clone.offsetWidth;
+                }
+            }
             this.actionObj.clone.style.right = formatUnit(rightOffset);
         }
         else {
             cloneIndex = Math.floor(this.actionObj.clone.offsetLeft / this.actionObj.cellWidth);
-            var leftOffset = parseInt(this.actionObj.clone.style.left, 10);
+            leftOffset = parseInt(this.actionObj.clone.style.left, 10);
+            if (this.scrollEdges.left || this.scrollEdges.right) {
+                leftOffset = this.scrollEdges.left ? viewEle.scrollLeft :
+                    viewEle.scrollLeft + viewEle.offsetWidth - this.actionObj.clone.offsetWidth;
+            }
             this.actionObj.clone.style.left = formatUnit(leftOffset);
         }
         cloneIndex = this.getIndex(cloneIndex);
@@ -11425,7 +11890,9 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
     DragAndDrop.prototype.calculateResourceGroupingPosition = function (e) {
         var dragArea = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
         var trCollection = this.parent.element.querySelectorAll('.e-content-wrap .e-content-table tr:not(.e-hidden)');
-        var rowIndex = Math.floor(Math.floor((this.actionObj.Y + dragArea.scrollTop) -
+        var translateY = getTranslateY(dragArea.querySelector('table'));
+        translateY = (isNullOrUndefined(translateY)) ? 0 : translateY;
+        var rowIndex = Math.floor(Math.floor((this.actionObj.Y + (dragArea.scrollTop - translateY)) -
             dragArea.getBoundingClientRect().top) / this.actionObj.cellHeight);
         rowIndex = (rowIndex < 0) ? 0 : (rowIndex > trCollection.length - 1) ? trCollection.length - 1 : rowIndex;
         this.actionObj.index = rowIndex;
@@ -11528,12 +11995,25 @@ var ViewBase = /** @__PURE__ @class */ (function () {
     ViewBase.prototype.isTimelineView = function () {
         return this.parent.currentView.indexOf('Timeline') !== -1;
     };
+    ViewBase.prototype.getContentRows = function () {
+        return [];
+    };
     ViewBase.prototype.createEventTable = function (trCount) {
         var eventTable = createElement('div', { className: EVENT_TABLE_CLASS });
-        for (var row = 0; row < trCount; row++) {
-            eventTable.appendChild(createElement('div', { className: APPOINTMENT_CONTAINER_CLASS }));
-        }
+        append(this.getEventRows(trCount), eventTable);
         return eventTable;
+    };
+    ViewBase.prototype.getEventRows = function (trCount) {
+        var eventRows = [];
+        var eventContainer;
+        for (var row = 0; row < trCount; row++) {
+            eventContainer = createElement('div', { className: APPOINTMENT_CONTAINER_CLASS });
+            if (!isNullOrUndefined(this.parent.resourceBase) && !this.parent.uiStateValues.isGroupAdaptive) {
+                eventContainer.setAttribute('data-group-index', this.parent.resourceBase.renderedResources[row].groupIndex.toString());
+            }
+            eventRows.push(eventContainer);
+        }
+        return eventRows;
     };
     ViewBase.prototype.collapseRows = function (wrap) {
         if (!this.isTimelineView()) {
@@ -11879,6 +12359,10 @@ var WorkCellInteraction = /** @__PURE__ @class */ (function () {
         if (isNullOrUndefined(target)) {
             return;
         }
+        if (!isNullOrUndefined(closest(e.target, '.' + NEW_EVENT_CLASS))) {
+            this.parent.eventWindow.openEditor(this.parent.activeCellsData, 'Add');
+            return;
+        }
         var navigateEle = closest(e.target, '.' + NAVIGATE_CLASS);
         var navigateView = this.parent.getNavigateView();
         var sameView = this.parent.currentView === navigateView;
@@ -11888,7 +12372,8 @@ var WorkCellInteraction = /** @__PURE__ @class */ (function () {
                 this.parent.quickPopup.quickPopupHide();
                 return;
             }
-            var isWorkCell = target.classList.contains(WORK_CELLS_CLASS) || target.classList.contains(ALLDAY_CELLS_CLASS);
+            var isWorkCell = target.classList.contains(WORK_CELLS_CLASS) ||
+                target.classList.contains(ALLDAY_CELLS_CLASS);
             if (isWorkCell && e.shiftKey && e.which === 1 && this.parent.keyboardInteractionModule) {
                 this.parent.keyboardInteractionModule.onMouseSelection(e);
                 return;
@@ -11986,12 +12471,12 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
         return _this;
     }
     VerticalEvent.prototype.renderAppointments = function () {
-        var _this = this;
-        var wrapperElements = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_CLASS + ',.' + ROW_COUNT_WRAPPER_CLASS));
+        var wrapperElements = [].slice.call(this.parent.element.querySelectorAll('.' + BLOCK_APPOINTMENT_CLASS +
+            ',.' + APPOINTMENT_CLASS + ',.' + ROW_COUNT_WRAPPER_CLASS));
         wrapperElements.forEach(function (element) { return remove(element); });
         this.allDayElement = [].slice.call(this.element.querySelectorAll('.' + ALLDAY_CELLS_CLASS));
         this.setAllDayRowHeight(0);
-        if (this.parent.eventsProcessed.length === 0) {
+        if (this.parent.eventsProcessed.length === 0 && this.parent.blockProcessed.length === 0) {
             return;
         }
         var expandCollapse = this.element.querySelector('.' + ALLDAY_APPOINTMENT_SECTION_CLASS);
@@ -11999,14 +12484,8 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
         EventHandler.add(expandCollapse, 'click', this.rowExpandCollapse, this);
         this.renderedEvents = [];
         this.renderedAllDayEvents = [];
-        this.resources = (this.parent.activeViewOptions.group.resources.length > 0) ? this.parent.uiStateValues.isGroupAdaptive ?
-            [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] :
-            this.parent.resourceBase.lastResourceLevel : [];
-        this.cellHeight = this.element.querySelector('.' + WORK_CELLS_CLASS).offsetHeight;
-        this.dateRender[0] = this.parent.activeView.renderDates;
-        if (this.parent.activeViewOptions.group.resources.length > 0) {
-            this.resources.forEach(function (resource, index) { return _this.dateRender[index] = resource.renderDates; });
-        }
+        this.initializeValues();
+        this.processBlockEvents();
         this.renderEvents('normalEvents');
         if (this.allDayEvents.length > 0) {
             this.allDayEvents = this.allDayEvents.filter(function (item, index, arr) {
@@ -12019,33 +12498,119 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
         this.parent.notify(contentReady, {});
         addClass(this.allDayElement, ALLDAY_ROW_ANIMATE_CLASS);
     };
-    VerticalEvent.prototype.renderEvents = function (eventType) {
-        removeClass(this.allDayElement, ALLDAY_ROW_ANIMATE_CLASS);
-        var eventCollection = (eventType === 'allDayEvents') ? this.sortByDateTime(this.allDayEvents) : undefined;
+    VerticalEvent.prototype.initializeValues = function () {
+        var _this = this;
+        this.resources = (this.parent.activeViewOptions.group.resources.length > 0) ? this.parent.uiStateValues.isGroupAdaptive ?
+            [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] :
+            this.parent.resourceBase.lastResourceLevel : [];
+        this.cellHeight = this.element.querySelector('.' + WORK_CELLS_CLASS).offsetHeight;
+        this.dateRender[0] = this.parent.activeView.renderDates;
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            this.resources.forEach(function (resource, index) { return _this.dateRender[index] = resource.renderDates; });
+        }
+    };
+    VerticalEvent.prototype.isValidEvent = function (eventObj, start, end, schedule) {
+        var isHourRange = end.getTime() > schedule.startHour.getTime() && start.getTime() < schedule.endHour.getTime();
+        var isSameRange = schedule.startHour.getTime() <= start.getTime() &&
+            eventObj[this.fields.startTime].getTime() >= schedule.startHour.getTime() &&
+            eventObj[this.fields.endTime].getTime() < schedule.endHour.getTime() && start.getTime() === end.getTime();
+        return isHourRange || isSameRange;
+    };
+    VerticalEvent.prototype.getHeight = function (start, end) {
+        var appHeight = (end.getTime() - start.getTime()) / (60 * 1000) * (this.cellHeight * this.slotCount) / this.interval;
+        appHeight = (appHeight < this.cellHeight) ? this.cellHeight : appHeight;
+        return appHeight;
+    };
+    VerticalEvent.prototype.appendEvent = function (eventObj, appointmentElement, index, appLeft) {
+        var appointmentWrap = [].slice.call(this.element.querySelectorAll('.' + APPOINTMENT_WRAPPER_CLASS));
+        if (this.parent.enableRtl) {
+            setStyleAttribute(appointmentElement, { 'right': appLeft });
+        }
+        else {
+            setStyleAttribute(appointmentElement, { 'left': appLeft });
+        }
+        var eventType = appointmentElement.classList.contains(BLOCK_APPOINTMENT_CLASS) ? 'blockEvent' : 'event';
+        var args = { data: eventObj, element: appointmentElement, cancel: false, type: eventType };
+        this.parent.trigger(eventRendered, args);
+        if (args.cancel) {
+            return;
+        }
+        appointmentWrap[index].appendChild(appointmentElement);
+    };
+    VerticalEvent.prototype.processBlockEvents = function () {
         var resources = this.getResourceList();
         var dateCount = 0;
         for (var _i = 0, resources_1 = resources; _i < resources_1.length; _i++) {
             var resource = resources_1[_i];
             var renderDates = this.dateRender[resource];
             for (var day = 0, length_1 = renderDates.length; day < length_1; day++) {
-                this.renderedEvents = [];
                 var startDate = new Date(renderDates[day].getTime());
                 var endDate = addDays(renderDates[day], 1);
-                var filterEvents = this.filterEvents(startDate, endDate, eventCollection, this.resources[resource]);
+                var filterEvents = this.filterEvents(startDate, endDate, this.parent.blockProcessed, this.resources[resource]);
                 for (var _a = 0, filterEvents_1 = filterEvents; _a < filterEvents_1.length; _a++) {
                     var event_1 = filterEvents_1[_a];
                     if (this.parent.resourceBase) {
                         this.setValues(event_1, resource);
                     }
+                    this.renderBlockEvents(event_1, day, resource, dateCount);
+                    this.cssClass = null;
+                    this.groupOrder = null;
+                }
+                dateCount += 1;
+            }
+        }
+    };
+    VerticalEvent.prototype.renderBlockEvents = function (eventObj, dayIndex, resource, dayCount) {
+        var spannedData = this.isSpannedEvent(eventObj, dayIndex, resource);
+        var eStart = spannedData[this.fields.startTime];
+        var eEnd = spannedData[this.fields.endTime];
+        var currentDate = resetTime(new Date(this.dateRender[resource][dayIndex].getTime()));
+        var schedule = getStartEndHours(currentDate, this.startHour, this.endHour);
+        if (eStart <= eEnd && this.isValidEvent(eventObj, eStart, eEnd, schedule)) {
+            var blockTop = void 0;
+            var blockHeight = void 0;
+            if (spannedData[this.fields.isAllDay]) {
+                var contentWrap = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS + ' table');
+                blockHeight = formatUnit(contentWrap.offsetHeight);
+                blockTop = formatUnit(0);
+            }
+            else {
+                blockHeight = formatUnit(this.getHeight(eStart, eEnd));
+                blockTop = formatUnit(this.getTopValue(eStart, dayIndex, resource));
+            }
+            var appointmentElement = this.createBlockAppointmentElement(eventObj, resource);
+            setStyleAttribute(appointmentElement, { 'width': '100%', 'height': blockHeight, 'top': blockTop });
+            var index = this.parent.activeViewOptions.group.byDate ? (this.resources.length * dayIndex) + resource : dayCount;
+            this.appendEvent(eventObj, appointmentElement, index, '0px');
+        }
+    };
+    VerticalEvent.prototype.renderEvents = function (eventType) {
+        removeClass(this.allDayElement, ALLDAY_ROW_ANIMATE_CLASS);
+        var eventCollection = (eventType === 'allDayEvents') ? this.sortByDateTime(this.allDayEvents) : undefined;
+        var resources = this.getResourceList();
+        var dateCount = 0;
+        for (var _i = 0, resources_2 = resources; _i < resources_2.length; _i++) {
+            var resource = resources_2[_i];
+            var renderDates = this.dateRender[resource];
+            for (var day = 0, length_2 = renderDates.length; day < length_2; day++) {
+                this.renderedEvents = [];
+                var startDate = new Date(renderDates[day].getTime());
+                var endDate = addDays(renderDates[day], 1);
+                var filterEvents = this.filterEvents(startDate, endDate, eventCollection, this.resources[resource]);
+                for (var _a = 0, filterEvents_2 = filterEvents; _a < filterEvents_2.length; _a++) {
+                    var event_2 = filterEvents_2[_a];
+                    if (this.parent.resourceBase) {
+                        this.setValues(event_2, resource);
+                    }
                     if (eventType === 'allDayEvents') {
-                        this.renderAllDayEvents(event_1, day, resource, dateCount);
+                        this.renderAllDayEvents(event_2, day, resource, dateCount);
                     }
                     else {
-                        if (this.isAllDayAppointment(event_1)) {
-                            this.allDayEvents.push(extend({}, event_1, null, true));
+                        if (this.isAllDayAppointment(event_2)) {
+                            this.allDayEvents.push(extend({}, event_2, null, true));
                         }
                         else {
-                            this.renderNormalEvents(event_1, day, resource, dateCount);
+                            this.renderNormalEvents(event_2, day, resource, dateCount);
                         }
                     }
                     this.cssClass = null;
@@ -12081,12 +12646,15 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
                 'data-guid': record.Guid,
                 'role': 'button',
                 'tabindex': '0',
-                'aria-readonly': 'false',
+                'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record),
                 'aria-selected': 'false',
                 'aria-grabbed': 'true',
                 'aria-label': recordSubject
             }
         });
+        if (record[this.fields.isReadonly]) {
+            addClass([appointmentWrapper], 'e-read-only');
+        }
         var appointmentDetails = createElement('div', { className: APPOINTMENT_DETAILS });
         appointmentWrapper.appendChild(appointmentDetails);
         if (this.parent.activeViewOptions.group.resources.length > 0) {
@@ -12150,7 +12718,7 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
             addClass([appointmentWrapper], this.cssClass);
         }
         this.applyResourceColor(appointmentWrapper, record, 'backgroundColor', this.groupOrder);
-        this.renderResizeHandler(appointmentWrapper, eventData);
+        this.renderResizeHandler(appointmentWrapper, eventData, record[this.fields.isReadonly]);
         return appointmentWrapper;
     };
     VerticalEvent.prototype.createMoreIndicator = function (allDayRow, count, currentDay) {
@@ -12174,7 +12742,7 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
             var countCell = countWrapper.querySelector('.' + MORE_INDICATOR_CLASS);
             var moreCount = parseInt(countCell.getAttribute('data-count'), 10) + 1;
             countCell.setAttribute('data-count', moreCount.toString());
-            countCell.innerHTML = countCell.innerHTML.replace(/[0-9]/g, moreCount.toString());
+            countCell.innerHTML = '+' + moreCount + '&nbsp;' + (this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant('more'));
         }
     };
     VerticalEvent.prototype.renderSpannedIcon = function (element, spanEvent) {
@@ -12276,7 +12844,7 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
                 setStyleAttribute(appointmentElement, { 'width': appWidth + '%', 'top': topValue + 'px' });
                 if (allDayIndex > 1) {
                     this.moreEvents.push(appointmentElement);
-                    for (var count = 0, length_2 = allDayDifference; count < length_2; count++) {
+                    for (var count = 0, length_3 = allDayDifference; count < length_3; count++) {
                         this.createMoreIndicator(allDayRow, count, wIndex);
                     }
                 }
@@ -12285,7 +12853,7 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
                     (3 * appHeight) : ((this.allDayLevel + 1) * appHeight)) + 4;
                 this.setAllDayRowHeight(allDayRowHeight);
                 this.addOrRemoveClass();
-                this.wireAppointmentEvents(appointmentElement, true);
+                this.wireAppointmentEvents(appointmentElement, true, eventObj[this.fields.isReadonly]);
             }
         }
     };
@@ -12298,13 +12866,9 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
         var topValue = 0;
         var currentDate = resetTime(new Date(this.dateRender[resource][dayIndex].getTime()));
         var schedule = getStartEndHours(currentDate, this.startHour, this.endHour);
-        var isHourRange = eEnd.getTime() > schedule.startHour.getTime() && eStart.getTime() < schedule.endHour.getTime();
-        var isSameRange = schedule.startHour.getTime() <= eStart.getTime() &&
-            eventObj[this.fields.startTime].getTime() >= schedule.startHour.getTime() &&
-            eventObj[this.fields.endTime].getTime() < schedule.endHour.getTime() && eStart.getTime() === eEnd.getTime();
-        if (eStart <= eEnd && (isHourRange || isSameRange)) {
-            var appHeight = (eEnd.getTime() - eStart.getTime()) / (60 * 1000) * (this.cellHeight * this.slotCount) / this.interval;
-            appHeight = (appHeight < this.cellHeight) ? this.cellHeight : appHeight;
+        var isValidEvent = this.isValidEvent(eventObj, eStart, eEnd, schedule);
+        if (eStart <= eEnd && isValidEvent) {
+            var appHeight = this.getHeight(eStart, eEnd);
             if (eStart.getTime() > schedule.startHour.getTime()) {
                 topValue = this.getTopValue(eStart, dayIndex, resource);
             }
@@ -12333,7 +12897,6 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
                 this.renderedEvents[resource] = [];
             }
             this.renderedEvents[resource].push(extend({}, record, null, true));
-            var appointmentWrap = [].slice.call(this.element.querySelectorAll('.' + APPOINTMENT_WRAPPER_CLASS));
             var appointmentElement = this.createAppointmentElement(eventObj, false, record.isSpanned, resource);
             setStyleAttribute(appointmentElement, { 'width': tempData.appWidth, 'height': appHeight + 'px', 'top': topValue + 'px' });
             var iconHeight = appointmentElement.querySelectorAll('.' + EVENT_INDICATOR_CLASS).length * 15;
@@ -12342,20 +12905,9 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
             if (!this.parent.isAdaptive && subjectElement) {
                 subjectElement.style.maxHeight = formatUnit(maxHeight);
             }
-            if (this.parent.enableRtl) {
-                setStyleAttribute(appointmentElement, { 'right': tempData.appLeft });
-            }
-            else {
-                setStyleAttribute(appointmentElement, { 'left': tempData.appLeft });
-            }
             var index = this.parent.activeViewOptions.group.byDate ? (this.resources.length * dayIndex) + resource : dayCount;
-            var args = { data: eventObj, element: appointmentElement, cancel: false };
-            this.parent.trigger(eventRendered, args);
-            if (args.cancel) {
-                return;
-            }
-            appointmentWrap[index].appendChild(appointmentElement);
-            this.wireAppointmentEvents(appointmentElement, false);
+            this.appendEvent(eventObj, appointmentElement, index, tempData.appLeft);
+            this.wireAppointmentEvents(appointmentElement, false, eventObj[this.fields.isReadonly]);
         }
     };
     VerticalEvent.prototype.getTopValue = function (date, day, resource) {
@@ -12405,11 +12957,11 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
             this.overlapList = this.overlapList.concat(appointment_1);
             eventsList = this.overlapList;
             for (var _i = 0, eventsList_1 = eventsList; _i < eventsList_1.length; _i++) {
-                var event_2 = eventsList_1[_i];
-                var record_1 = event_2;
+                var event_3 = eventsList_1[_i];
+                var record_1 = event_3;
                 var index = record_1.Index;
-                (isNullOrUndefined(this.overlapEvents[index])) ? this.overlapEvents[index] = [event_2] :
-                    this.overlapEvents[index].push(event_2);
+                (isNullOrUndefined(this.overlapEvents[index])) ? this.overlapEvents[index] = [event_3] :
+                    this.overlapEvents[index].push(event_3);
             }
         }
         if (eventsList.length > 0) {
@@ -12492,7 +13044,7 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
         var eventWrapper = this.element.querySelector('.' + ALLDAY_APPOINTMENT_WRAPPER_CLASS + ':first-child');
         eventWrapper.appendChild(eventElement);
         var height = eventElement.offsetHeight;
-        eventElement.remove();
+        remove(eventElement);
         return height;
     };
     VerticalEvent.prototype.rowExpandCollapse = function () {
@@ -12545,6 +13097,7 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
         var _this = _super.call(this, parent) || this;
         _this.renderedEvents = [];
         _this.moreIndicatorHeight = 19;
+        _this.renderType = 'day';
         _this.element = _this.parent.activeView.getPanel();
         _this.fields = _this.parent.eventFields;
         _this.addEventListener();
@@ -12573,23 +13126,28 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
     MonthEvent.prototype.renderEventsHandler = function (dateRender, workDays, resData) {
         this.renderedEvents = [];
         var eventsList;
+        var blockList;
         var resIndex = 0;
         if (resData) {
             resIndex = resData.groupIndex;
             this.cssClass = resData.cssClass;
             this.groupOrder = resData.groupOrder;
-            eventsList = this.parent.eventBase.filterEventsByResource(resData);
+            eventsList = this.parent.eventBase.filterEventsByResource(resData, this.parent.eventsProcessed);
+            blockList = this.parent.eventBase.filterEventsByResource(resData, this.parent.blockProcessed);
             this.workCells = [].slice.call(this.element.querySelectorAll('.' + WORK_CELLS_CLASS + '[data-group-index="' + resIndex + '"]'));
         }
         else {
             eventsList = this.parent.eventsProcessed;
+            blockList = this.parent.blockProcessed;
             this.workCells = [].slice.call(this.element.querySelectorAll('.' + WORK_CELLS_CLASS));
         }
         this.sortByDateTime(eventsList);
+        this.sortByDateTime(blockList);
         this.cellWidth = this.workCells.slice(-1)[0].offsetWidth;
         this.cellHeight = this.workCells.slice(-1)[0].offsetHeight;
         this.dateRender = dateRender;
         this.getSlotDates(workDays);
+        this.processBlockEvents(blockList, resIndex, resData);
         for (var _i = 0, eventsList_1 = eventsList; _i < eventsList_1.length; _i++) {
             var event_1 = eventsList_1[_i];
             if (this.parent.resourceBase && !resData) {
@@ -12604,6 +13162,102 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
         }
         this.cssClass = null;
         this.groupOrder = null;
+    };
+    MonthEvent.prototype.processBlockEvents = function (blockEvents, resIndex, resData) {
+        for (var _i = 0, blockEvents_1 = blockEvents; _i < blockEvents_1.length; _i++) {
+            var event_3 = blockEvents_1[_i];
+            if (this.parent.resourceBase && !resData) {
+                this.cssClass = this.parent.resourceBase.getCssClass(event_3);
+            }
+            var blockSpannedList = [];
+            if (this.renderType === 'day' && !event_3[this.fields.isAllDay]) {
+                var temp = extend({}, event_3, null, true);
+                var isSameDate = this.isSameDate(temp[this.fields.startTime], temp[this.fields.endTime]);
+                temp.isBlockIcon = isSameDate;
+                if (!isSameDate && getDateInMs(temp[this.fields.startTime]) > 0) {
+                    var e = extend({}, event_3, null, true);
+                    e[this.fields.endTime] = addDays(resetTime(new Date(event_3[this.fields.startTime] + '')), 1);
+                    e.isBlockIcon = true;
+                    temp[this.fields.startTime] = e[this.fields.endTime];
+                    blockSpannedList.push(e);
+                }
+                isSameDate = this.isSameDate(temp[this.fields.startTime], temp[this.fields.endTime]);
+                if (!isSameDate && getDateInMs(temp[this.fields.endTime]) > 0) {
+                    var e = extend({}, event_3, null, true);
+                    e[this.fields.startTime] = resetTime(new Date(event_3[this.fields.endTime] + ''));
+                    e.isBlockIcon = true;
+                    blockSpannedList.push(e);
+                    temp[this.fields.endTime] = e[this.fields.startTime];
+                }
+                blockSpannedList.push(temp);
+            }
+            else {
+                blockSpannedList.push(event_3);
+            }
+            for (var _a = 0, blockSpannedList_1 = blockSpannedList; _a < blockSpannedList_1.length; _a++) {
+                var blockEvent = blockSpannedList_1[_a];
+                var splittedEvents = this.splitEvent(blockEvent, this.dateRender);
+                for (var _b = 0, splittedEvents_2 = splittedEvents; _b < splittedEvents_2.length; _b++) {
+                    var event_4 = splittedEvents_2[_b];
+                    this.renderBlockEvents(event_4, resIndex, !!blockEvent.isBlockIcon);
+                }
+            }
+        }
+    };
+    MonthEvent.prototype.isSameDate = function (start, end) {
+        return new Date(+start).setHours(0, 0, 0, 0) === new Date(+end).setHours(0, 0, 0, 0);
+    };
+    MonthEvent.prototype.renderBlockEvents = function (event, resIndex, isIcon) {
+        var eventData = event.data;
+        var startTime = this.getStartTime(event, eventData);
+        var endTime = this.getEndTime(event, eventData);
+        var day = this.parent.getIndexOfDate(this.dateRender, resetTime(new Date(startTime.getTime())));
+        if (day < 0 || startTime > endTime) {
+            return;
+        }
+        var cellTd = this.getCellTd(day);
+        var position = this.getPosition(startTime, endTime, event[this.fields.isAllDay], day);
+        if (!isIcon) {
+            var diffInDays = eventData.count;
+            var appWidth = this.getEventWidth(startTime, endTime, event[this.fields.isAllDay], diffInDays);
+            appWidth = (appWidth <= 0) ? this.cellWidth : appWidth;
+            var appLeft = (this.parent.enableRtl) ? 0 : position;
+            var appRight = (this.parent.enableRtl) ? position : 0;
+            var appHeight = this.cellHeight - this.monthHeaderHeight;
+            var appTop = this.getRowTop(resIndex);
+            var blockElement = this.createBlockAppointmentElement(event, resIndex);
+            setStyleAttribute(blockElement, {
+                'width': appWidth + 'px', 'height': appHeight + 'px', 'left': appLeft + 'px', 'right': appRight + 'px', 'top': appTop + 'px'
+            });
+            this.renderEventElement(event, blockElement, cellTd);
+        }
+        else {
+            this.renderBlockIndicator(cellTd, position, resIndex);
+        }
+    };
+    MonthEvent.prototype.renderBlockIndicator = function (cellTd, position, resIndex) {
+        var blockIndicator = createElement('div', { className: 'e-icons ' + BLOCK_INDICATOR_CLASS });
+        if (isNullOrUndefined(cellTd.querySelector('.' + BLOCK_INDICATOR_CLASS))) {
+            cellTd.appendChild(blockIndicator);
+        }
+    };
+    MonthEvent.prototype.getStartTime = function (event, eventData) {
+        return event[this.fields.startTime];
+    };
+    MonthEvent.prototype.getEndTime = function (event, eventData) {
+        return event[this.fields.endTime];
+    };
+    MonthEvent.prototype.getCellTd = function (day) {
+        return this.workCells[day];
+    };
+    MonthEvent.prototype.getEventWidth = function (startDate, endDate, isAllDay, count) {
+        return count * this.cellWidth - 1;
+    };
+    MonthEvent.prototype.getPosition = function (startTime, endTime, isAllDay, day) {
+        return 0;
+    };
+    MonthEvent.prototype.getRowTop = function (resIndex) {
+        return 0;
     };
     MonthEvent.prototype.updateIndicatorIcon = function (event) {
         if (this.parent.currentView.indexOf('Timeline') === -1 || this.parent.currentView === 'TimelineMonth'
@@ -12640,12 +13294,15 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
             attrs: {
                 'data-id': 'Appointment_' + record[this.fields.id],
                 'data-guid': record.Guid, 'role': 'button', 'tabindex': '0',
-                'aria-readonly': 'false', 'aria-selected': 'false', 'aria-grabbed': 'true',
+                'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true',
                 'aria-label': eventSubject
             }
         });
         if (!isNullOrUndefined(this.cssClass)) {
             addClass([appointmentWrapper], this.cssClass);
+        }
+        if (record[this.fields.isReadonly]) {
+            addClass([appointmentWrapper], 'e-read-only');
         }
         var appointmentDetails = createElement('div', { className: APPOINTMENT_DETAILS });
         appointmentWrapper.appendChild(appointmentDetails);
@@ -12715,7 +13372,7 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
         }
         append(templateElement, appointmentDetails);
         this.appendEventIcons(record, appointmentDetails);
-        this.renderResizeHandler(appointmentWrapper, record.data);
+        this.renderResizeHandler(appointmentWrapper, record.data, record[this.fields.isReadonly]);
         return appointmentWrapper;
     };
     MonthEvent.prototype.appendEventIcons = function (record, appointmentDetails) {
@@ -12759,7 +13416,7 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
             if (this.cellHeight > this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight) {
                 var appointmentElement = this.createAppointmentElement(event, resIndex);
                 this.applyResourceColor(appointmentElement, event, 'backgroundColor', this.groupOrder);
-                this.wireAppointmentEvents(appointmentElement);
+                this.wireAppointmentEvents(appointmentElement, false, event[this.fields.isReadonly]);
                 setStyleAttribute(appointmentElement, { 'width': appWidth + 'px', 'top': appTop + 'px' });
                 this.renderEventElement(event, appointmentElement, cellTd);
             }
@@ -12835,7 +13492,8 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
         }
     };
     MonthEvent.prototype.renderEventElement = function (event, appointmentElement, cellTd) {
-        var args = { data: event, element: appointmentElement, cancel: false };
+        var eventType = appointmentElement.classList.contains(BLOCK_APPOINTMENT_CLASS) ? 'blockEvent' : 'event';
+        var args = { data: event, element: appointmentElement, cancel: false, type: eventType };
         this.parent.trigger(eventRendered, args);
         if (args.cancel) {
             this.renderedEvents.pop();
@@ -12920,7 +13578,9 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     VerticalView.prototype.onContentScroll = function (e) {
+        this.parent.removeNewEventElement();
         var target = e.target;
+        this.parent.notify(virtualScroll, e);
         this.scrollLeftPanel(target);
         this.scrollTopPanel(target);
         if (!this.parent.isAdaptive) {
@@ -12937,6 +13597,7 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     VerticalView.prototype.onApaptiveScroll = function (e) {
+        this.parent.removeNewEventElement();
         this.parent.uiStateValues.top = e.target.scrollTop;
     };
     VerticalView.prototype.scrollLeftPanel = function (target) {
@@ -13193,6 +13854,9 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
         if (!this.parent.activeViewOptions.timeScale.enable) {
             addClass([this.element], [TIMESCALE_DISABLE, this.viewClass]);
         }
+        if (this.parent.activeViewOptions.allowVirtualScrolling) {
+            clsList.push(VIRTUAL_SCROLL_CLASS);
+        }
         this.renderPanel(type);
         addClass([this.element], clsList);
         this.element.appendChild(this.createTableLayout(OUTER_TABLE_CLASS));
@@ -13334,8 +13998,7 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
             if (!isNullOrUndefined(td.groupIndex)) {
                 tdEle.setAttribute('data-group-index', '' + td.groupIndex);
             }
-            EventHandler.add(tdEle, 'click', this.workCellAction.cellClick, this.workCellAction);
-            EventHandler.add(tdEle, 'dblclick', this.workCellAction.cellDblClick, this.workCellAction);
+            this.wireMouseEvents(tdEle);
         }
         var args = { elementType: td.type, element: tdEle, date: td.date, groupIndex: td.groupIndex };
         this.parent.trigger(renderCell, args);
@@ -13343,8 +14006,13 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
     };
     VerticalView.prototype.wireCellEvents = function (element) {
         EventHandler.add(element, 'mousedown', this.workCellAction.cellMouseDown, this.workCellAction);
+        this.wireMouseEvents(element);
+    };
+    VerticalView.prototype.wireMouseEvents = function (element) {
         EventHandler.add(element, 'click', this.workCellAction.cellClick, this.workCellAction);
-        EventHandler.add(element, 'dblclick', this.workCellAction.cellDblClick, this.workCellAction);
+        if (!this.parent.isAdaptive) {
+            EventHandler.add(element, 'dblclick', this.workCellAction.cellDblClick, this.workCellAction);
+        }
     };
     VerticalView.prototype.renderTimeCells = function () {
         var _this = this;
@@ -13701,6 +14369,8 @@ var Month = /** @__PURE__ @class */ (function (_super) {
         // Here cell click
     };
     Month.prototype.onContentScroll = function (e) {
+        this.parent.removeNewEventElement();
+        this.parent.notify(virtualScroll, e);
         this.scrollTopPanel(e.target);
         this.scrollLeftPanel(e.target);
     };
@@ -13791,6 +14461,9 @@ var Month = /** @__PURE__ @class */ (function (_super) {
         if (this.parent.activeViewOptions.group.byDate) {
             clsList.push('e-by-date');
         }
+        if (this.parent.activeViewOptions.allowVirtualScrolling) {
+            clsList.push(VIRTUAL_SCROLL_CLASS);
+        }
         addClass([this.element], clsList);
         this.renderPanel(type);
         this.element.appendChild(this.createTableLayout(OUTER_TABLE_CLASS));
@@ -13806,7 +14479,9 @@ var Month = /** @__PURE__ @class */ (function (_super) {
     Month.prototype.wireCellEvents = function (element) {
         EventHandler.add(element, 'mousedown', this.workCellAction.cellMouseDown, this.workCellAction);
         EventHandler.add(element, 'click', this.workCellAction.cellClick, this.workCellAction);
-        EventHandler.add(element, 'dblclick', this.workCellAction.cellDblClick, this.workCellAction);
+        if (!this.parent.isAdaptive) {
+            EventHandler.add(element, 'dblclick', this.workCellAction.cellDblClick, this.workCellAction);
+        }
     };
     Month.prototype.renderHeader = function () {
         var tr = createElement('tr');
@@ -13992,12 +14667,13 @@ var Month = /** @__PURE__ @class */ (function (_super) {
             start: firstDateOfMonth(monthDate),
             end: lastDateOfMonth(addMonths(monthDate, this.parent.activeViewOptions.interval - 1))
         };
-        this.renderContentTable(tbl);
-        this.wireCellEvents(tbl.querySelector('tbody'));
+        var tBody = tbl.querySelector('tbody');
+        append(this.getContentRows(), tBody);
+        this.wireCellEvents(tBody);
         return tbl;
     };
-    Month.prototype.renderContentTable = function (table) {
-        var tbody = table.querySelector('tbody');
+    Month.prototype.getContentRows = function () {
+        var trows = [];
         var tr = createElement('tr', { attrs: { role: 'row' } });
         var td = createElement('td', { attrs: { role: 'gridcell', 'aria-selected': 'false' } });
         var slotDatas = this.getContentSlots();
@@ -14007,8 +14683,9 @@ var Month = /** @__PURE__ @class */ (function (_super) {
                 var ntd = this.createContentTd(slotDatas[row][col], td);
                 ntr.appendChild(ntd);
             }
-            tbody.appendChild(ntr);
+            trows.push(ntr);
         }
+        return trows;
     };
     Month.prototype.createContentTd = function (data, td) {
         var ntd = td.cloneNode();
@@ -14200,7 +14877,7 @@ var AgendaBase = /** @__PURE__ @class */ (function () {
                         'data-guid': listData[li].Guid,
                         'role': 'button',
                         'tabindex': '0',
-                        'aria-readonly': 'false',
+                        'aria-readonly': this.parent.eventBase.getReadonlyAttribute(listData[li]),
                         'aria-selected': 'false',
                         'aria-grabbed': 'true',
                         'aria-label': (listData[li][this.parent.eventFields.subject]
@@ -15103,6 +15780,8 @@ var __extends$23 = (undefined && undefined.__extends) || (function () {
     };
 })();
 var EVENT_GAP$1 = 2;
+var BLOCK_INDICATOR_WIDTH = 22;
+var BLOCK_INDICATOR_HEIGHT = 18;
 /**
  * Timeline view events render
  */
@@ -15118,6 +15797,7 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
         _this.slotCount = _this.parent.activeViewOptions.timeScale.slotCount;
         _this.interval = _this.parent.activeViewOptions.timeScale.interval;
         _this.day = 0;
+        _this.rowIndex = 0;
         _this.renderType = type;
         _this.appContainers = [].slice.call(_this.element.querySelectorAll('.' + APPOINTMENT_CONTAINER_CLASS));
         _this.dayLength = _this.element.querySelectorAll('.' + CONTENT_TABLE_CLASS + ' tbody tr')[0].children.length;
@@ -15127,6 +15807,15 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
     TimelineEvent.prototype.getSlotDates = function () {
         this.slots = [];
         this.slots.push(this.parent.activeView.renderDates.map(function (date) { return +date; }));
+        if (this.parent.headerRows.length > 0 &&
+            this.parent.headerRows[this.parent.headerRows.length - 1].option !== 'Hour') {
+            this.renderType = 'day';
+            this.cellWidth = this.content.offsetWidth / this.dateRender.length;
+            this.slotsPerDay = 1;
+        }
+        else {
+            this.slotsPerDay = (this.dayLength / this.dateRender.length);
+        }
     };
     TimelineEvent.prototype.getOverlapEvents = function (date, appointments) {
         var appointmentsList = [];
@@ -15154,22 +15843,13 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
     TimelineEvent.prototype.renderResourceEvents = function () {
         var resources = this.parent.uiStateValues.isGroupAdaptive ?
             [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] :
-            this.parent.resourceBase.lastResourceLevel;
+            this.parent.resourceBase.renderedResources;
         for (var i = 0; i < resources.length; i++) {
+            this.rowIndex = i;
             this.renderEventsHandler(this.parent.activeView.renderDates, this.parent.activeViewOptions.workDays, resources[i]);
         }
     };
     TimelineEvent.prototype.renderEvents = function (event, resIndex) {
-        if (this.parent.headerRows.length > 0 &&
-            this.parent.headerRows[this.parent.headerRows.length - 1].option !== 'Hour') {
-            this.renderType = 'day';
-            this.cellWidth = this.content.offsetWidth / this.dateRender.length;
-            this.slotsPerDay = 1;
-        }
-        else {
-            this.slotsPerDay = (this.dayLength / this.dateRender.length);
-        }
-        var wrapIndex = this.parent.uiStateValues.isGroupAdaptive ? 0 : resIndex;
         var eventData = event.data;
         var startTime = this.getStartTime(event, eventData);
         var endTime = this.getEndTime(event, eventData);
@@ -15177,30 +15857,19 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
         if (this.day < 0) {
             return;
         }
-        var currentDate = resetTime(new Date(this.dateRender[this.day].getTime()));
-        var schedule = getStartEndHours(currentDate, this.startHour, this.endHour);
+        var cellTd = this.getCellTd();
         var overlapCount = this.getIndex(startTime);
         event.Index = overlapCount;
         var appHeight = this.eventHeight;
         var diffInDays = eventData.count;
         if (startTime <= endTime) {
-            var appWidth = 0;
+            var appWidth = this.getEventWidth(startTime, endTime, event[this.fields.isAllDay], diffInDays);
+            appWidth = this.renderType === 'day' ? appWidth - 2 : appWidth;
             var appLeft = 0;
             var appRight = 0;
-            var position = 0;
-            if (this.renderType === 'day' || event[this.fields.isAllDay]) {
-                appWidth = this.renderType === 'day' ? (((diffInDays * this.slotsPerDay) * this.cellWidth) - 2) :
-                    ((diffInDays * this.slotsPerDay) * this.cellWidth);
-                position = ((this.day * this.slotsPerDay) * this.cellWidth);
-            }
-            else {
-                appWidth = this.getNormalEventsWidth(startTime, endTime, diffInDays);
-                position = this.getPosition(schedule, startTime, endTime, this.day);
-                position = position * this.cellWidth;
-            }
-            appWidth = (appWidth === 0) ? this.cellWidth : appWidth; // appWidth 0 when start and end time as same
+            var position = this.getPosition(startTime, endTime, event[this.fields.isAllDay], this.day);
+            appWidth = (appWidth <= 0) ? this.cellWidth : appWidth; // appWidth 0 when start and end time as same
             this.renderedEvents.push(extend({}, event, null, true));
-            var cellTd = this.appContainers[wrapIndex];
             var top_1 = this.getRowTop(resIndex);
             var appTop = (top_1 + EVENT_GAP$1) + (overlapCount * (appHeight + EVENT_GAP$1));
             appLeft = (this.parent.enableRtl) ? 0 : position;
@@ -15208,20 +15877,19 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
             if (this.cellHeight > ((overlapCount + 1) * (appHeight + EVENT_GAP$1)) + this.moreIndicatorHeight) {
                 var appointmentElement = this.createAppointmentElement(event, resIndex);
                 this.applyResourceColor(appointmentElement, event, 'backgroundColor', this.groupOrder);
-                this.wireAppointmentEvents(appointmentElement);
                 setStyleAttribute(appointmentElement, {
                     'width': appWidth + 'px', 'left': appLeft + 'px', 'right': appRight + 'px', 'top': appTop + 'px'
                 });
+                this.wireAppointmentEvents(appointmentElement, false, event[this.fields.isReadonly]);
                 this.renderEventElement(event, appointmentElement, cellTd);
             }
             else {
                 for (var i = 0; i < diffInDays; i++) {
-                    var cellTd_1 = this.appContainers[wrapIndex];
-                    var moreIndicator = cellTd_1.querySelector('.' + MORE_INDICATOR_CLASS);
+                    var moreIndicator = cellTd.querySelector('.' + MORE_INDICATOR_CLASS);
                     var appPos = (this.parent.enableRtl) ? appRight : appLeft;
                     appPos = (Math.floor(appPos / this.cellWidth) * this.cellWidth);
-                    if ((cellTd_1 && isNullOrUndefined(moreIndicator)) ||
-                        (!this.isAlreadyAvail(appPos, cellTd_1))) {
+                    if ((cellTd && isNullOrUndefined(moreIndicator)) ||
+                        (!this.isAlreadyAvail(appPos, cellTd))) {
                         var interval = this.interval / this.slotCount;
                         var startDate = new Date(this.dateRender[this.day + i].getTime());
                         var endDate = addDays(this.dateRender[this.day + i], 1);
@@ -15249,7 +15917,7 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
                         moreIndicatorElement.style.width = this.cellWidth + 'px';
                         moreIndicatorElement.style.left = (Math.floor(appLeft / this.cellWidth) * this.cellWidth) + 'px';
                         moreIndicatorElement.style.right = (Math.floor(appRight / this.cellWidth) * this.cellWidth) + 'px';
-                        this.renderElement(cellTd_1, moreIndicatorElement);
+                        this.renderElement(cellTd, moreIndicatorElement);
                         EventHandler.add(moreIndicatorElement, 'click', this.moreIndicatorClick, this);
                     }
                 }
@@ -15300,12 +15968,15 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
         }
         return endTime;
     };
-    TimelineEvent.prototype.getNormalEventsWidth = function (startDate, endDate, diffInDays) {
+    TimelineEvent.prototype.getEventWidth = function (startDate, endDate, isAllDay, count) {
+        if (this.renderType === 'day' || isAllDay) {
+            return (count * this.slotsPerDay) * this.cellWidth;
+        }
         if (this.isSameDay(startDate, endDate)) {
             return this.getSameDayEventsWidth(startDate, endDate);
         }
         else {
-            return this.getSpannedEventsWidth(startDate, endDate, diffInDays);
+            return this.getSpannedEventsWidth(startDate, endDate, count);
         }
     };
     TimelineEvent.prototype.getSameDayEventsWidth = function (startDate, endDate) {
@@ -15333,7 +16004,7 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
         var endDay = this.parent.getIndexOfDate(this.dateRender, resetTime(new Date(endTime.getTime())));
         return (startDay === endDay);
     };
-    TimelineEvent.prototype.getAppointmentLeft = function (schedule, startTime, endTime, day) {
+    TimelineEvent.prototype.getAppointmentLeft = function (schedule, startTime, day) {
         var slotTd = (this.isSameDay(startTime, schedule.startHour)) ?
             ((startTime.getTime() - schedule.startHour.getTime()) / ((60 * 1000) * this.interval)) * this.slotCount : 0;
         if (day === 0) {
@@ -15344,19 +16015,26 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
             return (daySlot * day) + slotTd;
         }
     };
-    TimelineEvent.prototype.getPosition = function (schedule, startTime, endTime, day) {
+    TimelineEvent.prototype.getPosition = function (startTime, endTime, isAllDay, day) {
+        if (this.renderType === 'day' || isAllDay) {
+            return (day * this.slotsPerDay) * this.cellWidth;
+        }
+        var currentDate = resetTime(new Date(this.dateRender[day].getTime()));
+        var schedule = getStartEndHours(currentDate, this.startHour, this.endHour);
+        var cellIndex;
         if (schedule.endHour.getTime() <= endTime.getTime() && schedule.startHour.getTime() >= startTime.getTime()) {
-            return this.getAppointmentLeft(schedule, schedule.startHour, schedule.endHour, day);
+            cellIndex = this.getAppointmentLeft(schedule, schedule.startHour, day);
         }
         else if (schedule.endHour.getTime() <= endTime.getTime()) {
-            return this.getAppointmentLeft(schedule, startTime, schedule.endHour, day);
+            cellIndex = this.getAppointmentLeft(schedule, startTime, day);
         }
         else if (schedule.startHour.getTime() >= startTime.getTime()) {
-            return this.getAppointmentLeft(schedule, schedule.startHour, endTime, day);
+            cellIndex = this.getAppointmentLeft(schedule, schedule.startHour, day);
         }
         else {
-            return this.getAppointmentLeft(schedule, startTime, endTime, day);
+            cellIndex = this.getAppointmentLeft(schedule, startTime, day);
         }
+        return cellIndex * this.cellWidth;
     };
     TimelineEvent.prototype.getFilterEvents = function (startDate, endDate, startTime, endTime, gIndex) {
         if (this.renderType === 'day') {
@@ -15381,11 +16059,35 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
     };
     TimelineEvent.prototype.getRowTop = function (resIndex) {
         if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
-            var tr = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS +
-                ' tbody tr:nth-child(' + (resIndex + 1) + ')');
-            return tr.offsetTop;
+            var td = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS + ' ' + 'tbody td[data-group-index="'
+                + resIndex.toString() + '"]');
+            return td.offsetTop;
         }
         return 0;
+    };
+    TimelineEvent.prototype.getCellTd = function () {
+        var wrapIndex = this.parent.uiStateValues.isGroupAdaptive ? 0 : this.rowIndex;
+        return this.appContainers[wrapIndex];
+    };
+    TimelineEvent.prototype.renderBlockIndicator = function (cellTd, position, resIndex) {
+        // No need to render block icon for Year, Month and Week header rows
+        if (this.parent.headerRows.length > 0 &&
+            (this.parent.headerRows[this.parent.headerRows.length - 1].option !== 'Hour' ||
+                this.parent.headerRows[this.parent.headerRows.length - 1].option !== 'Date')) {
+            return;
+        }
+        position = (Math.floor(position / this.cellWidth) * this.cellWidth) + this.cellWidth - BLOCK_INDICATOR_WIDTH;
+        if (!this.isAlreadyAvail(position, cellTd)) {
+            var blockIndicator = createElement('div', { className: 'e-icons ' + BLOCK_INDICATOR_CLASS });
+            if (this.parent.enableRtl) {
+                blockIndicator.style.right = position + 'px';
+            }
+            else {
+                blockIndicator.style.left = position + 'px';
+            }
+            blockIndicator.style.top = this.getRowTop(resIndex) + this.cellHeight - BLOCK_INDICATOR_HEIGHT + 'px';
+            this.renderElement(cellTd, blockIndicator);
+        }
     };
     return TimelineEvent;
 }(MonthEvent));
@@ -15675,16 +16377,19 @@ var TimelineViews = /** @__PURE__ @class */ (function (_super) {
         this.collapseRows(wrap);
         workTd.appendChild(wrap);
         tr.appendChild(workTd);
+        if (this.parent.virtualScrollModule) {
+            this.parent.virtualScrollModule.renderVirtualTrack(wrap);
+        }
         this.element.querySelector('tbody').appendChild(tr);
     };
     TimelineViews.prototype.getRowCount = function () {
         if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
-            return this.parent.resourceBase.lastResourceLevel.length;
+            return this.parent.resourceBase.renderedResources.length;
         }
         return 1;
     };
     TimelineViews.prototype.getResourceTdData = function (i, tdData) {
-        var resLevel = this.parent.resourceBase.lastResourceLevel[i];
+        var resLevel = this.parent.resourceBase.renderedResources[i];
         var resSHr = resLevel.resourceData[resLevel.resource.startHourField] || this.parent.workHours.start;
         var resEHr = resLevel.resourceData[resLevel.resource.endHourField] || this.parent.workHours.end;
         tdData.startHour = this.parent.globalize.parseDate(resSHr, { skeleton: 'Hm' });
@@ -15696,8 +16401,12 @@ var TimelineViews = /** @__PURE__ @class */ (function (_super) {
         return tdData;
     };
     TimelineViews.prototype.renderContentTable = function (table) {
-        var tr = createElement('tr', { attrs: { role: 'row' } });
         var tBody = table.querySelector('tbody');
+        append(this.getContentRows(), tBody);
+    };
+    TimelineViews.prototype.getContentRows = function () {
+        var rows = [];
+        var tr = createElement('tr', { attrs: { role: 'row' } });
         var td = createElement('td', { attrs: { role: 'gridcell', 'aria-selected': 'false' } });
         var trCount = this.getRowCount();
         for (var i = 0; i < trCount; i++) {
@@ -15710,9 +16419,9 @@ var TimelineViews = /** @__PURE__ @class */ (function (_super) {
                 var ntd = this.createContentTd(tdData, tdData, td);
                 ntr.appendChild(ntd);
             }
-            tBody.appendChild(ntr);
+            rows.push(ntr);
         }
-        table.appendChild(tBody);
+        return rows;
     };
     TimelineViews.prototype.getContentTdClass = function (r) {
         return (r.first || !this.parent.activeViewOptions.timeScale.enable) ? [WORK_CELLS_CLASS] :
@@ -15816,11 +16525,14 @@ var TimelineMonth = /** @__PURE__ @class */ (function (_super) {
         this.collapseRows(wrap);
         EventHandler.add(wrap, 'scroll', this.onContentScroll, this);
         contentTd.appendChild(wrap);
+        if (this.parent.virtualScrollModule) {
+            this.parent.virtualScrollModule.renderVirtualTrack(wrap);
+        }
         contentTr.appendChild(contentTd);
     };
     TimelineMonth.prototype.getRowCount = function () {
         if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
-            return this.parent.resourceBase.lastResourceLevel.length;
+            return this.parent.resourceBase.renderedResources.length;
         }
         return 1;
     };
@@ -15831,7 +16543,7 @@ var TimelineMonth = /** @__PURE__ @class */ (function (_super) {
                 var data = _a[_i];
                 data.className = [WORK_CELLS_CLASS];
                 if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
-                    var resLevel = this.parent.resourceBase.lastResourceLevel[row];
+                    var resLevel = this.parent.resourceBase.renderedResources[row];
                     data.workDays = resLevel.resourceData[resLevel.resource.workDaysField] || this.parent.workDays;
                     data.className = data.className.concat(resLevel.className);
                     data.groupIndex = resLevel.groupIndex;
@@ -15893,5 +16605,5 @@ var TimelineMonth = /** @__PURE__ @class */ (function (_super) {
  * Export Schedule components
  */
 
-export { Schedule, cellClick, cellDoubleClick, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, contentReady, scroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, tapHoldReady, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getWeekFirstDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, Resize, DragAndDrop, HeaderRenderer, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, Timezone, timezoneData, RecurrenceEditor };
+export { Schedule, cellClick, cellDoubleClick, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, Resize, DragAndDrop, HeaderRenderer, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, Timezone, timezoneData, RecurrenceEditor };
 //# sourceMappingURL=ej2-schedule.es5.js.map

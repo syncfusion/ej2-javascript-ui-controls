@@ -196,7 +196,7 @@ export interface ShapeStyleModel {
 
     /**
      * Sets the fill color of a shape/path
-     * @default 'white'
+     * @default 'transparent'
      */
     fill?: string;
 

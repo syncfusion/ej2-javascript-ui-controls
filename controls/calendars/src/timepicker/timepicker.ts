@@ -172,7 +172,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * Specifies the component to act as strict so that, it allows to enter only a valid time value within a specified range or else 
      * resets to previous value. By default, strictMode is in false.
      * > For more details refer to 
-     * [`Strict Mode`] (https://ej2.syncfusion.com/documentation/timepicker/strict-mode.html?lang=typescript) documentation.
+     * [`Strict Mode`](https://ej2.syncfusion.com/documentation/timepicker/strict-mode?lang=typescript) documentation.
      * @default false
      */
     @Property(false)
@@ -181,7 +181,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * Specifies the format of value that is to be displayed in component. By default, the format is
      * based on the culture. 
      * > For more details refer to 
-     * [`Format`](./getting-started.html#setting-the-time-format) documentation.
+     * [`Format`](../timepicker/getting-started#setting-the-time-format) documentation.
      * @default null
      */
     @Property(null)
@@ -239,7 +239,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     /**
      * Specifies the time interval between the two adjacent time values in the popup list. 
      * > For more details refer to 
-     * [`Format`](./getting-started.html#setting-the-time-format)documentation.
+     * [`Format`](../timepicker/getting-started#setting-the-time-format)documentation.
      * @default 30
      * 
      */
@@ -263,7 +263,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     /**
      * Gets or sets the minimum time value that can be allowed to select in TimePicker.
      * > For more details refer to 
-     * [`Time Range`](https://ej2.syncfusion.com/documentation/timepicker/time-range.html?lang=typescript) documentation.
+     * [`Time Range`](https://ej2.syncfusion.com/documentation/timepicker/time-range?lang=typescript) documentation.
      * @default 00:00
      */
     @Property(null)
@@ -271,7 +271,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     /**
      * Gets or sets the maximum time value that can be allowed to select in TimePicker.
      * > For more details refer to 
-     * [`Time Range`](https://ej2.syncfusion.com/documentation/timepicker/time-range.html?lang=typescript) documentation.
+     * [`Time Range`](https://ej2.syncfusion.com/documentation/timepicker/time-range?lang=typescript) documentation.
      * @default 00:00
      */
     @Property(null)
@@ -906,6 +906,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     this.hide();
                     addClass([this.inputWrapper.container], FOCUS);
                     this.isNavigate = false;
+                    event.stopPropagation();
                     break;
                 case 'open':
                     this.show(event);
@@ -1521,7 +1522,9 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             this.prevValue = this.getValue(date);
         }
         this.prevDate = this.valueWithMinutes = date;
-        this.setProperties({ value: date }, true);
+        if ((this.value && +new Date(+this.value).setMilliseconds(0)) !== +date) {
+            this.setProperties({ value: date }, true);
+        }
     }
     protected setActiveDescendant(): void {
         if (!isNullOrUndefined(this.selectedElement)) {
@@ -1884,7 +1887,9 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                         this.setProperties({ value: this.checkDateValue(new Date(newProp.value)) }, true);
                         newProp.value = this.value;
                     } else {
-                        newProp.value = this.checkDateValue(new Date('' + newProp.value));
+                        if ((newProp.value && +new Date(+newProp.value).setMilliseconds(0)) !== +this.value) {
+                            newProp.value = this.checkDateValue(new Date('' + newProp.value));
+                        }
                     }
                     this.initValue = newProp.value;
                     newProp.value = this.compareFormatChange(this.checkValue(newProp.value));

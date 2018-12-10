@@ -1,4 +1,4 @@
-@include export-module('pivotfieldlist-theme') {
+@include export-module('field-list-theme') {
 
   /*! field-list theme */
 
@@ -54,9 +54,45 @@
     max-width: 700px;
     min-width: 300px;
 
+    .e-layout-footer {
+      padding: 10px 2px 2px;
+      text-align: right;
+
+      .e-defer-apply-button {
+        margin-right: 10px;
+      }
+    }
+
+    .e-checkbox-layout {
+      float: left;
+      margin-top: 6px;
+    }
+
+    &.e-rtl {
+      .e-layout-footer {
+        text-align: left;
+
+        .e-defer-apply-button {
+          margin-left: 10px;
+        }
+      }
+    }
+
     // sass-lint:disable-all
     &.e-dialog {
       max-height: 550px !important;
+
+      .e-layout-footer {
+        padding: 0;
+      }
+
+      .e-checkbox-layout {
+        margin-left: 10px;
+      }
+
+      .e-button-layout {
+        margin-right: 10px;
+      }
     }
     // sass-lint:enable-all
 
@@ -278,7 +314,8 @@
 
                   .e-sort,
                   .e-pv-filter,
-                  .e-pv-filtered {
+                  .e-pv-filtered,
+                  .e-dropdown-icon, {
                     color: $field-list-button-active-color;
                   }
                 }
@@ -311,7 +348,8 @@
 
                 .e-sort,
                 .e-pv-filter,
-                .e-pv-filtered {
+                .e-pv-filtered,
+                .e-dropdown-icon, {
                   color: $pivotgrid-button-icon-color;
                   cursor: pointer;
                   display: inline-block;
@@ -345,7 +383,8 @@
                   .e-sort,
                   .e-pv-filter,
                   .e-pv-filtered,
-                  .e-remove {
+                  .e-remove,
+                  .e-dropdown-icon, {
                     padding-left: 0;
                     padding-right: $field-list-icon-to-icon-padding;
                   }
@@ -372,7 +411,7 @@
 
           .e-draggable-prompt {
             bottom: 32%;
-            color: $field-list-default-border-color;
+            color: $field-list-default-prompt-color;
             font-size: $field-list-content-font-size;
             height: 25px;
             pointer-events: none;
@@ -451,7 +490,7 @@
     &.e-static {
       background-color: $field-list-default-bg-color;
       border: $field-list-border-size $field-list-border-type $field-list-default-border-color;
-      max-height: 670px;
+      max-height: 700px;
       padding: $field-list-static-padding-size;
       position: relative;
 
@@ -620,7 +659,8 @@
                 .e-sort,
                 .e-pv-filter,
                 .e-pv-filtered,
-                .e-remove {
+                .e-remove,
+                .e-dropdown-icon, {
                   color: $pivotgrid-button-icon-color;
                   cursor: pointer;
                   display: inline-block;
@@ -656,7 +696,8 @@
                   .e-sort,
                   .e-pv-filter,
                   .e-pv-filtered,
-                  .e-remove {
+                  .e-remove,
+                  .e-dropdown-icon, {
                     padding-left: 0;
                     padding-right: 10px;
                   }
@@ -788,7 +829,8 @@
 
         .e-field-list-btn,
         .e-calculated-field-btn,
-        .e-cancel-btn {
+        .e-cancel-btn,
+        .e-defer-apply-button {
           float: right;
           height: $field-list-adaptive-btn-size;
           pointer-events: all;
@@ -801,7 +843,8 @@
           }
         }
 
-        .e-cancel-btn {
+        .e-cancel-btn,
+        .e-defer-apply-button {
           float: left;
         }
       }
@@ -827,7 +870,8 @@
             float: left;
           }
 
-          .e-cancel-btn {
+          .e-cancel-btn,
+          .e-defer-apply-button {
             float: right;
           }
         }
@@ -947,7 +991,8 @@
 
               .e-sort,
               .e-pv-filter,
-              .e-pv-filtered {
+              .e-pv-filtered,
+              .e-dropdown-icon, {
                 cursor: pointer;
                 display: inline-block;
                 font-size: $field-list-bigger-icon-size;
@@ -974,6 +1019,8 @@
     }
     
     &.e-static {
+	  max-height: 720px;
+
       .e-field-list-container {
         .e-center-title {
           color: $field-list-default-header-font-color;
@@ -1046,7 +1093,8 @@
             .e-sort,
             .e-pv-filter,
             .e-pv-filtered,
-            .e-remove {
+            .e-remove,
+            .e-dropdown-icon, {
               padding-left: 0;
               padding-right: $field-list-bigger-icon-to-icon-padding;
             }

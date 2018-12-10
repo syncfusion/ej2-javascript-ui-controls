@@ -16,7 +16,8 @@ document.getElementById('alertdlg1').onclick= function(): void {
         showCloseIcon: true,
         closeOnEscape: true,
         content: 'This is an Alert Dialog!',
-        okButton: {  text: 'OK', click: okClick }
+        okButton: {  text: 'OK', click: okClick },
+        animationSettings: { effect:'Zoom' }
     });
 };
 function okClick(): void {
@@ -30,7 +31,8 @@ document.getElementById('confirmdlgbtn1').onclick= function(): void {
         closeOnEscape: true,
         content: "This is a Confirmation Dialog!",
         okButton: {  text: 'OK', click: okClick },
-        cancelButton: {  text: 'Cancel', click: cancelClick }
+        cancelButton: {  text: 'Cancel', click: cancelClick },
+        animationSettings: { effect:'Zoom' }
     });
 };
 function cancelClick(): void {

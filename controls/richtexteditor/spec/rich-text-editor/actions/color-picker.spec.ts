@@ -2,10 +2,10 @@
  * RTE - Color-picker action spec
  */
 import { Browser } from "@syncfusion/ej2-base";
-import { RichTextEditor, Toolbar, HtmlEditor } from './../../../src/index';
+import { RichTextEditor, Toolbar } from './../../../src/index';
 import { detach } from '@syncfusion/ej2-base';
 import { renderRTE, destroy } from "./../render.spec";
-RichTextEditor.Inject(Toolbar, HtmlEditor);
+RichTextEditor.Inject(Toolbar);
 
 describe("'FontColor and BackgroundColor' - ColorPicker render testing", () => {
     let rteEle: HTMLElement;

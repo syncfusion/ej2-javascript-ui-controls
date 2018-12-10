@@ -3,7 +3,7 @@
  */
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../src/diagram/diagram';
-import { Path } from '../../src/diagram/objects/node';
+import { Path, SwimLane } from '../../src/diagram/objects/node';
 
 import { BpmnDiagrams } from '../../src/diagram/objects/bpmn';
 import { NodeModel } from '../../src/diagram/objects/node-model';
@@ -15,7 +15,7 @@ import {
 } from '../../src/symbol-palette/index';
 
 import { MouseEvents } from '../diagram/interaction/mouseevents.spec';
-import { PaletteModel, IElement, PointModel, PortVisibility, PortConstraints } from '../../src/index';
+import { PaletteModel, IElement, PointModel, PortVisibility, PortConstraints, IDragEnterEventArgs } from '../../src/index';
 import { EJ2Instance } from '@syncfusion/ej2-navigations';
 Diagram.Inject(BpmnDiagrams);
 SymbolPalette.Inject(BpmnDiagrams);
@@ -227,7 +227,7 @@ describe('Symbol Palette - Group', () => {
         });
         it('Checking default palette rendering with group Symbol with offset', (done: Function) => {
             setTimeout(() => {
-                //just for coverage
+                // just for coverage
                 let events: MouseEvents = new MouseEvents();
                 events.mouseDownEvent(palette.element, 70, 125, false, false);
                 events.mouseMoveEvent(palette.element, 150, 150, false, false);
@@ -356,7 +356,7 @@ describe('Symbol Palette - Group', () => {
         });
         it('Checking default palette rendering with group Symbol with offset', (done: Function) => {
             setTimeout(() => {
-                //just for coverage
+                // just for coverage
                 let events: MouseEvents = new MouseEvents();
                 events.mouseDownEvent(palette.element, 70, 125, false, false);
                 events.mouseMoveEvent(palette.element, 150, 150, false, false);
@@ -496,6 +496,251 @@ describe('Symbol Palette - Group', () => {
                 events.mouseUpEvent(diagram.element, 300, 300, false, false);
                 expect(diagram.nodes.length).toBe(3);
             });
+        });
+    });
+});
+
+describe('SymbolPalette - swimLane', () => {
+    describe('Testing symbol palette with swimlane Symbols', () => {
+        let diagram: Diagram;
+        let palette: SymbolPalette;
+        let ele: HTMLElement;
+
+        let palettes: PaletteModel[] = [
+            {
+                id: 'swimlaneShapes', expanded: true,
+                title: 'Swimlane Shapes',
+                symbols: [
+                    {
+                        id: 'stackCanvas1',
+                        shape: {
+                            type: 'SwimLane',
+                            lanes: [
+                                {
+                                    id: 'lane1',
+                                    style: { fill: '#f5f5f5'}, height: 60, width: 150,
+                                    header:{ width: 50, height: 50, style: {fill:'#C7D4DF', fontSize: 11} },
+                                }
+                            ],
+                            orientation: 'Horizontal', isLane: true
+                        },
+                        height: 140,
+                        width: 60,
+                        style: { fill: '#f5f5f5'},
+                    }, {
+                        id: 'stackCanvas2',
+                        shape: {
+                            type: 'SwimLane',
+                            lanes: [
+                                {
+                                    id: 'lane1',
+                                    style: { fill: '#f5f5f5'}, height: 60, width: 150,
+                                    header:{ width: 50, height: 50, style: {fill:'#C7D4DF', fontSize: 11} },
+                                }
+                            ],
+                            orientation: 'Vertical', isLane: true
+                        },
+                        height: 140,
+                        width: 60,
+                        style: { fill: '#f5f5f5'},
+                    }
+                ]
+            }
+        ];
+        beforeAll((): void => {
+            ele = createElement('div', { styles: 'width:100%;height:500px;' });
+            ele.appendChild(createElement('div', { id: 'symbolPaletteSwimlane1', styles: 'width:25%;height:500px;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'diagramSwimlane1', styles: 'width:74%;height:500px;float:left;' }));
+            document.body.appendChild(ele);
+
+            diagram = new Diagram({
+                pageSettings: { background: { color: 'transparent' } },
+                width: '74%', height: '600px'
+            });
+            diagram.appendTo('#diagramSwimlane1');
+
+            palette = new SymbolPalette({
+                width: '250px', height: '100%',
+                palettes: palettes,
+                expandMode: 'Multiple',
+                enableAnimation: false, symbolHeight: 50, symbolWidth: 50,
+                symbolPreview: { height: 100, width: 100 }
+            });
+            palette.appendTo('#symbolPaletteSwimlane1');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            palette.destroy();
+            ele.remove();
+        });
+        it('Checking default palette rendering with swimlane symbols', (done: Function) => {
+            expect(
+                ('stackCanvas1' in palette.symbolTable) &&
+                ('stackCanvas2' in palette.symbolTable)
+            ).toBe(true);
+            done();
+        });
+        it('Checking default palette rendering with lanes with html elements', (done: Function) => {
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let position: PointModel = palette['getMousePosition'](e.sender);
+                let target = document.elementFromPoint(position.x, position.y).childNodes[0];
+                let symbols: IElement = palette.symbolTable['stackCanvas1'];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+            diagram.dragEnter = (arg) => {
+                expect(arg.source instanceof SymbolPalette).toBe(true);
+                done();
+            }
+            diagram.dragOver = (arg) => {
+                expect(arg.diagram !== undefined).toBe(true);
+                done();
+            }
+            diagram.drop = (arg) => {
+                expect((arg.element as NodeModel).id === diagram.currentSymbol.id).toBe(true);
+                done();
+            }
+            let events: MouseEvents = new MouseEvents();
+            expect(diagram.nodes.length === 0).toBe(true);
+            events.mouseDownEvent(palette.element, 54, 103  , false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
+            events.mouseMoveEvent(diagram.element, 300, 300, false, false);
+            events.mouseUpEvent(diagram.element, 300, 300, false, false);
+            expect(diagram.nodes.length > 0).toBe(true);
+            diagram.clear();
+            done();
+        });
+    });
+    describe('Testing symbol palette with group Symbols', () => {
+        let diagram: Diagram;
+        let palette: SymbolPalette;
+        let ele: HTMLElement;
+
+        let palettes: PaletteModel[] = [
+            {
+                id: 'swimlaneShapes', expanded: true,
+                title: 'Swimlane Shapes',
+                symbols: [
+                    {
+                        id: 'verticalPhase',
+                        shape: {
+                            type: 'SwimLane',
+                            phases: [{style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#A9A9A9'},}],
+                            annotations: [{text: ''}],
+                            orientation: 'Vertical', isPhase: true
+                        },
+                        height: 60,
+                        width: 140
+                    }, {
+                        id: 'horizontalPhase',
+                        shape: {
+                            type: 'SwimLane',
+                            phases: [{style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#A9A9A9'},}],
+                            annotations: [{text: ''}],
+                            orientation: 'Horizontal', isPhase: true
+                        },
+                        height: 60,
+                        width: 140
+                    }, {
+                        id: 'verticalPhase1',
+                        shape: {
+                            type: 'SwimLane',
+                            phases: [{style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#A9A9A9'},}],
+                            annotations: [{text: ''}],
+                            orientation: 'Vertical', isPhase: true
+                        }
+                    }, {
+                        id: 'horizontalPhase1',
+                        shape: {
+                            type: 'SwimLane',
+                            phases: [{style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#A9A9A9'},}],
+                            annotations: [{text: ''}],
+                            orientation: 'Horizontal', isPhase: true
+                        }
+                    }
+                ]
+            }
+        ];
+        beforeAll((): void => {
+            ele = createElement('div', { styles: 'width:100%;height:500px;' });
+            ele.appendChild(createElement('div', { id: 'symbolPaletteSwimlane2', styles: 'width:25%;height:500px;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'diagramSwimlane2', styles: 'width:74%;height:500px;float:left;' }));
+            document.body.appendChild(ele);
+
+            diagram = new Diagram({
+                pageSettings: { background: { color: 'transparent' } },
+                width: '74%', height: '600px'
+            });
+            diagram.appendTo('#diagramSwimlane2');
+
+            palette = new SymbolPalette({
+                width: '250px', height: '100%',
+                palettes: palettes,
+                expandMode: 'Multiple',
+                enableAnimation: false, symbolHeight: 50, symbolWidth: 50,
+                symbolPreview: { height: 100, width: 100 }
+            });
+            palette.appendTo('#symbolPaletteSwimlane2');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            palette.destroy();
+            ele.remove();
+        });
+        it('Checking default palette rendering with swimlane symbols', (done: Function) => {
+            expect(
+                ('verticalPhase' in palette.symbolTable) &&
+                ('horizontalPhase' in palette.symbolTable) &&
+                ('verticalPhase1' in palette.symbolTable) &&
+                ('horizontalPhase1' in palette.symbolTable)
+            ).toBe(true);
+            done();
+        });
+        it('Checking default palette rendering with phase Symbol with html elements', (done: Function) => {
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let position: PointModel = palette['getMousePosition'](e.sender);
+                let target = document.elementFromPoint(position.x, position.y).childNodes[0];
+                let symbols: IElement = palette.symbolTable['verticalPhase'];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+            diagram.dragEnter = (arg) => {
+                expect(arg.source instanceof SymbolPalette).toBe(true);
+                done();
+            }
+            diagram.dragOver = (arg) => {
+                expect(arg.diagram !== undefined).toBe(true);
+                done();
+            }
+            diagram.drop = (arg) => {
+                expect((arg.element as NodeModel).id === diagram.currentSymbol.id).toBe(true);
+                done();
+            }
+            let events: MouseEvents = new MouseEvents();
+            expect(diagram.nodes.length === 0).toBe(true);
+            events.mouseDownEvent(palette.element, 45, 85, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
+            events.mouseMoveEvent(diagram.element, 300, 300, false, false);
+            events.mouseUpEvent(diagram.element, 300, 300, false, false);
+            expect(diagram.nodes.length > 0).toBe(true);
+            diagram.clear();
+            done();
         });
     });
 });

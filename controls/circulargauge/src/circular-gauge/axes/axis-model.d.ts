@@ -541,6 +541,18 @@ export interface AxisModel {
     background?: string;
 
     /**
+     * Specifies the range gap property by pixel value.
+     * @default null
+     */
+    rangeGap?: number;
+
+    /**
+     * Specifies the start and end range gap.
+     * @default false
+     */
+    startAndEndRangeGap?: boolean;
+
+    /**
      * Options to customize the axis label.
      */
 

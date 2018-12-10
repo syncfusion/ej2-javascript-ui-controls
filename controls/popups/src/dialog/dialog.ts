@@ -8,7 +8,7 @@ import { Draggable } from '@syncfusion/ej2-base';
 import { Popup, PositionData, getZindexPartial } from '../popup/popup';
 import { PositionDataModel } from '../popup/popup-model';
 import { Button, ButtonModel } from '@syncfusion/ej2-buttons';
-
+import { createResize, removeResize, setMinHeight } from '../common/resize';
 export type ButtonType = 'Button' | 'Submit' | 'Reset';
 
 export class ButtonProps extends ChildProperty<ButtonProps> {
@@ -58,18 +58,21 @@ export class AnimationSettings extends ChildProperty<AnimationSettings> {
      * 14. SlideTop
      * 15. Zoom
      * 16. None
+     * @default 'Fade'
      */
     @Property('Fade')
     public effect: DialogEffect;
 
     /**
      * Specifies the duration in milliseconds that the animation takes to open or close the dialog.
+     * @default 400
      */
     @Property(400)
     public duration: number;
 
     /**
-     * Specifies the delay in milliseconds to start animation. 
+     * Specifies the delay in milliseconds to start animation.
+     * @default 0
      */
     @Property(0)
     public delay: number;
@@ -105,6 +108,9 @@ const DLG_UTIL_DEFAULT_TITLE: string = 'Information';
 const DLG_UTIL_ROOT: string = 'e-scroll-disabled';
 const DLG_UTIL_ALERT: string = 'e-alert-dialog';
 const DLG_UTIL_CONFIRM: string = 'e-confirm-dialog';
+const DLG_RESIZABLE: string = 'e-dlg-resizable';
+const DLG_RESTRICT_LEFT_VALUE: string = 'e-restrict-left';
+const DLG_RESTRICT_WIDTH_VALUE: string = 'e-resize-viewport';
 
 export interface BeforeOpenEventArgs {
     /**
@@ -236,6 +242,13 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      */
     @Property(true)
     public visible: boolean;
+    /**
+     * Specifies the value whether the dialog component can be resized by the end-user.
+     * If enableResize is true, the dialog component creates grip to resize it diagonal direction.
+     * @default false 
+     */
+    @Property(false)
+    public enableResize: boolean;
     /**
      * Specifies the height of the dialog component.
      * @default 'auto'
@@ -390,6 +403,24 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     @Event()
     public overlayClick: EmitType<Object>;
     /**
+     * Event triggers when the user begins to resize a dialog.
+     * @event
+     */
+    @Event()
+    public resizeStart: EmitType<Object>;
+    /**
+     * Event triggers when the user resize the dialog.
+     * @event
+     */
+    @Event()
+    public resizing: EmitType<Object>;
+    /**
+     * Event triggers when the user stop to resize a dialog.
+     * @event
+     */
+    @Event()
+    public resizeStop: EmitType<Object>;
+    /**
      * Constructor for creating the widget    
      * @hidden
      */
@@ -406,6 +437,12 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         this.wireEvents();
         if (this.width === '100%') {
             this.element.style.width = '';
+        }
+        if (this.enableResize) {
+            this.setResize();
+            if (this.animationSettings.effect === 'None') {
+                this.getMinHeight();
+            }
         }
     }
     /**
@@ -431,6 +468,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         };
         let localeText: object = { close: 'Close' };
         this.l10n = new L10n('dialog', localeText, this.locale);
+        this.checkPositionData();
         if (isNullOrUndefined(this.target)) {
             let prevOnChange: boolean = this.isProtectedOnChange;
             this.isProtectedOnChange = true;
@@ -438,6 +476,96 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.isProtectedOnChange = prevOnChange;
         }
     };
+
+    private isNumberValue(value: string): boolean {
+        let isNumber: boolean = /^[-+]?\d*\.?\d+$/.test(value);
+        return isNumber;
+    }
+
+    private checkPositionData(): void  {
+        if (!isNullOrUndefined(this.position)) {
+            if ( !isNullOrUndefined(this.position.X) && ( typeof(this.position.X) !== 'number')) {
+                let isNumber: boolean = this.isNumberValue(this.position.X);
+                if (isNumber) {
+                    let prevOnChange: boolean = this.isProtectedOnChange;
+                    this.isProtectedOnChange = true;
+                    this.position.X = parseFloat(this.position.X);
+                    this.isProtectedOnChange = prevOnChange;
+                }
+            }
+
+            if ( !isNullOrUndefined(this.position.Y) && ( typeof(this.position.Y) !== 'number')) {
+                let isNumber: boolean = this.isNumberValue(this.position.Y);
+                if (isNumber) {
+                    let prevOnChange: boolean = this.isProtectedOnChange;
+                    this.isProtectedOnChange = true;
+                    this.position.Y = parseFloat(this.position.Y);
+                    this.isProtectedOnChange = prevOnChange;
+                }
+            }
+        }
+    }
+
+    /* istanbul ignore next */
+    private getMinHeight(): void {
+        let computedHeaderHeight: string = '0px';
+        let computedFooterHeight: string = '0px';
+        if (!isNullOrUndefined(this.element.querySelector('.' + DLG_HEADER_CONTENT))) {
+            computedHeaderHeight = getComputedStyle(this.headerContent).height;
+        }
+        if (!isNullOrUndefined(this.element.querySelector('.' + DLG_FOOTER_CONTENT))) {
+            computedFooterHeight = getComputedStyle(this.element.querySelector('.' + DLG_FOOTER_CONTENT)).height;
+        }
+        let headerHeight: number = parseInt(computedHeaderHeight.slice(0, computedHeaderHeight.indexOf('p')), 10);
+        let footerHeight: number = parseInt(computedFooterHeight.slice(0, computedFooterHeight.indexOf('p')), 10);
+        setMinHeight(headerHeight + 30 + footerHeight);
+    }
+
+    private onResizeStart(args: MouseEvent | TouchEvent): void {
+        this.trigger('resizeStart', args);
+    }
+
+    private onResizing(args: MouseEvent | TouchEvent): void {
+        this.trigger('resizing', args);
+    }
+
+    private onResizeComplete(args: MouseEvent | TouchEvent): void {
+        this.trigger('resizeStop', args);
+    }
+
+    private setResize(): void {
+        if (this.enableResize) {
+            this.element.classList.add(DLG_RESIZABLE);
+            let computedHeight: string = getComputedStyle(this.element).minHeight;
+            let computedWidth: string = getComputedStyle(this.element).minWidth;
+            let direction: string = this.enableRtl ? 'south-west' : 'south-east';
+            if (this.isModal && this.enableRtl) {
+                this.element.classList.add(DLG_RESTRICT_LEFT_VALUE);
+            } else if (this.isModal && this.target === document.body) {
+                this.element.classList.add(DLG_RESTRICT_WIDTH_VALUE);
+            }
+            createResize({
+                element: this.element,
+                direction: direction,
+                minHeight: parseInt(computedHeight.slice(0, computedWidth.indexOf('p')), 10),
+                maxHeight: this.targetEle.clientHeight,
+                minWidth: parseInt(computedWidth.slice(0, computedWidth.indexOf('p')), 10),
+                maxWidth: this.targetEle.clientWidth,
+                boundary: this.target === document.body ? null : this.targetEle,
+                resizeBegin: this.onResizeStart.bind(this),
+                resizeComplete: this.onResizeComplete.bind(this),
+                resizing: this.onResizing.bind(this)
+            });
+        } else {
+            removeResize();
+            if (this.isModal) {
+                this.element.classList.remove(DLG_RESTRICT_LEFT_VALUE);
+            } else {
+                this.element.classList.remove(DLG_RESTRICT_WIDTH_VALUE);
+            }
+            this.element.classList.remove(DLG_RESIZABLE);
+        }
+    }
 
     /* istanbul ignore next */
     private keyDown(event: KeyboardEvent): void {
@@ -550,6 +678,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     element: this.element,
                     target: this.target
                 };
+                if (this.enableResize && this.animationSettings.effect !== 'None') {
+                    this.getMinHeight();
+                }
                 this.trigger('open', eventArgs);
             },
             close: (event: Event) => {
@@ -561,7 +692,11 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     this.dlgContainer.style.display = 'none';
                 }
                 this.trigger('close', this.closeArgs);
+                if (!isNullOrUndefined((document.activeElement as HTMLElement).blur)) {
+                    (document.activeElement as HTMLElement).blur();
+                }
                 if (!isNullOrUndefined(this.storeActiveElement)) {
+                    (document.activeElement as HTMLElement).blur();
                     this.storeActiveElement.focus();
                 }
             }
@@ -636,6 +771,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     this.element.style.position = 'relative';
                 }
                 this.trigger('dragStop', event);
+                this.element.classList.remove(DLG_RESTRICT_LEFT_VALUE);
             },
             drag: (event: Object) => {
                 this.trigger('drag', event);
@@ -710,6 +846,10 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
 
     private setEnableRTL(): void {
         this.enableRtl ? addClass([this.element], RTL) : removeClass([this.element], RTL);
+        if (!isNullOrUndefined(this.element.querySelector('.e-resize-handle'))) {
+            removeResize();
+            this.setResize();
+        }
     }
 
     private setTargetContent(): void {
@@ -956,6 +1096,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 case 'target':
                     this.popupObj.relateTo = newProp.target;  break;
                 case 'position':
+                    this.checkPositionData();
                     if (this.isModal) {
                         let positionX: string | number = isNullOrUndefined(oldProp.position.X) ? this.position.X : oldProp.position.X;
                         let positionY: string | number = isNullOrUndefined(oldProp.position.Y) ? this.position.Y : oldProp.position.Y;
@@ -967,6 +1108,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     break;
                 case 'enableRtl':
                     this.setEnableRTL(); break;
+                case 'enableResize':
+                    this.setResize(); break;
             }
         }
     }
@@ -1343,6 +1486,8 @@ export namespace DialogUtility {
         options.allowDragging = !isNullOrUndefined(option.isDraggable) ? option.isDraggable : false;
         options.closeOnEscape = !isNullOrUndefined(option.closeOnEscape) ? option.closeOnEscape : false;
         options.position = !isNullOrUndefined(option.position) ? option.position : { X: 'center', Y: 'top' };
+        options.animationSettings = !isNullOrUndefined(option.animationSettings) ? option.animationSettings :
+                                    { effect: 'Fade', duration: 400, delay: 0 };
         return options;
     }
 
@@ -1423,6 +1568,7 @@ export interface AlertDialogArgs {
     closeOnEscape?: boolean;
     position?: PositionDataModel;
     okButton?: ButtonArgs;
+    animationSettings ?: AnimationSettingsModel;
 }
 
 export interface ConfirmDialogArgs {
@@ -1435,4 +1581,5 @@ export interface ConfirmDialogArgs {
     position?: PositionDataModel;
     okButton?: ButtonArgs;
     cancelButton?: ButtonArgs;
+    animationSettings ?: AnimationSettingsModel;
 }

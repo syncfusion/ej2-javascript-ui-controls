@@ -5,12 +5,12 @@ import { StrokeStyleModel, ShapeStyleModel } from '../core/appearance-model';
 import { Point } from '../primitives/point';
 import { TextElement } from '../core/elements/text-element';
 import { PointModel } from '../primitives/point-model';
-import { Segments, DecoratorShapes, Transform, ConnectorConstraints, Direction, LayoutOrientation } from '../enum/enum';
-import { DecoratorModel, ConnectorShapeModel, BpmnFlowModel, VectorModel, ConnectorModel } from './connector-model';
+import { Segments, DecoratorShapes, Transform, ConnectorConstraints, Direction, LayoutOrientation, Status } from '../enum/enum';
+import { DecoratorModel, ConnectorShapeModel, BpmnFlowModel, VectorModel } from './connector-model';
 import { Rect } from '../primitives/rect';
 import { Size } from '../primitives/size';
 import { findAngle, findConnectorPoints, Bridge, getOuterBounds } from '../utility/connector';
-import { getAnnotationPosition, alignLabelOnSegments, updateConnector } from '../utility/diagram-util';
+import { getAnnotationPosition, alignLabelOnSegments, updateConnector, setUMLActivityDefaults } from '../utility/diagram-util';
 import { randomId, getFunction } from './../utility/base-util';
 import { PathElement } from '../core/elements/path-element';
 import { PathAnnotation } from './annotation';
@@ -19,20 +19,25 @@ import { getDecoratorShape } from './dictionary/common';
 import { IElement } from './interface/IElement';
 import { Container } from '../core/containers/container';
 import { DiagramElement } from '../core/elements/diagram-element';
-import { HorizontalAlignment, VerticalAlignment } from '../enum/enum';
-import { ConnectionShapes, BpmnFlows, BpmnMessageFlows, BpmnSequenceFlows, BpmnAssociationFlows } from '../enum/enum';
+import { HorizontalAlignment, VerticalAlignment, AssociationFlow, ClassifierShape, Multiplicity } from '../enum/enum';
+import { ConnectionShapes, UmlActivityFlows, BpmnFlows, BpmnMessageFlows, BpmnSequenceFlows, BpmnAssociationFlows } from '../enum/enum';
 import { SegmentInfo, Alignment } from '../rendering/canvas-interface';
 import { PathAnnotationModel } from './annotation-model';
 import { NodeBase } from './node-base';
 import { DiagramTooltipModel } from './tooltip-model';
 import { DiagramTooltip } from './tooltip';
-import { Matrix, identityMatrix, rotateMatrix, scaleMatrix, transformPointsByMatrix } from '../primitives/matrix';
-import { OrthogonalSegmentModel, StraightSegmentModel, BezierSegmentModel } from './connector-model';
-
+import { Matrix, identityMatrix, rotateMatrix, scaleMatrix, transformPointsByMatrix, transformPointByMatrix } from '../primitives/matrix';
+import { OrthogonalSegmentModel, StraightSegmentModel, BezierSegmentModel, ConnectorModel } from './connector-model';
+import { RelationShipModel, ClassifierMultiplicityModel, MultiplicityLabelModel } from './connector-model';
+import { DiagramHtmlElement } from '../core/elements/html-element';
 let getConnectorType: Function = (obj: ConnectorShape): Object => {
     switch (obj.type) {
         case 'Bpmn':
             return BpmnFlow;
+        case 'UmlActivity':
+            return ActivityFlow;
+        case 'UmlClassifier':
+            return RelationShip;
         default:
             return ConnectorShape;
     }
@@ -166,6 +171,29 @@ export class ConnectorShape extends ChildProperty<ConnectorShape> {
      */
     @Property('None')
     public type: ConnectionShapes;
+}
+
+/**
+ * Sets the type of the flow in a BPMN Process
+ */
+export class ActivityFlow extends ConnectorShape {
+    /**
+     * Defines the type of the UMLActivity flows
+     * Object - Sets the type of the UMLActivity Flow as Object
+     * Control - Sets the type of the UMLActivity Flow as Control
+     * Exception - Sets the type of the UMLActivity Flow as Exception
+     * @default 'Object'
+     * @IgnoreSingular
+     */
+    @Property('Object')
+    public flow: UmlActivityFlows;
+
+    /**
+     * Defines the height of the exception flow.
+     * @default '50'
+     */
+    @Property(30)
+    public exceptionFlowHeight: number;
 }
 
 /**
@@ -503,6 +531,92 @@ export function bezierPoints(
 }
 
 /**
+ * Defines the behavior of the UMLActivity Classifier multiplicity connection defaults
+ */
+export class MultiplicityLabel extends ChildProperty<MultiplicityLabel>  {
+    /**
+     * Defines the type of the Classifier Multiplicity
+     * @default ''
+     * @IgnoreSingular
+     */
+    @Property(true)
+    public optional: boolean;
+    /**
+     * Defines the type of the Classifier Multiplicity
+     * @default ''
+     * @IgnoreSingular
+     */
+    @Property(undefined)
+    public lowerBounds: string;
+    /**
+     * Defines the type of the Classifier Multiplicity
+     * @default ''
+     * @IgnoreSingular
+     */
+    @Property(undefined)
+    public upperBounds: string;
+}
+/**
+ * Defines the behavior of the UMLActivity Classifier multiplicity connection defaults
+ */
+export class ClassifierMultiplicity extends ChildProperty<ClassifierMultiplicity>  {
+    /**
+     * Defines the type of the Classifier Multiplicity
+     * @default ''
+     * @IgnoreSingular
+     */
+    @Property('')
+    public type: Multiplicity;
+    /**
+     * Defines the type of the Classifier Multiplicity
+     * @default ''
+     * @IgnoreSingular
+     */
+    @Complex<MultiplicityLabelModel>({}, MultiplicityLabel)
+    public target: MultiplicityLabelModel;
+    /**
+     * Defines the type of the Classifier Multiplicity
+     * @default ''
+     * @IgnoreSingular
+     */
+    @Complex<MultiplicityLabelModel>({}, MultiplicityLabel)
+    public source: MultiplicityLabelModel;
+}
+/**
+ * Defines the behavior of the UMLActivity shape
+ */
+export class RelationShip extends ConnectorShape {
+    /**
+     * Defines the type of the  UMLConnector
+     * @default ''
+     * @IgnoreSingular
+     */
+    @Property('UmlClassifier')
+    public type: ConnectionShapes;
+    /**
+     * Defines the association direction
+     * @default ''
+     * @IgnoreSingular
+     */
+    @Property('Aggregation')
+    public relationship: ClassifierShape;
+    /**
+     * Defines the association direction
+     * @default ''
+     * @IgnoreSingular
+     */
+    @Property('Directional')
+    public associationType: AssociationFlow;
+    /**
+     * Defines the type of the Classifier Multiplicity
+     * @default ''
+     * @IgnoreSingular
+     */
+    @Complex<ClassifierMultiplicityModel>({}, ClassifierMultiplicity)
+    public multiplicity: ClassifierMultiplicityModel;
+}
+
+/**
  * Connectors are used to create links between nodes
  */
 export class Connector extends NodeBase implements IElement {
@@ -513,7 +627,7 @@ export class Connector extends NodeBase implements IElement {
      * @aspType object
      */
     @ComplexFactory(getConnectorType)
-    public shape: ConnectorShapeModel | BpmnFlowModel;
+    public shape: ConnectorShapeModel | BpmnFlowModel | RelationShipModel;
 
     /**
      * Defines the constraints of connector
@@ -695,10 +809,15 @@ export class Connector extends NodeBase implements IElement {
 
     /** @private */
     public intermediatePoints: PointModel[];
+    /** @private */
+    public status: Status = 'None';
 
     // tslint:disable-next-line:no-any
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);
+        if (this.shape && this.shape.type === 'UmlActivity') {
+            setUMLActivityDefaults(defaultValue, this);
+        }
     }
     /** @private */
     // tslint:disable-next-line:no-any
@@ -741,8 +860,20 @@ export class Connector extends NodeBase implements IElement {
                         break;
                 }
                 break;
+            case 'UmlActivity':
+                switch ((this.shape as ActivityFlow).flow) {
+                    case 'Object':
+                        this.getUMLObjectFlow();
+                        break;
+                    case 'Exception':
+                        this.getUMLExceptionFlow(segment);
+                        break;
+                }
+                break;
+            case 'UmlClassifier':
+                this.getConnectorRelation();
+                break;
         }
-
         let anglePoints: PointModel[] = this.intermediatePoints as PointModel[];
         if (this.type === 'Bezier') {
             let firstSegment: BezierSegment = this.segments[0] as BezierSegment;
@@ -784,10 +915,100 @@ export class Connector extends NodeBase implements IElement {
         for (let i: number = 0; this.annotations !== undefined, i < this.annotations.length; i++) {
             container.children.push(
                 this.getAnnotationElement(
-                    this.annotations[i] as PathAnnotation, this.intermediatePoints, bounds, getDescription));
+                    this.annotations[i] as PathAnnotation, this.intermediatePoints, bounds, getDescription, diagram.element.id));
         }
         this.wrapper = container;
         return container;
+    }
+
+    private getConnectorRelation(): void {
+        let shape: RelationShip = (this.shape as RelationShip);
+        if (shape.relationship === 'Association') {
+            this.segments[0].type = 'Straight';
+            this.sourceDecorator.shape = 'None';
+            this.targetDecorator.shape = 'Arrow';
+            this.style.strokeWidth = 2;
+
+        } else if (shape.relationship === 'Inheritance') {
+            this.segments[0].type = 'Orthogonal';
+            this.sourceDecorator.shape = 'None';
+            this.targetDecorator.shape = 'Arrow';
+            this.targetDecorator.style.fill = 'white';
+            this.style.strokeWidth = 2;
+            this.style.strokeDashArray = '4 4';
+        } else if (shape.relationship === 'Composition') {
+            this.segments[0].type = 'Orthogonal';
+            this.sourceDecorator.shape = 'Diamond';
+            this.targetDecorator.shape = 'None';
+            this.sourceDecorator.style.fill = 'black';
+            this.style.strokeWidth = 2;
+        } else if (shape.relationship === 'Aggregation') {
+            this.segments[0].type = 'Orthogonal';
+            this.sourceDecorator.shape = 'Diamond';
+            this.targetDecorator.shape = 'None';
+            this.sourceDecorator.style.fill = 'white';
+            this.style.strokeWidth = 2;
+        } else if (shape.relationship === 'Dependency') {
+            this.segments[0].type = 'Orthogonal';
+            this.sourceDecorator.shape = 'None';
+            this.targetDecorator.shape = 'OpenArrow';
+            this.sourceDecorator.style.fill = 'white';
+            this.style.strokeWidth = 2;
+            this.style.strokeDashArray = '4 4';
+        } else if (shape.relationship === 'Realization') {
+            this.segments[0].type = 'Orthogonal';
+            this.sourceDecorator.shape = 'None';
+            this.targetDecorator.shape = 'Arrow';
+            this.sourceDecorator.style.fill = 'white';
+            this.style.strokeWidth = 2;
+        }
+        if (shape.associationType === 'BiDirectional') {
+            this.sourceDecorator.shape = 'None';
+            this.targetDecorator.shape = 'None';
+        }
+        let text1: string = '';
+        let lower: MultiplicityLabelModel;
+        let upper: MultiplicityLabelModel;
+        let sourceText: string = '';
+        let targetText: string = '';
+        let text: string = '';
+        if (shape.multiplicity.source) {
+            shape.multiplicity.source.lowerBounds = shape.multiplicity.source.lowerBounds;
+            shape.multiplicity.source.upperBounds = shape.multiplicity.source.upperBounds;
+        }
+        if (shape.multiplicity.target) {
+            shape.multiplicity.target.lowerBounds = shape.multiplicity.target.lowerBounds;
+            shape.multiplicity.target.upperBounds = shape.multiplicity.target.upperBounds;
+        }
+        lower = shape.multiplicity.source;
+        upper = shape.multiplicity.target;
+        text = lower.upperBounds ? lower.lowerBounds + '...' + lower.upperBounds : lower.lowerBounds;
+        text1 = upper.upperBounds ? upper.lowerBounds + '...' + upper.upperBounds : upper.lowerBounds;
+        if (shape.multiplicity.type === 'ManyToOne') {
+            shape.multiplicity.target.optional = false;
+            sourceText = text ? text : '*'; targetText = '1';
+        }
+        if (shape.multiplicity.type === 'OneToMany') {
+            shape.multiplicity.source.optional = false;
+            targetText = text1 ? text1 : '*'; sourceText = '1';
+        }
+        if (shape.multiplicity.type === 'ManyToOne') {
+            sourceText = text ? text : '*'; targetText = text1 ? text1 : '*';
+        }
+        if (shape.multiplicity.type === 'OneToOne') {
+            shape.multiplicity.target.optional = false;
+            shape.multiplicity.source.optional = false;
+            sourceText = '1'; targetText = '1';
+        }
+        this.annotations = [
+            {
+                id: this.id + 'sourcelabel', content: sourceText, offset: 0, alignment: 'Before',
+                margin: {right: 5, bottom: 5 }
+            },
+            {
+                id: this.id + 'targetlabel', content: targetText, offset: 1, alignment: 'Before',
+                margin: { right: 5, bottom: 5 }
+            }];
     }
 
     private getBpmnSequenceFlow(): PathElement {
@@ -814,6 +1035,38 @@ export class Connector extends NodeBase implements IElement {
             this.sourceDecorator.width = 20; this.sourceDecorator.height = 10;
         }
         return pathseq;
+    }
+    /** @private */
+    public getUMLObjectFlow(): void {
+        if (this.annotations) {
+            for (let i: number = 0; i < this.annotations.length; i++) {
+                this.annotations[i].content = '[' + this.annotations[i].content + ']';
+            }
+        }
+    }
+
+    /** @private */
+    public getUMLExceptionFlow(segment: PathElement): void {
+        this.type = 'Straight';
+        let height: number = ((this.shape as ActivityFlow).exceptionFlowHeight) / 2;
+        let midPt: PointModel = { x: (this.targetPoint.x + this.sourcePoint.x) / 2, y: (this.targetPoint.y + this.sourcePoint.y) / 2 };
+        let xDist: number = midPt.x - this.sourcePoint.x;
+        let yDist: number = midPt.y - this.sourcePoint.y;
+        let dist: number = Math.sqrt(xDist * xDist + yDist * yDist);
+        let fractionOfTotal: number = (height) / dist;
+        let midPt2: PointModel = { x: midPt.x - xDist * fractionOfTotal, y: midPt.y - yDist * fractionOfTotal };
+        let midPt1: PointModel = { x: midPt.x + xDist * fractionOfTotal, y: midPt.y + yDist * fractionOfTotal };
+        let matrix: Matrix = identityMatrix();
+        rotateMatrix(matrix, 315, midPt.x, midPt.y);
+        this.segments = [];
+        let segments: StraightSegmentModel = new StraightSegment(
+            this, 'segments', { type: 'Straight', point: transformPointByMatrix(matrix, midPt1) }, true);
+        (this.segments).push(segments);
+
+        segments = new StraightSegment(
+            this, 'segments', { type: 'Straight', point: transformPointByMatrix(matrix, midPt2) }, true);
+        (this.segments).push(segments);
+        segment = this.getSegmentElement(this, segment);
     }
 
     private getBpmnAssociationFlow(): void {
@@ -851,11 +1104,11 @@ export class Connector extends NodeBase implements IElement {
         }
         return segmentMessage;
     }
+
     /** @private */
     public distance(pt1: PointModel, pt2: PointModel): number {
         return Math.sqrt(Math.pow(pt2.x - pt1.x, 2) + Math.pow(pt2.y - pt1.y, 2));
     }
-
     /**   @private  */
     public findPath(sourcePt: PointModel, targetPt: PointModel): Object {
         let beginningpoint: PointModel = { x: sourcePt.x, y: sourcePt.y };
@@ -865,17 +1118,24 @@ export class Connector extends NodeBase implements IElement {
         let transferpoint: PointModel = Point.transform({ x: beginningpoint.x, y: beginningpoint.y }, angle, distance);
         let startpoint1: PointModel = Point.transform({ x: transferpoint.x, y: transferpoint.y }, angle, -12);
         let endpoint1: PointModel = Point.transform({ x: startpoint1.x, y: startpoint1.y }, angle, 12 * 2);
-
         let path: string = 'M' + startpoint1.x + ' ' + startpoint1.y + ' L' + endpoint1.x + ' ' + endpoint1.y;
         return [path, transferpoint];
     }
     /** @private */
     public getAnnotationElement(
-        annotation: PathAnnotation, points: PointModel[], bounds: Rect, getDescription: Function | string)
+        annotation: PathAnnotation, points: PointModel[], bounds: Rect, getDescription: Function | string, diagramId: string)
         :
-        TextElement {
+        TextElement | DiagramHtmlElement {
         annotation.id = annotation.id || randomId();
-        let textele: TextElement = new TextElement();
+        let textele: TextElement | DiagramHtmlElement;
+        if (diagramId && annotation.template) {
+            textele = new DiagramHtmlElement(this.id, diagramId, annotation.id);
+            textele.content = annotation.template;
+        } else {
+            textele = new TextElement();
+            textele.content = annotation.content;
+            textele.style.textOverflow = 'Wrap';
+        }
         textele.constraints = annotation.constraints;
         textele.visible = annotation.visibility;
         textele.rotateAngle = annotation.rotateAngle;
@@ -883,14 +1143,13 @@ export class Connector extends NodeBase implements IElement {
         textele.verticalAlignment = annotation.verticalAlignment;
         textele.width = annotation.width;
         textele.height = annotation.height;
-        if (bounds.width !== undefined) {
+        if (bounds.width !== undefined && !annotation.template) {
             textele.width = (annotation.width || bounds.width) - annotation.margin.left - annotation.margin.right;
         }
         textele.margin = annotation.margin;
         textele.id = this.id + '_' + annotation.id;
         if (bounds.width === 0) { bounds.width = this.style.strokeWidth; }
         if (bounds.height === 0) { bounds.height = this.style.strokeWidth; }
-        textele.content = annotation.content;
         textele.style = annotation.style;
         // tslint:disable-next-line:no-any
         let wrapperContent: any;
@@ -900,15 +1159,18 @@ export class Connector extends NodeBase implements IElement {
         }
         textele.description = wrapperContent ? wrapperContent : textele.id;
         this.updateAnnotation(annotation, points, bounds, textele);
-        textele.style.textOverflow = 'Wrap';
         return textele;
     }
     /** @private */
-    public updateAnnotation(annotation: PathAnnotation, points: PointModel[], bounds: Rect, textElement: TextElement): void {
+    public updateAnnotation(
+        annotation: PathAnnotation, points: PointModel[], bounds: Rect, textElement: TextElement | DiagramHtmlElement
+    ): void {
         let getPointloop: SegmentInfo;
         let newPoint: PointModel; let align: Alignment; let hAlign: string;
         let vAlign: string; let offsetPoint: PointModel; let pivotPoint: PointModel = { x: 0, y: 0 };
-        textElement.refreshTextElement();
+        if (!(textElement instanceof DiagramHtmlElement)) {
+            (textElement as TextElement).refreshTextElement();
+        }
         textElement.width = (annotation.width || bounds.width);
         getPointloop = getAnnotationPosition(points, annotation, bounds);
         newPoint = getPointloop.point;
@@ -1098,6 +1360,7 @@ export class Connector extends NodeBase implements IElement {
         element.style = decorator.style;
         element.rotateAngle = angle;
         (element as PathElement).data = getPath;
+        (element as PathElement).canMeasurePath = true;
         element.width = size.width;
         element.height = size.height;
     }
@@ -1216,8 +1479,13 @@ export class Connector extends NodeBase implements IElement {
                     this.updateShapePosition(connector, element);
                 }
                 break;
-        }
+            case 'UmlActivity':
+                if ((connector.shape as ActivityFlow).flow === 'Exception') {
+                    this.getUMLExceptionFlow(connector.wrapper.children[0] as PathElement);
+                }
+                break;
 
+        }
     }
     /** @private */
     public updateShapePosition(connector: Connector, element: DiagramElement): void {

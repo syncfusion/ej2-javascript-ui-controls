@@ -3,6 +3,7 @@ import { createElement, remove, isNullOrUndefined, EmitType, closest, extend, ge
 import { Dialog } from '@syncfusion/ej2-popups';
 import { pivot_dataset } from '../base/datasource.spec';
 import { IDataSet } from '../../src/base/engine';
+import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { PivotCommon } from '../../src/common/base/pivot-common';
 import { MaskedTextBox } from '@syncfusion/ej2-inputs';
 import { TreeView } from '@syncfusion/ej2-navigations';
@@ -182,6 +183,181 @@ describe('PivotFieldList spec', () => {
             it('field-list destroy expect', () => {
                 expect(fieldListObj.element.innerHTML).toBe('');
             });
+        });
+    });
+
+    describe('- Members limit in editor - field list', () => {
+        let fieldListObj: PivotFieldList;
+        let elem: HTMLElement = createElement('div', { id: 'PivotFieldList', styles: 'height:400px;width:60%' });
+        afterAll(() => {
+            if (fieldListObj) {
+                fieldListObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            let dataBound: EmitType<Object> = () => { done(); };
+            fieldListObj = new PivotFieldList(
+                {
+                    dataSource: {
+                        data: pivot_dataset as IDataSet[],
+                        rows: [{ name: 'product' }, { name: 'state' }],
+                        columns: [{ name: 'gender' }],
+                        values: [{ name: 'balance' }, { name: 'quantity' }], filters: [{ name: 'index' }]
+                    },
+                    maxNodeLimitInMemberEditor: 5,
+                    renderMode: 'Fixed',
+                    dataBound: dataBound
+                });
+            fieldListObj.appendTo('#PivotFieldList');
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 1000);
+        });
+        it('field list render testing', () => {
+            // if (document.querySelectorAll('.e-pivot-calc-dialog-div .e-icon-btn')) {
+            //     (document.querySelectorAll('.e-pivot-calc-dialog-div .e-icon-btn')[0] as HTMLElement).click()
+            // }
+            expect(document.querySelectorAll('.e-pivot-button').length).toBe(6);
+        });
+
+        it('check filtering field', (done: Function) => {
+            let pivotButtons: HTMLElement[] =
+                [].slice.call(document.querySelector('.e-filters').querySelectorAll('.e-pivot-button'));
+            ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(5);
+                done();
+            }, 1000);
+        });
+        it('check all nodes on filter popup', () => {
+            let allNode: HTMLElement = document.querySelector('.e-member-editor-wrapper .e-checkbox-wrapper');
+            let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            allNode.querySelector('.e-frame').dispatchEvent(args);
+            args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            allNode.querySelector('.e-frame').dispatchEvent(args);
+            args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            allNode.querySelector('.e-frame').dispatchEvent(args);
+            let checkedEle: Element[] = <Element[] & NodeListOf<Element>>document.querySelectorAll('.e-member-editor-wrapper .e-check');
+            expect(checkedEle.length).toEqual(0);
+            expect(document.querySelector('.e-ok-btn').getAttribute('disabled')).toBe('disabled');
+            let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-wrapper .e-checkbox-wrapper')[1] as HTMLElement;
+            args = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            firstNode.querySelector('.e-frame').dispatchEvent(args);
+            args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            firstNode.querySelector('.e-frame').dispatchEvent(args);
+            args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            firstNode.querySelector('.e-frame').dispatchEvent(args);
+            checkedEle = <Element[] & NodeListOf<Element>>document.querySelectorAll('.e-member-editor-wrapper .e-check');
+            expect(checkedEle.length).toEqual(1);
+            expect(document.querySelector('.e-ok-btn').getAttribute('disabled')).toBe(null);
+            (document.querySelector('.e-ok-btn') as HTMLElement).click();
+        });
+        it('check filter state after update', () => {
+            expect(document.querySelectorAll('.e-pv-filtered').length).toBe(1);
+        });
+        it('check filtering field', (done: Function) => {
+            let pivotButtons: HTMLElement[] =
+                [].slice.call(document.querySelector('.e-filters').querySelectorAll('.e-pivot-button'));
+            ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(5);
+                expect(document.querySelectorAll('.e-select-all li .e-check').length).toBe(0);
+                expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(1);
+                done();
+            }, 1000);
+        });
+        it('search 0', () => {
+            let searchOption: MaskedTextBox = fieldListObj.pivotCommon.filterDialog.editorSearch;
+            searchOption.setProperties({ value: '0' });
+            searchOption.change({ value: searchOption.value });
+            expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(5);
+            expect(document.querySelectorAll('.e-select-all li .e-check').length).toBe(0);
+            expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(1);
+            expect((document.querySelectorAll('.e-member-editor-container li .e-list-text')[1] as HTMLElement).innerText).toBe("10");
+        });
+        it('search 11', () => {
+            let searchOption: MaskedTextBox = fieldListObj.pivotCommon.filterDialog.editorSearch;
+            searchOption.setProperties({ value: '11' });
+            searchOption.change({ value: searchOption.value });
+            expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(5);
+            expect(document.querySelectorAll('.e-select-all li .e-stop').length).toBe(1);
+            expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(0);
+            expect((document.querySelectorAll('.e-member-editor-container li .e-list-text')[4] as HTMLElement).innerText).toBe("811");
+        });
+        it('check 11', () => {
+            let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-wrapper .e-checkbox-wrapper')[1] as HTMLElement;
+            args = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            firstNode.querySelector('.e-frame').dispatchEvent(args);
+            args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            firstNode.querySelector('.e-frame').dispatchEvent(args);
+            args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            firstNode.querySelector('.e-frame').dispatchEvent(args);
+            let searchOption: MaskedTextBox = fieldListObj.pivotCommon.filterDialog.editorSearch;
+            searchOption.setProperties({ value: '0' });
+            searchOption.change({ value: searchOption.value });
+            expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(5);
+            expect(document.querySelectorAll('.e-select-all li .e-stop').length).toBe(1);
+            expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(1);
+            expect((document.querySelectorAll('.e-member-editor-container li .e-list-text')[4] as HTMLElement).innerText).toBe("40");
+        });
+        it('search 11', () => {
+            let searchOption: MaskedTextBox = fieldListObj.pivotCommon.filterDialog.editorSearch;
+            searchOption.setProperties({ value: '11' });
+            searchOption.change({ value: searchOption.value });
+            expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(5);
+            expect(document.querySelectorAll('.e-select-all li .e-stop').length).toBe(1);
+            expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(0);
+            expect((document.querySelectorAll('.e-member-editor-container li .e-list-text')[4] as HTMLElement).innerText).toBe("811");
+        });
+        it('check all search 0', () => {
+            let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-wrapper .e-checkbox-wrapper')[0] as HTMLElement;
+            args = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            firstNode.querySelector('.e-frame').dispatchEvent(args);
+            args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            firstNode.querySelector('.e-frame').dispatchEvent(args);
+            args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            firstNode.querySelector('.e-frame').dispatchEvent(args);
+            expect(document.querySelectorAll('.e-select-all li .e-check').length).toBe(1);
+            expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(5);
+            let searchOption: MaskedTextBox = fieldListObj.pivotCommon.filterDialog.editorSearch;
+            searchOption.setProperties({ value: '0' });
+            searchOption.change({ value: searchOption.value });
+            expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(5);
+            expect(document.querySelectorAll('.e-select-all li .e-stop').length).toBe(1);
+            expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(1);
+            expect((document.querySelectorAll('.e-member-editor-container li .e-list-text')[4] as HTMLElement).innerText).toBe("40");
+        });
+        it('check all btn click', () => {
+            let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-wrapper .e-checkbox-wrapper')[0] as HTMLElement;
+            args = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            firstNode.querySelector('.e-frame').dispatchEvent(args);
+            args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            firstNode.querySelector('.e-frame').dispatchEvent(args);
+            args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            firstNode.querySelector('.e-frame').dispatchEvent(args);
+            expect(document.querySelectorAll('.e-select-all li .e-check').length).toBe(1);
+            expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(5);
+            (document.querySelector('.e-ok-btn') as HTMLElement).click();
+        });
+        it('change mem limit to 10', (done: Function) => {
+            fieldListObj.maxNodeLimitInMemberEditor = 10;
+            let pivotButtons: HTMLElement[] =
+                [].slice.call(document.querySelector('.e-filters').querySelectorAll('.e-pivot-button'));
+            ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(10);
+                expect(document.querySelectorAll('.e-select-all li .e-check').length).toBe(1);
+                expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(10);
+                done();
+            }, 1000);
         });
     });
 
@@ -1406,7 +1582,7 @@ describe('PivotFieldList spec', () => {
                 expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
                 checkTreeNode(treeObj, closest(allNode[0], 'li'));
                 expect(allNode[0].querySelector('.e-frame').classList.contains('e-check')).not.toBeTruthy;
-                expect(pivotCommon.filterDialog.dialogPopUp.element.querySelector('.e-ok-btn').getAttribute('disabled')).toBe(null);
+                expect(pivotCommon.filterDialog.dialogPopUp.element.querySelector('.e-ok-btn').getAttribute('disabled')).toBe('disabled');
                 (pivotCommon.filterDialog.dialogPopUp.element.querySelector('.e-ok-btn') as HTMLElement).click();
             });
             it('check filter popup after update', () => {
@@ -2569,7 +2745,7 @@ describe('PivotFieldList spec', () => {
                 setTimeout(() => {
                     expect(pivotButton.length).toEqual(4);
                     expect(pivotButton[0].getAttribute('data-uid')).toBe('advance');
-                    expect((pivotButton[0].querySelector('.e-content') as HTMLElement).innerText).toEqual("droppedButton");
+                    expect((pivotButton[0].querySelector('.e-content') as HTMLElement).innerText).toEqual("Sum of droppedButton");
                     done();
                 }, 1000);
             });
@@ -2917,6 +3093,1008 @@ describe('PivotFieldList spec', () => {
         });
     });
 
+    describe('Pivot Field List Rendering - Defer Update', () => {
+        describe('Check pivot button drag and drop Actions', () => {
+            let fieldListObj: PivotFieldList;
+            let pivotGridObj: PivotView;
+            let pivotCommon: PivotCommon;
+            let mouseEventArgs: any;
+            let grid: HTMLElement = createElement('div', { id: 'PivotView', styles: 'width: 58%; height: 100%' });
+            let fieldlist: HTMLElement = createElement('div', { id: 'PivotFieldList', styles: 'width: 42%; height: 100%' });
+            let elem: HTMLElement = createElement('div', { className: 'container' });
+            elem.appendChild(grid); elem.appendChild(fieldlist);
+            PivotView.Inject(GroupingBar);
+            PivotFieldList.Inject(CalculatedField);
+            beforeEach(() => {
+            }, 1000);
+            afterAll(() => {
+                if (fieldListObj) {
+                    fieldListObj.destroy();
+                }
+                if (pivotGridObj) {
+                    pivotGridObj.destroy();
+                }
+                remove(elem);
+            });
+            beforeAll((done: Function) => {
+                if (document.getElementById(elem.id)) {
+                    remove(document.getElementById(elem.id));
+                }
+                document.body.appendChild(elem);
+                let dataBound: EmitType<Object> = () => { done(); };
+                pivotGridObj = new PivotView({
+                    enginePopulated: () => {
+                        if (fieldListObj) {
+                            fieldListObj.update(pivotGridObj);
+                        }
+                    },
+                    enableValueSorting: true,
+                    showGroupingBar: true,
+                    allowDeferLayoutUpdate: true,
+                    width: '99%',
+                    height: 530,
+                    gridSettings: { columnWidth: 140 }
+                });
+                pivotGridObj.appendTo('#PivotView');
+                fieldListObj = new PivotFieldList(
+                    {
+                        dataSource: {
+                            data: pivot_dataset as IDataSet[],
+                            expandAll: false,
+                            enableSorting: true,
+                            sortSettings: [{ name: 'company', order: 'Descending' }],
+                            filterSettings: [{ name: 'name', type: 'Include', items: ['Knight Wooten'] },
+                            { name: 'company', type: 'Exclude', items: ['NIPAZ'] },
+                            { name: 'gender', type: 'Include', items: ['male'] }],
+                            calculatedFieldSettings: [{ name: 'price', formula: '5+10' }],
+                            rows: [{ name: 'company' }, { name: 'state' }],
+                            columns: [{ name: 'name' }],
+                            values: [{ name: 'balance' }, { name: 'price', type: 'CalculatedField' },
+                            { name: 'quantity' }],
+                            filters: [{ name: 'gender' }]
+                        },
+                        allowDeferLayoutUpdate: true,
+                        allowCalculatedField: true,
+                        showValuesButton: true,
+                        enginePopulated: (): void => {
+                            if (fieldListObj.isRequiredUpdate) {
+                                fieldListObj.updateView(pivotGridObj);
+                            }
+                            pivotGridObj.notify('ui-update', pivotGridObj);
+                            fieldListObj.notify('tree-view-update', fieldListObj);
+                        },
+                        renderMode: 'Fixed',
+                        dataBound: dataBound
+                    });
+                fieldListObj.appendTo('#PivotFieldList');
+                pivotCommon = fieldListObj.pivotCommon;
+            });
+            it('drag and drop pivot button to body', () => {
+                let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
+                let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+                let rowAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
+                let pivotButton: HTMLElement[] = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(2);
+                let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
+                let mousedown: any =
+                    getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+                EventHandler.trigger(dragElement, 'mousedown', mousedown);
+                let mousemove: any =
+                    getEventObject('MouseEvents', 'mousemove', dragElement, treeObj.element, 15, 70);
+                mousemove.srcElement = mousemove.target = mousemove.toElement = treeObj.element;
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                mousemove = setMouseCordinates(mousemove, 15, 75);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, treeObj.element);
+                mouseUp.type = 'mouseup';
+                mouseUp.srcElement = mouseUp.target = mouseUp.toElement = treeObj.element;
+                EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+                pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(1);
+            });
+            it('Cancel button', () => {
+                document.getElementById('PivotFieldList_DeferUpdateButton2').click();
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
+            });
+            it('drag and drop pivot button to body', () => {
+                let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
+                let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+                let rowAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
+                let pivotButton: HTMLElement[] = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(2);
+                let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
+                let mousedown: any =
+                    getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+                EventHandler.trigger(dragElement, 'mousedown', mousedown);
+                let mousemove: any =
+                    getEventObject('MouseEvents', 'mousemove', dragElement, treeObj.element, 15, 70);
+                mousemove.srcElement = mousemove.target = mousemove.toElement = treeObj.element;
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                mousemove = setMouseCordinates(mousemove, 15, 75);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, treeObj.element);
+                mouseUp.type = 'mouseup';
+                mouseUp.srcElement = mouseUp.target = mouseUp.toElement = treeObj.element;
+                EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+                pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(1);
+            });
+            it('Apply button', () => {
+                document.getElementById('PivotFieldList_DeferUpdateButton1').click();
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(6);
+            });
+        });
+        describe('Check public method for node state change', () => {
+            let fieldListObj: PivotFieldList;
+            let pivotGridObj: PivotView;
+            let pivotCommon: PivotCommon;
+            let grid: HTMLElement = createElement('div', { id: 'PivotView', styles: 'width: 58%; height: 100%' });
+            let fieldlist: HTMLElement = createElement('div', { id: 'PivotFieldList', styles: 'width: 42%; height: 100%' });
+            let elem: HTMLElement = createElement('div', { className: 'container' });
+            elem.appendChild(grid); elem.appendChild(fieldlist);
+            PivotView.Inject(GroupingBar);
+            PivotFieldList.Inject(CalculatedField);
+            afterAll(() => {
+                if (fieldListObj) {
+                    fieldListObj.destroy();
+                }
+                if (pivotGridObj) {
+                    pivotGridObj.destroy();
+                }
+                remove(elem);
+            });
+            beforeEach(() => {
+            }, 1000);
+            beforeAll((done: Function) => {
+                if (document.getElementById(elem.id)) {
+                    remove(document.getElementById(elem.id));
+                }
+                document.body.appendChild(elem);
+                let dataBound: EmitType<Object> = () => { done(); };
+                pivotGridObj = new PivotView({
+                    enginePopulated: () => {
+                        if (fieldListObj) {
+                            fieldListObj.update(pivotGridObj);
+                        }
+                    },
+                    enableValueSorting: true,
+                    showGroupingBar: true,
+                    allowDeferLayoutUpdate: true,
+                    width: '99%',
+                    height: 530,
+                    gridSettings: { columnWidth: 140 }
+                });
+                pivotGridObj.appendTo('#PivotView');
+                fieldListObj = new PivotFieldList(
+                    {
+                        dataSource: {
+                            data: pivot_dataset as IDataSet[],
+                            expandAll: false,
+                            enableSorting: true,
+                            sortSettings: [{ name: 'company', order: 'Descending' }],
+                            filterSettings: [{ name: 'name', type: 'Include', items: ['Knight Wooten'] },
+                            { name: 'company', type: 'Exclude', items: ['NIPAZ'] },
+                            { name: 'gender', type: 'Include', items: ['male'] }],
+                            rows: [{ name: 'company' }, { name: 'state' }],
+                            columns: [{ name: 'name' }],
+                            values: [{ name: 'balance' }, { name: 'quantity' }], filters: [{ name: 'gender' }]
+                        },
+                        allowDeferLayoutUpdate: true,
+                        allowCalculatedField: true,
+                        showValuesButton: true,
+                        enginePopulated: (): void => {
+                            if (fieldListObj.isRequiredUpdate) {
+                                fieldListObj.updateView(pivotGridObj);
+                            }
+                            pivotGridObj.notify('ui-update', pivotGridObj);
+                            fieldListObj.notify('tree-view-update', fieldListObj);
+                        },
+                        renderMode: 'Fixed',
+                        dataBound: dataBound
+                    });
+                fieldListObj.appendTo('#PivotFieldList');
+                pivotCommon = fieldListObj.pivotCommon;
+            });
+            it('testing row axis using drop args', () => {
+                let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
+                let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+                let rowsAxisContent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
+                let pivotButton: HTMLElement[] = [].slice.call((rowsAxisContent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(2);
+                let args: any = {
+                    target: rowsAxisContent,
+                    cancel: true,
+                    event: getEventObject('MouseEvents', 'mouseup', treeObj.element, rowsAxisContent) as any
+                } as DragAndDropEventArgs;
+                pivotCommon.nodeStateModified.onStateModified(args, 'pno');
+                fieldListObj.axisFieldModule.render();
+                pivotButton = [].slice.call((rowsAxisContent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(3);
+                expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('pno');
+            });
+            it('Cancel button', () => {
+                document.getElementById('PivotFieldList_DeferUpdateButton2').click();
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(6);
+            });
+            it('testing row axis using drop args', () => {
+                let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
+                let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+                let rowsAxisContent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
+                let pivotButton: HTMLElement[] = [].slice.call((rowsAxisContent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(2);
+                let args: any = {
+                    target: rowsAxisContent,
+                    cancel: true,
+                    event: getEventObject('MouseEvents', 'mouseup', treeObj.element, rowsAxisContent) as any
+                } as DragAndDropEventArgs;
+                pivotCommon.nodeStateModified.onStateModified(args, 'pno');
+                fieldListObj.axisFieldModule.render();
+                pivotButton = [].slice.call((rowsAxisContent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(3);
+                expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('pno');
+            });
+            it('Apply button', () => {
+                document.getElementById('PivotFieldList_DeferUpdateButton1').click();
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
+            });
+            it('testing column axis using drop args', () => {
+                let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
+                let rightAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-right-axis-fields');
+                let columnAxisContent: HTMLElement = rightAxisPanel.querySelector('.e-columns');
+                let pivotButton: HTMLElement[] = [].slice.call((columnAxisContent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(2);
+                let args: any = {
+                    target: columnAxisContent,
+                    cancel: true,
+                    event: getEventObject('MouseEvents', 'mouseup', treeObj.element, columnAxisContent) as any
+                } as DragAndDropEventArgs;
+                pivotCommon.nodeStateModified.onStateModified(args, 'pno');
+                fieldListObj.axisFieldModule.render();
+                pivotButton = [].slice.call((columnAxisContent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(3);
+                expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('Values');
+            });
+            it('Cancel button', () => {
+                document.getElementById('PivotFieldList_DeferUpdateButton2').click();
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
+            });
+            it('testing column axis using drop args', () => {
+                let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
+                let rightAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-right-axis-fields');
+                let columnAxisContent: HTMLElement = rightAxisPanel.querySelector('.e-columns');
+                let pivotButton: HTMLElement[] = [].slice.call((columnAxisContent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(2);
+                let args: any = {
+                    target: columnAxisContent,
+                    cancel: true,
+                    event: getEventObject('MouseEvents', 'mouseup', treeObj.element, columnAxisContent) as any
+                } as DragAndDropEventArgs;
+                pivotCommon.nodeStateModified.onStateModified(args, 'pno');
+                fieldListObj.axisFieldModule.render();
+                pivotButton = [].slice.call((columnAxisContent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(3);
+                expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('Values');
+            });
+            it('Apply button', () => {
+                document.getElementById('PivotFieldList_DeferUpdateButton1').click();
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
+            });
+        });
+        describe('Check public method for node state change', () => {
+            let fieldListObj: PivotFieldList;
+            let pivotGridObj: PivotView;
+            let pivotCommon: PivotCommon;
+            let grid: HTMLElement = createElement('div', { id: 'PivotView', styles: 'width: 58%; height: 100%; float: left' });
+            let fieldlist: HTMLElement = createElement('div', { id: 'PivotFieldList', styles: 'width: 42%; height: 100%; float: right' });
+            let elem: HTMLElement = createElement('div', { className: 'container', styles: 'height: 700px' });
+            elem.appendChild(grid); elem.appendChild(fieldlist);
+            PivotView.Inject(GroupingBar);
+            PivotFieldList.Inject(CalculatedField);
+            afterAll(() => {
+                if (fieldListObj) {
+                    fieldListObj.destroy();
+                }
+                if (pivotGridObj) {
+                    pivotGridObj.destroy();
+                }
+                remove(elem);
+            });
+            beforeAll((done: Function) => {
+                if (document.getElementById(elem.id)) {
+                    remove(document.getElementById(elem.id));
+                }
+                document.body.appendChild(elem);
+                let dataBound: EmitType<Object> = () => {
+                    done();
+                };
+                pivotGridObj = new PivotView({
+                    enginePopulated: () => {
+                        if (fieldListObj) {
+                            fieldListObj.update(pivotGridObj);
+                        }
+                    },
+                    enableValueSorting: true,
+                    showGroupingBar: true,
+                    allowDeferLayoutUpdate: true,
+                    width: '99%',
+                    height: 530,
+                    gridSettings: { columnWidth: 140 }
+                });
+                pivotGridObj.appendTo('#PivotView');
+                fieldListObj = new PivotFieldList(
+                    {
+                        dataSource: {
+                            data: pivot_dataset as IDataSet[],
+                            expandAll: false,
+                            enableSorting: true,
+                            rows: [{ name: 'state' }],
+                            columns: [{ name: 'gender' }],
+                            values: [{ name: 'balance' }, { name: 'quantity' }],
+                        },
+                        allowDeferLayoutUpdate: true,
+                        allowCalculatedField: true,
+                        showValuesButton: true,
+                        enginePopulated: (): void => {
+                            if (fieldListObj.isRequiredUpdate) {
+                                fieldListObj.updateView(pivotGridObj);
+                            }
+                            pivotGridObj.notify('ui-update', pivotGridObj);
+                            fieldListObj.notify('tree-view-update', fieldListObj);
+                        },
+                        renderMode: 'Fixed',
+                        dataBound: dataBound
+                    });
+                fieldListObj.appendTo('#PivotFieldList');
+                pivotCommon = fieldListObj.pivotCommon;
+            });
+            it('Check node', () => {
+                let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                expect(checkEle.length).toBeGreaterThan(0);
+                checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(5);
+            });
+            it('Cancel button', () => {
+                document.getElementById('PivotFieldList_DeferUpdateButton2').click();
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(4);
+            });
+            it('Check node', () => {
+                let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                expect(checkEle.length).toBeGreaterThan(0);
+                checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(5);
+            });
+            it('Apply button', () => {
+                document.getElementById('PivotFieldList_DeferUpdateButton1').click();
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(5);
+            });
+            it('Check node', () => {
+                let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                expect(checkEle.length).toBeGreaterThan(0);
+                checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(4);
+            });
+            it('Cancel button', () => {
+                document.getElementById('PivotFieldList_DeferUpdateButton2').click();
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(5);
+            });
+            it('Check node', () => {
+                let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                expect(checkEle.length).toBeGreaterThan(0);
+                checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(4);
+            });
+            it('Apply button', () => {
+                document.getElementById('PivotFieldList_DeferUpdateButton1').click();
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(4);
+            });
+            it('Sort Click', () => {
+                (fieldListObj.element.querySelector('.e-pivot-button .e-sort') as HTMLElement).click();
+                expect(document.querySelector('.e-pivot-button .e-sort').classList.contains('e-descend')).toBeTruthy;
+            });
+            it('Cancel button', () => {
+                document.getElementById('PivotFieldList_DeferUpdateButton2').click();
+                expect(document.querySelector('.e-pivot-button .e-sort').classList.contains('e-descend')).toBeFalsy;
+            });
+            it('Sort Click', () => {
+                (fieldListObj.element.querySelector('.e-pivot-button .e-sort') as HTMLElement).click();
+                expect(document.querySelector('.e-pivot-button .e-sort').classList.contains('e-descend')).toBeTruthy;
+            });
+            it('Apply button', () => {
+                document.getElementById('PivotFieldList_DeferUpdateButton1').click();
+                expect(document.querySelector('.e-pivot-button .e-sort').classList.contains('e-descend')).toBeTruthy;
+            });
+            it('check include type filter field', (done: Function) => {
+                let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+                let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(fieldListObj.pivotCommon.filterDialog.dialogPopUp.element.classList.contains('e-popup-open')).toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('check all nodes on filter popup', () => {
+                let treeObj: TreeView = fieldListObj.pivotCommon.filterDialog.allMemberSelect;
+                let memberTreeObj: TreeView = fieldListObj.pivotCommon.filterDialog.memberTreeView;
+                let allNode: HTMLElement = treeObj.element.querySelector('.e-checkbox-wrapper');
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                expect(checkEle.length).toBeGreaterThan(0);
+                expect(allNode.classList.contains('e-small')).toBe(false);
+                checkTreeNode(treeObj, closest(allNode, 'li'));
+                let checkedEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-check');
+                expect(checkEle.length).toEqual(6);
+                expect(fieldListObj.pivotCommon.filterDialog.dialogPopUp.element.querySelector('.e-ok-btn').getAttribute('disabled')).toBe('disabled');
+                (fieldListObj.pivotCommon.filterDialog.dialogPopUp.element.querySelector('.e-ok-btn') as HTMLElement).click();
+            });
+            it('check filter state after update', (done: Function) => {
+                let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+                expect(fieldListObj.pivotCommon.filterDialog.dialogPopUp).toBeUndefined;
+                let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                expect((pivotButtons[0]).querySelector('.e-btn-filter').classList.contains('e-pv-filter')).toBeTruthy;
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    done();
+                }, 1000);
+            });
+            it('Cancel button', () => {
+                document.getElementById('PivotFieldList_DeferUpdateButton2').click();
+                expect(document.querySelector('.e-pivot-button .e-sort').classList.contains('e-descend')).toBeFalsy;
+            });
+            it('check include type filter field', (done: Function) => {
+                let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+                let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(fieldListObj.pivotCommon.filterDialog.dialogPopUp.element.classList.contains('e-popup-open')).toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('check all nodes on filter popup', () => {
+                let treeObj: TreeView = fieldListObj.pivotCommon.filterDialog.allMemberSelect;
+                let memberTreeObj: TreeView = fieldListObj.pivotCommon.filterDialog.memberTreeView;
+                let allNode: HTMLElement = treeObj.element.querySelector('.e-checkbox-wrapper');
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                expect(checkEle.length).toBeGreaterThan(0);
+                expect(allNode.classList.contains('e-small')).toBe(false);
+                checkTreeNode(treeObj, closest(allNode, 'li'));
+                let checkedEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-check');
+                expect(checkEle.length).toEqual(6);
+                expect(fieldListObj.pivotCommon.filterDialog.dialogPopUp.element.querySelector('.e-ok-btn').getAttribute('disabled')).toBe('disabled');
+                (fieldListObj.pivotCommon.filterDialog.dialogPopUp.element.querySelector('.e-ok-btn') as HTMLElement).click();
+            });
+            it('check filter state after update', (done: Function) => {
+                let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+                expect(fieldListObj.pivotCommon.filterDialog.dialogPopUp).toBeUndefined;
+                let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                expect((pivotButtons[0]).querySelector('.e-btn-filter').classList.contains('e-pv-filter')).toBeTruthy;
+                ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(fieldListObj.pivotCommon.filterDialog.dialogPopUp.element.classList.contains('e-popup-open')).toBe(true);
+                    (fieldListObj.pivotCommon.filterDialog.dialogPopUp.element.querySelector('.e-ok-btn') as HTMLElement).click();
+                    done();
+                }, 1000);
+            });
+            it('Apply button', () => {
+                document.getElementById('PivotFieldList_DeferUpdateButton1').click();
+                expect(document.querySelector('.e-pivot-button .e-sort').classList.contains('e-descend')).toBeTruthy;
+            });
+            it('Remove Click', () => {
+                (fieldListObj.element.querySelector('.e-pivot-button .e-remove') as HTMLElement).click();
+                expect(document.querySelectorAll('.e-pivot-button').length === 4).toBeTruthy;
+            });
+            it('Cancel button', () => {
+                document.getElementById('PivotFieldList_DeferUpdateButton2').click();
+                expect(document.querySelectorAll('.e-pivot-button').length === 5).toBeTruthy;
+            });
+            it('Remove Click', () => {
+                (fieldListObj.element.querySelector('.e-pivot-button .e-remove') as HTMLElement).click();
+                expect(document.querySelectorAll('.e-pivot-button').length === 4).toBeTruthy;
+            });
+            it('Apply button', () => {
+                document.getElementById('PivotFieldList_DeferUpdateButton1').click();
+                expect(document.querySelectorAll('.e-pivot-button').length === 4).toBeTruthy;
+            });
+            it('Check defer update', (done: Function) => {
+                (fieldListObj.element.querySelector('.e-layout-footer .e-frame') as HTMLElement).click();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect((fieldListObj.element.querySelector('#PivotFieldList_DeferUpdateButton1') as HTMLButtonElement).disabled).toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('Check defer update', (done: Function) => {
+                (fieldListObj.element.querySelector('.e-layout-footer .e-frame') as HTMLElement).click();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect((fieldListObj.element.querySelector('#PivotFieldList_DeferUpdateButton1') as HTMLButtonElement).disabled).toBe(false);
+                    done();
+                }, 1000);
+            });
+        });
+        describe('- Field List with injected Module - ', () => {
+            let pivotGridObj: PivotView;
+            let keyModule: any;
+            let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+            afterAll(() => {
+                if (pivotGridObj) {
+                    pivotGridObj.destroy();
+                }
+                remove(elem);
+            });
+            beforeAll((done: Function) => {
+                if (!document.getElementById(elem.id)) {
+                    document.body.appendChild(elem);
+                }
+                let dataBound: EmitType<Object> = () => { done(); };
+                PivotView.Inject(GroupingBar, FieldList);
+                pivotGridObj = new PivotView({
+                    dataSource: {
+                        data: pivot_dataset as IDataSet[],
+                        expandAll: false,
+                        enableSorting: true,
+                        sortSettings: [{ name: 'company', order: 'Descending' }],
+                        filterSettings: [{ name: 'name', type: 'Include', items: ['Knight Wooten'] },
+                        { name: 'company', type: 'Include', items: ['NIPAZ'] },
+                        { name: 'gender', type: 'Include', items: ['male'] }],
+                        rows: [{ name: 'company' }, { name: 'state' }],
+                        columns: [{ name: 'name' }],
+                        values: [{ name: 'balance' }, { name: 'quantity' }], filters: [{ name: 'gender' }]
+                    },
+                    allowDeferLayoutUpdate: true,
+                    showGroupingBar: true,
+                    showFieldList: true,
+                    dataBound: dataBound
+                });
+                pivotGridObj.appendTo('#PivotGrid');
+                disableDialogAnimation(pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog);
+            });
+            let persistdata: string;
+            it('set keymodule', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    keyModule = pivotGridObj.pivotCommon.keyboardModule
+                    done();
+                }, 1000);
+            });
+            it('check dropdown icon', (done: Function) => {
+                let valueField: HTMLElement = pivotGridObj.element.querySelector('.e-group-values');
+                let pivotButtons: HTMLElement[] = [].slice.call(valueField.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                keyModule.keyActionHandler({ action: 'enter', target: pivotButtons[0], preventDefault: (): void => { /** Null */ } });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(document.getElementById("FieldListcontextmenu")).toBeTruthy;
+                    done();
+                }, 1000);
+            });
+            it('select context Menu', (done: Function) => {
+                let menuObj: any = (pivotGridObj.pivotButtonModule.menuOption as any).menuInfo;
+                let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>menuObj.element.querySelectorAll('li');
+                let menu: any = {
+                    element: li[0],
+                    item: menuObj.items[0]
+                };
+                menuObj.select(menu as MenuEventArgs);
+                let valueField: HTMLElement = pivotGridObj.element.querySelector('.e-group-values');
+                let pivotButtons: HTMLElement[] = [].slice.call(valueField.querySelectorAll('.e-pivot-button'));
+                //expect(pivotButtons.length).toBeGreaterThan(0);
+                let buttonText: HTMLElement = ((pivotButtons[0]).querySelector('.e-content') as HTMLElement);
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    menuObj.close();
+                    expect(buttonText.innerHTML).toEqual('Count of balance');
+                    done();
+                }, 1000);
+            });
+            it('Check aggregation in fieldlist', (done: Function) => {
+                //pivotGridObj.refresh();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect((pivotGridObj.element.querySelector('.e-toggle-field-list') as HTMLElement).click()).toBeTruthy;
+                    done();
+                }, 1000);
+            });
+            it('check dropdown icon', (done: Function) => {
+                //var valueField: HTMLElement = pivotGridObj.element.querySelector('.e-group-values');
+                let valueField: HTMLElement = pivotGridObj.pivotFieldListModule.axisTableModule.axisTable.querySelector('.e-field-list-values');
+                let pivotButtons: HTMLElement[] = [].slice.call(valueField.querySelectorAll('.e-pivot-button'));
+                //expect(pivotButtons.length).toBeGreaterThan(0);
+                keyModule.keyActionHandler({ action: 'enter', target: pivotButtons[0], preventDefault: (): void => { /** Null */ } });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(document.getElementById("FieldListcontextmenu")).toBeTruthy;
+                    done();
+                }, 1000);
+            });
+            it('select context Menu', (done: Function) => {
+                let menuObj: any = (pivotGridObj.pivotFieldListModule.pivotButtonModule.menuOption as any).menuInfo;
+                let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>menuObj.element.querySelectorAll('li');
+                let menu: any = {
+                    element: li[2],
+                    item: menuObj.items[2]
+                };
+                menuObj.select(menu as MenuEventArgs);
+                let valueField: HTMLElement = pivotGridObj.pivotFieldListModule.axisTableModule.axisTable.querySelector('.e-field-list-values');
+                let pivotButtons: HTMLElement[] = [].slice.call(valueField.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                let buttonText: HTMLElement = ((pivotButtons[0]).querySelector('.e-content') as HTMLElement);
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(buttonText.innerHTML === 'Avg of balance').toBeTruthy;   
+                    (pivotGridObj.element.querySelector('.e-toggle-field-list') as HTMLElement).click();
+                    done();
+                }, 1000);
+            });
+            it('check sorting order field', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let pivotButtons: HTMLElement[] =
+                    [].slice.call(pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-columns').querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                    ((pivotButtons[0]).querySelector('.e-sort') as HTMLElement).click();
+                    expect(true).toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('sorting order after update', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let pivotButtons: HTMLElement[] =
+                        [].slice.call(pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-columns').querySelectorAll('.e-pivot-button'));
+                    expect(pivotButtons.length).toBeGreaterThan(0);
+                    expect((pivotButtons[0]).querySelector('.e-descend')).toBeTruthy;
+                    done();
+                }, 1000);
+            });
+            it('Cancel button', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (document.querySelector('.e-cancel-btn') as HTMLElement).click();
+                    expect(true).toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('sorting order after update', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let pivotButtons: HTMLElement[] =
+                        [].slice.call(pivotGridObj.element.querySelector('.e-columns').querySelectorAll('.e-pivot-button'));
+                    expect(pivotButtons.length).toBeGreaterThan(0);
+                    expect((pivotButtons[0]).querySelector('.e-descend')).toBeFalsy;
+                    done();
+                }, 1000);
+            });
+            it('check open field list popup', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (pivotGridObj.element.querySelector('.e-toggle-field-list') as HTMLElement).click();
+                    expect(true).toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('check sorting order field', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let pivotButtons: HTMLElement[] =
+                        [].slice.call(pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-columns').querySelectorAll('.e-pivot-button'));
+                    expect(pivotButtons.length).toBeGreaterThan(0);
+                    ((pivotButtons[0]).querySelector('.e-sort') as HTMLElement).click();
+                    expect(true).toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('Apply button', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (document.querySelector('.e-defer-update-btn') as HTMLElement).click();
+                    expect(true).toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('sorting order after update', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let pivotButtons: HTMLElement[] =
+                        [].slice.call(pivotGridObj.element.querySelector('.e-columns').querySelectorAll('.e-pivot-button'));
+                    expect(pivotButtons.length).toBeGreaterThan(0);
+                    expect((pivotButtons[0]).querySelector('.e-descend')).toBeTruthy;
+                    done();
+                }, 1000);
+            });
+            it('check open field list popup', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (pivotGridObj.element.querySelector('.e-toggle-field-list') as HTMLElement).click();
+                    expect(true).toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('check filtering field', (done: Function) => {
+                let pivotButtons: HTMLElement[] =
+                    [].slice.call(pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-filters').querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let filterDialog: Dialog = pivotGridObj.pivotFieldListModule.pivotCommon.filterDialog.dialogPopUp;
+                    expect(filterDialog.element.classList.contains('e-popup-open')).toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('check all nodes on filter popup', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let treeObj: TreeView = pivotGridObj.pivotFieldListModule.pivotCommon.filterDialog.allMemberSelect;
+                    let memberTreeObj: TreeView = pivotGridObj.pivotFieldListModule.pivotCommon.filterDialog.memberTreeView;
+                    let filterDialog: Dialog = pivotGridObj.pivotFieldListModule.pivotCommon.filterDialog.dialogPopUp;
+                    let allNode: HTMLElement = treeObj.element.querySelector('.e-checkbox-wrapper');
+                    let checkEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                    expect(checkEle.length).toBeGreaterThan(0);
+                    expect(allNode.classList.contains('e-small')).toBe(false);
+                    let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                    allNode.querySelector('.e-frame').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    allNode.querySelector('.e-frame').dispatchEvent(args);
+                    args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                    allNode.querySelector('.e-frame').dispatchEvent(args);
+                    let checkedEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-check');
+                    expect(checkEle.length).toEqual(checkedEle.length);
+                    expect(filterDialog.element.querySelector('.e-ok-btn').getAttribute('disabled')).toBe(null);
+                    (filterDialog.element.querySelector('.e-ok-btn') as HTMLElement).click();
+                    done();
+                }, 1000);
+            });
+            it('check filter state after update', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let filterDialog: Dialog = pivotGridObj.pivotFieldListModule.pivotCommon.filterDialog.dialogPopUp;
+                    expect(filterDialog).toBeUndefined;
+                    done();
+                }, 1000);
+            });
+            it('Cancel button', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (document.querySelector('.e-cancel-btn') as HTMLElement).click();
+                    expect(true).toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('check open field list popup', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (pivotGridObj.element.querySelector('.e-toggle-field-list') as HTMLElement).click();
+                    expect(true).toBe(true);
+                done();
+                }, 1000);
+            });
+            it('check filtering field', (done: Function) => {
+                let pivotButtons: HTMLElement[] =
+                    [].slice.call(pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-filters').querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let filterDialog: Dialog = pivotGridObj.pivotFieldListModule.pivotCommon.filterDialog.dialogPopUp;
+                    expect(filterDialog.element.classList.contains('e-popup-open')).toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('check all nodes on filter popup', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let treeObj: TreeView = pivotGridObj.pivotFieldListModule.pivotCommon.filterDialog.allMemberSelect;
+                    let memberTreeObj: TreeView = pivotGridObj.pivotFieldListModule.pivotCommon.filterDialog.memberTreeView;
+                    let filterDialog: Dialog = pivotGridObj.pivotFieldListModule.pivotCommon.filterDialog.dialogPopUp;
+                    let allNode: HTMLElement = treeObj.element.querySelector('.e-checkbox-wrapper');
+                    let checkEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                    expect(checkEle.length).toBeGreaterThan(0);
+                    expect(allNode.classList.contains('e-small')).toBe(false);
+                    let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                    allNode.querySelector('.e-frame').dispatchEvent(args);
+                    args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    allNode.querySelector('.e-frame').dispatchEvent(args);
+                    args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                    allNode.querySelector('.e-frame').dispatchEvent(args);
+                    let checkedEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-check');
+                    expect(checkEle.length).toEqual(checkedEle.length);
+                    expect(filterDialog.element.querySelector('.e-ok-btn').getAttribute('disabled')).toBe(null);
+                    (filterDialog.element.querySelector('.e-ok-btn') as HTMLElement).click();
+                    done();
+                }, 1000);
+            });
+            it('check filter state after update', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let filterDialog: Dialog = pivotGridObj.pivotCommon.filterDialog.dialogPopUp;
+                    expect(filterDialog).toBeUndefined;
+                    done();
+                }, 1000);
+            });
+            it('Apply button', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (document.querySelector('.e-defer-update-btn') as HTMLElement).click();
+                    expect(true).toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('check open field list popup', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (pivotGridObj.element.querySelector('.e-toggle-field-list') as HTMLElement).click();
+                    expect(true).toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('check remove pivot button', (done: Function) => {
+                let pivotButton: HTMLElement =
+                    (pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
+                expect(pivotButton.id).toBe('gender');
+                (pivotButton.querySelector('.e-remove') as HTMLElement).click();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    pivotButton = (pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
+                    expect(pivotButton).toBeNull();
+                    done();
+                }, 1000);
+            });
+            it('Cancel button', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (document.querySelector('.e-cancel-btn') as HTMLElement).click();
+                    expect(true).toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('check open field list popup', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (pivotGridObj.element.querySelector('.e-toggle-field-list') as HTMLElement).click();
+                    expect(true).toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('check remove pivot button', (done: Function) => {
+                let pivotButton: HTMLElement =
+                    (pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
+                expect(pivotButton.id).toBe('gender');
+                (pivotButton.querySelector('.e-remove') as HTMLElement).click();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    pivotButton = (pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
+                    expect(pivotButton).toBeNull();
+                    done();
+                }, 1000);
+            });
+            it('Apply button', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (document.querySelector('.e-defer-update-btn') as HTMLElement).click();
+                    expect(true).toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('check open field list popup', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (pivotGridObj.element.querySelector('.e-toggle-field-list') as HTMLElement).click();
+                    expect(true).toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('check drag and drop pivot button', (done: Function) => {
+                let rowAxiscontent: HTMLElement = pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-rows');
+                let valueAxiscontent: HTMLElement = pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-values');
+                let pivotButton: HTMLElement[] = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(2);
+                let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
+                let mousedown: any =
+                    getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+                EventHandler.trigger(dragElement, 'mousedown', mousedown);
+                let mousemove: any =
+                    getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
+                mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                mousemove = setMouseCordinates(mousemove, 15, 75);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
+                mouseUp.type = 'mouseup';
+                mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
+                EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                    expect(pivotButton.length).toEqual(3);
+                    done();
+                }, 1000);
+            });
+            it('Cancel button', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (document.querySelector('.e-cancel-btn') as HTMLElement).click();
+                    expect(true).toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('check open field list popup', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (pivotGridObj.element.querySelector('.e-toggle-field-list') as HTMLElement).click();
+                    expect(true).toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('check drag and drop pivot button', (done: Function) => {
+                let rowAxiscontent: HTMLElement = pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-rows');
+                let valueAxiscontent: HTMLElement = pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-values');
+                let pivotButton: HTMLElement[] = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(2);
+                let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
+                let mousedown: any =
+                    getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+                EventHandler.trigger(dragElement, 'mousedown', mousedown);
+                let mousemove: any =
+                    getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
+                mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                mousemove = setMouseCordinates(mousemove, 15, 75);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
+                mouseUp.type = 'mouseup';
+                mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
+                EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                    expect(pivotButton.length).toEqual(3);
+                    done();
+                }, 1000);
+            });
+            it('Apply button', (done: Function) => {
+                (document.querySelector('.e-defer-update-btn') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(true).toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('check open field list popup', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (pivotGridObj.element.querySelector('.e-toggle-field-list') as HTMLElement).click();
+                    expect(true).toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('Check defer update', (done: Function) => {
+                (pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-layout-footer .e-frame') as HTMLElement).click();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect((pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('#PivotGrid_PivotFieldList_DeferUpdateButton1') as HTMLButtonElement).style.display === 'none').toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('Check defer update', (done: Function) => {
+                (pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-layout-footer .e-frame') as HTMLElement).click();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect((pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('#PivotGrid_PivotFieldList_DeferUpdateButton1') as HTMLButtonElement).style.display === '').toBe(true);
+                    done();
+                }, 1000);
+            });
+        });
+    });
+
     /**
      * Pivot Field List Drag and drop spec
      */
@@ -2979,6 +4157,7 @@ describe('PivotFieldList spec', () => {
             });
         });
     });
+
 
     /**
      * Pivot keyboard interaction spec
@@ -3525,6 +4704,189 @@ describe('PivotFieldList spec', () => {
                     done();
                 }, 1000);
             });
+        });
+    });
+    describe('Testing Pivot Grid aggregation module on keyboard interaction in grouping bar with fieldlist', () => {
+        let pivotGridObj: any;
+        let keyModule: any;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            PivotView.Inject(GroupingBar, FieldList, CalculatedField);
+            pivotGridObj = new PivotView({
+                dataSource: {
+                    data: pivot_dataset as IDataSet[],
+                    expandAll: false,
+                    formatSettings: [{ name: 'balance', format: 'C' }],
+                    sortSettings: [{ name: 'eyeColor', order: 'Descending' }],
+                    rows: [{ name: 'eyeColor' }],
+                    columns: [{ name: 'isActive' }],
+                    values: [{ name: 'balance' }]
+                },
+                showFieldList: true,
+                allowCalculatedField: true,
+                showGroupingBar: true,
+
+                width: 1000,
+                height: 500
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        it('set keymodule', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                keyModule = pivotGridObj.pivotCommon.keyboardModule
+                done();
+            }, 1000);
+        });
+        it('check dropdown icon', () => {
+            var valueField: HTMLElement = pivotGridObj.element.querySelector('.e-group-values');
+            var pivotButtons: HTMLElement[] = [].slice.call(valueField.querySelectorAll('.e-pivot-button'));
+            expect(pivotButtons.length).toBeGreaterThan(0);
+            keyModule.keyActionHandler({ action: 'enter', target: pivotButtons[0], preventDefault: (): void => { /** Null */ } });
+            expect(document.getElementById("FieldListcontextmenu")).toBeTruthy;
+        });
+        it('select context Menu', (done: Function) => {
+            let menuObj: any = (pivotGridObj.pivotButtonModule.menuOption as any).menuInfo;
+            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>menuObj.element.querySelectorAll('li');
+            let menu: any = {
+                element: li[0],
+                item: menuObj.items[0]
+            };
+            menuObj.select(menu as MenuEventArgs);
+            var valueField: HTMLElement = pivotGridObj.element.querySelector('.e-group-values');
+            var pivotButtons: HTMLElement[] = [].slice.call(valueField.querySelectorAll('.e-pivot-button'));
+            //expect(pivotButtons.length).toBeGreaterThan(0);
+            let buttonText: HTMLElement = ((pivotButtons[0]).querySelector('.e-content') as HTMLElement);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                menuObj.close();
+                expect(buttonText.innerHTML).toEqual('Count of balance');
+                done();
+            }, 1000);
+        });
+        it('check pivot grid aggregation', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                let target: HTMLElement = pivotGridObj.element.querySelector('td[aria-colindex="1"]');
+                expect(target.querySelector(".e-cellvalue").innerHTML).toEqual('69');
+                done();
+            }, 1000);
+        });
+        it('check dropdown icon for more option', () => {
+            var valueField: HTMLElement = pivotGridObj.element.querySelector('.e-group-values');
+            var pivotButtons: HTMLElement[] = [].slice.call(valueField.querySelectorAll('.e-pivot-button'));
+            expect(pivotButtons.length).toBeGreaterThan(0);
+            keyModule.keyActionHandler({ action: 'enter', target: pivotButtons[0], preventDefault: (): void => { /** Null */ } });
+            expect(document.getElementById("FieldListcontextmenu")).toBeTruthy;
+        });
+        it('check more option dialog', (done: Function) => {
+            let menuObj: any = (pivotGridObj.pivotButtonModule.menuOption as any).menuInfo;
+            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>menuObj.element.querySelectorAll('li');
+            let menu: any = {
+                element: li[li.length - 1],
+                item: menuObj.items[li.length - 1]
+            };
+            menuObj.select(menu as MenuEventArgs);
+            var valueField: HTMLElement = pivotGridObj.element.querySelector('.e-group-values');
+            var pivotButtons: HTMLElement[] = [].slice.call(valueField.querySelectorAll('.e-pivot-button'));
+            //expect(pivotButtons.length).toBeGreaterThan(0);
+            let buttonText: HTMLElement = ((pivotButtons[0]).querySelector('.e-content') as HTMLElement);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                menuObj.close();
+                expect(buttonText.innerHTML).toEqual('Count of balance');
+                done();
+            }, 1000);
+        });
+        it('agrregation options check', (done: Function) => {
+            let dialogElement: HTMLElement = (pivotGridObj.pivotButtonModule.menuOption as any).valueDialog.element;
+            let dropdownlist: any = getInstance(dialogElement.querySelector('#' + 'PivotGrid_type_option') as HTMLElement, DropDownList);
+            let fieldsddl: any = getInstance(dialogElement.querySelector('#' + 'PivotGrid_base_field_option') as HTMLElement, DropDownList);
+            expect(fieldsddl).toBeTruthy;
+            expect(dropdownlist).toBeTruthy;
+            dropdownlist.value = "DifferenceFrom";
+            fieldsddl.value = "isActive";
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                (dialogElement.querySelector('.e-ok-btn') as HTMLElement).click();
+                done();
+            }, 1000);
+        });
+        it('check pivot grid aggregation', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                let target: HTMLElement = pivotGridObj.element.querySelector('td[aria-colindex="2"]');
+                expect(target.querySelector(".e-cellvalue").innerHTML).toEqual('$29,322.76');
+                done();
+            }, 1000);
+        });
+        it('Check aggregation in fieldlist', (done: Function) => {
+            //pivotGridObj.refresh();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect((pivotGridObj.element.querySelector('.e-toggle-field-list') as HTMLElement).click()).toBeTruthy;
+                done();
+            }, 1000);
+        });
+        it('check dropdown icon', () => {
+            //var valueField: HTMLElement = pivotGridObj.element.querySelector('.e-group-values');
+            var valueField: HTMLElement = pivotGridObj.pivotFieldListModule.axisTableModule.axisTable.querySelector('.e-field-list-values');
+            var pivotButtons: HTMLElement[] = [].slice.call(valueField.querySelectorAll('.e-pivot-button'));
+            //expect(pivotButtons.length).toBeGreaterThan(0);
+            keyModule.keyActionHandler({ action: 'enter', target: pivotButtons[0], preventDefault: (): void => { /** Null */ } });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            expect(document.getElementById("FieldListcontextmenu")).toBeTruthy;
+        });
+        it('select context Menu', (done: Function) => {
+            let menuObj: any = (pivotGridObj.pivotFieldListModule.pivotButtonModule.menuOption as any).menuInfo;
+            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>menuObj.element.querySelectorAll('li');
+            let menu: any = {
+                element: li[2],
+                item: menuObj.items[2]
+            };
+            menuObj.select(menu as MenuEventArgs);
+            var valueField: HTMLElement = pivotGridObj.pivotFieldListModule.axisTableModule.axisTable.querySelector('.e-field-list-values');
+            var pivotButtons: HTMLElement[] = [].slice.call(valueField.querySelectorAll('.e-pivot-button'));
+            expect(pivotButtons.length).toBeGreaterThan(0);
+            let buttonText: HTMLElement = ((pivotButtons[0]).querySelector('.e-content') as HTMLElement);
+            expect(buttonText.innerHTML === 'Avg of balance').toBeTruthy;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                done();
+            }, 1000);
+        });
+        it('close the fieldlist dialog', (done: Function) => {
+            let fieldListWrapper = document.getElementById('PivotGrid_PivotFieldList_Wrapper');
+
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect((fieldListWrapper.querySelector('.e-cancel-btn') as HTMLElement).click()).toBeTruthy;
+                done();
+            }, 1000);
+        });
+        it('check pivot grid aggregation', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                let target: HTMLElement = pivotGridObj.element.querySelector('td[aria-colindex="1"]');
+                expect(target.querySelector(".e-cellvalue").innerHTML).toEqual('$2,424.22');
+                done();
+            }, 1000);
+        });
+        it('destroy aggregate menu', () => {
+            let menuOption: any = pivotGridObj.pivotButtonModule.menuOption;
+            menuOption.destroy();
+            expect((pivotGridObj.pivotButtonModule.menuOption as any).menuInfo).toBeUndefined;
+            expect((pivotGridObj.pivotButtonModule.menuOption as any).valueDialog).toBeUndefined;
         });
     });
 });

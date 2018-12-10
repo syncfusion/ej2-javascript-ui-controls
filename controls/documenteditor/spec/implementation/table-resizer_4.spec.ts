@@ -34,7 +34,7 @@ describe('Table Column resizing validation with selection', () => {
         document.body.removeChild(document.getElementById('container'));
         setTimeout(function () {
             done();
-        }, 2000);
+        }, 1000);
     });
     it('Resize Table Row', () => {
         editor.editor.insertTable(2, 2);
@@ -80,7 +80,7 @@ describe('Table Column resizing validation with selection', () => {
         document.body.removeChild(document.getElementById('container'));
         setTimeout(function () {
             done();
-        }, 2000);
+        }, 1000);
     });
     it('Resize Table Row', () => {
         editor.editor.insertTable(2, 2);
@@ -131,7 +131,7 @@ describe('Table Column resizing validation with selection', () => {
         document.body.removeChild(document.getElementById('container'));
         setTimeout(function () {
             done();
-        }, 2000);
+        }, 1000);
     });
     it('Resize Table column with left column selection ', () => {
         editor.editor.insertTable(2, 2);
@@ -834,7 +834,7 @@ describe('Table Cell resizing testing at cell resizer position at 0', () => {
         document.body.removeChild(document.getElementById('container'));
         setTimeout(function () {
             done();
-        }, 2000);
+        }, 1000);
     });
     it('Table grid before width value 83 and test resizer at position 0', () => {
         editor.open(getJson());
@@ -902,13 +902,14 @@ describe('Table Cell resizing testing at cell resizer position at 0', () => {
         document.body.removeChild(document.getElementById('container'));
         setTimeout(function () {
             done();
-        }, 2000);
+        }, 1000);
     });
     it('Table grid before width value 83 and test resizer at position 0', () => {
         editor.open(getJson());
         viewer = editor.viewer as PageLayoutViewer;
         editor.selection.handleDownKey();
         editor.selection.handleShiftRightKey();
+        expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.allowAutoFit).toBe(true);
         let offsetX: number = viewer.currentPage.boundingRectangle.x + 95.5;
         let event: any = { offsetX: offsetX, offsetY: 142, preventDefault: function () { }, ctrlKey: false, which: 1 };
         viewer.onMouseDownInternal(event);
@@ -920,6 +921,11 @@ describe('Table Cell resizing testing at cell resizer position at 0', () => {
         event = { offsetX: viewer.currentPage.boundingRectangle.x + 10, offsetY: 120, preventDefault: function () { }, ctrlKey: false, which: 0 };
         viewer.onMouseMoveInternal(event);
         viewer.onMouseUpInternal(event);
+        expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.allowAutoFit).toBe(false);
+        editor.editorHistory.undo();
+        expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.allowAutoFit).toBe(true);
+        editor.editorHistory.redo();
+        expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.allowAutoFit).toBe(false);
     });
 });
 

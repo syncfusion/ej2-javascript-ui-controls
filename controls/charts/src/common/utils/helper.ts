@@ -12,6 +12,7 @@ import { RangeNavigator } from '../../range-navigator/range-navigator';
 import { AccumulationSeries, AccPoints } from '../../accumulation-chart/model/acc-base';
 import { IShapes, IAxisLabelRenderEventArgs } from '../model/interface';
 import { axisLabelRender } from '../model/constants';
+import { StockChart } from '../../stock-chart/stock-chart';
 
 
 /**
@@ -378,7 +379,8 @@ export function createZoomingLabels(chart: Chart, axis: Axis, parent: Element, i
     let rx: number = 3;
     let arrowLocation: ChartLocation;
     let direction: string;
-    let scrollBarHeight: number = axis.zoomingScrollBar && axis.zoomingScrollBar.svgObject ? axis.scrollBarHeight : 0;
+    let scrollBarHeight: number = axis.scrollbarSettings.enable || (axis.zoomingScrollBar && axis.zoomingScrollBar.svgObject)
+     ? axis.scrollBarHeight : 0;
     for (let i: number = 0; i < 2; i++) {
         size = measureText(i ? axis.endLabel : axis.startLabel, axis.labelStyle);
         if (isVertical) {
@@ -552,6 +554,38 @@ export function markerAnimate(
 }
 
 /**
+ * Animate the rect element
+ */
+export function animateRectElement(
+    element: Element, delay: number, duration: number, currentRect: Rect, previousRect: Rect
+): void {
+    let setStyle: Function = (rect: Rect): void => {
+        element.setAttribute('x', rect.x + '');
+        element.setAttribute('y', rect.y + '');
+        element.setAttribute('width', rect.width + '');
+        element.setAttribute('height', rect.height + '');
+    };
+    new Animation({}).animate(createElement('div'), {
+        duration: duration,
+        delay: delay,
+        name: name,
+        progress: (args: AnimationOptions): void => {
+            setStyle(
+                new Rect(
+                    linear(args.timeStamp, previousRect.x, currentRect.x - previousRect.x, args.duration),
+                    linear(args.timeStamp, previousRect.y, currentRect.y - previousRect.y, args.duration),
+                    linear(args.timeStamp, previousRect.width, currentRect.width - previousRect.width, args.duration),
+                    linear(args.timeStamp, previousRect.height, currentRect.height - previousRect.height, args.duration)
+                )
+            );
+        },
+        end: (): void => {
+            setStyle(currentRect);
+        },
+    });
+}
+
+/**
  * Animation after legend click a path
  * @param element element to be animated
  * @param direction current direction of the path
@@ -578,7 +612,7 @@ export function pathAnimation(
             currentDireciton = '';
             splitDirections.map((directions: string, index: number) => {
                 startPath = directions.split(' ');
-                endPath = endDirections[index].split(' ');
+                endPath = endDirections[index] ? endDirections[index].split(' ') : startPath;
                 if (startPath[0] === 'Z') {
                     currentDireciton += 'Z' + ' ';
                 } else {
@@ -610,10 +644,10 @@ export function pathAnimation(
 }
 /**
  * To append the clip rect element
- * @param redraw 
- * @param options 
- * @param renderer 
- * @param clipPath 
+ * @param redraw
+ * @param options
+ * @param renderer
+ * @param clipPath
  */
 export function appendClipElement(
     redraw: boolean, options: BaseAttibutes, renderer: SvgRenderer,
@@ -923,14 +957,15 @@ export function appendElement(
 }
 /**
  * Method to append child element
- * @param parent 
- * @param childElement 
- * @param isReplace 
+ * @param parent
+ * @param childElement
+ * @param isReplace
  */
 export function appendChildElement(
     parent: Element | HTMLElement, childElement: Element | HTMLElement,
     redraw?: boolean, isAnimate: boolean = false, x: string = 'x', y: string = 'y',
-    start?: ChartLocation, direction?: string
+    start?: ChartLocation, direction?: string, forceAnimate: boolean = false,
+    isRect: boolean = false, previousRect: Rect = null
 ): void {
     let existChild: HTMLElement = parent.querySelector('#' + childElement.id);
     let element: HTMLElement = <HTMLElement>(existChild || getElement(childElement.id));
@@ -941,12 +976,22 @@ export function appendChildElement(
             new ChartLocation(+element.getAttribute(x), +element.getAttribute(y)));
         if (direction && direction !== 'undefined') {
             pathAnimation(childElement, childElement.getAttribute('d'), redraw, direction);
+        } else if (isRect && previousRect) {
+            animateRectElement(
+                child, 0, 300, new Rect(
+                    +element.getAttribute('x'), +element.getAttribute('y'),
+                    +element.getAttribute('width'), +element.getAttribute('height')
+                ),
+                previousRect
+            );
         } else {
             let end: ChartLocation = child.tagName === 'DIV' ?
                 new ChartLocation(+(child.style[x].split('px')[0]), +(child.style[y].split('px')[0])) :
                 new ChartLocation(+child.getAttribute(x), +child.getAttribute(y));
             animateRedrawElement(child, 300, start, end, x, y);
         }
+    } else if (redraw && isAnimate && !element && forceAnimate) {
+        templateAnimate(child, 0, 600, 'FadeIn');
     }
     if (existChild) {
         parent.replaceChild(child, element);
@@ -1380,7 +1425,8 @@ export function animateRedrawElement(
 /** @private */
 export function textElement(
     options: TextOption, font: FontModel, color: string,
-    parent: HTMLElement | Element, isMinus: boolean = false, redraw?: boolean, isAnimate?: boolean
+    parent: HTMLElement | Element, isMinus: boolean = false, redraw?: boolean, isAnimate?: boolean,
+    forceAnimate: boolean = false
 ): Element {
     let renderOptions: Object = {};
     let htmlObject: Element;
@@ -1417,7 +1463,7 @@ export function textElement(
             htmlObject.appendChild(tspanElement);
         }
     }
-    appendChildElement(parent, htmlObject, redraw, isAnimate);
+    appendChildElement(parent, htmlObject, redraw, isAnimate, 'x', 'y', null, null, forceAnimate);
     return htmlObject;
 }
 
@@ -1425,9 +1471,12 @@ export function textElement(
  * Method to calculate the width and height of the chart
  */
 
-export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator): void {
+export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator | StockChart): void {
     let containerWidth: number = chart.element.clientWidth;
     let containerHeight: number = chart.element.clientHeight;
+    if ((chart as Chart).stockChart) {
+        containerWidth = (chart as Chart).stockChart.element.clientWidth;
+    }
     let height: number = 450;
     let marginHeight: number;
     if (chart.getModuleName() === 'rangeNavigator') {
@@ -1452,11 +1501,17 @@ export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator)
 export function createSvg(chart: Chart | AccumulationChart | RangeNavigator): void {
     chart.renderer = new SvgRenderer(chart.element.id);
     calculateSize(chart);
-    chart.svgObject = chart.renderer.createSvg({
-        id: chart.element.id + '_svg',
-        width: chart.availableSize.width,
-        height: chart.availableSize.height
-    });
+    if ((chart as Chart).stockChart && chart.getModuleName() === 'chart') {
+        chart.svgObject = (chart as Chart).stockChart.chartObject;
+    } else if ((chart as RangeNavigator).stockChart && chart.getModuleName() === 'rangeNavigator') {
+        chart.svgObject = (chart as RangeNavigator).stockChart.selectorObject;
+    } else {
+        chart.svgObject = chart.renderer.createSvg({
+            id: chart.element.id + '_svg',
+            width: chart.availableSize.width,
+            height: chart.availableSize.height
+        });
+    }
 }
 
 /**

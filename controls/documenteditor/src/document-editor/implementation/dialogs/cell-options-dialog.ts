@@ -4,7 +4,7 @@ import { Dialog } from '@syncfusion/ej2-popups';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { WCellFormat } from '../index';
-import { isNullOrUndefined, L10n, createElement, setCulture } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, L10n, createElement } from '@syncfusion/ej2-base';
 import { SelectionTableFormat, SelectionCellFormat } from '../index';
 import { TableWidget, TableRowWidget, TableCellWidget } from '../viewer/page';
 import { TextPosition } from '../selection/selection-helper';
@@ -74,12 +74,11 @@ export class CellOptionsDialog {
     /**
      * @private
      */
-    public initCellMarginsDialog(localValue: L10n): void {
+    public initCellMarginsDialog(localValue: L10n, isRtl?: boolean): void {
         let instance: LayoutViewer = this.owner;
         this.target = createElement('div', {
             id: this.owner.owner.containerId + '_tableCellMarginsDialog', className: 'e-de-table-cell-margin-dlg'
         });
-        this.owner.owner.element.appendChild(this.target);
         let innerDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width: 475px;position: relative;height: 165px;' });
         let innerDivLabel: HTMLElement = createElement('Label', {
             className: 'e-de-cell-dia-options-label', id: this.target.id + '_innerDivLabel'
@@ -102,7 +101,8 @@ export class CellOptionsDialog {
         this.target.appendChild(divBtn);
         this.sameAsTableCheckBox = new CheckBox({
             label: localValue.getConstant('Same as the whole table'),
-            change: this.changeSameAsTable
+            change: this.changeSameAsTable,
+            enableRtl: isRtl
         });
         this.sameAsTableCheckBox.appendTo(sameAsTableCheckBox);
         this.sameAsTableCheckBox.addEventListener('change', this.changeSameAsTable);
@@ -113,9 +113,8 @@ export class CellOptionsDialog {
     public show(): void {
         let localizeValue: L10n = new L10n('documenteditor', this.owner.owner.defaultLocale);
         localizeValue.setLocale(this.owner.owner.locale);
-        setCulture(this.owner.owner.locale);
         if (!this.target) {
-            this.initCellMarginsDialog(localizeValue);
+            this.initCellMarginsDialog(localizeValue, this.owner.owner.enableRtl);
         }
         this.loadCellMarginsDialog();
         this.owner.dialog.header = localizeValue.getConstant('Cell Options');
@@ -305,7 +304,7 @@ export class CellOptionsDialog {
     public static getCellMarginDialogElements(dialog: CellOptionsDialog | TableOptionsDialog, div: HTMLDivElement, locale: L10n): void {
         if (!isNullOrUndefined(dialog)) {
             let table: HTMLTableElement = <HTMLTableElement>createElement('TABLE', { className: 'e-de-cell-margin-top' });
-            let tr1: HTMLTableRowElement = <HTMLTableRowElement>createElement('tr', { styles: 'height: 50px;color:black;' });
+            let tr1: HTMLTableRowElement = <HTMLTableRowElement>createElement('tr', { styles: 'height: 50px;' });
             let td1: HTMLTableCellElement = <HTMLTableCellElement>createElement('td');
             let topLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
                 innerHTML: locale.getConstant('Top'), className: 'e-de-cell-dia-label-common',
@@ -326,7 +325,7 @@ export class CellOptionsDialog {
             });
             td2.appendChild(leftLabel); td2.appendChild(leftTextBox);
             tr1.appendChild(td1); tr1.appendChild(td2);
-            let tr2: HTMLTableRowElement = <HTMLTableRowElement>createElement('tr', { styles: 'height: 50px;color:black;' });
+            let tr2: HTMLTableRowElement = <HTMLTableRowElement>createElement('tr', { styles: 'height: 50px;' });
             let td3: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { styles: 'width:40%;' });
             let bottomLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
                 innerHTML: locale.getConstant('Bottom'),

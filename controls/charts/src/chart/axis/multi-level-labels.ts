@@ -5,7 +5,7 @@ import { Chart } from '../chart';
 import { Axis } from '../axis/axis';
 import { FontModel } from '../../common/model/base-model';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { textWrap, TextOption, PathOption, Rect } from '../../common/utils/helper';
+import { textWrap, TextOption, PathOption, Rect, appendClipElement, getElement, appendChildElement } from '../../common/utils/helper';
 import { Size, valueToCoefficient, measureText, textTrim, textElement } from '../../common/utils/helper';
 import { MultiLevelLabels, MultiLevelCategories } from '../model/chart-base';
 import { IAxisMultiLabelRenderEventArgs } from '../../common/model/interface';
@@ -97,8 +97,8 @@ export class MultiLevelLabel {
         let labelSize: Size; let clipY: number; let isOutside: boolean = axis.labelPosition === 'Outside';
         let gap: number; let anchor: string; let isInversed: boolean = axis.isInversed;
         let argsData: IAxisMultiLabelRenderEventArgs; let labelElement: Element; let opposedPosition: boolean = axis.opposedPosition;
-        let scrollBarHeight: number = isOutside && isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight : 0;
-        scrollBarHeight = scrollBarHeight * (opposedPosition ? -1 : 1);
+        let scrollBarHeight: number = axis.scrollbarSettings.enable || (isOutside && isNullOrUndefined(axis.crossesAt)) ?
+         axis.scrollBarHeight : 0;
         clipY = ((opposedPosition && !isOutside) || (!opposedPosition && isOutside)) ?
             (axisRect.y + startY - axis.majorTickLines.width) : (axisRect.y - startY - axis.multiLevelLabelHeight);
         this.createClipRect(
@@ -143,7 +143,10 @@ export class MultiLevelLabel {
                                 textWrap(argsData.text, gap, argsData.textStyle) : textTrim(gap, argsData.text, argsData.textStyle);
                             options.x = options.x - padding / 2;
                         }
-                        textElement(options, argsData.textStyle, argsData.textStyle.color || this.chart.themeStyle.axisLabel, labelElement);
+                        textElement(
+                            options, argsData.textStyle, argsData.textStyle.color || this.chart.themeStyle.axisLabel, labelElement, false,
+                            this.chart.redraw, true
+                        );
                         if (multiLevel.border.width > 0 && multiLevel.border.type !== 'WithoutBorder') {
                             pathRect = this.renderXAxisLabelBorder(
                                 level, endX - startX - padding, axis, startX, startY, labelSize, options, axisRect, argsData.alignment,
@@ -181,10 +184,10 @@ export class MultiLevelLabel {
             case 'Rectangle':
             case 'WithoutTopBorder':
                 height = ((!opposedPosition && isOutside) || (opposedPosition && !isOutside)) ? height : -height;
-                path += 'M' + x + ' ' + y + 'L' + x + ' ' + (y + height) +
-                    'M' + (x + width) + ' ' + y + 'L' + (x + width) + ' ' + (y + height);
-                path += (groupLabel.border.type !== 'WithoutTopandBottomBorder') ? ('L' + ' ' + (x) + ' ' + (y + height) + ' ') : ' ';
-                path += groupLabel.border.type === 'Rectangle' ? ('M' + x + ' ' + y + 'L' + (x + width) + ' ' + y) : ' ';
+                path += 'M ' + x + ' ' + y + ' L ' + x + ' ' + (y + height) +
+                    ' M ' + (x + width) + ' ' + y + ' L ' + (x + width) + ' ' + (y + height);
+                path += (groupLabel.border.type !== 'WithoutTopandBottomBorder') ? (' L'  + ' ' + (x) + ' ' + (y + height) + ' ') : ' ';
+                path += groupLabel.border.type === 'Rectangle' ? (' M ' + x + ' ' + y + ' L ' + (x + width) + ' ' + y) : ' ';
                 break;
             case 'Brace':
                 if (alignment === 'Near') {
@@ -196,10 +199,10 @@ export class MultiLevelLabel {
                     value = textOptions.x - labelSize.width - 2; value1 = textOptions.x;
                 }
                 height = ((!opposedPosition && isOutside) || (opposedPosition && !isOutside)) ? height : -height;
-                path += 'M' + x + ' ' + y + 'L' + x + ' ' + (y + height / 2) +
-                    'M' + x + ' ' + (y + height / 2) + 'L' + (value - 2) + ' ' + (y + height / 2) +
-                    'M' + (value1) + ' ' + (y + height / 2) + 'L' + (x + width) + ' ' + (y + height / 2) +
-                    'M' + (x + width) + ' ' + (y + height / 2) + 'L' + (x + width) + ' ' + (y);
+                path += ' M ' + x + ' ' + y + ' L ' + x + ' ' + (y + height / 2) +
+                    ' M ' + x + ' ' + (y + height / 2) + ' L ' + (value - 2) + ' ' + (y + height / 2) +
+                    ' M ' + (value1) + ' ' + (y + height / 2) + ' L ' + (x + width) + ' ' + (y + height / 2) +
+                    ' M ' + (x + width) + ' ' + (y + height / 2) + ' L ' + (x + width) + ' ' + (y);
                 break;
             case 'CurlyBrace':
                 if ((!opposedPosition && isOutside) || (opposedPosition && !isOutside)) {
@@ -208,19 +211,19 @@ export class MultiLevelLabel {
                     padding = -10; padding1 = -15; padding2 = -5;
                 }
                 if (alignment === 'Center') {
-                    path += 'M' + x + ' ' + y + ' C ' + x + ' ' + y + ' ' + (x + 5) + ' ' + (y + padding) + ' ' + (x + 10) + ' ' +
-                        (y + padding) + 'L' + (x + width / 2 - 5) + ' ' + (y + padding) + 'L' + (x + width / 2) + ' ' + (y + padding1) +
-                        'L' + (x + width / 2 + 5) + ' ' + (y + padding) + 'L' + (x + width - 10) + ' ' + (y + padding) + ' C ' +
+                    path += ' M ' + x + ' ' + y + ' C ' + x + ' ' + y + ' ' + (x + 5) + ' ' + (y + padding) + ' ' + (x + 10) + ' ' +
+                        (y + padding) + ' L ' + (x + width / 2 - 5) + ' ' + (y + padding) + ' L ' + (x + width / 2) + ' ' + (y + padding1) +
+                        ' L ' + (x + width / 2 + 5) + ' ' + (y + padding) + ' L ' + (x + width - 10) + ' ' + (y + padding) + ' C ' +
                         (x + width - 10) + ' ' + (y + padding) + ' ' + (x + width) + ' ' + (y + padding2) + ' ' + (x + width) + ' ' + (y);
                 } else if (alignment === 'Near') {
-                    path += 'M' + x + ' ' + y + ' C ' + x + ' ' + y + ' ' + (x + 5) + ' ' + (y + padding) + ' ' + (x + 10) + ' ' +
-                        (y + padding) + 'L' + (x + 15) + ' ' + (y + padding1) + 'L' + (x + 20) + ' ' + (y + padding) + 'L' +
+                    path += ' M ' + x + ' ' + y + ' C ' + x + ' ' + y + ' ' + (x + 5) + ' ' + (y + padding) + ' ' + (x + 10) + ' ' +
+                        (y + padding) + ' L ' + (x + 15) + ' ' + (y + padding1) + ' L ' + (x + 20) + ' ' + (y + padding) + ' L ' +
                         (x + width - 10) + ' ' + (y + padding) + ' C ' + (x + width - 10) + ' ' + (y + padding) + ' ' + (x + width) + ' '
                         + (y + padding2) + ' ' + (x + width) + ' ' + (y);
                 } else {
-                    path += 'M' + x + ' ' + y + ' C ' + x + ' ' + y + ' ' + (x + 5) + ' ' + (y + padding) + ' ' + (x + 10) + ' ' +
-                        (y + padding) + 'L' + (x + width - 20) + ' ' + (y + padding) + 'L' + (x + width - 15) + ' ' + (y + padding1) +
-                        'L' + (x + width - 10) + ' ' + (y + padding) + 'L' + (x + width - 10) + ' ' + (y + padding) + ' C '
+                    path += ' M ' + x + ' ' + y + ' C ' + x + ' ' + y + ' ' + (x + 5) + ' ' + (y + padding) + ' ' + (x + 10) + ' ' +
+                        (y + padding) + ' L ' + (x + width - 20) + ' ' + (y + padding) + ' L ' + (x + width - 15) + ' ' + (y + padding1) +
+                        ' L ' + (x + width - 10) + ' ' + (y + padding) + ' L ' + (x + width - 10) + ' ' + (y + padding) + ' C '
                         + (x + width - 10) + ' ' + (y + padding) + ' ' + (x + width) + ' ' + (y + padding2) + ' ' + (x + width) + ' ' + (y);
                 }
                 break;
@@ -296,7 +299,10 @@ export class MultiLevelLabel {
                                 (categoryLabel.maximumTextWidth === null ? this.yAxisMultiLabelHeight[level] :
                                     categoryLabel.maximumTextWidth),
                                 argsData.text, argsData.textStyle) : options.text;
-                        textElement(options, argsData.textStyle, argsData.textStyle.color || this.chart.themeStyle.axisLabel, labelElement);
+                        textElement(
+                            options, argsData.textStyle, argsData.textStyle.color || this.chart.themeStyle.axisLabel, labelElement,
+                            this.chart.redraw, true
+                        );
                         if (multiLevel.border.width > 0 && multiLevel.border.type !== 'WithoutBorder') {
                             path = this.renderYAxisLabelBorder(
                                 level, gap, axis, endY, startX, startY, labelSize, options, rect, argsData.alignment, path,
@@ -333,14 +339,15 @@ export class MultiLevelLabel {
             case 'Rectangle':
             case 'WithoutTopBorder':
                 width = ((!opposedPosition && isOutside) || (opposedPosition && !isOutside)) ? -width : width;
-                path += 'M' + x + ' ' + y + 'L' + (x + width) + ' ' + y +
-                    'M' + x + ' ' + (y + height) + 'L' + (x + width) + ' ' + (y + height);
-                path += (groupLabel.border.type !== 'WithoutTopandBottomBorder') ? ('L' + ' ' + (x + width) + ' ' + y + ' ') : ' ';
-                path += (groupLabel.border.type === 'Rectangle') ? ('M' + (x) + ' ' + (y + height) + 'L' + ' ' + (x) + ' ' + y + ' ') : ' ';
+                path += ' M ' + x + ' ' + y + ' L ' + (x + width) + ' ' + y +
+                    ' M ' + x + ' ' + (y + height) + ' L ' + (x + width) + ' ' + (y + height);
+                path += (groupLabel.border.type !== 'WithoutTopandBottomBorder') ? (' L ' + ' ' + (x + width) + ' ' + y + ' ') : ' ';
+                path += (groupLabel.border.type === 'Rectangle') ?
+                    (' M' + (x) + ' ' + (y + height) + ' L ' + ' ' + (x) + ' ' + y + ' ') : ' ';
                 break;
             case 'Brace':
                 width = ((!opposedPosition && isOutside) || (opposedPosition && !isOutside)) ? width : -width;
-                path += 'M ' + (x) + ' ' + y + ' L ' + (x - width / 2) + ' ' + y + ' L ' + (x - width / 2) + ' ' +
+                path += ' M ' + (x) + ' ' + y + ' L ' + (x - width / 2) + ' ' + y + ' L ' + (x - width / 2) + ' ' +
                     (textOptions.y - labelSize.height / 2 - 4) + ' M ' + (x - width / 2) + ' ' +
                     (textOptions.y + labelSize.height / 4 + 2) +
                     ' L ' + (x - width / 2) + ' ' + (y + height) + ' L ' + (x) + ' ' + (y + height);
@@ -352,19 +359,19 @@ export class MultiLevelLabel {
                     padding = 10; padding1 = 15; padding2 = 5;
                 }
                 if (alignment === 'Center') {
-                    path += 'M ' + x + ' ' + y + ' C ' + x + ' ' + y + ' ' + (x + padding) + ' ' + y + ' ' + (x + padding) + ' ' + (y + 10)
+                    path += ' M ' + x + ' ' + y + ' C ' + x + ' ' + y + ' ' + (x + padding) + ' ' + y + ' ' + (x + padding) + ' ' + (y + 10)
                         + ' L ' + (x + padding) + ' ' + (y + (height - 10) / 2) + ' L ' + (x + padding1) + ' ' + (y + (height - 10) / 2 + 5)
                         + ' L ' + (x + padding) + ' ' + (y + (height - 10) / 2 + 10) + ' L ' + (x + padding) + ' ' + (y + (height - 10)) +
                         ' C ' + (x + padding) + ' ' + (y + (height - 10)) + ' ' + (x + padding2) + ' ' + (y + height) + ' '
                         + x + ' ' + (y + height);
                 } else if (alignment === 'Far') {
-                    path += 'M ' + x + ' ' + y + ' C ' + x + ' ' + y + ' ' + (x + padding) + ' ' + y + ' ' + (x + padding) + ' ' + (y + 10)
+                    path += ' M ' + x + ' ' + y + ' C ' + x + ' ' + y + ' ' + (x + padding) + ' ' + y + ' ' + (x + padding) + ' ' + (y + 10)
                         + ' L ' + (x + padding) + ' ' + (y + height - 20) + ' ' + ' L ' + (x + padding1) + ' ' + (y + (height - 15)) +
                         ' L ' + (x + padding) + ' ' + (y + (height - 10)) + ' L ' + (x + padding) + ' ' + (y + (height - 10)) +
                         ' C' + (x + padding) + ' ' + (y + (height - 10)) + ' ' + (x + padding) + ' ' + (y + height) + ' ' + x + ' '
                         + (y + height);
                 } else {
-                    path += 'M ' + x + ' ' + y + ' C ' + x + ' ' + y + ' ' + (x + padding) + ' ' + y + ' ' + (x + padding) + ' ' + (y + 10)
+                    path += ' M ' + x + ' ' + y + ' C ' + x + ' ' + y + ' ' + (x + padding) + ' ' + y + ' ' + (x + padding) + ' ' + (y + 10)
                         + ' L ' + (x + padding1) + ' ' + (y + 15) +
                         ' L ' + (x + padding) + ' ' + (y + 20) + ' L ' + (x + padding) + ' ' + (y + (height - 10)) +
                         ' C' + (x + padding) + ' ' + (y + (height - 10)) + ' ' + (x + padding2) + ' ' + (y + height) + ' ' + x +
@@ -385,15 +392,20 @@ export class MultiLevelLabel {
             'id': axisId,
             'clip-path': 'url(#' + clipId + ')'
         });
-        this.multiElements.appendChild(this.chart.renderer.drawClipPath({
-            'id': clipId,
-            'x': x,
-            'y': y,
-            'width': width,
-            'height': height,
-            'fill': 'white',
-            'stroke-width': 1, 'stroke': 'Gray'
-        }));
+        this.multiElements.appendChild(
+            appendClipElement(
+                this.chart.redraw, {
+                    'id': clipId,
+                    'x': x,
+                    'y': y,
+                    'width': width,
+                    'height': height,
+                    'fill': 'white',
+                    'stroke-width': 1, 'stroke': 'Gray'
+                },
+                this.chart.renderer
+            )
+        );
     }
     /**
      * create borer element
@@ -402,6 +414,8 @@ export class MultiLevelLabel {
      */
 
     public createBorderElement(borderIndex: number, axisIndex: number, axis: Axis, path: string): void {
+        let element: Element = getElement(this.chart.element.id + axisIndex + '_Axis_MultiLevelLabel_Rect_' + borderIndex);
+        let direction: string = element ?  element.getAttribute('d') : '';
         let borderElement: Element = this.chart.renderer.drawPath(new PathOption(
             this.chart.element.id + axisIndex + '_Axis_MultiLevelLabel_Rect_' + borderIndex, 'Transparent',
             axis.multiLevelLabels[borderIndex].border.width,
@@ -409,7 +423,7 @@ export class MultiLevelLabel {
             1, '', path
         )) as HTMLElement;
         borderElement.setAttribute('style', 'pointer-events: none');
-        this.multiElements.appendChild(borderElement);
+        appendChildElement(this.multiElements, borderElement, this.chart.redraw, true, 'x', 'y', null, direction);
     }
     /**
      * Triggers the event.

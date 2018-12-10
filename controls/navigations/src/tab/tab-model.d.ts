@@ -1,4 +1,4 @@
-import { Component, Property, Event, EmitType, closest, Collection, Complex, attributes, detach } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, AnimationOptions, select, isVisible } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, MouseEventArgs, Effect, Browser, formatUnit, DomElements, L10n } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll } from '@syncfusion/ej2-base';import { EventHandler, rippleEffect, Touch, SwipeEventArgs, compile, Animation, AnimationModel, BaseEventArgs } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Toolbar, OverflowMode, ClickEventArgs } from '../toolbar/toolbar';
+import { Component, Property, Event, EmitType, closest, Collection, Complex, attributes, detach, Instance } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, AnimationOptions, select, isVisible } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, MouseEventArgs, Effect, Browser, formatUnit, DomElements, L10n } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll, addClass, removeClass } from '@syncfusion/ej2-base';import { EventHandler, rippleEffect, Touch, SwipeEventArgs, compile, Animation, AnimationModel, BaseEventArgs } from '@syncfusion/ej2-base';import { Popup, PopupModel } from '@syncfusion/ej2-popups';import { Toolbar, OverflowMode, ClickEventArgs } from '../toolbar/toolbar';
 import {HeaderPosition,HeightStyles,SelectingEventArgs,SelectEventArgs,RemoveEventArgs} from "./tab";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -168,6 +168,8 @@ export interface TabModel extends ComponentModel{
      * The possible values are:
      * - Top: Places the Tab header on the top.
      * - Bottom: Places the Tab header at the bottom.
+     * - Left: Places the Tab header on the left.
+     * - Right: Places the Tab header at the right.
      * @default 'Top'
      */
     headerPlacement?: HeaderPosition;
@@ -178,7 +180,7 @@ export interface TabModel extends ComponentModel{
      * - None: Based on the given height property, the content panel height is set.
      * - Auto: Tallest panel height of a given Tab content is set to all the other panels.
      * - Content: Based on the corresponding content height, the content panel height is set.
-     * - Fill: Based on the parent height, the content panel hight is set.
+     * - Fill: Based on the parent height, the content panel height is set.
      * @default 'Content'
      */
     heightAdjustMode?: HeightStyles;

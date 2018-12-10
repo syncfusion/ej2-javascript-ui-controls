@@ -11,6 +11,7 @@ import { extend } from '@syncfusion/ej2-base';
 import { markdownFormatTags, markdownListsTags, markdownSelectionTags } from './../../common/config';
 import { UndoRedoCommands } from './../plugin/undo';
 import { MDLink } from './../plugin/link';
+import { MDTable } from './../plugin/table';
 import * as EVENTS from './../../common/constant';
 import { ClearFormat } from './../plugin/clearformat';
 
@@ -30,6 +31,7 @@ export class MarkdownParser {
     public mdSelectionFormats: MDSelectionFormats;
     public markdownSelection: MarkdownSelection;
     public linkObj: MDLink;
+    public tableObj: MDTable;
     public clearObj: ClearFormat;
     /**
      * Constructor for creating the component
@@ -45,6 +47,7 @@ export class MarkdownParser {
         this.undoRedoManager = new UndoRedoCommands(this, options.options);
         this.mdSelectionFormats = new MDSelectionFormats({ parent: this, syntax: this.selectionTags });
         this.linkObj = new MDLink(this);
+        this.tableObj = new MDTable(this);
         this.clearObj = new ClearFormat(this);
         this.wireEvents();
     }
@@ -56,6 +59,10 @@ export class MarkdownParser {
     private wireEvents(): void {
         this.observer.on(EVENTS.KEY_DOWN, this.editorKeyDown, this);
         this.observer.on(EVENTS.KEY_UP, this.editorKeyUp, this);
+        this.observer.on(EVENTS.MODEL_CHANGED, this.onPropertyChanged, this);
+    }
+    private onPropertyChanged(props: { [key: string]: Object }): void {
+        this.observer.notify(EVENTS.MODEL_CHANGED_PLUGIN, props);
     }
     private editorKeyDown(e: IMDKeyboardEvent): void {
         this.observer.notify(EVENTS.KEY_DOWN_HANDLER, e);
@@ -83,6 +90,13 @@ export class MarkdownParser {
             case 'images':
                 this.observer.notify(CONSTANT.LINK_COMMAND, { subCommand: value, event: event, callBack: callBack, item: exeValue });
                 break;
+            case 'table':
+                switch (value.toString().toLocaleLowerCase()) {
+                    case 'createtable':
+                        this.observer.notify(CONSTANT.MD_TABLE, { subCommand: value, item: exeValue, event: event, callBack: callBack });
+                        break;
+                }
+                break;
             case 'clear':
                 this.observer.notify(CONSTANT.CLEAR_COMMAND, { subCommand: value, event: event, callBack: callBack });
                 break;
@@ -90,4 +104,3 @@ export class MarkdownParser {
         }
     }
 }
-

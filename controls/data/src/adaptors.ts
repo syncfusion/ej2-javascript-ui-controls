@@ -470,11 +470,11 @@ export class UrlAdaptor extends Adaptor {
         }
         if (!query.distincts.length && options.expand) {
             req[options.expand] = 'onExpand' in this && 'onSelect' in singles ?
-            DataUtil.callAdaptorFunction(
-            this,
-            'onExpand',
-            { selects: DataUtil.getValue(singles.onSelect.fieldNames, query), expands: query.expands },
-            query) : query.expands;
+                DataUtil.callAdaptorFunction(
+                    this,
+                    'onExpand',
+                    { selects: DataUtil.getValue(singles.onSelect.fieldNames, query), expands: query.expands },
+                    query) : query.expands;
         }
         req[options.select] = 'onSelect' in singles && !query.distincts.length ?
             DataUtil.callAdaptorFunction(this, 'onSelect', DataUtil.getValue(singles.onSelect.fieldNames, query), query) : '';
@@ -517,22 +517,22 @@ export class UrlAdaptor extends Adaptor {
         data: DataResult, ds?: DataOptions, query?: Query, xhr?: XMLHttpRequest, request?: Object, changes?: CrudOptions): DataResult {
         let requests: { pvtData?: Object, data?: string } = request;
         let pvt: PvtOptions = requests.pvtData || {};
-        let groupDs: Object[] = data.groupDs;
+        let groupDs: Object[] = data ? data.groupDs : [];
         if (xhr && xhr.getResponseHeader('Content-Type') &&
             xhr.getResponseHeader('Content-Type').indexOf('xml') !== -1) {
             return (query.isCountRequired ? { result: [], count: 0 } : []) as DataResult;
         }
         let d: { action: string } = JSON.parse(requests.data);
-        if (d && d.action === 'batch' && data.addedRecords) {
+        if (d && d.action === 'batch' && data && data.addedRecords) {
             changes.addedRecords = data.addedRecords;
             return changes;
         }
-        if (data.d) {
+        if (data && data.d) {
             data = <DataResult>data.d;
         }
         let args: DataResult = {};
-        if ('count' in data) { args.count = data.count; }
-        args.result = data.result ? data.result : data;
+        if (data && 'count' in data) { args.count = data.count; }
+        args.result = data && data.result ? data.result : data;
 
         this.getAggregateResult(pvt, data, args, groupDs, query);
 
@@ -1074,7 +1074,7 @@ export class ODataAdaptor extends UrlAdaptor {
         return res.length ? tableName + '?' + res : tableName || '';
     }
 
-    private localTimeReplacer(key: string, convertObj: Object) : Object {
+    private localTimeReplacer(key: string, convertObj: Object): Object {
         for (let prop of !isNullOrUndefined(convertObj) ? Object.keys(convertObj) : []) {
             if ((convertObj[prop] instanceof Date)) {
                 convertObj[prop] = DataUtil.dateParse.toLocalTime(convertObj[prop]);
@@ -1089,8 +1089,8 @@ export class ODataAdaptor extends UrlAdaptor {
      * @param  {Object} data
      * @param  {string} tableName?
      */
-    public insert(dm: DataManager, data: Object, tableName?: string ): Object {
-        return  {
+    public insert(dm: DataManager, data: Object, tableName?: string): Object {
+        return {
             url: dm.dataSource.url.replace(/\/*$/, tableName ? '/' + tableName : ''),
             data: JSON.stringify(data, this.options.localTime ? this.localTimeReplacer : null)
         };
@@ -1165,14 +1165,14 @@ export class ODataAdaptor extends UrlAdaptor {
 
         this.pvt.changeSet = 0;
 
-        req += this.generateInsertRequest(changes.addedRecords, args);
-        req += this.generateUpdateRequest(changes.changedRecords, args, original ? original.changedRecords : []);
-        req += this.generateDeleteRequest(changes.deletedRecords, args);
+        req += this.generateInsertRequest(changes.addedRecords, args, dm);
+        req += this.generateUpdateRequest(changes.changedRecords, args, dm, original ? original.changedRecords : []);
+        req += this.generateDeleteRequest(changes.deletedRecords, args, dm);
 
         req += args.cSet + '--\n';
         req += '--' + initialGuid + '--';
 
-        return  {
+        return {
             type: 'POST',
             url: url,
             dataType: 'json',
@@ -1188,7 +1188,7 @@ export class ODataAdaptor extends UrlAdaptor {
      * @param  {RemoteArgs} e
      * @returns this
      */
-    public generateDeleteRequest(arr: Object[], e: RemoteArgs): string {
+    public generateDeleteRequest(arr: Object[], e: RemoteArgs, dm: DataManager): string {
         if (!arr) { return ''; }
         let req: string = '';
 
@@ -1197,7 +1197,7 @@ export class ODataAdaptor extends UrlAdaptor {
             'url': (data: Object[], i: number, key: string): string => '(' + data[i][key] as string + ')',
             'data': (data: Object[], i: number): string => ''
         };
-        req = this.generateBodyContent(arr, e, stat);
+        req = this.generateBodyContent(arr, e, stat, dm);
 
         return req + '\n';
     }
@@ -1208,7 +1208,7 @@ export class ODataAdaptor extends UrlAdaptor {
      * @param  {Object[]} arr
      * @param  {RemoteArgs} e
      */
-    public generateInsertRequest(arr: Object[], e: RemoteArgs): string {
+    public generateInsertRequest(arr: Object[], e: RemoteArgs, dm: DataManager): string {
         if (!arr) { return ''; }
         let req: string = '';
 
@@ -1217,7 +1217,7 @@ export class ODataAdaptor extends UrlAdaptor {
             'url': (data: Object[], i: number, key: string): string => '',
             'data': (data: Object[], i: number): string => JSON.stringify(data[i]) + '\n\n'
         };
-        req = this.generateBodyContent(arr, e, stat);
+        req = this.generateBodyContent(arr, e, stat, dm);
 
         return req;
     }
@@ -1228,7 +1228,7 @@ export class ODataAdaptor extends UrlAdaptor {
      * @param  {Object[]} arr
      * @param  {RemoteArgs} e
      */
-    public generateUpdateRequest(arr: Object[], e: RemoteArgs, org?: Object[]): string {
+    public generateUpdateRequest(arr: Object[], e: RemoteArgs, dm: DataManager, org?: Object[]): string {
         if (!arr) { return ''; }
         let req: string = '';
         arr.forEach((change: Object) => change = this.compareAndRemove(
@@ -1240,7 +1240,7 @@ export class ODataAdaptor extends UrlAdaptor {
             'url': (data: Object[], i: number, key: string): string => '(' + data[i][key] as string + ')',
             'data': (data: Object[], i: number): string => JSON.stringify(data[i]) + '\n\n'
         };
-        req = this.generateBodyContent(arr, e, stat);
+        req = this.generateBodyContent(arr, e, stat, dm);
 
         return req;
     }
@@ -1249,14 +1249,20 @@ export class ODataAdaptor extends UrlAdaptor {
         return prop.replace(/\./g, '/');
     }
 
-    private generateBodyContent(arr: Object[], e: RemoteArgs, stat: { method: string, url: Function, data: Function })
+    private generateBodyContent(arr: Object[], e: RemoteArgs, stat: { method: string, url: Function, data: Function }, dm: DataManager)
         : string {
         let req: string = '';
         for (let i: number = 0; i < arr.length; i++) {
             req += '\n' + e.cSet + '\n';
             req += this.options.changeSetContent + '\n\n';
             req += stat.method;
-            req += e.url + stat.url(arr, i, e.key) + ' HTTP/1.1\n';
+            if (stat.method === 'POST ') {
+                req += (dm.dataSource.insertUrl || dm.dataSource.crudUrl || e.url) + stat.url(arr, i, e.key) + ' HTTP/1.1\n';
+            } else if (stat.method === 'PUT ' || stat.method === 'PATCH ') {
+                req += (dm.dataSource.updateUrl || dm.dataSource.crudUrl || e.url) + stat.url(arr, i, e.key) + ' HTTP/1.1\n';
+            } else if (stat.method === 'DELETE ') {
+                req += (dm.dataSource.removeUrl || dm.dataSource.crudUrl || e.url) + stat.url(arr, i, e.key) + ' HTTP/1.1\n';
+            }
             req += 'Accept: ' + this.options.accept + '\n';
             req += 'Content-Id: ' + this.pvt.changeSet++ + '\n';
             req += this.options.batchChangeSetContentType + '\n';
@@ -1452,7 +1458,7 @@ export class ODataV4Adaptor extends ODataAdaptor {
      * Returns the groupby query string.
      * @param  {string} e
      */
-    public onDistinct(distinctFields: string[]): Object  {
+    public onDistinct(distinctFields: string[]): Object {
         let fields: string = distinctFields.map((field: string) => ODataAdaptor.getField(field)).join(',');
         return `groupby((${fields}))`;
     }

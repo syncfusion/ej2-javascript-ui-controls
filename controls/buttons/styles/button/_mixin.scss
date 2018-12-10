@@ -3,8 +3,8 @@
   border-color: $btn-focus-border-color;
   box-shadow: $btn-hover-focus-box-shadow;
   color: $btn-focus-color;
-  outline: $focus-outline;
-  outline-offset: $focus-outline-offset;
+  outline: $btn-focus-outline;
+  outline-offset: $btn-focus-outline-offset;
 }
 
 @mixin button-active {
@@ -12,8 +12,8 @@
   border-color: $btn-active-border-color;
   box-shadow: $btn-active-box-shadow;
   color: $btn-active-color;
-  outline: $active-outline;
-  outline-offset: $active-outline-offset;
+  outline: $btn-active-outline;
+  outline-offset: $btn-active-outline-offset;
 }
 
 @mixin primary-focus {
@@ -21,7 +21,7 @@
   border-color: $btn-primary-focus-border-color;
   box-shadow: $btn-hover-focus-box-shadow;
   color: $btn-primary-focus-color;
-  outline: $primary-outline;
+  outline: $btn-primary-outline;
 }
 
 @mixin primary-active {
@@ -29,7 +29,7 @@
   border-color: $btn-primary-active-border-color;
   box-shadow: $btn-active-box-shadow;
   color: $btn-primary-active-color;
-  outline: $active-outline;
+  outline: $btn-active-outline;
 }
 
 @mixin primary-disabled {

@@ -2,6 +2,122 @@ import { Browser, CanvasRenderer, ChildProperty, Collection, Complex, Component,
 import { DataUtil } from '@syncfusion/ej2-data';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
 
+/**
+ * Specifies HeatMaps Themes
+ */
+var Theme;
+(function (Theme) {
+    /** @private */
+    Theme.heatMapTitleFont = {
+        size: '15px',
+        fontWeight: '500',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+    /** @private */
+    Theme.axisTitleFont = {
+        size: '12px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+    /** @private */
+    Theme.axisLabelFont = {
+        size: '12px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+    /** @private */
+    Theme.legendLabelFont = {
+        size: '12px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI',
+        textOverflow: 'None',
+    };
+    /** @private */
+    Theme.rectLabelFont = {
+        size: '12px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI',
+        textOverflow: 'None',
+    };
+    /** @private */
+    Theme.tooltipFont = {
+        size: '13px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI',
+        textOverflow: 'None',
+    };
+})(Theme || (Theme = {}));
+/** @private */
+function getThemeColor(theme) {
+    let style;
+    switch (theme.toLowerCase()) {
+        case 'highcontrastlight':
+            style = {
+                heatMapTitle: '#ffffff',
+                axisTitle: '#ffffff',
+                axisLabel: '#ffffff',
+                cellBorder: '#EEEEEE',
+                background: '#000000',
+                cellTextColor: '#000000',
+                toggledColor: '#000000',
+                emptyCellColor: '#EEEEEE',
+                legendLabel: '#ffffff',
+                palette: [{ 'color': '#BEE7EE' },
+                    { 'color': '#85c4cf' },
+                    { 'color': '#4CA1AF' }]
+            };
+            break;
+        case 'materialdark':
+        case 'fabricdark':
+        case 'bootstrapdark':
+        case 'highcontrastdark':
+            style = {
+                heatMapTitle: '#ffffff',
+                axisTitle: '#ffffff',
+                axisLabel: '#DADADA',
+                cellBorder: '#EEEEEE',
+                background: '#000000',
+                cellTextColor: '#000000',
+                toggledColor: '#000000',
+                emptyCellColor: '#EEEEEE',
+                legendLabel: '#ffffff',
+                palette: [{ 'color': '#BEE7EE' },
+                    { 'color': '#85c4cf' },
+                    { 'color': '#4CA1AF' }]
+            };
+            break;
+        default:
+            style = {
+                heatMapTitle: '#424242',
+                axisTitle: '#424242',
+                axisLabel: '#686868',
+                cellBorder: '#EEEEEE',
+                cellTextColor: '#000000',
+                toggledColor: '#ffffff',
+                background: '#FFFFFF',
+                emptyCellColor: '#EEEEEE',
+                legendLabel: '#353535',
+                palette: [{ 'color': '#BEE7EE' },
+                    { 'color': '#85c4cf' },
+                    { 'color': '#4CA1AF' }]
+            };
+            break;
+    }
+    return style;
+}
+
 var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -66,6 +182,17 @@ __decorate$2([
     Property('')
 ], Border.prototype, "radius", void 0);
 /**
+ * Configures the tooltip borders in the heat map.
+ */
+class TooltipBorder extends ChildProperty {
+}
+__decorate$2([
+    Property('')
+], TooltipBorder.prototype, "color", void 0);
+__decorate$2([
+    Property(0)
+], TooltipBorder.prototype, "width", void 0);
+/**
  * Configures the mapping name for size and color in SizeAndColor type.
  */
 class BubbleData extends ChildProperty {
@@ -101,6 +228,57 @@ __decorate$2([
 __decorate$2([
     Property(null)
 ], PaletteCollection.prototype, "label", void 0);
+/**
+ * label border properties.
+ */
+class AxisLabelBorder extends ChildProperty {
+}
+__decorate$2([
+    Property('#b5b5b5')
+], AxisLabelBorder.prototype, "color", void 0);
+__decorate$2([
+    Property(1)
+], AxisLabelBorder.prototype, "width", void 0);
+__decorate$2([
+    Property('Rectangle')
+], AxisLabelBorder.prototype, "type", void 0);
+/**
+ * categories for multi level labels
+ */
+class MultiLevelCategories extends ChildProperty {
+}
+__decorate$2([
+    Property(null)
+], MultiLevelCategories.prototype, "start", void 0);
+__decorate$2([
+    Property(null)
+], MultiLevelCategories.prototype, "end", void 0);
+__decorate$2([
+    Property('')
+], MultiLevelCategories.prototype, "text", void 0);
+__decorate$2([
+    Property(null)
+], MultiLevelCategories.prototype, "maximumTextWidth", void 0);
+/**
+ * MultiLevelLabels properties
+ */
+class MultiLevelLabels extends ChildProperty {
+}
+__decorate$2([
+    Property('Center')
+], MultiLevelLabels.prototype, "alignment", void 0);
+__decorate$2([
+    Property('Wrap')
+], MultiLevelLabels.prototype, "overflow", void 0);
+__decorate$2([
+    Complex(Theme.axisLabelFont, Font)
+], MultiLevelLabels.prototype, "textStyle", void 0);
+__decorate$2([
+    Complex({ color: '#b5b5b5', width: 1, type: 'Rectangle' }, AxisLabelBorder)
+], MultiLevelLabels.prototype, "border", void 0);
+__decorate$2([
+    Collection([], MultiLevelCategories)
+], MultiLevelLabels.prototype, "categories", void 0);
 /**
  * Internal class used to maintain colorcollection.
  */
@@ -297,13 +475,16 @@ class CellColor {
             heatMap.colorCollection = tempcolorMapping.offsets;
             heatMap.legendColorCollection = extend([], tempcolorMapping.offsets, null, true);
         }
-        this.updateLegendColorCollection(minValue, maxValue);
+        this.updateLegendColorCollection(minValue, maxValue, tempcolorMapping);
     }
     /**
      * To update legend color Collection.
      * @private
      */
-    updateLegendColorCollection(minValue, maxValue) {
+    updateLegendColorCollection(minValue, maxValue, tempcolorMapping) {
+        if (this.heatMap.paletteSettings.type === 'Fixed' && (tempcolorMapping.isCompact || tempcolorMapping.isLabel)) {
+            return;
+        }
         if (minValue < this.heatMap.legendColorCollection[0].value) {
             this.heatMap.legendColorCollection.unshift(new LegendColorCollection(minValue, this.heatMap.legendColorCollection[0].color, this.heatMap.legendColorCollection[0].label, true));
         }
@@ -318,9 +499,14 @@ class CellColor {
     orderbyOffset(offsets) {
         let returnCollection = new PaletterColor();
         let key = 'value';
+        let label = 'label';
         returnCollection.isCompact = true;
+        returnCollection.isLabel = true;
         // tslint:disable-next-line:no-any 
         returnCollection.offsets = offsets.sort((a, b) => {
+            if (isNullOrUndefined(a[label]) && isNullOrUndefined(b[label])) {
+                returnCollection.isLabel = false;
+            }
             if (!isNullOrUndefined(a[key]) && !isNullOrUndefined(b[key])) {
                 return a[key] - b[key];
             }
@@ -353,7 +539,12 @@ class CellColor {
                     compareValue = this.heatMap.colorCollection[y + 1] ? this.heatMap.colorCollection[y + 1].value :
                         this.heatMap.colorCollection[y].value;
                     if (text < compareValue || (text >= compareValue && y === this.heatMap.colorCollection.length - 1)) {
-                        color = this.heatMap.colorCollection[y].color;
+                        let legendRange;
+                        if (this.heatMap.legendVisibilityByCellType) {
+                            legendRange = this.heatMap.legendModule.legendRange;
+                        }
+                        color = (this.heatMap.legendVisibilityByCellType && legendRange[y] && !legendRange[y].visible) ?
+                            this.heatMap.themeStyle.toggledColor : this.heatMap.colorCollection[y].color;
                         break;
                     }
                 }
@@ -468,13 +659,34 @@ class PathOption extends CustomizeOption {
  * @private
  */
 class CurrentRect {
-    constructor(x, y, width, height, value, id) {
+    constructor(x, y, width, height, value, id, xIndex, yIndex, xValue, yValue, visible, displayText, textId) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.value = value;
         this.id = id;
+        this.xIndex = xIndex;
+        this.yIndex = yIndex;
+        this.xValue = xValue;
+        this.yValue = yValue;
+        this.visible = visible;
+        this.displayText = displayText;
+        this.textId = textId;
+    }
+}
+/**
+ * Class to define the details of selected cell.
+ * @private
+ */
+class SelectedCellDetails {
+    constructor(value, xLabel, yLabel, xValue, yValue, cellElement) {
+        this.value = value;
+        this.xLabel = xLabel;
+        this.yLabel = yLabel;
+        this.xValue = xValue;
+        this.yValue = yValue;
+        this.cellElement = cellElement;
     }
 }
 /**
@@ -1027,7 +1239,7 @@ function showTooltip(text, x, y, areaWidth, id, element, isTouch, heatmap) {
         tooltip.style.left = (x + 15) + size.width + 7 > heatmap.availableSize.width ?
             (heatmap.availableSize.width - (size.width + 7)).toString() + 'px' : x.toString() + 'px';
         tooltip.style.top = (y + 15) + size.height + 6 > heatmap.availableSize.height ?
-            (initialClip.height + initialClip.y - (size.height + 6) + 5).toString() + 'px' : tooltip.style.top; // 6 and 7 are padding and border width
+            (y - (size.height + 6) - 10).toString() + 'px' : tooltip.style.top; // 6 and 7 are padding and border width
     }
     if (isTouch) {
         setTimeout(() => { removeElement(id); }, 1500);
@@ -1125,6 +1337,25 @@ class CurrentLegendRect {
     }
 }
 /** @private */
+class LegendRange {
+    constructor(x, y, width, height, value, visible, currentPage) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.value = value;
+        this.visible = visible;
+        this.currentPage = currentPage;
+    }
+}
+/** @private */
+class ToggleVisibility {
+    constructor(visible, value) {
+        this.visible = visible;
+        this.value = value;
+    }
+}
+/** @private */
 function colorNameToHex(color) {
     let element;
     color = color === 'transparent' ? 'white' : color;
@@ -1150,91 +1381,17 @@ function convertHexToColor(hex) {
     return result ? new RgbColor(parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)) :
         new RgbColor(255, 255, 255);
 }
-
-/**
- * Specifies HeatMaps Themes
- */
-var Theme;
-(function (Theme) {
-    /** @private */
-    Theme.heatMapTitleFont = {
-        size: '15px',
-        fontWeight: '500',
-        color: null,
-        fontStyle: 'Normal',
-        fontFamily: 'Segoe UI'
-    };
-    /** @private */
-    Theme.axisTitleFont = {
-        size: '12px',
-        fontWeight: 'Normal',
-        color: null,
-        fontStyle: 'Normal',
-        fontFamily: 'Segoe UI'
-    };
-    /** @private */
-    Theme.axisLabelFont = {
-        size: '12px',
-        fontWeight: 'Normal',
-        color: null,
-        fontStyle: 'Normal',
-        fontFamily: 'Segoe UI'
-    };
-    /** @private */
-    Theme.legendLabelFont = {
-        size: '12px',
-        fontWeight: 'Normal',
-        color: null,
-        fontStyle: 'Normal',
-        fontFamily: 'Segoe UI',
-        textOverflow: 'None',
-    };
-    /** @private */
-    Theme.rectLabelFont = {
-        size: '12px',
-        fontWeight: 'Normal',
-        color: null,
-        fontStyle: 'Normal',
-        fontFamily: 'Segoe UI',
-        textOverflow: 'None',
-    };
-})(Theme || (Theme = {}));
 /** @private */
-function getThemeColor(theme) {
-    let style;
-    switch (theme) {
-        case 'Highcontrast':
-            style = {
-                heatMapTitle: '#ffffff',
-                axisTitle: '#ffffff',
-                axisLabel: '#ffffff',
-                cellBorder: '#EEEEEE',
-                background: '#000000',
-                cellTextColor: '#000000',
-                emptyCellColor: '#EEEEEE',
-                legendLabel: '#ffffff',
-                palette: [{ 'color': '#BEE7EE' },
-                    { 'color': '#85c4cf' },
-                    { 'color': '#4CA1AF' }]
-            };
-            break;
-        default:
-            style = {
-                heatMapTitle: '#424242',
-                axisTitle: '#424242',
-                axisLabel: '#686868',
-                cellBorder: '#EEEEEE',
-                cellTextColor: '#000000',
-                background: '#FFFFFF',
-                emptyCellColor: '#EEEEEE',
-                legendLabel: '#353535',
-                palette: [{ 'color': '#BEE7EE' },
-                    { 'color': '#85c4cf' },
-                    { 'color': '#4CA1AF' }]
-            };
-            break;
+function formatValue(isCustom, format, tempInterval, formatFun) {
+    return isCustom ? format.replace('{value}', formatFun(tempInterval))
+        : formatFun(tempInterval);
+}
+/** @private */
+class MultiLevelPosition {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
     }
-    return style;
 }
 
 var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
@@ -1279,6 +1436,15 @@ class Axis extends ChildProperty {
         this.max = 0;
         /** @private */
         this.isIntersect = false;
+        /** @private */
+        this.jsonCellLabel = [];
+        this.multiLevelSize = [];
+        /** @private */
+        this.xAxisMultiLabelHeight = [];
+        /** @private */
+        this.yAxisMultiLabelHeight = [];
+        /** @private */
+        this.multiLevelPosition = [];
     }
     /**
      * measure the axis title and label size
@@ -1286,10 +1452,96 @@ class Axis extends ChildProperty {
      * @param heatmap
      * @private
      */
-    computeSize(axis, heatmap) {
+    computeSize(axis, heatmap, rect) {
+        let size = new Size(0, 0);
         let innerPadding = 10;
         this.titleSize = axis.getTitleSize(axis, innerPadding);
         this.maxLabelSize = axis.getMaxLabelSize(axis, heatmap);
+        this.getMultilevelLabelsHeight(axis, rect, heatmap);
+        for (let i = 0; i < this.multiLevelLabels.length; i++) {
+            size = axis.multiLevelLabelSize(innerPadding, i);
+            this.multiLevelSize.push(size);
+        }
+    }
+    /**
+     * calculating x, y position of multi level labels
+     * @private
+     */
+    multiPosition(axis, index) {
+        let innerPadding = axis.orientation === 'Horizontal' ? 10 : 20;
+        let multiPosition = new MultiLevelPosition(0, 0);
+        if (axis.orientation === 'Horizontal') {
+            let level0 = axis.maxLabelSize.height + innerPadding;
+            let level1 = this.xAxisMultiLabelHeight[index - 1];
+            multiPosition.x = (axis.isInversed ? axis.rect.x + axis.rect.width : axis.rect.x);
+            multiPosition.y = index === 0 ? axis.rect.y + (axis.opposedPosition ? -level0 : level0) :
+                axis.multiLevelPosition[index - 1].y + (axis.opposedPosition ? -level1 : level1);
+        }
+        else {
+            let level0 = axis.maxLabelSize.width + innerPadding;
+            let level1 = index !== 0 && (this.multiLevelSize[index - 1].width);
+            multiPosition.x = index === 0 ? axis.rect.x - (axis.opposedPosition ? -level0 : level0) :
+                axis.multiLevelPosition[index - 1].x - (axis.opposedPosition ? -(level1 + innerPadding) : level1 + innerPadding);
+            multiPosition.y = axis.isInversed ? axis.rect.y : axis.rect.y + axis.rect.height;
+        }
+        return multiPosition;
+    }
+    multiLevelLabelSize(innerPadding, index) {
+        let labelSize = new Size(0, 0);
+        let multiLevel = this.multiLevelLabels;
+        let categoryLabel = multiLevel[index].categories;
+        for (let i = 0; i < categoryLabel.length; i++) {
+            let size = measureText(categoryLabel[i].text, multiLevel[index].textStyle);
+            labelSize.width = (labelSize.width > size.width) ? labelSize.width : size.width;
+            labelSize.height = (labelSize.height > size.height) ? labelSize.height : size.height;
+        }
+        let size = (this.orientation === 'Horizontal') ? this.xAxisMultiLabelHeight[index] : this.yAxisMultiLabelHeight[index];
+        if (this.opposedPosition) {
+            this.farSizes.push(size);
+        }
+        else {
+            this.nearSizes.push(size);
+        }
+        return labelSize;
+    }
+    getMultilevelLabelsHeight(axis, rect, heatmap) {
+        let labelSize;
+        let gap;
+        let height;
+        let multiLevelLabelsHeight = [];
+        let start;
+        let end;
+        let startPosition;
+        let endPosition;
+        let isVertical = axis.orientation === 'Vertical';
+        let axisValue = (isVertical ? rect.height : rect.width) / axis.axisLabelSize;
+        let padding = axis.orientation === 'Vertical' ? 20 : 10;
+        this.multiLevelLabels.map((multiLevel, index) => {
+            multiLevel.categories.map((categoryLabel) => {
+                start = typeof categoryLabel.start === 'number' ? categoryLabel.start : Number(new Date(categoryLabel.start));
+                end = typeof categoryLabel.end === 'number' ? categoryLabel.end : Number(new Date(categoryLabel.end));
+                if (categoryLabel.text !== '' && categoryLabel.start !== null && categoryLabel.end !== null) {
+                    labelSize = measureText(categoryLabel.text, multiLevel.textStyle);
+                    height = isVertical ? labelSize.width : labelSize.height;
+                    startPosition = heatmap.heatMapAxis.calculateLeftPosition(axis, start, categoryLabel.start, rect);
+                    endPosition = heatmap.heatMapAxis.calculateWidth(axis, categoryLabel.end, end, rect);
+                    labelSize = measureText(categoryLabel.text, multiLevel.textStyle);
+                    gap = ((categoryLabel.maximumTextWidth === null) ? Math.abs(endPosition - startPosition) :
+                        categoryLabel.maximumTextWidth);
+                    if ((labelSize.width > gap - padding) && (multiLevel.overflow === 'Wrap') && !isVertical) {
+                        height = (height * (textWrap(categoryLabel.text, gap - padding, multiLevel.textStyle).length));
+                    }
+                    multiLevelLabelsHeight[index] = !multiLevelLabelsHeight[index] ? height + padding :
+                        ((multiLevelLabelsHeight[index] < height) ? height + padding : multiLevelLabelsHeight[index]);
+                }
+            });
+        });
+        if (isVertical) {
+            this.yAxisMultiLabelHeight = multiLevelLabelsHeight;
+        }
+        else {
+            this.xAxisMultiLabelHeight = multiLevelLabelsHeight;
+        }
     }
     getTitleSize(axis, innerPadding) {
         let titleSize = new Size(0, 0);
@@ -1308,16 +1560,20 @@ class Axis extends ChildProperty {
     getMaxLabelSize(axis, heatmap) {
         let labelSize = new Size(0, 0);
         let labels = this.axisLabels;
+        let padding = (axis.border.width > 0 || axis.multiLevelLabels.length > 0) ? 10 : 0;
         axis.angle = axis.labelRotation;
         axis.isIntersect = false;
         if (axis.orientation === 'Horizontal' && (axis.labelIntersectAction === 'Rotate45' ||
             (axis.labelRotation % 180 === 0 && axis.labelIntersectAction === 'Trim'))) {
-            let interval = heatmap.initialClipRect.width / axis.axisLabels.length;
+            let interval = (axis.valueType === 'DateTime' && axis.showLabelOn !== 'None') ?
+                heatmap.initialClipRect.width / axis.axisLabelSize : heatmap.initialClipRect.width / axis.axisLabels.length;
             let startX = heatmap.initialClipRect.x + ((!axis.isInversed) ? 0 : heatmap.initialClipRect.width);
             let previousEnd;
             for (let i = 0, len = labels.length; i < len; i++) {
                 let label = labels[i];
                 let elementSize = measureText(label, axis.textStyle);
+                let axisInterval = (axis.valueType === 'DateTime' && axis.showLabelOn !== 'None') ?
+                    axis.dateTimeAxisLabelInterval[i] * interval : interval;
                 let startPoint = startX + (!axis.isInversed ?
                     ((interval - elementSize.width) / 2) : -((interval + elementSize.width) / 2));
                 startPoint = startPoint < heatmap.initialClipRect.x ? heatmap.initialClipRect.x : startPoint;
@@ -1337,7 +1593,7 @@ class Axis extends ChildProperty {
                     }
                     previousEnd = endPoint;
                 }
-                startX += axis.isInversed ? -interval : interval;
+                startX += axis.isInversed ? -axisInterval : axisInterval;
             }
         }
         for (let i = 0; i < labels.length; i++) {
@@ -1347,10 +1603,10 @@ class Axis extends ChildProperty {
             labelSize.height = (labelSize.height > size.height) ? labelSize.height : size.height;
         }
         if (axis.opposedPosition) {
-            this.farSizes.push((axis.orientation === 'Horizontal') ? labelSize.height : labelSize.width);
+            this.farSizes.push((axis.orientation === 'Horizontal') ? labelSize.height : labelSize.width + padding);
         }
         else {
-            this.nearSizes.push((axis.orientation === 'Horizontal') ? labelSize.height : labelSize.width);
+            this.nearSizes.push((axis.orientation === 'Horizontal') ? labelSize.height : labelSize.width + padding);
         }
         return labelSize;
     }
@@ -1388,7 +1644,7 @@ class Axis extends ChildProperty {
             format: isCustom ? '' : format
         });
         for (let i = min; i <= max; i = i + (interval * this.increment)) {
-            let value = this.formatValue(isCustom, format, i);
+            let value = formatValue(isCustom, format, i, this.format);
             this.axisLabels.push(value);
         }
         this.min = 0;
@@ -1396,7 +1652,7 @@ class Axis extends ChildProperty {
         this.max = this.axisLabelSize - 1;
         this.axisLabelInterval = interval;
         for (let i = min; i <= max; i = i + this.increment) {
-            let value = this.formatValue(isCustom, format, i);
+            let value = formatValue(isCustom, format, i, this.format);
             this.tooltipLabels.push(value);
             this.labelValue.push(i);
         }
@@ -1572,14 +1828,6 @@ class Axis extends ChildProperty {
         }
         return skeleton;
     }
-    /**
-     * Formatted the axis label.
-     * @private
-     */
-    formatValue(isCustom, format, tempInterval) {
-        return isCustom ? format.replace('{value}', this.format(tempInterval))
-            : this.format(tempInterval);
-    }
     /** @private */
     getTotalLabelLength(min, max) {
         let length = 0;
@@ -1615,6 +1863,16 @@ class Axis extends ChildProperty {
                 break;
         }
         return length;
+    }
+    /**
+     * Clear the axis label collection
+     * @private
+     */
+    clearAxisLabel() {
+        this.axisLabels = [];
+        this.tooltipLabels = [];
+        this.dateTimeAxisLabelInterval = [];
+        this.labelValue = [];
     }
 }
 __decorate$3([
@@ -1662,6 +1920,12 @@ __decorate$3([
 __decorate$3([
     Property('Trim')
 ], Axis.prototype, "labelIntersectAction", void 0);
+__decorate$3([
+    Complex({ color: '#b5b5b5', width: 0, type: 'Rectangle' }, AxisLabelBorder)
+], Axis.prototype, "border", void 0);
+__decorate$3([
+    Collection([], MultiLevelLabels)
+], Axis.prototype, "multiLevelLabels", void 0);
 
 class AxisHelper {
     constructor(heatMap) {
@@ -1698,6 +1962,9 @@ class AxisHelper {
                 this.drawYAxisTitle(axis, element, axis.rect);
                 this.drawYAxisLabels(axis, element, axis.rect);
             }
+            if (axis.multiLevelLabels.length > 0) {
+                this.drawMultiLevels(element, axis);
+            }
             if (!heatMap.enableCanvasRendering) {
                 axisElement.appendChild(element);
             }
@@ -1717,8 +1984,8 @@ class AxisHelper {
         this.drawSvgCanvas.drawLine(line, parent);
     }
     drawXAxisTitle(axis, parent, rect) {
-        let y = rect.y + (!axis.opposedPosition ?
-            (axis.maxLabelSize.height + this.padding) : -(axis.maxLabelSize.height + this.padding));
+        let y = rect.y + (!axis.opposedPosition ? (axis.maxLabelSize.height + this.padding +
+            sum(axis.xAxisMultiLabelHeight)) : -(axis.maxLabelSize.height + this.padding + sum(axis.xAxisMultiLabelHeight)));
         if (axis.title.text) {
             let heatMap = this.heatMap;
             let title = axis.title;
@@ -1741,7 +2008,8 @@ class AxisHelper {
                 title.textStyle.textAlignment === 'Far' ? 'end' : 'middle';
             let padding = 10;
             padding = axis.opposedPosition ? padding : -padding;
-            let x = rect.x + padding + ((axis.opposedPosition) ? axis.maxLabelSize.width : -axis.maxLabelSize.width);
+            let x = rect.x + padding + ((axis.opposedPosition) ? axis.maxLabelSize.width + sum(axis.yAxisMultiLabelHeight) :
+                -(axis.maxLabelSize.width + sum(axis.yAxisMultiLabelHeight)));
             let y = rect.y + titlePositionY(rect, 0, 0, title.textStyle) + (axis.opposedPosition ? this.padding : -this.padding);
             let options = new TextOption(heatMap.element.id + '_YAxisTitle', new TextBasic(x, y - this.padding, anchor, title.text, labelRotation, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', 'auto'), title.textStyle, title.textStyle.color || heatMap.themeStyle.axisTitle);
             if (!this.heatMap.enableCanvasRendering) {
@@ -1760,19 +2028,20 @@ class AxisHelper {
         let heatmap = this.heatMap;
         let axis;
         let axisCollection = heatmap.axisCollections;
+        let data = this.heatMap.dataSource;
+        let processLabels = !(data && data.isJsonData && data.adaptorType === 'Cell');
         for (let i = 0, len = axisCollection.length; i < len; i++) {
             axis = axisCollection[i];
-            axis.axisLabels = [];
-            axis.tooltipLabels = [];
-            axis.dateTimeAxisLabelInterval = [];
-            axis.labelValue = [];
-            if (axis.valueType === 'Numeric') {
+            if (axis.valueType === 'Numeric' && processLabels) {
+                axis.clearAxisLabel();
                 axis.calculateNumericAxisLabels(this.heatMap);
             }
-            else if (axis.valueType === 'DateTime') {
+            else if (axis.valueType === 'DateTime' && processLabels) {
+                axis.clearAxisLabel();
                 axis.calculateDateTimeAxisLabel(this.heatMap);
             }
-            else {
+            else if (axis.valueType === 'Category') {
+                axis.clearAxisLabel();
                 axis.calculateCategoryAxisLabels();
             }
             axis.tooltipLabels = axis.isInversed ? axis.tooltipLabels.reverse() : axis.tooltipLabels;
@@ -1792,7 +2061,7 @@ class AxisHelper {
             let padding = axis.textStyle.size === '0px' ? 0 : this.padding;
             axis.nearSizes = [];
             axis.farSizes = [];
-            axis.computeSize(axis, heatmap);
+            axis.computeSize(axis, heatmap, rect);
             if (!axis.opposedPosition) {
                 if (axis.orientation === 'Horizontal') {
                     rect.height -= (sum(axis.nearSizes) + padding);
@@ -1832,6 +2101,11 @@ class AxisHelper {
                 axis.rect.x = rect.x + rect.width;
                 axis.rect.width = 0;
             }
+            axis.multiLevelPosition = [];
+            for (let i = 0; i < axis.multiLevelLabels.length; i++) {
+                let multiPosition = axis.multiPosition(axis, i);
+                axis.multiLevelPosition.push(multiPosition);
+            }
         }
     }
     drawXAxisLabels(axis, parent, rect) {
@@ -1857,13 +2131,17 @@ class AxisHelper {
             axisInterval = temp;
         }
         let padding = 10;
-        let lableStrtX = rect.x + (!axis.isInversed ? 0 : rect.width);
         let labelPadding;
+        let lableStrtX = rect.x + (!axis.isInversed ? 0 : rect.width);
         let angle = axis.angle;
         padding = this.padding;
+        let anglePadding = ((angle === 90 || angle === -90)) ? -2 : 0;
         let labelElement;
+        let borderElement;
+        anglePadding = ((angle % 360 === 180 || angle % 360 === -180)) ? -3 : 0;
         if (!heatMap.enableCanvasRendering) {
             labelElement = this.heatMap.renderer.createGroup({ id: heatMap.element.id + 'XAxisLabels' });
+            borderElement = this.heatMap.renderer.createGroup({ id: heatMap.element.id + 'XAxisLabelBorder' });
         }
         for (let i = 0, len = labels.length; i < len; i++) {
             let lableRect = new Rect(lableStrtX, rect.y, interval, rect.height);
@@ -1874,7 +2152,7 @@ class AxisHelper {
             let transform;
             labelPadding = (axis.opposedPosition) ?
                 -(padding)
-                : padding + (3 * (elementSize.height / 4));
+                : (padding + ((angle % 360) === 0 ? (elementSize.height / 2) : 0));
             let x = lableRect.x + ((!axis.isInversed) ?
                 (lableRect.width / 2) - (elementSize.width / 2) : -((lableRect.width / 2) + (elementSize.width / 2)));
             if (axis.labelIntersectAction === 'Trim') {
@@ -1885,15 +2163,22 @@ class AxisHelper {
                 x = ((x + elementSize.width) > (rect.x + rect.width)) ? (rect.x + rect.width - elementSize.width) : x;
             }
             let y = rect.y + labelPadding;
+            this.drawXAxisBorder(axis, borderElement, axis.rect, x, elementSize.width, i);
             if (angle % 360 !== 0) {
                 angle = (angle > 360) ? angle % 360 : angle;
                 let rotateSize = rotateTextSize(axis.textStyle, label, angle);
                 let diffHeight = axis.maxLabelSize.height - Math.ceil(rotateSize.height - elementSize.height);
                 let yLocation = axis.opposedPosition ? diffHeight / 2 : -diffHeight / 2;
                 x = lableRect.x + (axis.isInversed ? -(lableRect.width / 2) : (lableRect.width / 2));
-                y = y + (axis.opposedPosition ? -(rotateSize.height / 2) : ((rotateSize.height - elementSize.height) / 2));
+                y = y + (axis.opposedPosition ? -(rotateSize.height / 2) : (((angle % 360) === 180 ||
+                    (angle % 360) === -180) ? 0 : (rotateSize.height) / 2));
                 transform = 'rotate(' + angle + ',' + x + ','
                     + y + ')';
+                let calculateAngle = angle % 360;
+                calculateAngle = angle <= 180 ? angle : (360 - angle);
+                if (!axis.opposedPosition) {
+                    y = y - (((calculateAngle / 180) / 2) * rotateSize.height) + anglePadding;
+                }
             }
             let options = new TextOption(heatMap.element.id + '_XAxis_Label' + i, new TextBasic(x, y, (angle % 360 === 0) ? 'start' : 'middle', label, angle, transform), axis.textStyle, axis.textStyle.color || heatMap.themeStyle.axisLabel);
             if (angle !== 0 && this.heatMap.enableCanvasRendering) {
@@ -1911,7 +2196,7 @@ class AxisHelper {
             else {
                 lableStrtX = lableStrtX + (!axis.isInversed ? (compactInterval * interval) : -(compactInterval * interval));
             }
-            if (label.indexOf('...') !== -1 && this.heatMap.enableCanvasRendering) {
+            if (label.indexOf('...') !== -1) {
                 this.heatMap.tooltipCollection.push(new CanvasTooltip(labels[i], new Rect(x, y - elementSize.height, elementSize.width, elementSize.height)));
             }
             if (compactInterval !== 0) {
@@ -1920,6 +2205,7 @@ class AxisHelper {
         }
         if (!heatMap.enableCanvasRendering) {
             parent.appendChild(labelElement);
+            parent.appendChild(borderElement);
         }
     }
     drawYAxisLabels(axis, parent, rect) {
@@ -1947,8 +2233,10 @@ class AxisHelper {
         let anchor = axis.opposedPosition ? 'start' : 'end';
         padding = axis.opposedPosition ? padding : -padding;
         let labelElement;
+        let borderElement;
         if (!heatMap.enableCanvasRendering) {
             labelElement = this.heatMap.renderer.createGroup({ id: heatMap.element.id + 'YAxisLabels' });
+            borderElement = this.heatMap.renderer.createGroup({ id: heatMap.element.id + 'YAxisLabelBorder' });
         }
         for (let i = 0, len = labels.length; i < len; i++) {
             let labelRect = new Rect(rect.x, lableStartY, rect.width, interval);
@@ -1970,10 +2258,501 @@ class AxisHelper {
                 lableStartY = lableStartY + (axis.isInversed ? (compactInterval * interval) : -(compactInterval * interval));
                 i = i + (compactInterval - 1);
             }
+            let elementSize = measureText(labels[i], axis.textStyle);
+            this.drawYAxisBorder(axis, borderElement, axis.rect, y, elementSize.height, i);
         }
         if (!heatMap.enableCanvasRendering) {
             parent.appendChild(labelElement);
+            parent.appendChild(borderElement);
         }
+    }
+    drawXAxisBorder(axis, parent, rect, lableX, width, index) {
+        let interval = rect.width / axis.axisLabelSize;
+        let path = '';
+        let padding = 10;
+        let axisInterval = axis.interval ? axis.interval : 1;
+        let startX = axis.isInversed ? rect.x + rect.width - (interval * index * axisInterval) :
+            rect.x + (interval * index * axisInterval);
+        let startY = rect.y;
+        let endX;
+        let endY;
+        endY = startY + (axis.opposedPosition ? -(axis.maxLabelSize.height + padding) : axis.maxLabelSize.height + padding);
+        endX = axis.isInversed ? startX - interval : startX + interval;
+        switch (axis.border.type) {
+            case 'Rectangle':
+                path = ('M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
+                    'L' + ' ' + endX + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + startY);
+                break;
+            case 'WithoutTopBorder':
+                path = 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
+                    'L' + ' ' + endX + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ';
+                break;
+            case 'WithoutBottomBorder':
+                path = 'M' + ' ' + startX + ' ' + endY + ' ' + 'L' + ' ' + startX + ' ' + startY + ' ' +
+                    'L' + ' ' + endX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ';
+                break;
+            case 'WithoutTopandBottomBorder':
+                path = 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
+                    'M' + ' ' + endX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ';
+                break;
+            case 'Brace':
+                let padding = 3;
+                endY = startY + ((endY - startY) / 2) + (axis.opposedPosition ? 0 : 5);
+                let endY1 = axis.isInversed ? (lableX + width + padding) : (lableX - padding);
+                let endY2 = axis.isInversed ? (lableX - padding) : (lableX + width + padding);
+                path = 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
+                    'L' + ' ' + endY1 + ' ' + endY + ' ' + 'M' + ' ' + endY2 +
+                    ' ' + endY + ' ' + 'L' +
+                    ' ' + endX + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ';
+                break;
+        }
+        if (axis.border.width > 0 && axis.border.type !== 'WithoutBorder') {
+            this.createAxisBorderElement(axis, path, parent, index);
+        }
+    }
+    drawYAxisBorder(axis, parent, rect, lableY, height, index) {
+        let interval = rect.height / axis.axisLabelSize;
+        let path = '';
+        let padding = 20;
+        let axisInterval = axis.interval ? axis.interval : 1;
+        let startX = rect.x;
+        let startY = axis.isInversed ? rect.y + (interval * index * axisInterval) :
+            rect.y + rect.height - (interval * index * axisInterval);
+        let endX;
+        let endY;
+        endX = startX + (!axis.opposedPosition ? -(axis.maxLabelSize.width + padding) : axis.maxLabelSize.width + padding);
+        endY = axis.isInversed ? startY + interval : startY - interval;
+        switch (axis.border.type) {
+            case 'Rectangle':
+                path = 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
+                    'L' + ' ' + endX + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + startY;
+                break;
+            case 'WithoutTopBorder':
+                path = 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ' +
+                    'L' + ' ' + endX + ' ' + endY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ';
+                break;
+            case 'WithoutBottomBorder':
+                path = 'M' + ' ' + endX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + startY + ' ' +
+                    'L' + ' ' + startX + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ';
+                break;
+            case 'WithoutTopandBottomBorder':
+                path = 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ' +
+                    'M' + ' ' + endX + ' ' + endY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ';
+                break;
+            case 'Brace':
+                endX = startX - (startX - endX) / 2;
+                let endY1 = axis.isInversed ? lableY - height / 2 : lableY + height / 2;
+                let endY2 = axis.isInversed ? lableY + height / 2 : lableY - height / 2;
+                path = 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ' +
+                    'L' + ' ' + endX + ' ' + endY1 + ' ' + 'M' + ' ' +
+                    endX + ' ' + endY2 + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ' +
+                    'L' + ' ' + startX + ' ' + endY;
+                break;
+        }
+        if (axis.border.width > 0 && axis.border.type !== 'WithoutBorder') {
+            this.createAxisBorderElement(axis, path, parent, index);
+        }
+    }
+    /**
+     * To create border element for axis.
+     * @return {void}
+     * @private
+     */
+    createAxisBorderElement(axis, labelBorder, parent, index) {
+        let canvasTranslate;
+        let id = axis.orientation === 'Horizontal' ? '_XAxis_Label_Border' : '_YAxis_Label_Border';
+        let pathOptions = new PathOption(this.heatMap.element.id + id + index, 'transparent', axis.border.width, axis.border.color, 1, 'none', labelBorder);
+        if (!this.heatMap.enableCanvasRendering) {
+            let borderElement = this.heatMap.renderer.drawPath(pathOptions);
+            parent.appendChild(borderElement);
+        }
+        else {
+            this.heatMap.canvasRenderer.drawPath(pathOptions, canvasTranslate);
+        }
+    }
+    drawMultiLevels(parent, axis) {
+        let element;
+        if (!this.heatMap.enableCanvasRendering) {
+            element = this.heatMap.renderer.createGroup({ id: this.heatMap.element.id + '_' + axis.orientation + '_MultiLevelLabel' });
+        }
+        axis.orientation === 'Horizontal' ? this.renderXAxisMultiLevelLabels(axis, element, axis.rect) :
+            this.renderYAxisMultiLevelLabels(axis, element, axis.rect);
+        if (!this.heatMap.enableCanvasRendering) {
+            parent.appendChild(element);
+        }
+    }
+    /**
+     * render x axis multi level labels
+     * @private
+     * @return {void}
+     */
+    renderXAxisMultiLevelLabels(axis, parent, rect) {
+        let x = 0;
+        let y;
+        let padding = 10;
+        let startX;
+        let startY;
+        let endX = 0;
+        let tooltip;
+        let start;
+        let end;
+        let labelSize;
+        let anchor;
+        let isInversed = axis.isInversed;
+        let labelElement;
+        let opposedPosition = axis.opposedPosition;
+        let pathRect = '';
+        let gap;
+        let width;
+        let textLength;
+        let position = (isInversed ? axis.rect.width : 0) + axis.rect.x;
+        axis.multiLevelLabels.map((multiLevel, level) => {
+            labelElement = this.heatMap.renderer.createGroup({ id: this.heatMap.element.id + '_XAxisMultiLevelLabel' + level });
+            multiLevel.categories.map((categoryLabel, i) => {
+                tooltip = false;
+                start = typeof categoryLabel.start === 'number' ? categoryLabel.start : Number(new Date(categoryLabel.start));
+                end = typeof categoryLabel.end === 'number' ? categoryLabel.end : Number(new Date(categoryLabel.end));
+                startX = position + this.calculateLeftPosition(axis, start, categoryLabel.start, axis.rect);
+                startY = axis.multiLevelPosition[level].y;
+                endX = position + this.calculateWidth(axis, categoryLabel.end, end, axis.rect);
+                labelSize = measureText(categoryLabel.text, multiLevel.textStyle);
+                gap = ((categoryLabel.maximumTextWidth === null) ? Math.abs(endX - startX) : categoryLabel.maximumTextWidth) - padding;
+                y = startY + (opposedPosition ? -((axis.xAxisMultiLabelHeight[level] - labelSize.height)) : labelSize.height);
+                width = categoryLabel.maximumTextWidth ? categoryLabel.maximumTextWidth : labelSize.width;
+                x = !isInversed ? startX + padding : startX - gap;
+                if (multiLevel.alignment === 'Center') {
+                    x = ((endX - startX) / 2) + startX;
+                    x -= (labelSize.width > gap ? gap : labelSize.width) / 2;
+                }
+                else if (multiLevel.alignment === 'Far') {
+                    x = !isInversed ? endX - padding : startX - padding;
+                    x -= (labelSize.width > gap ? gap : labelSize.width);
+                }
+                else {
+                    x = !isInversed ? startX + padding : endX + padding;
+                }
+                if (multiLevel.overflow === 'None' && labelSize.width > Math.abs(endX - startX)) {
+                    x = !isInversed ? startX + padding : startX - labelSize.width - padding;
+                    anchor = 'start';
+                }
+                let textBasic = new TextBasic(x, y, anchor, categoryLabel.text, 0, 'translate(0,0)');
+                let options = new TextOption(this.heatMap.element.id + '_XAxis_MultiLevel' + level + '_Text' + i, textBasic, multiLevel.textStyle, multiLevel.textStyle.color || this.heatMap.themeStyle.axisLabel);
+                if (multiLevel.overflow === 'Wrap') {
+                    options.text = textWrap(categoryLabel.text, gap, multiLevel.textStyle);
+                    textLength = options.text.length;
+                }
+                else if (multiLevel.overflow === 'Trim') {
+                    options.text = textTrim(gap, categoryLabel.text, multiLevel.textStyle);
+                    textLength = 1;
+                }
+                if (multiLevel.overflow === 'Wrap' && options.text.length > 1) {
+                    this.drawSvgCanvas.createWrapText(options, multiLevel.textStyle, labelElement);
+                    for (let i = 0; i < options.text.length; i++) {
+                        if (options.text[i].indexOf('...') !== -1) {
+                            tooltip = true;
+                            break;
+                        }
+                    }
+                }
+                else {
+                    this.drawSvgCanvas.createText(options, labelElement, options.text);
+                }
+                if (!this.heatMap.enableCanvasRendering) {
+                    parent.appendChild(labelElement);
+                }
+                if (options.text.indexOf('...') !== -1 || options.text[0].indexOf('...') !== -1 || tooltip) {
+                    this.heatMap.tooltipCollection.push(new CanvasTooltip(categoryLabel.text, new Rect(x, y - labelSize.height, gap, labelSize.height * textLength)));
+                }
+                if (multiLevel.border.width > 0 && multiLevel.border.type !== 'WithoutBorder') {
+                    pathRect = this.renderXAxisLabelBorder(level, axis, startX, startY, endX, pathRect, level, labelSize, gap, x);
+                }
+            });
+            if (pathRect !== '') {
+                this.createBorderElement(level, axis, pathRect, parent);
+                pathRect = '';
+            }
+        });
+        if (!this.heatMap.enableCanvasRendering) {
+            parent.appendChild(labelElement);
+        }
+    }
+    /**
+     * render x axis multi level labels border
+     * @private
+     * @return {void}
+     */
+    renderXAxisLabelBorder(labelIndex, axis, startX, startY, endX, path, level, labelSize, gap, x) {
+        let path1;
+        let path2;
+        let endY = startY + (axis.opposedPosition ? -(axis.xAxisMultiLabelHeight[labelIndex]) :
+            axis.xAxisMultiLabelHeight[labelIndex]);
+        switch (axis.multiLevelLabels[level].border.type) {
+            case 'Rectangle':
+                path += 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
+                    'L' + ' ' + endX + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + startY + ' ';
+                break;
+            case 'WithoutTopBorder':
+                path += 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
+                    'L' + ' ' + endX + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ';
+                break;
+            case 'WithoutBottomBorder':
+                path += 'M' + ' ' + startX + ' ' + endY + ' ' + 'L' + ' ' + startX + ' ' + startY + ' ' +
+                    'L' + ' ' + endX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ';
+                break;
+            case 'WithoutTopandBottomBorder':
+                path += 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
+                    'M' + ' ' + endX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ';
+                break;
+            case 'Brace':
+                let padding = 3;
+                path1 = axis.isInversed ? (labelSize.width > gap ? gap : labelSize.width) + x + padding : x - padding;
+                path2 = axis.isInversed ? x - padding : (labelSize.width > gap ? gap : labelSize.width) + x + padding;
+                path += 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + (startY + (endY - startY) / 2) + ' ' +
+                    'L' + ' ' + path1 + ' ' + (startY + (endY - startY) / 2) + ' ' + 'M' + ' ' + path2 + ' ' + (startY +
+                    (endY - startY) / 2) + ' ' + 'L' + ' ' + endX + ' ' + (startY + (endY - startY) / 2) +
+                    ' ' + 'L' + ' ' + endX + ' ' + startY + ' ';
+                break;
+        }
+        return path;
+    }
+    /**
+     * render y axis multi level labels
+     * @private
+     * @return {void}
+     */
+    renderYAxisMultiLevelLabels(axis, parent, rect) {
+        let x = 0;
+        let y;
+        let padding = 10;
+        let startX;
+        let startY;
+        let startY2;
+        let endY;
+        let start;
+        let end;
+        let labelSize;
+        let isInversed = axis.isInversed;
+        let labelElement;
+        let opposedPosition = axis.opposedPosition;
+        let pathRect = '';
+        let gap;
+        let interval = (axis.rect.height / axis.axisLabelSize) / axis.increment;
+        let text;
+        let position = (!isInversed ? axis.rect.height : 0) + axis.rect.y;
+        axis.multiLevelLabels.map((multiLevel, level) => {
+            startY2 = axis.multiLevelPosition[level].y;
+            labelElement = this.heatMap.renderer.createGroup({ id: this.heatMap.element.id + '_YAxisMultiLevelLabel' + level });
+            multiLevel.categories.map((categoryLabel, i) => {
+                start = typeof categoryLabel.start === 'number' ? categoryLabel.start : Number(new Date(categoryLabel.start));
+                end = typeof categoryLabel.end === 'number' ? categoryLabel.end : Number(new Date(categoryLabel.end));
+                startY = position + this.calculateLeftPosition(axis, start, categoryLabel.start, axis.rect);
+                startX = axis.multiLevelPosition[level].x;
+                endY = position + this.calculateWidth(axis, categoryLabel.start, end, axis.rect);
+                labelSize = measureText(categoryLabel.text, multiLevel.textStyle);
+                gap = ((categoryLabel.maximumTextWidth === null) ? Math.abs(startX) : categoryLabel.maximumTextWidth) - padding;
+                let maxWidth = Math.abs(startX - (startX - axis.multiLevelSize[level].width - 2 * padding)) / 2 -
+                    (labelSize.width / 2);
+                x = (axis.opposedPosition ? startX : startX - axis.multiLevelSize[level].width - 2 * padding) + maxWidth;
+                y = startY + padding;
+                if (multiLevel.overflow !== 'None') {
+                    if (multiLevel.overflow === 'Wrap') {
+                        text = textWrap(categoryLabel.text, gap, multiLevel.textStyle);
+                    }
+                    else {
+                        text = textTrim(gap, categoryLabel.text, multiLevel.textStyle);
+                    }
+                }
+                if (multiLevel.alignment === 'Center') {
+                    y += ((endY - startY) / 2 - (text.length * labelSize.height) / 2);
+                }
+                else if (multiLevel.alignment === 'Far') {
+                    y = isInversed ? endY - labelSize.height / 2 : y - labelSize.height;
+                }
+                else {
+                    y = isInversed ? y + labelSize.height / 2 : endY + labelSize.height;
+                }
+                if (multiLevel.border.width > 0 && multiLevel.border.type !== 'WithoutBorder') {
+                    pathRect = this.renderYAxisLabelBorder(level, axis, startX, startY, endY, pathRect, level, labelSize, gap, y);
+                }
+                let textBasic = new TextBasic(x, y, 'start', categoryLabel.text, 0, 'translate(0,0)');
+                let options = new TextOption(this.heatMap.element.id + '_YAxis_MultiLevel' + level + '_Text' + i, textBasic, multiLevel.textStyle, multiLevel.textStyle.color || this.heatMap.themeStyle.axisLabel);
+                options.text = text;
+                this.drawSvgCanvas.createText(options, labelElement, options.text);
+                if (options.text.indexOf('...') !== -1) {
+                    this.heatMap.tooltipCollection.push(new CanvasTooltip(categoryLabel.text, new Rect(x, y - labelSize.height, gap, labelSize.height)));
+                }
+                if (!this.heatMap.enableCanvasRendering) {
+                    parent.appendChild(labelElement);
+                }
+            });
+            if (pathRect !== '') {
+                this.createBorderElement(level, axis, pathRect, parent);
+                pathRect = '';
+            }
+        });
+        if (!this.heatMap.enableCanvasRendering) {
+            parent.appendChild(labelElement);
+        }
+    }
+    /**
+     * render x axis multi level labels border
+     * @private
+     * @return {void}
+     */
+    renderYAxisLabelBorder(labelIndex, axis, startX, startY, endY, path, level, labelSize, gap, y) {
+        let padding = 20;
+        let path1;
+        let path2;
+        let endX = startX - (axis.opposedPosition ? -(axis.multiLevelSize[labelIndex].width + padding) :
+            (axis.multiLevelSize[labelIndex].width + padding));
+        switch (axis.multiLevelLabels[level].border.type) {
+            case 'Rectangle':
+                path += 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ' +
+                    'L' + ' ' + endX + ' ' + endY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' + 'L' + ' ' + startX + ' ' + startY + ' ';
+                break;
+            case 'WithoutTopBorder':
+                path += 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ' +
+                    'L' + ' ' + endX + ' ' + endY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ';
+                break;
+            case 'WithoutBottomBorder':
+                path += 'M' + ' ' + endX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + startY + ' ' +
+                    'L' + ' ' + startX + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ';
+                break;
+            case 'WithoutTopandBottomBorder':
+                path += 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ' +
+                    'M' + ' ' + startX + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ';
+                break;
+            case 'Brace':
+                let padding = 10;
+                path1 = axis.isInversed ? (y - padding - 5) : (y + (labelSize.height) - padding);
+                path2 = axis.isInversed ? (y + (labelSize.height) - padding) : (y - padding - 5);
+                path += 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + (startX + (endX - startX) / 2) + ' ' + startY + ' ' +
+                    'L' + ' ' + (startX + (endX - startX) / 2) + ' ' + path1 + ' ' + 'M' + ' ' + (startX + (endX - startX) / 2) +
+                    ' ' + path2 + ' ' + 'L' + ' ' + (startX + (endX - startX) / 2) + ' ' +
+                    endY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ';
+                break;
+        }
+        return path;
+    }
+    /**
+     * create borer element
+     * @return {void}
+     * @private
+     */
+    createBorderElement(borderIndex, axis, path, parent) {
+        let canvasTranslate;
+        let id = axis.orientation === 'Horizontal' ? 'XAxis' : 'YAxis';
+        let pathOptions = new PathOption(this.heatMap.element.id + '_' + id + '_MultiLevel_Rect_' + borderIndex, 'Transparent', axis.multiLevelLabels[borderIndex].border.width, axis.multiLevelLabels[borderIndex].border.color, 1, '', path);
+        let borderElement = this.heatMap.renderer.drawPath(pathOptions);
+        if (!this.heatMap.enableCanvasRendering) {
+            parent.appendChild(borderElement);
+        }
+        else {
+            this.heatMap.canvasRenderer.drawPath(pathOptions, canvasTranslate);
+        }
+    }
+    /**
+     * calculate left position of border element
+     * @private
+     */
+    calculateLeftPosition(axis, start, label, rect) {
+        let value;
+        let interval;
+        if (typeof label === 'number') {
+            if (axis.valueType === 'Numeric' && (axis.minimum || axis.maximum)) {
+                let min = axis.minimum ? axis.minimum : 0;
+                start -= min;
+            }
+            let size = axis.orientation === 'Horizontal' ? rect.width : rect.height;
+            interval = size / (axis.axisLabelSize * axis.increment);
+            value = (axis.isInversed ? -1 : 1) * start * interval;
+            value = axis.orientation === 'Horizontal' ? value : -value;
+        }
+        else {
+            interval = this.calculateNumberOfDays(start, axis, true, rect);
+            value = axis.isInversed ? -interval : interval;
+            value = axis.orientation === 'Horizontal' ? value : -value;
+        }
+        return value;
+    }
+    /**
+     * calculate width of border element
+     * @private
+     */
+    calculateWidth(axis, label, end, rect) {
+        let interval;
+        let value;
+        if (typeof label === 'number') {
+            if (axis.valueType === 'Numeric' && (axis.minimum || axis.maximum)) {
+                let min = axis.minimum ? axis.minimum : 0;
+                end -= min;
+            }
+            let size = axis.orientation === 'Horizontal' ? rect.width : rect.height;
+            interval = size / (axis.axisLabelSize * axis.increment);
+            value = (axis.isInversed ? -1 : 1) * (end + 1) * interval;
+            value = axis.orientation === 'Horizontal' ? value : -value;
+        }
+        else {
+            interval = this.calculateNumberOfDays(end, axis, false, rect);
+            value = interval;
+            value = axis.isInversed ? -value : value;
+            value = axis.orientation === 'Horizontal' ? value : -value;
+        }
+        return value;
+    }
+    calculateNumberOfDays(date, axis, start, rect) {
+        let oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
+        let oneMinute = 60 * 1000;
+        let firstDate;
+        let secondDate;
+        let labels = axis.labelValue;
+        let position;
+        let interval = (axis.orientation === 'Horizontal' ? rect.width : rect.height) / axis.axisLabelSize;
+        let givenDate = new Date(Number(date));
+        let days = 0;
+        for (let index = 0; index < axis.axisLabelSize; index++) {
+            firstDate = new Date(Number(labels[index]));
+            secondDate = axis.isInversed ? new Date(Number(labels[index - 1])) : new Date(Number(labels[index + 1]));
+            if (index === (axis.isInversed ? 0 : axis.axisLabelSize - 1)) {
+                secondDate = new Date(Number(labels[index]));
+                if (axis.intervalType === 'Hours') {
+                    secondDate = new Date(Number(secondDate.setHours(secondDate.getHours() + 1)));
+                }
+                else if ((axis.intervalType === 'Minutes')) {
+                    secondDate = new Date(Number(secondDate.setMinutes(secondDate.getMinutes() + 1)));
+                }
+                else if ((axis.intervalType === 'Days')) {
+                    secondDate = new Date(Number(secondDate.setDate(secondDate.getDate() + 1)));
+                }
+                else {
+                    let numberOfDays = axis.intervalType === 'Months' ?
+                        new Date(secondDate.getFullYear(), secondDate.getMonth() + 1, 0).getDate() :
+                        secondDate.getFullYear() % 4 === 0 ? 366 : 365;
+                    secondDate = new Date(Number(secondDate.setDate(secondDate.getDate() + numberOfDays)));
+                }
+            }
+            if (Number(firstDate) <= date && Number(secondDate) >= date) {
+                if (axis.intervalType === 'Minutes' || axis.intervalType === 'Hours') {
+                    let totalMinutes = Math.round(Math.abs((firstDate.getTime() - secondDate.getTime()) / (oneMinute)));
+                    let minutesInHours = Math.abs((firstDate.getTime() - givenDate.getTime()) / (oneMinute));
+                    days = (interval / totalMinutes) * minutesInHours;
+                    index = axis.isInversed ? axis.axisLabelSize - 1 - index : index;
+                    position = index * interval + days;
+                    break;
+                }
+                else {
+                    let numberOfDays = Math.round(Math.abs((firstDate.getTime() - secondDate.getTime()) / (oneDay)));
+                    start ? givenDate.getDate() : givenDate.setDate(givenDate.getDate() + 1);
+                    if (numberOfDays !== 0) {
+                        days = (interval / numberOfDays) * (Math.abs((firstDate.getTime() - givenDate.getTime()) / (oneDay)));
+                    }
+                    index = axis.isInversed ? axis.axisLabelSize - 1 - index : index;
+                    position = index * interval + days;
+                    break;
+                }
+            }
+        }
+        return position;
     }
 }
 
@@ -2023,6 +2802,7 @@ class Series {
      * @return {void}
      * @private
      */
+    //tslint:disable:max-line-length
     renderRectSeries() {
         this.createSeriesGroup();
         let heatMap = this.heatMap;
@@ -2044,6 +2824,7 @@ class Series {
         let circleRadius;
         tempBorder = cellSetting.border;
         let borderColor;
+        let displayText;
         this.rectPositionCollection = [];
         this.color = '';
         this.bubbleColorValue = [];
@@ -2053,32 +2834,39 @@ class Series {
         circleRadius = this.getBubbleRadius(tempWidth, tempHeight);
         for (let x = 0; x < (heatMap.xLength * heatMap.yLength); x++) {
             this.setTextAndColor(dataXIndex, dataYIndex);
-            let rectPosition = new CurrentRect(0, 0, 0, 0, 0, '');
+            let rectPosition = new CurrentRect(0, 0, 0, 0, 0, '', 0, 0, 0, 0, true, '', '');
             borderColor = tempBorder.color;
             if ((heatMap.renderingMode === 'Canvas' && parseFloat(tempBorder.width.toString()) === 0) || (!borderColor &&
                 cellSetting.tileType === 'Bubble' && cellSetting.bubbleType === 'Sector')) {
                 borderColor = this.color;
             }
             if (this.heatMap.bubbleSizeWithColor) {
-                this.updateRectDetails(rectPosition, tempX, tempY, tempWidth, tempHeight, extend('', this.bubbleColorValue, null, true), x);
+                this.updateRectDetails(rectPosition, tempX, tempY, tempWidth, tempHeight, extend('', this.bubbleColorValue, null, true), x, dataYIndex, dataXIndex);
             }
             else {
-                this.updateRectDetails(rectPosition, tempX, tempY, tempWidth, tempHeight, this.text, x);
+                this.updateRectDetails(rectPosition, tempX, tempY, tempWidth, tempHeight, this.text, x, dataYIndex, dataXIndex);
+            }
+            if (cellSetting.showLabel) {
+                displayText = this.getFormatedText(this.text, cellSetting.format);
+                rectPosition.displayText = displayText;
+                if (!isNullOrUndefined(this.heatMap.cellRender)) {
+                    displayText = this.cellRendering(rectPosition, displayText);
+                }
             }
             if (cellSetting.tileType === 'Rect') { // Rectangle/Tile Series
                 this.renderTileCell(rectPosition, tempBorder, x, this.color, borderColor);
-                this.updateLabelVisibleStatus(tempWidth, tempHeight);
+                this.updateLabelVisibleStatus(tempWidth, tempHeight, displayText);
             }
             else {
                 if (cellSetting.bubbleType === 'Color') { // Bubble by same size and different color Series
                     this.renderBubbleCell(rectPosition, tempBorder, x, this.color, borderColor, circleRadius);
-                    this.updateLabelVisibleStatus((circleRadius * 2) - 12, (circleRadius * 2) - 6); // 6, 12 - circle padding
+                    this.updateLabelVisibleStatus((circleRadius * 2) - 12, (circleRadius * 2) - 6, displayText); // 6, 12 - circle padding
                 }
                 else if (!isNullOrUndefined(this.text) && (cellSetting.bubbleType === 'Size' || cellSetting.bubbleType === 'SizeAndColor')
                     && this.text.toString() !== '') { // Bubble by same color and different size Series
                     let tempCircleRadius = this.getRadiusBypercentage(parseFloat(this.text.toString()), heatMap.dataSourceMinValue, heatMap.dataSourceMaxValue, circleRadius);
                     this.renderBubbleCell(rectPosition, tempBorder, x, this.color, borderColor, tempCircleRadius);
-                    this.updateLabelVisibleStatus((tempCircleRadius * 2) - 12, (tempCircleRadius * 2) - 6);
+                    this.updateLabelVisibleStatus((tempCircleRadius * 2) - 12, (tempCircleRadius * 2) - 6, displayText);
                 }
                 else if (cellSetting.bubbleType === 'Sector' && !isNullOrUndefined(this.text) && this.text.toString() !== '') {
                     this.renderSectorCell(rectPosition, tempBorder, x.toString(), this.color, borderColor, circleRadius, this.text);
@@ -2088,9 +2876,12 @@ class Series {
             }
             tempRectPosition.push(rectPosition);
             if (cellSetting.showLabel && this.checkLabelYDisplay && this.checkLabelXDisplay) {
-                let displayText = this.getFormatedText(this.text, cellSetting.format);
                 let themeCellTextStyle = cellSetting.textStyle;
                 let options = new TextOption(heatMap.element.id + '_HeatMapRectLabels_' + x, new TextBasic(Math.round((tempX + tempWidth / 2) * 100) / 100, Math.round((tempY + tempHeight / 2) * 100) / 100, 'middle', displayText, null, null, 'middle'), themeCellTextStyle, themeCellTextStyle.color || this.getSaturatedColor(this.color));
+                rectPosition.textId = options.id;
+                if (heatMap.rangeSelection && heatMap.paletteSettings.type === 'Fixed') {
+                    this.toggleCellTextColor(rectPosition, options);
+                }
                 if (Browser.isIE && !heatMap.enableCanvasRendering) {
                     options.dy = this.heatMap.cellSettings.tileType === 'Bubble' ? '0.5ex' : '1ex';
                 }
@@ -2122,6 +2913,52 @@ class Series {
                 heatMap.svgObject.appendChild(this.containerTextObject);
             }
         }
+    }
+    /**
+     * To toggle the cell text color based on legend selection.
+     */
+    toggleCellTextColor(rectPosition, options) {
+        for (let i = 0; i < this.heatMap.toggleValue.length; i++) {
+            let minValue = (i === 0) ? this.heatMap.dataSourceMinValue : this.heatMap.toggleValue[i].value;
+            let maxValue = (i === this.heatMap.toggleValue.length - 1) ? this.heatMap.dataSourceMaxValue :
+                this.heatMap.toggleValue[i + 1].value - 0.01;
+            if (this.text >= minValue && this.text <= maxValue) {
+                if (!this.heatMap.toggleValue[i].visible) {
+                    options.fill = this.color === '#EEEEEE' ? '#EEEEEE' : this.heatMap.themeStyle.toggledColor;
+                    rectPosition.visible = false;
+                    break;
+                }
+                else {
+                    options.fill = options.fill;
+                    break;
+                }
+            }
+        }
+    }
+    /**
+     * To customize the cell.
+     * @return {void}
+     * @private
+     */
+    cellRendering(rectPosition, text) {
+        let xAxis = this.heatMap.axisCollections[0];
+        let yAxis = this.heatMap.axisCollections[1];
+        let xLabels = xAxis.tooltipLabels;
+        let yLabels = yAxis.tooltipLabels.slice().reverse();
+        let yLabelValue = yAxis.labelValue.slice().reverse();
+        let argData = {
+            heatmap: this.heatMap,
+            cancel: false,
+            name: 'cellRender',
+            value: rectPosition.value,
+            xLabel: xLabels[rectPosition.xIndex].toString(),
+            yLabel: yLabels[rectPosition.yIndex].toString(),
+            displayText: text,
+            xValue: xAxis.labelValue[rectPosition.xIndex],
+            yValue: yLabelValue[rectPosition.yIndex]
+        };
+        this.heatMap.trigger('cellRender', argData);
+        return argData.displayText;
     }
     /**
      * To set color and text details.
@@ -2175,13 +3012,15 @@ class Series {
      * To update rect details.
      * @private
      */
-    updateRectDetails(rectPosition, tempX, tempY, tempWidth, tempHeight, text, x) {
+    updateRectDetails(rectPosition, tempX, tempY, tempWidth, tempHeight, text, x, dataXIndex, dataYIndex) {
         rectPosition.x = tempX;
         rectPosition.y = tempY;
         rectPosition.width = tempWidth;
         rectPosition.height = tempHeight;
         rectPosition.value = text;
         rectPosition.id = this.heatMap.element.id + '_HeatMapRect_' + x;
+        rectPosition.xIndex = dataXIndex;
+        rectPosition.yIndex = dataYIndex;
     }
     /**
      * To Render Tile Cell.
@@ -2308,11 +3147,12 @@ class Series {
      * To find whether the X,Y Label need to display or not.
      * @private
      */
-    updateLabelVisibleStatus(tempWidth, tempHeight) {
-        let tempMaxString = this.getFormatedText(this.text, this.heatMap.cellSettings.format);
-        this.checkLabelYDisplay = tempHeight > parseInt(this.heatMap.cellSettings.textStyle.size, 10) ? true : false;
-        this.checkLabelXDisplay = tempWidth > (tempMaxString.length *
-            (parseInt(this.heatMap.cellSettings.textStyle.size, 10) / 2)) ? true : false;
+    updateLabelVisibleStatus(tempWidth, tempHeight, displayText) {
+        if (this.heatMap.cellSettings.showLabel) {
+            this.checkLabelYDisplay = tempHeight > parseInt(this.heatMap.cellSettings.textStyle.size, 10) ? true : false;
+            this.checkLabelXDisplay = tempWidth > (displayText.length *
+                (parseInt(this.heatMap.cellSettings.textStyle.size, 10) / 2)) ? true : false;
+        }
     }
     /**
      * To find percentage value.
@@ -2355,11 +3195,11 @@ class Series {
                 if (this.heatMap.tempRectHoverClass !== tempID) {
                     if (this.heatMap.cellSettings.enableCellHighlighting) {
                         let oldElement = document.getElementById(this.heatMap.tempRectHoverClass);
-                        if (oldElement) {
-                            oldElement.style.opacity = '1';
+                        if (oldElement && !this.heatMap.rectSelected) {
+                            oldElement.setAttribute('opacity', '1');
                         }
-                        if (element) {
-                            element.style.opacity = '0.65';
+                        if (element && !this.heatMap.rectSelected) {
+                            element.setAttribute('opacity', '0.65');
                         }
                     }
                     this.heatMap.tempRectHoverClass = tempID;
@@ -2368,8 +3208,8 @@ class Series {
             else {
                 if (this.heatMap.cellSettings.enableCellHighlighting) {
                     let oldElement = document.getElementById(this.heatMap.tempRectHoverClass);
-                    if (oldElement) {
-                        oldElement.style.opacity = '1';
+                    if (oldElement && !this.heatMap.rectSelected) {
+                        oldElement.setAttribute('opacity', '1');
                         this.heatMap.tempRectHoverClass = '';
                     }
                 }
@@ -2389,7 +3229,7 @@ class Series {
         });
         let value = '';
         if (val.toString() !== '') {
-            value = this.formatValue(isCustom, format, val);
+            value = formatValue(isCustom, format, val, this.format);
         }
         return value;
     }
@@ -2418,13 +3258,232 @@ class Series {
         this.hoverYAxisValue = this.heatMap.axisCollections[1].labelValue[(this.heatMap.axisCollections[1].labelValue.length - 1) - rectY];
         return currentRect;
     }
+}
+
+/**
+ * HeatMap tool tip file
+ */
+var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Configures the color property in Heatmap.
+ */
+class TooltipSettings extends ChildProperty {
+}
+__decorate$5([
+    Property('')
+], TooltipSettings.prototype, "fill", void 0);
+__decorate$5([
+    Complex({}, TooltipBorder)
+], TooltipSettings.prototype, "border", void 0);
+__decorate$5([
+    Complex(Theme.tooltipFont, Font)
+], TooltipSettings.prototype, "textStyle", void 0);
+/**
+ *
+ * The `Tooltip` module is used to render the tooltip for heatmap series.
+ */
+class Tooltip$1 {
+    constructor(heatMap) {
+        /* private */
+        this.isFirst = true;
+        /* private */
+        this.isFadeout = false;
+        this.heatMap = heatMap;
+    }
     /**
-     * Format the cell label.
+     * Get module name
+     */
+    getModuleName() {
+        return 'Tooltip';
+    }
+    /**
+     * To show/hide Tooltip.
      * @private
      */
-    formatValue(isCustom, format, tempInterval) {
-        return isCustom ? format.replace('{value}', this.format(tempInterval))
-            : this.format(tempInterval);
+    showHideTooltip(isShow, isFadeout) {
+        let ele = document.getElementById(this.heatMap.element.id + 'Celltooltipcontainer');
+        if (!isShow) {
+            if (ele && ele.style.visibility !== 'hidden') {
+                if (this.tooltipObject && isFadeout) {
+                    this.tooltipObject.fadeOut();
+                }
+                else {
+                    if (this.tooltipObject && this.tooltipObject.element) {
+                        let tooltipElement = this.tooltipObject.element.firstChild;
+                        tooltipElement.setAttribute('opacity', '0');
+                    }
+                }
+                ele.style.visibility = 'hidden';
+            }
+            this.isFadeout = true;
+        }
+        else {
+            ele.style.visibility = 'visible';
+        }
+    }
+    /**
+     * To destroy the Tooltip.
+     * @return {void}
+     * @private
+     */
+    destroy(heatMap) {
+        /**
+         * Destroy method performed here
+         */
+    }
+    ;
+    /**
+     * To add Tooltip to the rect cell.
+     * @return {void}
+     * @private
+     */
+    createTooltip(x, y, tempTooltipText) {
+        let offset = null;
+        if (this.heatMap.cellSettings.showLabel && this.heatMap.heatMapSeries.checkLabelXDisplay &&
+            this.heatMap.heatMapSeries.checkLabelYDisplay) {
+            offset = parseInt(this.heatMap.cellSettings.textStyle.size, 10) / 2;
+        }
+        this.tooltipObject = new Tooltip({
+            enableAnimation: false,
+            offset: offset,
+            location: { x: x, y: y },
+            theme: this.heatMap.theme,
+            content: tempTooltipText,
+            fill: this.heatMap.tooltipSettings.fill,
+            border: {
+                width: this.heatMap.tooltipSettings.border.width,
+                color: this.heatMap.tooltipSettings.border.color
+            },
+            textStyle: {
+                size: this.heatMap.tooltipSettings.textStyle.size,
+                fontWeight: this.heatMap.tooltipSettings.textStyle.fontWeight,
+                color: this.heatMap.tooltipSettings.textStyle.color,
+                fontStyle: this.heatMap.tooltipSettings.textStyle.fontStyle,
+                fontFamily: this.heatMap.tooltipSettings.textStyle.fontFamily
+            },
+            areaBounds: {
+                height: this.heatMap.initialClipRect.height + this.heatMap.initialClipRect.y,
+                width: this.heatMap.initialClipRect.width, x: this.heatMap.initialClipRect.x
+            },
+        }, '#' + this.heatMap.element.id + 'Celltooltipcontainer');
+    }
+    /**
+     * To create div container for tooltip.
+     * @return {void}
+     * @private
+     */
+    createTooltipDiv(heatMap) {
+        let element2 = createElement('div', {
+            id: this.heatMap.element.id + 'Celltooltipcontainer',
+            styles: 'position:absolute; z-index: 3'
+        });
+        this.heatMap.element.appendChild(createElement('div', {
+            id: this.heatMap.element.id + 'Celltooltipparent',
+            styles: 'position:relative'
+        })
+            .appendChild(element2));
+    }
+    /**
+     * To get default tooltip content.
+     * @private
+     */
+    getTooltipContent(currentRect, hetmapSeries) {
+        let value;
+        let content;
+        let heatMap = this.heatMap;
+        let adaptData = this.heatMap.dataSource;
+        if (heatMap.bubbleSizeWithColor) {
+            let xAxis = heatMap.xAxis.title && heatMap.xAxis.title.text !== '' ? heatMap.xAxis.title.text : 'X-Axis';
+            let yAxis = heatMap.yAxis.title && heatMap.yAxis.title.text !== '' ? heatMap.yAxis.title.text : 'Y-Axis';
+            let value1 = adaptData.isJsonData && adaptData.adaptorType === 'Cell' ?
+                heatMap.dataSource.bubbleDataMapping.size : 'Value 1';
+            let value2 = adaptData.isJsonData && adaptData.adaptorType === 'Cell' ?
+                heatMap.dataSource.bubbleDataMapping.color : 'Value 2';
+            value = hetmapSeries.getFormatedText(currentRect.value[0].bubbleData, this.heatMap.cellSettings.format);
+            content = [xAxis + ' : ' + hetmapSeries.hoverXAxisLabel + '<br/>'
+                    + yAxis + ' : ' + hetmapSeries.hoverYAxisLabel + '<br/>'
+                    + value1 + ' : ' + value + '<br/>'
+                    + value2 + ' : '
+                    + hetmapSeries.getFormatedText(currentRect.value[1].bubbleData, this.heatMap.cellSettings.format)];
+        }
+        else {
+            value = currentRect.value;
+            content = [hetmapSeries.hoverXAxisLabel + ' | ' + hetmapSeries.hoverYAxisLabel + ' : ' +
+                    hetmapSeries.getFormatedText(value, this.heatMap.cellSettings.format)];
+        }
+        return content;
+    }
+    /**
+     * To render tooltip.
+     * @private
+     */
+    renderTooltip(currentRect) {
+        let hetmapSeries = this.heatMap.heatMapSeries;
+        let tempTooltipText = [''];
+        let showTooltip = this.heatMap.bubbleSizeWithColor ?
+            !isNullOrUndefined(currentRect.value) && !isNullOrUndefined(currentRect.value[0].bubbleData)
+                && currentRect.value[0].bubbleData.toString() !== '' ? true : false
+            : isNullOrUndefined(currentRect.value) || (!isNullOrUndefined(currentRect.value) &&
+                currentRect.value.toString() === '') ? false : true;
+        if (!showTooltip) {
+            this.showHideTooltip(false, false);
+        }
+        else {
+            if (!isNullOrUndefined(this.heatMap.tooltipRender)) {
+                // this.tooltipObject.header = '';
+                // this.tooltipObject.content = this.getTemplateText(
+                //     currentRect, this.heatMap.tooltipTemplate, hetmapSeries.hoverXAxisLabel,
+                //     hetmapSeries.hoverYAxisLabel);
+                let content = this.getTooltipContent(currentRect, hetmapSeries);
+                let argData = {
+                    heatmap: this.heatMap,
+                    cancel: false,
+                    name: 'tooltipRender',
+                    value: currentRect.value,
+                    xValue: this.heatMap.heatMapSeries.hoverXAxisValue,
+                    yValue: this.heatMap.heatMapSeries.hoverYAxisValue,
+                    xLabel: this.heatMap.heatMapSeries.hoverXAxisLabel ?
+                        this.heatMap.heatMapSeries.hoverXAxisLabel.toString() : null,
+                    yLabel: this.heatMap.heatMapSeries.hoverYAxisLabel ?
+                        this.heatMap.heatMapSeries.hoverYAxisLabel.toString() : null,
+                    content: content
+                };
+                this.heatMap.trigger('tooltipRender', argData);
+                if (!argData.cancel) {
+                    tempTooltipText = argData.content;
+                }
+                else {
+                    if (this.tooltipObject) {
+                        this.showHideTooltip(false);
+                    }
+                    return;
+                }
+            }
+            else {
+                //  this.tooltipObject.header = hetmapSeries.hoverYAxisLabel.toString();
+                tempTooltipText = this.getTooltipContent(currentRect, hetmapSeries);
+            }
+            if (!this.tooltipObject) {
+                this.createTooltip(currentRect.x + (currentRect.width / 2), currentRect.y + (currentRect.height / 2), tempTooltipText);
+            }
+            else {
+                this.tooltipObject.content = tempTooltipText;
+            }
+            this.showHideTooltip(true);
+            this.tooltipObject.enableAnimation = (this.isFirst || this.isFadeout) ? false : true;
+            this.isFirst = (this.isFirst) ? false : this.isFirst;
+            this.isFadeout = (this.isFadeout) ? false : this.isFadeout;
+            this.tooltipObject.location.x = currentRect.x + (currentRect.width / 2);
+            this.tooltipObject.location.y = currentRect.y + (currentRect.height / 2);
+        }
+        if (!currentRect.visible) {
+            this.showHideTooltip(false, false);
+        }
     }
 }
 
@@ -2611,7 +3670,7 @@ class TwoDimensional {
     }
 }
 
-var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -2622,36 +3681,42 @@ var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, 
  */
 class LegendSettings extends ChildProperty {
 }
-__decorate$5([
+__decorate$6([
     Property('')
 ], LegendSettings.prototype, "height", void 0);
-__decorate$5([
+__decorate$6([
     Property('')
 ], LegendSettings.prototype, "width", void 0);
-__decorate$5([
+__decorate$6([
     Property('Right')
 ], LegendSettings.prototype, "position", void 0);
-__decorate$5([
+__decorate$6([
     Property(true)
 ], LegendSettings.prototype, "visible", void 0);
-__decorate$5([
+__decorate$6([
     Property('Center')
 ], LegendSettings.prototype, "alignment", void 0);
-__decorate$5([
+__decorate$6([
     Property(true)
 ], LegendSettings.prototype, "showLabel", void 0);
-__decorate$5([
+__decorate$6([
     Property(true)
 ], LegendSettings.prototype, "showGradientPointer", void 0);
-__decorate$5([
+__decorate$6([
     Property(false)
 ], LegendSettings.prototype, "enableSmartLegend", void 0);
-__decorate$5([
+__decorate$6([
     Property('All')
 ], LegendSettings.prototype, "labelDisplayType", void 0);
-__decorate$5([
+__decorate$6([
     Complex(Theme.legendLabelFont, Font)
 ], LegendSettings.prototype, "textStyle", void 0);
+__decorate$6([
+    Property('')
+], LegendSettings.prototype, "labelFormat", void 0);
+__decorate$6([
+    Property(true)
+], LegendSettings.prototype, "toggleVisibility", void 0);
 /**
  *
  * The `Legend` module is used to render legend for the heatmap.
@@ -2682,6 +3747,12 @@ class Legend {
         this.legendYCollections = [];
         /** @private */
         this.legendRectPositionCollection = [];
+        /** @private */
+        this.legendRange = [];
+        /** @private */
+        this.legendTextRange = [];
+        /** @private */
+        this.visibilityCollections = [];
         this.heatMap = heatMap;
         this.drawSvgCanvas = new DrawSvgCanvas(heatMap);
     }
@@ -2717,6 +3788,17 @@ class Legend {
         this.drawSvgCanvas.drawRectangle(rectItems, this.legend);
         let legendBound = this.legendRectScale;
         let rectItemsSvg = new Rect(legendBound.x, legendBound.y, legendBound.width, legendBound.height);
+        if (heatMap.paletteSettings.type === 'Fixed') {
+            let colorCollection = (!heatMap.legendSettings.enableSmartLegend) ?
+                heatMap.colorCollection : heatMap.legendColorCollection;
+            this.legendRange = heatMap.legendOnLoad ? this.legendRange : [];
+            this.legendTextRange = heatMap.legendOnLoad ? this.legendTextRange : [];
+            heatMap.toggleValue = [];
+            for (let i = 0; i < colorCollection.length; i++) {
+                let visibility = !isNullOrUndefined(this.visibilityCollections[i]) ? this.visibilityCollections[i] : true;
+                heatMap.toggleValue.push(new ToggleVisibility(visibility, colorCollection[i].value));
+            }
+        }
         if (heatMap.paletteSettings.type === 'Gradient' || (heatMap.paletteSettings.type === 'Fixed' &&
             heatMap.legendSettings.enableSmartLegend === true)) {
             if (heatMap.paletteSettings.type === 'Gradient') {
@@ -2770,10 +3852,7 @@ class Legend {
             if (!heatMap.enableCanvasRendering) {
                 heatMap.svgObject.appendChild(this.legend);
             }
-            if (heatMap.legendSettings.showLabel && (heatMap.paletteSettings.type === 'Gradient' ||
-                (heatMap.paletteSettings.type === 'Fixed' && heatMap.legendSettings.labelDisplayType !== 'None'))) {
-                this.renderLegendLabel(rectItemsSvg);
-            }
+            this.renderLegendLabel(rectItemsSvg);
         }
         else {
             this.legendScale = heatMap.renderer.createGroup({ id: heatMap.element.id + 'Heatmap_GradientScale' });
@@ -2787,7 +3866,7 @@ class Legend {
             if (this.numberOfPages > 1) {
                 this.paginggroup = heatMap.renderer.createGroup({ id: heatMap.element.id + '_navigation' });
             }
-            this.renderListLegendMode(rectItemsSvg);
+            this.renderListLegendMode(rectItemsSvg, true);
         }
     }
     renderSmartLegend() {
@@ -2806,7 +3885,8 @@ class Legend {
         let width = legendBound.width / colorCollection.length;
         let height = legendBound.height / colorCollection.length;
         this.legendRectPositionCollection = [];
-        for (let i = 0; i < colorCollection.length; i++) {
+        this.legendRange = [];
+        for (let i = 0; i < heatMap.legendColorCollection.length; i++) {
             let rectPosition = new CurrentLegendRect(0, 0, 0, 0, '', '');
             if (heatMap.horizontalGradient) {
                 legendX = legendBound.x + (i * width);
@@ -2814,7 +3894,8 @@ class Legend {
                 legendWidth = width;
                 legendHeight = legendBound.height;
                 this.segmentCollections.push((heatMap.legendSettings.labelDisplayType === 'Edge' &&
-                    i === colorCollection.length - 1) ? legendX + width : legendX);
+                    i === heatMap.legendColorCollection.length - 1 && !heatMap.legendColorCollection[i].isHidden) ?
+                    legendX + width : legendX);
             }
             else {
                 legendX = legendBound.x;
@@ -2822,99 +3903,133 @@ class Legend {
                 legendWidth = legendBound.width;
                 legendHeight = height;
                 this.segmentCollections.push((heatMap.legendSettings.labelDisplayType === 'Edge' &&
-                    i === colorCollection.length - 1) ? legendY + height : legendY);
+                    i === heatMap.legendColorCollection.length - 1 && !heatMap.legendColorCollection[i].isHidden) ?
+                    legendY + height : legendY);
             }
             smartLegendRect = new Rect(legendX, legendY, legendWidth, legendHeight);
-            let rectItem = new RectOption(heatMap.element.id + '_Smart_Legend' + i, colorCollection[i].color, tempBorder, 1, smartLegendRect);
-            this.drawSvgCanvas.drawRectangle(rectItem, this.legend);
-            rectPosition.x = legendX;
-            rectPosition.y = legendY;
-            rectPosition.width = legendWidth;
-            rectPosition.height = legendHeight;
-            rectPosition.label = this.labelCollections[i];
-            rectPosition.id = heatMap.element.id + '_Smart_Legend' + i;
-            this.legendRectPositionCollection.push(rectPosition);
-            let text = getTitle(this.labelCollections[i], heatMap.legendSettings.textStyle, this.textWrapCollections[i]);
-            if (text.length !== 0 && heatMap.enableCanvasRendering) {
-                let elementSize = measureText(this.labelCollections[i], heatMap.legendSettings.textStyle);
-                this.legendLabelTooltip.push(new CanvasTooltip(this.labelCollections[i], new Rect(rectPosition.x, rectPosition.y, elementSize.width, elementSize.height)));
+            let legendRange = new LegendRange(0, 0, 0, 0, 0, true, 0);
+            legendRange.x = legendX;
+            legendRange.y = legendY;
+            legendRange.width = legendWidth;
+            legendRange.height = legendHeight;
+            legendRange.value = heatMap.legendColorCollection[i].value;
+            legendRange.currentPage = this.currentPage;
+            if (colorCollection.length !== heatMap.legendColorCollection.length && i === heatMap.legendColorCollection.length - 1) {
+                heatMap.horizontalGradient ? legendRange.width = 0 : legendRange.height = 0;
+                this.visibilityCollections[i] = this.visibilityCollections[i - 1];
+            }
+            legendRange.visible = !isNullOrUndefined(this.visibilityCollections[i]) ? this.visibilityCollections[i] : true;
+            this.legendRange.push(legendRange);
+            if (!heatMap.legendColorCollection[i].isHidden) {
+                let color = heatMap.legendOnLoad ? colorCollection[i].color :
+                    this.legendRange[i].visible ? colorCollection[i].color : '#D3D3D3';
+                let rectItem = new RectOption(heatMap.element.id + '_Smart_Legend' + i, color, tempBorder, 1, smartLegendRect);
+                this.drawSvgCanvas.drawRectangle(rectItem, this.legend);
+                rectPosition.x = legendX;
+                rectPosition.y = legendY;
+                rectPosition.width = legendWidth;
+                rectPosition.height = legendHeight;
+                rectPosition.label = this.labelCollections[i];
+                rectPosition.id = heatMap.element.id + '_Smart_Legend' + i;
+                this.legendRectPositionCollection.push(rectPosition);
+                let text = getTitle(this.labelCollections[i], heatMap.legendSettings.textStyle, this.textWrapCollections[i]);
+                if (text.length !== 0 && heatMap.enableCanvasRendering) {
+                    let elementSize = measureText(this.labelCollections[i], heatMap.legendSettings.textStyle);
+                    this.legendLabelTooltip.push(new CanvasTooltip(this.labelCollections[i], new Rect(rectPosition.x, rectPosition.y, elementSize.width, elementSize.height)));
+                }
             }
         }
     }
     renderLegendLabel(rect) {
         let heatMap = this.heatMap;
-        let anchor;
-        let dominantBaseline;
-        let legendLabel;
-        let textWrapWidth = 0;
-        let text;
-        this.legendLabelTooltip = [];
-        let colorCollection = heatMap.paletteSettings.type === 'Gradient' ?
-            heatMap.legendColorCollection : heatMap.colorCollection;
-        if (heatMap.enableCanvasRendering) {
-            let ctx = heatMap.canvasRenderer.ctx;
-            ctx.rect(this.legendGroup.x, this.legendGroup.y, this.legendGroup.width, this.legendGroup.height);
-            ctx.clip();
-        }
-        else {
-            legendLabel = heatMap.renderer.createGroup({ id: heatMap.element.id + '_Heatmap_LegendLabel' });
-        }
-        let labelX;
-        let labelY;
-        for (let i = 0; i < colorCollection.length; i++) {
-            let value = ((colorCollection[i].value - this.legendMinValue) /
-                (this.legendMaxValue - this.legendMinValue)) * 100;
-            if (heatMap.horizontalGradient) {
-                labelX = this.segmentCollections[i];
-                labelY = rect.y + rect.height + this.labelPadding;
-                anchor = (value === 0) || (heatMap.paletteSettings.type === 'Fixed') ?
-                    (heatMap.legendSettings.labelDisplayType === 'Edge' &&
-                        i === colorCollection.length - 1) ? 'end' : 'start' : (i === colorCollection.length - 1) ? 'end' : 'middle';
-                dominantBaseline = 'hanging';
+        this.legendTextRange = [];
+        if (heatMap.legendSettings.showLabel && (heatMap.paletteSettings.type === 'Gradient' ||
+            (heatMap.paletteSettings.type === 'Fixed' && heatMap.legendSettings.labelDisplayType !== 'None'))) {
+            let anchor;
+            let dominantBaseline;
+            let legendLabel;
+            let textWrapWidth = 0;
+            let text;
+            this.legendLabelTooltip = [];
+            let elementSize;
+            let colorCollection = heatMap.legendColorCollection;
+            if (heatMap.enableCanvasRendering) {
+                let ctx = heatMap.canvasRenderer.ctx;
+                ctx.rect(this.legendGroup.x, this.legendGroup.y, this.legendGroup.width, this.legendGroup.height);
+                ctx.save();
+                ctx.clip();
+                ctx.restore();
             }
             else {
-                labelX = rect.x + rect.width + this.labelPadding;
-                labelY = this.segmentCollections[i];
-                dominantBaseline = (value === 0) || (heatMap.paletteSettings.type === 'Fixed') ?
-                    (heatMap.legendSettings.labelDisplayType === 'Edge' &&
-                        i === colorCollection.length - 1) ? 'baseline' : 'hanging' :
-                    (i === colorCollection.length - 1) ? 'baseline' : 'middle';
+                legendLabel = heatMap.renderer.createGroup({ id: heatMap.element.id + '_Heatmap_LegendLabel' });
             }
-            textWrapWidth = heatMap.horizontalGradient ? this.textWrapCollections[i] : this.width - (this.legendRectScale.width +
-                this.labelPadding + this.legendRectPadding);
-            if (this.labelCollections[i] !== '') {
-                text = getTitle(this.labelCollections[i], heatMap.legendSettings.textStyle, textWrapWidth);
-                if (text.length !== 0 && text[0].indexOf('...') !== -1 && heatMap.enableCanvasRendering) {
-                    let elementSize = measureText(text[0], heatMap.legendSettings.textStyle);
-                    this.legendLabelTooltip.push(new CanvasTooltip(this.labelCollections[i], new Rect(labelX, labelY, elementSize.width, elementSize.height)));
-                }
-                let textBasic = new TextBasic(labelX, labelY, anchor, text, 0, 'translate(0,0)', dominantBaseline);
-                let options = new TextOption(heatMap.element.id + '_Legend_Label' + i, textBasic, heatMap.legendSettings.textStyle, heatMap.legendSettings.textStyle.color || heatMap.themeStyle.legendLabel);
-                if (text.length > 1) {
-                    this.drawSvgCanvas.createWrapText(options, heatMap.legendSettings.textStyle, legendLabel);
+            let labelX;
+            let labelY;
+            for (let i = 0; i < colorCollection.length; i++) {
+                let value = ((colorCollection[i].value - this.legendMinValue) /
+                    (this.legendMaxValue - this.legendMinValue)) * 100;
+                if (heatMap.horizontalGradient) {
+                    labelX = this.segmentCollections[i];
+                    labelY = rect.y + rect.height + this.labelPadding;
+                    anchor = (value === 0 || (i === 0 && heatMap.paletteSettings.type === 'Fixed')) ? 'start' :
+                        (heatMap.dataSourceMaxValue === colorCollection[i].value) || (heatMap.legendSettings.enableSmartLegend &&
+                            heatMap.legendSettings.labelDisplayType === 'Edge') ? 'end' : 'middle';
+                    dominantBaseline = 'hanging';
                 }
                 else {
-                    this.drawSvgCanvas.createText(options, legendLabel, text[0]);
+                    labelX = rect.x + rect.width + this.labelPadding;
+                    labelY = this.segmentCollections[i];
+                    dominantBaseline = (value === 0 || (i === 0 && heatMap.paletteSettings.type === 'Fixed')) ? 'hanging' :
+                        (heatMap.dataSourceMaxValue === colorCollection[i].value) || (heatMap.legendSettings.enableSmartLegend &&
+                            heatMap.legendSettings.labelDisplayType === 'Edge') ? 'baseline' : 'middle';
                 }
-                if (Browser.isIE && !heatMap.enableCanvasRendering) {
-                    if (dominantBaseline === 'middle') {
-                        legendLabel.lastChild.setAttribute('dy', '0.6ex');
+                textWrapWidth = heatMap.horizontalGradient ? this.textWrapCollections[i] : this.width - (this.legendRectScale.width +
+                    this.labelPadding + this.legendRectPadding);
+                text = getTitle(this.labelCollections[i], heatMap.legendSettings.textStyle, textWrapWidth);
+                elementSize = measureText(text[0], heatMap.legendSettings.textStyle);
+                if (heatMap.paletteSettings.type === 'Fixed') {
+                    let rectY = dominantBaseline === 'hanging' ? labelY : dominantBaseline === 'middle' ?
+                        labelY - elementSize.height / 2 : labelY - elementSize.height;
+                    let rectX = anchor === 'end' ? labelX - elementSize.width : anchor === 'middle' ?
+                        labelX - elementSize.width / 2 : labelX;
+                    let textPosition = new LegendRange(rectX, rectY, elementSize.width, elementSize.height, colorCollection[i].value, true, this.currentPage);
+                    textPosition.visible = !isNullOrUndefined(this.visibilityCollections[i]) ? this.visibilityCollections[i] : true;
+                    this.legendTextRange.push(textPosition);
+                }
+                if (this.labelCollections[i] !== '') {
+                    if (text.length !== 0 && text[0].indexOf('...') !== -1 && heatMap.enableCanvasRendering) {
+                        this.legendLabelTooltip.push(new CanvasTooltip(this.labelCollections[i], new Rect(labelX, labelY, elementSize.width, elementSize.height)));
                     }
-                    else if (dominantBaseline === 'hanging') {
-                        legendLabel.lastChild.setAttribute('dy', '1.5ex');
+                    let textBasic = new TextBasic(labelX, labelY, anchor, text, 0, 'translate(0,0)', dominantBaseline);
+                    let options = new TextOption(heatMap.element.id + '_Legend_Label' + i, textBasic, heatMap.legendSettings.textStyle, heatMap.legendSettings.textStyle.color || heatMap.themeStyle.legendLabel);
+                    options.fill = heatMap.legendOnLoad ? options.fill :
+                        (heatMap.paletteSettings.type === 'Fixed' && !this.legendRange[i].visible) ? '#D3D3D3' : options.fill;
+                    if (text.length > 1) {
+                        this.drawSvgCanvas.createWrapText(options, heatMap.legendSettings.textStyle, legendLabel);
+                    }
+                    else {
+                        this.drawSvgCanvas.createText(options, legendLabel, text[0]);
+                    }
+                    if (Browser.isIE && !heatMap.enableCanvasRendering) {
+                        if (dominantBaseline === 'middle') {
+                            legendLabel.lastChild.setAttribute('dy', '0.6ex');
+                        }
+                        else if (dominantBaseline === 'hanging') {
+                            legendLabel.lastChild.setAttribute('dy', '1.5ex');
+                        }
                     }
                 }
             }
-        }
-        if (!heatMap.enableCanvasRendering) {
-            this.legendGroup.height = this.legendGroup.height > 0 ? this.legendGroup.height : 0;
-            this.legendGroup.width = this.legendGroup.width > 0 ? this.legendGroup.width : 0;
-            this.legend.appendChild(legendLabel);
-            let clippath = heatMap.renderer.createClipPath({ id: heatMap.element.id + '_clipPath' });
-            let clipRect = heatMap.renderer.drawRectangle(this.legendGroup);
-            clippath.appendChild(clipRect);
-            heatMap.svgObject.appendChild(clippath);
-            this.legend.setAttribute('style', 'clip-path:url(#' + clippath.id + ')');
+            if (!heatMap.enableCanvasRendering) {
+                this.legendGroup.height = this.legendGroup.height > 0 ? this.legendGroup.height : 0;
+                this.legendGroup.width = this.legendGroup.width > 0 ? this.legendGroup.width : 0;
+                this.legend.appendChild(legendLabel);
+                let clippath = heatMap.renderer.createClipPath({ id: heatMap.element.id + '_clipPath' });
+                let clipRect = heatMap.renderer.drawRectangle(this.legendGroup);
+                clippath.appendChild(clipRect);
+                heatMap.svgObject.appendChild(clippath);
+                this.legend.setAttribute('style', 'clip-path:url(#' + clippath.id + ')');
+            }
         }
     }
     /**
@@ -3026,13 +4141,17 @@ class Legend {
         this.labelPadding = legendSettings.showLabel ? this.heatMap.horizontalGradient ? 10 : 6 : 0; // padding between list and label
         this.legendHeight = legendSettings.height;
         this.legendWidth = legendSettings.width;
+        let format = heatMap.legendSettings.labelFormat;
+        let isCustom = format.match('{value}') !== null;
+        this.format = heatMap.intl.getNumberFormat({
+            format: isCustom ? '' : format
+        });
         if (heatMap.paletteSettings.type === 'Fixed') {
-            let paletteCollection = heatMap.colorCollection;
-            for (let i = 0; i < paletteCollection.length; i++) {
-                let label = paletteCollection[i].label ? paletteCollection[i].label :
-                    paletteCollection[i].value.toString();
+            for (let i = 0; i < colorCollection.length; i++) {
+                let label = colorCollection[i].label ? colorCollection[i].label :
+                    formatValue(isCustom, format, colorCollection[i].value, this.format).toString();
                 if (heatMap.legendSettings.enableSmartLegend && heatMap.legendSettings.labelDisplayType === 'Edge'
-                    && i > 0 && i < paletteCollection.length - 1) {
+                    && i > 0 && i < colorCollection.length - 1) {
                     this.labelCollections.push('');
                 }
                 else {
@@ -3043,7 +4162,7 @@ class Legend {
         else {
             for (let i = 0; i < colorCollection.length; i++) {
                 let label = colorCollection[i].isHidden ? '' : colorCollection[i].label ?
-                    colorCollection[i].label : colorCollection[i].value.toString();
+                    colorCollection[i].label : formatValue(isCustom, format, colorCollection[i].value, this.format).toString();
                 this.labelCollections.push(label);
             }
         }
@@ -3068,14 +4187,16 @@ class Legend {
         this.height = stringToNumber(this.legendHeight, rect.height);
         this.width = stringToNumber(this.legendWidth, rect.width);
         if (heatMap.horizontalGradient) {
-            this.height = heatMap.paletteSettings.type === 'Gradient' ? this.height < 50 ? 50 : this.height : this.height;
+            this.height = heatMap.paletteSettings.type === 'Gradient' || heatMap.legendSettings.enableSmartLegend ?
+                this.height < 50 ? 50 : this.height : this.height;
             if (legendSettings.position === 'Top') {
                 rect.y += this.height;
             }
             rect.height -= this.height;
         }
         else {
-            this.width = heatMap.paletteSettings.type === 'Gradient' ? this.width < 50 ? 50 : this.width : this.width;
+            this.width = heatMap.paletteSettings.type === 'Gradient' || heatMap.legendSettings.enableSmartLegend ?
+                this.width < 50 ? 50 : this.width : this.width;
             if (legendSettings.position === 'Left') {
                 rect.x += this.width;
             }
@@ -3139,7 +4260,7 @@ class Legend {
         }
         else {
             let labelSize = this.maxLegendLabelSize;
-            for (let i = 0; i < heatMap.colorCollection.length; i++) {
+            for (let i = 0; i < heatMap.legendColorCollection.length; i++) {
                 let size = measureText(this.labelCollections[i], heatMap.legendSettings.textStyle);
                 labelSize.width = (labelSize.width > size.width) ? labelSize.width : size.width;
                 labelSize.height = (labelSize.height > size.height) ? labelSize.height : size.height;
@@ -3163,25 +4284,29 @@ class Legend {
         let axisTitlePadding = 0;
         if (heatMap.horizontalGradient) {
             width = width > rect.width ? rect.width : width;
-            height = heatMap.paletteSettings.type === 'Gradient' ? height > 50 ? height : 50 : this.height;
+            height = heatMap.paletteSettings.type === 'Gradient' || heatMap.legendSettings.enableSmartLegend ?
+                height > 50 ? height : 50 : this.height;
             left = alignment === 'Near' ? rect.x : alignment === 'Far' ? rect.x + rect.width - width :
                 rect.x + (rect.width / 2) - (width / 2);
             if (heatMap.xAxis.title.text !== '') {
                 axisTitlePadding = measureText(heatMap.xAxis.title.text, heatMap.xAxis.textStyle).height + padding;
             }
-            let axisHeight = axis[0].opposedPosition ? 0 : axis[0].maxLabelSize.height + axisTitlePadding + padding;
+            let axisHeight = axis[0].opposedPosition ? 0 : sum(axis[0].xAxisMultiLabelHeight) + axis[0].maxLabelSize.height +
+                axisTitlePadding + padding;
             top = legendSettings.position === 'Top' ? heatMap.titleSettings.text ? legendTop :
                 heatMap.margin.top : rect.y + rect.height + axisHeight;
         }
         else {
             height = height > rect.height ? rect.height : height;
-            width = heatMap.paletteSettings.type === 'Gradient' ? width > 50 ? width : 50 : width;
+            width = heatMap.paletteSettings.type === 'Gradient' || heatMap.legendSettings.enableSmartLegend ?
+                width > 50 ? width : 50 : width;
             top = alignment === 'Near' ? rect.y : alignment === 'Far' ? rect.y + rect.height - height :
                 rect.y + (rect.height / 2) - (height / 2);
             if (heatMap.yAxis.title.text !== '') {
                 axisTitlePadding = measureText(heatMap.yAxis.title.text, heatMap.yAxis.textStyle).height + padding;
             }
-            let axisWidth = axis[1].opposedPosition ? axis[1].maxLabelSize.width + axisTitlePadding + padding : 0;
+            let axisWidth = axis[1].opposedPosition ? sum(axis[1].yAxisMultiLabelHeight) +
+                axis[1].maxLabelSize.width + axisTitlePadding + 2 * padding : 0;
             left = legendSettings.position === 'Right' ? rect.x + rect.width + axisWidth : heatMap.margin.left;
         }
         this.legendGroup = new Rect(left, top, width, height);
@@ -3349,7 +4474,8 @@ class Legend {
                     }
                 }
                 else {
-                    textWrapWidth = this.legendRectScale.width / heatMap.colorCollection.length;
+                    let width = this.legendRectScale.width / heatMap.colorCollection.length;
+                    textWrapWidth = heatMap.legendSettings.labelDisplayType === 'Edge' ? width : width / 2;
                 }
                 this.textWrapCollections.push(textWrapWidth);
                 text = getTitle(this.labelCollections[i], heatMap.legendSettings.textStyle, textWrapWidth);
@@ -3474,7 +4600,7 @@ class Legend {
             this.numberOfPages = this.lastList.length;
         }
     }
-    renderListLegendMode(rect) {
+    renderListLegendMode(rect, translate) {
         let heatMap = this.heatMap;
         let legendSize = 10;
         let tempBorder = {
@@ -3489,7 +4615,9 @@ class Legend {
         let labelY = 0;
         let legendX = rect.x;
         let legendY = rect.y;
-        this.renderPagingElements();
+        if (translate) {
+            this.renderPagingElements();
+        }
         let x;
         let y;
         let textWrapWidth = this.legendGroup.width - (this.legendSize +
@@ -3514,27 +4642,35 @@ class Legend {
                 labelX = this.labelXCollections[i];
                 labelY = this.labelYCollections[i];
             }
+            labelX = legendX + this.legendSize + this.labelPadding;
+            labelY = legendY + padding;
+            if (translate && this.legendRange.length <= heatMap.colorCollection.length) {
+                let rectPosition = new LegendRange(legendX, legendY, legendSize, legendSize, heatMap.colorCollection[i].value, true, this.currentPage);
+                rectPosition.visible = !isNullOrUndefined(this.visibilityCollections[i]) ? this.visibilityCollections[i] : true;
+                this.legendRange.push(rectPosition);
+                if (heatMap.legendSettings.showLabel) {
+                    let textPosition = new LegendRange(labelX, (labelY - size.height / 2), size.width, size.height, heatMap.colorCollection[i].value, true, this.currentPage);
+                    textPosition.visible = !isNullOrUndefined(this.visibilityCollections[i]) ? this.visibilityCollections[i] : true;
+                    this.legendTextRange.push(textPosition);
+                }
+            }
             if (heatMap.legendSettings.showLabel) {
-                labelX = legendX + this.legendSize + this.labelPadding;
-                labelY = legendY + padding;
                 let text = getTitle(this.labelCollections[i], heatMap.legendSettings.textStyle, textWrapWidth);
                 if (text[0].indexOf('...') !== -1 && heatMap.enableCanvasRendering) {
                     this.legendLabelTooltip.push(new CanvasTooltip(this.labelCollections[i], new Rect(labelX, labelY, size.width, size.height)));
                 }
                 let textBasic = new TextBasic(labelX, labelY, 'start', text, 0, 'translate(0,0)', 'middle');
                 let options = new TextOption(heatMap.element.id + '_Legend_Label' + i, textBasic, heatMap.legendSettings.textStyle, heatMap.legendSettings.textStyle.color || heatMap.themeStyle.legendLabel);
-                if (text.length > 1) {
-                    this.drawSvgCanvas.createWrapText(options, heatMap.legendSettings.textStyle, this.translategroup);
-                }
-                else {
-                    this.drawSvgCanvas.createText(options, this.translategroup, text[0]);
-                }
+                options.fill = heatMap.legendOnLoad ? options.fill : this.legendRange[i].visible ? options.fill : '#D3D3D3';
+                this.drawSvgCanvas.createText(options, this.translategroup, text[0]);
                 if (Browser.isIE && !heatMap.enableCanvasRendering) {
                     this.translategroup.lastChild.setAttribute('dy', '0.6ex');
                 }
             }
             listRect = new Rect(legendX, legendY, legendSize, legendSize);
-            let rectItems = new RectOption(heatMap.element.id + '_legend_list' + i, heatMap.colorCollection[i].color, tempBorder, 1, listRect);
+            let listColor = heatMap.legendOnLoad ? heatMap.colorCollection[i].color :
+                this.legendRange[i].visible ? heatMap.colorCollection[i].color : '#D3D3D3';
+            let rectItems = new RectOption(heatMap.element.id + '_legend_list' + i, listColor, tempBorder, 1, listRect);
             this.drawSvgCanvas.drawRectangle(rectItems, this.translategroup);
             heatMap.horizontalGradient ? legendX = legendX + this.legendSize + this.labelPadding + size.width + this.listInterval :
                 legendY += this.legendSize + this.listInterval;
@@ -3577,7 +4713,7 @@ class Legend {
                     padding, this.legendRectScale.height + (2 * padding));
                 ctx.fillRect(this.pagingRect.x, this.pagingRect.y, this.pagingRect.width, this.pagingRect.height);
             }
-            this.renderListLegendMode(this.legendRectScale);
+            this.renderListLegendMode(this.legendRectScale, true);
         }
     }
     /**
@@ -3643,6 +4779,84 @@ class Legend {
             this.renderTooltip(currentLegendRect);
         }
     }
+    /**
+     * Toggle the visibility of cells based on legend selection
+     * @private
+     */
+    legendRangeSelection(index) {
+        let heatMap = this.heatMap;
+        let legendRange = this.legendRange;
+        let padding = 5;
+        let legendBound = this.legendRectScale;
+        heatMap.rangeSelection = true;
+        if (heatMap.enableCanvasRendering) {
+            let ctx = heatMap.canvasRenderer.ctx;
+            if (heatMap.legendSettings.enableSmartLegend) {
+                ctx.fillRect(legendBound.x - padding, legendBound.y - padding, (legendBound.width + this.labelPadding + this.maxLegendLabelSize.width) + padding, legendBound.height + (2 * padding));
+            }
+            else {
+                ctx.fillRect(legendBound.x - padding, legendBound.y - padding, legendBound.width +
+                    padding, legendBound.height + (2 * padding));
+            }
+        }
+        else {
+            if (heatMap.legendSettings.enableSmartLegend) {
+                while (this.legend && this.legend.childNodes.length) {
+                    this.legend.removeChild(this.legend.firstChild);
+                }
+                if (heatMap.colorCollection.length !== heatMap.legendColorCollection.length) {
+                    if (index === heatMap.legendColorCollection.length - 1) {
+                        heatMap.toggleValue[index - 1].visible = this.visibilityCollections[index - 1] =
+                            legendRange[index - 1].visible = !legendRange[index].visible;
+                    }
+                    else {
+                        if (index === heatMap.colorCollection.length - 1) {
+                            heatMap.toggleValue[index + 1].visible = this.visibilityCollections[index + 1] =
+                                legendRange[index + 1].visible = !legendRange[index].visible;
+                        }
+                    }
+                }
+            }
+            else {
+                while (this.translategroup && this.translategroup.childNodes.length) {
+                    this.translategroup.removeChild(this.translategroup.firstChild);
+                }
+            }
+            removeElement(heatMap.heatMapSeries.containerRectObject.id);
+            if (heatMap.cellSettings.showLabel) {
+                removeElement(heatMap.heatMapSeries.containerTextObject.id);
+            }
+        }
+        heatMap.toggleValue[index].visible = this.visibilityCollections[index] = legendRange[index].visible = !legendRange[index].visible;
+        heatMap.legendOnLoad = false;
+        if (heatMap.legendSettings.enableSmartLegend) {
+            this.renderSmartLegend();
+            let rectItemsSvg = new Rect(legendBound.x, legendBound.y, legendBound.width, legendBound.height);
+            this.renderLegendLabel(rectItemsSvg);
+        }
+        else {
+            this.renderListLegendMode(this.legendRectScale, false);
+        }
+        heatMap.heatMapSeries.renderRectSeries();
+        heatMap.clearSelection();
+        if (heatMap.enableCanvasRendering && heatMap.allowSelection) {
+            heatMap.createSvg();
+            heatMap.refreshBound();
+            heatMap.createMultiCellDiv(false);
+        }
+    }
+    /**
+     * update visibility collections of legend and series
+     * @private
+     */
+    updateLegendRangeCollections() {
+        let heatMap = this.heatMap;
+        heatMap.rangeSelection = !heatMap.legendOnLoad ? true : false;
+        this.visibilityCollections = !heatMap.legendOnLoad ? this.visibilityCollections : [];
+        heatMap.toggleValue = !heatMap.legendOnLoad ? heatMap.toggleValue : [];
+        this.legendRange = !heatMap.legendOnLoad ? this.legendRange : [];
+        this.legendTextRange = !heatMap.legendOnLoad ? this.legendTextRange : [];
+    }
 }
 
 /**
@@ -3665,7 +4879,22 @@ let HeatMap = class HeatMap extends Component {
         /** @private */
         this.enableCanvasRendering = false;
         /** @private */
+        this.toggleValue = [];
+        /** @private */
+        this.legendOnLoad = true;
+        /** @private */
         this.horizontalGradient = this.legendSettings.position === 'Bottom' || this.legendSettings.position === 'Top';
+        /** @private */
+        this.multiSelection = false;
+        /** @private */
+        this.rectSelected = false;
+        /** @private */
+        this.previousSelectedCellsRect = [];
+        /** @private */
+        /** @private */
+        this.multiCellCollection = [];
+        /** @private */
+        this.tempMultiCellCollection = [];
         /**
          * @private
          */
@@ -3701,9 +4930,9 @@ let HeatMap = class HeatMap extends Component {
     render() {
         this.updateBubbleHelperProperty();
         this.trigger('load', { heatmap: this });
+        this.initAxis();
         this.processInitData();
         this.setTheme();
-        this.initAxis();
         this.calculateMaxLength();
         this.heatMapAxis.calculateVisibleLabels();
         this.twoDimensional.processDataSource(this.completeAdaptDataSource);
@@ -3711,11 +4940,10 @@ let HeatMap = class HeatMap extends Component {
         this.cellColor.getColorCollection();
         this.calculateBounds();
         this.renderElements();
-        this.element.appendChild(this.svgObject);
+        this.appendSvgObject();
         if (this.tooltipModule) {
             this.tooltipModule.showHideTooltip(false);
         }
-        this.trigger('created', { heatmap: this });
     }
     /**
      * To re-calculate the datasource while changing datasource property dynamically.
@@ -3814,12 +5042,18 @@ let HeatMap = class HeatMap extends Component {
         let renderer = false;
         let refreshBounds = false;
         for (let prop of Object.keys(newProp)) {
+            this.legendOnLoad = false;
             switch (prop) {
                 case 'renderingMode':
                     renderer = true;
                     break;
                 case 'cellSettings':
                     this.updateBubbleHelperProperty();
+                    if (this.legendModule && ((newProp.cellSettings.tileType !==
+                        oldProp.cellSettings.tileType) || (newProp.cellSettings.bubbleType !== oldProp.cellSettings.bubbleType))) {
+                        this.legendOnLoad = true;
+                        this.legendModule.updateLegendRangeCollections();
+                    }
                     this.reRenderDatasource();
                     refreshBounds = true;
                     break;
@@ -3829,6 +5063,10 @@ let HeatMap = class HeatMap extends Component {
                 case 'dataSource':
                     this.isCellData = false;
                     this.updateBubbleHelperProperty();
+                    if (this.legendVisibilityByCellType) {
+                        this.legendOnLoad = true;
+                        this.legendModule.updateLegendRangeCollections();
+                    }
                     this.reRenderDatasource();
                     renderer = true;
                     break;
@@ -3836,15 +5074,33 @@ let HeatMap = class HeatMap extends Component {
                 case 'width':
                 case 'height':
                 case 'margin':
+                    refreshBounds = true;
+                    break;
                 case 'legendSettings':
+                    this.updateBubbleHelperProperty();
+                    if (this.legendVisibilityByCellType && (((newProp.legendSettings.visible !== oldProp.legendSettings.visible) ||
+                        (newProp.legendSettings.enableSmartLegend !== oldProp.legendSettings.enableSmartLegend)))) {
+                        this.legendOnLoad = true;
+                        this.legendModule.updateLegendRangeCollections();
+                    }
                     refreshBounds = true;
                     break;
                 case 'yAxis':
                 case 'xAxis':
+                    this.updateBubbleHelperProperty();
+                    if (this.legendVisibilityByCellType) {
+                        this.legendOnLoad = true;
+                        this.legendModule.updateLegendRangeCollections();
+                    }
                     this.reRenderDatasource();
                     refreshBounds = true;
                     break;
                 case 'paletteSettings':
+                    this.updateBubbleHelperProperty();
+                    if (this.legendVisibilityByCellType) {
+                        this.legendOnLoad = true;
+                        this.legendModule.updateLegendRangeCollections();
+                    }
                     this.cellColor.getColorCollection();
                     this.calculateBounds();
                     renderer = true;
@@ -3853,21 +5109,34 @@ let HeatMap = class HeatMap extends Component {
                     this.setTheme();
                     renderer = true;
                     break;
+                case 'tooltipSettings':
+                    if (this.tooltipModule) {
+                        this.tooltipModule.tooltipObject.fill = this.tooltipSettings.fill;
+                        this.tooltipModule.tooltipObject.border = this.tooltipSettings.border;
+                        this.tooltipModule.tooltipObject.textStyle = this.tooltipSettings.textStyle;
+                        this.tooltipModule.tooltipObject.refresh();
+                    }
+                    break;
             }
         }
         if (!refreshBounds && renderer) {
             this.createSvg();
             this.renderElements();
-            this.element.appendChild(this.svgObject);
-            this.trigger('created', { heatmap: this });
+            this.appendSvgObject();
+            this.trigger('created');
+            this.clearSelection();
         }
         else if (refreshBounds) {
             this.createSvg();
             this.refreshBound();
-            this.element.appendChild(this.svgObject);
-            this.trigger('created', { heatmap: this });
+            this.appendSvgObject();
+            this.trigger('created');
         }
     }
+    /**
+     * create svg or canvas element
+     * @private
+     */
     createSvg() {
         this.removeSvg();
         this.setRenderMode();
@@ -3888,6 +5157,9 @@ let HeatMap = class HeatMap extends Component {
                 width: this.availableSize.width,
                 height: this.availableSize.height
             });
+            if (this.allowSelection) {
+                this.createMultiCellDiv(true);
+            }
         }
     }
     /**
@@ -3904,6 +5176,12 @@ let HeatMap = class HeatMap extends Component {
         if (document.getElementById(this.element.id + 'legendLabelTooltipContainer')) {
             remove(document.getElementById(this.element.id + 'legendLabelTooltipContainer'));
         }
+        if (document.getElementById(this.element.id + '_Multi_CellSelection_Canvas')) {
+            remove(document.getElementById(this.element.id + '_Multi_CellSelection_Canvas'));
+        }
+        if (document.getElementById(this.element.id + '_CellSelection_Container')) {
+            remove(document.getElementById(this.element.id + '_CellSelection_Container'));
+        }
         if (this.svgObject) {
             let svgElement = document.getElementById(this.svgObject.id);
             if (svgElement) {
@@ -3919,6 +5197,11 @@ let HeatMap = class HeatMap extends Component {
         tooltipDiv.id = this.element.id + '_Secondary_Element';
         tooltipDiv.setAttribute('style', 'position: relative');
         this.element.appendChild(tooltipDiv);
+        let divElement = this.createElement('div', {
+            id: this.element.id + '_CellSelection_Container',
+            styles: 'position:absolute; z-index: 2',
+        });
+        this.element.appendChild(divElement);
     }
     /**
      * To provide the array of modules needed for control rendering
@@ -3968,6 +5251,18 @@ let HeatMap = class HeatMap extends Component {
         super.refresh();
         this.element.classList.add('e-heatmap');
     }
+    /**
+     * Appending svg object to the element
+     * @private
+     */
+    appendSvgObject() {
+        if (this.enableCanvasRendering && this.allowSelection) {
+            this.createMultiCellDiv(false);
+        }
+        else {
+            this.element.appendChild(this.svgObject);
+        }
+    }
     renderBorder() {
         this.border = {
             width: 0
@@ -4010,9 +5305,16 @@ let HeatMap = class HeatMap extends Component {
     }
     axisTooltip(event, x, y, isTouch) {
         let targetId = event.target.id;
-        if ((targetId.indexOf(this.element.id + '_XAxis_Label') !== -1) && (event.target.textContent.indexOf('...') > -1)) {
-            let index = parseInt(targetId.replace(this.element.id + '_XAxis_Label', ''), 10);
-            showTooltip(this.axisCollections[0].axisLabels[index], x, y, this.element.offsetWidth, this.element.id + '_axis_Tooltip', getElement(this.element.id + '_Secondary_Element'), isTouch, this);
+        if ((targetId.indexOf(this.element.id + '_XAxis_Label') !== -1) ||
+            (targetId.indexOf(this.element.id + '_XAxis_MultiLevel') !== -1) ||
+            (targetId.indexOf(this.element.id + '_YAxis_MultiLevel') !== -1)) {
+            let tooltipText = getTooltipText(this.tooltipCollection, x, y);
+            if (tooltipText) {
+                showTooltip(tooltipText, this.mouseX, this.mouseY, this.element.offsetWidth, this.element.id + '_axis_Tooltip', getElement(this.element.id + '_Secondary_Element'), this.isTouch, this);
+            }
+            else {
+                removeElement(this.element.id + '_axis_Tooltip');
+            }
         }
         else {
             removeElement(this.element.id + '_axis_Tooltip');
@@ -4047,6 +5349,7 @@ let HeatMap = class HeatMap extends Component {
                 padding;
         }
         let top = margin.top + titleHeight;
+        this.titleRect = new Rect(margin.left, margin.top, this.availableSize.width - margin.left - margin.right, titleHeight);
         let height = this.availableSize.height - top - margin.bottom;
         this.initialClipRect = new Rect(left, top, width, height);
         let legendTop = this.initialClipRect.y;
@@ -4127,6 +5430,9 @@ let HeatMap = class HeatMap extends Component {
      * @private
      */
     heatMapResize(e) {
+        this.rangeSelection = true;
+        this.legendOnLoad = false;
+        this.clearSelection();
         if (this.resizeTimer) {
             clearTimeout(this.resizeTimer);
         }
@@ -4137,7 +5443,7 @@ let HeatMap = class HeatMap extends Component {
             }
             this.createSvg();
             this.refreshBound();
-            this.element.appendChild(this.svgObject);
+            this.appendSvgObject();
         }, 500);
         return false;
     }
@@ -4222,6 +5528,22 @@ let HeatMap = class HeatMap extends Component {
                 pageY > page[1].y && pageY < page[1].y + page[1].height) {
                 this.legendModule.translatePage(this, this.legendModule.currentPage, false);
             }
+            let legendRange = this.legendModule.legendRange;
+            let legendTextRange = this.legendModule.legendTextRange;
+            let loop = true;
+            for (let i = 0; i < legendRange.length; i++) {
+                if (this.legendModule && this.legendSettings.toggleVisibility &&
+                    this.legendModule.currentPage === legendRange[i].currentPage) {
+                    if ((loop && (pageX >= legendRange[i].x && pageX <= legendRange[i].width + legendRange[i].x) &&
+                        (pageY >= legendRange[i].y && pageY <= legendRange[i].y + legendRange[i].height) ||
+                        ((this.legendSettings.showLabel && this.legendSettings.labelDisplayType !== 'None' &&
+                            pageX >= legendTextRange[i].x && pageX <= legendTextRange[i].width + legendTextRange[i].x) &&
+                            (pageY >= legendTextRange[i].y && pageY <= legendTextRange[i].y + legendTextRange[i].height)))) {
+                        this.legendModule.legendRangeSelection(i);
+                        loop = false;
+                    }
+                }
+            }
         }
         return false;
     }
@@ -4262,46 +5584,16 @@ let HeatMap = class HeatMap extends Component {
                 else {
                     this.legendModule.removeGradientPointer();
                 }
+                this.renderMousePointer(pageX, pageY);
             }
             let isshowTooltip;
-            isshowTooltip = this.showTooltip && this.tooltipModule ? this.isHeatmapRect(pageX, pageY) : false;
-            if (isshowTooltip) {
-                let currentRect;
+            let currentRect;
+            isshowTooltip = this.showTooltip && this.tooltipModule ? isheatmapRect : false;
+            if (isheatmapRect) {
                 currentRect = this.heatMapSeries.getCurrentRect(pageX, pageY);
-                if (this.tempTooltipRectId !== currentRect.id) {
-                    if (this.showTooltip) {
-                        if ((this.cellSettings.enableCellHighlighting || (this.tooltipModule && this.showTooltip))
-                            && !this.enableCanvasRendering) {
-                            this.heatMapSeries.highlightSvgRect(currentRect.id);
-                        }
-                        this.tooltipModule.renderTooltip(currentRect);
-                        if (this.isTouch) {
-                            if (this.tooltipTimer) {
-                                window.clearTimeout(this.tooltipTimer);
-                            }
-                            this.tooltipTimer = setTimeout(() => {
-                                this.tooltipModule.tooltipObject.fadeOut();
-                                this.tooltipModule.isFadeout = true;
-                            }, 1500);
-                            if (e.type === 'touchmove') {
-                                e.preventDefault();
-                            }
-                        }
-                    }
-                    this.tempTooltipRectId = currentRect.id;
-                }
+                isshowTooltip = this.cellSelectionOnMouseMove(e, currentRect, pageX, pageY, isshowTooltip);
             }
-            else {
-                if (e.target.id.indexOf('Celltooltip') === -1) {
-                    if ((this.cellSettings.enableCellHighlighting || this.showTooltip) && !this.enableCanvasRendering) {
-                        this.heatMapSeries.highlightSvgRect(e.target.id);
-                    }
-                    if (this.tooltipModule && this.showTooltip) {
-                        this.tooltipModule.showHideTooltip(false, true);
-                    }
-                }
-                this.tempTooltipRectId = '';
-            }
+            this.tooltipOnMouseMove(e, currentRect, isshowTooltip);
             if (this.legendModule && this.legendSettings.visible && this.paletteSettings.type === 'Fixed' &&
                 this.legendSettings.enableSmartLegend && this.legendSettings.labelDisplayType === 'None') {
                 this.legendModule.createTooltip(pageX, pageY);
@@ -4332,6 +5624,283 @@ let HeatMap = class HeatMap extends Component {
         return true;
     }
     /**
+     * Triggering cell selection
+     */
+    cellSelectionOnMouseMove(e, currentRect, pageX, pageY, isshowTooltip) {
+        if ((this.cellSettings.tileType === 'Rect' && e.type === 'mousedown' || e.type === 'touchstart') && this.allowSelection) {
+            this.previousRect = currentRect;
+            this.multiSelection = true;
+            this.rectSelected = true;
+            this.initialCellX = pageX;
+            this.initialCellY = pageY;
+        }
+        if (this.cellSettings.tileType === 'Rect' && this.multiSelection && currentRect) {
+            this.highlightSelectedCells(this.previousRect, currentRect, e);
+            isshowTooltip = false;
+        }
+        return isshowTooltip;
+    }
+    /**
+     * Rendering tooltip on mouse move
+     */
+    tooltipOnMouseMove(e, currentRect, isshowTooltip) {
+        if (isshowTooltip) {
+            if (this.tempTooltipRectId !== currentRect.id) {
+                if (this.showTooltip) {
+                    if ((this.cellSettings.enableCellHighlighting || (this.tooltipModule && this.showTooltip))
+                        && !this.enableCanvasRendering) {
+                        this.heatMapSeries.highlightSvgRect(currentRect.id);
+                    }
+                    this.tooltipModule.renderTooltip(currentRect);
+                    if (this.isTouch) {
+                        if (this.tooltipTimer) {
+                            window.clearTimeout(this.tooltipTimer);
+                        }
+                        this.tooltipTimer = setTimeout(() => {
+                            this.tooltipModule.tooltipObject.fadeOut();
+                            this.tooltipModule.isFadeout = true;
+                        }, 1500);
+                        if (e.type === 'touchmove') {
+                            e.preventDefault();
+                        }
+                    }
+                }
+                this.tempTooltipRectId = currentRect.id;
+            }
+        }
+        else {
+            if (e.target.id.indexOf('Celltooltip') === -1) {
+                if ((this.cellSettings.enableCellHighlighting || this.showTooltip) && !this.enableCanvasRendering) {
+                    this.heatMapSeries.highlightSvgRect(e.target.id);
+                }
+                if (this.tooltipModule && this.showTooltip) {
+                    this.tooltipModule.showHideTooltip(false, true);
+                }
+            }
+            this.tempTooltipRectId = '';
+        }
+    }
+    /**
+     * To select the multiple cells on mouse move action
+     */
+    highlightSelectedCells(previousRect, currentRect, e) {
+        let pXIndex = previousRect.xIndex;
+        let pYIndex = previousRect.yIndex;
+        let cXIndex = currentRect.xIndex;
+        let cYIndex = currentRect.yIndex;
+        let xIndex = Math.abs((currentRect.xIndex === previousRect.xIndex ? 0 : currentRect.xIndex - previousRect.xIndex)) + 1;
+        let yIndex = Math.abs((currentRect.yIndex === previousRect.yIndex ? 0 : currentRect.yIndex - previousRect.yIndex)) + 1;
+        let minX = cXIndex > pXIndex ? pXIndex : cXIndex;
+        let maxX = cXIndex > pXIndex ? cXIndex : pXIndex;
+        let minY = cYIndex > pYIndex ? pYIndex : cYIndex;
+        let maxY = cYIndex > pYIndex ? cYIndex : pYIndex;
+        let tempX = minX;
+        let tempY = minY;
+        let cellX = previousRect.x;
+        let cellY = previousRect.y;
+        this.selectedCellsRect = new Rect(0, 0, 0, 0);
+        this.selectedCellsRect.x = previousRect.x > currentRect.x ? currentRect.x : previousRect.x;
+        this.selectedCellsRect.y = previousRect.y > currentRect.y ? currentRect.y : previousRect.y;
+        this.selectedCellsRect.width = ((previousRect.x > currentRect.x ? (pXIndex - cXIndex) :
+            (cXIndex - pXIndex)) + 1) * currentRect.width;
+        this.selectedCellsRect.height = ((previousRect.y > currentRect.y ? (pYIndex - cYIndex) :
+            (cYIndex - pYIndex)) + 1) * currentRect.height;
+        this.removeSelectedCellsBorder();
+        this.multiCellCollection = [];
+        for (let i = 0; i < (xIndex * yIndex); i++) {
+            this.getSelectedCellDatas(cellX, cellY);
+            if (tempX < maxX) {
+                cellX += cXIndex > pXIndex ? currentRect.width : -currentRect.width;
+                tempX++;
+            }
+            else if (tempY < maxY) {
+                cellY += cYIndex > pYIndex ? currentRect.height : -currentRect.height;
+                cellX = previousRect.x;
+                tempX = minX;
+            }
+        }
+        let x = this.initialCellX > e.pageX ? e.pageX : this.initialCellX;
+        let y = this.initialCellY > e.pageY ? e.pageY : this.initialCellY;
+        let parentDiv = document.getElementById(this.element.id + '_CellSelection_Container');
+        parentDiv.style.left = (this.selectedCellsRect.x - 1) + 'px';
+        parentDiv.style.top = (this.selectedCellsRect.y - 1) + 'px';
+        let svgObject = this.renderer.createSvg({
+            id: this.element.id + '_CellSelection_Container_svg',
+            width: this.selectedCellsRect.width + 2,
+            height: this.selectedCellsRect.height + 2
+        });
+        parentDiv.appendChild(svgObject);
+        let parent = document.getElementById(this.element.id + '_CellSelection_Container_svg');
+        let rect = new Rect(x - this.selectedCellsRect.x, y - this.selectedCellsRect.y, Math.abs(e.pageX - this.initialCellX), Math.abs(e.pageY - this.initialCellY));
+        let rectItems = new RectOption(this.element.id + '_selectedCells', '#87ceeb', { color: 'transparent', width: 1 }, 1, rect, '#0000ff');
+        parent.appendChild(this.renderer.drawRectangle(rectItems));
+        document.getElementById(this.element.id + '_selectedCells').style.opacity = '0.5';
+    }
+    /**
+     * To select the multiple cells on mouse move action
+     */
+    removeSelectedCellsBorder() {
+        if (!this.enableCanvasRendering) {
+            for (let i = 0; i < this.multiCellCollection.length; i++) {
+                let rectElement = this.multiCellCollection[i].cellElement;
+                if (rectElement) {
+                    let index = rectElement.id.slice((this.element.id + '_HeatMapRect_').length);
+                    let textElement = document.getElementById(this.element.id + '_HeatMapRectLabels_' + index);
+                    let elementClassName = rectElement.getAttribute('class');
+                    if (this.tempMultiCellCollection.length > 0) {
+                        rectElement.setAttribute('opacity', '0.3');
+                        if (this.cellSettings.showLabel) {
+                            textElement.setAttribute('opacity', '0.3');
+                        }
+                    }
+                    this.removeSvgClass(rectElement, textElement, elementClassName, false);
+                }
+            }
+        }
+        else {
+            if (this.previousSelectedCellsRect.length > 0) {
+                let ctx = this.canvasRenderer.ctx;
+                ctx.save();
+                ctx.clearRect(this.previousSelectedCellsRect[0].x - 1, this.previousSelectedCellsRect[0].y - 1, this.previousSelectedCellsRect[0].width + 2, this.previousSelectedCellsRect[0].height + 2);
+                ctx.restore();
+                this.previousSelectedCellsRect.shift();
+            }
+        }
+        if (this.element.id + '_selectedCellsBorder') {
+            removeElement(this.element.id + '_selectedCellsBorder');
+        }
+    }
+    /**
+     * To select the multiple cells on mouse move action
+     */
+    highlightSelectedAreaInCanvas(rect) {
+        let oldCanvas = document.getElementById(this.element.id + '_canvas');
+        let newCanvas = document.getElementById(this.element.id + '_secondarycanvas');
+        let padding = 10;
+        let rectImage = oldCanvas.getContext('2d').getImageData(rect.x, rect.y, rect.width, rect.height);
+        newCanvas.getContext('2d').putImageData(rectImage, rect.x, rect.y);
+        if (this.legendModule && this.legendSettings.visible) {
+            let legendRect = this.legendModule.legendGroup;
+            let legendImage = oldCanvas.getContext('2d').getImageData(legendRect.x, legendRect.y, legendRect.width, legendRect.height);
+            newCanvas.getContext('2d').putImageData(legendImage, legendRect.x, legendRect.y);
+        }
+        if (this.titleSettings.text !== '') {
+            let titleRect = this.titleRect;
+            let titleImage = oldCanvas.getContext('2d').getImageData(titleRect.x, titleRect.y, titleRect.width, titleRect.height);
+            newCanvas.getContext('2d').putImageData(titleImage, titleRect.x, titleRect.y);
+        }
+        let axis = this.axisCollections;
+        let xHeight = (axis[0].opposedPosition ? sum(axis[0].farSizes) : sum(axis[0].nearSizes)) + padding;
+        let yWidth = (axis[1].opposedPosition ? sum(axis[1].farSizes) : sum(axis[1].nearSizes)) + padding;
+        let x = axis[1].opposedPosition ? axis[1].rect.x : axis[1].rect.x - yWidth;
+        let y = axis[0].opposedPosition ? axis[0].rect.y - xHeight : axis[0].rect.y;
+        let xAxisImage = oldCanvas.getContext('2d').getImageData(axis[0].rect.x, y, axis[0].rect.width, xHeight);
+        newCanvas.getContext('2d').putImageData(xAxisImage, axis[0].rect.x, y);
+        let yAxisImage = oldCanvas.getContext('2d').getImageData(x, axis[1].rect.y, yWidth, axis[1].rect.height);
+        newCanvas.getContext('2d').putImageData(yAxisImage, x, axis[1].rect.y);
+        oldCanvas.style.opacity = '0.5';
+    }
+    /**
+     * To select the multiple cells on mouse move action
+     */
+    getSelectedCellDatas(cellX, cellY) {
+        let xAxis = this.axisCollections[0];
+        let yAxis = this.axisCollections[1];
+        let xLabels = xAxis.tooltipLabels;
+        let yLabels = yAxis.tooltipLabels.slice().reverse();
+        let rectPosition = this.heatMapSeries.getCurrentRect(cellX + 1, cellY);
+        let currentRect = document.getElementById(rectPosition.id);
+        let cellDetails = new SelectedCellDetails(null, '', '', 0, 0, null);
+        cellDetails.value = rectPosition.value;
+        cellDetails.xLabel = xLabels[rectPosition.xIndex].toString();
+        cellDetails.yLabel = yLabels[rectPosition.yIndex].toString();
+        cellDetails.xValue = xAxis.labelValue[rectPosition.xIndex];
+        cellDetails.yValue = yLabels[rectPosition.yIndex];
+        cellDetails.cellElement = this.enableCanvasRendering ? null : currentRect;
+        this.addSvgClass(currentRect);
+        if (rectPosition.visible && !isNullOrUndefined(rectPosition.value)) {
+            this.multiCellCollection.push(cellDetails);
+        }
+    }
+    /**
+     * To add class for selected cells
+     * @private
+     */
+    addSvgClass(element) {
+        if (!this.enableCanvasRendering) {
+            let className = this.element.id + '_selected';
+            element.setAttribute('class', className);
+        }
+    }
+    /**
+     * To remove class for unselected cells
+     * @private
+     */
+    removeSvgClass(rectElement, textElement, className, clearSelection) {
+        if (className) {
+            rectElement.setAttribute('class', className.replace(className, ''));
+        }
+        if (!clearSelection && className !== this.element.id + '_selected') {
+            rectElement.setAttribute('opacity', '0.3');
+            if (this.cellSettings.showLabel) {
+                textElement.setAttribute('opacity', '0.3');
+            }
+        }
+    }
+    /**
+     * To clear the multi cell selection
+     */
+    clearSelection() {
+        if (!this.enableCanvasRendering) {
+            let rect = document.getElementById(this.element.id + '_Container_RectGroup');
+            let text = document.getElementById(this.element.id + '_Container_TextGroup');
+            for (let i = 0; i < rect.childNodes.length; i++) {
+                let elementClassName = rect.children[i].getAttribute('class');
+                if (elementClassName === this.element.id + '_selected') {
+                    this.removeSvgClass(rect.children[i], text.children[i], elementClassName, true);
+                }
+                rect.children[i].setAttribute('opacity', '1');
+                if (this.cellSettings.showLabel) {
+                    rect.children[i].setAttribute('opacity', '1');
+                }
+            }
+        }
+        this.tempMultiCellCollection = [];
+        if (this.element.id + '_selectedCellsBorder') {
+            removeElement(this.element.id + '_selectedCellsBorder');
+        }
+    }
+    renderMousePointer(pageX, pageY) {
+        let legendRange = this.legendModule.legendRange;
+        let legendTextRange = this.legendModule.legendTextRange;
+        let loop = true;
+        for (let i = 0; i < legendRange.length; i++) {
+            if (this.legendSettings.toggleVisibility && this.legendModule.currentPage === legendRange[i].currentPage) {
+                if ((loop && (pageX >= legendRange[i].x && pageX <= legendRange[i].width + legendRange[i].x) &&
+                    (pageY >= legendRange[i].y && pageY <= legendRange[i].y + legendRange[i].height) ||
+                    ((this.legendSettings.showLabel && this.legendSettings.labelDisplayType !== 'None' &&
+                        pageX >= legendTextRange[i].x && pageX <= legendTextRange[i].width + legendTextRange[i].x) &&
+                        (pageY >= legendTextRange[i].y && pageY <= legendTextRange[i].y + legendTextRange[i].height)))) {
+                    if (this.enableCanvasRendering) {
+                        document.getElementById(this.element.id + '_canvas').style.cursor = 'Pointer';
+                    }
+                    else {
+                        document.getElementById(this.element.id + '_svg').style.cursor = 'Pointer';
+                    }
+                    loop = false;
+                }
+                else if (loop) {
+                    if (this.enableCanvasRendering) {
+                        document.getElementById(this.element.id + '_canvas').style.cursor = '';
+                    }
+                    else {
+                        document.getElementById(this.element.id + '_svg').style.cursor = '';
+                    }
+                }
+            }
+        }
+    }
+    /**
      * Handles the mouse end.
      * @return {boolean}
      * @private
@@ -4341,6 +5910,47 @@ let HeatMap = class HeatMap extends Component {
             (this.cellSettings.enableCellHighlighting || (this.tooltipModule && this.showTooltip))
             && !this.enableCanvasRendering) {
             this.heatMapSeries.highlightSvgRect(this.tempTooltipRectId);
+        }
+        if (this.allowSelection && this.multiSelection) {
+            this.multiSelection = false;
+            if (e.type === 'mouseup' || e.type === 'touchend') {
+                if (!this.enableCanvasRendering) {
+                    this.tempMultiCellCollection.push(this.multiCellCollection);
+                    let containerRect = document.getElementById(this.element.id + '_Container_RectGroup');
+                    let containerText = document.getElementById(this.element.id + '_Container_TextGroup');
+                    for (let i = 0; i < containerRect.childNodes.length; i++) {
+                        let elementClassName = containerRect.children[i].getAttribute('class');
+                        if (elementClassName !== this.element.id + '_selected') {
+                            containerRect.children[i].setAttribute('opacity', '0.3');
+                            if (this.cellSettings.showLabel) {
+                                containerText.children[i].setAttribute('opacity', '0.3');
+                            }
+                        }
+                        else {
+                            containerRect.children[i].setAttribute('opacity', '1');
+                            if (this.cellSettings.showLabel) {
+                                containerText.children[i].setAttribute('opacity', '1');
+                            }
+                        }
+                    }
+                }
+                else {
+                    this.previousSelectedCellsRect.push(this.selectedCellsRect);
+                    this.highlightSelectedAreaInCanvas(this.selectedCellsRect);
+                }
+                removeElement(this.element.id + '_selectedCells');
+                let rect = new Rect(1, 1, this.selectedCellsRect.width, this.selectedCellsRect.height);
+                let rectItems = new RectOption(this.element.id + '_selectedCellsBorder', 'none', { color: 'transparent', width: 1 }, 1, rect, 'Black');
+                let parent = document.getElementById(this.element.id + '_CellSelection_Container_svg');
+                parent.appendChild(this.renderer.drawRectangle(rectItems));
+                let argData = {
+                    heatmap: this,
+                    cancel: false,
+                    name: 'cellSelected',
+                    data: this.multiCellCollection
+                };
+                this.trigger('cellSelected', argData);
+            }
         }
         if (this.tooltipModule && this.showTooltip && e.type === 'mouseleave') {
             this.tooltipModule.showHideTooltip(false);
@@ -4390,6 +6000,35 @@ let HeatMap = class HeatMap extends Component {
         }
         return true;
     }
+    /**
+     * To create div container for rendering two layers of canvas.
+     * @return {void}
+     * @private
+     */
+    createMultiCellDiv(onLoad) {
+        if (onLoad) {
+            let divElement = this.createElement('div', {
+                id: this.element.id + '_Multi_CellSelection_Canvas',
+                styles: 'position:relative'
+            });
+            this.element.appendChild(divElement);
+            divElement.appendChild(this.svgObject);
+            this.svgObject.style.position = 'absolute';
+            this.svgObject.style.left = '0px';
+            this.svgObject.style.top = '0px';
+            this.svgObject.style.zIndex = '0';
+        }
+        else {
+            let element = document.getElementById(this.element.id + '_Multi_CellSelection_Canvas');
+            let secondaryCanvas = this.canvasRenderer.createCanvas({
+                width: this.availableSize.width,
+                height: this.availableSize.height, x: 0, y: 0,
+                style: 'position: absolute; z-index: 1'
+            });
+            element.appendChild(secondaryCanvas);
+            secondaryCanvas.id = this.element.id + '_secondarycanvas';
+        }
+    }
 };
 __decorate([
     Property(null)
@@ -4404,6 +6043,12 @@ __decorate([
     Event()
 ], HeatMap.prototype, "tooltipRender", void 0);
 __decorate([
+    Event()
+], HeatMap.prototype, "cellRender", void 0);
+__decorate([
+    Event()
+], HeatMap.prototype, "cellSelected", void 0);
+__decorate([
     Property('SVG')
 ], HeatMap.prototype, "renderingMode", void 0);
 __decorate([
@@ -4412,6 +6057,9 @@ __decorate([
 __decorate([
     Property('Material')
 ], HeatMap.prototype, "theme", void 0);
+__decorate([
+    Property(false)
+], HeatMap.prototype, "allowSelection", void 0);
 __decorate([
     Complex({}, Margin)
 ], HeatMap.prototype, "margin", void 0);
@@ -4427,6 +6075,9 @@ __decorate([
 __decorate([
     Complex({}, PaletteSettings)
 ], HeatMap.prototype, "paletteSettings", void 0);
+__decorate([
+    Complex({}, TooltipSettings)
+], HeatMap.prototype, "tooltipSettings", void 0);
 __decorate([
     Complex({}, Axis)
 ], HeatMap.prototype, "yAxis", void 0);
@@ -4446,7 +6097,7 @@ HeatMap = __decorate([
     NotifyPropertyChanges
 ], HeatMap);
 
-var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$7 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -4457,25 +6108,25 @@ var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, 
  */
 class Data extends ChildProperty {
 }
-__decorate$6([
+__decorate$7([
     Property(null)
 ], Data.prototype, "data", void 0);
-__decorate$6([
+__decorate$7([
     Property(false)
 ], Data.prototype, "isJsonData", void 0);
-__decorate$6([
+__decorate$7([
     Property('cell')
 ], Data.prototype, "adaptorType", void 0);
-__decorate$6([
+__decorate$7([
     Property('')
 ], Data.prototype, "xDataMapping", void 0);
-__decorate$6([
+__decorate$7([
     Property('')
 ], Data.prototype, "yDataMapping", void 0);
-__decorate$6([
+__decorate$7([
     Property('')
 ], Data.prototype, "valueMapping", void 0);
-__decorate$6([
+__decorate$7([
     Complex({}, BubbleData)
 ], Data.prototype, "bubbleDataMapping", void 0);
 class AdaptiveMinMax {
@@ -4498,6 +6149,21 @@ class Adaptor {
      * @private
      */
     constructDatasource(adaptData) {
+        if (adaptData.adaptorType === 'Cell') {
+            let xAxis = this.heatMap.xAxis;
+            let yAxis = this.heatMap.yAxis;
+            this.adaptiveXMinMax.min = xAxis.minimum;
+            this.adaptiveXMinMax.max = xAxis.maximum;
+            this.adaptiveYMinMax.min = yAxis.minimum;
+            this.adaptiveYMinMax.max = yAxis.maximum;
+            if (((xAxis.valueType === 'Numeric' || xAxis.valueType === 'DateTime') &&
+                (isNullOrUndefined(xAxis.minimum) || isNullOrUndefined(xAxis.maximum))) ||
+                ((yAxis.valueType === 'Numeric' || yAxis.valueType === 'DateTime') &&
+                    (isNullOrUndefined(yAxis.minimum) || isNullOrUndefined(yAxis.maximum)))) {
+                this.getMinMaxValue(adaptData, xAxis, yAxis);
+            }
+            this.heatMap.isCellData = true;
+        }
         if (adaptData && adaptData.data === undefined) {
             this.heatMap.completeAdaptDataSource = adaptData;
         }
@@ -4511,18 +6177,6 @@ class Adaptor {
             this.heatMap.completeAdaptDataSource = this.processJsonCellData(adaptData);
         }
         else if (!adaptData.isJsonData && adaptData.adaptorType === 'Cell') {
-            let xAxis = this.heatMap.xAxis;
-            let yAxis = this.heatMap.yAxis;
-            this.adaptiveXMinMax.min = xAxis.minimum;
-            this.adaptiveXMinMax.max = xAxis.maximum;
-            this.adaptiveYMinMax.min = yAxis.minimum;
-            this.adaptiveYMinMax.max = yAxis.maximum;
-            if (((xAxis.valueType === 'Numeric' || xAxis.valueType === 'DateTime') &&
-                (isNullOrUndefined(xAxis.minimum) || isNullOrUndefined(xAxis.maximum))) ||
-                ((yAxis.valueType === 'Numeric' || yAxis.valueType === 'DateTime') &&
-                    (isNullOrUndefined(yAxis.minimum) || isNullOrUndefined(yAxis.maximum)))) {
-                this.getMinMaxValue(adaptData.data, xAxis, yAxis);
-            }
             this.constructAdaptiveAxis();
             this.heatMap.completeAdaptDataSource = this.processCellData(adaptData);
             this.heatMap.isCellData = true;
@@ -4589,25 +6243,39 @@ class Adaptor {
      * @return {void}
      * @private
      */
-    getMinMaxValue(data, xAxis, yAxis) {
+    getMinMaxValue(adapData, xAxis, yAxis) {
+        let data = adapData.data;
+        let label = Object.keys(data[0]);
         if (data.length > 0) {
-            this.adaptiveXMinMax.min = !isNullOrUndefined(xAxis.minimum) ? xAxis.minimum : data[0][0];
-            this.adaptiveYMinMax.min = !isNullOrUndefined(yAxis.minimum) ? yAxis.minimum : data[0][1];
-            this.adaptiveXMinMax.max = !isNullOrUndefined(xAxis.maximum) ? xAxis.maximum : data[0][0];
-            this.adaptiveYMinMax.max = !isNullOrUndefined(yAxis.maximum) ? yAxis.maximum : data[0][1];
+            this.adaptiveXMinMax.min = !isNullOrUndefined(xAxis.minimum) ? xAxis.minimum : adapData.isJsonData ?
+                // tslint:disable-next-line:no-any
+                data[0][label[0]] : data[0][0];
+            this.adaptiveYMinMax.min = !isNullOrUndefined(yAxis.minimum) ? yAxis.minimum : adapData.isJsonData ?
+                // tslint:disable-next-line:no-any
+                data[0][label[1]] : data[0][1];
+            this.adaptiveXMinMax.max = !isNullOrUndefined(xAxis.maximum) ? xAxis.maximum : adapData.isJsonData ?
+                // tslint:disable-next-line:no-any
+                data[0][label[0]] : data[0][0];
+            this.adaptiveYMinMax.max = !isNullOrUndefined(yAxis.maximum) ? yAxis.maximum : adapData.isJsonData ?
+                // tslint:disable-next-line:no-any
+                data[0][label[1]] : data[0][1];
         }
         for (let dataIndex = 0; dataIndex < data.length; dataIndex++) {
-            if (data[dataIndex][0] < this.adaptiveXMinMax.min && isNullOrUndefined(xAxis.minimum)) {
-                this.adaptiveXMinMax.min = data[dataIndex][0];
+            // tslint:disable-next-line:no-any
+            let xDataIndex = adapData.isJsonData ? data[dataIndex][label[0]] : data[dataIndex][0];
+            // tslint:disable-next-line:no-any
+            let yDataIndex = adapData.isJsonData ? data[dataIndex][label[1]] : data[dataIndex][1];
+            if (xDataIndex < this.adaptiveXMinMax.min && isNullOrUndefined(xAxis.minimum)) {
+                this.adaptiveXMinMax.min = xDataIndex;
             }
-            if (data[dataIndex][0] > this.adaptiveXMinMax.max && isNullOrUndefined(xAxis.maximum)) {
-                this.adaptiveXMinMax.max = data[dataIndex][0];
+            if (xDataIndex > this.adaptiveXMinMax.max && isNullOrUndefined(xAxis.maximum)) {
+                this.adaptiveXMinMax.max = xDataIndex;
             }
-            if (data[dataIndex][1] < this.adaptiveYMinMax.min && isNullOrUndefined(yAxis.minimum)) {
-                this.adaptiveYMinMax.min = data[dataIndex][1];
+            if (yDataIndex < this.adaptiveYMinMax.min && isNullOrUndefined(yAxis.minimum)) {
+                this.adaptiveYMinMax.min = yDataIndex;
             }
-            if (data[dataIndex][1] > this.adaptiveYMinMax.max && isNullOrUndefined(yAxis.maximum)) {
-                this.adaptiveYMinMax.max = data[dataIndex][1];
+            if (yDataIndex > this.adaptiveYMinMax.max && isNullOrUndefined(yAxis.maximum)) {
+                this.adaptiveYMinMax.max = yDataIndex;
             }
         }
     }
@@ -4662,31 +6330,39 @@ class Adaptor {
     processJsonCellData(adaptordata) {
         // tslint:disable-next-line:no-any 
         let tempDataCollection = adaptordata.data;
-        let xLabels = this.heatMap.xAxis.labels ? this.heatMap.xAxis.labels : [];
-        let yLabels = this.heatMap.yAxis.labels ? this.heatMap.yAxis.labels : [];
+        let xAxisLabels = this.heatMap.xAxis.labels ? this.heatMap.xAxis.labels : [];
+        let yAxisLabels = this.heatMap.yAxis.labels ? this.heatMap.yAxis.labels : [];
+        let axisCollections = this.heatMap.axisCollections;
+        if (xAxisLabels.length === 0 || yAxisLabels.length === 0) {
+            this.generateAxisLabels(adaptordata);
+        }
+        let xLabels = (this.heatMap.xAxis.valueType === 'Category') ? (xAxisLabels.length > 0 ?
+            this.heatMap.xAxis.labels : axisCollections[0].jsonCellLabel) : axisCollections[0].labelValue;
+        let yLabels = (this.heatMap.yAxis.valueType === 'Category') ? (yAxisLabels.length > 0 ?
+            this.heatMap.yAxis.labels : axisCollections[1].jsonCellLabel) : axisCollections[1].labelValue;
         let currentDataXIndex = 0;
         let currentDataYIndex = 0;
         if (tempDataCollection.length) {
             this.reconstructData = [];
             for (let index = 0; index < tempDataCollection.length; index++) {
-                currentDataXIndex = this.getSplitDataValue(tempDataCollection[index], adaptordata, xLabels, adaptordata.xDataMapping.split('.'));
+                currentDataXIndex = this.getSplitDataValue(tempDataCollection[index], adaptordata, xLabels, adaptordata.xDataMapping.split('.'), this.heatMap.xAxis.valueType);
                 if (currentDataXIndex !== -1) {
                     while (!this.reconstructData[currentDataXIndex]) {
                         this.reconstructData.push([]);
                     }
-                    currentDataYIndex = this.getSplitDataValue(tempDataCollection[index], adaptordata, yLabels, adaptordata.yDataMapping.split('.'));
+                    currentDataYIndex = this.getSplitDataValue(tempDataCollection[index], adaptordata, yLabels, adaptordata.yDataMapping.split('.'), this.heatMap.yAxis.valueType);
                     if (currentDataYIndex !== -1) {
                         while (isNullOrUndefined(this.reconstructData[currentDataXIndex][currentDataYIndex])) {
                             this.reconstructData[currentDataXIndex].push('');
                         }
                         if (this.heatMap.bubbleSizeWithColor) {
                             this.reconstructData[currentDataXIndex][currentDataYIndex] = [
-                                this.getSplitDataValue(tempDataCollection[index], adaptordata, null, adaptordata.bubbleDataMapping.size.split('.')),
-                                this.getSplitDataValue(tempDataCollection[index], adaptordata, null, adaptordata.bubbleDataMapping.color.split('.'))
+                                this.getSplitDataValue(tempDataCollection[index], adaptordata, null, adaptordata.bubbleDataMapping.size.split('.'), ''),
+                                this.getSplitDataValue(tempDataCollection[index], adaptordata, null, adaptordata.bubbleDataMapping.color.split('.'), '')
                             ];
                         }
                         else {
-                            this.reconstructData[currentDataXIndex][currentDataYIndex] = this.getSplitDataValue(tempDataCollection[index], adaptordata, null, adaptordata.valueMapping.split('.'));
+                            this.reconstructData[currentDataXIndex][currentDataYIndex] = this.getSplitDataValue(tempDataCollection[index], adaptordata, null, adaptordata.valueMapping.split('.'), '');
                         }
                     }
                 }
@@ -4695,17 +6371,70 @@ class Adaptor {
         return this.reconstructData;
     }
     /**
+     * Method to generate axis labels when labels are not given.
+     * @return {string}
+     * @private
+     */
+    generateAxisLabels(adaptordata) {
+        // tslint:disable-next-line:no-any 
+        let tempDataCollection = adaptordata.data;
+        let xLabels = this.heatMap.xAxis.labels ? this.heatMap.xAxis.labels : [];
+        let yLabels = this.heatMap.yAxis.labels ? this.heatMap.yAxis.labels : [];
+        let hasXLabels = xLabels.length > 0 ? true : false;
+        let hasYLabels = yLabels.length > 0 ? true : false;
+        let axisCollection = this.heatMap.axisCollections;
+        for (let index = 0; index < axisCollection.length; index++) {
+            let valueType = axisCollection[index].valueType;
+            let axis = axisCollection[index];
+            if (valueType === 'Category') {
+                let hasLabels;
+                let dataMapping;
+                let labels;
+                if (axis.orientation === 'Horizontal') {
+                    hasLabels = hasXLabels;
+                    dataMapping = adaptordata.xDataMapping;
+                    axis.jsonCellLabel = labels = [];
+                }
+                else {
+                    hasLabels = hasYLabels;
+                    dataMapping = adaptordata.yDataMapping;
+                    axis.jsonCellLabel = labels = [];
+                }
+                if (!hasLabels) {
+                    for (let i = 0; i < tempDataCollection.length; i++) {
+                        if (dataMapping in tempDataCollection[i]) {
+                            let xValue = tempDataCollection[i][dataMapping].toString();
+                            if (labels.indexOf(xValue.toString()) === -1) {
+                                labels.push(xValue);
+                            }
+                        }
+                    }
+                }
+            }
+            else if (valueType === 'DateTime') {
+                axis.clearAxisLabel();
+                axis.calculateDateTimeAxisLabel(this.heatMap);
+            }
+            else {
+                axis.clearAxisLabel();
+                axis.calculateNumericAxisLabels(this.heatMap);
+            }
+        }
+    }
+    /**
      * Method to get data from complex mapping.
      * @return {number|string}
      * @private
      */
     getSplitDataValue(
     // tslint:disable-next-line:no-any 
-    tempSplitDataCollection, adaptordata, labels, tempSplitData) {
+    tempSplitDataCollection, adaptordata, labels, tempSplitData, valueType) {
         let value = -1;
         this.tempSplitDataCollection = tempSplitDataCollection;
         for (let splitIndex = 0; splitIndex < tempSplitData.length; splitIndex++) {
-            value = !isNullOrUndefined(labels) ? labels.indexOf(this.tempSplitDataCollection[tempSplitData[splitIndex]]) : null;
+            value = !isNullOrUndefined(labels) ? (!(valueType === 'DateTime') ?
+                labels.indexOf(this.tempSplitDataCollection[tempSplitData[splitIndex]]) :
+                labels.map(Number).indexOf(+this.tempSplitDataCollection[tempSplitData[splitIndex]])) : null;
             if (!isNullOrUndefined(this.tempSplitDataCollection)) {
                 this.tempSplitDataCollection = value !== -1 && !isNullOrUndefined(labels) ?
                     this.tempSplitDataCollection : this.tempSplitDataCollection[tempSplitData[splitIndex]];
@@ -4734,7 +6463,7 @@ class Adaptor {
         if (tempDataCollection.length) {
             this.reconstructData = [];
             for (let xindex = 0; xindex < tempDataCollection.length; xindex++) {
-                currentDataXIndex = this.getSplitDataValue(tempDataCollection[xindex], adaptordata, xLabels, adaptordata.xDataMapping.split('.'));
+                currentDataXIndex = this.getSplitDataValue(tempDataCollection[xindex], adaptordata, xLabels, adaptordata.xDataMapping.split('.'), this.heatMap.xAxis.valueType);
                 if (currentDataXIndex !== -1) {
                     while (!this.reconstructData[currentDataXIndex]) {
                         this.reconstructData.push([]);
@@ -4776,198 +6505,6 @@ class Adaptor {
 }
 
 /**
- * HeatMap tool tip file
- */
-/**
- *
- * The `Tooltip` module is used to render the tooltip for heatmap series.
- */
-class Tooltip$1 {
-    constructor(heatMap) {
-        /* private */
-        this.isFirst = true;
-        /* private */
-        this.isFadeout = false;
-        this.heatMap = heatMap;
-    }
-    /**
-     * Get module name
-     */
-    getModuleName() {
-        return 'Tooltip';
-    }
-    /**
-     * To show/hide Tooltip.
-     * @private
-     */
-    showHideTooltip(isShow, isFadeout) {
-        let ele = document.getElementById(this.heatMap.element.id + 'Celltooltipcontainer');
-        if (!isShow) {
-            if (ele && ele.style.visibility !== 'hidden') {
-                if (this.tooltipObject && isFadeout) {
-                    this.tooltipObject.fadeOut();
-                }
-                else {
-                    if (this.tooltipObject && this.tooltipObject.element) {
-                        let tooltipElement = this.tooltipObject.element.firstChild;
-                        tooltipElement.setAttribute('opacity', '0');
-                    }
-                }
-                ele.style.visibility = 'hidden';
-            }
-            this.isFadeout = true;
-        }
-        else {
-            ele.style.visibility = 'visible';
-        }
-    }
-    /**
-     * To destroy the Tooltip.
-     * @return {void}
-     * @private
-     */
-    destroy(heatMap) {
-        /**
-         * Destroy method performed here
-         */
-    }
-    ;
-    /**
-     * To add Tooltip to the rect cell.
-     * @return {void}
-     * @private
-     */
-    createTooltip(x, y, tempTooltipText) {
-        let offset = null;
-        if (this.heatMap.cellSettings.showLabel && this.heatMap.heatMapSeries.checkLabelXDisplay &&
-            this.heatMap.heatMapSeries.checkLabelYDisplay) {
-            offset = parseInt(this.heatMap.cellSettings.textStyle.size, 10) / 2;
-        }
-        this.tooltipObject = new Tooltip({
-            enableAnimation: false,
-            offset: offset,
-            location: { x: x, y: y },
-            theme: this.heatMap.theme,
-            content: tempTooltipText,
-            areaBounds: {
-                height: this.heatMap.initialClipRect.height + this.heatMap.initialClipRect.y,
-                width: this.heatMap.initialClipRect.width, x: this.heatMap.initialClipRect.x
-            }
-        }, '#' + this.heatMap.element.id + 'Celltooltipcontainer');
-    }
-    /**
-     * To create div container for tooltip.
-     * @return {void}
-     * @private
-     */
-    createTooltipDiv(heatMap) {
-        let element2 = createElement('div', {
-            id: this.heatMap.element.id + 'Celltooltipcontainer',
-            styles: 'position:absolute'
-        });
-        this.heatMap.element.appendChild(createElement('div', {
-            id: this.heatMap.element.id + 'Celltooltipparent',
-            styles: 'position:relative'
-        })
-            .appendChild(element2));
-    }
-    /**
-     * To get default tooltip content.
-     * @private
-     */
-    getTooltipContent(currentRect, hetmapSeries) {
-        let value;
-        let content;
-        let heatMap = this.heatMap;
-        let adaptData = this.heatMap.dataSource;
-        if (heatMap.bubbleSizeWithColor) {
-            let xAxis = heatMap.xAxis.title && heatMap.xAxis.title.text !== '' ? heatMap.xAxis.title.text : 'X-Axis';
-            let yAxis = heatMap.yAxis.title && heatMap.yAxis.title.text !== '' ? heatMap.yAxis.title.text : 'Y-Axis';
-            let value1 = adaptData.isJsonData && adaptData.adaptorType === 'Cell' ?
-                heatMap.dataSource.bubbleDataMapping.size : 'Value 1';
-            let value2 = adaptData.isJsonData && adaptData.adaptorType === 'Cell' ?
-                heatMap.dataSource.bubbleDataMapping.color : 'Value 2';
-            value = hetmapSeries.getFormatedText(currentRect.value[0].bubbleData, this.heatMap.cellSettings.format);
-            content = [xAxis + ' : ' + hetmapSeries.hoverXAxisLabel + '<br/>'
-                    + yAxis + ' : ' + hetmapSeries.hoverYAxisLabel + '<br/>'
-                    + value1 + ' : ' + value + '<br/>'
-                    + value2 + ' : '
-                    + hetmapSeries.getFormatedText(currentRect.value[1].bubbleData, this.heatMap.cellSettings.format)];
-        }
-        else {
-            value = currentRect.value;
-            content = [hetmapSeries.hoverXAxisLabel + ' | ' + hetmapSeries.hoverYAxisLabel + ' : ' +
-                    hetmapSeries.getFormatedText(value, this.heatMap.cellSettings.format)];
-        }
-        return content;
-    }
-    /**
-     * To render tooltip.
-     * @private
-     */
-    renderTooltip(currentRect) {
-        let hetmapSeries = this.heatMap.heatMapSeries;
-        let tempTooltipText = [''];
-        let showTooltip = this.heatMap.bubbleSizeWithColor ?
-            !isNullOrUndefined(currentRect.value) && !isNullOrUndefined(currentRect.value[0].bubbleData)
-                && currentRect.value[0].bubbleData.toString() !== '' ? true : false
-            : isNullOrUndefined(currentRect.value) || (!isNullOrUndefined(currentRect.value) &&
-                currentRect.value.toString() === '') ? false : true;
-        if (!showTooltip) {
-            this.showHideTooltip(false, false);
-        }
-        else {
-            if (!isNullOrUndefined(this.heatMap.tooltipRender)) {
-                // this.tooltipObject.header = '';
-                // this.tooltipObject.content = this.getTemplateText(
-                //     currentRect, this.heatMap.tooltipTemplate, hetmapSeries.hoverXAxisLabel,
-                //     hetmapSeries.hoverYAxisLabel);
-                let content = this.getTooltipContent(currentRect, hetmapSeries);
-                let argData = {
-                    heatmap: this.heatMap,
-                    cancel: false,
-                    name: 'tooltipRender',
-                    value: currentRect.value,
-                    xValue: this.heatMap.heatMapSeries.hoverXAxisValue,
-                    yValue: this.heatMap.heatMapSeries.hoverYAxisValue,
-                    xLabel: this.heatMap.heatMapSeries.hoverXAxisLabel ?
-                        this.heatMap.heatMapSeries.hoverXAxisLabel.toString() : null,
-                    yLabel: this.heatMap.heatMapSeries.hoverYAxisLabel ?
-                        this.heatMap.heatMapSeries.hoverYAxisLabel.toString() : null,
-                    content: content
-                };
-                this.heatMap.trigger('tooltipRender', argData);
-                if (!argData.cancel) {
-                    tempTooltipText = argData.content;
-                }
-                else {
-                    if (this.tooltipObject) {
-                        this.showHideTooltip(false);
-                    }
-                    return;
-                }
-            }
-            else {
-                //  this.tooltipObject.header = hetmapSeries.hoverYAxisLabel.toString();
-                tempTooltipText = this.getTooltipContent(currentRect, hetmapSeries);
-            }
-            if (!this.tooltipObject) {
-                this.createTooltip(currentRect.x + (currentRect.width / 2), currentRect.y + (currentRect.height / 2), tempTooltipText);
-            }
-            else {
-                this.tooltipObject.content = tempTooltipText;
-            }
-            this.showHideTooltip(true);
-            this.tooltipObject.enableAnimation = (this.isFirst || this.isFadeout) ? false : true;
-            this.isFirst = (this.isFirst) ? false : this.isFirst;
-            this.isFadeout = (this.isFadeout) ? false : this.isFadeout;
-            this.tooltipObject.location.x = currentRect.x + (currentRect.width / 2);
-            this.tooltipObject.location.y = currentRect.y + (currentRect.height / 2);
-        }
-    }
-}
-
-/**
  * Heatmap component exported items
  */
 
@@ -4975,5 +6512,5 @@ class Tooltip$1 {
  * HeatMap index file
  */
 
-export { HeatMap, Axis, AxisHelper, Data, AdaptiveMinMax, Adaptor, TwoDimensional, LegendSettings, Legend, Font, Margin, Border, BubbleData, Title, PaletteCollection, ColorCollection, BubbleTooltipData, LegendColorCollection, CellSettings, Series, PaletteSettings, RgbColor, CellColor, Tooltip$1 as Tooltip, stringToNumber, measureText, TextElement, titlePositionX, Size, CustomizeOption, PathOption, CurrentRect, RectOption, CircleOption, Rect, TextOption, TextBasic, Line, LineOption, PathAttributes, Path, sum, titlePositionY, rotateTextSize, DrawSvgCanvas, getTitle, textWrap, textTrim, textNone, Gradient, GradientColor, showTooltip, removeElement, getElement, increaseDateTimeInterval, CanvasTooltip, getTooltipText, PaletterColor, GradientPointer, CurrentLegendRect, colorNameToHex, convertToHexCode, componentToHex, convertHexToColor };
+export { HeatMap, Axis, AxisHelper, Data, AdaptiveMinMax, Adaptor, TwoDimensional, LegendSettings, Legend, Font, Margin, Border, TooltipBorder, BubbleData, Title, PaletteCollection, AxisLabelBorder, MultiLevelCategories, MultiLevelLabels, ColorCollection, BubbleTooltipData, LegendColorCollection, CellSettings, Series, PaletteSettings, RgbColor, CellColor, TooltipSettings, Tooltip$1 as Tooltip, stringToNumber, measureText, TextElement, titlePositionX, Size, CustomizeOption, PathOption, CurrentRect, SelectedCellDetails, RectOption, CircleOption, Rect, TextOption, TextBasic, Line, LineOption, PathAttributes, Path, sum, titlePositionY, rotateTextSize, DrawSvgCanvas, getTitle, textWrap, textTrim, textNone, Gradient, GradientColor, showTooltip, removeElement, getElement, increaseDateTimeInterval, CanvasTooltip, getTooltipText, PaletterColor, GradientPointer, CurrentLegendRect, LegendRange, ToggleVisibility, colorNameToHex, convertToHexCode, componentToHex, convertHexToColor, formatValue, MultiLevelPosition };
 //# sourceMappingURL=ej2-heatmap.es2015.js.map

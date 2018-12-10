@@ -1,11 +1,12 @@
 import { createElement, isNullOrUndefined, addClass, removeClass } from '@syncfusion/ej2-base';
-import { EventHandler, setStyleAttribute } from '@syncfusion/ej2-base';
+import { EventHandler, setStyleAttribute, extend } from '@syncfusion/ej2-base';
 import { PivotFieldList } from '../base/field-list';
 import * as cls from '../../common/base/css-constant';
-import { Dialog } from '@syncfusion/ej2-popups';
-import { Button } from '@syncfusion/ej2-buttons';
+import { Dialog, ButtonPropsModel } from '@syncfusion/ej2-popups';
+import { Button, CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { Tab, SelectEventArgs, TabItemModel } from '@syncfusion/ej2-navigations';
 import * as events from '../../common/base/constant';
+import { IDataOptions, IFieldListOptions } from '../../base/engine';
 
 /**
  * Module to render Pivot Field List Dialog
@@ -19,6 +20,9 @@ export class DialogRenderer {
     public fieldListDialog: Dialog;
     /** @hidden */
     public adaptiveElement: Tab;
+
+    private deferUpdateApplyButton: Button;
+    private deferUpdateCancelButton: Button;
 
     /** Constructor for render module */
     constructor(parent: PivotFieldList) {
@@ -77,7 +81,108 @@ export class DialogRenderer {
             addClass([fieldListWrappper], cls.STATIC_FIELD_LIST_CLASS);
             fieldListWrappper.appendChild(layoutHeader);
             fieldListWrappper.appendChild(this.parentElement);
+            addClass([fieldListWrappper], cls.STATIC_FIELD_LIST_CLASS);
+            if (this.parent.allowDeferLayoutUpdate) {
+                fieldListWrappper.appendChild(this.createDeferUpdateButtons());
+                this.renderDeferUpdateButtons();
+            }
         }
+    }
+
+    private renderDeferUpdateButtons(): void {
+        if (this.parent.allowDeferLayoutUpdate) {
+            let checkBoxObj: CheckBox = new CheckBox({
+                label: this.parent.localeObj.getConstant('deferLayoutUpdate'),
+                checked: true,
+                enableRtl: this.parent.enableRtl,
+                change: this.onCheckChange.bind(this)
+            });
+            checkBoxObj.appendTo('#' + this.parent.element.id + 'DeferUpdateCheckBox');
+            this.deferUpdateApplyButton = new Button({
+                cssClass: cls.DEFER_APPLY_BUTTON + ' ' + cls.DEFER_UPDATE_BUTTON + (this.parent.renderMode === 'Popup' ?
+                (' ' + cls.BUTTON_FLAT_CLASS) : ''),
+                content: this.parent.localeObj.getConstant('apply'),
+                enableRtl: this.parent.enableRtl,
+                isPrimary: true
+            });
+            this.deferUpdateApplyButton.appendTo('#' + this.parent.element.id + '_DeferUpdateButton1');
+            this.deferUpdateApplyButton.element.onclick = this.parent.renderMode === 'Fixed' ? this.applyButtonClick.bind(this) :
+                this.onDeferUpdateClick.bind(this);
+        }
+        this.deferUpdateCancelButton = new Button({
+            cssClass: cls.DEFER_CANCEL_BUTTON + ' ' + cls.CANCEL_BUTTON_CLASS + (this.parent.renderMode === 'Popup' ?
+            (' ' + cls.BUTTON_FLAT_CLASS) : ''),
+            content: this.parent.allowDeferLayoutUpdate ? this.parent.localeObj.getConstant('cancel') :
+                this.parent.localeObj.getConstant('close'),
+            enableRtl: this.parent.enableRtl, isPrimary: !this.parent.allowDeferLayoutUpdate
+        });
+        this.deferUpdateCancelButton.appendTo('#' + this.parent.element.id + '_DeferUpdateButton2');
+        this.deferUpdateCancelButton.element.onclick = this.parent.renderMode === 'Fixed' ? this.cancelButtonClick.bind(this) :
+            this.onCloseFieldList.bind(this);
+    }
+
+    private createDeferUpdateButtons(): HTMLElement {
+        let layoutFooter: HTMLElement = createElement('div', {
+            className: cls.LAYOUT_FOOTER
+        });
+        if (this.parent.allowDeferLayoutUpdate) {
+            let checkBoxLayout: HTMLElement = createElement('div', {
+                className: cls.CHECKBOX_LAYOUT
+            });
+            let deferUpdateCheckBox: HTMLElement = createElement('input', {
+                id: this.parent.element.id + 'DeferUpdateCheckBox'
+            });
+            checkBoxLayout.appendChild(deferUpdateCheckBox);
+            layoutFooter.appendChild(checkBoxLayout);
+        }
+        let buttonLayout: HTMLElement = createElement('div', {
+            className: cls.BUTTON_LAYOUT
+        });
+        if (this.parent.allowDeferLayoutUpdate) {
+            let deferUpdateButton1: HTMLElement = createElement('button', {
+                id: this.parent.element.id + '_DeferUpdateButton1'
+            });
+            buttonLayout.appendChild(deferUpdateButton1);
+        }
+        let deferUpdateButton2: HTMLElement = createElement('button', {
+            id: this.parent.element.id + '_DeferUpdateButton2'
+        });
+        buttonLayout.appendChild(deferUpdateButton2);
+        layoutFooter.appendChild(buttonLayout);
+        return layoutFooter;
+    }
+    private onCheckChange(args: ChangeEventArgs): void {
+        if (args.checked) {
+            this.parent.clonedDataSource = extend({}, this.parent.dataSource, null, true) as IDataOptions;
+            this.parent.clonedFieldList = extend({}, this.parent.pivotFieldList, null, true) as IFieldListOptions;
+        }
+        this.parent.allowDeferLayoutUpdate = !this.parent.allowDeferLayoutUpdate;
+        if (this.parent.renderMode === 'Fixed') {
+            this.deferUpdateApplyButton.setProperties({ disabled: !this.parent.allowDeferLayoutUpdate });
+            this.deferUpdateCancelButton.setProperties({ disabled: !this.parent.allowDeferLayoutUpdate });
+        } else {
+            if (this.parent.allowDeferLayoutUpdate) {
+                this.deferUpdateApplyButton.element.style.display = '';
+                this.deferUpdateCancelButton.setProperties({ content: this.parent.localeObj.getConstant('cancel')});
+                this.deferUpdateCancelButton.isPrimary = false;
+            } else {
+                this.deferUpdateApplyButton.element.style.display = 'none';
+                this.deferUpdateCancelButton.setProperties({ content: this.parent.localeObj.getConstant('close')});
+                this.deferUpdateCancelButton.isPrimary = true;
+            }
+        }
+        this.cancelButtonClick();
+    }
+    private applyButtonClick(): void {
+        this.parent.updateDataSource(false);
+        this.parent.clonedDataSource = extend({}, this.parent.dataSource, null, true) as IDataOptions;
+        this.parent.clonedFieldList = extend({}, this.parent.pivotFieldList, null, true) as IFieldListOptions;
+    }
+    private cancelButtonClick(): void {
+        this.parent.
+            setProperties({ dataSource: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions }, true);
+        this.parent.engineModule.fieldList = extend({}, this.parent.clonedFieldList, null, true) as IFieldListOptions;
+        this.parent.updateDataSource(false, true);
     }
     private renderFieldListDialog(fieldListWrappper: HTMLElement): void {
         let toggleFieldList: HTMLElement = createElement('div', {
@@ -91,6 +196,40 @@ export class DialogRenderer {
         });
         this.parent.element.appendChild(toggleFieldList);
         if (this.parent.isAdaptive) {
+            let buttons: ButtonPropsModel[] = [{
+                click: this.showFieldListDialog.bind(this),
+                buttonModel: {
+                    cssClass: cls.ADAPTIVE_FIELD_LIST_BUTTON_CLASS + ' ' + cls.BUTTON_SMALL_CLASS + ' ' + cls.BUTTON_ROUND_CLASS,
+                    iconCss: cls.ICON + ' ' + cls.ADD_ICON_CLASS,
+                    isPrimary: true
+                }
+            }, {
+                click: this.showCalculatedField.bind(this),
+                buttonModel: {
+                    cssClass: cls.ADAPTIVE_CALCULATED_FIELD_BUTTON_CLASS +
+                        ' ' + cls.BUTTON_SMALL_CLASS + ' ' + cls.BUTTON_ROUND_CLASS + ' ' + cls.ICON_DISABLE,
+                    iconCss: cls.ICON + ' ' + cls.ADD_ICON_CLASS, enableRtl: this.parent.enableRtl,
+                    isPrimary: true
+                }
+            }, {
+                click: this.onDeferUpdateClick.bind(this),
+                buttonModel: {
+                    content: this.parent.localeObj.getConstant('apply'), enableRtl: this.parent.enableRtl,
+                    cssClass: cls.DEFER_APPLY_BUTTON + ' ' + cls.DEFER_UPDATE_BUTTON + ' ' + cls.BUTTON_FLAT_CLASS,
+                    isPrimary: true
+                }
+            }, {
+                click: this.onCloseFieldList.bind(this),
+                buttonModel: {
+                    cssClass: cls.DEFER_CANCEL_BUTTON + ' ' + cls.CANCEL_BUTTON_CLASS + ' ' + cls.BUTTON_FLAT_CLASS,
+                    content: this.parent.allowDeferLayoutUpdate ? this.parent.localeObj.getConstant('cancel') :
+                        this.parent.localeObj.getConstant('close'),
+                    enableRtl: this.parent.enableRtl
+                }
+            }];
+            if (!this.parent.allowDeferLayoutUpdate) {
+                buttons.splice(2, 1);
+            }
             this.fieldListDialog = new Dialog({
                 animationSettings: { effect: 'Zoom' },
                 content: this.parentElement,
@@ -103,28 +242,7 @@ export class DialogRenderer {
                 width: '100%',
                 height: '100%',
                 position: { X: 'center', Y: 'center' },
-                buttons: [{
-                    click: this.showFieldListDialog.bind(this),
-                    buttonModel: {
-                        cssClass: cls.ADAPTIVE_FIELD_LIST_BUTTON_CLASS + ' ' + cls.BUTTON_SMALL_CLASS + ' ' + cls.BUTTON_ROUND_CLASS,
-                        iconCss: cls.ICON + ' ' + cls.ADD_ICON_CLASS,
-                        isPrimary: true
-                    }
-                }, {
-                    click: this.showCalculatedField.bind(this),
-                    buttonModel: {
-                        cssClass: cls.ADAPTIVE_CALCULATED_FIELD_BUTTON_CLASS +
-                            ' ' + cls.BUTTON_SMALL_CLASS + ' ' + cls.BUTTON_ROUND_CLASS + ' ' + cls.ICON_DISABLE,
-                        iconCss: cls.ICON + ' ' + cls.ADD_ICON_CLASS,
-                        isPrimary: true
-                    }
-                }, {
-                    click: this.onCloseFieldList.bind(this),
-                    buttonModel: {
-                        content: this.parent.localeObj.getConstant('close'),
-                        cssClass: cls.CANCEL_BUTTON_CLASS,
-                    }
-                }],
+                buttons: buttons,
                 target: document.body,
                 close: this.removeFieldListIcon.bind(this)
             });
@@ -137,6 +255,7 @@ export class DialogRenderer {
             removeClass([footer.querySelector('.' + cls.ADAPTIVE_CALCULATED_FIELD_BUTTON_CLASS) as Element], cls.BUTTON_FLAT_CLASS);
             removeClass([footer.querySelector('.' + cls.ADAPTIVE_FIELD_LIST_BUTTON_CLASS)], cls.BUTTON_FLAT_CLASS);
         } else {
+            let template: string = this.createDeferUpdateButtons().outerHTML;
             let headerTemplate: string = '<div class=' + cls.TITLE_HEADER_CLASS + '><div class=' +
                 cls.TITLE_CONTENT_CLASS + '>' + this.parent.localeObj.getConstant('fieldList') + '</div></div>';
             this.fieldListDialog = new Dialog({
@@ -150,19 +269,14 @@ export class DialogRenderer {
                 enableRtl: this.parent.enableRtl,
                 width: this.parent.element.style.width,
                 position: { X: 'center', Y: this.parent.element.offsetTop },
-                buttons: [{
-                    click: this.onCloseFieldList.bind(this),
-                    buttonModel: {
-                        content: this.parent.localeObj.getConstant('close'), cssClass: cls.CANCEL_BUTTON_CLASS,
-                        isPrimary: true
-                    },
-                }],
+                footerTemplate: template,
                 closeOnEscape: true,
                 target: !isNullOrUndefined(this.parent.target) ? ((typeof this.parent.target) === 'string') ?
                     <HTMLElement>document.querySelector(<string>this.parent.target) : <HTMLElement>this.parent.target : document.body,
                 close: this.removeFieldListIcon.bind(this)
             });
             this.fieldListDialog.appendTo(fieldListWrappper);
+            this.renderDeferUpdateButtons();
             setStyleAttribute(fieldListWrappper.querySelector('#' + fieldListWrappper.id + '_title') as HTMLElement, { 'width': '100%' });
             fieldListWrappper.querySelector('.' + cls.TITLE_HEADER_CLASS).appendChild(this.createCalculatedButton());
         }
@@ -183,7 +297,15 @@ export class DialogRenderer {
             this.parent.pivotCommon.dataSourceUpdate.updateDataSource(fieldName, droppedClass, -1);
         }
         this.parent.axisFieldModule.render();
-        this.parent.updateDataSource(true);
+        if (!this.parent.allowDeferLayoutUpdate) {
+            this.parent.updateDataSource(true);
+        } else {
+            this.parent.triggerPopulateEvent();
+        }
+    }
+    private onDeferUpdateClick(): void {
+        this.parent.updateDataSource();
+        this.parent.dialogRenderer.fieldListDialog.hide();
     }
     private renderAdaptiveLayout(fieldListWrappper: HTMLElement): void {
         let layoutFooter: HTMLElement = createElement('div', {
@@ -320,6 +442,13 @@ export class DialogRenderer {
     }
 
     private onShowFieldList(): void {
+        if (this.parent.allowDeferLayoutUpdate) {
+            if (this.parent.isAdaptive) {
+                this.parent.axisFieldModule.render();
+            }
+            this.parent.clonedDataSource = extend({}, this.parent.dataSource, null, true) as IDataOptions;
+            this.parent.clonedFieldList = extend({}, this.parent.pivotFieldList, null, true) as IFieldListOptions;
+        }
         addClass([this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)], cls.ICON_HIDDEN);
         this.parent.dialogRenderer.fieldListDialog.show();
         this.parent.dialogRenderer.fieldListDialog.element.style.top =
@@ -328,6 +457,16 @@ export class DialogRenderer {
     }
 
     private onCloseFieldList(): void {
+        if (this.parent.allowDeferLayoutUpdate) {
+            this.parent.dataSource =
+                extend({}, (<{ [key: string]: Object }>this.parent.clonedDataSource).properties, null, true) as IDataOptions;
+            this.parent.pivotGridModule.engineModule = this.parent.engineModule;
+            this.parent.pivotGridModule.
+                setProperties({ dataSource: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions }, true);
+            this.parent.engineModule.fieldList = extend({}, this.parent.clonedFieldList, null, true) as IFieldListOptions;
+            this.parent.pivotGridModule.notify(events.uiUpdate, this);
+            this.parent.pivotGridModule.notify(events.contentReady, this);
+        }
         this.parent.dialogRenderer.fieldListDialog.hide();
     }
 

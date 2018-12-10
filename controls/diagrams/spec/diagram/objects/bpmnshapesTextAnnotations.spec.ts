@@ -106,9 +106,9 @@ describe('Diagram Control', () => {
             let wrapper: Container = (diagram.nodes[0] as NodeModel).wrapper.children[0] as Container;
 
             expect((Math.round(wrapper.children[10].offsetX) === 272 ||
-                Math.round(wrapper.children[10].offsetX) === 273) &&
-                (Math.round(wrapper.children[10].offsetY) === 544 ||
-                    Math.round(wrapper.children[10].offsetY) === 549)).toBe(true);
+                    Math.round(wrapper.children[10].offsetX) === 273) &&
+                    (Math.round(wrapper.children[10].offsetY) === 544 ||
+                        Math.round(wrapper.children[10].offsetY) === 549||Math.round(wrapper.children[10].offsetY) === 548)).toBe(true);
             expect(((wrapper.children[10] as Canvas).children[0] as PathElement).data).toBe('M20,10 L20,0 L0,0 L0,10');
             done();
         });

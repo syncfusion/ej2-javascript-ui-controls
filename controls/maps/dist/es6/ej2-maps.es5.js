@@ -262,24 +262,24 @@ var GeoLocation = /** @__PURE__ @class */ (function () {
  * @private
  */
 function measureText(text, font) {
-    var htmlObject = document.getElementById('mapsmeasuretext');
-    if (htmlObject === null) {
-        htmlObject = createElement('text', { id: 'mapsmeasuretext' });
-        document.body.appendChild(htmlObject);
+    var measureObject = document.getElementById('mapsmeasuretext');
+    if (measureObject === null) {
+        measureObject = createElement('text', { id: 'mapsmeasuretext' });
+        document.body.appendChild(measureObject);
     }
-    htmlObject.innerHTML = text;
-    htmlObject.style.position = 'absolute';
-    htmlObject.style.fontSize = font.size;
-    htmlObject.style.fontWeight = font.fontWeight;
-    htmlObject.style.fontStyle = font.fontStyle;
-    htmlObject.style.fontFamily = font.fontFamily;
-    htmlObject.style.visibility = 'hidden';
-    htmlObject.style.top = '-100';
-    htmlObject.style.left = '0';
-    htmlObject.style.whiteSpace = 'nowrap';
+    measureObject.innerHTML = text;
+    measureObject.style.position = 'absolute';
+    measureObject.style.fontSize = font.size;
+    measureObject.style.fontWeight = font.fontWeight;
+    measureObject.style.fontStyle = font.fontStyle;
+    measureObject.style.fontFamily = font.fontFamily;
+    measureObject.style.visibility = 'hidden';
+    measureObject.style.top = '-100';
+    measureObject.style.left = '0';
+    measureObject.style.whiteSpace = 'nowrap';
     // For bootstrap line height issue
-    htmlObject.style.lineHeight = 'normal';
-    return new Size(htmlObject.clientWidth, htmlObject.clientHeight);
+    measureObject.style.lineHeight = 'normal';
+    return new Size(measureObject.clientWidth, measureObject.clientHeight);
 }
 /**
  * Internal use of text options
@@ -291,11 +291,11 @@ var TextOption = /** @__PURE__ @class */ (function () {
         this.transform = '';
         this.baseLine = 'auto';
         this.id = id;
-        this.x = x;
-        this.y = y;
-        this.anchor = anchor;
         this.text = text;
         this.transform = transform;
+        this.anchor = anchor;
+        this.x = x;
+        this.y = y;
         this.baseLine = baseLine;
     }
     return TextOption;
@@ -315,6 +315,15 @@ var PathOption = /** @__PURE__ @class */ (function () {
         this.d = d;
     }
     return PathOption;
+}());
+/** @private */
+var ColorValue = /** @__PURE__ @class */ (function () {
+    function ColorValue(r, g, b) {
+        this.r = r;
+        this.g = g;
+        this.b = b;
+    }
+    return ColorValue;
 }());
 /**
  * Internal use of rectangle options
@@ -460,23 +469,23 @@ var PatternOptions = /** @__PURE__ @class */ (function () {
  * Internal rendering of text
  * @private
  */
-function renderTextElement(options, font, color, parent, isMinus) {
+function renderTextElement(option, style, color, parent, isMinus) {
     if (isMinus === void 0) { isMinus = false; }
     var renderOptions = {
-        'id': options.id,
-        'x': options.x,
-        'y': options.y,
+        'id': option.id,
+        'x': option.x,
+        'y': option.y,
         'fill': color,
-        'font-size': font.size,
-        'font-style': font.fontStyle,
-        'font-family': font.fontFamily,
-        'font-weight': font.fontWeight,
-        'text-anchor': options.anchor,
-        'transform': options.transform,
-        'opacity': font.opacity,
-        'dominant-baseline': options.baseLine
+        'font-size': style.size,
+        'font-style': style.fontStyle,
+        'font-family': style.fontFamily,
+        'font-weight': style.fontWeight,
+        'text-anchor': option.anchor,
+        'transform': option.transform,
+        'opacity': style.opacity,
+        'dominant-baseline': option.baseLine
     };
-    var text = typeof options.text === 'string' ? options.text : isMinus ? options.text[options.text.length - 1] : options.text[0];
+    var text = typeof option.text === 'string' ? option.text : isMinus ? option.text[option.text.length - 1] : option.text[0];
     var tspanElement;
     var renderer = new SvgRenderer('');
     var height;
@@ -488,13 +497,13 @@ function renderTextElement(options, font, color, parent, isMinus) {
     htmlObject.style['-khtml-user-select'] = 'none';
     htmlObject.style['-ms-user-select'] = 'none';
     htmlObject.style['-o-user-select'] = 'none';
-    if (typeof options.text !== 'string' && options.text.length > 1) {
-        for (var i = 1, len = options.text.length; i < len; i++) {
-            height = (measureText(options.text[i], font).height);
+    if (typeof option.text !== 'string' && option.text.length > 1) {
+        for (var i = 1, len = option.text.length; i < len; i++) {
+            height = (measureText(option.text[i], style).height);
             tspanElement = renderer.createTSpan({
-                'x': options.x, 'id': options.id,
-                'y': (options.y) + ((isMinus) ? -(i * height) : (i * height))
-            }, isMinus ? options.text[options.text.length - (i + 1)] : options.text[i]);
+                'x': option.x, 'id': option.id,
+                'y': (option.y) + ((isMinus) ? -(i * height) : (i * height))
+            }, isMinus ? option.text[option.text.length - (i + 1)] : option.text[i]);
             htmlObject.appendChild(tspanElement);
         }
     }
@@ -740,8 +749,23 @@ function getFieldData(dataSource, fields) {
 function checkShapeDataFields(dataSource, properties, dataPath, propertyPath) {
     if (!(isNullOrUndefined(properties))) {
         for (var i = 0; i < dataSource.length; i++) {
-            if (dataSource[i][dataPath] === properties[propertyPath]) {
+            var shapePath = checkPropertyPath(dataSource[i][dataPath], propertyPath, properties);
+            if (dataSource[i][dataPath] === properties[shapePath]) {
                 return i;
+            }
+        }
+    }
+    return null;
+}
+function checkPropertyPath(shapeData, shapePropertyPath, shape) {
+    if (!isNullOrUndefined(shapeData) && !isNullOrUndefined(shape)) {
+        if (!isNullOrUndefined(shapePropertyPath)) {
+            var properties = (Object.prototype.toString.call(shapePropertyPath) === '[object Array]' ?
+                shapePropertyPath : [shapePropertyPath]);
+            for (var i = 0; i < properties.length; i++) {
+                if (shapeData === shape[properties[i]]) {
+                    return properties[i];
+                }
             }
         }
     }
@@ -1221,97 +1245,94 @@ function createTooltip(id, text, top, left, fontSize) {
 /** @private */
 function drawSymbol(location, shape, size, url, options) {
     var renderer = new SvgRenderer('');
-    var temp = calculateLegendShapes(location, size, shape, options, url);
+    var temp = renderLegendShape(location, size, shape, options, url);
     var htmlObject = renderer['draw' + temp.functionName](temp.renderOption);
     return htmlObject;
 }
 /** @private */
-function calculateLegendShapes(location, size, shape, options, url) {
-    var path;
+function renderLegendShape(location, size, shape, options, url) {
+    var renderPath;
     var functionName = 'Path';
-    var width = size.width;
-    var height = size.height;
-    var locX = location.x;
-    var locY = location.y;
-    var x = location.x + (-width / 2);
-    var y = location.y + (-height / 2);
+    var shapeWidth = size.width;
+    var shapeHeight = size.height;
+    var shapeX = location.x;
+    var shapeY = location.y;
+    var x = location.x + (-shapeWidth / 2);
+    var y = location.y + (-shapeHeight / 2);
     switch (shape) {
         case 'Circle':
         case 'Bubble':
             functionName = 'Ellipse';
-            merge(options, { 'rx': width / 2, 'ry': height / 2, 'cx': locX, 'cy': locY });
-            break;
-        case 'Star':
-            path = 'M ' + (location.x + size.width / 3) + ' ' + (location.y - size.height / 2) + ' L ' + (location.x - size.width / 2)
-                + ' ' + (location.y + size.height / 6) + ' L ' + (location.x + size.width / 2) + ' ' + (location.y + size.height / 6)
-                + ' L ' + (location.x - size.width / 3) + ' ' + (location.y - size.height / 2) + ' L ' + location.x + ' ' +
-                (location.y + size.height / 2) + ' L ' + (location.x + size.width / 3) + ' ' + (location.y - size.height / 2) + ' Z';
-            merge(options, { 'd': path });
-            break;
-        case 'Cross':
-            path = 'M' + ' ' + x + ' ' + locY + ' ' + 'L' + ' ' + (locX + (width / 2)) + ' ' + locY + ' ' +
-                'M' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + locX + ' ' +
-                (locY + (-height / 2));
-            merge(options, { 'd': path });
-            break;
-        case 'HorizontalLine':
-            path = 'M' + ' ' + x + ' ' + locY + ' ' + 'L' + ' ' + (locX + (width / 2)) + ' ' + locY;
-            merge(options, { 'd': path });
+            merge(options, { 'rx': shapeWidth / 2, 'ry': shapeHeight / 2, 'cx': shapeX, 'cy': shapeY });
             break;
         case 'VerticalLine':
-            path = 'M' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + locX + ' ' + (locY + (-height / 2));
-            merge(options, { 'd': path });
+            renderPath = 'M' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' + 'L' + ' ' + shapeX + ' '
+                + (shapeY + (-shapeHeight / 2));
+            merge(options, { 'd': renderPath });
             break;
         case 'Diamond':
-            path = 'M' + ' ' + x + ' ' + locY + ' ' +
-                'L' + ' ' + locX + ' ' + (locY + (-height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + locY + ' ' +
-                'L' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + locY + ' z';
-            merge(options, { 'd': path });
+            renderPath = 'M' + ' ' + x + ' ' + shapeY + ' ' +
+                'L' + ' ' + shapeX + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
+                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + shapeY + ' ' +
+                'L' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+                'L' + ' ' + x + ' ' + shapeY + ' z';
+            merge(options, { 'd': renderPath });
             break;
         case 'Rectangle':
-            path = 'M' + ' ' + x + ' ' + (locY + (-height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (-height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + (locY + (-height / 2)) + ' z';
-            merge(options, { 'd': path });
+            renderPath = 'M' + ' ' + x + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
+                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
+                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+                'L' + ' ' + x + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+                'L' + ' ' + x + ' ' + (shapeY + (-shapeHeight / 2)) + ' z';
+            merge(options, { 'd': renderPath });
             break;
         case 'Triangle':
-            path = 'M' + ' ' + x + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + locX + ' ' + (locY + (-height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + (locY + (height / 2)) + ' z';
-            merge(options, { 'd': path });
+            renderPath = 'M' + ' ' + x + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+                'L' + ' ' + shapeX + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
+                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+                'L' + ' ' + x + ' ' + (shapeY + (shapeHeight / 2)) + ' z';
+            merge(options, { 'd': renderPath });
             break;
         case 'InvertedTriangle':
-            path = 'M' + ' ' + (locX + (width / 2)) + ' ' + (locY - (height / 2)) + ' ' +
-                'L' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + (locX - (width / 2)) + ' ' + (locY - (height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY - (height / 2)) + ' z';
-            merge(options, { 'd': path });
+            renderPath = 'M' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY - (shapeHeight / 2)) + ' ' +
+                'L' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+                'L' + ' ' + (shapeX - (shapeWidth / 2)) + ' ' + (shapeY - (shapeHeight / 2)) + ' ' +
+                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY - (shapeHeight / 2)) + ' z';
+            merge(options, { 'd': renderPath });
             break;
         case 'Pentagon':
             var eq = 72;
             var xValue = void 0;
             var yValue = void 0;
             for (var i = 0; i <= 5; i++) {
-                xValue = (width / 2) * Math.cos((Math.PI / 180) * (i * eq));
-                yValue = (height / 2) * Math.sin((Math.PI / 180) * (i * eq));
+                xValue = (shapeWidth / 2) * Math.cos((Math.PI / 180) * (i * eq));
+                yValue = (shapeWidth / 2) * Math.sin((Math.PI / 180) * (i * eq));
                 if (i === 0) {
-                    path = 'M' + ' ' + (locX + xValue) + ' ' + (locY + yValue) + ' ';
+                    renderPath = 'M' + ' ' + (shapeX + xValue) + ' ' + (shapeY + yValue) + ' ';
                 }
                 else {
-                    path = path.concat('L' + ' ' + (locX + xValue) + ' ' + (locY + yValue) + ' ');
+                    renderPath = renderPath.concat('L' + ' ' + (shapeX + xValue) + ' ' + (shapeY + yValue) + ' ');
                 }
             }
-            path = path.concat('Z');
-            merge(options, { 'd': path });
+            renderPath = renderPath.concat('Z');
+            merge(options, { 'd': renderPath });
+            break;
+        case 'Star':
+            renderPath = 'M ' + (location.x + size.width / 3) + ' ' + (location.y - size.height / 2) + ' L ' + (location.x - size.width / 2)
+                + ' ' + (location.y + size.height / 6) + ' L ' + (location.x + size.width / 2) + ' ' + (location.y + size.height / 6)
+                + ' L ' + (location.x - size.width / 3) + ' ' + (location.y - size.height / 2) + ' L ' + location.x + ' ' +
+                (location.y + size.height / 2) + ' L ' + (location.x + size.width / 3) + ' ' + (location.y - size.height / 2) + ' Z';
+            merge(options, { 'd': renderPath });
+            break;
+        case 'Cross':
+            renderPath = 'M' + ' ' + x + ' ' + shapeY + ' ' + 'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + shapeY + ' ' +
+                'M' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' + 'L' + ' ' + shapeX + ' ' +
+                (shapeY + (-shapeHeight / 2));
+            merge(options, { 'd': renderPath });
             break;
         case 'Image':
             functionName = 'Image';
-            merge(options, { 'href': url, 'height': height, 'width': width, x: x, y: y });
+            merge(options, { 'href': url, 'height': shapeHeight, 'width': shapeWidth, x: x, y: y });
             break;
     }
     return { renderOption: options, functionName: functionName };
@@ -1756,6 +1777,52 @@ var HighContrastTheme;
         fontFamily: 'Roboto, Noto, Sans-serif'
     };
 })(HighContrastTheme || (HighContrastTheme = {}));
+/**
+ * Dark Theme configuration
+ */
+var DarkTheme;
+(function (DarkTheme) {
+    /** @private */
+    DarkTheme.mapsTitleFont = {
+        fontFamily: 'Roboto, Noto, Sans-serif',
+        fontWeight: 'Medium',
+        size: '14px',
+        fontStyle: 'Medium',
+        color: '#FFFFFF'
+    };
+    /** @private */
+    DarkTheme.mapsSubTitleFont = {
+        size: '13px',
+        color: '#FFFFFF',
+        fontWeight: 'Medium',
+        fontFamily: 'Roboto, Noto, Sans-serif',
+        fontStyle: 'Medium',
+    };
+    /** @private */
+    DarkTheme.tooltipLabelFont = {
+        size: '12px',
+        color: '#282727',
+        fontWeight: 'Regular',
+        fontFamily: 'Roboto',
+        fontStyle: 'Regular',
+    };
+    /** @private */
+    DarkTheme.legendTitleFont = {
+        size: '14px',
+        fontWeight: 'Regular',
+        color: '#FFFFFF',
+        fontStyle: 'Regular',
+        fontFamily: 'Roboto, Noto, Sans-serif'
+    };
+    /** @private */
+    DarkTheme.legendLabelFont = {
+        size: '13px',
+        fontFamily: 'Roboto, Noto, Sans-serif',
+        fontWeight: 'Medium',
+        color: '#DADADA',
+        fontStyle: 'Medium',
+    };
+})(DarkTheme || (DarkTheme = {}));
 
 var __extends$2 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1948,7 +2015,16 @@ var ColorMappingSettings = /** @__PURE__ @class */ (function (_super) {
     ], ColorMappingSettings.prototype, "color", void 0);
     __decorate$1([
         Property(null)
+    ], ColorMappingSettings.prototype, "minOpacity", void 0);
+    __decorate$1([
+        Property(null)
+    ], ColorMappingSettings.prototype, "maxOpacity", void 0);
+    __decorate$1([
+        Property(null)
     ], ColorMappingSettings.prototype, "label", void 0);
+    __decorate$1([
+        Property(true)
+    ], ColorMappingSettings.prototype, "showLegend", void 0);
     return ColorMappingSettings;
 }(ChildProperty));
 /**
@@ -2280,8 +2356,20 @@ var LegendSettings = /** @__PURE__ @class */ (function (_super) {
         Property(null)
     ], LegendSettings.prototype, "fill", void 0);
     __decorate$1([
+        Property(1)
+    ], LegendSettings.prototype, "opacity", void 0);
+    __decorate$1([
         Property('Default')
     ], LegendSettings.prototype, "mode", void 0);
+    __decorate$1([
+        Property(null)
+    ], LegendSettings.prototype, "showLegendPath", void 0);
+    __decorate$1([
+        Property(null)
+    ], LegendSettings.prototype, "valuePath", void 0);
+    __decorate$1([
+        Property(false)
+    ], LegendSettings.prototype, "removeDuplicateLegend", void 0);
     return LegendSettings;
 }(ChildProperty));
 /**
@@ -2679,6 +2767,18 @@ var itemHighlight = 'itemHighlight';
  * Specifies maps beforePrint event name
  */
 var beforePrint = 'beforePrint';
+/**
+ * Specifies the map zoom in event name
+ */
+var zoomIn = 'zoomIn';
+/**
+ * Specifies the map zoom out event name
+ */
+var zoomOut = 'zoomOut';
+/**
+ * Specifies the map pan event name
+ */
+var pan = 'pan';
 
 /**
  * Bing map src doc
@@ -2735,14 +2835,187 @@ var ColorMapping = /** @__PURE__ @class */ (function () {
             return null;
         }
         var fill = '';
+        var opacity;
+        var gradientFill;
         for (var _i = 0, colorMapping_1 = colorMapping; _i < colorMapping_1.length; _i++) {
             var colorMap = colorMapping_1[_i];
-            if ((colorMap.from && colorMap.to && (colorValue >= colorMap.from && colorValue <= colorMap.to)) ||
+            if ((!isNullOrUndefined(colorMap.from) && !isNullOrUndefined(colorMap.to)
+                && (colorValue >= colorMap.from && colorValue <= colorMap.to)) ||
                 (colorMap.value === equalValue)) {
-                fill = colorMap.color;
+                if (Object.prototype.toString.call(colorMap.color) === '[object Array]') {
+                    if (!isNullOrUndefined(colorMap.value)) {
+                        fill = colorMap.color[0];
+                    }
+                    else {
+                        gradientFill = this.getColor(colorMap, colorValue);
+                        fill = gradientFill;
+                    }
+                }
+                else {
+                    fill = colorMap.color;
+                }
+            }
+            if (((colorValue >= colorMap.from && colorValue <= colorMap.to) || (colorMap.value === equalValue))
+                && (!isNullOrUndefined(colorMap.minOpacity) && !isNullOrUndefined(colorMap.maxOpacity) && fill)) {
+                opacity = this.deSaturationColor(colorMap, fill, colorValue, equalValue);
+            }
+            if ((fill === '' || isNullOrUndefined(fill)) && isNullOrUndefined(colorMap.from) && isNullOrUndefined(colorMap.to)
+                && isNullOrUndefined(colorMap.minOpacity) && isNullOrUndefined(colorMap.maxOpacity) && isNullOrUndefined(colorMap.value)) {
+                fill = Object.prototype.toString.call(colorMap.color) === '[object Array]' ? colorMap.color[0] : colorMap.color;
             }
         }
-        return fill || ((!colorMapping.length) ? equalValue : null);
+        return { fill: fill || ((!colorMapping.length) ? equalValue : null), opacity: opacity };
+    };
+    ColorMapping.prototype.deSaturationColor = function (colorMapping, color, rangeValue, equalValue) {
+        var opacity = 1;
+        if (((rangeValue >= colorMapping.from && rangeValue <= colorMapping.to) || colorMapping.value === equalValue)) {
+            var ratio = !isNaN(rangeValue) ? (rangeValue - colorMapping.from) / (colorMapping.to - colorMapping.from) :
+                colorMapping.from / (colorMapping.to - colorMapping.from);
+            opacity = (ratio * (colorMapping.maxOpacity - colorMapping.minOpacity)) + colorMapping.minOpacity;
+        }
+        return opacity;
+    };
+    ColorMapping.prototype.rgbToHex = function (r, g, b) {
+        return '#' + this.componentToHex(r) + this.componentToHex(g) + this.componentToHex(b);
+    };
+    ColorMapping.prototype.componentToHex = function (value) {
+        var hex = value.toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+    };
+    ColorMapping.prototype.getColor = function (colorMap, value) {
+        var color = '';
+        var rbg;
+        if (Number(value) === colorMap.from) {
+            color = colorMap.color[0];
+        }
+        else if (Number(value) === colorMap.to) {
+            color = colorMap.color[colorMap.color.length - 1];
+        }
+        else {
+            rbg = this.getGradientColor(Number(value), colorMap);
+            color = this.rgbToHex(rbg.r, rbg.g, rbg.b);
+        }
+        return color;
+    };
+    /* tslint:disable-next-line:max-func-body-length */
+    /* tslint:disable:no-string-literal */
+    ColorMapping.prototype.getGradientColor = function (value, colorMap) {
+        var previousOffset = colorMap.from;
+        var nextOffset = colorMap.to;
+        var percent = 0;
+        var full = nextOffset - previousOffset;
+        var midColor;
+        percent = (value - previousOffset) / full;
+        var previousColor;
+        var nextColor;
+        if (colorMap.color.length <= 2) {
+            previousColor = colorMap.color[0].charAt(0) === '#' ? colorMap.color[0] : this._colorNameToHex(colorMap.color[0]);
+            nextColor = colorMap.color[colorMap.color.length - 1].charAt(0) === '#' ?
+                colorMap.color[colorMap.color.length - 1] : this._colorNameToHex(colorMap.color[colorMap.color.length - 1]);
+        }
+        else {
+            previousColor = colorMap.color[0].charAt(0) === '#' ? colorMap.color[0] : this._colorNameToHex(colorMap.color[0]);
+            nextColor = colorMap.color[colorMap.color.length - 1].charAt(0) === '#' ?
+                colorMap.color[colorMap.color.length - 1] : this._colorNameToHex(colorMap.color[colorMap.color.length - 1]);
+            var a = full / (colorMap.color.length - 1);
+            var b = void 0;
+            var c = void 0;
+            var length_1 = colorMap.color.length - 1;
+            var splitColorValueOffset = [];
+            var splitColor = {};
+            for (var j = 1; j < length_1; j++) {
+                c = j * a;
+                b = previousOffset + c;
+                splitColor = { b: b, color: colorMap.color[j] };
+                splitColorValueOffset.push(splitColor);
+            }
+            for (var i = 0; i < splitColorValueOffset.length; i++) {
+                if (previousOffset <= value && value <= splitColorValueOffset[i]['b'] && i === 0) {
+                    midColor = splitColorValueOffset[i]['color'].charAt(0) === '#' ?
+                        splitColorValueOffset[i]['color'] : this._colorNameToHex(splitColorValueOffset[i]['color']);
+                    nextColor = midColor;
+                    percent = value < splitColorValueOffset[i]['b'] ? 1 - Math.abs((value - splitColorValueOffset[i]['b']) / a)
+                        : (value - splitColorValueOffset[i]['b']) / a;
+                }
+                else if (splitColorValueOffset[i]['b'] <= value && value <= nextOffset && i === (splitColorValueOffset.length - 1)) {
+                    midColor = splitColorValueOffset[i]['color'].charAt(0) === '#' ?
+                        splitColorValueOffset[i]['color'] : this._colorNameToHex(splitColorValueOffset[i]['color']);
+                    previousColor = midColor;
+                    percent = value < splitColorValueOffset[i]['b'] ?
+                        1 - Math.abs((value - splitColorValueOffset[i]['b']) / a) : (value - splitColorValueOffset[i]['b']) / a;
+                }
+                if (i !== splitColorValueOffset.length - 1 && i < splitColorValueOffset.length) {
+                    if (splitColorValueOffset[i]['b'] <= value && value <= splitColorValueOffset[i + 1]['b']) {
+                        midColor = splitColorValueOffset[i]['color'].charAt(0) === '#' ?
+                            splitColorValueOffset[i]['color'] : this._colorNameToHex(splitColorValueOffset[i]['color']);
+                        previousColor = midColor;
+                        nextColor = splitColorValueOffset[i + 1]['color'].charAt(0) === '#' ?
+                            splitColorValueOffset[i + 1]['color'] : this._colorNameToHex(splitColorValueOffset[i + 1]['color']);
+                        percent = Math.abs((value - splitColorValueOffset[i + 1]['b'])) / a;
+                    }
+                }
+            }
+        }
+        return this.getPercentageColor(percent, previousColor, nextColor);
+    };
+    ColorMapping.prototype.getPercentageColor = function (percent, previous, next) {
+        var nextColor = next.split('#')[1];
+        var prevColor = previous.split('#')[1];
+        var r = this.getPercentage(percent, parseInt(prevColor.substr(0, 2), 16), parseInt(nextColor.substr(0, 2), 16));
+        var g = this.getPercentage(percent, parseInt(prevColor.substr(2, 2), 16), parseInt(nextColor.substr(2, 2), 16));
+        var b = this.getPercentage(percent, parseInt(prevColor.substr(4, 2), 16), parseInt(nextColor.substr(4, 2), 16));
+        return new ColorValue(r, g, b);
+    };
+    ColorMapping.prototype.getPercentage = function (percent, previous, next) {
+        var full = next - previous;
+        return Math.round((previous + (full * percent)));
+    };
+    ColorMapping.prototype._colorNameToHex = function (color) {
+        var colors = {
+            'aliceblue': '#f0f8ff', 'antiquewhite': '#faebd7', 'aqua': '#00ffff', 'aquamarine': '#7fffd4', 'azure': '#f0ffff',
+            'beige': '#f5f5dc', 'bisque': '#ffe4c4', 'black': '#000000', 'blanchedalmond': '#ffebcd', 'blue': '#0000ff',
+            'blueviolet': '#8a2be2', 'brown': '#a52a2a', 'burlywood': '#deb887',
+            'cadetblue': '#5f9ea0', 'chartreuse': '#7fff00', 'chocolate': '#d2691e', 'coral': '#ff7f50',
+            'cornflowerblue': '#6495ed', 'cornsilk': '#fff8dc', 'crimson': '#dc143c', 'cyan': '#00ffff',
+            'darkblue': '#00008b', 'darkcyan': '#008b8b', 'darkgoldenrod': '#b8860b', 'darkgray': '#a9a9a9', 'darkgreen': '#006400',
+            'darkkhaki': '#bdb76b', 'darkmagenta': '#8b008b', 'darkolivegreen': '#556b2f',
+            'darkorange': '#ff8c00', 'darkorchid': '#9932cc', 'darkred': '#8b0000', 'darksalmon': '#e9967a', 'darkseagreen': '#8fbc8f',
+            'darkslateblue': '#483d8b', 'darkslategray': '#2f4f4f', 'darkturquoise': '#00ced1',
+            'darkviolet': '#9400d3', 'deeppink': '#ff1493', 'deepskyblue': '#00bfff', 'dimgray': '#696969', 'dodgerblue': '#1e90ff',
+            'firebrick': '#b22222', 'floralwhite': '#fffaf0', 'forestgreen': '#228b22', 'fuchsia': '#ff00ff',
+            'gainsboro': '#dcdcdc', 'ghostwhite': '#f8f8ff', 'gold': '#ffd700', 'goldenrod': '#daa520', 'gray': '#808080',
+            'green': '#008000', 'greenyellow': '#adff2f',
+            'honeydew': '#f0fff0', 'hotpink': '#ff69b4',
+            'indianred ': '#cd5c5c', 'indigo ': '#4b0082', 'ivory': '#fffff0', 'khaki': '#f0e68c',
+            'lavender': '#e6e6fa', 'lavenderblush': '#fff0f5', 'lawngreen': '#7cfc00', 'lemonchiffon': '#fffacd', 'lightblue': '#add8e6',
+            'lightcoral': '#f08080', 'lightcyan': '#e0ffff', 'lightgoldenrodyellow': '#fafad2',
+            'lightgrey': '#d3d3d3', 'lightgreen': '#90ee90', 'lightpink': '#ffb6c1', 'lightsalmon': '#ffa07a', 'lightseagreen': '#20b2aa',
+            'lightskyblue': '#87cefa', 'lightslategray': '#778899', 'lightsteelblue': '#b0c4de',
+            'lightyellow': '#ffffe0', 'lime': '#00ff00', 'limegreen': '#32cd32', 'linen': '#faf0e6',
+            'magenta': '#ff00ff', 'maroon': '#800000', 'mediumaquamarine': '#66cdaa', 'mediumblue': '#0000cd', 'mediumorchid': '#ba55d3',
+            'mediumpurple': '#9370d8', 'mediumseagreen': '#3cb371', 'mediumslateblue': '#7b68ee',
+            'mediumspringgreen': '#00fa9a', 'mediumturquoise': '#48d1cc', 'mediumvioletred': '#c71585', 'midnightblue': '#191970',
+            'mintcream': '#f5fffa', 'mistyrose': '#ffe4e1', 'moccasin': '#ffe4b5',
+            'navajowhite': '#ffdead', 'navy': '#000080', 'orchid': '#da70d6', 'papayawhip': '#ffefd5',
+            'oldlace': '#fdf5e6', 'olive': '#808000', 'olivedrab': '#6b8e23', 'orange': '#ffa500', 'orangered': '#ff4500',
+            'palegoldenrod': '#eee8aa', 'palegreen': '#98fb98', 'paleturquoise': '#afeeee', 'palevioletred': '#d87093',
+            'peachpuff': '#ffdab9', 'peru': '#cd853f', 'pink': '#ffc0cb', 'plum': '#dda0dd', 'powderblue': '#b0e0e6', 'purple': '#800080',
+            'red': '#ff0000', 'rosybrown': '#bc8f8f', 'royalblue': '#4169e1',
+            'saddlebrown': '#8b4513', 'salmon': '#fa8072', 'sandybrown': '#f4a460', 'seagreen': '#2e8b57', 'seashell': '#fff5ee',
+            'sienna': '#a0522d', 'silver': '#c0c0c0', 'skyblue': '#87ceeb', 'slateblue': '#6a5acd',
+            'slategray': '#708090', 'snow': '#fffafa', 'springgreen': '#00ff7f', 'steelblue': '#4682b4',
+            'tan': '#d2b48c', 'teal': '#008080', 'thistle': '#d8bfd8', 'tomato': '#ff6347', 'turquoise': '#40e0d0',
+            'violet': '#ee82ee',
+            'wheat': '#f5deb3', 'white': '#ffffff', 'whitesmoke': '#f5f5f5',
+            'yellow': '#ffff00', 'yellowgreen': '#9acd32'
+        };
+        if (Object.prototype.toString.call(color) === '[object Array]') {
+            return color;
+        }
+        if (typeof colors[color.toLowerCase()] !== 'undefined') {
+            return colors[color.toLowerCase()];
+        }
+        return color;
     };
     return ColorMapping;
 }());
@@ -2800,7 +3073,7 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
         panel.mapObject.tileTranslatePoint = panel.panTileMap(panel.mapObject.availableSize.width, panel.mapObject.availableSize.height, center);
         panel.generateTiles(panel.mapObject.tileZoomLevel, panel.mapObject.tileTranslatePoint, bing);
         if (panel.mapObject.markerModule) {
-            panel.mapObject.markerModule.markerRender(panel.layerObject, layerIndex, panel.mapObject.tileZoomLevel);
+            panel.mapObject.markerModule.markerRender(panel.layerObject, layerIndex, panel.mapObject.tileZoomLevel, null);
         }
         if (panel.mapObject.navigationLineModule) {
             panel.layerObject.appendChild(panel.mapObject.navigationLineModule.renderNavigation(panel.currentLayer, panel.mapObject.tileZoomLevel, layerIndex));
@@ -2950,7 +3223,9 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
             var groupElement = void 0;
             var path = '';
             var points = '';
+            var getShapeColor_1 = void 0;
             var fill = (shapeSettings.autofill) ? colors[i % colors.length] : shapeSettings.fill;
+            var opacity = void 0;
             if (shapeSettings.colorValuePath !== null && !isNullOrUndefined(currentShapeData['property'])) {
                 k = checkShapeDataFields(this_1.currentLayer.dataSource, currentShapeData['property'], this_1.currentLayer.shapeDataPath, this_1.currentLayer.shapePropertyPath);
                 if (k !== null && shapeSettings.colorMapping.length === 0) {
@@ -2962,7 +3237,11 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                 }
             }
             var shapeID = this_1.mapObject.element.id + '_LayerIndex_' + layerIndex + '_ShapeIndex_' + i + '_dataIndex_' + k;
-            fill = this_1.getShapeColorMapping(this_1.currentLayer, currentShapeData['property'], fill);
+            getShapeColor_1 = this_1.getShapeColorMapping(this_1.currentLayer, currentShapeData['property'], fill);
+            fill = Object.prototype.toString.call(getShapeColor_1) === '[object Object]' && !isNullOrUndefined(getShapeColor_1['fill'])
+                ? getShapeColor_1['fill'] : fill;
+            opacity = (Object.prototype.toString.call(getShapeColor_1) === '[object Object]'
+                && !isNullOrUndefined(getShapeColor_1['opacity'])) ? getShapeColor_1['opacity'] : shapeSettings.opacity;
             var eventArgs = {
                 cancel: false, name: shapeRendering, index: i,
                 data: this_1.currentLayer.dataSource ? this_1.currentLayer.dataSource[k] : null, maps: this_1.mapObject,
@@ -3008,7 +3287,7 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                     }
                     path += ' z ';
                     if (path.length > 3) {
-                        pathOptions = new PathOption(shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, shapeSettings.opacity, shapeSettings.dashArray, path);
+                        pathOptions = new PathOption(shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, opacity, shapeSettings.dashArray, path);
                         pathEle = this_1.mapObject.renderer.drawPath(pathOptions);
                     }
                     break;
@@ -3016,23 +3295,33 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                     currentShapeData.map(function (lineData) {
                         points += lineData['point']['x'] + ' , ' + lineData['point']['y'] + ' ';
                     });
-                    polyLineOptions = new PolylineOption(shapeID, points, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, shapeSettings.opacity, shapeSettings.dashArray);
+                    polyLineOptions = new PolylineOption(shapeID, points, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, opacity, shapeSettings.dashArray);
                     pathEle = this_1.mapObject.renderer.drawPolyline(polyLineOptions);
                     break;
                 case 'Point':
                     var pointData = currentShapeData['point'];
-                    circleOptions = new CircleOption(shapeID, eventArgs.fill, eventArgs.border, shapeSettings.opacity, pointData['x'], pointData['y'], shapeSettings.circleRadius, null);
+                    circleOptions = new CircleOption(shapeID, eventArgs.fill, eventArgs.border, opacity, pointData['x'], pointData['y'], shapeSettings.circleRadius, null);
                     pathEle = this_1.mapObject.renderer.drawCircle(circleOptions);
                     break;
                 case 'Path':
                     path = currentShapeData['point'];
-                    pathOptions = new PathOption(shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, shapeSettings.opacity, shapeSettings.dashArray, path);
+                    pathOptions = new PathOption(shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, opacity, shapeSettings.dashArray, path);
                     pathEle = this_1.mapObject.renderer.drawPath(pathOptions);
                     break;
             }
             if (!isNullOrUndefined(pathEle)) {
+                var property = (Object.prototype.toString.call(this_1.currentLayer.shapePropertyPath) === '[object Array]' ?
+                    this_1.currentLayer.shapePropertyPath : [this_1.currentLayer.shapePropertyPath]);
+                // tslint:disable-next-line:align
+                var properties = void 0;
+                for (var j = 0; j < property.length; j++) {
+                    if (!isNullOrUndefined(currentShapeData['property'])) {
+                        properties = property[j];
+                        break;
+                    }
+                }
                 pathEle.setAttribute('aria-label', ((!isNullOrUndefined(currentShapeData['property'])) ?
-                    (currentShapeData['property'][this_1.currentLayer.shapePropertyPath]) : ''));
+                    (currentShapeData['property'][properties]) : ''));
                 pathEle.setAttribute('tabindex', (this_1.mapObject.tabIndex + i + 2).toString());
                 groupElement.appendChild(pathEle);
             }
@@ -3078,7 +3367,7 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
             _this.layerObject.appendChild(element);
         });
         if (this.mapObject.markerModule) {
-            this.mapObject.markerModule.markerRender(this.layerObject, layerIndex, this.currentFactor);
+            this.mapObject.markerModule.markerRender(this.layerObject, layerIndex, this.currentFactor, null);
         }
         this.translateLayerElements(this.layerObject, layerIndex);
         this.layerGroup.appendChild(this.layerObject);
@@ -3736,34 +4025,44 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
      */
     Maps.prototype.themeEffect = function () {
         this.setBackgroundValue(this.theme);
-        switch (this.theme) {
-            case 'Material':
+        var theme = this.theme.toLowerCase();
+        switch (theme) {
+            case 'highcontrastlight':
+            case 'material':
                 this.setTextStyle(Theme.mapsTitleFont, this.titleSettings.textStyle);
                 this.setTextStyle(Theme.mapsSubTitleFont, this.titleSettings.subtitleSettings.textStyle);
                 this.setTextStyle(Theme.legendLabelFont, this.legendSettings.textStyle);
                 this.setTextStyle(Theme.legendTitleFont, this.legendSettings.textStyle);
                 this.setLabelFont(this.layers, Theme.dataLabelFont);
                 break;
-            case 'Bootstrap':
+            case 'bootstrap':
                 this.setTextStyle(BootstrapTheme.mapsTitleFont, this.titleSettings.textStyle);
                 this.setTextStyle(BootstrapTheme.mapsSubTitleFont, this.titleSettings.subtitleSettings.textStyle);
                 this.setTextStyle(BootstrapTheme.legendLabelFont, this.legendSettings.textStyle);
                 this.setTextStyle(BootstrapTheme.legendTitleFont, this.legendSettings.textStyle);
                 this.setLabelFont(this.layers, BootstrapTheme.dataLabelFont);
                 break;
-            case 'Fabric':
+            case 'fabric':
                 this.setTextStyle(FabricTheme.mapsTitleFont, this.titleSettings.textStyle);
                 this.setTextStyle(FabricTheme.mapsSubTitleFont, this.titleSettings.subtitleSettings.textStyle);
                 this.setTextStyle(FabricTheme.legendLabelFont, this.legendSettings.textStyle);
                 this.setTextStyle(FabricTheme.legendTitleFont, this.legendSettings.textStyle);
                 this.setLabelFont(this.layers, FabricTheme.dataLabelFont);
                 break;
-            case 'Highcontrast':
+            case 'highcontrast':
                 this.setTextStyle(HighContrastTheme.mapsTitleFont, this.titleSettings.textStyle);
                 this.setTextStyle(HighContrastTheme.mapsSubTitleFont, this.titleSettings.subtitleSettings.textStyle);
                 this.setTextStyle(HighContrastTheme.legendLabelFont, this.legendSettings.textStyle);
                 this.setTextStyle(HighContrastTheme.legendTitleFont, this.legendSettings.textStyle);
                 this.setLabelFont(this.layers, HighContrastTheme.dataLabelFont);
+                break;
+            case 'materialdark':
+            case 'bootstrapdark':
+            case 'fabricdark':
+                this.setTextStyle(DarkTheme.mapsTitleFont, this.titleSettings.textStyle);
+                this.setTextStyle(DarkTheme.mapsSubTitleFont, this.titleSettings.subtitleSettings.textStyle);
+                this.setTextStyle(DarkTheme.legendLabelFont, this.legendSettings.textStyle);
+                this.setTextStyle(DarkTheme.legendTitleFont, this.legendSettings.textStyle);
                 break;
         }
     };
@@ -3772,10 +4071,12 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
      * @param theme based on theme background colors will change.
      */
     Maps.prototype.setBackgroundValue = function (theme) {
-        var color = theme === 'Highcontrast' ? '#000000' : '#FFFFFF';
+        var color = (theme.toLowerCase().indexOf('dark') > -1 || theme.toLowerCase() === 'highcontrast') ?
+            '#000000' : '#FFFFFF';
         this.background = this.background ? this.background : color;
         this.mapsArea.background = this.mapsArea.background ? this.mapsArea.background : color;
-        color = theme !== 'Highcontrast' ? '#737373' : '#FFFFFF';
+        color = (theme.toLowerCase().indexOf('dark') > -1 || theme.toLowerCase() === 'highcontrast') ?
+            '#FFFFFF' : '#737373';
         this.zoomSettings.color = (this.zoomSettings.color) ? this.zoomSettings.color : color;
     };
     /**
@@ -3881,6 +4182,17 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         }
         this.mapLayerPanel.measureLayerPanel();
         this.element.appendChild(this.svgObject);
+        if (!isNullOrUndefined(document.getElementById(this.element.id + '_tile_parent'))) {
+            var svg = this.svgObject.getBoundingClientRect();
+            var tile = document.getElementById(this.element.id + '_tile_parent').getBoundingClientRect();
+            var bottom = svg.bottom - tile.bottom;
+            var left = parseFloat(document.getElementById(this.element.id + '_tile_parent').style.left);
+            document.getElementById(this.element.id + '_tile_parent').style.left = (tile.left < this.element.getBoundingClientRect().left ?
+                left + this.margin.right + Math.abs(tile.left - this.element.getBoundingClientRect().left) : 0) + 'px';
+            var top_1 = parseFloat(document.getElementById(this.element.id + '_tile_parent').style.top);
+            var value = (bottom <= 10) ? top_1 : (top_1 * 2);
+            document.getElementById(this.element.id + '_tile_parent').style.top = value + 'px';
+        }
         //this.setSecondaryElementPosition();
         this.arrangeTemplate();
         if (this.annotationsModule) {
@@ -4004,10 +4316,10 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
             var elementRect = this.element.getBoundingClientRect();
             var parentRect = this.element.parentElement.getBoundingClientRect();
             var left = Math.abs(elementRect.left - parentRect.left);
-            var top_1 = Math.abs(elementRect.top - parentRect.top);
+            var top_2 = Math.abs(elementRect.top - parentRect.top);
             var ele = createElement('div', {
                 id: this.element.id + '_tile_parent', styles: 'position: absolute; left: ' +
-                    (this.mapAreaRect.x + left) + 'px; top: ' + (this.mapAreaRect.y + top_1 + padding) + 'px; height: ' +
+                    (this.mapAreaRect.x + left) + 'px; top: ' + (this.mapAreaRect.y + top_2 + padding) + 'px; height: ' +
                     (this.mapAreaRect.height) + 'px; width: '
                     + (this.mapAreaRect.width) + 'px; overflow: hidden;'
             });
@@ -4137,6 +4449,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         EventHandler.add(this.element, Browser.touchStartEvent, this.mouseDownOnMap, this);
         EventHandler.add(this.element, Browser.touchMoveEvent, this.mouseMoveOnMap, this);
         EventHandler.add(this.element, Browser.touchEndEvent, this.mouseEndOnMap, this);
+        EventHandler.add(this.element, 'pointerleave mouseleave', this.mouseLeaveOnMap, this);
         //  EventHandler.add(this.element, cancelEvent, this.mouseLeaveOnMap, this);
         window.addEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.mapsOnResize.bind(this));
     };
@@ -4151,8 +4464,15 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         EventHandler.remove(this.element, Browser.touchStartEvent, this.mouseDownOnMap);
         EventHandler.remove(this.element, Browser.touchMoveEvent, this.mouseMoveOnMap);
         EventHandler.remove(this.element, Browser.touchEndEvent, this.mouseEndOnMap);
+        EventHandler.remove(this.element, 'pointerleave mouseleave', this.mouseLeaveOnMap);
         //EventHandler.remove(this.element, cancelEvent, this.mouseLeaveOnMap);
         window.removeEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.mapsOnResize);
+    };
+    Maps.prototype.mouseLeaveOnMap = function (e) {
+        if (document.getElementsByClassName('highlightMapStyle').length > 0) {
+            this.legendModule.removeShapeHighlightCollection();
+            removeClass(document.getElementsByClassName('highlightMapStyle')[0]);
+        }
     };
     /**
      * To handle the click event for the maps.
@@ -4183,6 +4503,8 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
      *
      */
     Maps.prototype.mouseEndOnMap = function (e) {
+        var targetEle = e.target;
+        var targetId = targetEle.id;
         var pageX;
         var pageY;
         var target;
@@ -4201,6 +4523,10 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
             pageX = e.pageX;
             pageY = e.pageY;
             target = e.target;
+        }
+        if (targetEle.id.indexOf('ShapeIndex') !== -1) {
+            var layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
+            triggerShapeEvent(targetId, this.layers[layerIndex].selectionSettings, this, shapeSelected);
         }
         if (this.isTouch) {
             this.titleTooltip(e, pageX, pageY, true);
@@ -4288,36 +4614,89 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         }
         return false;
     };
+    /**
+     * To zoom the map by specifies the center position
+     * @param centerPosition
+     * @param zoomFactor
+     */
     Maps.prototype.zoomByPosition = function (centerPosition, zoomFactor) {
-        var lattitude = centerPosition.latitude;
-        var longitude = centerPosition.longitude;
         var factor = this.mapLayerPanel.calculateFactor(this.layersCollection[0]);
-        var position = convertGeoToPoint(lattitude, longitude, factor, this.layersCollection[0], this);
-        if (this.zoomModule) {
-            this.zoomModule.performZooming(position, zoomFactor, 'ZoomIn');
+        var position;
+        var size = this.mapAreaRect;
+        if (!isNullOrUndefined(centerPosition) && this.zoomModule) {
+            position = convertGeoToPoint(centerPosition.latitude, centerPosition.longitude, factor, this.layersCollection[0], this);
+            var mapRect = document.getElementById(this.element.id + '_Layer_Collections').getBoundingClientRect();
+            var svgRect = this.svgObject.getBoundingClientRect();
+            var xDiff = Math.abs(mapRect.left - svgRect.left) / this.scale;
+            var yDiff = Math.abs(mapRect.top - svgRect.top) / this.scale;
+            var x = this.translatePoint.x + xDiff;
+            var y = this.translatePoint.y + yDiff;
+            this.scale = zoomFactor;
+            this.translatePoint.x = ((mapRect.left < svgRect.left ? x : 0) + (size.width / 2) - (position.x * zoomFactor)) / zoomFactor;
+            this.translatePoint.y = ((mapRect.top < svgRect.top ? y : 0) + (size.height / 2) - (position.y * zoomFactor)) / zoomFactor;
+            this.zoomModule.applyTransform();
+        }
+        else if (this.zoomModule) {
+            position = { x: size.width / 2, y: size.height / 2 };
+            this.zoomModule.performZooming(position, zoomFactor, zoomFactor > this.scale ? 'ZoomIn' : 'ZoomOut');
         }
     };
     /**
-     * To add layers to maps
+     * To pan the map by specifies the direction
+     * @param direction
+     */
+    Maps.prototype.panByDirection = function (direction) {
+        var xDiff = 0;
+        var yDiff = 0;
+        switch (direction) {
+            case 'Left':
+                xDiff = -(this.mapAreaRect.width / 7);
+                break;
+            case 'Right':
+                xDiff = (this.mapAreaRect.width / 7);
+                break;
+            case 'Top':
+                yDiff = -(this.mapAreaRect.height / 7);
+                break;
+            case 'Bottom':
+                yDiff = (this.mapAreaRect.height / 7);
+                break;
+        }
+        if (this.zoomModule) {
+            this.zoomModule.panning(direction, xDiff, yDiff);
+        }
+    };
+    /**
+     * To add layer
+     * @param layer
      */
     Maps.prototype.addLayer = function (layer) {
         this.layers.push(new LayerSettings(this.layers[0], 'layers', layer));
         this.refresh();
     };
     /**
-     * To remove layers from maps
+     * To remove layer
+     * @param index
      */
     Maps.prototype.removeLayer = function (index) {
         this.layers.splice(index, 1);
         this.refresh();
     };
     /**
-     * To add marker to layers
+     * To add marker
+     * @param layerIndex
+     * @param marker
      */
     Maps.prototype.addMarker = function (layerIndex, marker) {
-        var currentMarker = this.layers[layerIndex].markerSettings;
+        var currentMarker = this.layersCollection[layerIndex].markerSettings;
         currentMarker.push(new MarkerSettings(currentMarker[0], 'markerSettings', marker));
-        this.refresh();
+        var layerEle = document.getElementById(this.element.id + '_LayerIndex_' + layerIndex);
+        if (this.markerModule && layerEle) {
+            this.markerModule.markerRender(layerEle, layerIndex, this.mapLayerPanel['currentFactor'], 'AddMarker');
+            if (marker.template) {
+                this.arrangeTemplate();
+            }
+        }
     };
     /**
      * Method to set culture for maps
@@ -4732,6 +5111,12 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], Maps.prototype, "annotationRendering", void 0);
+    __decorate([
+        Event()
+    ], Maps.prototype, "zoom", void 0);
+    __decorate([
+        Event()
+    ], Maps.prototype, "pan", void 0);
     Maps = __decorate([
         NotifyPropertyChanges
     ], Maps);
@@ -4760,13 +5145,18 @@ var Bubble = /** @__PURE__ @class */ (function () {
         var equalValue = shapeData[colorValuePath];
         var colorValue = Number(shapeData[colorValuePath]);
         var bubbleValue = Number(shapeData[bubbleSettings.valuePath]);
+        var opacity;
+        var bubbleColor;
         if (isNaN(bubbleValue) && isNaN(colorValue) && isNullOrUndefined(equalValue)) {
             return null;
         }
         var radius = this.getRatioOfBubble(bubbleSettings.minRadius, bubbleSettings.maxRadius, bubbleValue, range.min, range.max);
         var colorMapping = new ColorMapping(this.maps);
         var shapeColor = colorMapping.getColorByValue(bubbleSettings.colorMapping, colorValue, equalValue);
-        shapeColor = shapeColor ? shapeColor : color;
+        bubbleColor = (Object.prototype.toString.call(shapeColor) === '[object Object]' &&
+            !isNullOrUndefined(shapeColor['fill'])) ? shapeColor['fill'] : color;
+        opacity = (Object.prototype.toString.call(shapeColor) === '[object Object]' &&
+            !isNullOrUndefined(shapeColor['opacity'])) ? shapeColor['opacity'] : bubbleSettings.opacity;
         var shapePoints = [[]];
         var midIndex = 0;
         var pointsLength = 0;
@@ -4774,7 +5164,8 @@ var Bubble = /** @__PURE__ @class */ (function () {
         for (var i = 0, len = layerData.length; i < len; i++) {
             var shape = layerData[i];
             shape = shape['property'];
-            if (shapeData[layer.shapeDataPath] === shape[layer.shapePropertyPath]) {
+            var shapePath = checkPropertyPath(shapeData[layer.shapeDataPath], layer.shapePropertyPath, shape);
+            if (shapeData[layer.shapeDataPath] === shape[shapePath]) {
                 if (!layerData[i]['_isMultiPolygon']) {
                     shapePoints.push(this.getPoints(layerData[i], []));
                     currentLength = shapePoints[shapePoints.length - 1].length;
@@ -4801,7 +5192,7 @@ var Bubble = /** @__PURE__ @class */ (function () {
             var centerY = this.maps.projectionType === 'Mercator' ? center['y'] : (-center['y']);
             var eventArgs = {
                 cancel: false, name: bubbleRendering, border: bubbleSettings.border,
-                cx: center['x'], cy: centerY, data: shapeData, fill: shapeColor, maps: this.maps,
+                cx: center['x'], cy: centerY, data: shapeData, fill: bubbleColor, maps: this.maps,
                 radius: radius
             };
             this.maps.trigger(bubbleRendering, eventArgs);
@@ -4810,12 +5201,12 @@ var Bubble = /** @__PURE__ @class */ (function () {
             }
             var bubbleElement = void 0;
             if (bubbleSettings.bubbleType === 'Circle') {
-                var circle = new CircleOption(this.id, eventArgs.fill, eventArgs.border, bubbleSettings.opacity, 0, 0, eventArgs.radius, null);
+                var circle = new CircleOption(this.id, eventArgs.fill, eventArgs.border, opacity, 0, 0, eventArgs.radius, null);
                 bubbleElement = drawCircle(this.maps, circle, group);
             }
             else {
                 var y = this.maps.projectionType === 'Mercator' ? (eventArgs.cy - radius) : (eventArgs.cy + radius);
-                var rectangle = new RectOption(this.id, eventArgs.fill, eventArgs.border, bubbleSettings.opacity, new Rect(0, 0, radius * 2, radius * 2), 2, 2);
+                var rectangle = new RectOption(this.id, eventArgs.fill, eventArgs.border, opacity, new Rect(0, 0, radius * 2, radius * 2), 2, 2);
                 eventArgs.cx -= radius;
                 eventArgs.cy = y;
                 bubbleElement = drawRectangle(this.maps, rectangle, group);
@@ -4941,12 +5332,17 @@ var Marker = /** @__PURE__ @class */ (function () {
         this.trackElements = [];
     }
     /* tslint:disable:no-string-literal */
-    Marker.prototype.markerRender = function (layerElement, layerIndex, factor) {
+    Marker.prototype.markerRender = function (layerElement, layerIndex, factor, type) {
         var _this = this;
         var templateFn;
         var currentLayer = this.maps.layersCollection[layerIndex];
-        this.markerSVGObject = this.maps.renderer.createGroup({ id: this.maps.element.id + '_Markers_Group',
-            style: 'pointer-events: auto;' });
+        this.markerSVGObject = this.maps.renderer.createGroup({
+            id: this.maps.element.id + '_Markers_Group',
+            style: 'pointer-events: auto;'
+        });
+        if (document.getElementById(this.markerSVGObject.id)) {
+            document.getElementById(this.markerSVGObject.id).remove();
+        }
         var markerTemplateEle = createElement('div', {
             id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_Markers_Template_Group',
             className: 'template',
@@ -4956,6 +5352,9 @@ var Marker = /** @__PURE__ @class */ (function () {
                 'height:' + this.maps.mapAreaRect.height + 'px;' +
                 'width:' + this.maps.mapAreaRect.width + 'px;'
         });
+        if (document.getElementById(markerTemplateEle.id)) {
+            document.getElementById(markerTemplateEle.id).remove();
+        }
         currentLayer.markerSettings.map(function (markerSettings, markerIndex) {
             var markerData = markerSettings.dataSource;
             markerData.forEach(function (data, dataIndex) {
@@ -4975,8 +5374,8 @@ var Marker = /** @__PURE__ @class */ (function () {
                     var location_1 = (_this.maps.isTileMap) ? convertTileLatLongToPoint(new MapLocation(lng, lat), factor, _this.maps.tileTranslatePoint, true) : convertGeoToPoint(lat, lng, factor, currentLayer, _this.maps);
                     var animate$$1 = currentLayer.animationDuration !== 0 || isNullOrUndefined(_this.maps.zoomModule);
                     var translate = (_this.maps.isTileMap) ? new Object() : getTranslate(_this.maps, currentLayer, animate$$1);
-                    var scale = translate['scale'];
-                    var transPoint = translate['location'];
+                    var scale = type === 'AddMarker' ? _this.maps.scale : translate['scale'];
+                    var transPoint = type === 'AddMarker' ? _this.maps.translatePoint : translate['location'];
                     if (eventArgs.template) {
                         templateFn = getTemplateFunction(eventArgs.template);
                         if (templateFn && templateFn(_this.maps).length) {
@@ -5180,56 +5579,54 @@ var DataLabel = /** @__PURE__ @class */ (function () {
         var datasrcObj;
         var currentLength = 0;
         var location;
+        var shapeProperties = shape['properties'];
         var labelId = this.maps.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + index + '_LabelIndex_' + index;
         var textLocation = new Point(0, 0);
         /* tslint:disable:no-string-literal */
-        for (var i = 0, len = layerData.length; i < len; i++) {
-            var shapes = layerData[i];
-            shape = shapes['property'];
-            if (!isNullOrUndefined(shapes['property']) &&
-                (shapeData['properties'][layer.shapePropertyPath] === shape[layer.shapePropertyPath])) {
-                if (!layerData[i]['_isMultiPolygon']) {
-                    shapePoint.push(this.getPoint(layerData[i], []));
+        var shapes = layerData[index];
+        shape = shapes['property'];
+        var properties = (Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]' ?
+            layer.shapePropertyPath : [layer.shapePropertyPath]);
+        var propertyPath;
+        for (var j = 0; j < properties.length; j++) {
+            if (shapeProperties[properties[j]]) {
+                propertyPath = properties[j];
+                break;
+            }
+        }
+        datasrcObj = this.getDataLabel(layer.dataSource, labelpath, shapeData['properties'][propertyPath], layer.shapeDataPath);
+        if (!isNullOrUndefined(shapes['property']) && ((shapeProperties[labelpath]) || datasrcObj)) {
+            shapePoint = [[]];
+            if (!layerData[index]['_isMultiPolygon']) {
+                shapePoint.push(this.getPoint(layerData[index], []));
+                currentLength = shapePoint[shapePoint.length - 1].length;
+                if (pointsLength < currentLength) {
+                    pointsLength = currentLength;
+                    midIndex = shapePoint.length - 1;
+                }
+            }
+            else {
+                var layer_1 = layerData[index];
+                for (var j = 0; j < layer_1.length; j++) {
+                    shapePoint.push(this.getPoint(layer_1[j], []));
                     currentLength = shapePoint[shapePoint.length - 1].length;
                     if (pointsLength < currentLength) {
                         pointsLength = currentLength;
                         midIndex = shapePoint.length - 1;
                     }
                 }
-                else {
-                    var layer_1 = layerData[i];
-                    for (var j = 0; j < layer_1.length; j++) {
-                        shapePoint.push(this.getPoint(layer_1[j], []));
-                        currentLength = shapePoint[shapePoint.length - 1].length;
-                        if (pointsLength < currentLength) {
-                            pointsLength = currentLength;
-                            midIndex = shapePoint.length - 1;
-                        }
-                    }
-                }
             }
         }
-        if (!isNullOrUndefined(layer.dataSource) && layer.dataSource.length > 0) {
-            var localData = extend([], layer.dataSource, null, true);
-            datasrcObj = this.getDataLabel(localData, labelpath, shapeData['properties'][layer.shapePropertyPath], layer.shapeDataPath);
-            if (isNullOrUndefined(datasrcObj) || isNullOrUndefined(datasrcObj[labelpath])) {
-                text = undefined;
-            }
-            else {
-                datasrcObj[labelpath] = datasrcObj[labelpath];
-                text = datasrcObj[labelpath].toString();
-            }
-        }
-        else {
-            text = shapeData['properties'][labelpath] ? shapeData['properties'][labelpath].toString() : undefined;
-        }
+        text = (!isNullOrUndefined(datasrcObj)) ? datasrcObj[labelpath].toString() : shapeData['properties'][labelpath];
         location = findMidPointOfPolygon(shapePoint[midIndex]);
         if (!isNullOrUndefined(text) && !isNullOrUndefined(location)) {
             location['y'] = (this.maps.projectionType === 'Mercator') ? location['y'] : (-location['y']);
             if (!isNullOrUndefined(this.maps.format) && !isNaN(parseFloat(text))) {
-                text = Internalize(this.maps, parseFloat(text));
-                if (!isNullOrUndefined(datasrcObj)) {
-                    datasrcObj[labelpath] = text;
+                if (this.maps.useGroupingSeparator) {
+                    text = Internalize(this.maps, parseFloat(text));
+                    if (!isNullOrUndefined(datasrcObj)) {
+                        datasrcObj[labelpath] = text;
+                    }
                 }
             }
             var eventargs = {
@@ -5247,8 +5644,8 @@ var DataLabel = /** @__PURE__ @class */ (function () {
             var start = location['y'] - textSize['height'] / 4;
             var end = location['y'] + textSize['height'] / 4;
             position = filter(shapePoint[midIndex], startY, endY);
-            if (position.length > 5 && (!isNullOrUndefined(shapeData['geometry']) ? shapeData['geometry']['type'] !== 'MultiPolygon' :
-                shapeData['type'] !== 'MultiPolygon')) {
+            if (position.length > 5 && (shapeData['geometry']['type'] !== 'MultiPolygon') &&
+                (shapeData['type'] !== 'MultiPolygon')) {
                 var location1 = findMidPointOfPolygon(position);
                 location['x'] = location1['x'];
                 width = location1['rightMax']['x'] - location1['leftMax']['x'];
@@ -5501,11 +5898,13 @@ var NavigationLine = /** @__PURE__ @class */ (function () {
                         defElement.appendChild(markerEle);
                         navigationGroup.appendChild(defElement);
                     }
+                    angle = Math.abs(angle);
                     d = (angle === 0) ? 'M ' + point[j]['x'] + ',' + point[j]['y'] + 'L ' + point[j + 1]['x']
-                        + ',' + point[j + 1]['y'] + '' :
-                        'M ' + point[j]['x'] + ',' + point[j]['y'] + ' A ' + (angle * radius_1) + ' ' +
-                            (angle * radius_1) + ' ' + 0 + ',' + 0 + ',' + direction + ' , ' + point[j + 1]['x'] + ',' + point[j + 1]['y'] + ' ';
-                    pathOption = new PathOption(arcId_1, 'none', 2, color, 1, dashArray, d);
+                        + ',' + point[j + 1]['y'] + ' ' :
+                        'M ' + point[j]['x'] + ',' + point[j]['y'] + ' A ' + (radius_1 / 2 + (1 - angle) * radius_1 / (angle * 10)) +
+                            ' ' + (radius_1 / 2 + (1 - angle) * radius_1 / (angle * 10)) + ' ' + 0 + ',' + 0 + ','
+                            + direction + ' , ' + point[j + 1]['x'] + ',' + point[j + 1]['y'] + ' ';
+                    pathOption = new PathOption(arcId_1, 'none', width, color, 1, dashArray, d);
                     navigationEle = this.maps.renderer.drawPath(pathOption);
                     if (!isNullOrUndefined(arrowPosition)) {
                         (arrowPosition === 'Start') ? navigationEle.setAttribute('marker-start', startArrow)
@@ -5559,6 +5958,15 @@ var Legend = /** @__PURE__ @class */ (function () {
         this.widthIncrement = 0;
         this.textMaxWidth = 0;
         this.areaRect = new Rect(0, 0, 0, 0);
+        this.shapeHighlightCollection = [];
+        this.shapeSelectionCollection = [];
+        this.legendHighlightCollection = [];
+        this.legendSelectionCollection = [];
+        this.legendInteractiveGradient = [];
+        this.legendElement = null;
+        this.shapeElement = null;
+        this.shapeSelection = true;
+        this.legendSelection = true;
         this.maps = maps;
         this.addEventListener();
     }
@@ -5566,6 +5974,8 @@ var Legend = /** @__PURE__ @class */ (function () {
      * To calculate legend bounds and draw the legend shape and text.
      */
     Legend.prototype.renderLegend = function () {
+        this.defsElement = this.maps.renderer.createDefs();
+        this.maps.svgObject.appendChild(this.defsElement);
         this.calculateLegendBounds();
         this.drawLegend();
     };
@@ -5846,7 +6256,7 @@ var Legend = /** @__PURE__ @class */ (function () {
                 var textLocation = new Point(item['textX'], item['textY']);
                 eventArgs.fill = item['fill'];
                 map.trigger(legendRendering, eventArgs);
-                var rectOptions = new RectOption(itemId, eventArgs.fill, eventArgs.shapeBorder, 1, bounds);
+                var rectOptions = new RectOption(itemId, eventArgs.fill, eventArgs.shapeBorder, legend.opacity, bounds);
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'middle', item['text'], '', '');
                 renderTextElement(textOptions, textFont, textFont.color, this.legendGroup);
                 this.legendGroup.appendChild(render.drawRectangle(rectOptions));
@@ -5891,7 +6301,7 @@ var Legend = /** @__PURE__ @class */ (function () {
                 var shapeLocation = collection['Shape'];
                 var textLocation = collection['Text'];
                 var imageUrl = ((isNullOrUndefined(collection['ImageSrc'])) ? legend.shape : collection['ImageSrc']);
-                var renderOptions_1 = new PathOption(shapeId, eventArgs.fill, eventArgs.shapeBorder.width, eventArgs.shapeBorder.color, 1, '');
+                var renderOptions_1 = new PathOption(shapeId, eventArgs.fill, eventArgs.shapeBorder.width, eventArgs.shapeBorder.color, legend.opacity, '');
                 legendElement.appendChild(drawSymbol(shapeLocation, eventArgs.shape, shapeSize, collection['ImageSrc'], renderOptions_1));
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
                 renderTextElement(textOptions, legend.textStyle, legend.textStyle.color, legendElement);
@@ -5948,6 +6358,286 @@ var Legend = /** @__PURE__ @class */ (function () {
             this.renderLegendBorder();
         }
     };
+    // tslint:disable-next-line:max-func-body-length
+    Legend.prototype.legendHighLightAndSelection = function (targetElement, value) {
+        var shapeIndex;
+        var layerIndex;
+        var dataIndex;
+        var textEle;
+        var legend = this.maps.legendSettings;
+        textEle = legend.mode === 'Default' ? document.getElementById(targetElement.id.replace('Shape', 'Text')) :
+            document.getElementById(targetElement.id + '_Text');
+        var collection = this.maps.legendModule.legendCollection;
+        var length;
+        var selectLength = 0;
+        var interactProcess = true;
+        if (value === 'selection') {
+            this.shapeHighlightCollection = [];
+            if (this.legendSelectionCollection.length > 0) {
+                for (var k = 0; k < this.legendSelectionCollection.length; k++) {
+                    if (targetElement === this.legendSelectionCollection[k]['legendElement']) {
+                        interactProcess = false;
+                        this.removeLegendSelectionCollection();
+                        this.legendSelectionCollection.splice(k, 1);
+                        break;
+                    }
+                    else {
+                        this.removeLegendSelectionCollection();
+                        this.legendSelectionCollection.splice(k, 1);
+                    }
+                }
+            }
+        }
+        else {
+            if (this.legendSelectionCollection.length > 0) {
+                for (var k = 0; k < this.legendSelectionCollection.length; k++) {
+                    if ((targetElement.id.indexOf('_Legend_Shape') > -1 || targetElement.id.indexOf('_Legend_Index')) && targetElement ===
+                        this.legendSelectionCollection[k]['legendElement']) {
+                        interactProcess = false;
+                        break;
+                    }
+                    else {
+                        this.removeLegendHighlightCollection();
+                    }
+                }
+            }
+            this.removeLegendHighlightCollection();
+        }
+        if (interactProcess) {
+            for (var i = 0; i < collection.length; i++) {
+                if (textEle.textContent === collection[i]['text'] && collection[i]['data'].length > 0) {
+                    var layer = this.maps.layers[collection[i]['data'][0]['layerIndex']];
+                    var enable = (value === 'selection') ? layer.selectionSettings.enable : layer.highlightSettings.enable;
+                    var module = void 0;
+                    module = (value === 'selection') ? layer.selectionSettings : layer.highlightSettings;
+                    var data = collection[i]['data'];
+                    if (enable) {
+                        for (var j = 0; j < data.length; j++) {
+                            shapeIndex = data[j]['shapeIndex'];
+                            layerIndex = data[j]['layerIndex'];
+                            dataIndex = data[j]['dataIndex'];
+                            var shapeEle = document.getElementById(this.maps.element.id + '_LayerIndex_' +
+                                layerIndex + '_ShapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
+                            if (shapeEle !== null) {
+                                if (value === 'highlight' && this.shapeElement !== targetElement) {
+                                    this.setColor(shapeEle, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
+                                    this.setColor(targetElement, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
+                                    if (j === 0) {
+                                        this.legendHighlightCollection = [];
+                                        this.pushCollection(targetElement, this.legendHighlightCollection, collection[i]);
+                                    }
+                                    length = this.legendHighlightCollection.length;
+                                    this.legendHighlightCollection[length - 1]['MapShapeCollection']['Elements'].push(shapeEle);
+                                }
+                                else if (value === 'selection' && this.shapeSelection) {
+                                    this.setColor(targetElement, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
+                                    this.setColor(shapeEle, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
+                                    this.legendHighlightCollection = [];
+                                    if (j === 0) {
+                                        this.pushCollection(targetElement, this.legendSelectionCollection, collection[i]);
+                                    }
+                                    selectLength = this.legendSelectionCollection.length;
+                                    this.legendSelectionCollection[selectLength - 1]['MapShapeCollection']['Elements'].push(shapeEle);
+                                    this.legendElement = targetElement;
+                                    if (j === data.length - 1) {
+                                        this.legendSelection = false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    };
+    Legend.prototype.setColor = function (element, fill, opacity, borderColor, borderWidth) {
+        element.setAttribute('fill', fill);
+        element.setAttribute('opacity', opacity);
+        element.setAttribute('stroke', borderColor);
+        element.setAttribute('stroke-width', borderWidth);
+    };
+    Legend.prototype.pushCollection = function (targetElement, collection, oldElement) {
+        collection.push({
+            legendElement: targetElement, legendOldFill: oldElement['fill'], legendOldOpacity: oldElement['opacity'],
+            legendOldBorderColor: oldElement['borderColor'], legendOldBorderWidth: oldElement['borderWidth']
+        });
+        length = collection.length;
+        collection[length - 1]['MapShapeCollection'] = { Elements: [] };
+    };
+    Legend.prototype.removeLegend = function (collection) {
+        for (var i = 0; i < collection.length; i++) {
+            var item = collection[i];
+            this.setColor(item['legendElement'], item['legendOldFill'], item['legendOldOpacity'], item['legendOldBorderColor'], item['legendOldBorderWidth']);
+            var dataCount = item['MapShapeCollection']['Elements'].length;
+            for (var j = 0; j < dataCount; j++) {
+                this.setColor(item['MapShapeCollection']['Elements'][j], item['legendOldFill'], item['legendOldOpacity'], item['legendOldBorderColor'], item['legendOldBorderWidth']);
+            }
+        }
+    };
+    Legend.prototype.removeLegendHighlightCollection = function () {
+        if (this.legendHighlightCollection.length > 0) {
+            this.removeLegend(this.legendHighlightCollection);
+        }
+    };
+    Legend.prototype.removeLegendSelectionCollection = function () {
+        if (this.legendSelectionCollection.length > 0) {
+            this.removeLegend(this.legendSelectionCollection);
+            this.legendElement = null;
+            this.legendSelection = true;
+        }
+    };
+    Legend.prototype.removeShapeHighlightCollection = function () {
+        if (this.shapeHighlightCollection.length > 0) {
+            for (var i = 0; i < this.shapeHighlightCollection.length; i++) {
+                var item = this.shapeHighlightCollection[i];
+                var removeFill = true;
+                for (var j = 0; j < this.shapeSelectionCollection.length; j++) {
+                    if (this.shapeSelectionCollection[j]['legendElement'] === item['legendElement']) {
+                        removeFill = false;
+                    }
+                }
+                if (removeFill) {
+                    this.setColor(item['legendElement'], item['legendOldFill'], item['legendOldOpacity'], item['legendOldBorderColor'], item['legendOldBorderWidth']);
+                }
+            }
+        }
+    };
+    Legend.prototype.shapeHighLightAndSelection = function (targetElement, data, module, getValue, layerIndex) {
+        if (data !== undefined) {
+            var collection = this.maps.legendModule.legendCollection;
+            var index = this.legendIndexOnShape(data, layerIndex);
+            var text = collection[index]['text'];
+            var content = void 0;
+            var legendShape = void 0;
+            if (this.maps.legendSettings.mode === 'Default') {
+                content = document.getElementById(this.maps.element.id + '_Legend_Text_Index_' + index).textContent;
+                legendShape = document.getElementById(this.maps.element.id + '_Legend_Shape_Index_' + index);
+            }
+            else {
+                content = document.getElementById(this.maps.element.id + '_Legend_Index_' + index + '_Text').textContent;
+                legendShape = document.getElementById(this.maps.element.id + '_Legend_Index_' + index);
+            }
+            var shapeElement = this.shapeDataOnLegend(targetElement);
+            this.oldShapeElement = shapeElement['LegendEle'];
+            var length_1 = this.shapeSelectionCollection.length;
+            if (text === content) {
+                if (getValue === 'highlight' && shapeElement['LegendEle'] !== this.legendElement) {
+                    var selectionEle = this.isTargetSelected(shapeElement, this.shapeHighlightCollection);
+                    if (selectionEle === undefined || (selectionEle && !selectionEle['IsSelected'])) {
+                        this.pushCollection(legendShape, this.shapeHighlightCollection, collection[index]);
+                    }
+                    if (length_1 > 0) {
+                        for (var j = 0; j < length_1; j++) {
+                            if (shapeElement['LegendEle'] === this.shapeSelectionCollection[j]['legendElement']) {
+                                break;
+                            }
+                            else if (j === length_1 - 1) {
+                                this.removeShapeHighlightCollection();
+                                this.setColor(legendShape, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
+                            }
+                        }
+                    }
+                    else {
+                        this.removeShapeHighlightCollection();
+                        this.setColor(legendShape, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
+                    }
+                }
+                else if (getValue === 'selection') {
+                    var selectionEle = this.isTargetSelected(shapeElement, this.shapeSelectionCollection);
+                    if (length_1 > 0) {
+                        for (var j = 0; j < length_1; j++) {
+                            if (shapeElement['LegendEle'] !== this.shapeSelectionCollection[j]['legendElement']) {
+                                var element = this.shapeSelectionCollection[j];
+                                this.setColor(element['legendElement'], element['legendOldFill'], element['legendOldOpacity'], element['legendOldBorderColor'], element['legendOldBorderWidth']);
+                                this.shapeSelection = true;
+                                this.shapeElement = null;
+                            }
+                        }
+                    }
+                    if (selectionEle && (selectionEle['IsSelected'] && targetElement.getAttribute('class') === 'ShapeselectionMapStyle')) {
+                        var element = this.shapeSelectionCollection[selectionEle['SelectionIndex']];
+                        this.setColor(shapeElement['LegendEle'], element['legendOldFill'], element['legendOldOpacity'], element['legendOldBorderColor'], element['legendOldBorderWidth']);
+                        this.shapeSelectionCollection.splice(selectionEle['SelectionIndex'], 1);
+                        this.shapeSelection = true;
+                        this.shapeElement = null;
+                    }
+                    if (targetElement.getAttribute('class') !== 'ShapeselectionMapStyle' && this.legendSelection) {
+                        if (selectionEle === undefined || (selectionEle && !selectionEle['IsSelected'])) {
+                            this.pushCollection(legendShape, this.shapeSelectionCollection, collection[index]);
+                        }
+                        this.setColor(legendShape, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
+                        this.shapeElement = shapeElement['LegendEle'];
+                        this.shapeSelection = false;
+                    }
+                }
+                else if (document.getElementsByClassName('highlightMapStyle').length > 0) {
+                    this.removeShapeHighlightCollection();
+                    removeClass(document.getElementsByClassName('highlightMapStyle')[0]);
+                }
+            }
+        }
+        else {
+            this.removeShapeHighlightCollection();
+        }
+    };
+    Legend.prototype.isTargetSelected = function (target, collection) {
+        var selectEle;
+        for (var i = 0; i < collection.length; i++) {
+            if (target['LegendEle'] === collection[i]['legendElement']) {
+                selectEle = { IsSelected: true, SelectionIndex: i };
+            }
+        }
+        return selectEle;
+    };
+    Legend.prototype.legendIndexOnShape = function (data, index) {
+        var legendIndex;
+        var path = this.maps.layers[index].shapeDataPath;
+        var value = data[path];
+        var collection = this.maps.legendModule.legendCollection;
+        for (var i = 0; i < collection.length; i++) {
+            var dataValue = collection[i]['data'];
+            for (var j = 0; j < dataValue.length; j++) {
+                if (value === dataValue[j]['name']) {
+                    legendIndex = i;
+                }
+            }
+        }
+        return legendIndex;
+    };
+    Legend.prototype.shapeDataOnLegend = function (targetElement) {
+        var shapeIndex;
+        var layerIndex;
+        var dataIndex;
+        var collection = this.maps.legendModule.legendCollection;
+        var legend = this.maps.legendSettings;
+        for (var i = 0; i < collection.length; i++) {
+            var data = collection[i]['data'];
+            var process = false;
+            var elements = [];
+            var currentElement = { Elements: [] };
+            for (var j = 0; j < data.length; j++) {
+                shapeIndex = data[j]['shapeIndex'];
+                layerIndex = data[j]['layerIndex'];
+                dataIndex = data[j]['dataIndex'];
+                var shapeEle = document.getElementById(this.maps.element.id + '_LayerIndex_' +
+                    layerIndex + '_ShapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
+                if (targetElement === shapeEle) {
+                    process = true;
+                }
+                elements.push(shapeEle);
+            }
+            if (process) {
+                if (isNullOrUndefined(currentElement['LegendEle'])) {
+                    currentElement['LegendEle'] = legend.mode === 'Default' ?
+                        document.getElementById(this.maps.element.id + '_Legend_Shape_Index_' + i) :
+                        document.getElementById(this.maps.element.id + '_Legend_Index_' + i);
+                }
+                currentElement['Elements'] = elements;
+                return currentElement;
+            }
+        }
+        return null;
+    };
     Legend.prototype.renderLegendBorder = function () {
         var map = this.maps;
         var legend = map.legendSettings;
@@ -5960,7 +6650,7 @@ var Legend = /** @__PURE__ @class */ (function () {
         this.legendBorderRect = new Rect((this.legendItemRect.x - spacing), (this.legendItemRect.y - spacing - textSize.height), (this.legendItemRect.width) + (spacing * 2), (this.legendItemRect.height) + (spacing * 2) + textSize.height +
             (legend.mode === 'Interactive' ? 0 : (this.page !== 0) ? spacing : 0));
         if (legendTitle) {
-            textOptions = new TextOption(map.element.id + '_LegendTitle', (this.legendItemRect.x) + (this.legendItemRect.width / 2), this.legendItemRect.y - (textSize.height / 2), 'middle', trimTitle, '');
+            textOptions = new TextOption(map.element.id + '_LegendTitle', (this.legendItemRect.x) + (this.legendItemRect.width / 2), this.legendItemRect.y - (textSize.height / 2) - spacing / 2, 'middle', trimTitle, '');
             renderTextElement(textOptions, textStyle, textStyle.color, this.legendGroup);
         }
         var renderOptions = new RectOption(map.element.id + '_Legend_Border', legend.background, legend.border, 1, this.legendBorderRect, null, null, '', '');
@@ -6028,9 +6718,12 @@ var Legend = /** @__PURE__ @class */ (function () {
             var dataSource = marker.dataSource;
             var field = marker.legendText;
             var templateFn;
+            var isDuplicate;
             dataSource.forEach(function (data, dataIndex) {
                 var imageSrc = null;
-                if (marker.visible && (!isNullOrUndefined(data['latitude'])) && (!isNullOrUndefined(data['longitude']))) {
+                var showLegend = isNullOrUndefined(data[_this.maps.legendSettings.showLegendPath]) ? true :
+                    data[_this.maps.legendSettings.showLegendPath];
+                if (marker.visible && showLegend && (!isNullOrUndefined(data['latitude'])) && (!isNullOrUndefined(data['longitude']))) {
                     if (marker.template) {
                         templateFn = getTemplateFunction(marker.template);
                         var templateElement = templateFn(_this.maps);
@@ -6039,10 +6732,14 @@ var Legend = /** @__PURE__ @class */ (function () {
                         imageSrc = markerEle.querySelector('img').src;
                     }
                     var text = isNullOrUndefined(data[field]) ? '' : data[field];
-                    _this.legendCollection.push({
-                        layerIndex: layerIndex, markerIndex: markerIndex, dataIndex: dataIndex,
-                        fill: marker.fill, text: text, imageSrc: imageSrc
-                    });
+                    isDuplicate = _this.maps.legendSettings.removeDuplicateLegend ?
+                        _this.removeDuplicates(_this.legendCollection, text) : false;
+                    if (!isDuplicate) {
+                        _this.legendCollection.push({
+                            layerIndex: layerIndex, markerIndex: markerIndex, dataIndex: dataIndex,
+                            fill: marker.fill, text: text, imageSrc: imageSrc
+                        });
+                    }
                 }
             });
         });
@@ -6050,27 +6747,32 @@ var Legend = /** @__PURE__ @class */ (function () {
     Legend.prototype.getRangeLegendCollection = function (layerIndex, layerData, colorMapping, dataSource, dataPath, colorValuePath, propertyPath) {
         var _this = this;
         var legendText;
+        var legendIndex = 0;
         var fill = this.maps.legendSettings.fill;
+        var rangeData = [];
         var _loop_1 = function (colorMap) {
             if (!isNullOrUndefined(colorMap.from) && !isNullOrUndefined(colorMap.to)) {
                 legendText = !isNullOrUndefined(colorMap.label) ? colorMap.label : colorMap.from + ' - ' + colorMap.to;
-                var rangeData_1 = [];
+                rangeData = [];
                 var colorMapProcess_1 = false;
                 dataSource.forEach(function (data, dataIndex) {
                     var colorValue = parseFloat(data[colorValuePath]);
                     if (colorValue >= colorMap.from && colorValue <= colorMap.to) {
                         colorMapProcess_1 = true;
-                        rangeData_1.push(_this.getLegendData(layerIndex, dataIndex, data, dataPath, layerData, propertyPath, colorValue));
+                        rangeData.push(_this.getLegendData(layerIndex, dataIndex, data, dataPath, layerData, propertyPath, colorValue));
                     }
                 });
                 if (!colorMapProcess_1) {
-                    rangeData_1.push({
+                    rangeData.push({
                         layerIndex: layerIndex, shapeIndex: null, dataIndex: null,
                         name: null, value: null
                     });
                 }
-                var legendFill = (isNullOrUndefined(fill)) ? colorMap.color : fill;
-                this_1.getOverallLegendItemsCollection(legendText, legendFill, rangeData_1);
+                var legendFill = (isNullOrUndefined(fill)) ? Object.prototype.toString.call(colorMap.color) === '[object Array]' ?
+                    !isNullOrUndefined(colorMap.value) ? colorMap.color[0] : this_1.legendGradientColor(colorMap, legendIndex) :
+                    colorMap.color : fill;
+                legendIndex++;
+                this_1.getOverallLegendItemsCollection(legendText, legendFill, rangeData, colorMap.showLegend);
             }
         };
         var this_1 = this;
@@ -6079,9 +6781,10 @@ var Legend = /** @__PURE__ @class */ (function () {
             _loop_1(colorMap);
         }
     };
-    Legend.prototype.getOverallLegendItemsCollection = function (legendText, legendFill, legendData) {
+    Legend.prototype.getOverallLegendItemsCollection = function (legendText, legendFill, legendData, showLegend) {
         var newColllection = [];
-        if (legendData.length > 0) {
+        var legend = this.maps.legendSettings;
+        if (legendData.length > 0 && showLegend) {
             for (var i = 0; i < legendData.length; i++) {
                 var collection = legendData[i];
                 if (collection.length > 0) {
@@ -6094,33 +6797,110 @@ var Legend = /** @__PURE__ @class */ (function () {
                 }
                 newColllection['_isVisible'] = true;
             }
-            this.legendCollection.push({ text: legendText, fill: legendFill, data: newColllection });
+            var isDuplicate = this.maps.legendSettings.removeDuplicateLegend ?
+                this.removeDuplicates(this.legendCollection, legendText) : false;
+            if (!isDuplicate) {
+                this.legendCollection.push({
+                    text: legendText, fill: legendFill, data: newColllection, opacity: legend.opacity,
+                    borderColor: legend.border.color, borderWidth: legend.border.width
+                });
+            }
         }
+    };
+    Legend.prototype.removeDuplicates = function (legendCollection, text) {
+        var isDuplicate = false;
+        for (var i = 0; i < legendCollection.length; i++) {
+            if (legendCollection[i]['text'] === text) {
+                isDuplicate = true;
+                break;
+            }
+            else {
+                continue;
+            }
+        }
+        return isDuplicate;
     };
     Legend.prototype.getEqualLegendCollection = function (layerIndex, layerData, colorMapping, dataSource, dataPath, colorValuePath, propertyPath) {
         var _this = this;
         var fill = this.maps.legendSettings.fill;
+        var equalValues = [];
         var legendText;
+        var equalData = [];
+        var outOfRangeValues = [];
+        var outOfRange = [];
         var _loop_2 = function (colorMap) {
             if (!isNullOrUndefined(colorMap.value)) {
                 legendText = !isNullOrUndefined(colorMap.label) ? colorMap.label : colorMap.value;
-                var equalData_1 = [];
+                equalData = [];
                 var eqaulColorProcess_1 = false;
                 dataSource.forEach(function (data, dataIndex) {
                     var equalValue = data[colorValuePath];
                     if (equalValue === colorMap.value) {
                         eqaulColorProcess_1 = true;
-                        equalData_1.push(_this.getLegendData(layerIndex, dataIndex, data, dataPath, layerData, propertyPath, equalValue));
+                        if (equalValues.indexOf(equalValue) === -1) {
+                            equalValues.push(equalValue);
+                        }
+                        equalData.push(_this.getLegendData(layerIndex, dataIndex, data, dataPath, layerData, propertyPath, equalValue));
+                    }
+                    else {
+                        if (outOfRangeValues.indexOf(equalValue) === -1) {
+                            outOfRangeValues.push(equalValue);
+                        }
                     }
                 });
+                for (var x = 0; x < equalValues.length; x++) {
+                    for (var y = 0; y < outOfRangeValues.length; y++) {
+                        if (equalValues[x] === outOfRangeValues[y]) {
+                            var equalIndex = outOfRangeValues.indexOf(equalValues[x]);
+                            outOfRangeValues.splice(equalIndex, 1);
+                        }
+                    }
+                }
                 if (!eqaulColorProcess_1) {
-                    equalData_1.push({
+                    equalData.push({
                         layerIndex: layerIndex, shapeIndex: null, dataIndex: null,
                         name: null, value: null
                     });
                 }
-                var legendFill = (isNullOrUndefined(fill)) ? colorMap.color : fill;
-                this_2.getOverallLegendItemsCollection(legendText, legendFill, equalData_1);
+                var legendFill = (isNullOrUndefined(fill)) ? Object.prototype.toString.call(colorMap.color) === '[object Array]'
+                    ? colorMap.color[0] : colorMap.color : fill;
+                this_2.getOverallLegendItemsCollection(legendText, legendFill, equalData, colorMap.showLegend);
+            }
+            else if (isNullOrUndefined(colorMap.minOpacity) && isNullOrUndefined(colorMap.maxOpacity) && isNullOrUndefined(colorMap.value)
+                && isNullOrUndefined(colorMap.from) && isNullOrUndefined(colorMap.to) && !isNullOrUndefined(colorMap.color)) {
+                dataSource.forEach(function (data, dataIndex) {
+                    var equalValue = data[colorValuePath];
+                    for (var k = 0; k < outOfRangeValues.length; k++) {
+                        if (equalValue === outOfRangeValues[k]) {
+                            outOfRange.push(_this.getLegendData(layerIndex, dataIndex, data, dataPath, layerData, propertyPath, equalValue));
+                        }
+                    }
+                });
+                if (outOfRangeValues.length === 0) {
+                    var range_1 = false;
+                    dataSource.forEach(function (data, dataIndex) {
+                        range_1 = false;
+                        var rangeValue = data[colorValuePath];
+                        for (var z = 0; z < colorMapping.length; z++) {
+                            if (!isNullOrUndefined(rangeValue) && rangeValue !== 0) {
+                                if (rangeValue >= colorMapping[z].from && rangeValue <= colorMapping[z].to) {
+                                    range_1 = true;
+                                }
+                            }
+                            else if (!range_1) {
+                                range_1 = false;
+                            }
+                        }
+                        if (!range_1) {
+                            outOfRange.push(_this.getLegendData(layerIndex, dataIndex, data, dataPath, layerData, propertyPath, rangeValue));
+                        }
+                    });
+                }
+                legendText = !isNullOrUndefined(colorMap.label) ? colorMap.label : 'Others';
+                var outfill = ((Object.prototype.toString.call(colorMap.color) === '[object Array]'))
+                    ? colorMap.color[0] : colorMap.color;
+                var legendOutFill = outfill;
+                this_2.getOverallLegendItemsCollection(legendText, legendOutFill, outOfRange, colorMap.showLegend);
             }
         };
         var this_2 = this;
@@ -6133,16 +6913,19 @@ var Legend = /** @__PURE__ @class */ (function () {
         var _this = this;
         var legendText;
         var fill = this.maps.legendSettings.fill;
-        if (!isNullOrUndefined(colorValuePath)) {
+        var valuePath = this.maps.legendSettings.valuePath;
+        if (!isNullOrUndefined(colorValuePath) && !isNullOrUndefined(dataSource)) {
             dataSource.forEach(function (data, dataIndex) {
+                var showLegend = isNullOrUndefined(data[_this.maps.legendSettings.showLegendPath]) ?
+                    true : data[_this.maps.legendSettings.showLegendPath];
                 var dataValue = data[colorValuePath];
                 var newData = [];
                 var legendFill = (isNullOrUndefined(fill)) ? dataValue : fill;
                 if (!isNullOrUndefined(dataValue) && colorMapping.length === 0) {
-                    legendText = data[dataPath];
+                    legendText = !isNullOrUndefined(data[valuePath]) ? data[valuePath] : data[dataPath];
                     newData.push(_this.getLegendData(layerIndex, dataIndex, data, dataPath, layerData, propertyPath, dataValue));
                 }
-                _this.getOverallLegendItemsCollection(legendText, legendFill, newData);
+                _this.getOverallLegendItemsCollection(legendText, legendFill, newData, showLegend);
             });
         }
     };
@@ -6341,7 +7124,8 @@ var Legend = /** @__PURE__ @class */ (function () {
         if (Object.prototype.toString.call(layerData) === '[object Array]') {
             for (var i = 0; i < layerData.length; i++) {
                 var shapeData = layerData[i];
-                if (shapeData['properties'][shapePropertyPath] === data[dataPath]) {
+                var shapePath = checkPropertyPath(data[dataPath], shapePropertyPath, shapeData['properties']);
+                if (shapeData['properties'][shapePath] === data[dataPath]) {
                     legendData.push({
                         layerIndex: layerIndex, shapeIndex: i, dataIndex: dataIndex,
                         name: data[dataPath], value: value
@@ -6350,6 +7134,37 @@ var Legend = /** @__PURE__ @class */ (function () {
             }
         }
         return legendData;
+    };
+    Legend.prototype.legendGradientColor = function (colorMap, legendIndex) {
+        var legendFillColor;
+        var xmlns = 'http://www.w3.org/2000/svg';
+        if (!isNullOrUndefined(colorMap.color) && typeof (colorMap.color) === 'object') {
+            var linerGradientEle = document.createElementNS(xmlns, 'linearGradient');
+            var opacity = 1;
+            var position = this.maps.legendSettings.position;
+            var x2 = void 0;
+            var y2 = void 0;
+            x2 = position === 'Top' || position === 'Bottom' ? '100' : '0';
+            y2 = position === 'Top' || position === 'Bottom' ? '0' : '100';
+            linerGradientEle.setAttribute('id', 'linear_' + legendIndex);
+            linerGradientEle.setAttribute('x1', 0 + '%');
+            linerGradientEle.setAttribute('y1', 0 + '%');
+            linerGradientEle.setAttribute('x2', x2 + '%');
+            linerGradientEle.setAttribute('y2', y2 + '%');
+            for (var b = 0; b < colorMap.color.length; b++) {
+                var offsetColor = 100 / (colorMap.color.length - 1);
+                var stopEle = document.createElementNS(xmlns, 'stop');
+                stopEle.setAttribute('offset', b * offsetColor + '%');
+                stopEle.setAttribute('stop-color', colorMap.color[b]);
+                stopEle.setAttribute('stop-opacity', opacity.toString());
+                linerGradientEle.appendChild(stopEle);
+            }
+            this.legendLinearGradient = linerGradientEle;
+            var color = 'url(' + '#linear_' + legendIndex + ')';
+            this.defsElement.appendChild(linerGradientEle);
+            legendFillColor = color;
+        }
+        return legendFillColor;
     };
     /**
      * Get module name.
@@ -6454,6 +7269,9 @@ var Highlight = /** @__PURE__ @class */ (function () {
                 this.highlightSettings = this.maps.layers[layerIndex].navigationLineSettings[index].highlightSettings;
             }
             if (this.highlightSettings.enable) {
+                if (this.maps.legendSettings.visible) {
+                    this.maps.legendModule.shapeHighLightAndSelection(targetEle, data, this.highlightSettings, 'highlight', layerIndex);
+                }
                 this.mapHighlight(targetEle, shapeData, data);
             }
             else {
@@ -6478,21 +7296,36 @@ var Highlight = /** @__PURE__ @class */ (function () {
                 targetEle.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
             }
             removeClass(targetEle);
+            if (this.maps.legendSettings.visible) {
+                this.maps.legendModule.removeShapeHighlightCollection();
+            }
+        }
+        else if ((targetEle.id.indexOf(this.maps.element.id + '_Legend_Shape_Index') !== -1 ||
+            targetEle.id.indexOf(this.maps.element.id + '_Legend_Index') !== -1) &&
+            this.maps.legendSettings.visible && targetEle.id.indexOf('_Text') === -1) {
+            this.maps.legendModule.legendHighLightAndSelection(targetEle, 'highlight');
+        }
+        else {
+            if (this.maps.legendSettings.visible) {
+                this.maps.legendModule.removeLegendHighlightCollection();
+            }
         }
     };
     Highlight.prototype.mapHighlight = function (targetEle, shapeData, data) {
-        var eventArgs = {
-            opacity: this.highlightSettings.opacity,
-            fill: targetEle.id.indexOf('NavigationIndex') === -1 ? this.highlightSettings.fill : 'none',
-            border: { color: this.highlightSettings.border.color, width: this.highlightSettings.border.width },
-            name: itemHighlight,
-            target: targetEle.id,
-            cancel: false,
-            shapeData: shapeData,
-            data: data
-        };
-        this.maps.trigger(itemHighlight, eventArgs);
-        this.highlightMap(targetEle, eventArgs);
+        if (this.maps.legendSettings.visible ? (this.maps.legendModule.legendElement !== this.maps.legendModule.oldShapeElement) : true) {
+            var eventArgs = {
+                opacity: this.highlightSettings.opacity,
+                fill: targetEle.id.indexOf('NavigationIndex') === -1 ? this.highlightSettings.fill : 'none',
+                border: { color: this.highlightSettings.border.color, width: this.highlightSettings.border.width },
+                name: itemHighlight,
+                target: targetEle.id,
+                cancel: false,
+                shapeData: shapeData,
+                data: data
+            };
+            this.maps.trigger(itemHighlight, eventArgs);
+            this.highlightMap(targetEle, eventArgs);
+        }
     };
     Highlight.prototype.highlightMap = function (targetEle, eventArgs) {
         if (targetEle.getAttribute('class') === 'highlightMapStyle') {
@@ -6613,8 +7446,18 @@ var Selection = /** @__PURE__ @class */ (function () {
                 this.selectionType = 'navigationline';
             }
             if (this.selectionsettings.enable) {
-                this.selectMap(targetEle, shapeData, data);
+                if (this.maps.legendSettings.visible) {
+                    this.maps.legendModule.shapeHighLightAndSelection(targetEle, data, this.selectionsettings, 'selection', layerIndex);
+                }
+                if (this.maps.legendSettings.visible ? this.maps.legendModule.legendSelection : true) {
+                    this.selectMap(targetEle, shapeData, data);
+                }
             }
+        }
+        else if (!isNullOrUndefined(targetEle.id) && (targetEle.id.indexOf(this.maps.element.id + '_Legend_Shape_Index') > -1 ||
+            targetEle.id.indexOf(this.maps.element.id + '_Legend_Index') !== -1) && this.maps.legendSettings.visible &&
+            targetEle.id.indexOf('_Text') === -1) {
+            this.maps.legendModule.legendHighLightAndSelection(targetEle, 'selection');
         }
     };
     /**
@@ -6761,10 +7604,10 @@ var MapsTooltip = /** @__PURE__ @class */ (function () {
             if (targetId.indexOf('_ShapeIndex_') > -1) {
                 option = layer.tooltipSettings;
                 var shape = parseInt(targetId.split('_')[4], 10);
-                if (isNullOrUndefined(layer.shapeData['features'])) {
+                if (isNullOrUndefined(layer.layerData) || isNullOrUndefined(layer.layerData[shape])) {
                     return;
                 }
-                var value_1 = layer.shapeData['features'][shape]['properties'];
+                var value_1 = layer.layerData[shape]['property'];
                 index = checkShapeDataFields(layer.dataSource, value_1, layer.shapeDataPath, layer.shapePropertyPath);
                 templateData = layer.dataSource[index];
                 if (option.visible && ((!isNullOrUndefined(index) && !isNaN(index)) || (!isNullOrUndefined(value_1)))) {
@@ -6772,8 +7615,12 @@ var MapsTooltip = /** @__PURE__ @class */ (function () {
                         currentData = this.formatter(layer.tooltipSettings.format, layer.dataSource[index]);
                     }
                     else {
+                        var shapePath = checkPropertyPath(layer.shapeDataPath, layer.shapePropertyPath, value_1);
                         currentData = ((!isNullOrUndefined(layer.dataSource)) && ((!isNullOrUndefined(index)))) ?
-                            this.formatValue(layer.dataSource[index][option.valuePath], this.maps) : value_1[layer.shapePropertyPath];
+                            this.formatValue(layer.dataSource[index][option.valuePath], this.maps) : value_1[shapePath];
+                        if (isNullOrUndefined(currentData)) {
+                            currentData = value_1[option.valuePath];
+                        }
                     }
                 }
                 //location.y = this.template(option, location);
@@ -6836,8 +7683,10 @@ var MapsTooltip = /** @__PURE__ @class */ (function () {
                 element: target, eventArgs: e
             };
             this.maps.trigger(tooltipRender, tootipArgs);
+            var themes = this.maps.theme.toLowerCase();
+            var tooltipColor = themes.indexOf('dark') > -1 || themes === 'highcontrast' ? '#00000' : '#FFFFFF';
             if (!tootipArgs.cancel && option.visible && !isNullOrUndefined(currentData)) {
-                tootipArgs.options['textStyle']['color'] = (this.maps.theme === 'Highcontrast') ? '#00000' : '#FFFFFF';
+                tootipArgs.options['textStyle']['color'] = tooltipColor;
                 this.svgTooltip = new Tooltip({
                     enable: true,
                     header: '',
@@ -6849,8 +7698,7 @@ var MapsTooltip = /** @__PURE__ @class */ (function () {
                     palette: [markerFill],
                     areaBounds: this.maps.mapAreaRect,
                     textStyle: tootipArgs.options['textStyle'],
-                    theme: this.maps.theme,
-                    fill: (this.maps.theme === 'Highcontrast') ? '#FFFFFF' : '#00000'
+                    fill: (themes.indexOf('dark') > -1 || themes === 'highcontrast') ? '#FFFFFF' : '#00000'
                 });
                 this.svgTooltip.appendTo(tooltipEle);
             }
@@ -6980,9 +7828,11 @@ var Zoom = /** @__PURE__ @class */ (function () {
     Zoom.prototype.performZooming = function (position, newZoomFactor, type) {
         var map = this.maps;
         var prevLevel = map.tileZoomLevel;
-        var prevScale = map.scale;
+        var scale = map.previousScale = map.scale;
         var maxZoom = map.zoomSettings.maxZoom;
         var minZoom = map.zoomSettings.minZoom;
+        var translatePoint = map.previousPoint = map.translatePoint;
+        var prevTilePoint = map.tileTranslatePoint;
         if ((!map.isTileMap) && (type === 'ZoomIn' ? newZoomFactor >= minZoom && newZoomFactor <= maxZoom : newZoomFactor >= minZoom)) {
             var availSize = map.mapAreaRect;
             var minBounds = map.baseMapRectBounds['min'];
@@ -6990,24 +7840,44 @@ var Zoom = /** @__PURE__ @class */ (function () {
             var mapTotalWidth = Math.abs(minBounds['x'] - maxBounds['x']);
             var mapTotalHeight = Math.abs(minBounds['y'] - maxBounds['y']);
             var point = map.translatePoint;
-            var translatePointX = point.x - (((availSize.width / prevScale) - (availSize.width / newZoomFactor)) / (availSize.width / position.x));
-            var translatePointY = point.y - (((availSize.height / prevScale) - (availSize.height / newZoomFactor)) / (availSize.height / position.y));
+            var translatePointX = point.x - (((availSize.width / scale) - (availSize.width / newZoomFactor)) / (availSize.width / position.x));
+            var translatePointY = point.y - (((availSize.height / scale) - (availSize.height / newZoomFactor)) / (availSize.height / position.y));
             var currentHeight = Math.abs(map.baseMapRectBounds['max']['y'] - map.baseMapRectBounds['min']['y']) * newZoomFactor;
             translatePointX = (currentHeight < map.mapAreaRect.height) ? (availSize.x + ((-(minBounds['x'])) + ((availSize.width / 2) - (mapTotalWidth / 2)))) : translatePointX;
             translatePointY = (currentHeight < map.mapAreaRect.height) ? (availSize.y + ((-(minBounds['y'])) + ((availSize.height / 2) - (mapTotalHeight / 2)))) : translatePointY;
             map.translatePoint = new Point(translatePointX, translatePointY);
             map.scale = newZoomFactor;
+            this.triggerZoomEvent(prevTilePoint, prevLevel);
         }
         else if ((map.isTileMap) && (newZoomFactor >= minZoom && newZoomFactor <= maxZoom)) {
             this.getTileTranslatePosition(prevLevel, newZoomFactor, position);
             map.tileZoomLevel = newZoomFactor;
             map.scale = Math.pow(2, newZoomFactor - 1);
+            map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.scale)) / map.scale;
+            map.translatePoint.y = (map.tileTranslatePoint.y - (0.01 * map.scale)) / map.scale;
+            this.triggerZoomEvent(prevTilePoint, prevLevel);
             map.mapLayerPanel.generateTiles(newZoomFactor, map.tileTranslatePoint);
-            map.translatePoint.x = (map.tileTranslatePoint.x - (0.5 * map.scale)) / map.scale;
-            map.translatePoint.y = (map.tileTranslatePoint.y - (0.5 * map.scale)) / map.scale;
         }
         this.applyTransform();
-        map.trigger(doubleClick, this);
+    };
+    Zoom.prototype.triggerZoomEvent = function (prevTilePoint, prevLevel) {
+        var map = this.maps;
+        var zoomArgs;
+        if (!map.isTileMap) {
+            zoomArgs = {
+                cancel: false, name: 'zoom', type: map.scale > map.previousScale ? zoomIn : zoomOut, maps: map,
+                tileTranslatePoint: {}, translatePoint: { previous: map.previousPoint, current: map.translatePoint },
+                tileZoomLevel: {}, scale: { previous: map.previousScale, current: map.scale }
+            };
+        }
+        else {
+            zoomArgs = {
+                cancel: false, name: 'zoom', type: map.tileZoomLevel > prevLevel ? zoomIn : zoomOut, maps: map,
+                tileTranslatePoint: { previous: prevTilePoint, current: map.tileTranslatePoint }, translatePoint: { previous: map.previousPoint, current: map.translatePoint },
+                tileZoomLevel: { previous: prevLevel, current: map.tileZoomLevel }, scale: { previous: map.previousScale, current: map.scale }
+            };
+        }
+        map.trigger('zoom', zoomArgs);
     };
     Zoom.prototype.getTileTranslatePosition = function (prevLevel, currentLevel, position) {
         var map = this.maps;
@@ -7071,6 +7941,9 @@ var Zoom = /** @__PURE__ @class */ (function () {
         var map = this.maps;
         var prevLevel = map.tileZoomLevel;
         var availSize = map.mapAreaRect;
+        map.previousScale = map.scale;
+        map.previousPoint = map.translatePoint;
+        var prevTilePoint = map.tileTranslatePoint;
         var scale = calculateScale(this.touchStartList, this.touchMoveList);
         var touchCenter = getTouchCenter(getTouches(this.touchMoveList, this.maps));
         var newScale = scale / this.lastScale;
@@ -7085,23 +7958,25 @@ var Zoom = /** @__PURE__ @class */ (function () {
             var mapTotalHeight = Math.abs(minBounds['y'] - maxBounds['y']);
             var translatePoint = map.translatePoint;
             var currentHeight = Math.abs(map.baseMapRectBounds['max']['y'] - map.baseMapRectBounds['min']['y']) * zoomCalculationFactor;
-            var translatePointX_1 = translatePoint.x - (((availSize.width / map.scale) - (availSize.width / zoomCalculationFactor)) / (availSize.width / touchCenter.x));
-            var translatePointY_1 = translatePoint.y - (((availSize.height / map.scale) - (availSize.height / zoomCalculationFactor)) / (availSize.height / touchCenter.y));
-            // translatePointX = (currentHeight < map.mapAreaRect.height) ? (availSize.x + ((-(minBounds['x'])) + ((availSize.width / 2) - (mapTotalWidth / 2)))) : translatePointX;
-            //translatePointY = (currentHeight < map.mapAreaRect.height) ? (availSize.y + ((-(minBounds['y'])) + ((availSize.height / 2) - (mapTotalHeight / 2)))) : translatePointY;
-            map.translatePoint = new Point(translatePointX_1, translatePointY_1);
+            var translatePointX = translatePoint.x - (((availSize.width / map.scale) - (availSize.width / zoomCalculationFactor)) / (availSize.width / touchCenter.x));
+            var translatePointY = translatePoint.y - (((availSize.height / map.scale) - (availSize.height / zoomCalculationFactor)) / (availSize.height / touchCenter.y));
+            translatePointX = (currentHeight < map.mapAreaRect.height) ? (availSize.x + ((-(minBounds['x'])) + ((availSize.width / 2) - (mapTotalWidth / 2)))) : translatePointX;
+            translatePointY = (currentHeight < map.mapAreaRect.height) ? (availSize.y + ((-(minBounds['y'])) + ((availSize.height / 2) - (mapTotalHeight / 2)))) : translatePointY;
+            map.translatePoint = new Point(translatePointX, translatePointY);
             map.scale = zoomCalculationFactor;
+            this.triggerZoomEvent(prevTilePoint, prevLevel);
         }
         else {
             var newTileFactor = zoomCalculationFactor;
             this.getTileTranslatePosition(prevLevel, newTileFactor, { x: touchCenter.x, y: touchCenter.y });
             map.tileZoomLevel = newTileFactor;
-            map.mapLayerPanel.generateTiles(newTileFactor, map.tileTranslatePoint);
             map.translatePoint.x = (map.tileTranslatePoint.x - (0.5 * Math.pow(2, newTileFactor))) /
                 (Math.pow(2, newTileFactor));
             map.translatePoint.y = (map.tileTranslatePoint.y - (0.5 * Math.pow(2, newTileFactor))) /
                 (Math.pow(2, newTileFactor));
             map.scale = (Math.pow(2, newTileFactor));
+            this.triggerZoomEvent(prevTilePoint, prevLevel);
+            map.mapLayerPanel.generateTiles(newTileFactor, map.tileTranslatePoint);
         }
         this.applyTransform();
     };
@@ -7325,48 +8200,71 @@ var Zoom = /** @__PURE__ @class */ (function () {
             }
         }
     };
-    Zoom.prototype.panning = function () {
+    Zoom.prototype.panning = function (direction, xDifference, yDifference) {
         var map = this.maps;
-        var areaRect = map.mapAreaRect;
+        var panArgs;
         var down = this.mouseDownPoints;
         var move = this.mouseMovePoints;
         var scale = map.scale;
         var translatePoint = map.translatePoint;
+        var prevTilePoint = map.tileTranslatePoint;
         var x;
         var y;
+        xDifference = !isNullOrUndefined(xDifference) ? xDifference : (down.x - move.x);
+        yDifference = !isNullOrUndefined(yDifference) ? yDifference : (down.y - move.y);
         if (!map.isTileMap) {
-            var x_2 = translatePoint.x - (down.x - move.x) / scale;
-            var y_2 = translatePoint.y - (down.y - move.y) / scale;
+            x = translatePoint.x - xDifference / scale;
+            y = translatePoint.y - yDifference / scale;
             var layerRect = getElementByID(map.element.id + '_Layer_Collections').getBoundingClientRect();
             var elementRect = getElementByID(map.element.id + '_svg').getBoundingClientRect();
-            var panningXDirection = (((down.x - move.x) < 0 ? layerRect.left <= (elementRect.left + map.mapAreaRect.x) :
+            var panningXDirection = ((xDifference < 0 ? layerRect.left <= (elementRect.left + map.mapAreaRect.x) :
                 ((layerRect.left + layerRect.width) >= (elementRect.left + elementRect.width) + map.mapAreaRect.x + map.margin.left)));
-            var panningYDirection = (((down.y - move.y) < 0 ? layerRect.top <= (elementRect.top + map.mapAreaRect.y) :
+            var panningYDirection = ((yDifference < 0 ? layerRect.top <= (elementRect.top + map.mapAreaRect.y) :
                 ((layerRect.top + layerRect.height) >= (elementRect.top + elementRect.height) + map.mapAreaRect.y + map.margin.top)));
+            panArgs = {
+                cancel: false, name: pan, maps: map, tileTranslatePoint: {}, translatePoint: { previous: translatePoint, current: new Point(x, y) },
+                scale: map.scale, tileZoomLevel: map.tileZoomLevel
+            };
+            map.trigger(pan, panArgs);
             if (panningXDirection && panningYDirection) {
-                map.translatePoint = new Point(x_2, y_2);
+                map.translatePoint = new Point(x, y);
                 this.applyTransform();
             }
             else if (panningXDirection) {
-                map.translatePoint = new Point(x_2, map.translatePoint.y);
+                map.translatePoint = new Point(x, map.translatePoint.y);
                 this.applyTransform();
             }
             else if (panningYDirection) {
-                map.translatePoint = new Point(map.translatePoint.x, y_2);
+                map.translatePoint = new Point(map.translatePoint.x, y);
                 this.applyTransform();
             }
         }
         else if (this.maps.tileZoomLevel > 1) {
-            x = map.tileTranslatePoint.x - (down.x - move.x);
-            y = map.tileTranslatePoint.y - (down.y - move.y);
+            x = map.tileTranslatePoint.x - xDifference;
+            y = map.tileTranslatePoint.y - yDifference;
+            this.distanceX = x - map.tileTranslatePoint.x;
+            this.distanceY = y - map.tileTranslatePoint.y;
             map.tileTranslatePoint.x = x;
             map.tileTranslatePoint.y = y;
+            map.translatePoint.x = (map.tileTranslatePoint.x - xDifference) / map.scale;
+            map.translatePoint.y = (map.tileTranslatePoint.y - yDifference) / map.scale;
+            panArgs = {
+                cancel: false, name: pan, maps: map, tileTranslatePoint: { previous: prevTilePoint, current: map.tileTranslatePoint },
+                translatePoint: { previous: translatePoint, current: map.translatePoint }, scale: map.scale,
+                tileZoomLevel: map.tileZoomLevel
+            };
+            map.trigger(pan, panArgs);
             map.mapLayerPanel.generateTiles(map.tileZoomLevel, map.tileTranslatePoint);
-            map.translatePoint.x = (map.tileTranslatePoint.x - (down.x - move.x)) / map.scale;
-            map.translatePoint.y = (map.tileTranslatePoint.y - (down.y - move.y)) / map.scale;
             this.applyTransform();
         }
         this.mouseDownPoints = this.mouseMovePoints;
+    };
+    Zoom.prototype.toAlignSublayer = function () {
+        this.maps.translatePoint.x = !isNullOrUndefined(this.distanceX) ? (this.maps.translatePoint.x -
+            (this.distanceX / this.maps.scale)) : this.maps.translatePoint.x;
+        this.maps.translatePoint.y = !isNullOrUndefined(this.distanceY) ? this.maps.translatePoint.y -
+            (this.distanceY / this.maps.scale) : this.maps.translatePoint.y;
+        this.applyTransform(false);
     };
     Zoom.prototype.toolBarZooming = function (zoomFactor, type) {
         var map = this.maps;
@@ -7375,9 +8273,10 @@ var Zoom = /** @__PURE__ @class */ (function () {
         var maxZoom = map.zoomSettings.maxZoom;
         var minZoom = map.zoomSettings.minZoom;
         var size = map.mapAreaRect;
+        var translatePoint = map.previousPoint = map.translatePoint;
+        var prevTilePoint = map.tileTranslatePoint;
         zoomFactor = (type === 'ZoomOut') ? (Math.round(zoomFactor) === 1 ? 1 : zoomFactor) : zoomFactor;
         if ((!map.isTileMap) && (type === 'ZoomIn' ? zoomFactor >= minZoom && zoomFactor <= maxZoom : zoomFactor >= minZoom)) {
-            var translatePoint = map.previousPoint = map.translatePoint;
             var min = map.baseMapRectBounds['min'];
             var max = map.baseMapRectBounds['max'];
             var mapWidth = Math.abs(max['x'] - min['x']);
@@ -7391,6 +8290,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 : translatePointY;
             map.translatePoint = new Point(translatePointX, translatePointY);
             map.scale = zoomFactor;
+            this.triggerZoomEvent(prevTilePoint, prevLevel);
         }
         else if ((map.isTileMap) && (zoomFactor >= minZoom && zoomFactor <= maxZoom)) {
             var tileZoomFactor = zoomFactor;
@@ -7398,9 +8298,10 @@ var Zoom = /** @__PURE__ @class */ (function () {
             map.tileZoomLevel = tileZoomFactor;
             var position = { x: map.availableSize.width / 2, y: map.availableSize.height / 2 };
             this.getTileTranslatePosition(prevLevel, tileZoomFactor, position);
+            map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.scale)) / map.scale;
+            map.translatePoint.y = (map.tileTranslatePoint.y - (0.01 * map.scale)) / map.scale;
+            this.triggerZoomEvent(prevTilePoint, prevLevel);
             map.mapLayerPanel.generateTiles(tileZoomFactor, map.tileTranslatePoint);
-            map.translatePoint.x = (map.tileTranslatePoint.x - (0.5 * map.scale)) / map.scale;
-            map.translatePoint.y = (map.tileTranslatePoint.y - (0.5 * map.scale)) / map.scale;
         }
         this.applyTransform(true);
     };
@@ -7607,7 +8508,9 @@ var Zoom = /** @__PURE__ @class */ (function () {
         element.style.left = x + 'px';
         element.style.top = y + 'px';
         var color = this.maps.zoomSettings.highlightColor;
-        var css = ' .e-maps-toolbar:hover > circle { stroke:' + color + '; } .e-maps-toolbar:hover > path { fill: ' + color + ' ;  stroke: ' + color + '; }';
+        var css = ' .e-maps-toolbar:hover > circle { stroke:' + color + '; } .e-maps-toolbar:hover > path { fill: ' + color + ' ;  stroke: ' + color + '; }' +
+            '.e-maps-toolbar:hover { cursor: pointer; } .e-maps-cursor-disable:hover { cursor: not-allowed; } .e-maps-panning:hover { cursor: pointer; } ' +
+            '.e-maps-popup-close { display: block; opacity: 0; }';
         var style = document.createElement('style');
         style.appendChild(document.createTextNode(css));
         element.appendChild(style);
@@ -7738,7 +8641,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
         if (zoom.enable && this.isPanning) {
             e.preventDefault();
             this.maps.element.style.cursor = 'pointer';
-            this.panning();
+            this.panning('None', null, null);
         }
         if (this.isTouch ? (touches.length === 1 && this.rectZoomingStart) : this.rectZoomingStart) {
             e.preventDefault();
@@ -7754,6 +8657,10 @@ var Zoom = /** @__PURE__ @class */ (function () {
         this.touchMoveList = [];
         this.lastScale = 1;
         this.maps.element.style.cursor = 'auto';
+        if (!isNullOrUndefined(this.distanceX) || !isNullOrUndefined(this.distanceY)) {
+            this.toAlignSublayer();
+            this.distanceX = this.distanceY = null;
+        }
         var zoomRectElement = getElementByID(this.maps.element.id + '_Selection_Rect_Zooming');
         if (zoomRectElement && this.maps.zoomSettings.enable) {
             remove(zoomRectElement);
@@ -7860,5 +8767,5 @@ var Zoom = /** @__PURE__ @class */ (function () {
  * exporting all modules from maps index
  */
 
-export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClick, markerMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, Annotation, Arrow, Font, Border, TooltipSettings, Margin, ColorMappingSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, filter, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, calculateLegendShapes, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
+export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClick, markerMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, TooltipSettings, Margin, ColorMappingSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
 //# sourceMappingURL=ej2-maps.es5.js.map

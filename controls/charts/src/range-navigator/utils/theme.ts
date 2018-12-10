@@ -52,7 +52,7 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
         case 'Bootstrap':
             style.selectedRegionColor = range.series.length ? 'transparent' : '#428BCA';
             break;
-        case 'Highcontrast':
+        case 'HighcontrastLight':
             style = {
                 gridLineColor: '#bdbdbd',
                 axisLineColor: '#969696',
@@ -70,6 +70,27 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
                 thumbHeight: thumbHeight
             };
             break;
+        case 'MaterialDark':
+        case 'FabricDark':
+        case 'BootstrapDark':
+        case 'Highcontrast':
+        style = {
+            gridLineColor: '#4A4848',
+            axisLineColor: '#969696',
+            labelFontColor: '#DADADA',
+            unselectedRectColor: range.series.length ? 'rgba(43, 43, 43, 0.6)' : '#514F4F',
+            thumpLineColor: '#969696',
+            thumbBackground: '#333232',
+            gripColor: '#DADADA',
+            background: '#000000',
+            thumbHoverColor: '#BFBFBF',
+            selectedRegionColor: range.series.length ? 'rgba(22, 22, 22, 0.6)' : '#FFD939',
+            tooltipBackground: '#F4F4F4',
+            tooltipFontColor: '#282727',
+            thumbWidth: thumbWidth,
+            thumbHeight: thumbHeight
+          };
+          break;
         default:
             style.selectedRegionColor = range.series.length ? 'transparent' : '#FF4081';
             break;

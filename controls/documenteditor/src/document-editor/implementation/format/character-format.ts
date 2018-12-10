@@ -1,6 +1,6 @@
 import { TextElementBox, ParagraphWidget } from '../viewer/page';
 import { Dictionary } from '../../base/dictionary';
-import { Underline, HighlightColor, BaselineAlignment, Strikethrough } from '../../base/types';
+import { Underline, HighlightColor, BaselineAlignment, Strikethrough, BiDirectionalOverride } from '../../base/types';
 import { WUniqueFormat } from '../../base/unique-format';
 import { WUniqueFormats } from '../../base/unique-formats';
 import { WStyle, WParagraphStyle } from './style';
@@ -68,6 +68,48 @@ export class WCharacterFormat {
     set fontColor(value: string) {
         this.setPropertyValue('fontColor', value);
     }
+
+    get bidi(): boolean {
+        return this.getPropertyValue('bidi') as boolean;
+    }
+
+    set bidi(value: boolean) {
+        this.setPropertyValue('bidi', value);
+    }
+
+    get bdo(): BiDirectionalOverride {
+        return this.getPropertyValue('bdo') as BiDirectionalOverride;
+    }
+
+    set bdo(value: BiDirectionalOverride) {
+        this.setPropertyValue('bdo', value);
+    }
+
+    get boldBidi(): boolean {
+        return this.getPropertyValue('boldBidi') as boolean;
+    }
+    set boldBidi(value: boolean) {
+        this.setPropertyValue('boldBidi', value);
+    }
+    get italicBidi(): boolean {
+        return this.getPropertyValue('italicBidi') as boolean;
+    }
+    set italicBidi(value: boolean) {
+        this.setPropertyValue('italicBidi', value);
+    }
+    get fontSizeBidi(): number {
+        return this.getPropertyValue('fontSizeBidi') as number;
+    }
+    set fontSizeBidi(value: number) {
+        this.setPropertyValue('fontSizeBidi', value);
+    }
+    get fontFamilyBidi(): string {
+        return this.getPropertyValue('fontFamilyBidi') as string;
+    }
+    set fontFamilyBidi(value: string) {
+        this.setPropertyValue('fontFamilyBidi', value);
+    }
+
     constructor(node?: Object) {
         this.ownerBase = node;
     }
@@ -189,6 +231,12 @@ export class WCharacterFormat {
         this.addUniqueCharacterFormat('baselineAlignment', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('highlightColor', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('styleName', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('bidi', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('bdo', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('fontFamilyBidi', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('fontSizeBidi', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('boldBidi', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('italicBidi', property, propValue, uniqueCharFormatTemp);
         // tslint:disable-next-line:max-line-length
         this.uniqueCharacterFormat = WCharacterFormat.uniqueCharacterFormats.addUniqueFormat(uniqueCharFormatTemp, WCharacterFormat.uniqueFormatType);
     }
@@ -233,6 +281,24 @@ export class WCharacterFormat {
             case 'styleName':
                 value = 'Default Paragraph Font';
                 break;
+            case 'bidi':
+                value = false;
+                break;
+            case 'bdo':
+                value = 'None';
+                break;
+            case 'boldBidi':
+                value = false;
+                break;
+            case 'italicBidi':
+                value = false;
+                break;
+            case 'fontSizeBidi':
+                value = 11;
+                break;
+            case 'fontFamilyBidi':
+                value = 'Calibri';
+                break;
         }
         return value;
     }
@@ -245,7 +311,8 @@ export class WCharacterFormat {
             && this.underline === format.underline
             && this.fontColor === format.fontColor
             && this.strikethrough === format.strikethrough
-            && this.highlightColor === format.highlightColor);
+            && this.highlightColor === format.highlightColor && this.bidi === format.bidi
+            && this.bdo === format.bdo);
     }
     public isSameFormat(format: WCharacterFormat): boolean {
         return this.baseCharStyle === format.baseCharStyle &&
@@ -345,6 +412,12 @@ export class WCharacterFormat {
         }
         if (isNullOrUndefined(this.getValue('fontColor'))) {
             this.fontColor = format.getValue('fontColor') as string;
+        }
+        if (isNullOrUndefined(this.getValue('bidi'))) {
+            this.bidi = format.getValue('bidi') as boolean;
+        }
+        if (isNullOrUndefined(this.getValue('bdo'))) {
+            this.bdo = format.getValue('bdo') as BiDirectionalOverride;
         }
     }
 }

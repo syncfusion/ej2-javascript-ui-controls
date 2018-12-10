@@ -241,14 +241,12 @@ export class AutoComplete extends ComboBox {
     }
     protected searchLists(e: KeyboardEventArgs): void {
         this.isTyped = true;
-        this.isSelectCustom = false;
-        this.isDataFetched = false;
+        this.isDataFetched = this.isSelectCustom = false;
         if (isNullOrUndefined(this.list)) {
             super.renderList(true);
         }
-        let isDownUpKey: boolean = e.keyCode === 40 || e.keyCode === 38;
         this.queryString = this.filterInput.value;
-        if (isDownUpKey) {
+        if (e.keyCode === 40 || e.keyCode === 38) {
             this.queryString = this.queryString === '' ? null : this.queryString;
             this.beforePopupOpen = true;
             this.resetList(this.dataSource, this.fields);

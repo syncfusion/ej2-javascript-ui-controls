@@ -8,6 +8,8 @@ import { NodeStateModified } from '../actions/node-state-modified';
 import { DataSourceUpdate } from '../actions/dataSource-update';
 import { ErrorDialog } from '../popups/error-dialog';
 import { FilterDialog } from '../popups/filter-dialog';
+import { PivotView } from '../../pivotview';
+import { PivotFieldList } from '../../pivotfieldlist';
 
 /**
  * PivotCommon is used to manipulate the relational or Multi-Dimensional public methods by using their dataSource
@@ -35,6 +37,19 @@ export class PivotCommon {
     public renderMode: Mode;
     /** @hidden */
     public parentID: string;
+    /** @hidden */
+    public control: PivotView | PivotFieldList;
+    /** @hidden */
+    public currentTreeItems: { [key: string]: Object }[] = [];
+    /** @hidden */
+    public savedTreeFilterPos: { [key: number]: string } = {};
+    /** @hidden */
+    public currentTreeItemsPos: { [key: string]: number } = {};
+    /** @hidden */
+    public editorLabelElement: HTMLLabelElement;
+    /** @hidden */
+    public isDataOverflow: boolean = false;
+
 
     //Module Declarations
     /** @hidden */

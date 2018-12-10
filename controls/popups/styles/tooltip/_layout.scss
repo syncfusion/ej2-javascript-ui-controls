@@ -1,6 +1,6 @@
 @include export-module('tooltip-layout') {
   /*! tooltip layout */
-  .e-tooltip-wrap.e-popup {
+  #{&}.e-tooltip-wrap {
     max-width: 350px;
     min-width: 30px;
     padding: 0;
@@ -65,8 +65,8 @@
   }
 
   /*! Bigger Style */
-  .e-bigger .e-tooltip-wrap.e-popup .e-tip-content,
-  &.e-tooltip-wrap.e-popup.e-bigger .e-tip-content {
+  .e-bigger #{&}.e-tooltip-wrap .e-tip-content,
+  &#{&}.e-tooltip-wrap.e-bigger .e-tip-content {
     line-height: 20px;
     padding: $tooltip-mobile-horizontal-padding $tooltip-mobile-vertical-padding;
   }

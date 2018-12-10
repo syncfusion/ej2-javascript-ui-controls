@@ -45,7 +45,7 @@ export class TableCommand {
         }
         table.appendChild(tblBody);
         e.item.selection.restore();
-        InsertHtml.Insert(this.parent.currentDocument, table);
+        InsertHtml.Insert(this.parent.currentDocument, table, this.parent.editableElement);
         e.item.selection.setSelectionText(this.parent.currentDocument, table.querySelector('td'), table.querySelector('td'), 0, 0);
         table.querySelector('td').classList.add('e-cell-select');
         if (e.callBack) {
@@ -66,15 +66,26 @@ export class TableCommand {
     private insertRow(e: IHtmlItem): void {
         let selectedCell: Node = e.item.selection.range.startContainer;
         selectedCell = (selectedCell.nodeType === 3) ? selectedCell.parentNode : selectedCell;
-        if (selectedCell.nodeName.toLowerCase() === 'th') { return; }
+        if (selectedCell.nodeName.toLowerCase() === 'th' && e.item.subCommand === 'InsertRowBefore') { return; }
         let curRow: Node = closest(selectedCell as HTMLElement, 'tr');
-        let newRow: Node = closest(selectedCell as HTMLElement, 'tr').cloneNode(true);
-        let tabCell: HTMLElement[] = Array.prototype.slice.call((newRow as HTMLElement).querySelectorAll('td'));
-        Array.prototype.forEach.call(tabCell, (cell: HTMLElement): void => {
-            cell.innerHTML = '';
-            cell.appendChild(createElement('br'));
-            cell.removeAttribute('class');
-        });
+        let newRow: Node;
+        if (selectedCell.nodeName.toLowerCase() !== 'th') {
+            newRow = closest(selectedCell as HTMLElement, 'tr').cloneNode(true);
+            let tabCell: HTMLElement[] = Array.prototype.slice.call((newRow as HTMLElement).querySelectorAll('td'));
+            Array.prototype.forEach.call(tabCell, (cell: HTMLElement): void => {
+                cell.innerHTML = '';
+                cell.appendChild(createElement('br'));
+                cell.removeAttribute('class');
+            });
+        } else {
+            let childNodes: NodeListOf<Node> = curRow.childNodes as NodeListOf<Node>;
+            newRow = createElement('tr');
+            for (let i: number = 0; i < childNodes.length; i++) {
+                let tdElement: Element = createElement('td');
+                tdElement.appendChild(createElement('br'));
+                newRow.appendChild(tdElement);
+            }
+        }
         (e.item.subCommand === 'InsertRowBefore') ?
             curRow.parentElement.insertBefore(newRow, curRow) : this.insertAfter((newRow as Element), (curRow as Element));
         e.item.selection.setSelectionText(
@@ -96,7 +107,7 @@ export class TableCommand {
         selectedCell = (selectedCell.nodeName !== 'TD') ? closest(selectedCell, 'td,th') : selectedCell;
         let curRow: HTMLElement = closest(selectedCell as HTMLElement, 'tr') as HTMLElement;
         let curCell: Element;
-        let allRows: NodeListOf<Element> = (closest((curRow as HTMLElement), 'table') as HTMLTableElement).rows;
+        let allRows: HTMLCollectionOf<HTMLTableRowElement> = (closest((curRow), 'table') as HTMLTableElement).rows;
         let colIndex: number = Array.prototype.slice.call((curRow as HTMLElement).querySelectorAll('th,td')).indexOf(selectedCell);
         let width: number = parseInt(e.item.width as string, 10) / (curRow.querySelectorAll('td,th').length + 1);
         for (let j: number = 0; j < closest(curRow as HTMLElement, 'table').querySelectorAll('th,td').length; j++) {
@@ -127,7 +138,7 @@ export class TableCommand {
         let selectedCell: Node = e.item.selection.range.startContainer;
         selectedCell = (selectedCell.nodeType === 3) ? selectedCell.parentNode : selectedCell;
         let curRow: HTMLTableRowElement = closest(selectedCell as HTMLElement, 'tr') as HTMLTableRowElement;
-        let allRows: NodeListOf<Element> = (closest(curRow as HTMLElement, 'table') as HTMLTableElement).rows;
+        let allRows: HTMLCollectionOf<HTMLTableRowElement> = (closest(curRow, 'table') as HTMLTableElement).rows;
         if (curRow.querySelectorAll('th,td').length === 1) {
             e.item.selection.restore();
             detach(closest(selectedCell.parentElement, 'table'));

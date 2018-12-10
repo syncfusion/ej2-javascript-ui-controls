@@ -1,4 +1,4 @@
-/** 
+/**
  * AccumulationChart DataLabel module file
  */
 import { extend, createElement, getValue } from '@syncfusion/ej2-base';
@@ -50,8 +50,11 @@ export class AccumulationDataLabel extends AccumulationBase {
     public getDataLabelPosition(
         point: AccPoints, dataLabel: AccumulationDataLabelSettingsModel, textSize: Size,
         points: AccPoints[], parent: Element, id: string): void {
+        let radius: number = this.isCircular() ? (!this.isVariousRadius() ? this.accumulation.pieSeriesModule.labelRadius :
+            this.accumulation.pieSeriesModule.getLabelRadius(this.accumulation.visibleSeries[0], point)) :
+            this.getLabelDistance(point, dataLabel);
 
-        let radius: number = this.isCircular() ? this.labelRadius : this.getLabelDistance(point, dataLabel);
+        //let radius: number = this.isCircular() ? this.labelRadius : this.getLabelDistance(point, dataLabel);
 
         this.getLabelRegion(point, dataLabel.position, textSize, radius, this.marginValue);
         point.labelAngle = point.midAngle;
@@ -153,7 +156,7 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
 
     /**
-     * To find trimmed datalabel tooltip needed. 
+     * To find trimmed datalabel tooltip needed.
      * @return {void}
      * @private
      */
@@ -180,7 +183,7 @@ export class AccumulationDataLabel extends AccumulationBase {
         }
         if (isTouch) {
             clearTimeout(this.clearTooltip);
-            this.clearTooltip = setTimeout(() => { removeElement(this.accumulation.element.id + '_EJ2_Datalabel_Tooltip'); }, 1000);
+            this.clearTooltip = +setTimeout(() => { removeElement(this.accumulation.element.id + '_EJ2_Datalabel_Tooltip'); }, 1000);
         }
     }
     /**
@@ -371,7 +374,10 @@ export class AccumulationDataLabel extends AccumulationBase {
     private getConnectorPath(label: Rect, point: AccPoints, dataLabel: AccumulationDataLabelSettingsModel, end: number = 0): string {
         let connector: ConnectorModel = dataLabel.connectorStyle;
 
-        let labelRadius: number = this.isCircular() ? this.labelRadius : this.getLabelDistance(point, dataLabel);
+        let labelRadius: number = this.isCircular() ? (!this.isVariousRadius() ? this.labelRadius :
+            this.accumulation.pieSeriesModule.getLabelRadius(this.accumulation.visibleSeries[0], point)) :
+            this.getLabelDistance(point, dataLabel);
+        //let labelRadius: number = this.isCircular() ? this.labelRadius : this.getLabelDistance(point, dataLabel);
 
         let start: ChartLocation = this.getConnectorStartPoint(point, connector);
 
@@ -383,7 +389,10 @@ export class AccumulationDataLabel extends AccumulationBase {
 
         if (connector.type === 'Curve') {
             if (this.isCircular()) {
-                let r: number = labelRadius - this.radius;
+                let r: number = labelRadius - (
+                    this.isVariousRadius() ? stringToNumber(point.sliceRadius, this.accumulation.pieSeriesModule.seriesRadius) :
+                        this.radius);
+                //let r: number = labelRadius - this.radius;
                 middle = degreeToLocation(labelAngle, labelRadius - (r / 2), this.center);
                 return 'M ' + start.x + ' ' + start.y + ' Q ' + middle.x + ' ' + middle.y + ' ' + endPoint.x + ' ' + endPoint.y;
             } else {
@@ -500,7 +509,14 @@ export class AccumulationDataLabel extends AccumulationBase {
             }
             return location;
         } else {
-            return degreeToLocation(point.midAngle, this.radius, this.center);
+            //return degreeToLocation(point.midAngle, this.radius, this.center);
+            return degreeToLocation(
+                point.midAngle,
+                (this.isVariousRadius() ? stringToNumber(point.sliceRadius, this.accumulation.pieSeriesModule.seriesRadius) :
+                    this.radius),
+                this.center
+            );
+
         }
     }
 
@@ -508,8 +524,15 @@ export class AccumulationDataLabel extends AccumulationBase {
      * Finds the beginning of connector line
      */
     private getConnectorStartPoint(point: AccPoints, connector: ConnectorModel): ChartLocation {
-        return this.isCircular() ? degreeToLocation(point.midAngle, this.radius - connector.width, this.center) :
-            this.getLabelLocation(point);
+        // return this.isCircular() ? degreeToLocation(point.midAngle, this.radius - connector.width, this.center) :
+        //     this.getLabelLocation(point);
+        return this.isCircular() ? degreeToLocation(
+            point.midAngle,
+            (this.isVariousRadius() ? stringToNumber(point.sliceRadius, this.accumulation.pieSeriesModule.seriesRadius) :
+                this.radius) - connector.width,
+            this.center
+        ) : this.getLabelLocation(point);
+
     }
 
     /**
@@ -601,9 +624,9 @@ export class AccumulationDataLabel extends AccumulationBase {
 
     /**
      * To find the template element size
-     * @param element 
-     * @param point 
-     * @param argsData 
+     * @param element
+     * @param point
+     * @param argsData
      */
     private getTemplateSize(
         element: HTMLElement, point: AccPoints, argsData: IAccTextRenderEventArgs, redraw: boolean
@@ -619,10 +642,10 @@ export class AccumulationDataLabel extends AccumulationBase {
     /**
      * To set the template element style
      * @param childElement
-     * @param point 
-     * @param parent 
-     * @param labelColor 
-     * @param fill 
+     * @param point
+     * @param parent
+     * @param labelColor
+     * @param fill
      */
     private setTemplateStyle(
         childElement: HTMLElement, point: AccPoints, parent: Element,
@@ -692,7 +715,7 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
 
     /**
-     * To destroy the data label. 
+     * To destroy the data label.
      * @return {void}
      * @private
      */

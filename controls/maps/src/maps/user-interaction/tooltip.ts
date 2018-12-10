@@ -1,8 +1,8 @@
 import { Maps, ITooltipRenderEventArgs, tooltipRender } from '../index';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
 import { createElement, Browser, isNullOrUndefined, extend } from '@syncfusion/ej2-base';
-import { TooltipSettingsModel,  LayerSettings, MarkerSettingsModel, BubbleSettingsModel } from '../index';
-import {  MapLocation, checkShapeDataFields, getMousePosition, Internalize } from '../utils/helper';
+import { TooltipSettingsModel, LayerSettings, MarkerSettingsModel, BubbleSettingsModel } from '../index';
+import { MapLocation, checkShapeDataFields, getMousePosition, Internalize, checkPropertyPath } from '../utils/helper';
 /**
  * Map Tooltip
  */
@@ -50,23 +50,27 @@ export class MapsTooltip {
         let tooltipContent: string[] = []; let markerFill: string;
         location = getMousePosition(pageX, pageY, this.maps.svgObject);
         let istooltipRender: boolean = (targetId.indexOf('_ShapeIndex_') > -1)
-         || (targetId.indexOf('_MarkerIndex_') > -1) || (targetId.indexOf('_BubbleIndex_') > -1);
+            || (targetId.indexOf('_MarkerIndex_') > -1) || (targetId.indexOf('_BubbleIndex_') > -1);
         if (istooltipRender) {
             if (targetId.indexOf('_ShapeIndex_') > -1) {
                 option = layer.tooltipSettings;
                 let shape: number = parseInt(targetId.split('_')[4], 10);
-                if (isNullOrUndefined(layer.shapeData['features'])) {
+                if (isNullOrUndefined(layer.layerData) || isNullOrUndefined(layer.layerData[shape])) {
                     return;
                 }
-                let value: object = layer.shapeData['features'][shape]['properties'];
+                let value: object = layer.layerData[shape]['property'];
                 index = checkShapeDataFields(<Object[]>layer.dataSource, value, layer.shapeDataPath, layer.shapePropertyPath);
                 templateData = layer.dataSource[index];
                 if (option.visible && ((!isNullOrUndefined(index) && !isNaN(index)) || (!isNullOrUndefined(value)))) {
                     if (layer.tooltipSettings.format) {
                         currentData = this.formatter(layer.tooltipSettings.format, layer.dataSource[index]);
-                    }else {
+                    } else {
+                        let shapePath: string = checkPropertyPath(layer.shapeDataPath, layer.shapePropertyPath, value);
                         currentData = ((!isNullOrUndefined(layer.dataSource)) && ((!isNullOrUndefined(index)))) ?
-                        this.formatValue(layer.dataSource[index][option.valuePath], this.maps) : value[layer.shapePropertyPath];
+                            this.formatValue(layer.dataSource[index][option.valuePath], this.maps) : value[shapePath];
+                        if (isNullOrUndefined(currentData)) {
+                            currentData = value[option.valuePath];
+                        }
                     }
                 }
                 //location.y = this.template(option, location);
@@ -80,7 +84,7 @@ export class MapsTooltip {
                 if (option.visible && !isNaN(markerIdex)) {
                     if (marker.tooltipSettings.format) {
                         currentData = this.formatter(marker.tooltipSettings.format, marker.dataSource[dataIndex]);
-                    }else {
+                    } else {
                         currentData = this.formatValue(marker.dataSource[dataIndex][marker.tooltipSettings.valuePath], this.maps) as string;
                     }
                 }
@@ -94,7 +98,7 @@ export class MapsTooltip {
                 if (option.visible && !isNaN(dataIndex)) {
                     if (bubble.tooltipSettings.format) {
                         currentData = this.formatter(bubble.tooltipSettings.format, bubble.dataSource[dataIndex]);
-                    }else {
+                    } else {
                         currentData = this.formatValue(bubble.dataSource[dataIndex][bubble.tooltipSettings.valuePath], this.maps) as string;
                     }
                 }
@@ -126,8 +130,10 @@ export class MapsTooltip {
                 element: target, eventArgs: e
             };
             this.maps.trigger(tooltipRender, tootipArgs);
+            let themes: string = this.maps.theme.toLowerCase();
+            let tooltipColor: string = themes.indexOf('dark') > -1 || themes === 'highcontrast' ? '#00000' : '#FFFFFF';
             if (!tootipArgs.cancel && option.visible && !isNullOrUndefined(currentData)) {
-                tootipArgs.options['textStyle']['color'] = ( this.maps.theme === 'Highcontrast') ? '#00000' : '#FFFFFF';
+                tootipArgs.options['textStyle']['color'] = tooltipColor;
                 this.svgTooltip = new Tooltip({
                     enable: true,
                     header: '',
@@ -139,8 +145,7 @@ export class MapsTooltip {
                     palette: [markerFill],
                     areaBounds: this.maps.mapAreaRect,
                     textStyle: tootipArgs.options['textStyle'],
-                    theme: this.maps.theme,
-                    fill: (this.maps.theme === 'Highcontrast') ? '#FFFFFF' : '#00000'
+                    fill: (themes.indexOf('dark') > -1 || themes === 'highcontrast') ? '#FFFFFF' : '#00000'
                 });
                 this.svgTooltip.appendTo(tooltipEle);
             } else {

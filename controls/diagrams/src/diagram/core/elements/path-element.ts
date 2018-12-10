@@ -45,6 +45,9 @@ export class PathElement extends DiagramElement {
      */
     public absolutePath: string = '';
 
+    /**   @private  */
+    public canMeasurePath: boolean = false;
+
     //Private variables
     /**   @private  */
     public absoluteBounds: Rect = new Rect();
@@ -78,7 +81,8 @@ export class PathElement extends DiagramElement {
             this.absoluteBounds = new Rect(
                 this.offsetX - this.width * this.pivot.x, this.offsetY - this.height * this.pivot.y,
                 this.width, this.height);
-        } else if (this.isDirt && (this.transformPath || (this.width === undefined || this.height === undefined))) {
+        } else if (this.isDirt && (this.transformPath || (this.width === undefined || this.height === undefined))
+            && (!this.absoluteBounds || this.absoluteBounds.height === 0) || this.canMeasurePath) {
             //Measure the element only whent the path data is changed/ size is not specified
             this.absoluteBounds = measurePath(this.data ? this.data : '');
         }
@@ -90,6 +94,7 @@ export class PathElement extends DiagramElement {
             this.desiredSize = new Size(this.width, this.height);
         }
         this.desiredSize = this.validateDesiredSize(this.desiredSize, availableSize);
+        this.canMeasurePath = false;
         return this.desiredSize;
     }
 

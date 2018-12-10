@@ -54,6 +54,13 @@ export class Annotation extends ChildProperty<Annotation> {
     public content: string;
 
     /**
+     * Sets the textual description of the node/connector
+     * @default undefined
+     */
+    @Property(undefined)
+    public template: string | HTMLElement;
+
+    /**
      * Defines the visibility of the label
      * @default true
      */
@@ -164,6 +171,13 @@ export class Annotation extends ChildProperty<Annotation> {
      */
     @Complex<MarginModel>({}, Margin)
     public margin: MarginModel;
+
+    /**
+     * Sets the space to be left between an annotation and its parent node/connector
+     * @default new Margin(20,20,20,20)
+     */
+    @Complex<MarginModel>({ top: undefined, bottom: undefined, left: undefined, right: undefined }, Margin)
+    public dragLimit: MarginModel;
 
     /**
      * Sets the type of the annotation

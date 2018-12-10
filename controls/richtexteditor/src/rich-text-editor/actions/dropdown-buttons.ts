@@ -1,7 +1,8 @@
-import { addClass, removeClass, select } from '@syncfusion/ej2-base';
+import { addClass, isNullOrUndefined, removeClass, select, closest } from '@syncfusion/ej2-base';
 import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { RenderType } from '../base/enum';
 import { getIndex } from '../base/util';
+import { RichTextEditorModel } from '../base/rich-text-editor-model';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { getDropDownValue, getFormattedFontSize, getTooltipText } from '../base/util';
@@ -42,7 +43,7 @@ export class DropDownButtons {
 
     private beforeRender(args: MenuEventArgs): void {
         let item: IDropDownItemModel = args.item as IDropDownItemModel;
-        if (item.class) { addClass([args.element], item.class); }
+        if (item.cssClass) { addClass([args.element], item.cssClass); }
         if (item.command === 'Alignments' || item.subCommand === 'JustifyLeft'
             || item.subCommand === 'JustifyRight' || item.subCommand === 'JustifyCenter') {
             args.element.setAttribute('title', getTooltipText(item.subCommand.toLocaleLowerCase(), this.locator));
@@ -153,6 +154,100 @@ export class DropDownButtons {
                 }
             }
         });
+    }
+
+    private getUpdateItems(items: IDropDownItemModel[], value: string): IDropDownItemModel[] {
+        let dropDownItems: IDropDownItemModel[] = items.slice();
+        dropDownItems.forEach((item: IDropDownItemModel): void => {
+            Object.defineProperties((item as object), {
+                command: { value: (value === 'Format' ? 'Formats' : 'Font'), enumerable: true },
+                subCommand: { value: (value === 'Format' ? item.value : value), enumerable: true }
+            });
+        });
+        return dropDownItems;
+    }
+
+    private onPropertyChanged(model: { [key: string]: Object }): void {
+        let newProp: RichTextEditorModel = model.newProp;
+        for (let prop of Object.keys(newProp)) {
+            switch (prop) {
+                case 'fontFamily':
+                    if (this.fontNameDropDown) {
+                        for (let fontFamily of Object.keys(newProp.fontFamily)) {
+                            switch (fontFamily) {
+                                case 'default':
+                                case 'width':
+                                    let fontItems: IDropDownItemModel[] = this.fontNameDropDown.items;
+                                    let type: string = !isNullOrUndefined(
+                                        closest(this.fontNameDropDown.element, '.' + classes.CLS_QUICK_TB)) ?
+                                        'quick' : 'toolbar';
+                                    let content: string = this.dropdownContent(
+                                        this.parent.fontFamily.width, type,
+                                        ((type === 'quick') ? '' :
+                                            getDropDownValue(fontItems, this.parent.fontFamily.default, 'text', 'text')));
+                                    this.fontNameDropDown.setProperties({ content: content });
+                                    break;
+                                case 'items':
+                                    this.fontNameDropDown.setProperties({
+                                        items: this.getUpdateItems(newProp.fontFamily.items, 'FontSize')
+                                    });
+                                    break;
+                            }
+                        }
+                    }
+                    break;
+                case 'fontSize':
+                    if (this.fontSizeDropDown) {
+                        for (let fontSize of Object.keys(newProp.fontSize)) {
+                            switch (fontSize) {
+                                case 'default':
+                                case 'width':
+                                    let fontsize: IDropDownItemModel[] = this.fontSizeDropDown.items;
+                                    let type: string = !isNullOrUndefined(
+                                        closest(this.fontSizeDropDown.element, '.' + classes.CLS_QUICK_TB)) ? 'quick' : 'toolbar';
+                                    let content: string = this.dropdownContent(
+                                        this.parent.fontSize.width, type,
+                                        getFormattedFontSize(getDropDownValue(fontsize, this.parent.fontSize.default, 'text', 'value')));
+                                    this.fontSizeDropDown.setProperties({ content: content });
+                                    break;
+                                case 'items':
+                                    this.fontSizeDropDown.setProperties({
+                                        items:
+                                            this.getUpdateItems(newProp.fontSize.items, 'FontSize')
+                                    });
+                                    break;
+                            }
+                        }
+                    }
+                    break;
+                case 'format':
+                    if (this.formatDropDown) {
+                        for (let format of Object.keys(newProp.format)) {
+                            switch (format) {
+                                case 'default':
+                                case 'width':
+                                    let formatItems: IDropDownItemModel[] = this.formatDropDown.items;
+                                    let type: string = !isNullOrUndefined(
+                                        closest(this.formatDropDown.element, '.' + classes.CLS_QUICK_TB)) ? 'quick' : 'toolbar';
+                                    let content: string = this.dropdownContent(
+                                        this.parent.format.width,
+                                        type,
+                                        ((type === 'quick') ? '' :
+                                            getDropDownValue(formatItems, this.parent.format.default, 'text', 'text')));
+                                    this.formatDropDown.setProperties({ content: content });
+                                    break;
+                                case 'types':
+                                    this.formatDropDown.setProperties({
+                                        items:
+                                            this.getUpdateItems(newProp.format.types, 'Format')
+                                    });
+                                    break;
+                            }
+                        }
+                    }
+                    break;
+            }
+        }
     }
     private rowDropDown(type: string, tbElement: HTMLElement, targetElement: Element): void {
         targetElement = select('#' + this.parent.getID() + '_' + type + '_TableRows', tbElement);
@@ -298,6 +393,7 @@ export class DropDownButtons {
         this.parent.on(events.iframeMouseDown, this.onIframeMouseDown, this);
         this.parent.on(events.rtlMode, this.setRtl, this);
         this.parent.on(events.destroy, this.removeEventListener, this);
+        this.parent.on(events.modelChanged, this.onPropertyChanged, this);
     }
 
     private onIframeMouseDown(): void {
@@ -310,5 +406,7 @@ export class DropDownButtons {
         this.parent.off(events.rtlMode, this.setRtl);
         this.parent.off(events.beforeDropDownItemRender, this.beforeRender);
         this.parent.off(events.destroy, this.removeEventListener);
+        this.parent.off(events.modelChanged, this.onPropertyChanged);
     }
+
 }

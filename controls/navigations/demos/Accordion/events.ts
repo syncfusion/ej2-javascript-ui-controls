@@ -16,7 +16,7 @@ let acrdnObj: Accordion = new Accordion({
   expanding: expanding,
   clicked: create,
   items: [
-    { header: 'What is React?', content: ctn3, iconCss: 'e-react e-icons' },
+    { header: 'What is React?', content: ctn3, iconCss: 'e-athletics e-acrdn-icons' },
     { header: 'What is TypeScript?', content: ctn4 },
     { header: 'What is Angular?', content: ctn2 }
   ]
@@ -27,7 +27,7 @@ function create( e: AccordionClickArgs) {
     if (el && !el.classList.contains('e-control')) {
     acdnObj= new Accordion({
         items: [
-            { content: ctn1, header: 'React', iconCss: 'e-react e-icons' }, { content: ctn2, header: 'Angular' }]
+            { content: ctn1, header: 'React', iconCss: 'e-athletics e-acrdn-icons' }, { content: ctn2, header: 'Angular' }]
     });
     acdnObj.appendTo('#nestAcrdion'); }
     if (ele && !ele.classList.contains('e-control')) {

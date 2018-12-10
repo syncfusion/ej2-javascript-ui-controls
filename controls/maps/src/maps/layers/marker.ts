@@ -25,11 +25,16 @@ export class Marker {
     }
 
     /* tslint:disable:no-string-literal */
-    public markerRender(layerElement: Element, layerIndex: number, factor: number): void {
+    public markerRender(layerElement: Element, layerIndex: number, factor: number, type: string): void {
         let templateFn: Function;
         let currentLayer: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex];
-        this.markerSVGObject = this.maps.renderer.createGroup({ id: this.maps.element.id + '_Markers_Group',
-            style: 'pointer-events: auto;' });
+        this.markerSVGObject = this.maps.renderer.createGroup({
+            id: this.maps.element.id + '_Markers_Group',
+            style: 'pointer-events: auto;'
+        });
+        if (document.getElementById(this.markerSVGObject.id)) {
+            document.getElementById(this.markerSVGObject.id).remove();
+        }
         let markerTemplateEle: HTMLElement = createElement('div', {
             id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_Markers_Template_Group',
             className: 'template',
@@ -39,6 +44,9 @@ export class Marker {
                 'height:' + this.maps.mapAreaRect.height + 'px;' +
                 'width:' + this.maps.mapAreaRect.width + 'px;'
         });
+        if (document.getElementById(markerTemplateEle.id)) {
+            document.getElementById(markerTemplateEle.id).remove();
+        }
         currentLayer.markerSettings.map((markerSettings: MarkerSettings, markerIndex: number) => {
             let markerData: Object[] = <Object[]>markerSettings.dataSource;
             markerData.forEach((data: Object, dataIndex: number) => {
@@ -60,8 +68,8 @@ export class Marker {
                     ) : convertGeoToPoint(lat, lng, factor, currentLayer, this.maps);
                     let animate: boolean = currentLayer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
                     let translate: Object = (this.maps.isTileMap) ? new Object() : getTranslate(this.maps, currentLayer, animate);
-                    let scale: number = translate['scale'];
-                    let transPoint: Point = translate['location'] as Point;
+                    let scale: number = type === 'AddMarker' ? this.maps.scale : translate['scale'];
+                    let transPoint: Point = type === 'AddMarker' ? this.maps.translatePoint : translate['location'] as Point;
                     if (eventArgs.template) {
                         templateFn = getTemplateFunction(eventArgs.template);
                         if (templateFn && templateFn(this.maps).length) {

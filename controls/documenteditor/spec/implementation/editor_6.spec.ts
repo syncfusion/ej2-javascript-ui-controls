@@ -70,31 +70,31 @@ describe('ApplyStyle API validation - 1', () => {
     });
 
     it('set ClearDirectFormatting as true', () => {
-       editor.editor.insertText('Sample',false);
-       editor.selection.selectAll();
-       editor.selection.characterFormat.fontSize=24;
-       editor.selection.characterFormat.fontFamily='Algerian';
-       editor.selection.paragraphFormat.textAlignment='Right';
-       editor.editor.applyStyle('Heading 1',true);
-       expect(editor.selection.characterFormat.fontFamily).toBe('Calibri Light');
-       expect(editor.selection.characterFormat.fontSize).toBe(16);
-       expect( editor.selection.paragraphFormat.textAlignment).toBe('Left');
+        editor.editor.insertText('Sample', false);
+        editor.selection.selectAll();
+        editor.selection.characterFormat.fontSize = 24;
+        editor.selection.characterFormat.fontFamily = 'Algerian';
+        editor.selection.paragraphFormat.textAlignment = 'Right';
+        editor.editor.applyStyle('Heading 1', true);
+        expect(editor.selection.characterFormat.fontFamily).toBe('Calibri Light');
+        expect(editor.selection.characterFormat.fontSize).toBe(16);
+        expect(editor.selection.paragraphFormat.textAlignment).toBe('Left');
     });
-    it('undo -after applyStyle validation',()=>{
+    it('undo -after applyStyle validation', () => {
         editor.editorHistory.undo();
         expect(editor.selection.characterFormat.fontFamily).toBe('Algerian');
         expect(editor.selection.characterFormat.fontSize).toBe(24);
-        expect( editor.selection.paragraphFormat.textAlignment).toBe('Right');
+        expect(editor.selection.paragraphFormat.textAlignment).toBe('Right');
     });
 
-    it('redo -after applyStyle validation',()=>{
+    it('redo -after applyStyle validation', () => {
         editor.editorHistory.redo();
         expect(editor.selection.characterFormat.fontFamily).toBe('Calibri Light');
-       expect(editor.selection.characterFormat.fontSize).toBe(16);
-       expect( editor.selection.paragraphFormat.textAlignment).toBe('Left');
+        expect(editor.selection.characterFormat.fontSize).toBe(16);
+        expect(editor.selection.paragraphFormat.textAlignment).toBe('Left');
     });
 
-    it('multiple undo and redo -after applyStyle validation',()=>{
+    it('multiple undo and redo -after applyStyle validation', () => {
         let count: number = 1;
         while (count <= 5) {
             editor.editorHistory.undo();
@@ -102,8 +102,8 @@ describe('ApplyStyle API validation - 1', () => {
             count++;
         }
         expect(editor.selection.characterFormat.fontFamily).toBe('Calibri Light');
-       expect(editor.selection.characterFormat.fontSize).toBe(16);
-       expect( editor.selection.paragraphFormat.textAlignment).toBe('Left');
+        expect(editor.selection.characterFormat.fontSize).toBe(16);
+        expect(editor.selection.paragraphFormat.textAlignment).toBe('Left');
     });
 });
 
@@ -131,35 +131,35 @@ describe('ApplyStyle API validation - 2', () => {
     });
 
     it('The paragraph already contains style and direct formatting, set ClearDirectFormatting as true', () => {
-       editor.editor.insertText('Sample',false);
-       editor.editor.applyStyle('Heading 1',true);
-       editor.selection.selectAll();
-       editor.selection.characterFormat.fontSize=24;          
-       editor.editor.applyStyle('Heading 4',true);
-       expect(editor.selection.characterFormat.italic).toBe(true);    
-       expect(editor.selection.characterFormat.fontSize).toBe(11);   
+        editor.editor.insertText('Sample', false);
+        editor.editor.applyStyle('Heading 1', true);
+        editor.selection.selectAll();
+        editor.selection.characterFormat.fontSize = 24;
+        editor.editor.applyStyle('Heading 4', true);
+        expect(editor.selection.characterFormat.italic).toBe(true);
+        expect(editor.selection.characterFormat.fontSize).toBe(11);
     });
-    it('undo -after applyStyle validation',()=>{
+    it('undo -after applyStyle validation', () => {
         editor.editorHistory.undo();
-        expect(editor.selection.characterFormat.italic).toBe(false);    
-       expect(editor.selection.characterFormat.fontSize).toBe(24); 
+        expect(editor.selection.characterFormat.italic).toBe(false);
+        expect(editor.selection.characterFormat.fontSize).toBe(24);
     });
 
-    it('redo -after applyStyle validation',()=>{
+    it('redo -after applyStyle validation', () => {
         editor.editorHistory.redo();
-        expect(editor.selection.characterFormat.italic).toBe(true);    
-       expect(editor.selection.characterFormat.fontSize).toBe(11);  
+        expect(editor.selection.characterFormat.italic).toBe(true);
+        expect(editor.selection.characterFormat.fontSize).toBe(11);
     });
 
-    it('multiple undo and redo -after applyStyle validation',()=>{
+    it('multiple undo and redo -after applyStyle validation', () => {
         let count: number = 1;
         while (count <= 5) {
             editor.editorHistory.undo();
             editor.editorHistory.redo();
             count++;
         }
-        expect(editor.selection.characterFormat.italic).toBe(true);    
-       expect(editor.selection.characterFormat.fontSize).toBe(11);  
+        expect(editor.selection.characterFormat.italic).toBe(true);
+        expect(editor.selection.characterFormat.fontSize).toBe(11);
     });
 });
 
@@ -170,7 +170,7 @@ describe('ApplyStyle API validation - 2 without History', () => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
-        DocumentEditor.Inject(Editor, Selection); 
+        DocumentEditor.Inject(Editor, Selection);
         (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
         (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
         (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
@@ -187,19 +187,19 @@ describe('ApplyStyle API validation - 2 without History', () => {
     });
 
     it('without specify ClearDirectFormatting', () => {
-       editor.editor.insertText('Sample',false);       
-       editor.selection.selectAll();
-       editor.selection.characterFormat.fontSize=24;          
-       editor.editor.applyStyle('Heading 4');          
-       expect(editor.selection.characterFormat.fontSize).toBe(24);   
-    }); 
-    it('with ClearDirectFormatting', () => {
-        editor.editor.insertText('Sample',false);       
+        editor.editor.insertText('Sample', false);
         editor.selection.selectAll();
-        editor.selection.characterFormat.fontSize=24;          
-        editor.editor.applyStyle('Heading 4',true);          
-        expect(editor.selection.characterFormat.fontSize).toBe(11);   
-     });   
+        editor.selection.characterFormat.fontSize = 24;
+        editor.editor.applyStyle('Heading 4');
+        expect(editor.selection.characterFormat.fontSize).toBe(24);
+    });
+    it('with ClearDirectFormatting', () => {
+        editor.editor.insertText('Sample', false);
+        editor.selection.selectAll();
+        editor.selection.characterFormat.fontSize = 24;
+        editor.editor.applyStyle('Heading 4', true);
+        expect(editor.selection.characterFormat.fontSize).toBe(11);
+    });
 });
 
 describe('Adding bookmark link in empty paragraph validation', () => {
@@ -207,8 +207,8 @@ describe('Adding bookmark link in empty paragraph validation', () => {
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
-        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true,enableBookmarkDialog: true });
-        DocumentEditor.Inject(Editor, Selection, BookmarkDialog); 
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableBookmarkDialog: true });
+        DocumentEditor.Inject(Editor, Selection, BookmarkDialog);
         (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
         (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
         (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
@@ -226,7 +226,9 @@ describe('Adding bookmark link in empty paragraph validation', () => {
 
     it('Adding bookmark link in empty paragraph', () => {
         editor.showBookmarkDialog();
-        (document.getElementById('bookmark_text_box') as any).value ='firstpage';
+        (document.getElementById('bookmark_text_box') as any).value = 'firstpage';
+        editor.bookmarkDialogModule.onKeyUpOnTextBox({} as any);
+        (document.getElementById('add') as HTMLButtonElement).disabled = false;
         document.getElementById('add').click();
         expect(editor.viewer.bookmarks.length).toBe(1);
     });

@@ -7,6 +7,7 @@ import { DropDownList } from '../../src/drop-down-list/drop-down-list';
 import { DataManager, ODataV4Adaptor, Query } from '@syncfusion/ej2-data';
 import { isCollide } from '@syncfusion/ej2-popups';
 import '../../node_modules/es6-promise/dist/es6-promise';
+import { SelectEventArgs } from '@syncfusion/ej2-lists';
 
 
 L10n.load({
@@ -166,7 +167,7 @@ describe('DDList', () => {
             expect(listObj.hiddenElement.getAttribute('data-required')).toBe('name');
             expect(listObj.htmlAttributes['data-required']).toBe('name');
          });
- 
+
         afterAll(() => {
             if (element) {
                 element.remove();
@@ -4320,6 +4321,53 @@ describe('DDList', () => {
             let ele: Element = (<any>listObj).getElementByValue('car');
             expect(ele).toBe(undefined);
         });
+    });
+
+    describe('EJ2-15820 - select event not trigger issue', () => {
+        let listObj: DropDownList;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let num: number = 0;
+        beforeAll(() => {
+            document.body.appendChild(element);
+          
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        /**
+         * initialize
+         */
+        it('check same value selection', (done) => {
+            listObj = new DropDownList({
+                dataSource: datasource2,
+               fields: { text: "text", value: "id" },
+                open: () => {
+                    let items: HTMLLIElement = (<any>listObj).popupObj.element.querySelector('.e-list-parent').firstChild;
+                    (<any>listObj).setSelection(items);
+                },
+                close: () => {
+                    listObj.showPopup();
+                },
+                select: (e) => {
+                    if (num === 0) {
+                        num = 1;
+                        listObj.hidePopup();
+                    }
+                    else {
+                        expect(num).toBe(1);
+                        done();
+                    }
+                    e.cancel = true;
+                }
+            });
+            listObj.appendTo(element);
+            listObj.dataBind();
+            listObj.showPopup();
+        });
+
     });
 
 });

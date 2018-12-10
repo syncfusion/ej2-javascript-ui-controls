@@ -1,24 +1,22 @@
-@import 'definition.scss';
+$progress-btn-color: $neutral-light-font !default;
+$progress-btn-bgcolor: rgba($neutral-black, .2) !default;
+$progress-btn-bgcolor-normal: rgba($neutral-black, .2) !default;
+$progress-btn-circle-opacity: .8 !default;
 
-$progress-color: $neutral-light-font;
-$progress-bgcolor: rgba($neutral-black, .2);
-$progress-bgcolor-normal: rgba($neutral-black, .2);
-$circle-opacity: .8;
+$progress-btn-transition: all .3s linear !default;
 
-$transition: all .3s linear;
+$progress-btn-spinner-padding: 12px !default;
+$progress-btn-spinner-padding-small: 10px !default;
+$progress-btn-spinner-padding-bigger: 14px !default;
+$progress-btn-spinner-padding-bigger-small: 12px !default;
 
-$spinner-padding: 12px;
-$spinner-padding-small: 10px;
-$spinner-padding-bigger: 14px;
-$spinner-padding-bigger-small: 12px;
+$progress-btn-spin-btn-padding: 20px !default;
+$progress-btn-small-spin-btn-padding: 16px !default;
+$progress-btn-bigger-spin-btn-padding: 24px !default;
+$progress-btn-bigger-small-spin-btn-padding: 22px !default;
 
-$spin-btn-padding: 20px;
-$small-spin-btn-padding: 16px;
-$bigger-spin-btn-padding: 24px;
-$bigger-small-spin-btn-padding: 22px;
-
-$btn-flat-primary-progress-color: $neutral-black;
-$btn-flat-success-progress-color: $neutral-black;
-$btn-flat-info-progress-color: $neutral-black;
-$btn-flat-warning-progress-color: $neutral-black;
-$btn-flat-danger-progress-color: $neutral-black;
+$progress-btn-flat-primary-progress-color: $neutral-black !default;
+$progress-btn-flat-success-progress-color: $neutral-black !default;
+$progress-btn-flat-info-progress-color: $neutral-black !default;
+$progress-btn-flat-warning-progress-color: $neutral-black !default;
+$progress-btn-flat-danger-progress-color: $neutral-black !default;

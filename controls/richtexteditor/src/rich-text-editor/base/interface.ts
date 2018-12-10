@@ -98,7 +98,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     countModule?: Count;
     serviceLocator?: ServiceLocator;
     setEnable?(): void;
-    setReadOnly?(): void;
+    setReadOnly?(isInit?: boolean): void;
     setPlaceHolder?(): void;
     updateValue?(): void;
     print(): void;
@@ -129,6 +129,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     localeObj?: L10n;
     invokeChangeEvent?(): void;
     preventDefaultResize?(e?: FocusEvent | MouseEvent): void;
+    autoResize?(): void;
 }
 export interface IRenderer {
     linkQTBar?: BaseQuickToolbar;
@@ -318,7 +319,7 @@ export interface IToolsItems {
 }
 
 export interface IDropDownItemModel extends DropDownItemModel {
-    class?: string;
+    cssClass?: string;
     command?: string;
     subCommand?: string;
     value?: string;

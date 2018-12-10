@@ -6,7 +6,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { TestHelper } from '../../test-helper.spec';
 import { Selection } from '../../../src/index';
 import { EditorHistory } from '../../../src/document-editor/implementation/editor-history/editor-history';
-import { L10n, setCulture } from '@syncfusion/ej2-base';
+import { L10n } from '@syncfusion/ej2-base';
 import { Editor } from '../../../src/index';
 
 /**
@@ -603,7 +603,6 @@ describe('dialog event validation-1', () => {
         editor.editor.applyBullet('\uf0b7', 'Symbol');
         let locale: L10n = new L10n('documenteditor', editor.defaultLocale);
         locale.setLocale(editor.locale);
-        setCulture(editor.locale);
         dialog.initListDialog(locale);
         let event: any = { target: { value: "Space" } };
         (dialog as any).onFollowCharacterValueChanged(event);

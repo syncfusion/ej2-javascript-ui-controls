@@ -1,7 +1,7 @@
 import { LayoutViewer } from '../index';
 import { TextSearchResults } from './text-search-results';
 import { TextSearchResult } from './text-search-result';
-import { createElement, isNullOrUndefined, L10n, setCulture } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { FindOption } from '../../base/types';
 import { TextPosition } from '../selection/selection-helper';
 import { HelperMethods } from '../editor/editor-helper';
@@ -93,7 +93,7 @@ export class OptionsPane {
      * @private
      */
     // tslint:disable:max-func-body-length
-    public initOptionsPane(localeValue: L10n): void {
+    public initOptionsPane(localeValue: L10n, isRtl?: boolean): void {
         let viewer: LayoutViewer = this.viewer;
         this.localeValue = localeValue;
         this.optionsPane = createElement('div', { className: 'e-de-op', styles: 'display:none;' });
@@ -126,7 +126,7 @@ export class OptionsPane {
         this.searchTextBoxContainer = createElement('div', { className: 'e-input-group e-de-op-input-group' });
         this.findTabContentDiv.appendChild(this.searchTextBoxContainer);
         // tslint:disable-next-line:max-line-length
-        this.searchInput = createElement('input', { className: 'e-input e-de-search-input', id: this.viewer.owner.containerId + '_option_search_text_box', attrs: { placeholder: 'Search for' }, styles: 'font-size:14px;' }) as HTMLInputElement;
+        this.searchInput = createElement('input', { className: 'e-input e-de-search-input', id: this.viewer.owner.containerId + '_option_search_text_box', attrs: { placeholder: localeValue.getConstant('Search for') } }) as HTMLInputElement;
         this.searchTextBoxContainer.appendChild(this.searchInput);
         this.searchIcon = createElement('span', {
             className: 'e-de-op-icon e-de-op-search-icon e-input-group-icon e-icon',
@@ -151,16 +151,24 @@ export class OptionsPane {
             id: this.viewer.owner.containerId + '_matchCase'
         }) as HTMLInputElement;
         div.appendChild(this.matchInput);
-        this.matchCase = new CheckBox({ label: 'Match case', checked: false, change: this.matchChange });
+        // tslint:disable-next-line:max-line-length
+        this.matchCase = new CheckBox({ label: localeValue.getConstant('Match case'), enableRtl: isRtl, checked: false, change: this.matchChange });
         this.matchCase.appendTo(this.matchInput);
         this.focusedElement.push(this.matchInput);
         this.matchInput.tabIndex = 0;
+        let wholeWordLabel: string;
+        if (isRtl) {
+            wholeWordLabel = '_e-de-rtl';
+        } else {
+            wholeWordLabel = '_e-de-ltr';
+        }
         this.wholeInput = createElement('input', {
             attrs: { type: 'checkbox' },
-            id: this.viewer.owner.containerId + '_wholeWord',
+            id: this.viewer.owner.containerId + '_wholeWord' + wholeWordLabel
         }) as HTMLInputElement;
         div.appendChild(this.wholeInput);
-        this.wholeWord = new CheckBox({ label: 'Whole words', checked: false, change: this.wholeWordsChange });
+        // tslint:disable-next-line:max-line-length
+        this.wholeWord = new CheckBox({ label: localeValue.getConstant('Whole words'), enableRtl: isRtl, checked: false, change: this.wholeWordsChange });
         this.wholeWord.appendTo(this.wholeInput);
         this.focusedElement.push(this.wholeInput);
         this.wholeInput.tabIndex = 0;
@@ -170,8 +178,8 @@ export class OptionsPane {
         this.replaceTabContentDiv = createElement('div', { className: 'e-de-op-replacetabcontentdiv', styles: 'display:none;' });
         tabContent.appendChild(this.replaceTabContentDiv);
         this.findTabContentDiv.appendChild(this.replaceTabContentDiv);
-        this.createReplacePane();
-        this.findDiv = createElement('div', { className: 'findDiv', styles: 'height:250px;display:block;' });
+        this.createReplacePane(isRtl);
+        this.findDiv = createElement('div', { className: 'findDiv', styles: 'display:block;' });
         findTabContent.appendChild(this.findTabContentDiv);
         this.resultContainer = createElement('div', { styles: 'width:85%;display:block;', className: 'e-de-op-result-container' });
         this.findDiv.appendChild(this.resultContainer);
@@ -183,7 +191,7 @@ export class OptionsPane {
         this.findDiv.appendChild(this.resultsListBlock);
         this.findTabContentDiv.appendChild(this.findDiv);
         this.findTab.appendChild(tabContent);
-        this.tabInstance = new Tab({ selected: this.selectedTabItem });
+        this.tabInstance = new Tab({ enableRtl: isRtl, selected: this.selectedTabItem });
         this.tabInstance.appendTo(this.findTab);
         let findHeader: HTMLElement = this.tabInstance.element.getElementsByClassName('e-item e-toolbar-item')[0] as HTMLElement;
         this.findTabButtonHeader = findHeader.getElementsByClassName('e-tab-wrap')[0] as HTMLElement;
@@ -194,29 +202,43 @@ export class OptionsPane {
         this.replaceTabButtonHeader.classList.add('e-de-op-replace-tab-header');
         this.replaceTabButtonHeader.tabIndex = 0;
         this.onWireEvents();
+        if (isRtl) {
+            this.optionsPane.classList.add('e-de-rtl');
+            this.closeButton.classList.add('e-de-rtl');
+            this.searchDiv.classList.add('e-de-rtl');
+            this.findTabButtonHeader.classList.add('e-de-rtl');
+        }
     }
     /**
      * Create replace pane instances.
      */
-    private createReplacePane(): void {
+    private createReplacePane(isRtl?: boolean): void {
         this.replaceDiv = createElement('div');
         this.replaceTabContentDiv.appendChild(this.replaceDiv);
         this.replaceWith = createElement('input', {
-            className: 'e-de-op-replacewith e-input', styles: 'font-size:14px;',
-            attrs: { placeholder: 'Replace with' }
+            className: 'e-de-op-replacewith e-input',
+            attrs: { placeholder: this.localeValue.getConstant('Replace with') }
         }) as HTMLInputElement;
         this.replaceDiv.appendChild(this.replaceWith);
-        let replaceButtonDiv: HTMLElement = createElement('div', { styles: 'text-align:right;', className: 'e-de-op-dlg-footer' });
+        let replaceButtonDivTextAlign: string;
+        let replaceButtonMargin: string;
+        if (isRtl) {
+            replaceButtonDivTextAlign = 'text-align:left';
+            replaceButtonMargin = 'margin-left:10px';
+        } else {
+            replaceButtonDivTextAlign = 'text-align:right';
+            replaceButtonMargin = 'margin-right:10px';
+        }
+        let replaceButtonDiv: HTMLElement = createElement('div', { styles: replaceButtonDivTextAlign, className: 'e-de-op-dlg-footer' });
         this.replaceDiv.appendChild(replaceButtonDiv);
         this.replaceButton = createElement('button', {
             className: 'e-control e-btn e-flat e-replace',
-            styles: 'font-size:12px;margin-right:10px;',
+            styles: replaceButtonMargin,
             innerHTML: this.localeValue.getConstant(this.replaceButtonText)
         });
         replaceButtonDiv.appendChild(this.replaceButton);
         this.replaceAllButton = createElement('button', {
             className: 'e-control e-btn e-flat e-replaceall',
-            styles: 'font-size:12px;',
             innerHTML: this.localeValue.getConstant(this.replaceAllButtonText)
         });
         replaceButtonDiv.appendChild(this.replaceAllButton);
@@ -233,18 +255,23 @@ export class OptionsPane {
      * @private
      */
     public selectedTabItem = (args: SelectEventArgs): void => {
+        let contentParent: Element = this.findTab.getElementsByClassName('e-content').item(0);
         if (args.previousIndex !== args.selectedIndex) {
-            let previousTab: Element = document.querySelector('#e-content_' + args.previousIndex);
-            let nextTab: Element = document.querySelector('#e-content_' + args.selectedIndex);
-            nextTab.insertBefore(previousTab.firstElementChild, nextTab.firstChild);
+            let previousTab: Element = contentParent.children[args.previousIndex];
+            let nextTab: Element = contentParent.children[args.selectedIndex];
+            let element: HTMLElement = previousTab.firstElementChild as HTMLElement;
+            element.parentElement.removeChild(element);
+            nextTab.appendChild(element);
         }
-        if (args.selectedIndex === 0 && !isNullOrUndefined(document.querySelector('#e-content_' + args.selectedIndex))) {
-            this.isOptionsPane = true;
-            this.onFindPane();
-        }
-        if (args.selectedIndex === 1 && !isNullOrUndefined(document.querySelector('#e-content_' + args.selectedIndex))) {
-            this.isOptionsPane = false;
-            this.onReplacePane();
+        let selectedElement: Element = contentParent.children[args.selectedIndex];
+        if (!isNullOrUndefined(selectedElement)) {
+            if (args.selectedIndex === 0) {
+                this.isOptionsPane = true;
+                this.onFindPane();
+            } else {
+                this.isOptionsPane = false;
+                this.onReplacePane();
+            }
         }
     }
     private searchOptionChange = (): void => {
@@ -380,7 +407,8 @@ export class OptionsPane {
             this.searchIcon.classList.add('e-de-op-search-close-icon');
             this.searchIcon.classList.remove('e-de-op-search-icon');
         }
-        let resultsContainerHeight: number = this.viewer.owner.getDocumentEditorElement().offsetHeight - 215;
+        let height: number = this.isOptionsPane ? 215 : 292;
+        let resultsContainerHeight: number = this.viewer.owner.getDocumentEditorElement().offsetHeight - height;
         this.clearSearchResultItems();
         this.viewer.owner.searchModule.clearSearchHighlight();
         let pattern: RegExp = this.viewer.owner.searchModule.textSearch.stringToRegex(text, this.findOption);
@@ -452,7 +480,9 @@ export class OptionsPane {
             this.resultsListBlock.style.display = 'none';
             this.messageDiv.innerHTML = this.localeValue.getConstant('No matches');
         }
-        this.resultsListBlock.style.height = this.resultsListBlock.offsetHeight + this.replaceTabContentDiv.offsetHeight + 'px';
+        let height: number = this.isOptionsPane ? 215 : 292;
+        let resultsContainerHeight: number = this.viewer.owner.getDocumentEditorElement().offsetHeight - height;
+        this.resultsListBlock.style.height = resultsContainerHeight + 'px';
         this.replaceTabContentDiv.style.display = 'none';
         this.findDiv.style.display = 'block';
         this.messageDiv.style.display = 'block';
@@ -489,7 +519,9 @@ export class OptionsPane {
         this.findDiv.style.display = 'block';
         this.replaceDiv.style.display = 'block';
         this.replaceTabContentDiv.style.display = 'block';
-        this.resultsListBlock.style.height = this.resultsListBlock.offsetHeight - this.replaceTabContentDiv.offsetHeight + 'px';
+        let height: number = this.isOptionsPane ? 215 : 292;
+        let resultsContainerHeight: number = this.viewer.owner.getDocumentEditorElement().offsetHeight - height;
+        this.resultsListBlock.style.height = resultsContainerHeight + 'px';
         this.isOptionsPane = false;
         if (this.searchInput.value.length !== 0) {
             (this.replaceButton as HTMLButtonElement).disabled = false;
@@ -706,7 +738,8 @@ export class OptionsPane {
         if (this.results != null && this.results.length > 0) {
             this.navigateSearchResult();
             this.getMessageDivHeight();
-            let resultsContainerHeight: number = this.viewer.owner.getDocumentEditorElement().offsetHeight - 215;
+            let height: number = this.isOptionsPane ? 215 : 292;
+            let resultsContainerHeight: number = this.viewer.owner.getDocumentEditorElement().offsetHeight - height;
             this.resultsListBlock.style.height = resultsContainerHeight + 'px';
         } else {
             this.messageDiv.innerHTML = this.localeValue.getConstant('No matches');
@@ -950,11 +983,17 @@ export class OptionsPane {
             if (show) {
                 this.localeValue = new L10n('documenteditor', this.viewer.owner.defaultLocale);
                 this.localeValue.setLocale(this.viewer.owner.locale);
-                setCulture(this.viewer.owner.locale);
                 if (isNullOrUndefined(this.optionsPane)) {
-                    this.initOptionsPane(this.localeValue);
+                    this.initOptionsPane(this.localeValue, this.viewer.owner.enableRtl);
                     //Add Option Pane
-                    this.viewer.optionsPaneContainer.setAttribute('style', 'display:inline-flex');
+                    let isRtl: boolean = this.viewer.owner.enableRtl;
+                    let optionsPaneContainerStyle: string;
+                    if (isRtl) {
+                        optionsPaneContainerStyle = 'display:inline-flex;direction:rtl;';
+                    } else {
+                        optionsPaneContainerStyle = 'display:inline-flex;';
+                    }
+                    this.viewer.optionsPaneContainer.setAttribute('style', optionsPaneContainerStyle);
                     // tslint:disable-next-line:max-line-length
                     this.viewer.optionsPaneContainer.insertBefore(this.viewer.owner.optionsPaneModule.optionsPane, this.viewer.viewerContainer);
                 }

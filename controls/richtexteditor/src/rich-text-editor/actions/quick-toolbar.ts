@@ -9,6 +9,7 @@ import { RendererFactory } from '../services/renderer-factory';
 import { BaseQuickToolbar } from './base-quick-toolbar';
 import { BaseToolbar } from './base-toolbar';
 import { PopupRenderer } from '../renderer/popup-renderer';
+import { RichTextEditorModel } from '../base/rich-text-editor-model';
 import { CLS_INLINE_POP, CLS_INLINE } from '../base/classes';
 
 /**
@@ -291,7 +292,20 @@ export class QuickToolbar {
      * Called internally if any of the property value changed.
      * @hidden
      */
-    protected onPropertyChanged(e: NotifyArgs): void {
+    protected onPropertyChanged(e: { [key: string]: RichTextEditorModel }): void {
+        if (!isNullOrUndefined(e.newProp.quickToolbarSettings)) {
+            for (let prop of Object.keys(e.newProp.quickToolbarSettings)) {
+                switch (prop) {
+                    case 'actionOnScroll':
+                        if (e.newProp.quickToolbarSettings.actionOnScroll === 'none') {
+                            this.parent.off(events.scroll, this.hideQuickToolbars);
+                        } else {
+                            this.parent.on(events.scroll, this.hideQuickToolbars, this);
+                        }
+                        break;
+                }
+            }
+        }
         if (e.module !== this.getModuleName()) { return; }
         if (this.inlineQTBar) {
             removeClass([this.parent.element], [CLS_INLINE]);

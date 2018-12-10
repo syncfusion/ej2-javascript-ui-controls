@@ -10,7 +10,6 @@ import { CellType } from '../base/enum';
 import { CellRendererFactory } from '../services/cell-render-factory';
 import { ServiceLocator } from '../services/service-locator';
 import { CellMergeRender } from './cell-merge-renderer';
-
 /**
  * RowRenderer class which responsible for building row content. 
  * @hidden
@@ -24,6 +23,8 @@ export class RowRenderer<T> implements IRowRenderer<T> {
     private serviceLocator: ServiceLocator;
 
     private cellType: CellType;
+
+    private isSpan: boolean = false;
 
     protected parent: IGrid;
 
@@ -99,16 +100,30 @@ export class RowRenderer<T> implements IRowRenderer<T> {
             let cell: Cell<T> = row.cells[i]; cell.isSelected = row.isSelected;
             let cellRenderer: ICellRenderer<T> = cellRendererFact.getCellRenderer(row.cells[i].cellType || CellType.Data);
             let attrs: {} = { 'index': !isNullOrUndefined(row.index) ? row.index.toString() : '' };
-            if (row.isExpand && row.cells[i].cellType === CellType.DetailExpand) { attrs['class'] = 'e-detailrowexpand'; }
+            if (row.isExpand && row.cells[i].cellType === CellType.DetailExpand) {
+                attrs['class'] = this.parent.isPrinting ? 'e-detailrowcollapse' : 'e-detailrowexpand';
+            }
             let td: Element = cellRenderer.render(row.cells[i], row.data, attrs);
             if (row.cells[i].cellType !== CellType.Filter) {
                 if (row.cells[i].cellType === CellType.Data || row.cells[i].cellType === CellType.CommandColumn) {
                     this.parent.trigger(queryCellInfo, extend(
                         cellArgs, <QueryCellInfoEventArgs>{
                             cell: td, column: <{}>cell.column, colSpan: 1,
-                            foreignKeyData: row.cells[i].foreignKeyData
+                            rowSpan: 1, foreignKeyData: row.cells[i].foreignKeyData,
+                            requestType: this.parent.requestTypeAction
                         }));
-                    if (cellArgs.colSpan > 1 || row.cells[i].cellSpan > 1) {
+                    let isRowSpanned: boolean = false;
+                    if (row.index > 0 && this.isSpan) {
+                        let prevRowCells: Cell<Column>[] = this.parent.groupSettings.columns.length > 0 &&
+                            !this.parent.getRowsObject()[row.index - 1].isDataRow ?
+                            this.parent.getRowsObject()[row.index].cells : this.parent.getRowsObject()[row.index - 1].cells;
+                        let uid: string = 'uid';
+                        let prevRowCell: Cell<Column> = prevRowCells.filter((cell: Cell<Column>) =>
+                            cell.column.uid === row.cells[i].column[uid])[0];
+                        isRowSpanned = prevRowCell.isRowSpanned ? prevRowCell.isRowSpanned : prevRowCell.rowSpanRange > 1;
+                    }
+                    if (cellArgs.colSpan > 1 || row.cells[i].cellSpan > 1 || cellArgs.rowSpan > 1 || isRowSpanned) {
+                        this.isSpan = true;
                         let cellMerge: CellMergeRender<T> = new CellMergeRender(this.serviceLocator, this.parent);
                         td = cellMerge.render(cellArgs, row, i, td);
                     }
@@ -117,7 +132,6 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                     tr.appendChild(td);
                 }
             }
-
         }
         let args: RowDataBoundEventArgs = { row: tr, rowHeight: this.parent.rowHeight };
         if (row.isDataRow) {
@@ -135,7 +149,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
             tr.classList.add(row.cssClass);
         }
         if (this.parent.element.scrollHeight > this.parent.height && this.parent.aggregates.length) {
-           for (let i: number = 0; i < this.parent.aggregates.length; i++) {
+            for (let i: number = 0; i < this.parent.aggregates.length; i++) {
                 let property: string = 'properties';
                 let column: string = 'columns';
                 if (this.parent.aggregates[i][property][column][0].footerTemplate) {

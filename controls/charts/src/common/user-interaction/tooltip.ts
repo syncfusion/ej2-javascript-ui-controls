@@ -37,7 +37,6 @@ export class BaseTooltip extends ChartData {
 
     public control: AccumulationChart | Chart;
     public text: string[];
-    public headerText: string;
     public svgTooltip: SVGTooltip;
     /**
      * Constructor for tooltip module.
@@ -90,7 +89,11 @@ export class BaseTooltip extends ChartData {
             }
             this.stopAnimation();
             if (tooltipDiv && !document.getElementById(tooltipDiv.id)) {
-                document.getElementById(this.element.id + '_Secondary_Element').appendChild(tooltipDiv);
+                if (!this.chart.stockChart) {
+                    document.getElementById(this.element.id + '_Secondary_Element').appendChild(tooltipDiv);
+                } else {
+                    document.getElementById(this.chart.stockChart.element.id + '_Secondary_Element').appendChild(tooltipDiv);
+                }
             }
             return true;
         }
@@ -131,7 +134,7 @@ export class BaseTooltip extends ChartData {
         }
     }
 
-    public createTooltip(chart: Chart | AccumulationChart, isFirst: boolean, location: ChartLocation,
+    public createTooltip(chart: Chart | AccumulationChart, isFirst: boolean, header: string, location: ChartLocation,
                          clipLocation: ChartLocation, point: Points | AccPoints, shapes : ChartShape[], offset : number,
                          bounds : Rect, extraPoints: PointData[] = null, templatePoint : Points | AccPoints = null ): void {
         let series: Series = <Series>this.currentPoints[0].series;
@@ -140,14 +143,14 @@ export class BaseTooltip extends ChartData {
             this.svgTooltip = new SVGTooltip(
                 {
                 opacity: chart.tooltip.opacity,
-                header: this.headerText, content: this.text, fill: chart.tooltip.fill, border: chart.tooltip.border,
+                header: header, content: this.text, fill: chart.tooltip.fill, border: chart.tooltip.border,
                 enableAnimation: chart.tooltip.enableAnimation, location: location, shared: chart.tooltip.shared,
                 shapes: shapes, clipBounds: this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation,
                 areaBounds: bounds, palette: this.findPalette(), template: chart.tooltip.template, data: templatePoint,
                 theme : chart.theme,  offset: offset, textStyle : chart.tooltip.textStyle,
                 isNegative: (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0),
                 inverted: this.chart.requireInvertedAxis && series.isRectSeries,
-                arrowPadding : this.text.length > 1 ? 0 : 12,
+                arrowPadding : this.text.length > 1 || this.chart.stockChart ? 0 : 12,
                 tooltipRender: () => {
                     module.removeHighlight(module.control);
                     module.highlightPoints();
@@ -163,7 +166,7 @@ export class BaseTooltip extends ChartData {
         } else {
             this.svgTooltip.location = location;
             this.svgTooltip.content = this.text;
-            this.svgTooltip.header = this.headerText;
+            this.svgTooltip.header = header;
             this.svgTooltip.offset = offset;
             this.svgTooltip.palette = this.findPalette();
             this.svgTooltip.shapes = shapes;
@@ -172,7 +175,7 @@ export class BaseTooltip extends ChartData {
             this.svgTooltip.textStyle = chart.tooltip.textStyle;
             this.svgTooltip.isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
             this.svgTooltip.clipBounds = this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation;
-            this.svgTooltip.arrowPadding = this.text.length > 1 ? 0 : 12;
+            this.svgTooltip.arrowPadding = this.text.length > 1 || this.chart.stockChart ? 0 : 12;
             this.svgTooltip.dataBind();
         }
     }
@@ -232,11 +235,10 @@ export class BaseTooltip extends ChartData {
     }
 
 
-    public triggerEvent(point: PointData | AccPointData, isFirst: boolean, textCollection: string, headerText: string,
-                        firstText: boolean = true): boolean {
+    public triggerEvent(point: PointData | AccPointData, isFirst: boolean, textCollection: string, firstText: boolean = true): boolean {
         let argsData: ITooltipRenderEventArgs = {
             cancel: false, name: tooltipRender, text: textCollection,
-            point: point.point, series: point.series, textStyle: this.textStyle, headerText: headerText
+            point: point.point, series: point.series, textStyle: this.textStyle
         };
         this.chart.trigger(tooltipRender, argsData);
         if (!argsData.cancel) {
@@ -246,7 +248,6 @@ export class BaseTooltip extends ChartData {
             }
             this.formattedText = this.formattedText.concat(argsData.text);
             this.text = this.formattedText;
-            this.headerText = argsData.headerText;
         }
         return !argsData.cancel;
     }
@@ -272,7 +273,7 @@ export class BaseTooltip extends ChartData {
     */
 
     public removeTooltip(duration: number): void {
-        let tooltipElement: HTMLElement = this.getElement(this.element.id + '_tooltip');
+        let tooltipElement: HTMLElement =  this.getElement(this.element.id + '_tooltip');
         this.stopAnimation();
         if (tooltipElement && this.previousPoints.length > 0) {
             this.toolTipInterval = setTimeout(

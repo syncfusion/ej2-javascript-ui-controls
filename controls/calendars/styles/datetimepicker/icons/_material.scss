@@ -1,0 +1,11 @@
+@include export-module('datetimepicker-material-icons') {
+  /*! component icons */
+  .e-datetime-wrapper {
+
+    & .e-time-icon.e-icons::before {
+      content: '\e20c';
+      font-family: 'e-icons';
+    }
+  }
+}
+

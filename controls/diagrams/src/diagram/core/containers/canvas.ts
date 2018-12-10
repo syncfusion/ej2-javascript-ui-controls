@@ -5,6 +5,7 @@ import { Transform } from '../../enum/enum';
 import { Size } from '../../primitives/size';
 import { Rect } from '../../primitives/rect';
 import { PointModel } from '../../primitives/point-model';
+import { TextElement } from '../elements/text-element';
 
 /**
  * Canvas module is used to define a plane(canvas) and to arrange the children based on margin
@@ -26,7 +27,16 @@ export class Canvas extends Container {
         if (this.hasChildren()) {
             //Measuring the children
             for (let child of this.children) {
-                child.measure(availableSize);
+                if (child instanceof TextElement) {
+                    if (child.canMeasure) {
+                        child.measure(availableSize);
+                    } else {
+                        break;
+                    }
+                } else if (!(child instanceof TextElement)) {
+                    child.measure(availableSize);
+                }
+
                 let childSize: Size = child.desiredSize.clone();
 
                 if (child.rotateAngle !== 0) {
@@ -74,7 +84,7 @@ export class Canvas extends Container {
     /**
      * Arranges the child elements of the canvas
      */
-    public arrange(desiredSize: Size): Size {
+    public arrange(desiredSize: Size, isStack?: boolean): Size {
         this.outerBounds = new Rect();
         if (this.hasChildren()) {
             let y: number;
@@ -86,10 +96,6 @@ export class Canvas extends Container {
                     child.parentTransform = this.parentTransform + this.rotateAngle;
 
                     let childSize: Size = child.desiredSize.clone();
-
-                    if (child.rotateAngle !== 0) {
-                        childSize = rotateSize(childSize, child.rotateAngle);
-                    }
 
                     let topLeft: PointModel;
                     let center: PointModel = { x: 0, y: 0 };
@@ -106,15 +112,25 @@ export class Canvas extends Container {
                     if (child.relativeMode === 'Object') {
                         topLeft = this.alignChildBasedOnParent(child, childSize, desiredSize, childX, childY);
                     } else {
-                        topLeft = this.alignChildBasedOnaPoint(child, childX, childY, childSize);
+                        topLeft = this.alignChildBasedOnaPoint(child, childX, childY);
                     }
 
                     center = { x: topLeft.x + childSize.width / 2, y: topLeft.y + childSize.height / 2 };
 
                     super.findChildOffsetFromCenter(child, center);
                 }
-                child.arrange(child.desiredSize);
-                this.outerBounds.uniteRect(child.outerBounds);
+                if (isStack && (child.horizontalAlignment === 'Stretch' || child.verticalAlignment === 'Stretch')) {
+                    child.arrange(desiredSize);
+                } else {
+                    if (child instanceof TextElement && child.canMeasure) {
+                        child.arrange(child.desiredSize);
+                        this.outerBounds.uniteRect(child.outerBounds);
+                    } else if (!(child instanceof TextElement)) {
+                        child.arrange(child.desiredSize);
+                        this.outerBounds.uniteRect(child.outerBounds);
+
+                    }
+                }
             }
         }
         this.actualSize = desiredSize;
@@ -169,7 +185,7 @@ export class Canvas extends Container {
      * @param x 
      * @param y 
      */
-    private alignChildBasedOnaPoint(child: DiagramElement, x: number, y: number, childSize: Size): PointModel {
+    private alignChildBasedOnaPoint(child: DiagramElement, x: number, y: number): PointModel {
         x += child.margin.left - child.margin.right;
         y += child.margin.top - child.margin.bottom;
         switch (child.horizontalAlignment) {
@@ -179,10 +195,10 @@ export class Canvas extends Container {
                 break;
             case 'Stretch':
             case 'Center':
-                x -= childSize.width * child.pivot.x;
+                x -= child.desiredSize.width * child.pivot.x;
                 break;
             case 'Right':
-                x -= childSize.width;
+                x -= child.desiredSize.width;
                 break;
         }
         switch (child.verticalAlignment) {
@@ -192,10 +208,10 @@ export class Canvas extends Container {
                 break;
             case 'Stretch':
             case 'Center':
-                y -= childSize.height * child.pivot.y;
+                y -= child.desiredSize.height * child.pivot.y;
                 break;
             case 'Bottom':
-                y -= childSize.height;
+                y -= child.desiredSize.height;
                 break;
         }
         return { x: x, y: y };

@@ -3,7 +3,7 @@ import { HeatMap } from '../heatmap';
 import { PaletteType } from '../utils/enum';
 import { ColorCollection, LegendColorCollection, PaletteCollection } from '../model/base';
 import { PaletteCollectionModel } from '../model/base-model';
-import { PaletterColor } from './helper';
+import { PaletterColor, LegendRange } from './helper';
 
 /**
  * Configures the color property in Heatmap.
@@ -126,7 +126,7 @@ export class CellColor {
     protected convertToHex(color: string): string {
         let itemColor: string = color.substr(3);
         itemColor = itemColor.split('(')[1].split(')')[0];
-        let colorSplit : string[] = itemColor.split(',');
+        let colorSplit: string[] = itemColor.split(',');
         itemColor = this.rgbToHex(parseInt(colorSplit[0], 10), parseInt(colorSplit[1], 10), parseInt(colorSplit[2], 10));
         return itemColor;
     }
@@ -196,14 +196,17 @@ export class CellColor {
             heatMap.colorCollection = <ColorCollection[]>tempcolorMapping.offsets;
             heatMap.legendColorCollection = <LegendColorCollection[]>extend([], tempcolorMapping.offsets, null, true);
         }
-        this.updateLegendColorCollection(minValue, maxValue);
+        this.updateLegendColorCollection(minValue, maxValue, tempcolorMapping);
     }
 
     /**
      * To update legend color Collection.
      * @private
      */
-    private updateLegendColorCollection(minValue: number, maxValue: number): void {
+    private updateLegendColorCollection(minValue: number, maxValue: number, tempcolorMapping: PaletterColor ): void {
+        if (this.heatMap.paletteSettings.type === 'Fixed' && (tempcolorMapping.isCompact || tempcolorMapping.isLabel)) {
+            return;
+        }
         if (minValue < this.heatMap.legendColorCollection[0].value) {
             this.heatMap.legendColorCollection.unshift(new LegendColorCollection(
                 minValue,
@@ -227,9 +230,14 @@ export class CellColor {
     private orderbyOffset(offsets: PaletteCollectionModel[]): PaletterColor {
         let returnCollection: PaletterColor = new PaletterColor();
         let key: string = 'value';
+        let label: string = 'label';
         returnCollection.isCompact = true;
+        returnCollection.isLabel = true;
         // tslint:disable-next-line:no-any 
         returnCollection.offsets = offsets.sort((a: any, b: any) => {
+            if (isNullOrUndefined(a[label]) && isNullOrUndefined(b[label])) {
+                returnCollection.isLabel = false;
+            }
             if (!isNullOrUndefined(a[key]) && !isNullOrUndefined(b[key])) {
                 return a[key] - b[key];
             } else {
@@ -261,7 +269,12 @@ export class CellColor {
                     compareValue = this.heatMap.colorCollection[y + 1] ? this.heatMap.colorCollection[y + 1].value :
                         this.heatMap.colorCollection[y].value;
                     if (text < compareValue || (text >= compareValue && y === this.heatMap.colorCollection.length - 1)) {
-                        color = this.heatMap.colorCollection[y].color;
+                        let legendRange: LegendRange[];
+                        if (this.heatMap.legendVisibilityByCellType) {
+                            legendRange = this.heatMap.legendModule.legendRange;
+                        }
+                        color = (this.heatMap.legendVisibilityByCellType && legendRange[y] && !legendRange[y].visible) ?
+                         this.heatMap.themeStyle.toggledColor : this.heatMap.colorCollection[y].color;
                         break;
                     }
                 }

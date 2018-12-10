@@ -15,6 +15,7 @@
 
     .e-slider-button {
       background-color: $slider-button-bg-color;
+      border: 1px solid $slider-button-border-color;
       border-radius: 50%;
       box-sizing: border-box;
       cursor: pointer;
@@ -23,12 +24,6 @@
       padding: 0;
       position: absolute;
       width: 18px;
-      @if $skin-name == 'highcontrast' {
-        border: 1px solid $slider-button-border-color;
-      }
-      @if $skin-name != 'highcontrast' {
-        border: 1px solid $slider-button-border-color;
-      }
     }
 
     .e-slider-button:hover {

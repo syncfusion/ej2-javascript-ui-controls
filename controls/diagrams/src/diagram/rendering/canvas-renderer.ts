@@ -396,12 +396,13 @@ export class CanvasRenderer implements IRenderer {
         }
     }
 
-    private loadImage(ctx: CanvasRenderingContext2D, obj: ImageAttributes): void {
-        ctx.rotate(obj.angle * Math.PI / 180);
+    private loadImage(
+        ctx: CanvasRenderingContext2D, obj: ImageAttributes, canvas: HTMLCanvasElement, pivotX: number, pivotY: number):
+        void {
+        this.rotateContext(canvas, obj.angle, pivotX, pivotY);
         let image: HTMLImageElement = new Image();
         image.src = obj.source;
         this.image(ctx, image, obj.x, obj.y, obj.width, obj.height, obj);
-        ctx.rotate(-(obj.angle * Math.PI / 180));
     }
 
     /**   @private  */
@@ -415,6 +416,8 @@ export class CanvasRenderer implements IRenderer {
 
             let imageObj: HTMLImageElement = new Image();
             imageObj.src = obj.source;
+            let id: string[] = ctx.canvas.id.split('_');
+            let value: boolean = id[id.length - 1] === ('diagram' || 'diagramLayer') ? true : false;
             /** 
              *  Since Clipping portion for node with slice option is not calculated properly
              * if (obj.sourceX !== undefined && obj.sourceY !== undefined && obj.sourceWidth !== undefined
@@ -425,10 +428,10 @@ export class CanvasRenderer implements IRenderer {
              * }
              */
             if (!fromPalette) {
-                this.loadImage(ctx, obj);
+                this.loadImage(ctx, obj, canvas, pivotX, pivotY);
             } else {
                 imageObj.onload = () => {
-                    this.loadImage(ctx, obj);
+                    this.loadImage(ctx, obj, canvas, pivotX, pivotY);
                 };
             }
             ctx.restore();

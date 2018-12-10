@@ -12,7 +12,7 @@ import { Accordion, AccordionClickArgs, ExpandEventArgs } from '../../src/accord
         expanded: expanded,
         expanding: expanding,
         items : [
-            { header: 'What is React?', content: ctn1, iconCss: 'e-react e-icons'},
+            { header: 'What is React?', content: ctn1, iconCss: 'e-athletics e-acrdn-icons'},
             { header: 'What is TypeScript?', content: ctn, expanded: true },
             { header: 'What is Angular?' , content: ctn2, expanded: true  }
           ]
@@ -34,8 +34,8 @@ import { Accordion, AccordionClickArgs, ExpandEventArgs } from '../../src/accord
        (<HTMLElement>document.getElementsByClassName('e-bigger')[0]).classList.remove('e-bigger');
     };
 	document.getElementById('btn_boot').onclick = (e : Event) => {
-        document.getElementsByTagName('link')[0].href = '../../styles/bootstrap.css';
+        document.getElementsByTagName('link')[0].href = './theme-files/bootstrap.css';
     };
     document.getElementById('btn_fabric').onclick = (e : Event) => {
-        document.getElementsByTagName('link')[0].href = '../../styles/fabric.css';
+        document.getElementsByTagName('link')[0].href = './theme-files/fabric.css';
     };

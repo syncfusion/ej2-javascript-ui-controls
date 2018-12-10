@@ -82,7 +82,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     /**
      * Specifies a minimum value that is allowed a user can enter.
      * For more information on min, refer to
-     * [min](./getting-started.html#range-validation).
+     * [min](../numerictextbox/getting-started#range-validation/).
      * @default null
      * @aspType object
      */
@@ -92,7 +92,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     /**
      * Specifies a maximum value that is allowed a user can enter.
      * For more information on max, refer to
-     * [max](./getting-started.html#range-validation).
+     * [max](../numerictextbox/getting-started#range-validation/).
      * @default null
      * @aspType object
      */
@@ -102,7 +102,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     /**
      * Specifies the incremental or decremental step size for the NumericTextBox.
      * For more information on step, refer to
-     * [step](./getting-started.html#range-validation).
+     * [step](../numerictextbox/getting-started#range-validation/).
      * @default 1
      */
     @Property(1)
@@ -171,7 +171,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     /**
      * Specifies the number format that indicates the display format for the value of the NumericTextBox.
      * For more information on formats, refer to
-     * [formats](./formats.html#standard-formats).
+     * [formats](../numerictextbox/formats#standard-formats/).
      * @default 'n2'
      */
     @Property('n2')
@@ -180,7 +180,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     /**
      * Specifies the number precision applied to the textbox value when the NumericTextBox is focused.
      * For more information on decimals, refer to
-     * [decimals](./formats.html#precision-of-numbers).
+     * [decimals](../numerictextbox/formats#precision-of-numbers/).
      * @default null
      */
     @Property(null)
@@ -283,7 +283,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         this.isCalled = false;
         let ejInstance: Object = getValue('ej2_instances', this.element);
         this.cloneElement = <HTMLElement>this.element.cloneNode(true);
-        removeClass([this.cloneElement], [CONTROL, COMPONENT]);
+        removeClass([this.cloneElement], [CONTROL, COMPONENT, 'e-lib']);
         this.angularTagName = null;
         if (this.element.tagName === 'EJS-NUMERICTEXTBOX') {
             this.angularTagName = this.element.tagName;

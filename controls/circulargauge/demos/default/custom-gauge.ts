@@ -30,12 +30,14 @@ window.onload = () => {
         random.destroy();
         usage.appendTo('#cutomization-container');
         gauge = usage; isUsage = true;
-        let element: HTMLSelectElement = <HTMLSelectElement>document.getElementById('currentValue');
+        let element: HTMLInputElement = <HTMLInputElement>document.getElementById('currentValue');
+        element.min = '0.5'; element.max = '100';
         element.value = usage.axes[0].pointers[0].value.toString();
         document.getElementById('currentPointerValue').innerHTML = 'Current Value <span>    '
             + usage.axes[0].pointers[0].value + '</span>';
             (document.getElementById('barColor') as HTMLSelectElement).value = usage.axes[0].pointers[0].color;
             (document.getElementById('rangeColor') as HTMLSelectElement).value = usage.axes[0].ranges[0].color;
+            (document.getElementById('pointerColor') as HTMLSelectElement).disabled = true;
         let pointElement: HTMLSelectElement = <HTMLSelectElement>document.getElementById('pointColor');
         pointElement.className = 'e-disabled';
         let currentElement: HTMLSelectElement = <HTMLSelectElement>document.getElementById('usage');
@@ -54,9 +56,11 @@ window.onload = () => {
         let exisLine: HTMLSelectElement = <HTMLSelectElement>document.getElementById('usage_line');
         let currentLine: HTMLSelectElement = <HTMLSelectElement>document.getElementById('random_line');
         currentLine.style.display = 'block'; exisLine.style.display = 'none';
-        let element: HTMLSelectElement = <HTMLSelectElement>document.getElementById('currentValue');
+        let element: HTMLInputElement = <HTMLInputElement>document.getElementById('currentValue');
         let pointElement: HTMLSelectElement = <HTMLSelectElement>document.getElementById('pointColor');
         pointElement.className = 'e-enabled';
+        (document.getElementById('pointerColor') as HTMLSelectElement).disabled = false;
+        element.min = '1000'; element.max = '2000';
         element.value = random.axes[0].pointers[0].value.toString();
         document.getElementById('currentPointerValue').innerHTML = 'Current Value <span>    ' +
             random.axes[0].pointers[0].value + '</span>';

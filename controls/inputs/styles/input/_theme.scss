@@ -290,9 +290,9 @@
     }
   }
 
-  .e-float-input:not(.e-input-focus) input:not(:focus):not(:valid) ~ label.e-float-text:not(.e-label-top),
+  .e-float-input:not(.e-input-focus):not(.e-disabled) input:not(:focus):not(:valid) ~ label.e-float-text:not(.e-label-top),
   .e-float-input:not(.e-input-focus) textarea:not(:focus):not(:valid) ~ label.e-float-text:not(.e-label-top),
-  .e-float-input.e-control-wrapper:not(.e-input-focus) input:not(:focus):not(:valid) ~ label.e-float-text:not(.e-label-top) {
+  .e-float-input.e-control-wrapper:not(.e-input-focus):not(.e-disabled) input:not(:focus):not(:valid) ~ label.e-float-text:not(.e-label-top) {
     color: $input-placeholder;
   }
 
@@ -1254,6 +1254,8 @@
 
   .e-float-input.e-control-wrapper.e-input-group.e-disabled .e-float-text,
   .e-float-input.e-control-wrapper.e-input-group.e-disabled .e-float-text.e-label-top,
+  .e-float-input.e-control-wrapper.e-disabled input[disabled] ~ label.e-float-text,
+  .e-float-input.e-control-wrapper.e-disabled input[disabled] ~ label.e-label-top.e-float-text,
   .e-float-input.e-control-wrapper input[disabled] ~ label.e-float-text,
   .e-float-input.e-control-wrapper input[disabled] ~ label.e-label-top.e-float-text,
   .e-float-input.e-control-wrapper.e-disabled label.e-float-text,
@@ -1265,7 +1267,15 @@
   .e-float-input.e-control-wrapper.e-small:not(.e-error) input[disabled] ~ label.e-float-text,
   .e-float-input.e-control-wrapper.e-small:not(.e-error) input[disabled] ~ label.e-float-text.e-label-top,
   .e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error) input[disabled] ~ label.e-float-text,
-  .e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error) input[disabled] ~ label.e-float-text.e-label-top {
+  .e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error) input[disabled] ~ label.e-float-text.e-label-top,
+  .e-float-input.e-control-wrapper.e-disabled:not(.e-error) input[disabled] ~ label.e-float-text,
+  .e-float-input.e-control-wrapper.e-disabled:not(.e-error) input[disabled] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper.e-disabled.e-bigger:not(.e-error) input[disabled] ~ label.e-float-text,
+  .e-float-input.e-control-wrapper.e-disabled.e-bigger:not(.e-error) input[disabled] ~ label.e-float-text.e-label-top,
+  .e-float-input.e-control-wrapper.e-disabled.e-small:not(.e-error) input[disabled] ~ label.e-float-text,
+  .e-float-input.e-control-wrapper.e-disabled.e-small:not(.e-error) input[disabled] ~ label.e-float-text.e-label-top,
+  .e-float-input.e-control-wrapper.e-disabled.e-small.e-bigger:not(.e-error) input[disabled] ~ label.e-float-text,
+  .e-float-input.e-control-wrapper.e-disabled.e-small.e-bigger:not(.e-error) input[disabled] ~ label.e-float-text.e-label-top {
     color: $float-label-disbale-font-color;
   }
 

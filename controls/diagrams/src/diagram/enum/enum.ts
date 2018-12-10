@@ -460,6 +460,20 @@ export type Orientation =
     /** Vertical - Sets the orientation as Vertical */
     'Vertical';
 
+
+/**
+ * Defines the orientation
+ * Horizontal - Sets the orientation as Horizontal
+ * Vertical - Sets the orientation as Vertical
+ */
+export type ContainerTypes =
+    /** Canvas - Sets the ContainerTypes as Canvas */
+    'Canvas' |
+    /** Stack - Sets the ContainerTypes as Stack */
+    'Stack' |
+    /** Grid - Sets the ContainerTypes as Grid */
+    'Grid';
+
 /**
  * Defines the reference with respect to which the diagram elements have to be aligned
  * Point - Diagram elements will be aligned with respect to a point
@@ -818,6 +832,8 @@ export enum NodeConstraints {
     Resize = 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15 | 1 << 16 | 1 << 17 | 1 << 18 | 1 << 19,
     /** Enables the Aspect ratio fo the node */
     AspectRatio = 1 << 20,
+    /** hide all resize support for node */
+    HideThumbs = 1 << 24,
     /** Enables or disables tool tip for the Nodes */
     Tooltip = 1 << 21,
     /** Enables or disables tool tip for the Nodes */
@@ -1009,8 +1025,13 @@ export type Shapes =
     /** Native - Sets the type of the node as Native */
     'Native' |
     /** HTML - Sets the type of the node as HTML */
-    'HTML';
-
+    'HTML' |
+    /** UMLActivity - Sets the type of the node as UMLActivity */
+    'UmlActivity' |
+    /** UMLClassifier - Sets the type of the node as UMLClassifier */
+    'UmlClassifier' |
+    /** SwimLane - Sets the type of the node as SwimLane */
+    'SwimLane';
 /**
  * None - Scale value will be set as None for the image
  * Meet - Scale value Meet will be set for the image
@@ -1234,6 +1255,61 @@ export type BpmnShapes =
     'TextAnnotation';
 
 /**
+ * Defines the type of the UMLActivity Shape
+ * Action - Sets the type of the UMLActivity Shape as Action
+ * Decision - Sets the type of the UMLActivity Shape as Decision
+ * MergeNode - Sets the type of the UMLActivity Shape as MergeNode
+ * InitialNode - Sets the type of the UMLActivity Shape as InitialNode
+ * FinalNode - Sets the type of the UMLActivity Shape as FinalNode
+ * ForkNode - Sets the type of the UMLActivity Shape as ForkNode
+ * JoinNode - Sets the type of the UMLActivity Shape as JoinNode
+ * TimeEvent - Represents the UMLActivity shape as TimeEvent
+ * @IgnoreSingular
+ */
+export type UmlActivityShapes =
+    /** Action - Sets the type of the UMLActivity Shape as Action */
+    'Action' |
+    /** Decision - Sets the type of the UMLActivity Shape as Decision */
+    'Decision' |
+    /** MergeNode - Sets the type of the UMLActivity Shape as MergeNode */
+    'MergeNode' |
+    /** InitialNode - Sets the type of the UMLActivity Shape as InitialNode */
+    'InitialNode' |
+    /** FinalNode - Sets the type of the UMLActivity Shape as FinalNode */
+    'FinalNode' |
+    /** ForkNode - Sets the type of the UMLActivity Shape as ForkNode */
+    'ForkNode' |
+    /** JoinNode - Sets the type of the UMLActivity Shape as JoinNode */
+    'JoinNode' |
+    /** TimeEvent - Represents the shape as TimeEvent */
+    'TimeEvent' |
+    /** AcceptingEvent - Sets the type of the UMLActivity Shape as AcceptingEvent */
+    'AcceptingEvent' |
+    /** SendSignal - Sets the type of the UMLActivity Shape as SendSignal */
+    'SendSignal' |
+    /** ReceiveSignal - Sets the type of the UMLActivity Shape as ReceiveSignal */
+    'ReceiveSignal' |
+    /** StructuredNode - Sets the type of the UMLActivity Shape as StructuredNode */
+    'StructuredNode' |
+    /** Note - Sets the type of the UMLActivity Shape as Note */
+    'Note';
+
+/**
+ * Defines the type of the UMLActivity flows
+ * Object - Sets the type of the UMLActivity Flow as Object
+ * Control - Sets the type of the UMLActivity Flow as Control
+ * Exception - Sets the type of the UMLActivity Flow as Exception
+ * @IgnoreSingular
+ */
+export type UmlActivityFlows =
+    /** Object - Sets the type of the UMLActivity Flow as Object */
+    'Object' |
+    /** Control - Sets the type of the UMLActivity Flow as Control */
+    'Control' |
+    /** Exception - Sets the type of the UMLActivity Flow as Exception */
+    'Exception';
+
+/**
  * Defines the type of the Bpmn Events
  * Start - Sets the type of the Bpmn Event as Start
  * Intermediate - Sets the type of the Bpmn Event as Intermediate
@@ -1442,7 +1518,11 @@ export type ConnectionShapes =
     /** None - Sets the type of the connection shape as None */
     'None' |
     /** Bpmn - Sets the type of the connection shape as Bpmn */
-    'Bpmn';
+    'Bpmn' |
+    /** UMLActivity - Sets the type of the connection shape as UMLActivity */
+    'UmlActivity' |
+    /** UMLClassifier - Sets the type of the connection shape as UMLClassifier */
+    'UmlClassifier';
 
 /**
  * Defines the type of the Bpmn flows
@@ -1640,7 +1720,11 @@ export type EntryType =
     /** PortPositionChanged - Sets the entry type as PortPositionChanged */
     'PortPositionChanged' |
     /** AnnotationPropertyChanged - Sets the entry type as AnnotationPropertyChanged */
-    'AnnotationPropertyChanged';
+    'AnnotationPropertyChanged' |
+    /** ChildCollectionChanged - Sets the entry type as ChildCollectionChanged used for add and remove a child collection in a container */
+    'ChildCollectionChanged' |
+    /** StackNodeChanged - Sets the entry type as StackNodePositionChanged */
+    'StackChildPositionChanged';
 /**
  * Defines the entry category type
  * Internal - Sets the entry category type as Internal
@@ -2019,7 +2103,7 @@ export enum DiagramAction {
     /** Indicates the group is in progress. */
     Group = 1 << 6,
     /** Indicates diagram have clear all. */
-    Clear = 1 << 7,
+    Clear = 1 << 7
 }
 
 export enum RealAction {
@@ -2160,7 +2244,11 @@ export enum PortConstraints {
     /** Enables connections with connector  */
     Drag = 1 << 1,
     /** Enables to create the connection when mouse hover on the port  */
-    Draw = 1 << 2
+    Draw = 1 << 2,
+    /** Enables to only connect the target end of connector */
+    InConnect = 1 << 3,
+    /** Enables to only connect the source end of connector */
+    OutConnect = 1 << 4
 }
 
 /**
@@ -2267,3 +2355,56 @@ export const contextMenuClick: string =
 export const contextMenuOpen: string =
     /** contextMenuOpen - Sets the context menu open as contextMenuOpen */
     'contextMenuOpen';
+
+/**
+ * Defines the context menu Before Item Render
+ * contextMenuBeforeItemRender - Sets the context menu open as contextMenuBeforeItemRender
+ */
+export const contextMenuBeforeItemRender: string =
+    /** contextMenuBeforeItemRender - Sets the context menu open as contextMenuBeforeItemRender */
+    'contextMenuBeforeItemRender';
+/**
+ * Detect the status of Crud operation performed in the diagram
+ */
+export type Status =
+    'None' | 'New' | 'Update';
+/**
+ * Enables/Disables scope of the uml shapes
+ * * Public - Indicates the scope is public.
+ * * Protected - Indicates the scope is protected.
+ * * Private - Indicates the scope is private.
+ * * Package - Indicates the scope is package.
+ */
+export type UmlScope = 'Public' | 'Protected' | 'Private' | 'Package';
+/**
+ * Enables/Disables shape of the uml classifier shapes
+ * * Package - Indicates the scope is public.
+ * * Class - Indicates the scope is protected.
+ * * Interface - Indicates the scope is private.
+ * * Enumeration - Indicates the scope is package.
+ * * CollapsedPackage - Indicates the scope is public.
+ * * Inheritance - Indicates the scope is protected.
+ * * Association - Indicates the scope is private.
+ * * Aggregation - Indicates the scope is package.
+ * * Composition - Indicates the scope is public.
+ * * Realization - Indicates the scope is protected.
+ * * DirectedAssociation - Indicates the scope is private.
+ * * Dependency - Indicates the scope is package.
+ */
+export type ClassifierShape = 'Class' | 'Interface' | 'Enumeration' | 'Inheritance' |
+    'Association' | 'Aggregation' | 'Composition' | 'Realization' | 'Dependency';
+/**
+ * Defines the direction the uml connectors
+ * * Default - Indicates the direction is Default.
+ * * Directional - Indicates the direction is single Directional.
+ * * BiDirectional - Indicates the direction is BiDirectional.
+ */
+export type AssociationFlow = 'Default' | 'Directional' | 'BiDirectional';
+/**
+ * Define the Multiplicity of uml connector shapes
+ * * OneToOne - Indicates the connector multiplicity is OneToOne.
+ * * OneToMany - Indicates the connector multiplicity is OneToMany.
+ * * ManyToOne - Indicates the connector multiplicity is ManyToOne.
+ * * ManyToOne - Indicates the connector multiplicity is ManyToOne.
+ */
+export type Multiplicity = 'OneToOne' | 'OneToMany' | 'ManyToOne' | 'ManyToOne';

@@ -73,6 +73,12 @@ export class WSectionFormat {
     set topMargin(value: number) {
         this.setPropertyValue('topMargin', value);
     }
+    get bidi(): boolean {
+        return this.getPropertyValue('bidi') as boolean;
+    }
+    set bidi(value: boolean) {
+        this.setPropertyValue('bidi', value);
+    }
     constructor(node?: Object) {
         this.ownerBase = node;
     }
@@ -123,6 +129,9 @@ export class WSectionFormat {
             case 'bottomMargin':
                 value = 72;
                 break;
+            case 'bidi':
+                value = false;
+                break;
         }
         return value;
     }
@@ -165,6 +174,7 @@ export class WSectionFormat {
         this.addUniqueSectionFormat('topMargin', property, propValue, uniqueSectionFormatTemp);
         this.addUniqueSectionFormat('rightMargin', property, propValue, uniqueSectionFormatTemp);
         this.addUniqueSectionFormat('bottomMargin', property, propValue, uniqueSectionFormatTemp);
+        this.addUniqueSectionFormat('bidi', property, propValue, uniqueSectionFormatTemp);
         // tslint:disable-next-line:max-line-length
         this.uniqueSectionFormat = WSectionFormat.uniqueSectionFormats.addUniqueFormat(uniqueSectionFormatTemp, WSectionFormat.uniqueFormatType);
     }

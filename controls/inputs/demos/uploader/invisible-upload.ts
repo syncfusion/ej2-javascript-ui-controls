@@ -25,7 +25,6 @@ let uploadObj: Uploader = new Uploader({
 uploadObj.appendTo('#fileupload')
 
 function onupload(args: any){
-    debugger;
     for(let i = 0; i< args.filesData.length ; i++){
     let liparentDiv = createElement('div',  { className: 'image-list'});
     let liImage = createElement('img',  { className: 'image'});

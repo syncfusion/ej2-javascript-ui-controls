@@ -11,11 +11,11 @@ enableRipple(true);
 let items: ItemModel[] = [
     {
         text: 'Unread',
-        iconCss: 'e-icons e-unread',
+        iconCss: 'ddb-icons e-unread',
     },
     {
         text: 'Has Attachments',
-        iconCss: 'e-icons e-attachments',
+        iconCss: 'ddb-icons e-attachments',
         url: 'http://www.google.com'
     },
     {
@@ -27,7 +27,7 @@ let items: ItemModel[] = [
     },
     {
         text: 'Important',
-        iconCss: 'e-icons e-important'
+        iconCss: 'ddb-icons e-important'
     },
     {
         text: 'More Filters',

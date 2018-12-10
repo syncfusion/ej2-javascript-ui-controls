@@ -102,9 +102,9 @@ export class SparklineTooltip {
      * To render tracker line
      */
     private renderTrackerLine(points: SparkValues): void {
-        let spark: Sparkline = this.sparkline;
+        let spark: Sparkline = this.sparkline; let theme: string = spark.theme.toLowerCase();
         let tracker: TrackLineSettingsModel = spark.tooltipSettings.trackLineSettings;
-        let color: string = (spark.theme === 'Highcontrast') ? '#FFFFFF' : '#000000';
+        let color: string = (theme.indexOf('dark') > -1 ? '#FFFFFF' : '#000000');
         color = (tracker.color) ? tracker.color : color;
         if (!tracker.visible || spark.type === 'Pie') {
             return;
@@ -116,7 +116,7 @@ export class SparklineTooltip {
         }
         let pathEle: Element = getIdElement(spark.element.id + '_sparkline_tracker');
         let d: string = 'M ' + points.location.x + ' ' + spark.padding.top + ' L ' + points.location.x + ' ' +
-        (spark.availableSize.height - spark.padding.bottom);
+            (spark.availableSize.height - spark.padding.bottom);
         if (isNullOrUndefined(pathEle)) {
             let pathOption: PathOption = new PathOption(
                 spark.element.id + '_sparkline_tracker', 'transparent', tracker.width, color, 1);
@@ -140,8 +140,10 @@ export class SparklineTooltip {
         }
         let div: Element = getIdElement(spark.element.id + '_sparkline_tooltip_div');
         if (isNullOrUndefined(div)) {
-            div = createElement('div', { id: spark.element.id + '_sparkline_tooltip_div',
-            styles: 'pointer-events: none; position: absolute;z-index:1;' });
+            div = createElement('div', {
+                id: spark.element.id + '_sparkline_tooltip_div',
+                styles: 'pointer-events: none; position: absolute;z-index:1;'
+            });
             getIdElement(spark.element.id + '_Secondary_Element').appendChild(div);
         }
         let size: number = (spark.markerSettings.visible.length) ? spark.markerSettings.size : 0;
@@ -152,10 +154,10 @@ export class SparklineTooltip {
             x = new Date(points.xVal).toDateString();
         }
         let y: string = points.yVal.toString();
-        let text: string[] |  HTMLElement = this.getFormat(
+        let text: string[] | HTMLElement = this.getFormat(
             spark.tooltipSettings.format, spark, x, this.formatValue(points.yVal, spark).toString());
-        let location: {x: number, y: number } = { x: points.location.x, y: points.location.y };
-        location = spark.type === 'Pie' ? {x: points.location.x, y: points.location.y} : location;
+        let location: { x: number, y: number } = { x: points.location.x, y: points.location.y };
+        location = spark.type === 'Pie' ? { x: points.location.x, y: points.location.y } : location;
         let tooltipEvent: ITooltipRenderingEventArgs = {
             name: 'tooltipInitialize', cancel: false, text: text,
             textStyle: {
@@ -179,7 +181,7 @@ export class SparklineTooltip {
             fill: tooltip.fill,
             textStyle: tooltipEvent.textStyle,
             enableAnimation: false,
-            location: {x: location.x, y: location.y},
+            location: { x: location.x, y: location.y },
             shared: false,
             areaBounds: new Rect(0, 0, spark.availableSize.width, spark.availableSize.height),
             theme: spark.theme

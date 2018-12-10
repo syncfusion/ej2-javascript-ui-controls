@@ -1,46 +1,46 @@
 @include export-module('drop-down-button-theme') {
   /*! drop-down button theme */
   #{&}.e-dropdown-popup {
-    background-color: $ul-bgcolor;
-    color: $color;
+    background-color: $drop-down-btn-ul-bgcolor;
+    color: $drop-down-btn-color;
 
     & ul {
       & .e-item  {
         & .e-menu-url {
-          color: $color;
+          color: $drop-down-btn-color;
         }
 
         & .e-menu-icon {
-          color: $menu-icon-color;
+          color: $drop-down-btn-menu-icon-color;
         }
 
         &.e-focused {
-          background-color: $li-focus-bgcolor;
-          box-shadow: $li-box-shadow;
+          background-color: $drop-down-btn-li-focus-bgcolor;
+          box-shadow: $drop-down-btn-li-box-shadow;
         }
 
         &:hover {
-          background-color: $li-bgcolor;
-          color: $li-selection-font-color;
+          background-color: $drop-down-btn-li-bgcolor;
+          color: $drop-down-btn-li-selection-font-color;
         }
 
         &:active,
         &.e-selected {
-          background-color: $li-selection-bgcolor;
-          color: $selected-color;
+          background-color: $drop-down-btn-li-selection-bgcolor;
+          color: $drop-down-btn-selected-color;
 
           & .e-menu-url {
-            color: $selected-color;
+            color: $drop-down-btn-selected-color;
           }
 
           & .e-menu-icon {
-            color: $selected-color;
+            color: $drop-down-btn-selected-color;
           }
         }
       }
 
       & .e-separator {
-        border-bottom-color: $li-border-color;
+        border-bottom-color: $drop-down-btn-li-border-color;
       }
     }
   }

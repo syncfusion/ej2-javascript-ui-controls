@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined, L10n, setCulture } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { HyperlinkTextInfo } from '../editor/editor-helper';
 import { LayoutViewer } from '../index';
 import { FieldElementBox } from '../viewer/page';
@@ -42,7 +42,7 @@ export class HyperlinkDialog {
     /**
      * @private
      */
-    public initHyperlinkDialog(localValue: L10n): void {
+    public initHyperlinkDialog(localValue: L10n, isRtl?: boolean): void {
         let instance: HyperlinkDialog = this;
         let id: string = this.owner.owner.containerId + '_insert_hyperlink';
         this.target = createElement('div', { id: id, className: 'e-de-hyperlink' });
@@ -77,7 +77,10 @@ export class HyperlinkDialog {
         let bookmarkCheckDiv: HTMLDivElement = createElement('div', { className: 'e-de-hyperlink-bookmark-check e-de-hyperlink-dlg-title' }) as HTMLDivElement;
         let bookmarkCheck: HTMLInputElement = createElement('input', { attrs: { type: 'checkbox' }, id: this.target.id + '_bookmark', className: this.target.id + '_bookmarkcheck' }) as HTMLInputElement;
         bookmarkCheckDiv.appendChild(bookmarkCheck);
-        this.bookmarkCheckbox = new CheckBox({ label: localValue.getConstant('Use bookmarks'), change: this.onUseBookmarkChange });
+        this.bookmarkCheckbox = new CheckBox({
+            label: localValue.getConstant('Use bookmarks'),
+            enableRtl: isRtl, change: this.onUseBookmarkChange
+        });
         this.bookmarkCheckbox.appendTo(bookmarkCheck);
         container.appendChild(bookmarkCheckDiv);
         this.target.appendChild(container);
@@ -88,9 +91,8 @@ export class HyperlinkDialog {
     public show(): void {
         this.localObj = new L10n('documenteditor', this.owner.owner.defaultLocale);
         this.localObj.setLocale(this.owner.owner.locale);
-        setCulture(this.owner.owner.locale);
         if (!this.target) {
-            this.initHyperlinkDialog(this.localObj);
+            this.initHyperlinkDialog(this.localObj, this.owner.owner.enableRtl);
         }
         this.owner.dialog.header = this.localObj.getConstant('Insert Hyperlink');
         this.owner.dialog.height = 'auto';

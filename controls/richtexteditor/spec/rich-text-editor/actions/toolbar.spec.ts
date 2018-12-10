@@ -963,7 +963,7 @@ describe("Toolbar - Actions Module", () => {
             detach(rteEle.querySelector(".e-toolbar"));
             rteObj.toolbarSettings.type = ToolbarType.MultiRow;
             rteObj.dataBind();
-            expect(rteEle.querySelectorAll(".e-toolbar").length).toBe(0);
+            expect(rteEle.querySelectorAll(".e-toolbar").length).toBe(1);
         });
 
         it("enable/disable toolbar property testing", (done: Function) => {

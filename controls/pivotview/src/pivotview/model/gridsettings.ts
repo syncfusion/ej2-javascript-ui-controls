@@ -5,6 +5,7 @@ import { QueryCellInfoEventArgs, HeaderCellInfoEventArgs, CellSelectEventArgs, R
 import { CellSelectingEventArgs, CellDeselectEventArgs, ResizeArgs, PrintEventArgs } from '@syncfusion/ej2-grids';
 import { ContextMenuItemModel, RowDeselectEventArgs, PdfQueryCellInfoEventArgs, ColumnDragEventArgs } from '@syncfusion/ej2-grids';
 import { BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
+import { BeforeColumnRenderEventArgs } from '../../common';
 
 /** 
  *  Represents Pivot widget model class.
@@ -288,4 +289,11 @@ export class GridSettings extends ChildProperty<GridSettings> {
      */
     @Event()
     public columnDrop: EmitType<ColumnDragEventArgs>;
+
+    /**
+     * This allows to configure the column before it renders.
+     * @event 
+     */
+    @Event()
+    public beforeColumnsRender: EmitType<BeforeColumnRenderEventArgs>;
 }

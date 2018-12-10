@@ -142,7 +142,7 @@ describe('Chart Control', () => {
                     series: [
                         {
                             name: 'series1', type: 'Line', fill: '#ACE5FF', width: 2,
-                            dataSource: [{'id': 1, 'Estimate': 10}], xName: 'Id', yName: 'Estimate'//, query: query
+                            dataSource: dataManager, xName: 'Id', yName: 'Estimate', query: query
                         },
                     ],
                     height: '600', legendSettings: { visible: false }
@@ -158,7 +158,7 @@ describe('Chart Control', () => {
         it('Checking the series', (done: Function) => {
             loaded = (args: Object): void => {
                 let text: HTMLElement = document.getElementById('container0_AxisLabel_0');
-                //expect(text.textContent != null).toBe(true);
+                expect(text.textContent != null).toBe(true);
                 done();
             };
             chartEle1.loaded = loaded;

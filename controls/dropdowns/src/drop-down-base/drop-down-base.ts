@@ -116,7 +116,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected isRequested: boolean;
     protected isDataFetched: boolean;
     protected queryString: string;
-
+    private sortedData: { [key: string]: Object }[] | string[] | boolean[] | number[];
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
      * * text - Maps the text column from data table for each list item.
@@ -459,11 +459,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * Sets the enabled state to DropDownBase.
      */
     protected setEnabled(): void {
-        if (this.enabled) {
-            this.element.setAttribute('aria-disabled', 'false');
-        } else {
-            this.element.setAttribute('aria-disabled', 'true');
-        }
+        this.element.setAttribute('aria-disabled', (this.enabled) ? 'false' : 'true');
     };
 
     private renderItemsBySelect(): void {
@@ -541,8 +537,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 ulElement = this.renderItems(listItems, fields);
                 this.onActionComplete(ulElement, listItems, e);
                 this.isRequested = false;
-                this.hideSpinner();
-                this.trigger('dataBound', { items: listItems, e: e });
+                this.bindChildItems(listItems, ulElement, fields, e);
             }).catch((e: Object) => {
                 this.isRequested = false;
                 this.onActionFailure(e);
@@ -550,17 +545,68 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             });
         } else {
             let dataManager: DataManager = new DataManager(eventArgs.data as DataOptions | JSON[]);
-            let listItems: { [key: string]: Object }[];
-            listItems = <{ [key: string]: Object }[]>(this.getQuery(eventArgs.query as Query)).executeLocal(dataManager);
+            let listItems: { [key: string]: Object }[] = <{ [key: string]: Object }[]>(
+                this.getQuery(eventArgs.query as Query)).executeLocal(dataManager);
             let localDataArgs: { [key: string]: Object } = { cancel: false, result: listItems };
             this.trigger('actionComplete', localDataArgs);
             if (localDataArgs.cancel) { return; }
             ulElement = this.renderItems(localDataArgs.result as { [key: string]: Object; }[], fields);
             this.onActionComplete(ulElement, localDataArgs.result as { [key: string]: Object; }[]);
-            this.hideSpinner();
-            this.trigger('dataBound', { items: localDataArgs.result as { [key: string]: Object; }[] });
+            this.bindChildItems(localDataArgs.result as { [key: string]: Object; }[], ulElement, fields);
         }
 
+    }
+    private bindChildItems(
+        listItems: { [key: string]: Object; }[],
+        ulElement: HTMLElement,
+        fields: FieldSettingsModel,
+        e?: object): void {
+        if (listItems.length >= 100 && this.getModuleName() === 'autocomplete') {
+            setTimeout(
+                () => {
+                    let childNode: HTMLElement[] = this.remainingItems(this.sortedData, fields);
+                    append(childNode, ulElement);
+                    this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
+                    this.updateListValues();
+                    this.raiseDataBound(listItems, e);
+                },
+                0);
+        } else {
+            this.raiseDataBound(listItems, e);
+        }
+    }
+    protected updateListValues(): void {
+        // Used this method in component side.
+    }
+    private raiseDataBound(
+        listItems: { [key: string]: Object; }[] | string[] | boolean[] | number[],
+        e?: object): void {
+        this.hideSpinner();
+        this.trigger('dataBound', { items: listItems, e: e });
+    }
+    private remainingItems(
+        dataSource: { [key: string]: Object }[] | string[] | number[] | boolean[],
+        fields: FieldSettingsModel): HTMLElement[] {
+        let spliceData: { [key: string]: Object; }[] | string[] | number[] | boolean[] =
+            <{ [key: string]: Object }[] | string[] | number[] | boolean[]>new DataManager(
+                dataSource as DataOptions | JSON[]).executeLocal(new Query().skip(100));
+        if (this.itemTemplate) {
+            let listElements: HTMLElement = this.templateListItem(spliceData as { [key: string]: Object }[], fields);
+            return [].slice.call(listElements.childNodes);
+        }
+        let type: string = this.typeOfData(spliceData).typeof as string;
+        if (type === 'string' || type === 'number' || type === 'boolean') {
+            return ListBase.createListItemFromArray(
+                this.createElement, <string[] | number[]>spliceData,
+                true,
+                <{ [key: string]: Object }>this.listOption(spliceData, fields));
+        }
+        return ListBase.createListItemFromJson(
+            this.createElement,
+            <{ [key: string]: Object; }[]>spliceData,
+            <{ [key: string]: Object }>this.listOption(spliceData, fields),
+            1,
+            true);
     }
     private emptyDataRequest(fields: FieldSettingsModel): void {
         let listItems: { [key: string]: Object }[] = [];
@@ -599,7 +645,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         let focusItem: Element = listElement.querySelector('.' + dropDownBaseClasses.li);
         let selectedItem: Element = listElement.querySelector('.' + dropDownBaseClasses.selected);
         if (focusItem && !selectedItem) {
-            addClass([focusItem], dropDownBaseClasses.focus);
+            focusItem.classList.add(dropDownBaseClasses.focus);
         }
         if (list.length <= 0) {
             this.l10nUpdate();
@@ -646,10 +692,16 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             dataSource = this.getSortedDataSource(dataSource);
         }
         let options: { [key: string]: Object } = <{ [key: string]: Object }>this.listOption(dataSource, fields);
-        return ListBase.createList(this.createElement, dataSource, options, true);
+        let spliceData: { [key: string]: Object; }[] = (dataSource.length > 100) ?
+            <{ [key: string]: Object }[]>new DataManager(dataSource as DataOptions | JSON[]).executeLocal(new Query().take(100))
+            : dataSource;
+        this.sortedData = dataSource;
+        return ListBase.createList(this.createElement, (this.getModuleName() === 'autocomplete') ? spliceData : dataSource, options, true);
     };
 
-    protected listOption(dataSource: { [key: string]: Object }[], fields: FieldSettingsModel): FieldSettingsModel {
+    protected listOption(
+        dataSource: { [key: string]: Object }[] | string[] | number[] | boolean[],
+        fields: FieldSettingsModel): FieldSettingsModel {
         let iconCss: boolean = isNullOrUndefined(fields.iconCss) ? false : true;
         let fieldValues: FieldSettingsModel = !isNullOrUndefined((fields as FieldSettingsModel & { properties: Object }).properties) ?
             (fields as FieldSettingsModel & { properties: Object }).properties : fields;
@@ -709,7 +761,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             } else {
                 dataSource = this.getSortedDataSource(dataSource);
             }
-            ulElement = this.templateListItem(dataSource, fields);
+            this.sortedData = dataSource;
+            let spliceData: { [key: string]: Object; }[] = (dataSource.length > 100) ?
+                <{ [key: string]: Object }[]>new DataManager(dataSource as DataOptions | JSON[]).executeLocal(new Query().take(100))
+                : dataSource;
+            ulElement = this.templateListItem((this.getModuleName() === 'autocomplete') ? spliceData : dataSource, fields);
         } else {
             ulElement = this.createListItems(listData, fields);
         }
@@ -774,10 +830,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * To set the current fields
      */
     protected setFields(): void {
-        let fields: FieldSettingsModel = this.fields;
         if (this.fields.value && !this.fields.text) {
             this.fields.text = this.fields.value;
-        } else if (!fields.value && fields.text) {
+        } else if (!this.fields.value && this.fields.text) {
             this.fields.value = this.fields.text;
         } else if (!this.fields.value && !this.fields.text) {
             this.fields.value = this.fields.text = 'text';
@@ -800,12 +855,12 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         // This is for render the list items.
         this.render();
     }
-    protected updateDataSource(props?: { [key: string]: string; }): void {
+    protected updateDataSource(props?: DropDownBaseModel): void {
         this.resetList(this.dataSource);
     }
     protected setUpdateInitial(props: string[], newProp: { [key: string]: string; }): void {
         this.isDataFetched = false;
-        let updateData: { [key: string]: string; } = {};
+        let updateData: { [key: string]: string | { [key: string]: Object }[]; } = {};
         for (let j: number = 0; props.length > j; j++) {
             if ((newProp as { [key: string]: string; })[props[j]] && props[j] === 'fields') {
                 this.setFields();
@@ -814,6 +869,10 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
         }
         if (Object.keys(updateData).length > 0) {
+            if (Object.keys(updateData).indexOf('dataSource') === -1) {
+                (updateData as { [key: string]: { [key: string]: Object }[] }).dataSource = this.dataSource as
+                    { [key: string]: Object; }[];
+            }
             this.updateDataSource(updateData);
         }
     }
@@ -922,26 +981,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         let index: number;
         index = (isNullOrUndefined(itemIndex) || itemIndex < 0 || itemIndex > itemsCount - 1) ? itemsCount : itemIndex;
         let fields: FieldSettingsModel = this.fields;
-        if (items && fields.groupBy) {
-            items = ListBase.groupDataSource(
-                (items as { [key: string]: Object }[]), (fields as FieldSettingsModel & { properties: Object }).properties);
-        }
         let liCollections: HTMLElement[] = [];
         for (let i: number = 0; i < items.length; i++) {
             let item: { [key: string]: Object } | string | boolean | number = items[i];
-            let isHeader: boolean = (item as { [key: string]: Object }).isHeader as boolean;
-            let li: HTMLElement = this.createElement(
-                'li', { className: isHeader ? dropDownBaseClasses.group : dropDownBaseClasses.li, id: 'option-add-' + i });
-
-            if (isHeader) { li.innerText = getValue(fields.text, item); }
-            if (this.itemTemplate && !isHeader) {
-                let compiledString: Function = compile(this.itemTemplate);
-                append(compiledString(item), li);
-            } else if (!isHeader) {
-                li.appendChild(document.createTextNode(<string>getValue(fields.text, item)));
-            }
-            li.setAttribute('data-value', getValue(fields.value, item));
+            let li: HTMLElement = this.createElement('li', { className: dropDownBaseClasses.li, id: 'option-add-' + i });
+            li.setAttribute('data-value', <string>getValue(fields.value, item));
             li.setAttribute('role', 'option');
+            li.appendChild(document.createTextNode(<string>getValue(fields.text, item)));
             this.notify('addItem', { module: 'CheckBoxSelection', item: li });
             liCollections.push(li);
             (this.listData as { [key: string]: Object }[]).push(item as { [key: string]: Object });

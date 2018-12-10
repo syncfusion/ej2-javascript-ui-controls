@@ -6,12 +6,15 @@
       & ul {
         @include ul-layout;
         @include ul-size;
+        border: $cmenu-ul-border;
+        border-radius: $cmenu-ul-border-radius;
+        box-shadow: $cmenu-sub-ul-box-shadow;
         display: none;
-        min-width: $min-width;
+        min-width: $cmenu-min-width;
         position: absolute;
 
         &.e-contextmenu {
-          box-shadow: $parent-ul-box-shadow;
+          box-shadow: $cmenu-parent-ul-box-shadow;
         }
 
         & .e-menu-item  {
@@ -19,11 +22,7 @@
           @include li-size;
 
           & .e-previous {
-            margin-right: $back-icon-margin;
-
-            &::before {
-              content: $back-icon;
-            }
+            margin-right: $cmenu-back-icon-margin;
           }
 
           &.e-disabled {
@@ -43,8 +42,9 @@
   .e-bigger .e-contextmenu-wrapper ul,
   .e-bigger.e-contextmenu-wrapper ul {
     @include bigger-ul-size;
-    max-width: $bigger-max-width;
-    min-width: $bigger-min-width;
+    box-shadow: $cmenu-parent-ul-box-shadow;
+    max-width: $cmenu-bigger-max-width;
+    min-width: $cmenu-bigger-min-width;
 
     & .e-menu-item  {
       @include bigger-li-size;

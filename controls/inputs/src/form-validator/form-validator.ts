@@ -1,6 +1,7 @@
 import { selectAll, select, createElement, Base, EmitType } from '@syncfusion/ej2-base';
 import { extend, isNullOrUndefined, IKeyValue, EventHandler } from '@syncfusion/ej2-base';
-import { Property, NotifyPropertyChanges, INotifyPropertyChanged, Event } from '@syncfusion/ej2-base';
+import { Property, NotifyPropertyChanges, INotifyPropertyChanged, Event, onIntlChange } from '@syncfusion/ej2-base';
+import { Internationalization, L10n } from '@syncfusion/ej2-base';
 import { FormValidatorModel } from './form-validator-model';
 
 /**
@@ -50,6 +51,16 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
     private inputElement: HTMLInputElement = null;
     private selectQuery: string = 'input:not([type=reset]):not([type=button]), select, textarea';
     private inputElements: HTMLInputElement[];
+    private l10n: L10n;
+    private internationalization: Internationalization;
+    // tslint:disable-next-line:no-any
+    private localyMessage: any = {};
+    /**
+     * default locale variable
+     */
+    @Property('')
+    public locale: string;
+
 
     /**
      * Ignores input fields based on the class name
@@ -248,6 +259,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
             element.remove();
         }
         super.destroy();
+        onIntlChange.off('notifyExternalChange', this.afterLocalization);
     }
 
     /**
@@ -279,8 +291,26 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
      * @private
      */
     public onPropertyChanged(newProp: FormValidatorModel, oldProp?: FormValidatorModel): void {
-        // No code are needed
+        for (let prop of Object.keys(newProp)) {
+            switch (prop) {
+                case 'locale':
+                    this.localeFunc();
+                    break;
+            }
+        }
     };
+
+    /**
+     * @private
+     */
+    public localeFunc(): void {
+        for (let key of Object.keys(this.defaultMessages)) {
+            this.l10n.setLocale(this.locale);
+            let value: string = this.l10n.getConstant(key);
+            this.localyMessage[key] = value;
+        }
+    }
+
 
     /**
      * @private
@@ -288,6 +318,15 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
     public getModuleName(): string {
         return 'formValidator';
     }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line:no-any
+    public afterLocalization(args: any): void {
+        this.locale = args.locale;
+        this.localeFunc();
+    }
+
 
     // Initializes the FormValidator 
     constructor(element: string | HTMLFormElement, options?: FormValidatorModel) {
@@ -295,6 +334,12 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         if (typeof this.rules === 'undefined') {
             this.rules = {};
         }
+        this.l10n = new L10n('formValidator', this.defaultMessages, this.locale);
+        if (this.locale) {
+            this.localeFunc();
+        }
+        onIntlChange.on('notifyExternalChange', this.afterLocalization, this);
+
         element = typeof element === 'string' ? <HTMLFormElement>select(element, document) : element;
         // Set novalidate to prevent default HTML5 form validation
         if (this.element != null) {
@@ -612,7 +657,8 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
 
     // Return default error message or custom error message 
     private getErrorMessage(ruleValue: Object, rule: string): string {
-        let message: string = (ruleValue instanceof Array && typeof ruleValue[1] === 'string') ? ruleValue[1] : this.defaultMessages[rule];
+        let message: string = (ruleValue instanceof Array && typeof ruleValue[1] === 'string') ? ruleValue[1] :
+        (Object.keys(this.localyMessage).length !== 0) ? this.localyMessage[rule] : this.defaultMessages[rule];
         let formats: string[] = message.match(/{(\d)}/g);
         if (!isNullOrUndefined(formats)) {
             for (let i: number = 0; i < formats.length; i++) {

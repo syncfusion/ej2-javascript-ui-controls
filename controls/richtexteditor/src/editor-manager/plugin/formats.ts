@@ -38,7 +38,8 @@ export class Formats {
             let replaceHTML: string;
             if (e.subCommand.toLowerCase() === 'blockquote') {
                 parentNode = this.getParentNode(formatsNodes[i]) as Element;
-                replaceHTML = this.parent.domNode.isList(parentNode) ? parentNode.outerHTML : parentNode.innerHTML;
+                replaceHTML = this.parent.domNode.isList(parentNode) ||
+                    parentNode.tagName === 'TABLE' ? parentNode.outerHTML : parentNode.innerHTML;
             } else {
                 parentNode = formatsNodes[i] as Element;
                 replaceHTML = parentNode.innerHTML;

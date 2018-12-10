@@ -5,6 +5,7 @@ import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
 import * as cls from '../../common/base/css-constant';
 import { ContextMenu, MenuItemModel, ContextMenuModel, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { SummaryTypes } from '../../base/types';
+
 /**
  * Module to render Pivot button
  */

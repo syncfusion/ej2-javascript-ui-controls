@@ -3313,3 +3313,35 @@ describe('Row,cell Selecting in batch edit while adding record => ', () => {
         destroy(gridObj);
     });
 });
+
+describe('enableSimpleMultiRowSelection property Testing => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                selectionSettings: { type:'Multiple', enableSimpleMultiRowSelection: true},
+                columns: [
+                    { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true },
+                    { field: 'CustomerID', type: 'string' },
+                    { field: 'EmployeeID', type: 'number', allowEditing: false },
+                    { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                ]
+            }, done);
+    });
+    it('Multiple row selection without pressing ctrl/shift', () => {
+        gridObj.selectRow(0);
+        expect(gridObj.getRows()[0].hasAttribute('aria-selected')).toBeTruthy();
+        gridObj.selectRow(1);
+        expect(gridObj.getRows()[0].hasAttribute('aria-selected')).toBeTruthy();
+        expect(gridObj.getRows()[1].hasAttribute('aria-selected')).toBeTruthy();
+        gridObj.selectRow(1);
+        expect(gridObj.getRows()[0].hasAttribute('aria-selected')).toBeTruthy();
+        expect(gridObj.getRows()[1].hasAttribute('aria-selected')).toBeFalsy();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

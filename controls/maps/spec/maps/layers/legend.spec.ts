@@ -1,6 +1,6 @@
 import { Maps, ILoadedEventArgs } from '../../../src/index';
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { World_Map, randomcountriesData, usMap, CustomPathData, flightRoutes, intermediatestops1 } from '../data/data.spec';
+import { World_Map, randomcountriesData, topPopulation, flightRoutes, intermediatestops1, internetUser } from '../data/data.spec';
 import { MouseEvents } from '../../../spec/maps/base/events.spec';
 import { Legend, Marker } from '../../../src/maps/index';
 Maps.Inject(Legend, Marker);
@@ -52,7 +52,7 @@ describe('Map marker properties tesing', () => {
                                 from: 100, to: 200, color: 'orange'
                             },
                             {
-                                from: 200, to: 300, color: 'yellow'
+                                from: 200, to: 300, color: 'yellow', showLegend: false
                             },
                             {
                                 from: 300, to: 400, color: 'blueviolet'
@@ -74,6 +74,13 @@ describe('Map marker properties tesing', () => {
         afterAll(() => {
             remove(ele);
             map.destroy();
+        });
+
+        it('Legend visibility', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_Legend_Group');
+                expect(element.childElementCount).toBe(5);
+            };
         });
 
         it('Legend position as top', () => {
@@ -300,6 +307,122 @@ describe('Map marker properties tesing', () => {
             map.refresh();
         });
 
+    });
+    describe('Marker testing', () => {
+        let id: string = 'legend';
+        let map: Maps;
+        let ele: HTMLDivElement;
+        let spec: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            map = new Maps({
+                baseLayerIndex: 0,
+                legendSettings: {
+                    visible: true,
+                    type: 'Bubbles',
+                    showLegendPath: 'legendVisibility',
+                    valuePath: 'valuePath',
+                    removeDuplicateLegend: true
+                },
+                layers: [
+                    {
+                        shapeDataPath: 'name',
+                        shapePropertyPath: 'name',
+                        shapeData: World_Map,
+                        shapeSettings: {
+                            fill: '#E5E5E5'
+                        },
+                        bubbleSettings: [
+                            {
+                                visible: true,
+                                valuePath: 'value',
+                                colorValuePath: 'color',
+                                animationDuration: 0,
+                                minRadius: 3,
+                                maxRadius: 70,
+                                opacity: 0.8,
+                                dataSource: internetUser,
+                                tooltipSettings: {
+                                    visible: true,
+                                    valuePath: 'population',
+                                    template: '#template'
+                                },
+                            }
+                        ]
+                    }
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            map.destroy();
+        });
+
+        it('Bubble Legend visibility', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_Legend_Group');
+                expect(element.childElementCount).toBe(3);
+            };
+        });
+       
+    });
+    describe('Marker testing', () => {
+        let id: string = 'legend';
+        let map: Maps;
+        let ele: HTMLDivElement;
+        let spec: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            map = new Maps({
+                baseLayerIndex: 0,
+                legendSettings: {
+                    visible: true,
+                    type: 'Markers',
+                    showLegendPath: 'legendVisibility',
+                    removeDuplicateLegend: true
+                },
+                layers: [
+                    {
+                        shapeData: World_Map,
+                        dataSource: topPopulation,
+                        shapeSettings: {
+                            fill: '#C3E6ED'
+                        },
+                        markerSettings: [
+                            {
+                                legendText: 'name',
+                                dataSource: topPopulation,
+                                visible: true,
+                                animationDuration: 0,
+                                shape: 'Circle',
+                                fill: '#285255',
+                                width: 3,
+                                border: { width: 2, color: '#285255' },
+                                tooltipSettings: {
+                                    template: '#template',
+                                    visible: true,
+                                    valuePath: 'population',
+                                }
+                            },
+                        ]
+                    }
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            map.destroy();
+        });
+
+        it('Marker Legend visibility', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_Legend_Group');
+                expect(element.childElementCount).toBe(4);
+            };
+        });
+       
     });
     describe('Marker testing', () => {
         let id: string = 'legend';
@@ -1042,6 +1165,69 @@ describe('Map marker properties tesing', () => {
                     value: 'Games', color: 'yellow'
                 }]
             map.refresh();
+        });
+    });
+    describe('Theme Support', () => {
+        let id: string = 'container';
+        let map: Maps;
+        let ele: HTMLDivElement;
+        let spec: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            map = new Maps({
+                baseLayerIndex: 0,
+                theme:'FabricDark',
+                layers: [
+                    {
+                        shapeData: World_Map,
+                        shapePropertyPath: 'continent',
+                        shapeDataPath: 'continent',
+                        dataSource: randomcountriesData,
+                        tooltipSettings: {
+                            visible: true
+                        },                        
+                        shapeSettings: {
+                           // autofill: true,
+                            //fill: 'grey',
+                            border: {
+                                width: 1,
+                                color: 'white'
+                            },
+                            colorValuePath: 'Sales',
+                            colorMapping: [{
+                                from: 100, to: 200, color: 'orange'
+                            },
+                            {
+                                from: 200, to: 300, color: 'yellow', showLegend: false
+                            },
+                            {
+                                from: 300, to: 400, color: 'blueviolet'
+                            },
+                            {
+                                from: 400, to: 500, color: 'teal'
+                            },
+                            {
+                                from: 500, to: 600, color: 'aqua'
+                            }]
+                        }
+                    }
+                ],
+                legendSettings: {
+                    visible: true
+                }
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            map.destroy();
+        });
+
+        it('Legend visibility theme color', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_Legend_Text_Index_3');
+                expect(element.getAttribute('fill')).toBe('#DADADA');
+            };
         });
     });
 });

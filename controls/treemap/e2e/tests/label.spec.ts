@@ -69,7 +69,7 @@ describe('Hierarchical datalabel', () => {
 });
 describe('Flat datalabel', () => {
     let property;
-    it(' data label Trim', () => {
+    it('data label Trim', () => {
         browser.get(browser.basePath + '/demo/flat_datalabel.html');
         browser.compareScreen(element(By.id('container')), 'hier_label_trim');
     });

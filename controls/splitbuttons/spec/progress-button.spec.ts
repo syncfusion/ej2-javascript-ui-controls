@@ -41,12 +41,12 @@ describe('Progress Button', () => {
         new ProgressButton({ content: 'Spinner', duration: 1000 }, '#progressbtn4');
         ele.click();
         expect(ele.classList).toContain('e-progress-active');
+        jasmine.clock().tick(50000);
         setTimeout(() => {
             expect(ele.getElementsByClassName('e-spinner-pane')[0].classList).toContain('e-spin-hide');
             expect(ele.classList).not.toContain('e-progress-active');
-        }, 1000);
+        }, 20000);
         jasmine.clock().tick(20000);
-
     });
 
     it('Progress Only', () => {
@@ -225,9 +225,48 @@ describe('Progress Button', () => {
         new ProgressButton({ content: 'Spin Center', duration: 1000, spinSettings: { position: 'Center' } }, '#progressbtn15');
         ele.click();
         expect(ele.getElementsByClassName('e-btn-content')[0].classList).toContain('e-cont-animate');
+        jasmine.clock().tick(50000);
         setTimeout(() => {
             expect(ele.getElementsByClassName('e-btn-content')[0].classList).not.toContain('e-cont-animate');
-        }, 2000);
+        }, 20000);
         jasmine.clock().tick(20000);
+    });
+
+    it('Spin Settings property change', () => {
+        let ele: any = createElement('button', { id: 'progressbtn12' });
+        document.body.appendChild(ele);
+        let button: ProgressButton = new ProgressButton({ content: 'Spin Left' }, '#progressbtn12');
+        button.spinSettings.position = 'Right';
+        button.dataBind();
+        expect(ele.childNodes[1].classList).toContain('e-spinner');
+        expect(ele.classList).toContain('e-spin-right');
+        expect(ele.classList).not.toContain('e-spin-left');
+        button.spinSettings.width = 30;
+        button.dataBind();
+        expect(ele.getElementsByClassName('e-spin-material')[0].style.width).toBe('30px');
+    });
+
+    it('Spinner Events', () => {
+        let ele: any = createElement('button', { id: 'progressbtn16' });
+        document.body.appendChild(ele);
+        new ProgressButton({ content: 'Spinner', duration: 1000, begin: begin, progress: progress, end: end }, '#progressbtn16');
+        ele.click();
+
+        function begin(args: any) {
+            expect(args.percent).toBe(0);
+            expect(args.currentDuration).toBe(0);
+        }
+
+        function progress(args: any) {
+            expect(args.percent).toBeGreaterThan(0);
+            expect(args.currentDuration).toBeGreaterThan(0);
+            expect(args.percent).toBeLessThan(100);
+            expect(args.currentDuration).toBeLessThan(1000);
+        }
+        function end(args: any) {
+            expect(args.percent).toBe(100);
+            expect(args.currentDuration).toBe(1000);
+        }
+
     });
 });

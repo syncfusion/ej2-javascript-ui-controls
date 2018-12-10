@@ -1,4 +1,4 @@
-import { Property, Event, Component, EmitType, Internationalization, extend } from '@syncfusion/ej2-base';import { L10n, remove, addClass, Browser, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, removeClass } from '@syncfusion/ej2-base';import { PivotEngine, IFieldListOptions, IPageSettings } from '../../base/engine';import * as events from '../../common/base/constant';import * as cls from '../../common/base/css-constant';import { LoadEventArgs, EnginePopulatingEventArgs, EnginePopulatedEventArgs } from '../../common/base/interface';import { FieldDroppedEventArgs } from '../../common/base/interface';import { Mode } from '../../common/base/enum';import { PivotCommon } from '../../common/base/pivot-common';import { CommonArgs } from '../../common/base/interface';import { Render } from '../renderer/renderer';import { DialogRenderer } from '../renderer/dialog-renderer';import { TreeViewRenderer } from '../renderer/tree-renderer';import { AxisTableRenderer } from '../renderer/axis-table-renderer';import { AxisFieldRenderer } from '../renderer/axis-field-renderer';import { PivotButton } from '../../common/actions/pivot-button';import { PivotView } from '../../pivotview/base/pivotview';import { DataSourceModel, FieldOptionsModel } from '../../pivotview/model/dataSource-model';import { DataSource } from '../../pivotview/model/dataSource';import { CalculatedField } from '../../common/calculatedfield/calculated-field';import { PivotContextMenu } from '../../common/popups/context-menu';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
+import { Property, Event, Component, EmitType, Internationalization, extend } from '@syncfusion/ej2-base';import { L10n, remove, addClass, Browser, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';import { PivotEngine, IFieldListOptions, IPageSettings, IDataOptions } from '../../base/engine';import * as events from '../../common/base/constant';import * as cls from '../../common/base/css-constant';import { LoadEventArgs, EnginePopulatingEventArgs, EnginePopulatedEventArgs } from '../../common/base/interface';import { FieldDroppedEventArgs } from '../../common/base/interface';import { Mode } from '../../common/base/enum';import { PivotCommon } from '../../common/base/pivot-common';import { CommonArgs } from '../../common/base/interface';import { Render } from '../renderer/renderer';import { DialogRenderer } from '../renderer/dialog-renderer';import { TreeViewRenderer } from '../renderer/tree-renderer';import { AxisTableRenderer } from '../renderer/axis-table-renderer';import { AxisFieldRenderer } from '../renderer/axis-field-renderer';import { PivotButton } from '../../common/actions/pivot-button';import { PivotView } from '../../pivotview/base/pivotview';import { DataSourceModel, FieldOptionsModel } from '../../pivotview/model/dataSource-model';import { DataSource } from '../../pivotview/model/dataSource';import { CalculatedField } from '../../common/calculatedfield/calculated-field';import { PivotContextMenu } from '../../common/popups/context-menu';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -44,6 +44,18 @@ export interface PivotFieldListModel extends ComponentModel{
      * @default false
      */
     showValuesButton?: boolean;
+
+    /**
+     * If `allowDeferLayoutUpdate` is set to true, then it will enable defer layout update to pivotfieldlist.
+     * @default false
+     */
+    allowDeferLayoutUpdate?: boolean;
+
+    /**
+     * It allows to set the maximum number of nodes to be displayed in the member editor.
+     * @default 1000    
+     */
+    maxNodeLimitInMemberEditor?: number;
 
     /**
      * This allows any customization of Pivot Field List properties before rendering.

@@ -15,15 +15,15 @@ let menuItems: MenuItemModel[] = [
     },
     {
         text: 'Share',
-        iconCss: 'e-icons e-share',
+        iconCss: 'e-cm-icons e-share',
         items: [
             {
                 text: 'Facebook',
-                iconCss: 'e-icons e-share',
+                iconCss: 'e-cm-icons e-share',
             },
             {
                 text: 'Whatsapp',
-                iconCss: 'e-icons e-share',
+                iconCss: 'e-cm-icons e-share',
             }
         ]
     },
@@ -43,7 +43,7 @@ let menuItems: MenuItemModel[] = [
     },
     {
         text: 'Remove',
-        iconCss: 'e-icons e-delete'
+        iconCss: 'e-cm-icons e-delete'
     }];
 
 let menuOptions: ContextMenuModel = {

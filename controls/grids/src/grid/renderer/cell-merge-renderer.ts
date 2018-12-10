@@ -6,6 +6,7 @@ import { iterateArrayOrObject } from '../base/util';
 import { CellRendererFactory } from '../services/cell-render-factory';
 import { ServiceLocator } from '../services/service-locator';
 import { CellType } from '../base/enum';
+import { Cell } from '../models/cell';
 
 /**
  * `CellMergeRender` module.
@@ -23,10 +24,23 @@ export class CellMergeRender<T> {
     public render(cellArgs: QueryCellInfoEventArgs, row: Row<T>, i: number, td: Element): Element {
         let cellRendererFact: CellRendererFactory = this.serviceLocator.getService<CellRendererFactory>('cellRendererFactory');
         let cellRenderer: ICellRenderer<T> = cellRendererFact.getCellRenderer(row.cells[i].cellType || CellType.Data);
-        let span: number = row.cells[i].cellSpan ? row.cells[i].cellSpan :
+        let colSpan: number = row.cells[i].cellSpan ? row.cells[i].cellSpan :
             (cellArgs.colSpan + i) <= row.cells.length ? cellArgs.colSpan : row.cells.length - i;
+        let rowSpan: number = cellArgs.rowSpan;
         let visible: number = 0;
-        for ( let j: number = i + 1; j < i + span && j < row.cells.length; j++) {
+        let spannedCell: Cell<Column>;
+        if (row.index > 0) {
+            let cells: Cell<Column>[] = this.parent.groupSettings.columns.length > 0 &&
+                !this.parent.getRowsObject()[row.index - 1].isDataRow ? this.parent.getRowsObject()[row.index].cells :
+                this.parent.getRowsObject()[row.index - 1].cells;
+            let targetCell: Cell<T> = row.cells[i];
+            let uid: string = 'uid';
+            spannedCell = cells.filter((cell: Cell<Column>) => cell.column.uid === targetCell.column[uid])[0];
+        }
+        let colSpanLen: number = spannedCell && spannedCell.colSpanRange > 1 && spannedCell.rowSpanRange > 1 ?
+            spannedCell.colSpanRange : colSpan;
+        for (let j: number = i + 1; j < i + colSpanLen && j < row.cells.length; j++) {
+
             if (row.cells[j].visible === false) {
                 visible ++;
             } else {
@@ -34,11 +48,11 @@ export class CellMergeRender<T> {
             }
         }
         if (visible > 0) {
-            for ( let j: number = i + span; j < i + span + visible && j < row.cells.length; j++) {
+            for (let j: number = i + colSpan; j < i + colSpan + visible && j < row.cells.length; j++) {
                 row.cells[j].isSpanned = true;
             }
-            if ( i + span + visible >= row.cells.length) {
-                span -= (i + span + visible) - row.cells.length;
+            if ( i + colSpan + visible >= row.cells.length) {
+                colSpan -= (i + colSpan + visible) - row.cells.length;
             }
         }
         if (row.cells[i].cellSpan) {
@@ -47,8 +61,20 @@ export class CellMergeRender<T> {
                 row.cells[i], row.data,
                 { 'index': !isNullOrUndefined(row.index) ? row.index.toString() : '' });
         }
-        if (span > 1) {
-            attributes(td, {'colSpan': span.toString(), 'aria-colSpan': span.toString()});
+        if (colSpan > 1) {
+            attributes(td, { 'colSpan': colSpan.toString(), 'aria-colSpan': colSpan.toString() });
+        }
+        if (rowSpan > 1) {
+            attributes(td, { 'rowspan': rowSpan.toString(), 'aria-rowspan': rowSpan.toString() });
+            row.cells[i].isRowSpanned = true;
+            row.cells[i].rowSpanRange = Number(rowSpan);
+            if (colSpan > 1) { row.cells[i].colSpanRange = Number(colSpan); }
+        }
+        if (row.index > 0 && (spannedCell.rowSpanRange > 1)) {
+            row.cells[i].isSpanned = true;
+            row.cells[i].rowSpanRange = Number(spannedCell.rowSpanRange - 1);
+            row.cells[i].colSpanRange = spannedCell.rowSpanRange > 0 ? spannedCell.colSpanRange : 1;
+
         }
         if (this.parent.enableColumnVirtualization && !row.cells[i].cellSpan &&
             !this.containsKey(cellArgs.column.field, cellArgs.data[cellArgs.column.field]) ) {

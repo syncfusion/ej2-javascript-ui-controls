@@ -1,6 +1,6 @@
 import { Double } from '../axis/double-axis';
 import { Axis, Size } from '../../chart/index';
-import { RangeIntervalType } from '../../range-navigator';
+import { RangeIntervalType } from '../../common/utils/enum';
 /**
  * Common axis classes
  * @private

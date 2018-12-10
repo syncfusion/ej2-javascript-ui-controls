@@ -169,3 +169,5 @@ export const docClick: string = 'docClick';
 export const tableToolbarAction: string = 'table-toolbar-action';
 /** @hidden */
 export const checkUndo: string = 'checkUndoStack';
+/** @hidden */
+export const readOnlyMode: string = 'readOnlyMode';

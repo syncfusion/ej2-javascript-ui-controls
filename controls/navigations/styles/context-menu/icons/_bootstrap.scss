@@ -1,0 +1,30 @@
+@include export-module('context-menu-bootstrap-icons') {
+  /*! contextmenu layout */
+  .e-contextmenu-wrapper {
+    @at-root {
+      & ul {
+        & .e-menu-item  {
+          & .e-previous {
+            &::before {
+              content: '\e94b';
+            }
+          }
+
+          & .e-caret {
+            &::before {
+              content: '\e207';
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .e-rtl.e-contextmenu-wrapper .e-menu-item {
+    & .e-caret {
+      &::before {
+        content: '\e990';
+      }
+    }
+  }
+}

@@ -123,6 +123,7 @@ export class Double {
                     continue;
                 }
                 this.paddingInterval = 0;
+                axis.maxPointLength = series.points.length;
                 if (((series.type.indexOf('Column') > -1 || series.type.indexOf('Histogram') > -1) && axis.orientation === 'Horizontal')
                     || (series.type.indexOf('Bar') > -1 && axis.orientation === 'Vertical')) {
                     if ((series.xAxis.valueType === 'Double' || series.xAxis.valueType === 'DateTime')
@@ -178,7 +179,6 @@ export class Double {
                 this.updateActualRange(axis, start, end, interval);
             }
         }
-
         axis.actualRange.delta = axis.actualRange.max - axis.actualRange.min;
 
         this.calculateVisibleRange(size, axis);
@@ -247,7 +247,8 @@ export class Double {
             max: axis.actualRange.max, min: axis.actualRange.min,
             delta: axis.actualRange.delta, interval: axis.actualRange.interval
         };
-        if (axis.zoomFactor < 1 || axis.zoomPosition > 0) {
+        let isLazyLoad : boolean = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
+        if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad ) {
             axis.calculateVisibleRange(size);
             axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming && axis.valueType !== 'Category') ?
                 this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size)

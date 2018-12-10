@@ -20,7 +20,7 @@ describe('Heatmap Control', () => {
         let heatmap: HeatMap;
         let ele: HTMLElement;
         let tempElement: HTMLElement;
-        let created: EmitType<ILoadedEventArgs>;
+        let created: EmitType<Object>;
         let trigger: MouseEvents = new MouseEvents();
 
         let cellNumericData = [[0, 0, null], [0, 1, null], [0, 2, 8], [0, 3, 24], [0, 4, 67],
@@ -277,6 +277,8 @@ describe('Heatmap Control', () => {
                 adaptorType: "Table",
                 xDataMapping: "Region",
             };
+            heatmap.xAxis.valueType = "Category";
+            heatmap.yAxis.valueType = "Category";
             heatmap.xAxis.labels = ['TestX1', 'Pacific', 'TestX2', 'Moutain', 'TestX3'];
             heatmap.yAxis.labels = ['TestY1', 'Jan', 'Feb', 'Mar', 'TestY2', 'Apr', 'May', 'Jun', 'TestY3'];
             heatmap.dataSource = adaptorData;
@@ -380,10 +382,10 @@ describe('Heatmap Control', () => {
             heatmap.xAxis.labels = null;
             heatmap.yAxis.labels = null;
             heatmap.refresh();
-            expect(heatmap.clonedDataSource.length).toBe(1);
-            expect(heatmap.clonedDataSource[0].length).toBe(1);
-            expect(heatmap.dataSourceMaxValue).toBe(0);
-            expect(heatmap.dataSourceMinValue).toBe(0);
+            expect(heatmap.clonedDataSource.length).toBe(8);
+            expect(heatmap.clonedDataSource[0].length).toBe(5);
+            expect(heatmap.dataSourceMaxValue).toBe(34);
+            expect(heatmap.dataSourceMinValue).toBe(21);
         });
         it('Check cell dataSource with Json Cell dataSource', () => {
             adaptorData = {
@@ -538,6 +540,43 @@ describe('Heatmap Control', () => {
             expect(heatmap.clonedDataSource[0].length).toBe(9);
             expect(heatmap.dataSourceMaxValue).toBe(121);
             expect(heatmap.dataSourceMinValue).toBe(21);
+        });
+        it('Check complex dataSource with Rect cell', () => {
+            let jsonData : object = [
+                { 'rowid': 'France', 'columnid': new Date(2010, 0, 1), 'value': '77.6' },
+                { 'rowid': 'France', 'columnid': new Date(2011, 0, 1), 'value': '79.4' },
+                { 'rowid': 'France', 'columnid': new Date(2012, 0, 1), 'value': '80.8' },
+                { 'rowid': 'France', 'columnid': new Date(2013, 0, 1), 'value': '86.6' },
+                { 'rowid': 'France', 'columnid': new Date(2014, 0, 1), 'value': '83.7' },
+                { 'rowid': 'France', 'columnid': new Date(2015, 0, 1), 'value': '84.5' },
+                { 'rowid': 'France', 'columnid': new Date(2016, 0, 1), 'value': '82.6' },
+                { 'rowid': 'USA', 'columnid': new Date(2010, 0, 1), 'value': '60.6' },
+                { 'rowid': 'USA', 'columnid': new Date(2011, 0, 1), 'value': '65.4' },
+                { 'rowid': 'USA', 'columnid': new Date(2012, 0, 1), 'value': '70.8' },
+                { 'rowid': 'USA', 'columnid': new Date(2013, 0, 1), 'value': '73.8' },
+                { 'rowid': 'USA', 'columnid': new Date(2014, 0, 1), 'value': '75.3' },
+                { 'rowid': 'USA', 'columnid': new Date(2015, 0, 1), 'value': '77.5' },
+                { 'rowid': 'USA', 'columnid': new Date(2016, 0, 1), 'value': '77.6' },
+            ];
+            heatmap.cellSettings.tileType = 'Rect';
+            heatmap.dataSource = {
+                data: jsonData,
+                isJsonData: true,
+                adaptorType: 'Cell',
+                xDataMapping: 'rowid',
+                yDataMapping: 'columnid',
+                valueMapping:'value'
+            }
+            heatmap.xAxis.valueType = "Category";
+            heatmap.xAxis.labels = [];
+            heatmap.yAxis.labels = [];
+            heatmap.yAxis.valueType = "DateTime";
+            heatmap.yAxis.intervalType = "Years";
+            heatmap.refresh();
+            expect(heatmap.clonedDataSource.length).toBe(7);
+            expect(heatmap.clonedDataSource[0].length).toBe(2);
+            expect(heatmap.dataSourceMaxValue).toBe(86.6);
+            expect(heatmap.dataSourceMinValue).toBe(60.6);
         });
         it('Check dataSource without inject Adaptor', () => {
             heatmap.adaptorModule = null;

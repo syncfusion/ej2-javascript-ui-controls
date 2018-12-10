@@ -635,6 +635,20 @@ export class Axis extends ChildProperty<Axis> {
     public background: string;
 
     /**
+     * Specifies the range gap property by pixel value.
+     * @default null
+     */
+    @Property(null)
+    public rangeGap: number;
+
+    /**
+     * Specifies the start and end range gap.
+     * @default false
+     */
+    @Property(false)
+    public startAndEndRangeGap: boolean;
+
+    /**
      * Options to customize the axis label.
      */
 

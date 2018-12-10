@@ -7,7 +7,7 @@ import { Matrix, identityMatrix, scaleMatrix, translateMatrix, transformPointByM
 import { MarginModel } from '../core/appearance-model';
 import { IFitOptions } from '../objects/interface/interfaces';
 import { updateRuler } from '../ruler/ruler';
-import { canZoom, canPan } from './../utility/constraints-util';
+import { canZoom, canPan, canVitualize } from './../utility/constraints-util';
 import { NodeModel } from '../objects/node-model';
 import { ConnectorModel } from '../objects/connector-model';
 /**
@@ -435,8 +435,10 @@ export class DiagramScroller {
                 this.horizontalOffset = newOffset.x;
                 this.verticalOffset = newOffset.y;
                 this.setSize();
-
-                if (this.diagram.mode !== 'SVG') {
+                if (this.diagram.mode !== 'SVG' && canVitualize(this.diagram)) {
+                    this.diagram.scroller.virtualizeElements();
+                }
+                if (this.diagram.mode !== 'SVG' && !canVitualize(this.diagram)) {
                     this.diagram.refreshDiagramLayer();
                 }
                 this.diagram.setOffset(-this.horizontalOffset - pageBounds.x, -this.verticalOffset - pageBounds.y);
@@ -444,6 +446,7 @@ export class DiagramScroller {
             }
         }
     }
+
     /** @private */
     public fitToPage(options?: IFitOptions): void {
         options = options || {};

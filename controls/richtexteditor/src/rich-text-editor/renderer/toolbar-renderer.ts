@@ -1,4 +1,4 @@
-import { addClass, Browser, removeClass, EventHandler } from '@syncfusion/ej2-base';
+import { addClass, Browser, removeClass, EventHandler, formatUnit } from '@syncfusion/ej2-base';
 import { getInstance, closest, MouseEventArgs, selectAll } from '@syncfusion/ej2-base';
 import { Toolbar, ClickEventArgs, BeforeCreateArgs, OverflowMode } from '@syncfusion/ej2-navigations';
 import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
@@ -212,7 +212,8 @@ export class ToolbarRenderer implements IRenderer {
                     let colorpickerValue: string = element.classList.contains(CLS_RTE_ELEMENTS) ? element.style.borderBottomColor :
                         (element.querySelector('.' + CLS_RTE_ELEMENTS) as HTMLElement).style.borderBottomColor;
                     range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
-                    if ((range.startContainer.nodeName === 'TD' || closest(range.startContainer.parentNode, 'td')) && range.collapsed) {
+                    if ((range.startContainer.nodeName === 'TD' || range.startContainer.nodeName === 'TH' ||
+                        closest(range.startContainer.parentNode, 'td,th')) && range.collapsed) {
                         proxy.parent.notify(events.tableColorPickerChanged, { item: { command: args.command, subCommand: args.subCommand,
                             value: colorpickerValue }
                         });
@@ -241,6 +242,7 @@ export class ToolbarRenderer implements IRenderer {
                 };
             },
             open: (dropDownArgs: OpenCloseMenuEventArgs): void => {
+                this.setColorPickerContentWidth(colorPicker);
                 let ele: HTMLElement = (dropDownArgs.element.querySelector('.e-control.e-colorpicker') as HTMLElement);
                 let focusEle: HTMLElement;
                 if (dropDownArgs.element.querySelector('.e-color-palette')) {
@@ -256,7 +258,8 @@ export class ToolbarRenderer implements IRenderer {
                         (element.querySelector('.' + CLS_RTE_ELEMENTS) as HTMLElement).style.borderBottomColor;
                     /* tslint:enable */
                     range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
-                    if ((range.startContainer.nodeName === 'TD' || closest(range.startContainer.parentNode, 'td')) && range.collapsed) {
+                    if ((range.startContainer.nodeName === 'TD' || range.startContainer.nodeName === 'TH' ||
+                        closest(range.startContainer.parentNode, 'td,th')) && range.collapsed) {
                         proxy.parent.notify(events.tableColorPickerChanged, { item: { command: args.command, subCommand: args.subCommand,
                                 value: colorpickerValue }
                         });
@@ -281,10 +284,15 @@ export class ToolbarRenderer implements IRenderer {
         dropDown.appendTo(args.element);
         dropDown.element.insertBefore(content, dropDown.element.querySelector('.e-caret'));
         args.element.tabIndex = -1;
-        dropDown.element.onmousedown = (): void => {
-            proxy.parent.notify(events.selectionSave, {});
-        };
+        dropDown.element.onmousedown = (): void => { proxy.parent.notify(events.selectionSave, {}); };
         return dropDown;
+    }
+    private setColorPickerContentWidth(colorPicker: ColorPicker): void {
+        let colorPickerContent: HTMLElement =  (colorPicker.element.nextSibling as HTMLElement);
+        colorPickerContent.style.width = '';
+        let borderWidth: number = parseInt(getComputedStyle(colorPickerContent).borderBottomWidth, 10);
+        colorPickerContent.style.width = formatUnit((colorPickerContent.children[0] as HTMLElement).offsetWidth
+            + borderWidth + borderWidth);
     }
     public renderColorPicker(args: IColorPickerModel, item: string): ColorPicker {
         let proxy: this = this;
@@ -311,9 +319,9 @@ export class ToolbarRenderer implements IRenderer {
                     value: colorpickerValue
                 };
                 (proxy.currentElement.querySelector('.' + CLS_RTE_ELEMENTS) as HTMLElement).style.borderBottomColor = colorpickerValue;
-                let range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(
-                    proxy.parent.contentModule.getDocument());
-                if ((range.startContainer.nodeName === 'TD' || closest(range.startContainer.parentNode, 'td')) && range.collapsed) {
+                let range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
+                if ((range.startContainer.nodeName === 'TD' || range.startContainer.nodeName === 'TH' ||
+                        closest(range.startContainer.parentNode, 'td,th')) && range.collapsed) {
                     proxy.parent.notify(events.tableColorPickerChanged, colorPickerArgs);
                 } else {
                     proxy.parent.notify(events.colorPickerChanged, colorPickerArgs);

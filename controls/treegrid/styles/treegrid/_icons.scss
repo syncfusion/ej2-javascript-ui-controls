@@ -1,0 +1,18 @@
+@include export-module('treegrid-icons') {
+  .e-treegrid {
+    .e-treegridexpand::before,
+    .e-treegridcollapse::before {
+      content: $treegrid-right-arrow-icon;
+    }
+
+    .e-toolbar-item {
+      .e-expand::before {
+        content: $treegrid-toolbar-expand-icon;
+      }
+
+      .e-collapse::before {
+        content:  $treegrid-toolbar-collapse-icon;
+      }
+    }
+  }
+}

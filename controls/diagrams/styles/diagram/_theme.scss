@@ -63,6 +63,11 @@
     stroke: $diagram-border-stroke-disabled;
   }
 
+  .e-diagram-border.e-thick-border {
+    stroke: $diagram-border-strokes;
+    stroke-width: $diagram-border-stroke-width;
+  }
+
   .e-diagram-highlighter {
     stroke: $diagram-highlighter-stroke;
   }

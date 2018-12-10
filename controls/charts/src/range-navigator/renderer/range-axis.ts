@@ -4,7 +4,7 @@ import {
     firstToLowerCase,
 } from '../../common/utils/helper';
 import { DateTime, FontModel, IntervalType } from '../../chart/index';
-import { RangeIntervalType } from '..//utils/enum';
+import { RangeIntervalType } from '../../common/utils/enum';
 import { Axis, VisibleLabels, MajorGridLinesModel, VisibleLabelsModel, MajorTickLinesModel } from '../../chart/index';
 import { ILabelRenderEventsArgs } from '../model/range-navigator-interface';
 

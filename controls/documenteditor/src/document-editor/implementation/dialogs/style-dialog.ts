@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined, L10n, setCulture } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { DropDownList, ComboBox } from '@syncfusion/ej2-dropdowns';
 import { RadioButton, Button } from '@syncfusion/ej2-buttons';
 import { WStyle, WCharacterStyle, WParagraphStyle } from '../../implementation/format/style';
@@ -34,6 +34,7 @@ export class StyleDialog {
     private fontSize: ComboBox = undefined;
     private characterFormat: WCharacterFormat = undefined;
     private paragraphFormat: WParagraphFormat = undefined;
+    private localObj: L10n;
 
     //Font Properties
 
@@ -65,8 +66,9 @@ export class StyleDialog {
      * @private
      */
     //tslint:disable: max-func-body-length
-    public initStyleDialog(localValue: L10n): void {
+    public initStyleDialog(localValue: L10n, isRtl?: boolean): void {
         let instance: StyleDialog = this;
+        this.localObj = localValue;
         let id: string = this.owner.owner.containerId + '_style';
         this.target = createElement('div', { id: id, className: 'e-de-style-dialog' });
         let container: HTMLElement = createElement('div');
@@ -93,9 +95,9 @@ export class StyleDialog {
         let styleTypeDivElement: HTMLElement = createElement('div', { className: 'e-de-style-style-type-div' });
         let styleTypeValue: HTMLSelectElement = createElement('select', { id: 'e-de-style-style-type' }) as HTMLSelectElement;
         // tslint:disable-next-line:max-line-length
-        styleTypeValue.innerHTML = '<option>Paragraph</option><option>Character</option><option>Linked(Paragraph and Character)</option>'; //<option>Linked(Paragraph and Character)</option><option>Table</option><option>List</option>';
+        styleTypeValue.innerHTML = '<option>' + localValue.getConstant('Paragraph') + '</option><option>' + localValue.getConstant('Character') + '</option><option>' + localValue.getConstant('Linked(Paragraph and Character)') + '</option>'; //<option>Linked(Paragraph and Character)</option><option>Table</option><option>List</option>';
         styleTypeDivElement.appendChild(styleTypeValue);
-        this.styleType = new DropDownList({ change: this.styleTypeChange, popupHeight: '253px', width: '210px' });
+        this.styleType = new DropDownList({ change: this.styleTypeChange, popupHeight: '253px', width: '210px', enableRtl: isRtl });
         this.styleType.appendTo(styleTypeValue);
         styleTypeWholeDiv.appendChild(styleTypeDivElement);
         // tslint:disable-next-line:max-line-length
@@ -111,12 +113,18 @@ export class StyleDialog {
         let styleBasedOnValue: HTMLInputElement = createElement('input', { id: 'e-de-style-style-based-on-value' }) as HTMLInputElement;
         //styleBasedOnValue.innerHTML = '<option>Normal</option><option>Heading 1</option><option>Heading 2</option><option>Heading 3</option><option>Heading 4</option><option>Heading 5</option><option>Heading 6</option>';
         styleBasedOnDivElement.appendChild(styleBasedOnValue);
-        this.styleBasedOn = new DropDownList({ dataSource: [], select: this.styleBasedOnChange, popupHeight: '253px', width: '210px' });
+        // tslint:disable-next-line:max-line-length
+        this.styleBasedOn = new DropDownList({ dataSource: [], select: this.styleBasedOnChange, popupHeight: '253px', width: '210px', enableRtl: isRtl });
         this.styleBasedOn.appendTo(styleBasedOnValue);
         styleBasedOnWholeDiv.appendChild(styleBasedOnDivElement);
 
         let styleParagraphWholeDiv: HTMLElement = createElement('div', { className: 'e-de-style-left-div' });
         styleBasedParaDiv.appendChild(styleParagraphWholeDiv);
+        if (isRtl) {
+            nameWholeDiv.classList.add('e-de-rtl');
+            styleBasedOnWholeDiv.classList.add('e-de-rtl');
+            styleParagraphWholeDiv.classList.add('e-de-rtl');
+        }
         // tslint:disable-next-line:max-line-length
         let styleParagraph: HTMLElement = createElement('div', { className: 'e-de-style-style-paragraph', innerHTML: localValue.getConstant('Style for following paragraph') + ':' });
         styleParagraphWholeDiv.appendChild(styleParagraph);
@@ -126,7 +134,8 @@ export class StyleDialog {
         // tslint:disable-next-line:max-line-length
         //styleParagraphValue.innerHTML = '<option>Normal</option><option>Heading 1</option><option>Heading 2</option><option>Heading 3</option><option>Heading 4</option><option>Heading 5</option><option>Heading 6</option>';
         styleParagraphDivElement.appendChild(styleParagraphValue);
-        this.styleParagraph = new DropDownList({ dataSource: [], select: this.styleParagraphChange, popupHeight: '253px', width: '210px' });
+        // tslint:disable-next-line:max-line-length
+        this.styleParagraph = new DropDownList({ dataSource: [], select: this.styleParagraphChange, popupHeight: '253px', width: '210px', enableRtl: isRtl });
         this.styleParagraph.appendTo(styleParagraphValue);
         styleParagraphWholeDiv.appendChild(styleParagraphDivElement);
         // tslint:disable-next-line:max-line-length
@@ -136,7 +145,7 @@ export class StyleDialog {
         container.appendChild(optionsDiv);
         let fontOptionsDiv: HTMLElement = createElement('div', { styles: 'display:flex;margin-bottom: 15px;' });
         optionsDiv.appendChild(fontOptionsDiv);
-        this.createFontOptions(fontOptionsDiv);
+        this.createFontOptions(fontOptionsDiv, isRtl);
         let paragraphOptionsDiv: HTMLElement = createElement('div', { styles: 'display:flex', className: 'e-style-paragraph' });
         optionsDiv.appendChild(paragraphOptionsDiv);
         this.createParagraphOptions(paragraphOptionsDiv);
@@ -160,10 +169,10 @@ export class StyleDialog {
         // this.template = new RadioButton({ label: 'Template', value: 'template', name: 'styles' });
         // this.template.appendTo(template);
         // radioOptionsDiv.appendChild(templateDiv);
-        this.createFormatDropdown(container, localValue);
+        this.createFormatDropdown(container, localValue, isRtl);
         this.target.appendChild(container);
     }
-    private createFormatDropdown(parentDiv: HTMLElement, localValue: L10n): void {
+    private createFormatDropdown(parentDiv: HTMLElement, localValue: L10n, isRtl?: boolean): void {
         let formatBtn: HTMLElement = createElement('button', { id: 'style_format_dropdown', innerHTML: localValue.getConstant('Format') });
         formatBtn.style.height = '35px';
         parentDiv.appendChild(formatBtn);
@@ -171,10 +180,10 @@ export class StyleDialog {
         { text: localValue.getConstant('Paragraph') + '..', id: 'style_paragraph' },
         { text: localValue.getConstant('Numbering') + '..', id: 'style_numbering' }];
         let dropDownbtn: DropDownButton = new DropDownButton({
-            items: items, cssClass: 'e-de-style-format-dropdwn',
+            items: items, cssClass: 'e-de-style-format-dropdwn', enableRtl: isRtl,
             beforeItemRender: (args: MenuEventArgs) => {
-                if (this.styleType.value === 'Character') {
-                    if (args.item.text === 'Paragraph') {
+                if (this.styleType.value === localValue.getConstant('Character')) {
+                    if (args.item.text === localValue.getConstant('Paragraph')) {
                         args.element.classList.add('e-disabled');
                     }
 
@@ -182,7 +191,7 @@ export class StyleDialog {
                         args.element.classList.add('e-disabled');
                     }
                 } else {
-                    if (args.item.text === 'Paragraph') {
+                    if (args.item.text === localValue.getConstant('Paragraph')) {
                         args.element.classList.remove('e-disabled');
                     }
 
@@ -209,7 +218,7 @@ export class StyleDialog {
                 break;
         }
     }
-    private createFontOptions(parentDiv: HTMLElement): void {
+    private createFontOptions(parentDiv: HTMLElement, isRtl?: boolean): void {
         let fontFamilyElement: HTMLSelectElement = createElement('select', { id: this.target.id + '_fontName' }) as HTMLSelectElement;
         fontFamilyElement.innerHTML = '<option>Arial</option><option>Calibri</option><option>Candara</option>' +
             '<option>Comic Sans MS</option><option>Consolas</option><option>Constantia</option><option>Corbel</option>' +
@@ -221,7 +230,7 @@ export class StyleDialog {
         parentDiv.appendChild(fontFamilyElement);
         this.fontFamily = new ComboBox({
             width: '123px', popupWidth: '123px',
-            cssClass: 'e-style-font-fmaily-right', change: this.fontFamilyChanged
+            cssClass: 'e-style-font-fmaily-right', enableRtl: isRtl, change: this.fontFamilyChanged
         });
         this.fontFamily.showClearButton = false;
         this.fontFamily.appendTo(fontFamilyElement);
@@ -230,7 +239,7 @@ export class StyleDialog {
         let sizeDataSource: number[] = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72];
         this.fontSize = new ComboBox({
             dataSource: sizeDataSource, width: '73px', cssClass: 'e-style-font-fmaily-right',
-            change: this.fontSizeUpdate
+            enableRtl: isRtl, change: this.fontSizeUpdate
         });
         this.fontSize.showClearButton = false;
         this.fontSize.appendTo(fontSizeElement);
@@ -247,7 +256,8 @@ export class StyleDialog {
         this.underline.addEventListener('click', this.setUnderlineProperty);
         let fontColorElement: HTMLElement = createElement('input', { attrs: { type: 'color' }, className: 'e-de-style-icon-button-size' });
         parentDiv.appendChild(fontColorElement);
-        this.fontColor = new ColorPicker({ cssClass: 'e-de-style-font-color-picker', change: this.fontColorUpdate });
+        // tslint:disable-next-line:max-line-length
+        this.fontColor = new ColorPicker({ cssClass: 'e-de-style-font-color-picker', enableRtl: isRtl, change: this.fontColorUpdate, locale: this.owner.owner.locale });
         this.fontColor.appendTo(fontColorElement);
     }
     private setBoldProperty = (): void => {
@@ -417,7 +427,7 @@ export class StyleDialog {
         }
     }
     private toggleDisable(): void {
-        if (this.styleType.value === 'Character') {
+        if (this.styleType.value === this.localObj.getConstant('Character')) {
             this.styleParagraph.enabled = false;
             // tslint:disable-next-line:max-line-length
             this.target.getElementsByClassName('e-style-paragraph').item(0).setAttribute('style', 'display:flex;pointer-events:none;opacity:0.5');
@@ -433,7 +443,8 @@ export class StyleDialog {
      */
     public updateNextStyle = (args: FocusEvent): void => {
         let typedName: string = (args.srcElement as HTMLInputElement).value;
-        if (this.getTypeValue() === 'Paragraph' && !isNullOrUndefined(typedName) && typedName !== '' && !this.isUserNextParaUpdated) {
+        // tslint:disable-next-line:max-line-length
+        if (this.getTypeValue() === this.localObj.getConstant('Paragraph') && !isNullOrUndefined(typedName) && typedName !== '' && !this.isUserNextParaUpdated) {
             let styles: string[] = this.owner.owner.viewer.styles.getStyleNames(this.getTypeValue());
             if (this.isEdit) {
                 styles = styles.filter((e: string) => e !== this.editStyleName);
@@ -459,11 +470,12 @@ export class StyleDialog {
     public styleTypeChange = (args: any): void => {
         if (args.isInteracted) {
             let type: StyleType;
-            if (args.value === 'Character') {
+            if (args.value === this.localObj.getConstant('Character')) {
                 this.style = new WCharacterStyle();
                 type = 'Character';
             }
-            if (args.value === 'Paragraph' || args.value === 'Linked(Paragraph and Character)') {
+            // tslint:disable-next-line:max-line-length
+            if (args.value === this.localObj.getConstant('Paragraph') || args.value === this.localObj.getConstant('Linked(Paragraph and Character)')) {
                 this.style = new WParagraphStyle();
                 type = 'Paragraph';
             }
@@ -525,9 +537,8 @@ export class StyleDialog {
         let style: WCharacterStyle | WParagraphStyle = this.owner.owner.viewer.styles.findByName(styleName) as WCharacterStyle | WParagraphStyle;
         this.style = !this.isEdit ? new WParagraphStyle() : style ? style : this.getStyle(styleName) as WCharacterStyle | WParagraphStyle;
         localObj.setLocale(this.owner.owner.locale);
-        setCulture(this.owner.owner.locale);
         if (!this.target) {
-            this.initStyleDialog(localObj);
+            this.initStyleDialog(localObj, this.owner.owner.enableRtl);
         }
         if (isNullOrUndefined(header)) {
             header = localObj.getConstant('Create New Style');
@@ -562,13 +573,14 @@ export class StyleDialog {
             if (!isNullOrUndefined(style)) {
                 this.style.type = this.getTypeValue();
                 this.style.basedOn = this.owner.owner.viewer.styles.findByName(this.styleBasedOn.value as string) as WStyle;
-                if (this.styleType.value === 'Paragraph' || this.styleType.value === 'Linked(Paragraph and Character)') {
+                // tslint:disable-next-line:max-line-length
+                if (this.styleType.value === this.localObj.getConstant('Paragraph') || this.styleType.value === this.localObj.getConstant('Linked(Paragraph and Character)')) {
                     this.style.next = this.owner.owner.viewer.styles.findByName(this.styleParagraph.value as string) as WStyle;
                     (this.style as WParagraphStyle).characterFormat.mergeFormat((style as WParagraphStyle).characterFormat);
                     (this.style as WParagraphStyle).paragraphFormat.mergeFormat((style as WParagraphStyle).paragraphFormat);
                     this.updateList();
                     // tslint:disable-next-line:max-line-length
-                    this.style.link = (this.styleType.value === 'Linked(Paragraph and Character)') ? this.createLinkStyle(styleName, this.isEdit) : undefined;
+                    this.style.link = (this.styleType.value === this.localObj.getConstant('Linked(Paragraph and Character)')) ? this.createLinkStyle(styleName, this.isEdit) : undefined;
                 }
 
                 //Updating existing style implementation
@@ -582,7 +594,8 @@ export class StyleDialog {
             } else {
                 /* tslint:disable-next-line:no-any */
                 let basedOn: any = this.owner.owner.viewer.styles.findByName(this.styleBasedOn.value as string) as WStyle;
-                if (this.styleType.value === 'Paragraph' || this.styleType.value === 'Linked(Paragraph and Character)') {
+                // tslint:disable-next-line:max-line-length
+                if (this.styleType.value === this.localObj.getConstant('Paragraph') || this.styleType.value === this.localObj.getConstant('Linked(Paragraph and Character)')) {
                     if (styleName === this.styleParagraph.value) {
                         this.style.next = this.style;
                     } else {
@@ -591,7 +604,7 @@ export class StyleDialog {
                     this.updateList();
                 }
                 // tslint:disable-next-line:max-line-length
-                this.style.link = (this.styleType.value === 'Linked(Paragraph and Character)') ? this.createLinkStyle(styleName) : undefined;
+                this.style.link = (this.styleType.value === this.localObj.getConstant('Linked(Paragraph and Character)')) ? this.createLinkStyle(styleName) : undefined;
                 this.style.type = this.getTypeValue();
                 this.style.name = styleName;
                 this.style.basedOn = basedOn;
@@ -759,7 +772,8 @@ export class StyleDialog {
     }
     private getTypeValue(): StyleType {
         let type: StyleType;
-        if (this.styleType.value === 'Linked(Paragraph and Character)' || this.styleType.value === 'Paragraph') {
+        /* tslint:disable-next-line:max-line-length */
+        if (this.styleType.value === this.localObj.getConstant('Linked(Paragraph and Character)') || this.styleType.value === this.localObj.getConstant('Paragraph')) {
             return 'Paragraph';
         } else {
             return 'Character';

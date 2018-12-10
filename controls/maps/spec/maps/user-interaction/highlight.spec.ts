@@ -2,11 +2,12 @@
  * Highlight Testcase
  */
 import { usMap, World_Map, randomcountriesData1 } from '../data/data.spec';
+import { Population_Density } from '../data/PopulationDensity.spec';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { MouseEvents } from '../base/events.spec';
 import { getElement } from '../../../src/maps/utils/helper';
-import { ILoadedEventArgs, Highlight, Maps } from '../../../src/maps/index';
-Maps.Inject(Highlight);
+import { ILoadedEventArgs, Highlight, Maps, Legend, Selection } from '../../../src/maps/index';
+Maps.Inject(Highlight, Legend, Selection);
 describe('Selection Settings', () => {
     describe('Testing selection is applied or not', () => {
         let id: string = 'container';
@@ -221,5 +222,155 @@ describe('Testing bubble, marker and navigation line highlight', () => {
             done();
         };
         world.refresh();
+    });
+});
+describe('Highlight Settings', () => {
+    describe('Testing highlight is applied or not', () => {
+        let id: string = 'container';
+        let highlight: Maps;
+        let trigger: MouseEvents = new MouseEvents();
+        let ele: HTMLDivElement;
+        let spec: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            highlight = new Maps({
+                titleSettings: {
+                    text: 'WorldMap',
+                },
+                legendSettings: {
+                    visible: true,
+                    position: 'Top',
+                },
+                layers: [{
+                    highlightSettings: {
+                        enable: true,
+                        fill: 'red'
+                    },
+                    selectionSettings: {
+                        enable: true,
+                        fill: 'green'
+                    },
+                    shapeData: World_Map,
+                    shapeDataPath: 'name',
+                    dataSource: Population_Density,
+                    shapeSettings: {
+                        colorValuePath: 'density',
+                        fill: '#E5E5E5',
+                        colorMapping: [
+                            {
+                                from: 0.00001, to: 100, color: 'rgb(153,174,214)', label: '<100'
+                            },
+                            {
+                                from: 100, to: 200, color: 'rgb(115,143,199)', label: '100 - 200'
+                            },
+                            {
+                                from: 200, to: 300, color: 'rgb(77,112,184)', label: '200 - 300'
+                            },
+                            {
+                                from: 300, to: 500, color: 'rgb(38,82,168)', label: '300 - 500'
+                            },
+                            {
+                                from: 500, to: 19000, color: 'rgb(0,51,153)', label: '>500'
+                            }
+                        ]
+                    }
+                }],
+            });
+        });
+        afterAll(() => {
+            remove(ele);
+            highlight.destroy();
+        });
+        it('Highlight checking for legends on shapes', (done: Function) => {
+            highlight.loaded = (args: ILoadedEventArgs) => {
+            spec = getElement('container_LayerIndex_0_ShapeIndex_134_dataIndex_125');
+            trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
+            done();
+        };
+            highlight.appendTo('#' + id);
+        });
+        it('Highlight checking for shapes on legends', (done: Function) => {
+            highlight.loaded = (args: ILoadedEventArgs) => {
+            spec = getElement('container_Legend_Shape_Index_0');
+            trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
+            done();
+        };
+            highlight.refresh();
+        });
+        it('Highlight checking for shapes on legends', (done: Function) => {
+            highlight.loaded = (args: ILoadedEventArgs) => {
+            spec = getElement('container_Legend_Shape_Index_0');
+            trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
+            spec = getElement('container_MapAreaBorder');
+            trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
+            spec = getElement('container_Legend_Shape_Index_1');
+            trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
+            spec = getElement('container_Legend_Shape_Index_1');
+            trigger.clickEvent(spec);
+            spec = getElement('container_MapAreaBorder');
+            trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
+            spec = getElement('container_Legend_Shape_Index_1');
+            trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
+            done();
+        };
+            highlight.refresh();
+        });
+        it('Highlight after selection on the legends', (done: Function) => {
+            highlight.loaded = (args: ILoadedEventArgs) => {
+            spec = getElement('container_Legend_Shape_Index_2');
+            trigger.clickEvent(spec);
+            spec = getElement('container_Legend_Shape_Index_2');
+            trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
+            spec = getElement('container_Legend_Shape_Index_1');
+            trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
+            done();
+        };
+            highlight.refresh();
+        });
+        it('Highlight after selection on shapes', (done: Function) => {
+            highlight.loaded = (args: ILoadedEventArgs) => {
+            spec = getElement('container_LayerIndex_0_ShapeIndex_26_dataIndex_25');
+            trigger.clickEvent(spec);
+            spec = getElement('container_LayerIndex_0_ShapeIndex_108_dataIndex_95');
+            trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
+            spec = getElement('container_MapAreaBorder');
+            trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
+            spec = getElement('container_LayerIndex_0_ShapeIndex_29_dataIndex_29');
+            trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
+            done();
+        };
+            highlight.refresh();
+        });
+        it('Legend selection and highlight in interactive legend', (done: Function) => {
+            highlight.loaded = (args: ILoadedEventArgs) => {
+            spec = getElement('container_Legend_Index_0');
+            trigger.clickEvent(spec);
+            spec = getElement('container_Legend_Index_1');
+            trigger.mousemoveEvent(spec, 0, 0, 0, 0);
+            spec = getElement('container_MapAreaBorder');
+            trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
+            done();
+        };
+            highlight.legendSettings.mode = 'Interactive';
+            highlight.refresh();
+        });
+        it('Shape highlight with other window', (done: Function) => {
+            highlight.loaded = (args: ILoadedEventArgs) => {
+            spec = getElement('container_LayerIndex_0_ShapeIndex_29_dataIndex_29');
+            trigger.mousemoveEvent(spec, 0, 0, 0, 0);
+            let eventObj: Object = {};
+            eventObj = {
+                target: spec,
+                type: 'mousemove',
+                pageX: spec.getBoundingClientRect().left,
+                pageY: (spec.getBoundingClientRect().top + 10)
+            };
+            highlight.mouseLeaveOnMap(<PointerEvent>eventObj);
+            done();
+        };
+            highlight.legendSettings.mode = 'Interactive';
+            highlight.refresh();
+        });
     });
 });

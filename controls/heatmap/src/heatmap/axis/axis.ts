@@ -1,13 +1,14 @@
 /**
  * HeatMap Axis file
  */
-import { Property, Complex, ChildProperty, DateFormatOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Property, Complex, ChildProperty, DateFormatOptions, isNullOrUndefined, Collection } from '@syncfusion/ej2-base';
 import { DataUtil } from '@syncfusion/ej2-data';
 import { Orientation } from '../utils/enum';
-import { FontModel, TitleModel } from '../model/base-model';
-import { Font, Title } from '../model/base';
+import { FontModel, TitleModel, AxisLabelBorderModel, MultiLevelLabelsModel, MultiLevelCategoriesModel } from '../model/base-model';
+import { Font, Title, AxisLabelBorder, MultiLevelLabels, MultiLevelCategories } from '../model/base';
 import { Theme } from '../model/theme';
-import { Rect, measureText, Size, rotateTextSize, increaseDateTimeInterval } from '../utils/helper';
+import { Rect, measureText, Size, rotateTextSize, increaseDateTimeInterval, formatValue } from '../utils/helper';
+import { MultiLevelPosition, textWrap } from '../utils/helper';
 import { ValueType, IntervalType, LabelIntersectAction, LabelType } from '../utils/enum';
 import { HeatMap } from '../heatmap'
     ;
@@ -145,6 +146,18 @@ export class Axis extends ChildProperty<Axis> {
     @Property('Trim')
     public labelIntersectAction: LabelIntersectAction;
 
+    /**
+     * Border of the axis labels.
+     */
+    @Complex<AxisLabelBorderModel>({ color: '#b5b5b5', width: 0, type: 'Rectangle' }, AxisLabelBorder)
+    public border: AxisLabelBorderModel;
+
+    /**
+     * Specifies the multi level labels collection for the axis
+     */
+    @Collection<MultiLevelLabels>([], MultiLevelLabels)
+    public multiLevelLabels: MultiLevelLabelsModel[];
+
     /** @private */
     public orientation: Orientation;
 
@@ -184,18 +197,108 @@ export class Axis extends ChildProperty<Axis> {
     public angle: number;
     /** @private */
     public isIntersect: boolean = false;
-
+    /** @private */
+    public jsonCellLabel: string[] = [];
+    public multiLevelSize: Size[] = [];
+    /** @private */
+    public xAxisMultiLabelHeight: number[] = [];
+    /** @private */
+    public yAxisMultiLabelHeight: number[] = [];
+    /** @private */
+    public multiLevelPosition: MultiLevelPosition[] = [];
     /**
      * measure the axis title and label size
      * @param axis 
      * @param heatmap 
      * @private
      */
-    public computeSize(axis: Axis, heatmap: HeatMap): void {
-        let width: number = 0;
+    public computeSize(axis: Axis, heatmap: HeatMap, rect: Rect): void {
+        let size: Size = new Size(0, 0);
         let innerPadding: number = 10;
         this.titleSize = axis.getTitleSize(axis, innerPadding);
         this.maxLabelSize = axis.getMaxLabelSize(axis, heatmap);
+        this.getMultilevelLabelsHeight(axis, rect, heatmap);
+        for (let i: number = 0; i < this.multiLevelLabels.length; i++) {
+            size = axis.multiLevelLabelSize(innerPadding, i);
+            this.multiLevelSize.push(size);
+        }
+    }
+
+    /**
+     * calculating x, y position of multi level labels
+     * @private
+     */
+    public multiPosition(axis: Axis, index: number): MultiLevelPosition {
+        let innerPadding: number = axis.orientation === 'Horizontal' ? 10 : 20;
+        let multiPosition: MultiLevelPosition = new MultiLevelPosition(0, 0);
+        if (axis.orientation === 'Horizontal') {
+            let level0: number = axis.maxLabelSize.height + innerPadding ;
+            let level1: number = this.xAxisMultiLabelHeight[index - 1] ;
+            multiPosition.x = (axis.isInversed ? axis.rect.x + axis.rect.width : axis.rect.x);
+            multiPosition.y = index === 0 ? axis.rect.y + (axis.opposedPosition ? -level0 : level0) :
+                axis.multiLevelPosition[index - 1].y + (axis.opposedPosition ? -level1 : level1 );
+        } else {
+            let level0: number =  axis.maxLabelSize.width + innerPadding;
+            let level1: number = index !== 0 && (this.multiLevelSize[index - 1].width  );
+            multiPosition.x = index === 0 ? axis.rect.x - (axis.opposedPosition ? -level0 : level0 ) :
+            axis.multiLevelPosition[index - 1].x - (axis.opposedPosition ? - (level1 + innerPadding) : level1 + innerPadding);
+            multiPosition.y =  axis.isInversed ? axis.rect.y : axis.rect.y + axis.rect.height;
+        }
+        return multiPosition;
+    }
+
+    private multiLevelLabelSize(innerPadding: number, index: number): Size {
+        let labelSize: Size = new Size(0, 0);
+        let multiLevel: MultiLevelLabelsModel[] = this.multiLevelLabels;
+        let categoryLabel: MultiLevelCategoriesModel[] = multiLevel[index].categories;
+        for (let i: number = 0; i < categoryLabel.length; i++) {
+            let size: Size = measureText(categoryLabel[i].text, multiLevel[index].textStyle);
+            labelSize.width = (labelSize.width > size.width) ? labelSize.width : size.width;
+            labelSize.height = (labelSize.height > size.height) ? labelSize.height : size.height;
+        }
+        let size: number = (this.orientation === 'Horizontal') ? this.xAxisMultiLabelHeight[index] : this.yAxisMultiLabelHeight[index];
+        if (this.opposedPosition) {
+             this.farSizes.push(size );
+        } else {
+            this.nearSizes.push(size );
+        }
+        return labelSize;
+    }
+
+    private getMultilevelLabelsHeight(axis: Axis, rect: Rect, heatmap: HeatMap): void {
+        let labelSize: Size; let gap: number;
+        let height: number;
+        let multiLevelLabelsHeight: number[] = [];
+        let start: number | Date; let end: number | Date;
+        let startPosition: number; let endPosition: number;
+        let isVertical: boolean = axis.orientation === 'Vertical';
+        let axisValue: number = (isVertical ? rect.height : rect.width) / axis.axisLabelSize;
+        let padding: number = axis.orientation === 'Vertical' ? 20 : 10;
+        this.multiLevelLabels.map((multiLevel: MultiLevelLabels, index: number) => {
+            multiLevel.categories.map((categoryLabel: MultiLevelCategories) => {
+                start = typeof categoryLabel.start === 'number' ? categoryLabel.start :  Number(new Date(<string>categoryLabel.start));
+                end = typeof categoryLabel.end === 'number' ? categoryLabel.end : Number(new Date(<string>categoryLabel.end));
+                if (categoryLabel.text !== '' && categoryLabel.start !== null && categoryLabel.end !== null) {
+                    labelSize = measureText(categoryLabel.text, multiLevel.textStyle);
+                    height = isVertical ? labelSize.width : labelSize.height;
+                    startPosition =  heatmap.heatMapAxis.calculateLeftPosition(axis, start, categoryLabel.start, rect);
+                    endPosition = heatmap.heatMapAxis.calculateWidth(axis, categoryLabel.end, end, rect);
+                    labelSize = measureText(categoryLabel.text, multiLevel.textStyle);
+                    gap = ((categoryLabel.maximumTextWidth === null) ? Math.abs(endPosition - startPosition) :
+                     categoryLabel.maximumTextWidth);
+                    if ((labelSize.width > gap - padding)  && (multiLevel.overflow === 'Wrap') && !isVertical) {
+                        height = (height * (textWrap(categoryLabel.text, gap - padding, multiLevel.textStyle).length));
+                    }
+                    multiLevelLabelsHeight[index] = !multiLevelLabelsHeight[index] ? height + padding :
+                        ((multiLevelLabelsHeight[index] < height) ? height + padding  : multiLevelLabelsHeight[index]);
+                }
+            });
+        });
+        if (isVertical) {
+            this.yAxisMultiLabelHeight = multiLevelLabelsHeight;
+        } else {
+            this.xAxisMultiLabelHeight = multiLevelLabelsHeight;
+        }
     }
 
     private getTitleSize(axis: Axis, innerPadding: number): Size {
@@ -215,16 +318,20 @@ export class Axis extends ChildProperty<Axis> {
     private getMaxLabelSize(axis: Axis, heatmap: HeatMap): Size {
         let labelSize: Size = new Size(0, 0);
         let labels: string[] = this.axisLabels;
+        let padding: number = (axis.border.width > 0 || axis.multiLevelLabels.length > 0) ? 10 : 0;
         axis.angle = axis.labelRotation;
         axis.isIntersect = false;
         if (axis.orientation === 'Horizontal' && (axis.labelIntersectAction === 'Rotate45' ||
             (axis.labelRotation % 180 === 0 && axis.labelIntersectAction === 'Trim'))) {
-            let interval: number = heatmap.initialClipRect.width / axis.axisLabels.length;
+            let interval: number = (axis.valueType === 'DateTime' && axis.showLabelOn !== 'None') ?
+                heatmap.initialClipRect.width / axis.axisLabelSize : heatmap.initialClipRect.width / axis.axisLabels.length;
             let startX: number = heatmap.initialClipRect.x + ((!axis.isInversed) ? 0 : heatmap.initialClipRect.width);
             let previousEnd: number;
             for (let i: number = 0, len: number = labels.length; i < len; i++) {
                 let label: string = labels[i];
                 let elementSize: Size = measureText(label, axis.textStyle);
+                let axisInterval: number = (axis.valueType === 'DateTime' && axis.showLabelOn !== 'None') ?
+                    axis.dateTimeAxisLabelInterval[i] * interval : interval;
                 let startPoint: number = startX + (!axis.isInversed ?
                     ((interval - elementSize.width) / 2) : -((interval + elementSize.width) / 2));
                 startPoint = startPoint < heatmap.initialClipRect.x ? heatmap.initialClipRect.x : startPoint;
@@ -242,7 +349,7 @@ export class Axis extends ChildProperty<Axis> {
                     }
                     previousEnd = endPoint;
                 }
-                startX += axis.isInversed ? -interval : interval;
+                startX += axis.isInversed ? -axisInterval : axisInterval;
             }
         }
         for (let i: number = 0; i < labels.length; i++) {
@@ -252,9 +359,9 @@ export class Axis extends ChildProperty<Axis> {
             labelSize.height = (labelSize.height > size.height) ? labelSize.height : size.height;
         }
         if (axis.opposedPosition) {
-            this.farSizes.push((axis.orientation === 'Horizontal') ? labelSize.height : labelSize.width);
+            this.farSizes.push((axis.orientation === 'Horizontal') ? labelSize.height : labelSize.width + padding);
         } else {
-            this.nearSizes.push((axis.orientation === 'Horizontal') ? labelSize.height : labelSize.width);
+            this.nearSizes.push((axis.orientation === 'Horizontal') ? labelSize.height : labelSize.width + padding);
         }
         return labelSize;
     }
@@ -294,7 +401,7 @@ export class Axis extends ChildProperty<Axis> {
             format: isCustom ? '' : format
         });
         for (let i: number = min; i <= max; i = i + (interval * this.increment)) {
-            let value: string = this.formatValue(isCustom, format, i);
+            let value: string = formatValue(isCustom, format, i, this.format);
             this.axisLabels.push(value);
         }
         this.min = 0;
@@ -302,7 +409,7 @@ export class Axis extends ChildProperty<Axis> {
         this.max = this.axisLabelSize - 1;
         this.axisLabelInterval = interval;
         for (let i: number = min; i <= max; i = i + this.increment) {
-            let value: string = this.formatValue(isCustom, format, i);
+            let value: string = formatValue(isCustom, format, i, this.format);
             this.tooltipLabels.push(value);
             this.labelValue.push(i);
         }
@@ -477,16 +584,6 @@ export class Axis extends ChildProperty<Axis> {
         return skeleton;
     }
 
-    /**
-     * Formatted the axis label.
-     * @private
-     */
-
-    protected formatValue(isCustom: boolean, format: string, tempInterval: number): string {
-        return isCustom ? format.replace('{value}', this.format(tempInterval))
-            : this.format(tempInterval);
-    }
-
     /** @private */
     public getTotalLabelLength(min: number, max: number): number {
         let length: number = 0;
@@ -523,5 +620,16 @@ export class Axis extends ChildProperty<Axis> {
                 break;
         }
         return length;
+    }
+
+    /**
+     * Clear the axis label collection
+     * @private
+     */
+    public clearAxisLabel(): void {
+        this.axisLabels = [];
+        this.tooltipLabels = [];
+        this.dateTimeAxisLabelInterval = [];
+        this.labelValue = [];
     }
 }

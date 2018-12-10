@@ -48,7 +48,7 @@ describe('Pie Series checking', () => {
         pie.destroy();
         removeElement(id);
     });
-    it('center of the pie segments', (done: Function) => {
+    it('Default center of the pie segments', (done: Function) => {
         pie.loaded = () => {
             slice = getElement(sliceid + 0);
             slicepath = getLocations(slice.getAttribute('d'));
@@ -56,6 +56,143 @@ describe('Pie Series checking', () => {
             expect(slicepath.center.y).toBe(200);
             done();
         };
+        pie.refresh();
+    });
+    it('Customize the pie segment center values in percentage', (done: Function) => {
+        pie.loaded = () => {
+            slice = getElement(sliceid + 0);
+            slicepath = getLocations(slice.getAttribute('d'));
+            console.log('center in % x' + slicepath.center.x);
+            console.log('center in % y' + slicepath.center.y);
+            expect(slicepath.center.x).toBe(416);
+            expect(slicepath.center.y).toBe(124);
+            done();
+        };
+        pie.center.x = "70%";
+        pie.center.y = "30%";
+        pie.refresh();
+    });
+    it('Customize the pie segment center values in pixcel', (done: Function) => {
+        pie.loaded = () => {
+            slice = getElement(sliceid + 0);
+            slicepath = getLocations(slice.getAttribute('d'));
+            console.log('center in px x' + slicepath.center.x);
+            console.log('center in px y' + slicepath.center.y);
+            expect(slicepath.center.x).toBe(1010);
+            expect(slicepath.center.y).toBe(210);
+            done();
+        };
+        pie.center.x = "1000px";
+        pie.center.y = "200px";
+        pie.refresh();
+    });
+    it('Given center value and chart title', (done: Function) => {
+        pie.loaded = () => {
+            slice = getElement(sliceid + 0);
+            slicepath = getLocations(slice.getAttribute('d'));
+            console.log('chart x' + slicepath.center.x);
+            console.log('chart y' + slicepath.center.y);
+            expect(slicepath.center.x).toBe(310);
+            expect(slicepath.center.y == 52 || slicepath.center.y == 55).toBe(true);
+            done();
+        };
+
+        pie.title = 'Pie chart';
+        pie.center.x = "300";
+        pie.center.y = "25";
+        pie.refresh();
+    });
+    it('Given center value and sub title', (done: Function) => {
+        pie.loaded = () => {
+            slice = getElement(sliceid + 0);
+            slicepath = getLocations(slice.getAttribute('d'));
+             console.log('subtitle x' + slicepath.center.x);
+             console.log('subtitle y' + slicepath.center.y);
+            expect(slicepath.center.x).toBe(310);
+            expect(slicepath.center.y == 91 || slicepath.center.y == 85).toBe(true);
+            done();
+        };
+        pie.subTitle = 'sub title';
+        pie.center.x = "300";
+        pie.center.y = "46.25";
+        pie.refresh();
+    });
+    it('Center (0,0) with series bounds', (done: Function) => {
+        pie.loaded = () => {
+            let series: Element = getElement(id + '_SeriesCollection');
+            let width: number = series.getBoundingClientRect().width;
+            let height: number = series.getBoundingClientRect().height;
+            console.log('bound width' + width);
+            console.log('bound height' + height);
+            expect(width >= 276).toBe(true);
+            expect(height >= 276).toBe(true);
+            done();
+        };
+        pie.center.x = "0";
+        pie.center.y = "0";
+        pie.refresh();
+    });
+    it('Given center with legend', (done: Function) => {
+        pie.loaded = () => {
+            let legend: Element = getElement(id + '_chart_legend_g');
+            let width: number = legend.getBoundingClientRect().width;
+            let height: number = legend.getBoundingClientRect().height;
+            console.log('legend width' + width);
+            console.log('legend height' + height);
+            expect(width == 45 || width == 44).toBe(true);
+            expect(height == 258 || height == 248).toBe(true);
+            done();
+        };
+        pie.center.x = "95%";
+        pie.center.y = "50%";
+        pie.legendSettings.visible = true;
+        pie.refresh();
+    });
+    it('Given center with Data label', (done: Function) => {
+        pie.loaded = () => {
+            let label: Element = getElement(id + '_datalabel_Series_0');
+            let totalLabel: number = label.childElementCount;
+            console.log('data label count' + totalLabel);
+            expect(totalLabel).toBe(3);
+            done();
+        };
+        pie.center.x = "0";
+        pie.center.y = "0";
+        pie.legendSettings.visible = false;
+        pie.series[0].dataLabel.visible = true;
+        pie.refresh();
+    });
+    it('Given center with smart labels', (done: Function) => {
+        pie.loaded = () => {
+            let label: Element = getElement(id + '_datalabel_Series_0');
+            let totalLabel: number = label.childElementCount;
+            console.log('smart label count' + totalLabel);
+            expect(totalLabel).toBe(5);
+            done();
+        };
+        pie.center.x = "95%";
+        pie.center.y = "50%";
+        pie.legendSettings.visible = true;
+        pie.series[0].dataLabel.visible = true;
+        pie.enableSmartLabels = true;
+        pie.refresh();
+    });
+    it('Given center with donut', (done: Function) => {
+        pie.loaded = () => {
+            slice = getElement(sliceid + 0);
+            slicepath = getLocations(slice.getAttribute('d'));
+            console.log('donut x' + slicepath.center.x);
+            console.log('donut y' + slicepath.center.y);
+            expect(slicepath.center.x).toBe(387);
+            expect(slicepath.center.y >= 144).toBe(true);
+            done();
+        };
+        pie.center.x = "65%";
+        pie.center.y = "70%";
+        pie.series[0].innerRadius = '50%';
+        pie.legendSettings.visible = false;
+        pie.series[0].dataLabel.visible = false;
+        pie.enableSmartLabels = false;
         pie.refresh();
     });
     it('start angle alone', (done: Function) => {
@@ -66,6 +203,11 @@ describe('Pie Series checking', () => {
             expect(slicepath.center.y).toBe(200);
             done();
         };
+        pie.title = '';
+        pie.subTitle = '';
+        pie.series[0].innerRadius = '0%';
+        pie.center.x = "50%";
+        pie.center.y = "50%";
         pie.series[0].startAngle = 90;
         pie.refresh();
     });
@@ -457,6 +599,85 @@ describe('Pie Series checking', () => {
             expect(points[3]).not.toBe(null);
             done();
         };
+        pie.series[0].dataSource = piedata;
+        pie.refresh();
+    });
+    it('Default slice radius checking', (done: Function) => {
+        pie.loaded = (args: IAccLoadedEventArgs) => {
+            points = pie.visibleSeries[0].points;
+            slice = getElement(sliceid + 0);
+            let width = slice.getBoundingClientRect().width;
+            console.log('slice 0 radius : ' + width);
+            expect(Math.round(width) == 29).toBe(true);
+            expect(points[0].sliceRadius == '80%').toBe(true);
+            slice = getElement(sliceid + 1);
+            width = slice.getBoundingClientRect().width;
+            console.log('slice 1 radius : ' + width);
+            expect(Math.round(width) == 65).toBe(true);
+            expect(points[1].sliceRadius == '80%').toBe(true);
+            slice = getElement(sliceid + 2);
+            width = slice.getBoundingClientRect().width;
+            console.log('slice 2 radius : ' + width);
+            expect(Math.round(width) == 105).toBe(true);
+            expect(points[2].sliceRadius == '80%').toBe(true);
+            done();
+        };
+        pie.series[0].groupTo = null;
+        pie.visibleSeries[0].explode = false;
+        pie.series[0].radius = '80%';
+        pie.series[0].dataSource = piedata;
+        pie.refresh();
+    });
+    it('slice radius checking with radius mapping', (done: Function) => {
+        pie.loaded = (args: IAccLoadedEventArgs) => {
+            points = pie.visibleSeries[0].points;
+            slice = getElement(sliceid + 0);
+            let width = slice.getBoundingClientRect().width;
+            console.log('slice 0 radius : ' + width);
+            expect(Math.round(width) == 18).toBe(true);
+            expect(points[0].sliceRadius == '50%').toBe(true);
+            slice = getElement(sliceid + 1);
+            width = slice.getBoundingClientRect().width;
+            console.log('slice 1 radius : ' + width);
+            expect(Math.round(width) == 49).toBe(true);
+            expect(points[1].sliceRadius == '60%').toBe(true);
+            slice = getElement(sliceid + 2);
+            width = slice.getBoundingClientRect().width;
+            console.log('slice 2 radius : ' + width);
+            expect(Math.round(width) == 92).toBe(true);
+            expect(points[2].sliceRadius == '70%').toBe(true);
+            done();
+        };
+        pie.series[0].groupTo = null;
+        pie.visibleSeries[0].explode = false;
+        pie.series[0].radius = 'radius';
+        pie.series[0].dataSource = piedata;
+        pie.refresh();
+    });
+    it('Various slice radius with inner radius', function (done) {
+        pie.loaded = function (args) {
+            points = pie.visibleSeries[0].points;
+            slice = getElement(sliceid + 0);
+            var width = slice.getBoundingClientRect().width;
+            console.log('slice 0 inner radius : ' + width);
+            expect(Math.round(width) == 18).toBe(true);
+            expect(points[0].sliceRadius == '50%').toBe(true);
+            slice = getElement(sliceid + 1);
+            width = slice.getBoundingClientRect().width;
+            console.log('slice 1 inner radius : ' + width);
+            expect(Math.round(width) == 38).toBe(true);
+            expect(points[1].sliceRadius == '60%').toBe(true);
+            slice = getElement(sliceid + 2);
+            width = slice.getBoundingClientRect().width;
+            console.log('slice 2 inner radius : ' + width);
+            expect(Math.round(width) == 67).toBe(true);
+            expect(points[2].sliceRadius == '70%').toBe(true);
+            done();
+        };
+        pie.series[0].groupTo = null;
+        pie.visibleSeries[0].explode = false;
+        pie.series[0].radius = 'radius';
+        pie.series[0].innerRadius = '30%';
         pie.series[0].dataSource = piedata;
         pie.refresh();
     });

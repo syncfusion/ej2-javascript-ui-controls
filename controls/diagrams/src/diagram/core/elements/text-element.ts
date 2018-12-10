@@ -23,6 +23,8 @@ export class TextElement extends DiagramElement {
      */
     private textContent: string = '';
 
+    /** @private */
+    public canMeasure: boolean = true;
     /**
      * sets the constraints for the text element
      */
@@ -95,7 +97,7 @@ export class TextElement extends DiagramElement {
      * Defines the appearance of the text element 
      */
     public style: TextStyleModel = {
-        color: 'black', fill: 'white', strokeColor: 'black',
+        color: 'black', fill: 'transparent', strokeColor: 'black',
         strokeWidth: 1, fontFamily: 'Arial', fontSize: 12, whiteSpace: 'CollapseSpace',
         textWrapping: 'WrapWithOverflow', textAlign: 'Center', italic: false, bold: false,
         textDecoration: 'None', strokeDashArray: '', opacity: 5, gradient: null,
@@ -108,7 +110,7 @@ export class TextElement extends DiagramElement {
      */
     public measure(availableSize: Size): Size {
         let size: Size;
-        if (this.isDirt) {
+        if (this.isDirt && this.canMeasure) {
             size = measureText(this, this.style, this.content, this.width);
         } else {
             size = this.desiredSize;

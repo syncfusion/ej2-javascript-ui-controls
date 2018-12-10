@@ -26,7 +26,7 @@ Badges can be used to alert users about new or unread messages, notifications, a
 
 * [Getting Started](https://ej2.syncfusion.com/documentation/badge/getting-started.html?lang=typescript&utm_source=npm&utm_campaign=badge)
 * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=badge#/material/badge/default.html)
-* [Product Page](https://www.syncfusion.com/products/javascript/badge)
+* [Product Page](https://www.syncfusion.com/javascript-ui-controls/badge/?utm_source=npm&utm_campaign)
 
 ### Toasts
 
