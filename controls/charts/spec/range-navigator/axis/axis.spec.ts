@@ -68,13 +68,13 @@ describe('Range navigator', () => {
             range.theme = 'Bootstrap';
             range.refresh();
         });
-        it('checking with highcontrast theme', (done: Function) => {
+        it('checking with highContrast theme', (done: Function) => {
             range.loaded = (args: Object) => {
                 let selectedElement: Element = document.getElementById('container_SelectedArea');
                 expect(selectedElement.getAttribute('fill')).toEqual('#FFD939');
                 done();
             };
-            range.theme = 'HighcontrastLight';
+            range.theme = 'HighContrastLight';
             range.refresh();
         });
         it('checking with custom width', (done: Function) => {
@@ -248,7 +248,7 @@ describe('Range navigator', () => {
                 expect(selectedElement.getAttribute('fill')).toEqual('transparent');
                 done();
             };
-            range.theme = 'HighcontrastLight';
+            range.theme = 'HighContrastLight';
             range.refresh();
         });
         it('checking with area series', (done: Function) => {

@@ -38,9 +38,14 @@ export class BookmarkView {
         request.onreadystatechange = (event: any): void => {
             if (request.readyState === 4 && request.status === 200) {
                 this.pdfViewerBase.navigationPane.disableBookmarkButton();
-                if (event.currentTarget.response) {
-                    this.bookmarks = { bookMark: event.currentTarget.response.Bookmarks };
-                    this.bookmarksDestination = { bookMarkDestination: event.currentTarget.response.BookmarksDestination };
+                // tslint:disable-next-line
+                let data: any = event.currentTarget.response;
+                if (data) {
+                    if (typeof data !== 'object') {
+                        data = JSON.parse(data);
+                    }
+                    this.bookmarks = { bookMark: data.Bookmarks };
+                    this.bookmarksDestination = { bookMarkDestination: data.BookmarksDestination };
                 }
                 if (this.bookmarks == null) {
                     this.pdfViewerBase.navigationPane.disableBookmarkButton();
@@ -61,7 +66,7 @@ export class BookmarkView {
      */
     public renderBookmarkcontent(): void {
         if (this.bookmarkView != null) {
-            this.bookmarkView.remove();
+            this.bookmarkView.parentElement.removeChild(this.bookmarkView);
         }
         this.bookmarkView = createElement('div', { id: this.pdfViewer.element.id + '_bookmark_view', className: 'e-pv-bookmark-view' });
         this.pdfViewerBase.navigationPane.sideBarContent.appendChild(this.bookmarkView);

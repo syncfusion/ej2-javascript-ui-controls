@@ -349,4 +349,90 @@ describe('Diagram Control', () => {
         });
 
     });
+    describe('gradient - change runtime', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramGradientCheck' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1', height: 80, width: 80, offsetX: 150, offsetY: 50, shape: { type: 'Basic', shape: 'Ellipse'},
+                    style: { fill: 'pink', strokeColor: 'lightblue', strokeWidth: 3, strokeDashArray: '3,3',
+                    gradient: { type: 'Linear', x1: 0, x2: 40, y1: 0, y2: 40, stops: [{color: 'red', offset: 40}, {color: 'yellow', offset: 100}] } }, 
+                    annotations: [{ content: 'Ellipse' }],
+                    maxHeight: 200, maxWidth: 200, minHeight: 100, minWidth: 100
+                }
+            ]
+
+            diagram = new Diagram({
+                width: 800, height: 300,
+                nodes: nodes
+            });
+            diagram.appendTo('#diagramGradientCheck');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking gradient property change on runtime', (done: Function) => {
+            debugger;
+            expect(document.getElementById('node1_content_linear') !== undefined).toBe(true);
+            diagram.nodes[0].style.gradient = {
+                type: 'Radial', cx: 40, cy: 40, fx: 20, fy: 20, r: 20,
+                stops: [{color: 'yellow', offset: 0}, {color: 'red', offset: 100}]
+            };
+            diagram.dataBind();
+            expect(document.getElementById('node1_content_linear') === null).toBe(true);
+            expect(document.getElementById('node1_content_radial') !== undefined).toBe(true);
+            diagram.nodes[0].style.gradient = {
+                type: 'Linear', x1: 0,y1: 0, x2: 50, y2: 50,
+                stops: [{color: 'red', offset: 40}, {color: 'yellow', offset: 100}]
+            };
+            expect(document.getElementById('node1_content_radial') !== undefined).toBe(true);
+            expect(document.getElementById('node1_content_linear') === null).toBe(true);
+            done();
+        });
+
+    });describe('shadow - change runtime', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramShadowCheck' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1', height: 80, width: 80, offsetX: 250, offsetY: 50, shape: { type: 'Flow', shape: 'Decision'},
+                    style: { fill: 'lightgreen', strokeColor: 'green', strokeWidth: 3, strokeDashArray: '3,1'}, 
+                    annotations: [{ content: 'Decision' }],
+                    constraints: NodeConstraints.Default | NodeConstraints.Shadow,
+                    shadow: { color: 'grey', angle: 45, opacity: 0.75, distance: 5}
+                }
+            ]
+
+            diagram = new Diagram({
+                width: 800, height: 300,
+                nodes: nodes
+            });
+            diagram.appendTo('#diagramShadowCheck');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking shadow property change on runtime', (done: Function) => {
+            expect(document.getElementById('node1_content_groupElement_shadow').getAttribute('fill') === 'grey').toBe(true);
+            diagram.nodes[0].shadow = { angle: 60, distance: 25, opacity: 0.50, color: 'blue' };
+            diagram.dataBind();
+            expect(document.getElementById('node1_content_groupElement_shadow').getAttribute('fill') === 'blue').toBe(true);
+            done();
+        });
+
+    });
 });

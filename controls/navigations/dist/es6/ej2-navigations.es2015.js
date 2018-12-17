@@ -1472,6 +1472,10 @@ let MenuBase = class MenuBase extends Component {
             left = eventArgs.left;
         }
         if (eventArgs.cancel) {
+            if (this.isMenu) {
+                popupObj.destroy();
+                detach(popupWrapper);
+            }
             this.navIdx.pop();
         }
         else {
@@ -2377,6 +2381,7 @@ const CLS_TBARIGNORE = 'e-ignore';
 const CLS_POPPRI = 'e-popup-alone';
 const CLS_HIDDEN = 'e-hidden';
 const CLS_MULTIROW = 'e-toolbar-multirow';
+const CLS_MULTIROWPOS = 'e-multirow-pos';
 const CLS_MULTIROW_SEPARATOR = 'e-multirow-separator';
 const CLS_EXTENDABLE_SEPARATOR = 'e-extended-separator';
 const CLS_EXTEANDABLE_TOOLBAR = 'e-extended-toolbar';
@@ -3038,6 +3043,10 @@ let Toolbar = class Toolbar extends Component {
                     break;
                 case 'MultiRow':
                     this.add(innerItems, CLS_MULTIROW);
+                    if (this.checkOverflow(ele, innerItems) && this.tbarAlign) {
+                        this.removePositioning();
+                        this.add(innerItems, CLS_MULTIROWPOS);
+                    }
                     if (ele.style.overflow === 'hidden') {
                         ele.style.overflow = '';
                     }
@@ -3048,6 +3057,9 @@ let Toolbar = class Toolbar extends Component {
                 case 'Extended':
                     this.add(this.element, CLS_EXTEANDABLE_TOOLBAR);
                     if (this.checkOverflow(ele, innerItems) || priorityCheck) {
+                        if (this.tbarAlign) {
+                            this.removePositioning();
+                        }
                         this.createPopupEle(ele, [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, ele)));
                         this.element.querySelector('.' + CLS_TBARNAV).setAttribute('tabIndex', '0');
                     }
@@ -4067,6 +4079,11 @@ let Toolbar = class Toolbar extends Component {
         let checkOverflow = this.checkOverflow(ele, ele.getElementsByClassName(CLS_ITEMS)[0]);
         if (!checkOverflow) {
             this.destroyScroll();
+            let multirowele = ele.querySelector('.' + CLS_ITEMS);
+            if (!isNullOrUndefined(multirowele)) {
+                this.remove(multirowele, CLS_MULTIROWPOS);
+                this.add(multirowele, CLS_TBARPOS);
+            }
         }
         if (checkOverflow && this.scrollModule && (this.offsetWid === ele.offsetWidth)) {
             return;

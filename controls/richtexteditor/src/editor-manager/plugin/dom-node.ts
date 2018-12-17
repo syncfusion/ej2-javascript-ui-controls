@@ -1,5 +1,5 @@
 import * as CONSTANT from './../base/constant';
-import { append, detach } from '@syncfusion/ej2-base';
+import { append, detach, createElement } from '@syncfusion/ej2-base';
 import { NodeSelection } from './../../selection/index';
 
 export const markerClassName: { [key: string]: string } = {
@@ -124,7 +124,13 @@ export class DOMNode {
 
     public parseHTMLFragment(value: string): Element {
         /* tslint:disable */
-        return document.createRange().createContextualFragment(value) as any;
+        let temp: HTMLTemplateElement = <HTMLTemplateElement>createElement('template');
+        temp.innerHTML = value;
+        if (temp.content instanceof DocumentFragment) {
+            return temp.content as any;
+        } else {
+            return document.createRange().createContextualFragment(value) as any;
+        }
         /* tslint:enable */
     }
 

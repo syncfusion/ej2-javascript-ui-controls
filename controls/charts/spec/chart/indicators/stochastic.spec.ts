@@ -387,7 +387,7 @@ describe('Chart', () => {
             loaded = (args: Object): void => {
 
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_Stochastic');
                 expect((signalLine).getAttribute('d')).not.toBeNull();
                 let svg: HTMLElement = document.getElementById('containerAxisLine_0');
                 expect(svg.getAttribute('d').split(' ')[1] == '63.5' || svg.getAttribute('d').split(' ')[1] == '59.5').toBe(true);
@@ -408,7 +408,7 @@ describe('Chart', () => {
 
 
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_Stochastic');
                 expect(signalLine.getAttribute('d')).not.toBeNull();
                 let point: Element = document.getElementById('containerIndicatorGroup0');
                 expect(point != null).toBe(true);

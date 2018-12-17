@@ -148,7 +148,7 @@ export class PivotButton implements IAction {
         let buttonText: HTMLElement;
         let aggregation: string;
         if (this.parent.engineModule.fieldList[field[i].name] !== undefined) {
-            aggregation = this.parent.engineModule.fieldList[field[i].name].aggregateType; 
+            aggregation = this.parent.engineModule.fieldList[field[i].name].aggregateType;
             if (aggregation === undefined && (this.parent.engineModule.fieldList[field[i].name].type === 'string' || this.parent.engineModule.fieldList[field[i].name].type === 'include' ||
                 this.parent.engineModule.fieldList[field[i].name].type === 'exclude')) {
                 aggregation = 'Count';
@@ -160,6 +160,7 @@ export class PivotButton implements IAction {
         let text: string = field[i].caption ? field[i].caption : field[i].name;
         buttonText = createElement('span', {
             attrs: {
+                title: ((axis !== 'values' || aggregation === 'CalculatedField') ? text : this.parent.localeObj.getConstant(aggregation) + ' ' + 'of' + ' ' + text),
                 'tabindex': '-1', 'aria-disabled': 'false', 'oncontextmenu': 'return false;',
                 'data-type': valuePos === i ? '' : aggregation
             },
@@ -254,7 +255,7 @@ export class PivotButton implements IAction {
         let filterCLass: string;
         if (!this.parent.allowDeferLayoutUpdate) {
             filterCLass = this.parent.engineModule.fieldList[fieldName].filter.length === 0 ?
-            !this.parent.engineModule.fieldList[fieldName].isExcelFilter ? cls.FILTER_CLASS : cls.FILTERED_CLASS : cls.FILTERED_CLASS;
+                !this.parent.engineModule.fieldList[fieldName].isExcelFilter ? cls.FILTER_CLASS : cls.FILTERED_CLASS : cls.FILTERED_CLASS;
         } else {
             filterCLass = cls.FILTER_CLASS;
             for (let i: number = 0; i < this.parent.dataSource.filterSettings.length; i++) {
@@ -389,7 +390,7 @@ export class PivotButton implements IAction {
                 (this.parent as PivotFieldList).pivotGridModule.engineModule = (this.parent as PivotFieldList).engineModule;
                 (this.parent as PivotFieldList).pivotGridModule.notify(events.uiUpdate, this);
                 (this.parent as PivotFieldList).
-                pivotGridModule.setProperties({ dataSource: (<{ [key: string]: Object }>this.parent.dataSource).properties as IDataOptions }, true);
+                    pivotGridModule.setProperties({ dataSource: (<{ [key: string]: Object }>this.parent.dataSource).properties as IDataOptions }, true);
             } else {
                 (this.parent as PivotFieldList).triggerPopulateEvent();
             }
@@ -415,6 +416,12 @@ export class PivotButton implements IAction {
                 if (e.selectedIndex > 0) {
                     /* tslint:disable-next-line:max-line-length */
                     addClass([this.dialogPopUp.element.querySelector('.e-filter-div-content' + '.' + (e.selectedIndex === 1 && this.parent.dataSource.allowLabelFilter ? 'e-label-filter' : 'e-value-filter'))], 'e-selected-tab');
+                }
+                if (e.selectedIndex === 0) {
+                    this.parent.pivotCommon.filterDialog.updateCheckedState();
+                } else {
+                    this.dialogPopUp.buttons[0].buttonModel.disabled = false;
+                    this.dialogPopUp.element.querySelector('.' + cls.OK_BUTTON_CLASS).removeAttribute('disabled');
                 }
             };
         } else {
@@ -444,6 +451,15 @@ export class PivotButton implements IAction {
             value1: filterType === 'date' ? new Date(operand1) : operand1 as string,
             value2: filterType === 'date' ? new Date(operand2) : operand2 as string
         };
+        if ((isNOU(operand1) || operand1 === '') ||
+            (['Between', 'NotBetween'].indexOf(operator) > -1 && (isNOU(operand2) || operand2 === ''))) {
+            let inputElementString: string =
+                (type.toLowerCase() + ((isNOU(operand1) || operand1 === '') ? '_input_option_1' : '_input_option_2'));
+            let focusElement: HTMLElement = dialogElement.querySelector('#' + this.parent.element.id + '_' + inputElementString);
+            addClass([focusElement], cls.EMPTY_FIELD);
+            focusElement.focus();
+            return;
+        }
         let filterObject: IFilter = this.parent.pivotCommon.eventBase.getFilterItemByName(fieldName);
         if (filterObject) {
             // this.removeDataSourceSettings(fieldName);
@@ -506,24 +522,38 @@ export class PivotButton implements IAction {
     private checkedStateAll(state: string): void {
         if (state === 'check') {
             for (let item of this.parent.pivotCommon.currentTreeItems) {
-                item.checkedStatus = true;
+                for (let searctItem of this.parent.pivotCommon.searchTreeItems) {
+                    if (item.id === searctItem.id) {
+                        item.checkedStatus = true;
+                        searctItem.checkedStatus = true;
+                    }
+                }
             }
         } else {
             for (let item of this.parent.pivotCommon.currentTreeItems) {
-                item.checkedStatus = false;
+                for (let searctItem of this.parent.pivotCommon.searchTreeItems) {
+                    if (item.id === searctItem.id) {
+                        item.checkedStatus = false;
+                        searctItem.checkedStatus = false;
+                    }
+                }
             }
         }
     }
     private updateFilterState(fieldName: string, args: Event): void {
-        let unCheckedNodeCount: number = 0;
+        let isNodeUnChecked: boolean = false;
         let filterItem: IFilter = { items: [], name: fieldName, type: 'Include' };
-        for (let item of this.parent.pivotCommon.currentTreeItems) {
+        for (let item of this.parent.pivotCommon.searchTreeItems) {
             if (item.checkedStatus) {
-                filterItem.items.push(item.id as string);
-            } else {
-                unCheckedNodeCount = unCheckedNodeCount + 1;
+                if (this.parent.pivotCommon.isDateField) {
+                    filterItem.items.push(item.name as string);
+                } else {
+                    filterItem.items.push(item.id as string);
+                }
             }
         }
+        isNodeUnChecked = (filterItem.items.length === this.parent.pivotCommon.currentTreeItems.length ?
+            false : true);
         let filterObject: IFilter = this.parent.pivotCommon.eventBase.getFilterItemByName(fieldName);
         if (filterObject) {
             for (let i: number = 0; i < this.parent.dataSource.filterSettings.length; i++) {
@@ -537,8 +567,8 @@ export class PivotButton implements IAction {
             this.parent.dataSource.filterSettings.push(filterItem);
         }
         this.dialogPopUp.close();
-        this.refreshPivotButtonState(fieldName, (unCheckedNodeCount > 0) ? true : false);
-        if (unCheckedNodeCount === 0) {
+        this.refreshPivotButtonState(fieldName, isNodeUnChecked);
+        if (!isNodeUnChecked) {
             this.removeDataSourceSettings(fieldName);
         }
         this.updateDataSource(true);

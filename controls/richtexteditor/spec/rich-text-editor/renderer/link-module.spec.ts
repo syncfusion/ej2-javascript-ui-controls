@@ -102,6 +102,7 @@ describe('insert Link', () => {
             eventsArgs = { pageX: 50, pageY: 300, target: selectParent[0], preventDefault: function () { } };
             clickEvent.initEvent("mousedown", false, true);
             trg.dispatchEvent(clickEvent);
+            (<any>rteObj).formatter.editorManager.linkObj.openLink(args);
         });
 
         it('show link quick toolbar testing', () => {
@@ -224,7 +225,9 @@ describe('insert Link', () => {
             expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkTitle').value === 'http://data').toBe(true);
             evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
             (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
+            evnArg.args.item = {command: 'Links', subCommand: 'OpenLink'};
             (<any>rteObj).linkModule.openLink(evnArg);
+            evnArg.args.item = { command: 'Links', subCommand: 'CreateLink'};
             (<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor').target = '';
             (<any>rteObj).linkModule.linkDialog(evnArg);
             evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle.nextElementSibling;
@@ -258,7 +261,9 @@ describe('insert Link', () => {
                 target: '', args: args,
                 selfLink: (<any>rteObj).linkModule, selection: save, selectParent: selectParent, selectNode: selectNode
             };
+            evnArg.args.item = {command: 'Links', subCommand: 'OpenLink'};
             (<any>rteObj).linkModule.openLink(evnArg);
+            evnArg.args.item = {command: 'Links', subCommand: 'CreateLink'};
             (<any>rteObj).linkModule.editLink(evnArg);
             expect(isNullOrUndefined((<any>rteObj).linkModule.dialogObj)).toBe(true);
             (rteObj.toolbarModule.getToolbarElement().querySelectorAll('.e-toolbar-item button')[7] as HTMLElement).click();

@@ -148,6 +148,7 @@ var Column = /** @__PURE__ @class */ (function () {
             this.setFormatter(valueFormatter.getFormatFunction(options.format));
             this.setParser(valueFormatter.getParserFunction(options.format));
         }
+        this.toJSON = function () { return {}; };
         if (!this.field) {
             this.allowFiltering = false;
             this.allowGrouping = false;
@@ -594,7 +595,12 @@ var printGridInit = 'printGrid-Init';
 var exportRowDataBound = 'export-RowDataBound';
 /** @hidden */
 var rowPositionChanged = 'row-position-changed';
+/** @hidden */
+var batchForm = 'batchedit-form';
 
+/**
+ * @hidden
+ */
 function getCloneProperties() {
     return ['aggregates', 'allowGrouping', 'allowFiltering', 'allowMultiSorting', 'allowReordering', 'allowSorting',
         'allowTextWrap', 'childGrid', 'columns', 'currentViewData', 'dataSource', 'detailTemplate', 'enableAltRow',
@@ -1383,6 +1389,9 @@ function renderMovable(ele, frzCols) {
     }
     return mEle;
 }
+/**
+ * @hidden
+ */
 function getObject(field, object) {
     if (field === void 0) { field = ''; }
     if (field) {
@@ -1394,6 +1403,9 @@ function getObject(field, object) {
         return value;
     }
 }
+/**
+ * @hidden
+ */
 function getCustomDateFormat(format, colType) {
     var intl = new Internationalization();
     var formatvalue;
@@ -1411,6 +1423,9 @@ function getCustomDateFormat(format, colType) {
     }
     return formatvalue;
 }
+/**
+ * @hidden
+ */
 function getExpandedState(gObj, hierarchyPrintMode) {
     var rows = gObj.getRowsObject();
     var obj = {};
@@ -1427,6 +1442,9 @@ function getExpandedState(gObj, hierarchyPrintMode) {
     }
     return obj;
 }
+/**
+ * @hidden
+ */
 function getPrintGridModel(gObj, hierarchyPrintMode) {
     if (hierarchyPrintMode === void 0) { hierarchyPrintMode = 'Expanded'; }
     var printGridModel = {};
@@ -1450,6 +1468,9 @@ function getPrintGridModel(gObj, hierarchyPrintMode) {
     }
     return printGridModel;
 }
+/**
+ * @hidden
+ */
 function extendObjWithFn(copied, first, second, deep) {
     var res = copied || {};
     var len = arguments.length;
@@ -1488,6 +1509,9 @@ function extendObjWithFn(copied, first, second, deep) {
     }
     return res;
 }
+/**
+ * @hidden
+ */
 function getPrototypesOfObj(obj) {
     var keys = [];
     while (Object.keys(Object.getPrototypeOf(obj)).length) {
@@ -1496,6 +1520,9 @@ function getPrototypesOfObj(obj) {
     }
     return keys;
 }
+/**
+ * @hidden
+ */
 function measureColumnDepth(column) {
     var max = 0;
     for (var i = 0; i < column.length; i++) {
@@ -1506,6 +1533,9 @@ function measureColumnDepth(column) {
     }
     return max + 1;
 }
+/**
+ * @hidden
+ */
 function checkDepth(col, index) {
     var max = index;
     var indices = [];
@@ -2472,8 +2502,7 @@ var Data = /** @__PURE__ @class */ (function () {
      */
     Data.prototype.generateQuery = function (skipPage) {
         var gObj = this.parent;
-        gObj.query = gObj.getQuery().clone();
-        var query = gObj.query.clone();
+        var query = gObj.getQuery().clone();
         if (this.parent.columnQueryMode === 'ExcludeHidden') {
             query.select(this.parent.getColumns().filter(function (column) { return !(column.isPrimaryKey !== true && column.visible === false || column.field === undefined); }).map(function (column) { return column.field; }));
         }
@@ -3367,7 +3396,7 @@ var SummaryModelGenerator = /** @__PURE__ @class */ (function () {
         if (this.parent.allowGrouping) {
             this.parent.groupSettings.columns.forEach(function (value) { return columns.push(new Column({})); });
         }
-        if (this.parent.detailTemplate || !isNullOrUndefined(this.parent.childGrid)) {
+        if (this.parent.detailTemplate || !isNullOrUndefined(this.parent.childGrid) || this.parent.isRowDragable()) {
             columns.push(new Column({}));
         }
         columns.push.apply(columns, this.parent.getColumns());
@@ -3392,6 +3421,10 @@ var SummaryModelGenerator = /** @__PURE__ @class */ (function () {
         var isDetailGridAlone = !isNullOrUndefined(this.parent.childGrid);
         var indentLength = this.parent.groupSettings.columns.length + (this.parent.detailTemplate ||
             !isNullOrUndefined(this.parent.childGrid) ? 1 : 0);
+        if (this.parent.isRowDragable()) {
+            indentLength++;
+            indents = ['e-indentcelltop'];
+        }
         this.getColumns(start, end).forEach(function (value, index) { return tmp.push(_this.getGeneratedCell(value, summaryRow, index >= indentLength ? _this.getCellType() :
             index < _this.parent.groupSettings.columns.length ? CellType.Indent : CellType.DetailFooterIntent, indents[index], isDetailGridAlone)); });
         var row = new Row({ data: data, attributes: { class: 'e-summaryrow' } });
@@ -5678,22 +5711,18 @@ var Render = /** @__PURE__ @class */ (function () {
             var deffered = new Deferred();
             dataManager = this.getFData(deffered);
         }
-        var query;
         if (!dataManager) {
-            query = this.data.generateQuery();
-            dataManager = this.data.getData(args, query.requiresCount());
-            this.parent.query.queries = query.queries;
+            dataManager = this.data.getData(args, this.data.generateQuery().requiresCount());
         }
         else {
             dataManager = dataManager.then(function (e) {
-                query = _this.data.generateQuery();
+                var query = _this.data.generateQuery().requiresCount();
                 if (_this.emptyGrid) {
                     var def = new Deferred();
                     def.resolve({ result: [], count: 0 });
                     return def.promise;
                 }
-                _this.parent.query.queries = query.queries;
-                return _this.data.getData(args, query.requiresCount());
+                return _this.data.getData(args, query);
             });
         }
         if (this.parent.getForeignKeyColumns().length && (!isFActon || this.parent.searchSettings.key.length)) {
@@ -6501,7 +6530,8 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
                 (e.args && e.args.isFrozen) ? _this.fHeader : _this.header;
             var rows = content ? e.rows.slice(_this.parent.frozenRows) : e.rows;
             var updateRow = content ? e.rows.slice(0, _this.parent.frozenRows) : e.rows;
-            var matrix = cFocus.matrix.generate(updateRow, cFocus.selector);
+            var isRowTemplate = !isNullOrUndefined(_this.parent.rowTemplate);
+            var matrix = cFocus.matrix.generate(updateRow, cFocus.selector, isRowTemplate);
             var frozenColumnsCount = _this.parent.getFrozenColumns();
             if (e.name === 'batchAdd' && frozenColumnsCount) {
                 var newMovableRows = rows.map(function (row) { return row.clone(); });
@@ -6512,11 +6542,11 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
                         newMovableRows[i].cells = rows[i].cells.slice(frozenColumnsCount);
                     }
                 }
-                _this.fContent.matrix.generate(newFrozenRows, _this.fContent.selector);
-                cFocus.matrix.generate(newMovableRows, cFocus.selector);
+                _this.fContent.matrix.generate(newFrozenRows, _this.fContent.selector, isRowTemplate);
+                cFocus.matrix.generate(newMovableRows, cFocus.selector, isRowTemplate);
             }
             else {
-                cFocus.matrix.generate(rows, cFocus.selector);
+                cFocus.matrix.generate(rows, cFocus.selector, isRowTemplate);
             }
             cFocus.generateRows(updateRow, { matrix: matrix, handlerInstance: (e.args && e.args.isFrozen) ? _this.fHeader : _this.header });
             if (!Browser.isDevice && !_this.focusByClick && e && e.args && e.args.requestType === 'paging') {
@@ -6706,7 +6736,7 @@ var Matrix = /** @__PURE__ @class */ (function () {
         columnIndex = Math.max(0, Math.min(columnIndex, this.matrix[rowIndex].length - 1));
         this.current = [rowIndex, columnIndex];
     };
-    Matrix.prototype.generate = function (rows, selector) {
+    Matrix.prototype.generate = function (rows, selector, isRowTemplate) {
         var _this = this;
         this.rows = rows.length - 1;
         this.matrix = [];
@@ -6714,7 +6744,7 @@ var Matrix = /** @__PURE__ @class */ (function () {
             var cells = row.cells.filter(function (c) { return c.isSpanned !== true; });
             _this.columns = Math.max(cells.length - 1, _this.columns | 0);
             cells.forEach(function (cell, cIndex) {
-                _this.set(rIndex, cIndex, selector(row, cell));
+                _this.set(rIndex, cIndex, selector(row, cell, isRowTemplate));
             });
         });
         return this.matrix;
@@ -6832,13 +6862,14 @@ var ContentFocus = /** @__PURE__ @class */ (function () {
          */
         return child.length ? child[0] : element;
     };
-    ContentFocus.prototype.selector = function (row, cell) {
+    ContentFocus.prototype.selector = function (row, cell, isRowTemplate) {
         var types = [CellType.Expand, CellType.GroupCaption, CellType.CaptionSummary, CellType.GroupSummary];
         return ((row.isDataRow && cell.visible && (cell.isDataCell || cell.isTemplate))
             || (row.isDataRow && cell.cellType === CellType.DetailExpand)
             || (!row.isDataRow && types.indexOf(cell.cellType) > -1)
             || (cell.column && cell.column.type === 'checkbox')
-            || (cell.cellType === CellType.CommandColumn))
+            || (cell.cellType === CellType.CommandColumn)
+            || (row.isDataRow && isRowTemplate))
             && !(row.edit === 'delete' && row.isDirty);
     };
     ContentFocus.prototype.jump = function (action, current) {
@@ -8446,6 +8477,9 @@ var Selection = /** @__PURE__ @class */ (function () {
             this.autofill.style.display = 'none';
         }
     };
+    /**
+     * @hidden
+     */
     Selection.prototype.updateAutoFillPosition = function () {
         if (this.parent.enableAutoFill && !this.parent.isEdit &&
             this.selectionSettings.cellSelectionMode.indexOf('Box') > -1 && !this.isRowType() && !this.isSingleSel()
@@ -9798,7 +9832,8 @@ var Scroll = /** @__PURE__ @class */ (function () {
             }
             else {
                 cont = _this.parent.getContent().querySelector('.e-frozencontent');
-                if (_this.previousValues.top === top || (top < 0 || (cont.scrollHeight - cont.clientHeight) < top)) {
+                if (_this.previousValues.top === top && (top < 0 || (cont.scrollHeight - cont.clientHeight) < top)
+                    || (top < 0 || (cont.scrollHeight - cont.clientHeight) < top)) {
                     return;
                 }
                 e.preventDefault();
@@ -10676,9 +10711,11 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         /** @hidden */
         _this.prevPageMoving = false;
         _this.needsID = true;
+        Grid_1.Inject(Selection);
         setValue('mergePersistData', _this.mergePersistGridData, _this);
         return _this;
     }
+    Grid_1 = Grid;
     /**
      * Get the properties to be maintained in the persisted state.
      * @return {string}
@@ -10697,7 +10734,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             sortSettings: [], columns: [], selectedRowIndex: []
         };
         var ignoreOnColumn = ['filter', 'edit', 'filterBarTemplate', 'headerTemplate', 'template',
-            'commandTemplate', 'commands', 'dataSource'];
+            'commandTemplate', 'commands', 'dataSource', 'headerText'];
         keyEntity.forEach(function (value) {
             var currentObject = _this[value];
             for (var _i = 0, _a = ignoreOnPersist[value]; _i < _a.length; _i++) {
@@ -11026,7 +11063,6 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         this.checkLockColumns(this.columns);
         this.getColumns();
         this.processModel();
-        this.commonQuery = this.query.clone();
         this.gridRender();
         this.wireEvents();
         this.addListener();
@@ -11279,7 +11315,6 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
         if (requireGridRefresh) {
             if (freezeRefresh$$1 || this.frozenColumns || this.frozenRows) {
-                this.setProperties({ query: this.commonQuery }, true);
                 this.freezeRefresh();
             }
             else {
@@ -11406,12 +11441,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Grid.prototype.setProperties = function (prop, muteOnChange) {
-        var query = 'query';
-        if (prop[query]) {
-            this.commonQuery = prop[query].clone();
-        }
         _super.prototype.setProperties.call(this, prop, muteOnChange);
-        if (this.filterModule && muteOnChange) {
+        var filterSettings = 'filterSettings';
+        if (prop[filterSettings] && this.filterModule && muteOnChange) {
             this.filterModule.refreshFilter();
         }
     };
@@ -11522,7 +11554,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Grid.prototype.getQuery = function () {
-        return this.commonQuery;
+        return this.query;
     };
     /**
      * @private
@@ -12512,6 +12544,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     Grid.prototype.refreshDataSource = function (e, args) {
         this.notify('refreshdataSource', e);
     };
+    /**
+     * @hidden
+     */
     Grid.prototype.disableRowDD = function (enable) {
         var headerTable = this.getHeaderTable();
         var contentTable = this.getContentTable();
@@ -13159,6 +13194,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     Grid.prototype.destroyTemplate = function (propertyNames, index) {
         this.clearTemplate(propertyNames, index);
     };
+    var Grid_1;
     __decorate([
         Property([])
     ], Grid.prototype, "columns", void 0);
@@ -13504,12 +13540,11 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], Grid.prototype, "dataSourceChanged", void 0);
-    Grid = __decorate([
+    Grid = Grid_1 = __decorate([
         NotifyPropertyChanges
     ], Grid);
     return Grid;
 }(Component));
-Grid.Inject(Selection);
 
 /**
  * Base export
@@ -14925,7 +14960,6 @@ var ExternalMessage = /** @__PURE__ @class */ (function () {
     return ExternalMessage;
 }());
 
-Pager.Inject(ExternalMessage, PagerDropDown);
 /**
  * The `Page` module is used to render pager and handle paging action.
  */
@@ -14935,6 +14969,7 @@ var Page = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     function Page(parent, pageSettings) {
+        Pager.Inject(ExternalMessage, PagerDropDown);
         this.parent = parent;
         this.pageSettings = pageSettings;
         this.addEventListener();
@@ -15970,7 +16005,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
                 this.closeDialog();
             }
             else {
-                pos.top = client.top;
+                pos.top = window.scrollY + client.top;
                 pos.left = this.getCMenuYPosition(this.dlg, this.menuObj);
             }
             this.menuObj.open(pos.top, pos.left, e.target);
@@ -17661,6 +17696,7 @@ var Resize = /** @__PURE__ @class */ (function () {
                     }
                     this.widthService.setWidthToTable();
                 }
+                this.refreshStackedColumnWidth();
                 this.element = e.target;
                 if (this.parent.getVisibleFrozenColumns()) {
                     var mtbody = this.parent.getContent().querySelector('.e-movablecontent').querySelector('tbody');
@@ -17872,11 +17908,13 @@ var Resize = /** @__PURE__ @class */ (function () {
                 }
             }
         }
-        for (var _c = 0, _d = this.parent.getStackedColumns(this.parent.columns); _c < _d.length; _c++) {
-            var stackedColumn = _d[_c];
+        return columns;
+    };
+    Resize.prototype.refreshStackedColumnWidth = function () {
+        for (var _i = 0, _a = this.parent.getStackedColumns(this.parent.columns); _i < _a.length; _i++) {
+            var stackedColumn = _a[_i];
             stackedColumn.width = this.getStackedWidth(stackedColumn, 0);
         }
-        return columns;
     };
     Resize.prototype.getStackedWidth = function (column, width) {
         for (var _i = 0, _a = column.columns; _i < _a.length; _i++) {
@@ -18532,7 +18570,8 @@ var RowDD = /** @__PURE__ @class */ (function () {
                 target: e.target, draggableType: 'rows', data: gObj.getSelectedRecords()
             });
             var dropElem = document.getElementById(gObj.rowDropSettings.targetID);
-            if (gObj.rowDropSettings.targetID && dropElem && dropElem.ej2_instances) {
+            if (gObj.rowDropSettings.targetID && dropElem && dropElem.ej2_instances &&
+                dropElem.ej2_instances[0].getModuleName() === 'grid') {
                 dropElem.ej2_instances[0].getContent().classList.add('e-allowRowDrop');
             }
         };
@@ -18607,9 +18646,10 @@ var RowDD = /** @__PURE__ @class */ (function () {
             var target = targetEle ? targetEle : e.target;
             var cloneElement = _this.parent.element.querySelector('.e-cloneproperties');
             gObj.element.classList.remove('e-rowdrag');
-            var dropElem = document.getElementById(gObj.rowDropSettings.targetID);
-            if (gObj.rowDropSettings.targetID && dropElem && dropElem.ej2_instances) {
-                dropElem.ej2_instances[0].getContent().classList.remove('e-allowRowDrop');
+            var dropElement = document.getElementById(gObj.rowDropSettings.targetID);
+            if (gObj.rowDropSettings.targetID && dropElement && dropElement.ej2_instances &&
+                dropElement.ej2_instances[0].getModuleName() === 'grid') {
+                dropElement.ej2_instances[0].getContent().classList.remove('e-allowRowDrop');
             }
             var startRow = gObj.getSelectedRows().length > 0 ? gObj.getSelectedRows() : [_this.startedRow];
             if (gObj.isRowDragable()) {
@@ -20811,7 +20851,7 @@ var InterSectionObserver = /** @__PURE__ @class */ (function () {
             }
             var check = _this.check(direction);
             if (current.entered) {
-                onEnterCallback(_this.element, current, direction, { top: top, left: left });
+                onEnterCallback(_this.element, current, direction, { top: top, left: left }, _this.fromWheel, check);
             }
             if (check) {
                 var fn = debounced100; //this.fromWheel ? this.options.debounceEvent ? debounced100 : callback : debounced100;
@@ -21070,6 +21110,9 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         var viewInfo = this.currentInfo = this.getInfoFromView(scrollArgs.direction, info, scrollArgs.offset);
         if (this.prevInfo && ((info.axis === 'Y' && this.prevInfo.blockIndexes.toString() === viewInfo.blockIndexes.toString())
             || (info.axis === 'X' && this.prevInfo.columnIndexes.toString() === viewInfo.columnIndexes.toString()))) {
+            if (Browser.isIE) {
+                this.parent.hideSpinner();
+            }
             return;
         }
         this.parent.setColumnIndexesInView(this.parent.enableColumnVirtualization ? viewInfo.columnIndexes : []);
@@ -21150,7 +21193,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             width = this.getColumnOffset(cIndex[cIndex.length - 1]) - this.getColumnOffset(cIndex[0] - 1) + '';
             this.header.virtualEle.setWrapperWidth(width);
         }
-        this.virtualEle.setWrapperWidth(width, this.parent.enableColumnVirtualization);
+        this.virtualEle.setWrapperWidth(width, Browser.isIE || Browser.info.name === 'edge');
         remove(target);
         target = this.parent.createElement('tbody');
         target.appendChild(newChild);
@@ -21232,7 +21275,10 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
     };
     VirtualContentRenderer.prototype.onEntered = function () {
         var _this = this;
-        return function (element, current, direction, e) {
+        return function (element, current, direction, e, isWheel, check) {
+            if (Browser.isIE && !isWheel && check && !_this.preventEvent) {
+                _this.parent.showSpinner();
+            }
             var xAxis = current.axis === 'X';
             var top = _this.prevInfo.offsets ? _this.prevInfo.offsets.top : null;
             var height = _this.content.getBoundingClientRect().height;
@@ -21789,7 +21835,7 @@ var DialogEditRender = /** @__PURE__ @class */ (function () {
         var tbody = this.parent.createElement('tbody');
         var cols = gObj.getColumns();
         for (var i = 0; i < cols.length; i++) {
-            if (!cols[i].visible || cols[i].commands || cols[i].commandsTemplate) {
+            if (this.parent.editModule.checkColumnIsGrouped(cols[i]) || cols[i].commands || cols[i].commandsTemplate) {
                 continue;
             }
             var tr = this.parent.createElement('tr');
@@ -21882,7 +21928,7 @@ var EditRender = /** @__PURE__ @class */ (function () {
                 }
                 continue;
             }
-            if (!col.visible || col.commands) {
+            if (this.parent.editModule.checkColumnIsGrouped(col) || col.commands) {
                 continue;
             }
             value = (col.valueAccessor(col.field, args.rowData, col));
@@ -21938,7 +21984,7 @@ var EditRender = /** @__PURE__ @class */ (function () {
         }
         for (var i = 0, len = cols.length; i < len; i++) {
             var col = cols[i];
-            if (!col.visible) {
+            if (this.parent.editModule.checkColumnIsGrouped(col)) {
                 continue;
             }
             if (col.commands || col.commandsTemplate) {
@@ -23431,6 +23477,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         };
         if (!isForceSave) {
             gObj.trigger(cellSave, args);
+            gObj.notify(batchForm, { formObj: this.form });
         }
         if (args.cancel) {
             return;
@@ -24243,7 +24290,7 @@ var Edit = /** @__PURE__ @class */ (function () {
         var mForm = gObj.element.querySelectorAll('.e-gridform')[1];
         var rules = {};
         var mRules = {};
-        cols = cols ? cols : gObj.columns;
+        cols = cols ? cols : gObj.getColumns();
         cols.forEach(function (col, index) {
             if (!col.visible) {
                 return;
@@ -24267,6 +24314,7 @@ var Edit = /** @__PURE__ @class */ (function () {
         var _this = this;
         return new FormValidator(form, {
             rules: rules,
+            locale: this.parent.locale,
             validationComplete: function (args) {
                 _this.validationComplete(args);
             },
@@ -24367,6 +24415,12 @@ var Edit = /** @__PURE__ @class */ (function () {
             div.style.bottom = inputClient.height + 9 + 'px';
             div.style.top = null;
         }
+    };
+    /**
+     * @hidden
+     */
+    Edit.prototype.checkColumnIsGrouped = function (col) {
+        return !col.visible && !(this.parent.groupSettings.columns.indexOf(col.field) > -1);
     };
     return Edit;
 }());
@@ -27729,8 +27783,10 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         }
         else {
             this.targetColumn = this.getColumn(args.event);
-            this.selectRow(args.event, (args.event.target.classList.contains('e-selectionbackground')
-                && this.parent.selectionSettings.type === 'Multiple') ? false : true);
+            if ((isNullOrUndefined(args.parentItem))) {
+                this.selectRow(args.event, (args.event.target.classList.contains('e-selectionbackground')
+                    && this.parent.selectionSettings.type === 'Multiple') ? false : true);
+            }
             var hideSepItems = [];
             var showSepItems = [];
             for (var _i = 0, _a = args.items; _i < _a.length; _i++) {
@@ -28777,6 +28833,9 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
         return id.indexOf('_colmenu_') > 0 &&
             id.replace(this.gridID + '_colmenu_' + (append$$1 ? append$$1 : ''), '');
     };
+    /**
+     * @hidden
+     */
     ColumnMenu.prototype.getColumnMenu = function () {
         return this.element;
     };
@@ -29078,5 +29137,5 @@ var ForeignKey = /** @__PURE__ @class */ (function (_super) {
  * Export Grid components
  */
 
-export { SortDescriptor, SortSettings, Predicate$1 as Predicate, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, getUpdateUsingRaf, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, Global, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Column, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, Pager, ExternalMessage, NumericContainer, PagerMessage };
+export { SortDescriptor, SortSettings, Predicate$1 as Predicate, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, getUpdateUsingRaf, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, batchForm, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, Global, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Column, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
 //# sourceMappingURL=ej2-grids.es5.js.map

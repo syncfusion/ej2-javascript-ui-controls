@@ -2593,7 +2593,7 @@ var ShapeStyle = /** @__PURE__ @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate$2([
-        Property('transparent')
+        Property('white')
     ], ShapeStyle.prototype, "fill", void 0);
     __decorate$2([
         Property('black')
@@ -2683,6 +2683,9 @@ var TextStyle = /** @__PURE__ @class */ (function (_super) {
     __decorate$2([
         Property('Wrap')
     ], TextStyle.prototype, "textOverflow", void 0);
+    __decorate$2([
+        Property('transparent')
+    ], TextStyle.prototype, "fill", void 0);
     return TextStyle;
 }(ShapeStyle));
 
@@ -3257,7 +3260,7 @@ var TextElement = /** @__PURE__ @class */ (function (_super) {
     TextElement.prototype.measure = function (availableSize) {
         var size;
         if (this.isDirt && this.canMeasure) {
-            size = measureText(this, this.style, this.content, this.width);
+            size = measureText(this, this.style, this.content, this.width || availableSize.width);
         }
         else {
             size = this.desiredSize;
@@ -3416,6 +3419,7 @@ var Canvas = /** @__PURE__ @class */ (function (_super) {
                 var child = _a[_i];
                 if (child instanceof TextElement) {
                     if (child.canMeasure) {
+                        availableSize.width = availableSize.width || this.maxWidth || this.minWidth;
                         child.measure(availableSize);
                     }
                     else {
@@ -7732,7 +7736,7 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
         if (bounds.height === 0) {
             bounds.height = this.style.strokeWidth;
         }
-        textele.style = annotation.style;
+        // textele.style = annotation.style;
         // tslint:disable-next-line:no-any
         var wrapperContent;
         var description = getFunction(getDescription);
@@ -7906,7 +7910,7 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
     Connector.prototype.bridgePath = function (connector, path, pointIndex) {
         var pathData = path;
         if (connector.bridges.length > 0) {
-            if (connector.type === 'Straight') {
+            if (connector.type === 'Straight' && connector.segments.length < 2) {
                 for (var n = 0; n < connector.bridges.length; n++) {
                     var bridge = connector.bridges[n];
                     if (!bridge.rendered) {
@@ -7916,7 +7920,7 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
                     }
                 }
             }
-            else if (connector.type === 'Orthogonal') {
+            else if (connector.type === 'Orthogonal' || (connector.type === 'Straight' && connector.segments.length > 1)) {
                 for (var n = 0; n < connector.bridges.length; n++) {
                     var bridge = connector.bridges[n];
                     if (bridge.segmentPointIndex === pointIndex) {
@@ -8714,6 +8718,7 @@ var StackPanel = /** @__PURE__ @class */ (function (_super) {
         _this.orientation = 'Vertical';
         /**
          * Not applicable for canvas
+         * to avoid the child size updation with respect to parent ser true
          * @private
          */
         _this.measureChildren = undefined;
@@ -8749,7 +8754,12 @@ var StackPanel = /** @__PURE__ @class */ (function (_super) {
                 var child = _a[_i];
                 child.parentTransform = this.rotateAngle + this.parentTransform;
                 //Measure children
-                child.measure(child.desiredSize);
+                if (this.measureChildren) {
+                    child.measure(child.desiredSize);
+                }
+                else {
+                    child.measure(availableSize);
+                }
                 var childSize = child.desiredSize.clone();
                 //Consider Child's margin
                 this.applyChildMargin(child, childSize);
@@ -8762,7 +8772,9 @@ var StackPanel = /** @__PURE__ @class */ (function (_super) {
                     desired = childSize;
                 }
                 else {
-                    updateSize(childSize, desired);
+                    if (!child.preventContainer) {
+                        updateSize(childSize, desired);
+                    }
                 }
             }
         }
@@ -9417,7 +9429,7 @@ function getClassNodes(node, diagram, classifier, textWrap) {
                         ], verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
                         style: { fill: node.style.fill, strokeColor: '#ffffff00', textWrapping: textWrap },
                         constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~(NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
-                        maxHeight: 25, minHeight: 25
+                        minHeight: 25
                     }, true);
                     diagram.initObject(temp);
                     diagram.nodes.push(temp);
@@ -9470,7 +9482,7 @@ function getClassNodes(node, diagram, classifier, textWrap) {
                             }
                         ], verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
                         constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~(NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
-                        maxHeight: 25, minHeight: 25
+                        minHeight: 25
                     }, true);
                     diagram.initObject(temp);
                     diagram.nodes.push(temp);
@@ -9538,7 +9550,7 @@ function getClassMembers(node, diagram, classifier, textWrap) {
                             margin: { left: 14, right: 5 }, horizontalAlignment: 'Left'
                         }
                     ],
-                    style: { fill: node.style.fill, strokeColor: '#ffffff00' }, maxHeight: 25, minHeight: 25,
+                    style: { fill: node.style.fill, strokeColor: '#ffffff00' }, minHeight: 25,
                     constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~(NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize)
                 }, true);
                 diagram.initObject(temp);
@@ -11207,7 +11219,7 @@ var Node = /** @__PURE__ @class */ (function (_super) {
         Property(0)
     ], Node.prototype, "rotateAngle", void 0);
     __decorate$3([
-        Complex({}, TextStyle)
+        Complex({ fill: 'white' }, TextStyle)
     ], Node.prototype, "style", void 0);
     __decorate$3([
         Property('transparent')
@@ -12618,12 +12630,52 @@ function updateStyle(changedObject, target) {
                 style.textDecoration = changedObject.textDecoration;
                 break;
             case 'gradient':
-                style.gradient = changedObject.gradient;
+                updateGradient(changedObject.gradient, style.gradient);
                 break;
         }
     }
     if (target instanceof TextElement) {
         textElement.refreshTextElement();
+    }
+}
+function updateGradient(changedGradient, targetGradient) {
+    for (var _i = 0, _a = Object.keys(changedGradient); _i < _a.length; _i++) {
+        var key = _a[_i];
+        switch (key) {
+            case 'type':
+                targetGradient.type = changedGradient.type;
+                break;
+            case 'x1':
+                targetGradient.x1 = changedGradient.x1;
+                break;
+            case 'x2':
+                targetGradient.x2 = changedGradient.x2;
+                break;
+            case 'y1':
+                targetGradient.y1 = changedGradient.y1;
+                break;
+            case 'y2':
+                targetGradient.y2 = changedGradient.y2;
+                break;
+            case 'cx':
+                targetGradient.cx = changedGradient.cx;
+                break;
+            case 'cy':
+                targetGradient.cy = changedGradient.cy;
+                break;
+            case 'fx':
+                targetGradient.fx = changedGradient.fx;
+                break;
+            case 'fy':
+                targetGradient.fy = changedGradient.fy;
+                break;
+            case 'r':
+                targetGradient.r = changedGradient.r;
+                break;
+            case 'stops':
+                targetGradient.stops = changedGradient.stops;
+                break;
+        }
     }
 }
 /** @private */
@@ -12652,6 +12704,7 @@ function updateHyperlink(changedObject, target, actualAnnotation) {
         }
     }
 }
+/** @private */
 function updateShapeContent(content, actualObject, diagram) {
     content.width = actualObject.width;
     content.height = actualObject.height;
@@ -12680,7 +12733,7 @@ function updateShapeContent(content, actualObject, diagram) {
 /** @private */
 function updateShape(node, actualObject, oldObject, diagram) {
     var content = new DiagramElement();
-    switch (node.shape.type) {
+    switch (actualObject.shape.type) {
         case 'Path':
             var pathContent = new PathElement();
             pathContent.data = actualObject.shape.data;
@@ -12878,6 +12931,11 @@ function getUMLActivityShapes(umlActivityShape, content, node) {
             break;
     }
     return content;
+}
+/**   @private  */
+function removeGradient(svgId) {
+    removeElement(svgId + '_linear');
+    removeElement(svgId + '_radial');
 }
 /** @private */
 function removeItem(array, item) {
@@ -13561,6 +13619,9 @@ function measureText(text, style, content, maxWidth, textValue) {
     text.childNodes = childNodes = wrapSvgText(options, textValue);
     text.wrapBounds = wrapBounds = wrapSvgTextAlign(options, childNodes);
     bounds.width = wrapBounds.width;
+    if (text.wrapBounds.width >= maxWidth && options.textOverflow !== 'Wrap') {
+        bounds.width = maxWidth;
+    }
     bounds.height = childNodes.length * text.style.fontSize * 1.2;
     return bounds;
 }
@@ -14010,30 +14071,32 @@ function cloneObject(obj, additionalProp, key) {
         properties = properties.concat(internalProp);
         for (var _i = 0, properties_1 = properties; _i < properties_1.length; _i++) {
             var property = properties_1[_i];
-            if (property !== 'wrapper') {
-                var isEventEmmitter = obj[property] && obj.hasOwnProperty('observers') ? true : false;
-                if (!isEventEmmitter) {
-                    if (obj[property] instanceof Array) {
-                        newObject[property] = cloneArray((internalProp.indexOf(property) === -1 && obj[keys]) ? obj[keys][property] : obj[property], additionalProp, property);
-                    }
-                    else if (obj[property] instanceof Array === false && obj[property] instanceof HTMLElement) {
-                        newObject[property] = obj[property].cloneNode(true).innerHtml;
-                    }
-                    else if (obj[property] instanceof Array === false && obj[property] instanceof Object) {
-                        newObject[property] = cloneObject((internalProp.indexOf(property) === -1 && obj[keys]) ? obj[keys][property] : obj[property]);
-                    }
-                    else {
-                        newObject[property] = obj[property];
+            if (property !== 'historyManager') {
+                if (property !== 'wrapper') {
+                    var isEventEmmitter = obj[property] && obj.hasOwnProperty('observers') ? true : false;
+                    if (!isEventEmmitter) {
+                        if (obj[property] instanceof Array) {
+                            newObject[property] = cloneArray((internalProp.indexOf(property) === -1 && obj[keys]) ? obj[keys][property] : obj[property], additionalProp, property);
+                        }
+                        else if (obj[property] instanceof Array === false && obj[property] instanceof HTMLElement) {
+                            newObject[property] = obj[property].cloneNode(true).innerHtml;
+                        }
+                        else if (obj[property] instanceof Array === false && obj[property] instanceof Object) {
+                            newObject[property] = cloneObject((internalProp.indexOf(property) === -1 && obj[keys]) ? obj[keys][property] : obj[property]);
+                        }
+                        else {
+                            newObject[property] = obj[property];
+                        }
                     }
                 }
-            }
-            else {
-                if (obj[property]) {
-                    newObject[property] = {
-                        actualSize: {
-                            width: obj[property].actualSize.width, height: obj[property].actualSize.height
-                        }, offsetX: obj[property].offsetX, offsetY: obj[property].offsetY
-                    };
+                else {
+                    if (obj[property]) {
+                        newObject[property] = {
+                            actualSize: {
+                                width: obj[property].actualSize.width, height: obj[property].actualSize.height
+                            }, offsetX: obj[property].offsetX, offsetY: obj[property].offsetY
+                        };
+                    }
                 }
             }
         }
@@ -15170,7 +15233,7 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
             }
             var pivotX = options.x + options.width * options.pivotX;
             var pivotY = options.y + options.height * options.pivotY;
-            if (options.doWrap) {
+            if (options.doWrap || options.textOverflow !== 'Wrap') {
                 this.setSvgStyle(text, options, diagramId);
                 this.setSvgFontStyle(text, options);
                 textNode = document.createTextNode(options.content);
@@ -15340,6 +15403,7 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
         }
         var radial;
         var linear;
+        removeGradient(svg.id);
         if (options.gradient.type !== 'None') {
             for (var i = 0; i < options.gradient.stops.length; i++) {
                 max = !max ? options.gradient.stops[i].offset : Math.max(max, options.gradient.stops[i].offset);
@@ -15348,21 +15412,12 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
             if (options.gradient.type === 'Linear') {
                 linear = options.gradient;
                 linear.id = svg.id + '_linear';
-                grd = svgContainer.getElementById(svg.id + '_linear');
-                if (grd) {
-                    grd.parentNode.removeChild(grd);
-                }
                 grd = this.createLinearGradient(linear);
                 defs.appendChild(grd);
             }
             else {
                 radial = options.gradient;
                 radial.id = svg.id + '_radial';
-                grd = svgContainer.getElementById(svg.id + '_radial');
-                grd = svgContainer.getElementById(svg.id + '_linear');
-                if (grd) {
-                    grd.parentNode.removeChild(grd);
-                }
                 grd = this.createRadialGradient(radial);
                 defs.appendChild(grd);
             }
@@ -16434,22 +16489,24 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
     };
     /**   @private  */
     DiagramRenderer.renderSvgBackGroundImage = function (background, diagramElement, x, y, width, height) {
-        var container = document.getElementById(diagramElement.id);
-        var backgroundLayer = getBackgroundLayerSvg(diagramElement.id);
-        var target = backgroundLayer.getElementById(diagramElement.id + '_image');
-        if (!target && background.source) {
-            var bgimageLayer = getBackgroundImageLayer(diagramElement.id);
-            target = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-            target.setAttribute('id', diagramElement.id + '_image');
-            bgimageLayer.appendChild(target);
-        }
-        if (target) {
-            target.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', background.source);
+        if (background.source) {
+            var backgroundLayer = getBackgroundLayerSvg(diagramElement.id);
+            var target = backgroundLayer.getElementById(diagramElement.id + '_image');
+            if (!target) {
+                var bgimageLayer = getBackgroundImageLayer(diagramElement.id);
+                target = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+                target.setAttribute('id', diagramElement.id + '_image');
+                bgimageLayer.appendChild(target);
+            }
+            var imageObj = new Image();
+            imageObj.src = background.source;
+            target.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imageObj.src.toString());
             var scale = background.scale !== 'None' ? background.scale : '';
             var imgAlign = background.align;
-            var aspectRatio = imgAlign.charAt(0).toLowerCase() + imgAlign.slice(1) + ' '
-                + scale.charAt(0).toLowerCase() + scale.slice(1);
-            var container_1 = document.getElementById(diagramElement.id);
+            var aspectRatio = imgAlign.charAt(0).toLowerCase() + imgAlign.slice(1);
+            if (scale) {
+                aspectRatio += ' ' + scale.charAt(0).toLowerCase() + scale.slice(1);
+            }
             var attr = {
                 'id': diagramElement.id + '_image', 'x': x, 'y': y,
                 'width': width, 'height': height,
@@ -20839,8 +20896,10 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
             var obj = this.diagram.selectedObject.actualObject;
             obj.offsetX = helperObject.offsetX;
             obj.offsetY = helperObject.offsetY;
-            obj.width = helperObject.width;
-            obj.height = helperObject.height;
+            if (obj && obj.shape && obj.shape.type !== 'UmlClassifier') {
+                obj.width = helperObject.width;
+                obj.height = helperObject.height;
+            }
             obj.rotateAngle = helperObject.rotateAngle;
             var objects = this.diagram.findObjectsUnderMouse(this.currentPosition);
             var target = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
@@ -20885,9 +20944,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
                     var y = parentNode.wrapper.bounds.y;
                     if (obj.columnIndex !== undefined && (parentNode.container.orientation === 'Horizontal' && obj.rowIndex === 1) ||
                         (parentNode.container.orientation === 'Vertical' && obj.rowIndex > 0 && obj.columnIndex > 0)) {
-                        //let diff: number = helperObject.width - container.colDefns[obj.columnIndex].width;
                         container.updateColumnWidth(obj.columnIndex, helperObject.width);
-                        //parentNode.width += diff;
                     }
                     else if (obj.rowIndex !== undefined) {
                         container.updateRowHeight(obj.rowIndex, helperObject.height);
@@ -20900,12 +20957,15 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
                     this.diagram.drag(parentNode, x - parentNode.wrapper.bounds.x, y - parentNode.wrapper.bounds.y);
                 }
                 else {
+                    if (obj && obj.shape && obj.shape.type === 'UmlClassifier') {
+                        obj.wrapper.measureChildren = true;
+                    }
                     this.diagram.nodePropertyChange(obj, {}, {
                         offsetX: obj.offsetX, offsetY: obj.offsetY,
                         width: obj.width, height: obj.height,
                         rotateAngle: obj.rotateAngle
                     });
-                    this.diagram.updateConnectorEdges(obj);
+                    obj.wrapper.measureChildren = false;
                 }
             }
             if (isChangeProperties) {
@@ -20964,6 +21024,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
                     target: undefined, targetIndex: undefined
                 };
                 this.diagram.add(temp);
+                this.diagram.updateConnectorEdges(node);
                 this.diagram.select([this.diagram.nameTable[temp.id]]);
                 this.diagram.endGroupAction();
                 this.diagram.startTextEdit();
@@ -21720,11 +21781,11 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
     CommandHandler.prototype.cut = function () {
         this.clipboardData.pasteIndex = 0;
         if (this.diagram.undoRedoModule) {
-            this.diagram.historyList.startGroupAction();
+            this.diagram.historyManager.startGroupAction();
         }
         this.clipboardData.clipObject = this.copyObjects();
         if (this.diagram.undoRedoModule) {
-            this.diagram.historyList.endGroupAction();
+            this.diagram.historyManager.endGroupAction();
         }
         if (this.diagram.mode !== 'SVG') {
             this.diagram.refreshDiagramLayer();
@@ -21999,7 +22060,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 }
                 if (this.diagram.undoRedoModule) {
                     groupAction = true;
-                    this.diagram.historyList.startGroupAction();
+                    this.diagram.historyManager.startGroupAction();
                 }
                 for (var _i = 0, copiedItems_1 = copiedItems; _i < copiedItems_1.length; _i++) {
                     var copy = copiedItems_1[_i];
@@ -22053,7 +22114,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                     }
                 }
                 if (groupAction === true) {
-                    this.diagram.historyList.endGroupAction();
+                    this.diagram.historyManager.endGroupAction();
                     groupAction = false;
                 }
                 if (this.diagram.mode !== 'SVG') {
@@ -22855,7 +22916,9 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 var backNode = getDiagramElement(nodeId + id, this.diagram.views[i]);
                 var diagramDiv = targetID ? getDiagramElement(targetID + id, this.diagram.views[i])
                     : backNode.parentElement.firstChild;
-                diagramDiv.parentNode.insertBefore(backNode, diagramDiv);
+                if (backNode.parentNode.id === diagramDiv.parentNode.id) {
+                    diagramDiv.parentNode.insertBefore(backNode, diagramDiv);
+                }
             }
         }
     };
@@ -23007,7 +23070,11 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                     checkChildNodeInContainer(this.diagram, obj);
                 }
                 else {
+                    if (obj && obj.shape && obj.shape.type === 'UmlClassifier') {
+                        obj.wrapper.measureChildren = true;
+                    }
                     this.diagram.nodePropertyChange(obj, oldValues, { offsetX: obj.offsetX, offsetY: obj.offsetY });
+                    obj.wrapper.measureChildren = false;
                 }
             }
             else {
@@ -26124,6 +26191,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                             var changedProp = newProp.connectors[index];
                             this.connectorPropertyChange(actualObject, oldProp.connectors[index], changedProp, true);
                             objectArray.push(actualObject);
+                            if (actualObject && actualObject.parentId && this.nameTable[actualObject.parentId].shape.type === 'UmlClassifier') {
+                                this.updateConnectorEdges(this.nameTable[actualObject.parentId] || actualObject);
+                            }
                         }
                         this.updateBridging();
                         if (this.mode === 'Canvas') {
@@ -26186,6 +26256,22 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     this.realActions |= RealAction.PreventDataInit;
                     _super.prototype.refresh.call(this);
                     this.realActions &= ~RealAction.PreventDataInit;
+                    break;
+                case 'contextMenuSettings':
+                    if (newProp.contextMenuSettings.showCustomMenuOnly !== undefined) {
+                        this.contextMenuSettings.showCustomMenuOnly = newProp.contextMenuSettings.showCustomMenuOnly;
+                    }
+                    if (newProp.contextMenuSettings.show !== undefined) {
+                        this.contextMenuSettings.show = newProp.contextMenuSettings.show;
+                    }
+                    if (newProp.contextMenuSettings.items) {
+                        var items = newProp.contextMenuSettings.items;
+                        for (var _h = 0, _j = Object.keys(items); _h < _j.length; _h++) {
+                            var key = _j[_h];
+                            var index = Number(key);
+                            this.contextMenuSettings.items[index] = items[index];
+                        }
+                    }
                     break;
             }
         }
@@ -27423,6 +27509,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     removeElement(children[i].id + '_html_element', elementId);
                 }
             }
+            removeGradient(children[i].id);
         }
     };
     Diagram.prototype.removeCommand = function () {
@@ -27463,7 +27550,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                         };
                         if (!(this.diagramActions & DiagramAction.Clear)) {
                             if (selectedItems.length > 0 && this.undoRedoModule && !this.layout.type) {
-                                this.historyList.startGroupAction();
+                                this.historyManager.startGroupAction();
                                 groupAction = true;
                             }
                         }
@@ -27481,6 +27568,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                         this.deleteChild(obj);
                         if (this.nameTable[obj.parentId] && this.nameTable[obj.parentId].shape.type === 'UmlClassifier') {
                             this.updateDiagramObject(this.nameTable[obj.parentId]);
+                            this.updateConnectorEdges(this.nameTable[obj.parentId]);
                         }
                     }
                     var index = void 0;
@@ -27508,7 +27596,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                         this.spliceConnectorEdges(obj, false);
                     }
                     if (groupAction) {
-                        this.historyList.endGroupAction();
+                        this.historyManager.endGroupAction();
                     }
                     if (isSelected(this, currentObj)) {
                         this.unSelect(currentObj);
@@ -27539,7 +27627,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         }
         else if (selectedItems.length > 0) {
             if (this.undoRedoModule) {
-                this.historyList.startGroupAction();
+                this.historyManager.startGroupAction();
                 groupAction = true;
             }
             for (var i = 0; i < selectedItems.length; i++) {
@@ -27554,7 +27642,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             if (groupAction) {
-                this.historyList.endGroupAction();
+                this.historyManager.endGroupAction();
             }
             this.clearSelection();
         }
@@ -28585,6 +28673,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     Diagram.prototype.initObjectExtend = function (obj, layer, independentObj) {
         if (independentObj) {
             var checkBoundaryConstraints = this.commandHandler.checkBoundaryConstraints(undefined, undefined, obj.wrapper.bounds);
+            layer.zIndexTable[obj.zIndex] = obj.id;
             if (!checkBoundaryConstraints) {
                 var node = obj instanceof Node ? this.nodes : this.connectors;
                 for (var i = 0; i <= node.length; i++) {
@@ -28592,8 +28681,8 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                         node.splice(i, 1);
                     }
                 }
+                delete layer.zIndexTable[obj.zIndex];
             }
-            layer.zIndexTable[obj.zIndex] = obj.id;
         }
     };
     /** @private */
@@ -29354,7 +29443,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /** @private */
-    Diagram.prototype.renderDiagramElements = function (canvas, renderer, htmlLayer, transform, fromExport) {
+    Diagram.prototype.renderDiagramElements = function (canvas, renderer, htmlLayer, transform, fromExport, isOverView) {
         if (transform === void 0) { transform = true; }
         var pageBounds = this.scroller.getPageBounds();
         pageBounds.x *= this.scroller.currentZoom;
@@ -29416,7 +29505,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                         status_1 = false;
                     }
                     this.updateTextElementValue(renderNode);
-                    renderer.renderElement(renderNode.wrapper, canvas, htmlLayer, (!renderer.isSvgMode && transform) ? transformValue : undefined, undefined, undefined, status_1 && !this.diagramActions);
+                    renderer.renderElement(renderNode.wrapper, canvas, htmlLayer, (!renderer.isSvgMode && transform) ? transformValue : undefined, undefined, undefined, status_1 && (!this.diagramActions || isOverView));
                 }
             }
         }
@@ -29635,7 +29724,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             var renderer = new DiagramRenderer(overview.id, new SvgRenderer(), false);
             var g = document.getElementById(overview.element.id + '_diagramLayer');
             var htmlLayer = getHTMLLayer(overview.element.id);
-            this.renderDiagramElements(g, overview.diagramRenderer || renderer, htmlLayer);
+            this.renderDiagramElements(g, overview.diagramRenderer || renderer, htmlLayer, undefined, undefined, true);
         }
     };
     Diagram.prototype.updateThumbConstraints = function (node, selectorModel) {
@@ -29983,7 +30072,8 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 var annotation = findAnnotation(node, this.activeLabel.id);
                 if (annotation.content !== text && !args.cancel) {
                     if (node.parentId && this.nameTable[node.parentId].shape.type === 'UmlClassifier'
-                        && text.indexOf(' + ') === -1 && node.id.indexOf('')) {
+                        && text.indexOf('+') === -1 && text.indexOf('-') === -1 && text.indexOf('#') === -1
+                        && text.indexOf('~') === -1 && node.id.indexOf('_umlClass_header') === -1) {
                         text = ' + ' + text;
                     }
                     annotation.content = text;
@@ -30120,6 +30210,10 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             updateStyle(node.style, actualObject.wrapper.children[0]);
             update = true;
         }
+        if (node.shadow !== undefined) {
+            this.updateShadow(actualObject.shadow, node.shadow);
+            update = true;
+        }
         if (node.constraints !== undefined) {
             if ((oldObject.constraints & NodeConstraints.Select) &&
                 (!(node.constraints & NodeConstraints.Select)) && isSelected(this, actualObject)) {
@@ -30239,6 +30333,11 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             updateConnector$$1 = true;
             this.updateUMLActivity(node, oldObject, actualObject, this);
         }
+        if ((actualObject.shape && actualObject.shape.type === 'UmlClassifier') || (actualObject.parentId &&
+            this.nameTable[actualObject.parentId] && this.nameTable[actualObject.parentId].shape.type === 'UmlClassifier')) {
+            update = true;
+            updateConnector$$1 = true;
+        }
         if (node.ports !== undefined) {
             for (var _i = 0, _a = Object.keys(node.ports); _i < _a.length; _i++) {
                 var key = _a[_i];
@@ -30322,6 +30421,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             }
             if (!this.preventNodesUpdate) {
                 this.updateDiagramObject(actualObject);
+                if (!isLayout && updateConnector$$1) {
+                    this.updateConnectorEdges(actualObject);
+                }
             }
             if (actualObject.status !== 'New' && this.diagramActions) {
                 actualObject.status = 'Update';
@@ -30704,6 +30806,11 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             }
             if (isMeasure || canUpdateSize) {
                 annotationWrapper.width = (actualAnnotation.width || actualObject.width);
+                if (actualAnnotation.template) {
+                    annotationWrapper.width = (annotationWrapper.width || annotationWrapper.actualSize.width);
+                    annotationWrapper.height = (actualAnnotation.height || actualObject.height ||
+                        annotationWrapper.actualSize.height);
+                }
             }
             if (changedObject.horizontalAlignment !== undefined) {
                 annotationWrapper.horizontalAlignment = changedObject.horizontalAlignment;
@@ -30772,8 +30879,17 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             removeElement(annotationWrapper.id + '_groupElement', elementId);
             removeElement(annotationWrapper.id + '_html_element', elementId);
         }
-        annotationWrapper =
-            actualObject.initAnnotationWrapper(actualAnnotation, this.element.id);
+        if (actualObject instanceof Node) {
+            annotationWrapper =
+                actualObject.initAnnotationWrapper(actualAnnotation, this.element.id);
+        }
+        else if (actualObject instanceof Connector) {
+            var canvas = actualObject.wrapper;
+            var segment = canvas.children[0];
+            var bounds = new Rect(segment.offsetX - segment.width / 2, segment.offsetY - segment.height / 2, segment.width, segment.height);
+            annotationWrapper =
+                actualObject.getAnnotationElement(actualObject.annotations[actualObject.annotations.length - 1], actualObject.intermediatePoints, bounds, this.getDescription, this.element.id);
+        }
         for (var i = 0; i < nodes.children.length; i++) {
             if (annotationWrapper.id === nodes.children[i].id) {
                 nodes.children.splice(i, 1, annotationWrapper);
@@ -30960,8 +31076,8 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     };
     Diagram.prototype.updatePage = function () {
         if (this.diagramActions & DiagramAction.Render) {
-            this.scroller.setSize();
             this.scroller.updateScrollOffsets();
+            this.scroller.setSize();
             //updating overview
             for (var _i = 0, _a = this.views; _i < _a.length; _i++) {
                 var temp = _a[_i];
@@ -30975,6 +31091,21 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     /** @private */
     Diagram.prototype.protectPropertyChange = function (enable) {
         this.isProtectedOnChange = enable;
+    };
+    /** @private */
+    Diagram.prototype.updateShadow = function (nodeShadow, changedShadow) {
+        if (changedShadow.angle !== undefined) {
+            nodeShadow.angle = changedShadow.angle;
+        }
+        if (changedShadow.color !== undefined) {
+            nodeShadow.color = changedShadow.color;
+        }
+        if (changedShadow.distance !== undefined) {
+            nodeShadow.distance = changedShadow.distance;
+        }
+        if (changedShadow.opacity !== undefined) {
+            nodeShadow.opacity = changedShadow.opacity;
+        }
     };
     /** @private */
     Diagram.prototype.updateMargin = function (node, changes) {
@@ -31485,6 +31616,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     ], Diagram.prototype, "addInfo", void 0);
     __decorate([
         Property()
+    ], Diagram.prototype, "historyManager", void 0);
+    __decorate([
+        Property()
     ], Diagram.prototype, "getNodeDefaults", void 0);
     __decorate([
         Property()
@@ -31888,35 +32022,43 @@ var PrintAndExport = /** @__PURE__ @class */ (function () {
         var height = bounds.height;
         svg.appendChild(g);
         var attr = {
-            'transform': 'translate(' + (-options.bounds.x + margin.left) + ', ' + (-options.bounds.y + margin.top) + ')',
             'x': String(left),
             'y': String(top), 'width': String(width), 'height': String(height)
         };
         setAttributeSvg(g, attr);
-        var backRect = document.getElementById(this.diagram.element.id + '_backgroundLayerrect').cloneNode(true);
+        this.setTransform(g, options.bounds, margin);
+        var gradient = document.getElementById(this.diagram.element.id + 'gradient_pattern');
+        if (gradient) {
+            svg.appendChild(gradient);
+        }
         attr = {
             'x': 0,
             'y': 0, 'width': String(width + margin.left + margin.right), 'height': String(height + margin.top + margin.bottom)
         };
+        var backimage = document.getElementById(this.diagram.element.id + '_backgroundImageLayer').cloneNode(true);
+        setAttributeSvg(backimage, attr);
+        svg.appendChild(backimage);
+        this.setTransform(backimage, bounds, margin);
+        var backRect = document.getElementById(this.diagram.element.id + '_backgroundLayerrect').cloneNode(true);
         setAttributeSvg(backRect, attr);
         svg.appendChild(backRect);
+        this.setTransform(backRect, bounds, margin);
         if (this.diagram.mode === 'SVG') {
+            var element = void 0;
+            var i = void 0;
             var diagramLayerSVG = getDiagramLayerSvg(this.diagram.element.id);
             svg.appendChild(diagramLayerSVG.getElementById(this.diagram.diagramLayer.id).cloneNode(true));
-            for (var i = 0; i < svg.childNodes.length; i++) {
-                var element = svg.childNodes[i];
-                if (element.id === 'diagram_diagramLayer') {
-                    element.setAttribute('transform', 'translate(' + (-bounds.x + margin.left) + ', ' +
-                        (-bounds.y + margin.top) + ')');
+            for (i = 0; i < svg.childNodes.length; i++) {
+                element = svg.childNodes[i];
+                if (element.id === this.diagram.element.id + '_diagramLayer') {
+                    this.setTransform(element, bounds, margin);
                 }
             }
         }
         else {
             g = createSvgElement('g', { 'id': this.diagram.element.id + '_diagramLayer' });
             svg.appendChild(g);
-            g.setAttribute('transform', 'translate(' + (-options.bounds.x + margin.left) + ', ' +
-                (-options.bounds.y + margin.top) + ')');
-            var nodes = this.diagram.nodes;
+            this.setTransform(g, options.bounds, margin);
             //renderLabels
             var renderer = new DiagramRenderer('', null, true);
             var htmlLayer = getHTMLLayer(this.diagram.element.id);
@@ -31924,6 +32066,10 @@ var PrintAndExport = /** @__PURE__ @class */ (function () {
         }
         document.body.removeChild(svg);
         return svg;
+    };
+    PrintAndExport.prototype.setTransform = function (element, bounds, margin) {
+        element.setAttribute('transform', 'translate(' + (-bounds.x + margin.left) + ', ' +
+            (-bounds.y + margin.top) + ')');
     };
     PrintAndExport.prototype.diagramAsCanvas = function (options, customBounds) {
         var scaleX = 'scaleX';
@@ -32122,7 +32268,12 @@ var PrintAndExport = /** @__PURE__ @class */ (function () {
             ctx.drawImage(img, x_1 + mLeft, y_1 + mTop, img.width - (mRight + mLeft), img.height - (mTop + mBottom), 0 + mLeft, 0 + mTop, pageWidth_1 - (mRight + mLeft), pageHeight_1 - (mTop + mBottom));
             url = canvas.toDataURL();
             ctx.restore();
-            this.printImage(div, url, 0);
+            if (isExport) {
+                imageArray.push(url);
+            }
+            else {
+                this.printImage(div, url, 0);
+            }
         }
         if (isExport) {
             return imageArray;
@@ -32663,10 +32814,10 @@ var DiagramContextMenu = /** @__PURE__ @class */ (function () {
         var target = false;
         switch (itemText) {
             case 'undo':
-                target = this.parent.historyList && this.parent.historyList.canUndo ? true : false;
+                target = this.parent.historyManager && this.parent.historyManager.canUndo ? true : false;
                 break;
             case 'redo':
-                target = this.parent.historyList && this.parent.historyList.canRedo ? true : false;
+                target = this.parent.historyManager && this.parent.historyManager.canRedo ? true : false;
                 break;
             case 'paste':
                 target = this.parent.commandHandler.clipboardData.clipObject ? true : false;
@@ -36956,7 +37107,7 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
     }
     /** @private */
     UndoRedo.prototype.initHistory = function (diagram) {
-        diagram.historyList = {
+        diagram.historyManager = {
             canRedo: false, canUndo: false, currentEntry: null,
             push: diagram.addHistoryEntry.bind(diagram), undo: Function, redo: Function,
             startGroupAction: diagram.startGroupAction.bind(diagram), endGroupAction: diagram.endGroupAction.bind(diagram),
@@ -36967,14 +37118,14 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
     UndoRedo.prototype.addHistoryEntry = function (entry, diagram) {
         var entryObject = null;
         var nextEntry = null;
-        if (diagram.historyList.canLog) {
-            var hEntry = diagram.historyList.canLog(entry);
+        if (diagram.historyManager.canLog) {
+            var hEntry = diagram.historyManager.canLog(entry);
             if (hEntry.cancel === true) {
                 return;
             }
         }
-        if (diagram.historyList && diagram.historyList.canUndo && diagram.historyList.currentEntry) {
-            entryObject = diagram.historyList.currentEntry;
+        if (diagram.historyManager && diagram.historyManager.canUndo && diagram.historyManager.currentEntry) {
+            entryObject = diagram.historyManager.currentEntry;
             if (entryObject.next) {
                 if (entryObject.previous) {
                     nextEntry = entryObject.next;
@@ -36988,10 +37139,10 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
                 entry.previous = entryObject;
             }
         }
-        diagram.historyList.currentEntry = entry;
+        diagram.historyManager.currentEntry = entry;
         this.getHistoryList(diagram);
-        diagram.historyList.canUndo = true;
-        diagram.historyList.canRedo = false;
+        diagram.historyManager.canUndo = true;
+        diagram.historyManager.canRedo = false;
     };
     /** @private */
     UndoRedo.prototype.undo = function (diagram) {
@@ -37012,18 +37163,18 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
                 }
             }
             else {
-                diagram.historyList.undo(entry);
+                diagram.historyManager.undo(entry);
             }
         }
     };
     UndoRedo.prototype.getHistoryList = function (diagram) {
         var undoStack = [];
         var redoStack = [];
-        var currEntry = diagram.historyList.currentEntry;
+        var currEntry = diagram.historyManager.currentEntry;
         var undoObj;
         var redoObj;
-        currEntry = diagram.historyList.currentEntry;
-        if (diagram.historyList.canUndo || diagram.historyList.undoStack.length === 0) {
+        currEntry = diagram.historyManager.currentEntry;
+        if (diagram.historyManager.canUndo || diagram.historyManager.undoStack.length === 0) {
             this.getHistroyObject(undoStack, currEntry);
         }
         else {
@@ -37034,14 +37185,14 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
             this.getHistroyObject(undoStack, undoObj);
             currEntry = currEntry.previous;
         }
-        currEntry = diagram.historyList.currentEntry;
+        currEntry = diagram.historyManager.currentEntry;
         while (currEntry && currEntry.next) {
             redoObj = currEntry.next;
             this.getHistroyObject(redoStack, redoObj);
             currEntry = currEntry.next;
         }
-        diagram.historyList.undoStack = undoStack;
-        diagram.historyList.redoStack = redoStack;
+        diagram.historyManager.undoStack = undoStack;
+        diagram.historyManager.redoStack = redoStack;
     };
     UndoRedo.prototype.getHistroyObject = function (list, obj) {
         if (obj && obj.type !== 'StartGroup' && obj.type !== 'EndGroup') {
@@ -37072,9 +37223,9 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
             obj = (entry.undoObject);
         }
         if (entry.type !== 'StartGroup' && entry.type !== 'EndGroup') {
-            if (diagram.historyList.undoStack.length > 0) {
-                var addObject = diagram.historyList.undoStack.splice(0, 1);
-                diagram.historyList.redoStack.splice(0, 0, addObject[0]);
+            if (diagram.historyManager.undoStack.length > 0) {
+                var addObject = diagram.historyManager.undoStack.splice(0, 1);
+                diagram.historyManager.redoStack.splice(0, 0, addObject[0]);
             }
         }
         diagram.protectPropertyChange(true);
@@ -37243,6 +37394,9 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
         var currentElement = findPort(currentObject, entry.objectId);
         currentElement.offset = oldElement.offset;
         diagram.nodePropertyChange(currentObject, {}, undoChanges);
+        if (currentObject.parentId) {
+            diagram.updateConnectorEdges(diagram.nameTable[currentObject.parentId]);
+        }
     };
     UndoRedo.prototype.recordPropertyChanged = function (entry, diagram, isRedo) {
         var redoObject = entry.redoObject;
@@ -37557,7 +37711,7 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
                 }
             }
             else {
-                diagram.historyList.redo(entry);
+                diagram.historyManager.redo(entry);
             }
         }
     };
@@ -37581,9 +37735,9 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
         }
         diagram.diagramActions |= DiagramAction.UndoRedo;
         if (historyEntry.type !== 'StartGroup' && historyEntry.type !== 'EndGroup') {
-            if (diagram.historyList.redoStack.length > 0) {
-                var addObject = diagram.historyList.redoStack.splice(0, 1);
-                diagram.historyList.undoStack.splice(0, 0, addObject[0]);
+            if (diagram.historyManager.redoStack.length > 0) {
+                var addObject = diagram.historyManager.redoStack.splice(0, 1);
+                diagram.historyManager.undoStack.splice(0, 0, addObject[0]);
             }
         }
         diagram.protectPropertyChange(true);
@@ -37644,7 +37798,7 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
     UndoRedo.prototype.getUndoEntry = function (diagram) {
         var undoEntry = null;
         var currentObject;
-        var hList = diagram.historyList;
+        var hList = diagram.historyManager;
         if (hList.canUndo) {
             undoEntry = hList.currentEntry;
             currentObject = hList.currentEntry.previous;
@@ -37664,7 +37818,7 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
     UndoRedo.prototype.getRedoEntry = function (diagram) {
         var redoEntry = null;
         var entryCurrent;
-        var hList = diagram.historyList;
+        var hList = diagram.historyManager;
         if (hList.canRedo) {
             if (!hList.currentEntry.previous && !hList.canUndo) {
                 entryCurrent = hList.currentEntry;
@@ -41897,14 +42051,16 @@ var CrossReduction = /** @__PURE__ @class */ (function () {
                     var rank = model.ranks[j];
                     for (var k = 0; k < rank.length; k++) {
                         var cell = rank[k];
-                        if (this.nestedBestRanks[j][cell.temp[0]]) {
+                        var obj = this.nestedBestRanks[j][cell.temp[0]];
+                        if (obj && ((obj.id === cell.id) || (cell.ids && obj.ids &&
+                            obj.ids[0] === cell.ids[0]))) {
                             this.nestedBestRanks[j][cell.temp[0]] = cell;
                         }
                     }
                 }
             }
             else {
-                // Increase count of iterations  
+                // Increase count of iterations
                 iterationsWithoutImprovement++;
                 // Restore the best values to the cells
                 for (var j = 0; j < this.nestedBestRanks.length; j++) {
@@ -44314,5 +44470,5 @@ var Overview = /** @__PURE__ @class */ (function (_super) {
  * Diagram component exported items
  */
 
-export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setUMLActivityDefaults, findNearestPoint, isDiagramChild, groupHasType, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, serialize, deserialize, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getPoint, getObjectType, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, UserHandle, Selector, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, renderStackHighlighter, moveChildInStack, initSwimLane, addObjectToGrid, headerDefine, phaseDefine, laneCollection, createRow, createColumn, initGridRow, initGridColumns, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolPreview, SymbolPalette, Ruler, Overview };
+export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setUMLActivityDefaults, findNearestPoint, isDiagramChild, groupHasType, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, serialize, deserialize, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getPoint, getObjectType, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, UserHandle, Selector, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, renderStackHighlighter, moveChildInStack, initSwimLane, addObjectToGrid, headerDefine, phaseDefine, laneCollection, createRow, createColumn, initGridRow, initGridColumns, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolPreview, SymbolPalette, Ruler, Overview };
 //# sourceMappingURL=ej2-diagrams.es5.js.map

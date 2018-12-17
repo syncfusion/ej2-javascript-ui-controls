@@ -250,7 +250,8 @@ public isRemote(): boolean {
       if (!isNullOrUndefined(currentData[this.parent.childMapping])) {
         currentData.childRecords = currentData[this.parent.childMapping];
         currentData.hasChildRecords = true;
-        currentData.expanded = true;
+        currentData.expanded = !isNullOrUndefined(currentData[this.parent.expandStateMapping])
+          ? currentData[this.parent.expandStateMapping] : true;
       }
       currentData.index =  currentData.hasChildRecords ? this.storedIndex : this.storedIndex;
       if (isNullOrUndefined(currentData[this.parent.parentIdMapping])) {
@@ -337,7 +338,7 @@ public isRemote(): boolean {
           gridQuery = getValue('grid.renderModule.data', this.parent).aggregateQuery(new Query());
         }
         let summaryQuery: QueryOptions[]  = query.queries.filter((q: QueryOptions) => q.fn === 'onAggregates');
-        results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, results);
+        results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, results, true);
       }
     }
     if (this.parent.grid.aggregates.length && this.parent.grid.sortSettings.columns.length === 0
@@ -347,7 +348,7 @@ public isRemote(): boolean {
           gridQuery = getValue('grid.renderModule.data', this.parent).aggregateQuery(new Query());
         }
         let summaryQuery: QueryOptions[]  = gridQuery.queries.filter((q: QueryOptions) => q.fn === 'onAggregates');
-        results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, this.parent.flatData);
+        results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, this.parent.flatData, true);
     }
     if (this.parent.grid.sortSettings.columns.length > 0 || this.isSortAction) {
       this.isSortAction = false;
@@ -378,9 +379,10 @@ public isRemote(): boolean {
       results = this.sortedData;
       this.parent.notify('updateModel', {});
       if (this.parent.grid.aggregates.length > 0) {
+        let isSort: boolean = false;
         let query: Query = getObject('query', args);
         let summaryQuery: QueryOptions[]  = query.queries.filter((q: QueryOptions) => q.fn === 'onAggregates');
-        results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, this.sortedData);
+        results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, this.sortedData, isSort);
       }
     }
     count = results.length;

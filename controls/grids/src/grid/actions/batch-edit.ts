@@ -841,6 +841,7 @@ export class BatchEdit {
         };
         if (!isForceSave) {
             gObj.trigger(events.cellSave, args);
+            gObj.notify(events.batchForm, {formObj: this.form});
         }
         if (args.cancel) {
             return;

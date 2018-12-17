@@ -607,10 +607,11 @@ export class ResourceBase {
         let dateSlots: TdData[] = <TdData[]>extend([], renderDates, null, true);
         for (let dateSlot of dateSlots) {
             if (startHour) {
-                dateSlot.startHour = this.parent.globalize.parseDate(startHour, { skeleton: 'Hm' });
+                dateSlot.startHour =
+                    this.parent.globalize.parseDate(startHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
             }
             if (endHour) {
-                dateSlot.endHour = this.parent.globalize.parseDate(endHour, { skeleton: 'Hm' });
+                dateSlot.endHour = this.parent.globalize.parseDate(endHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
             }
             if (groupOrder) {
                 dateSlot.groupOrder = groupOrder;
@@ -644,7 +645,7 @@ export class ResourceBase {
                 }
             }
         }
-        this.lastResourceLevel = headerLevels.slice(-1)[0];
+        this.lastResourceLevel = headerLevels.slice(-1)[0] || [];
         if (!this.parent.activeViewOptions.group.byDate) {
             let index: number = 0;
             for (let lastLevelResource of this.lastResourceLevel) {
@@ -707,7 +708,7 @@ export class ResourceBase {
             for (let index: number = 0; index < this.resourceCollection.length; index++) {
                 let data: { [key: string]: Object } = (this.resourceCollection[index] as
                     { [key: string]: Object[] }).dataSource[0] as { [key: string]: Object };
-                setValues(index, this.resourceCollection[index].field, data[this.resourceCollection[index].idField]);
+                if (data) { setValues(index, this.resourceCollection[index].field, data[this.resourceCollection[index].idField]); }
             }
         }
     }

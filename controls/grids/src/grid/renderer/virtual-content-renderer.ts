@@ -1,4 +1,4 @@
-import { remove, createElement, closest, formatUnit } from '@syncfusion/ej2-base';
+import { remove, createElement, closest, formatUnit, Browser } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
 import { IGrid, IRenderer, NotifyArgs, VirtualInfo, IModelGenerator, InterSection } from '../base/interface';
@@ -72,6 +72,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         let viewInfo: VirtualInfo = this.currentInfo = this.getInfoFromView(scrollArgs.direction, info, scrollArgs.offset);
         if (this.prevInfo && ((info.axis === 'Y' && this.prevInfo.blockIndexes.toString() === viewInfo.blockIndexes.toString())
             || (info.axis === 'X' && this.prevInfo.columnIndexes.toString() === viewInfo.columnIndexes.toString()))) {
+            if (Browser.isIE) {
+                this.parent.hideSpinner();
+            }
             return;
         }
         this.parent.setColumnIndexesInView(this.parent.enableColumnVirtualization ? viewInfo.columnIndexes : []);
@@ -155,7 +158,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             width = this.getColumnOffset(cIndex[cIndex.length - 1]) - this.getColumnOffset(cIndex[0] - 1) + '';
             this.header.virtualEle.setWrapperWidth(width);
         }
-        this.virtualEle.setWrapperWidth(width, this.parent.enableColumnVirtualization);
+        this.virtualEle.setWrapperWidth(width, <boolean>Browser.isIE || Browser.info.name === 'edge');
 
         remove(target);
         target = this.parent.createElement('tbody');
@@ -240,7 +243,10 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     }
 
     private onEntered(): Function {
-        return (element: HTMLElement, current: SentinelType, direction: string, e: Offsets) => {
+        return (element: HTMLElement, current: SentinelType, direction: string, e: Offsets, isWheel: boolean, check: boolean) => {
+            if (Browser.isIE && !isWheel && check && !this.preventEvent) {
+                this.parent.showSpinner();
+            }
             let xAxis: boolean = current.axis === 'X'; let top: number = this.prevInfo.offsets ? this.prevInfo.offsets.top : null;
             let height: number = this.content.getBoundingClientRect().height;
             let x: number = this.getColumnOffset(xAxis ? this.vgenerator.getColumnIndexes()[0] - 1 : this.prevInfo.columnIndexes[0] - 1);

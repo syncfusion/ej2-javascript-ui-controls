@@ -64,6 +64,12 @@ export class EventBase {
         let eventData: Object[] = processed.filter((data: { [key: string]: Object }) => !data[this.parent.eventFields.isBlock]);
         this.parent.eventsProcessed = this.filterEvents(start, end, eventData);
         let blockData: Object[] = processed.filter((data: { [key: string]: Object }) => data[this.parent.eventFields.isBlock]);
+        blockData.forEach((eventObj: { [key: string]: Object }) => {
+            if (eventObj[fields.isAllDay]) {
+                eventObj[fields.startTime] = util.resetTime(eventObj[fields.startTime] as Date);
+                eventObj[fields.endTime] = util.addDays(util.resetTime(eventObj[fields.endTime] as Date), 1);
+            }
+        });
         this.parent.blockProcessed = this.filterEvents(start, end, blockData);
         return eventData;
     }
@@ -386,7 +392,7 @@ export class EventBase {
             if (this.parent.keyboardInteractionModule) {
                 let target: HTMLTableCellElement = ((!isNullOrUndefined(this.parent.activeCellsData) &&
                     this.parent.activeCellsData.element) || selectedCell[selectedCell.length - 1]) as HTMLTableCellElement;
-                this.parent.keyboardInteractionModule.selectCells(false, target);
+                this.parent.keyboardInteractionModule.selectCells(target instanceof Array, target);
             }
             return;
         }
@@ -475,7 +481,12 @@ export class EventBase {
         }
     }
 
-    public wireAppointmentEvents(element: HTMLElement, isAllDay: boolean = false, isReadOnly: boolean = false): void {
+    public wireAppointmentEvents(element: HTMLElement, isAllDay: boolean = false, event?: { [key: string]: Object }): void {
+        if (this.parent.calendarMode === 'Islamic' && (!isNullOrUndefined(event[this.parent.eventFields.recurrenceRule]) ||
+            !isNullOrUndefined(event[this.parent.eventFields.recurrenceID]))) {
+            return;
+        }
+        let isReadOnly: boolean = (!isNullOrUndefined(event)) ? event[this.parent.eventFields.isReadonly] as boolean : false;
         EventHandler.add(element, 'click', this.eventClick, this);
         if (!this.parent.isAdaptive && !this.parent.activeViewOptions.readonly && !isReadOnly) {
             EventHandler.add(element, 'dblclick', this.eventDoubleClick, this);

@@ -99,6 +99,7 @@ export interface FormValidatorModel {
      * Assigns the custom function to place the error message in the page.
      * @event
      */
-    customPlacement?: EmitType<Object>;
+    // tslint:disable
+    customPlacement?: EmitType<HTMLElement | any>;
 
 }

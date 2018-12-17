@@ -46,9 +46,13 @@ export class PivotCommon {
     /** @hidden */
     public currentTreeItemsPos: { [key: string]: number } = {};
     /** @hidden */
+    public searchTreeItems: { [key: string]: Object }[] = [];
+    /** @hidden */
     public editorLabelElement: HTMLLabelElement;
     /** @hidden */
     public isDataOverflow: boolean = false;
+    /** @hidden */
+    public isDateField: boolean = false;
 
 
     //Module Declarations

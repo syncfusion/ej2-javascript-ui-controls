@@ -33,19 +33,28 @@ export function findParentRecords(records: Object): Object {
 /**
  * @hidden
  */
-export function getExpandStatus (record: ITreeData, parents: ITreeData[]) : boolean {
+export function getExpandStatus (parent: TreeGrid, record: ITreeData, parents: ITreeData[]) : boolean {
   let parentRecord: ITreeData = isNullOrUndefined(record.parentItem) ? null :
        parents.filter((e: ITreeData) => {return e.uniqueID === record.parentItem.uniqueID; })[0];
   let childParent: ITreeData;
   if (parentRecord != null) {
-      if (parentRecord.expanded === false) {
+      if (parent.initialRender && !isNullOrUndefined(parentRecord[parent.expandStateMapping])
+        && !parentRecord[parent.expandStateMapping]) {
+          parentRecord.expanded = false;
+          return false;
+      } else if (parentRecord.expanded === false) {
           return false;
       } else if (parentRecord.parentItem) {
           childParent = parents.filter((e: ITreeData) => {return e.uniqueID === parentRecord.parentItem.uniqueID; })[0];
+          if (childParent && parent.initialRender && !isNullOrUndefined(childParent[parent.expandStateMapping])
+            && !childParent[parent.expandStateMapping]) {
+              childParent.expanded = false;
+              return false;
+          }
           if (childParent && childParent.expanded === false) {
               return false;
           } else if (childParent) {
-              return getExpandStatus(childParent, parents);
+              return getExpandStatus(parent, childParent, parents);
           }
           return true;
       } else {

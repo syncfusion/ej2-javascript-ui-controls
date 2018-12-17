@@ -300,8 +300,8 @@ export let blockData: Object[] = [
     }, {
         Id: 4,
         Subject: 'Server Refreshing',
-        StartTime: new Date(2017, 10, 4, 11, 0),
-        EndTime: new Date(2017, 10, 6, 10, 0),
+        StartTime: new Date(2017, 10, 4),
+        EndTime: new Date(2017, 10, 6),
         IsAllDay: true,
         IsBlock: true,
         HallId: 1,

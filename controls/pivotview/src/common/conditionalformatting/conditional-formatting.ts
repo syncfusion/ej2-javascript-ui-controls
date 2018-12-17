@@ -189,7 +189,7 @@ export class ConditionalFormatting {
         let value1: HTMLInputElement = createElement('input', {
             id: this.parentID + 'conditionvalue1' + i,
             attrs: { 'type': 'text', 'tabindex': '1', 'value': !isNaN(format.value1) ? format.value1.toString() : '0' },
-            styles: this.parent.isAdaptive ? style === '' ? 'width: 28%' : 'width: 100%' : style === '' ? 'width: 45px' : 'width: 120px',
+            styles: this.parent.isAdaptive ? style === '' ? 'width: 35%' : 'width: 100%' : style === '' ? 'width: 45px' : 'width: 120px',
             className: cls.INPUT + ' ' + cls.FORMAT_VALUE1
         }) as HTMLInputElement;
         td.appendChild(value1);
@@ -201,7 +201,7 @@ export class ConditionalFormatting {
         let value2: HTMLInputElement = createElement('input', {
             id: this.parentID + 'conditionvalue2' + i,
             attrs: { 'type': 'text', 'tabindex': '1', 'value': !isNaN(format.value2) ? format.value2.toString() : '0' },
-            styles: (this.parent.isAdaptive && style === '') ? 'width: 28%' : style === '' ? 'width: 45px' : style,
+            styles: (this.parent.isAdaptive && style === '') ? 'width: 35%' : style === '' ? 'width: 45px' : style,
             className: cls.INPUT + ' ' + cls.FORMAT_VALUE2
         }) as HTMLInputElement;
         td.appendChild(value2); tRow.appendChild(td);
@@ -262,7 +262,7 @@ export class ConditionalFormatting {
         this.fieldsDropDown[i] = new DropDownList({
             dataSource: fields, fields: { text: 'name' },
             value: value, width: this.parent.isAdaptive ? '100%' : '120px',
-            popupHeight: '200px',
+            popupHeight: '200px', popupWidth: 'auto',
             change: (args: DropDownArgs) => {
                 this.newFormat[i].measure = args.value.toString() === this.parent.localeObj.getConstant('AllValues') ?
                     undefined : args.value.toString();
@@ -283,7 +283,7 @@ export class ConditionalFormatting {
         this.conditionsDropDown[i] = new DropDownList({
             dataSource: conditions, fields: { value: 'value', text: 'name' },
             value: value, width: this.parent.isAdaptive ? '100%' : '120px',
-            popupHeight: '200px', popupWidth: '200px',
+            popupHeight: '200px', popupWidth: 'auto',
             change: (args: DropDownArgs) => {
                 this.newFormat[i].conditions = args.value as Condition;
                 if (args.value === 'Between' || args.value === 'NotBetween') {
@@ -292,9 +292,9 @@ export class ConditionalFormatting {
                         this.parent.isAdaptive ? '10%' : '10px';
                     (document.querySelector('#' + this.parentID + 'conditionvalue2' + i) as HTMLElement).style.display = 'inline-block';
                     (document.querySelector('#' + this.parentID + 'conditionvalue2' + i) as HTMLElement).style.width =
-                        this.parent.isAdaptive ? '28%' : '45px';
+                        this.parent.isAdaptive ? '35%' : '45px';
                     (document.querySelector('#' + this.parentID + 'conditionvalue1' + i) as HTMLElement).style.width =
-                        this.parent.isAdaptive ? '28%' : '45px';
+                        this.parent.isAdaptive ? '35%' : '45px';
                 } else {
                     (document.querySelector('#' + this.parentID + 'valuespan' + i) as HTMLElement).style.display = 'none';
                     (document.querySelector('#' + this.parentID + 'conditionvalue2' + i) as HTMLElement).style.display = 'none';

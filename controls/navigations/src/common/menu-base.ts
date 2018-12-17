@@ -799,7 +799,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 popupWrapper.style.display = 'block'; popupWrapper.style.maxHeight = popupWrapper.getBoundingClientRect().height + 'px';
                 this.addScrolling(popupWrapper, ul, 'vscroll', popupWrapper.offsetHeight, ul.offsetHeight);
                 this.checkScrollOffset(e);
-                let collide: string[]; let offset: OffsetPosition;
+                let collide: string[];
                 if (!left && !top) {
                     popupObj.refreshPosition(li as HTMLElement, true);
                     left = parseInt(popupWrapper.style.left, 10); top = parseInt(popupWrapper.style.top, 10);
@@ -835,11 +835,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             top = eventArgs.top; left = eventArgs.left;
         }
         if (eventArgs.cancel) {
+            if (this.isMenu) { popupObj.destroy(); detach(popupWrapper); }
             this.navIdx.pop();
         } else {
             if (this.isMenu) {
-                this.wireKeyboardEvent(popupWrapper);
-                rippleEffect(popupWrapper, { selector: '.' + ITEM });
+                this.wireKeyboardEvent(popupWrapper); rippleEffect(popupWrapper, { selector: '.' + ITEM });
                 popupWrapper.style.left = left + 'px'; popupWrapper.style.top = top + 'px';
                 let animationOptions: AnimationModel = this.animationSettings.effect !== 'None' ? {
                     name: this.animationSettings.effect, duration: this.animationSettings.duration,

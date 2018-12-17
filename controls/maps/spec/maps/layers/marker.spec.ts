@@ -429,11 +429,11 @@ describe('Map marker properties tesing', () => {
                 //     expect(transform.indexOf('scale(0.44') > -1).toBe(true);
                 //     expect(transform.indexOf(', 0.33') > -1).toBe(true);
             };
-            map.addMarker(0, {
+            map.addMarker(0, [{
                 animationDuration: 1, visible: true, fill: 'blueviolet', dataSource: [
                     { Name: 'USA', latitude: 38.8833, longitude: -77.0167 }
                 ]
-            });
+            }]);
         });
     });
 

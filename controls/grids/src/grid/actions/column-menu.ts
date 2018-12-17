@@ -52,13 +52,13 @@ export class ColumnMenu implements IAction {
         this.addEventListener();
     }
 
-    public wireEvents(): void {
+    private wireEvents(): void {
         this.getColumnMenuHandlers().forEach((ele: HTMLElement) => {
             EventHandler.add(ele, 'mousedown', this.columnMenuHandlerDown, this);
         });
     }
 
-    public unwireEvents(): void {
+    private unwireEvents(): void {
         this.getColumnMenuHandlers().forEach((ele: HTMLElement) => {
             EventHandler.remove(ele, 'mousedown', this.columnMenuHandlerDown);
         });
@@ -113,7 +113,7 @@ export class ColumnMenu implements IAction {
         e.preventDefault();
     }
 
-    public columnMenuHandlerDown(e: Event): void {
+    private columnMenuHandlerDown(e: Event): void {
         this.isOpen = !(this.element.style.display === 'none' || this.element.style.display === '');
     }
 
@@ -410,7 +410,9 @@ export class ColumnMenu implements IAction {
         return id.indexOf('_colmenu_') > 0 &&
             id.replace(this.gridID + '_colmenu_' + (append ? append : ''), '');
     }
-
+    /**
+     * @hidden
+     */
     public getColumnMenu(): HTMLElement {
         return this.element;
     }

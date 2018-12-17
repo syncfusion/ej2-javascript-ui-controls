@@ -63,6 +63,7 @@ const CLS_TBARIGNORE: Str = 'e-ignore';
 const CLS_POPPRI: Str = 'e-popup-alone';
 const CLS_HIDDEN: string = 'e-hidden';
 const CLS_MULTIROW: string = 'e-toolbar-multirow';
+const CLS_MULTIROWPOS: string = 'e-multirow-pos';
 const CLS_MULTIROW_SEPARATOR: string = 'e-multirow-separator';
 const CLS_EXTENDABLE_ITEM: string = 'e-extended-item';
 const CLS_EXTENDABLE_SEPARATOR: string = 'e-extended-separator';
@@ -868,6 +869,10 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                     break;
                 case 'MultiRow':
                     this.add(innerItems, CLS_MULTIROW);
+                    if (this.checkOverflow(ele, innerItems) && this.tbarAlign) {
+                        this.removePositioning();
+                        this.add(innerItems, CLS_MULTIROWPOS);
+                    }
                     if (ele.style.overflow === 'hidden') {
                         ele.style.overflow = '';
                     }
@@ -878,6 +883,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 case 'Extended':
                     this.add(this.element, CLS_EXTEANDABLE_TOOLBAR);
                     if (this.checkOverflow(ele, innerItems) || priorityCheck) {
+                        if (this.tbarAlign) {
+                            this.removePositioning();
+                        }
                         this.createPopupEle(ele, [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, ele)));
                         this.element.querySelector('.' + CLS_TBARNAV).setAttribute('tabIndex', '0');
                     }
@@ -1808,6 +1816,11 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         let checkOverflow: boolean = this.checkOverflow(ele, ele.getElementsByClassName(CLS_ITEMS)[0] as HTEle);
         if (!checkOverflow) {
             this.destroyScroll();
+            let multirowele: HTEle = ele.querySelector('.' + CLS_ITEMS);
+            if (!isNOU(multirowele)) {
+            this.remove(multirowele, CLS_MULTIROWPOS);
+            this.add(multirowele, CLS_TBARPOS);
+            }
         }
         if (checkOverflow && this.scrollModule && (this.offsetWid === ele.offsetWidth)) { return; }
         if (this.offsetWid > ele.offsetWidth || checkOverflow) {

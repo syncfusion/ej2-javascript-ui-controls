@@ -111,7 +111,7 @@ describe('Chart', () => {
 
         it('Technical Indicators with valid data source', (done: Function) => {
             loaded = (args: Object): void => {
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SMA');
                 expect(signalLine.getAttribute('d')).not.toBeNull();
                 done();
             };

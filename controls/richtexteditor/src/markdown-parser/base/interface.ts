@@ -119,3 +119,8 @@ export interface IMDKeyboardEvent {
      */
     event: KeyboardEventArgs;
 }
+
+
+export interface ITextArea extends HTMLTextAreaElement {
+    selectionDirection: string;
+}

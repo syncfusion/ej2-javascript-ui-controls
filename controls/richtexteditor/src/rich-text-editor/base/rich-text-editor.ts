@@ -1,7 +1,7 @@
 import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, select } from '@syncfusion/ej2-base';
 import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';
 import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';
-import { isNullOrUndefined as isNOU, compile, append, MouseEventArgs, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';
 import { getScrollableParent } from '@syncfusion/ej2-popups';
 import { RichTextEditorModel } from './rich-text-editor-model';
 import * as events from '../base/constant';
@@ -64,6 +64,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private placeHolderWrapper: HTMLElement;
     private scrollParentElements: HTMLElement[];
     private cloneValue: string;
+    private timeInterval: number;
     /**
      * @hidden
      */
@@ -146,13 +147,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      *      2. MultiRow: The toolbar overflowing items wrapped in the next row.
      * * items: Specifies the array of items aligned horizontally in the toolbar.
      * > | and - can insert a vertical and horizontal separator lines in the toolbar.
+     * * itemConfigs: Modify the default toolbar item configuration like icon class.
      * @default
      * {
      *  enable: true,
      *  enableFloating: true,
      *  type: ToolbarType.Expand,
      *  items: ['Bold', 'Italic', 'Underline', '|', 'Formats', 'Alignments', 'OrderedList',
-     *  'UnorderedList', '|', 'CreateLink', 'Image', '|', 'SourceCode', 'Undo', 'Redo']
+     *  'UnorderedList', '|', 'CreateLink', 'Image', '|', 'SourceCode', 'Undo', 'Redo'],
+     *  itemConfigs: {}
      * }
      */
     @Complex<ToolbarSettingsModel>({}, ToolbarSettings)
@@ -482,6 +485,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public valueTemplate: string;
 
     /**
+     * Specifies the saveInterval in milliseconds for autosave the value.
+     * The change event will be triggered if the content was changed from the last saved interval.
+     * @default 10000
+     */
+    @Property(10000)
+    public saveInterval: number;
+
+    /**
      * Triggers before command execution using toolbar items or executeCommand method. 
      * If you cancel this event, the command cannot be executed. 
      * Set the cancel argument to true to cancel the command execution.
@@ -660,13 +671,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.setProperties({ htmlAttributes: htmlAttr }, true);
         if (this.element.tagName === 'TEXTAREA') {
             let rteOutterWrapper: HTMLElement = this.createElement('div', {
-                className: 'e-control e-richtexteditor', id: this.getID()
+                className: 'e-control e-richtexteditor'
             }) as HTMLElement;
             rteOutterWrapper.innerHTML = (this.element as HTMLTextAreaElement).value;
             this.element.parentElement.insertBefore(rteOutterWrapper, this.element);
             this.valueContainer = this.element as HTMLTextAreaElement;
             this.valueContainer.classList.remove('e-control', 'e-richtexteditor');
-            this.valueContainer.id = this.getID() + '-value';
             this.element = rteOutterWrapper;
         } else {
             this.valueContainer = this.createElement('textarea', {
@@ -822,8 +832,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private keyUp(e: KeyboardEvent): void {
         this.notify(events.keyUp, { member: 'keyup', args: e });
         let allowedKeys: boolean = e.which === 32 || e.which === 13 || e.which === 8 || e.which === 46;
-        if (((e.key !== 'shift' && !e.ctrlKey) && e.key.length === 1 || allowedKeys) || (this.editorMode === 'Markdown'
-            && ((e.key !== 'shift' && !e.ctrlKey) && e.key.length === 1 || allowedKeys)) && !this.inlineMode.enable) {
+        if (((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys) || (this.editorMode === 'Markdown'
+            && ((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys)) && !this.inlineMode.enable) {
             this.formatter.onKeyHandler(this, e);
         }
         if (this.inputElement && this.inputElement.textContent.length !== 0) {
@@ -846,6 +856,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             (this.editorMode === 'Markdown' && (this.inputElement as HTMLTextAreaElement).value.length !== 0))) {
             this.notify(events.toolbarRefresh, { args: e });
         }
+        this.notify(events.editAreaClick, { member: 'editAreaClick', args: e });
     }
 
     /** 
@@ -1399,10 +1410,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.toolbarSettings.type === ToolbarType.Expand && isExpand && target !== 'preview') {
             heightValue = (this.height === 'auto') ? 'auto' : rteHeight - (tbHeight + expandPopHeight) + 'px';
             topValue = (!this.toolbarSettings.enableFloating) ? expandPopHeight : 0;
-            heightValue = (this.element.classList.contains('e-rte-full-screen')) ? '100%' : heightValue;
         } else {
-            if (this.height === 'auto') {
-                heightValue = (this.element.classList.contains('e-rte-full-screen')) ? '100%' : 'auto';
+            if (this.height === 'auto' && !(this.element.classList.contains('e-rte-full-screen'))) {
+                heightValue = 'auto';
             } else {
                 heightValue = rteHeight - tbHeight + 'px';
             }
@@ -1465,7 +1475,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     public getID(): string {
-        return this.element.id;
+        return (this.originalElement.tagName === 'TEXTAREA' ? this.valueContainer.id : this.element.id);
     }
 
     private mouseDownHandler(e: MouseEvent): void {
@@ -1507,10 +1517,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.notify(events.scroll, { args: e });
     }
 
-    private editAreaClickHandler(e: MouseEventArgs): void {
-        this.notify(events.editAreaClick, { member: 'editAreaClick', args: e });
-    }
-
     private focusHandler(e: FocusEvent): void {
         if (!this.isRTE || this.isFocusOut) {
             this.isRTE = this.isFocusOut ? false : true;
@@ -1527,8 +1533,26 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
             this.preventDefaultResize(e);
             this.trigger('focus', { event: e, isInteracted: Object.keys(e).length === 0 ? false : true });
+            if (!isNOU(this.saveInterval) && this.saveInterval > 0) {
+                this.timeInterval = setInterval(this.updateIntervalValue.bind(this), this.saveInterval);
+            }
             EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
         }
+    }
+
+    private setPanelValue(): void {
+        if (this.editorMode === 'HTML') {
+            this.value = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.inputElement.innerHTML;
+        } else {
+            this.value = (this.inputElement as HTMLTextAreaElement).value === '' ? null :
+                (this.inputElement as HTMLTextAreaElement).value;
+        }
+        this.valueContainer.value = this.value;
+    }
+
+    private updateIntervalValue(): void {
+        this.setPanelValue();
+        this.invokeChangeEvent();
     }
 
     private onDocumentClick(e: MouseEvent): void {
@@ -1556,13 +1580,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.isBlur && isNOU(trg)) {
             removeClass([this.element], [classes.CLS_FOCUS]);
             this.notify(events.focusChange, {});
-            if (this.editorMode === 'HTML') {
-                this.value = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.inputElement.innerHTML;
-            } else {
-                this.value = (this.inputElement as HTMLTextAreaElement).value === '' ? null :
-                    (this.inputElement as HTMLTextAreaElement).value;
-            }
-            this.valueContainer.value = this.value;
+            this.setPanelValue();
             this.notify(events.toolbarRefresh, { args: e, documentNode: document });
             this.invokeChangeEvent();
             this.isFocusOut = true;
@@ -1570,6 +1588,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             dispatchEvent(this.valueContainer, 'focusout');
             this.defaultResize(e);
             this.trigger('blur', { event: e, isInteracted: Object.keys(e).length === 0 ? false : true });
+            if (!isNOU(this.timeInterval)) {
+                clearInterval(this.timeInterval);
+            }
             EventHandler.remove(document, 'mousedown', this.onDocumentClick);
         } else {
             this.isRTE = true;
@@ -1646,15 +1667,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         EventHandler.add(this.inputElement, 'keyup', this.keyUp, this);
         EventHandler.add(this.inputElement, 'paste', this.onPaste, this);
-        EventHandler.add(this.inputElement, 'mouseup', this.mouseUp, this);
-        EventHandler.add(this.inputElement, 'mousedown', this.mouseDownHandler, this);
-        EventHandler.add(this.inputElement, 'click', this.editAreaClickHandler, this);
+        EventHandler.add(this.inputElement, Browser.touchEndEvent, debounce(this.mouseUp, 30), this);
+        EventHandler.add(this.inputElement, Browser.touchStartEvent, this.mouseDownHandler, this);
         this.formatter.editorManager.observer.on(CONSTANT.KEY_DOWN_HANDLER, this.editorKeyDown, this);
         window.addEventListener('resize', this.resizeHandler.bind(this), true);
         if (this.iframeSettings.enable) {
             EventHandler.add(this.inputElement, 'focusin', this.focusHandler, this);
             EventHandler.add(this.inputElement, 'focusout', this.blurHandler, this);
-            EventHandler.add(this.inputElement.ownerDocument, 'mousedown', this.onIframeMouseDown, this);
+            EventHandler.add(this.inputElement.ownerDocument, Browser.touchStartEvent, this.onIframeMouseDown, this);
         }
         this.wireScrollElementsEvents();
     }
@@ -1699,9 +1719,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         EventHandler.remove(this.inputElement, 'keyup', this.keyUp);
         EventHandler.remove(this.inputElement, 'paste', this.onPaste);
-        EventHandler.remove(this.inputElement, 'mouseup', this.mouseUp);
-        EventHandler.remove(this.inputElement, 'mousedown', this.mouseDownHandler);
-        EventHandler.remove(this.inputElement, 'click', this.editAreaClickHandler);
+        EventHandler.remove(this.inputElement, Browser.touchEndEvent, debounce(this.mouseUp, 30));
+        EventHandler.remove(this.inputElement, Browser.touchStartEvent, this.mouseDownHandler);
         if (this.formatter) {
             this.formatter.editorManager.observer.off(CONSTANT.KEY_DOWN_HANDLER, this.editorKeyDown);
         }
@@ -1709,7 +1728,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.iframeSettings.enable) {
             EventHandler.remove(this.inputElement, 'focusin', this.focusHandler);
             EventHandler.remove(this.inputElement, 'focusout', this.blurHandler);
-            EventHandler.remove(this.inputElement.ownerDocument, 'mousedown', this.onIframeMouseDown);
+            EventHandler.remove(this.inputElement.ownerDocument, Browser.touchStartEvent, this.onIframeMouseDown);
         }
         this.unWireScrollElementsEvents();
     }

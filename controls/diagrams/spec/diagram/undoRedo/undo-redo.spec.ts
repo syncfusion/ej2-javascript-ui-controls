@@ -1619,11 +1619,11 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagram6');
             let objects: (NodeModel | ConnectorModel)[] = [];
             objects.push(diagram.nodes[0], diagram.nodes[1], diagram.connectors[0]);
-            diagram.historyList.startGroupAction();
+            diagram.historyManager.startGroupAction();
             diagram.distribute('Top', objects);
             diagram.distribute('Bottom', objects);
             diagram.distribute('BottomToTop', objects);
-            diagram.historyList.endGroupAction();
+            diagram.historyManager.endGroupAction();
 
         });
 
@@ -1710,12 +1710,12 @@ describe('Diagram Control', () => {
             let node5: NodeModel = diagram.nodes[0];
             node5['customName'] = 'customNode';
             entry = { undoObject: node5 };
-            diagram.historyList.push(entry);
-            diagram.historyList.undo = function (args: HistoryEntry) {
+            diagram.historyManager.push(entry);
+            diagram.historyManager.undo = function (args: HistoryEntry) {
                 args.redoObject = cloneObject(args.undoObject) as NodeModel;
                 args.undoObject['customName'] = 'customNodeChange';
             }
-            diagram.historyList.redo = function (args: HistoryEntry) {
+            diagram.historyManager.redo = function (args: HistoryEntry) {
                 let current: NodeModel = cloneObject(args.undoObject) as NodeModel;
                 args.undoObject['customName'] = args.redoObject['customName'];
                 args.redoObject = current;
@@ -1870,7 +1870,7 @@ describe('Diagram Control', () => {
 
             diagram = new Diagram({ width: '600px', height: '530px', nodes: [node1, node], snapSettings: { constraints: SnapConstraints.ShowLines } });
             diagram.appendTo('#diagram');
-            diagram.historyList.canLog = function (entry: HistoryEntry) {
+            diagram.historyManager.canLog = function (entry: HistoryEntry) {
                 entry.cancel = true;
                 return entry;
             }
@@ -1885,17 +1885,17 @@ describe('Diagram Control', () => {
             diagram.redo();
             let connector: ConnectorModel = { id: 'connector1', sourcePoint: { x: 200, y: 200 }, targetPoint: { x: 300, y: 300 } };
             diagram.add(connector);
-            expect(diagram.historyList.currentEntry === null).toBe(true);
+            expect(diagram.historyManager.currentEntry === null).toBe(true);
             done();
         });
         it('Checking canLog function in undo redo', (done: Function) => {
-            diagram.historyList.canLog = function (entry: HistoryEntry) {
+            diagram.historyManager.canLog = function (entry: HistoryEntry) {
                 entry.cancel = false;
                 return entry;
             }
             let connector: ConnectorModel = { id: 'connector1', sourcePoint: { x: 200, y: 200 }, targetPoint: { x: 300, y: 300 } };
             diagram.add(connector);
-            expect(diagram.historyList.currentEntry !== null).toBe(true);
+            expect(diagram.historyManager.currentEntry !== null).toBe(true);
             done();
         });
     });
@@ -2036,11 +2036,11 @@ describe('Diagram Control', () => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.dragAndDropEvent(diagramCanvas, 150, 150, 100, 100);
             mouseEvents.dragAndDropEvent(diagramCanvas, 350, 150, 300, 100);
-            expect(diagram.historyList.undoStack.length).toBe(2);
-            expect(diagram.historyList.redoStack.length).toBe(0);
+            expect(diagram.historyManager.undoStack.length).toBe(2);
+            expect(diagram.historyManager.redoStack.length).toBe(0);
             diagram.undo();
-            expect(diagram.historyList.undoStack.length).toBe(1);
-            expect(diagram.historyList.redoStack.length).toBe(1);
+            expect(diagram.historyManager.undoStack.length).toBe(1);
+            expect(diagram.historyManager.redoStack.length).toBe(1);
             done();
         });
     });
@@ -2138,7 +2138,7 @@ describe('Diagram Control', () => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.mouseMoveEvent(diagramCanvas, 100 + diagram.element.offsetLeft, 150 + diagram.element.offsetTop);
             mouseEvents.mouseMoveEvent(diagramCanvas, 200 + diagram.element.offsetLeft, 150 + diagram.element.offsetTop)
-            expect(diagram.historyList.currentEntry == null).toBe(true);
+            expect(diagram.historyManager.currentEntry == null).toBe(true);
             done();
         });
     });
@@ -2450,7 +2450,7 @@ describe('Diagram Control', () => {
             diagram.undo();
             expect(document.getElementById('node2_content').getAttribute('fill') == 'red' && document.getElementById('node2_content').getAttribute('stroke') == 'red').toBe(true);
             diagram.undo();
-            expect(document.getElementById('node2_content').getAttribute('fill') == 'transparent' && document.getElementById('node2_content').getAttribute('stroke') == 'black').toBe(true);
+            expect(document.getElementById('node2_content').getAttribute('fill') == 'white' && document.getElementById('node2_content').getAttribute('stroke') == 'black').toBe(true);
             diagram.undo();
             expect(diagram.nodes.length == 0).toBe(true);
             diagram.redo();

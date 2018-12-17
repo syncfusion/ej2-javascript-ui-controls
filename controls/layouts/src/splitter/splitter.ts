@@ -120,6 +120,8 @@ export class Splitter extends Component<HTMLDivElement> {
     private nextPaneIndex: number;
     // tslint:disable-next-line
     private nextPaneHeightWidth: any;
+    private validDataAttributes: string [] = ['data-size', 'data-min', 'data-max', 'data-collapsible', 'data-resizable'];
+    private validElementAttributes: string [] = ['data-orientation', 'data-width', 'data-height'];
 
     /**
      * Specifies the height of the Splitter component that accepts both string and number values.
@@ -321,6 +323,7 @@ export class Splitter extends Component<HTMLDivElement> {
      * @private
      */
     public render(): void {
+        this.checkDataAttributes();
         this.setCssClass(this.cssClass);
         this.isEnabled(this.enabled);
         this.setDimension(this.getHeight(this.element), this.getWidth(this.element));
@@ -328,6 +331,54 @@ export class Splitter extends Component<HTMLDivElement> {
         this.addSeparator(this.element);
         this.getPanesDimensions();
         this.setRTL(this.enableRtl);
+    }
+
+
+    private checkDataAttributes() : void {
+        let api: string;
+        let value: string | boolean;
+        // Element values
+        for (let dataIndex: number = 0; dataIndex < this.validElementAttributes.length; dataIndex++) {
+            value = this.element.getAttribute(this.validElementAttributes[dataIndex]);
+            if (!isNullOrUndefined(value)) {
+                api = this.removeDataPrefix(this.validElementAttributes[dataIndex]);
+                // tslint:disable-next-line
+                (this as any)[api] = value;
+            }
+        }
+        // Pane values
+        for (let paneIndex : number = 0; paneIndex < this.element.children.length; paneIndex++) {
+            for (let dataAttr : number = 0; dataAttr < this.validDataAttributes.length; dataAttr++) {
+                value = this.element.children[paneIndex].getAttribute(this.validDataAttributes[dataAttr]);
+                if (!isNullOrUndefined(value)) {
+                    api = this.removeDataPrefix(this.validDataAttributes[dataAttr]);
+                    value = (api === 'collapsible' || api === 'resizable') ? (value === 'true') : value;
+                    if (isNullOrUndefined(this.paneSettings[paneIndex])) {
+                        this.paneSettings[paneIndex] = {
+                            size: '',
+                            min: null,
+                            max: null,
+                            content: '',
+                            resizable: true,
+                         };
+                    }
+                    // tslint:disable-next-line
+                    let paneAPI: PanePropertiesModel = (this.paneSettings[paneIndex] as any)[api];
+                    if (api === 'resizable' && this.paneSettings[paneIndex].resizable) {
+                        // tslint:disable-next-line
+                        (this.paneSettings[paneIndex] as any)[api] = value;
+                    }
+                    if (isNullOrUndefined(paneAPI) || paneAPI === '') {
+                        // tslint:disable-next-line
+                        (this.paneSettings[paneIndex] as any)[api] = value;
+                    }
+                }
+            }
+        }
+    }
+
+    private removeDataPrefix(attribute: string): string {
+        return attribute.slice(attribute.lastIndexOf('-') + 1);
     }
 
     private setRTL(rtl: boolean): void {
@@ -404,12 +455,12 @@ export class Splitter extends Component<HTMLDivElement> {
     }
 
     private getPrevPane(currentBar: Element, order: number): HTMLElement {
-        let elementIndex: number = (this.enableRtl) ? ((order - 1) / 2) + 1 : (order - 1) / (2);
+        let elementIndex: number = (this.enableRtl && this.orientation === 'Horizontal') ? ((order - 1) / 2) + 1 : (order - 1) / (2);
         return currentBar.parentElement.children[elementIndex] as HTMLElement;
     }
 
     private getNextPane(currentBar: Element, order: number): HTMLElement {
-        let elementIndex: number = (this.enableRtl) ? (order - 1) / (2) : ((order - 1) / 2) + 1;
+        let elementIndex: number = (this.enableRtl && this.orientation === 'Horizontal') ? (order - 1) / (2) : ((order - 1) / 2) + 1;
         return currentBar.parentElement.children[elementIndex] as HTMLElement;
     }
 
@@ -597,8 +648,8 @@ export class Splitter extends Component<HTMLDivElement> {
             if (pane.style.flexBasis !== '') {
                 previous = this.convertPixelToPercentage(this.convertPixelToNumber(pane.style.flexBasis));
             } else {
-                let offset: number = (this.orientation === 'Horizontal') ? pane.offsetWidth :
-                pane.offsetHeight;
+                let offset: number = (this.orientation === 'Horizontal') ? (pane.offsetWidth + this.currentSeparator.offsetWidth) :
+                (pane.offsetHeight + this.currentSeparator.offsetHeight);
                 previous = this.convertPixelToPercentage(offset);
             }
         }
@@ -675,7 +726,7 @@ export class Splitter extends Component<HTMLDivElement> {
         if (this.paneSettings.length > 0 && !isNullOrUndefined(this.paneSettings[paneIndex]) &&
             !isNullOrUndefined(paneValue)) {
             if (paneValue.indexOf('%') > 0) {
-                paneValue = this.convertPercentageToPixel(paneValue, target).toString();
+                paneValue = this.convertPercentageToPixel(paneValue).toString();
             }
             return this.convertPixelToNumber(paneValue);
         } else {
@@ -801,9 +852,8 @@ export class Splitter extends Component<HTMLDivElement> {
         this.nextPaneCurrentWidth = this.nextPaneHeightWidth - separatorNewPosition;
         this.validateMinMaxValues();
         if (this.nextPaneCurrentWidth < 0) { this.nextPaneCurrentWidth = 0; }
+        /* istanbul ignore next */
         if (this.prevPaneCurrentWidth < 0) { this.prevPaneCurrentWidth = 0; }
-        this.nextPaneCurrentWidth = parseInt(this.nextPaneCurrentWidth, 10);
-        this.prevPaneCurrentWidth = parseInt(this.prevPaneCurrentWidth, 10);
         if ((this.nextPaneCurrentWidth + this.prevPaneCurrentWidth) > this.totalWidth) {
             if (this.nextPaneCurrentWidth < this.prevPaneCurrentWidth) {
                 this.prevPaneCurrentWidth = this.prevPaneCurrentWidth - ((this.nextPaneCurrentWidth + this.prevPaneCurrentWidth)
@@ -813,6 +863,7 @@ export class Splitter extends Component<HTMLDivElement> {
                     - this.totalWidth);
             }
         }
+        /* istanbul ignore next */
         if ((this.nextPaneCurrentWidth + this.prevPaneCurrentWidth) < this.totalWidth) {
             let difference: number = this.totalWidth - ((this.nextPaneCurrentWidth + this.prevPaneCurrentWidth));
             this.nextPaneCurrentWidth = this.nextPaneCurrentWidth + difference;
@@ -833,7 +884,7 @@ export class Splitter extends Component<HTMLDivElement> {
         }
         if (!isNullOrUndefined(paneMinRange)) {
             if ((<string>paneMinRange).indexOf('%') > 0) {
-                paneMinRange = this.convertPercentageToPixel((<string>paneMinRange), pane).toString();
+                paneMinRange = this.convertPercentageToPixel((<string>paneMinRange)).toString();
             }
             paneMinDimensions = this.convertPixelToNumber((<string>paneMinRange));
             if (paneCurrentWidth < paneMinDimensions) {
@@ -856,7 +907,7 @@ export class Splitter extends Component<HTMLDivElement> {
         }
         if (!isNullOrUndefined(paneMaxRange)) {
             if ((<string>paneMaxRange).indexOf('%') > 0) {
-                paneMaxRange = this.convertPercentageToPixel(<string>paneMaxRange, pane).toString();
+                paneMaxRange = this.convertPercentageToPixel(<string>paneMaxRange).toString();
             }
             paneMaxDimensions = this.convertPixelToNumber(<string>paneMaxRange);
             if (paneCurrentWidth > paneMaxDimensions) {
@@ -969,7 +1020,7 @@ export class Splitter extends Component<HTMLDivElement> {
         this.trigger('resizeStop', eventArgs);
     }
 
-    private panesDimension(index: number, child: HTMLCollection): void {
+    private panesDimension(index: number, child: HTMLElement[]): void {
         let childCount: number = child.length;
         let size: string | number;
         parseInt(<string>this.getHeight(this.element), 10);
@@ -1015,7 +1066,7 @@ export class Splitter extends Component<HTMLDivElement> {
             }
         }
         childCount = target.children.length;
-        let child: HTMLCollection = target.children;
+        let child: HTMLElement[] = [].slice.call(target.children);
         this.element.setAttribute('aria-orientation', this.orientation);
         this.element.setAttribute('role', 'splitter');
         this.sizeFlag = false;
@@ -1047,6 +1098,76 @@ export class Splitter extends Component<HTMLDivElement> {
         detach(this.element);
         this.element = this.wrapper as HTMLDivElement;
         this.wrapperParent.appendChild(<HTMLElement>this.wrapper);
+    }
+
+    private addPaneClass(pane: HTMLElement): HTMLElement {
+        if (this.orientation === 'Horizontal') {
+            addClass([pane], [PANE, SPLIT_H_PANE, SCROLL_PANE]);
+        } else {
+            addClass([pane], [PANE, SPLIT_V_PANE, SCROLL_PANE]);
+        }
+        return pane;
+    }
+
+    private removePaneOrders(paneClass: string) : void {
+        let panes: NodeListOf<HTMLElement> = document.querySelectorAll('.' + paneClass) as NodeListOf<HTMLElement>;
+        for (let i: number = 0; i < panes.length; i++) {
+            panes[i].style.removeProperty('order');
+        }
+    }
+
+    private setPaneOrder() : void {
+        for (let i : number = 0; i < this.allPanes.length; i++) {
+            this.panesDimension(i, this.allPanes);
+        }
+    }
+
+    public removeSeparator() : void {
+        for (let i: number = 0; i < this.allBars.length; i ++) {
+            detach(this.allBars[i]);
+        }
+        this.allBars = [];
+    }
+
+    private updatePanes() : void {
+        this.setPaneOrder();
+        this.removeSeparator();
+        this.addSeparator(this.element);
+    }
+
+    public addPane(paneProperties: PanePropertiesModel, index: number) : void {
+        let newPane : HTMLElement = this.createElement('div');
+        newPane = this.addPaneClass(newPane);
+        index = (index > this.allPanes.length + 1) ? this.allPanes.length : index;
+        let paneDetails: PanePropertiesModel = {
+            size: isNullOrUndefined(paneProperties.size) ? '' : paneProperties.size,
+            min: isNullOrUndefined(paneProperties.min) ? null : paneProperties.min,
+            max: isNullOrUndefined(paneProperties.max) ? null : paneProperties.max,
+            content: isNullOrUndefined(paneProperties.content) ? '' : paneProperties.content,
+            resizable: isNullOrUndefined(paneProperties.resizable) ? true : paneProperties.resizable
+        };
+        this.paneSettings.splice(index , 0, paneDetails);
+        if (this.orientation === 'Horizontal') {
+            this.element.insertBefore(newPane, this.element.querySelectorAll('.' + SPLIT_H_PANE)[index]);
+            this.removePaneOrders(SPLIT_H_PANE);
+        } else {
+            this.element.insertBefore(newPane, this.element.querySelectorAll('.' + SPLIT_V_PANE)[index]);
+            this.removePaneOrders(SPLIT_V_PANE);
+        }
+        this.allPanes.splice(index, 0, newPane);
+        this.updatePanes();
+        this.setTemplate(this.paneSettings[index].content, newPane);
+        this.allPanes[this.allPanes.length - 1].classList.remove(STATIC_PANE);
+    }
+
+    public removePane(index: number) : void {
+        index = (index > this.allPanes.length + 1) ? this.allPanes.length : index;
+        let elementClass: string = (this.orientation === 'Horizontal') ? SPLIT_H_PANE : SPLIT_V_PANE;
+        detach(this.element.querySelectorAll('.' + elementClass)[index]);
+        this.allPanes.splice(index, 1);
+        this.removePaneOrders(elementClass);
+        this.updatePanes();
+        this.allPanes[this.allPanes.length - 1].classList.remove(STATIC_PANE);
     }
 }
 

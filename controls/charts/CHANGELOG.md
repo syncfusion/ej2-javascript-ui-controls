@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 16.4.42 (2018-12-10)
+
+### Chart
+
+#### Breaking Changes
+
+- Export functionality has been moved into separate module. To export the chart, inject the `Export` module.
+
 ## 16.4.40-beta (2018-12-10)
 
 ### Chart
@@ -37,12 +45,6 @@ Graphics (SVG).
 - **Period Selector** - Supports period selector to select data based on predefined periods.
 - **Tooltip** - Supports tooltip for the selected data.
 - **Export** - Supports to print the chart directly from the browser and exports in both JPEG and PNG format.
-
-### Chart
-
-#### Bug Fixes
-
-- Default tooltip format for box and whisker is corrected.
 
 ## 16.3.33 (2018-11-20)
 

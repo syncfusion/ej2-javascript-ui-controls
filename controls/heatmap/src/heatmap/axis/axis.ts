@@ -326,7 +326,7 @@ export class Axis extends ChildProperty<Axis> {
             let interval: number = (axis.valueType === 'DateTime' && axis.showLabelOn !== 'None') ?
                 heatmap.initialClipRect.width / axis.axisLabelSize : heatmap.initialClipRect.width / axis.axisLabels.length;
             let startX: number = heatmap.initialClipRect.x + ((!axis.isInversed) ? 0 : heatmap.initialClipRect.width);
-            let previousEnd: number;
+            let previousEnd: number; let previousStart: number;
             for (let i: number = 0, len: number = labels.length; i < len; i++) {
                 let label: string = labels[i];
                 let elementSize: Size = measureText(label, axis.textStyle);
@@ -336,10 +336,10 @@ export class Axis extends ChildProperty<Axis> {
                     ((interval - elementSize.width) / 2) : -((interval + elementSize.width) / 2));
                 startPoint = startPoint < heatmap.initialClipRect.x ? heatmap.initialClipRect.x : startPoint;
                 let endPoint: number = startPoint + elementSize.width;
-                if (isNullOrUndefined(previousEnd)) {
-                    previousEnd = endPoint;
-                } else {
-                    if (startPoint < previousEnd) {
+                if (!axis.isInversed) {
+                    if (isNullOrUndefined(previousEnd)) {
+                        previousEnd = endPoint;
+                    } else if ((startPoint < previousEnd)) {
                         if (axis.labelIntersectAction === 'Rotate45') {
                             axis.angle = 45;
                         } else {
@@ -348,6 +348,18 @@ export class Axis extends ChildProperty<Axis> {
                         break;
                     }
                     previousEnd = endPoint;
+                } else {
+                    if (isNullOrUndefined(previousStart)) {
+                        previousStart = startPoint;
+                    } else if ((previousStart < endPoint)) {
+                        if (axis.labelIntersectAction === 'Rotate45') {
+                            axis.angle = 45;
+                        } else {
+                            axis.isIntersect = true;
+                        }
+                        break;
+                    }
+                    previousStart = startPoint;
                 }
                 startX += axis.isInversed ? -axisInterval : axisInterval;
             }
@@ -422,6 +434,7 @@ export class Axis extends ChildProperty<Axis> {
      */
     public calculateCategoryAxisLabels(): void {
         let labels: string[] = this.labels ? this.labels : [];
+        labels = (labels.length > 0) ? labels : this.jsonCellLabel;
         let min: number = !isNullOrUndefined(this.minimum) ? <number>this.minimum : 0;
         let max: number = !isNullOrUndefined(this.maximum) ? <number>this.maximum : this.maxLength;
         let interval: number = this.interval ? this.interval : 1;

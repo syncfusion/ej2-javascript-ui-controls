@@ -28,3 +28,18 @@ document.getElementById('highcontrast').onclick = (e: Event) => {
     document.body.style.backgroundColor = 'black';
     document.body.style.color = 'white';
 };
+document.getElementById('materialdark').onclick = (e: Event) => {
+    document.getElementById('theme').setAttribute('href', './../theme-files/material-dark.css');
+    document.body.style.backgroundColor = 'black';
+    document.body.style.color = 'white';
+};
+document.getElementById('bootstrapdark').onclick = (e: Event) => {
+    document.getElementById('theme').setAttribute('href', './../theme-files/bootstrap-dark.css');
+    document.body.style.backgroundColor = 'black';
+    document.body.style.color = 'white';
+};
+document.getElementById('fabricdark').onclick = (e: Event) => {
+    document.getElementById('theme').setAttribute('href', './../theme-files/fabric-dark.css');
+    document.body.style.backgroundColor = 'black';
+    document.body.style.color = 'white';
+};

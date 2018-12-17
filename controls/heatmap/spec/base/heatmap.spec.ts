@@ -224,6 +224,7 @@ describe('Heatmap Control', () => {
                 [8, 9],
             ];
             heatmap.renderingMode = "Canvas";
+            heatmap.allowSelection = true;
             heatmap.titleSettings.text = "A heat map is a graphical representation of data where the values contained in a matrix are represented as colors. A heat map is a graphical representation of data where the values contained in a matrix are represented as colors.";
             heatmap.titleSettings.textStyle.textOverflow = "Trim";
             heatmap.titleSettings.textStyle.size = '15';
@@ -244,7 +245,7 @@ describe('Heatmap Control', () => {
         });
         it('Check title tooltip remove in SVG', () => {
             heatmap.renderingMode = "SVG";
-            heatmap.refresh();
+            heatmap.dataBind();
             let tempElement: Element = document.getElementById('container');
             heatmap.heatMapMouseLeave(<PointerEvent>trigger.onTouchStart(tempElement, null, null, null, null, 0, 0));
             let element: Element = document.getElementById('container_Title_Tooltip');
@@ -296,7 +297,7 @@ describe('Heatmap Control', () => {
             heatmap.renderingMode = 'Canvas';
             heatmap.allowSelection = true;
             heatmap.legendSettings.visible = true;
-            heatmap.refresh();
+            heatmap.dataBind();
             let element: Element = document.getElementById("container_canvas");
             heatmap.heatMapMouseMove(<PointerEvent>trigger.onTouchStart(element, null, null, null, null, 100, 100));
             trigger.mousemoveEvent(element, 0, 0, 200, 200);
@@ -307,7 +308,47 @@ describe('Heatmap Control', () => {
             expect(heatmap.selectedCellsRect.x == 52 && heatmap.selectedCellsRect.width == 258.2);
             heatmap.clearSelection();
         });
+        it('Multi Cell Selection in Canvas with paging element', () => {
+            heatmap.height = '500px';
+            heatmap.width = '1000px';
+            heatmap.paletteSettings.type = 'Fixed';
+            heatmap.legendSettings.visible = true;
+            heatmap.legendSettings.height = "30%";
+            heatmap.paletteSettings.palette = [
+                {  color: '#309DAE' },
+                {  color: '#2B8C9B' },
+                {  color: '#257A87' },
+                {  color: '#206974' },
+                {  color: '#1B5761' },
+                {  color: '#15464D' },
+                {  color: '#000000' }];
+            heatmap.refresh();
+            let element: Element = document.getElementById("container_canvas");
+            heatmap.heatMapMouseMove(<PointerEvent>trigger.onTouchStart(element, null, null, null, null, 150, 150));
+            trigger.mousemoveEvent(element, 0, 0, 250, 250);
+            heatmap.heatMapMouseLeave(<PointerEvent>trigger.onTouchEnd(element, null, null, null, null, 250, 250));
+            trigger.clickEvent(element, 0, 0, 985, 312);
+            expect(heatmap.selectedCellsRect.x == 52 && heatmap.selectedCellsRect.width == 258.2);
+            heatmap.clearSelection();
+        });
+        it('Multi Cell Selection in Canvas with paging element in horizontal direction', () => {
+            heatmap.legendSettings.position = "Bottom";
+            heatmap.legendSettings.width = "110px";
+            heatmap.legendSettings.height = "";
+            heatmap.refresh();
+            let element: Element = document.getElementById("container_canvas");
+            heatmap.heatMapMouseMove(<PointerEvent>trigger.onTouchStart(element, null, null, null, null, 150, 150));
+            trigger.mousemoveEvent(element, 0, 0, 250, 250);
+            heatmap.heatMapMouseLeave(<PointerEvent>trigger.onTouchEnd(element, null, null, null, null, 250, 250));
+            trigger.clickEvent(element, 0, 0, 570, 485);
+            expect(heatmap.selectedCellsRect.x == 52 && heatmap.selectedCellsRect.width == 258.2);
+            heatmap.clearSelection();
+        });
         it('Check title tool tip', (done: Function) => {
+            heatmap.legendSettings.position = "Right";
+            heatmap.legendSettings.width = "";
+            heatmap.height = '';
+            heatmap.width = '';
             heatmap.dataSource = [
                 [1, 2, 3],
                 [4, 5, 6, 7],
@@ -432,6 +473,7 @@ describe('Heatmap Control', () => {
             heatmap.height = "50px";
             heatmap.width = "50px";
             heatmap.paletteSettings.type = 'Gradient';
+            heatmap.legendSettings.height = '';
             heatmap.legendSettings.visible = true;
             heatmap.legendSettings.position = "Bottom";
             heatmap.titleSettings.text = "";

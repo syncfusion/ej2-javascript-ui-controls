@@ -71,10 +71,10 @@ export class EventBase {
         let filterObj: IFilter = this.getFilterItemByName(fieldName);
         if (!isNullOrUndefined(filterObj)) {
             isInclude = filterObj.type === 'Include' ? true : false;
-            filterItems = filterObj.items;
+            filterItems = filterObj.items ? filterObj.items : [];
         }
         let treeData: { [key: string]: Object }[] =
-            this.getTreeData(isInclude, this.parent.engineModule.fieldList[fieldName].dateMember, filterItems);
+            this.getTreeData(isInclude, this.parent.engineModule.fieldList[fieldName].dateMember, filterItems, fieldName);
         if (this.parent.filterDialog.dialogPopUp) {
             this.parent.filterDialog.dialogPopUp.close();
         }
@@ -115,7 +115,7 @@ export class EventBase {
      * @return {Sort}
      * @hidden
      */
-    public getFieldByName(fieldName: string, fields: IFieldOptions[] ): IFieldOptions {
+    public getFieldByName(fieldName: string, fields: IFieldOptions[]): IFieldOptions {
         return new DataManager({ json: fields }).executeLocal(new Query().where('name', 'equal', fieldName))[0] as IFieldOptions;
     }
 
@@ -151,14 +151,12 @@ export class EventBase {
             treeObj.disableNodes(nonSearchList);
         } else {
             let searchList: { [key: string]: Object }[] = [];
+            this.parent.searchTreeItems = [];
             let memberCount: number = 0;
-            for (let item of this.parent.currentTreeItems) {
-                item.checkedStatus = this.parent.savedTreeFilterPos[memberCount] !== undefined ? false : true;
-                memberCount++;
-            }
             memberCount = 1;
             for (let item of this.parent.currentTreeItems) {
                 if ((item.name as string).toLowerCase().indexOf(args.value.toLowerCase()) > -1) {
+                    this.parent.searchTreeItems.push(item);
                     if (memberCount <= this.parent.control.maxNodeLimitInMemberEditor) {
                         searchList.push(item);
                     }
@@ -182,10 +180,13 @@ export class EventBase {
             treeObj.dataBind();
         }
     }
-    private getTreeData(isInclude: boolean, members: IAxisSet[], filterItems: string[]): { [key: string]: Object }[] {
+    private getTreeData(isInclude: boolean, members: IAxisSet[], filterItems: string[], fieldName: string): { [key: string]: Object }[] {
         this.parent.currentTreeItems = [];
+        this.parent.searchTreeItems = [];
         this.parent.currentTreeItemsPos = {};
         this.parent.savedTreeFilterPos = {};
+        this.parent.isDateField = this.parent.engineModule.formatFields[fieldName] &&
+            this.parent.engineModule.formatFields[fieldName].type === 'date';
         let list: { [key: string]: Object }[] = [];
         let memberCount: number = 1;
         let filterObj: { [key: string]: string } = {};
@@ -193,25 +194,27 @@ export class EventBase {
             filterObj[item] = item;
         }
         for (let member of members) {
+            let memberName: string = this.parent.isDateField ? member.formattedText : member.actualText.toString();
             let obj: { [key: string]: Object } = {
-                id: member.formattedText,
-                name: member.formattedText,
+                id: member.actualText.toString(),
+                name: memberName,
                 checkedStatus: isInclude ? false : true
             };
-            if (filterObj[member.formattedText] !== undefined) {
+            if (filterObj[memberName] !== undefined) {
                 obj.checkedStatus = isInclude ? true : false;
             }
             if (memberCount <= this.parent.control.maxNodeLimitInMemberEditor) {
                 list.push(obj);
             }
             if (!obj.checkedStatus) {
-                this.parent.savedTreeFilterPos[memberCount - 1] = member.formattedText;
+                this.parent.savedTreeFilterPos[memberCount - 1] = memberName;
             }
             this.parent.currentTreeItems.push(obj);
-            this.parent.currentTreeItemsPos[member.formattedText] = memberCount - 1;
+            this.parent.searchTreeItems.push(obj);
+            this.parent.currentTreeItemsPos[member.actualText] = memberCount - 1;
             memberCount++;
         }
-        this.parent.isDataOverflow = (memberCount > this.parent.control.maxNodeLimitInMemberEditor);
+        this.parent.isDataOverflow = ((memberCount - 1) > this.parent.control.maxNodeLimitInMemberEditor);
         return list;
     }
 }

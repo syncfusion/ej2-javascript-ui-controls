@@ -411,23 +411,6 @@ export function getTemplateFunction(template: string): Function {
     return templateFn;
 }
 
-export function getElementSize(template: string, gauge: CircularGauge, parent: HTMLElement): Size {
-    let elementSize: Size; let element: HTMLElement;
-    let templateFn: Function = getTemplateFunction(template);
-    if (templateFn && templateFn(gauge).length) {
-        element = gauge.createElement('div', { id: gauge.element.id + '_Measure_Element' });
-        gauge.element.appendChild(element);
-        let templateElement: HTMLCollection = templateFn(gauge);
-        while (templateElement.length > 0) {
-            element.appendChild(templateElement[0]);
-        }
-        parent.appendChild(element);
-        elementSize = new Size(parent.getBoundingClientRect().width, parent.getBoundingClientRect().height);
-        remove(element);
-    }
-    return elementSize;
-}
-
 /**
  * Function to remove the element from id.
  * @private
@@ -446,13 +429,29 @@ export function removeElement(id: string): void {
  */
 export function getPointer(targetId: string, gauge: CircularGauge): IVisiblePointer {
     let tempString: string;
-    tempString = targetId.split(gauge.element.id + '_Axis_')[1];
+    tempString = targetId.replace(gauge.element.id, '').split('_Axis_')[1];
     return {
         axisIndex: +tempString[0],
         pointerIndex: +tempString[tempString.length - 1]
     };
 }
 
+export function getElementSize(template: string, gauge: CircularGauge, parent: HTMLElement): Size {
+    let elementSize: Size; let element: HTMLElement;
+    let templateFn: Function = getTemplateFunction(template);
+    if (templateFn && templateFn(gauge).length) {
+        element = gauge.createElement('div', { id: gauge.element.id + '_Measure_Element' });
+        gauge.element.appendChild(element);
+        let templateElement: HTMLCollection = templateFn(gauge);
+        while (templateElement.length > 0) {
+            element.appendChild(templateElement[0]);
+        }
+        parent.appendChild(element);
+        elementSize = new Size(parent.getBoundingClientRect().width, parent.getBoundingClientRect().height);
+        remove(element);
+    }
+    return elementSize;
+}
 
 /**
  * Function to get the mouse position

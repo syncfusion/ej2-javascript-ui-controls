@@ -138,7 +138,7 @@ export class HeaderRenderer {
         }
     }
     private getDateRangeText(): string {
-        return this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y' });
+        return this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() });
     }
     private getItems(): ItemModel[] {
         let items: ItemModel[] = [];
@@ -270,6 +270,7 @@ export class HeaderRenderer {
             locale: this.parent.locale,
             depth: calendarView,
             start: calendarView,
+            calendarMode: this.parent.calendarMode,
             change: this.calendarChange.bind(this)
         });
         this.headerCalendar.appendTo(headerCalendarEle);

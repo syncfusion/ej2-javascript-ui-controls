@@ -245,6 +245,7 @@ describe('Diagram Control', () => {
             let node: NodeModel = diagram.nodes[5];
             let element: HyperlinkModel = (node.wrapper.children[1]) as HyperlinkModel;
             expect((element as AnnotationModel).style.textDecoration === 'None'
+                && (element as AnnotationModel).style.color === 'black'
                 && (element as AnnotationModel).hyperlink.content === '')
             done();
         });
@@ -550,7 +551,21 @@ describe('Diagram Control', () => {
             ];
             diagram = new Diagram({
 
-                width: '1000px', height: '1000px', nodes: nodes,
+                width: '1000px', height: '1000px', nodes: nodes, connectors: [
+                    {
+                        id: 'connector1',
+                        type: 'Straight',
+                        sourcePoint: { x: 100, y: 100 },
+                        targetPoint: { x: 500, y: 200 },
+                        annotations: [
+                            {
+                                id: 'node_lasssbel',
+                                constraints: AnnotationConstraints.Interaction,
+                                content: 'ddddddddddddddddd'
+                            }
+                        ]
+                    },
+                ]
             });
 
             diagram.appendTo('#diagram4');
@@ -571,6 +586,11 @@ describe('Diagram Control', () => {
             mouseEvents.mouseLeaveEvent(diagramCanvas);
             expect(diagram.nodes[0].annotations[0].offset.x !== 0.5 && diagram.nodes[0].annotations[0].offset.y !== 0.5).toBe(true);
             diagram.clearSelection();
+            done();
+            diagram.connectors[0].annotations[0].template = '<div id="test-case" style="height:100%;width:100%;background:red;">';
+            diagram.dataBind();
+            var text: any = document.getElementById("test-case");
+            expect(text !== undefined).toBe(true);
             done();
         });
     });

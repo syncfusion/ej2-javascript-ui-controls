@@ -584,11 +584,13 @@ export type ChartTheme =
     /**  Render a chart with Bootstrap theme. */
     'Bootstrap' |
     /**  Render a chart with HighcontrastLight theme. */
-    'HighcontrastLight'|
+    'HighContrastLight'|
     /**  Render a chart with MaterialDark theme. */
     'MaterialDark' |
     /**  Render a chart with FabricDark theme. */
     'FabricDark' |
+    /**  Render a chart with HighContrast theme. */
+    'HighContrast'|
     /**  Render a chart with Highcontrast theme. */
     'Highcontrast'|
     /**  Render a chart with BootstrapDark theme. */

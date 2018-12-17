@@ -1515,7 +1515,7 @@ export class Node extends NodeBase implements IElement {
      * @default new ShapeStyle()
      * @aspType object
      */
-    @Complex<ShapeStyleModel | TextStyleModel>({}, TextStyle)
+    @Complex<ShapeStyleModel | TextStyleModel>({ fill: 'white' }, TextStyle)
     public style: ShapeStyleModel | TextStyleModel;
 
     /**

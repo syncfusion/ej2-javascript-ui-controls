@@ -131,7 +131,7 @@ describe('Chart', () => {
         it('AD Technical indicator for a series with valid points & primary axis', (done: Function) => {
             loaded = (args: Object): void => {
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_AccumulationDistribution');
                 expect(signalLine.getAttribute('d')).not.toBeNull();
                 expect(chartObj.visibleSeries.length).toBe(2);
                 expect(chartObj.visibleSeries[1].points[0].x).toBe('Jan');
@@ -196,7 +196,7 @@ describe('Chart', () => {
         it('AD Technical indicator with hidden series', (done: Function) => {
             loaded = (args: Object): void => {
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_AccumulationDistribution');
                 expect(signalLine.getAttribute('d')).not.toBeNull();
                 done();
                 //reset visibility
@@ -218,7 +218,7 @@ describe('Chart', () => {
         it('AD Technical indicator with opposed position', (done: Function) => {
             loaded = (args: Object): void => {
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_AccumulationDistribution');
                 expect(signalLine.getAttribute('d')).not.toBeNull();
                 let svg: HTMLElement = document.getElementById('containerAxisLine_0');
                 expect(svg.getAttribute('d').split(' ')[1] == '57.5' || svg.getAttribute('d').split(' ')[1] == '62.5' || svg.getAttribute('d').split(' ')[1] == '53.5').toBe(true);
@@ -241,7 +241,7 @@ describe('Chart', () => {
             loaded = (args: Object): void => {
 
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_AccumulationDistribution');
                 expect(signalLine.getAttribute('d')).not.toBeNull();
                 let point: Element = document.getElementById('containerIndicatorGroup0');
                 expect(point != null).toBe(true);
@@ -266,7 +266,7 @@ describe('Chart', () => {
         it('AD Technical indicator with default appearance', (done: Function) => {
             loaded = (args: Object): void => {
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_AccumulationDistribution');
                 expect(signalLine.getAttribute('stroke')).toBe('#606eff');
                 done();
             };
@@ -278,7 +278,7 @@ describe('Chart', () => {
         it('AD Technical indicator with custom color', (done: Function) => {
             loaded = (args: Object): void => {
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_AccumulationDistribution');
                 expect(signalLine.getAttribute('stroke')).toBe('orange');
                 done();
             };
@@ -291,7 +291,7 @@ describe('Chart', () => {
         it('AD Technical indicator with custom stroke style', (done: Function) => {
             loaded = (args: Object): void => {
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_AccumulationDistribution');
                 expect(signalLine.getAttribute('stroke-width')).toBe('3');
                 //workaround
                 expect(signalLine.getAttribute('stroke-dasharray')).toBe('2,2');
@@ -427,8 +427,8 @@ describe('Chart', () => {
                 expect(path.getAttribute('fill') == 'rgba(0, 8, 22, 0.75)').toBe(true);
                 expect((<HTMLElement>text1.childNodes[0]).getAttribute('fill') == '#ffffff').toBe(true);
                 expect((<Element>text1.childNodes[0]).getAttribute('fill') == '#ffffff').toBe(true);
-                expect(text1.textContent == 'FebgoldHigh : 6.3Low : 1.3Open : 4.8Close : 2.5SignalLine : -10.385').toBe(true);
-                //expect(text2.textContent == 'SignalLine : -10.385').toBe(true);
+                expect(text1.textContent == 'FebgoldHigh : 6.3Low : 1.3Open : 4.8Close : 2.5AccumulationDistribution : -10.385').toBe(true);
+                //expect(text2.textContent == 'AccumulationDistribution : -10.385').toBe(true);
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y + 50));
                 done();
 

@@ -49,7 +49,7 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
         if (this.parent.allowGrouping) {
             this.parent.groupSettings.columns.forEach((value: string) => columns.push(new Column({})));
         }
-        if (this.parent.detailTemplate || !isNullOrUndefined(this.parent.childGrid)) {
+        if (this.parent.detailTemplate || !isNullOrUndefined(this.parent.childGrid) || this.parent.isRowDragable()) {
             columns.push(new Column({}));
         }
         columns.push(...<Column[]>this.parent.getColumns());
@@ -73,6 +73,10 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
         let isDetailGridAlone: boolean = !isNullOrUndefined(this.parent.childGrid);
         let indentLength: number = this.parent.groupSettings.columns.length + (this.parent.detailTemplate ||
             !isNullOrUndefined(this.parent.childGrid) ? 1 : 0);
+        if (this.parent.isRowDragable()) {
+            indentLength++;
+            indents = ['e-indentcelltop'];
+        }
 
         this.getColumns(start, end).forEach((value: Column, index: number) => tmp.push(
             this.getGeneratedCell(

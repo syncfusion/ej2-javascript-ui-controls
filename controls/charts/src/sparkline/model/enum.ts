@@ -63,13 +63,15 @@ export type SparklineTheme =
     /**  Render a sparkline with Bootstrap theme. */
     'Bootstrap' |
     /**  Render a sparkline with HighContrast Light theme. */
-    'HighcontrastLight' |
+    'HighContrastLight' |
     /**  Render a sparkline with Material Dark theme. */
     'MaterialDark'|
     /**  Render a sparkline with Fabric Dark theme. */
     'FabricDark'|
-    /**  Render a sparkline with Highcontrast theme. */
+    /**  Render a sparkline with Highcontrast Dark theme. */
     'Highcontrast'|
+    /**  Render a sparkline with Highcontrast Dark theme. */
+    'HighContrast'|
     /**  Render a sparkline with Bootstrap Dark theme. */
     'BootstrapDark';
 

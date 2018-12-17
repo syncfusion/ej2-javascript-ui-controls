@@ -106,7 +106,7 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
                             style: { fill: node.style.fill, strokeColor: '#ffffff00', textWrapping: textWrap },
                             constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~
                                 (NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
-                            maxHeight: 25, minHeight: 25
+                              minHeight: 25
                         } as NodeModel,
                         true);
                     diagram.initObject(temp);
@@ -158,7 +158,7 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
                             ], verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
                             constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~
                                 (NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
-                            maxHeight: 25, minHeight: 25
+                              minHeight: 25
                         } as NodeModel,
                         true);
                     diagram.initObject(temp as Node);
@@ -225,7 +225,7 @@ export function getClassMembers(node: Node, diagram: Diagram, classifier: UmlCla
                                 margin: { left: 14, right: 5 }, horizontalAlignment: 'Left'
                             }
                         ],
-                        style: { fill: node.style.fill, strokeColor: '#ffffff00' }, maxHeight: 25, minHeight: 25,
+                        style: { fill: node.style.fill, strokeColor: '#ffffff00' },   minHeight: 25,
                         constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~
                             (NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize)
                     } as NodeModel,

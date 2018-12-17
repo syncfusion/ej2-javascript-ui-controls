@@ -807,7 +807,7 @@ describe('Zoom feature tesing for map control', () => {
         });
     });
 
-    describe('Checking with mouse selection zooming', () => {
+    describe('Checking with center position', () => {
         let id: string = 'container';
         let map: Maps;
         let ele: HTMLDivElement;
@@ -822,14 +822,11 @@ describe('Zoom feature tesing for map control', () => {
                 baseLayerIndex: 0,
                 layers: [
                     {
-                        shapeData: MapData,
-                        key: "AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L",
+                        shapeData: MapData
                     }
                 ],
                 zoomSettings: {
-                    enable: true,
-                    pinchZooming: true,
-                    zoomOnClick: true
+                    enable: true
                 }
             }, '#' + id);
         });
@@ -838,9 +835,23 @@ describe('Zoom feature tesing for map control', () => {
             map.destroy();
         });
 
-        it('Checking with zooming public method ', () => {
-            let centerPosition = { latitude: 84, longitude: 45 };
-            map.zoomByPosition(centerPosition, 5);
+        it('To zoom the geometry layer with center position ', () => {
+            map.zoomByPosition({ latitude: 21, longitude: 78 }, 5);
+            map.panByDirection('Left');
+            map.panByDirection('Right');
+        });
+
+        it('To zoom the geometry layer without center position ', () => {
+            map.zoomByPosition(null, 2);
+            map.panByDirection('Top');
+            map.panByDirection('Bottom');
+        });
+        it('To zoom the OSM layer with center position ', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                map.zoomByPosition({ latitude: 21, longitude: 78 }, 5);
+            };
+            map.layersCollection[0].layerType = 'OSM';
+            map.refresh();
         });
     });
 

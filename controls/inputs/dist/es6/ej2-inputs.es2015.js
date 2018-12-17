@@ -5874,6 +5874,7 @@ let FormValidator = FormValidator_1 = class FormValidator extends Base {
             return undefined;
         }
     }
+    // tslint:enable
     /**
      * Add validation rules to the corresponding input element based on `name` attribute.
      * @param {string} name `name` of form field.
@@ -6724,12 +6725,12 @@ let Uploader = class Uploader extends Component {
     }
     updateFileList() {
         let element;
+        /* istanbul ignore next */
         if (this.fileList.length > 0 && !isNullOrUndefined(this.uploadWrapper.querySelector('.' + LIST_PARENT))) {
             for (let i = 0; i < this.fileList.length; i++) {
                 element = this.fileList[i].querySelector('.e-file-status');
                 element.innerHTML = this.localizedTexts(this.getKeyValue(this.filesData[i].status));
                 this.filesData[i].status = this.localizedTexts(this.getKeyValue(this.filesData[i].status));
-                /* istanbul ignore next */
                 if (this.fileList[i].classList.contains(UPLOAD_SUCCESS)) {
                     this.fileList[i].querySelector('.e-icons').setAttribute('title', this.localizedTexts('delete'));
                 }
@@ -7308,6 +7309,9 @@ let Uploader = class Uploader extends Component {
         let index = this.fileList.indexOf(selectedElement);
         let liElement = this.fileList[index];
         let fileData = this.filesData[index];
+        if (isNullOrUndefined(fileData)) {
+            return;
+        }
         if (args.target.classList.contains(ABORT_ICON)) {
             fileData.statusCode = '5';
             if (!isNullOrUndefined(liElement)) {
@@ -7366,6 +7370,7 @@ let Uploader = class Uploader extends Component {
             if (!removeDirectly) {
                 this.trigger('removing', eventArgs);
             }
+            /* istanbul ignore next */
             if (eventArgs.cancel) {
                 e.cancel = true;
                 return;
@@ -7568,6 +7573,7 @@ let Uploader = class Uploader extends Component {
                 validationMessages: this.validatedFileSize(file.size),
                 statusCode: '1'
             };
+            /* istanbul ignore next */
             if (paste) {
                 fileDetails.fileSource = 'paste';
             }

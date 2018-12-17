@@ -232,7 +232,7 @@ describe('Smithchart Series properties tesing', () => {
                 let color: string = element.getAttribute('stroke');
                 expect(color).toEqual('red');
             };
-            smithchart.theme = 'HighcontrastLight';
+            smithchart.theme = 'HighContrastLight';
              smithchart.refresh();
         });
         it('Checking with Dark theme', () => {
@@ -250,7 +250,7 @@ describe('Smithchart Series properties tesing', () => {
                 let color: string = element.getAttribute('stroke');
                 expect(color).toEqual('red');
             };
-            smithchart.theme = 'HighcontrastLight';
+            smithchart.theme = 'HighContrastLight';
             smithchart.refresh();
         });
         it('Checking with Dark theme', () => {

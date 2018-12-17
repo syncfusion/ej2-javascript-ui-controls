@@ -420,3 +420,9 @@ export const CHECKBOX_LAYOUT: string = 'e-checkbox-layout';
 export const DEFER_UPDATE_BUTTON: string = 'e-defer-update-btn';
 /** @hidden */
 export const HEADERCONTENT: string = 'e-headercontent';
+/** @hidden */
+export const BACK_ICON: string = 'e-field-list-back-icon';
+/** @hidden */
+export const TITLE_MOBILE_HEADER: string = 'e-title-mobile-header';
+/** @hidden */
+export const TITLE_MOBILE_CONTENT: string = 'e-title-mobile-content';

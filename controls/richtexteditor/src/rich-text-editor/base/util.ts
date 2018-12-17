@@ -1,9 +1,10 @@
 /**
  * Exports util methods used by RichTextEditor.
  */
-import { isNullOrUndefined as isNOU, addClass, removeClass, L10n, selectAll } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, addClass, removeClass, L10n, selectAll, createElement } from '@syncfusion/ej2-base';
 import * as classes from '../base/classes';
 import * as model from '../models/items';
+import { IToolsItemConfigs } from '../base/interface';
 import { toolsLocale } from '../models/default-locale';
 import { IToolbarItems, IDropDownItemModel, ISetToolbarStatusArgs, IToolbarItemModel } from './interface';
 import { BaseToolbar } from '../actions/base-toolbar';
@@ -216,4 +217,21 @@ export function dispatchEvent(element: Element | HTMLDocument, type: string): vo
     let evt: Event = document.createEvent('HTMLEvents');
     evt.initEvent(type, false, true);
     element.dispatchEvent(evt);
+}
+export function parseHtml(value: string): DocumentFragment {
+    let tempNode: HTMLTemplateElement = <HTMLTemplateElement>createElement('template');
+    tempNode.innerHTML = value;
+    if (tempNode.content instanceof DocumentFragment) {
+        return tempNode.content;
+    } else {
+        return document.createRange().createContextualFragment(value);
+    }
+}
+export function toObjectLowerCase(obj: { [key: string]: IToolsItemConfigs }): { [key: string]: IToolsItemConfigs } {
+    let convertedValue: { [key: string]: IToolsItemConfigs } = {};
+    let keys: string[] = Object.keys(obj);
+    for (let i: number = 0; i < Object.keys(obj).length; i++) {
+        convertedValue[keys[i].toLocaleLowerCase()] = obj[keys[i]];
+    }
+    return convertedValue;
 }

@@ -335,6 +335,10 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     private resizeTo: number;
     /** @private */
     private hierarchyData: Object[];
+    /** @private */
+    private mouseDown: boolean;
+    /** @private */
+    private drillMouseMove: boolean;
 
     /**s
      * Constructor for TreeMap component.
@@ -449,7 +453,10 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      * To initilize the private varibales of treemap.
      */
     private initPrivateVariable(): void {
-
+        if (this.element.id === '') {
+            let collection: number = document.getElementsByClassName('e-treemap').length;
+            this.element.id = 'treemap_control_' + collection;
+        }
         this.renderer = new SvgRenderer(this.element.id);
 
         this.layout = new LayoutPanel(this);
@@ -482,7 +489,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     private setTextStyle(color: string, darkColor: string): void {
         this.titleSettings.textStyle.color = this.titleSettings.textStyle.color || color;
         this.titleSettings.subtitleSettings.textStyle.color = this.titleSettings.subtitleSettings.textStyle.color || color;
-        this.legendSettings.textStyle.color = this.legendSettings.textStyle.color || !isNullOrUndefined(darkColor) ? darkColor : color;
+        this.legendSettings.textStyle.color = this.legendSettings.textStyle.color || (!isNullOrUndefined(darkColor) ? darkColor : color);
         this.legendSettings.titleStyle.color = this.legendSettings.titleStyle.color || color;
     }
 
@@ -875,6 +882,33 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /* tslint:disable-next-line:max-func-body-length */
     public mouseDownOnTreeMap(e: PointerEvent): void {
+        if ((<Element>e.target).id.indexOf('_Item_Index') > -1) {
+            this.mouseDown = true;
+        }
+        this.notify(Browser.touchStartEvent, e);
+    }
+
+    public mouseMoveOnTreeMap(e: PointerEvent): void {
+        let targetEle: Element = <Element>e.target;
+        let targetId: string = targetEle.id;
+        let eventArgs: IItemMoveEventArgs;
+        let item: Object;
+        let moveArgs: IMouseMoveEventArgs = { cancel: false, name: mouseMove, treemap: this, mouseEvent: e };
+        this.trigger(mouseMove, moveArgs);
+        let childItems: object[];
+        this.drillMouseMove = this.mouseDown;
+        if (targetId.indexOf('_Item_Index') > -1) {
+            item = this.layout.renderItems[parseFloat(targetId.split('_')[6])];
+            childItems = findChildren(item)['values'] as Object[];
+            this.element.style.cursor = (!item['isLeafItem'] && childItems && childItems.length > 0 && this.enableDrillDown) ?
+                'pointer' : 'auto';
+            eventArgs = { cancel: false, name: itemMove, treemap: this, item: item, mouseEvent: e };
+            this.trigger(itemMove, eventArgs);
+        }
+        this.notify(Browser.touchMoveEvent, e);
+    }
+
+    public mouseEndOnTreeMap(e: PointerEvent): void {
         let targetEle: Element = <Element>e.target;
         let startEvent: IDrillStartEventArgs; let endEvent: IDrillEndEventArgs;
         let targetId: string = targetEle.id; let totalRect: Rect;
@@ -882,10 +916,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         let item: Object; let process: boolean = true;
         let layoutID: string = this.element.id + '_TreeMap_' + this.layoutType + '_Layout';
         let templateID: string = this.element.id + '_Label_Template_Group';
-        if (document.getElementById(templateID)) {
-            document.getElementById(templateID).remove();
-        }
-        if (targetId.indexOf('_Item_Index') > -1 && this.enableDrillDown) {
+        if (targetId.indexOf('_Item_Index') > -1 && this.enableDrillDown && !this.drillMouseMove) {
             e.preventDefault();
             index = parseFloat(targetId.split('_')[6]);
             item = this.layout.renderItems[index];
@@ -937,6 +968,9 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                         }
                         totalRect = !isNullOrUndefined(this.totalRect) ? this.totalRect : totalRect;
                     }
+                    if (document.getElementById(templateID)) {
+                        document.getElementById(templateID).remove();
+                    }
                     this.layout.calculateLayoutItems(newDrillItem, totalRect);
                     this.layout.renderLayoutItems(newDrillItem);
                 }
@@ -947,29 +981,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
         }
-        this.notify(Browser.touchStartEvent, e);
-    }
-
-    public mouseMoveOnTreeMap(e: PointerEvent): void {
-        let targetEle: Element = <Element>e.target;
-        let targetId: string = targetEle.id;
-        let eventArgs: IItemMoveEventArgs;
-        let item: Object;
-        let moveArgs: IMouseMoveEventArgs = { cancel: false, name: mouseMove, treemap: this, mouseEvent: e };
-        this.trigger(mouseMove, moveArgs);
-        let childItems: object[];
-        if (targetId.indexOf('_Item_Index') > -1) {
-            item = this.layout.renderItems[parseFloat(targetId.split('_')[6])];
-            childItems = findChildren(item)['values'] as Object[];
-            this.element.style.cursor = (!item['isLeafItem'] && childItems && childItems.length > 0 && this.enableDrillDown) ?
-                'pointer' : 'auto';
-            eventArgs = { cancel: false, name: itemMove, treemap: this, item: item, mouseEvent: e };
-            this.trigger(itemMove, eventArgs);
-        }
-        this.notify(Browser.touchMoveEvent, e);
-    }
-
-    public mouseEndOnTreeMap(e: PointerEvent): void {
+        this.mouseDown = false;
         this.notify(Browser.touchEndEvent, e);
     }
 

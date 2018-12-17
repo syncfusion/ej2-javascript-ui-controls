@@ -826,11 +826,11 @@ describe('Splitter Control', () => {
         });
 
         it('get minimum value', () => {
-            expect(splitterObj.getMinMax(splitterObj.getPreviousPaneIndex(), document.querySelector('.e-pane-horizontal') as HTMLElement, 'min')).toEqual(20);
+            expect(splitterObj.getMinMax(splitterObj.getPreviousPaneIndex(), document.querySelector('.e-pane-horizontal') as HTMLElement, 'min')).toEqual(40);
         });
 
         it('get Maximum value', () => {
-            expect(splitterObj.getMinMax(splitterObj.getPreviousPaneIndex(), document.querySelector('.e-pane-horizontal') as HTMLElement, 'max')).toEqual(80);
+            expect(splitterObj.getMinMax(splitterObj.getPreviousPaneIndex(), document.querySelector('.e-pane-horizontal') as HTMLElement, 'max')).toEqual(160);
         });
     });
 
@@ -988,8 +988,8 @@ describe('Splitter Control', () => {
             splitterObj.nextPaneCurrentWidth = 15;
             splitterObj.totalWidth = 392;
             splitterObj.validateMinMaxValues();
-            expect(splitterObj.prevPaneCurrentWidth).toBe(20);
-            expect(splitterObj.nextPaneCurrentWidth).toBe(15);
+            expect(splitterObj.prevPaneCurrentWidth).toBe(30);
+            expect(splitterObj.nextPaneCurrentWidth).toBe(30);
         });
 
         it('Max value', () => {
@@ -999,8 +999,8 @@ describe('Splitter Control', () => {
             splitterObj.nextPaneCurrentWidth = 300;
             splitterObj.totalWidth = 392;
             splitterObj.validateMinMaxValues();
-            expect(splitterObj.prevPaneCurrentWidth).toBe(157);
-            expect(splitterObj.nextPaneCurrentWidth).toBe(103);
+            expect(splitterObj.prevPaneCurrentWidth).toBe(240);
+            expect(splitterObj.nextPaneCurrentWidth).toBe(300);
         });
 
     });
@@ -1084,9 +1084,9 @@ describe('Splitter Control', () => {
         });
 
         it('Dragged positions validation', () => {
-            expect(splitterObj.validateDraggedPosition (50, 100, 40)).toEqual(65);
-            expect(splitterObj.validateDraggedPosition (190, 100, 40)).toEqual(170);
-            expect(splitterObj.validateDraggedPosition (45, 100, 40)).toEqual(65);
+            expect(splitterObj.validateDraggedPosition (50, 100, 40)).toEqual(80);
+            expect(splitterObj.validateDraggedPosition (190, 100, 40)).toEqual(160);
+            expect(splitterObj.validateDraggedPosition (45, 100, 40)).toEqual(80);
         });
     });
 
@@ -1826,6 +1826,280 @@ describe('Splitter Control', () => {
             });
         });
 
-    });
+        describe('Data attributes support without pane settings', () => {
+            appendSplitterStyles();
+            let splitterObj: any;
+            beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default'});
+                let child1: HTMLElement = createElement('div');
+                child1.innerHTML =  "Paris, the city of lights and love - this short guide is full of ideas for how to make the most of the romanticism.";
+                child1.setAttribute('data-size', '196px');
+                child1.setAttribute('data-min', '50px');
+                child1.setAttribute('data-max', '250px');
+                let child2: HTMLElement = createElement('div');
+                child2.setAttribute('data-size', '196px');
+                child2.setAttribute('data-max', '250px');
+                child2.innerHTML = "Paris, the city of lights and love - this short guide is full of ideas for how to make the most of the romanticism...";
+                element.appendChild(child1);
+                element.appendChild(child2);
+                document.body.appendChild(element);
+                let content1: string = "<div id='content1'></div>";
+                let content2: string = "<div id='content2'></div>";
+                splitterObj = new Splitter({
+                    width: '300px', 
+                    height: '500px',
+                });
+                splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+                document.body.innerHTML = '';
+            });
+    
+            it('Checking paneSettings API values ', () => {
+               expect(splitterObj.paneSettings[0].size).toEqual('196px');
+               expect(splitterObj.paneSettings[0].min).toEqual('50px');
+               expect(splitterObj.paneSettings[0].max).toEqual('250px');
+               expect(splitterObj.paneSettings[1].size).toEqual('196px');
+               expect(isNullOrUndefined(splitterObj.paneSettings[1].min)).toEqual(true);
+               expect(splitterObj.paneSettings[1].max).toEqual('250px');
+            });
+        });
 
+        describe('Data attributes support with pane settings', () => {
+            appendSplitterStyles();
+            let splitterObj: any;
+            beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default'});
+                element.setAttribute('data-width', '400px');
+                element.setAttribute('data-height', '500px');
+                element.setAttribute('data-orientation', 'Vertical');
+                let child1: HTMLElement = createElement('div');
+                child1.innerHTML =  "Paris, the city of lights and love - this short guide is full of ideas for how to make the most of the romanticism.";
+                child1.setAttribute('data-size', '196px');
+                child1.setAttribute('data-min', '50px');
+                child1.setAttribute('data-max', '250px');
+                child1.setAttribute('data-resizable', 'false');
+                let child2: HTMLElement = createElement('div');
+                child2.setAttribute('data-size', '196px');
+                child2.innerHTML = "Paris, the city of lights and love - this short guide is full of ideas for how to make the most of the romanticism...";
+                element.appendChild(child1);
+                element.appendChild(child2);
+                document.body.appendChild(element);
+                let content1: string = "<div id='content1'></div>";
+                let content2: string = "<div id='content2'></div>";
+                splitterObj = new Splitter({
+                    paneSettings: [
+                        {
+                            size: '200px', min: '10px'
+                        },
+                        {
+                            size: '300px', min: '40px'
+                        }
+                    ]
+                });
+                splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+                document.body.innerHTML = '';
+            });
+    
+            it('Checking paneSettings API values ', () => {
+               expect(splitterObj.paneSettings[0].size).toEqual('200px');
+               expect(splitterObj.paneSettings[0].min).toEqual('10px');
+               expect(splitterObj.paneSettings[0].max).toEqual('250px');
+               expect(splitterObj.paneSettings[0].resizable).toEqual(false);
+               expect(splitterObj.paneSettings[1].size).toEqual('300px');
+               expect(splitterObj.paneSettings[1].min).toEqual('40px');
+               expect(isNullOrUndefined(splitterObj.paneSettings[1].max)).toEqual(true);
+               expect(splitterObj.width).toEqual('400px');
+               expect(splitterObj.height).toEqual('500px');
+               expect(splitterObj.orientation).toBe('Vertical');
+            });
+        });
 
+        describe('Checking public methods for Horizontal splitter', () => {
+            appendSplitterStyles();
+            let splitterObj: any;
+            beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default'});
+                let child1: HTMLElement = createElement('div');
+                child1.innerHTML =  "Paris, the city of lights and love - this short guide is full of ideas for how to make the most of the romanticism.";
+                let child2: HTMLElement = createElement('div');
+                child2.innerHTML = "Paris, the city of lights and love - this short guide is full of ideas for how to make the most of the romanticism...";
+                element.appendChild(child1);
+                element.appendChild(child2);
+                document.body.appendChild(element);
+                let content1: string = "<div id='content1'></div>";
+                let content2: string = "<div id='content2'></div>";
+                splitterObj = new Splitter({
+                    width: '800px', 
+                    height: '500px',
+                    paneSettings: [
+                        {
+                            size: '200px', min: '10px'
+                        },
+                        {
+                            size: '300px', min: '40px'
+                        }
+                    ]
+                });
+                splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+                document.body.innerHTML = '';
+            });
+    
+            it('Add Pane', () => {
+                let paneContent1 : PanePropertiesModel = {
+                    size: '200px',
+                    min: '40px',
+                    max: '100px',
+                    content: 'helloo',
+                    resizable: false,
+                }
+                let paneContent2 : PanePropertiesModel = {
+                    size: '200px',
+                    min: '40px',
+                    max: '100px',
+                    content: 'helloo',
+                    resizable: false,
+                }
+                splitterObj.addPane(paneContent1, 0);
+                expect(splitterObj.allPanes.length).toBe(3);
+                expect(splitterObj.allBars.length).toBe(2);
+                expect(splitterObj.allPanes[0].innerHTML).toEqual('helloo');
+                expect(splitterObj.element.querySelector('.e-pane-horizontal').style.flexBasis).toEqual('200px');
+                expect(splitterObj.allBars[0].querySelector('.e-resize-handler').classList.contains('e-hide-handler')).toBe(true);
+                splitterObj.addPane(paneContent2, 2);
+                expect(splitterObj.allPanes.length).toBe(4);
+                expect(splitterObj.allBars.length).toBe(3);
+                expect(splitterObj.allPanes[2].innerHTML).toEqual('helloo');
+                expect(splitterObj.allBars[2].querySelector('.e-resize-handler').classList.contains('e-hide-handler')).toBe(true);
+                splitterObj.addPane(paneContent2, 6);
+                expect(splitterObj.allPanes.length).toBe(5);
+            });
+
+            it('Remove Pane', () => {
+               splitterObj.removePane(1);
+               expect(splitterObj.allPanes.length).toEqual(4);
+               expect(splitterObj.allBars.length).toEqual(3);
+               expect(splitterObj.allPanes[2].classList.contains('e-static-pane')).toBe(true);
+               splitterObj.removePane(0);
+               expect(splitterObj.allPanes.length).toEqual(3);
+               expect(splitterObj.allBars.length).toEqual(2);
+               expect(splitterObj.allPanes[1].classList.contains('e-static-pane')).toBe(true);
+            })
+        });
+
+        describe('Checking public methods for Vertical splitter', () => {
+            appendSplitterStyles();
+            let splitterObj: any;
+            beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default'});
+                let child1: HTMLElement = createElement('div');
+                child1.innerHTML =  "Paris, the city of lights and love - this short guide is full of ideas for how to make the most of the romanticism.";
+                let child2: HTMLElement = createElement('div');
+                child2.innerHTML = "Paris, the city of lights and love - this short guide is full of ideas for how to make the most of the romanticism...";
+                element.appendChild(child1);
+                element.appendChild(child2);
+                document.body.appendChild(element);
+                let content1: string = "<div id='content1'></div>";
+                let content2: string = "<div id='content2'></div>";
+                splitterObj = new Splitter({
+                    width: '800px', 
+                    height: '500px',
+                    orientation: 'Vertical',
+                    paneSettings: [
+                        {
+                            size: '200px', min: '10px'
+                        },
+                        {
+                            size: '300px', min: '40px'
+                        }
+                    ]
+                });
+                splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+                document.body.innerHTML = '';
+            });
+    
+            it('Add Pane', () => {
+                let paneContent1 : PanePropertiesModel = {
+                    size: '200px',
+                    min: '40px',
+                    max: '100px',
+                    content: 'helloo',
+                    resizable: false,
+                }
+                let paneContent2 : PanePropertiesModel = {
+                    size: '200px',
+                    min: '40px',
+                    max: '100px',
+                    content: 'helloo',
+                    resizable: false,
+                }
+                splitterObj.addPane(paneContent1, 0);
+                expect(splitterObj.allPanes.length).toBe(3);
+                expect(splitterObj.allBars.length).toBe(2);
+                expect(splitterObj.allPanes[0].innerHTML).toEqual('helloo');
+                expect(splitterObj.element.querySelector('.e-pane-vertical').style.flexBasis).toEqual('200px');
+                expect(splitterObj.allBars[0].querySelector('.e-resize-handler').classList.contains('e-hide-handler')).toBe(true);
+                splitterObj.addPane(paneContent2, 2);
+                expect(splitterObj.allPanes.length).toBe(4);
+                expect(splitterObj.allBars.length).toBe(3);
+                expect(splitterObj.allPanes[2].innerHTML).toEqual('helloo');
+                expect(splitterObj.allBars[2].querySelector('.e-resize-handler').classList.contains('e-hide-handler')).toBe(true);
+                splitterObj.addPane(paneContent2, 6);
+                expect(splitterObj.allPanes.length).toBe(5);
+            });
+
+            it('Remove Pane', () => {
+               splitterObj.removePane(1);
+               expect(splitterObj.allPanes.length).toEqual(4);
+               expect(splitterObj.allBars.length).toEqual(3);
+               expect(splitterObj.allPanes[2].classList.contains('e-static-pane')).toBe(true);
+               splitterObj.removePane(0);
+               expect(splitterObj.allPanes.length).toEqual(3);
+               expect(splitterObj.allBars.length).toEqual(2);
+               expect(splitterObj.allPanes[1].classList.contains('e-static-pane')).toBe(true);
+            })
+
+            it('Add Pane with empty values', () => {
+                let paneContent3 : PanePropertiesModel = {  }
+                splitterObj.addPane(paneContent3, 4);
+                expect(splitterObj.allPanes.length).toEqual(4);
+                expect(splitterObj.allBars.length).toEqual(3);
+             })
+        });
+
+        describe('Get Previous and next pane on RTL mode', () => {
+            appendSplitterStyles();
+            let splitterObj: any;
+            beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default'});
+                element.style.width ='300px';
+                let child1: HTMLElement = createElement('div');
+                let child2: HTMLElement = createElement('div');
+                let child3: HTMLElement = createElement('div');
+                element.appendChild(child1);
+                element.appendChild(child2);
+                element.appendChild(child3);
+                document.body.appendChild(element);
+                splitterObj = new Splitter({ enableRtl: true, orientation: 'Vertical', paneSettings: [{ size: '50%', min: '10px' }, { size: '50%', min: '20px', }]});
+                splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+                document.body.innerHTML = '';
+            });
+    
+            it('on split bar', () => {
+                let mouseEvent = document.createEvent ('MouseEvents');
+                mouseEvent.initEvent ('mousedown', true, true);
+                (document.querySelector('.e-split-bar-vertical') as HTMLElement).dispatchEvent(mouseEvent);
+                expect(splitterObj.previousPane).toBe(splitterObj.element.querySelectorAll('.e-pane-vertical')[0]);
+                expect(splitterObj.nextPane).toBe(splitterObj.element.querySelectorAll('.e-pane-vertical')[1]);
+            });
+        });
+    
+ });

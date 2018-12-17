@@ -1,11 +1,11 @@
-import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, closest, createElement, extend, formatUnit, getInstance, isNullOrUndefined, prepend, remove, removeClass, setStyleAttribute } from '@syncfusion/ej2-base';
-import { DataManager, Query } from '@syncfusion/ej2-data';
+import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, closest, createElement, extend, formatUnit, getInstance, isNullOrUndefined, prepend, remove, removeClass, setCurrencyCode, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Dialog, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { ColumnChooser, CommandColumn, ContextMenu, Edit, ExcelExport, Freeze, Grid, Page, PdfExport, Reorder, Resize, Selection, Toolbar, VirtualScroll, headerRefreshed, setStyleAndAttributes } from '@syncfusion/ej2-grids';
 import { Workbook } from '@syncfusion/ej2-excel-export';
 import { PdfColor, PdfDocument, PdfFontFamily, PdfFontStyle, PdfGrid, PdfLayoutFormat, PdfPageTemplateElement, PdfPen, PdfSolidBrush, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfVerticalAlignment, PointF, RectangleF } from '@syncfusion/ej2-pdf-export';
 import { Accordion, ContextMenu as ContextMenu$1, Tab, TreeView } from '@syncfusion/ej2-navigations';
-import { ColorPicker, MaskedTextBox } from '@syncfusion/ej2-inputs';
+import { DataManager, Query } from '@syncfusion/ej2-data';
+import { ColorPicker, MaskedTextBox, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { DatePicker } from '@syncfusion/ej2-calendars';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
@@ -119,12 +119,12 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
         this.valueSortSettings = dataSource.valueSortSettings ||
             { sortOrder: 'None', headerDelimiter: '.', headerText: '', columnIndex: undefined };
         this.valueSortData = [];
+        this.pageSettings = pageSettings ? pageSettings : this.pageSettings;
         this.savedFieldList = savedFieldList;
         this.isDrillThrough = isDrillThrough ? isDrillThrough : false;
         this.getFieldList(fields, this.enableSort, dataSource.allowValueFilter);
         this.fillFieldMembers(dataSource.data, this.indexMatrix);
         this.updateSortSettings(dataSource.sortSettings, this.enableSort);
-        this.pageSettings = pageSettings ? pageSettings : this.pageSettings;
         this.valueMatrix = this.generateValueMatrix(dataSource.data);
         this.filterMembers = [];
         this.updateFilterMembers(dataSource);
@@ -318,7 +318,11 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                 if (!isNullOrUndefined(mkey)) {
                     if (!isDataAvail) {
                         var fKey = mkey;
-                        var formattedValue = this.getFormattedValue(mkey, key);
+                        var formattedValue = (this.pageSettings &&
+                            !(this.formatFields[key] && this.formatFields[key].type === 'date')) ? ({
+                            formattedText: isNullOrUndefined(mkey) ? mkey : mkey.toString(),
+                            actualText: mkey
+                        }) : this.getFormattedValue(mkey, key);
                         if (formattedValue.formattedText) {
                             fKey = formattedValue.formattedText;
                         }
@@ -522,8 +526,9 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                     var member = members_1[_i];
                     var operand1 = this.getParsedValue(filterElement.name, filterElement.value1);
                     var operand2 = this.getParsedValue(filterElement.name, filterElement.value2);
+                    var cValue = this.getParsedValue(filterElement.name, member);
                     /* tslint:disable-next-line:max-line-length */
-                    if (this.validateFilterValue(parseInt(member, 10), filterElement.condition, operand1, operand2)) {
+                    if (this.validateFilterValue(cValue, filterElement.condition, operand1, operand2)) {
                         filterElement.items.push(member);
                     }
                 }
@@ -700,7 +705,8 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
             field.filter = filter;
             field.filterType = type;
             field.isExcelFilter = isLabelFilter;
-            var members = field.formattedMembers;
+            var members = (_this.formatFields[name] && _this.formatFields[name].type === 'date') ?
+                field.formattedMembers : field.members;
             var allowFil = isInclude;
             var final = {};
             var filterObj = {};
@@ -798,13 +804,14 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
         }
     };
     PivotEngine.prototype.getParsedValue = function (measure, value) {
+        var cValue = value ? value.toString() : '';
         if (this.formatFields[measure] && value) {
             var formatSetting = extend({}, this.formatFields[measure], null, true);
             delete formatSetting.name;
-            return this.globalize.parseNumber(value, formatSetting);
+            return this.globalize.parseNumber(cValue, formatSetting);
         }
         else {
-            return parseInt(value, 10);
+            return this.globalize.parseNumber(cValue, { format: 'N' });
         }
     };
     PivotEngine.prototype.removefilteredData = function (row, rowFilterData) {
@@ -1391,7 +1398,8 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                     continue;
                 }
                 member.isDrilled = member.hasChild ? childrens.members[headerValue].isDrilled : false;
-                var formattedValue = this.getFormattedValue(headerValue, fieldName);
+                var formattedValue = (this.formatFields[fieldName] && this.formatFields[fieldName].type === 'date') ?
+                    this.getFormattedValue(headerValue, fieldName) : { formattedText: headerValue.toString(), actualText: headerValue };
                 member.actualText = formattedValue.actualText;
                 member.formattedText = formattedValue.formattedText;
                 var availData = showNoDataItems ? (this.filterPosObj[position[pos]] !== undefined &&
@@ -1473,12 +1481,17 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                     /* tslint:enable:align */
                 }
             }
+            /* tslint:disable:typedef */
             if (this.enableSort) {
-                return new DataManager(hierarchy).executeLocal(new Query().sortBy('actualText', childrens.sort.toLowerCase()));
+                //return new DataManager(hierarchy as JSON[]).executeLocal(new Query().sortBy('actualText', childrens.sort.toLowerCase()));
+                return childrens.sort === 'Ascending' ?
+                    (hierarchy.sort(function (a, b) { return (a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0); })) :
+                    (hierarchy.sort(function (a, b) { return (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0); }));
             }
             else {
                 return hierarchy;
             }
+            /* tslint:enable:typedef */
         }
         else {
             return hierarchy;
@@ -1504,7 +1517,9 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                 var member = {};
                 var memInd = this.indexMatrix[position[pos]][childrens.index];
                 var slicedHeader = slicedHeaders[orderedIndex[memInd]];
-                var formattedValue = this.getFormattedValue(data[position[pos]][field], field);
+                var formattedValue = (this.formatFields[field] && this.formatFields[field].type === 'date') ?
+                    this.getFormattedValue(data[position[pos]][field], field) :
+                    { formattedText: data[position[pos]][field].toString(), actualText: data[position[pos]][field].toString() };
                 if (!(slicedHeader && slicedHeader.formattedText === formattedValue.formattedText)) {
                     continue;
                 }
@@ -2631,7 +2646,9 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                             actualFormula = (actualFormula).replace(aggregatedValue.formula, value_1.toString());
                         }
                     }
-                    cellValue = this.evaluate(actualFormula);
+                    // /* tslint:disable */
+                    cellValue = eval(actualFormula);
+                    // /* tslint:enable */
                     JSON.parse(cellValue.toString());
                 }
                 ri++;
@@ -2672,6 +2689,7 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
         return ((type && type.toLowerCase() === 'avg' && cellValue !== 0) ? (cellValue / avgCnt) : cellValue);
     };
     /* tslint:enable */
+    /** hidden */
     PivotEngine.prototype.getFormattedValue = function (value, fieldName) {
         var formattedValue = {
             formattedText: value !== undefined ? value === null ? 'null' : value.toString() : undefined,
@@ -2719,10 +2737,6 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
         }
         return formula;
     };
-    PivotEngine.prototype.evaluate = function (obj) {
-        return Function('"use strict";return (' + obj + ')')();
-    };
-    
     return PivotEngine;
 }());
 
@@ -3225,6 +3239,12 @@ var CHECKBOX_LAYOUT = 'e-checkbox-layout';
 var DEFER_UPDATE_BUTTON = 'e-defer-update-btn';
 /** @hidden */
 var HEADERCONTENT = 'e-headercontent';
+/** @hidden */
+var BACK_ICON = 'e-field-list-back-icon';
+/** @hidden */
+var TITLE_MOBILE_HEADER = 'e-title-mobile-header';
+/** @hidden */
+var TITLE_MOBILE_CONTENT = 'e-title-mobile-content';
 
 /**
  * Module to render PivotGrid control
@@ -3462,7 +3482,6 @@ var Render = /** @__PURE__ @class */ (function () {
             args.column.customAttributes.cell.valueSort.levelName;
         this.parent.resizeInfo[column] =
             Number(args.column.width.toString().split('px')[0]);
-        this.parent.grid.headerModule.refreshUI();
         this.setGroupWidth(args);
     };
     Render.prototype.setGroupWidth = function (args) {
@@ -3871,7 +3890,7 @@ var Render = /** @__PURE__ @class */ (function () {
         this.parent.triggerColumnRenderEvent(integrateModel);
         return integrateModel;
     };
-    /** hidden */
+    /** @hidden */
     Render.prototype.setSavedWidth = function (column, width) {
         width = this.parent.resizeInfo[column] ? this.parent.resizeInfo[column] : width;
         return width;
@@ -5321,6 +5340,7 @@ var DrillThroughDialog = /** @__PURE__ @class */ (function () {
             isModal: true,
             visible: true,
             showCloseIcon: true,
+            locale: this.parent.locale,
             enableRtl: this.parent.enableRtl,
             width: this.parent.isAdaptive ? '100%' : '60%',
             position: { X: 'center', Y: 'center' },
@@ -5397,6 +5417,7 @@ var DrillThroughDialog = /** @__PURE__ @class */ (function () {
             showColumnChooser: true,
             toolbar: toolbarItems,
             columns: this.frameGridColumns(),
+            locale: this.parent.locale,
             enableRtl: this.parent.enableRtl,
             enableVirtualization: this.parent.editSettings.allowEditing,
             allowPaging: this.parent.editSettings.allowEditing
@@ -5424,7 +5445,7 @@ var DrillThroughDialog = /** @__PURE__ @class */ (function () {
             }
             /* tslint:disable:align */
             this.drillThroughGrid.columns.push({
-                field: '__index', visible: false, isPrimaryKey: true, type: 'number', showInColumnChooser: false
+                field: '__index', visible: false, isPrimaryKey: true, type: 'string', showInColumnChooser: false
             });
             /* tslint:disable-next-line:no-any */
             this.drillThroughGrid.actionComplete = function (args) {
@@ -5472,7 +5493,8 @@ var DrillThroughDialog = /** @__PURE__ @class */ (function () {
                     width: 120,
                     visible: this.parent.engineModule.fieldList[key].isSelected,
                     validationRules: { required: true },
-                    editType: editType
+                    editType: editType,
+                    type: 'string'
                 });
             }
         }
@@ -5923,23 +5945,24 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.isDragging = false;
         this.addInternalEvents();
+        setCurrencyCode(this.currencyCode);
     };
     PivotView.prototype.onBeforeTooltipOpen = function (args) {
         args.element.classList.add('e-pivottooltipwrap');
     };
     PivotView.prototype.renderToolTip = function () {
         if (this.showTooltip) {
-            this.toolTip = new Tooltip({
+            this.tooltip = new Tooltip({
                 target: 'td.e-valuescontent',
                 showTipPointer: false,
                 enableRtl: this.enableRtl,
                 beforeRender: this.setToolTip.bind(this),
                 beforeOpen: this.onBeforeTooltipOpen
             });
-            this.toolTip.appendTo(this.element);
+            this.tooltip.appendTo(this.element);
         }
-        else if (this.toolTip) {
-            this.toolTip.destroy();
+        else if (this.tooltip) {
+            this.tooltip.destroy();
         }
     };
     /* tslint:disable:align */
@@ -6095,8 +6118,8 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'locale':
                 case 'currencyCode':
-                    if (this.toolTip) {
-                        this.toolTip.destroy();
+                    if (this.tooltip) {
+                        this.tooltip.destroy();
                     }
                     _super.prototype.refresh.call(this);
                     break;
@@ -6341,6 +6364,10 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             this.element.style.minWidth = '400px';
             this.grid.element.style.minWidth = '400px';
         }
+        else {
+            this.element.style.minWidth = '310px';
+            this.grid.element.style.minWidth = '310px';
+        }
         this.unwireEvents();
         this.wireEvents();
     };
@@ -6348,9 +6375,9 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         var colIndex = Number(args.target.getAttribute('aria-colindex'));
         var rowIndex = Number(args.target.getAttribute('index'));
         var cell = this.pivotValues[rowIndex][colIndex];
-        this.toolTip.content = '';
+        this.tooltip.content = '';
         if (cell) {
-            this.toolTip.content = '<div class=' + PIVOTTOOLTIP + '><p class=' + TOOLTIP_HEADER + '>' +
+            this.tooltip.content = '<div class=' + PIVOTTOOLTIP + '><p class=' + TOOLTIP_HEADER + '>' +
                 this.localeObj.getConstant('row') + ':</p><p class=' + TOOLTIP_CONTENT + '>' +
                 this.getRowText(rowIndex, 0) +
                 '</p></br><p class=' + TOOLTIP_HEADER + '>' +
@@ -6535,7 +6562,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             /* tslint:enable */
         }
     };
-    /** hidden */
+    /** @hidden */
     PivotView.prototype.triggerColumnRenderEvent = function (gridcolumns) {
         this.pivotColumns = [];
         this.totColWidth = 0;
@@ -6552,7 +6579,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         this.posCount = 0;
         this.setGridColumns(gridcolumns);
     };
-    /** hidden */
+    /** @hidden */
     PivotView.prototype.setCommonColumnsWidth = function (columns, width) {
         for (var _i = 0, columns_1 = columns; _i < columns_1.length; _i++) {
             var column = columns_1[_i];
@@ -7153,9 +7180,9 @@ var EventBase = /** @__PURE__ @class */ (function () {
         var filterObj = this.getFilterItemByName(fieldName);
         if (!isNullOrUndefined(filterObj)) {
             isInclude = filterObj.type === 'Include' ? true : false;
-            filterItems = filterObj.items;
+            filterItems = filterObj.items ? filterObj.items : [];
         }
-        var treeData = this.getTreeData(isInclude, this.parent.engineModule.fieldList[fieldName].dateMember, filterItems);
+        var treeData = this.getTreeData(isInclude, this.parent.engineModule.fieldList[fieldName].dateMember, filterItems, fieldName);
         if (this.parent.filterDialog.dialogPopUp) {
             this.parent.filterDialog.dialogPopUp.close();
         }
@@ -7230,16 +7257,13 @@ var EventBase = /** @__PURE__ @class */ (function () {
         }
         else {
             var searchList = [];
+            this.parent.searchTreeItems = [];
             var memberCount = 0;
+            memberCount = 1;
             for (var _a = 0, _b = this.parent.currentTreeItems; _a < _b.length; _a++) {
                 var item = _b[_a];
-                item.checkedStatus = this.parent.savedTreeFilterPos[memberCount] !== undefined ? false : true;
-                memberCount++;
-            }
-            memberCount = 1;
-            for (var _c = 0, _d = this.parent.currentTreeItems; _c < _d.length; _c++) {
-                var item = _d[_c];
                 if (item.name.toLowerCase().indexOf(args.value.toLowerCase()) > -1) {
+                    this.parent.searchTreeItems.push(item);
                     if (memberCount <= this.parent.control.maxNodeLimitInMemberEditor) {
                         searchList.push(item);
                     }
@@ -7264,10 +7288,13 @@ var EventBase = /** @__PURE__ @class */ (function () {
             treeObj.dataBind();
         }
     };
-    EventBase.prototype.getTreeData = function (isInclude, members, filterItems) {
+    EventBase.prototype.getTreeData = function (isInclude, members, filterItems, fieldName) {
         this.parent.currentTreeItems = [];
+        this.parent.searchTreeItems = [];
         this.parent.currentTreeItemsPos = {};
         this.parent.savedTreeFilterPos = {};
+        this.parent.isDateField = this.parent.engineModule.formatFields[fieldName] &&
+            this.parent.engineModule.formatFields[fieldName].type === 'date';
         var list = [];
         var memberCount = 1;
         var filterObj = {};
@@ -7277,25 +7304,27 @@ var EventBase = /** @__PURE__ @class */ (function () {
         }
         for (var _a = 0, members_1 = members; _a < members_1.length; _a++) {
             var member = members_1[_a];
+            var memberName = this.parent.isDateField ? member.formattedText : member.actualText.toString();
             var obj = {
-                id: member.formattedText,
-                name: member.formattedText,
+                id: member.actualText.toString(),
+                name: memberName,
                 checkedStatus: isInclude ? false : true
             };
-            if (filterObj[member.formattedText] !== undefined) {
+            if (filterObj[memberName] !== undefined) {
                 obj.checkedStatus = isInclude ? true : false;
             }
             if (memberCount <= this.parent.control.maxNodeLimitInMemberEditor) {
                 list.push(obj);
             }
             if (!obj.checkedStatus) {
-                this.parent.savedTreeFilterPos[memberCount - 1] = member.formattedText;
+                this.parent.savedTreeFilterPos[memberCount - 1] = memberName;
             }
             this.parent.currentTreeItems.push(obj);
-            this.parent.currentTreeItemsPos[member.formattedText] = memberCount - 1;
+            this.parent.searchTreeItems.push(obj);
+            this.parent.currentTreeItemsPos[member.actualText] = memberCount - 1;
             memberCount++;
         }
-        this.parent.isDataOverflow = (memberCount > this.parent.control.maxNodeLimitInMemberEditor);
+        this.parent.isDataOverflow = ((memberCount - 1) > this.parent.control.maxNodeLimitInMemberEditor);
         return list;
     };
     return EventBase;
@@ -7696,6 +7725,7 @@ var FilterDialog = /** @__PURE__ @class */ (function () {
             placeholder: this.parent.localeObj.getConstant('search') + ' ' + '"' + fieldCaption + '"',
             enableRtl: this.parent.enableRtl,
             cssClass: EDITOR_SEARCH_CLASS,
+            showClearButton: true,
             change: function (e) {
                 _this.parent.eventBase.searchTreeNodes(e, _this.memberTreeView, false);
                 var filterDialog = _this.dialogPopUp.element;
@@ -7874,7 +7904,7 @@ var FilterDialog = /** @__PURE__ @class */ (function () {
         mainDiv.appendChild(filterWrapperDiv2);
         return mainDiv;
     };
-    /* tslint:disable-next-line:max-line-length */
+    /* tslint:disable */
     FilterDialog.prototype.createElements = function (filterObj, operators, optionDiv1, optionDiv2, inputDiv1, inputDiv2, vDataSource, oDataSource, valueIndex, option, type) {
         var popupInstance = this;
         var optionWrapper1 = new DropDownList({
@@ -7883,8 +7913,13 @@ var FilterDialog = /** @__PURE__ @class */ (function () {
             cssClass: VALUE_OPTIONS_CLASS, width: '100%',
             change: function (args) {
                 var element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
-                setStyleAndAttributes(element, { 'data-measure': args.value });
+                if (!isNullOrUndefined(element)) {
+                    popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
+                    setStyleAndAttributes(element, { 'data-measure': args.value });
+                }
+                else {
+                    return;
+                }
             }
         });
         optionWrapper1.appendTo(optionDiv1);
@@ -7894,18 +7929,23 @@ var FilterDialog = /** @__PURE__ @class */ (function () {
             cssClass: FILTER_OPERATOR_CLASS, width: '100%',
             change: function (args) {
                 var element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
-                var disabledClasses = [BETWEEN_TEXT_DIV_CLASS, FILTER_INPUT_DIV_2_CLASS];
-                for (var _i = 0, disabledClasses_1 = disabledClasses; _i < disabledClasses_1.length; _i++) {
-                    var className = disabledClasses_1[_i];
-                    if (operators.indexOf(args.value) >= 0) {
-                        removeClass([element.querySelector('.' + className)], ICON_DISABLE);
+                if (!isNullOrUndefined(element)) {
+                    popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
+                    var disabledClasses = [BETWEEN_TEXT_DIV_CLASS, FILTER_INPUT_DIV_2_CLASS];
+                    for (var _i = 0, disabledClasses_1 = disabledClasses; _i < disabledClasses_1.length; _i++) {
+                        var className = disabledClasses_1[_i];
+                        if (operators.indexOf(args.value) >= 0) {
+                            removeClass([element.querySelector('.' + className)], ICON_DISABLE);
+                        }
+                        else {
+                            addClass([element.querySelector('.' + className)], ICON_DISABLE);
+                        }
                     }
-                    else {
-                        addClass([element.querySelector('.' + className)], ICON_DISABLE);
-                    }
+                    setStyleAndAttributes(element, { 'data-operator': args.value });
                 }
-                setStyleAndAttributes(element, { 'data-operator': args.value });
+                else {
+                    return;
+                }
             }
         });
         optionWrapper.appendTo(optionDiv2);
@@ -7914,10 +7954,16 @@ var FilterDialog = /** @__PURE__ @class */ (function () {
                 placeholder: this.parent.localeObj.getConstant('chooseDate'),
                 enableRtl: this.parent.enableRtl,
                 format: 'dd/MM/yyyy',
+                showClearButton: true,
                 value: (filterObj && option === filterObj.condition ? filterObj.value1 : null),
                 change: function (e) {
                     var element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                    setStyleAndAttributes(element, { 'data-value1': e.value, 'data-value2': inputObj2_1.value });
+                    if (!isNullOrUndefined(element)) {
+                        setStyleAndAttributes(element, { 'data-value1': e.value, 'data-value2': inputObj2_1.value });
+                    }
+                    else {
+                        return;
+                    }
                 },
                 width: '100%',
             });
@@ -7925,39 +7971,100 @@ var FilterDialog = /** @__PURE__ @class */ (function () {
                 placeholder: this.parent.localeObj.getConstant('chooseDate'),
                 enableRtl: this.parent.enableRtl,
                 format: 'dd/MM/yyyy',
+                showClearButton: true,
                 value: (filterObj && option === filterObj.condition ? filterObj.value2 : null),
                 change: function (e) {
                     var element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                    setStyleAndAttributes(element, { 'data-value1': inputObj1_1.value, 'data-value2': e.value });
+                    if (!isNullOrUndefined(element)) {
+                        setStyleAndAttributes(element, { 'data-value1': inputObj1_1.value, 'data-value2': e.value });
+                    }
+                    else {
+                        return;
+                    }
                 },
                 width: '100%',
             });
             inputObj1_1.appendTo(inputDiv1);
             inputObj2_1.appendTo(inputDiv2);
         }
-        else {
-            var inputObj1_2 = new MaskedTextBox({
+        else if (type === 'value') {
+            var inputObj1_2 = new NumericTextBox({
                 placeholder: this.parent.localeObj.getConstant('enterValue'),
                 enableRtl: this.parent.enableRtl,
-                value: (filterObj && option === filterObj.condition ? filterObj.value1 : ''),
+                showClearButton: true,
+                format: '###.##',
+                value: (filterObj && option === filterObj.condition ? parseInt(filterObj.value1, 10) : undefined),
                 change: function (e) {
                     var element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                    setStyleAndAttributes(element, { 'data-value1': e.value, 'data-value2': inputObj2_2.value });
+                    if (!isNullOrUndefined(element)) {
+                        setStyleAndAttributes(element, {
+                            'data-value1': (e.value ? e.value.toString() : '0'),
+                            'data-value2': (inputObj2_2.value ? inputObj2_2.value.toString() : '0')
+                        });
+                    }
+                    else {
+                        return;
+                    }
                 }, width: '100%'
             });
-            var inputObj2_2 = new MaskedTextBox({
+            var inputObj2_2 = new NumericTextBox({
                 placeholder: this.parent.localeObj.getConstant('enterValue'),
                 enableRtl: this.parent.enableRtl,
-                value: (filterObj && option === filterObj.condition ? filterObj.value2 : ''),
+                showClearButton: true,
+                format: '###.##',
+                value: (filterObj && option === filterObj.condition ? parseInt(filterObj.value2, 10) : undefined),
                 change: function (e) {
                     var element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                    setStyleAndAttributes(element, { 'data-value1': inputObj1_2.value, 'data-value2': e.value });
+                    if (!isNullOrUndefined(element)) {
+                        setStyleAndAttributes(element, {
+                            'data-value1': (inputObj1_2.value ? inputObj1_2.value.toString() : '0'),
+                            'data-value2': (e.value ? e.value.toString() : '0')
+                        });
+                    }
+                    else {
+                        return;
+                    }
                 }, width: '100%'
             });
             inputObj1_2.appendTo(inputDiv1);
             inputObj2_2.appendTo(inputDiv2);
         }
+        else {
+            var inputObj1_3 = new MaskedTextBox({
+                placeholder: this.parent.localeObj.getConstant('enterValue'),
+                enableRtl: this.parent.enableRtl,
+                showClearButton: true,
+                value: (filterObj && option === filterObj.condition ? filterObj.value1 : ''),
+                change: function (e) {
+                    var element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
+                    if (!isNullOrUndefined(element)) {
+                        setStyleAndAttributes(element, { 'data-value1': e.value, 'data-value2': inputObj2_3.value });
+                    }
+                    else {
+                        return;
+                    }
+                }, width: '100%'
+            });
+            var inputObj2_3 = new MaskedTextBox({
+                placeholder: this.parent.localeObj.getConstant('enterValue'),
+                enableRtl: this.parent.enableRtl,
+                showClearButton: true,
+                value: (filterObj && option === filterObj.condition ? filterObj.value2 : ''),
+                change: function (e) {
+                    var element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
+                    if (!isNullOrUndefined(element)) {
+                        setStyleAndAttributes(element, { 'data-value1': inputObj1_3.value, 'data-value2': e.value });
+                    }
+                    else {
+                        return;
+                    }
+                }, width: '100%'
+            });
+            inputObj1_3.appendTo(inputDiv1);
+            inputObj2_3.appendTo(inputDiv2);
+        }
     };
+    /* tslint:enable */
     FilterDialog.prototype.updateInputValues = function (element, type, inputDiv1, inputDiv2) {
         var value1;
         var value2;
@@ -8004,27 +8111,30 @@ var FilterDialog = /** @__PURE__ @class */ (function () {
                     removeClass([firstNode], NODE_STOP_CLASS);
                     addClass([firstNode], NODE_CHECK_CLASS);
                 }
+                this.dialogPopUp.buttons[0].buttonModel.disabled = false;
                 filterDialog.querySelector('.' + OK_BUTTON_CLASS).removeAttribute('disabled');
             }
             else if (uncheckedNodes.length > 0 && checkedNodes.length === 0) {
                 removeClass([firstNode], [NODE_CHECK_CLASS, NODE_STOP_CLASS]);
                 if (this.getCheckedNodes().length === checkedNodes.length) {
+                    this.dialogPopUp.buttons[0].buttonModel.disabled = true;
                     filterDialog.querySelector('.' + OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
                 }
             }
         }
         else {
+            this.dialogPopUp.buttons[0].buttonModel.disabled = true;
             filterDialog.querySelector('.' + OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
         }
     };
     FilterDialog.prototype.getCheckedNodes = function () {
-        var checkeNodes = this.parent.currentTreeItems.filter(function (item) {
+        var checkeNodes = this.parent.searchTreeItems.filter(function (item) {
             return item.checkedStatus;
         });
         return checkeNodes;
     };
     FilterDialog.prototype.getUnCheckedNodes = function () {
-        var unCheckeNodes = this.parent.currentTreeItems.filter(function (item) {
+        var unCheckeNodes = this.parent.searchTreeItems.filter(function (item) {
             return !item.checkedStatus;
         });
         return unCheckeNodes;
@@ -8094,7 +8204,11 @@ var PivotCommon = /** @__PURE__ @class */ (function () {
         /** @hidden */
         this.currentTreeItemsPos = {};
         /** @hidden */
+        this.searchTreeItems = [];
+        /** @hidden */
         this.isDataOverflow = false;
+        /** @hidden */
+        this.isDateField = false;
         this.element = control.element;
         this.moduleName = control.moduleName;
         this.dataSource = control.dataSource;
@@ -8199,13 +8313,13 @@ var DialogRenderer = /** @__PURE__ @class */ (function () {
     };
     DialogRenderer.prototype.renderDeferUpdateButtons = function () {
         if (this.parent.allowDeferLayoutUpdate) {
-            var checkBoxObj = new CheckBox({
+            this.deferUpdateCheckBox = new CheckBox({
                 label: this.parent.localeObj.getConstant('deferLayoutUpdate'),
                 checked: true,
                 enableRtl: this.parent.enableRtl,
                 change: this.onCheckChange.bind(this)
             });
-            checkBoxObj.appendTo('#' + this.parent.element.id + 'DeferUpdateCheckBox');
+            this.deferUpdateCheckBox.appendTo('#' + this.parent.element.id + 'DeferUpdateCheckBox');
             this.deferUpdateApplyButton = new Button({
                 cssClass: DEFER_APPLY_BUTTON + ' ' + DEFER_UPDATE_BUTTON + (this.parent.renderMode === 'Popup' ?
                     (' ' + BUTTON_FLAT_CLASS) : ''),
@@ -8305,6 +8419,9 @@ var DialogRenderer = /** @__PURE__ @class */ (function () {
         });
         this.parent.element.appendChild(toggleFieldList);
         if (this.parent.isAdaptive) {
+            var headerTemplate = '<div class=' + TITLE_MOBILE_HEADER + '><span class="' + ICON + ' ' +
+                BACK_ICON + '"></span><div class=' + TITLE_MOBILE_CONTENT + '>' + this.parent.localeObj.getConstant('fieldList') +
+                '</div></div>';
             var buttons = [{
                     click: this.showFieldListDialog.bind(this),
                     buttonModel: {
@@ -8320,27 +8437,10 @@ var DialogRenderer = /** @__PURE__ @class */ (function () {
                         iconCss: ICON + ' ' + ADD_ICON_CLASS, enableRtl: this.parent.enableRtl,
                         isPrimary: true
                     }
-                }, {
-                    click: this.onDeferUpdateClick.bind(this),
-                    buttonModel: {
-                        content: this.parent.localeObj.getConstant('apply'), enableRtl: this.parent.enableRtl,
-                        cssClass: DEFER_APPLY_BUTTON + ' ' + DEFER_UPDATE_BUTTON + ' ' + BUTTON_FLAT_CLASS,
-                        isPrimary: true
-                    }
-                }, {
-                    click: this.onCloseFieldList.bind(this),
-                    buttonModel: {
-                        cssClass: DEFER_CANCEL_BUTTON + ' ' + CANCEL_BUTTON_CLASS + ' ' + BUTTON_FLAT_CLASS,
-                        content: this.parent.allowDeferLayoutUpdate ? this.parent.localeObj.getConstant('cancel') :
-                            this.parent.localeObj.getConstant('close'),
-                        enableRtl: this.parent.enableRtl
-                    }
                 }];
-            if (!this.parent.allowDeferLayoutUpdate) {
-                buttons.splice(2, 1);
-            }
             this.fieldListDialog = new Dialog({
-                animationSettings: { effect: 'Zoom' },
+                animationSettings: { effect: this.parent.enableRtl ? 'SlideRight' : 'SlideLeft' },
+                header: headerTemplate,
                 content: this.parentElement,
                 isModal: true,
                 showCloseIcon: false,
@@ -8363,6 +8463,8 @@ var DialogRenderer = /** @__PURE__ @class */ (function () {
             addClass([footer], FIELD_LIST_FOOTER_CLASS);
             removeClass([footer.querySelector('.' + ADAPTIVE_CALCULATED_FIELD_BUTTON_CLASS)], BUTTON_FLAT_CLASS);
             removeClass([footer.querySelector('.' + ADAPTIVE_FIELD_LIST_BUTTON_CLASS)], BUTTON_FLAT_CLASS);
+            this.fieldListDialog.element.querySelector('.' + BACK_ICON).onclick =
+                this.parent.allowDeferLayoutUpdate ? this.onDeferUpdateClick.bind(this) : this.onCloseFieldList.bind(this);
         }
         else {
             var template = this.createDeferUpdateButtons().outerHTML;
@@ -9120,13 +9222,13 @@ var AggregateMenu = /** @__PURE__ @class */ (function () {
     };
     AggregateMenu.prototype.createContextMenu = function () {
         var menuItems = [
+            { text: 'Sum', id: 'Sum' },
             { text: 'Count', id: 'Count' },
-            { text: 'DistinctCount', id: 'DistinctCount' },
+            { text: 'Distinct Count', id: 'DistinctCount' },
+            { text: 'Product', id: 'Product' },
             { text: 'Avg', id: 'Avg' },
             { text: 'Min', id: 'Min' },
             { text: 'Max', id: 'Max' },
-            { text: 'Sum', id: 'Sum' },
-            { text: 'Product', id: 'Product' },
             { text: 'More...', id: 'MoreOption' }
         ];
         var menuOptions = {
@@ -9342,8 +9444,10 @@ var AggregateMenu = /** @__PURE__ @class */ (function () {
             else {
                 var field = buttonElement.getAttribute('data-uid');
                 var valuefields = this.parent.dataSource.values;
-                buttonElement.querySelector('.e-content').innerHTML = menu.item.text + ' ' + 'of' + ' ' +
-                    this.parent.engineModule.fieldList[field].caption;
+                var contentElement = buttonElement.querySelector('.e-content');
+                var captionName = menu.item.text + ' ' + 'of' + ' ' + this.parent.engineModule.fieldList[field].caption;
+                contentElement.innerHTML = captionName;
+                contentElement.setAttribute('title', captionName);
                 buttonElement.setAttribute('data-type', menu.item.id);
                 for (var vCnt = 0; vCnt < this.parent.dataSource.values.length; vCnt++) {
                     if (this.parent.dataSource.values[vCnt].name === field) {
@@ -9381,9 +9485,10 @@ var AggregateMenu = /** @__PURE__ @class */ (function () {
         var baseItemInstance = getInstance('#' + this.parentElement.id + '_base_item_option', DropDownList);
         var fieldName = dialogElement.getAttribute('data-field');
         var buttonElement = this.parentElement.querySelector('.' + PIVOT_BUTTON_CLASS + '#' + fieldName);
-        buttonElement.querySelector('.e-content').innerHTML =
-            this.parent.localeObj.getConstant(summaryInstance.value)
-                + ' ' + 'of' + ' ' + captionInstance.value;
+        var contentElement = buttonElement.querySelector('.e-content');
+        var captionName = this.parent.localeObj.getConstant(summaryInstance.value) + ' ' + 'of' + ' ' + captionInstance.value;
+        contentElement.innerHTML = captionName;
+        contentElement.setAttribute('title', captionName);
         buttonElement.setAttribute('data-type', summaryInstance.value);
         buttonElement.setAttribute('data-caption', captionInstance.value);
         buttonElement.setAttribute('data-basefield', baseFieldInstance.value);
@@ -9576,6 +9681,7 @@ var PivotButton = /** @__PURE__ @class */ (function () {
         var text = field[i].caption ? field[i].caption : field[i].name;
         buttonText = createElement('span', {
             attrs: {
+                title: ((axis !== 'values' || aggregation === 'CalculatedField') ? text : this.parent.localeObj.getConstant(aggregation) + ' ' + 'of' + ' ' + text),
                 'tabindex': '-1', 'aria-disabled': 'false', 'oncontextmenu': 'return false;',
                 'data-type': valuePos === i ? '' : aggregation
             },
@@ -9845,6 +9951,13 @@ var PivotButton = /** @__PURE__ @class */ (function () {
                     /* tslint:disable-next-line:max-line-length */
                     addClass([_this.dialogPopUp.element.querySelector('.e-filter-div-content' + '.' + (e.selectedIndex === 1 && _this.parent.dataSource.allowLabelFilter ? 'e-label-filter' : 'e-value-filter'))], 'e-selected-tab');
                 }
+                if (e.selectedIndex === 0) {
+                    _this.parent.pivotCommon.filterDialog.updateCheckedState();
+                }
+                else {
+                    _this.dialogPopUp.buttons[0].buttonModel.disabled = false;
+                    _this.dialogPopUp.element.querySelector('.' + OK_BUTTON_CLASS).removeAttribute('disabled');
+                }
             };
         }
         else {
@@ -9873,6 +9986,14 @@ var PivotButton = /** @__PURE__ @class */ (function () {
             value1: filterType === 'date' ? new Date(operand1) : operand1,
             value2: filterType === 'date' ? new Date(operand2) : operand2
         };
+        if ((isNullOrUndefined(operand1) || operand1 === '') ||
+            (['Between', 'NotBetween'].indexOf(operator) > -1 && (isNullOrUndefined(operand2) || operand2 === ''))) {
+            var inputElementString = (type.toLowerCase() + ((isNullOrUndefined(operand1) || operand1 === '') ? '_input_option_1' : '_input_option_2'));
+            var focusElement = dialogElement.querySelector('#' + this.parent.element.id + '_' + inputElementString);
+            addClass([focusElement], EMPTY_FIELD);
+            focusElement.focus();
+            return;
+        }
         var filterObject = this.parent.pivotCommon.eventBase.getFilterItemByName(fieldName);
         if (filterObject) {
             // this.removeDataSourceSettings(fieldName);
@@ -9941,28 +10062,44 @@ var PivotButton = /** @__PURE__ @class */ (function () {
         if (state === 'check') {
             for (var _i = 0, _a = this.parent.pivotCommon.currentTreeItems; _i < _a.length; _i++) {
                 var item = _a[_i];
-                item.checkedStatus = true;
+                for (var _b = 0, _c = this.parent.pivotCommon.searchTreeItems; _b < _c.length; _b++) {
+                    var searctItem = _c[_b];
+                    if (item.id === searctItem.id) {
+                        item.checkedStatus = true;
+                        searctItem.checkedStatus = true;
+                    }
+                }
             }
         }
         else {
-            for (var _b = 0, _c = this.parent.pivotCommon.currentTreeItems; _b < _c.length; _b++) {
-                var item = _c[_b];
-                item.checkedStatus = false;
+            for (var _d = 0, _e = this.parent.pivotCommon.currentTreeItems; _d < _e.length; _d++) {
+                var item = _e[_d];
+                for (var _f = 0, _g = this.parent.pivotCommon.searchTreeItems; _f < _g.length; _f++) {
+                    var searctItem = _g[_f];
+                    if (item.id === searctItem.id) {
+                        item.checkedStatus = false;
+                        searctItem.checkedStatus = false;
+                    }
+                }
             }
         }
     };
     PivotButton.prototype.updateFilterState = function (fieldName, args) {
-        var unCheckedNodeCount = 0;
+        var isNodeUnChecked = false;
         var filterItem = { items: [], name: fieldName, type: 'Include' };
-        for (var _i = 0, _a = this.parent.pivotCommon.currentTreeItems; _i < _a.length; _i++) {
+        for (var _i = 0, _a = this.parent.pivotCommon.searchTreeItems; _i < _a.length; _i++) {
             var item = _a[_i];
             if (item.checkedStatus) {
-                filterItem.items.push(item.id);
-            }
-            else {
-                unCheckedNodeCount = unCheckedNodeCount + 1;
+                if (this.parent.pivotCommon.isDateField) {
+                    filterItem.items.push(item.name);
+                }
+                else {
+                    filterItem.items.push(item.id);
+                }
             }
         }
+        isNodeUnChecked = (filterItem.items.length === this.parent.pivotCommon.currentTreeItems.length ?
+            false : true);
         var filterObject = this.parent.pivotCommon.eventBase.getFilterItemByName(fieldName);
         if (filterObject) {
             for (var i = 0; i < this.parent.dataSource.filterSettings.length; i++) {
@@ -9977,8 +10114,8 @@ var PivotButton = /** @__PURE__ @class */ (function () {
             this.parent.dataSource.filterSettings.push(filterItem);
         }
         this.dialogPopUp.close();
-        this.refreshPivotButtonState(fieldName, (unCheckedNodeCount > 0) ? true : false);
-        if (unCheckedNodeCount === 0) {
+        this.refreshPivotButtonState(fieldName, isNodeUnChecked);
+        if (!isNodeUnChecked) {
             this.removeDataSourceSettings(fieldName);
         }
         this.updateDataSource(true);
@@ -10518,7 +10655,7 @@ var PivotFieldList = /** @__PURE__ @class */ (function (_super) {
             var pageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined;
             var enableValueSorting = this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined;
             var isDrillThrough = this.pivotGridModule ?
-                (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : undefined;
+                (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true;
             this.engineModule =
                 new PivotEngine(this.dataSource, '', this.pivotFieldList, pageSettings, enableValueSorting, isDrillThrough);
             this.getFieldCaption(this.dataSource);
@@ -10628,6 +10765,10 @@ var PivotFieldList = /** @__PURE__ @class */ (function (_super) {
         if (this.pivotButtonModule) {
             this.pivotButtonModule.destroy();
         }
+        if (this.allowDeferLayoutUpdate && this.dialogRenderer &&
+            this.dialogRenderer.deferUpdateCheckBox && !this.dialogRenderer.deferUpdateCheckBox.isDestroyed) {
+            this.dialogRenderer.deferUpdateCheckBox.destroy();
+        }
         _super.prototype.destroy.call(this);
         this.element.innerHTML = '';
         removeClass([this.element], ROOT);
@@ -10719,7 +10860,7 @@ var SUM = 'Sum';
 var DISTINCTCOUNT = 'DistinctCount';
 var PRODUCT = 'Product';
 var STDEV = 'SampleStDev';
-var STDEVP = 'Popultion StDev';
+var STDEVP = 'PopulationStDev';
 var VAR = 'SampleVar';
 var VARP = 'PopulationVar';
 var CALC = 'CalculatedField';
@@ -11150,11 +11291,11 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
             outerDiv.appendChild(accordDiv);
             var buttonDiv = createElement('div', { id: this.parentID + 'buttonDiv', className: CALCBUTTONDIV });
             var addBtn = createElement('button', {
-                id: this.parentID + 'addBtn', innerHTML: 'ADD',
+                id: this.parentID + 'addBtn', innerHTML: this.parent.localeObj.getConstant('add'),
                 className: CALCADDBTN
             });
             var cancelBtn = createElement('button', {
-                id: this.parentID + 'cancelBtn', innerHTML: 'CANCEL',
+                id: this.parentID + 'cancelBtn', innerHTML: this.parent.localeObj.getConstant('cancel'),
                 className: CALCCANCELBTN
             });
             buttonDiv.appendChild(cancelBtn);
@@ -11287,7 +11428,7 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
     CalculatedField.prototype.createTypeContainer = function (key) {
         var wrapDiv = createElement('div', { id: this.parentID + 'control_wrapper', className: TREEVIEWOUTER });
         var type = [SUM, COUNT, AVG, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
-        for (var i = 0; i < 5; i++) {
+        for (var i = 0; i < type.length; i++) {
             var input = createElement('input', {
                 id: this.parentID + 'radio' + key + type[i],
                 attrs: { 'type': 'radio', 'data-ftxt': key },
@@ -11364,7 +11505,7 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
                             var type = [SUM, COUNT, AVG, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
                             var radiobutton;
                             if (key === args.element.querySelector('[data-field').getAttribute('data-field')) {
-                                for (var i = 0; i < 5; i++) {
+                                for (var i = 0; i < type.length; i++) {
                                     radiobutton = new RadioButton({
                                         label: type[i],
                                         name: AGRTYPE + key,
@@ -12070,10 +12211,14 @@ var GroupingBar = /** @__PURE__ @class */ (function () {
                 }
             }
             else {
-                var pivotButtons = [].slice.call(this.rowPanel.querySelectorAll('.' + PIVOT_BUTTON_WRAPPER_CLASS));
-                for (var _i = 0, pivotButtons_1 = pivotButtons; _i < pivotButtons_1.length; _i++) {
-                    var btn = pivotButtons_1[_i];
-                    btn.style.width = '140px';
+                if (!this.parent.firstColWidth) {
+                    var resColWidth = 180;
+                    var gridColumn = this.parent.grid.columns;
+                    if (gridColumn && gridColumn.length > 0) {
+                        gridColumn[0].width = resColWidth;
+                    }
+                    this.parent.posCount = 0;
+                    this.parent.grid.headerModule.refreshUI();
                 }
             }
         }
@@ -12327,7 +12472,7 @@ var ConditionalFormatting = /** @__PURE__ @class */ (function () {
         var value1 = createElement('input', {
             id: this.parentID + 'conditionvalue1' + i,
             attrs: { 'type': 'text', 'tabindex': '1', 'value': !isNullOrUndefined(format.value1) ? format.value1.toString() : '0' },
-            styles: this.parent.isAdaptive ? style === '' ? 'width: 28%' : 'width: 100%' : style === '' ? 'width: 45px' : 'width: 120px',
+            styles: this.parent.isAdaptive ? style === '' ? 'width: 35%' : 'width: 100%' : style === '' ? 'width: 45px' : 'width: 120px',
             className: INPUT + ' ' + FORMAT_VALUE1
         });
         td.appendChild(value1);
@@ -12339,7 +12484,7 @@ var ConditionalFormatting = /** @__PURE__ @class */ (function () {
         var value2 = createElement('input', {
             id: this.parentID + 'conditionvalue2' + i,
             attrs: { 'type': 'text', 'tabindex': '1', 'value': !isNullOrUndefined(format.value2) ? format.value2.toString() : '0' },
-            styles: (this.parent.isAdaptive && style === '') ? 'width: 28%' : style === '' ? 'width: 45px' : style,
+            styles: (this.parent.isAdaptive && style === '') ? 'width: 35%' : style === '' ? 'width: 45px' : style,
             className: INPUT + ' ' + FORMAT_VALUE2
         });
         td.appendChild(value2);
@@ -12421,7 +12566,7 @@ var ConditionalFormatting = /** @__PURE__ @class */ (function () {
         this.fieldsDropDown[i] = new DropDownList({
             dataSource: fields, fields: { text: 'name' },
             value: value, width: this.parent.isAdaptive ? '100%' : '120px',
-            popupHeight: '200px',
+            popupHeight: '200px', popupWidth: 'auto',
             change: function (args) {
                 _this.newFormat[i].measure = args.value.toString() === _this.parent.localeObj.getConstant('AllValues') ?
                     undefined : args.value.toString();
@@ -12442,7 +12587,7 @@ var ConditionalFormatting = /** @__PURE__ @class */ (function () {
         this.conditionsDropDown[i] = new DropDownList({
             dataSource: conditions, fields: { value: 'value', text: 'name' },
             value: value, width: this.parent.isAdaptive ? '100%' : '120px',
-            popupHeight: '200px', popupWidth: '200px',
+            popupHeight: '200px', popupWidth: 'auto',
             change: function (args) {
                 _this.newFormat[i].conditions = args.value;
                 if (args.value === 'Between' || args.value === 'NotBetween') {
@@ -12451,9 +12596,9 @@ var ConditionalFormatting = /** @__PURE__ @class */ (function () {
                         _this.parent.isAdaptive ? '10%' : '10px';
                     document.querySelector('#' + _this.parentID + 'conditionvalue2' + i).style.display = 'inline-block';
                     document.querySelector('#' + _this.parentID + 'conditionvalue2' + i).style.width =
-                        _this.parent.isAdaptive ? '28%' : '45px';
+                        _this.parent.isAdaptive ? '35%' : '45px';
                     document.querySelector('#' + _this.parentID + 'conditionvalue1' + i).style.width =
-                        _this.parent.isAdaptive ? '28%' : '45px';
+                        _this.parent.isAdaptive ? '35%' : '45px';
                 }
                 else {
                     document.querySelector('#' + _this.parentID + 'valuespan' + i).style.display = 'none';

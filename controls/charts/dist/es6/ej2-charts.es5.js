@@ -82,19 +82,24 @@ function getSeriesColor(theme) {
     var palette;
     switch (theme) {
         case 'Fabric':
-        case 'FabricDark':
             palette = ['#4472c4', '#ed7d31', '#ffc000', '#70ad47', '#5b9bd5',
                 '#c1c1c1', '#6f6fe2', '#e269ae', '#9e480e', '#997300'];
             break;
         case 'Bootstrap':
-        case 'BootstrapDark':
             palette = ['#a16ee5', '#f7ce69', '#55a5c2', '#7ddf1e', '#ff6ea6',
                 '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
             break;
-        case 'HighcontrastLight':
+        case 'HighContrastLight':
         case 'Highcontrast':
+        case 'HighContrast':
             palette = ['#79ECE4', '#E98272', '#DFE6B6', '#C6E773', '#BA98FF',
                 '#FA83C3', '#00C27A', '#43ACEF', '#D681EF', '#D8BC6E'];
+            break;
+        case 'MaterialDark':
+        case 'FabricDark':
+        case 'BootstrapDark':
+            palette = ['#B586FF', '#71F9A3', '#FF9572', '#5BD5FF', '#F9F871',
+                '#B6F971', '#8D71F9', '#FF6F91', '#FFC75F', '#D55DB1'];
             break;
         default:
             palette = ['#00bdae', '#404041', '#357cd2', '#e56590', '#f8b883',
@@ -106,9 +111,11 @@ function getSeriesColor(theme) {
 /** @private */
 function getThemeColor(theme) {
     var style;
+    var darkBackground = theme === 'MaterialDark' ? '#303030' : (theme === 'FabricDark' ? '#201F1F' : '1A1A1A');
     switch (theme) {
-        case 'HighcontrastLight':
+        case 'HighContrastLight':
         case 'Highcontrast':
+        case 'HighContrast':
             style = {
                 axisLabel: '#ffffff',
                 axisTitle: '#ffffff',
@@ -148,7 +155,7 @@ function getThemeColor(theme) {
                 minorTickLine: ' #4A4848',
                 chartTitle: '#ffffff',
                 legendLabel: '#DADADA',
-                background: '#000000',
+                background: darkBackground,
                 areaBorder: ' #9A9A9A',
                 errorBar: '#ffffff',
                 crosshairLine: '#F4F4F4',
@@ -198,7 +205,7 @@ function getThemeColor(theme) {
 function getScrollbarThemeColor(theme) {
     var scrollStyle;
     switch (theme) {
-        case 'HighcontrastLight':
+        case 'HighContrastLight':
             scrollStyle = {
                 backRect: '#333',
                 thumb: '#bfbfbf',
@@ -4172,7 +4179,7 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
         for (var i = 0, len = axis.visibleLabels.length; i < len; i++) {
             pointX = isLabelInside ? (rect.x - padding) : (rect.x + padding + scrollBarHeight);
             elementSize = axis.visibleLabels[i].size;
-            pointY = (valueToCoefficient(axis.visibleLabels[i].value, axis) * rect.height) + (chart.stockChart ? 5 : 0);
+            pointY = (valueToCoefficient(axis.visibleLabels[i].value, axis) * rect.height) + (chart.stockChart ? 7 : 0);
             pointY = Math.floor((pointY * -1) + (rect.y + rect.height));
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY + (elementSize.height / 4), anchor, axis.visibleLabels[i].text);
             if (axis.edgeLabelPlacement) {
@@ -7237,8 +7244,6 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
      * Initialize the event handler.
      */
     Chart.prototype.preRender = function () {
-        //seperate ID to differentiate chart and stock chart
-        this.svgId = this.stockChart ? this.stockChart.element.id + '_stockChart_chart' : this.element.id + '_svg';
         this.unWireEvents();
         this.initPrivateVariable();
         this.setCulture();
@@ -7259,6 +7264,8 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
             var collection = document.getElementsByClassName('e-chart').length;
             this.element.id = 'chart_' + this.chartid + '_' + collection;
         }
+        //seperate ID to differentiate chart and stock chart
+        this.svgId = this.stockChart ? this.stockChart.element.id + '_stockChart_chart' : this.element.id + '_svg';
     };
     /**
      * To Initialize the control rendering.
@@ -7576,16 +7583,6 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
     Chart.prototype.print = function (id) {
         var exportChart = new ExportUtils(this);
         exportChart.print(id);
-    };
-    /**
-     * Handles the export method for chart control.
-     * @param type
-     * @param fileName
-     */
-    Chart.prototype.export = function (type, fileName, orientation, controls, width, height) {
-        var exportChart = new ExportUtils(this);
-        controls = controls ? controls : [this];
-        exportChart.export(type, fileName, orientation, controls, width, height);
     };
     /**
      * Defines the trendline initialization
@@ -7971,6 +7968,13 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
     };
     /**
+     * Export method for the chart.
+     * @return {boolean}
+     * @private
+     */
+    // tslint:disable-next-line
+    Chart.prototype.export = function (type, fileName) { };
+    /**
      * Handles the chart resize.
      * @return {boolean}
      * @private
@@ -8276,6 +8280,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
      * @return {ModuleDeclaration[]}
      * @private
      */
+    //tslint:disable:max-func-body-length
     Chart.prototype.requiredModules = function () {
         var _this = this;
         var modules = [];
@@ -8337,6 +8342,12 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         if (this.isLegend) {
             modules.push({
                 member: 'Legend',
+                args: [this]
+            });
+        }
+        if (this.enableExport) {
+            modules.push({
+                member: 'Export',
                 args: [this]
             });
         }
@@ -8845,6 +8856,9 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(false)
     ], Chart.prototype, "isMultiSelect", void 0);
+    __decorate([
+        Property(true)
+    ], Chart.prototype, "enableExport", void 0);
     __decorate([
         Collection([], Indexes)
     ], Chart.prototype, "selectedDataIndexes", void 0);
@@ -11504,7 +11518,7 @@ var PolarRadarPanel = /** @__PURE__ @class */ (function (_super) {
                         y1 = this.centerY + radius * vector.y;
                         x2 = this.centerX + radius * vector2.x;
                         y2 = this.centerY + radius * vector2.y;
-                        majorGrid = majorGrid.concat((i ? 'L' : 'M') + ' ' + x1 + ' ' + y1 + ' ' + 'L' + ' ' + x2 + ' ' + y2 + ' ');
+                        majorGrid = majorGrid.concat((i ? 'L ' : 'M ') + ' ' + x1 + ' ' + y1 + ' ' + 'L ' + ' ' + x2 + ' ' + y2 + ' ');
                     }
                     element = getElement(chart.element.id + '_MajorGridLine_' + index + '_' + j);
                     previousValue = element ? element.getAttribute('d') : null;
@@ -11550,7 +11564,7 @@ var PolarRadarPanel = /** @__PURE__ @class */ (function (_super) {
             y2 = this.centerY + chart.radius * vector.y;
             var xLoc = x2 + (axis.majorTickLines.height * vector.x * (axis.tickPosition === 'Inside' ? -1 : 1));
             var yLoc = y2 + (axis.majorTickLines.height * vector.y * (axis.tickPosition === 'Inside' ? -1 : 1));
-            majorGrid = 'M ' + x1 + ' ' + y1 + ' ' + 'L' + x2 + ' ' + y2;
+            majorGrid = 'M ' + x1 + ' ' + y1 + ' ' + 'L ' + x2 + ' ' + y2;
             majorTick = 'M ' + x2 + ' ' + y2 + ' L ' + xLoc + ' ' + yLoc;
             if (axis.minorTicksPerInterval > 0 && (axis.minorGridLines.width > 0 || axis.minorTickLines.width > 0)
                 && axis.valueType !== 'Category' && chart.visibleSeries[0].type !== 'Radar') {
@@ -14236,14 +14250,14 @@ var TechnicalAnalysis = /** @__PURE__ @class */ (function (_super) {
     TechnicalAnalysis.prototype.initSeriesCollection = function (indicator, chart) {
         indicator.targetSeries = [];
         var signalLine = new Series(indicator, 'targetSeries', {}, true);
-        this.setSeriesProperties(signalLine, indicator, 'SignalLine', indicator.fill, indicator.width, chart);
+        this.setSeriesProperties(signalLine, indicator, indicator.type, indicator.fill, indicator.width, chart);
     };
     /**
      * Initializes the properties of the given series
      * @private
      */
     TechnicalAnalysis.prototype.setSeriesProperties = function (series, indicator, name, fill, width, chart) {
-        series.name = name;
+        series.name = name.length <= 4 ? name.toLocaleUpperCase() : name;
         series.xName = 'x';
         series.yName = 'y';
         series.fill = fill || '#606eff';
@@ -15188,7 +15202,7 @@ var BollingerBands = /** @__PURE__ @class */ (function (_super) {
             this.setSeriesProperties(rangeArea, indicator, 'BollingerBand', indicator.bandColor, 0, chart);
         }
         var signalLine = new Series(indicator, 'targetSeries', {}, true);
-        this.setSeriesProperties(signalLine, indicator, 'SignalLine', indicator.fill, indicator.width, chart);
+        this.setSeriesProperties(signalLine, indicator, 'BollingerBand', indicator.fill, indicator.width, chart);
         var upperLine = new Series(indicator, 'targetSeries', {}, true);
         this.setSeriesProperties(upperLine, indicator, 'UpperLine', indicator.upperLine.color, indicator.upperLine.width, chart);
         var lowerLine = new Series(indicator, 'targetSeries', {}, true);
@@ -15548,7 +15562,7 @@ var Trendlines = /** @__PURE__ @class */ (function () {
      */
     Trendlines.prototype.getDataPoint = function (x, y, sourcePoint, series, index) {
         var trendPoint = new Points();
-        trendPoint.x = x;
+        trendPoint.x = series.xAxis.valueType === 'DateTime' ? new Date(Number(x)) : x;
         trendPoint.y = y;
         trendPoint.xValue = Number(x);
         trendPoint.color = series.fill;
@@ -17066,7 +17080,7 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
     Tooltip$$1.prototype.getIndicatorTooltipFormat = function (series, chart, format) {
         var toolTip;
         if (series.seriesType === 'XY') {
-            toolTip = series.name + ' : ${point.y}';
+            toolTip = series.name + ' : <b>${point.y}</b>';
         }
         else {
             toolTip = format;
@@ -21930,7 +21944,7 @@ var ScrollBar = /** @__PURE__ @class */ (function () {
         rightCircleEle.style.fill = isRightHover && isAxis ? style.circleHover : style.circle;
         leftCircleEle.style.stroke = isLeftHover && isAxis ? style.circleHover : style.circle;
         rightCircleEle.style.stroke = isRightHover && isAxis ? style.circleHover : style.circle;
-        if (this.component.theme === 'HighcontrastLight') {
+        if (this.component.theme === 'HighContrastLight') {
             leftArrowEle.style.fill = isLeftHover && isAxis ? style.arrowHover : style.arrow;
             leftArrowEle.style.stroke = isLeftHover && isAxis ? style.arrowHover : style.arrow;
             rightArrowEle.style.fill = isRightHover && isAxis ? style.arrowHover : style.arrow;
@@ -22290,6 +22304,45 @@ var ParetoSeries = /** @__PURE__ @class */ (function (_super) {
     };
     return ParetoSeries;
 }(ColumnBase));
+
+/**
+ * `ExportModule` module is used to print and export the rendered chart.
+ */
+var Export = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for export module.
+     * @private
+     */
+    function Export(chart) {
+        this.chart = chart;
+    }
+    /**
+     * Handles the export method for chart control.
+     * @param type
+     * @param fileName
+     */
+    Export.prototype.export = function (type, fileName, orientation, controls, width, height) {
+        var exportChart = new ExportUtils(this.chart);
+        controls = controls ? controls : [this.chart];
+        exportChart.export(type, fileName, orientation, controls, width, height);
+    };
+    /**
+     * Get module name.
+     */
+    Export.prototype.getModuleName = function () {
+        // Returns the module name
+        return 'Export';
+    };
+    /**
+     * To destroy the chart.
+     * @return {void}
+     * @private
+     */
+    Export.prototype.destroy = function (chart) {
+        // Destroy method performed here
+    };
+    return Export;
+}());
 
 /**
  * Chart component exported items
@@ -23707,13 +23760,6 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
         return false;
     };
     /**
-     * Handles the export method for accumulation control.
-     */
-    AccumulationChart.prototype.export = function (type, fileName, orientation, controls, width, height) {
-        var exportChart = new ExportUtils(this);
-        exportChart.export(type, fileName, orientation, (controls ? controls : [this]), width, height);
-    };
-    /**
      * Handles the print method for accumulation chart control.
      */
     AccumulationChart.prototype.print = function (id) {
@@ -24190,6 +24236,12 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
                 args: [this]
             });
         }
+        if (this.enableExport) {
+            modules.push({
+                member: 'Export',
+                args: [this]
+            });
+        }
         enableAnnotation = this.annotations.some(function (value) {
             return (value.content !== null);
         });
@@ -24380,6 +24432,9 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
     __decorate$7([
         Property('Material')
     ], AccumulationChart.prototype, "theme", void 0);
+    __decorate$7([
+        Property(true)
+    ], AccumulationChart.prototype, "enableExport", void 0);
     __decorate$7([
         Event()
     ], AccumulationChart.prototype, "loaded", void 0);
@@ -27351,6 +27406,10 @@ function getRangeThemeColor(theme, range) {
     var thumbSize = range.navigatorStyleSettings.thumb;
     var thumbWidth = isNullOrUndefined(thumbSize.width) ? (Browser.isDevice ? 15 : 20) : thumbSize.width;
     var thumbHeight = isNullOrUndefined(thumbSize.height) ? (Browser.isDevice ? 15 : 20) : thumbSize.height;
+    var darkAxisColor = (theme === 'Highcontrast' || theme === 'HighContrast') ? '#969696' : '#6F6C6C';
+    var darkGridlineColor = (theme === 'Highcontrast' || theme === 'HighContrast') ? '#4A4848' : '#414040';
+    var darkBackground = theme === 'MaterialDark' ? '#303030' : (theme === 'FabricDark' ? '#201F1F' :
+        (theme === 'BootstrapDark') ? '1A1A1A' : '#000000');
     var style = {
         gridLineColor: '#E0E0E0',
         axisLineColor: '#000000',
@@ -27374,7 +27433,7 @@ function getRangeThemeColor(theme, range) {
         case 'Bootstrap':
             style.selectedRegionColor = range.series.length ? 'transparent' : '#428BCA';
             break;
-        case 'HighcontrastLight':
+        case 'HighContrastLight':
             style = {
                 gridLineColor: '#bdbdbd',
                 axisLineColor: '#969696',
@@ -27383,7 +27442,7 @@ function getRangeThemeColor(theme, range) {
                 thumpLineColor: '#ffffff',
                 thumbBackground: '#262626',
                 gripColor: '#ffffff',
-                background: '#000000',
+                background: darkBackground,
                 thumbHoverColor: '#BFBFBF',
                 selectedRegionColor: range.series.length ? 'transparent' : '#FFD939',
                 tooltipBackground: '#ffffff',
@@ -27396,9 +27455,10 @@ function getRangeThemeColor(theme, range) {
         case 'FabricDark':
         case 'BootstrapDark':
         case 'Highcontrast':
+        case 'HighContrast':
             style = {
-                gridLineColor: '#4A4848',
-                axisLineColor: '#969696',
+                gridLineColor: darkGridlineColor,
+                axisLineColor: darkAxisColor,
                 labelFontColor: '#DADADA',
                 unselectedRectColor: range.series.length ? 'rgba(43, 43, 43, 0.6)' : '#514F4F',
                 thumpLineColor: '#969696',
@@ -27477,6 +27537,9 @@ var RangeNavigatorSeries = /** @__PURE__ @class */ (function (_super) {
     __decorate$11([
         Property(1)
     ], RangeNavigatorSeries.prototype, "width", void 0);
+    __decorate$11([
+        Property(1)
+    ], RangeNavigatorSeries.prototype, "opacity", void 0);
     __decorate$11([
         Property('0')
     ], RangeNavigatorSeries.prototype, "dashArray", void 0);
@@ -28767,10 +28830,8 @@ var PeriodSelector = /** @__PURE__ @class */ (function () {
         this.datePicker = new DateRangePicker({
             min: new Date(this.control.seriesXMin),
             max: new Date(this.control.seriesXMax),
-            format: 'dd\'\/\'MM\'\/\'yyyy',
-            placeholder: 'Select a range',
-            showClearButton: false,
-            startDate: new Date(this.control.startValue),
+            format: 'dd\'\/\'MM\'\/\'yyyy', placeholder: 'Select a range',
+            showClearButton: false, startDate: new Date(this.control.startValue),
             endDate: new Date(this.control.endValue),
             created: function (args) {
                 if (selctorArgs.enableCustomFormat) {
@@ -28779,11 +28840,11 @@ var PeriodSelector = /** @__PURE__ @class */ (function () {
                     datePickerElement.insertAdjacentElement('afterend', createElement('div', {
                         id: 'customRange',
                         innerHTML: selctorArgs.content, className: 'e-btn e-flat',
-                        styles: 'font-family: "Segoe UI"; font-size: 14px; font-weight: 500; text-transform: none; padding-top: 6px'
+                        styles: 'font-family: "Segoe UI"; font-size: 14px; font-weight: 500; text-transform: none '
                     }));
                     getElement('customRange').insertAdjacentElement('afterbegin', (createElement('span', {
-                        id: 'dateIcon',
-                        className: 'e-input-group-icon e-range-icon e-btn-icon', styles: 'padding-top:5px'
+                        id: 'dateIcon', className: 'e-input-group-icon e-range-icon e-btn-icon e-icons',
+                        styles: (_this.rootControl.theme === 'Material') ? 'padding-top: 4px' : 'padding-top: 5px'
                     })));
                     document.getElementById('customRange').onclick = function () {
                         _this.datePicker.show(getElement('customRange'));
@@ -28800,8 +28861,10 @@ var PeriodSelector = /** @__PURE__ @class */ (function () {
                     }
                     _this.nodes = _this.toolbar.element.querySelectorAll('.e-toolbar-left')[0];
                     for (var i = 0, length_1 = _this.nodes.childNodes.length; i < length_1; i++) {
-                        _this.nodes.childNodes[i].childNodes[0].classList.remove('e-active');
-                        _this.nodes.childNodes[i].childNodes[0].classList.remove('e-active');
+                        if (!_this.rootControl.resizeTo) {
+                            _this.nodes.childNodes[i].childNodes[0].classList.remove('e-active');
+                            _this.nodes.childNodes[i].childNodes[0].classList.remove('e-active');
+                        }
                     }
                 }
             }
@@ -28810,15 +28873,19 @@ var PeriodSelector = /** @__PURE__ @class */ (function () {
     };
     PeriodSelector.prototype.updateCustomElement = function () {
         var selector = [];
+        var buttonStyles = 'text-transform: none; text-overflow: unset';
         if (this.rootControl.getModuleName() === 'stockChart') {
             if (this.rootControl.seriesType.length) {
-                selector.push({ template: '<button id="seriesType">Series</button>', align: 'Left' });
+                selector.push({ template: createElement('button', { id: 'seriesType', innerHTML: 'Series', styles: buttonStyles }),
+                    align: 'Left' });
             }
             if (this.rootControl.indicatorType.length) {
-                selector.push({ template: ' <button id="indicatorType" >Indicators</button>', align: 'Left' });
+                selector.push({ template: createElement('button', { id: 'indicatorType', innerHTML: 'Indicators', styles: buttonStyles }),
+                    align: 'Left' });
             }
             if (this.rootControl.trendlineType.length) {
-                selector.push({ template: ' <button id="trendType" >Trendline</button>', align: 'Left' });
+                selector.push({ template: createElement('button', { id: 'trendType', innerHTML: 'Trendline', styles: buttonStyles }),
+                    align: 'Left' });
             }
         }
         return selector;
@@ -29401,7 +29468,6 @@ var RangeSelector = /** @__PURE__ @class */ (function () {
 var ToolBarSelector = /** @__PURE__ @class */ (function () {
     function ToolBarSelector(chart) {
         this.intervalTypes = ['Years', 'Quarter', 'Months', 'Weeks', 'Days', 'Hours', 'Minutes', 'Seconds'];
-        //private variables:
         this.indicators = [];
         this.secondayIndicators = [];
         this.stockChart = chart;
@@ -29440,6 +29506,11 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
                 }
             }
         }
+        else if (type === this.stockChart.exportType) {
+            for (var i = 0; i < type.length; i++) {
+                result.push({ text: type[i].toString() });
+            }
+        }
         else {
             for (var i = 0; i < type.length; i++) {
                 if (type[i].toString() !== 'Print') {
@@ -29458,10 +29529,12 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
             if (series[i].yName === 'volume') {
                 continue;
             }
-            series[i].type = (seriesType.indexOf('Candle') > -1 ? 'Candle' : seriesType);
+            series[i].type = (seriesType.indexOf('Candle') > -1 ? 'Candle' :
+                (seriesType.indexOf('OHLC') > -1 ? 'HiloOpenClose' : seriesType));
             series[i].enableSolidCandles = seriesType === 'Candle';
             series[i].trendlines.forEach(function (trendLine) {
                 trendLine.animation.enable = false;
+                trendLine.enableTooltip = false;
             });
         }
     };
@@ -29511,6 +29584,7 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
                 }
             }
             _this.stockChart.indicatorElements = null;
+            _this.stockChart.resizeTo = null;
             _this.stockChart.zoomChange = false;
             for (var j = 0; j < _this.stockChart.series.length; j++) {
                 _this.stockChart.series[j].dataSource = _this.stockChart.tempDataSource[j];
@@ -29520,38 +29594,51 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
     };
     ToolBarSelector.prototype.initializeTrendlineSelector = function () {
         var _this = this;
-        var trendType = new DropDownButton({
-            items: this.getDropDownItems(this.stockChart.trendlineType),
+        this.trendlineDropDown = new DropDownButton({
+            items: this.stockChart.resizeTo ? this.trendlineDropDown.items :
+                this.getDropDownItems(this.stockChart.trendlineType),
             select: function (args) {
                 var text = _this.tickMark(args);
+                text = text.split(' ')[0].toLocaleLowerCase() + (text.split(' ')[1] ? text.split(' ')[1] : '');
+                text = text.substr(0, 1).toUpperCase() + text.substr(1);
                 var type = text;
-                for (var i = 0; i < _this.stockChart.series.length; i++) {
-                    if (_this.stockChart.series[i].yName === 'volume') {
-                        continue;
-                    }
-                    if (_this.stockChart.series[0].trendlines.length === 0) {
-                        var trendlines = void 0;
-                        if (_this.stockChart.trendlinetriggered) {
-                            trendlines = [{ type: type, width: 1 }];
-                            _this.stockChart.trendlinetriggered = false;
+                if (_this.trendline !== type) {
+                    _this.trendline = type;
+                    for (var i = 0; i < _this.stockChart.series.length; i++) {
+                        if (_this.stockChart.series[i].yName === 'volume') {
+                            continue;
                         }
-                        _this.stockChart.series[0].trendlines = trendlines;
+                        if (_this.stockChart.series[0].trendlines.length === 0) {
+                            var trendlines = void 0;
+                            if (_this.stockChart.trendlinetriggered) {
+                                trendlines = [{ type: type, width: 1, enableTooltip: false }];
+                                _this.stockChart.trendlinetriggered = false;
+                            }
+                            _this.stockChart.series[0].trendlines = trendlines;
+                        }
+                        else {
+                            _this.stockChart.series[0].trendlines[0].width = 1;
+                            _this.stockChart.series[0].trendlines[0].type = type;
+                            _this.stockChart.series[0].trendlines[0].animation.enable = _this.stockChart.trendlinetriggered ? true : false;
+                        }
                     }
-                    else {
-                        _this.stockChart.series[0].trendlines[0].width = 1;
-                        _this.stockChart.series[0].trendlines[0].type = type;
-                        _this.stockChart.series[0].trendlines[0].animation.enable = _this.stockChart.trendlinetriggered ? true : false;
-                    }
+                    _this.stockChart.cartesianChart.initializeChart();
                 }
-                _this.stockChart.cartesianChart.initializeChart();
+                else {
+                    args.item.text = '&nbsp;&nbsp;&nbsp;' + args.item.text.replace('&#10004&nbsp;', '');
+                    _this.stockChart.series[0].trendlines[0].width = 0;
+                    _this.trendline = null;
+                    _this.stockChart.cartesianChart.initializeChart();
+                }
             },
         });
-        trendType.appendTo('#trendType');
+        this.trendlineDropDown.appendTo('#trendType');
     };
     ToolBarSelector.prototype.initializeIndicatorSelector = function () {
         var _this = this;
-        var indicatorType = new DropDownButton({
-            items: this.getDropDownItems(this.stockChart.indicatorType),
+        this.indicatorDropDown = new DropDownButton({
+            items: this.stockChart.resizeTo ? this.indicatorDropDown.items :
+                this.getDropDownItems(this.stockChart.indicatorType),
             select: function (args) {
                 for (var l = 0; l < _this.stockChart.series.length; l++) {
                     if (_this.stockChart.series[l].trendlines.length !== 0) {
@@ -29588,7 +29675,7 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
                 }
             },
         });
-        indicatorType.appendTo('#indicatorType');
+        this.indicatorDropDown.appendTo('#indicatorType');
     };
     ToolBarSelector.prototype.getIndicator = function (type, yAxisName) {
         var indicator = [{
@@ -29635,7 +29722,11 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
                     plotOffset: 10, opposedPosition: true,
                     rowIndex: (!this.stockChart.isSingleAxis ? this.stockChart.axes.length : 0),
                     desiredIntervals: 1,
-                    majorGridLines: { width: 0, color: '#EDEDED' }, lineStyle: { width: 1 },
+                    labelFormat: 'n2',
+                    majorGridLines: this.stockChart.primaryYAxis.majorGridLines,
+                    lineStyle: this.stockChart.primaryYAxis.lineStyle,
+                    labelPosition: this.stockChart.primaryYAxis.labelPosition,
+                    majorTickLines: this.stockChart.primaryYAxis.majorTickLines,
                     rangePadding: 'None', name: type.toString(),
                 }];
             this.stockChart.axes = this.stockChart.axes.concat(axis);
@@ -29707,7 +29798,10 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
             items: this.getDropDownItems(this.stockChart.exportType),
             select: function (args) {
                 var type = args.item.text;
-                _this.stockChart.chart.export(type, 'chart', null, [_this.stockChart]);
+                var stockChart = _this.stockChart;
+                if (stockChart.chart.exportModule) {
+                    stockChart.chart.exportModule.export(type, 'StockChart', null, [stockChart], null, stockChart.svgObject.clientHeight);
+                }
             }
         });
         exportChart.appendTo('#export');
@@ -30505,6 +30599,8 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
      */
     function StockChart(options, element) {
         var _this = _super.call(this, options, element) || this;
+        /** @private */
+        _this.isSingleAxis = false;
         _this.chartid = 57723;
         /** @private */
         _this.tempDataSource = [];
@@ -30682,6 +30778,7 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
     StockChart.prototype.renderPeriodSelector = function () {
         if (this.enablePeriodSelector) {
             this.toolbarSelector.initializePeriodSelector();
+            this.periodSelector.toolbar.refreshOverflow(); //to avoid overlapping toolbar elements
             if (!this.enableSelector) {
                 this.cartesianChart.cartesianChartRefresh(this, this.startValue, this.endValue);
             }
@@ -31159,9 +31256,6 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], StockChart.prototype, "isMultiSelect", void 0);
     __decorate$9([
-        Property(false)
-    ], StockChart.prototype, "isSingleAxis", void 0);
-    __decorate$9([
         Event()
     ], StockChart.prototype, "load", void 0);
     __decorate$9([
@@ -31180,7 +31274,7 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
         Collection([], StockChartIndexes)
     ], StockChart.prototype, "selectedDataIndexes", void 0);
     __decorate$9([
-        Property(['Line', 'Hilo', 'HiloOpenClose', 'Hollow Candle', 'Spline', 'Candle'])
+        Property(['Line', 'Hilo', 'OHLC', 'Hollow Candle', 'Spline', 'Candle'])
     ], StockChart.prototype, "seriesType", void 0);
     __decorate$9([
         Property(['EMA', 'TMA', 'SMA', 'Momentum', 'ATR', 'Accumulation Distribution', 'Bollinger Bands', 'MACD', 'Stochastic', 'RSI'])
@@ -31189,7 +31283,7 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
         Property(['PNG', 'JPEG', 'SVG', 'PDF', 'Print'])
     ], StockChart.prototype, "exportType", void 0);
     __decorate$9([
-        Property(['Linear', 'Exponential', 'Polynomial', 'Power', 'Logarithmic', 'MovingAverage'])
+        Property(['Linear', 'Exponential', 'Polynomial', 'Logarithmic', 'Moving Average'])
     ], StockChart.prototype, "trendlineType", void 0);
     return StockChart;
 }(Component));
@@ -37043,5 +37137,5 @@ var SparklineTooltip = /** @__PURE__ @class */ (function () {
  * Chart components exported.
  */
 
-export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, measureText, sort, rotateTextSize, removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, stringToNumber, findDirection, redrawElement, animateRedrawElement, textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, CustomizeOption, StackValues, TextOption, PathOption, RectOption, CircleOption, PolygonOption, Size, Rect, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, loaded, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
+export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, measureText, sort, rotateTextSize, removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, stringToNumber, findDirection, redrawElement, animateRedrawElement, textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, CustomizeOption, StackValues, TextOption, PathOption, RectOption, CircleOption, PolygonOption, Size, Rect, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, loaded, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
 //# sourceMappingURL=ej2-charts.es5.js.map

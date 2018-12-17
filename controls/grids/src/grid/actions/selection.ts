@@ -1416,7 +1416,9 @@ export class Selection implements IAction {
             this.autofill.style.display = 'none';
         }
     }
-
+    /**
+     * @hidden
+     */
     public updateAutoFillPosition(): void {
         if (this.parent.enableAutoFill && !this.parent.isEdit &&
             this.selectionSettings.cellSelectionMode.indexOf('Box') > -1 && !this.isRowType() && !this.isSingleSel()

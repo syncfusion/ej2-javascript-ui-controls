@@ -28,11 +28,11 @@ export class Render {
         let data: ITreeData = <ITreeData>args.data;
         let parentData: ITreeData = <ITreeData>data.parentItem;
         let index: number;
-        if (!isNullOrUndefined(data.parentIndex)) {
+        if (!isNullOrUndefined(data.parentIndex) && !(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root')))  {
             index = data.parentIndex;
             let collapsed: boolean = !(isNullOrUndefined(parentData[this.parent.expandStateMapping]) ||
                              parentData[this.parent.expandStateMapping]) || this.parent.enableCollapseAll ||
-                            !getExpandStatus(args.data, this.parent.grid.getCurrentViewRecords());
+                            !getExpandStatus(this.parent, args.data, this.parent.grid.getCurrentViewRecords());
             if (collapsed) {
                 (<HTMLTableRowElement>args.row).style.display = 'none';
             }
@@ -71,7 +71,7 @@ export class Render {
             let container: Element = createElement('div', {
                 className: 'e-treecolumn-container'
             });
-            let emptyExpandIcon: Element = createElement('span', {
+            let emptyExpandIcon: HTMLElement = createElement('span', {
                 className: 'e-icons e-none',
                 styles: 'width: 10px; display: inline-block'
             });
@@ -81,14 +81,27 @@ export class Render {
             let iconRequired: boolean = !isNullOrUndefined(data.hasFilteredChildRecords)
                 ? data.hasFilteredChildRecords : data.hasChildRecords;
             if (iconRequired) {
+                addClass([args.cell], 'e-treerowcell');
                 let expandIcon: Element = createElement('span', {
                     className: 'e-icons'
                 });
-                let expand: boolean = data.expanded &&
-                (isNullOrUndefined(data[this.parent.expandStateMapping]) || data[this.parent.expandStateMapping]) &&
-                !this.parent.enableCollapseAll;
-                addClass([expandIcon], expand ? 'e-treegridexpand' : 'e-treegridcollapse');
+                let expand: boolean;
+                if (this.parent.initialRender) {
+                    expand = data.expanded &&
+                        (isNullOrUndefined(data[this.parent.expandStateMapping]) || data[this.parent.expandStateMapping]) &&
+                        !this.parent.enableCollapseAll;
+                } else {
+                    expand = data.expanded;
+                }
+                let collapsed: boolean = true;
+                if (!isNullOrUndefined(data.parentIndex) && (!isNullOrUndefined(data[this.parent.expandStateMapping])
+                    && data[this.parent.expandStateMapping])
+                    && !(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root'))) {
+                    collapsed = !getExpandStatus(this.parent, args.data, this.parent.grid.getCurrentViewRecords());
+                }
+                addClass([expandIcon], (expand && collapsed) ? 'e-treegridexpand' : 'e-treegridcollapse');
                 container.appendChild(expandIcon);
+                emptyExpandIcon.style.width = '7px';
                 container.appendChild(emptyExpandIcon.cloneNode());
             } else if (pad) {
                 container.appendChild(emptyExpandIcon.cloneNode());

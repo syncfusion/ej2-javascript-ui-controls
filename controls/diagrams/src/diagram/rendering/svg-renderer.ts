@@ -14,6 +14,7 @@ import { DiagramNativeElement } from '../core/elements/native-element';
 import { DiagramHtmlElement } from '../core/elements/html-element';
 import { TransformFactor as Transforms } from '../interaction/scroller';
 import { createSvgElement, createHtmlElement, getBackgroundLayerSvg } from '../utility/dom-util';
+import { removeGradient } from '../utility/diagram-util';
 /** 
  * SVG Renderer
  */
@@ -305,7 +306,7 @@ export class SvgRenderer implements IRenderer {
             }
             let pivotX: number = options.x + options.width * options.pivotX;
             let pivotY: number = options.y + options.height * options.pivotY;
-            if (options.doWrap) {
+            if (options.doWrap || options.textOverflow !== 'Wrap') {
                 this.setSvgStyle(text, options as StyleAttributes, diagramId);
                 this.setSvgFontStyle(text, options);
                 textNode = document.createTextNode(options.content);
@@ -490,7 +491,7 @@ export class SvgRenderer implements IRenderer {
             svgContainer.insertBefore(defs, svgContainer.firstChild);
         }
         let radial: RadialGradientModel; let linear: LinearGradientModel; let stop: StopModel; let offset: number;
-
+        removeGradient(svg.id);
         if (options.gradient.type !== 'None') {
             for (let i: number = 0; i < options.gradient.stops.length; i++) {
                 max = !max ? options.gradient.stops[i].offset : Math.max(max, options.gradient.stops[i].offset);
@@ -499,20 +500,11 @@ export class SvgRenderer implements IRenderer {
             if (options.gradient.type === 'Linear') {
                 linear = options.gradient;
                 linear.id = svg.id + '_linear';
-                grd = svgContainer.getElementById(svg.id + '_linear') as SVGElement;
-                if (grd) {
-                    grd.parentNode.removeChild(grd);
-                }
                 grd = this.createLinearGradient(linear);
                 defs.appendChild(grd);
             } else {
                 radial = options.gradient;
                 radial.id = svg.id + '_radial';
-                grd = svgContainer.getElementById(svg.id + '_radial') as SVGElement;
-                grd = svgContainer.getElementById(svg.id + '_linear') as SVGElement;
-                if (grd) {
-                    grd.parentNode.removeChild(grd);
-                }
                 grd = this.createRadialGradient(radial);
                 defs.appendChild(grd);
             }

@@ -452,11 +452,11 @@ export class CommandHandler {
         let index: number;
         this.clipboardData.pasteIndex = 0;
         if (this.diagram.undoRedoModule) {
-            this.diagram.historyList.startGroupAction();
+            this.diagram.historyManager.startGroupAction();
         }
         this.clipboardData.clipObject = this.copyObjects();
         if (this.diagram.undoRedoModule) {
-            this.diagram.historyList.endGroupAction();
+            this.diagram.historyManager.endGroupAction();
         }
         if (this.diagram.mode !== 'SVG') {
             this.diagram.refreshDiagramLayer();
@@ -736,7 +736,7 @@ export class CommandHandler {
                 }
                 if (this.diagram.undoRedoModule) {
                     groupAction = true;
-                    this.diagram.historyList.startGroupAction();
+                    this.diagram.historyManager.startGroupAction();
                 }
                 for (let copy of copiedItems) {
                     objectTable[copy.id] = copy;
@@ -793,7 +793,7 @@ export class CommandHandler {
                 }
 
                 if (groupAction === true) {
-                    this.diagram.historyList.endGroupAction();
+                    this.diagram.historyManager.endGroupAction();
                     groupAction = false;
                 }
                 if (this.diagram.mode !== 'SVG') {
@@ -1586,7 +1586,9 @@ export class CommandHandler {
                 let backNode: HTMLElement = getDiagramElement(nodeId + id, this.diagram.views[i]);
                 let diagramDiv: HTMLElement = targetID ? getDiagramElement(targetID + id, this.diagram.views[i])
                     : backNode.parentElement.firstChild as HTMLElement;
-                diagramDiv.parentNode.insertBefore(backNode, diagramDiv);
+                if ((backNode.parentNode as HTMLElement).id === (diagramDiv.parentNode as HTMLElement).id) {
+                    diagramDiv.parentNode.insertBefore(backNode, diagramDiv);
+                }
             }
         }
     }
@@ -1751,7 +1753,11 @@ export class CommandHandler {
                 if (checkParentAsContainer(this.diagram, obj, true)) {
                     checkChildNodeInContainer(this.diagram, obj);
                 } else {
+                    if (obj && obj.shape && obj.shape.type === 'UmlClassifier') {
+                        obj.wrapper.measureChildren = true;
+                    }
                     this.diagram.nodePropertyChange(obj as Node, oldValues as Node, { offsetX: obj.offsetX, offsetY: obj.offsetY } as Node);
+                    obj.wrapper.measureChildren = false;
                 }
             } else {
                 let connector: Connector = obj as Connector;

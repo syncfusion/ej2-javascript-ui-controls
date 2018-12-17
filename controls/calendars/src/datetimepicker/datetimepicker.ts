@@ -3,6 +3,7 @@ import { EventHandler, Internationalization, Property, NotifyPropertyChanges, Br
 import { Animation, EmitType, Event, AnimationModel, cldrData, getDefaultDateObject, detach } from '@syncfusion/ej2-base';
 import { createElement, remove, addClass, L10n, removeClass, closest, classList, append, attributes } from '@syncfusion/ej2-base';
 import { KeyboardEvents, KeyboardEventArgs, isNullOrUndefined, formatUnit, getValue, rippleEffect } from '@syncfusion/ej2-base';
+import { ModuleDeclaration } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Input, BlurEventArgs } from '@syncfusion/ej2-inputs';
 import { DatePicker, PopupObjectArgs } from '../datepicker/datepicker';
@@ -70,7 +71,7 @@ export class DateTimePicker extends DatePicker {
     private popupObject: Popup;
     protected timeModal: HTMLElement;
     private isNavigate: boolean;
-    protected isPreventBlur: boolean;
+    protected isPreventBlur: Boolean;
     private timeValue: string;
     protected l10n: L10n;
     private keyboardHandler: KeyboardEvents;
@@ -127,6 +128,7 @@ export class DateTimePicker extends DatePicker {
      * @default null
      * @private
      */
+    @Property(null)
     public values: Date[];
     /**
      * Specifies whether to show or hide the clear icon in textbox.
@@ -371,8 +373,14 @@ export class DateTimePicker extends DatePicker {
         }
     }
     private getFormattedValue(value: Date): string {
+        let dateOptions: object;
         if (!isNullOrUndefined(value)) {
-            let dateOptions: object = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd' };
+            if (this.calendarMode === 'Gregorian') {
+                dateOptions = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd' };
+            } else {
+                dateOptions = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+            }
+
             return this.globalize.formatDate(value, dateOptions);
         } else {
             return null;
@@ -452,7 +460,12 @@ export class DateTimePicker extends DatePicker {
         } else { return false; }
     }
     protected getCultureTimeObject(ld: Object, c: string): Object {
-        return getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.short', ld);
+        if (this.calendarMode === 'Gregorian') {
+            return getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.short', ld);
+        } else {
+            return getValue('main.' + '' + this.locale + '.dates.calendars.islamic.timeFormats.short', ld);
+        }
+
     }
     private timeHandler(e?: MouseEvent): void {
         if (Browser.isDevice) {
@@ -523,8 +536,18 @@ export class DateTimePicker extends DatePicker {
     }
 
     private listCreation(): void {
+        let dateObject: Date;
+        if (this.calendarMode === 'Gregorian') {
+            dateObject = this.globalize.parseDate(this.inputElement.value, {
+                format: this.cldrDateTimeFormat(), type: 'datetime'
+            });
+        } else {
+            dateObject = this.globalize.parseDate(this.inputElement.value, {
+                format: this.cldrDateTimeFormat(), type: 'datetime', calendar: 'islamic'
+            });
+        }
         let value: Date = isNullOrUndefined(this.value) ? this.inputElement.value !== '' ?
-            this.globalize.parseDate(this.inputElement.value, { format: this.cldrDateTimeFormat(), type: 'datetime' }) :
+            dateObject :
             new Date() : this.value;
         this.valueWithMinutes = value;
         this.listWrapper = createElement('div', { className: CONTENT, attrs: { 'tabindex': '0' } });
@@ -603,7 +626,7 @@ export class DateTimePicker extends DatePicker {
             }
         } else if (target !== this.inputElement) {
             if (!Browser.isDevice) {
-                this.isPreventBlur = (Browser.isIE || Browser.info.name === 'edge') && (document.activeElement === this.inputElement);
+                this.isPreventBlur = ((document.activeElement === this.inputElement) && (Browser.isIE || Browser.info.name === 'edge'));
                 event.preventDefault();
             }
         }
@@ -721,7 +744,7 @@ export class DateTimePicker extends DatePicker {
         this.setInputValue('time');
         if (+this.previousDateTime !== +this.value) {
             this.changedArgs = {
-                value: this.value, event: e || null,
+                value: this.value, event: e,
                 isInteracted: !isNullOrUndefined(e),
                 element: this.element
             };
@@ -1008,6 +1031,16 @@ export class DateTimePicker extends DatePicker {
             }
         }
     }
+
+    public requiredModules(): ModuleDeclaration[] {
+        let modules: ModuleDeclaration[] = [];
+        if (this) {
+            modules.push({ args: [this], member: 'islamic' });
+        }
+
+        return modules;
+    }
+
     private getTimeActiveElement(): HTMLElement[] {
         if (!isNullOrUndefined(this.dateTimeWrapper)) {
             return <NodeListOf<HTMLElement> & HTMLElement[]>this.dateTimeWrapper.querySelectorAll('.' + ACTIVE);
@@ -1040,7 +1073,7 @@ export class DateTimePicker extends DatePicker {
             this.getDateObject(this.valueWithMinutes);
         let dateTimeVal: number = null;
         let listCount: number = this.liCollections.length;
-        if (!isNullOrUndefined(this.checkDateValue(value)) || !isNullOrUndefined(this.activeIndex)) {
+        if (!isNullOrUndefined(this.activeIndex) || !isNullOrUndefined(this.checkDateValue(value))) {
             if (event.action === 'home') {
                 dateTimeVal = +(this.createDateObj(new Date(this.timeCollections[0])));
                 this.activeIndex = 0;
@@ -1072,6 +1105,7 @@ export class DateTimePicker extends DatePicker {
     }
 
     protected setTimeValue(date: Date, value: Date): Date {
+        let dateString: string;
         let time: Date;
         let val: string | Date = this.validateMinMaxRange(value);
         let newval: Date = this.createDateObj(val);
@@ -1086,9 +1120,17 @@ export class DateTimePicker extends DatePicker {
             this.valueWithMinutes = this.checkDateValue(date);
             time = new Date(+this.valueWithMinutes);
         }
-        let dateString: string = this.globalize.formatDate(time, {
-            format: !isNullOrUndefined(this.format) ? this.format : this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd'
-        });
+        if (this.calendarMode === 'Gregorian') {
+            dateString = this.globalize.formatDate(time, {
+                format: !isNullOrUndefined(this.format) ? this.format : this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd'
+            });
+        } else {
+            dateString = this.globalize.formatDate(time, {
+                format: !isNullOrUndefined(this.format) ? this.format : this.cldrDateTimeFormat(),
+                type: 'dateTime', skeleton: 'yMd', calendar: 'islamic'
+            });
+        }
+
         if (!this.strictMode && isNullOrUndefined(time)) {
             Input.setValue(dateString, this.inputElement, this.floatLabelType, this.showClearButton);
         } else {
@@ -1162,6 +1204,7 @@ export class DateTimePicker extends DatePicker {
                     this.hide(event);
                     addClass([this.inputWrapper.container], INPUTFOCUS);
                     this.isNavigate = false;
+                    event.stopPropagation();
                     break;
                 case 'escape':
                     this.hide(event);

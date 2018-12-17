@@ -81,6 +81,14 @@ export class RangeNavigatorSeries extends ChildProperty<RangeNavigatorSeries> {
     public width: number;
 
     /**
+     * The opacity for the background.
+     * @default 1
+     */
+
+    @Property(1)
+    public opacity: number;
+
+    /**
      * Defines the pattern of dashes and gaps to stroke the lines in `Line` type series.
      * @default '0'
      */

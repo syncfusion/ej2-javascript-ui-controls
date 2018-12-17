@@ -1,7 +1,7 @@
 /**
  * RTE - Toolbar action spec
  */
-import { selectAll, select, Browser, createElement, detach, EventHandler } from "@syncfusion/ej2-base";
+import { selectAll, select, Browser, createElement, detach, EventHandler, isNullOrUndefined } from "@syncfusion/ej2-base";
 import { RichTextEditor, ToolbarType, Toolbar, HtmlEditor, MarkdownEditor } from "../../../src/rich-text-editor/index";
 import { IToolbarStatus } from '../../../src/common/interface';
 import { renderRTE, destroy } from "./../render.spec";
@@ -817,7 +817,7 @@ describe("Toolbar - Actions Module", () => {
             expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
             window.scrollTo(0, 200);
             rteObj.fullScreenModule.showFullScreen();
-            expect((rteObj.getToolbarElement() as HTMLElement).style.top==='0px').toBe(true);
+            expect((rteObj.getToolbarElement() as HTMLElement).style.top === '0px').toBe(true);
             setTimeout(() => {
                 expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(true);
                 window.scrollTo(0, 0);
@@ -853,7 +853,7 @@ describe("Toolbar - Actions Module", () => {
             expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
             ele1.scrollTo(0, 200);
             rteObj.fullScreenModule.showFullScreen();
-            expect((rteObj.getToolbarElement() as HTMLElement).style.top==='0px').toBe(true);
+            expect((rteObj.getToolbarElement() as HTMLElement).style.top === '0px').toBe(true);
             setTimeout(() => {
                 expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(true);
                 window.scrollTo(0, 0);
@@ -894,7 +894,7 @@ describe("Toolbar - Actions Module", () => {
             expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
             window.scrollTo(0, 200);
             rteObj.fullScreenModule.showFullScreen();
-            expect((rteObj.getToolbarElement() as HTMLElement).style.top==='0px').toBe(true);
+            expect((rteObj.getToolbarElement() as HTMLElement).style.top === '0px').toBe(true);
             setTimeout(() => {
                 expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(true);
                 window.scrollTo(0, 0);
@@ -930,7 +930,7 @@ describe("Toolbar - Actions Module", () => {
             expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
             ele1.scrollTo(0, 200);
             rteObj.fullScreenModule.showFullScreen();
-            expect((rteObj.getToolbarElement() as HTMLElement).style.top==='0px').toBe(true);
+            expect((rteObj.getToolbarElement() as HTMLElement).style.top === '0px').toBe(true);
             setTimeout(() => {
                 expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(true);
                 window.scrollTo(0, 0);
@@ -1280,6 +1280,41 @@ describe("Toolbar - Actions Module", () => {
         afterAll(() => {
             destroy(rteObj);
         });
-
     });
+
+    describe("EJ2-14546- toolbarSettings - 'itemConfigs' property ", () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let controlId:string;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ["Bold", "Italic", "|", "FontColor"],
+                    itemConfigs: {
+                        bold: {
+                            icon: 'e-italic'
+                        },
+                        italic: {
+                            icon: 'e-bold'
+                        },
+                        fontColor: {
+                            icon: 'e-underline'
+                        }
+                    }
+                }
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+
+        it(" Change the default icons of toolbar items", () => {
+            expect(!isNullOrUndefined(rteEle.querySelector("#"+controlId+"_toolbar_FontColor").querySelector(".e-underline"))).toBe(true);
+            expect(!isNullOrUndefined(rteEle.querySelector("#"+controlId+"_toolbar_Italic").querySelector(".e-bold"))).toBe(true);
+            expect(!isNullOrUndefined(rteEle.querySelector("#"+controlId+"_toolbar_Bold").querySelector(".e-italic"))).toBe(true);
+        });
+    });
+
 });

@@ -25,13 +25,15 @@ export type HeatMapTheme =
     /**  Render a HeatMap with Bootstrap theme. */
     'Bootstrap' |
     /**  Render a HeatMap with Highcontrast Light theme. */
-    'HighcontrastLight'|
+    'HighContrastLight'|
     /**  Render a HeatMap with Material Dark theme. */
     'MaterialDark' |
     /**  Render a HeatMap with Fabric Dark theme. */
     'FabricDark' |
     /**  Render a HeatMap with Highcontrast theme. */
     'Highcontrast'|
+     /**  Render a HeatMap with HighContrast theme. */
+    'HighContrast'|
     /**  Render a HeatMap with Bootstrap Dark theme. */
     'BootstrapDark';
 

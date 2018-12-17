@@ -2,7 +2,7 @@ import { CircularGauge } from '../circular-gauge';
 import { Axis, Pointer } from '../axes/axis';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
 import { IVisiblePointer, ITooltipRenderEventArgs } from '../model/interface';
-import { GaugeLocation, getPointer, Rect, getMousePosition, getElementSize, Size } from '../utils/helper';
+import { GaugeLocation, getPointer, Rect, getMousePosition, Size, getElementSize } from '../utils/helper';
 import { getAngleFromValue, getLabelFormat, getLocationFromAngle } from '../utils/helper';
 import { TooltipSettings } from '../model/base';
 import { FontModel, BorderModel } from '../model/base-model';
@@ -64,6 +64,7 @@ export class GaugeTooltip {
             }
             let svgRect: ClientRect = this.gauge.svgObject.getBoundingClientRect();
             let elementRect: ClientRect = this.gauge.element.getBoundingClientRect();
+            let axisRect: ClientRect = document.getElementById(this.gauge.element.id + '_AxesCollection').getBoundingClientRect();
             let rect: Rect = new Rect(
                 Math.abs(elementRect.left - svgRect.left),
                 Math.abs(elementRect.top - svgRect.top),
@@ -110,19 +111,9 @@ export class GaugeTooltip {
             }
             if (!this.tooltip.showAtMousePosition) {
                 if (template) {
-                    let pointerRect: ClientRect = target.getBoundingClientRect();
-                    let size: Size = getElementSize(this.tooltip.template, this.gauge, this.tooltipEle);
-                    let width: number = Math.abs(svgRect.width - pointerRect.width) - Math.abs(pointerRect.left - svgRect.left);
-                    if (size.height > Math.abs(svgRect.height - tooltipArgs.location.y) - 20) {
-                        tooltipArgs.location.y += size.height / 2;
-                    }
-                    if (size.width > width) {
-                        tooltipArgs.location.x -= Math.abs((svgRect.left + svgRect.width) - (tooltipArgs.location.x + size.width));
-                        this.tooltipRect = rect;
-                    } else {
-                        this.tooltipRect = rect;
-                        this.findPosition(rect, angle, content, tooltipArgs.location);
-                    }
+                    let elementSize: Size = getElementSize(template, this.gauge, this.tooltipEle);
+                    this.tooltipRect = Math.abs(axisRect.left - svgRect.left) > elementSize.width ?
+                        this.findPosition(rect, angle, content, tooltipArgs.location) : rect;
                 } else {
                     this.findPosition(rect, angle, content, tooltipArgs.location);
                 }
@@ -160,7 +151,7 @@ export class GaugeTooltip {
     /**
      * Method to find the position of the tooltip anchor for circular gauge.
      */
-    private findPosition(rect: Rect, angle: number, text: string, location: GaugeLocation): void {
+    private findPosition(rect: Rect, angle: number, text: string, location: GaugeLocation): Rect {
         let addLeft: number; let addTop: number; let addHeight: number; let addWidth: number;
         switch (true) {
             case (angle >= 0 && angle < 45):
@@ -210,6 +201,7 @@ export class GaugeTooltip {
                 this.tooltipPosition = 'RightTop';
                 break;
         }
+        return this.tooltipRect;
     }
 
 

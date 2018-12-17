@@ -71,8 +71,8 @@ describe('Heatmap Control', () => {
             tempElement = document.getElementById('container_svg');
             expect((tempElement.getAttribute('width') == '767' || tempElement.getAttribute('width') == '769') && tempElement.getAttribute('height') == '450').toBe(true);
         });
-        it('Cehck the heat map with Highcontrast light theme', () => {
-            heatmap.theme = "HighcontrastLight",
+        it('Cehck the heat map with HighContrast light theme', () => {
+            heatmap.theme = "HighContrastLight",
             heatmap.dataBind();
             tempElement = document.getElementById('container_HeatmapBorder');
             expect(tempElement.getAttribute('fill') == '#000000').toBe(true);

@@ -4,7 +4,7 @@ import { RangeNavigator, ThumbSettingsModel } from '../index';
 import { Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
- * 
+ *
  */
 export namespace RangeNavigatorTheme {
     /** @private */
@@ -29,6 +29,10 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
     let thumbSize: ThumbSettingsModel = range.navigatorStyleSettings.thumb;
     let thumbWidth: number = isNullOrUndefined(thumbSize.width) ? (Browser.isDevice ? 15 : 20) : thumbSize.width;
     let thumbHeight: number = isNullOrUndefined(thumbSize.height) ? (Browser.isDevice ? 15 : 20) : thumbSize.height;
+    let darkAxisColor: string = (theme === 'Highcontrast' || theme === 'HighContrast') ? '#969696' : '#6F6C6C';
+    let darkGridlineColor: string = (theme === 'Highcontrast' || theme === 'HighContrast') ? '#4A4848' : '#414040';
+    let darkBackground: string = theme === 'MaterialDark' ? '#303030' : (theme === 'FabricDark' ? '#201F1F' :
+        (theme === 'BootstrapDark') ? '1A1A1A' : '#000000');
     let style: IRangeStyle = {
         gridLineColor: '#E0E0E0',
         axisLineColor: '#000000',
@@ -52,7 +56,7 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
         case 'Bootstrap':
             style.selectedRegionColor = range.series.length ? 'transparent' : '#428BCA';
             break;
-        case 'HighcontrastLight':
+        case 'HighContrastLight':
             style = {
                 gridLineColor: '#bdbdbd',
                 axisLineColor: '#969696',
@@ -61,7 +65,7 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
                 thumpLineColor: '#ffffff',
                 thumbBackground: '#262626',
                 gripColor: '#ffffff',
-                background: '#000000',
+                background: darkBackground,
                 thumbHoverColor: '#BFBFBF',
                 selectedRegionColor: range.series.length ? 'transparent' : '#FFD939',
                 tooltipBackground: '#ffffff',
@@ -74,9 +78,10 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
         case 'FabricDark':
         case 'BootstrapDark':
         case 'Highcontrast':
+        case 'HighContrast':
         style = {
-            gridLineColor: '#4A4848',
-            axisLineColor: '#969696',
+            gridLineColor: darkGridlineColor,
+            axisLineColor: darkAxisColor,
             labelFontColor: '#DADADA',
             unselectedRectColor: range.series.length ? 'rgba(43, 43, 43, 0.6)' : '#514F4F',
             thumpLineColor: '#969696',

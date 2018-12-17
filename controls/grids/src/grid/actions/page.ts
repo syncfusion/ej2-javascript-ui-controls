@@ -9,7 +9,6 @@ import { IGrid, IAction, NotifyArgs } from '../base/interface';
 import { extend as gridExtend, getActualProperties, isActionPrevent } from '../base/util';
 import * as events from '../base/constant';
 import { PagerModel } from '../../pager';
-Pager.Inject(ExternalMessage, PagerDropDown);
 
 /**
  * The `Page` module is used to render pager and handle paging action.
@@ -38,6 +37,7 @@ export class Page implements IAction {
      * @hidden
      */
     constructor(parent?: IGrid, pageSettings?: PageSettingsModel) {
+        Pager.Inject(ExternalMessage, PagerDropDown);
         this.parent = parent;
         this.pageSettings = pageSettings;
         this.addEventListener();

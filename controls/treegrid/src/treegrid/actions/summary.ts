@@ -3,7 +3,7 @@ import { QueryOptions, Query, DataManager } from '@syncfusion/ej2-data';
 import { getObject, AggregateType, calculateAggregate, Aggregate as GridAggregate, Grid, appendChildren } from '@syncfusion/ej2-grids';
 import { ITreeData } from '../base';
 import { findParentRecords } from '../utils';
-import { isNullOrUndefined, setValue, NumberFormatOptions, DateFormatOptions, createElement } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, setValue, NumberFormatOptions, DateFormatOptions, createElement, extend } from '@syncfusion/ej2-base';
 import { AggregateColumn } from '../models/summary';
 import { AggregateRowModel } from '../models/summary-model';
 
@@ -42,7 +42,7 @@ export class Aggregate {
      * Function to calculate summary values
      *  @hidden
      */
-    public calculateSummaryValue(summaryQuery: QueryOptions[], filteredData: Object[]): Object[] {
+    public calculateSummaryValue(summaryQuery: QueryOptions[], filteredData: Object[], isSort: boolean): Object[] {
         this.summaryQuery = summaryQuery;
         let parentRecord: ITreeData;
         let parentDataLength: number = Object.keys(filteredData).length;
@@ -73,14 +73,19 @@ export class Aggregate {
                     let idx: number;
                     flatRecords.map((e: ITreeData, i: number) => { if (e.uniqueID === parentRecord.uniqueID) { idx = i; return; } });
                     let currentIndex: number = idx + childRecordsLength + summaryRowIndex;
-                    setValue('parentItem', parentRecord, item);
-                    let level: number = getObject('level', parentRecord);
+                    let summaryParent: ITreeData = extend({}, parentRecord);
+                    delete summaryParent.childRecords;
+                    delete summaryParent[this.parent.childMapping];
+                    setValue('parentItem', summaryParent, item);
+                    let level: number = getObject('level', summaryParent);
                     setValue('level', level + 1, item);
-                    let index: number = getObject('index', parentRecord);
+                    let index: number = getObject('index', summaryParent);
                     setValue('parentIndex', index, item);
                     setValue('isSummaryRow', true, item);
-                    let childRecords: Object[] = getObject('childRecords', parentRecord);
-                    childRecords.push(item);
+                    if (isSort) {
+                        let childRecords: Object[] = getObject('childRecords', parentRecord);
+                        childRecords.push(item);
+                    }
                     flatRecords.splice(currentIndex, 0, item);
                 } else {
                     continue;
@@ -113,7 +118,8 @@ export class Aggregate {
     private createSummaryItem(itemData: Object, summary: AggregateRowModel): Object {
         let summaryColumnLength: number = Object.keys(summary.columns).length;
         for (let i: number = 0, len: number = summaryColumnLength; i < len; i++) {
-            let displayColumn: string = summary.columns[i].columnName;
+            let displayColumn: string = isNullOrUndefined(summary.columns[i].columnName) ? summary.columns[i].field :
+                summary.columns[i].columnName;
             let keys: string[] = Object.keys(itemData);
             for (let key of keys) {
                 if (key === displayColumn) {
@@ -139,9 +145,10 @@ export class Aggregate {
         qry.queries = this.summaryQuery;
         qry.requiresCount();
         let sumData: Object[] = new DataManager(summaryData).executeLocal(qry);
-        let types: AggregateType[] = <AggregateType[]>summaryColumn.type;
+        let types: AggregateType[] = <AggregateType[]>summaryColumn.type; let summaryKey: string;
         types = <AggregateType[]>[summaryColumn.type];
         types.forEach((type: AggregateType) => {
+            summaryKey = type;
             let key: string = summaryColumn.field + ' - ' + type.toLowerCase();
             let val: Object = type !== 'Custom' ? getObject('aggregates', sumData) :
             calculateAggregate(type, sumData, summaryColumn, this.parent);
@@ -155,7 +162,14 @@ export class Aggregate {
             className: 'e-summary'
         });
         appendChildren(cellElement, tempObj.fn(single[summaryColumn.columnName], this.parent, tempObj.property));
-        return cellElement.innerHTML;
+        let value: string = single[summaryColumn.columnName][summaryKey];
+        let summaryValue: string;
+        if (cellElement.innerHTML.indexOf(value) === -1) {
+            summaryValue = cellElement.innerHTML + value;
+            return summaryValue;
+        } else {
+            return cellElement.innerHTML;
+        }
     }
 
     private getFormatFromType(summaryformat: string| NumberFormatOptions, type: string):

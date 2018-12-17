@@ -514,7 +514,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Find in document': 'Find in document',
         'Match case': 'Match case',
          // tslint:disable-next-line:max-line-length
-        'No matches': 'Viewer has finished searching the document.No more matches were found',
+        'No matches': 'Viewer has finished searching the document. No more matches were found',
         // tslint:disable-next-line:max-line-length
         'Server error': 'Web-service is not listening. PDF Viewer depends on web-service for all it\'s features. Please start the web service to continue.'
     };

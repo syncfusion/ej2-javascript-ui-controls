@@ -74,6 +74,7 @@ export class CellColor {
         let percent: number = 0;
         let full: number = nextOffset - previousOffset;
         percent = (value - previousOffset) / full;
+        percent = isNaN(percent) ? 0 : percent;
         let previousColor: string = this.getEqualColor(colorMapping, previousOffset);
         let nextColor: string = this.getEqualColor(colorMapping, nextOffset);
         return this.getPercentageColor(percent, previousColor, nextColor);
@@ -268,7 +269,9 @@ export class CellColor {
                 for (let y: number = 0; y < this.heatMap.colorCollection.length; y++) {
                     compareValue = this.heatMap.colorCollection[y + 1] ? this.heatMap.colorCollection[y + 1].value :
                         this.heatMap.colorCollection[y].value;
-                    if (text < compareValue || (text >= compareValue && y === this.heatMap.colorCollection.length - 1)) {
+                    let singleValue: boolean = this.heatMap.dataSourceMinValue === this.heatMap.dataSourceMaxValue;
+                    if ((text <= compareValue && y === 0 && singleValue) || text < compareValue ||
+                        (text >= compareValue && y === this.heatMap.colorCollection.length - 1)) {
                         let legendRange: LegendRange[];
                         if (this.heatMap.legendVisibilityByCellType) {
                             legendRange = this.heatMap.legendModule.legendRange;

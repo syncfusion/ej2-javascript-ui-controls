@@ -62,8 +62,6 @@ describe('Pie Series checking', () => {
         pie.loaded = () => {
             slice = getElement(sliceid + 0);
             slicepath = getLocations(slice.getAttribute('d'));
-            console.log('center in % x' + slicepath.center.x);
-            console.log('center in % y' + slicepath.center.y);
             expect(slicepath.center.x).toBe(416);
             expect(slicepath.center.y).toBe(124);
             done();
@@ -76,8 +74,6 @@ describe('Pie Series checking', () => {
         pie.loaded = () => {
             slice = getElement(sliceid + 0);
             slicepath = getLocations(slice.getAttribute('d'));
-            console.log('center in px x' + slicepath.center.x);
-            console.log('center in px y' + slicepath.center.y);
             expect(slicepath.center.x).toBe(1010);
             expect(slicepath.center.y).toBe(210);
             done();
@@ -90,8 +86,6 @@ describe('Pie Series checking', () => {
         pie.loaded = () => {
             slice = getElement(sliceid + 0);
             slicepath = getLocations(slice.getAttribute('d'));
-            console.log('chart x' + slicepath.center.x);
-            console.log('chart y' + slicepath.center.y);
             expect(slicepath.center.x).toBe(310);
             expect(slicepath.center.y == 52 || slicepath.center.y == 55).toBe(true);
             done();
@@ -106,8 +100,6 @@ describe('Pie Series checking', () => {
         pie.loaded = () => {
             slice = getElement(sliceid + 0);
             slicepath = getLocations(slice.getAttribute('d'));
-             console.log('subtitle x' + slicepath.center.x);
-             console.log('subtitle y' + slicepath.center.y);
             expect(slicepath.center.x).toBe(310);
             expect(slicepath.center.y == 91 || slicepath.center.y == 85).toBe(true);
             done();
@@ -122,8 +114,6 @@ describe('Pie Series checking', () => {
             let series: Element = getElement(id + '_SeriesCollection');
             let width: number = series.getBoundingClientRect().width;
             let height: number = series.getBoundingClientRect().height;
-            console.log('bound width' + width);
-            console.log('bound height' + height);
             expect(width >= 276).toBe(true);
             expect(height >= 276).toBe(true);
             done();
@@ -137,8 +127,6 @@ describe('Pie Series checking', () => {
             let legend: Element = getElement(id + '_chart_legend_g');
             let width: number = legend.getBoundingClientRect().width;
             let height: number = legend.getBoundingClientRect().height;
-            console.log('legend width' + width);
-            console.log('legend height' + height);
             expect(width == 45 || width == 44).toBe(true);
             expect(height == 258 || height == 248).toBe(true);
             done();
@@ -152,7 +140,6 @@ describe('Pie Series checking', () => {
         pie.loaded = () => {
             let label: Element = getElement(id + '_datalabel_Series_0');
             let totalLabel: number = label.childElementCount;
-            console.log('data label count' + totalLabel);
             expect(totalLabel).toBe(3);
             done();
         };
@@ -166,7 +153,6 @@ describe('Pie Series checking', () => {
         pie.loaded = () => {
             let label: Element = getElement(id + '_datalabel_Series_0');
             let totalLabel: number = label.childElementCount;
-            console.log('smart label count' + totalLabel);
             expect(totalLabel).toBe(5);
             done();
         };
@@ -181,8 +167,6 @@ describe('Pie Series checking', () => {
         pie.loaded = () => {
             slice = getElement(sliceid + 0);
             slicepath = getLocations(slice.getAttribute('d'));
-            console.log('donut x' + slicepath.center.x);
-            console.log('donut y' + slicepath.center.y);
             expect(slicepath.center.x).toBe(387);
             expect(slicepath.center.y >= 144).toBe(true);
             done();
@@ -607,17 +591,14 @@ describe('Pie Series checking', () => {
             points = pie.visibleSeries[0].points;
             slice = getElement(sliceid + 0);
             let width = slice.getBoundingClientRect().width;
-            console.log('slice 0 radius : ' + width);
             expect(Math.round(width) == 29).toBe(true);
             expect(points[0].sliceRadius == '80%').toBe(true);
             slice = getElement(sliceid + 1);
             width = slice.getBoundingClientRect().width;
-            console.log('slice 1 radius : ' + width);
             expect(Math.round(width) == 65).toBe(true);
             expect(points[1].sliceRadius == '80%').toBe(true);
             slice = getElement(sliceid + 2);
             width = slice.getBoundingClientRect().width;
-            console.log('slice 2 radius : ' + width);
             expect(Math.round(width) == 105).toBe(true);
             expect(points[2].sliceRadius == '80%').toBe(true);
             done();
@@ -633,17 +614,14 @@ describe('Pie Series checking', () => {
             points = pie.visibleSeries[0].points;
             slice = getElement(sliceid + 0);
             let width = slice.getBoundingClientRect().width;
-            console.log('slice 0 radius : ' + width);
             expect(Math.round(width) == 18).toBe(true);
             expect(points[0].sliceRadius == '50%').toBe(true);
             slice = getElement(sliceid + 1);
             width = slice.getBoundingClientRect().width;
-            console.log('slice 1 radius : ' + width);
             expect(Math.round(width) == 49).toBe(true);
             expect(points[1].sliceRadius == '60%').toBe(true);
             slice = getElement(sliceid + 2);
             width = slice.getBoundingClientRect().width;
-            console.log('slice 2 radius : ' + width);
             expect(Math.round(width) == 92).toBe(true);
             expect(points[2].sliceRadius == '70%').toBe(true);
             done();
@@ -659,17 +637,14 @@ describe('Pie Series checking', () => {
             points = pie.visibleSeries[0].points;
             slice = getElement(sliceid + 0);
             var width = slice.getBoundingClientRect().width;
-            console.log('slice 0 inner radius : ' + width);
             expect(Math.round(width) == 18).toBe(true);
             expect(points[0].sliceRadius == '50%').toBe(true);
             slice = getElement(sliceid + 1);
             width = slice.getBoundingClientRect().width;
-            console.log('slice 1 inner radius : ' + width);
             expect(Math.round(width) == 38).toBe(true);
             expect(points[1].sliceRadius == '60%').toBe(true);
             slice = getElement(sliceid + 2);
             width = slice.getBoundingClientRect().width;
-            console.log('slice 2 inner radius : ' + width);
             expect(Math.round(width) == 67).toBe(true);
             expect(points[2].sliceRadius == '70%').toBe(true);
             done();

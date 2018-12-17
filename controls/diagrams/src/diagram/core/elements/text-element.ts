@@ -111,7 +111,7 @@ export class TextElement extends DiagramElement {
     public measure(availableSize: Size): Size {
         let size: Size;
         if (this.isDirt && this.canMeasure) {
-            size = measureText(this, this.style, this.content, this.width);
+            size = measureText(this, this.style, this.content, this.width || availableSize.width);
         } else {
             size = this.desiredSize;
         }

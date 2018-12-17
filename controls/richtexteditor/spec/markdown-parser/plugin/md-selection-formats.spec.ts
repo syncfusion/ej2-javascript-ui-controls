@@ -118,11 +118,13 @@ Tabs and shift-tabs work too`;
             expect(isCallBack).toBe(true);
             line = editorObj.markdownSelection.getSelectedLine(textArea);
             expect((line as any).includes('<sub>')).toBe(true);
+            editorObj.markdownSelection.save(41, 54);
+            editorObj.markdownSelection.restore(textArea);
             editorObj.execCommand("Effects", 'SubScript', null, () => {
                 isCallBack = true;
             });
             line = editorObj.markdownSelection.getSelectedLine(textArea);
-            expect((line as any).includes('<sub>')).toBe(true);
+            expect((line as any).includes('<sub>')).not.toBe(true);
             editorObj.execCommand("Effects", 'SubScript', null, () => {
                 isCallBack = true;
             });
@@ -159,19 +161,23 @@ Tabs and shift-tabs work too`;
                 isCallBack = true;
             });
             expect(isCallBack).toBe(true);
+            editorObj.markdownSelection.save(123,125);
+            editorObj.markdownSelection.restore(textArea);
             let line: any = editorObj.markdownSelection.getSelectedInlinePoints(textArea);
             expect(new RegExp('^[A-Z]*$', 'g').test(line.text)).toBe(true);
-            editorObj.markdownSelection.save(123, 123);
+            editorObj.markdownSelection.save(124, 124);
             editorObj.markdownSelection.restore(textArea);
             let cmd = editorObj.mdSelectionFormats.isAppliedCommand('UpperCase');
             expect(cmd).toBe(true);
-            editorObj.markdownSelection.save(122, 125);
+            editorObj.markdownSelection.save(123, 125);
             editorObj.markdownSelection.restore(textArea);
             isCallBack = false;
             editorObj.execCommand("Casing", 'LowerCase', null, () => {
                 isCallBack = true;
             });
             expect(isCallBack).toBe(true);
+            editorObj.markdownSelection.save(123,125);
+            editorObj.markdownSelection.restore(textArea);
             line = editorObj.markdownSelection.getSelectedInlinePoints(textArea);
             expect(new RegExp('^[a-z]*$', 'g').test(line.text)).toBe(true);
             editorObj.markdownSelection.save(200, 200);
@@ -274,6 +280,63 @@ Tabs and shift-tabs work too`;
             editorObj.execCommand("Style", 'Italic', null, function () { isCallBack = true; });
             expect(isCallBack).toBe(true);
         });
+        afterAll(() => {
+            detach(textArea);
+        });
+    });
+
+    describe('RTE - uncommand', () => {
+        let elem: HTMLElement;
+        let editorObj: MarkdownParser;
+        let innerHTML:string =`Lists are a piece of cake
+They even auto continue as you type
+A double enter will end them
+Tabs and shift-tabs work too`;
+        let textArea: HTMLTextAreaElement = <HTMLTextAreaElement>createElement('textarea', {
+            id: 'markdown-editor',
+            styles: 'width:200px;height:200px'
+        });
+        beforeAll(() => {
+            document.body.appendChild(textArea);
+            editorObj = new MarkdownParser({ element: textArea });
+            textArea.value = innerHTML;
+            textArea.focus();
+        });
+
+        it('apply and remvoe the command', () => {
+            let isCallBack: boolean = false;
+            let line: any;
+            editorObj.markdownSelection.save(0, 5);
+            editorObj.markdownSelection.restore(textArea);
+             editorObj.execCommand("Style", 'Bold', null, () => {
+                isCallBack = true;
+            });
+            expect(isCallBack).toBe(true);
+            line = editorObj.markdownSelection.getSelectedLine(textArea);
+            expect(line.indexOf('**') === 0).toBe(true);
+            editorObj.execCommand("Style", 'Italic', null, () => {
+                isCallBack = true;
+            });
+            editorObj.execCommand("Style", 'StrikeThrough', null, () => {
+                isCallBack = true;
+            });
+            line = editorObj.markdownSelection.getSelectedLine(textArea);
+            expect(line.indexOf('~~')>0).toBe(true);
+            editorObj.execCommand("Style", 'Bold', null, () => {
+                isCallBack = true;
+            });
+            editorObj.execCommand("Style", 'Italic', null, () => {
+                isCallBack = true;
+            });
+            line = editorObj.markdownSelection.getSelectedLine(textArea);
+            expect(line.indexOf('**')<0).toBe(true);
+            editorObj.execCommand("Style", 'StrikeThrough', null, () => {
+                isCallBack = true;
+            });
+            line = editorObj.markdownSelection.getSelectedLine(textArea);
+            expect(line.indexOf('~~')<0).toBe(true);
+        });
+
         afterAll(() => {
             detach(textArea);
         });

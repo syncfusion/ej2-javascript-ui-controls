@@ -97,7 +97,6 @@ describe('Diagram Control', () => {
         });
         it('Multiple Selection - Connector interaction', () => {
             browser.load('/demos/connectors/connector.html');
-            debugger
             executeClickEvent('MultipleSelection');
             executeSelectionEvent('selectionOption', 1);
             executeSelectionEvent('selectionOption', 2);

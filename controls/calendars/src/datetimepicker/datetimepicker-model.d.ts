@@ -1,4 +1,4 @@
-import { EventHandler, Internationalization, Property, NotifyPropertyChanges, Browser, RippleOptions } from '@syncfusion/ej2-base';import { Animation, EmitType, Event, AnimationModel, cldrData, getDefaultDateObject, detach } from '@syncfusion/ej2-base';import { createElement, remove, addClass, L10n, removeClass, closest, classList, append, attributes } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, isNullOrUndefined, formatUnit, getValue, rippleEffect } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input, BlurEventArgs } from '@syncfusion/ej2-inputs';import { DatePicker, PopupObjectArgs } from '../datepicker/datepicker';import { TimePickerBase } from '../timepicker/timepicker';import { cssClass as ListBaseClasses } from '@syncfusion/ej2-lists';
+import { EventHandler, Internationalization, Property, NotifyPropertyChanges, Browser, RippleOptions } from '@syncfusion/ej2-base';import { Animation, EmitType, Event, AnimationModel, cldrData, getDefaultDateObject, detach } from '@syncfusion/ej2-base';import { createElement, remove, addClass, L10n, removeClass, closest, classList, append, attributes } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, isNullOrUndefined, formatUnit, getValue, rippleEffect } from '@syncfusion/ej2-base';import { ModuleDeclaration } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input, BlurEventArgs } from '@syncfusion/ej2-inputs';import { DatePicker, PopupObjectArgs } from '../datepicker/datepicker';import { TimePickerBase } from '../timepicker/timepicker';import { cssClass as ListBaseClasses } from '@syncfusion/ej2-lists';
 import {DatePickerModel} from "../datepicker/datepicker-model";
 
 /**
@@ -44,6 +44,13 @@ export interface DateTimePickerModel extends DatePickerModel{
      * @private
      */
     isMultiSelection?: boolean;
+
+    /**
+     * Gets or sets multiple selected dates of the calendar.
+     * @default null
+     * @private
+     */
+    values?: Date[];
 
     /**
      * Specifies whether to show or hide the clear icon in textbox.

@@ -2,7 +2,7 @@
  * Context Menu default sample
  */
 import { Browser } from '@syncfusion/ej2-base';
-import { Button, ChangeEventArgs, CheckBox } from '@syncfusion/ej2-buttons';
+import { ChangeEventArgs, CheckBox } from '@syncfusion/ej2-buttons';
 import { Menu, MenuModel } from './../../src/menu/index';
 import { MenuEventArgs, MenuItemModel } from '../../src/common/index';
 import { enableRipple } from '@syncfusion/ej2-base';
@@ -114,19 +114,6 @@ else {
     menuObj.animationSettings.effect = 'SlideDown';
 }
 
-//Theme
-let btnObj: Button = new Button();
-btnObj.appendTo('#material');
-
-btnObj = new Button();
-btnObj.appendTo('#fabric');
-
-btnObj = new Button();
-btnObj.appendTo('#bootstrap');
-
-btnObj = new Button();
-btnObj.appendTo('#highcontrast');
-
 let checkBoxObj: CheckBox = new CheckBox({ label: 'Enable Touch Mode', checked: false, change: onChange });
 checkBoxObj.appendTo('#touchMode');
 
@@ -153,6 +140,24 @@ document.getElementById('highcontrast').onclick = (e: Event) => {
     enableRipple(false);
     menuObj.refresh();
     document.getElementById('theme').setAttribute('href', './theme-files/highcontrast.css');
+};
+document.getElementById('materialdark').onclick = (e : Event) => {
+    document.body.classList.add('darkBG');
+    enableRipple(false);
+    menuObj.refresh();
+    document.getElementById('theme').setAttribute('href', './theme-files/material-dark.css');
+};
+document.getElementById('bootstrapdark').onclick = (e : Event) => {
+    document.body.classList.add('darkBG');
+    enableRipple(false);
+    menuObj.refresh();
+    document.getElementById('theme').setAttribute('href', './theme-files/bootstrap-dark.css');
+};
+document.getElementById('fabricdark').onclick = (e : Event) => {
+    document.body.classList.add('darkBG');
+    enableRipple(false);
+    menuObj.refresh();
+    document.getElementById('theme').setAttribute('href', './theme-files/fabric-dark.css');
 };
 
 // function to handle the CheckBox change event

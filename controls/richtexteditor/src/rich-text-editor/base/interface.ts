@@ -174,6 +174,7 @@ export interface NotifyArgs {
     action?: string;
     callBack?(args?: string): void;
     file?: Blob;
+    insertElement?: Element;
 }
 
 export interface IColorPickerModel extends ColorPickerModel {
@@ -233,6 +234,7 @@ export interface IImageCommandsArgs {
     altText?: string;
     selectParent?: Node[];
     cssClass?: string;
+    selectNode?: Node[];
 }
 
 export interface ITableArgs {
@@ -311,10 +313,17 @@ export interface IDropDownModel {
 
 export interface IToolsItems {
     id: string;
-    icon: string;
-    tooltip: string;
-    command: string;
-    subCommand: string;
+    icon?: string;
+    tooltip?: string;
+    command?: string;
+    subCommand?: string;
+    value?: string;
+}
+export interface IToolsItemConfigs {
+    icon?: string;
+    tooltip?: string;
+    command?: string;
+    subCommand?: string;
     value?: string;
 }
 

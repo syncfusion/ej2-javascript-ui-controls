@@ -199,7 +199,8 @@ export class FocusStrategy {
                 (e.args && e.args.isFrozen) ? this.fHeader : this.header;
             let rows: Row<Column>[] = content ? e.rows.slice(this.parent.frozenRows) : e.rows;
             let updateRow: Row<Column>[] = content ? e.rows.slice(0, this.parent.frozenRows) : e.rows;
-            let matrix: number[][] = cFocus.matrix.generate(updateRow, cFocus.selector);
+            let isRowTemplate: boolean = !isNullOrUndefined(this.parent.rowTemplate);
+            let matrix: number[][] = cFocus.matrix.generate(updateRow, cFocus.selector, isRowTemplate);
             let frozenColumnsCount: number = this.parent.getFrozenColumns();
             if (e.name === 'batchAdd' && frozenColumnsCount) {
                 let newMovableRows: Row<Column>[] = rows.map((row: Row<Column>) => { return row.clone(); });
@@ -210,10 +211,10 @@ export class FocusStrategy {
                         newMovableRows[i].cells = rows[i].cells.slice(frozenColumnsCount);
                     }
                 }
-                this.fContent.matrix.generate(newFrozenRows, this.fContent.selector);
-                cFocus.matrix.generate(newMovableRows, cFocus.selector);
+                this.fContent.matrix.generate(newFrozenRows, this.fContent.selector, isRowTemplate);
+                cFocus.matrix.generate(newMovableRows, cFocus.selector, isRowTemplate);
             } else {
-                cFocus.matrix.generate(rows, cFocus.selector);
+                cFocus.matrix.generate(rows, cFocus.selector, isRowTemplate);
             }
             cFocus.generateRows(updateRow, { matrix, handlerInstance: (e.args && e.args.isFrozen) ? this.fHeader : this.header });
             if (!Browser.isDevice && !this.focusByClick && e && e.args && e.args.requestType === 'paging') {
@@ -402,13 +403,13 @@ export class Matrix {
         this.current = [rowIndex, columnIndex];
     }
 
-    public generate(rows: Row<Column>[], selector: Function): number[][] {
+    public generate(rows: Row<Column>[], selector: Function, isRowTemplate?: boolean ): number[][] {
         this.rows = rows.length - 1; this.matrix = [];
         rows.forEach((row: Row<Column>, rIndex: number) => {
             let cells: Cell<Column>[] = row.cells.filter((c: Cell<Column>) => c.isSpanned !== true);
             this.columns = Math.max(cells.length - 1, this.columns | 0);
             cells.forEach((cell: Cell<Column>, cIndex: number) => {
-                this.set(rIndex, cIndex, selector(row, cell));
+                this.set(rIndex, cIndex, selector(row, cell, isRowTemplate));
             });
         });
         return this.matrix;
@@ -522,13 +523,14 @@ export class ContentFocus implements IFocus {
         return child.length ? child[0] : element;
     }
 
-    public selector(row: Row<Column>, cell: Cell<Column>): boolean {
+    public selector(row: Row<Column>, cell: Cell<Column>, isRowTemplate?: boolean): boolean {
         let types: CellType[] = [CellType.Expand, CellType.GroupCaption, CellType.CaptionSummary, CellType.GroupSummary];
         return ((row.isDataRow && cell.visible && (cell.isDataCell || cell.isTemplate))
             || (row.isDataRow && cell.cellType === CellType.DetailExpand)
             || (!row.isDataRow && types.indexOf(cell.cellType) > -1)
             || (cell.column && cell.column.type === 'checkbox')
-            || (cell.cellType === CellType.CommandColumn))
+            || (cell.cellType === CellType.CommandColumn)
+            || (row.isDataRow && isRowTemplate))
             && !(row.edit === 'delete' && row.isDirty);
     }
 

@@ -145,7 +145,7 @@ describe('Chart', () => {
             loaded = (args: Object): void => {
 
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_MacdLine');
                 expect(signalLine.getAttribute('d')).not.toBeNull();
                 expect(chartObj.visibleSeries.length).toBe(4);
                 expect(chartObj.visibleSeries[1].points[0].x).toBe('Oct');
@@ -253,7 +253,7 @@ describe('Chart', () => {
 
                 //define check condition
                 ;
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_MacdLine');
                 expect(signalLine.getAttribute('d')).not.toBeNull();
                 done();
                 //reset visibility
@@ -276,7 +276,7 @@ describe('Chart', () => {
             loaded = (args: Object): void => {
 
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_MacdLine');
                 expect(signalLine.getAttribute('d')).not.toBeNull();
                 let svg: HTMLElement = document.getElementById('containerAxisLine_0');
                 expect(svg.getAttribute('d').split(' ')[1] == '57.5' || svg.getAttribute('d').split(' ')[1] == '53.5').toBe(true);
@@ -300,7 +300,7 @@ describe('Chart', () => {
 
 
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_MacdLine');
                 expect(signalLine.getAttribute('d')).not.toBeNull();
                 let point: Element = document.getElementById('containerIndicatorGroup0');
                 expect(point != null).toBe(true);
@@ -326,7 +326,7 @@ describe('Chart', () => {
             loaded = (args: Object): void => {
 
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_MACD');
                 expect(signalLine.getAttribute('stroke')).toBe('blue');
                 done();
             };
@@ -339,7 +339,7 @@ describe('Chart', () => {
             loaded = (args: Object): void => {
 
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_MACD');
                 expect(signalLine.getAttribute('stroke')).toBe('orange');
                 done();
             };
@@ -353,7 +353,7 @@ describe('Chart', () => {
             loaded = (args: Object): void => {
 
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_MACD');
                 expect(signalLine.getAttribute('stroke-width')).toBe('3');
                 //workaround
                 expect(signalLine.getAttribute('stroke-dasharray')).toBe('2,2');

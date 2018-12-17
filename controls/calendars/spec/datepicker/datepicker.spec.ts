@@ -6,6 +6,7 @@ import { cldrData, loadCldr, Touch, SwipeEventArgs, L10n, Browser } from '@syncf
 import { createElement, removeClass, remove, addClass, setStyleAttribute } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, merge, getEnumValue, getValue, getUniqueID } from '@syncfusion/ej2-base';
 import '../../node_modules/es6-promise/dist/es6-promise';
+import { Calendar, ChangedEventArgs, Islamic } from '../../src/index';
 
 
 /**
@@ -32,10 +33,11 @@ clickEvent.initEvent('mousedown', true, true);
 function loadCultureFiles(name: string, base?: boolean): void {
     let files: string[] = !base ?
         ['ca-gregorian.json', 'numbers.json', 'timeZoneNames.json', 'currencies.json'] : ['numberingSystems.json'];
+    files.push('weekData.json');
     for (let prop of files) {
         let val: Object;
         let ajax: Ajax;
-        if (base) {
+        if (base || prop === 'weekData.json') {
             ajax = new Ajax('base/spec/cldr/supplemental/' + prop, 'GET', false);
         } else {
             ajax = new Ajax('base/spec/cldr/main/' + name + '/' + prop, 'GET', false);
@@ -416,6 +418,16 @@ describe('Datepicker', () => {
             datepicker.element.value = '3/55/2017';
             datepicker.inputBlurHandler();
             expect(datepicker.element.value).toBe('3/55/2017');
+        });
+        it('value with string type test case ', () => {
+            datepicker = new DatePicker({ value: <any>('3/3/2017') });
+            datepicker.appendTo('#date');
+            (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
+            datepicker.element.value = '3/3/17';
+            datepicker.inputBlurHandler();
+            dateString(datepicker, '3/3/2017');
+            expect(datepicker.element.value).toBe('3/3/2017');
+            
         });
         it('Input with different format value with test case ', () => {
             datepicker = new DatePicker({ value: new Date('3/3/2017') });
@@ -1088,6 +1100,13 @@ describe('Datepicker', () => {
             expect(datepicker.inputWrapper.container.classList.contains('e-float-input')).toBe(false);
             expect(datepicker.inputElement.getAttribute('placeholder')).toBe('Select a date');
             expect(datepicker.inputWrapper.container.children[2].classList.contains('e-float-text')).toBe(false);
+        });
+        it('floatLabelType onproperty test case', () => {
+            let ele = document.getElementById('date');
+            datepicker = new DatePicker({ placeholder: 'Select a date' });
+            datepicker.appendTo('#date');            
+            datepicker.floatLabelType = "Auto";
+            datepicker.dataBind();            
         });
         /**
          * Attribute testing  
@@ -2541,5 +2560,31 @@ describe('Datepicker', () => {
             (<HTMLElement>(document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0])).dispatchEvent(clickEvent);
             expect(datepicker.popupObj.position.X).toBe('right')
         });
+    });
+    Calendar.Inject(Islamic)
+    describe('Islamic ', () => {
+        let datepicker: any;
+        beforeEach(() => {
+            let input: HTMLElement = createElement('input', { id: "datepicker" });
+            document.body.appendChild(input);
+        });
+        afterEach(() => {
+            if (datepicker) {
+                datepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Islamic  test case ', () => {
+            datepicker = new DatePicker({
+                calendarMode: 'Islamic',
+                value: new Date(), open: function (args: PopupObjectArgs) {
+                    args.appendTo = this.inputWrapper.container;
+                }
+            });
+            datepicker.appendTo('#datepicker');
+            (<HTMLElement>(document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0])).dispatchEvent(clickEvent);
+            expect(datepicker.popupObj.element.parentElement).toBe(datepicker.inputWrapper.container);
+        });
+
     });
 });

@@ -110,7 +110,7 @@ function align() {
 }
 
 function canlog() {
-    diagram.historyList.canLog = function (entry: HistoryEntry) {
+    diagram.historyManager.canLog = function (entry: HistoryEntry) {
         entry.cancel = true;
         return entry;
     }
@@ -121,27 +121,27 @@ log.onclick = selectable;
 let oldProp, newProp;
 function selectable() {
     if (!log.checked) {
-        diagram.historyList.canLog = function (entry: HistoryEntry) {
+        diagram.historyManager.canLog = function (entry: HistoryEntry) {
             entry.cancel = true;
             return entry;
         }
         diagram.dataBind();
     }
     else {
-        diagram.historyList.canLog = function (entry: HistoryEntry) {
+        diagram.historyManager.canLog = function (entry: HistoryEntry) {
             entry.cancel = false;
             return entry;
         }
         diagram.dataBind();
     }
 }
-diagram.historyList.undo = function (args: HistoryEntry) {
+diagram.historyManager.undo = function (args: HistoryEntry) {
     (args.redoObject) = cloneObject(args.undoObject) as NodeModel;
     args.undoObject['description'] = 'Start';
     diagram.dataBind();
     alert(args.undoObject['description']);
 }
-diagram.historyList.redo = function (args: HistoryEntry) {
+diagram.historyManager.redo = function (args: HistoryEntry) {
     alert(args.redoObject['description']);
     let current: NodeModel = cloneObject(args.undoObject) as NodeModel;
     args.undoObject['description'] = args.redoObject['description'];
@@ -154,7 +154,7 @@ button0.onclick = function () {
     let obj = diagram.nodes[0];
     obj['description'] = (document.getElementById('custom') as HTMLSelectElement).value;
     let entry: HistoryEntry = { undoObject: obj };
-    diagram.historyList.push(entry);
+    diagram.historyManager.push(entry);
     diagram.dataBind();
 }
 let button2 = document.getElementById('change');
@@ -176,13 +176,13 @@ button1.onclick = function () {
 
 let button3 = document.getElementById('startGroup');
 button3.onclick = function () {
-    diagram.historyList.startGroupAction();
+    diagram.historyManager.startGroupAction();
 
 }
 
 let button4 = document.getElementById('endGroup');
 button4.onclick = function () {
-    diagram.historyList.endGroupAction();
+    diagram.historyManager.endGroupAction();
 }
 
 let button5 = document.getElementById('copy');

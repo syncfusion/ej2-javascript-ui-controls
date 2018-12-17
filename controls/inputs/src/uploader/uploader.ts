@@ -842,12 +842,12 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
 
     private updateFileList () : void {
         let element : HTMLElement;
+        /* istanbul ignore next */
         if (this.fileList.length > 0 && !isNullOrUndefined(this.uploadWrapper.querySelector('.' + LIST_PARENT ))) {
             for (let i: number = 0; i < this.fileList.length; i++) {
                 element = this.fileList[i].querySelector('.e-file-status') as HTMLElement;
                 element.innerHTML = this.localizedTexts(this.getKeyValue(this.filesData[i].status));
                 this.filesData[i].status = this.localizedTexts(this.getKeyValue(this.filesData[i].status));
-                /* istanbul ignore next */
                 if (this.fileList[i].classList.contains(UPLOAD_SUCCESS)) {
                     this.fileList[i].querySelector('.e-icons').setAttribute('title', this.localizedTexts('delete'));
                 }
@@ -1424,6 +1424,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         let index: number = this.fileList.indexOf(selectedElement);
         let liElement: HTMLElement = this.fileList[index];
         let fileData: FileInfo = this.filesData[index];
+        if (isNullOrUndefined(fileData)) { return; }
         if ((<HTMLInputElement>args.target).classList.contains(ABORT_ICON)) {
             fileData.statusCode = '5';
             if (!isNullOrUndefined(liElement)) {
@@ -1481,6 +1482,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         ajax.beforeSend = (e: BeforeSendEventArgs) => {
             eventArgs.currentRequest = ajax.httpRequest;
             if (!removeDirectly) { this.trigger('removing', eventArgs); }
+            /* istanbul ignore next */
             if (eventArgs.cancel) { e.cancel = true; return; }
             if (!isNullOrUndefined(liElement) && (!isNullOrUndefined(liElement.querySelector('.' + DELETE_ICON)) ||
             !isNullOrUndefined(liElement.querySelector('.' + REMOVE_ICON)))) {
@@ -1674,6 +1676,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 validationMessages: this.validatedFileSize(file.size),
                 statusCode: '1'
             };
+            /* istanbul ignore next */
             if (paste) { fileDetails.fileSource = 'paste'; }
             fileDetails.status = fileDetails.validationMessages.minSize !== '' ? this.localizedTexts('invalidMinFileSize') :
             fileDetails.validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : fileDetails.status;

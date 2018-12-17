@@ -165,6 +165,8 @@ export class MDLists {
         let start: number = textArea.selectionStart;
         let end: number = textArea.selectionEnd;
         let addedLength: number = 0;
+        let startLength: number = 0;
+        let endLength: number = 0;
         let parents: { [key: string]: string | number }[] = this.selection.getSelectedParentPoints(textArea);
         let prefix: string = '';
         let regex: string = this.syntax[this.currentAction];
@@ -183,7 +185,7 @@ export class MDLists {
                 prefix = replace.line ? prefix : this.syntax[this.currentAction];
                 parents[i].text = replace.line ? replace.line : prefix + parents[i].text;
                 replace.space = replace.space ? replace.space : 0;
-                textArea.value = textArea.value.substr(0, parents[i].start as number) + parents[i].text + '\n' +
+                textArea.value = textArea.value.substr(0, parents[i].start as number + endLength) + parents[i].text + '\n' +
                     textArea.value.substr(parents[i].end as number, textArea.value.length);
                 start = i === 0 ? (start + prefix.length + (replace.space as number)) > 0 ?
                     start + prefix.length + (replace.space as number) : 0 : start;
@@ -195,9 +197,16 @@ export class MDLists {
                         parents[j].end = prefix.length + (parents[j].end as number) + (replace.space as number);
                     }
                 }
+                this.restore(textArea, start, end + addedLength, e);
+            } else {
+                parents[i].text = (parents[i].text as string).replace(regex, '');
+                textArea.value = textArea.value.substr(0, parents[i].start as number + endLength) + parents[i].text + '\n' +
+                    textArea.value.substr(parents[i].end as number + endLength, textArea.value.length);
+                endLength -= this.syntax[this.currentAction].length;
+                startLength = this.syntax[this.currentAction].length;
+                this.restore(textArea, start - startLength, end + endLength, e);
             }
         }
-        this.restore(textArea, start, end + addedLength, e);
     }
     private appliedLine(line: string): { [key: string]: number | string } {
         let points: { [key: string]: number | string } = {};

@@ -43,6 +43,10 @@
   }
 
   #{&}.e-pivotfieldlist-wrapper {
+    .e-field-list-back-icon::before {
+      content: '\e977';
+    }
+
     .e-sort::before {
       content: '\e840';
     }

@@ -427,7 +427,7 @@ export class Tooltip extends BaseTooltip {
         let toolTip: string;
         let points: Points[] = [];
         if (series.seriesType === 'XY') {
-            toolTip = series.name + ' : ${point.y}';
+            toolTip = series.name + ' : <b>${point.y}</b>';
         } else {
             toolTip = format;
         }

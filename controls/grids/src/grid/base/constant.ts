@@ -330,3 +330,5 @@ export const printGridInit: string = 'printGrid-Init';
 export const exportRowDataBound: string = 'export-RowDataBound';
 /** @hidden */
 export const rowPositionChanged: string = 'row-position-changed';
+/** @hidden */
+export const batchForm: string = 'batchedit-form';

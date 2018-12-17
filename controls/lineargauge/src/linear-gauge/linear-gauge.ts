@@ -342,7 +342,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     private themeEffect(): void {
         let theme : string = this.theme.toLowerCase();
-        if (theme === 'highcontrast-dark') {
+        if (theme === 'highcontrast') {
             this.titleStyle.color = this.titleStyle.color || '#FFFFFF';
             this.setThemeColors('#FFFFFF', '#FFFFFF');
         } else if (theme.indexOf('dark') > -1) {

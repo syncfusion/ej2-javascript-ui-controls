@@ -650,6 +650,10 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      * @private
      */
     private initPrivateVariable(): void {
+        if (this.element.id === '') {
+            let collection: number = document.getElementsByClassName('e-circulargauge').length;
+            this.element.id = 'circulargauge_control_' + collection;
+        }
         this.renderer = new SvgRenderer(this.element.id);
         this.gaugeAxisLayoutPanel = new AxisLayoutPanel(this);
         this.animatePointer = true;

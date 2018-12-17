@@ -361,7 +361,7 @@ describe('Range navigator Tooltip', () => {
                 done();
             };
             range.tooltip.displayMode = 'Always';
-            range.theme = 'HighcontrastLight';
+            range.theme = 'HighContrastLight';
             range.tooltip.template = null;
             range.refresh();
         });

@@ -94,10 +94,10 @@ export class EditorManager {
                 this.observer.notify(CONSTANT.INDENT_TYPE, { subCommand: value, event: event, callBack: callBack });
                 break;
             case 'links':
-                this.observer.notify(CONSTANT.LINK, { item: exeValue, event: event, callBack: callBack });
+                this.observer.notify(CONSTANT.LINK, { command: command, value: value, item: exeValue, event: event, callBack: callBack });
                 break;
             case 'images':
-                this.observer.notify(CONSTANT.IMAGE, { item: exeValue, event: event, callBack: callBack });
+                this.observer.notify(CONSTANT.IMAGE, {command: command, value: value, item: exeValue, event: event, callBack: callBack });
                 break;
             case 'table':
                 switch (value.toString().toLocaleLowerCase()) {

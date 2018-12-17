@@ -19,7 +19,7 @@ describe('RTE CR issues', () => {
     describe('RTE - Incident issues', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLElement;
-        let innerHTML:string =`<ol>
+        let innerHTML: string = `<ol>
         <li>
             <p>Provide
         the tool bar support, it’s also customizable.</p>
@@ -52,14 +52,14 @@ describe('RTE CR issues', () => {
         });
 
         it('I213118 => EJ2-15261 - RTE removes spacing between words when content is pasted from a word document', () => {
-            expect((rteObj as any).inputElement.innerHTML === innerHTML.replace(/>\s+</g,'><')).toBe(true);
+            expect((rteObj as any).inputElement.innerHTML === innerHTML.replace(/>\s+</g, '><')).toBe(true);
         });
 
         afterAll(() => {
             destroy(rteObj);
         });
     });
-    
+
     describe('EJ2-18135 - name attribute of textarea element', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLTextAreaElement;
@@ -90,6 +90,49 @@ describe('RTE CR issues', () => {
         afterEach((done) => {
             destroy(rteObj);
             done();
+        });
+    });
+    describe('EJ2-18212 - RTE - Edited changes are not reflect using getHTML method through console window.', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['SourceCode']
+                },
+                value: `<div><p>First p node-0</p></div>`,
+                placeholder: 'Type something'
+            });
+            rteEle = rteObj.element;
+            rteObj.saveInterval= 100;
+            rteObj.dataBind();
+            done();
+        });
+        it("AutoSave the value in interval time", (done) => {
+            rteObj.focusIn();
+            (rteObj as any).inputElement.innerHTML = `<div><p>First p node-1</p></div>`;
+            expect(rteObj.value !== '<div><p>First p node-1</p></div>').toBe(true);
+            setTimeout(() => {
+                expect(rteObj.value === '<div><p>First p node-1</p></div>').toBe(true);
+                (rteObj as any).inputElement.innerHTML = `<div><p>First p node-2</p></div>`;
+                expect(rteObj.value !== '<div><p>First p node-2</p></div>').toBe(true);
+                setTimeout(() => {
+                    expect(rteObj.value === '<div><p>First p node-2</p></div>').toBe(true);
+                    done();
+                }, 110);
+            }, 110);
+        });
+        it(" Clear the setInterval at component blur", (done) => {
+            rteObj.focusOut();
+            (rteObj as any).inputElement.innerHTML = `<div><p>First p node-1</p></div>`;
+            expect(rteObj.value !== '<div><p>First p node-1</p></div>').toBe(true);
+            setTimeout(() => {
+                expect(rteObj.value === '<div><p>First p node-1</p></div>').toBe(false);
+                done();
+            }, 110);
+        });
+        afterAll(() => {
+            destroy(rteObj);
         });
     });
 })

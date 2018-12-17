@@ -191,7 +191,7 @@ export class ExcelFilter extends CheckBoxFilter {
                 pos.left = (window.innerWidth - contextRect.width) / 2;
                 this.closeDialog();
             } else {
-                pos.top = client.top;
+                pos.top = window.scrollY + client.top;
                 pos.left = this.getCMenuYPosition(this.dlg, this.menuObj);
             }
             this.menuObj.open(pos.top, pos.left, e.target as HTMLElement);

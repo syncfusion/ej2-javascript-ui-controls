@@ -58,6 +58,9 @@ Tabs and shift-tabs work too`;
             expect(new RegExp('^(1. )', 'gim').test(line)).toBe(true);
         });
         it('  apply to multi line   ', () => {
+            editorObj.markdownSelection.save(6, 6);
+            editorObj.markdownSelection.restore(textArea);
+            editorObj.execCommand("Lists", 'OL', null);
             editorObj.markdownSelection.save(0, textArea.value.length);
             editorObj.markdownSelection.restore(textArea);
             editorObj.execCommand("Lists", 'OL', null);
@@ -125,6 +128,9 @@ Tabs and shift-tabs work too`;
             expect(new RegExp('^(- )', 'gim').test(line)).toBe(true);
         });
         it('  apply to multi line   ', () => {
+            editorObj.markdownSelection.save(6,6);
+            editorObj.markdownSelection.restore(textArea);
+            editorObj.execCommand("Lists", 'OL', null);
             editorObj.markdownSelection.save(0, textArea.value.length);
             editorObj.markdownSelection.restore(textArea);
             editorObj.execCommand("Lists", 'UL', null);
@@ -369,6 +375,56 @@ Tabs and shift-tabs work too`;
             let line: string = editorObj.markdownSelection.getLine(textArea, index);
             expect(new RegExp('^(\t)', 'gim').test(line)).toBe(false);
         });
+        afterAll(() => {
+            detach(textArea);
+        });
+    });
+    describe('UL and OL testing apply and remvoe command', () => {
+        let innerValue: string =
+        `Lists are a piece of cake
+        They even auto continue as you type
+        A double enter will end them
+        Tabs and shift-tabs work too`;
+        let editorObj: MarkdownParser;
+        let textArea: HTMLTextAreaElement = <HTMLTextAreaElement>createElement('textarea', {
+            id: 'markdown-editor',
+            styles: 'width:200px;height:200px'
+        });
+        beforeAll(() => {
+            document.body.appendChild(textArea);
+            editorObj = new MarkdownParser({ element: textArea });
+            textArea.value = innerValue;
+            textArea.focus();
+        });
+
+        it(' apply and remove OL ', () => {
+            editorObj.markdownSelection.save(0, 2);
+            editorObj.markdownSelection.restore(textArea);
+            let isCallBack: boolean = false;
+            editorObj.execCommand("Lists", 'OL', null, () => {
+                isCallBack = true;
+            });
+            expect(isCallBack).toBe(true);
+            let line: string = editorObj.markdownSelection.getSelectedLine(textArea);
+            expect(new RegExp('^(1. )', 'gim').test(line)).toBe(true);
+             editorObj.markdownSelection.save(6, 6);
+            editorObj.markdownSelection.restore(textArea);
+             editorObj.execCommand("Lists", 'OL', null);
+              line = editorObj.markdownSelection.getSelectedLine(textArea);
+             expect(new RegExp('^(1. )', 'gim').test(line)).not.toBe(true);
+        });
+        it('  apply and remove UL   ', () => {
+            editorObj.markdownSelection.save(6, 6);
+            editorObj.markdownSelection.restore(textArea);
+            editorObj.execCommand("Lists", 'UL', null);
+            let line: string = editorObj.markdownSelection.getSelectedLine(textArea);
+             expect(new RegExp('^(- )', 'gim').test(line)).toBe(true);
+             editorObj.markdownSelection.save(6, 6);
+            editorObj.markdownSelection.restore(textArea);
+            editorObj.execCommand("Lists", 'UL', null);
+            line = editorObj.markdownSelection.getSelectedLine(textArea);
+            expect(new RegExp('^(- )', 'gim').test(line)).not.toBe(true);
+            });
         afterAll(() => {
             detach(textArea);
         });

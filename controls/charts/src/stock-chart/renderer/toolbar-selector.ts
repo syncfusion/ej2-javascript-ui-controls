@@ -19,6 +19,8 @@ interface Intervals {
 export class ToolBarSelector {
     private stockChart: StockChart;
     private intervalTypes: string[] = ['Years', 'Quarter', 'Months', 'Weeks', 'Days', 'Hours', 'Minutes', 'Seconds'];
+    private indicatorDropDown: DropDownButton;
+    private trendlineDropDown: DropDownButton;
     constructor(chart: StockChart) {
         this.stockChart = chart;
     }
@@ -58,6 +60,10 @@ export class ToolBarSelector {
                     }
                 }
             }
+        } else if (type === this.stockChart.exportType) {
+            for (let i: number = 0; i < type.length; i++) {
+                    result.push({ text: type[i].toString() });
+            }
         } else {
             for (let i: number = 0; i < type.length; i++) {
                 if (type[i].toString() !== 'Print') {
@@ -77,10 +83,12 @@ export class ToolBarSelector {
             if (series[i].yName === 'volume') {
                 continue;
             }
-            series[i].type = <ChartSeriesType>(seriesType.indexOf('Candle') > -1 ? 'Candle' : seriesType);
+            series[i].type = <ChartSeriesType>(seriesType.indexOf('Candle') > -1 ? 'Candle' :
+            (seriesType.indexOf('OHLC') > -1 ? 'HiloOpenClose' : seriesType) );
             series[i].enableSolidCandles = seriesType === 'Candle';
             series[i].trendlines.forEach((trendLine: TrendlineModel) => {
                 trendLine.animation.enable = false;
+                trendLine.enableTooltip = false;
             });
         }
     }
@@ -97,6 +105,7 @@ export class ToolBarSelector {
     }
 
     //private variables:
+    private trendline: TrendlineTypes;
     private indicators: TechnicalIndicators[] = [];
     private secondayIndicators: TechnicalIndicators[] = [];
     public resetButton(): void {
@@ -131,6 +140,7 @@ export class ToolBarSelector {
                 }
             }
             this.stockChart.indicatorElements = null;
+            this.stockChart.resizeTo = null;
             this.stockChart.zoomChange = false;
             for (let j: number = 0; j < this.stockChart.series.length; j++) {
                 this.stockChart.series[j].dataSource = this.stockChart.tempDataSource[j];
@@ -139,36 +149,48 @@ export class ToolBarSelector {
         };
     }
     public initializeTrendlineSelector(): void {
-        let trendType: DropDownButton = new DropDownButton({
-            items: this.getDropDownItems(this.stockChart.trendlineType),
+        this.trendlineDropDown = new DropDownButton({
+            items: this.stockChart.resizeTo ? this.trendlineDropDown.items :
+            this.getDropDownItems(this.stockChart.trendlineType),
             select: (args: MenuEventArgs) => {
                 let text: string = this.tickMark(args);
+                text = text.split(' ')[0].toLocaleLowerCase() + (text.split(' ')[1] ? text.split(' ')[1] : '');
+                text = text.substr(0, 1).toUpperCase() + text.substr(1);
                 let type: TrendlineTypes = <TrendlineTypes>text;
-                for (let i: number = 0; i < this.stockChart.series.length; i++) {
-                    if (this.stockChart.series[i].yName === 'volume') {
-                        continue;
-                    }
-                    if (this.stockChart.series[0].trendlines.length === 0) {
-                        let trendlines: TrendlineModel[];
-                        if (this.stockChart.trendlinetriggered) {
-                            trendlines = [{ type: type, width: 1 }];
-                            this.stockChart.trendlinetriggered = false;
+                if (this.trendline !== type) {
+                    this.trendline = type;
+                    for (let i: number = 0; i < this.stockChart.series.length; i++) {
+                        if (this.stockChart.series[i].yName === 'volume') {
+                            continue;
                         }
-                        this.stockChart.series[0].trendlines = trendlines;
-                    } else {
-                        this.stockChart.series[0].trendlines[0].width = 1;
-                        this.stockChart.series[0].trendlines[0].type = type;
-                        this.stockChart.series[0].trendlines[0].animation.enable = this.stockChart.trendlinetriggered ? true : false;
+                        if (this.stockChart.series[0].trendlines.length === 0) {
+                            let trendlines: TrendlineModel[];
+                            if (this.stockChart.trendlinetriggered) {
+                                trendlines = [{ type: type, width: 1, enableTooltip : false }];
+                                this.stockChart.trendlinetriggered = false;
+                            }
+                            this.stockChart.series[0].trendlines = trendlines;
+                        } else {
+                            this.stockChart.series[0].trendlines[0].width = 1;
+                            this.stockChart.series[0].trendlines[0].type = type;
+                            this.stockChart.series[0].trendlines[0].animation.enable = this.stockChart.trendlinetriggered ? true : false;
+                        }
                     }
+                    this.stockChart.cartesianChart.initializeChart();
+                } else {
+                    args.item.text = '&nbsp;&nbsp;&nbsp;' + args.item.text.replace('&#10004&nbsp;', '');
+                    this.stockChart.series[0].trendlines[0].width = 0;
+                    this.trendline = null;
+                    this.stockChart.cartesianChart.initializeChart();
                 }
-                this.stockChart.cartesianChart.initializeChart();
             },
         });
-        trendType.appendTo('#trendType');
+        this.trendlineDropDown.appendTo('#trendType');
     }
     public initializeIndicatorSelector(): void {
-        let indicatorType: DropDownButton = new DropDownButton({
-            items: this.getDropDownItems(this.stockChart.indicatorType),
+        this.indicatorDropDown = new DropDownButton({
+            items: this.stockChart.resizeTo ? this.indicatorDropDown.items :
+            this.getDropDownItems(this.stockChart.indicatorType),
             select: (args: MenuEventArgs) => {
                 for (let l: number = 0; l < this.stockChart.series.length; l++) {
                     if (this.stockChart.series[l].trendlines.length !== 0) {
@@ -203,7 +225,7 @@ export class ToolBarSelector {
                 }
             },
         });
-        indicatorType.appendTo('#indicatorType');
+        this.indicatorDropDown.appendTo('#indicatorType');
     }
     private getIndicator(type: TechnicalIndicators, yAxisName: string): TechnicalIndicatorModel[] {
         let indicator: TechnicalIndicatorModel[] = [{
@@ -249,7 +271,11 @@ export class ToolBarSelector {
                 plotOffset: 10, opposedPosition: true,
                 rowIndex: (!this.stockChart.isSingleAxis ? this.stockChart.axes.length : 0),
                 desiredIntervals: 1,
-                majorGridLines: { width: 0, color: '#EDEDED' }, lineStyle: { width: 1},
+                labelFormat : 'n2',
+                majorGridLines: this.stockChart.primaryYAxis.majorGridLines,
+                lineStyle: this.stockChart.primaryYAxis.lineStyle,
+                labelPosition : this.stockChart.primaryYAxis.labelPosition,
+                majorTickLines: this.stockChart.primaryYAxis.majorTickLines,
                 rangePadding: 'None',  name: type.toString(),
             }];
             this.stockChart.axes = this.stockChart.axes.concat(axis);
@@ -308,7 +334,7 @@ export class ToolBarSelector {
             });
             print.appendTo('#print');
             document.getElementById('print').onclick = () => {
-                this.stockChart.chart.print(this.stockChart.element.id);
+                    this.stockChart.chart.print(this.stockChart.element.id);
             };
         }
     }
@@ -317,7 +343,10 @@ export class ToolBarSelector {
             items: this.getDropDownItems(this.stockChart.exportType),
             select: (args: MenuEventArgs) => {
                 let type: ExportType = <ExportType>args.item.text;
-                this.stockChart.chart.export(type, 'chart', null, [this.stockChart]);
+                let stockChart: StockChart = this.stockChart;
+                if (stockChart.chart.exportModule) {
+                    stockChart.chart.exportModule.export(type, 'StockChart', null, [stockChart], null, stockChart.svgObject.clientHeight);
+                }
             }
         });
         exportChart.appendTo('#export');

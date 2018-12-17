@@ -84,3 +84,24 @@ document.getElementById('highcontrast').onclick = (e: Event) => {
     document.body.style.backgroundColor = 'black';
     document.body.style.color = 'white';
 };
+document.getElementById('materialdark').onclick = (e: Event) => {
+    enableRipple(false);
+    document.getElementById('cm-theme').setAttribute('href', './theme-files/material-dark.css');
+    menuObj.refresh();
+    document.body.style.backgroundColor = 'black';
+    document.body.style.color = 'white';
+};
+document.getElementById('fabricdark').onclick = (e: Event) => {
+    enableRipple(false);
+    document.getElementById('cm-theme').setAttribute('href', './theme-files/fabric-dark.css');
+    menuObj.refresh();
+    document.body.style.backgroundColor = 'black';
+    document.body.style.color = 'white';
+};
+document.getElementById('bootstrapdark').onclick = (e: Event) => {
+    enableRipple(false);
+    document.getElementById('cm-theme').setAttribute('href', './theme-files/bootstrap-dark.css');
+    menuObj.refresh();
+    document.body.style.backgroundColor = 'black';
+    document.body.style.color = 'white';
+};

@@ -297,6 +297,7 @@ export class Resize implements IAction {
                     }
                     this.widthService.setWidthToTable();
                 }
+                this.refreshStackedColumnWidth();
                 this.element = e.target as HTMLElement;
                 if (this.parent.getVisibleFrozenColumns()) {
                     let mtbody: Element = this.parent.getContent().querySelector('.e-movablecontent').querySelector('tbody');
@@ -498,10 +499,13 @@ export class Resize implements IAction {
                 }
             }
         }
+        return columns;
+    }
+
+    private refreshStackedColumnWidth(): void {
         for (const stackedColumn of this.parent.getStackedColumns(this.parent.columns as Column[])) {
             stackedColumn.width = this.getStackedWidth(stackedColumn, 0);
         }
-        return columns;
     }
 
     private getStackedWidth(column: Column, width: number): number {

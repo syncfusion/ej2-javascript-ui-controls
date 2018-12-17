@@ -642,7 +642,7 @@ describe('PivotView spec', () => {
                 dataSource.columns = [{ name: 'balance' }];
                 dataSource.values = [{ name: 'advance' }, { name: 'quantity' }];
                 pivotEngine = new PivotEngine(dataSource);
-                expect((pivotEngine.pivotValues[0][1] as IDataSet).formattedText).toBe('101,532.00%');
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).formattedText).toBe('1015.32');
             });
             describe('With custom date and time', () => {
                 let ds: IDataSet[] = pivot_dataset as IDataSet[];

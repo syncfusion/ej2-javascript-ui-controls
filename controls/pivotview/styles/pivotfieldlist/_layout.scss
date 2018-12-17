@@ -133,6 +133,12 @@
       width: 100%  !important;
       // sass-lint:enable-all
 
+      .e-format-value1,
+      .e-format-value2,
+      .e-format-value-span {
+        margin-right: 2px;
+      }
+
       .e-format-color-picker {
         width: 33%;
       }
@@ -141,6 +147,14 @@
         font-size: 12px;
         padding-right: 16px;
         padding-top: 16px;
+      }
+
+      .e-format-apply-button,
+      .e-format-cancel-button {
+        max-width: 40%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
     }
 
@@ -607,6 +621,28 @@
             display: none;
           }
         }
+        // sass-lint:disable-all
+
+        .e-empty-field::-webkit-input-placeholder {
+          color: $error-font-color !important;
+          font-weight: 600 !important;
+        }
+
+        .e-empty-field:-moz-placeholder {
+          color: $error-font-color !important;
+          font-weight: 600 !important;
+        }
+
+        .e-empty-field::-moz-placeholder {
+          color: $error-font-color !important;
+          font-weight: 600 !important;
+        }
+
+        .e-empty-field:-ms-input-placeholder {
+          color: $error-font-color !important;
+          font-weight: 600 !important;
+        }
+        // sass-lint:enable-all
       }
 
       &.e-excel-filter {

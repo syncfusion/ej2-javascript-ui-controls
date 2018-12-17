@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, cldrData, closest, createElement, detach, extend, formatUnit, getDefaultDateObject, getUniqueID, getValue, isNullOrUndefined, isUndefined, merge, prepend, remove, removeClass, rippleEffect, select, setStyleAttribute, setValue } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Component, Event, EventHandler, HijriParser, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, cldrData, closest, createElement, detach, extend, formatUnit, getDefaultDateObject, getUniqueID, getValue, isNullOrUndefined, isUndefined, merge, prepend, remove, removeClass, rippleEffect, select, setStyleAttribute, setValue, throwError } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Input } from '@syncfusion/ej2-inputs';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -88,6 +88,14 @@ let CalendarBase = class CalendarBase extends Component {
      * @private
      */
     render() {
+        if (this.calendarMode === 'Islamic') {
+            if (+(this.min.setSeconds(0)) === +new Date(1900, 0, 1, 0, 0, 0)) {
+                this.min = new Date(1944, 2, 18);
+            }
+            if (+this.max === +new Date(2099, 11, 31)) {
+                this.max = new Date(2069, 10, 16);
+            }
+        }
         this.globalize = new Internationalization(this.locale);
         if (isNullOrUndefined(this.firstDayOfWeek) || this.firstDayOfWeek > 6 || this.firstDayOfWeek < 0) {
             this.setProperties({ firstDayOfWeek: this.globalize.getFirstDayOfWeek() }, true);
@@ -485,12 +493,23 @@ let CalendarBase = class CalendarBase extends Component {
                 break;
             case 1:
                 this.addMonths(this.currentDate, number);
-                if (this.isMonthYearRange(this.currentDate)) {
-                    detach(this.tableBodyElement);
-                    this.renderYears(e);
+                if (this.calendarMode === 'Gregorian') {
+                    if (this.isMonthYearRange(this.currentDate)) {
+                        detach(this.tableBodyElement);
+                        this.renderYears(e);
+                    }
+                    else {
+                        this.currentDate = date;
+                    }
                 }
                 else {
-                    this.currentDate = date;
+                    if (this.isMonthYearRange(this.currentDate)) {
+                        detach(this.tableBodyElement);
+                        this.renderYears(e);
+                    }
+                    else {
+                        this.currentDate = date;
+                    }
                 }
                 break;
             case 0:
@@ -533,9 +552,20 @@ let CalendarBase = class CalendarBase extends Component {
     }
     renderMonths(e, value) {
         let numCells = this.weekNumber ? 8 : 7;
-        let tdEles = this.renderDays(this.currentDate, e, value);
+        let tdEles;
+        if (this.calendarMode === 'Gregorian') {
+            tdEles = this.renderDays(this.currentDate, e, value);
+        }
+        else {
+            tdEles = this.islamicModule.islamicRenderDays(this.currentDate, value);
+        }
         this.createContentHeader();
-        this.renderTemplate(tdEles, numCells, MONTH, e, value);
+        if (this.calendarMode === 'Gregorian') {
+            this.renderTemplate(tdEles, numCells, MONTH, e, value);
+        }
+        else {
+            this.islamicModule.islamicRenderTemplate(tdEles, numCells, MONTH, e, value);
+        }
     }
     // tslint:disable-next-line:max-func-body-length
     renderDays(currentDate, e, value, multiSelection, values) {
@@ -627,8 +657,10 @@ let CalendarBase = class CalendarBase extends Component {
             // }
             if (multiSelection && !isNullOrUndefined(values) && !otherMnthBool && !disabledCls) {
                 for (let tempValue = 0; tempValue < values.length; tempValue++) {
-                    let localDateString = this.globalize.formatDate(localDate, { type: 'date', skeleton: 'short' });
-                    let tempDateString = this.globalize.formatDate(values[tempValue], { type: 'date', skeleton: 'short' });
+                    let type = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+                    let formatOptions = { type: 'date', skeleton: 'short', calendar: type };
+                    let localDateString = this.globalize.formatDate(localDate, formatOptions);
+                    let tempDateString = this.globalize.formatDate(values[tempValue], formatOptions);
                     if (localDateString === tempDateString && this.getDateVal(localDate, values[tempValue])) {
                         addClass([tdEle], SELECTED);
                     }
@@ -758,7 +790,8 @@ let CalendarBase = class CalendarBase extends Component {
         this.renderTemplate(tdEles, numCells, 'e-decade', e, value);
     }
     dayCell(localDate) {
-        let dateFormatOptions = { skeleton: 'full', type: 'dateTime' };
+        let type = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+        let dateFormatOptions = { skeleton: 'full', type: 'dateTime', calendar: type };
         let date = this.globalize.parseDate(this.globalize.formatDate(localDate, dateFormatOptions), dateFormatOptions);
         let value = date.valueOf();
         let attrs = {
@@ -864,7 +897,12 @@ let CalendarBase = class CalendarBase extends Component {
             this.tableBodyElement.appendChild(trEle);
         }
         this.table.querySelector('tbody').className = this.effect;
-        this.iconHandler();
+        if (this.calendarMode === 'Gregorian') {
+            this.iconHandler();
+        }
+        else {
+            this.islamicModule.islamicIconHandler();
+        }
         if (view !== this.getViewNumber(this.currentView()) || (view === 0 && view !== this.getViewNumber(this.currentView()))) {
             this.navigateHandler(e);
         }
@@ -909,11 +947,16 @@ let CalendarBase = class CalendarBase extends Component {
                     this.renderMonths(e);
                 }
                 else {
-                    this.currentDate.setMonth(d.getMonth());
-                    if (d.getMonth() > 0 && this.currentDate.getMonth() !== d.getMonth()) {
-                        this.currentDate.setDate(0);
+                    if (this.calendarMode === 'Gregorian') {
+                        this.currentDate.setMonth(d.getMonth());
+                        if (d.getMonth() > 0 && this.currentDate.getMonth() !== d.getMonth()) {
+                            this.currentDate.setDate(0);
+                        }
+                        this.currentDate.setFullYear(d.getFullYear());
                     }
-                    this.currentDate.setFullYear(d.getFullYear());
+                    else {
+                        this.currentDate = d;
+                    }
                     this.effect = ZOOMIN;
                     detach(this.tableBodyElement);
                     this.renderMonths(e);
@@ -924,7 +967,13 @@ let CalendarBase = class CalendarBase extends Component {
                     this.selectDate(e, d, null);
                 }
                 else {
-                    this.currentDate.setFullYear(d.getFullYear());
+                    if (this.calendarMode === 'Gregorian') {
+                        this.currentDate.setFullYear(d.getFullYear());
+                    }
+                    else {
+                        let islamicDate = this.islamicModule.getIslamicDate(d);
+                        this.currentDate = this.islamicModule.toGregorian(islamicDate.year, islamicDate.month, 1);
+                    }
                     this.effect = ZOOMIN;
                     detach(this.tableBodyElement);
                     this.renderYears(e);
@@ -955,6 +1004,13 @@ let CalendarBase = class CalendarBase extends Component {
      */
     getModuleName() {
         return 'calendar';
+    }
+    requiredModules() {
+        let modules = [];
+        if (this) {
+            modules.push({ args: [this], member: 'islamic' });
+        }
+        return modules;
     }
     /**
      * Gets the properties to be maintained upon browser refresh.
@@ -1053,10 +1109,24 @@ let CalendarBase = class CalendarBase extends Component {
             let copyValues = this.copyValues(values);
             for (let skipIndex = 0; skipIndex < copyValues.length; skipIndex++) {
                 let tempValue = copyValues[skipIndex];
-                let tempValueString = this.globalize.formatDate(tempValue, { type: 'date', skeleton: 'yMd' });
-                let minString = this.globalize.formatDate(this.min, { type: 'date', skeleton: 'yMd' });
-                let maxString = this.globalize.formatDate(this.max, { type: 'date', skeleton: 'yMd' });
-                if (+new Date(tempValueString) < +new Date(minString) || +new Date(tempValueString) > +new Date(maxString)) {
+                let type = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+                let tempValueString;
+                if (this.calendarMode === 'Gregorian') {
+                    /* tslint:disable-next-line:max-line-length */
+                    tempValueString = this.globalize.formatDate(tempValue, { type: 'date', skeleton: 'yMd' });
+                }
+                else {
+                    /* tslint:disable-next-line:max-line-length */
+                    tempValueString = this.globalize.formatDate(tempValue, { type: 'dateTime', skeleton: 'full', calendar: 'islamic' });
+                }
+                let minFormatOption = { type: 'date', skeleton: 'yMd', calendar: type };
+                let minStringValue = this.globalize.formatDate(this.min, minFormatOption);
+                let minString = minStringValue;
+                let maxFormatOption = { type: 'date', skeleton: 'yMd', calendar: type };
+                let maxStringValue = this.globalize.formatDate(this.max, maxFormatOption);
+                let maxString = maxStringValue;
+                if (+new Date(tempValueString) < +new Date(minString) ||
+                    +new Date(tempValueString) > +new Date(maxString)) {
                     copyValues.splice(skipIndex, 1);
                     skipIndex = -1;
                 }
@@ -1080,19 +1150,31 @@ let CalendarBase = class CalendarBase extends Component {
     }
     titleUpdate(date, view) {
         let globalize = new Internationalization(this.locale);
+        let dayFormatOptions;
+        let monthFormatOptions;
+        let type = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+        if (this.calendarMode === 'Gregorian') {
+            dayFormatOptions = globalize.formatDate(date, { type: 'dateTime', skeleton: 'yMMMM', calendar: type });
+            monthFormatOptions = globalize.formatDate(date, { type: 'dateTime', skeleton: 'y', calendar: type });
+        }
+        else {
+            dayFormatOptions = globalize.formatDate(date, { type: 'dateTime', format: 'MMMM y', calendar: type });
+            monthFormatOptions = globalize.formatDate(date, { type: 'dateTime', format: 'y', calendar: type });
+        }
         switch (view) {
             case 'days':
-                this.headerTitleElement.textContent = globalize.formatDate(date, { type: 'dateTime', skeleton: 'yMMMM' });
+                this.headerTitleElement.textContent = dayFormatOptions;
                 break;
             case 'months':
-                this.headerTitleElement.textContent = globalize.formatDate(date, { type: 'dateTime', skeleton: 'y' });
+                this.headerTitleElement.textContent = monthFormatOptions;
         }
     }
     setActiveDescendant() {
         let id;
         let focusedEle = this.tableBodyElement.querySelector('tr td.e-focused-date');
         let selectedEle = this.tableBodyElement.querySelector('tr td.e-selected');
-        let title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'full' });
+        let type = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+        let title = this.globalize.formatDate(this.currentDate, { type: 'dateTime', skeleton: 'full', calendar: type });
         if (selectedEle || focusedEle) {
             (focusedEle || selectedEle).setAttribute('aria-selected', 'true');
             (focusedEle || selectedEle).setAttribute('aria-label', 'The current focused date is ' + '' + title);
@@ -1185,7 +1267,12 @@ let CalendarBase = class CalendarBase extends Component {
     }
     navigatePrevious(e) {
         e.preventDefault();
-        this.previous();
+        if (this.calendarMode === 'Gregorian') {
+            this.previous();
+        }
+        else {
+            this.islamicModule.islamicPrevious();
+        }
         this.triggerNavigate(e);
         if (this.getModuleName() === 'calendar') {
             this.table.focus();
@@ -1211,7 +1298,12 @@ let CalendarBase = class CalendarBase extends Component {
     }
     navigateNext(eve) {
         eve.preventDefault();
-        this.next();
+        if (this.calendarMode === 'Gregorian') {
+            this.next();
+        }
+        else {
+            this.islamicModule.islamicNext();
+        }
         this.triggerNavigate(eve);
         if (this.getModuleName() === 'calendar') {
             this.table.focus();
@@ -1264,7 +1356,12 @@ let CalendarBase = class CalendarBase extends Component {
             && date.getMonth() === (value).getMonth() && date.getFullYear() === (value).getFullYear());
     }
     getCultureObjects(ld, c) {
-        return getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.days.format.short', ld);
+        if (this.calendarMode === 'Gregorian') {
+            return getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.days.format.short', ld);
+        }
+        else {
+            return getValue('main.' + '' + this.locale + '.dates.calendars.islamic.days.format.short', ld);
+        }
     }
     ;
     getWeek(d) {
@@ -1280,16 +1377,28 @@ let CalendarBase = class CalendarBase extends Component {
         date.setTime(d.getTime() + tzOffsetDiff * minutesMilliSeconds);
     }
     addMonths(date, i) {
-        let day = date.getDate();
-        date.setDate(1);
-        date.setMonth(date.getMonth() + i);
-        date.setDate(Math.min(day, this.getMaxDays(date)));
+        if (this.calendarMode === 'Gregorian') {
+            let day = date.getDate();
+            date.setDate(1);
+            date.setMonth(date.getMonth() + i);
+            date.setDate(Math.min(day, this.getMaxDays(date)));
+        }
+        else {
+            let islamicDate = this.islamicModule.getIslamicDate(date);
+            this.currentDate = this.islamicModule.toGregorian(islamicDate.year, (islamicDate.month) + i, 1);
+        }
     }
     addYears(date, i) {
-        let day = date.getDate();
-        date.setDate(1);
-        date.setFullYear(date.getFullYear() + i);
-        date.setDate(Math.min(day, this.getMaxDays(date)));
+        if (this.calendarMode === 'Gregorian') {
+            let day = date.getDate();
+            date.setDate(1);
+            date.setFullYear(date.getFullYear() + i);
+            date.setDate(Math.min(day, this.getMaxDays(date)));
+        }
+        else {
+            let islamicDate = this.islamicModule.getIslamicDate(date);
+            this.currentDate = this.islamicModule.toGregorian(islamicDate.year + i, (islamicDate.month), 1);
+        }
     }
     getIdValue(e, element) {
         let eve;
@@ -1299,7 +1408,8 @@ let CalendarBase = class CalendarBase extends Component {
         else {
             eve = element;
         }
-        let dateFormatOptions = { type: 'dateTime', skeleton: 'full' };
+        let type = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+        let dateFormatOptions = { type: 'dateTime', skeleton: 'full', calendar: type };
         let dateString = this.globalize.formatDate(new Date(parseInt('' + eve.getAttribute('id'), 0)), dateFormatOptions);
         let date = this.globalize.parseDate(dateString, dateFormatOptions);
         let value = date.valueOf() - date.valueOf() % 1000;
@@ -1358,8 +1468,10 @@ let CalendarBase = class CalendarBase extends Component {
             if (element.classList.contains(SELECTED)) {
                 removeClass([element], SELECTED);
                 for (let i = 0; i < copyValues.length; i++) {
-                    let localDateString = this.globalize.formatDate(date, { type: 'date', skeleton: 'short' });
-                    let tempDateString = this.globalize.formatDate(copyValues[i], { type: 'date', skeleton: 'short' });
+                    let type = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+                    let formatOptions = { type: 'date', skeleton: 'short', calendar: type };
+                    let localDateString = this.globalize.formatDate(date, formatOptions);
+                    let tempDateString = this.globalize.formatDate(copyValues[i], formatOptions);
                     if (localDateString === tempDateString) {
                         let index = copyValues.indexOf(copyValues[i]);
                         copyValues.splice(index, 1);
@@ -1380,8 +1492,11 @@ let CalendarBase = class CalendarBase extends Component {
         let previousValue = false;
         if (!isNullOrUndefined(values)) {
             for (let checkPrevious = 0; checkPrevious < values.length; checkPrevious++) {
-                let localDateString = this.globalize.formatDate(dates, { type: 'date', skeleton: 'short' });
-                let tempDateString = this.globalize.formatDate(values[checkPrevious], { type: 'date', skeleton: 'short' });
+                let type = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+                /* tslint:disable-next-line:max-line-length */
+                let localDateString = this.globalize.formatDate(dates, { type: 'date', skeleton: 'short', calendar: type });
+                /* tslint:disable-next-line:max-line-length */
+                let tempDateString = this.globalize.formatDate(values[checkPrevious], { type: 'date', skeleton: 'short', calendar: type });
                 if (localDateString === tempDateString) {
                     previousValue = true;
                 }
@@ -1456,10 +1571,19 @@ let CalendarBase = class CalendarBase extends Component {
         return +date >= +this.min && +date <= +this.max;
     }
     isMonthYearRange(date) {
-        return date.getMonth() >= this.min.getMonth()
-            && date.getFullYear() >= this.min.getFullYear()
-            && date.getMonth() <= this.max.getMonth()
-            && date.getFullYear() <= this.max.getFullYear();
+        if (this.calendarMode === 'Gregorian') {
+            return date.getMonth() >= this.min.getMonth()
+                && date.getFullYear() >= this.min.getFullYear()
+                && date.getMonth() <= this.max.getMonth()
+                && date.getFullYear() <= this.max.getFullYear();
+        }
+        else {
+            let islamicDate = this.islamicModule.getIslamicDate(date);
+            return islamicDate.month >= (this.islamicModule.getIslamicDate(new Date(1944, 1, 18))).month
+                && islamicDate.year >= (this.islamicModule.getIslamicDate(new Date(1944, 1, 18))).year
+                && islamicDate.month <= (this.islamicModule.getIslamicDate(new Date(2069, 1, 16))).month
+                && islamicDate.year <= (this.islamicModule.getIslamicDate(new Date(2069, 1, 16))).year;
+        }
     }
     compareYear(start, end) {
         return this.compare(start, end, 0);
@@ -1487,7 +1611,13 @@ let CalendarBase = class CalendarBase extends Component {
         let collection = [];
         let isDisabled = false;
         if ((!isNullOrUndefined(value) && value.getMonth()) === (!isNullOrUndefined(this.currentDate) && this.currentDate.getMonth())) {
-            let tdEles = this.renderDays(value, null);
+            let tdEles;
+            if (this.calendarMode === 'Gregorian') {
+                tdEles = this.renderDays(value, null);
+            }
+            else {
+                tdEles = this.islamicModule.islamicRenderDays(this.currentDate, value);
+            }
             collection = tdEles.filter((element) => {
                 return element.classList.contains(DISABLED);
             });
@@ -1556,6 +1686,9 @@ __decorate([
     Property(null)
 ], CalendarBase.prototype, "firstDayOfWeek", void 0);
 __decorate([
+    Property('Gregorian')
+], CalendarBase.prototype, "calendarMode", void 0);
+__decorate([
     Property('Month')
 ], CalendarBase.prototype, "start", void 0);
 __decorate([
@@ -1616,6 +1749,9 @@ let Calendar = class Calendar extends CalendarBase {
      * @private
      */
     render() {
+        if (this.calendarMode === 'Islamic' && this.islamicModule === undefined) {
+            throwError('Requires the injectable Islamic modules to render Calendar in Islamic mode');
+        }
         if (this.isMultiSelection && typeof this.values === 'object' && !isNullOrUndefined(this.values) && this.values.length > 0) {
             let tempValues = [];
             let copyValues = [];
@@ -1748,13 +1884,28 @@ let Calendar = class Calendar extends CalendarBase {
         return tempDays;
     }
     renderYears(e) {
-        super.renderYears(e, this.value);
+        if (this.calendarMode === 'Gregorian') {
+            super.renderYears(e, this.value);
+        }
+        else {
+            this.islamicModule.islamicRenderYears(e, this.value);
+        }
     }
     renderDecades(e) {
-        super.renderDecades(e, this.value);
+        if (this.calendarMode === 'Gregorian') {
+            super.renderDecades(e, this.value);
+        }
+        else {
+            this.islamicModule.islamicRenderDecade(e, this.value);
+        }
     }
     renderTemplate(elements, count, classNm, e) {
-        super.renderTemplate(elements, count, classNm, e, this.value);
+        if (this.calendarMode === 'Gregorian') {
+            super.renderTemplate(elements, count, classNm, e, this.value);
+        }
+        else {
+            this.islamicModule.islamicRenderTemplate(elements, count, classNm, e, this.value);
+        }
         this.changedArgs = { value: this.value, values: this.values };
         this.changeHandler();
     }
@@ -2002,6 +2153,480 @@ Calendar = __decorate([
 ], Calendar);
 
 /**
+ *
+ */
+//class constant defination.
+const OTHERMONTH$1 = 'e-other-month';
+const YEAR$1 = 'e-year';
+const MONTH$1 = 'e-month';
+const DECADE$1 = 'e-decade';
+const DISABLED$1 = 'e-disabled';
+const OVERLAY$1 = 'e-overlay';
+const WEEKEND$1 = 'e-weekend';
+const WEEKNUMBER$1 = 'e-week-number';
+const SELECTED$1 = 'e-selected';
+const FOCUSEDDATE$1 = 'e-focused-date';
+const OTHERMONTHROW$1 = 'e-month-hide';
+const TODAY$1 = 'e-today';
+const LINK$1 = 'e-day';
+const CELL$1 = 'e-cell';
+const dayMilliSeconds$1 = 86400000;
+class Islamic {
+    constructor(instance) {
+        this.calendarInstance = instance;
+    }
+    getModuleName() {
+        return 'islamic';
+    }
+    islamicTitleUpdate(date, view) {
+        let globalize = new Internationalization(this.calendarInstance.locale);
+        switch (view) {
+            case 'days':
+                /* tslint:disable-next-line:max-line-length */
+                this.calendarInstance.headerTitleElement.textContent = globalize.formatDate(date, { type: 'dateTime', format: 'MMMMyyyy', calendar: 'islamic' });
+                break;
+            case 'months':
+                /* tslint:disable-next-line:max-line-length */
+                this.calendarInstance.headerTitleElement.textContent = globalize.formatDate(date, { type: 'dateTime', format: 'yyyy', calendar: 'islamic' });
+        }
+    }
+    /* tslint:disable-next-line:max-line-length */
+    // tslint:disable-next-line:max-func-body-length
+    islamicRenderDays(currentDate, value, multiSelection, values) {
+        let tdEles = [];
+        let cellsCount = 42;
+        let localDate = new Date('' + currentDate);
+        let minMaxDate;
+        let numCells = this.calendarInstance.weekNumber ? 8 : 7;
+        // 8 and 7 denotes the number of columns to be specified.
+        this.islamicTitleUpdate(currentDate, 'days');
+        /* tslint:disable-next-line:no-any */
+        let islamicDate = this.getIslamicDate(localDate);
+        let gregorianObject = this.toGregorian(islamicDate.year, islamicDate.month, 1);
+        let currentMonth = islamicDate.month;
+        localDate = gregorianObject;
+        while (localDate.getDay() !== this.calendarInstance.firstDayOfWeek) {
+            this.calendarInstance.setStartDate(localDate, -1 * dayMilliSeconds$1);
+        }
+        for (let day = 0; day < cellsCount; ++day) {
+            let weekEle = this.calendarInstance.createElement('td', { className: CELL$1 });
+            let weekAnchor = this.calendarInstance.createElement('span');
+            if (day % 7 === 0 && this.calendarInstance.weekNumber) {
+                weekAnchor.textContent = '' + this.calendarInstance.getWeek(localDate);
+                weekEle.appendChild(weekAnchor);
+                addClass([weekEle], '' + WEEKNUMBER$1);
+                tdEles.push(weekEle);
+            }
+            minMaxDate = new Date(+localDate);
+            localDate = this.calendarInstance.minMaxDate(localDate);
+            /* tslint:disable-next-line:max-line-length */
+            let dateFormatOptions = { type: 'dateTime', skeleton: 'full', calendar: 'islamic' };
+            let date = this.calendarInstance.globalize.parseDate(this.calendarInstance.globalize.formatDate(localDate, dateFormatOptions), dateFormatOptions);
+            let tdEle = this.islamicDayCell(localDate);
+            /* tslint:disable-next-line:max-line-length */
+            let title = this.calendarInstance.globalize.formatDate(localDate, { type: 'date', skeleton: 'full', calendar: 'islamic' });
+            let dayLink = this.calendarInstance.createElement('span');
+            /* tslint:disable-next-line:max-line-length */
+            dayLink.textContent = this.calendarInstance.globalize.formatDate(localDate, { type: 'date', skeleton: 'd', calendar: 'islamic' });
+            let disabled = (this.calendarInstance.min > localDate) || (this.calendarInstance.max < localDate);
+            if (disabled) {
+                addClass([tdEle], DISABLED$1);
+                addClass([tdEle], OVERLAY$1);
+            }
+            else {
+                dayLink.setAttribute('title', '' + title);
+            }
+            /* tslint:disable-next-line:no-any */
+            let hijriMonthObject = this.getIslamicDate(localDate);
+            if (currentMonth !== hijriMonthObject.month) {
+                addClass([tdEle], OTHERMONTH$1);
+            }
+            if (localDate.getDay() === 0 || localDate.getDay() === 6) {
+                addClass([tdEle], WEEKEND$1);
+            }
+            tdEle.appendChild(dayLink);
+            this.calendarInstance.renderDayCellArgs = {
+                date: localDate,
+                isDisabled: false,
+                element: tdEle,
+                isOutOfRange: disabled
+            };
+            let argument = this.calendarInstance.renderDayCellArgs;
+            this.calendarInstance.renderDayCellEvent(argument);
+            if (argument.isDisabled) {
+                if (this.calendarInstance.isMultiSelection) {
+                    if (!isNullOrUndefined(this.calendarInstance.values) && this.calendarInstance.values.length > 0) {
+                        for (let index = 0; index < values.length; index++) {
+                            /* tslint:disable-next-line:max-line-length */
+                            let localDateString = +new Date(this.calendarInstance.globalize.formatDate(argument.date, { type: 'date', skeleton: 'yMd', calendar: 'islamic' }));
+                            /* tslint:disable-next-line:max-line-length */
+                            let tempDateString = +new Date(this.calendarInstance.globalize.formatDate(this.calendarInstance.values[index], { type: 'date', skeleton: 'yMd', calendar: 'islamic' }));
+                            if (localDateString === tempDateString) {
+                                this.calendarInstance.values.splice(index, 1);
+                                index = -1;
+                            }
+                        }
+                    }
+                }
+                else if (value && +value === +argument.date) {
+                    this.calendarInstance.setProperties({ value: null }, true);
+                }
+            }
+            if (this.calendarInstance.renderDayCellArgs.isDisabled && !tdEle.classList.contains(SELECTED$1)) {
+                addClass([tdEle], DISABLED$1);
+                addClass([tdEle], OVERLAY$1);
+                if (+this.calendarInstance.renderDayCellArgs.date === +this.calendarInstance.todayDate) {
+                    this.calendarInstance.todayDisabled = true;
+                }
+            }
+            let otherMnthBool = tdEle.classList.contains(OTHERMONTH$1);
+            let disabledCls = tdEle.classList.contains(DISABLED$1);
+            if (!disabledCls) {
+                EventHandler.add(tdEle, 'click', this.calendarInstance.clickHandler, this.calendarInstance);
+            }
+            if (this.calendarInstance.isMultiSelection && !isNullOrUndefined(this.calendarInstance.values) &&
+                !otherMnthBool && !disabledCls) {
+                for (let tempValue = 0; tempValue < this.calendarInstance.values.length; tempValue++) {
+                    /* tslint:disable-next-line:max-line-length */
+                    let localDateString = this.calendarInstance.globalize.formatDate(localDate, { type: 'date', skeleton: 'short', calendar: 'islamic' });
+                    let tempDateString = this.calendarInstance.globalize.formatDate(this.calendarInstance.values[tempValue], { type: 'date', skeleton: 'short', calendar: 'islamic' });
+                    if (localDateString === tempDateString &&
+                        this.calendarInstance.getDateVal(localDate, this.calendarInstance.values[tempValue])) {
+                        addClass([tdEle], SELECTED$1);
+                    }
+                    else {
+                        this.calendarInstance.updateFocus(otherMnthBool, disabledCls, localDate, tdEle, currentDate);
+                    }
+                }
+                if (this.calendarInstance.values.length <= 0) {
+                    this.calendarInstance.updateFocus(otherMnthBool, disabledCls, localDate, tdEle, currentDate);
+                }
+            }
+            else if (!otherMnthBool && !disabledCls && this.calendarInstance.getDateVal(localDate, value)) {
+                addClass([tdEle], SELECTED$1);
+            }
+            else {
+                this.calendarInstance.updateFocus(otherMnthBool, disabledCls, localDate, tdEle, currentDate);
+            }
+            if (date.getDate() === new Date().getDate() && date.getMonth() === new Date().getMonth()) {
+                if (date.getFullYear() === new Date().getFullYear()) {
+                    addClass([tdEle], TODAY$1);
+                }
+            }
+            localDate = new Date(+minMaxDate);
+            tdEles.push(this.calendarInstance.renderDayCellArgs.element);
+            this.calendarInstance.addDay(localDate, 1, null, this.calendarInstance.max, this.calendarInstance.min);
+        }
+        return tdEles;
+    }
+    islamicIconHandler() {
+        new Date('' + this.calendarInstance.currentDate).setDate(1);
+        switch (this.calendarInstance.currentView()) {
+            case 'Month':
+                let prevMonthCompare = this.islamicCompareMonth(new Date('' + this.calendarInstance.currentDate), this.calendarInstance.min) < 1;
+                let nextMonthCompare = this.islamicCompareMonth(new Date('' + this.calendarInstance.currentDate), this.calendarInstance.max) > -1;
+                this.calendarInstance.previousIconHandler(prevMonthCompare);
+                this.calendarInstance.nextIconHandler(nextMonthCompare);
+                break;
+            case 'Year':
+                let prevYearCompare = this.hijriCompareYear(new Date('' + this.calendarInstance.currentDate), this.calendarInstance.min) < 1;
+                let nextYearCompare = this.hijriCompareYear(new Date('' + this.calendarInstance.currentDate), this.calendarInstance.max) > -1;
+                this.calendarInstance.previousIconHandler(prevYearCompare);
+                this.calendarInstance.nextIconHandler(nextYearCompare);
+                break;
+            case 'Decade':
+                let prevDecadeCompare = this.hijriCompareDecade(new Date('' + this.calendarInstance.currentDate), this.calendarInstance.min) < 1;
+                let nextDecadeCompare = this.hijriCompareDecade(new Date('' + this.calendarInstance.currentDate), this.calendarInstance.max) > -1;
+                this.calendarInstance.previousIconHandler(prevDecadeCompare);
+                this.calendarInstance.nextIconHandler(nextDecadeCompare);
+        }
+    }
+    islamicNext() {
+        this.calendarInstance.effect = '';
+        let view = this.calendarInstance.getViewNumber(this.calendarInstance.currentView());
+        /* tslint:disable-next-line:no-any */
+        let islamicDate = this.getIslamicDate(this.calendarInstance.currentDate);
+        switch (this.calendarInstance.currentView()) {
+            case 'Year':
+                this.calendarInstance.currentDate = this.toGregorian(islamicDate.year + 1, islamicDate.month, 1);
+                this.calendarInstance.switchView(view);
+                break;
+            case 'Month':
+                this.calendarInstance.currentDate = this.toGregorian(islamicDate.year, islamicDate.month + 1, 1);
+                this.calendarInstance.switchView(view);
+                break;
+            case 'Decade':
+                this.calendarInstance.currentDate = this.toGregorian(islamicDate.year + 10, islamicDate.month, 1);
+                this.calendarInstance.switchView(view);
+                break;
+        }
+    }
+    islamicPrevious() {
+        let currentView = this.calendarInstance.getViewNumber(this.calendarInstance.currentView());
+        this.calendarInstance.effect = '';
+        /* tslint:disable-next-line:no-any */
+        let islamicDate = this.getIslamicDate(this.calendarInstance.currentDate);
+        switch (this.calendarInstance.currentView()) {
+            case 'Month':
+                this.calendarInstance.currentDate = this.toGregorian(islamicDate.year, islamicDate.month - 1, 1);
+                this.calendarInstance.switchView(currentView);
+                break;
+            case 'Year':
+                this.calendarInstance.currentDate = this.toGregorian(islamicDate.year - 1, islamicDate.month, 1);
+                this.calendarInstance.switchView(currentView);
+                break;
+            case 'Decade':
+                this.calendarInstance.currentDate = this.toGregorian(islamicDate.year - 10, islamicDate.month - 1, 1);
+                this.calendarInstance.switchView(currentView);
+                break;
+        }
+    }
+    islamicRenderYears(e, value) {
+        this.calendarInstance.removeTableHeadElement();
+        let numCells = 4;
+        let tdEles = [];
+        let valueUtil = isNullOrUndefined(value);
+        let curDate = new Date('' + this.calendarInstance.currentDate);
+        let localDate = curDate;
+        /* tslint:disable-next-line:no-any */
+        let islamicDate = this.getIslamicDate(localDate);
+        let gregorianObject = HijriParser.toGregorian(islamicDate.year, 1, 1);
+        localDate = gregorianObject;
+        let mon = islamicDate.month;
+        let yr = islamicDate.year;
+        let curYrs = islamicDate.year;
+        /* tslint:disable-next-line:no-any */
+        let minYr = (this.getIslamicDate(this.calendarInstance.min)).year;
+        /* tslint:disable-next-line:no-any */
+        let minMonth = (this.getIslamicDate(this.calendarInstance.min)).month;
+        /* tslint:disable-next-line:no-any */
+        let maxYr = (this.getIslamicDate(this.calendarInstance.max)).year;
+        /* tslint:disable-next-line:no-any */
+        let maxMonth = (this.getIslamicDate(this.calendarInstance.max)).month;
+        this.islamicTitleUpdate(this.calendarInstance.currentDate, 'months');
+        let disabled = (this.calendarInstance.min > localDate) || (this.calendarInstance.max < localDate);
+        for (let month = 1; month <= 12; ++month) {
+            /* tslint:disable-next-line:no-any */
+            let islamicDate = this.getIslamicDate(localDate);
+            let gregorianObject = HijriParser.toGregorian(islamicDate.year, month, 1);
+            localDate = gregorianObject;
+            let tdEle = this.islamicDayCell(localDate);
+            let dayLink = this.calendarInstance.createElement('span');
+            /* tslint:disable-next-line:max-line-length */
+            /* tslint:disable-next-line:no-any */
+            let localMonth = (value && (this.getIslamicDate(value)).month === (this.getIslamicDate(localDate)).month);
+            /* tslint:disable-next-line:no-any  tslint:disable-next-line:max-line-length */
+            let select$$1 = (value && (this.getIslamicDate(value)).year === yr && localMonth);
+            /* tslint:disable-next-line:max-line-length */
+            dayLink.textContent = this.calendarInstance.globalize.formatDate(localDate, { type: 'dateTime', format: 'MMM', calendar: 'islamic' });
+            if ((this.calendarInstance.min && (curYrs < minYr || (month < minMonth && curYrs === minYr))) || (this.calendarInstance.max && (curYrs > maxYr || (month > maxMonth && curYrs >= maxYr)))) {
+                addClass([tdEle], DISABLED$1);
+            }
+            else if (!valueUtil && select$$1) {
+                addClass([tdEle], SELECTED$1);
+            }
+            else {
+                /* tslint:disable-next-line:no-any */
+                if ((this.getIslamicDate(localDate)).month === mon &&
+                    /* tslint:disable-next-line:no-any */
+                    (this.getIslamicDate(this.calendarInstance.currentDate)).month === mon) {
+                    addClass([tdEle], FOCUSEDDATE$1);
+                }
+            }
+            if (!tdEle.classList.contains(DISABLED$1)) {
+                EventHandler.add(tdEle, 'click', this.calendarInstance.clickHandler, this.calendarInstance);
+            }
+            tdEle.appendChild(dayLink);
+            tdEles.push(tdEle);
+        }
+        this.islamicRenderTemplate(tdEles, numCells, YEAR$1, e, value);
+    }
+    islamicRenderDecade(e, value) {
+        this.calendarInstance.removeTableHeadElement();
+        let numCells = 4;
+        let yearCell = 12;
+        let tdEles = [];
+        let localDate = new Date('' + this.calendarInstance.currentDate);
+        /* tslint:disable-next-line:no-any */
+        let islamicDate = this.getIslamicDate(localDate);
+        let gregorianObject = HijriParser.toGregorian(islamicDate.year, 1, 1);
+        localDate = gregorianObject;
+        let localYr = localDate.getFullYear();
+        let startYr = new Date('' + (localYr - localYr % 10));
+        let endYr = new Date('' + (localYr - localYr % 10 + (10 - 1)));
+        /* tslint:disable-next-line:max-line-length */
+        let startHdrYr = this.calendarInstance.globalize.formatDate(startYr, { type: 'dateTime', format: 'y', calendar: 'islamic' });
+        let endHdrYr = this.calendarInstance.globalize.formatDate(endYr, { type: 'dateTime', format: 'y', calendar: 'islamic' });
+        this.calendarInstance.headerTitleElement.textContent = startHdrYr + ' - ' + (endHdrYr);
+        let start = new Date(localYr - (localYr % 10) - 2, 0, 1);
+        let startYear = start.getFullYear();
+        for (let rowCount = 1; rowCount <= yearCell; ++rowCount) {
+            let year = startYear + rowCount;
+            localDate.setFullYear(year);
+            localDate.setDate(1);
+            localDate.setMonth(0);
+            /* tslint:disable-next-line:no-any */
+            let islamicDate = this.getIslamicDate(localDate);
+            let gregorianObject = HijriParser.toGregorian(islamicDate.year, 1, 1);
+            localDate = gregorianObject;
+            let tdEle = this.islamicDayCell(localDate);
+            attributes(tdEle, { 'role': 'gridcell' });
+            let dayLink = this.calendarInstance.createElement('span');
+            /* tslint:disable-next-line:max-line-length */
+            dayLink.textContent = this.calendarInstance.globalize.formatDate(localDate, { type: 'dateTime', format: 'y', calendar: 'islamic' });
+            /* tslint:disable-next-line:no-any */
+            if (year < new Date('' + this.calendarInstance.min).getFullYear()
+                || year > new Date('' + this.calendarInstance.max).getFullYear()) {
+                addClass([tdEle], DISABLED$1);
+            }
+            else if (!isNullOrUndefined(value) &&
+                /* tslint:disable-next-line:no-any */
+                (this.getIslamicDate(localDate)).year ===
+                    /* tslint:disable-next-line:no-any */
+                    (this.getIslamicDate(value)).year) {
+                addClass([tdEle], SELECTED$1);
+            }
+            else {
+                if (localDate.getFullYear() === this.calendarInstance.currentDate.getFullYear() && !tdEle.classList.contains(DISABLED$1)) {
+                    addClass([tdEle], FOCUSEDDATE$1);
+                }
+            }
+            if (!tdEle.classList.contains(DISABLED$1)) {
+                EventHandler.add(tdEle, 'click', this.calendarInstance.clickHandler, this.calendarInstance);
+            }
+            tdEle.appendChild(dayLink);
+            tdEles.push(tdEle);
+        }
+        this.islamicRenderTemplate(tdEles, numCells, 'e-decade', e, value);
+    }
+    islamicDayCell(localDate) {
+        let dateFormatOptions = { skeleton: 'full', type: 'dateTime', calendar: 'islamic' };
+        let formatDate = this.calendarInstance.globalize.formatDate(localDate, dateFormatOptions);
+        let date = this.calendarInstance.globalize.parseDate(formatDate, dateFormatOptions);
+        let value = date.valueOf();
+        let attrs = {
+            className: CELL$1, attrs: { 'id': '' + getUniqueID('' + value), 'aria-selected': 'false', 'role': 'gridcell' }
+        };
+        return this.calendarInstance.createElement('td', attrs);
+    }
+    islamicRenderTemplate(elements, count, classNm, e, value) {
+        let view = this.calendarInstance.getViewNumber(this.calendarInstance.currentView());
+        let trEle;
+        this.calendarInstance.tableBodyElement = this.calendarInstance.createElement('tbody');
+        this.calendarInstance.table.appendChild(this.calendarInstance.tableBodyElement);
+        removeClass([this.calendarInstance.contentElement, this.calendarInstance.headerElement], [MONTH$1, DECADE$1, YEAR$1]);
+        addClass([this.calendarInstance.contentElement, this.calendarInstance.headerElement], [classNm]);
+        let weekNumCell = 41;
+        let numberCell = 35;
+        let otherMonthCell = 6;
+        let row = count;
+        let rowCount = 0;
+        for (let dayCell = 0; dayCell < elements.length / count; ++dayCell) {
+            trEle = this.calendarInstance.createElement('tr', { attrs: { 'role': 'row' } });
+            for (rowCount = 0 + rowCount; rowCount < row; rowCount++) {
+                if (!elements[rowCount].classList.contains('e-week-number') && !isNullOrUndefined(elements[rowCount].children[0])) {
+                    addClass([elements[rowCount].children[0]], [LINK$1]);
+                    rippleEffect(elements[rowCount].children[0], {
+                        duration: 600,
+                        isCenterRipple: true
+                    });
+                }
+                trEle.appendChild(elements[rowCount]);
+                if (this.calendarInstance.weekNumber &&
+                    rowCount === otherMonthCell + 1 && elements[otherMonthCell + 1].classList.contains(OTHERMONTH$1)) {
+                    addClass([trEle], OTHERMONTHROW$1);
+                }
+                if (!this.calendarInstance.weekNumber
+                    && rowCount === otherMonthCell && elements[otherMonthCell].classList.contains(OTHERMONTH$1)) {
+                    addClass([trEle], OTHERMONTHROW$1);
+                }
+                if (this.calendarInstance.weekNumber) {
+                    if (rowCount === weekNumCell && elements[weekNumCell].classList.contains(OTHERMONTH$1)) {
+                        addClass([trEle], OTHERMONTHROW$1);
+                    }
+                }
+                else {
+                    if (rowCount === numberCell && elements[numberCell].classList.contains(OTHERMONTH$1)) {
+                        addClass([trEle], OTHERMONTHROW$1);
+                    }
+                }
+            }
+            row = row + count;
+            rowCount = rowCount + 0;
+            this.calendarInstance.tableBodyElement.appendChild(trEle);
+        }
+        this.calendarInstance.table.querySelector('tbody').className = this.calendarInstance.effect;
+        this.islamicIconHandler();
+        if (view !== this.calendarInstance.getViewNumber(this.calendarInstance.currentView())
+            || (view === 0 && view !== this.calendarInstance.getViewNumber(this.calendarInstance.currentView()))) {
+            this.calendarInstance.navigateHandler(e);
+        }
+        this.calendarInstance.setAriaActiveDescendant();
+        this.calendarInstance.changedArgs = { value: this.calendarInstance.value, values: this.calendarInstance.values };
+        this.calendarInstance.changeHandler();
+    }
+    islamicCompareMonth(start, end) {
+        /* tslint:disable-next-line:no-any */
+        let hijriStart = (this.getIslamicDate(start));
+        /* tslint:disable-next-line:no-any */
+        let hijriEnd = (this.getIslamicDate(end));
+        let result;
+        if (hijriStart.year > hijriEnd.year) {
+            result = 1;
+        }
+        else if (hijriStart.year < hijriEnd.year) {
+            result = -1;
+        }
+        else {
+            result = hijriStart.month === hijriEnd.month ? 0 : hijriStart.month > hijriEnd.month ? 1 : -1;
+        }
+        return result;
+    }
+    ;
+    islamicCompare(startDate, endDate, modifier) {
+        /* tslint:disable-next-line:no-any */
+        let hijriStart = this.getIslamicDate(startDate);
+        /* tslint:disable-next-line:no-any */
+        let hijriEnd = this.getIslamicDate(endDate);
+        let start = hijriEnd.year;
+        let end;
+        let result;
+        end = start;
+        result = 0;
+        if (modifier) {
+            start = start - start % modifier;
+            end = start - start % modifier + modifier - 1;
+        }
+        if (hijriStart.year > end) {
+            result = 1;
+        }
+        else if (hijriStart.year < start) {
+            result = -1;
+        }
+        return result;
+    }
+    ;
+    /* tslint:disable-next-line:no-any */
+    getIslamicDate(date) {
+        /* tslint:disable-next-line:no-any */
+        return (HijriParser.getHijriDate(date));
+    }
+    toGregorian(year, month, date) {
+        return HijriParser.toGregorian(year, month, date);
+    }
+    hijriCompareYear(start, end) {
+        return this.islamicCompare(start, end, 0);
+    }
+    hijriCompareDecade(start, end) {
+        return this.islamicCompare(start, end, 10);
+    }
+    ;
+    destroy() {
+        this.calendarInstance = null;
+    }
+}
+
+/**
  * Calendar modules
  */
 
@@ -2147,27 +2772,11 @@ let DatePicker = class DatePicker extends Calendar {
         addClass([this.inputWrapper.container], DATEWRAPPER);
     }
     updateInput() {
+        let formatOptions;
         if (this.value && !this.isCalendar()) {
             this.disabledDates();
         }
-        if (+new Date('' + this.value)) { // persis the value property. 
-            if (typeof this.value === 'string') {
-                this.value = this.checkDateValue(new Date('' + this.value));
-                let dateOptions;
-                if (this.getModuleName() === 'datetimepicker') {
-                    dateOptions = {
-                        format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
-                        type: 'dateTime', skeleton: 'yMd'
-                    };
-                }
-                else {
-                    dateOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
-                }
-                let dateString = this.globalize.formatDate(this.value, dateOptions);
-                this.setProperties({ value: this.globalize.parseDate(dateString, dateOptions) }, true);
-            }
-        }
-        else {
+        if (!+new Date('' + this.value)) {
             this.setProperties({ value: null }, true);
         }
         if (this.strictMode) {
@@ -2181,10 +2790,25 @@ let DatePicker = class DatePicker extends Calendar {
             let dateString;
             let tempFormat = !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat;
             if (this.getModuleName() === 'datetimepicker') {
-                dateString = this.globalize.formatDate(this.value, { format: tempFormat, type: 'dateTime', skeleton: 'yMd' });
+                if (this.calendarMode === 'Gregorian') {
+                    dateString = this.globalize.formatDate(this.value, {
+                        format: tempFormat, type: 'dateTime', skeleton: 'yMd'
+                    });
+                }
+                else {
+                    dateString = this.globalize.formatDate(this.value, {
+                        format: tempFormat, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic'
+                    });
+                }
             }
             else {
-                dateString = this.globalize.formatDate(this.value, { format: this.format, type: 'dateTime', skeleton: 'yMd' });
+                if (this.calendarMode === 'Gregorian') {
+                    formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
+                }
+                else {
+                    formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                }
+                dateString = this.globalize.formatDate(this.value, formatOptions);
             }
             if ((+dateValue <= +this.max) && (+dateValue >= +this.min)) {
                 Input.setValue(dateString, this.inputElement, this.floatLabelType, this.showClearButton);
@@ -2247,18 +2871,16 @@ let DatePicker = class DatePicker extends Calendar {
             keyConfigs: this.keyConfigs
         });
     }
-    resetFormHandler(e) {
+    resetFormHandler() {
         if (this.inputElement.getAttribute('value')) {
             this.value = this.checkDateValue(new Date('' + this.element.getAttribute('value')));
         }
         else {
-            if (this.formElement && e.target === this.formElement) {
-                this.value = null;
-                if (this.inputElement) {
-                    Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
-                    attributes(this.inputElement, { 'aria-invalid': 'false' });
-                    removeClass([this.inputWrapper.container], ERROR);
-                }
+            this.value = null;
+            if (this.inputElement) {
+                Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
+                attributes(this.inputElement, { 'aria-invalid': 'false' });
+                removeClass([this.inputWrapper.container], ERROR);
             }
         }
     }
@@ -2395,8 +3017,8 @@ let DatePicker = class DatePicker extends Calendar {
                 }
                 if (this.isCalendar()) {
                     e.preventDefault();
+                    e.stopPropagation();
                 }
-                e.stopPropagation();
                 break;
             case 'tab':
                 this.strictModeUpdate();
@@ -2414,6 +3036,7 @@ let DatePicker = class DatePicker extends Calendar {
     }
     strictModeUpdate() {
         let format;
+        let formatOptions;
         if (this.getModuleName() === 'datetimepicker') {
             format = !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat;
         }
@@ -2428,13 +3051,27 @@ let DatePicker = class DatePicker extends Calendar {
         }
         let dateOptions;
         if (this.getModuleName() === 'datetimepicker') {
-            dateOptions = {
-                format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
-                type: 'dateTime', skeleton: 'yMd'
-            };
+            if (this.calendarMode === 'Gregorian') {
+                dateOptions = {
+                    format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
+                    type: 'dateTime', skeleton: 'yMd'
+                };
+            }
+            else {
+                dateOptions = {
+                    format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
+                    type: 'dateTime', skeleton: 'yMd', calendar: 'islamic'
+                };
+            }
         }
         else {
-            dateOptions = { format: format, type: 'dateTime', skeleton: 'yMd' };
+            if (this.calendarMode === 'Gregorian') {
+                formatOptions = { format: format, type: 'dateTime', skeleton: 'yMd' };
+            }
+            else {
+                formatOptions = { format: format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+            }
+            dateOptions = formatOptions;
         }
         let date;
         if ((this.getModuleName() === 'datetimepicker')) {
@@ -2442,7 +3079,13 @@ let DatePicker = class DatePicker extends Calendar {
                 date = this.globalize.parseDate(this.inputElement.value, dateOptions);
             }
             else {
-                date = this.globalize.parseDate(this.inputElement.value, { type: 'dateTime', skeleton: 'yMd' });
+                if (this.calendarMode === 'Gregorian') {
+                    formatOptions = { type: 'dateTime', skeleton: 'yMd' };
+                }
+                else {
+                    formatOptions = { type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                }
+                date = this.globalize.parseDate(this.inputElement.value, formatOptions);
             }
         }
         else {
@@ -2528,14 +3171,33 @@ let DatePicker = class DatePicker extends Calendar {
         this.setAriaAttributes();
     }
     modelHeader() {
+        let dateOptions;
         let modelHeader = this.createElement('div', { className: 'e-model-header' });
         let yearHeading = this.createElement('h1', { className: 'e-model-year' });
         let h2 = this.createElement('div');
         let daySpan = this.createElement('span', { className: 'e-model-day' });
         let monthSpan = this.createElement('span', { className: 'e-model-month' });
-        yearHeading.textContent = '' + this.globalize.formatDate(this.value || new Date(), { format: 'y', skeleton: 'dateTime' });
-        daySpan.textContent = '' + this.globalize.formatDate(this.value || new Date(), { format: 'E', skeleton: 'dateTime' }) + ', ';
-        monthSpan.textContent = '' + this.globalize.formatDate(this.value || new Date(), { format: 'MMM d', skeleton: 'dateTime' });
+        if (this.calendarMode === 'Gregorian') {
+            dateOptions = { format: 'y', skeleton: 'dateTime' };
+        }
+        else {
+            dateOptions = { format: 'y', skeleton: 'dateTime', calendar: 'islamic' };
+        }
+        yearHeading.textContent = '' + this.globalize.formatDate(this.value || new Date(), dateOptions);
+        if (this.calendarMode === 'Gregorian') {
+            dateOptions = { format: 'E', skeleton: 'dateTime' };
+        }
+        else {
+            dateOptions = { format: 'E', skeleton: 'dateTime', calendar: 'islamic' };
+        }
+        daySpan.textContent = '' + this.globalize.formatDate(this.value || new Date(), dateOptions) + ', ';
+        if (this.calendarMode === 'Gregorian') {
+            dateOptions = { format: 'MMM d', skeleton: 'dateTime' };
+        }
+        else {
+            dateOptions = { format: 'MMM d', skeleton: 'dateTime', calendar: 'islamic' };
+        }
+        monthSpan.textContent = '' + this.globalize.formatDate(this.value || new Date(), dateOptions);
         modelHeader.appendChild(yearHeading);
         h2.appendChild(daySpan);
         h2.appendChild(monthSpan);
@@ -2571,9 +3233,17 @@ let DatePicker = class DatePicker extends Calendar {
             this.errorClass();
         }
     }
+    requiredModules() {
+        let modules = [];
+        if (this) {
+            modules.push({ args: [this], member: 'islamic' });
+        }
+        return modules;
+    }
     selectCalendar(e) {
         let date;
         let tempFormat;
+        let formatOptions;
         if (this.getModuleName() === 'datetimepicker') {
             tempFormat = !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat;
         }
@@ -2582,10 +3252,22 @@ let DatePicker = class DatePicker extends Calendar {
         }
         if (this.value) {
             if (this.getModuleName() === 'datetimepicker') {
-                date = this.globalize.formatDate(this.changedArgs.value, { format: tempFormat, type: 'dateTime', skeleton: 'yMd' });
+                if (this.calendarMode === 'Gregorian') {
+                    formatOptions = { format: tempFormat, type: 'dateTime', skeleton: 'yMd' };
+                }
+                else {
+                    formatOptions = { format: tempFormat, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                }
+                date = this.globalize.formatDate(this.changedArgs.value, formatOptions);
             }
             else {
-                date = this.globalize.formatDate(this.changedArgs.value, { format: this.format, type: 'dateTime', skeleton: 'yMd' });
+                if (this.calendarMode === 'Gregorian') {
+                    formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
+                }
+                else {
+                    formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                }
+                date = this.globalize.formatDate(this.changedArgs.value, formatOptions);
             }
         }
         if (!isNullOrUndefined(date)) {
@@ -2868,13 +3550,26 @@ let DatePicker = class DatePicker extends Calendar {
         let attributes$$1 = ['value', 'min', 'max', 'disabled', 'readonly', 'style', 'name', 'placeholder', 'type'];
         let options;
         if (this.getModuleName() === 'datetimepicker') {
-            options = {
-                format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
-                type: 'dateTime', skeleton: 'yMd'
-            };
+            if (this.calendarMode === 'Gregorian') {
+                options = {
+                    format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
+                    type: 'dateTime', skeleton: 'yMd'
+                };
+            }
+            else {
+                options = {
+                    format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
+                    type: 'dateTime', skeleton: 'yMd', calendar: 'islamic'
+                };
+            }
         }
         else {
-            options = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
+            if (this.calendarMode === 'Gregorian') {
+                options = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
+            }
+            else {
+                options = { format: this.format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+            }
         }
         for (let prop of attributes$$1) {
             if (!isNullOrUndefined(this.inputElement.getAttribute(prop))) {
@@ -2935,6 +3630,8 @@ let DatePicker = class DatePicker extends Calendar {
     }
     disabledDates() {
         let valueCopy;
+        let formatOptions;
+        let globalize;
         valueCopy = this.checkDateValue(this.value) ? new Date(+this.value) : new Date('' + this.value);
         let previousValCopy = this.previousDate;
         //calls the Calendar render method to check the disabled dates through renderDayCell event and update the input value accordingly.
@@ -2957,13 +3654,28 @@ let DatePicker = class DatePicker extends Calendar {
         }
         let inputVal;
         if (this.getModuleName() === 'datetimepicker') {
-            inputVal = this.globalize.formatDate(valueCopy, {
-                format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
-                type: 'dateTime', skeleton: 'yMd'
-            });
+            if (this.calendarMode === 'Gregorian') {
+                globalize = this.globalize.formatDate(valueCopy, {
+                    format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
+                    type: 'dateTime', skeleton: 'yMd'
+                });
+            }
+            else {
+                globalize = this.globalize.formatDate(valueCopy, {
+                    format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
+                    type: 'dateTime', skeleton: 'yMd', calendar: 'islamic'
+                });
+            }
+            inputVal = globalize;
         }
         else {
-            inputVal = this.globalize.formatDate(valueCopy, { format: this.format, type: 'dateTime', skeleton: 'yMd' });
+            if (this.calendarMode === 'Gregorian') {
+                formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
+            }
+            else {
+                formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+            }
+            inputVal = this.globalize.formatDate(valueCopy, formatOptions);
         }
         Input.setValue(inputVal, this.inputElement, this.floatLabelType, this.showClearButton);
     }
@@ -3099,6 +3811,9 @@ __decorate$1([
     Property(true)
 ], DatePicker.prototype, "enabled", void 0);
 __decorate$1([
+    Property(null)
+], DatePicker.prototype, "values", void 0);
+__decorate$1([
     Property(false)
 ], DatePicker.prototype, "isMultiSelection", void 0);
 __decorate$1([
@@ -3176,11 +3891,11 @@ const STARTBUTTON = 'e-start-btn';
 const INPUTFOCUS$1 = 'e-input-focus';
 const ENDBUTTON = 'e-end-btn';
 const RANGEHOVER = 'e-range-hover';
-const OTHERMONTH$1 = 'e-other-month';
+const OTHERMONTH$2 = 'e-other-month';
 const STARTLABEL = 'e-start-label';
 const ENDLABEL = 'e-end-label';
-const DISABLED$1 = 'e-disabled';
-const SELECTED$1 = 'e-selected';
+const DISABLED$2 = 'e-disabled';
+const SELECTED$2 = 'e-selected';
 const CALENDAR = 'e-calendar';
 const NEXTICON$1 = 'e-next';
 const PREVICON$1 = 'e-prev';
@@ -3192,11 +3907,11 @@ const RANGEHEADER = 'e-range-header';
 const PRESETS = 'e-presets';
 const FOOTER$1 = 'e-footer';
 const RANGEBORDER = 'e-range-border';
-const TODAY$1 = 'e-today';
+const TODAY$2 = 'e-today';
 const FOCUSDATE = 'e-focused-date';
 const CONTENT$1 = 'e-content';
 const DAYSPAN = 'e-day-span';
-const WEEKNUMBER$1 = 'e-week-number';
+const WEEKNUMBER$2 = 'e-week-number';
 const DATEDISABLED = 'e-date-disabled';
 const ICONDISABLED = 'e-icon-disabled';
 const CALENDARCONTAINER = 'e-calendar-container';
@@ -3204,7 +3919,7 @@ const SEPARATOR = 'e-separator';
 const APPLY = 'e-apply';
 const CANCEL = 'e-cancel';
 const DEVICE$1 = 'e-device';
-const OVERLAY$1 = 'e-overlay';
+const OVERLAY$2 = 'e-overlay';
 const CHANGEICON = 'e-change-icon e-icons';
 const LISTCLASS = cssClass.li;
 const RTL$2 = 'e-rtl';
@@ -3738,16 +4453,16 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
     }
     calendarIconEvent() {
         this.clearCalendarEvents();
-        if (this.leftCalPrevIcon && !this.leftCalPrevIcon.classList.contains(DISABLED$1)) {
+        if (this.leftCalPrevIcon && !this.leftCalPrevIcon.classList.contains(DISABLED$2)) {
             EventHandler.add(this.leftCalPrevIcon, 'mousedown', this.navPrevFunction);
         }
-        if (this.leftCalNextIcon && !this.leftCalNextIcon.classList.contains(DISABLED$1)) {
+        if (this.leftCalNextIcon && !this.leftCalNextIcon.classList.contains(DISABLED$2)) {
             EventHandler.add(this.leftCalNextIcon, 'mousedown', this.navNextFunction);
         }
-        if (this.rightCalPrevIcon && !this.rightCalPrevIcon.classList.contains(DISABLED$1)) {
+        if (this.rightCalPrevIcon && !this.rightCalPrevIcon.classList.contains(DISABLED$2)) {
             EventHandler.add(this.rightCalPrevIcon, 'mousedown', this.navPrevFunction);
         }
-        if (this.rightCalNextIcon && !this.rightCalNextIcon.classList.contains(DISABLED$1)) {
+        if (this.rightCalNextIcon && !this.rightCalNextIcon.classList.contains(DISABLED$2)) {
             EventHandler.add(this.rightCalNextIcon, 'mousedown', this.navNextFunction);
         }
     }
@@ -3788,10 +4503,10 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         EventHandler.clearEvents(this.previousIcon);
         rippleEffect(this.nextIcon, { selector: '.e-prev', duration: 400, isCenterRipple: true });
         rippleEffect(this.previousIcon, { selector: '.e-next', duration: 400, isCenterRipple: true });
-        if (this.nextIcon && !this.nextIcon.classList.contains(DISABLED$1)) {
+        if (this.nextIcon && !this.nextIcon.classList.contains(DISABLED$2)) {
             EventHandler.add(this.nextIcon, 'mousedown', this.deviceNavNextFunction);
         }
-        if (this.previousIcon && !this.previousIcon.classList.contains(DISABLED$1)) {
+        if (this.previousIcon && !this.previousIcon.classList.contains(DISABLED$2)) {
             EventHandler.add(this.previousIcon, 'mousedown', this.deviceNavPrevFunction);
         }
     }
@@ -4084,7 +4799,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
             case 'select':
                 if (view === 0) {
                     let element = !isNullOrUndefined(focusedDate) ? focusedDate : startDate;
-                    if (!isNullOrUndefined(element) && !element.classList.contains(DISABLED$1)) {
+                    if (!isNullOrUndefined(element) && !element.classList.contains(DISABLED$2)) {
                         this.selectRange(null, (element));
                     }
                 }
@@ -4302,8 +5017,8 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         for (let cell of tdCells) {
             EventHandler.clearEvents(cell);
             let disabledCell;
-            disabledCell = cell.classList.contains(DISABLED$1) || cell.classList.contains(DATEDISABLED);
-            if (!disabledCell && !cell.classList.contains(WEEKNUMBER$1)) {
+            disabledCell = cell.classList.contains(DISABLED$2) || cell.classList.contains(DATEDISABLED);
+            if (!disabledCell && !cell.classList.contains(WEEKNUMBER$2)) {
                 if (!this.isMobile) {
                     EventHandler.add(cell, 'mouseover', this.hoverSelection, this);
                 }
@@ -4319,7 +5034,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
             && this.rightCalendar && this.rightCalendar.querySelector('.e-content').classList.contains('e-month')) ||
             this.calendarElement && this.calendarElement.querySelector('.e-content').classList.contains('e-month')) {
             for (let ele of focusedDate) {
-                if (!ele.classList.contains(TODAY$1) || (ele.classList.contains(TODAY$1) && (isDate))) {
+                if (!ele.classList.contains(TODAY$2) || (ele.classList.contains(TODAY$2) && (isDate))) {
                     ele.classList.remove(FOCUSDATE);
                     if (!ele.classList.contains(STARTDATE) && !ele.classList.contains(ENDDATE)) {
                         ele.removeAttribute('aria-label');
@@ -4338,8 +5053,8 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                 let tdCells;
                 tdCells = this.popupObj.element.querySelectorAll('.' + CALENDAR + ' td');
                 for (let ele of tdCells) {
-                    let isDisabledCell = (!ele.classList.contains(DISABLED$1) || ele.classList.contains(DATEDISABLED));
-                    if (!ele.classList.contains(WEEKNUMBER$1) && isDisabledCell) {
+                    let isDisabledCell = (!ele.classList.contains(DISABLED$2) || ele.classList.contains(DATEDISABLED));
+                    if (!ele.classList.contains(WEEKNUMBER$2) && isDisabledCell) {
                         let eleDate = this.getIdValue(null, ele);
                         let startDateValue = new Date(+this.startValue);
                         let eleDateValue = new Date(+eleDate);
@@ -4359,7 +5074,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
             for (let calendar of elementCollection) {
                 let tdCells = calendar.querySelectorAll('.' + CALENDAR + ' td');
                 for (let ele of tdCells) {
-                    if (!ele.classList.contains(WEEKNUMBER$1) && !ele.classList.contains(DISABLED$1)) {
+                    if (!ele.classList.contains(WEEKNUMBER$2) && !ele.classList.contains(DISABLED$2)) {
                         let eleDate = this.getIdValue(null, ele);
                         let eleDateValue = this.getIdValue(null, ele);
                         if (!isNullOrUndefined(this.endValue)) {
@@ -4376,7 +5091,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                         else {
                             removeClass([ele], [RANGEHOVER]);
                         }
-                        if (!ele.classList.contains(OTHERMONTH$1)) {
+                        if (!ele.classList.contains(OTHERMONTH$2)) {
                             let startDateValue = new Date(+this.startValue);
                             let eleDateValue = new Date(+eleDate);
                             if (this.currentView() === 'Month' &&
@@ -4385,7 +5100,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                                 +this.startValue >= +this.min
                                 && !this.inputWrapper.container.classList.contains('e-error')
                                 && !(this.isDateDisabled(this.startValue) || this.isDateDisabled(this.endValue))) {
-                                addClass([ele], [STARTDATE, SELECTED$1]);
+                                addClass([ele], [STARTDATE, SELECTED$2]);
                                 this.addSelectedAttributes(ele, this.startValue, true);
                             }
                             let endDateValue = new Date(+this.endValue);
@@ -4396,7 +5111,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                                 +this.startValue >= +this.min
                                 && !this.inputWrapper.container.classList.contains('e-error')
                                 && !(this.isDateDisabled(this.startValue) || this.isDateDisabled(this.endValue))) {
-                                addClass([ele], [ENDDATE, SELECTED$1]);
+                                addClass([ele], [ENDDATE, SELECTED$2]);
                                 this.addSelectedAttributes(ele, this.startValue, false);
                             }
                             if (+eleDate === +this.startValue && !isNullOrUndefined(this.endValue) && +eleDate === +this.endValue) {
@@ -4452,11 +5167,11 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         let tdCell = this.popupObj && this.popupObj.element.querySelector(dateIdString);
         if (!isNullOrUndefined(tdCell)) {
             if (isStartDate) {
-                addClass([tdCell], [STARTDATE, SELECTED$1]);
+                addClass([tdCell], [STARTDATE, SELECTED$2]);
                 this.addSelectedAttributes(tdCell, this.startValue, true);
             }
             else {
-                addClass([tdCell], [ENDDATE, SELECTED$1]);
+                addClass([tdCell], [ENDDATE, SELECTED$2]);
                 this.addSelectedAttributes(tdCell, this.endValue, true);
             }
             if (sameDate) {
@@ -4494,7 +5209,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
             this.setValue();
             addClass([ele], STARTDATE);
             this.addSelectedAttributes(ele, this.startValue, true);
-            if (ele.classList.contains(OTHERMONTH$1)) {
+            if (ele.classList.contains(OTHERMONTH$2)) {
                 this.otherMonthSelect(ele, true);
             }
             this.checkMinMaxDays();
@@ -4533,7 +5248,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                         ele.removeAttribute('aria-label');
                         if (!ele.classList.contains(STARTDATE)) {
                             ele.setAttribute('aria-selected', 'false');
-                            removeClass([ele], [ENDDATE, SELECTED$1]);
+                            removeClass([ele], [ENDDATE, SELECTED$2]);
                         }
                         else {
                             this.addSelectedAttributes(ele, this.startValue, true);
@@ -4548,7 +5263,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                 else {
                     this.addSelectedAttributes(ele, this.endValue, false);
                 }
-                if (ele.classList.contains(OTHERMONTH$1)) {
+                if (ele.classList.contains(OTHERMONTH$2)) {
                     if (+this.endValue === +this.startValue) {
                         this.otherMonthSelect(ele, false, true);
                     }
@@ -4575,10 +5290,10 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                 this.startValue = new Date('' + date);
                 this.setValue();
                 this.removeSelectedAttributes();
-                removeClass(this.popupObj.element.querySelectorAll('.' + STARTDATE), [STARTDATE, SELECTED$1]);
+                removeClass(this.popupObj.element.querySelectorAll('.' + STARTDATE), [STARTDATE, SELECTED$2]);
                 addClass([ele], STARTDATE);
                 this.addSelectedAttributes(ele, this.startValue, true);
-                if (ele.classList.contains(OTHERMONTH$1)) {
+                if (ele.classList.contains(OTHERMONTH$2)) {
                     this.otherMonthSelect(ele, true);
                 }
                 this.checkMinMaxDays();
@@ -4598,7 +5313,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                 this.rightCalendar.children[1].firstElementChild.focus();
             }
         }
-        addClass([ele], SELECTED$1);
+        addClass([ele], SELECTED$2);
         this.updateHeader();
         this.removeFocusedDate();
     }
@@ -4608,11 +5323,11 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
             let isStartDate = false;
             if (this.currentView() === 'Month') {
                 for (let ele of tdCells) {
-                    if (!ele.classList.contains(STARTDATE) && !ele.classList.contains(WEEKNUMBER$1)) {
-                        if (!ele.classList.contains(DISABLED$1)) {
+                    if (!ele.classList.contains(STARTDATE) && !ele.classList.contains(WEEKNUMBER$2)) {
+                        if (!ele.classList.contains(DISABLED$2)) {
                             let eleDate = this.getIdValue(null, ele);
                             if (+eleDate < +this.startValue) {
-                                addClass([ele], [DATEDISABLED, DISABLED$1, OVERLAY$1]);
+                                addClass([ele], [DATEDISABLED, DISABLED$2, OVERLAY$2]);
                                 EventHandler.clearEvents(ele);
                                 continue;
                             }
@@ -4621,14 +5336,14 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                             }
                         }
                     }
-                    if (ele.classList.contains(STARTDATE) && !ele.classList.contains(OTHERMONTH$1)) {
+                    if (ele.classList.contains(STARTDATE) && !ele.classList.contains(OTHERMONTH$2)) {
                         isStartDate = true;
                         break;
                     }
                 }
                 if (isStartDate) {
-                    if (!this.previousIcon.classList.contains(DISABLED$1)) {
-                        addClass([this.previousIcon], [ICONDISABLED, DISABLED$1, OVERLAY$1]);
+                    if (!this.previousIcon.classList.contains(DISABLED$2)) {
+                        addClass([this.previousIcon], [ICONDISABLED, DISABLED$2, OVERLAY$2]);
                     }
                 }
             }
@@ -4641,16 +5356,16 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                         (element.getMonth() < startMonth) && (element.getFullYear() <= startYear))
                         || (this.currentView() === 'Decade' && (element.getMonth() <= startMonth) &&
                             (element.getFullYear() < startYear)))) {
-                        addClass([ele], [DISABLED$1]);
+                        addClass([ele], [DISABLED$2]);
                     }
                     else {
                         break;
                     }
                 }
-                if (tdCells[0].classList.contains(DISABLED$1)) {
+                if (tdCells[0].classList.contains(DISABLED$2)) {
                     this.previousIconHandler(true);
                 }
-                else if (tdCells[tdCells.length - 1].classList.contains(DISABLED$1)) {
+                else if (tdCells[tdCells.length - 1].classList.contains(DISABLED$2)) {
                     this.nextIconHandler(true);
                 }
             }
@@ -4666,24 +5381,24 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                 let tdCells = calendar.querySelectorAll('.' + CALENDAR + ' td');
                 let maxEle;
                 for (let ele of tdCells) {
-                    if (!ele.classList.contains(STARTDATE) && !ele.classList.contains(WEEKNUMBER$1)) {
+                    if (!ele.classList.contains(STARTDATE) && !ele.classList.contains(WEEKNUMBER$2)) {
                         let eleDate = this.getIdValue(null, ele);
-                        if (!isNullOrUndefined(minDate) && +eleDate === +minDate && ele.classList.contains(DISABLED$1)) {
+                        if (!isNullOrUndefined(minDate) && +eleDate === +minDate && ele.classList.contains(DISABLED$2)) {
                             minDate.setDate(minDate.getDate() + 1);
                         }
-                        if (!ele.classList.contains(DISABLED$1)) {
+                        if (!ele.classList.contains(DISABLED$2)) {
                             if (+eleDate <= +this.startValue) {
                                 continue;
                             }
                             if (!isNullOrUndefined(minDate) && +eleDate < +minDate) {
-                                addClass([ele], [DATEDISABLED, DISABLED$1, OVERLAY$1]);
+                                addClass([ele], [DATEDISABLED, DISABLED$2, OVERLAY$2]);
                                 EventHandler.clearEvents(ele);
                             }
                             if (!isNullOrUndefined(maxDate) && +eleDate > +maxDate) {
-                                addClass([ele], [DATEDISABLED, DISABLED$1, OVERLAY$1]);
+                                addClass([ele], [DATEDISABLED, DISABLED$2, OVERLAY$2]);
                                 this.isMaxDaysClicked = true;
                                 EventHandler.clearEvents(ele);
-                                if (isNullOrUndefined(maxEle) && !ele.classList.contains(OTHERMONTH$1)) {
+                                if (isNullOrUndefined(maxEle) && !ele.classList.contains(OTHERMONTH$2)) {
                                     maxEle = ele;
                                 }
                             }
@@ -4692,8 +5407,8 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                 }
                 if (!isNullOrUndefined(maxEle)) {
                     if (this.isMobile) {
-                        if (!this.nextIcon.classList.contains(DISABLED$1)) {
-                            addClass([this.nextIcon], [ICONDISABLED, DISABLED$1, OVERLAY$1]);
+                        if (!this.nextIcon.classList.contains(DISABLED$2)) {
+                            addClass([this.nextIcon], [ICONDISABLED, DISABLED$2, OVERLAY$2]);
                         }
                     }
                     else {
@@ -4701,19 +5416,19 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                         calendar = isNullOrUndefined(calendar) ? this.leftCalendar : calendar;
                         let isLeftCalendar = calendar.classList.contains(LEFTCALENDER);
                         if (!isLeftCalendar) {
-                            if (!this.rightCalNextIcon.classList.contains(DISABLED$1)) {
-                                addClass([this.rightCalNextIcon], [ICONDISABLED, DISABLED$1, OVERLAY$1]);
+                            if (!this.rightCalNextIcon.classList.contains(DISABLED$2)) {
+                                addClass([this.rightCalNextIcon], [ICONDISABLED, DISABLED$2, OVERLAY$2]);
                             }
                         }
                         else {
-                            if (!this.rightCalNextIcon.classList.contains(DISABLED$1)) {
-                                addClass([this.rightCalNextIcon], [ICONDISABLED, DISABLED$1, OVERLAY$1]);
+                            if (!this.rightCalNextIcon.classList.contains(DISABLED$2)) {
+                                addClass([this.rightCalNextIcon], [ICONDISABLED, DISABLED$2, OVERLAY$2]);
                             }
-                            if (!this.leftCalNextIcon.classList.contains(DISABLED$1)) {
-                                addClass([this.leftCalNextIcon], [ICONDISABLED, DISABLED$1, OVERLAY$1]);
+                            if (!this.leftCalNextIcon.classList.contains(DISABLED$2)) {
+                                addClass([this.leftCalNextIcon], [ICONDISABLED, DISABLED$2, OVERLAY$2]);
                             }
-                            if (!this.rightCalPrevIcon.classList.contains(DISABLED$1)) {
-                                addClass([this.rightCalPrevIcon], [ICONDISABLED, DISABLED$1, OVERLAY$1]);
+                            if (!this.rightCalPrevIcon.classList.contains(DISABLED$2)) {
+                                addClass([this.rightCalPrevIcon], [ICONDISABLED, DISABLED$2, OVERLAY$2]);
                             }
                         }
                     }
@@ -4729,7 +5444,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         tdCells = this.popupObj.element.querySelectorAll('.' + CALENDAR + ' td' + '.' + DATEDISABLED);
         for (let ele of tdCells) {
             if (ele.classList.contains(DATEDISABLED)) {
-                removeClass([ele], [DATEDISABLED, DISABLED$1, OVERLAY$1]);
+                removeClass([ele], [DATEDISABLED, DISABLED$2, OVERLAY$2]);
                 EventHandler.add(ele, 'click', this.selectRange, this);
                 if (!this.isMobile) {
                     EventHandler.add(ele, 'mouseover', this.hoverSelection, this);
@@ -4738,21 +5453,21 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         }
         if (this.isMobile) {
             if (this.nextIcon.classList.contains(ICONDISABLED)) {
-                removeClass([this.nextIcon], [ICONDISABLED, DISABLED$1, OVERLAY$1]);
+                removeClass([this.nextIcon], [ICONDISABLED, DISABLED$2, OVERLAY$2]);
             }
             if (this.previousIcon.classList.contains(ICONDISABLED)) {
-                removeClass([this.previousIcon], [ICONDISABLED, DISABLED$1, OVERLAY$1]);
+                removeClass([this.previousIcon], [ICONDISABLED, DISABLED$2, OVERLAY$2]);
             }
         }
         else {
             if (this.rightCalNextIcon.classList.contains(ICONDISABLED)) {
-                removeClass([this.rightCalNextIcon], [ICONDISABLED, DISABLED$1, OVERLAY$1]);
+                removeClass([this.rightCalNextIcon], [ICONDISABLED, DISABLED$2, OVERLAY$2]);
             }
             if (this.rightCalPrevIcon.classList.contains(ICONDISABLED)) {
-                removeClass([this.rightCalPrevIcon], [ICONDISABLED, DISABLED$1, OVERLAY$1]);
+                removeClass([this.rightCalPrevIcon], [ICONDISABLED, DISABLED$2, OVERLAY$2]);
             }
             if (this.leftCalNextIcon.classList.contains(ICONDISABLED)) {
-                removeClass([this.leftCalNextIcon], [ICONDISABLED, DISABLED$1, OVERLAY$1]);
+                removeClass([this.leftCalNextIcon], [ICONDISABLED, DISABLED$2, OVERLAY$2]);
             }
         }
     }
@@ -4824,8 +5539,8 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         this.setValue();
         this.removeSelectedAttributes();
         if (this.popupObj) {
-            if (this.popupObj.element.querySelectorAll('.' + SELECTED$1).length > 0) {
-                removeClass(this.popupObj.element.querySelectorAll('.' + SELECTED$1), [STARTDATE, ENDDATE, SELECTED$1]);
+            if (this.popupObj.element.querySelectorAll('.' + SELECTED$2).length > 0) {
+                removeClass(this.popupObj.element.querySelectorAll('.' + SELECTED$2), [STARTDATE, ENDDATE, SELECTED$2]);
             }
             if (this.popupObj.element.querySelectorAll('.' + FOCUSDATE).length > 0) {
                 removeClass(this.popupObj.element.querySelectorAll('.' + FOCUSDATE), FOCUSDATE);
@@ -5945,7 +6660,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
             buttons: [DATERANGEICON]
         }, this.createElement);
         attributes(this.inputElement, {
-            'aria-readonly': this.readonly ? 'true' : 'false', 'tabindex': '1', 'aria-haspopup': 'true',
+            'aria-readonly': this.readonly ? 'true' : 'false', 'tabindex': '0', 'aria-haspopup': 'true',
             'aria-activedescendant': 'null', 'aria-owns': this.element.id + '_popup', 'aria-expanded': 'false',
             'role': 'daterangepicker', 'autocomplete': 'off', 'aria-disabled': !this.enabled ? 'true' : 'false',
             'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false'
@@ -6162,7 +6877,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
     destroy() {
         this.hide(null);
         let ariaAttrs = {
-            'aria-readonly': this.readonly ? 'true' : 'false', 'tabindex': '1', 'aria-haspopup': 'true',
+            'aria-readonly': this.readonly ? 'true' : 'false', 'tabindex': '0', 'aria-haspopup': 'true',
             'aria-activedescendant': 'null', 'aria-owns': this.element.id + '_popup', 'aria-expanded': 'false',
             'role': 'daterangepicker', 'autocomplete': 'off', 'aria-disabled': !this.enabled ? 'true' : 'false',
             'autocorrect': 'off', 'autocapitalize': 'off', 'aria-invalid': 'false', 'spellcheck': 'false'
@@ -6724,14 +7439,14 @@ const POPUP$2 = 'e-popup';
 const ERROR$2 = 'e-error';
 const POPUPDIMENSION = '240px';
 const DAY = new Date().getDate();
-const MONTH$1 = new Date().getMonth();
-const YEAR$1 = new Date().getFullYear();
+const MONTH$2 = new Date().getMonth();
+const YEAR$2 = new Date().getFullYear();
 const ROOT$3 = 'e-timepicker';
 const CONTENT$2 = 'e-content';
-const SELECTED$2 = 'e-active';
+const SELECTED$3 = 'e-active';
 const HOVER$1 = 'e-hover';
 const NAVIGATION = 'e-navigation';
-const DISABLED$2 = 'e-disabled';
+const DISABLED$3 = 'e-disabled';
 const ICONANIMATION = 'e-icon-anim';
 const FOCUS = 'e-input-focus';
 const LISTCLASS$1 = cssClass.li;
@@ -6741,6 +7456,12 @@ var TimePickerBase;
 (function (TimePickerBase) {
     // tslint:disable-next-line
     function createListItems(createdEl, min, max, globalize, timeFormat, step) {
+        if (this.calendarMode === 'Gregorian') {
+            
+        }
+        else {
+            
+        }
         let start;
         let end;
         let interval = step * 60000;
@@ -7027,9 +7748,9 @@ let TimePicker = class TimePicker extends Component {
             offsetX: this.popupCalculation(),
             open: () => {
                 this.popupWrapper.style.visibility = 'visible';
-                addClass([this.inputWrapper.buttons[0]], SELECTED$2);
+                addClass([this.inputWrapper.buttons[0]], SELECTED$3);
             }, close: () => {
-                removeClass([this.inputWrapper.buttons[0]], SELECTED$2);
+                removeClass([this.inputWrapper.buttons[0]], SELECTED$3);
                 this.unWireListEvents();
                 this.inputElement.setAttribute('aria-activedescendant', 'null');
                 remove(this.popupObj.element);
@@ -7058,8 +7779,8 @@ let TimePicker = class TimePicker extends Component {
             let value = !this.isNullOrEmpty(this.initValue);
             if (this.checkDateValue(dateValue)) {
                 let date = value ? this.initValue.getDate() : DAY;
-                let month = value ? this.initValue.getMonth() : MONTH$1;
-                let year = value ? this.initValue.getFullYear() : YEAR$1;
+                let month = value ? this.initValue.getMonth() : MONTH$2;
+                let year = value ? this.initValue.getFullYear() : YEAR$2;
                 return new Date(year, month, date, dateValue.getHours(), dateValue.getMinutes(), dateValue.getSeconds());
             }
         }
@@ -7092,10 +7813,10 @@ let TimePicker = class TimePicker extends Component {
         this.hide();
     }
     disableElement(element) {
-        addClass(element, DISABLED$2);
+        addClass(element, DISABLED$3);
     }
     enableElement(element) {
-        removeClass(element, DISABLED$2);
+        removeClass(element, DISABLED$3);
     }
     selectInputText() {
         this.inputElement.setSelectionRange(0, (this.inputElement).value.length);
@@ -7122,7 +7843,7 @@ let TimePicker = class TimePicker extends Component {
     }
     getActiveElement() {
         if (!isNullOrUndefined(this.popupWrapper)) {
-            return this.popupWrapper.querySelectorAll('.' + SELECTED$2);
+            return this.popupWrapper.querySelectorAll('.' + SELECTED$3);
         }
         else {
             return null;
@@ -7375,7 +8096,9 @@ let TimePicker = class TimePicker extends Component {
                     this.hide();
                     addClass([this.inputWrapper.container], FOCUS);
                     this.isNavigate = false;
-                    event.stopPropagation();
+                    if (this.isPopupOpen()) {
+                        event.stopPropagation();
+                    }
                     break;
                 case 'open':
                     this.show(event);
@@ -7468,12 +8191,12 @@ let TimePicker = class TimePicker extends Component {
         }
     }
     setSelection(li, event) {
-        if (this.isValidLI(li) && !li.classList.contains(SELECTED$2)) {
+        if (this.isValidLI(li) && !li.classList.contains(SELECTED$3)) {
             this.checkValue(li.getAttribute('data-value'));
             this.selectedElement = li;
             this.activeIndex = Array.prototype.slice.call(this.liCollections).indexOf(li);
             this.valueWithMinutes = new Date(this.timeCollections[this.activeIndex]);
-            addClass([this.selectedElement], SELECTED$2);
+            addClass([this.selectedElement], SELECTED$3);
             this.selectedElement.setAttribute('aria-selected', 'true');
             this.checkValueChange(event, true);
         }
@@ -7707,7 +8430,7 @@ let TimePicker = class TimePicker extends Component {
         if (isNullOrUndefined(this.checkDateValue(value))) {
             return null;
         }
-        return new Date(YEAR$1, MONTH$1, DAY, value.getHours(), value.getMinutes(), value.getSeconds());
+        return new Date(YEAR$2, MONTH$2, DAY, value.getHours(), value.getMinutes(), value.getSeconds());
     }
     getTextFormat() {
         let time = 0;
@@ -7876,7 +8599,7 @@ let TimePicker = class TimePicker extends Component {
         if (items.length) {
             if (backward) {
                 for (let i = index; i >= 0; i--) {
-                    if (!items[i].classList.contains(DISABLED$2)) {
+                    if (!items[i].classList.contains(DISABLED$3)) {
                         elementIndex = i;
                         break;
                     }
@@ -7890,7 +8613,7 @@ let TimePicker = class TimePicker extends Component {
             }
             else {
                 for (let i = index; i <= items.length - 1; i++) {
-                    if (!items[i].classList.contains(DISABLED$2)) {
+                    if (!items[i].classList.contains(DISABLED$3)) {
                         elementIndex = i;
                         break;
                     }
@@ -7906,7 +8629,7 @@ let TimePicker = class TimePicker extends Component {
         return elementIndex;
     }
     keyHandler(event) {
-        if (isNullOrUndefined(this.step) || this.step <= 0 || this.inputWrapper.buttons[0].classList.contains(DISABLED$2)) {
+        if (isNullOrUndefined(this.step) || this.step <= 0 || this.inputWrapper.buttons[0].classList.contains(DISABLED$3)) {
             return;
         }
         let count = this.timeCollections.length;
@@ -8042,9 +8765,9 @@ let TimePicker = class TimePicker extends Component {
     removeSelection() {
         this.removeHover(HOVER$1);
         if (!isNullOrUndefined(this.popupWrapper)) {
-            let items = this.popupWrapper.querySelectorAll('.' + SELECTED$2);
+            let items = this.popupWrapper.querySelectorAll('.' + SELECTED$3);
             if (items.length) {
-                removeClass(items, SELECTED$2);
+                removeClass(items, SELECTED$3);
                 items[0].removeAttribute('aria-selected');
             }
         }
@@ -8085,12 +8808,12 @@ let TimePicker = class TimePicker extends Component {
         this.removeSelection();
         this.setActiveClass();
         if (!isNullOrUndefined(this.selectedElement)) {
-            addClass([this.selectedElement], SELECTED$2);
+            addClass([this.selectedElement], SELECTED$3);
             this.selectedElement.setAttribute('aria-selected', 'true');
         }
     }
     isValidLI(li) {
-        return (li && li.classList.contains(LISTCLASS$1) && !li.classList.contains(DISABLED$2));
+        return (li && li.classList.contains(LISTCLASS$1) && !li.classList.contains(DISABLED$3));
     }
     createDateObj(val) {
         let today = this.globalize.formatDate(new Date(), { skeleton: 'short', type: 'date' });
@@ -8146,9 +8869,9 @@ let TimePicker = class TimePicker extends Component {
                 };
                 this.trigger('itemRender', eventArgs);
                 if (eventArgs.isDisabled) {
-                    eventArgs.element.classList.add(DISABLED$2);
+                    eventArgs.element.classList.add(DISABLED$3);
                 }
-                if (eventArgs.element.classList.contains(DISABLED$2)) {
+                if (eventArgs.element.classList.contains(DISABLED$3)) {
                     this.disableItemCollection.push(eventArgs.element.getAttribute('data-value'));
                 }
             }
@@ -8185,12 +8908,12 @@ let TimePicker = class TimePicker extends Component {
     setEnable() {
         Input.setEnabled(this.enabled, this.inputElement, this.floatLabelType);
         if (this.enabled) {
-            removeClass([this.inputWrapper.container], DISABLED$2);
+            removeClass([this.inputWrapper.container], DISABLED$3);
             attributes(this.inputElement, { 'aria-disabled': 'false' });
         }
         else {
             this.hide();
-            addClass([this.inputWrapper.container], DISABLED$2);
+            addClass([this.inputWrapper.container], DISABLED$3);
             attributes(this.inputElement, { 'aria-disabled': 'true' });
         }
     }
@@ -8296,7 +9019,7 @@ let TimePicker = class TimePicker extends Component {
                 name: 'open'
             };
             this.trigger('open', args);
-            if (!args.cancel && !this.isPopupOpen() && !this.inputWrapper.buttons[0].classList.contains(DISABLED$2)) {
+            if (!args.cancel && !this.isPopupOpen() && !this.inputWrapper.buttons[0].classList.contains(DISABLED$3)) {
                 this.inputElement.focus();
                 this.popupCreation();
                 if (!args.cancel) {
@@ -8537,8 +9260,8 @@ const DATEWRAPPER$1 = 'e-date-wrapper';
 const DATEPICKERROOT = 'e-datepicker';
 const DATETIMEWRAPPER = 'e-datetime-wrapper';
 const DAY$1 = new Date().getDate();
-const MONTH$2 = new Date().getMonth();
-const YEAR$2 = new Date().getFullYear();
+const MONTH$3 = new Date().getMonth();
+const YEAR$3 = new Date().getFullYear();
 const HOUR = new Date().getHours();
 const MINUTE = new Date().getMinutes();
 const SECOND = new Date().getSeconds();
@@ -8551,7 +9274,7 @@ const TIMEICON = 'e-time-icon';
 const INPUTFOCUS$2 = 'e-input-focus';
 const POPUPDIMENSION$1 = '250px';
 const ICONANIMATION$1 = 'e-icon-anim';
-const DISABLED$3 = 'e-disabled';
+const DISABLED$4 = 'e-disabled';
 const ERROR$3 = 'e-error';
 const CONTENT$3 = 'e-content';
 const NAVIGATION$1 = 'e-navigation';
@@ -8757,16 +9480,22 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
     }
     disablePopupButton(isDisable) {
         if (isDisable) {
-            addClass([this.inputWrapper.buttons[0], this.timeIcon], DISABLED$3);
+            addClass([this.inputWrapper.buttons[0], this.timeIcon], DISABLED$4);
             this.hide();
         }
         else {
-            removeClass([this.inputWrapper.buttons[0], this.timeIcon], DISABLED$3);
+            removeClass([this.inputWrapper.buttons[0], this.timeIcon], DISABLED$4);
         }
     }
     getFormattedValue(value) {
+        let dateOptions;
         if (!isNullOrUndefined(value)) {
-            let dateOptions = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd' };
+            if (this.calendarMode === 'Gregorian') {
+                dateOptions = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd' };
+            }
+            else {
+                dateOptions = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+            }
             return this.globalize.formatDate(value, dateOptions);
         }
         else {
@@ -8854,7 +9583,12 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         }
     }
     getCultureTimeObject(ld, c) {
-        return getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.short', ld);
+        if (this.calendarMode === 'Gregorian') {
+            return getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.short', ld);
+        }
+        else {
+            return getValue('main.' + '' + this.locale + '.dates.calendars.islamic.timeFormats.short', ld);
+        }
     }
     timeHandler(e) {
         if (Browser.isDevice) {
@@ -8925,8 +9659,19 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         }
     }
     listCreation() {
+        let dateObject;
+        if (this.calendarMode === 'Gregorian') {
+            dateObject = this.globalize.parseDate(this.inputElement.value, {
+                format: this.cldrDateTimeFormat(), type: 'datetime'
+            });
+        }
+        else {
+            dateObject = this.globalize.parseDate(this.inputElement.value, {
+                format: this.cldrDateTimeFormat(), type: 'datetime', calendar: 'islamic'
+            });
+        }
         let value = isNullOrUndefined(this.value) ? this.inputElement.value !== '' ?
-            this.globalize.parseDate(this.inputElement.value, { format: this.cldrDateTimeFormat(), type: 'datetime' }) :
+            dateObject :
             new Date() : this.value;
         this.valueWithMinutes = value;
         this.listWrapper = createElement('div', { className: CONTENT$3, attrs: { 'tabindex': '0' } });
@@ -9008,7 +9753,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         }
         else if (target !== this.inputElement) {
             if (!Browser.isDevice) {
-                this.isPreventBlur = (Browser.isIE || Browser.info.name === 'edge') && (document.activeElement === this.inputElement);
+                this.isPreventBlur = ((document.activeElement === this.inputElement) && (Browser.isIE || Browser.info.name === 'edge'));
                 event.preventDefault();
             }
         }
@@ -9129,7 +9874,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         this.setInputValue('time');
         if (+this.previousDateTime !== +this.value) {
             this.changedArgs = {
-                value: this.value, event: e || null,
+                value: this.value, event: e,
                 isInteracted: !isNullOrUndefined(e),
                 element: this.element
             };
@@ -9270,7 +10015,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         return hoveredItem;
     }
     isValidLI(li) {
-        return (li && li.classList.contains(LISTCLASS$2) && !li.classList.contains(DISABLED$3));
+        return (li && li.classList.contains(LISTCLASS$2) && !li.classList.contains(DISABLED$4));
     }
     calculateStartEnd(value, range, method) {
         let day = value.getDate();
@@ -9430,6 +10175,13 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
             }
         }
     }
+    requiredModules() {
+        let modules = [];
+        if (this) {
+            modules.push({ args: [this], member: 'islamic' });
+        }
+        return modules;
+    }
     getTimeActiveElement() {
         if (!isNullOrUndefined(this.dateTimeWrapper)) {
             return this.dateTimeWrapper.querySelectorAll('.' + ACTIVE$2);
@@ -9448,8 +10200,8 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
             let status = !isNullOrUndefined(value);
             if (this.checkDateValue(dateValue)) {
                 let date = status ? value.getDate() : DAY$1;
-                let month = status ? value.getMonth() : MONTH$2;
-                let year = status ? value.getFullYear() : YEAR$2;
+                let month = status ? value.getMonth() : MONTH$3;
+                let year = status ? value.getFullYear() : YEAR$3;
                 let hour = status ? value.getHours() : HOUR;
                 let minute = status ? value.getMinutes() : MINUTE;
                 let second = status ? value.getSeconds() : SECOND;
@@ -9465,7 +10217,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
             this.getDateObject(this.valueWithMinutes);
         let dateTimeVal = null;
         let listCount = this.liCollections.length;
-        if (!isNullOrUndefined(this.checkDateValue(value)) || !isNullOrUndefined(this.activeIndex)) {
+        if (!isNullOrUndefined(this.activeIndex) || !isNullOrUndefined(this.checkDateValue(value))) {
             if (event.action === 'home') {
                 dateTimeVal = +(this.createDateObj(new Date(this.timeCollections[0])));
                 this.activeIndex = 0;
@@ -9499,6 +10251,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         }
     }
     setTimeValue(date, value) {
+        let dateString;
         let time;
         let val = this.validateMinMaxRange(value);
         let newval = this.createDateObj(val);
@@ -9514,9 +10267,17 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
             this.valueWithMinutes = this.checkDateValue(date);
             time = new Date(+this.valueWithMinutes);
         }
-        let dateString = this.globalize.formatDate(time, {
-            format: !isNullOrUndefined(this.format) ? this.format : this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd'
-        });
+        if (this.calendarMode === 'Gregorian') {
+            dateString = this.globalize.formatDate(time, {
+                format: !isNullOrUndefined(this.format) ? this.format : this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd'
+            });
+        }
+        else {
+            dateString = this.globalize.formatDate(time, {
+                format: !isNullOrUndefined(this.format) ? this.format : this.cldrDateTimeFormat(),
+                type: 'dateTime', skeleton: 'yMd', calendar: 'islamic'
+            });
+        }
         if (!this.strictMode && isNullOrUndefined(time)) {
             Input.setValue(dateString, this.inputElement, this.floatLabelType, this.showClearButton);
         }
@@ -9604,6 +10365,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
                     this.hide(event);
                     addClass([this.inputWrapper.container], INPUTFOCUS$2);
                     this.isNavigate = false;
+                    event.stopPropagation();
                     break;
                 case 'escape':
                     this.hide(event);
@@ -9722,6 +10484,9 @@ __decorate$4([
     Property(false)
 ], DateTimePicker.prototype, "isMultiSelection", void 0);
 __decorate$4([
+    Property(null)
+], DateTimePicker.prototype, "values", void 0);
+__decorate$4([
     Property(true)
 ], DateTimePicker.prototype, "showClearButton", void 0);
 __decorate$4([
@@ -9760,5 +10525,5 @@ DateTimePicker = __decorate$4([
  * Calendar all modules
  */
 
-export { CalendarBase, Calendar, DatePicker, Presets, DateRangePicker, TimePickerBase, TimePicker, DateTimePicker };
+export { CalendarBase, Calendar, Islamic, DatePicker, Presets, DateRangePicker, TimePickerBase, TimePicker, DateTimePicker };
 //# sourceMappingURL=ej2-calendars.es2015.js.map

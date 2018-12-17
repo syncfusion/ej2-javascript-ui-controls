@@ -680,8 +680,12 @@ class PdfViewerBase {
                 this.scrollPosition = this.viewerContainer.scrollTop / this.getZoomFactor();
                 this.mouseX = event.clientX;
                 this.mouseY = event.clientY;
+                // tslint:disable-next-line
+                let isIE = !!document.documentMode;
                 if (this.pdfViewer.textSelectionModule && !this.isClickedOnScrollBar(event) && !this.isTextSelectionDisabled) {
-                    event.preventDefault();
+                    if (!isIE) {
+                        event.preventDefault();
+                    }
                     this.pdfViewer.textSelectionModule.clearTextSelection();
                 }
             }
@@ -796,8 +800,9 @@ class PdfViewerBase {
         this.viewerContainerOnMousemove = (event) => {
             this.mouseX = event.clientX;
             this.mouseY = event.clientY;
+            // tslint:disable-next-line
+            let isIE = !!document.documentMode;
             if (this.isViewerMouseDown) {
-                event.preventDefault();
                 // tslint:disable-next-line:max-line-length
                 if (this.pdfViewer.textSelectionModule && this.pdfViewer.enableTextSelection && !this.isTextSelectionDisabled) {
                     // text selection won't perform if we start the selection from hyperlink content by commenting this line.
@@ -805,7 +810,19 @@ class PdfViewerBase {
                     // if ((event.target as HTMLElement).classList.contains('e-pv-hyperlink') && this.pdfViewer.linkAnnotationModule) {
                     // this.pdfViewer.linkAnnotationModule.modifyZindexForHyperlink((event.target as HTMLElement), true);
                     // }
-                    this.pdfViewer.textSelectionModule.textSelectionOnMouseMove(event.target, this.mouseX, this.mouseY);
+                    if (!isIE) {
+                        event.preventDefault();
+                        this.pdfViewer.textSelectionModule.textSelectionOnMouseMove(event.target, this.mouseX, this.mouseY);
+                    }
+                    else {
+                        let selection = window.getSelection();
+                        if (!selection.type && !selection.isCollapsed && selection.anchorNode !== null) {
+                            this.pdfViewer.textSelectionModule.isTextSelection = true;
+                        }
+                    }
+                }
+                else {
+                    event.preventDefault();
                 }
             }
             if (this.isPanMode) {
@@ -855,8 +872,12 @@ class PdfViewerBase {
             }
         };
         this.viewerContainerOnMouseOver = (event) => {
+            // tslint:disable-next-line
+            let isIE = !!document.documentMode;
             if (this.isViewerMouseDown) {
-                event.preventDefault();
+                if (!isIE) {
+                    event.preventDefault();
+                }
             }
         };
         this.viewerContainerOnClick = (event) => {
@@ -885,7 +906,11 @@ class PdfViewerBase {
             }
         };
         this.viewerContainerOnDragStart = (event) => {
-            event.preventDefault();
+            // tslint:disable-next-line
+            let isIE = !!document.documentMode;
+            if (!isIE) {
+                event.preventDefault();
+            }
         };
         // tslint:disable-next-line
         this.viewerContainerOnContextMenuClick = (event) => {
@@ -1069,9 +1094,7 @@ class PdfViewerBase {
             }
             if (pageIndex !== this.currentPageNumber) {
                 if (proxy.pdfViewer.thumbnailViewModule) {
-                    if (!proxy.pdfViewer.thumbnailViewModule.isThumbnailClicked) {
-                        proxy.pdfViewer.thumbnailViewModule.gotoThumbnailImage(proxy.currentPageNumber - 1);
-                    }
+                    proxy.pdfViewer.thumbnailViewModule.gotoThumbnailImage(proxy.currentPageNumber - 1);
                     proxy.pdfViewer.thumbnailViewModule.isThumbnailClicked = false;
                 }
                 this.pdfViewer.firePageChange(pageIndex);
@@ -1179,7 +1202,7 @@ class PdfViewerBase {
                 // tslint:disable-next-line
                 let data = event.currentTarget.response; // jshint ignore:line
                 // tslint:disable-next-line:max-line-length
-                if (navigator.userAgent.indexOf('MSIE') !== -1 || navigator.userAgent.indexOf('Edge') !== -1 || navigator.userAgent.indexOf('Trident') !== -1 || typeof data !== 'object') {
+                if (typeof data !== 'object') {
                     data = JSON.parse(data);
                 }
                 this.requestSuccess(data, documentData, password);
@@ -1538,10 +1561,10 @@ class PdfViewerBase {
         if (this.navigationPane.sideBarToolbar) {
             this.navigationPane.clear();
         }
-        if (this.pdfViewer.enableToolbar && this.pdfViewer.thumbnailViewModule) {
+        if (this.pdfViewer.thumbnailViewModule) {
             this.pdfViewer.thumbnailViewModule.clear();
         }
-        if (this.pdfViewer.enableToolbar && this.pdfViewer.bookmarkViewModule) {
+        if (this.pdfViewer.bookmarkViewModule) {
             this.pdfViewer.bookmarkViewModule.clear();
         }
         if (this.pdfViewer.magnificationModule) {
@@ -1624,7 +1647,37 @@ class PdfViewerBase {
         let scrollX = window.scrollX;
         let scrollY = window.scrollY;
         this.viewerContainer.focus();
+        // tslint:disable-next-line
+        let parentNode = this.getScrollParent(this.viewerContainer);
+        let scrollNodeX = 0;
+        let scrollNodeY = 0;
+        if (parentNode !== null) {
+            scrollNodeX = parentNode.scrollLeft;
+            scrollNodeY = parentNode.scrollTop;
+        }
+        this.viewerContainer.focus();
+        // tslint:disable-next-line:max-line-length
+        if (navigator.userAgent.indexOf('MSIE') !== -1 || navigator.appVersion.indexOf('Trident/') > -1 || navigator.userAgent.indexOf('Edge') !== -1 && parentNode != null) {
+            parentNode.scrollLeft = scrollNodeX;
+            parentNode.scrollTop = scrollNodeY;
+        }
+        else if (parentNode !== null) {
+            parentNode.scrollTo(scrollNodeX, scrollNodeY);
+        }
         window.scrollTo(scrollX, scrollY);
+    }
+    // tslint:disable-next-line
+    getScrollParent(node) {
+        if (node === null || node.nodeName === 'HTML') {
+            return null;
+        }
+        let style = getComputedStyle(node);
+        if (this.viewerContainer.id !== node.id && (style.overflowY === 'scroll' || style.overflowY === 'auto')) {
+            return node;
+        }
+        else {
+            return this.getScrollParent(node.parentNode);
+        }
     }
     createCorruptedPopup() {
         // tslint:disable-next-line:max-line-length
@@ -1977,7 +2030,7 @@ class PdfViewerBase {
             if (request.readyState === 4 && request.status === 200) {
                 // tslint:disable-next-line
                 let data = event.currentTarget.response;
-                if (navigator.userAgent.indexOf('MSIE') !== -1 || navigator.userAgent.indexOf('Edge') !== -1 || navigator.userAgent.indexOf('Trident') !== -1 || typeof data !== 'object') {
+                if (typeof data !== 'object') {
                     data = JSON.parse(data);
                 }
                 if (data) {
@@ -2250,7 +2303,7 @@ class PdfViewerBase {
                 // tslint:disable-next-line
                 let data = event.currentTarget.response;
                 // tslint:disable-next-line:max-line-length
-                if (navigator.userAgent.indexOf('MSIE') !== -1 || navigator.userAgent.indexOf('Edge') !== -1 || navigator.userAgent.indexOf('Trident') !== -1) {
+                if (typeof data === 'object') {
                     data = JSON.parse(data);
                 }
                 if (data) {
@@ -2307,7 +2360,7 @@ class PdfViewerBase {
                                 // tslint:disable-next-line
                                 let data = event.currentTarget.response;
                                 // tslint:disable-next-line:max-line-length
-                                if (navigator.userAgent.indexOf('MSIE') !== -1 || navigator.userAgent.indexOf('Edge') !== -1 || navigator.userAgent.indexOf('Trident') !== -1 || typeof data !== 'object') {
+                                if (typeof data !== 'object') {
                                     data = JSON.parse(data);
                                 }
                                 if (data) {
@@ -2856,6 +2909,9 @@ class TextLayer {
             beforeClose: () => {
                 this.notifyDialog.destroy();
                 this.pdfViewer.element.removeChild(popupElement);
+                if (this.pdfViewer.textSearchModule) {
+                    this.pdfViewer.textSearch.isMessagePopupOpened = false;
+                }
             }
         });
         this.notifyDialog.appendTo(popupElement);
@@ -3880,47 +3936,61 @@ class ThumbnailView {
     createRequestForThumbnails() {
         let proxy = this;
         // tslint:disable-next-line
-        return new Promise(
-        // tslint:disable-next-line
-        function (renderThumbnailImage, reject) {
-            if (!proxy.isThumbnailCompleted) {
-                // tslint:disable-next-line:max-line-length
-                proxy.thumbnailLimit = proxy.thumbnailLimit < proxy.pdfViewer.pageCount ? proxy.thumbnailLimit : proxy.pdfViewer.pageCount;
-                if (proxy.thumbnailLimit !== proxy.pdfViewer.pageCount) {
-                    proxy.isThumbnailCompleted = false;
-                    proxy.startIndex = 0;
-                }
-            }
-            else {
-                proxy.startIndex = proxy.thumbnailLimit;
-                // tslint:disable-next-line:max-line-length
-                proxy.thumbnailLimit = proxy.startIndex + proxy.thumbnailThreshold < proxy.pdfViewer.pageCount ? proxy.startIndex + proxy.thumbnailThreshold : proxy.pdfViewer.pageCount;
-            }
-            let request = new XMLHttpRequest();
+        let isIE = !!document.documentMode;
+        if (!isIE) {
+            // tslint:disable-next-line
+            return new Promise(
+            // tslint:disable-next-line
+            function (renderThumbnailImage, reject) {
+                proxy.requestCreation(proxy);
+            });
+        }
+        else {
+            this.requestCreation(proxy);
+            return null;
+        }
+    }
+    requestCreation(proxy) {
+        if (!proxy.isThumbnailCompleted) {
             // tslint:disable-next-line:max-line-length
-            let jsonObject = { startPage: proxy.startIndex, endPage: proxy.thumbnailLimit, sizeX: 99.7, sizeY: 141, hashId: proxy.pdfViewerBase.hashId };
-            request.open('POST', proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.renderThumbnail);
-            request.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
-            request.responseType = 'json';
-            request.send(JSON.stringify(jsonObject));
-            // tslint:disable-next-line
-            request.onreadystatechange = (event) => {
-                if (request.readyState === 4 && request.status === 200) {
-                    // tslint:disable-next-line
-                    let data = event.currentTarget.response;
-                    proxy.renderThumbnailImage(data);
-                    if (!proxy.isThumbnailCompleted) {
-                        proxy.startIndex = proxy.thumbnailLimit;
-                        proxy.isThumbnailCompleted = true;
-                    }
+            proxy.thumbnailLimit = proxy.thumbnailLimit < proxy.pdfViewer.pageCount ? proxy.thumbnailLimit : proxy.pdfViewer.pageCount;
+            if (proxy.thumbnailLimit !== proxy.pdfViewer.pageCount) {
+                proxy.isThumbnailCompleted = false;
+                proxy.startIndex = 0;
+            }
+        }
+        else {
+            proxy.startIndex = proxy.thumbnailLimit;
+            // tslint:disable-next-line:max-line-length
+            proxy.thumbnailLimit = proxy.startIndex + proxy.thumbnailThreshold < proxy.pdfViewer.pageCount ? proxy.startIndex + proxy.thumbnailThreshold : proxy.pdfViewer.pageCount;
+        }
+        let request = new XMLHttpRequest();
+        // tslint:disable-next-line:max-line-length
+        let jsonObject = { startPage: proxy.startIndex, endPage: proxy.thumbnailLimit, sizeX: 99.7, sizeY: 141, hashId: proxy.pdfViewerBase.hashId };
+        request.open('POST', proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.renderThumbnail);
+        request.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+        request.responseType = 'json';
+        request.send(JSON.stringify(jsonObject));
+        // tslint:disable-next-line
+        request.onreadystatechange = (event) => {
+            if (request.readyState === 4 && request.status === 200) {
+                // tslint:disable-next-line
+                let data = event.currentTarget.response;
+                if (typeof data !== 'object') {
+                    data = JSON.parse(data);
                 }
-            };
-            // tslint:disable-next-line
-            request.onerror = (event) => {
-                this.pdfViewerBase.openNotificationPopup();
-                proxy.pdfViewer.fireAjaxRequestFailed(request.status, request.statusText);
-            };
-        });
+                proxy.renderThumbnailImage(data);
+                if (!proxy.isThumbnailCompleted) {
+                    proxy.startIndex = proxy.thumbnailLimit;
+                    proxy.isThumbnailCompleted = true;
+                }
+            }
+        };
+        // tslint:disable-next-line
+        request.onerror = (event) => {
+            this.pdfViewerBase.openNotificationPopup();
+            proxy.pdfViewer.fireAjaxRequestFailed(request.status, request.statusText);
+        };
     }
     /**
      * @private
@@ -3935,13 +4005,15 @@ class ThumbnailView {
                     let offsetTop = thumbnailDiv.offsetTop + thumbnailDiv.clientTop - this.thumbnailTopMargin;
                     this.pdfViewerBase.navigationPane.sideBarContent.scrollTop = offsetTop;
                 }
-                if (this.previousElement) {
-                    this.previousElement.classList.remove('e-pv-thumbnail-selection');
-                    this.previousElement.classList.remove('e-pv-thumbnail-focus');
-                    this.previousElement.classList.remove('e-pv-thumbnail-hover');
-                    this.previousElement.classList.add('e-pv-thumbnail-selection-ring');
+                if (!this.isThumbnailClicked) {
+                    if (this.previousElement) {
+                        this.previousElement.classList.remove('e-pv-thumbnail-selection');
+                        this.previousElement.classList.remove('e-pv-thumbnail-focus');
+                        this.previousElement.classList.remove('e-pv-thumbnail-hover');
+                        this.previousElement.classList.add('e-pv-thumbnail-selection-ring');
+                    }
+                    this.setFocusStyle(thumbnailDiv, pageNumber);
                 }
-                this.setFocusStyle(thumbnailDiv, pageNumber);
                 this.previousElement = thumbnailDiv.children[0];
             }
         }
@@ -4016,7 +4088,14 @@ class ThumbnailView {
         }
         this.pdfViewerBase.navigationPane.enableThumbnailButton();
         if (this.thumbnailLimit !== this.pdfViewerBase.pageCount && this.thumbnailView) {
-            Promise.all([this.createRequestForThumbnails()]);
+            // tslint:disable-next-line
+            let isIE = !!document.documentMode;
+            if (!isIE) {
+                Promise.all([this.createRequestForThumbnails()]);
+            }
+            else {
+                this.createRequestForThumbnails();
+            }
         }
     }
     wireUpEvents() {
@@ -4036,6 +4115,9 @@ class ThumbnailView {
     goToThumbnailPage(pageNumber) {
         if (pageNumber > 0 && pageNumber <= this.pdfViewerBase.pageCount && this.pdfViewerBase.currentPageNumber !== pageNumber) {
             this.pdfViewerBase.updateScrollTop(pageNumber - 1);
+        }
+        else {
+            this.isThumbnailClicked = false;
         }
     }
     setSelectionStyle(thumbnailElement) {
@@ -4061,8 +4143,10 @@ class ThumbnailView {
             thumbnailElement.classList.remove('e-pv-thumbnail-hover');
         }
         else {
-            thumbnailElement.classList.remove('e-pv-thumbnail-selection');
-            thumbnailElement.classList.add('e-pv-thumbnail-focus');
+            if (!thumbnailElement.classList.contains('e-pv-thumbnail-selection')) {
+                thumbnailElement.classList.remove('e-pv-thumbnail-selection');
+                thumbnailElement.classList.add('e-pv-thumbnail-focus');
+            }
         }
     }
     setMouseFocusStyle(thumbnailElement) {
@@ -4399,6 +4483,11 @@ class Toolbar$1 {
      */
     intializeToolbar(width) {
         let toolbarDiv = this.createToolbar(width);
+        // tslint:disable-next-line
+        let isIE = !!document.documentMode;
+        if (isIE) {
+            this.totalPageItem.classList.add('e-pv-total-page-ms');
+        }
         this.createFileElement(toolbarDiv);
         this.wireEvent();
         this.updateToolbarItems();
@@ -4534,34 +4623,34 @@ class Toolbar$1 {
         this.applyHideToToolbar(enableSearchOption, 15, 15);
     }
     enableOpenOption(enableOpenOption) {
-        this.toolbar.enableItems(this.openDocumentItem, enableOpenOption);
+        this.toolbar.enableItems(this.openDocumentItem.parentElement, enableOpenOption);
     }
     enablePageNavigationTool(enablePageNavigationTool) {
-        this.toolbar.enableItems(this.firstPageItem, enablePageNavigationTool);
-        this.toolbar.enableItems(this.previousPageItem, enablePageNavigationTool);
-        this.toolbar.enableItems(this.nextPageItem, enablePageNavigationTool);
-        this.toolbar.enableItems(this.lastPageItem, enablePageNavigationTool);
+        this.toolbar.enableItems(this.firstPageItem.parentElement, enablePageNavigationTool);
+        this.toolbar.enableItems(this.previousPageItem.parentElement, enablePageNavigationTool);
+        this.toolbar.enableItems(this.nextPageItem.parentElement, enablePageNavigationTool);
+        this.toolbar.enableItems(this.lastPageItem.parentElement, enablePageNavigationTool);
         this.currentPageBox.readonly = !enablePageNavigationTool;
     }
     enableMagnificationTool(enableMagnificationTool) {
-        this.toolbar.enableItems(this.zoomInItem, enableMagnificationTool);
-        this.toolbar.enableItems(this.zoomOutItem, enableMagnificationTool);
+        this.toolbar.enableItems(this.zoomInItem.parentElement, enableMagnificationTool);
+        this.toolbar.enableItems(this.zoomOutItem.parentElement, enableMagnificationTool);
         this.zoomDropDown.readonly = !enableMagnificationTool;
     }
     enableSelectionTool(enableSelectionTool) {
-        this.toolbar.enableItems(this.textSelectItem, enableSelectionTool);
+        this.toolbar.enableItems(this.textSelectItem.parentElement, enableSelectionTool);
     }
     enableScrollingTool(enableScrollingTool) {
-        this.toolbar.enableItems(this.panItem, enableScrollingTool);
+        this.toolbar.enableItems(this.panItem.parentElement, enableScrollingTool);
     }
     enableDownloadOption(enableDownloadOption) {
-        this.toolbar.enableItems(this.downloadItem, enableDownloadOption);
+        this.toolbar.enableItems(this.downloadItem.parentElement, enableDownloadOption);
     }
     enablePrintOption(enablePrintOption) {
-        this.toolbar.enableItems(this.printItem, enablePrintOption);
+        this.toolbar.enableItems(this.printItem.parentElement, enablePrintOption);
     }
     enableSearchOption(enableSearchOption) {
-        this.toolbar.enableItems(this.textSearchItem, enableSearchOption);
+        this.toolbar.enableItems(this.textSearchItem.parentElement, enableSearchOption);
     }
     /**
      * @private
@@ -4577,21 +4666,25 @@ class Toolbar$1 {
      */
     updateToolbarItems() {
         if (this.pdfViewerBase.pageCount === 0) {
-            this.toolbar.enableItems(this.downloadItem, false);
-            this.toolbar.enableItems(this.printItem, false);
+            this.toolbar.enableItems(this.downloadItem.parentElement, false);
+            this.toolbar.enableItems(this.printItem.parentElement, false);
             this.updateNavigationButtons();
-            this.toolbar.enableItems(this.zoomInItem, false);
-            this.toolbar.enableItems(this.zoomOutItem, false);
+            this.toolbar.enableItems(this.zoomInItem.parentElement, false);
+            this.toolbar.enableItems(this.zoomOutItem.parentElement, false);
             if (this.pdfViewer.magnificationModule) {
                 this.zoomDropDown.readonly = true;
             }
-            this.toolbar.enableItems(this.textSelectItem, false);
-            this.toolbar.enableItems(this.panItem, false);
-            this.toolbar.enableItems(this.textSearchItem, false);
+            this.toolbar.enableItems(this.pdfViewerBase.getElement('_currentPageInputContainer'), false);
+            this.toolbar.enableItems(this.pdfViewerBase.getElement('_zoomDropDownContainer'), false);
+            this.toolbar.enableItems(this.textSelectItem.parentElement, false);
+            this.toolbar.enableItems(this.panItem.parentElement, false);
+            this.toolbar.enableItems(this.textSearchItem.parentElement, false);
         }
         else if (this.pdfViewerBase.pageCount > 0) {
-            this.toolbar.enableItems(this.downloadItem, true);
-            this.toolbar.enableItems(this.printItem, true);
+            this.toolbar.enableItems(this.downloadItem.parentElement, true);
+            this.toolbar.enableItems(this.printItem.parentElement, true);
+            this.toolbar.enableItems(this.pdfViewerBase.getElement('_currentPageInputContainer'), true);
+            this.toolbar.enableItems(this.pdfViewerBase.getElement('_zoomDropDownContainer'), true);
             this.updateNavigationButtons();
             this.updateZoomButtons();
             if (this.pdfViewer.magnificationModule) {
@@ -4599,7 +4692,7 @@ class Toolbar$1 {
             }
             this.updateInteractionItems();
             if (this.pdfViewer.textSearchModule && this.pdfViewer.enableTextSearch) {
-                this.toolbar.enableItems(this.textSearchItem, true);
+                this.toolbar.enableItems(this.textSearchItem.parentElement, true);
             }
         }
     }
@@ -4609,35 +4702,35 @@ class Toolbar$1 {
     updateNavigationButtons() {
         if (this.pdfViewer.navigationModule && !this.isPageNavigationToolDisabled) {
             if (this.pdfViewerBase.pageCount === 0 || (this.pdfViewerBase.currentPageNumber === 1 && this.pdfViewerBase.pageCount === 1)) {
-                this.toolbar.enableItems(this.firstPageItem, false);
-                this.toolbar.enableItems(this.previousPageItem, false);
-                this.toolbar.enableItems(this.nextPageItem, false);
-                this.toolbar.enableItems(this.lastPageItem, false);
+                this.toolbar.enableItems(this.firstPageItem.parentElement, false);
+                this.toolbar.enableItems(this.previousPageItem.parentElement, false);
+                this.toolbar.enableItems(this.nextPageItem.parentElement, false);
+                this.toolbar.enableItems(this.lastPageItem.parentElement, false);
             }
             else if (this.pdfViewerBase.currentPageNumber === 1 && this.pdfViewerBase.pageCount > 0) {
-                this.toolbar.enableItems(this.firstPageItem, false);
-                this.toolbar.enableItems(this.previousPageItem, false);
-                this.toolbar.enableItems(this.nextPageItem, true);
-                this.toolbar.enableItems(this.lastPageItem, true);
+                this.toolbar.enableItems(this.firstPageItem.parentElement, false);
+                this.toolbar.enableItems(this.previousPageItem.parentElement, false);
+                this.toolbar.enableItems(this.nextPageItem.parentElement, true);
+                this.toolbar.enableItems(this.lastPageItem.parentElement, true);
             }
             else if (this.pdfViewerBase.currentPageNumber === this.pdfViewerBase.pageCount && this.pdfViewerBase.pageCount > 0) {
-                this.toolbar.enableItems(this.firstPageItem, true);
-                this.toolbar.enableItems(this.previousPageItem, true);
-                this.toolbar.enableItems(this.nextPageItem, false);
-                this.toolbar.enableItems(this.lastPageItem, false);
+                this.toolbar.enableItems(this.firstPageItem.parentElement, true);
+                this.toolbar.enableItems(this.previousPageItem.parentElement, true);
+                this.toolbar.enableItems(this.nextPageItem.parentElement, false);
+                this.toolbar.enableItems(this.lastPageItem.parentElement, false);
             }
             else if (this.pdfViewerBase.currentPageNumber > 1 && this.pdfViewerBase.currentPageNumber < this.pdfViewerBase.pageCount) {
-                this.toolbar.enableItems(this.firstPageItem, true);
-                this.toolbar.enableItems(this.previousPageItem, true);
-                this.toolbar.enableItems(this.nextPageItem, true);
-                this.toolbar.enableItems(this.lastPageItem, true);
+                this.toolbar.enableItems(this.firstPageItem.parentElement, true);
+                this.toolbar.enableItems(this.previousPageItem.parentElement, true);
+                this.toolbar.enableItems(this.nextPageItem.parentElement, true);
+                this.toolbar.enableItems(this.lastPageItem.parentElement, true);
             }
         }
         else {
-            this.toolbar.enableItems(this.firstPageItem, false);
-            this.toolbar.enableItems(this.previousPageItem, false);
-            this.toolbar.enableItems(this.nextPageItem, false);
-            this.toolbar.enableItems(this.lastPageItem, false);
+            this.toolbar.enableItems(this.firstPageItem.parentElement, false);
+            this.toolbar.enableItems(this.previousPageItem.parentElement, false);
+            this.toolbar.enableItems(this.nextPageItem.parentElement, false);
+            this.toolbar.enableItems(this.lastPageItem.parentElement, false);
             this.currentPageBox.readonly = true;
         }
     }
@@ -4647,16 +4740,16 @@ class Toolbar$1 {
     updateZoomButtons() {
         if (this.pdfViewer.magnificationModule && !this.isMagnificationToolDisabled) {
             if (this.pdfViewer.magnificationModule.zoomFactor <= 0.5) {
-                this.toolbar.enableItems(this.zoomInItem, true);
-                this.toolbar.enableItems(this.zoomOutItem, false);
+                this.toolbar.enableItems(this.zoomInItem.parentElement, true);
+                this.toolbar.enableItems(this.zoomOutItem.parentElement, false);
             }
             else if (this.pdfViewer.magnificationModule.zoomFactor >= 4) {
-                this.toolbar.enableItems(this.zoomInItem, false);
-                this.toolbar.enableItems(this.zoomOutItem, true);
+                this.toolbar.enableItems(this.zoomInItem.parentElement, false);
+                this.toolbar.enableItems(this.zoomOutItem.parentElement, true);
             }
             else {
-                this.toolbar.enableItems(this.zoomInItem, true);
-                this.toolbar.enableItems(this.zoomOutItem, true);
+                this.toolbar.enableItems(this.zoomInItem.parentElement, true);
+                this.toolbar.enableItems(this.zoomOutItem.parentElement, true);
             }
         }
     }
@@ -4969,16 +5062,16 @@ class Toolbar$1 {
     updateInteractionItems() {
         if (this.pdfViewer.textSelectionModule) {
             if (this.pdfViewer.enableTextSelection) {
-                this.toolbar.enableItems(this.textSelectItem, true);
+                this.toolbar.enableItems(this.textSelectItem.parentElement, true);
             }
             else {
-                this.toolbar.enableItems(this.textSelectItem, false);
+                this.toolbar.enableItems(this.textSelectItem.parentElement, false);
             }
         }
         else {
-            this.toolbar.enableItems(this.textSelectItem, false);
+            this.toolbar.enableItems(this.textSelectItem.parentElement, false);
         }
-        this.toolbar.enableItems(this.panItem, true);
+        this.toolbar.enableItems(this.panItem.parentElement, true);
         if (this.pdfViewer.interactionMode === 'TextSelection') {
             this.selectItem(this.textSelectItem);
             this.deSelectItem(this.panItem);
@@ -5220,7 +5313,7 @@ let PdfViewer = class PdfViewer extends Component {
             'Find in document': 'Find in document',
             'Match case': 'Match case',
             // tslint:disable-next-line:max-line-length
-            'No matches': 'Viewer has finished searching the document.No more matches were found',
+            'No matches': 'Viewer has finished searching the document. No more matches were found',
             // tslint:disable-next-line:max-line-length
             'Server error': 'Web-service is not listening. PDF Viewer depends on web-service for all it\'s features. Please start the web service to continue.'
         };
@@ -5775,9 +5868,14 @@ class BookmarkView {
         request.onreadystatechange = (event) => {
             if (request.readyState === 4 && request.status === 200) {
                 this.pdfViewerBase.navigationPane.disableBookmarkButton();
-                if (event.currentTarget.response) {
-                    this.bookmarks = { bookMark: event.currentTarget.response.Bookmarks };
-                    this.bookmarksDestination = { bookMarkDestination: event.currentTarget.response.BookmarksDestination };
+                // tslint:disable-next-line
+                let data = event.currentTarget.response;
+                if (data) {
+                    if (typeof data !== 'object') {
+                        data = JSON.parse(data);
+                    }
+                    this.bookmarks = { bookMark: data.Bookmarks };
+                    this.bookmarksDestination = { bookMarkDestination: data.BookmarksDestination };
                 }
                 if (this.bookmarks == null) {
                     this.pdfViewerBase.navigationPane.disableBookmarkButton();
@@ -5798,7 +5896,7 @@ class BookmarkView {
      */
     renderBookmarkcontent() {
         if (this.bookmarkView != null) {
-            this.bookmarkView.remove();
+            this.bookmarkView.parentElement.removeChild(this.bookmarkView);
         }
         this.bookmarkView = createElement('div', { id: this.pdfViewer.element.id + '_bookmark_view', className: 'e-pv-bookmark-view' });
         this.pdfViewerBase.navigationPane.sideBarContent.appendChild(this.bookmarkView);
@@ -5939,10 +6037,7 @@ class TextSelection {
                 let xTouch = event.changedTouches[0].clientX;
                 let yTouch = event.changedTouches[0].clientY;
                 event.target.style.zIndex = '1000';
-                if (document.caretRangeFromPoint) {
-                    range = document.caretRangeFromPoint(xTouch, yTouch);
-                    nodeElement = this.onTouchElementScroll(range, nodeElement, yTouch, event);
-                }
+                nodeElement = this.getNodeElement(range, xTouch, yTouch, event, nodeElement);
                 if (nodeElement) {
                     // tslint:disable-next-line:max-line-length
                     let currentDifference = Math.sqrt((yTouch - dropBounds.top) * (yTouch - dropBounds.top) + (xTouch - dropBounds.left) * (xTouch - dropBounds.left));
@@ -5988,10 +6083,7 @@ class TextSelection {
                 let touchX = event.changedTouches[0].clientX;
                 let touchY = event.changedTouches[0].clientY;
                 event.target.style.zIndex = '1000';
-                if (document.caretRangeFromPoint) {
-                    range = document.caretRangeFromPoint(touchX, touchY);
-                    nodeElement = this.onTouchElementScroll(range, nodeElement, touchY, event);
-                }
+                nodeElement = this.getNodeElement(range, touchX, touchY, event, nodeElement);
                 if (nodeElement) {
                     // tslint:disable-next-line:max-line-length
                     let currentDifference = Math.sqrt((touchY - dropPosition.top) * (touchY - dropPosition.top) + (touchX - dropPosition.left) * (touchX - dropPosition.left));
@@ -6385,13 +6477,13 @@ class TextSelection {
      */
     maintainSelectionOnZoom(isMaintainSelection, isStich) {
         let selection = window.getSelection();
-        if (selection.type === 'Range') {
+        if (selection.type === 'Range' || (!selection.type && !selection.isCollapsed)) {
             let isBackward = this.isBackWardSelection(selection);
             if (selection.anchorNode !== null) {
                 // tslint:disable-next-line:radix
-                let anchorPageId = parseInt(selection.anchorNode.parentElement.id.split('_text_')[1]);
+                let anchorPageId = parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1]);
                 // tslint:disable-next-line:radix
-                let focusPageId = parseInt(selection.focusNode.parentElement.id.split('_text_')[1]);
+                let focusPageId = parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1]);
                 if (this.isTouchSelection && isNaN(focusPageId)) {
                     let focusElement = selection.focusNode;
                     if (focusElement === this.pdfViewerBase.pageContainer) {
@@ -6690,11 +6782,11 @@ class TextSelection {
     }
     maintainSelection(pageNumber, isStich) {
         let selection = window.getSelection();
-        if (this.isTextSelection && selection.type === 'Range') {
+        if (this.isTextSelection && (selection.type === 'Range' || (!selection.type && !selection.isCollapsed))) {
             // tslint:disable-next-line
-            let anchorPageId = parseInt(selection.anchorNode.parentElement.id.split('_text_')[1]);
+            let anchorPageId = parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1]);
             // tslint:disable-next-line
-            let focusPageId = parseInt(selection.focusNode.parentElement.id.split('_text_')[1]);
+            let focusPageId = parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1]);
             if (isNaN(focusPageId) && selection.anchorNode !== null) {
                 let backward = this.isBackWardSelection(selection);
                 if (!backward) {
@@ -6722,11 +6814,11 @@ class TextSelection {
                 let selectionObject = null;
                 let selectionBounds = this.getSelectionBounds(selection.getRangeAt(0), pageNumber);
                 // tslint:disable-next-line:max-line-length
-                let anchorOffsetValue = (selection.anchorNode.parentElement.childNodes.length === 1) ? selection.anchorOffset : this.getCorrectOffset(selection.anchorNode, selection.anchorOffset);
-                let focusOffsetValue = (selection.focusNode.parentElement.childNodes.length === 1) ? selection.focusOffset : this.getCorrectOffset(selection.focusNode, selection.focusOffset);
+                let anchorOffsetValue = (this.getNodeElementFromNode(selection.anchorNode).childNodes.length === 1) ? selection.anchorOffset : this.getCorrectOffset(selection.anchorNode, selection.anchorOffset);
+                let focusOffsetValue = (this.getNodeElementFromNode(selection.focusNode).childNodes.length === 1) ? selection.focusOffset : this.getCorrectOffset(selection.focusNode, selection.focusOffset);
                 selectionObject = {
-                    isBackward: backward, startNode: selection.anchorNode.parentElement.id,
-                    startOffset: anchorOffsetValue, endNode: selection.focusNode.parentElement.id,
+                    isBackward: backward, startNode: this.getNodeElementFromNode(selection.anchorNode).id,
+                    startOffset: anchorOffsetValue, endNode: this.getNodeElementFromNode(selection.focusNode).id,
                     endOffset: focusOffsetValue, textContent: selection.toString(), pageNumber: pageNumber, bounds: selectionBounds
                 };
                 this.pushSelectionRangeObject(selectionObject, pageNumber);
@@ -6744,7 +6836,7 @@ class TextSelection {
     }
     getCorrectOffset(node, offset) {
         let offsetValue = 0;
-        let parentElement = node.parentElement;
+        let parentElement = this.getNodeElementFromNode(node);
         for (let i = 0; i < parentElement.childNodes.length; i++) {
             if (parentElement.childNodes[i] === node) {
                 offsetValue = offsetValue + offset;
@@ -6874,9 +6966,9 @@ class TextSelection {
         let selection = window.getSelection();
         if (this.isTextSelection) {
             // tslint:disable-next-line:radix
-            let anchorPageId = parseInt(selection.anchorNode.parentElement.id.split('_text_')[1]);
+            let anchorPageId = parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1]);
             // tslint:disable-next-line:radix
-            let focusPageId = parseInt(selection.focusNode.parentElement.id.split('_text_')[1]);
+            let focusPageId = parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1]);
             let nextPageElement;
             if (anchorPageId !== currentPageNumber && focusPageId !== currentPageNumber) {
                 let backward = this.isBackWardSelection(selection);
@@ -6885,12 +6977,12 @@ class TextSelection {
                     if (nextPageElement) {
                         let lastElement = nextPageElement.lastChild;
                         if (lastElement) {
-                            selection.extend(lastElement.childNodes[0], this.getTextLastLength(lastElement));
+                            this.extendSelectionStich(lastElement.childNodes[0], this.getTextLastLength(lastElement), selection);
                         }
                         else {
                             nextPageElement = this.pdfViewerBase.getElement('_textLayer_' + currentPageNumber);
                             let lastElement = nextPageElement.firstChild;
-                            selection.extend(lastElement.childNodes[0], 0);
+                            this.extendSelectionStich(lastElement.childNodes[0], 0, selection);
                         }
                     }
                 }
@@ -6899,12 +6991,17 @@ class TextSelection {
                     if (nextPageElement) {
                         let lastElement = nextPageElement.firstChild;
                         if (lastElement) {
-                            selection.extend(lastElement.childNodes[0], 0);
+                            this.extendSelectionStich(lastElement.childNodes[0], 0, selection);
                         }
                     }
                 }
             }
             this.maintainSelectionArray();
+        }
+    }
+    extendSelectionStich(node, offset, selection) {
+        if (selection.extend) {
+            selection.extend(node, offset);
         }
     }
     /**
@@ -6923,7 +7020,7 @@ class TextSelection {
             if (element.childNodes) {
                 if (!backward) {
                     if (pageNumber === anchorPageId) {
-                        firstElement = selection.anchorNode.parentElement;
+                        firstElement = this.getNodeElementFromNode(selection.anchorNode);
                         // tslint:disable-next-line:max-line-length
                         lastElement = element.lastChild;
                         startOffset = this.getCorrectOffset(selection.anchorNode, selection.anchorOffset);
@@ -6940,9 +7037,9 @@ class TextSelection {
                     else if (pageNumber === focusPageId) {
                         // tslint:disable-next-line:max-line-length
                         firstElement = element.firstChild;
-                        let pageNumberIndex = selection.focusNode.parentElement.id.indexOf(focusPageId.toString());
+                        let pageNumberIndex = this.getNodeElementFromNode(selection.focusNode).id.indexOf(focusPageId.toString());
                         if (pageNumberIndex !== -1) {
-                            lastElement = selection.focusNode.parentElement;
+                            lastElement = this.getNodeElementFromNode(selection.focusNode);
                             endOffset = this.getCorrectOffset(selection.focusNode, selection.focusOffset);
                         }
                         else {
@@ -6955,7 +7052,7 @@ class TextSelection {
                 }
                 else {
                     if (pageNumber === anchorPageId) {
-                        firstElement = selection.anchorNode.parentElement;
+                        firstElement = this.getNodeElementFromNode(selection.anchorNode);
                         // tslint:disable-next-line:max-line-length
                         lastElement = element.firstChild;
                         startOffset = this.getCorrectOffset(selection.anchorNode, selection.anchorOffset);
@@ -6970,7 +7067,7 @@ class TextSelection {
                         endOffset = this.getTextLastLength(lastElement);
                     }
                     else if (pageNumber === focusPageId) {
-                        firstElement = selection.focusNode.parentElement;
+                        firstElement = this.getNodeElementFromNode(selection.focusNode);
                         // tslint:disable-next-line:max-line-length
                         lastElement = element.lastChild;
                         startOffset = this.getCorrectOffset(selection.focusNode, selection.focusOffset);
@@ -7011,8 +7108,8 @@ class TextSelection {
         return range;
     }
     getSelectionBounds(range, pageNumber) {
-        let startElement = range.startContainer.parentElement;
-        let endElement = range.endContainer.parentElement;
+        let startElement = this.getNodeElementFromNode(range.startContainer);
+        let endElement = this.getNodeElementFromNode(range.endContainer);
         let bounds = [];
         if (startElement !== endElement) {
             let newStartRange = document.createRange();
@@ -7070,13 +7167,13 @@ class TextSelection {
             let selection = window.getSelection();
             let isBackward = this.isBackWardSelection(selection);
             // tslint:disable-next-line
-            let anchorPage = isNaN(parseInt(selection.anchorNode.parentElement.id.split('_text_')[1])) ? parseInt(selection.anchorNode.id.split('_pageDiv_')[1]) : parseInt(selection.anchorNode.parentElement.id.split('_text_')[1]);
+            let anchorPage = isNaN(parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1])) ? parseInt(selection.anchorNode.id.split('_pageDiv_')[1]) : parseInt(selection.anchorNode.parentElement.id.split('_text_')[1]);
             if (isNaN(anchorPage)) {
                 // tslint:disable-next-line:radix
                 anchorPage = parseInt(selection.anchorNode.id.split('_text_')[1]);
             }
             // tslint:disable-next-line
-            let focusPage = isNaN(parseInt(selection.focusNode.parentElement.id.split('_text_')[1])) ? parseInt(selection.focusNode.id.split('_pageDiv_')[1]) : parseInt(selection.focusNode.parentElement.id.split('_text_')[1]);
+            let focusPage = isNaN(parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1])) ? parseInt(selection.focusNode.id.split('_pageDiv_')[1]) : parseInt(selection.focusNode.parentElement.id.split('_text_')[1]);
             if (isNaN(focusPage)) {
                 // tslint:disable-next-line
                 focusPage = isNaN(parseInt(selection.focusNode.id.split('_text_')[1])) ? parseInt(selection.focusNode.id.split('_textLayer_')[1]) : parseInt(selection.focusNode.id.split('_text_')[1]);
@@ -7125,7 +7222,8 @@ class TextSelection {
      */
     applySpanForSelection() {
         let selection = window.getSelection();
-        if (selection.anchorNode !== null && this.pdfViewerBase.viewerContainer.contains(selection.anchorNode)) {
+        // tslint:disable-next-line:max-line-length
+        if (selection.anchorNode !== null && this.pdfViewerBase.viewerContainer.contains(this.getNodeElementFromNode(selection.anchorNode))) {
             let isBackWardSelection = this.isBackWardSelection(selection);
             let anchorPageId;
             let focusPageId;
@@ -7135,19 +7233,19 @@ class TextSelection {
             let focusOffset;
             if (isBackWardSelection) {
                 // tslint:disable-next-line:radix
-                anchorPageId = parseInt(selection.focusNode.parentElement.id.split('_text_')[1]);
+                anchorPageId = parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1]);
                 // tslint:disable-next-line:radix
-                focusPageId = parseInt(selection.anchorNode.parentElement.id.split('_text_')[1]);
+                focusPageId = parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1]);
                 // tslint:disable-next-line:radix
-                anchorOffsetDiv = parseInt(selection.focusNode.parentElement.id.split('_text_')[1].split('_')[1]);
+                anchorOffsetDiv = parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1].split('_')[1]);
                 // tslint:disable-next-line:radix
-                focusOffsetDiv = parseInt(selection.anchorNode.parentElement.id.split('_text_')[1].split('_')[1]);
+                focusOffsetDiv = parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1].split('_')[1]);
                 anchorOffset = selection.focusOffset;
                 focusOffset = selection.anchorOffset;
             }
             else {
-                let anchorElement = selection.anchorNode.parentElement;
-                let focusElement = selection.focusNode.parentElement;
+                let anchorElement = this.getNodeElementFromNode(selection.anchorNode);
+                let focusElement = this.getNodeElementFromNode(selection.focusNode);
                 // tslint:disable-next-line
                 anchorPageId = (anchorElement.id.indexOf('text_') !== -1) ? parseInt(anchorElement.id.split('text_')[1]) : parseInt(anchorElement.id.split('_textLayer_')[1]);
                 // tslint:disable-next-line
@@ -7173,12 +7271,12 @@ class TextSelection {
                     }
                 }
                 if (anchorElement.classList.contains('e-pv-maintaincontent')) {
-                    anchorElement = anchorElement.parentElement;
+                    anchorElement = this.getNodeElementFromNode(anchorElement);
                     // tslint:disable-next-line:radix
                     anchorPageId = parseInt(anchorElement.id.split('text_')[1]);
                 }
                 if (focusElement.classList.contains('e-pv-maintaincontent')) {
-                    focusElement = focusElement.parentElement;
+                    focusElement = this.getNodeElementFromNode(focusElement);
                     // tslint:disable-next-line:radix
                     focusPageId = parseInt(focusElement.id.split('text_')[1]);
                 }
@@ -7438,6 +7536,24 @@ class TextSelection {
         // tslint:disable-next-line:max-line-length
         this.pdfViewerBase.contextMenuModule.contextMenuObj.open(event.changedTouches[0].clientY - this.pdfViewerBase.viewerContainer.offsetTop + this.pdfViewerBase.contextMenuModule.contextMenuElement.clientHeight, event.changedTouches[0].clientX - this.pdfViewerBase.viewerContainer.offsetLeft, this.pdfViewerBase.viewerContainer);
     }
+    getNodeElement(range, touchX, touchY, event, nodeElement) {
+        if (document.caretRangeFromPoint) {
+            range = document.caretRangeFromPoint(touchX, touchY);
+            nodeElement = this.onTouchElementScroll(range, nodeElement, touchY, event);
+            // tslint:disable-next-line
+        }
+        else if (document.caretPositionFromPoint) {
+            // tslint:disable-next-line
+            let start = document.caretPositionFromPoint(touchX, touchY);
+            // tslint:disable-next-line
+            let end = document.caretPositionFromPoint(touchX, touchY);
+            range = document.createRange();
+            range.setStart(start.offsetNode, start.offset);
+            range.setEnd(end.offsetNode, end.offset);
+            nodeElement = this.onTouchElementScroll(range, nodeElement, touchY, event);
+        }
+        return nodeElement;
+    }
     isTouchedWithinContainer(event) {
         let elements = document.elementsFromPoint(event.touches[0].clientX, event.touches[0].clientY);
         let isTouchedWithinContainer = false;
@@ -7495,6 +7611,14 @@ class TextSelection {
         }
         else {
             return 0;
+        }
+    }
+    getNodeElementFromNode(node) {
+        if (node.parentElement) {
+            return node.parentElement;
+        }
+        else {
+            return node.parentNode;
         }
     }
     /**
@@ -7573,6 +7697,10 @@ class TextSearch {
         this.isPrevSearch = false;
         // tslint:disable-next-line
         this.tempElementStorage = new Array();
+        /**
+         * @private
+         */
+        this.isMessagePopupOpened = false;
         this.checkBoxOnChange = (event) => {
             if (event.checked) {
                 this.isMatchCase = true;
@@ -7631,7 +7759,7 @@ class TextSearch {
         this.searchInput.type = 'text';
         this.searchInput.placeholder = this.pdfViewer.localeObj.getConstant('Find in document');
         // tslint:disable-next-line:max-line-length
-        this.searchBtn = createElement('span', { id: this.pdfViewer.element.id + '_search_box-icon', className: 'e-input-group-icon e-pv-search-icon' });
+        this.searchBtn = createElement('span', { id: this.pdfViewer.element.id + '_search_box-icon', className: 'e-input-group-icon e-input-search-group-icon e-pv-search-icon' });
         searchInputContainer.appendChild(this.searchInput);
         searchInputContainer.appendChild(this.searchBtn);
         searchElementsContainer.appendChild(searchInputContainer);
@@ -7837,7 +7965,10 @@ class TextSearch {
                 if ((this.pdfViewerBase.currentPageNumber - 1) !== this.searchPageIndex) {
                     // tslint:disable-next-line:max-line-length
                     if (this.searchCollection.length > 0 && (this.searchIndex === 0 || this.searchIndex === -1) && (this.searchPageIndex) === this.currentSearchIndex) {
-                        this.pdfViewerBase.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No matches'));
+                        if (!this.isMessagePopupOpened) {
+                            this.onMessageBoxOpen();
+                            this.pdfViewerBase.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No matches'));
+                        }
                         this.searchPageIndex = this.getSearchPage(this.pdfViewerBase.currentPageNumber - 1);
                         this.searchedPages = [];
                     }
@@ -7859,20 +7990,31 @@ class TextSearch {
                 }
                 else {
                     let searchPageIndex = this.getSearchPage(pageIndex);
-                    if (!this.searchCollection[this.searchPageIndex] && this.searchCollection.length === 0) {
+                    // tslint:disable-next-line:max-line-length
+                    if (!this.searchCollection[this.searchPageIndex] && this.searchCollection.length === 0 && this.searchedPages.length === this.pdfViewerBase.pageCount) {
                         // tslint:disable-next-line:max-line-length
-                        this.pdfViewerBase.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No matches'));
+                        if (!this.isMessagePopupOpened) {
+                            this.onMessageBoxOpen();
+                            this.pdfViewerBase.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No matches'));
+                        }
+                        // tslint:disable-next-line:max-line-length
                     }
                     else if (this.searchCollection.length > 0 && (this.searchIndex === 0 || this.searchIndex === -1) && (searchPageIndex) === this.currentSearchIndex) {
                         if (this.isPrevSearch) {
                             // tslint:disable-next-line:max-line-length
-                            this.pdfViewerBase.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No matches'));
+                            if (!this.isMessagePopupOpened) {
+                                this.onMessageBoxOpen();
+                                this.pdfViewerBase.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No matches'));
+                            }
                             this.searchPageIndex = this.getSearchPage(this.pdfViewerBase.currentPageNumber - 1);
                             this.searchedPages = [];
                             this.searchIndex = -1;
                         }
                         else {
-                            this.pdfViewerBase.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No matches'));
+                            if (!this.isMessagePopupOpened) {
+                                this.onMessageBoxOpen();
+                                this.pdfViewerBase.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No matches'));
+                            }
                             this.searchPageIndex = this.getSearchPage(this.pdfViewerBase.currentPageNumber - 1);
                             this.searchedPages = [];
                             this.searchIndex = 0;
@@ -8397,6 +8539,10 @@ class TextSearch {
             this.searchBtn.classList.add('e-pv-search-close');
         }
     }
+    onMessageBoxOpen() {
+        this.pdfViewerBase.getElement('_search_input').blur();
+        this.isMessagePopupOpened = true;
+    }
     /**
      * Searches the target text in the PDF document and highlights the occurrences in the pages
      * @param  {string} searchText
@@ -8481,8 +8627,8 @@ class Print {
             setTimeout(() => {
                 for (pageIndex = 0; pageIndex <= this.pdfViewerBase.pageCount; pageIndex++) {
                     if (pageIndex < this.pdfViewerBase.pageCount) {
-                        let pageWidth = this.pdfViewerBase.getPageWidth(pageIndex);
-                        let pageHeight = this.pdfViewerBase.getPageHeight(pageIndex);
+                        let pageWidth = this.pdfViewerBase.pageSize[pageIndex].width;
+                        let pageHeight = this.pdfViewerBase.pageSize[pageIndex].height;
                         this.pdfViewer.printModule.createRequestForPrint(pageIndex, pageWidth, pageHeight, this.pdfViewerBase.pageCount);
                     }
                     else {
@@ -8496,8 +8642,9 @@ class Print {
         let proxy = this;
         let request = new XMLHttpRequest();
         // tslint: disable-next-line:max-line-length
+        // set default zoomFactor value.  
         let jsonObject = { pageNumber: pageIndex, documentId: this.pdfViewerBase.documentId,
-            hashId: this.pdfViewerBase.hashId, zoomFactor: this.pdfViewerBase.getZoomFactor() };
+            hashId: this.pdfViewerBase.hashId, zoomFactor: 1 };
         request.open('POST', proxy.pdfViewer.serviceUrl + '/PrintImages', false);
         request.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
         request.send(JSON.stringify(jsonObject));
@@ -8507,7 +8654,15 @@ class Print {
         pageImage.src = printImage;
         pageImage.height = pageHeight;
         pageImage.width = pageWidth;
-        this.printViewerContainer.appendChild(pageImage);
+        this.printImageContainer = createElement('div', { id: this.pdfViewer.element.id + '_print_image_container' + pageIndex });
+        if (pageHeight < pageWidth) {
+            this.printImageContainer.style.height = pageWidth + 'px';
+            pageImage.height = pageWidth;
+            this.printImageContainer.style.width = pageHeight + 'px';
+            pageImage.width = pageHeight;
+        }
+        this.printImageContainer.appendChild(pageImage);
+        this.printViewerContainer.appendChild(this.printImageContainer);
     }
     printWindowOpen() {
         let browserUserAgent = navigator.userAgent;
@@ -8518,8 +8673,10 @@ class Print {
             this.frameDoc.document.write('<!DOCTYPE html>');
             // tslint: disable-next-line:max-line-length
             this.frameDoc.document.write('<html moznomarginboxes mozdisallowselectionprint><head><style>html, body { height: 100%; }'
-                + ' img { height: 100%; width: 100%; display: block; }@media print { body { margin: 0cm; }img { box-sizing: border-box; }br,'
-                + ' button { display: none; }} @page{margin:0mm; size:auto;}</style></head><body><center class="loader">');
+                + ' img { height: 100%; width: 100%; display: block; }@media print { body { margin: 0cm; }'
+                + ' img { width:98%; max-width: 1048px; box-sizing: border-box; }br, button { display: none; }'
+                // set default page Height and page Width for A4 size.
+                + ' div{ page-break-inside: avoid; }} @page{margin:0mm; size: 816px 1056px;}</style></head><body><center class="loader">');
         }
         else {
             //ie
@@ -8527,7 +8684,9 @@ class Print {
             // tslint: disable-next-line:max-line-length
             this.frameDoc.document.write('<html><head>'
                 + '<style>html, body { height: 99%; } img { height: 99%; width: 100%; }@media print { body { margin: 0cm; }'
-                + 'img { box-sizing: border-box; }br, button { display: none; }} @page{margin:0mm; size:auto;}</style></head><body><center>');
+                + 'img { width:98%; max-width: 1048px; box-sizing: border-box; }br, button { display: none; } '
+                // set default page Height and page Width for A4 size.
+                + 'div{ page-break-inside: avoid; }} @page{margin:0mm; size: 816px 1056px;}</style></head><body><center>');
         }
         this.frameDoc.document.write(this.printViewerContainer.outerHTML);
         this.pdfViewerBase.showPrintLoadingIndicator(false);

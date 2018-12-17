@@ -58,7 +58,7 @@ export class EventTooltip {
             };
             let contentContainer: HTMLElement = createElement('div');
             append(this.parent.getHeaderTooltipTemplate()(data), contentContainer);
-            this.tooltipObj.content = contentContainer;
+            this.setContent(contentContainer);
             return;
         }
         let record: { [key: string]: Object } =
@@ -66,7 +66,7 @@ export class EventTooltip {
         if (!isNullOrUndefined(this.parent.eventSettings.tooltipTemplate)) {
             let contentContainer: HTMLElement = createElement('div');
             append(this.parent.getEventTooltipTemplate()(record), contentContainer);
-            this.tooltipObj.content = contentContainer;
+            this.setContent(contentContainer);
         } else {
             let globalize: Internationalization = this.parent.globalize; let fields: EventFieldsMapping = this.parent.eventFields;
             let eventStart: Date = new Date('' + record[fields.startTime]) as Date;
@@ -76,25 +76,42 @@ export class EventTooltip {
             let endDate: Date = util.resetTime(new Date('' + eventEnd));
             let tooltipSubject: string = (record[fields.subject] || this.parent.eventSettings.fields.subject.default) as string;
             let tooltipLocation: string = !isNullOrUndefined(record[fields.location]) ? <string>record[fields.location] : '';
-            let startMonthDate: string = globalize.formatDate(eventStart, { type: 'date', skeleton: 'MMMd' });
-            let startMonthYearDate: string = globalize.formatDate(eventStart, { type: 'date', skeleton: 'yMMMd' });
-            let endMonthYearDate: string = globalize.formatDate(eventEnd, { type: 'date', skeleton: 'yMMMd' });
-            let startTime: string = globalize.formatDate(eventStart, { type: 'time', skeleton: 'short' });
-            let endTime: string = globalize.formatDate(eventEnd, { type: 'time', skeleton: 'short' });
+            let startMonthDate: string = globalize.formatDate(eventStart, {
+                type: 'date', skeleton: 'MMMd', calendar: this.parent.getCalendarMode()
+            });
+            let startMonthYearDate: string = globalize.formatDate(eventStart, {
+                type: 'date', skeleton: 'medium', calendar: this.parent.getCalendarMode()
+            });
+            let endMonthYearDate: string = globalize.formatDate(eventEnd, {
+                type: 'date', skeleton: 'medium', calendar: this.parent.getCalendarMode()
+            });
+            let startTime: string = globalize.formatDate(eventStart, {
+                type: 'time', skeleton: 'short', calendar: this.parent.getCalendarMode()
+            });
+            let endTime: string = globalize.formatDate(eventEnd, {
+                type: 'time', skeleton: 'short', calendar: this.parent.getCalendarMode()
+            });
             let tooltipDetails: string;
             if (startDate.getTime() === endDate.getTime()) {
-                tooltipDetails = globalize.formatDate(eventStart, { type: 'date', skeleton: 'long' });
+                tooltipDetails = globalize.formatDate(eventStart, {
+                    type: 'date', skeleton: 'long', calendar: this.parent.getCalendarMode()
+                });
             } else {
                 tooltipDetails = (startDate.getFullYear() === endDate.getFullYear()) ? (startMonthDate + ' - ' + endMonthYearDate) :
                     (startMonthYearDate + ' - ' + endMonthYearDate);
             }
             let tooltipTime: string = (record[fields.isAllDay]) ? this.parent.localeObj.getConstant('allDay') :
                 (startTime + ' - ' + endTime);
-            this.tooltipObj.content = '<div><div class="e-subject">' + tooltipSubject + '</div>' +
+            let content: string = '<div><div class="e-subject">' + tooltipSubject + '</div>' +
                 '<div class="e-location">' + tooltipLocation + '</div>' +
                 '<div class="e-details">' + tooltipDetails + '</div>' +
                 '<div class="e-all-day">' + tooltipTime + '</div></div>';
+            this.setContent(content);
         }
+    }
+
+    private setContent(content: string | HTMLElement): void {
+        this.tooltipObj.setProperties({ content: content }, true);
     }
 
     public close(): void {

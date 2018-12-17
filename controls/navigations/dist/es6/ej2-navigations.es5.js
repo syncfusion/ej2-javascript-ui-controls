@@ -1555,6 +1555,10 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             left = eventArgs.left;
         }
         if (eventArgs.cancel) {
+            if (this.isMenu) {
+                popupObj.destroy();
+                detach(popupWrapper);
+            }
             this.navIdx.pop();
         }
         else {
@@ -2498,6 +2502,7 @@ var CLS_TBARIGNORE = 'e-ignore';
 var CLS_POPPRI = 'e-popup-alone';
 var CLS_HIDDEN = 'e-hidden';
 var CLS_MULTIROW = 'e-toolbar-multirow';
+var CLS_MULTIROWPOS = 'e-multirow-pos';
 var CLS_MULTIROW_SEPARATOR = 'e-multirow-separator';
 var CLS_EXTENDABLE_SEPARATOR = 'e-extended-separator';
 var CLS_EXTEANDABLE_TOOLBAR = 'e-extended-toolbar';
@@ -3168,6 +3173,10 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'MultiRow':
                     this.add(innerItems, CLS_MULTIROW);
+                    if (this.checkOverflow(ele, innerItems) && this.tbarAlign) {
+                        this.removePositioning();
+                        this.add(innerItems, CLS_MULTIROWPOS);
+                    }
                     if (ele.style.overflow === 'hidden') {
                         ele.style.overflow = '';
                     }
@@ -3178,6 +3187,9 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
                 case 'Extended':
                     this.add(this.element, CLS_EXTEANDABLE_TOOLBAR);
                     if (this.checkOverflow(ele, innerItems) || priorityCheck) {
+                        if (this.tbarAlign) {
+                            this.removePositioning();
+                        }
                         this.createPopupEle(ele, [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, ele)));
                         this.element.querySelector('.' + CLS_TBARNAV).setAttribute('tabIndex', '0');
                     }
@@ -4210,6 +4222,11 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         var checkOverflow = this.checkOverflow(ele, ele.getElementsByClassName(CLS_ITEMS)[0]);
         if (!checkOverflow) {
             this.destroyScroll();
+            var multirowele = ele.querySelector('.' + CLS_ITEMS);
+            if (!isNullOrUndefined(multirowele)) {
+                this.remove(multirowele, CLS_MULTIROWPOS);
+                this.add(multirowele, CLS_TBARPOS);
+            }
         }
         if (checkOverflow && this.scrollModule && (this.offsetWid === ele.offsetWidth)) {
             return;

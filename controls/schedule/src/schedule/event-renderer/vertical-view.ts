@@ -45,6 +45,9 @@ export class VerticalEvent extends EventBase {
         let wrapperElements: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.BLOCK_APPOINTMENT_CLASS +
             ',.' + cls.APPOINTMENT_CLASS + ',.' + cls.ROW_COUNT_WRAPPER_CLASS));
         wrapperElements.forEach((element: HTMLElement) => remove(element));
+        if (!this.element.querySelector('.' + cls.WORK_CELLS_CLASS)) {
+            return;
+        }
         this.allDayElement = [].slice.call(this.element.querySelectorAll('.' + cls.ALLDAY_CELLS_CLASS));
         this.setAllDayRowHeight(0);
         if (this.parent.eventsProcessed.length === 0 && this.parent.blockProcessed.length === 0) {
@@ -275,7 +278,8 @@ export class VerticalEvent extends EventBase {
             }
         }
         append(templateElement, appointmentDetails);
-        if (!this.parent.isAdaptive && !isNullOrUndefined(record[fieldMapping.recurrenceRule])) {
+        if (!this.parent.isAdaptive &&
+            (!isNullOrUndefined(record[fieldMapping.recurrenceRule]) || !isNullOrUndefined(record[fieldMapping.recurrenceID]))) {
             let iconClass: string = (record[fieldMapping.id] === record[fieldMapping.recurrenceID]) ?
                 cls.EVENT_RECURRENCE_ICON_CLASS : cls.EVENT_RECURRENCE_EDIT_ICON_CLASS;
             let recurrenceIcon: HTMLElement = createElement('div', { className: cls.ICON + ' ' + iconClass });
@@ -421,7 +425,7 @@ export class VerticalEvent extends EventBase {
                     (3 * appHeight) : ((this.allDayLevel + 1) * appHeight)) + 4;
                 this.setAllDayRowHeight(allDayRowHeight);
                 this.addOrRemoveClass();
-                this.wireAppointmentEvents(appointmentElement, true, eventObj[this.fields.isReadonly] as boolean);
+                this.wireAppointmentEvents(appointmentElement, true, eventObj);
             }
         }
     }
@@ -473,7 +477,7 @@ export class VerticalEvent extends EventBase {
             }
             let index: number = this.parent.activeViewOptions.group.byDate ? (this.resources.length * dayIndex) + resource : dayCount;
             this.appendEvent(eventObj, appointmentElement, index, tempData.appLeft as string);
-            this.wireAppointmentEvents(appointmentElement, false, eventObj[this.fields.isReadonly] as boolean);
+            this.wireAppointmentEvents(appointmentElement, false, eventObj);
         }
     }
 

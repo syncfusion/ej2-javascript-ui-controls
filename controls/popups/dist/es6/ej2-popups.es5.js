@@ -403,7 +403,9 @@ function getViewPortHeight() {
     return window.innerHeight;
 }
 function getViewPortWidth() {
-    return window.innerWidth;
+    var windowWidth = window.innerWidth;
+    var offsetWidth = (isNullOrUndefined(document.documentElement)) ? 0 : document.documentElement.offsetWidth;
+    return windowWidth - (windowWidth - offsetWidth);
 }
 
 var __extends = (undefined && undefined.__extends) || (function () {

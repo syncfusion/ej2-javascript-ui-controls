@@ -291,7 +291,7 @@ export class PolarRadarPanel extends LineBase {
                         y1 = this.centerY + radius * vector.y;
                         x2 = this.centerX + radius * vector2.x;
                         y2 = this.centerY + radius * vector2.y;
-                        majorGrid = majorGrid.concat((i ? 'L' : 'M') + ' ' + x1 + ' ' + y1 + ' ' + 'L' + ' ' + x2 + ' ' + y2 + ' ');
+                        majorGrid = majorGrid.concat((i ? 'L ' : 'M ') + ' ' + x1 + ' ' + y1 + ' ' + 'L ' + ' ' + x2 + ' ' + y2 + ' ');
                     }
                     element = getElement(chart.element.id + '_MajorGridLine_' + index + '_' + j);
                     previousValue = element ? element.getAttribute('d') : null;
@@ -343,7 +343,7 @@ export class PolarRadarPanel extends LineBase {
             y2 = this.centerY + chart.radius * vector.y;
             let xLoc: number = x2 +  (axis.majorTickLines.height * vector.x * (axis.tickPosition === 'Inside' ? -1 : 1));
             let yLoc: number = y2 +  (axis.majorTickLines.height * vector.y * (axis.tickPosition === 'Inside' ? -1 : 1));
-            majorGrid = 'M ' + x1 + ' ' + y1 + ' ' + 'L' + x2 + ' ' + y2;
+            majorGrid = 'M ' + x1 + ' ' + y1 + ' ' + 'L ' + x2 + ' ' + y2;
             majorTick = 'M ' + x2 + ' ' + y2 + ' L ' + xLoc + ' ' + yLoc;
             if (axis.minorTicksPerInterval > 0 && (axis.minorGridLines.width > 0 || axis.minorTickLines.width > 0)
                 && axis.valueType !== 'Category' && chart.visibleSeries[0].type !== 'Radar') {

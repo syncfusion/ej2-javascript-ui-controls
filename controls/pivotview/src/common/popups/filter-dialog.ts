@@ -3,7 +3,7 @@ import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
 import { TreeView, NodeCheckEventArgs, Tab, TabItemModel, EJ2Instance } from '@syncfusion/ej2-navigations';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { MaskedTextBox, MaskChangeEventArgs } from '@syncfusion/ej2-inputs';
+import { MaskedTextBox, MaskChangeEventArgs, NumericTextBox, ChangeEventArgs as NumericChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { setStyleAndAttributes } from '@syncfusion/ej2-grids';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { IFilter, IFieldOptions, IFormatSettings } from '../../base/engine';
@@ -150,6 +150,7 @@ export class FilterDialog {
             placeholder: this.parent.localeObj.getConstant('search') + ' ' + '"' + fieldCaption + '"',
             enableRtl: this.parent.enableRtl,
             cssClass: cls.EDITOR_SEARCH_CLASS,
+            showClearButton: true,
             change: (e: MaskChangeEventArgs) => {
                 this.parent.eventBase.searchTreeNodes(e, this.memberTreeView, false);
                 let filterDialog: Element = this.dialogPopUp.element;
@@ -327,7 +328,7 @@ export class FilterDialog {
         mainDiv.appendChild(filterWrapperDiv2);
         return mainDiv;
     }
-    /* tslint:disable-next-line:max-line-length */
+    /* tslint:disable */
     private createElements(filterObj: IFilter, operators: Operators[], optionDiv1: HTMLElement, optionDiv2: HTMLElement, inputDiv1: HTMLInputElement, inputDiv2: HTMLInputElement, vDataSource: { [key: string]: Object }[], oDataSource: { [key: string]: Object }[], valueIndex: number, option: string, type: string): void {
         let popupInstance: FilterDialog = this;
         let optionWrapper1: DropDownList = new DropDownList({
@@ -336,8 +337,12 @@ export class FilterDialog {
             cssClass: cls.VALUE_OPTIONS_CLASS, width: '100%',
             change(args: ChangeEventArgs): void {
                 let element: Element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
-                setStyleAndAttributes(element, { 'data-measure': args.value });
+                if (!isNullOrUndefined(element)) {
+                    popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
+                    setStyleAndAttributes(element, { 'data-measure': args.value });
+                } else {
+                    return;
+                }
             }
         });
         optionWrapper1.appendTo(optionDiv1);
@@ -347,16 +352,20 @@ export class FilterDialog {
             cssClass: cls.FILTER_OPERATOR_CLASS, width: '100%',
             change(args: ChangeEventArgs): void {
                 let element: Element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
-                let disabledClasses: string[] = [cls.BETWEEN_TEXT_DIV_CLASS, cls.FILTER_INPUT_DIV_2_CLASS];
-                for (let className of disabledClasses) {
-                    if (operators.indexOf(args.value as Operators) >= 0) {
-                        removeClass([element.querySelector('.' + className)], cls.ICON_DISABLE);
-                    } else {
-                        addClass([element.querySelector('.' + className)], cls.ICON_DISABLE);
+                if (!isNullOrUndefined(element)) {
+                    popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
+                    let disabledClasses: string[] = [cls.BETWEEN_TEXT_DIV_CLASS, cls.FILTER_INPUT_DIV_2_CLASS];
+                    for (let className of disabledClasses) {
+                        if (operators.indexOf(args.value as Operators) >= 0) {
+                            removeClass([element.querySelector('.' + className)], cls.ICON_DISABLE);
+                        } else {
+                            addClass([element.querySelector('.' + className)], cls.ICON_DISABLE);
+                        }
                     }
+                    setStyleAndAttributes(element, { 'data-operator': args.value as Operators });
+                } else {
+                    return;
                 }
-                setStyleAndAttributes(element, { 'data-operator': args.value as Operators });
             }
         });
         optionWrapper.appendTo(optionDiv2);
@@ -365,10 +374,15 @@ export class FilterDialog {
                 placeholder: this.parent.localeObj.getConstant('chooseDate'),
                 enableRtl: this.parent.enableRtl,
                 format: 'dd/MM/yyyy',
+                showClearButton: true,
                 value: (filterObj && option === filterObj.condition ? filterObj.value1 as Date : null),
                 change: (e: ChangedEventArgs) => {
                     let element: Element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                    setStyleAndAttributes(element, { 'data-value1': e.value, 'data-value2': inputObj2.value });
+                    if (!isNullOrUndefined(element)) {
+                        setStyleAndAttributes(element, { 'data-value1': e.value, 'data-value2': inputObj2.value });
+                    } else {
+                        return;
+                    }
                 },
                 width: '100%',
             });
@@ -376,12 +390,56 @@ export class FilterDialog {
                 placeholder: this.parent.localeObj.getConstant('chooseDate'),
                 enableRtl: this.parent.enableRtl,
                 format: 'dd/MM/yyyy',
+                showClearButton: true,
                 value: (filterObj && option === filterObj.condition ? filterObj.value2 as Date : null),
                 change: (e: ChangedEventArgs) => {
                     let element: Element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                    setStyleAndAttributes(element, { 'data-value1': inputObj1.value, 'data-value2': e.value });
+                    if (!isNullOrUndefined(element)) {
+                        setStyleAndAttributes(element, { 'data-value1': inputObj1.value, 'data-value2': e.value });
+                    } else {
+                        return;
+                    }
                 },
                 width: '100%',
+            });
+            inputObj1.appendTo(inputDiv1);
+            inputObj2.appendTo(inputDiv2);
+        } else if (type === 'value') {
+            let inputObj1: NumericTextBox = new NumericTextBox({
+                placeholder: this.parent.localeObj.getConstant('enterValue'),
+                enableRtl: this.parent.enableRtl,
+                showClearButton: true,
+                format: '###.##',
+                value: (filterObj && option === filterObj.condition ? parseInt(filterObj.value1 as string, 10) : undefined),
+                change: (e: NumericChangeEventArgs) => {
+                    let element: Element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
+                    if (!isNullOrUndefined(element)) {
+                        setStyleAndAttributes(element, {
+                            'data-value1': (e.value ? e.value.toString() : '0'),
+                            'data-value2': (inputObj2.value ? inputObj2.value.toString() : '0')
+                        });
+                    } else {
+                        return;
+                    }
+                }, width: '100%'
+            });
+            let inputObj2: NumericTextBox = new NumericTextBox({
+                placeholder: this.parent.localeObj.getConstant('enterValue'),
+                enableRtl: this.parent.enableRtl,
+                showClearButton: true,
+                format: '###.##',
+                value: (filterObj && option === filterObj.condition ? parseInt(filterObj.value2 as string, 10) : undefined),
+                change: (e: NumericChangeEventArgs) => {
+                    let element: Element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
+                    if (!isNullOrUndefined(element)) {
+                        setStyleAndAttributes(element, {
+                            'data-value1': (inputObj1.value ? inputObj1.value.toString() : '0'),
+                            'data-value2': (e.value ? e.value.toString() : '0')
+                        });
+                    } else {
+                        return;
+                    }
+                }, width: '100%'
             });
             inputObj1.appendTo(inputDiv1);
             inputObj2.appendTo(inputDiv2);
@@ -389,25 +447,36 @@ export class FilterDialog {
             let inputObj1: MaskedTextBox = new MaskedTextBox({
                 placeholder: this.parent.localeObj.getConstant('enterValue'),
                 enableRtl: this.parent.enableRtl,
+                showClearButton: true,
                 value: (filterObj && option === filterObj.condition ? filterObj.value1 as string : ''),
                 change: (e: MaskChangeEventArgs) => {
                     let element: Element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                    setStyleAndAttributes(element, { 'data-value1': e.value, 'data-value2': inputObj2.value });
+                    if (!isNullOrUndefined(element)) {
+                        setStyleAndAttributes(element, { 'data-value1': e.value, 'data-value2': inputObj2.value });
+                    } else {
+                        return;
+                    }
                 }, width: '100%'
             });
             let inputObj2: MaskedTextBox = new MaskedTextBox({
                 placeholder: this.parent.localeObj.getConstant('enterValue'),
                 enableRtl: this.parent.enableRtl,
+                showClearButton: true,
                 value: (filterObj && option === filterObj.condition ? filterObj.value2 as string : ''),
                 change: (e: MaskChangeEventArgs) => {
                     let element: Element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                    setStyleAndAttributes(element, { 'data-value1': inputObj1.value, 'data-value2': e.value });
+                    if (!isNullOrUndefined(element)) {
+                        setStyleAndAttributes(element, { 'data-value1': inputObj1.value, 'data-value2': e.value });
+                    } else {
+                        return;
+                    }
                 }, width: '100%'
             });
             inputObj1.appendTo(inputDiv1);
             inputObj2.appendTo(inputDiv2);
         }
     }
+    /* tslint:enable */
     private updateInputValues(element: Element, type: string, inputDiv1: HTMLInputElement, inputDiv2: HTMLInputElement): void {
         let value1: string;
         let value2: string;
@@ -452,27 +521,30 @@ export class FilterDialog {
                     removeClass([firstNode], cls.NODE_STOP_CLASS);
                     addClass([firstNode], cls.NODE_CHECK_CLASS);
                 }
+                this.dialogPopUp.buttons[0].buttonModel.disabled = false;
                 filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS).removeAttribute('disabled');
             } else if (uncheckedNodes.length > 0 && checkedNodes.length === 0) {
                 removeClass([firstNode], [cls.NODE_CHECK_CLASS, cls.NODE_STOP_CLASS]);
                 if (this.getCheckedNodes().length === checkedNodes.length) {
+                    this.dialogPopUp.buttons[0].buttonModel.disabled = true;
                     filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
                 }
             }
         } else {
+            this.dialogPopUp.buttons[0].buttonModel.disabled = true;
             filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
         }
     }
     private getCheckedNodes(): { [key: string]: object }[] {
         let checkeNodes: { [key: string]: object }[] =
-            this.parent.currentTreeItems.filter((item: { [key: string]: object }) => {
+            this.parent.searchTreeItems.filter((item: { [key: string]: object }) => {
                 return item.checkedStatus;
             });
         return checkeNodes;
     }
     private getUnCheckedNodes(): { [key: string]: object }[] {
         let unCheckeNodes: { [key: string]: object }[] =
-            this.parent.currentTreeItems.filter((item: { [key: string]: object }) => {
+            this.parent.searchTreeItems.filter((item: { [key: string]: object }) => {
                 return !item.checkedStatus;
             });
         return unCheckeNodes;

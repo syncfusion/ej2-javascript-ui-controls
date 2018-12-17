@@ -334,21 +334,31 @@ function findParentRecords(records) {
 /**
  * @hidden
  */
-function getExpandStatus(record, parents) {
+function getExpandStatus(parent, record, parents) {
     let parentRecord = isNullOrUndefined(record.parentItem) ? null :
         parents.filter((e) => { return e.uniqueID === record.parentItem.uniqueID; })[0];
     let childParent;
     if (parentRecord != null) {
-        if (parentRecord.expanded === false) {
+        if (parent.initialRender && !isNullOrUndefined(parentRecord[parent.expandStateMapping])
+            && !parentRecord[parent.expandStateMapping]) {
+            parentRecord.expanded = false;
+            return false;
+        }
+        else if (parentRecord.expanded === false) {
             return false;
         }
         else if (parentRecord.parentItem) {
             childParent = parents.filter((e) => { return e.uniqueID === parentRecord.parentItem.uniqueID; })[0];
+            if (childParent && parent.initialRender && !isNullOrUndefined(childParent[parent.expandStateMapping])
+                && !childParent[parent.expandStateMapping]) {
+                childParent.expanded = false;
+                return false;
+            }
             if (childParent && childParent.expanded === false) {
                 return false;
             }
             else if (childParent) {
-                return getExpandStatus(childParent, parents);
+                return getExpandStatus(parent, childParent, parents);
             }
             return true;
         }
@@ -429,11 +439,11 @@ class Render {
         let data = args.data;
         let parentData = data.parentItem;
         let index;
-        if (!isNullOrUndefined(data.parentIndex)) {
+        if (!isNullOrUndefined(data.parentIndex) && !(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root'))) {
             index = data.parentIndex;
             let collapsed$$1 = !(isNullOrUndefined(parentData[this.parent.expandStateMapping]) ||
                 parentData[this.parent.expandStateMapping]) || this.parent.enableCollapseAll ||
-                !getExpandStatus(args.data, this.parent.grid.getCurrentViewRecords());
+                !getExpandStatus(this.parent, args.data, this.parent.grid.getCurrentViewRecords());
             if (collapsed$$1) {
                 args.row.style.display = 'none';
             }
@@ -483,14 +493,28 @@ class Render {
             let iconRequired = !isNullOrUndefined(data.hasFilteredChildRecords)
                 ? data.hasFilteredChildRecords : data.hasChildRecords;
             if (iconRequired) {
+                addClass([args.cell], 'e-treerowcell');
                 let expandIcon = createElement('span', {
                     className: 'e-icons'
                 });
-                let expand = data.expanded &&
-                    (isNullOrUndefined(data[this.parent.expandStateMapping]) || data[this.parent.expandStateMapping]) &&
-                    !this.parent.enableCollapseAll;
-                addClass([expandIcon], expand ? 'e-treegridexpand' : 'e-treegridcollapse');
+                let expand;
+                if (this.parent.initialRender) {
+                    expand = data.expanded &&
+                        (isNullOrUndefined(data[this.parent.expandStateMapping]) || data[this.parent.expandStateMapping]) &&
+                        !this.parent.enableCollapseAll;
+                }
+                else {
+                    expand = data.expanded;
+                }
+                let collapsed$$1 = true;
+                if (!isNullOrUndefined(data.parentIndex) && (!isNullOrUndefined(data[this.parent.expandStateMapping])
+                    && data[this.parent.expandStateMapping])
+                    && !(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root'))) {
+                    collapsed$$1 = !getExpandStatus(this.parent, args.data, this.parent.grid.getCurrentViewRecords());
+                }
+                addClass([expandIcon], (expand && collapsed$$1) ? 'e-treegridexpand' : 'e-treegridcollapse');
                 container.appendChild(expandIcon);
+                emptyExpandIcon.style.width = '7px';
                 container.appendChild(emptyExpandIcon.cloneNode());
             }
             else if (pad) {
@@ -909,7 +933,8 @@ class DataManipulation {
             if (!isNullOrUndefined(currentData[this.parent.childMapping])) {
                 currentData.childRecords = currentData[this.parent.childMapping];
                 currentData.hasChildRecords = true;
-                currentData.expanded = true;
+                currentData.expanded = !isNullOrUndefined(currentData[this.parent.expandStateMapping])
+                    ? currentData[this.parent.expandStateMapping] : true;
             }
             currentData.index = currentData.hasChildRecords ? this.storedIndex : this.storedIndex;
             if (isNullOrUndefined(currentData[this.parent.parentIdMapping])) {
@@ -995,7 +1020,7 @@ class DataManipulation {
                     gridQuery = getValue('grid.renderModule.data', this.parent).aggregateQuery(new Query());
                 }
                 let summaryQuery = query.queries.filter((q) => q.fn === 'onAggregates');
-                results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, results);
+                results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, results, true);
             }
         }
         if (this.parent.grid.aggregates.length && this.parent.grid.sortSettings.columns.length === 0
@@ -1005,7 +1030,7 @@ class DataManipulation {
                 gridQuery = getValue('grid.renderModule.data', this.parent).aggregateQuery(new Query());
             }
             let summaryQuery = gridQuery.queries.filter((q) => q.fn === 'onAggregates');
-            results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, this.parent.flatData);
+            results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, this.parent.flatData, true);
         }
         if (this.parent.grid.sortSettings.columns.length > 0 || this.isSortAction) {
             this.isSortAction = false;
@@ -1034,9 +1059,10 @@ class DataManipulation {
             results = this.sortedData;
             this.parent.notify('updateModel', {});
             if (this.parent.grid.aggregates.length > 0) {
+                let isSort = false;
                 let query = getObject('query', args);
                 let summaryQuery = query.queries.filter((q) => q.fn === 'onAggregates');
-                results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, this.sortedData);
+                results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, this.sortedData, isSort);
             }
         }
         count = results.length;
@@ -1488,8 +1514,55 @@ let TreeGrid = class TreeGrid extends Component {
                     let expandtarget = e.target;
                     this.expandCollapseRequest(expandtarget.querySelector('.e-icons'));
                     break;
+                case 'downArrow':
+                    let target = e.target.parentElement;
+                    let summaryElement = this.findnextRowElement(target);
+                    if (summaryElement !== null) {
+                        let rowIndex = summaryElement.rowIndex;
+                        this.selectRow(rowIndex);
+                        let cellIndex = e.target.cellIndex;
+                        let row = summaryElement.children[cellIndex];
+                        addClass([row], 'e-focused');
+                        addClass([row], 'e-focus');
+                    }
+                    else {
+                        this.clearSelection();
+                    }
+                    break;
+                case 'upArrow':
+                    let targetRow = e.target.parentElement;
+                    let summaryRowElement = this.findPreviousRowElement(targetRow);
+                    if (summaryRowElement !== null) {
+                        let rIndex = summaryRowElement.rowIndex;
+                        this.selectRow(rIndex);
+                        let cIndex = e.target.cellIndex;
+                        let rows = summaryRowElement.children[cIndex];
+                        addClass([rows], 'e-focused');
+                        addClass([rows], 'e-focus');
+                    }
+                    else {
+                        this.clearSelection();
+                    }
             }
         }
+    }
+    // Get Proper Row Element from the summary 
+    findnextRowElement(summaryRowElement) {
+        let rowElement = summaryRowElement.nextSibling;
+        if (rowElement !== null && (rowElement.className.indexOf('e-summaryrow') !== -1 ||
+            rowElement.style.display === 'none')) {
+            rowElement = this.findnextRowElement(rowElement);
+        }
+        return rowElement;
+    }
+    // Get Proper Row Element from the summary 
+    findPreviousRowElement(summaryRowElement) {
+        let rowElement = summaryRowElement.previousSibling;
+        if (rowElement !== null && (rowElement.className.indexOf('e-summaryrow') !== -1 ||
+            rowElement.style.display === 'none')) {
+            rowElement = this.findPreviousRowElement(rowElement);
+        }
+        return rowElement;
     }
     initProperties() {
         this.defaultLocale = {};
@@ -1502,6 +1575,8 @@ let TreeGrid = class TreeGrid extends Component {
             ctrlUpArrow: 'ctrl+uparrow',
             ctrlShiftUpArrow: 'ctrl+shift+uparrow',
             ctrlShiftDownArrow: 'ctrl+shift+downarrow',
+            downArrow: 'downArrow',
+            upArrow: 'upArrow'
         };
         this.isLocalData = (!(this.dataSource instanceof DataManager) || this.dataSource.dataSource.offline
             || (!isNullOrUndefined(this.dataSource.ready)) || this.dataSource.adaptor instanceof RemoteSaveAdaptor);
@@ -1770,6 +1845,7 @@ let TreeGrid = class TreeGrid extends Component {
                 }).length;
                 setValue('grid.contentModule.isLoaded', !(req > 0), this);
             }
+            this.initialRender = false;
         };
         this.grid.beforeDataBound = function (args) {
             if (isRemoteData(treeGrid) && !isOffline(treeGrid)) {
@@ -2049,6 +2125,9 @@ let TreeGrid = class TreeGrid extends Component {
         let requireRefresh = false;
         for (let prop of properties) {
             switch (prop) {
+                case 'columns':
+                    this.grid.columns = this.getGridColumns();
+                    break;
                 case 'treeColumnIndex':
                     this.grid.refreshColumns();
                     break;
@@ -2195,7 +2274,41 @@ let TreeGrid = class TreeGrid extends Component {
      * @hidden
      */
     getPersistData() {
-        return this.addOnPersist([]);
+        let keyEntity = ['pageSettings', 'sortSettings',
+            'filterSettings', 'columns', 'searchSettings', 'selectedRowIndex'];
+        let ignoreOnPersist = {
+            pageSettings: ['template', 'pageSizes', 'pageSizeMode', 'enableQueryString', 'totalRecordsCount', 'pageCount'],
+            filterSettings: ['type', 'mode', 'showFilterBarStatus', 'immediateModeDelay', 'ignoreAccent', 'hierarchyMode'],
+            searchSettings: ['fields', 'operator', 'ignoreCase'],
+            sortSettings: [], columns: [], selectedRowIndex: []
+        };
+        let ignoreOnColumn = ['filter', 'edit', 'filterBarTemplate', 'headerTemplate', 'template',
+            'commandTemplate', 'commands', 'dataSource'];
+        keyEntity.forEach((value) => {
+            let currentObject = this[value];
+            for (let val of ignoreOnPersist[value]) {
+                delete currentObject[val];
+            }
+        });
+        this.ignoreInArrays(ignoreOnColumn, this.columns);
+        return this.addOnPersist(keyEntity);
+    }
+    ignoreInArrays(ignoreOnColumn, columns) {
+        columns.forEach((column) => {
+            if (column.columns) {
+                this.ignoreInColumn(ignoreOnColumn, column);
+                this.ignoreInArrays(ignoreOnColumn, column.columns);
+            }
+            else {
+                this.ignoreInColumn(ignoreOnColumn, column);
+            }
+        });
+    }
+    ignoreInColumn(ignoreOnColumn, column) {
+        ignoreOnColumn.forEach((val) => {
+            delete column[val];
+            column.filter = {};
+        });
     }
     mouseClickHandler(e) {
         if (!isNullOrUndefined(e.touches)) {
@@ -2356,6 +2469,24 @@ let TreeGrid = class TreeGrid extends Component {
         return this.grid.getFooterContentTable();
     }
     /**
+     * Shows a column by its column name.
+     * @param  {string|string[]} keys - Defines a single or collection of column names.
+     * @param  {string} showBy - Defines the column key either as field name or header text.
+     * @return {void}
+     */
+    showColumns(keys, showBy) {
+        return this.grid.showColumns(keys, showBy);
+    }
+    /**
+     * Hides a column by column name.
+     * @param  {string|string[]} keys - Defines a single or collection of column names.
+     * @param  {string} hideBy - Defines the column key either as field name or header text.
+     * @return {void}
+     */
+    hideColumns(keys, hideBy) {
+        return this.grid.hideColumns(keys, hideBy);
+    }
+    /**
      * Gets a column header by column name.
      * @param  {string} field - Specifies the column name.
      * @return {Element}
@@ -2414,7 +2545,7 @@ let TreeGrid = class TreeGrid extends Component {
             }
             this.columnModel.push(new Column(gridColumn));
         }
-        this.columns = this.columnModel;
+        this.setProperties({ columns: this.columnModel }, true);
         return this.columnModel;
     }
     /**
@@ -3767,7 +3898,7 @@ class Page$1 {
             let expanded$$1 = new Predicate$1('expanded', 'notequal', null).or('expanded', 'notequal', undefined);
             let parents = dm.executeLocal(new Query().where(expanded$$1));
             let visualData = parents.filter((e) => {
-                return getExpandStatus(e, parents);
+                return getExpandStatus(this.parent, e, parents);
             });
             pageingDetails.count = visualData.length;
             let query = new Query();
@@ -3856,7 +3987,7 @@ class Aggregate$1 {
      * Function to calculate summary values
      *  @hidden
      */
-    calculateSummaryValue(summaryQuery, filteredData) {
+    calculateSummaryValue(summaryQuery, filteredData, isSort) {
         this.summaryQuery = summaryQuery;
         let parentRecord;
         let parentDataLength = Object.keys(filteredData).length;
@@ -3894,14 +4025,19 @@ class Aggregate$1 {
                         return;
                     } });
                     let currentIndex = idx + childRecordsLength + summaryRowIndex;
-                    setValue('parentItem', parentRecord, item);
-                    let level = getObject('level', parentRecord);
+                    let summaryParent = extend({}, parentRecord);
+                    delete summaryParent.childRecords;
+                    delete summaryParent[this.parent.childMapping];
+                    setValue('parentItem', summaryParent, item);
+                    let level = getObject('level', summaryParent);
                     setValue('level', level + 1, item);
-                    let index = getObject('index', parentRecord);
+                    let index = getObject('index', summaryParent);
                     setValue('parentIndex', index, item);
                     setValue('isSummaryRow', true, item);
-                    let childRecords = getObject('childRecords', parentRecord);
-                    childRecords.push(item);
+                    if (isSort) {
+                        let childRecords = getObject('childRecords', parentRecord);
+                        childRecords.push(item);
+                    }
                     flatRecords.splice(currentIndex, 0, item);
                 }
                 else {
@@ -3935,7 +4071,8 @@ class Aggregate$1 {
     createSummaryItem(itemData, summary) {
         let summaryColumnLength = Object.keys(summary.columns).length;
         for (let i = 0, len = summaryColumnLength; i < len; i++) {
-            let displayColumn = summary.columns[i].columnName;
+            let displayColumn = isNullOrUndefined(summary.columns[i].columnName) ? summary.columns[i].field :
+                summary.columns[i].columnName;
             let keys = Object.keys(itemData);
             for (let key of keys) {
                 if (key === displayColumn) {
@@ -3964,8 +4101,10 @@ class Aggregate$1 {
         qry.requiresCount();
         let sumData = new DataManager(summaryData).executeLocal(qry);
         let types = summaryColumn.type;
+        let summaryKey;
         types = [summaryColumn.type];
         types.forEach((type) => {
+            summaryKey = type;
             let key = summaryColumn.field + ' - ' + type.toLowerCase();
             let val = type !== 'Custom' ? getObject('aggregates', sumData) :
                 calculateAggregate(type, sumData, summaryColumn, this.parent);
@@ -3980,7 +4119,15 @@ class Aggregate$1 {
             className: 'e-summary'
         });
         appendChildren(cellElement, tempObj.fn(single[summaryColumn.columnName], this.parent, tempObj.property));
-        return cellElement.innerHTML;
+        let value = single[summaryColumn.columnName][summaryKey];
+        let summaryValue;
+        if (cellElement.innerHTML.indexOf(value) === -1) {
+            summaryValue = cellElement.innerHTML + value;
+            return summaryValue;
+        }
+        else {
+            return cellElement.innerHTML;
+        }
     }
     getFormatFromType(summaryformat, type) {
         if (isNullOrUndefined(type) || typeof summaryformat !== 'string') {
@@ -4178,13 +4325,18 @@ class Edit$1 {
                 args.cancel = true;
                 this.keyPress = null;
             }
-            let toolbarID = this.parent.element.id + '_gridcontrol_';
-            this.parent.grid.toolbarModule.enableItems([toolbarID + 'add', toolbarID + 'edit', toolbarID + 'delete'], false);
-            this.parent.grid.toolbarModule.enableItems([toolbarID + 'update', toolbarID + 'cancel'], true);
+            this.enableToolbarItems();
         }
         // if (this.isAdd && this.parent.editSettings.mode === 'Batch' && !args.cell.parentElement.classList.contains('e-insertedrow')) {
         //   this.isAdd = false;
         // }
+    }
+    enableToolbarItems() {
+        if (!isNullOrUndefined(this.parent.grid.toolbarModule)) {
+            let toolbarID = this.parent.element.id + '_gridcontrol_';
+            this.parent.grid.toolbarModule.enableItems([toolbarID + 'add', toolbarID + 'edit', toolbarID + 'delete'], false);
+            this.parent.grid.toolbarModule.enableItems([toolbarID + 'update', toolbarID + 'cancel'], true);
+        }
     }
     batchCancel(e) {
         if (this.parent.editSettings.mode === 'Cell') {
@@ -4240,9 +4392,7 @@ class Edit$1 {
             }
             row = this.parent.grid.getRows()[rowIndex];
             this.parent.grid.editModule.updateRow(rowIndex, args.rowData);
-            let toolbarID = this.parent.element.id + '_gridcontrol_';
-            this.parent.grid.toolbarModule.enableItems([toolbarID + 'add', toolbarID + 'edit', toolbarID + 'delete'], true);
-            this.parent.grid.toolbarModule.enableItems([toolbarID + 'update', toolbarID + 'cancel'], false);
+            this.enableToolbarItems();
             this.parent.grid.editModule.formObj.destroy();
             if (this.keyPress !== 'tab' && this.keyPress !== 'shiftTab') {
                 this.parent.grid.editSettings.mode = 'Normal';

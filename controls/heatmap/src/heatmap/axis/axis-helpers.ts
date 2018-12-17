@@ -233,12 +233,13 @@ export class AxisHelper {
             labels = axis.tooltipLabels;
             axisInterval = temp;
         }
-        let padding: number = 10; let labelPadding: number;
+        let padding: number = 10;
         let lableStrtX: number = rect.x + (!axis.isInversed ? 0 : rect.width);
-        let angle: number = axis.angle; padding = this.padding;
+        let labelPadding: number;
+        let angle: number = axis.angle;
+        padding = this.padding;
         let anglePadding: number = ((angle === 90 || angle === -90)) ? -2 : 0;
         let labelElement: Element; let borderElement: Element;
-        anglePadding = ((angle % 360 === 180 || angle % 360 === -180)) ? -3 : 0;
         if (!heatMap.enableCanvasRendering) {
             labelElement = this.heatMap.renderer.createGroup({ id: heatMap.element.id + 'XAxisLabels' });
             borderElement = this.heatMap.renderer.createGroup({ id: heatMap.element.id + 'XAxisLabelBorder' });
@@ -269,15 +270,10 @@ export class AxisHelper {
                 let diffHeight: number = axis.maxLabelSize.height - Math.ceil(rotateSize.height - elementSize.height);
                 let yLocation: number = axis.opposedPosition ? diffHeight / 2 : - diffHeight / 2;
                 x = lableRect.x + (axis.isInversed ? -(lableRect.width / 2) : (lableRect.width / 2));
-                y = y + (axis.opposedPosition ? -(rotateSize.height / 2) : (((angle % 360) === 180 ||
-                    (angle % 360) === -180) ? 0 : (rotateSize.height) / 2));
+                y = y + (axis.opposedPosition ? -(rotateSize.height / 2) :
+                    (((angle % 360) === 180 || (angle % 360) === -180) ? 0 : (rotateSize.height) / 2));
                 transform = 'rotate(' + angle + ',' + x + ','
                     + y + ')';
-                let calculateAngle : number = angle % 360;
-                calculateAngle = angle <= 180 ? angle : (360 - angle);
-                if (!axis.opposedPosition) {
-                    y = y - (((calculateAngle / 180) / 2) * rotateSize.height) + anglePadding;
-                }
             }
             let options: TextOption = new TextOption(
                 heatMap.element.id + '_XAxis_Label' + i,
@@ -401,14 +397,14 @@ export class AxisHelper {
                     'M' + ' ' + endX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ';
                 break;
             case 'Brace':
-                let padding: number = 3;
+            let padding: number = 3;
                 endY = startY + ((endY - startY) / 2) + (axis.opposedPosition ? 0 : 5);
                 let endY1: number = axis.isInversed ? (lableX + width + padding) : (lableX - padding);
                 let endY2: number = axis.isInversed ? (lableX - padding) : (lableX + width + padding);
                 path = 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
-                    'L' + ' ' + endY1 + ' ' + endY + ' ' + 'M' + ' ' + endY2 +
-                    ' ' + endY + ' ' + 'L' +
-                    ' ' + endX + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ';
+                        'L' + ' ' + endY1 + ' ' + endY + ' ' + 'M' + ' ' + endY2 +
+                        ' ' + endY + ' ' + 'L' +
+                        ' ' + endX + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ';
                 break;
         }
         if (axis.border.width > 0 && axis.border.type !== 'WithoutBorder') {
@@ -422,7 +418,7 @@ export class AxisHelper {
         let axisInterval: number = axis.interval ? axis.interval : 1;
         let startX: number = rect.x;
         let startY: number = axis.isInversed ? rect.y + (interval * index * axisInterval) :
-            rect.y + rect.height - (interval * index * axisInterval);
+         rect.y + rect.height - (interval * index * axisInterval);
         let endX: number; let endY: number;
         endX = startX + (!axis.opposedPosition ? -(axis.maxLabelSize.width + padding) : axis.maxLabelSize.width + padding);
         endY = axis.isInversed ? startY + interval : startY - interval;
@@ -448,9 +444,9 @@ export class AxisHelper {
                 let endY1: number = axis.isInversed ? lableY - height / 2 : lableY + height / 2;
                 let endY2: number = axis.isInversed ? lableY + height / 2 : lableY - height / 2;
                 path = 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ' +
-                    'L' + ' ' + endX + ' ' + endY1 + ' ' + 'M' + ' ' +
-                    endX + ' ' + endY2 + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ' +
-                    'L' + ' ' + startX + ' ' + endY;
+                        'L' + ' ' + endX + ' ' + endY1 + ' ' + 'M' + ' ' +
+                        endX + ' ' + endY2 + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ' +
+                        'L' + ' ' + startX + ' ' + endY;
                 break;
 
         }
@@ -610,7 +606,7 @@ export class AxisHelper {
                     'M' + ' ' + endX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ';
                 break;
             case 'Brace':
-                let padding: number = 3;
+            let padding: number = 3;
                 path1 = axis.isInversed ? (labelSize.width > gap ? gap : labelSize.width) + x + padding : x - padding;
                 path2 = axis.isInversed ? x - padding : (labelSize.width > gap ? gap : labelSize.width) + x + padding;
                 path += 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + (startY + (endY - startY) / 2) + ' ' +
@@ -653,7 +649,7 @@ export class AxisHelper {
                 labelSize = measureText(categoryLabel.text, multiLevel.textStyle);
                 gap = ((categoryLabel.maximumTextWidth === null) ? Math.abs(startX) : categoryLabel.maximumTextWidth) - padding;
                 let maxWidth: number = Math.abs(startX - (startX - axis.multiLevelSize[level].width - 2 * padding)) / 2 -
-                    (labelSize.width / 2);
+                 (labelSize.width / 2);
                 x = (axis.opposedPosition ? startX : startX - axis.multiLevelSize[level].width - 2 * padding) + maxWidth;
                 y = startY + padding;
                 if (multiLevel.overflow !== 'None') {
@@ -731,7 +727,7 @@ export class AxisHelper {
                     'M' + ' ' + startX + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ';
                 break;
             case 'Brace':
-                let padding: number = 10;
+            let padding: number = 10;
                 path1 = axis.isInversed ? (y - padding - 5) : (y + (labelSize.height) - padding);
                 path2 = axis.isInversed ? (y + (labelSize.height) - padding) : (y - padding - 5);
                 path += 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + (startX + (endX - startX) / 2) + ' ' + startY + ' ' +

@@ -29,7 +29,7 @@ export type MapsTheme =
     /**  Render a maps with Fabric theme. */
     'Fabric' |
     /**  Render a maps with Highcontrast Light theme. */
-    'HighcontrastLight' |
+    'HighContrastLight' |
     /**  Render a maps with Bootstrap theme. */
     'Bootstrap' |
     /**  Render a maps with Material Dark theme. */
@@ -38,6 +38,8 @@ export type MapsTheme =
     'FabricDark'|
     /**  Render a maps with Highcontrast Dark theme. */
     'Highcontrast'|
+    /**  Render a maps with Highcontrast Dark theme. */
+    'HighContrast'|
     /**  Render a maps with Bootstrap Dark theme. */
     'BootstrapDark';
 

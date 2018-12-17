@@ -1,5 +1,5 @@
-import { Component, EventHandler, Internationalization, } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, KeyboardEvents, L10n } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, KeyboardEventArgs, BaseEventArgs } from '@syncfusion/ej2-base';import { cldrData, getDefaultDateObject, rippleEffect } from '@syncfusion/ej2-base';import { createElement, removeClass, detach, closest, addClass, attributes } from '@syncfusion/ej2-base';import { getValue, getUniqueID, extend, Browser } from '@syncfusion/ej2-base';import { Property, Event, EmitType, isNullOrUndefined } from '@syncfusion/ej2-base';
-import {CalendarView,NavigatedEventArgs,RenderDayCellEventArgs,ChangedEventArgs} from "./calendar";
+import { Component, EventHandler, Internationalization, ModuleDeclaration } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, KeyboardEvents, L10n } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, KeyboardEventArgs, BaseEventArgs } from '@syncfusion/ej2-base';import { cldrData, getDefaultDateObject, rippleEffect } from '@syncfusion/ej2-base';import { createElement, removeClass, detach, closest, addClass, attributes } from '@syncfusion/ej2-base';import { getValue, getUniqueID, extend, Browser } from '@syncfusion/ej2-base';import { Property, Event, EmitType, isNullOrUndefined, throwError } from '@syncfusion/ej2-base';import { Islamic, IslamicDateArgs } from './index';
+import {CalendarType,CalendarView,NavigatedEventArgs,RenderDayCellEventArgs,ChangedEventArgs} from "./calendar";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -28,6 +28,12 @@ export interface CalendarBaseModel extends ComponentModel{
      * [`First day of week`](../calendar/how-to/first-day-of-week#change-the-first-day-of-the-week) documentation.
      */
     firstDayOfWeek?: number;
+
+    /**
+     * Gets or sets the Calendar's Type like gregorian or islamic.
+     * @default Gregorian
+     */
+    calendarMode?: CalendarType;
 
     /**
      * Specifies the initial view of the Calendar when it is opened.

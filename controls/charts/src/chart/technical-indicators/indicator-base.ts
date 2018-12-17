@@ -16,7 +16,7 @@ export class TechnicalAnalysis extends LineBase {
     public initSeriesCollection(indicator: TechnicalIndicator, chart: Chart): void {
         indicator.targetSeries = [];
         let signalLine: Series = new Series(indicator, 'targetSeries', {}, true);
-        this.setSeriesProperties(signalLine, indicator, 'SignalLine', indicator.fill, indicator.width, chart);
+        this.setSeriesProperties(signalLine, indicator, indicator.type, indicator.fill, indicator.width, chart);
     }
 
     /**
@@ -26,7 +26,7 @@ export class TechnicalAnalysis extends LineBase {
     protected setSeriesProperties(
         series: Series, indicator: TechnicalIndicator, name: string, fill: string,
         width: number, chart: Chart): void {
-        series.name = name;
+        series.name = name.length <= 4 ? name.toLocaleUpperCase() : name;
         series.xName = 'x';
         series.yName = 'y';
         series.fill = fill || '#606eff';

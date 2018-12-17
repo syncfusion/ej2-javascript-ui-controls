@@ -58,42 +58,42 @@ describe('TreeMap component Spec', () => {
                 let rectEle: Element = document.getElementById(args.treemap.element.id + '_Level_Index_0_Item_Index_0_RectPath');
                 let eventObj: Object = {
                     target: rectEle,
-                    type: 'mousedown',
+                    type: 'mouseup',
                     preventDefault: prevent,
                     pageX: rectEle.getBoundingClientRect().left,
                     pageY: (rectEle.getBoundingClientRect().top + 10)
                 };
-                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
-                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
-                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
-                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+                treemap.mouseEndOnTreeMap(<PointerEvent>eventObj);
+                treemap.mouseEndOnTreeMap(<PointerEvent>eventObj);
+                treemap.mouseEndOnTreeMap(<PointerEvent>eventObj);
+                treemap.mouseEndOnTreeMap(<PointerEvent>eventObj);
                 rectEle = document.getElementById(args.treemap.element.id + '_Level_Index_0_Item_Index_1_RectPath');
                 eventObj = {
                     target: rectEle,
-                    type: 'mousedown',
+                    type: 'mouseup',
                     preventDefault: prevent,
                     pageX: rectEle.getBoundingClientRect().left,
                     pageY: (rectEle.getBoundingClientRect().top + 10)
                 };
-                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+                treemap.mouseEndOnTreeMap(<PointerEvent>eventObj);
                 rectEle = document.getElementById(args.treemap.element.id + '_Level_Index_1_Item_Index_1_RectPath');
                 eventObj = {
                     target: rectEle,
-                    type: 'mousedown',
+                    type: 'mouseup',
                     preventDefault: prevent,
                     pageX: rectEle.getBoundingClientRect().left,
                     pageY: (rectEle.getBoundingClientRect().top + 10)
                 };
-                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+                treemap.mouseEndOnTreeMap(<PointerEvent>eventObj);
                 rectEle = document.getElementById(args.treemap.element.id + '_Level_Index_1_Item_Index_0_RectPath');
                 eventObj = {
                     target: rectEle,
-                    type: 'mousedown',
+                    type: 'mouseup',
                     preventDefault: prevent,
                     pageX: rectEle.getBoundingClientRect().left,
                     pageY: (rectEle.getBoundingClientRect().top + 10)
                 };
-                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+                treemap.mouseEndOnTreeMap(<PointerEvent>eventObj);
             };
             treemap.leafItemSettings.labelPosition = 'BottomCenter';
             treemap.enableDrillDown = true;
@@ -116,22 +116,22 @@ describe('TreeMap component Spec', () => {
                 border: {
                     color: 'red',
                     width: 2
-                },                
+                },
                 dataSource: jobData,
                 enableDrillDown: true,
                 palette: ['green'],
                 weightValuePath: 'EmployeesCount',
-                legendSettings:{
-                    visible : true,
-                    position:'Top',
-                    mode:'Default'
+                legendSettings: {
+                    visible: true,
+                    position: 'Top',
+                    mode: 'Default'
                 },
                 leafItemSettings: {
                     labelPath: 'JobGroup',
                     fill: '#6699cc',
                     labelPosition: 'BottomRight',
                     border: { color: 'black', width: 2 }
-                },                
+                },
                 levels: [
                     { groupPath: 'Country', fill: '#336699', border: { color: 'black', width: 2 } },
                     { groupPath: 'JobDescription', fill: '#336699', border: { color: 'black', width: 2 } }
@@ -149,21 +149,21 @@ describe('TreeMap component Spec', () => {
                 let rectEle: Element = document.getElementById('drill-container_Level_Index_0_Item_Index_0_RectPath');
                 let eventObj: Object = {
                     target: rectEle,
-                    type: 'mousedown',
+                    type: 'mouseup',
                     preventDefault: prevent,
                 };
 
-                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
+                treemap.mouseEndOnTreeMap(<PointerEvent>eventObj);
                 rectEle = document.getElementById('drill-container_Level_Index_1_Item_Index_1_RectPath');
                 eventObj = {
                     target: rectEle,
-                    type: 'mousedown',
+                    type: 'mouseup',
                     preventDefault: prevent,
                 };
-                treemap.mouseDownOnTreeMap(<PointerEvent>eventObj);
-            };            
+                treemap.mouseEndOnTreeMap(<PointerEvent>eventObj);
+            };
             treemap.refresh();
-        });        
+        });
     });
 
 
@@ -557,7 +557,7 @@ describe('TreeMap component Spec', () => {
             treemap.selectionSettings.enable = true;
             treemap.refresh();
         });
-        
+
         it('Checking with highlight and selection together in nodes of the treemap', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 let layoutID: string = args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout';
@@ -597,7 +597,7 @@ describe('TreeMap component Spec', () => {
             treemap.selectionSettings.enable = true;
             treemap.refresh();
         });
-        
+
         it('', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 let rectEle: Element; let eventObj: Object = {};
@@ -633,7 +633,7 @@ describe('TreeMap component Spec', () => {
             treemap.selectionSettings.enable = true;
             treemap.refresh();
         });
-        
+
         it('Checking with legend highlight enable with default mode', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 let rectEle: Element; let eventObj: Object = {};
@@ -650,8 +650,8 @@ describe('TreeMap component Spec', () => {
             treemap.highlightSettings.enable = true;
             treemap.refresh();
         });
-        
-        
+
+
         it('Checking with multi legend highlight enable with default mode', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 let rectEle: Element; let eventObj: Object = {};
@@ -677,7 +677,7 @@ describe('TreeMap component Spec', () => {
             treemap.highlightSettings.enable = true;
             treemap.refresh();
         });
-        
+
         it('Checking with legend highlight enable with intreactive mode', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 let rectEle: Element; let eventObj: Object = {};
@@ -911,7 +911,7 @@ describe('TreeMap component Spec', () => {
             treemap.legendSettings.mode = 'Interactive';
             treemap.highlightSettings.enable = true;
             treemap.refresh();
-        }); 
+        });
 
         it('Checking with node selection with highlight', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
@@ -947,7 +947,7 @@ describe('TreeMap component Spec', () => {
             treemap.selectionSettings.enable = true;
             treemap.highlightSettings.enable = true;
             treemap.refresh();
-        });       
+        });
 
         it('Checking with legend selection with node highlight', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {

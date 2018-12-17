@@ -2,7 +2,6 @@ import { Component, Property, NotifyPropertyChanges, Internationalization, BaseA
 import { ModuleDeclaration, L10n } from '@syncfusion/ej2-base';
 import { TapEventArgs, EmitType, ChildProperty } from '@syncfusion/ej2-base';
 import { remove, extend } from '@syncfusion/ej2-base';
-import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { INotifyPropertyChanged, SvgRenderer, Browser, Touch } from '@syncfusion/ej2-base';
 import { Event, EventHandler, Complex, Collection } from '@syncfusion/ej2-base';
 import { findClipRect, measureText, TextOption, showTooltip, removeElement, appendChildElement } from '../common/utils/helper';
@@ -83,21 +82,21 @@ import { IAnnotationRenderEventArgs, IAxisMultiLabelRenderEventArgs, IThemeStyle
 import { IPointRenderEventArgs, ISeriesRenderEventArgs, IDragCompleteEventArgs, ITooltipRenderEventArgs } from '../common/model/interface';
 import { IZoomCompleteEventArgs, ILoadedEventArgs } from '../common/model/interface';
 import { IAnimationCompleteEventArgs, IMouseEventArgs, IPointEventArgs } from '../common/model/interface';
-import { loaded, chartMouseClick, pointClick, pointMove, chartMouseLeave, resized } from '../common/model/constants';
+import { chartMouseClick, pointClick, pointMove, chartMouseLeave, resized } from '../common/model/constants';
 import { chartMouseDown, chartMouseMove, chartMouseUp, load } from '../common/model/constants';
 import { IPrintEventArgs, IAxisRangeCalculatedEventArgs } from '../common/model/interface';
-import { ExportUtils } from '../common/utils/export';
 import { ChartAnnotationSettingsModel } from './model/chart-base-model';
 import { ChartAnnotationSettings } from './model/chart-base';
 import { ChartAnnotation } from './annotation/annotation';
 import { getElement, getTitle } from '../common/utils/helper';
-import { ExportType, Alignment } from '../common/utils/enum';
+import { Alignment, ExportType } from '../common/utils/enum';
 import { MultiColoredLineSeries } from './series/multi-colored-line-series';
 import { MultiColoredAreaSeries } from './series/multi-colored-area-series';
 import { ScrollBar } from '../common/scrollbar/scrollbar';
-import { AccumulationChart, RangeNavigator } from '..';
 import { DataManager } from '@syncfusion/ej2-data';
 import { StockChart } from '../stock-chart/stock-chart';
+import { Export } from './print-export/export';
+import { ExportUtils } from '../common/utils/export';
 /**
  * Configures the crosshair in the chart.
  */
@@ -472,8 +471,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * `bollingerBandsModule` is used to predict the market trend using Bollinger approach
      */
     public bollingerBandsModule: BollingerBands;
-
+    /**
+     * ScrollBar Module is used to render scrollbar in chart while zooming.
+     */
     public scrollBarModule: ScrollBar;
+    /**
+     * Export Module is used to export chart.
+     */
+    public exportModule: Export;
 
     /**
      * The width of the chart as a string accepts input as both like '100px' or '100%'.
@@ -691,6 +696,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     @Property(false)
     public isMultiSelect: boolean;
+
+    /**
+     * To enable export feature in chart.
+     * @default true
+     */
+    @Property(true)
+    public enableExport: boolean;
 
     /**
      * Specifies the point indexes to be selected while loading a chart.
@@ -1100,8 +1112,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
 
     protected preRender(): void {
-        //seperate ID to differentiate chart and stock chart
-        this.svgId = this.stockChart ? this.stockChart.element.id + '_stockChart_chart' : this.element.id + '_svg';
         this.unWireEvents();
         this.initPrivateVariable();
         this.setCulture();
@@ -1123,6 +1133,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             let collection: number = document.getElementsByClassName('e-chart').length;
             this.element.id = 'chart_' + this.chartid + '_' + collection;
         }
+        //seperate ID to differentiate chart and stock chart
+        this.svgId = this.stockChart ? this.stockChart.element.id + '_stockChart_chart' : this.element.id + '_svg';
     }
 
     /**
@@ -1502,23 +1514,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public print(id?: string[] | string | Element): void {
         let exportChart: ExportUtils = new ExportUtils(this);
         exportChart.print(id);
-    }
-    /**
-     * Handles the export method for chart control.
-     * @param type
-     * @param fileName
-     */
-    public export(
-        type: ExportType, fileName: string,
-        orientation?: PdfPageOrientation, controls?: (Chart | AccumulationChart | RangeNavigator | StockChart)[],
-        width?: number, height?: number
-    ): void {
-        let exportChart: ExportUtils = new ExportUtils(this);
-        controls = controls ? controls : [this];
-        exportChart.export(
-            type, fileName, orientation,
-            controls, width, height
-        );
     }
 
     /**
@@ -1961,6 +1956,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     /**
+     * Export method for the chart.
+     * @return {boolean}
+     * @private
+     */
+    // tslint:disable-next-line
+    public export(type: ExportType, fileName: string): void { }
+
+    /**
      * Handles the chart resize.
      * @return {boolean}
      * @private
@@ -2287,6 +2290,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * @return {ModuleDeclaration[]}
      * @private
      */
+    //tslint:disable:max-func-body-length
     public requiredModules(): ModuleDeclaration[] {
         let modules: ModuleDeclaration[] = [];
         let series: SeriesModel[] = this.series;
@@ -2345,6 +2349,12 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.isLegend) {
             modules.push({
                 member: 'Legend',
+                args: [this]
+            });
+        }
+        if (this.enableExport) {
+            modules.push({
+                member: 'Export',
                 args: [this]
             });
         }

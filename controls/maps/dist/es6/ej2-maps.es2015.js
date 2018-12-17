@@ -2299,62 +2299,68 @@ __decorate$1([
 /**
  * To configure the marker settings for the maps.
  */
-class MarkerSettings extends ChildProperty {
+class MarkerBase extends ChildProperty {
 }
 __decorate$1([
     Complex({ color: 'transparent', width: 1 }, Border)
-], MarkerSettings.prototype, "border", void 0);
+], MarkerBase.prototype, "border", void 0);
 __decorate$1([
     Property(null)
-], MarkerSettings.prototype, "dashArray", void 0);
+], MarkerBase.prototype, "dashArray", void 0);
 __decorate$1([
     Property(false)
-], MarkerSettings.prototype, "visible", void 0);
+], MarkerBase.prototype, "visible", void 0);
 __decorate$1([
     Property('#FF471A')
-], MarkerSettings.prototype, "fill", void 0);
+], MarkerBase.prototype, "fill", void 0);
 __decorate$1([
     Property(10)
-], MarkerSettings.prototype, "height", void 0);
+], MarkerBase.prototype, "height", void 0);
 __decorate$1([
     Property(10)
-], MarkerSettings.prototype, "width", void 0);
+], MarkerBase.prototype, "width", void 0);
 __decorate$1([
     Property(1)
-], MarkerSettings.prototype, "opacity", void 0);
+], MarkerBase.prototype, "opacity", void 0);
 __decorate$1([
     Property('Balloon')
-], MarkerSettings.prototype, "shape", void 0);
+], MarkerBase.prototype, "shape", void 0);
 __decorate$1([
     Property('')
-], MarkerSettings.prototype, "legendText", void 0);
+], MarkerBase.prototype, "legendText", void 0);
 __decorate$1([
     Property(new Point(0, 0))
-], MarkerSettings.prototype, "offset", void 0);
+], MarkerBase.prototype, "offset", void 0);
 __decorate$1([
     Property('')
-], MarkerSettings.prototype, "imageUrl", void 0);
+], MarkerBase.prototype, "imageUrl", void 0);
 __decorate$1([
     Property(null)
-], MarkerSettings.prototype, "template", void 0);
+], MarkerBase.prototype, "template", void 0);
 __decorate$1([
     Property([])
-], MarkerSettings.prototype, "dataSource", void 0);
+], MarkerBase.prototype, "dataSource", void 0);
 __decorate$1([
     Complex({}, TooltipSettings)
-], MarkerSettings.prototype, "tooltipSettings", void 0);
+], MarkerBase.prototype, "tooltipSettings", void 0);
 __decorate$1([
     Property(1000)
-], MarkerSettings.prototype, "animationDuration", void 0);
+], MarkerBase.prototype, "animationDuration", void 0);
 __decorate$1([
     Property(0)
-], MarkerSettings.prototype, "animationDelay", void 0);
+], MarkerBase.prototype, "animationDelay", void 0);
 __decorate$1([
     Complex({}, SelectionSettings)
-], MarkerSettings.prototype, "selectionSettings", void 0);
+], MarkerBase.prototype, "selectionSettings", void 0);
 __decorate$1([
     Complex({}, HighlightSettings)
-], MarkerSettings.prototype, "highlightSettings", void 0);
+], MarkerBase.prototype, "highlightSettings", void 0);
+class MarkerSettings extends MarkerBase {
+    // tslint:disable-next-line:no-any
+    constructor(parent, propName, defaultValue, isArray) {
+        super(parent, propName, defaultValue, isArray);
+    }
+}
 /**
  * To configure the layers of the maps.
  */
@@ -2455,6 +2461,212 @@ __decorate$1([
 __decorate$1([
     Complex({ color: 'transparent', width: 1 }, Border)
 ], MapsAreaSettings.prototype, "border", void 0);
+
+/**
+ * Marker class
+ */
+class Marker {
+    constructor(maps) {
+        this.maps = maps;
+        this.trackElements = [];
+    }
+    /* tslint:disable:no-string-literal */
+    markerRender(layerElement, layerIndex, factor, type) {
+        let templateFn;
+        let currentLayer = this.maps.layersCollection[layerIndex];
+        this.markerSVGObject = this.maps.renderer.createGroup({
+            id: this.maps.element.id + '_Markers_Group',
+            style: 'pointer-events: auto;'
+        });
+        if (document.getElementById(this.markerSVGObject.id)) {
+            document.getElementById(this.markerSVGObject.id).remove();
+        }
+        let markerTemplateEle = createElement('div', {
+            id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_Markers_Template_Group',
+            className: 'template',
+            styles: 'overflow: hidden; position: absolute;pointer-events: none;' +
+                'top:' + (this.maps.isTileMap ? 0 : this.maps.mapAreaRect.y) + 'px;' +
+                'left:' + (this.maps.isTileMap ? 0 : this.maps.mapAreaRect.x) + 'px;' +
+                'height:' + this.maps.mapAreaRect.height + 'px;' +
+                'width:' + this.maps.mapAreaRect.width + 'px;'
+        });
+        if (document.getElementById(markerTemplateEle.id)) {
+            document.getElementById(markerTemplateEle.id).remove();
+        }
+        currentLayer.markerSettings.map((markerSettings, markerIndex) => {
+            let markerData = markerSettings.dataSource;
+            markerData.forEach((data, dataIndex) => {
+                let eventArgs = {
+                    cancel: false, name: markerRendering, fill: markerSettings.fill, height: markerSettings.height,
+                    width: markerSettings.width, imageUrl: markerSettings.imageUrl, shape: markerSettings.shape,
+                    template: markerSettings.template, data: data, maps: this.maps, marker: markerSettings,
+                    border: markerSettings.border
+                };
+                this.maps.trigger(markerRendering, eventArgs);
+                let lng = data['longitude'];
+                let lat = data['latitude'];
+                let offset = markerSettings.offset;
+                if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(lng) && !isNullOrUndefined(lat)) {
+                    let markerID = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
+                        + markerIndex + '_DataIndex_' + dataIndex;
+                    let location = (this.maps.isTileMap) ? convertTileLatLongToPoint(new MapLocation(lng, lat), factor, this.maps.tileTranslatePoint, true) : convertGeoToPoint(lat, lng, factor, currentLayer, this.maps);
+                    let animate$$1 = currentLayer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
+                    let translate = (this.maps.isTileMap) ? new Object() : getTranslate(this.maps, currentLayer, animate$$1);
+                    let scale = type === 'AddMarker' ? this.maps.scale : translate['scale'];
+                    let transPoint = type === 'AddMarker' ? this.maps.translatePoint : translate['location'];
+                    if (eventArgs.template) {
+                        templateFn = getTemplateFunction(eventArgs.template);
+                        if (templateFn && templateFn(this.maps).length) {
+                            let templateElement = templateFn(this.maps);
+                            let markerElement = convertElement(templateElement, markerID, data, markerIndex, this.maps);
+                            for (let i = 0; i < markerElement.children.length; i++) {
+                                markerElement.children[i].style.pointerEvents = 'none';
+                            }
+                            markerElement.style.left = ((this.maps.isTileMap ? location.x :
+                                ((Math.abs(this.maps.baseMapRectBounds['min']['x'] - location.x)) * scale)) + offset.x) + 'px';
+                            markerElement.style.top = ((this.maps.isTileMap ? location.y :
+                                ((Math.abs(this.maps.baseMapRectBounds['min']['y'] - location.y)) * scale)) + offset.y) + 'px';
+                            markerTemplateEle.appendChild(markerElement);
+                        }
+                    }
+                    else {
+                        let shapeCustom = {
+                            size: new Size(eventArgs.width, eventArgs.height),
+                            fill: eventArgs.fill, borderColor: eventArgs.border.color,
+                            borderWidth: eventArgs.border.width, opacity: markerSettings.opacity,
+                            dashArray: markerSettings.dashArray
+                        };
+                        let ele = this.drawSymbol(eventArgs.shape, eventArgs.imageUrl, { x: 0, y: 0 }, markerID, shapeCustom);
+                        let x = (this.maps.isTileMap ? location.x : (location.x + transPoint.x) * scale) + offset.x;
+                        let y = (this.maps.isTileMap ? location.y : (location.y + transPoint.y) * scale) + offset.y;
+                        ele.setAttribute('transform', 'translate( ' + x + ' ' + y + ' )');
+                        this.markerSVGObject.appendChild(ele);
+                        let element = (markerData.length - 1) === dataIndex ? 'marker' : null;
+                        let markerPoint = new Point(x, y);
+                        if (markerSettings.animationDuration > 0) {
+                            elementAnimate(ele, markerSettings.animationDelay, markerSettings.animationDuration, markerPoint, this.maps, element);
+                        }
+                    }
+                }
+            });
+        });
+        if (this.markerSVGObject.childElementCount > 0) {
+            layerElement.appendChild(this.markerSVGObject);
+        }
+        if (markerTemplateEle.childElementCount > 0 && getElementByID(this.maps.element.id + '_Secondary_Element')) {
+            getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
+        }
+    }
+    drawSymbol(shape, imageUrl, location, markerID, shapeCustom) {
+        let markerEle;
+        let x;
+        let y;
+        let size = shapeCustom['size'];
+        let borderColor = shapeCustom['borderColor'];
+        let borderWidth = parseFloat(shapeCustom['borderWidth']);
+        let fill = shapeCustom['fill'];
+        let dashArray = shapeCustom['dashArray'];
+        let border = { color: borderColor, width: borderWidth };
+        let opacity = shapeCustom['opacity'];
+        let circleOptions;
+        let pathOptions;
+        let rectOptions;
+        pathOptions = new PathOption(markerID, fill, borderWidth, borderColor, opacity, dashArray, '');
+        if (shape === 'Circle') {
+            let radius = (size.width + size.height) / 4;
+            circleOptions = new CircleOption(markerID, fill, border, opacity, location.x, location.y, radius, dashArray);
+            markerEle = this.maps.renderer.drawCircle(circleOptions);
+        }
+        else if (shape === 'Rectangle') {
+            x = location.x - (size.width / 2);
+            y = location.y - (size.height / 2);
+            rectOptions = new RectOption(markerID, fill, border, opacity, new Rect(x, y, size.width, size.height), null, null, '', dashArray);
+            markerEle = this.maps.renderer.drawRectangle(rectOptions);
+        }
+        else if (shape === 'Image') {
+            x = location.x - (size.width / 2);
+            y = location.y - (size.height / 2);
+            merge(pathOptions, { 'href': imageUrl, 'height': size.height, 'width': size.width, x: x, y: y });
+            markerEle = this.maps.renderer.drawImage(pathOptions);
+        }
+        else {
+            markerEle = calculateShapes(this.maps, shape, pathOptions, size, location, this.markerSVGObject);
+        }
+        return markerEle;
+    }
+    /**
+     * To check and trigger marker click event
+     */
+    markerClick(e) {
+        let target = e.target.id;
+        if (target.indexOf('_LayerIndex_') === -1) {
+            return;
+        }
+        let options = this.getMarker(target);
+        if (isNullOrUndefined(options)) {
+            return;
+        }
+        let eventArgs = {
+            cancel: false, name: markerClick, data: options.data, maps: this.maps, marker: options.marker,
+            target: target, x: e.clientX, y: e.clientY
+        };
+        this.maps.trigger(markerClick, eventArgs);
+    }
+    /**
+     * To get marker from target id
+     */
+    getMarker(target) {
+        let id = target.split('_LayerIndex_');
+        let index = parseInt(id[1].split('_')[0], 10);
+        let layer = this.maps.layers[index];
+        let data;
+        let marker;
+        if (target.indexOf('_MarkerIndex_') > -1) {
+            let markerIndex = parseInt(id[1].split('_MarkerIndex_')[1].split('_')[0], 10);
+            let dataIndex = parseInt(id[1].split('_DataIndex_')[1].split('_')[0], 10);
+            marker = layer.markerSettings[markerIndex];
+            if (!isNaN(markerIndex)) {
+                data = marker.dataSource[dataIndex];
+                return { marker: marker, data: data };
+            }
+        }
+        return null;
+    }
+    /**
+     * To check and trigger marker move event
+     */
+    markerMove(e) {
+        let targetId = e.target.id;
+        if (targetId.indexOf('_LayerIndex_') === -1) {
+            return;
+        }
+        let options = this.getMarker(targetId);
+        if (isNullOrUndefined(options)) {
+            return;
+        }
+        let eventArgs = {
+            cancel: false, name: markerMouseMove, data: options.data, maps: this.maps,
+            target: targetId, x: e.clientX, y: e.clientY
+        };
+        this.maps.trigger(markerMouseMove, eventArgs);
+    }
+    /**
+     * Get module name.
+     */
+    getModuleName() {
+        return 'Marker';
+    }
+    /**
+     * To destroy the layers.
+     * @return {void}
+     * @private
+     */
+    destroy(maps) {
+        /**
+         * Destroy method performed here
+         */
+    }
+}
 
 /**
  * Maps constants doc
@@ -4109,6 +4321,10 @@ let Maps = class Maps extends Component {
      * To initilize the private varibales of maps.
      */
     initPrivateVariable() {
+        if (this.element.id === '') {
+            let collection = document.getElementsByClassName('e-maps').length;
+            this.element.id = 'maps_control_' + collection;
+        }
         this.renderer = new SvgRenderer(this.element.id);
         this.mapLayerPanel = new LayerPanel(this);
     }
@@ -4400,22 +4616,29 @@ let Maps = class Maps extends Component {
         let factor = this.mapLayerPanel.calculateFactor(this.layersCollection[0]);
         let position;
         let size = this.mapAreaRect;
-        if (!isNullOrUndefined(centerPosition) && this.zoomModule) {
-            position = convertGeoToPoint(centerPosition.latitude, centerPosition.longitude, factor, this.layersCollection[0], this);
-            let mapRect = document.getElementById(this.element.id + '_Layer_Collections').getBoundingClientRect();
-            let svgRect = this.svgObject.getBoundingClientRect();
-            let xDiff = Math.abs(mapRect.left - svgRect.left) / this.scale;
-            let yDiff = Math.abs(mapRect.top - svgRect.top) / this.scale;
-            let x = this.translatePoint.x + xDiff;
-            let y = this.translatePoint.y + yDiff;
-            this.scale = zoomFactor;
-            this.translatePoint.x = ((mapRect.left < svgRect.left ? x : 0) + (size.width / 2) - (position.x * zoomFactor)) / zoomFactor;
-            this.translatePoint.y = ((mapRect.top < svgRect.top ? y : 0) + (size.height / 2) - (position.y * zoomFactor)) / zoomFactor;
-            this.zoomModule.applyTransform();
+        if (!this.isTileMap && this.zoomModule) {
+            if (!isNullOrUndefined(centerPosition)) {
+                position = convertGeoToPoint(centerPosition.latitude, centerPosition.longitude, factor, this.layersCollection[0], this);
+                let mapRect = document.getElementById(this.element.id + '_Layer_Collections').getBoundingClientRect();
+                let svgRect = this.svgObject.getBoundingClientRect();
+                let xDiff = Math.abs(mapRect.left - svgRect.left) / this.scale;
+                let yDiff = Math.abs(mapRect.top - svgRect.top) / this.scale;
+                let x = this.translatePoint.x + xDiff;
+                let y = this.translatePoint.y + yDiff;
+                this.scale = zoomFactor;
+                this.translatePoint.x = ((mapRect.left < svgRect.left ? x : 0) + (size.width / 2) - (position.x * zoomFactor)) / zoomFactor;
+                this.translatePoint.y = ((mapRect.top < svgRect.top ? y : 0) + (size.height / 2) - (position.y * zoomFactor)) / zoomFactor;
+                this.zoomModule.applyTransform();
+            }
+            else {
+                position = { x: size.width / 2, y: size.height / 2 };
+                this.zoomModule.performZooming(position, zoomFactor, zoomFactor > this.scale ? 'ZoomIn' : 'ZoomOut');
+            }
         }
         else if (this.zoomModule) {
-            position = { x: size.width / 2, y: size.height / 2 };
-            this.zoomModule.performZooming(position, zoomFactor, zoomFactor > this.scale ? 'ZoomIn' : 'ZoomOut');
+            this.tileZoomLevel = zoomFactor;
+            this.tileTranslatePoint = this.mapLayerPanel['panTileMap'](this.availableSize.width, this.availableSize.height, { x: centerPosition.longitude, y: centerPosition.latitude });
+            this.mapLayerPanel.generateTiles(zoomFactor, this.tileTranslatePoint, new BingMap(this));
         }
     }
     /**
@@ -4464,15 +4687,15 @@ let Maps = class Maps extends Component {
      * @param layerIndex
      * @param marker
      */
-    addMarker(layerIndex, marker) {
-        let currentMarker = this.layersCollection[layerIndex].markerSettings;
-        currentMarker.push(new MarkerSettings(currentMarker[0], 'markerSettings', marker));
+    addMarker(layerIndex, markerCollection) {
         let layerEle = document.getElementById(this.element.id + '_LayerIndex_' + layerIndex);
-        if (this.markerModule && layerEle) {
-            this.markerModule.markerRender(layerEle, layerIndex, this.mapLayerPanel['currentFactor'], 'AddMarker');
-            if (marker.template) {
-                this.arrangeTemplate();
+        if (markerCollection.length > 0 && layerEle) {
+            for (let newMarker of markerCollection) {
+                this.layersCollection[layerIndex].markerSettings.push(new MarkerSettings(this, 'markerSettings', newMarker));
             }
+            let markerModule = new Marker(this);
+            markerModule.markerRender(layerEle, layerIndex, this.mapLayerPanel['currentFactor'], 'AddMarker');
+            this.arrangeTemplate();
         }
     }
     /**
@@ -5087,212 +5310,6 @@ class Bubble {
 }
 
 /**
- * Marker class
- */
-class Marker {
-    constructor(maps) {
-        this.maps = maps;
-        this.trackElements = [];
-    }
-    /* tslint:disable:no-string-literal */
-    markerRender(layerElement, layerIndex, factor, type) {
-        let templateFn;
-        let currentLayer = this.maps.layersCollection[layerIndex];
-        this.markerSVGObject = this.maps.renderer.createGroup({
-            id: this.maps.element.id + '_Markers_Group',
-            style: 'pointer-events: auto;'
-        });
-        if (document.getElementById(this.markerSVGObject.id)) {
-            document.getElementById(this.markerSVGObject.id).remove();
-        }
-        let markerTemplateEle = createElement('div', {
-            id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_Markers_Template_Group',
-            className: 'template',
-            styles: 'overflow: hidden; position: absolute;pointer-events: none;' +
-                'top:' + (this.maps.isTileMap ? 0 : this.maps.mapAreaRect.y) + 'px;' +
-                'left:' + (this.maps.isTileMap ? 0 : this.maps.mapAreaRect.x) + 'px;' +
-                'height:' + this.maps.mapAreaRect.height + 'px;' +
-                'width:' + this.maps.mapAreaRect.width + 'px;'
-        });
-        if (document.getElementById(markerTemplateEle.id)) {
-            document.getElementById(markerTemplateEle.id).remove();
-        }
-        currentLayer.markerSettings.map((markerSettings, markerIndex) => {
-            let markerData = markerSettings.dataSource;
-            markerData.forEach((data, dataIndex) => {
-                let eventArgs = {
-                    cancel: false, name: markerRendering, fill: markerSettings.fill, height: markerSettings.height,
-                    width: markerSettings.width, imageUrl: markerSettings.imageUrl, shape: markerSettings.shape,
-                    template: markerSettings.template, data: data, maps: this.maps, marker: markerSettings,
-                    border: markerSettings.border
-                };
-                this.maps.trigger(markerRendering, eventArgs);
-                let lng = data['longitude'];
-                let lat = data['latitude'];
-                let offset = markerSettings.offset;
-                if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(lng) && !isNullOrUndefined(lat)) {
-                    let markerID = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
-                        + markerIndex + '_DataIndex_' + dataIndex;
-                    let location = (this.maps.isTileMap) ? convertTileLatLongToPoint(new MapLocation(lng, lat), factor, this.maps.tileTranslatePoint, true) : convertGeoToPoint(lat, lng, factor, currentLayer, this.maps);
-                    let animate$$1 = currentLayer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
-                    let translate = (this.maps.isTileMap) ? new Object() : getTranslate(this.maps, currentLayer, animate$$1);
-                    let scale = type === 'AddMarker' ? this.maps.scale : translate['scale'];
-                    let transPoint = type === 'AddMarker' ? this.maps.translatePoint : translate['location'];
-                    if (eventArgs.template) {
-                        templateFn = getTemplateFunction(eventArgs.template);
-                        if (templateFn && templateFn(this.maps).length) {
-                            let templateElement = templateFn(this.maps);
-                            let markerElement = convertElement(templateElement, markerID, data, markerIndex, this.maps);
-                            for (let i = 0; i < markerElement.children.length; i++) {
-                                markerElement.children[i].style.pointerEvents = 'none';
-                            }
-                            markerElement.style.left = ((this.maps.isTileMap ? location.x :
-                                ((Math.abs(this.maps.baseMapRectBounds['min']['x'] - location.x)) * scale)) + offset.x) + 'px';
-                            markerElement.style.top = ((this.maps.isTileMap ? location.y :
-                                ((Math.abs(this.maps.baseMapRectBounds['min']['y'] - location.y)) * scale)) + offset.y) + 'px';
-                            markerTemplateEle.appendChild(markerElement);
-                        }
-                    }
-                    else {
-                        let shapeCustom = {
-                            size: new Size(eventArgs.width, eventArgs.height),
-                            fill: eventArgs.fill, borderColor: eventArgs.border.color,
-                            borderWidth: eventArgs.border.width, opacity: markerSettings.opacity,
-                            dashArray: markerSettings.dashArray
-                        };
-                        let ele = this.drawSymbol(eventArgs.shape, eventArgs.imageUrl, { x: 0, y: 0 }, markerID, shapeCustom);
-                        let x = (this.maps.isTileMap ? location.x : (location.x + transPoint.x) * scale) + offset.x;
-                        let y = (this.maps.isTileMap ? location.y : (location.y + transPoint.y) * scale) + offset.y;
-                        ele.setAttribute('transform', 'translate( ' + x + ' ' + y + ' )');
-                        this.markerSVGObject.appendChild(ele);
-                        let element = (markerData.length - 1) === dataIndex ? 'marker' : null;
-                        let markerPoint = new Point(x, y);
-                        if (markerSettings.animationDuration > 0) {
-                            elementAnimate(ele, markerSettings.animationDelay, markerSettings.animationDuration, markerPoint, this.maps, element);
-                        }
-                    }
-                }
-            });
-        });
-        if (this.markerSVGObject.childElementCount > 0) {
-            layerElement.appendChild(this.markerSVGObject);
-        }
-        if (markerTemplateEle.childElementCount > 0 && getElementByID(this.maps.element.id + '_Secondary_Element')) {
-            getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
-        }
-    }
-    drawSymbol(shape, imageUrl, location, markerID, shapeCustom) {
-        let markerEle;
-        let x;
-        let y;
-        let size = shapeCustom['size'];
-        let borderColor = shapeCustom['borderColor'];
-        let borderWidth = parseFloat(shapeCustom['borderWidth']);
-        let fill = shapeCustom['fill'];
-        let dashArray = shapeCustom['dashArray'];
-        let border = { color: borderColor, width: borderWidth };
-        let opacity = shapeCustom['opacity'];
-        let circleOptions;
-        let pathOptions;
-        let rectOptions;
-        pathOptions = new PathOption(markerID, fill, borderWidth, borderColor, opacity, dashArray, '');
-        if (shape === 'Circle') {
-            let radius = (size.width + size.height) / 4;
-            circleOptions = new CircleOption(markerID, fill, border, opacity, location.x, location.y, radius, dashArray);
-            markerEle = this.maps.renderer.drawCircle(circleOptions);
-        }
-        else if (shape === 'Rectangle') {
-            x = location.x - (size.width / 2);
-            y = location.y - (size.height / 2);
-            rectOptions = new RectOption(markerID, fill, border, opacity, new Rect(x, y, size.width, size.height), null, null, '', dashArray);
-            markerEle = this.maps.renderer.drawRectangle(rectOptions);
-        }
-        else if (shape === 'Image') {
-            x = location.x - (size.width / 2);
-            y = location.y - (size.height / 2);
-            merge(pathOptions, { 'href': imageUrl, 'height': size.height, 'width': size.width, x: x, y: y });
-            markerEle = this.maps.renderer.drawImage(pathOptions);
-        }
-        else {
-            markerEle = calculateShapes(this.maps, shape, pathOptions, size, location, this.markerSVGObject);
-        }
-        return markerEle;
-    }
-    /**
-     * To check and trigger marker click event
-     */
-    markerClick(e) {
-        let target = e.target.id;
-        if (target.indexOf('_LayerIndex_') === -1) {
-            return;
-        }
-        let options = this.getMarker(target);
-        if (isNullOrUndefined(options)) {
-            return;
-        }
-        let eventArgs = {
-            cancel: false, name: markerClick, data: options.data, maps: this.maps, marker: options.marker,
-            target: target, x: e.clientX, y: e.clientY
-        };
-        this.maps.trigger(markerClick, eventArgs);
-    }
-    /**
-     * To get marker from target id
-     */
-    getMarker(target) {
-        let id = target.split('_LayerIndex_');
-        let index = parseInt(id[1].split('_')[0], 10);
-        let layer = this.maps.layers[index];
-        let data;
-        let marker;
-        if (target.indexOf('_MarkerIndex_') > -1) {
-            let markerIndex = parseInt(id[1].split('_MarkerIndex_')[1].split('_')[0], 10);
-            let dataIndex = parseInt(id[1].split('_DataIndex_')[1].split('_')[0], 10);
-            marker = layer.markerSettings[markerIndex];
-            if (!isNaN(markerIndex)) {
-                data = marker.dataSource[dataIndex];
-                return { marker: marker, data: data };
-            }
-        }
-        return null;
-    }
-    /**
-     * To check and trigger marker move event
-     */
-    markerMove(e) {
-        let targetId = e.target.id;
-        if (targetId.indexOf('_LayerIndex_') === -1) {
-            return;
-        }
-        let options = this.getMarker(targetId);
-        if (isNullOrUndefined(options)) {
-            return;
-        }
-        let eventArgs = {
-            cancel: false, name: markerMouseMove, data: options.data, maps: this.maps,
-            target: targetId, x: e.clientX, y: e.clientY
-        };
-        this.maps.trigger(markerMouseMove, eventArgs);
-    }
-    /**
-     * Get module name.
-     */
-    getModuleName() {
-        return 'Marker';
-    }
-    /**
-     * To destroy the layers.
-     * @return {void}
-     * @private
-     */
-    destroy(maps) {
-        /**
-         * Destroy method performed here
-         */
-    }
-}
-
-/**
  * DataLabel Module used to render the maps datalabel
  */
 class DataLabel {
@@ -5711,17 +5728,14 @@ class Legend {
         this.totalPages = [];
         this.page = 0;
         this.currentPage = 0;
-        this.interactiveLocation = new Point(0, 0);
         this.legendItemRect = new Rect(0, 0, 0, 0);
         this.heightIncrement = 0;
         this.widthIncrement = 0;
         this.textMaxWidth = 0;
-        this.areaRect = new Rect(0, 0, 0, 0);
         this.shapeHighlightCollection = [];
         this.shapeSelectionCollection = [];
         this.legendHighlightCollection = [];
         this.legendSelectionCollection = [];
-        this.legendInteractiveGradient = [];
         this.legendElement = null;
         this.shapeElement = null;
         this.shapeSelection = true;
@@ -5733,6 +5747,11 @@ class Legend {
      * To calculate legend bounds and draw the legend shape and text.
      */
     renderLegend() {
+        this.legendRenderingCollections = [];
+        this.legendCollection = [];
+        this.totalPages = [];
+        this.widthIncrement = 0;
+        this.heightIncrement = 0;
         this.defsElement = this.maps.renderer.createDefs();
         this.maps.svgObject.appendChild(this.defsElement);
         this.calculateLegendBounds();
@@ -8501,5 +8520,5 @@ class Zoom {
  * exporting all modules from maps index
  */
 
-export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClick, markerMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, TooltipSettings, Margin, ColorMappingSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
+export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClick, markerMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, TooltipSettings, Margin, ColorMappingSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
 //# sourceMappingURL=ej2-maps.es2015.js.map

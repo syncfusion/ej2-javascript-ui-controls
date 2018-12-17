@@ -213,12 +213,6 @@ export interface StockChartModel extends ComponentModel{
     isMultiSelect?: boolean;
 
     /**
-     * If set true, enables the multi selection in chart. It requires `selectionMode` to be `Point` | `Series` | or `Cluster`.
-     * @default false
-     */
-    isSingleAxis?: boolean;
-
-    /**
      * Triggers before the range navigator rendering
      * @event
      */

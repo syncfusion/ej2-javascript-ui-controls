@@ -1,6 +1,7 @@
 import { EventHandler, detach, L10n, isNullOrUndefined, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { closest, addClass, removeClass, Browser } from '@syncfusion/ej2-base';
 import { IRichTextEditor, NotifyArgs, IRenderer, IImageNotifyArgs, IToolbarItemModel, IShowPopupArgs } from './../base/interface';
+import { IDropDownItemModel } from './../base/interface';
 import { ServiceLocator } from './../services/service-locator';
 import * as events from '../base/constant';
 import { CLS_RTE_ELEMENTS } from '../base/classes';
@@ -10,7 +11,7 @@ import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { NodeSelection } from '../../selection/selection';
 import { RendererFactory } from '../services/renderer-factory';
 import { RenderType } from '../base/enum';
-import { dispatchEvent } from '../base/util';
+import { dispatchEvent, parseHtml } from '../base/util';
 
 /**
  * `Link` module is used to handle undo actions.
@@ -204,7 +205,7 @@ export class Link {
             '<input type="text" data-role ="none" spellcheck="false" class="e-input e-rte-linkText" placeholder="' + textPlace + '">' +
             '</div><div class="e-rte-label">' + htmlTextbox;
 
-        let contentElem: DocumentFragment = document.createRange().createContextualFragment(content);
+        let contentElem: DocumentFragment = parseHtml(content);
         linkContent.appendChild(contentElem);
         let linkTarget: HTMLInputElement = linkContent.querySelector('.e-rte-linkTarget') as HTMLInputElement;
         let linkUrl: HTMLInputElement = linkContent.querySelector('.e-rte-linkurl') as HTMLInputElement;
@@ -310,7 +311,9 @@ export class Link {
         (this as NotifyArgs).selfLink.parent.formatter.process(
             (this as NotifyArgs).selfLink.parent, (this as NotifyArgs).args,
             ((this as NotifyArgs).args as ClickEventArgs).originalEvent, value);
-        if (document.contains(proxy.dialogObj.element)) { (this as NotifyArgs).selfLink.dialogObj.hide({ returnValue: false } as Event); }
+        if (document.body.contains(proxy.dialogObj.element)) {
+            (this as NotifyArgs).selfLink.dialogObj.hide({ returnValue: false } as Event);
+        }
         ((this as NotifyArgs).selfLink.parent.contentModule.getEditPanel() as HTMLElement).focus();
     }
     private isUrl(url: string): boolean {
@@ -329,28 +332,26 @@ export class Link {
         }
     }
     private removeLink(e: NotifyArgs): void {
-        let parent: Node = e.selectParent[0].parentNode;
-        let child: Node[] = [];
         if (this.parent.formatter.getUndoRedoStack().length === 0) {
             this.parent.formatter.saveData();
         }
-        for (; e.selectParent[0].firstChild; null) {
-            child.push(parent.insertBefore(e.selectParent[0].firstChild, e.selectParent[0]));
-        }
-        parent.removeChild(e.selectParent[0]);
-        if (child && child.length === 1) {
-            e.selection.startContainer = e.selection.getNodeArray(child[child.length - 1], true);
-            e.selection.endContainer = e.selection.startContainer;
-        }
-        e.selection.restore();
+        this.parent.formatter.process(
+            this.parent, e.args, e.args,
+            { selectNode: e.selectNode, selectParent: e.selectParent, selection: e.selection,
+                subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
+            });
         (this.contentModule.getEditPanel() as HTMLElement).focus();
-        this.parent.formatter.saveData();
         this.hideLinkQuickToolbar();
     }
     private openLink(e: NotifyArgs): void {
         if ((e.selectParent[0] as HTMLElement).classList.contains('e-rte-anchor') || (e.selectParent[0] as HTMLElement).tagName === 'A') {
-            let target: string = (e.selectParent[0] as HTMLAnchorElement).target === '' ? '_self' : '_blank';
-            window.open((e.selectParent[0] as HTMLAnchorElement).href, target);
+            this.parent.formatter.process(
+            this.parent, e.args, e.args,
+            {
+                url: (e.selectParent[0] as HTMLAnchorElement).href,
+                target: (e.selectParent[0] as HTMLAnchorElement).target === '' ? '_self' : '_blank', selectNode: e.selectNode,
+                subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
+            });
         }
     }
     private editLink(e: NotifyArgs): void {

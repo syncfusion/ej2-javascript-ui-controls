@@ -1200,8 +1200,7 @@ export class DiagramEventHandler {
 
     private updateContainerProperties(): boolean {
         let helperObject: NodeModel; let isChangeProperties: boolean = false;
-        let hasStack: boolean;
-        let hasGroup: boolean;
+        let hasStack: boolean; let hasGroup: boolean;
         if (this.diagram.selectedObject.helperObject) {
             helperObject = this.diagram.selectedObject.helperObject as Node;
             this.diagram.selectedItems.wrapper.children[0].offsetX = helperObject.wrapper.offsetX;
@@ -1210,16 +1209,16 @@ export class DiagramEventHandler {
             this.diagram.selectedItems.wrapper.children[0].actualSize.height = helperObject.wrapper.actualSize.height;
             let obj: NodeModel | ConnectorModel = this.diagram.selectedObject.actualObject;
             (obj as Node).offsetX = helperObject.offsetX; (obj as Node).offsetY = helperObject.offsetY;
-            (obj as Node).width = helperObject.width;
-            (obj as Node).height = helperObject.height;
+            if (obj && obj.shape && obj.shape.type !== 'UmlClassifier') {
+                (obj as Node).width = helperObject.width; (obj as Node).height = helperObject.height;
+            }
             (obj as Node).rotateAngle = helperObject.rotateAngle;
             let objects: IElement[] = this.diagram.findObjectsUnderMouse(this.currentPosition);
             let target: IElement = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
             let parentNode: Node = this.diagram.nameTable[(obj as Node).parentId];
             let undoElement: StackEntryObject;
             if (parentNode && parentNode.container && parentNode.container.type === 'Stack') {
-                this.diagram.startGroupAction();
-                hasGroup = true;
+                this.diagram.startGroupAction(); hasGroup = true;
             }
             if (!target && parentNode && parentNode.container && parentNode.container.type === 'Stack' && this.action === 'Drag') {
                 let index: number = parentNode.wrapper.children.indexOf(obj.wrapper);
@@ -1245,7 +1244,6 @@ export class DiagramEventHandler {
                 parentNode.wrapper.maxHeight = parentNode.wrapper.actualSize.height;
                 isChangeProperties = true;
             }
-
             if (checkParentAsContainer(this.diagram, obj, true) && parentNode && parentNode.container.type === 'Canvas') {
                 checkChildNodeInContainer(this.diagram, obj as NodeModel);
             } else {
@@ -1256,9 +1254,7 @@ export class DiagramEventHandler {
                     let y: number = parentNode.wrapper.bounds.y;
                     if (obj.columnIndex !== undefined && (parentNode.container.orientation === 'Horizontal' && obj.rowIndex === 1) ||
                         (parentNode.container.orientation === 'Vertical' && obj.rowIndex > 0 && obj.columnIndex > 0)) {
-                        //let diff: number = helperObject.width - container.colDefns[obj.columnIndex].width;
                         container.updateColumnWidth(obj.columnIndex, helperObject.width);
-                        //parentNode.width += diff;
                     } else if (obj.rowIndex !== undefined) {
                         container.updateRowHeight(obj.rowIndex, helperObject.height);
                     }
@@ -1269,12 +1265,15 @@ export class DiagramEventHandler {
                     } as Node);
                     this.diagram.drag(parentNode, x - parentNode.wrapper.bounds.x, y - parentNode.wrapper.bounds.y);
                 } else {
+                    if (obj && obj.shape && obj.shape.type === 'UmlClassifier') {
+                        obj.wrapper.measureChildren = true;
+                    }
                     this.diagram.nodePropertyChange(obj as Node, {} as Node, {
                         offsetX: obj.offsetX, offsetY: obj.offsetY,
                         width: obj.width, height: obj.height,
                         rotateAngle: obj.rotateAngle
                     } as Node);
-                    this.diagram.updateConnectorEdges(obj as Node);
+                    obj.wrapper.measureChildren = false;
                 }
             }
             if (isChangeProperties) {
@@ -1336,6 +1335,7 @@ export class DiagramEventHandler {
                     target: undefined, targetIndex: undefined
                 };
                 this.diagram.add(temp);
+                this.diagram.updateConnectorEdges(node as Node);
                 this.diagram.select([this.diagram.nameTable[temp.id]]);
                 this.diagram.endGroupAction();
                 this.diagram.startTextEdit();

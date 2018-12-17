@@ -91,6 +91,7 @@ export class DrillThroughDialog {
             isModal: true,
             visible: true,
             showCloseIcon: true,
+            locale: this.parent.locale,
             enableRtl: this.parent.enableRtl,
             width: this.parent.isAdaptive ? '100%' : '60%',
             position: { X: 'center', Y: 'center' },
@@ -169,6 +170,7 @@ export class DrillThroughDialog {
             showColumnChooser: true,
             toolbar: toolbarItems,
             columns: this.frameGridColumns(),
+            locale: this.parent.locale,
             enableRtl: this.parent.enableRtl,
             enableVirtualization: this.parent.editSettings.allowEditing,
             allowPaging: this.parent.editSettings.allowEditing
@@ -194,7 +196,7 @@ export class DrillThroughDialog {
             }
             /* tslint:disable:align */
             (this.drillThroughGrid.columns as ColumnModel[]).push({
-                field: '__index', visible: false, isPrimaryKey: true, type: 'number', showInColumnChooser: false
+                field: '__index', visible: false, isPrimaryKey: true, type: 'string', showInColumnChooser: false
             });
             /* tslint:disable-next-line:no-any */
             this.drillThroughGrid.actionComplete = (args: any) => {
@@ -239,7 +241,8 @@ export class DrillThroughDialog {
                     width: 120,
                     visible: this.parent.engineModule.fieldList[key].isSelected,
                     validationRules: { required: true },
-                    editType: editType
+                    editType: editType,
+                    type: 'string'
                 });
             }
         }

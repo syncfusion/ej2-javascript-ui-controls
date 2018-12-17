@@ -1042,6 +1042,16 @@
 
       }
 
+      &.e-multirow-pos {
+
+        .e-toolbar-left,
+        .e-toolbar-center,
+        .e-toolbar-right {
+          display: inline;
+        }
+
+      }
+
       &.e-toolbar-multirow:not(.e-tbar-pos) {
 
         .e-toolbar-item:first-child {

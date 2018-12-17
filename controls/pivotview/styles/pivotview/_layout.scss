@@ -198,6 +198,28 @@
             display: none;
           }
         }
+
+        // sass-lint:disable-all
+        .e-empty-field::-webkit-input-placeholder {
+          color: $error-font-color !important;
+          font-weight: 600 !important;
+        }
+
+        .e-empty-field:-moz-placeholder {
+          color: $error-font-color !important;
+          font-weight: 600 !important;
+        }
+
+        .e-empty-field::-moz-placeholder {
+          color: $error-font-color !important;
+          font-weight: 600 !important;
+        }
+
+        .e-empty-field:-ms-input-placeholder {
+          color: $error-font-color !important;
+          font-weight: 600 !important;
+        }
+        // sass-lint:enable-all
       }
 
       &.e-excel-filter {

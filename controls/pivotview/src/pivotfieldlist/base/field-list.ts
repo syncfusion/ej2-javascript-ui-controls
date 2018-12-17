@@ -520,7 +520,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             let enableValueSorting: boolean = this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined;
             let isDrillThrough: boolean =
                 this.pivotGridModule ?
-                    (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : undefined;
+                    (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true;
             this.engineModule =
                 new PivotEngine(this.dataSource, '', this.pivotFieldList, pageSettings, enableValueSorting, isDrillThrough);
             this.getFieldCaption(this.dataSource);
@@ -630,6 +630,10 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         }
         if (this.pivotButtonModule) {
             this.pivotButtonModule.destroy();
+        }
+        if (this.allowDeferLayoutUpdate && this.dialogRenderer &&
+            this.dialogRenderer.deferUpdateCheckBox && !this.dialogRenderer.deferUpdateCheckBox.isDestroyed) {
+            this.dialogRenderer.deferUpdateCheckBox.destroy();
         }
         super.destroy();
         this.element.innerHTML = '';

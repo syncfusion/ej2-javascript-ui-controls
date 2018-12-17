@@ -679,7 +679,7 @@ function getPointer(target, gauge) {
     let pointIndex;
     let axis;
     let pointer;
-    split = target.id.split('_');
+    split = target.id.replace(gauge.element.id, '').split('_');
     axisIndex = parseInt(split[2], radix);
     pointIndex = parseInt(split[4], radix);
     axis = gauge.axes[axisIndex];
@@ -1912,9 +1912,10 @@ class GaugeTooltip {
             if (template !== null && Object.keys(template).length === 1) {
                 template = template[Object.keys(template)[0]];
             }
+            let themes = this.gauge.theme.toLowerCase();
             if (!args.cancel) {
                 args['tooltip']['properties']['textStyle']['color'] =
-                    (this.gauge.theme.toLowerCase().indexOf('dark') > -1) ? '#00000' : '#FFFFFF';
+                    (themes.indexOf('dark') > -1 || themes === 'highcontrast') ? '#00000' : '#FFFFFF';
                 this.svgTooltip = new Tooltip({
                     enable: true,
                     header: '',
@@ -1926,7 +1927,7 @@ class GaugeTooltip {
                     palette: [],
                     inverted: !(args.gauge.orientation === 'Horizontal'),
                     enableAnimation: args.tooltip.enableAnimation,
-                    fill: (this.gauge.theme.toLowerCase().indexOf('dark') > -1) ? '#FFFFFF' : args.tooltip.fill,
+                    fill: (themes.indexOf('dark') > -1 || themes === 'highcontrast') ? '#FFFFFF' : args.tooltip.fill,
                     areaBounds: new Rect(areaRect.left, tooltipPos === 'Bottom' ? location.y : areaRect.top, tooltipPos === 'Right' ? Math.abs(areaRect.left - location.x) : areaRect.width, areaRect.height),
                     textStyle: args.tooltip.textStyle,
                     border: args.tooltip.border,
@@ -2084,7 +2085,7 @@ let LinearGauge = class LinearGauge extends Component {
     }
     themeEffect() {
         let theme = this.theme.toLowerCase();
-        if (theme === 'highcontrast-dark') {
+        if (theme === 'highcontrast') {
             this.titleStyle.color = this.titleStyle.color || '#FFFFFF';
             this.setThemeColors('#FFFFFF', '#FFFFFF');
         }

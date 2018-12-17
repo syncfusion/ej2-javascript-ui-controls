@@ -1,18 +1,21 @@
 
-import { Component, EventHandler, Internationalization, } from '@syncfusion/ej2-base';
+import { Component, EventHandler, Internationalization, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, KeyboardEvents, L10n } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, KeyboardEventArgs, BaseEventArgs } from '@syncfusion/ej2-base';
 import { cldrData, getDefaultDateObject, rippleEffect } from '@syncfusion/ej2-base';
 import { createElement, removeClass, detach, closest, addClass, attributes } from '@syncfusion/ej2-base';
 import { getValue, getUniqueID, extend, Browser } from '@syncfusion/ej2-base';
-import { Property, Event, EmitType, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Property, Event, EmitType, isNullOrUndefined, throwError } from '@syncfusion/ej2-base';
 import { CalendarModel, CalendarBaseModel } from './calendar-model';
+import { Islamic, IslamicDateArgs } from './index';
 
 
 /**
  * Specifies the view of the calendar.
  */
 export type CalendarView = 'Month' | 'Year' | 'Decade';
+
+export type CalendarType = 'Islamic' | 'Gregorian';
 
 //class constant defination.
 const OTHERMONTH: string = 'e-other-month';
@@ -69,6 +72,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected footer: HTMLElement;
     protected keyboardModule: KeyboardEvents;
     protected globalize: Internationalization;
+    public islamicModule: Islamic;
     protected currentDate: Date;
     protected navigatedArgs: NavigatedEventArgs;
     protected renderDayCellArgs: RenderDayCellEventArgs;
@@ -126,6 +130,12 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      */
     @Property(null)
     public firstDayOfWeek: number;
+    /**
+     * Gets or sets the Calendar's Type like gregorian or islamic.
+     * @default Gregorian
+     */
+    @Property('Gregorian')
+    public calendarMode: CalendarType;
     /**
      * Specifies the initial view of the Calendar when it is opened.
      * With the help of this property, initial view can be changed to year or decade view.
@@ -251,6 +261,12 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * @private
      */
     protected render(): void {
+        if (this.calendarMode === 'Islamic') {
+            if (+(this.min.setSeconds(0)) === +new Date(1900, 0, 1, 0, 0, 0)) {
+                this.min = new Date(1944, 2, 18);
+            }
+            if (+this.max === +new Date(2099, 11, 31)) { this.max = new Date(2069, 10, 16); }
+        }
         this.globalize = new Internationalization(this.locale);
         if (isNullOrUndefined(this.firstDayOfWeek) || this.firstDayOfWeek > 6 || this.firstDayOfWeek < 0) {
             this.setProperties({ firstDayOfWeek: this.globalize.getFirstDayOfWeek() }, true);
@@ -638,11 +654,20 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 break;
             case 1:
                 this.addMonths(this.currentDate, number);
-                if (this.isMonthYearRange(this.currentDate)) {
-                    detach(this.tableBodyElement);
-                    this.renderYears(e);
+                if (this.calendarMode === 'Gregorian') {
+                    if (this.isMonthYearRange(this.currentDate)) {
+                        detach(this.tableBodyElement);
+                        this.renderYears(e);
+                    } else {
+                        this.currentDate = date;
+                    }
                 } else {
-                    this.currentDate = date;
+                    if (this.isMonthYearRange(this.currentDate)) {
+                        detach(this.tableBodyElement);
+                        this.renderYears(e);
+                    } else {
+                        this.currentDate = date;
+                    }
                 }
                 break;
             case 0:
@@ -684,9 +709,18 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected renderMonths(e?: Event, value?: Date): void {
         let numCells: number = this.weekNumber ? 8 : 7;
-        let tdEles: HTMLElement[] = this.renderDays(this.currentDate, e, value);
+        let tdEles: HTMLElement[];
+        if (this.calendarMode === 'Gregorian') {
+            tdEles = this.renderDays(this.currentDate, e, value);
+        } else {
+            tdEles = this.islamicModule.islamicRenderDays(this.currentDate, value);
+        }
         this.createContentHeader();
-        this.renderTemplate(tdEles, numCells, MONTH, e, value);
+        if (this.calendarMode === 'Gregorian') {
+            this.renderTemplate(tdEles, numCells, MONTH, e, value);
+        } else {
+            this.islamicModule.islamicRenderTemplate(tdEles, numCells, MONTH, e, value);
+        }
     }
     // tslint:disable-next-line:max-func-body-length
     protected renderDays(currentDate: Date, e?: Event, value?: Date, multiSelection?: boolean, values?: Date[]): HTMLElement[] {
@@ -779,8 +813,10 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             // }
             if (multiSelection && !isNullOrUndefined(values) && !otherMnthBool && !disabledCls) {
                 for (let tempValue: number = 0; tempValue < values.length; tempValue++) {
-                    let localDateString: string = this.globalize.formatDate(localDate, { type: 'date', skeleton: 'short' });
-                    let tempDateString: string = this.globalize.formatDate(values[tempValue], { type: 'date', skeleton: 'short' });
+                    let type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+                    let formatOptions: object = { type: 'date', skeleton: 'short', calendar: type };
+                    let localDateString: string = this.globalize.formatDate(localDate, formatOptions);
+                    let tempDateString: string = this.globalize.formatDate(values[tempValue], formatOptions);
                     if (localDateString === tempDateString && this.getDateVal(localDate, values[tempValue])) {
                         addClass([tdEle], SELECTED);
                     } else {
@@ -904,7 +940,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         this.renderTemplate(tdEles, numCells, 'e-decade', e, value);
     }
     protected dayCell(localDate: Date): HTMLElement {
-        let dateFormatOptions: object = { skeleton: 'full', type: 'dateTime' };
+        let type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+        let dateFormatOptions: object = { skeleton: 'full', type: 'dateTime', calendar: type };
         let date: Date = this.globalize.parseDate(this.globalize.formatDate(localDate, dateFormatOptions), dateFormatOptions);
         let value: number = date.valueOf();
         let attrs: Object = {
@@ -1009,7 +1046,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             this.tableBodyElement.appendChild(trEle);
         }
         this.table.querySelector('tbody').className = this.effect;
-        this.iconHandler();
+        if (this.calendarMode === 'Gregorian') {
+            this.iconHandler();
+        } else {
+            this.islamicModule.islamicIconHandler();
+        }
 
         if (view !== this.getViewNumber(this.currentView()) || (view === 0 && view !== this.getViewNumber(this.currentView()))) {
             this.navigateHandler(e);
@@ -1051,11 +1092,17 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                     this.effect = ZOOMIN;
                     this.renderMonths(e);
                 } else {
-                    this.currentDate.setMonth(d.getMonth());
-                    if (d.getMonth() > 0 && this.currentDate.getMonth() !== d.getMonth()) {
-                        this.currentDate.setDate(0);
+
+                    if (this.calendarMode === 'Gregorian') {
+                        this.currentDate.setMonth(d.getMonth());
+                        if (d.getMonth() > 0 && this.currentDate.getMonth() !== d.getMonth()) {
+                            this.currentDate.setDate(0);
+                        }
+                        this.currentDate.setFullYear(d.getFullYear());
+                    } else {
+                        this.currentDate = d;
                     }
-                    this.currentDate.setFullYear(d.getFullYear());
+
                     this.effect = ZOOMIN;
                     detach(this.tableBodyElement);
                     this.renderMonths(e);
@@ -1065,7 +1112,12 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 if (currentView === this.getViewNumber(this.depth) && this.getViewNumber(this.start) >= this.getViewNumber(this.depth)) {
                     this.selectDate(e, d, null);
                 } else {
-                    this.currentDate.setFullYear(d.getFullYear());
+                    if (this.calendarMode === 'Gregorian') {
+                        this.currentDate.setFullYear(d.getFullYear());
+                    } else {
+                        let islamicDate: IslamicDateArgs = this.islamicModule.getIslamicDate(d);
+                        this.currentDate = this.islamicModule.toGregorian(islamicDate.year, islamicDate.month, 1);
+                    }
                     this.effect = ZOOMIN;
                     detach(this.tableBodyElement);
                     this.renderYears(e);
@@ -1097,6 +1149,16 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected getModuleName(): string {
         return 'calendar';
     }
+
+    public requiredModules(): ModuleDeclaration[] {
+        let modules: ModuleDeclaration[] = [];
+        if (this) {
+            modules.push({ args: [this], member: 'islamic' });
+        }
+
+        return modules;
+    }
+
     /**
      * Gets the properties to be maintained upon browser refresh.
      * @returns string
@@ -1190,10 +1252,23 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             let copyValues: Date[] = this.copyValues(values);
             for (let skipIndex: number = 0; skipIndex < copyValues.length; skipIndex++) {
                 let tempValue: Date = copyValues[skipIndex];
-                let tempValueString: string = this.globalize.formatDate(tempValue, { type: 'date', skeleton: 'yMd' });
-                let minString: string = this.globalize.formatDate(this.min, { type: 'date', skeleton: 'yMd' });
-                let maxString: string = this.globalize.formatDate(this.max, { type: 'date', skeleton: 'yMd' });
-                if (+new Date(tempValueString) < +new Date(minString) || +new Date(tempValueString) > +new Date(maxString)) {
+                let type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+                let tempValueString: string;
+                if (this.calendarMode === 'Gregorian') {
+                    /* tslint:disable-next-line:max-line-length */
+                    tempValueString = this.globalize.formatDate(tempValue, { type: 'date', skeleton: 'yMd' });
+                } else {
+                    /* tslint:disable-next-line:max-line-length */
+                    tempValueString = this.globalize.formatDate(tempValue, { type: 'dateTime', skeleton: 'full', calendar: 'islamic' });
+                }
+                let minFormatOption: object = { type: 'date', skeleton: 'yMd', calendar: type };
+                let minStringValue: string = this.globalize.formatDate(this.min, minFormatOption);
+                let minString: string = minStringValue;
+                let maxFormatOption: object = { type: 'date', skeleton: 'yMd', calendar: type };
+                let maxStringValue: string = this.globalize.formatDate(this.max, maxFormatOption);
+                let maxString: string = maxStringValue;
+                if (+new Date(tempValueString) < +new Date(minString) ||
+                    +new Date(tempValueString) > +new Date(maxString)) {
                     copyValues.splice(skipIndex, 1);
                     skipIndex = -1;
                 }
@@ -1217,19 +1292,31 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected titleUpdate(date: Date, view: string): void {
         let globalize: Internationalization = new Internationalization(this.locale);
+        let dayFormatOptions: string;
+        let monthFormatOptions: string;
+        let type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+        if (this.calendarMode === 'Gregorian') {
+            dayFormatOptions = globalize.formatDate(date, { type: 'dateTime', skeleton: 'yMMMM', calendar: type });
+            monthFormatOptions = globalize.formatDate(date, { type: 'dateTime', skeleton: 'y', calendar: type });
+        } else {
+
+            dayFormatOptions = globalize.formatDate(date, { type: 'dateTime', format: 'MMMM y', calendar: type });
+            monthFormatOptions = globalize.formatDate(date, { type: 'dateTime', format: 'y', calendar: type });
+        }
         switch (view) {
             case 'days':
-                this.headerTitleElement.textContent = globalize.formatDate(date, { type: 'dateTime', skeleton: 'yMMMM' });
+                this.headerTitleElement.textContent = dayFormatOptions;
                 break;
             case 'months':
-                this.headerTitleElement.textContent = globalize.formatDate(date, { type: 'dateTime', skeleton: 'y' });
+                this.headerTitleElement.textContent = monthFormatOptions;
         }
     }
     protected setActiveDescendant(): string {
         let id: string;
         let focusedEle: Element = this.tableBodyElement.querySelector('tr td.e-focused-date');
         let selectedEle: Element = this.tableBodyElement.querySelector('tr td.e-selected');
-        let title: string = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'full' });
+        let type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+        let title: string = this.globalize.formatDate(this.currentDate, { type: 'dateTime', skeleton: 'full', calendar: type });
         if (selectedEle || focusedEle) {
             (focusedEle || selectedEle).setAttribute('aria-selected', 'true');
             (focusedEle || selectedEle).setAttribute('aria-label', 'The current focused date is ' + '' + title);
@@ -1320,7 +1407,12 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected navigatePrevious(e: MouseEvent | KeyboardEvent): void {
         e.preventDefault();
-        this.previous();
+        if (this.calendarMode === 'Gregorian') {
+            this.previous();
+        } else {
+            this.islamicModule.islamicPrevious();
+        }
+
         this.triggerNavigate(e);
         if (this.getModuleName() === 'calendar') {
             this.table.focus();
@@ -1346,7 +1438,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected navigateNext(eve: MouseEvent | KeyboardEvent): void {
         eve.preventDefault();
-        this.next();
+        if (this.calendarMode === 'Gregorian') {
+            this.next();
+        } else {
+            this.islamicModule.islamicNext();
+        }
         this.triggerNavigate(eve);
         if (this.getModuleName() === 'calendar') {
             this.table.focus();
@@ -1397,7 +1493,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             && date.getMonth() === (value).getMonth() && date.getFullYear() === (value).getFullYear());
     }
     protected getCultureObjects(ld: Object, c: string): Object {
-        return getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.days.format.short', ld);
+        if (this.calendarMode === 'Gregorian') {
+            return getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.days.format.short', ld);
+        } else {
+            return getValue('main.' + '' + this.locale + '.dates.calendars.islamic.days.format.short', ld);
+        }
     };
     protected getWeek(d: Date): number {
         let currentDate: number = new Date('' + d).valueOf();
@@ -1412,16 +1512,26 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         date.setTime(d.getTime() + tzOffsetDiff * minutesMilliSeconds);
     }
     protected addMonths(date: Date, i: number): void {
-        let day: number = date.getDate();
-        date.setDate(1);
-        date.setMonth(date.getMonth() + i);
-        date.setDate(Math.min(day, this.getMaxDays(date)));
+        if (this.calendarMode === 'Gregorian') {
+            let day: number = date.getDate();
+            date.setDate(1);
+            date.setMonth(date.getMonth() + i);
+            date.setDate(Math.min(day, this.getMaxDays(date)));
+        } else {
+            let islamicDate: IslamicDateArgs = this.islamicModule.getIslamicDate(date);
+            this.currentDate = this.islamicModule.toGregorian(islamicDate.year, (islamicDate.month) + i, 1);
+        }
     }
     protected addYears(date: Date, i: number): void {
-        let day: number = date.getDate();
-        date.setDate(1);
-        date.setFullYear(date.getFullYear() + i);
-        date.setDate(Math.min(day, this.getMaxDays(date)));
+        if (this.calendarMode === 'Gregorian') {
+            let day: number = date.getDate();
+            date.setDate(1);
+            date.setFullYear(date.getFullYear() + i);
+            date.setDate(Math.min(day, this.getMaxDays(date)));
+        } else {
+            let islamicDate: IslamicDateArgs = this.islamicModule.getIslamicDate(date);
+            this.currentDate = this.islamicModule.toGregorian(islamicDate.year + i, (islamicDate.month), 1);
+        }
     }
     protected getIdValue(e: MouseEvent | TouchEvent | KeyboardEvent, element: Element): Date {
         let eve: Element;
@@ -1430,7 +1540,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         } else {
             eve = element;
         }
-        let dateFormatOptions: object = { type: 'dateTime', skeleton: 'full' };
+        let type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+        let dateFormatOptions: object = { type: 'dateTime', skeleton: 'full', calendar: type };
         let dateString: string = this.globalize.formatDate(new Date(parseInt('' + eve.getAttribute('id'), 0)), dateFormatOptions);
         let date: Date = this.globalize.parseDate(dateString, dateFormatOptions);
         let value: number = date.valueOf() - date.valueOf() % 1000;
@@ -1485,8 +1596,10 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             if (element.classList.contains(SELECTED)) {
                 removeClass([element], SELECTED);
                 for (let i: number = 0; i < copyValues.length; i++) {
-                    let localDateString: string = this.globalize.formatDate(date, { type: 'date', skeleton: 'short' });
-                    let tempDateString: string = this.globalize.formatDate(copyValues[i], { type: 'date', skeleton: 'short' });
+                    let type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+                    let formatOptions: object = { type: 'date', skeleton: 'short', calendar: type };
+                    let localDateString: string = this.globalize.formatDate(date, formatOptions);
+                    let tempDateString: string = this.globalize.formatDate(copyValues[i], formatOptions);
                     if (localDateString === tempDateString) {
                         let index: number = copyValues.indexOf(copyValues[i]);
                         copyValues.splice(index, 1);
@@ -1506,8 +1619,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         let previousValue: boolean = false;
         if (!isNullOrUndefined(values)) {
             for (let checkPrevious: number = 0; checkPrevious < values.length; checkPrevious++) {
-                let localDateString: string = this.globalize.formatDate(dates, { type: 'date', skeleton: 'short' });
-                let tempDateString: string = this.globalize.formatDate(values[checkPrevious], { type: 'date', skeleton: 'short' });
+                let type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+                /* tslint:disable-next-line:max-line-length */
+                let localDateString: string = this.globalize.formatDate(dates, { type: 'date', skeleton: 'short', calendar: type });
+                /* tslint:disable-next-line:max-line-length */
+                let tempDateString: string = this.globalize.formatDate(values[checkPrevious], { type: 'date', skeleton: 'short', calendar: type });
                 if (localDateString === tempDateString) {
                     previousValue = true;
                 }
@@ -1582,10 +1698,19 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
 
     protected isMonthYearRange(date: Date): boolean {
-        return date.getMonth() >= this.min.getMonth()
-            && date.getFullYear() >= this.min.getFullYear()
-            && date.getMonth() <= this.max.getMonth()
-            && date.getFullYear() <= this.max.getFullYear();
+        if (this.calendarMode === 'Gregorian') {
+            return date.getMonth() >= this.min.getMonth()
+                && date.getFullYear() >= this.min.getFullYear()
+                && date.getMonth() <= this.max.getMonth()
+                && date.getFullYear() <= this.max.getFullYear();
+
+        } else {
+            let islamicDate: IslamicObject = this.islamicModule.getIslamicDate(date);
+            return islamicDate.month >= (<IslamicObject>(this.islamicModule.getIslamicDate(new Date(1944, 1, 18)))).month
+                && islamicDate.year >= (<IslamicObject>(this.islamicModule.getIslamicDate(new Date(1944, 1, 18)))).year
+                && islamicDate.month <= (<IslamicObject>(this.islamicModule.getIslamicDate(new Date(2069, 1, 16)))).month
+                && islamicDate.year <= (<IslamicObject>(this.islamicModule.getIslamicDate(new Date(2069, 1, 16)))).year;
+        }
     }
 
     protected compareYear(start: Date, end: Date): number {
@@ -1614,7 +1739,13 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         let collection: Element[] = [];
         let isDisabled: boolean = false;
         if ((!isNullOrUndefined(value) && value.getMonth()) === (!isNullOrUndefined(this.currentDate) && this.currentDate.getMonth())) {
-            let tdEles: Element[] = this.renderDays(value, null);
+            let tdEles: Element[];
+            if (this.calendarMode === 'Gregorian') {
+                tdEles = this.renderDays(value, null);
+            } else {
+                tdEles = this.islamicModule.islamicRenderDays(this.currentDate, value);
+            }
+
             collection = tdEles.filter((element: Element) => {
                 return element.classList.contains(DISABLED);
             });
@@ -1728,6 +1859,9 @@ export class Calendar extends CalendarBase {
      * @private
      */
     protected render(): void {
+        if (this.calendarMode === 'Islamic' && this.islamicModule === undefined) {
+            throwError('Requires the injectable Islamic modules to render Calendar in Islamic mode');
+        }
         if (this.isMultiSelection && typeof this.values === 'object' && !isNullOrUndefined(this.values) && this.values.length > 0) {
             let tempValues: number[] = [];
             let copyValues: Date[] = [];
@@ -1856,13 +1990,26 @@ export class Calendar extends CalendarBase {
         return tempDays;
     }
     protected renderYears(e?: Event): void {
-        super.renderYears(e, this.value);
+        if (this.calendarMode === 'Gregorian') {
+            super.renderYears(e, this.value);
+        } else {
+            this.islamicModule.islamicRenderYears(e, this.value);
+        }
+
     }
     protected renderDecades(e?: Event): void {
-        super.renderDecades(e, this.value);
+        if (this.calendarMode === 'Gregorian') {
+            super.renderDecades(e, this.value);
+        } else {
+            this.islamicModule.islamicRenderDecade(e, this.value);
+        }
     }
     protected renderTemplate(elements: HTMLElement[], count: number, classNm: string, e?: Event): void {
-        super.renderTemplate(elements, count, classNm, e, this.value);
+        if (this.calendarMode === 'Gregorian') {
+            super.renderTemplate(elements, count, classNm, e, this.value);
+        } else {
+            this.islamicModule.islamicRenderTemplate(elements, count, classNm, e, this.value);
+        }
         this.changedArgs = { value: this.value, values: this.values };
         this.changeHandler();
     }
@@ -2135,5 +2282,11 @@ export interface ChangedEventArgs extends BaseEventArgs {
      * If the event is triggered by interaction, it returns true. Otherwise, it returns false.
      */
     isInteracted?: boolean;
+}
+
+export interface IslamicObject {
+    year: number;
+    date: number;
+    month: number;
 }
 

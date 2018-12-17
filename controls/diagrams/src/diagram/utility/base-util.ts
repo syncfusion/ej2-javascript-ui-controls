@@ -115,31 +115,33 @@ export function cloneObject(obj: Object, additionalProp?: Function | string, key
         let internalProp: string[] = getInternalProperties(key);
         properties = properties.concat(internalProp);
         for (let property of properties) {
-            if (property !== 'wrapper') {
-                let constructorId: string = 'constructor';
-                let name: string = 'name';
-                let isEventEmmitter: boolean = obj[property] && obj.hasOwnProperty('observers') ? true : false;
-                if (!isEventEmmitter) {
-                    if (obj[property] instanceof Array) {
-                        newObject[property] = cloneArray(
-                            (internalProp.indexOf(property) === -1 && obj[keys]) ? obj[keys][property] : obj[property],
-                            additionalProp, property);
-                    } else if (obj[property] instanceof Array === false && obj[property] instanceof HTMLElement) {
-                        newObject[property] = obj[property].cloneNode(true).innerHtml;
-                    } else if (obj[property] instanceof Array === false && obj[property] instanceof Object) {
-                        newObject[property] = cloneObject(
-                            (internalProp.indexOf(property) === -1 && obj[keys]) ? obj[keys][property] : obj[property]);
-                    } else {
-                        newObject[property] = obj[property];
+            if (property !== 'historyManager') {
+                if (property !== 'wrapper') {
+                    let constructorId: string = 'constructor';
+                    let name: string = 'name';
+                    let isEventEmmitter: boolean = obj[property] && obj.hasOwnProperty('observers') ? true : false;
+                    if (!isEventEmmitter) {
+                        if (obj[property] instanceof Array) {
+                            newObject[property] = cloneArray(
+                                (internalProp.indexOf(property) === -1 && obj[keys]) ? obj[keys][property] : obj[property],
+                                additionalProp, property);
+                        } else if (obj[property] instanceof Array === false && obj[property] instanceof HTMLElement) {
+                            newObject[property] = obj[property].cloneNode(true).innerHtml;
+                        } else if (obj[property] instanceof Array === false && obj[property] instanceof Object) {
+                            newObject[property] = cloneObject(
+                                (internalProp.indexOf(property) === -1 && obj[keys]) ? obj[keys][property] : obj[property]);
+                        } else {
+                            newObject[property] = obj[property];
+                        }
                     }
-                }
-            } else {
-                if (obj[property]) {
-                    newObject[property] = {
-                        actualSize: {
-                            width: obj[property].actualSize.width, height: obj[property].actualSize.height
-                        }, offsetX: obj[property].offsetX, offsetY: obj[property].offsetY
-                    };
+                } else {
+                    if (obj[property]) {
+                        newObject[property] = {
+                            actualSize: {
+                                width: obj[property].actualSize.width, height: obj[property].actualSize.height
+                            }, offsetX: obj[property].offsetX, offsetY: obj[property].offsetY
+                        };
+                    }
                 }
             }
         }

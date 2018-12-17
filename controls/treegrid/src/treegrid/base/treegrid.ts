@@ -27,7 +27,7 @@ import { ExcelExportCompleteArgs, ExcelHeaderQueryCellInfoEventArgs, ExcelQueryC
 import { PdfExportCompleteArgs, PdfHeaderQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelExportProperties, PdfExportProperties, CellSelectingEventArgs, PrintEventArgs } from '@syncfusion/ej2-grids';
 import {BeforeDataBoundArgs} from '@syncfusion/ej2-grids';
-import { DataManager, Query, ReturnOption, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
+import { DataManager, ReturnOption, RemoteSaveAdaptor, Query } from '@syncfusion/ej2-data';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { isRemoteData, isOffline } from '../utils';
 import { Grid, QueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
@@ -86,6 +86,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
   private columnModel: Column[];
   private isExpandAll: boolean;
   private gridSettings: GridModel;
+  /** @hidden */
+  public initialRender: boolean;
   /** @hidden */
   public flatData: Object[];
   /** @hidden */
@@ -964,8 +966,57 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
           let expandtarget: HTMLElement = <HTMLElement>e.target;
           this.expandCollapseRequest(<HTMLElement>expandtarget.querySelector('.e-icons'));
           break;
+          case 'downArrow':
+            let target: HTMLElement = (<HTMLTableCellElement>e.target).parentElement;
+            let summaryElement: Element = this.findnextRowElement(target);
+            if (summaryElement !== null) {
+              let rowIndex: number = (<HTMLTableRowElement>summaryElement).rowIndex;
+              this.selectRow(rowIndex);
+              let cellIndex: number = (<HTMLTableCellElement>e.target).cellIndex;
+              let row: Element = (<HTMLTableRowElement>summaryElement).children[cellIndex];
+              addClass([row], 'e-focused');
+              addClass([row], 'e-focus');
+            } else {
+                this.clearSelection();
+            }
+          break;
+        case 'upArrow':
+          let targetRow: HTMLElement = (<HTMLTableCellElement>e.target).parentElement;
+          let summaryRowElement: Element = this.findPreviousRowElement(targetRow);
+          if (summaryRowElement !== null) {
+            let rIndex: number = (<HTMLTableRowElement>summaryRowElement).rowIndex;
+            this.selectRow(rIndex);
+            let cIndex: number = (<HTMLTableCellElement>e.target).cellIndex;
+            let rows: Element = (<HTMLTableRowElement>summaryRowElement).children[cIndex];
+            addClass([rows], 'e-focused');
+            addClass([rows], 'e-focus');
+          } else {
+            this.clearSelection();
+          }
       }
     }
+  }
+
+  // Get Proper Row Element from the summary 
+
+  private findnextRowElement(summaryRowElement: HTMLElement ): Element {
+    let rowElement: Element = <Element>summaryRowElement.nextSibling;
+    if (rowElement !== null && (rowElement.className.indexOf('e-summaryrow') !== -1 ||
+        (<HTMLTableRowElement>rowElement).style.display === 'none')) {
+        rowElement = this.findnextRowElement(<HTMLElement>rowElement);
+    }
+    return rowElement;
+  }
+
+  // Get Proper Row Element from the summary 
+
+  private findPreviousRowElement(summaryRowElement: HTMLElement ): Element {
+    let rowElement: Element = <Element>summaryRowElement.previousSibling;
+    if (rowElement !== null && (rowElement.className.indexOf('e-summaryrow') !== -1 ||
+        (<HTMLTableRowElement>rowElement).style.display === 'none')) {
+        rowElement = this.findPreviousRowElement(<HTMLElement>rowElement);
+    }
+    return rowElement;
   }
 
   private initProperties(): void {
@@ -979,6 +1030,8 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       ctrlUpArrow: 'ctrl+uparrow',
       ctrlShiftUpArrow: 'ctrl+shift+uparrow',
       ctrlShiftDownArrow: 'ctrl+shift+downarrow',
+      downArrow: 'downArrow',
+      upArrow: 'upArrow'
     };
     this.isLocalData = (!(this.dataSource instanceof DataManager) || this.dataSource.dataSource.offline
                      || (!isNullOrUndefined((<DataManager>this.dataSource).ready)) || this.dataSource.adaptor instanceof RemoteSaveAdaptor);
@@ -1250,6 +1303,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
         ).length;
         setValue('grid.contentModule.isLoaded', !(req > 0), this);
       }
+      this.initialRender = false;
     };
     this.grid.beforeDataBound = function (args: BeforeDataBoundArgs): void  {
       if (isRemoteData(treeGrid) && !isOffline(treeGrid)) {
@@ -1531,6 +1585,8 @@ private getGridEditSettings(): GridEditModel {
     let requireRefresh: boolean = false;
     for (let prop of properties) {
       switch (prop) {
+        case 'columns':
+          this.grid.columns = this.getGridColumns(); break;
         case 'treeColumnIndex':
           this.grid.refreshColumns(); break;
         case 'allowPaging':
@@ -1653,7 +1709,41 @@ private getGridEditSettings(): GridEditModel {
    * @hidden
    */
   public getPersistData(): string {
-    return this.addOnPersist([]);
+    let keyEntity: string[] = ['pageSettings', 'sortSettings',
+    'filterSettings', 'columns', 'searchSettings', 'selectedRowIndex'];
+    let ignoreOnPersist: { [x: string]: string[] } = {
+        pageSettings: ['template', 'pageSizes', 'pageSizeMode', 'enableQueryString', 'totalRecordsCount', 'pageCount'],
+        filterSettings: ['type', 'mode', 'showFilterBarStatus', 'immediateModeDelay', 'ignoreAccent', 'hierarchyMode'],
+        searchSettings: ['fields', 'operator', 'ignoreCase'],
+        sortSettings: [], columns: [], selectedRowIndex: []
+    };
+    let ignoreOnColumn: string[] = ['filter', 'edit', 'filterBarTemplate', 'headerTemplate', 'template',
+        'commandTemplate', 'commands', 'dataSource'];
+    keyEntity.forEach((value: string) => {
+        let currentObject: Object = this[value];
+        for (let val of ignoreOnPersist[value]) {
+            delete currentObject[val];
+        }
+    });
+    this.ignoreInArrays(ignoreOnColumn, <Column[]>this.columns);
+    return this.addOnPersist(keyEntity);
+  }
+  private ignoreInArrays(ignoreOnColumn: string[], columns: Column[]): void {
+      columns.forEach((column: Column) => {
+          if (column.columns) {
+              this.ignoreInColumn(ignoreOnColumn, column);
+              this.ignoreInArrays(ignoreOnColumn, <Column[]>column.columns);
+          } else {
+              this.ignoreInColumn(ignoreOnColumn, column);
+          }
+      });
+  }
+
+  private ignoreInColumn(ignoreOnColumn: string[], column: Column): void {
+      ignoreOnColumn.forEach((val: string) => {
+          delete column[val];
+          column.filter = {};
+      });
   }
   private mouseClickHandler(e: MouseEvent & TouchEvent): void {
     if (!isNullOrUndefined(e.touches)) {
@@ -1833,6 +1923,27 @@ private getGridEditSettings(): GridEditModel {
       return this.grid.getFooterContentTable();
  }
 
+   /** 
+    * Shows a column by its column name. 
+    * @param  {string|string[]} keys - Defines a single or collection of column names. 
+    * @param  {string} showBy - Defines the column key either as field name or header text. 
+    * @return {void} 
+    */
+
+  public showColumns(keys: string | string[], showBy?: string): void {
+    return this.grid.showColumns(keys, showBy);
+  }
+
+   /** 
+    * Hides a column by column name. 
+    * @param  {string|string[]} keys - Defines a single or collection of column names. 
+    * @param  {string} hideBy - Defines the column key either as field name or header text. 
+    * @return {void} 
+    */
+    public hideColumns(keys: string | string[], hideBy?: string): void {
+      return this.grid.hideColumns(keys, hideBy);
+  }
+
     /**
      * Gets a column header by column name.
      * @param  {string} field - Specifies the column name.
@@ -1898,7 +2009,7 @@ private getGridEditSettings(): GridEditModel {
       }
       this.columnModel.push(new Column(gridColumn));
     }
-    this.columns = this.columnModel;
+    this.setProperties({columns : this.columnModel}, true);
     return this.columnModel;
   }
 

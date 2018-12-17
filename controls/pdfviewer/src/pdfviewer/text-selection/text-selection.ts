@@ -427,13 +427,13 @@ export class TextSelection {
      */
     public maintainSelectionOnZoom(isMaintainSelection: boolean, isStich: boolean): void {
         let selection: Selection = window.getSelection();
-        if (selection.type === 'Range') {
+        if (selection.type === 'Range' || (!selection.type && !selection.isCollapsed)) {
             let isBackward: boolean = this.isBackWardSelection(selection);
             if (selection.anchorNode !== null) {
                 // tslint:disable-next-line:radix
-                let anchorPageId: number = parseInt(selection.anchorNode.parentElement.id.split('_text_')[1]);
+                let anchorPageId: number = parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1]);
                 // tslint:disable-next-line:radix
-                let focusPageId: number = parseInt(selection.focusNode.parentElement.id.split('_text_')[1]);
+                let focusPageId: number = parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1]);
                 if (this.isTouchSelection && isNaN(focusPageId)) {
                     let focusElement: HTMLElement = selection.focusNode as HTMLElement;
                     if (focusElement === this.pdfViewerBase.pageContainer) {
@@ -707,11 +707,11 @@ export class TextSelection {
 
     private maintainSelection(pageNumber: number, isStich: boolean): void {
         let selection: Selection = window.getSelection();
-        if (this.isTextSelection && selection.type === 'Range') {
+        if (this.isTextSelection && (selection.type === 'Range' || (!selection.type && !selection.isCollapsed))) {
             // tslint:disable-next-line
-            let anchorPageId: number = parseInt(selection.anchorNode.parentElement.id.split('_text_')[1]);
+            let anchorPageId: number = parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1]);
             // tslint:disable-next-line
-            let focusPageId: number = parseInt(selection.focusNode.parentElement.id.split('_text_')[1]);
+            let focusPageId: number = parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1]);
             if (isNaN(focusPageId) && selection.anchorNode !== null) {
                 let backward: boolean = this.isBackWardSelection(selection);
                 if (!backward) {
@@ -737,11 +737,11 @@ export class TextSelection {
                 let selectionObject: ISelection = null;
                 let selectionBounds: ClientRect[] = this.getSelectionBounds(selection.getRangeAt(0), pageNumber);
                 // tslint:disable-next-line:max-line-length
-                let anchorOffsetValue: number = (selection.anchorNode.parentElement.childNodes.length === 1) ? selection.anchorOffset : this.getCorrectOffset(selection.anchorNode, selection.anchorOffset);
-                let focusOffsetValue: number = (selection.focusNode.parentElement.childNodes.length === 1) ? selection.focusOffset : this.getCorrectOffset(selection.focusNode, selection.focusOffset);
+                let anchorOffsetValue: number = (this.getNodeElementFromNode(selection.anchorNode).childNodes.length === 1) ? selection.anchorOffset : this.getCorrectOffset(selection.anchorNode, selection.anchorOffset);
+                let focusOffsetValue: number = (this.getNodeElementFromNode(selection.focusNode).childNodes.length === 1) ? selection.focusOffset : this.getCorrectOffset(selection.focusNode, selection.focusOffset);
                 selectionObject = {
-                    isBackward: backward, startNode: selection.anchorNode.parentElement.id,
-                    startOffset: anchorOffsetValue, endNode: selection.focusNode.parentElement.id,
+                    isBackward: backward, startNode: this.getNodeElementFromNode(selection.anchorNode).id,
+                    startOffset: anchorOffsetValue, endNode: this.getNodeElementFromNode(selection.focusNode).id,
                     endOffset: focusOffsetValue, textContent: selection.toString(), pageNumber: pageNumber, bounds: selectionBounds
                 };
                 this.pushSelectionRangeObject(selectionObject, pageNumber);
@@ -759,7 +759,7 @@ export class TextSelection {
 
     private getCorrectOffset(node: Node, offset: number): number {
         let offsetValue: number = 0;
-        let parentElement: HTMLElement = node.parentElement;
+        let parentElement: HTMLElement = this.getNodeElementFromNode(node);
         for (let i: number = 0; i < parentElement.childNodes.length; i++) {
             if (parentElement.childNodes[i] === node) {
                 offsetValue = offsetValue + offset;
@@ -885,9 +885,9 @@ export class TextSelection {
         let selection: Selection = window.getSelection();
         if (this.isTextSelection) {
             // tslint:disable-next-line:radix
-            let anchorPageId: number = parseInt(selection.anchorNode.parentElement.id.split('_text_')[1]);
+            let anchorPageId: number = parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1]);
             // tslint:disable-next-line:radix
-            let focusPageId: number = parseInt(selection.focusNode.parentElement.id.split('_text_')[1]);
+            let focusPageId: number = parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1]);
             let nextPageElement: HTMLElement;
             if (anchorPageId !== currentPageNumber && focusPageId !== currentPageNumber) {
                 let backward: boolean = this.isBackWardSelection(selection);
@@ -896,11 +896,11 @@ export class TextSelection {
                     if (nextPageElement) {
                         let lastElement: HTMLElement = nextPageElement.lastChild as HTMLElement;
                         if (lastElement) {
-                            selection.extend(lastElement.childNodes[0], this.getTextLastLength(lastElement));
+                            this.extendSelectionStich(lastElement.childNodes[0], this.getTextLastLength(lastElement), selection);
                         } else {
                             nextPageElement = this.pdfViewerBase.getElement('_textLayer_' + currentPageNumber);
                             let lastElement: HTMLElement = nextPageElement.firstChild as HTMLElement;
-                            selection.extend(lastElement.childNodes[0], 0);
+                            this.extendSelectionStich(lastElement.childNodes[0], 0, selection);
                         }
                     }
                 } else {
@@ -908,12 +908,18 @@ export class TextSelection {
                     if (nextPageElement) {
                         let lastElement: HTMLElement = nextPageElement.firstChild as HTMLElement;
                         if (lastElement) {
-                            selection.extend(lastElement.childNodes[0], 0);
+                            this.extendSelectionStich(lastElement.childNodes[0], 0, selection);
                         }
                     }
                 }
             }
             this.maintainSelectionArray();
+        }
+    }
+
+    private extendSelectionStich(node: Node, offset: number, selection: Selection): void {
+        if (selection.extend) {
+            selection.extend(node, offset);
         }
     }
 
@@ -933,7 +939,7 @@ export class TextSelection {
             if (element.childNodes) {
                 if (!backward) {
                     if (pageNumber === anchorPageId) {
-                        firstElement = selection.anchorNode.parentElement;
+                        firstElement = this.getNodeElementFromNode(selection.anchorNode);
                         // tslint:disable-next-line:max-line-length
                         lastElement = (element.lastChild as HTMLElement);
                         startOffset = this.getCorrectOffset(selection.anchorNode, selection.anchorOffset);
@@ -948,9 +954,9 @@ export class TextSelection {
                     } else if (pageNumber === focusPageId) {
                         // tslint:disable-next-line:max-line-length
                         firstElement = (element.firstChild as HTMLElement);
-                        let pageNumberIndex: number = selection.focusNode.parentElement.id.indexOf(focusPageId.toString());
+                        let pageNumberIndex: number = this.getNodeElementFromNode(selection.focusNode).id.indexOf(focusPageId.toString());
                         if (pageNumberIndex !== -1) {
-                            lastElement = selection.focusNode.parentElement;
+                            lastElement = this.getNodeElementFromNode(selection.focusNode);
                             endOffset = this.getCorrectOffset(selection.focusNode, selection.focusOffset);
                         } else {
                             // tslint:disable-next-line:max-line-length
@@ -961,7 +967,7 @@ export class TextSelection {
                     }
                 } else {
                     if (pageNumber === anchorPageId) {
-                        firstElement = selection.anchorNode.parentElement;
+                        firstElement = this.getNodeElementFromNode(selection.anchorNode);
                         // tslint:disable-next-line:max-line-length
                         lastElement = (element.firstChild as HTMLElement);
                         startOffset = this.getCorrectOffset(selection.anchorNode, selection.anchorOffset);
@@ -974,7 +980,7 @@ export class TextSelection {
                         startOffset = 0;
                         endOffset = this.getTextLastLength(lastElement);
                     } else if (pageNumber === focusPageId) {
-                        firstElement = selection.focusNode.parentElement;
+                        firstElement = this.getNodeElementFromNode(selection.focusNode);
                         // tslint:disable-next-line:max-line-length
                         lastElement = (element.lastChild as HTMLElement);
                         startOffset = this.getCorrectOffset(selection.focusNode, selection.focusOffset);
@@ -1015,8 +1021,8 @@ export class TextSelection {
     }
 
     private getSelectionBounds(range: Range, pageNumber: number): ClientRect[] {
-        let startElement: HTMLElement = range.startContainer.parentElement;
-        let endElement: HTMLElement = range.endContainer.parentElement;
+        let startElement: HTMLElement = this.getNodeElementFromNode(range.startContainer);
+        let endElement: HTMLElement = this.getNodeElementFromNode(range.endContainer);
         let bounds: IRectangle[] = [];
         if (startElement !== endElement) {
             let newStartRange: Range = document.createRange();
@@ -1079,13 +1085,13 @@ export class TextSelection {
             let selection: Selection = window.getSelection();
             let isBackward: boolean = this.isBackWardSelection(selection);
             // tslint:disable-next-line
-            let anchorPage: number = isNaN(parseInt(selection.anchorNode.parentElement.id.split('_text_')[1])) ? parseInt((selection.anchorNode as HTMLElement).id.split('_pageDiv_')[1]) : parseInt(selection.anchorNode.parentElement.id.split('_text_')[1]);
+            let anchorPage: number = isNaN(parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1])) ? parseInt((selection.anchorNode as HTMLElement).id.split('_pageDiv_')[1]) : parseInt(selection.anchorNode.parentElement.id.split('_text_')[1]);
             if (isNaN(anchorPage)) {
                 // tslint:disable-next-line:radix
                 anchorPage = parseInt((selection.anchorNode as HTMLElement).id.split('_text_')[1]);
             }
             // tslint:disable-next-line
-            let focusPage: number = isNaN(parseInt(selection.focusNode.parentElement.id.split('_text_')[1])) ? parseInt((selection.focusNode as HTMLElement).id.split('_pageDiv_')[1]) : parseInt(selection.focusNode.parentElement.id.split('_text_')[1]);
+            let focusPage: number = isNaN(parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1])) ? parseInt((selection.focusNode as HTMLElement).id.split('_pageDiv_')[1]) : parseInt(selection.focusNode.parentElement.id.split('_text_')[1]);
             if (isNaN(focusPage)) {
                 // tslint:disable-next-line
                 focusPage = isNaN(parseInt((selection.focusNode as HTMLElement).id.split('_text_')[1])) ? parseInt((selection.focusNode as HTMLElement).id.split('_textLayer_')[1]) : parseInt((selection.focusNode as HTMLElement).id.split('_text_')[1]);
@@ -1135,24 +1141,25 @@ export class TextSelection {
      */
     public applySpanForSelection(): void {
         let selection: Selection = window.getSelection();
-        if (selection.anchorNode !== null && this.pdfViewerBase.viewerContainer.contains(selection.anchorNode)) {
+        // tslint:disable-next-line:max-line-length
+        if (selection.anchorNode !== null && this.pdfViewerBase.viewerContainer.contains(this.getNodeElementFromNode(selection.anchorNode))) {
             let isBackWardSelection: boolean = this.isBackWardSelection(selection);
             let anchorPageId: number; let focusPageId: number; let anchorOffsetDiv: number; let focusOffsetDiv: number;
             let anchorOffset: number; let focusOffset: number;
             if (isBackWardSelection) {
                 // tslint:disable-next-line:radix
-                anchorPageId = parseInt(selection.focusNode.parentElement.id.split('_text_')[1]);
+                anchorPageId = parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1]);
                 // tslint:disable-next-line:radix
-                focusPageId = parseInt(selection.anchorNode.parentElement.id.split('_text_')[1]);
+                focusPageId = parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1]);
                 // tslint:disable-next-line:radix
-                anchorOffsetDiv = parseInt(selection.focusNode.parentElement.id.split('_text_')[1].split('_')[1]);
+                anchorOffsetDiv = parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1].split('_')[1]);
                 // tslint:disable-next-line:radix
-                focusOffsetDiv = parseInt(selection.anchorNode.parentElement.id.split('_text_')[1].split('_')[1]);
+                focusOffsetDiv = parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1].split('_')[1]);
                 anchorOffset = selection.focusOffset;
                 focusOffset = selection.anchorOffset;
             } else {
-                let anchorElement: HTMLElement = selection.anchorNode.parentElement;
-                let focusElement: HTMLElement = selection.focusNode.parentElement;
+                let anchorElement: HTMLElement = this.getNodeElementFromNode(selection.anchorNode);
+                let focusElement: HTMLElement = this.getNodeElementFromNode(selection.focusNode);
                 // tslint:disable-next-line
                 anchorPageId = (anchorElement.id.indexOf('text_') !== -1) ? parseInt(anchorElement.id.split('text_')[1]) : parseInt(anchorElement.id.split('_textLayer_')[1]);
                 // tslint:disable-next-line
@@ -1177,12 +1184,12 @@ export class TextSelection {
                     }
                 }
                 if (anchorElement.classList.contains('e-pv-maintaincontent')) {
-                    anchorElement = anchorElement.parentElement;
+                    anchorElement = this.getNodeElementFromNode(anchorElement);
                     // tslint:disable-next-line:radix
                     anchorPageId = parseInt(anchorElement.id.split('text_')[1]);
                 }
                 if (focusElement.classList.contains('e-pv-maintaincontent')) {
-                    focusElement = focusElement.parentElement;
+                    focusElement = this.getNodeElementFromNode(focusElement);
                     // tslint:disable-next-line:radix
                     focusPageId = parseInt(focusElement.id.split('text_')[1]);
                 }
@@ -1469,10 +1476,7 @@ export class TextSelection {
             let xTouch: number = event.changedTouches[0].clientX;
             let yTouch: number = event.changedTouches[0].clientY;
             (event.target as HTMLElement).style.zIndex = '1000';
-            if (document.caretRangeFromPoint) {
-                range = document.caretRangeFromPoint(xTouch, yTouch);
-                nodeElement = this.onTouchElementScroll(range, nodeElement, yTouch, event);
-            }
+            nodeElement = this.getNodeElement(range, xTouch, yTouch, event, nodeElement);
             if (nodeElement) {
                 // tslint:disable-next-line:max-line-length
                 let currentDifference: number = Math.sqrt((yTouch - dropBounds.top) * (yTouch - dropBounds.top) + (xTouch - dropBounds.left) * (xTouch - dropBounds.left));
@@ -1518,10 +1522,7 @@ export class TextSelection {
             let touchX: number = event.changedTouches[0].clientX;
             let touchY: number = event.changedTouches[0].clientY;
             (event.target as HTMLElement).style.zIndex = '1000';
-            if (document.caretRangeFromPoint) {
-                range = document.caretRangeFromPoint(touchX, touchY);
-                nodeElement = this.onTouchElementScroll(range, nodeElement, touchY, event);
-            }
+            nodeElement = this.getNodeElement(range, touchX, touchY, event, nodeElement);
             if (nodeElement) {
                 // tslint:disable-next-line:max-line-length
                 let currentDifference: number = Math.sqrt((touchY - dropPosition.top) * (touchY - dropPosition.top) + (touchX - dropPosition.left) * (touchX - dropPosition.left));
@@ -1552,6 +1553,24 @@ export class TextSelection {
                 }
             }
         }
+    }
+
+    private getNodeElement(range: Range, touchX: number, touchY: number, event: TouchEvent, nodeElement: Node): Node {
+        if (document.caretRangeFromPoint) {
+            range = document.caretRangeFromPoint(touchX, touchY);
+            nodeElement = this.onTouchElementScroll(range, nodeElement, touchY, event);
+            // tslint:disable-next-line
+        } else if ((document as any).caretPositionFromPoint) {
+            // tslint:disable-next-line
+            let start: any = (document as any).caretPositionFromPoint(touchX, touchY);
+            // tslint:disable-next-line
+            let end: any = (document as any).caretPositionFromPoint(touchX, touchY);
+            range = document.createRange();
+            range.setStart(start.offsetNode, start.offset);
+            range.setEnd(end.offsetNode, end.offset);
+            nodeElement = this.onTouchElementScroll(range, nodeElement, touchY, event);
+        }
+        return nodeElement;
     }
 
     private isTouchedWithinContainer(event: TouchEvent): boolean {
@@ -1615,6 +1634,14 @@ export class TextSelection {
         }
     }
 
+    private getNodeElementFromNode(node: Node): HTMLElement {
+        if (node.parentElement) {
+            return node.parentElement;
+        } else {
+            return (node.parentNode as HTMLElement);
+        }
+    }
+
     /**
      * @private
      */
@@ -1648,7 +1675,7 @@ export class TextSelection {
      * @private
      */
     public destroy(): void {
-       this.clear();
+        this.clear();
     }
     /**
      * @private

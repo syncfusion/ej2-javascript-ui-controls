@@ -73,28 +73,28 @@ describe('Diagram Control', () => {
             diagram.layout.verticalSpacing = 40;
             diagram.spatialSearch = new SpatialSearch(diagram.nameTable);
             diagram.dataBind();
-            expect(diagram.nodes[0].offsetX == 1.1238696756863291 && diagram.nodes[0].offsetY == 70).toBe(true);
+            expect((diagram.nodes[0].offsetX == 1.1238696756863291||diagram.nodes[0].offsetX == 1.257941532653028) && diagram.nodes[0].offsetY == 70).toBe(true);
             done();
         });
         it('Checking BottomToTop complex tree layout', (done: Function) => {
             diagram.layout.type = 'ComplexHierarchicalTree';
             diagram.layout.orientation = 'BottomToTop';
             diagram.dataBind();
-            expect(diagram.nodes[0].offsetX == 1.1238696756863291 && diagram.nodes[0].offsetY == 470).toBe(true);
+            expect((diagram.nodes[0].offsetX == 1.1238696756863291||diagram.nodes[0].offsetX == 1.257941532653028) && diagram.nodes[0].offsetY == 470).toBe(true);
             done();
         });
         it('Checking LeftToRight complex tree layout', (done: Function) => {
             diagram.layout.type = 'ComplexHierarchicalTree';
             diagram.layout.orientation = 'LeftToRight';
             diagram.dataBind();
-            expect(diagram.nodes[0].offsetX == 200 && diagram.nodes[0].offsetY == 57.02686734040091).toBe(true);
+            expect(diagram.nodes[0].offsetX == 200 && (diagram.nodes[0].offsetY == 57.02686734040091||diagram.nodes[0].offsetY == 57.09756405520557)).toBe(true);
             done();
         });
         it('Checking RightToLeft complex tree layout', (done: Function) => {
             diagram.layout.type = 'ComplexHierarchicalTree';
             diagram.layout.orientation = 'RightToLeft';
             diagram.dataBind();
-            expect(diagram.nodes[0].offsetX == 900 && diagram.nodes[0].offsetY == 57.02686734040091).toBe(true);
+            expect(diagram.nodes[0].offsetX == 900 && (diagram.nodes[0].offsetY == 57.02686734040091||diagram.nodes[0].offsetY == 57.09756405520557)).toBe(true);
             done();
         });
         it('Checking Margin layout', (done: Function) => {
@@ -342,6 +342,199 @@ describe('Diagram Control', () => {
                 done();
             },
                 0);
+        });
+    });
+});
+describe('Diagram Control', () => {
+    describe('Complex Hierarchical Nan issue fix', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let items1: DataManager = new DataManager(complexData as JSON[], new Query().take(3));
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            var data = [
+                {
+                    id: '0',
+                    parent: ['1', '2']
+                },
+                {
+                    id: '1',
+                },
+                {
+                    id: '2',
+                },
+                {
+                    id: '3',
+                    parent: ['0']
+                },
+                {
+                    id: '4',
+                    parent: ['0']
+                },
+                {
+                    id: '5',
+                    parent: ['4']
+                },
+                {
+                    id: '6',
+                    parent: ['4']
+                },
+                {
+                    id: '7',
+                    parent: ['17', '6']
+                },
+                {
+                    id: '8',
+                    parent: ['0']
+                },
+                {
+                    id: '9',
+                    parent: ['8']
+                },
+                {
+                    id: '10',
+                    parent: ['9', '19']
+                },
+                {
+                    id: '11',
+                    parent: ['10', '19']
+                },
+                {
+                    id: '12',
+                    parent: ['10', '19']
+                },
+                {
+                    id: '13',
+                    parent: ['9', '19']
+                },
+                {
+                    id: '14',
+                    parent: ['13', '19']
+                },
+                {
+                    id: '15',
+                    parent: ['13', '19']
+                },
+                {
+                    id: '16',
+                    parent: ['9', '24']
+                },
+                {
+                    id: '17',
+                    parent: ['9']
+                },
+                {
+                    id: '18',
+                    parent: ['0']
+                },
+                {
+                    id: '19',
+                    parent: ['0']
+                },
+                {
+                    id: '20',
+                    parent: ['19']
+                },
+                {
+                    id: '21',
+                    parent: ['19']
+                },
+                {
+                    id: '22',
+                    parent: ['19']
+                },
+                {
+                    id: '23',
+                    parent: ['0']
+                },
+                {
+                    id: '24',
+                    parent: ['0']
+                },
+                {
+                    id: '25',
+                    parent: ['0']
+                },
+                {
+                    id: '26',
+                    parent: ['25']
+                },
+                {
+                    id: '27',
+                    parent: ['0']
+                },
+                {
+                    id: '28',
+                    parent: ['27']
+                },
+                {
+                    id: '29',
+                    parent: ['27']
+                },
+                {
+                    id: '30',
+                    parent: ['0']
+                },
+                {
+                    id: '31',
+                    parent: ['30']
+                },
+                {
+                    id: '32',
+                    parent: ['0']
+                }
+            ];
+            function getConnectorDefaults(connector:ConnectorModel) {
+                connector.id = connector.sourceID + '_' + connector.targetID;
+                connector.type = 'Orthogonal';
+                connector.cornerRadius = 7;
+                connector.targetDecorator.height = 7;
+                connector.targetDecorator.width = 7;
+                connector.style.strokeColor = '#6d6d6d';
+                return connector;
+            }
+            function getNodeDefaults(node:NodeModel, diagram:Diagram) {
+                var obj = {
+                    width: 75,
+                    height: 75,
+                    shape: { shape: 'Ellipse' },
+                    style: { fill: '#37909A', strokeColor: '#024249' },
+                    annotations: [
+                        {
+                            content: node.id,
+                            margin: { left: 10, right: 10 },
+                            style: {
+                                color: 'white',
+                                fill: 'none',
+                                strokeColor: 'none',
+                                bold: true
+                            }
+                        }
+                    ],
+                };
+                return obj;
+            }
+            diagram = new Diagram({
+                width: '1000px', height: '500px', dataSourceSettings: {
+                    id: 'id', parentId: 'parent', dataManager: new DataManager(data),
+                },
+                layout: { type: 'ComplexHierarchicalTree' ,horizontalSpacing:20, verticalSpacing: 20,
+                // enableAnimation: true,
+                 margin: { left: 10, right: 0, top: 50, bottom: 0 }},
+                 getNodeDefaults: getNodeDefaults, getConnectorDefaults: getConnectorDefaults
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('checking the node which have multiple parent', (done: Function) => {
+        var nodes =diagram.nodes
+        expect(nodes.length===33).toBe(true);
+        done();
         });
     });
 });

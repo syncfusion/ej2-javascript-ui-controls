@@ -6,3 +6,4 @@ export * from './formatter'
 export * from './renderer';
 export * from './base';
 export * from './services';
+export * from './models';

@@ -5,7 +5,7 @@ import { pivot_dataset } from '../base/datasource.spec';
 import { IDataSet } from '../../src/base/engine';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { PivotCommon } from '../../src/common/base/pivot-common';
-import { MaskedTextBox } from '@syncfusion/ej2-inputs';
+import { MaskedTextBox, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { TreeView } from '@syncfusion/ej2-navigations';
 import { LoadEventArgs, FieldDroppedEventArgs } from '../../src';
 import { CalculatedField } from '../../src/common/calculatedfield/calculated-field';
@@ -285,7 +285,7 @@ describe('PivotFieldList spec', () => {
             searchOption.setProperties({ value: '11' });
             searchOption.change({ value: searchOption.value });
             expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(5);
-            expect(document.querySelectorAll('.e-select-all li .e-stop').length).toBe(1);
+            expect(document.querySelectorAll('.e-select-all li .e-stop').length).toBe(0);
             expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(0);
             expect((document.querySelectorAll('.e-member-editor-container li .e-list-text')[4] as HTMLElement).innerText).toBe("811");
         });
@@ -312,7 +312,7 @@ describe('PivotFieldList spec', () => {
             searchOption.change({ value: searchOption.value });
             expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(5);
             expect(document.querySelectorAll('.e-select-all li .e-stop').length).toBe(1);
-            expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(0);
+            expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(1);
             expect((document.querySelectorAll('.e-member-editor-container li .e-list-text')[4] as HTMLElement).innerText).toBe("811");
         });
         it('check all search 0', () => {
@@ -354,8 +354,8 @@ describe('PivotFieldList spec', () => {
             ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(10);
-                expect(document.querySelectorAll('.e-select-all li .e-check').length).toBe(1);
-                expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(10);
+                expect(document.querySelectorAll('.e-select-all li .e-stop').length).toBe(1);
+                expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(1);
                 done();
             }, 1000);
         });
@@ -2373,18 +2373,18 @@ describe('PivotFieldList spec', () => {
                 let dropdownlist1: any = getInstance(dialogElement.querySelector('#' + fieldListObj.element.id + '_value_contition_option_wrapper') as HTMLElement, DropDownList);
                 expect(dropdownlist1).toBeTruthy;
                 dropdownlist1.value = "Between";
-                let input1: any = getInstance(dialogElement.querySelector('#' + fieldListObj.element.id + '_value_input_option_1') as HTMLElement, MaskedTextBox);
-                let input2: any = getInstance(dialogElement.querySelector('#' + fieldListObj.element.id + '_value_input_option_2') as HTMLElement, MaskedTextBox);
+                let input1: any = getInstance(dialogElement.querySelector('#' + fieldListObj.element.id + '_value_input_option_1') as HTMLElement, NumericTextBox);
+                let input2: any = getInstance(dialogElement.querySelector('#' + fieldListObj.element.id + '_value_input_option_2') as HTMLElement, NumericTextBox);
                 expect(input1).toBeTruthy;
                 expect(input2).toBeTruthy;
-                input1.setProperties({ value: '1500' });
+                input1.setProperties({ value: 1500 });
                 input1.change({ value: input1.value });
-                input2.setProperties({ value: '2100' });
+                input2.setProperties({ value: 2100 });
                 input2.change({ value: input2.value });
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    expect(input1.value === '1500').toBeTruthy;
-                    expect(input2.value === '2100').toBeTruthy;
+                    expect(input1.value.toString() === '1500').toBeTruthy;
+                    expect(input2.value.toString() === '2100').toBeTruthy;
                     done();
                 }, 2000);
             });
@@ -3681,8 +3681,8 @@ describe('PivotFieldList spec', () => {
                 let menuObj: any = (pivotGridObj.pivotButtonModule.menuOption as any).menuInfo;
                 let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>menuObj.element.querySelectorAll('li');
                 let menu: any = {
-                    element: li[0],
-                    item: menuObj.items[0]
+                    element: li[1],
+                    item: menuObj.items[1]
                 };
                 menuObj.select(menu as MenuEventArgs);
                 let valueField: HTMLElement = pivotGridObj.element.querySelector('.e-group-values');
@@ -3720,8 +3720,8 @@ describe('PivotFieldList spec', () => {
                 let menuObj: any = (pivotGridObj.pivotFieldListModule.pivotButtonModule.menuOption as any).menuInfo;
                 let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>menuObj.element.querySelectorAll('li');
                 let menu: any = {
-                    element: li[2],
-                    item: menuObj.items[2]
+                    element: li[4],
+                    item: menuObj.items[4]
                 };
                 menuObj.select(menu as MenuEventArgs);
                 let valueField: HTMLElement = pivotGridObj.pivotFieldListModule.axisTableModule.axisTable.querySelector('.e-field-list-values');
@@ -3730,7 +3730,7 @@ describe('PivotFieldList spec', () => {
                 let buttonText: HTMLElement = ((pivotButtons[0]).querySelector('.e-content') as HTMLElement);
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    expect(buttonText.innerHTML === 'Avg of balance').toBeTruthy;   
+                    expect(buttonText.innerHTML === 'Avg of balance').toBeTruthy;
                     (pivotGridObj.element.querySelector('.e-toggle-field-list') as HTMLElement).click();
                     done();
                 }, 1000);
@@ -3739,8 +3739,8 @@ describe('PivotFieldList spec', () => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
                     let pivotButtons: HTMLElement[] =
-                    [].slice.call(pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-columns').querySelectorAll('.e-pivot-button'));
-                expect(pivotButtons.length).toBeGreaterThan(0);
+                        [].slice.call(pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-columns').querySelectorAll('.e-pivot-button'));
+                    expect(pivotButtons.length).toBeGreaterThan(0);
                     ((pivotButtons[0]).querySelector('.e-sort') as HTMLElement).click();
                     expect(true).toBe(true);
                     done();
@@ -3875,7 +3875,7 @@ describe('PivotFieldList spec', () => {
                 setTimeout(() => {
                     (pivotGridObj.element.querySelector('.e-toggle-field-list') as HTMLElement).click();
                     expect(true).toBe(true);
-                done();
+                    done();
                 }, 1000);
             });
             it('check filtering field', (done: Function) => {
@@ -4759,8 +4759,8 @@ describe('PivotFieldList spec', () => {
             let menuObj: any = (pivotGridObj.pivotButtonModule.menuOption as any).menuInfo;
             let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>menuObj.element.querySelectorAll('li');
             let menu: any = {
-                element: li[0],
-                item: menuObj.items[0]
+                element: li[1],
+                item: menuObj.items[1]
             };
             menuObj.select(menu as MenuEventArgs);
             var valueField: HTMLElement = pivotGridObj.element.querySelector('.e-group-values');
@@ -4851,8 +4851,8 @@ describe('PivotFieldList spec', () => {
             let menuObj: any = (pivotGridObj.pivotFieldListModule.pivotButtonModule.menuOption as any).menuInfo;
             let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>menuObj.element.querySelectorAll('li');
             let menu: any = {
-                element: li[2],
-                item: menuObj.items[2]
+                element: li[4],
+                item: menuObj.items[4]
             };
             menuObj.select(menu as MenuEventArgs);
             var valueField: HTMLElement = pivotGridObj.pivotFieldListModule.axisTableModule.axisTable.querySelector('.e-field-list-values');

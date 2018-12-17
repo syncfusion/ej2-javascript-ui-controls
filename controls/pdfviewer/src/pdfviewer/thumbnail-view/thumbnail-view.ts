@@ -50,46 +50,60 @@ export class ThumbnailView {
     public createRequestForThumbnails(): Promise<any> {
         let proxy: ThumbnailView = this;
         // tslint:disable-next-line
+        let isIE: boolean = !!(document as any).documentMode;
+        if (!isIE) {
+        // tslint:disable-next-line
         return new Promise<any>(
             // tslint:disable-next-line
             function (renderThumbnailImage: any, reject: any): any {
-                if (!proxy.isThumbnailCompleted) {
-                    // tslint:disable-next-line:max-line-length
-                    proxy.thumbnailLimit = proxy.thumbnailLimit < proxy.pdfViewer.pageCount ? proxy.thumbnailLimit : proxy.pdfViewer.pageCount;
-                    if (proxy.thumbnailLimit !== proxy.pdfViewer.pageCount) {
-                        proxy.isThumbnailCompleted = false;
-                        proxy.startIndex = 0;
-                    }
-                } else {
-                    proxy.startIndex = proxy.thumbnailLimit;
-                    // tslint:disable-next-line:max-line-length
-                    proxy.thumbnailLimit = proxy.startIndex + proxy.thumbnailThreshold < proxy.pdfViewer.pageCount ? proxy.startIndex + proxy.thumbnailThreshold : proxy.pdfViewer.pageCount;
-                }
-                let request: XMLHttpRequest = new XMLHttpRequest();
-                // tslint:disable-next-line:max-line-length
-                let jsonObject: object = { startPage: proxy.startIndex, endPage: proxy.thumbnailLimit, sizeX: 99.7, sizeY: 141, hashId: proxy.pdfViewerBase.hashId };
-                request.open('POST', proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.renderThumbnail);
-                request.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
-                request.responseType = 'json';
-                request.send(JSON.stringify(jsonObject));
-                // tslint:disable-next-line
-                request.onreadystatechange = (event: any): void => {
-                    if (request.readyState === 4 && request.status === 200) {
-                        // tslint:disable-next-line
-                        let data: any = event.currentTarget.response;
-                        proxy.renderThumbnailImage(data);
-                        if (!proxy.isThumbnailCompleted) {
-                            proxy.startIndex = proxy.thumbnailLimit;
-                            proxy.isThumbnailCompleted = true;
-                        }
-                    }
-                };
-                // tslint:disable-next-line
-                request.onerror = (event: any): void => {
-                    this.pdfViewerBase.openNotificationPopup();
-                    proxy.pdfViewer.fireAjaxRequestFailed(request.status, request.statusText);
-                };
+                proxy.requestCreation(proxy);
             });
+        } else {
+            this.requestCreation(proxy);
+            return null;
+        }
+    }
+
+    private requestCreation(proxy: ThumbnailView): void {
+        if (!proxy.isThumbnailCompleted) {
+            // tslint:disable-next-line:max-line-length
+            proxy.thumbnailLimit = proxy.thumbnailLimit < proxy.pdfViewer.pageCount ? proxy.thumbnailLimit : proxy.pdfViewer.pageCount;
+            if (proxy.thumbnailLimit !== proxy.pdfViewer.pageCount) {
+                proxy.isThumbnailCompleted = false;
+                proxy.startIndex = 0;
+            }
+        } else {
+            proxy.startIndex = proxy.thumbnailLimit;
+            // tslint:disable-next-line:max-line-length
+            proxy.thumbnailLimit = proxy.startIndex + proxy.thumbnailThreshold < proxy.pdfViewer.pageCount ? proxy.startIndex + proxy.thumbnailThreshold : proxy.pdfViewer.pageCount;
+        }
+        let request: XMLHttpRequest = new XMLHttpRequest();
+        // tslint:disable-next-line:max-line-length
+        let jsonObject: object = { startPage: proxy.startIndex, endPage: proxy.thumbnailLimit, sizeX: 99.7, sizeY: 141, hashId: proxy.pdfViewerBase.hashId };
+        request.open('POST', proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.renderThumbnail);
+        request.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+        request.responseType = 'json';
+        request.send(JSON.stringify(jsonObject));
+        // tslint:disable-next-line
+        request.onreadystatechange = (event: any): void => {
+            if (request.readyState === 4 && request.status === 200) {
+                // tslint:disable-next-line
+                let data: any = event.currentTarget.response;
+                if (typeof data !== 'object') {
+                    data = JSON.parse(data);
+                }
+                proxy.renderThumbnailImage(data);
+                if (!proxy.isThumbnailCompleted) {
+                    proxy.startIndex = proxy.thumbnailLimit;
+                    proxy.isThumbnailCompleted = true;
+                }
+            }
+        };
+        // tslint:disable-next-line
+        request.onerror = (event: any): void => {
+            this.pdfViewerBase.openNotificationPopup();
+            proxy.pdfViewer.fireAjaxRequestFailed(request.status, request.statusText);
+        };
     }
 
     /**
@@ -105,13 +119,15 @@ export class ThumbnailView {
                     let offsetTop: number = thumbnailDiv.offsetTop + thumbnailDiv.clientTop - this.thumbnailTopMargin;
                     this.pdfViewerBase.navigationPane.sideBarContent.scrollTop = offsetTop;
                 }
-                if (this.previousElement) {
-                    this.previousElement.classList.remove('e-pv-thumbnail-selection');
-                    this.previousElement.classList.remove('e-pv-thumbnail-focus');
-                    this.previousElement.classList.remove('e-pv-thumbnail-hover');
-                    this.previousElement.classList.add('e-pv-thumbnail-selection-ring');
+                if (!this.isThumbnailClicked) {
+                    if (this.previousElement) {
+                        this.previousElement.classList.remove('e-pv-thumbnail-selection');
+                        this.previousElement.classList.remove('e-pv-thumbnail-focus');
+                        this.previousElement.classList.remove('e-pv-thumbnail-hover');
+                        this.previousElement.classList.add('e-pv-thumbnail-selection-ring');
+                    }
+                    this.setFocusStyle(thumbnailDiv, pageNumber);
                 }
-                this.setFocusStyle(thumbnailDiv, pageNumber);
                 this.previousElement = thumbnailDiv.children[0] as HTMLElement;
             }
         }
@@ -187,7 +203,13 @@ export class ThumbnailView {
         }
         this.pdfViewerBase.navigationPane.enableThumbnailButton();
         if (this.thumbnailLimit !== this.pdfViewerBase.pageCount && this.thumbnailView) {
-            Promise.all([this.createRequestForThumbnails()]);
+            // tslint:disable-next-line
+            let isIE: boolean = !!(document as any).documentMode;
+            if (!isIE) {
+                Promise.all([this.createRequestForThumbnails()]);
+            } else {
+                this.createRequestForThumbnails();
+            }
         }
     }
 
@@ -232,6 +254,8 @@ export class ThumbnailView {
     private goToThumbnailPage(pageNumber: number): void {
         if (pageNumber > 0 && pageNumber <= this.pdfViewerBase.pageCount && this.pdfViewerBase.currentPageNumber !== pageNumber) {
             this.pdfViewerBase.updateScrollTop(pageNumber - 1);
+        } else {
+            this.isThumbnailClicked = false;
         }
     }
     private setSelectionStyle(thumbnailElement: HTMLElement): void {
@@ -284,8 +308,10 @@ export class ThumbnailView {
             }
             thumbnailElement.classList.remove('e-pv-thumbnail-hover');
         } else {
-            thumbnailElement.classList.remove('e-pv-thumbnail-selection');
-            thumbnailElement.classList.add('e-pv-thumbnail-focus');
+            if (!thumbnailElement.classList.contains('e-pv-thumbnail-selection')) {
+                thumbnailElement.classList.remove('e-pv-thumbnail-selection');
+                thumbnailElement.classList.add('e-pv-thumbnail-focus');
+            }
         }
     }
 

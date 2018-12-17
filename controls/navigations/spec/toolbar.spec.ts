@@ -591,6 +591,223 @@ describe('Toolbar Control', () => {
         });
     });
 
+      //OverflowMode main Property with Align property testing
+      describe('Main property OverflowMode with Align testing', () => {
+        let toolbar: Toolbar;
+        document.body.innerHTML = '';
+        beforeEach((): void => {
+            toolbar = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Toolbar' });
+            setStyleAttribute(ele, { 'display': 'block', 'white-space': 'nowrap', 'position': 'relative' });
+            ele.style.display = 'block';
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (toolbar) {
+                toolbar.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it(' Main property OverflowMode for scrollable with alignment', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                overflowMode: "Scrollable",
+                items: [{text: 'Today', overflow: 'Hide', align: 'Left' },  
+                 { text: 'Week', overflow: 'Hide', align: 'Left' },
+                { text: 'Week', overflow: 'Hide', align: 'Left' },
+                { text: 'Week', overflow: 'Hide', align: 'Center' },
+                { text: 'Month', overflow: 'Hide', align: 'Center'},
+                {text: 'Year', overflow: 'Hide', align: 'Right'},
+                {text: 'Print', overflow: 'Hide',align: 'Right' },
+                {text: 'Sync', overflow: 'Hide',align: 'Right' }]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            let ELe: HTMLElement = <HTMLElement>element.children[0];
+            expect(ELe.classList.contains("e-tbar-pos")).toEqual(true);
+        });
+        it(' Main property OverflowMode for popup with alignment', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                overflowMode: "Popup",
+                items: [{text: 'Today', overflow: 'Hide', align: 'Left' },  
+                 { text: 'Week', overflow: 'Hide', align: 'Left' },
+                { text: 'Week', overflow: 'Hide', align: 'Left' },
+                { text: 'Week', overflow: 'Hide', align: 'Center' },
+                { text: 'Month', overflow: 'Hide', align: 'Center'},
+                {text: 'Year', overflow: 'Hide', align: 'Right'},
+                {text: 'Print', overflow: 'Hide',align: 'Right' },
+                {text: 'Sync', overflow: 'Hide',align: 'Right' }]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            let ELe: HTMLElement = <HTMLElement>element.children[0];
+            expect(ELe.classList.contains("e-tbar-pos")).toEqual(true);
+        });
+        it(' Main property OverflowMode for MultiRow with alignment', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                overflowMode: "MultiRow",
+                items: [{text: 'Today', overflow: 'Hide', align: 'Left' },  
+                 { text: 'Week', overflow: 'Hide', align: 'Left' },
+                { text: 'Week', overflow: 'Hide', align: 'Left' },
+                { text: 'Week', overflow: 'Hide', align: 'Center' },
+                { text: 'Month', overflow: 'Hide', align: 'Center'},
+                {text: 'Year', overflow: 'Hide', align: 'Right'},
+                {text: 'Print', overflow: 'Hide',align: 'Right' },
+                {text: 'Sync', overflow: 'Hide',align: 'Right' }]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            let ELe: HTMLElement = <HTMLElement>element.children[0];
+            expect(ELe.classList.contains("e-tbar-pos")).toEqual(true);
+        });
+        it(' Main property OverflowMode for Extended with alignment', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                overflowMode: "Extended",
+                items: [{text: 'Today', overflow: 'Hide', align: 'Left' },  
+                { text: 'Week', overflow: 'Hide', align: 'Left' },
+               { text: 'Week', overflow: 'Hide', align: 'Left' },
+               { text: 'Week', overflow: 'Hide', align: 'Center' },
+               { text: 'Month', overflow: 'Hide', align: 'Center'},
+               {text: 'Year', overflow: 'Hide', align: 'Right'},
+               {text: 'Print', overflow: 'Hide',align: 'Right' },
+               {text: 'Sync', overflow: 'Hide',align: 'Right' }]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            let ELe: HTMLElement = <HTMLElement>element;
+            expect(ELe.classList.contains("e-extended-toolbar")).toEqual(true);
+        });
+    });
+
+          //OverflowMode main Property with Align property testing
+          describe('Main property OverflowMode enabled with width and Align', () => {
+            let toolbar: Toolbar;
+            document.body.innerHTML = '';
+            beforeEach((): void => {
+                toolbar = undefined;
+                let ele: HTMLElement = createElement('div', { id: 'ej2Toolbar' });
+                setStyleAttribute(ele, { 'display': 'block', 'white-space': 'nowrap', 'position': 'relative' });
+                ele.style.display = 'block';
+                document.body.appendChild(ele);
+            });
+            afterEach((): void => {
+                if (toolbar) {
+                    toolbar.destroy();
+                }
+                document.body.innerHTML = '';
+            });
+            it(' Main property OverflowMode for scrollable with width and alignment', () => {
+                let element: HTMLElement = document.getElementById('ej2Toolbar');
+                toolbar = new Toolbar({
+                    width:100,
+                    overflowMode: "Scrollable",
+                    items: [{text: 'Today', overflow: 'Hide', align: 'Left' },  
+                     { text: 'Week', overflow: 'Hide', align: 'Left' },
+                    { text: 'Week', overflow: 'Hide', align: 'Left' },
+                    { text: 'Week', overflow: 'Hide', align: 'Center' },
+                    { text: 'Month', overflow: 'Hide', align: 'Center'},
+                    {text: 'Year', overflow: 'Hide', align: 'Right'},
+                    {text: 'Print', overflow: 'Hide',align: 'Right' },
+                    {text: 'Sync', overflow: 'Hide',align: 'Right' }]
+                });
+                toolbar.appendTo('#ej2Toolbar');
+                let ELe: HTMLElement = <HTMLElement>element.children[0];
+                expect(ELe.classList.contains("e-hscroll")).toEqual(true);
+            });
+            it(' Main property OverflowMode for popup with width and alignment', () => {
+                let element: HTMLElement = document.getElementById('ej2Toolbar');
+                toolbar = new Toolbar({
+                    width:100,
+                    overflowMode: "Popup",
+                    items: [{text: 'Today', overflow: 'Hide', align: 'Left' },  
+                     { text: 'Week', overflow: 'Hide', align: 'Left' },
+                    { text: 'Week', overflow: 'Hide', align: 'Left' },
+                    { text: 'Week', overflow: 'Hide', align: 'Center' },
+                    { text: 'Month', overflow: 'Hide', align: 'Center'},
+                    {text: 'Year', overflow: 'Hide', align: 'Right'},
+                    {text: 'Print', overflow: 'Hide',align: 'Right' },
+                    {text: 'Sync', overflow: 'Hide',align: 'Right' }]
+                });
+                toolbar.appendTo('#ej2Toolbar');
+                let ELe: HTMLElement = <HTMLElement>element.children[0];
+                expect(ELe.classList.contains("e-tbar-pos")).toEqual(true);
+            });
+            it(' Main property OverflowMode for MultiRow with width and alignment', () => {
+                let element: HTMLElement = document.getElementById('ej2Toolbar');
+                toolbar = new Toolbar({
+                    width: 50,
+                    overflowMode: "MultiRow",
+                    items: [{text: 'Today', overflow: 'Hide', align: 'Left' },  
+                    { text: 'Week', overflow: 'Hide', align: 'Left' },
+                    { text: 'Week', overflow: 'Hide', align: 'Left' },
+                    { text: 'Week', overflow: 'Hide', align: 'Center' },
+                    { text: 'Month', overflow: 'Hide', align: 'Center'},
+                    {text: 'Year', overflow: 'Hide', align: 'Right'},
+                    {text: 'Print', overflow: 'Hide',align: 'Right' },
+                    {text: 'Sync', overflow: 'Hide',align: 'Right' }]
+                });
+                toolbar.appendTo('#ej2Toolbar');
+                let ELe: HTMLElement = <HTMLElement>element.children[0];
+                expect(ELe.classList.contains("e-multirow-pos")).toEqual(true);
+            });
+            it(' Main property OverflowMode for Extended with width and alignment', () => {
+                let element: HTMLElement = document.getElementById('ej2Toolbar');
+                toolbar = new Toolbar({
+                    width: '300px',
+                    overflowMode: "Extended",
+                    items: [{text: 'Today', overflow: 'Hide', align: 'Left' },  
+                   { text: 'Week', overflow: 'Hide', align: 'Left' },
+                   { text: 'Week', overflow: 'Hide', align: 'Left' },
+                   { text: 'Week', overflow: 'Hide', align: 'Center' },
+                   { text: 'Month', overflow: 'Hide', align: 'Center'},
+                   {text: 'Year', overflow: 'Hide', align: 'Right'},
+                   {text: 'Print', overflow: 'Hide',align: 'Right' },
+                   {text: 'Sync', overflow: 'Hide',align: 'Right' }]
+                });
+                toolbar.appendTo('#ej2Toolbar');
+                let ELe: HTMLElement = <HTMLElement>element;
+                expect(ELe.classList.contains("e-extended-toolbar")).toEqual(true);
+            });
+        });
+
+         //OverflowMode Extended and multirow with Align property testing
+         describe('OverflowMode Extended and multirow with Align property testing', () => {
+            let toolbar: Toolbar;
+            document.body.innerHTML = '';
+            beforeEach((): void => {
+                toolbar = undefined;
+                let ele: HTMLElement = createElement('div', { id: 'ej2Toolbar' });
+                setStyleAttribute(ele, { 'display': 'block', 'white-space': 'nowrap', 'position': 'relative' });
+                ele.style.display = 'block';
+                document.body.appendChild(ele);
+            });
+            afterEach((): void => {
+                if (toolbar) {
+                    toolbar.destroy();
+                }
+                document.body.innerHTML = '';
+            });         
+            it('OverflowMode MultiRow with alignment enabled and disabled', () => {
+                let element: HTMLElement = document.getElementById('ej2Toolbar');
+                toolbar = new Toolbar({
+                    width: 380,
+                    overflowMode: "MultiRow",
+                    items: [{text: 'Today', overflow: 'Hide', align: 'Left' },  
+                     { text: 'Week', overflow: 'Hide', align: 'Left' },
+                    { text: 'Week', overflow: 'Hide', align: 'Left' },
+                    { text: 'Week', overflow: 'Hide', align: 'Center' },
+                    { text: 'Month', overflow: 'Hide', align: 'Center'},
+                    {text: 'Year', overflow: 'Hide', align: 'Right'},
+                    {text: 'Print', overflow: 'Hide',align: 'Right' },
+                    {text: 'Sync', overflow: 'Hide',align: 'Right' }]
+                });
+                toolbar.appendTo('#ej2Toolbar');
+                let ELe: HTMLElement = <HTMLElement>element.children[0];
+                expect(ELe.classList.contains("e-multirow-pos")).toEqual(true);
+                toolbar.removeItems(1);
+                expect(ELe.classList.contains("e-multirow-pos")).toEqual(false);
+                expect(ELe.classList.contains("e-tbar-pos")).toEqual(true);
+            });          
+        });
 
     // HtmlAttributes property testing
     describe(' Html attributes property testing in items main property', () => {

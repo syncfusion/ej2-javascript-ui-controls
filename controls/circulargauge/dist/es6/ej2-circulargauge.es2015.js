@@ -332,23 +332,6 @@ function getTemplateFunction(template) {
     }
     return templateFn;
 }
-function getElementSize(template, gauge, parent) {
-    let elementSize;
-    let element;
-    let templateFn = getTemplateFunction(template);
-    if (templateFn && templateFn(gauge).length) {
-        element = gauge.createElement('div', { id: gauge.element.id + '_Measure_Element' });
-        gauge.element.appendChild(element);
-        let templateElement = templateFn(gauge);
-        while (templateElement.length > 0) {
-            element.appendChild(templateElement[0]);
-        }
-        parent.appendChild(element);
-        elementSize = new Size(parent.getBoundingClientRect().width, parent.getBoundingClientRect().height);
-        remove(element);
-    }
-    return elementSize;
-}
 /**
  * Function to remove the element from id.
  * @private
@@ -366,11 +349,28 @@ function removeElement(id) {
  */
 function getPointer(targetId, gauge) {
     let tempString;
-    tempString = targetId.split(gauge.element.id + '_Axis_')[1];
+    tempString = targetId.replace(gauge.element.id, '').split('_Axis_')[1];
     return {
         axisIndex: +tempString[0],
         pointerIndex: +tempString[tempString.length - 1]
     };
+}
+function getElementSize(template, gauge, parent) {
+    let elementSize;
+    let element;
+    let templateFn = getTemplateFunction(template);
+    if (templateFn && templateFn(gauge).length) {
+        element = gauge.createElement('div', { id: gauge.element.id + '_Measure_Element' });
+        gauge.element.appendChild(element);
+        let templateElement = templateFn(gauge);
+        while (templateElement.length > 0) {
+            element.appendChild(templateElement[0]);
+        }
+        parent.appendChild(element);
+        elementSize = new Size(parent.getBoundingClientRect().width, parent.getBoundingClientRect().height);
+        remove(element);
+    }
+    return elementSize;
 }
 /**
  * Function to get the mouse position
@@ -1027,8 +1027,10 @@ class Annotations {
             templateFn = getTemplateFunction(argsData.content);
             if (templateFn && templateFn(axis).length) {
                 templateElement = templateFn(axis);
-                while (templateElement.length > 0) {
+                let count = templateElement.length;
+                while (count > 0) {
                     childElement.appendChild(templateElement[0]);
+                    count--;
                 }
             }
             else {
@@ -1113,6 +1115,7 @@ class GaugeTooltip {
             }
             let svgRect = this.gauge.svgObject.getBoundingClientRect();
             let elementRect = this.gauge.element.getBoundingClientRect();
+            let axisRect = document.getElementById(this.gauge.element.id + '_AxesCollection').getBoundingClientRect();
             let rect = new Rect(Math.abs(elementRect.left - svgRect.left), Math.abs(elementRect.top - svgRect.top), svgRect.width, svgRect.height);
             let currentPointer = getPointer(target.id, this.gauge);
             this.currentAxis = this.gauge.axes[currentPointer.axisIndex];
@@ -1151,20 +1154,9 @@ class GaugeTooltip {
             }
             if (!this.tooltip.showAtMousePosition) {
                 if (template) {
-                    let pointerRect = target.getBoundingClientRect();
-                    let size = getElementSize(this.tooltip.template, this.gauge, this.tooltipEle);
-                    let width = Math.abs(svgRect.width - pointerRect.width) - Math.abs(pointerRect.left - svgRect.left);
-                    if (size.height > Math.abs(svgRect.height - tooltipArgs.location.y) - 20) {
-                        tooltipArgs.location.y += size.height / 2;
-                    }
-                    if (size.width > width) {
-                        tooltipArgs.location.x -= Math.abs((svgRect.left + svgRect.width) - (tooltipArgs.location.x + size.width));
-                        this.tooltipRect = rect;
-                    }
-                    else {
-                        this.tooltipRect = rect;
-                        this.findPosition(rect, angle, content, tooltipArgs.location);
-                    }
+                    let elementSize = getElementSize(template, this.gauge, this.tooltipEle);
+                    this.tooltipRect = Math.abs(axisRect.left - svgRect.left) > elementSize.width ?
+                        this.findPosition(rect, angle, content, tooltipArgs.location) : rect;
                 }
                 else {
                     this.findPosition(rect, angle, content, tooltipArgs.location);
@@ -1257,6 +1249,7 @@ class GaugeTooltip {
                 this.tooltipPosition = 'RightTop';
                 break;
         }
+        return this.tooltipRect;
     }
     removeTooltip() {
         if (document.getElementsByClassName('EJ2-CircularGauge-Tooltip').length > 0) {
@@ -1468,6 +1461,7 @@ class AxisRenderer {
         let rangeElement = gauge.renderer.createGroup({
             id: gauge.element.id + '_Axis_Ranges_' + index
         });
+        let location = this.gauge.midPoint;
         let startAngle;
         let endAngle;
         let isClockWise = axis.direction === 'ClockWise';
@@ -1508,16 +1502,18 @@ class AxisRenderer {
                 }
                 endAngle = isClockWise ? endAngle : [startAngle, startAngle = endAngle][0];
                 endWidth = isClockWise ? endWidth : [startWidth, startWidth = endWidth][0];
+                let radius = range.roundedCornerRadius;
+                let process = (radius * 0.25);
                 oldStart = ((((range.currentRadius - (startWidth / 2)) * ((startAngle * Math.PI) / 180) -
-                    (range.roundedCornerRadius / 4)) / (range.currentRadius - (startWidth / 2))) * 180) / Math.PI;
+                    (radius / process)) / (range.currentRadius - (startWidth / 2))) * 180) / Math.PI;
                 oldEnd = ((((range.currentRadius - (endWidth / 2)) * ((endAngle * Math.PI) / 180) +
-                    (range.roundedCornerRadius / 4)) / (range.currentRadius - (endWidth / 2))) * 180) / Math.PI;
+                    (radius / process)) / (range.currentRadius - (endWidth / 2))) * 180) / Math.PI;
                 roundedStartAngle = ((((range.currentRadius) * ((startAngle * Math.PI) / 180) +
-                    range.roundedCornerRadius) / (range.currentRadius)) * 180) / Math.PI;
+                    radius) / (range.currentRadius)) * 180) / Math.PI;
                 roundedEndAngle = ((((range.currentRadius) * ((endAngle * Math.PI) / 180) -
-                    range.roundedCornerRadius) / (range.currentRadius)) * 180) / Math.PI;
+                    radius) / (range.currentRadius)) * 180) / Math.PI;
                 if (range.roundedCornerRadius) {
-                    appendPath(new PathOption(gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex, range.rangeColor, 0, range.rangeColor, 1, '0', getRoundedPathArc(gauge.midPoint, Math.floor(roundedStartAngle), Math.ceil(roundedEndAngle), Math.floor(oldStart), Math.ceil(oldEnd), range.currentRadius, startWidth, endWidth), '', 'pointer-events:none;'), rangeElement, gauge);
+                    appendPath(new PathOption(gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex, range.rangeColor, 0, range.rangeColor, 1, '0', getRoundedPathArc(location, Math.floor(roundedStartAngle), Math.ceil(roundedEndAngle), oldStart, oldEnd, range.currentRadius, startWidth, endWidth), '', 'pointer-events:none;'), rangeElement, gauge);
                 }
                 else {
                     appendPath(new PathOption(gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex, range.rangeColor, 0, range.rangeColor, 1, '0', getPathArc(gauge.midPoint, Math.floor(startAngle), Math.ceil(endAngle), range.currentRadius, startWidth, endWidth), '', 'pointer-events:none;'), rangeElement, gauge);
@@ -1648,29 +1644,29 @@ class PointerRenderer {
         else {
             endAngle = startAngle === endAngle ? [startAngle, startAngle = endAngle - 1][0] : [startAngle, startAngle = endAngle][0];
         }
-        let roundedStartAngle;
-        let roundedEndAngle;
-        let oldStart;
-        let oldEnd;
+        let roundStartAngle;
+        let roundEndAngle;
+        let oldStartValue;
+        let oldEndValue;
         let radius = pointer.roundedCornerRadius;
-        let process = radius * 0.25;
-        if (value <= process) {
+        let minRadius = (radius * 0.25);
+        if (value <= minRadius) {
             radius = value === 1 || 2 ? 8 : radius;
             radius /= 2;
-            process = radius * 0.25;
+            minRadius = radius * 0.25;
         }
-        oldStart = ((((pointer.currentRadius - (pointer.pointerWidth / 2)) * ((startAngle * Math.PI) / 180) -
-            (radius / process)) / (pointer.currentRadius - (pointer.pointerWidth / 2))) * 180) / Math.PI;
-        oldEnd = ((((pointer.currentRadius - (pointer.pointerWidth / 2)) * ((endAngle * Math.PI) / 180) +
-            (radius / process)) / (pointer.currentRadius - (pointer.pointerWidth / 2))) * 180) / Math.PI;
-        roundedStartAngle = ((((pointer.currentRadius) * ((startAngle * Math.PI) / 180) +
+        oldStartValue = ((((pointer.currentRadius - (pointer.pointerWidth / 2)) * ((startAngle * Math.PI) / 180) -
+            (radius / minRadius)) / (pointer.currentRadius - (pointer.pointerWidth / 2))) * 180) / Math.PI;
+        oldEndValue = ((((pointer.currentRadius - (pointer.pointerWidth / 2)) * ((endAngle * Math.PI) / 180) +
+            (radius / minRadius)) / (pointer.currentRadius - (pointer.pointerWidth / 2))) * 180) / Math.PI;
+        roundStartAngle = ((((pointer.currentRadius) * ((startAngle * Math.PI) / 180) +
             radius) / (pointer.currentRadius)) * 180) / Math.PI;
-        roundedEndAngle = ((((pointer.currentRadius) * ((endAngle * Math.PI) / 180) -
+        roundEndAngle = ((((pointer.currentRadius) * ((endAngle * Math.PI) / 180) -
             radius) / (pointer.currentRadius)) * 180) / Math.PI;
         pointer.pathElement.map((element) => {
             if (pointer.type === 'RangeBar') {
                 if (pointer.roundedCornerRadius && value) {
-                    element.setAttribute('d', getRoundedPathArc(location, roundedStartAngle, roundedEndAngle, oldStart, oldEnd, pointer.currentRadius, pointer.pointerWidth, pointer.pointerWidth));
+                    element.setAttribute('d', getRoundedPathArc(location, Math.floor(roundStartAngle), Math.ceil(roundEndAngle), oldStartValue, oldEndValue, pointer.currentRadius, pointer.pointerWidth, pointer.pointerWidth));
                     radius = 0;
                 }
                 else {
@@ -2437,6 +2433,10 @@ let CircularGauge = class CircularGauge extends Component {
      * @private
      */
     initPrivateVariable() {
+        if (this.element.id === '') {
+            let collection = document.getElementsByClassName('e-circulargauge').length;
+            this.element.id = 'circulargauge_control_' + collection;
+        }
         this.renderer = new SvgRenderer(this.element.id);
         this.gaugeAxisLayoutPanel = new AxisLayoutPanel(this);
         this.animatePointer = true;
@@ -2827,5 +2827,5 @@ CircularGauge = __decorate([
  * Circular Gauge component exported.
  */
 
-export { CircularGauge, Annotations, Line, Label, Range, Tick, Cap, NeedleTail, Animation$1 as Animation, Annotation, Pointer, Axis, Border, Font, Margin, TooltipSettings, GaugeTooltip, measureText, toPixel, getFontStyle, setStyles, measureElementRect, stringToNumber, textElement, appendPath, calculateSum, linear, getAngleFromValue, getDegree, getValueFromAngle, isCompleteAngle, getAngleFromLocation, getLocationFromAngle, getPathArc, getRangePath, getRoundedPathArc, getRoundedPath, getCompleteArc, getCirclePath, getCompletePath, getElement, getTemplateFunction, getElementSize, removeElement, getPointer, getMousePosition, getLabelFormat, calculateShapes, getRangeColor, CustomizeOption, PathOption, RectOption, Size, GaugeLocation, Rect, TextOption, VisibleLabels };
+export { CircularGauge, Annotations, Line, Label, Range, Tick, Cap, NeedleTail, Animation$1 as Animation, Annotation, Pointer, Axis, Border, Font, Margin, TooltipSettings, GaugeTooltip, measureText, toPixel, getFontStyle, setStyles, measureElementRect, stringToNumber, textElement, appendPath, calculateSum, linear, getAngleFromValue, getDegree, getValueFromAngle, isCompleteAngle, getAngleFromLocation, getLocationFromAngle, getPathArc, getRangePath, getRoundedPathArc, getRoundedPath, getCompleteArc, getCirclePath, getCompletePath, getElement, getTemplateFunction, removeElement, getPointer, getElementSize, getMousePosition, getLabelFormat, calculateShapes, getRangeColor, CustomizeOption, PathOption, RectOption, Size, GaugeLocation, Rect, TextOption, VisibleLabels };
 //# sourceMappingURL=ej2-circulargauge.es2015.js.map

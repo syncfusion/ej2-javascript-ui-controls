@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Default</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="utf-8" />
+    <link href="../theme-files/material.css" rel="stylesheet" />
+    <script>
+        window.require = {
+            config: function (json) {
+                window.rsConfig = json;
+                window.rsConfig.baseUrl = '';
+            }
+        };
+    </script>
+    <script src="./demo-config.js"></script>
+    <script data-main="./inplace-editor" src="../../../node_modules/requirejs/require.js"></script>
+    <script>
+        require.config(window.rsConfig);
+    </script>
+</head>
+
+<body class="e-bigger">
+    <select name="render-mode" id="renderMode">
+        <option value="" disabled selected>Mode</option>
+        <option value="1">Mouse</option>
+        <option value="2">Touch</option>
+    </select>
+    <select name="themes" id="themes">
+        <option value="" disabled selected>Theme</option>
+        <option value="material">Material</option>
+        <option value="fabric">Fabric</option>
+        <option value="bootstrap">Bootstrap</option>
+        <option value="highcontrast">HighContrast</option>
+        <option value="material-dark">Material-Dark</option>
+        <option value="fabric-dark">Fabric-Dark</option>
+        <option value="bootstrap-dark">Bootstrap-Dark</option>
+        <option value="highcontrast-light">HighContrast-light</option>
+    </select>
+    <br/><br/>
+    <div class="container">
+        <div id="root">
+            <table id="extra">
+                <tr>
+                    <td>Mode: </td>
+                    <td><button id="mode"></button></td>
+                </tr>
+            </table>
+            <table id="demo">
+                <tbody>
+                    <tr>
+                        <th>TextBox</th>
+                        <td>
+                            <div id="textBox"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Auto Complete</th>
+                        <td>
+                            <div id="autoComplete"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>ComboBox</th>
+                        <td>
+                            <div id="comboBox"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>DropDownList</th>
+                        <td>
+                            <div id="dropDownList"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>MultiSelect</th>
+                        <td>
+                            <div id="multiSelect"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Date Picker</th>
+                        <td>
+                            <div id="datePicker"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>DateRange Picker</th>
+                        <td>
+                            <div id="dateRangePickerEle"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>DateTime Picker</th>
+                        <td>
+                            <div id="dateTimePicker"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>TimePicker</th>
+                        <td>
+                            <div id="timePicker"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                    <th>ColorPicker</th>
+                        <td>
+                            <div id="colorPicker"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>MaskedTextBox</th>
+                        <td>
+                            <div id="maskedTextBox"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Numeric TextBox</th>
+                        <td>
+                            <div id="numericTextBox"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Slider</th>
+                        <td>
+                            <div id="slider"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>RichTextEditor</th>
+                        <td>
+                            <div id="rte"></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    </div>
+
+    <style>
+        #root {
+            margin-left: 150px;
+            margin-top: 50px;
+            margin-bottom: 200px;
+            margin-right: 100px;
+        }
+
+        #demo>tbody>tr>td {
+            width: 150px;
+            height: 50px;
+            vertical-align: middle;
+            padding: 4px 8px;
+        }
+
+        #demo {
+            border: 1px solid #dddddd;
+            width: 100%;
+        }
+
+        table {
+            background-color: transparent;
+            border-collapse: collapse;
+            border-spacing: 13px;
+        }
+
+        th {
+            width: 30%;
+        }
+
+        tr:nth-child(odd) th {
+            background: gainsboro;
+        }
+
+        tr:nth-child(even) th {
+            background: #f1f1f1;
+        }
+
+        #demo>tbody>tr>td {
+            border: 1px solid #dddddd;
+        }
+
+        #sampleMode {
+            float: left;
+        }
+
+        #extra {
+            border: none;
+        }
+    </style>
+</body>
+
+</html>

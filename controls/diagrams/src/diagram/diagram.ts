@@ -40,7 +40,7 @@ import { RealAction } from './enum/enum';
 import { PathElement } from './core/elements/path-element';
 import { TextElement } from './core/elements/text-element';
 import { updateStyle, removeItem, updateConnector, updateShape, setUMLActivityDefaults, findNodeByName } from './utility/diagram-util';
-import { checkPortRestriction, serialize, deserialize, updateHyperlink, getObjectType } from './utility/diagram-util';
+import { checkPortRestriction, serialize, deserialize, updateHyperlink, getObjectType, removeGradient } from './utility/diagram-util';
 import { Rect } from './primitives/rect';
 import { getPortShape } from './objects/dictionary/common';
 import { PointPortModel } from './objects/port-model';
@@ -85,7 +85,7 @@ import { findAnnotation, arrangeChild, getInOutConnectPorts } from './utility/di
 import { randomId, cloneObject, extendObject, getFunction, getBounds } from './utility/base-util';
 import { Snapping } from './objects/snapping';
 import { DiagramTooltipModel } from './objects/tooltip-model';
-import { TextStyleModel } from './core/appearance-model';
+import { TextStyleModel, ShadowModel } from './core/appearance-model';
 import { TransformFactor } from './interaction/scroller';
 import { RadialTree } from './layout/radial-tree';
 import { HierarchicalTree } from './layout/hierarchical-tree';
@@ -106,6 +106,7 @@ import { IconShapeModel } from './objects/icon-model';
 import { canAllowDrop } from './utility/constraints-util';
 import { checkParentAsContainer, addChildToContainer } from './interaction/container-interaction';
 import { DataManager } from '@syncfusion/ej2-data';
+import { ContextMenuItemModel } from './../diagram/objects/interface/interfaces';
 /**
  * Represents the Diagram control
  * ```html
@@ -473,6 +474,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     @Property()
     public addInfo: Object;
+
+    /**
+     * Customizes the undo redo functionality 
+     * @default undefined
+     */
+    @Property()
+    public historyManager: History;
 
     /**
      * Helps to return the default properties of node
@@ -1056,8 +1064,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     private htmlLayer: HTMLElement;
     /** @private */
-    public historyList: History;
-    /** @private */
     public diagramActions: DiagramAction;
     /** @private */
     public commands: {};
@@ -1177,6 +1183,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             let changedProp: Connector = newProp.connectors[index] as Connector;
                             this.connectorPropertyChange(actualObject, oldProp.connectors[index] as Connector, changedProp, true);
                             objectArray.push(actualObject);
+                            if (actualObject && actualObject.parentId && this.nameTable[actualObject.parentId].shape.type === 'UmlClassifier') {
+                                this.updateConnectorEdges(this.nameTable[actualObject.parentId] || actualObject);
+                            }
+
                         }
                         this.updateBridging();
                         if (this.mode === 'Canvas') {
@@ -1230,6 +1240,21 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.realActions |= RealAction.PreventDataInit;
                     super.refresh();
                     this.realActions &= ~RealAction.PreventDataInit;
+                    break;
+                case 'contextMenuSettings':
+                    if (newProp.contextMenuSettings.showCustomMenuOnly !== undefined) {
+                        this.contextMenuSettings.showCustomMenuOnly = newProp.contextMenuSettings.showCustomMenuOnly;
+                    }
+                    if (newProp.contextMenuSettings.show !== undefined) {
+                        this.contextMenuSettings.show = newProp.contextMenuSettings.show;
+                    }
+                    if (newProp.contextMenuSettings.items) {
+                        let items: ContextMenuItemModel[] = newProp.contextMenuSettings.items;
+                        for (let key of Object.keys(items)) {
+                            let index: number = Number(key);
+                            this.contextMenuSettings.items[index] = items[index];
+                        }
+                    }
                     break;
             }
         }
@@ -2561,6 +2586,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     removeElement(children[i].id + '_html_element', elementId);
                 }
             }
+            removeGradient(children[i].id);
         }
     }
 
@@ -2602,7 +2628,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         };
                         if (!(this.diagramActions & DiagramAction.Clear)) {
                             if (selectedItems.length > 0 && this.undoRedoModule && !this.layout.type) {
-                                this.historyList.startGroupAction();
+                                this.historyManager.startGroupAction();
                                 groupAction = true;
                             }
                         }
@@ -2621,6 +2647,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         this.deleteChild(obj);
                         if (this.nameTable[(obj as Node | Connector).parentId] && this.nameTable[(obj as Node | Connector).parentId].shape.type === 'UmlClassifier') {
                             this.updateDiagramObject(this.nameTable[(obj as Node | Connector).parentId]);
+                            this.updateConnectorEdges(this.nameTable[(obj as Node | Connector).parentId]);
                         }
                     }
                     let index: number;
@@ -2647,7 +2674,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         this.spliceConnectorEdges(obj as ConnectorModel, false);
                     }
                     if (groupAction) {
-                        this.historyList.endGroupAction();
+                        this.historyManager.endGroupAction();
                     }
                     if (isSelected(this, currentObj)) {
                         this.unSelect(currentObj);
@@ -2677,7 +2704,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
         } else if (selectedItems.length > 0) {
             if (this.undoRedoModule) {
-                this.historyList.startGroupAction();
+                this.historyManager.startGroupAction();
                 groupAction = true;
             }
             for (let i: number = 0; i < selectedItems.length; i++) {
@@ -2692,7 +2719,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
             if (groupAction) {
-                this.historyList.endGroupAction();
+                this.historyManager.endGroupAction();
             }
             this.clearSelection();
         }
@@ -3752,13 +3779,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (independentObj) {
             let checkBoundaryConstraints: boolean = this.commandHandler.checkBoundaryConstraints(
                 undefined, undefined, obj.wrapper.bounds);
+            (layer as Layer).zIndexTable[(obj as Node).zIndex] = (obj as Node).id;
             if (!checkBoundaryConstraints) {
                 let node: (NodeModel | ConnectorModel)[] = obj instanceof Node ? this.nodes : this.connectors;
                 for (let i: number = 0; i <= node.length; i++) {
                     if (node[i] && (obj as NodeModel).id === node[i].id) { node.splice(i, 1); }
                 }
+                delete (layer as Layer).zIndexTable[(obj as Node).zIndex];
             }
-            (layer as Layer).zIndexTable[(obj as Node).zIndex] = (obj as Node).id;
         }
     }
 
@@ -4502,7 +4530,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public renderDiagramElements(
         canvas: HTMLCanvasElement | SVGElement, renderer: DiagramRenderer, htmlLayer: HTMLElement,
-        transform: boolean = true, fromExport?: boolean): void {
+        transform: boolean = true, fromExport?: boolean, isOverView?: boolean): void {
         let pageBounds: Rect = this.scroller.getPageBounds();
         pageBounds.x *= this.scroller.currentZoom;
         pageBounds.y *= this.scroller.currentZoom;
@@ -4562,7 +4590,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     renderer.renderElement(
                         renderNode.wrapper, canvas, htmlLayer,
                         (!renderer.isSvgMode && transform) ? transformValue : undefined,
-                        undefined, undefined, status && !this.diagramActions);
+                        undefined, undefined, status && (!this.diagramActions || isOverView));
                 }
             }
         }
@@ -4805,7 +4833,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             let renderer: DiagramRenderer = new DiagramRenderer(overview.id, new SvgRenderer(), false);
             let g: HTMLElement = document.getElementById(overview.element.id + '_diagramLayer') as HTMLCanvasElement;
             let htmlLayer: HTMLElement = getHTMLLayer(overview.element.id);
-            this.renderDiagramElements(g as HTMLCanvasElement, overview.diagramRenderer || renderer, htmlLayer);
+            this.renderDiagramElements(g as HTMLCanvasElement, overview.diagramRenderer || renderer, htmlLayer, undefined, undefined, true);
         }
     }
 
@@ -5179,7 +5207,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 let annotation: ShapeAnnotationModel | PathAnnotationModel | TextModel = findAnnotation(node, this.activeLabel.id);
                 if (annotation.content !== text && !args.cancel) {
                     if ((node as Node).parentId && this.nameTable[(node as Node).parentId].shape.type === 'UmlClassifier'
-                        && text.indexOf(' + ') === -1 && node.id.indexOf('')) {
+                        && text.indexOf('+') === -1 && text.indexOf('-') === -1 && text.indexOf('#') === -1
+                        && text.indexOf('~') === -1 && node.id.indexOf('_umlClass_header') === -1) {
                         text = ' + ' + text;
                     }
                     annotation.content = text;
@@ -5318,6 +5347,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             updateStyle(node.style, actualObject.wrapper.children[0]);
             update = true;
         }
+        if (node.shadow !== undefined) {
+            this.updateShadow(actualObject.shadow, node.shadow);
+            update = true;
+        }
         if (node.constraints !== undefined) {
             if ((oldObject.constraints & NodeConstraints.Select) &&
                 (!(node.constraints & NodeConstraints.Select)) && isSelected(this, actualObject)) {
@@ -5419,6 +5452,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             updateConnector = true;
             this.updateUMLActivity(node, oldObject, actualObject, this);
         }
+        if ((actualObject.shape && actualObject.shape.type === 'UmlClassifier') || (actualObject.parentId &&
+            this.nameTable[actualObject.parentId] && this.nameTable[actualObject.parentId].shape.type === 'UmlClassifier')) {
+            update = true;
+            updateConnector = true;
+        }
         if (node.ports !== undefined) {
             for (let key of Object.keys(node.ports)) {
                 let index: number = Number(key); update = true; let changedObject: PointPortModel = node.ports[key];
@@ -5486,6 +5524,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             if (!this.preventNodesUpdate) {
                 this.updateDiagramObject(actualObject as NodeModel);
+                if (!isLayout && updateConnector) {
+                    this.updateConnectorEdges(actualObject);
+                }
             }
             if (actualObject.status !== 'New' && this.diagramActions) {
                 actualObject.status = 'Update';
@@ -5863,6 +5904,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             if (isMeasure || canUpdateSize) {
                 annotationWrapper.width = (actualAnnotation.width || (actualObject as Node).width);
+                if (actualAnnotation.template) {
+                    annotationWrapper.width = (annotationWrapper.width || annotationWrapper.actualSize.width);
+                    annotationWrapper.height = (actualAnnotation.height || (actualObject as Node).height ||
+                        annotationWrapper.actualSize.height);
+                }
             }
             if (changedObject.horizontalAlignment !== undefined) {
                 annotationWrapper.horizontalAlignment = changedObject.horizontalAlignment; isMeasure = true;
@@ -5933,9 +5979,21 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             removeElement(annotationWrapper.id + '_groupElement', elementId);
             removeElement(annotationWrapper.id + '_html_element', elementId);
         }
-        annotationWrapper =
-            (actualObject as Node).initAnnotationWrapper(
-                actualAnnotation as Annotation, this.element.id) as DiagramHtmlElement | TextElement;
+        if (actualObject instanceof Node) {
+            annotationWrapper =
+                (actualObject as Node).initAnnotationWrapper(
+                    actualAnnotation as Annotation, this.element.id) as DiagramHtmlElement | TextElement;
+        } else if (actualObject instanceof Connector) {
+            let canvas: Container = actualObject.wrapper;
+            let segment: DiagramElement = canvas.children[0];
+            let bounds: Rect = new Rect(
+                segment.offsetX - segment.width / 2, segment.offsetY - segment.height / 2, segment.width, segment.height);
+            annotationWrapper =
+                actualObject.getAnnotationElement(
+                    actualObject.annotations[actualObject.annotations.length - 1] as PathAnnotation,
+                    actualObject.intermediatePoints,
+                    bounds, this.getDescription, this.element.id);
+        }
         for (let i: number = 0; i < nodes.children.length; i++) {
             if (annotationWrapper.id === nodes.children[i].id) {
                 nodes.children.splice(i, 1, annotationWrapper);
@@ -6126,8 +6184,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     private updatePage(): void {
         if (this.diagramActions & DiagramAction.Render) {
-            this.scroller.setSize();
             this.scroller.updateScrollOffsets();
+            this.scroller.setSize();
             //updating overview
             for (let temp of this.views) {
                 let view: View = this.views[temp];
@@ -6141,6 +6199,22 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public protectPropertyChange(enable: boolean): void {
         this.isProtectedOnChange = enable;
+    }
+
+    /** @private */
+    public updateShadow(nodeShadow: ShadowModel, changedShadow: ShadowModel): void {
+        if (changedShadow.angle !== undefined) {
+            nodeShadow.angle = changedShadow.angle;
+        }
+        if (changedShadow.color !== undefined) {
+            nodeShadow.color = changedShadow.color;
+        }
+        if (changedShadow.distance !== undefined) {
+            nodeShadow.distance = changedShadow.distance;
+        }
+        if (changedShadow.opacity !== undefined) {
+            nodeShadow.opacity = changedShadow.opacity;
+        }
     }
 
     /** @private */

@@ -339,7 +339,6 @@ describe('Diagram Control', () => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 100 + diagram.element.offsetLeft, 200 - diagram.element.offsetTop);
             let element2 = document.getElementById('bezierLine_1_1');
-            debugger;
             expect(element2.attributes['x1'].nodeValue == "100" && element2.attributes['x2'].nodeValue == "125").toBe(true)
             done();
         });
@@ -1143,7 +1142,6 @@ describe('Diagram Control', () => {
             ele.remove();
         });
         it('Checking connector docking - rotated source and target nodes', function (done) {
-            debugger
             expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 347.31 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 126.79 &&
                 (diagram.connectors[0] as Connector).intermediatePoints[1].x == 399.45 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 126.79 &&
                 (diagram.connectors[0] as Connector).intermediatePoints[2].x == 399.45 && (diagram.connectors[0] as Connector).intermediatePoints[2].y == 292.27 &&
@@ -1250,7 +1248,6 @@ describe('Diagram Control', () => {
             ele.remove();
         });
         it('Checking connector docking - rotated source and target nodes', function (done) {
-            debugger
             expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 428.21 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 159.91 &&
                 (diagram.connectors[0] as Connector).intermediatePoints[1].x == 477.26 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 159.91 &&
                 (diagram.connectors[0] as Connector).intermediatePoints[2].x == 477.26 && (diagram.connectors[0] as Connector).intermediatePoints[2].y == -1.14 &&
@@ -1437,5 +1434,62 @@ describe('Diagram Control', () => {
         });
 
     });
-
+    describe('Connectors-', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramDecoratorIssue' });
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                width: 500, height: 500,
+                connectors: [
+                    {
+                        id: 'connector1',
+                        type: 'Straight',
+                        sourcePoint: { x: 100, y: 100 },
+                        targetPoint: { x: 500, y: 200 },
+                        segments: [
+                            { type: 'Straight', point: { x: 150, y: 150 } }
+                        ],
+                    },
+                    {
+                        id: 'connector2',
+                        type: 'Straight',
+                        sourcePoint: { x: 300, y: 100 },
+                        targetPoint: { x: 400, y: 200 },
+                        sourceDecorator: {
+                            style: { fill: 'black' },
+                            shape: 'Diamond',
+                            pivot: { x: 0, y: 0.5 }
+                        },
+                        targetDecorator: {
+                            shape: 'None',
+                            style: { fill: 'blue' },
+                            pivot: { x: 0, y: 0.5 }
+                        }
+                    },
+                ],
+                getConnectorDefaults: (obj: ConnectorModel) => {
+                    let connector: ConnectorModel = {};
+                    connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
+                    return connector;
+                },
+                snapSettings: { constraints: SnapConstraints.ShowLines }
+            });
+            diagram.appendTo('#diagramDecoratorIssue');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('checking connector path data', function (done) {
+            expect((diagram.connectors[0].wrapper.children[0] as any).pathData === 'M100 100 L150 150 L499.51 199.93')
+            done();
+            expect((diagram.connectors[0].wrapper.children[0] as any).pathData === 'M15,10 L15,22 L5,16Z')
+            done();
+        });
+    });
 });

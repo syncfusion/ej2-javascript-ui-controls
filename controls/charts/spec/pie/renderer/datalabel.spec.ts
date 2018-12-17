@@ -449,7 +449,6 @@ describe('Data Label checking for the pie doughnut series', () => {
         accumulation.loaded = (args: IAccLoadedEventArgs): void => {
             let element: HTMLElement = document.getElementById('ej2container_datalabel_Series_0');
             expect(element.childElementCount == 9).toBe(true);
-            console.log('pie smart labels count :' + element.childElementCount);
             done();
         };
         accumulation.series[0].dataLabel = {
@@ -464,7 +463,6 @@ describe('Data Label checking for the pie doughnut series', () => {
         accumulation.loaded = (args: IAccLoadedEventArgs): void => {
             let element: HTMLElement = document.getElementById('ej2container_datalabel_Series_0');
             expect(element.childElementCount == 9).toBe(true);
-            console.log('donut smart labels count :' + element.childElementCount);
             done();
         };
         accumulation.series[0].dataLabel = {

@@ -124,7 +124,7 @@ export class Page {
         let expanded: Predicate = new Predicate('expanded', 'notequal', null).or('expanded', 'notequal', undefined);
         let parents: ITreeData[] = dm.executeLocal(new Query().where(expanded));
         let visualData: ITreeData[] = parents.filter((e: ITreeData) => {
-            return getExpandStatus(e, parents);
+          return getExpandStatus(this.parent, e, parents);
         });
         pageingDetails.count = visualData.length;
         let query: Query = new Query();

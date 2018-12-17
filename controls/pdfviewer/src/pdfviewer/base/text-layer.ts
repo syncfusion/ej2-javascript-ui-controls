@@ -352,6 +352,9 @@ export class TextLayer {
             beforeClose: (): void => {
                 this.notifyDialog.destroy();
                 this.pdfViewer.element.removeChild(popupElement);
+                if (this.pdfViewer.textSearchModule) {
+                    this.pdfViewer.textSearch.isMessagePopupOpened = false;
+                }
             }
         });
         this.notifyDialog.appendTo(popupElement);

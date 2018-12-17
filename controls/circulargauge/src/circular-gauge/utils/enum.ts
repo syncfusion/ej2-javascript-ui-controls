@@ -48,16 +48,18 @@ export type GaugeTheme =
     'Material' |
     /**  Render a gauge with Bootstrap theme. */
     'Bootstrap' |
-    /**  Render a gauge with Highcontrast theme. */
-    'HighcontrastLight'|
+    /**  Render a gauge with Highcontrast light theme. */
+    'HighContrastLight'|
     /**  Render a gauge with Fabric theme. */
     'Fabric'|
     /**  Render a chart with Material Dark theme. */
     'MaterialDark'|
     /**  Render a chart with Fabric Dark theme. */
     'FabricDark'|
-    /**  Render a chart with Highcontrast theme. */
+    /**  Render a chart with Highcontrast Dark theme. */
     'Highcontrast'|
+    /**  Render a chart with Highcontrast Dark theme. */
+    'HighContrast'|
     /**  Render a chart with Bootstrap Dark theme. */
     'BootstrapDark';
 

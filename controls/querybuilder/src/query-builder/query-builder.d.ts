@@ -107,14 +107,17 @@ export declare class Rule extends ChildProperty<Rule> {
 export declare class ShowButtons extends ChildProperty<ShowButtons> {
     /**
      * Specifies the boolean value in ruleDelete that the enable/disable the buttons in rule.
+     * @default true
      */
     ruleDelete: boolean;
     /**
      * Specifies the boolean value in groupInsert that the enable/disable the buttons in group.
+     * @default true
      */
     groupInsert: boolean;
     /**
      * Specifies the boolean value in groupDelete that the enable/disable the buttons in group.
+     * @default true
      */
     groupDelete: boolean;
 }
@@ -154,7 +157,6 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private customOperators;
     private operators;
     private operatorValue;
-    private validationRules;
     private ruleElem;
     private groupElem;
     /**
@@ -310,7 +312,8 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private clickEventHandler;
     private selectBtn;
     private addRuleElement;
-    private validateFields;
+    private renderToolTip;
+    validateFields(): void;
     private groupTemplate;
     private ruleTemplate;
     private addGroupElement;
@@ -323,10 +326,14 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private getDistinctValues;
     private renderMultiSelect;
     private processTemplate;
+    private renderStringValue;
+    private renderNumberValue;
+    private processValueString;
     private renderControls;
     private renderValues;
     private updateValues;
     private updateRules;
+    private validatValue;
     private findGroupByIdx;
     /**
      * Removes the component from the DOM and detaches all its related event handlers.
@@ -348,6 +355,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private initWrapper;
     private renderSummary;
     private renderSummaryCollapse;
+    private columnSort;
     onPropertyChanged(newProp: QueryBuilderModel, oldProp: QueryBuilderModel): void;
     protected preRender(): void;
     protected render(): void;
@@ -381,7 +389,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      * Deletes the rule or rules based on the rule ID.
      * @returns void.
      */
-    deleteRules(filterID: string[]): void;
+    deleteRules(ruleID: string[]): void;
     /**
      * Gets the query for Data Manager.
      * @returns string.
@@ -429,12 +437,12 @@ export interface Validation {
      * Specifies the minimum value in textbox validation.
      * @default 2
      */
-    min: number;
+    min?: number;
     /**
      * Specifies the maximum value in textbox validation.
      * @default 10
      */
-    max: number;
+    max?: number;
     /**
      * Specifies whether the value is required or not
      * @default true

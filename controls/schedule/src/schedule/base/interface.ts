@@ -389,3 +389,13 @@ export interface ActionBaseArgs {
     scroll?: ScrollOptions;
     navigation?: NavigateOptions;
 }
+
+/** @hidden */
+export interface StateArgs {
+    isRefresh: boolean;
+    isResource: boolean;
+    isView: boolean;
+    isDate: boolean;
+    isLayout: boolean;
+    isDataManager: boolean;
+}

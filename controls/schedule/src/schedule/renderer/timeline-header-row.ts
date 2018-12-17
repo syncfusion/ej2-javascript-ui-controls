@@ -52,10 +52,10 @@ export class TimelineHeaderRow {
         let tdDatas: TdData[] = [];
         let customHelper: Object = {
             getYear: (dt: Date) => {
-                return this.parent.globalize.formatDate(dt, { format: 'y' });
+                return this.parent.globalize.formatDate(dt, { format: 'y', calendar: this.parent.getCalendarMode() });
             },
             getMonth: (dt: Date) => {
-                return this.parent.globalize.formatDate(dt, { format: 'MMMM' });
+                return this.parent.globalize.formatDate(dt, { format: 'MMMM', calendar: this.parent.getCalendarMode() });
             },
             getWeekNumber: (dt: Date) => {
                 return getWeekNumber(dt);

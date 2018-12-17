@@ -126,6 +126,24 @@ document.getElementById('highcontrast').onclick = (e: Event) => {
     menuObj.refresh();
     document.getElementById('theme').setAttribute('href', './theme-files/highcontrast.css');
 };
+document.getElementById('materialdark').onclick = (e : Event) => {
+    document.body.classList.add('darkBG');
+    enableRipple(false);
+    menuObj.refresh();
+    document.getElementById('theme').setAttribute('href', './theme-files/material-dark.css');
+};
+document.getElementById('bootstrapdark').onclick = (e : Event) => {
+    document.body.classList.add('darkBG');
+    enableRipple(false);
+    menuObj.refresh();
+    document.getElementById('theme').setAttribute('href', './theme-files/bootstrap-dark.css');
+};
+document.getElementById('fabricdark').onclick = (e : Event) => {
+    document.body.classList.add('darkBG');
+    enableRipple(false);
+    menuObj.refresh();
+    document.getElementById('theme').setAttribute('href', './theme-files/fabric-dark.css');
+};
 
 // function to handle the CheckBox change event
 function onChange(args: ChangeEventArgs): void {

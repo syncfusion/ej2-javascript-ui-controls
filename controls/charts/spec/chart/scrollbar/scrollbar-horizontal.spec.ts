@@ -665,7 +665,7 @@ describe('Scrollbar Chart ', () => {
                 expect(thumbEle.getAttribute('width') === '40').toBe(true);
                 done();
             };
-            chartObj.theme = 'HighcontrastLight';
+            chartObj.theme = 'HighContrastLight';
             chartObj.loaded = loaded;
             chartObj.refresh();
         });
@@ -864,7 +864,7 @@ describe('Scrollbar Chart ', () => {
 
             }
             chartObj.loaded = loaded;
-            chartObj.theme = 'HighcontrastLight';
+            chartObj.theme = 'HighContrastLight';
             chartObj.refresh();
         });
 
@@ -902,7 +902,7 @@ describe('Scrollbar Chart ', () => {
                 expect(circleEle).not.toBe(null);
                 done();
             }
-            chartObj.theme = 'HighcontrastLight';
+            chartObj.theme = 'HighContrastLight';
             chartObj.loaded = loaded;
             chartObj.refresh()
         });
@@ -1053,7 +1053,7 @@ describe('Scrollbar Chart ', () => {
                 console.log(thumbEle.getAttribute('x') + ',' + thumbEle.getAttribute('width'));
                 done();
             };
-            chartObj.theme = 'HighcontrastLight';
+            chartObj.theme = 'HighContrastLight';
             chartObj.loaded = loaded;
             chartObj.refresh();
             });

@@ -177,7 +177,7 @@ describe('Chart Control', () => {
                 expect(getElement(prefix + 11 + suffix).getAttribute('fill')).toBe(highContrast[1]);
                 done();
             };
-            chartObj.theme = 'HighcontrastLight';
+            chartObj.theme = 'HighContrastLight';
             chartObj.loaded = loaded;
             chartObj.refresh();
         });

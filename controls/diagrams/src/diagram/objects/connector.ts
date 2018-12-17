@@ -1003,7 +1003,7 @@ export class Connector extends NodeBase implements IElement {
         this.annotations = [
             {
                 id: this.id + 'sourcelabel', content: sourceText, offset: 0, alignment: 'Before',
-                margin: {right: 5, bottom: 5 }
+                margin: { right: 5, bottom: 5 }
             },
             {
                 id: this.id + 'targetlabel', content: targetText, offset: 1, alignment: 'Before',
@@ -1150,7 +1150,7 @@ export class Connector extends NodeBase implements IElement {
         textele.id = this.id + '_' + annotation.id;
         if (bounds.width === 0) { bounds.width = this.style.strokeWidth; }
         if (bounds.height === 0) { bounds.height = this.style.strokeWidth; }
-        textele.style = annotation.style;
+        // textele.style = annotation.style;
         // tslint:disable-next-line:no-any
         let wrapperContent: any;
         let description: Function = getFunction(getDescription);
@@ -1321,7 +1321,7 @@ export class Connector extends NodeBase implements IElement {
     private bridgePath(connector: Connector, path: string, pointIndex: number): string {
         let pathData: string = path;
         if (connector.bridges.length > 0) {
-            if (connector.type === 'Straight') {
+            if (connector.type === 'Straight' && connector.segments.length < 2) {
                 for (let n: number = 0; n < connector.bridges.length; n++) {
                     let bridge: Bridge = connector.bridges[n];
                     if (!bridge.rendered) {
@@ -1330,7 +1330,7 @@ export class Connector extends NodeBase implements IElement {
                         bridge.rendered = true;
                     }
                 }
-            } else if (connector.type === 'Orthogonal') {
+            } else if (connector.type === 'Orthogonal' || (connector.type === 'Straight' && connector.segments.length > 1)) {
                 for (let n: number = 0; n < connector.bridges.length; n++) {
                     let bridge: Bridge = connector.bridges[n];
                     if (bridge.segmentPointIndex === pointIndex) {

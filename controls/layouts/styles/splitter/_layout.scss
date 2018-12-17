@@ -71,6 +71,7 @@
         flex-direction: column;
         justify-content: center;
         min-width: 1px;
+        z-index: 15;
 
         .e-hidden {
           display: none;
@@ -112,6 +113,7 @@
         flex: 0 0 auto;
         justify-content: center;
         min-height: 1px;
+        z-index: 20;
 
         .e-hidden {
           display: none;

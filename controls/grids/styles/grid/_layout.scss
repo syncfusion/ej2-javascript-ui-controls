@@ -342,8 +342,8 @@
     .e-emptyrow td,
     .e-frozencontent table tr td:first-child:empty,
     .e-movablecontent table tr td:first-child:empty,
-    .e-gridcontent tr td:first-child:empty,
-    .e-gridcontent tr.e-row .e-rowcell:empty {
+    .e-gridcontent tr td:not(.e-indentcell):first-child:empty,
+    &:not(.e-grid-min-height) .e-gridcontent tr.e-row .e-rowcell:empty {
       line-height: $grid-bigger-rowcell-line-height;
     }
 
@@ -369,8 +369,8 @@
     .e-frozencontent table tr td:first-child:empty,
     .e-movablecontent table tr td:first-child:empty,
     .e-frozenhdrcont table tr td:first-child:empty,
-    .e-gridcontent tr td:first-child:empty,
-    .e-gridcontent tr.e-row .e-rowcell:empty {
+    .e-gridcontent tr td:not(.e-indentcell):first-child:empty,
+    &:not(.e-grid-min-height) .e-gridcontent tr.e-row .e-rowcell:empty {
       height: $grid-bigger-rowcell-line-height + $grid-bigger-content-padding +  $grid-bigger-content-padding;
     }
 
@@ -594,8 +594,8 @@
     }
 
     .e-dropitemscount {   
-        border: 1px solid $grid-clone-dropitemscount-color;
-        border-radius: 14px;
+        border: 1px solid $grid-clone-dropitemscount-border;
+        border-radius: 17px;
         box-sizing: content-box;
         font-size: 13px;
         line-height: normal;
@@ -608,9 +608,9 @@
         z-index: 5;
     }
 
-    .e-cloneproperties.e-draganddrop .e-rowdragdrop {
-        border-top: 1px solid $grid-clone-row-border-color;
-        border-right: 1px solid $grid-clone-row-border-color;
+     .e-cloneproperties.e-draganddrop .e-rowdragdrop {
+        border-top: 1px solid $grid-cell-border-color;
+        border-right: 1px solid $grid-cell-border-color;
         border-bottom: 0;
     }
 
@@ -636,7 +636,7 @@
         font-size: $grid-drag-font-size;
         font-weight: $grid-drag-icon-font-weight;
         color: $grid-drap-drop-icon-color;
-        opacity: 0.54;
+        opacity: $grid-drag-icon-opacity;
       }
   
       .e-row .e-icon-rowdragmoveicon::before {
@@ -969,8 +969,8 @@
     .e-frozencontent table tr td:first-child:empty,
     .e-movablecontent table tr td:first-child:empty,
     .e-frozenhdrcont table tr td:first-child:empty,
-    .e-gridcontent tr td:first-child:empty,
-    .e-gridcontent tr.e-row .e-rowcell:empty {
+    .e-gridcontent tr td:not(.e-indentcell):first-child:empty,
+    &:not(.e-grid-min-height) .e-gridcontent tr.e-row .e-rowcell:empty {
       height: $grid-rowcell-line-height + $grid-content-padding + $grid-content-padding;
     }
 
@@ -1654,7 +1654,7 @@
     }
 
     .e-draganddrop .e-rowcell {
-      opacity: .9;
+      opacity: .95;
     }
 
     &.e-default .e-gridheader th.e-firstcell {
@@ -2479,6 +2479,18 @@
         border-width: $grid-headercell-both-border-width;
       }
 
+      &.e-default.e-bothlines .e-dragheadercell,
+      &.e-default.e-bothlines .e-rowdragheader,
+      &.e-default.e-bothlines .e-cloneproperties.e-draganddrop td.e-rowdragdrop {
+        border-left: 1px solid $grid-header-border-color;
+        padding-left: 3px;
+      }
+
+      & .e-cloneproperties.e-draganddrop .e-row .e-icon-rowdragicon::before {
+        left: 4px;
+        position: relative;
+      }
+
       &.e-default table th[rowspan]  {
         border-width: $grid-rtl-headercell-both-border-width;
       }
@@ -2763,8 +2775,8 @@
   .e-frozencontent table tr td:first-child:empty,
   .e-movablecontent table tr td:first-child:empty,
   .e-frozenhdrcont table tr td:first-child:empty,
-  .e-gridcontent tr td:first-child:empty,
-  .e-gridcontent tr.e-row .e-rowcell:empty {
+  .e-gridcontent tr td:not(.e-indentcell):first-child:empty,
+  &:not(.e-grid-min-height) .e-gridcontent tr.e-row .e-rowcell:empty {
     height: 18px;
    }
 }

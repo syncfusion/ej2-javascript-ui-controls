@@ -274,13 +274,6 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     public isMultiSelect: boolean;
 
     /**
-     * If set true, enables the multi selection in chart. It requires `selectionMode` to be `Point` | `Series` | or `Cluster`.
-     * @default false
-     */
-    @Property(false)
-    public isSingleAxis: boolean;
-
-    /**
      * Triggers before the range navigator rendering
      * @event
      */
@@ -341,7 +334,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * It specifies the types of series in financial chart.
      */
-    @Property(['Line', 'Hilo', 'HiloOpenClose', 'Hollow Candle', 'Spline', 'Candle'])
+    @Property(['Line', 'Hilo', 'OHLC', 'Hollow Candle', 'Spline', 'Candle'])
     public seriesType: ChartSeriesType[];
 
     /**
@@ -359,12 +352,13 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * It specifies the types of trendline types in financial chart.
      */
-    @Property(['Linear', 'Exponential', 'Polynomial', 'Power', 'Logarithmic', 'MovingAverage'])
+    @Property(['Linear', 'Exponential', 'Polynomial', 'Logarithmic', 'Moving Average'])
     public trendlineType: TrendlineTypes[];
-
 
     /** @private */
     public startValue: number;
+    /** @private */
+    public isSingleAxis: boolean = false;
     /** @private */
     public endValue: number;
     /** @private */
@@ -401,7 +395,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     private threshold: number;
     /** @private */
     public isChartDrag: boolean;
-    private resizeTo: number;
+    public resizeTo: number;
     /** @private */
     public disableTrackTooltip: boolean;
     /** @private */
@@ -653,6 +647,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     public renderPeriodSelector(): void {
         if (this.enablePeriodSelector) {
             this.toolbarSelector.initializePeriodSelector();
+            this.periodSelector.toolbar.refreshOverflow();   //to avoid overlapping toolbar elements
             if (!this.enableSelector) {
                 this.cartesianChart.cartesianChartRefresh(this, this.startValue, this.endValue);
             }

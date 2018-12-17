@@ -55,13 +55,13 @@ export class AggregateMenu {
     }
     private createContextMenu(): void {
         let menuItems: MenuItemModel[] = [
+            { text: 'Sum', id: 'Sum' },
             { text: 'Count', id: 'Count' },
-            { text: 'DistinctCount', id: 'DistinctCount' },
+            { text: 'Distinct Count', id: 'DistinctCount' },
+            { text: 'Product', id: 'Product' },
             { text: 'Avg', id: 'Avg' },
             { text: 'Min', id: 'Min' },
             { text: 'Max', id: 'Max' },
-            { text: 'Sum', id: 'Sum' },
-            { text: 'Product', id: 'Product' },
             { text: 'More...', id: 'MoreOption' }];
         let menuOptions: ContextMenuModel = {
             items: menuItems,
@@ -274,8 +274,10 @@ export class AggregateMenu {
             } else {
                 let field: string = buttonElement.getAttribute('data-uid');
                 let valuefields: IFieldOptions[] = this.parent.dataSource.values;
-                buttonElement.querySelector('.e-content').innerHTML = menu.item.text + ' ' + 'of' + ' ' +
-                    this.parent.engineModule.fieldList[field].caption;
+                let contentElement: HTMLElement = buttonElement.querySelector('.e-content') as HTMLElement;
+                let captionName: string = menu.item.text + ' ' + 'of' + ' ' + this.parent.engineModule.fieldList[field].caption;
+                contentElement.innerHTML = captionName;
+                contentElement.setAttribute('title', captionName);
                 buttonElement.setAttribute('data-type', menu.item.id as string);
                 for (let vCnt: number = 0; vCnt < this.parent.dataSource.values.length; vCnt++) {
                     if (this.parent.dataSource.values[vCnt].name === field) {
@@ -312,9 +314,11 @@ export class AggregateMenu {
         let baseItemInstance: DropDownList = getInstance('#' + this.parentElement.id + '_base_item_option', DropDownList) as DropDownList;
         let fieldName: string = dialogElement.getAttribute('data-field');
         let buttonElement: HTMLElement = this.parentElement.querySelector('.' + cls.PIVOT_BUTTON_CLASS + '#' + fieldName) as HTMLElement;
-        buttonElement.querySelector('.e-content').innerHTML =
-            this.parent.localeObj.getConstant(summaryInstance.value as string)
-            + ' ' + 'of' + ' ' + captionInstance.value;
+        let contentElement: HTMLElement = buttonElement.querySelector('.e-content') as HTMLElement;
+        let captionName: string =
+            this.parent.localeObj.getConstant(summaryInstance.value as string) + ' ' + 'of' + ' ' + captionInstance.value;
+        contentElement.innerHTML = captionName;
+        contentElement.setAttribute('title', captionName);
         buttonElement.setAttribute('data-type', summaryInstance.value as string);
         buttonElement.setAttribute('data-caption', captionInstance.value);
         buttonElement.setAttribute('data-basefield', baseFieldInstance.value as string);

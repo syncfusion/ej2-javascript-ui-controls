@@ -164,8 +164,11 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
      * Assigns the custom function to place the error message in the page.
      * @event
      */
+    // tslint:disable
     @Event()
-    public customPlacement: EmitType<Object>;
+    public customPlacement: EmitType<HTMLElement | any>;
+
+    // tslint:enable
 
     /**
      * Add validation rules to the corresponding input element based on `name` attribute.   

@@ -1,5 +1,5 @@
 import { MarkdownParser } from './../base/markdown-parser';
-import { IMarkdownSubCommands, IMDFormats } from './../base/interface';
+import { IMarkdownSubCommands, IMDFormats, ITextArea } from './../base/interface';
 import { MarkdownSelection } from './markdown-selection';
 import { extend } from '@syncfusion/ej2-base';
 import * as EVENTS from './../../common/constant';
@@ -30,6 +30,19 @@ export class MDFormats {
         e.subCommand = e.subCommand.toLowerCase();
         let textArea: HTMLTextAreaElement = this.parent.element as HTMLTextAreaElement;
         this.selection.save(textArea.selectionStart, textArea.selectionEnd);
+        let parents: { [key: string]: string | number }[] = this.selection.getSelectedParentPoints(textArea);
+        if (this.isAppliedFormat(parents) === e.subCommand) {
+            if (e.subCommand === 'pre') {
+                if (parents.length > 1) {
+                    this.applyCodeBlock(textArea, e, parents);
+                } else {
+                    return;
+                }
+            }
+            this.cleanFormat(textArea);
+            this.restore(textArea, textArea.selectionStart, textArea.selectionEnd, e);
+            return;
+        }
         if (e.subCommand === 'p') {
             this.cleanFormat(textArea);
             this.restore(textArea, textArea.selectionStart, textArea.selectionEnd, e);
@@ -40,7 +53,7 @@ export class MDFormats {
         let start: number = textArea.selectionStart;
         let end: number = textArea.selectionEnd;
         let addedLength: number = 0;
-        let parents: { [key: string]: string | number }[] = this.selection.getSelectedParentPoints(textArea);
+        parents = this.selection.getSelectedParentPoints(textArea);
         if (e.subCommand === 'pre') {
             if (parents.length > 1) {
                 this.applyCodeBlock(textArea, e, parents);
@@ -147,13 +160,28 @@ export class MDFormats {
                 0, start as number) + this.syntax[command] + textArea.value.substring(start, end) +
                 lastLine + this.syntax[command] +
                 textArea.value.substr(end as number, textArea.value.length);
-            start += this.syntax[command].length;
-            end += this.syntax[command].length - 1;
+            start = this.selection.selectionStart + this.syntax[command].length;
+            end = this.selection.selectionEnd + this.syntax[command].length - 1;
         } else {
-            start = textArea.selectionStart;
-            end = textArea.selectionEnd;
+            let cmd: string = this.syntax[command];
+            let selection: { [key: string]: string | number } = this.parent.markdownSelection.getSelectedInlinePoints(textArea);
+            let startNo: number = textArea.value.substr(0, textArea.selectionStart as number).lastIndexOf(cmd);
+            let endNo: number = textArea.value.substr(textArea.selectionEnd as number, textArea.selectionEnd as number).indexOf(cmd);
+            endNo = endNo + (selection.end as number);
+            let repStartText: string = this.replaceAt(
+                textArea.value.substr(0, selection.start as number), cmd, '', startNo, selection.start as number);
+            let repEndText: string = this.replaceAt(
+                textArea.value.substr(selection.end as number, textArea.value.length), cmd, '', 0, endNo);
+            textArea.value = repStartText + selection.text + repEndText;
+            start = this.selection.selectionStart - cmd.length;
+            end = this.selection.selectionEnd - cmd.length;
         }
         this.restore(textArea, start, end, event);
+    }
+    private replaceAt(input: string, search: string, replace: string, start: number, end: number): string {
+        return input.slice(0, start)
+            + input.slice(start, end).replace(search, replace)
+            + input.slice(end);
     }
     private restore(textArea: HTMLTextAreaElement, start: number, end: number, event?: IMarkdownSubCommands): void {
         this.selection.save(start, end);
@@ -166,5 +194,29 @@ export class MDFormats {
                 event: event.event
             });
         }
+    }
+
+    private isAppliedFormat(lines: { [key: string]: string | number }[], documentNode?: Node): string {
+        let format: string = 'p';
+        let configKey: string[] = Object.keys(this.syntax);
+        let keys: string[] = Object.keys(this.syntax);
+        let direction: string = (this.parent.element as ITextArea).selectionDirection;
+        let checkLine: string = direction === 'backward' ? lines[0].text as string : lines[lines.length - 1].text as string;
+        for (let i: number = 0; !documentNode && i < keys.length; i++) {
+            if (keys[i] !== 'pre' && this.selection.isStartWith(checkLine, this.syntax[keys[i]])) {
+                format = keys[i];
+                break;
+            } else if (keys[i] === 'pre') {
+                let parentLines: string[] = this.selection.getAllParents((this.parent.element as HTMLTextAreaElement).value);
+                let firstPrevText: string = parentLines[(lines[0].line as number) - 1];
+                let lastNextText: string = parentLines[lines.length + 1];
+                if (this.selection.isStartWith(firstPrevText, this.syntax[keys[i]].split('\n')[0]) &&
+                    this.selection.isStartWith(lastNextText, this.syntax[keys[i]].split('\n')[0])) {
+                    format = keys[i];
+                    break;
+                }
+            }
+        }
+        return format;
     }
 }

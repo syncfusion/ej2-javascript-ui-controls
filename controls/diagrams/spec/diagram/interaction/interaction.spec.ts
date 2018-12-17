@@ -2670,7 +2670,17 @@ describe('Diagram Control', () => {
                 (diagram.contextMenuModule as any).contextMenuOnClose(e);
                 done();
             });
-
+            it('databind in context menu', (done: Function) => {
+                diagram.contextMenuSettings.showCustomMenuOnly = true;
+                diagram.dataBind();
+                diagram.contextMenuSettings.show = false;
+                diagram.dataBind();
+                diagram.contextMenuSettings.items = [{ id: 'tape', text: 'tape' }];
+                diagram.dataBind();
+                expect(diagram.contextMenuSettings.showCustomMenuOnly).toBe(true);
+                expect(diagram.contextMenuSettings.show).toBe(false);
+                done();
+            });
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();

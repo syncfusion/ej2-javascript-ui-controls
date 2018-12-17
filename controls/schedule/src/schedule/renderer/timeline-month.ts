@@ -128,13 +128,13 @@ export class TimelineMonth extends Month {
     }
 
     public getMonthStart(currentDate: Date): Date {
-        let monthStart: Date = util.firstDateOfMonth(util.resetTime(currentDate));
+        let monthStart: Date = this.parent.calendarUtil.firstDateOfMonth(util.resetTime(currentDate));
         return new Date(monthStart.getFullYear(), monthStart.getMonth(), monthStart.getDate());
     }
 
     public getMonthEnd(currentDate: Date): Date {
-        let monthStart: Date = util.firstDateOfMonth(util.resetTime(currentDate));
-        return util.lastDateOfMonth(util.addMonths(new Date(+monthStart), this.parent.activeViewOptions.interval - 1));
+        let monthStart: Date = this.parent.calendarUtil.firstDateOfMonth(util.resetTime(currentDate));
+        return this.parent.calendarUtil.lastDateOfMonth(util.addMonths(new Date(+monthStart), this.parent.activeViewOptions.interval - 1));
     }
 
     public generateColumnLevels(): TdData[][] {

@@ -54,6 +54,8 @@ export class TreeMapLegend {
         this.legendNames = [];
         this.totalPages = [];
         this.gradientCount = 1;
+        this.widthIncrement = 0;
+        this.heightIncrement = 0;
         this.defsElement = this.treemap.renderer.createDefs();
         this.treemap.svgObject.appendChild(this.defsElement);
         this.calculateLegendBounds();
@@ -726,7 +728,7 @@ export class TreeMapLegend {
                 case 'Bottom':
                     totalRect.height = (areaHeight - height);
                     x = (totalWidth / 2) - (width / 2);
-                    y = (legend.position === 'Top') ? areaY : (areaY + totalRect.height);
+                    y = (legend.position === 'Top') ? areaY : (areaY + totalRect.height) + spacing;
                     totalRect.y = (legend.position === 'Top') ? areaY + height + spacing : areaY;
                     break;
                 case 'Left':

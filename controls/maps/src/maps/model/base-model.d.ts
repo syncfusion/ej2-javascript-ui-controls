@@ -945,9 +945,9 @@ export interface ShapeSettingsModel {
 }
 
 /**
- * Interface for a class MarkerSettings
+ * Interface for a class MarkerBase
  */
-export interface MarkerSettingsModel {
+export interface MarkerBaseModel {
 
     /**
      * Options for customizing the color and width of the marker.
@@ -1049,6 +1049,13 @@ export interface MarkerSettingsModel {
      * To configure the highlight settings of the maps.
      */
     highlightSettings?: HighlightSettingsModel;
+
+}
+
+/**
+ * Interface for a class MarkerSettings
+ */
+export interface MarkerSettingsModel extends MarkerBaseModel{
 
 }
 

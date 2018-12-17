@@ -459,11 +459,99 @@ describe('Diagram Control', () => {
 
         it('Checking stack panel addition of inner node', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            debugger;
             mouseEvents.clickEvent(diagramCanvas, 310, 310);
             diagram.remove();
             diagram.undo();
             diagram.redo();
+            expect(diagram.nodes.length > 1).toBe(true);
+            done();
+        });
+    });
+    describe('Simple Stack Panel interaction', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+
+            ele = createElement('div', { id: 'diagram35' });
+            document.body.appendChild(ele);
+            let node1: NodeModel = {
+                id: 'nodeww1',
+                offsetX: 300,
+                offsetY: 300, style: {
+                    fill: '#26A0DA',
+                }, borderColor: 'white'
+                ,
+                shape: {
+                    type: 'UmlClassifier',
+                    class: {
+                        attributes: [
+                            {
+                                type: 'Date', scope: 'Package',
+                                style: { fill: "black", fontSize: 11, strokeColor: 'green', strokeWidth: 4 }
+                            },
+                            { name: 'sickness', type: 'History', scope: 'Private', isSeparator: true },
+                            { name: 'prescription', type: 'String[*]', scope: 'Protected' },
+                            { name: 'allergies', type: 'String[*]', scope: 'Public' }
+                        ], methods: [
+                            { scope: 'Package', isSeparator: true, style: {}, parameters: [{ name: 'Date', style: {} }], type: 'History' },
+                        ],
+                        name: 'Patient'
+                    },
+                    classifier: 'Class'
+                } as UmlClassifierShapeModel,
+            };
+            let node2: NodeModel = {
+                id: 'nodeww1ddd',
+                offsetX: 500,
+                offsetY: 500, style: {
+                    fill: '#26A0DA',
+                }, borderColor: 'white'
+                ,
+                shape: {
+                    type: 'UmlClassifier',
+                    class: {
+                        attributes: [
+                            {
+                                type: 'Date', scope: 'Package',
+                                style: { fill: "black", fontSize: 11, strokeColor: 'green', strokeWidth: 4 }
+                            },
+                            { name: 'sickness', type: 'History', scope: 'Private', isSeparator: true },
+                            { name: 'prescription', type: 'String[*]', scope: 'Protected' },
+                            { name: 'allergies', type: 'String[*]', scope: 'Public' }
+                        ], methods: [
+                            { scope: 'Package', isSeparator: true, style: {}, parameters: [{ name: 'Date', style: {} }], type: 'History' },
+                        ],
+                        name: 'Patient'
+                    },
+                    classifier: 'Class'
+                } as UmlClassifierShapeModel,
+            };
+            let connector: ConnectorModel = {
+                id: 'conn1',
+                sourceID: 'nodeww1ddd',
+                targetID: 'nodeww1'
+            }
+            diagram = new Diagram({ width: '500px', height: '500px', nodes: [node1, node2], connectors: [connector] } as DiagramModel);
+            diagram.appendTo('#diagram35');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking stack panel addition of inner node', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 310, 220);
+            var bound = diagram.nodes[0].wrapper.bounds.middleRight;
+            mouseEvents.mouseMoveEvent(diagramCanvas, bound.x + 10, bound.y);
+            mouseEvents.clickEvent(diagramCanvas, bound.x + 10, bound.y);
+            (document.getElementById('diagram35_editBox') as any).value = 'ffffdddddddddddddddddfffffffffffffffffffffffffffffffffffffff'
+            mouseEvents.clickEvent(diagramCanvas, 390, 700);
+            expect(diagram.nodes[0].wrapper.actualSize.width > 200).toBe(true);
+            diagram.undo();
+            expect(diagram.nodes[0].wrapper.actualSize.width < 200).toBe(true);
             expect(diagram.nodes.length > 1).toBe(true);
             done();
         });

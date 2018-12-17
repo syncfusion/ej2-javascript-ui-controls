@@ -277,11 +277,11 @@ export class Crud {
     private checkBlockEvents(eventData: Object | Object[]): boolean {
         let eventCollection: Object[] = (eventData instanceof Array) ? eventData : [eventData];
         let isBlockAlert: boolean = false;
+        let fields: EventFieldsMapping = this.parent.eventFields;
         eventCollection.forEach((event: { [key: string]: Object }) => {
             let dataCol: Object[] = [];
-            if (!isNullOrUndefined(event[this.parent.eventFields.recurrenceRule])) {
-                let parentObj: { [key: string]: Object } = this.parent.eventBase.getRecurrenceEvent(event);
-                dataCol = this.parent.eventBase.generateOccurrence(parentObj || event);
+            if (!isNullOrUndefined(event[fields.recurrenceRule]) && isNullOrUndefined(event[fields.recurrenceID])) {
+                dataCol = this.parent.eventBase.generateOccurrence(event);
             } else {
                 dataCol.push(event);
             }

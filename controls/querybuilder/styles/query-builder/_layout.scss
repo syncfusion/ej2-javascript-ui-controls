@@ -32,7 +32,7 @@
 
       & .e-rule-list>::after,
       & .e-rule-list>::before {
-        right: $qrybldr-rule-list-first-top;
+        right: $qrybldr-rule-list-first-right;
     }
 
       & .e-rule-list>::after {
@@ -71,7 +71,7 @@
     & .e-rule-list>::before {
       border-style: $qrybldr-rule-list-border-style;
       content: '';
-      left: $qrybldr-rule-list-first-top;
+      left: $qrybldr-rule-list-first-left;
       position: $vrmode-ruledlt-mrgnpos;
       width: $qrybldr-nav-width;
     }
@@ -86,6 +86,10 @@
       height: $after-border-height;
     }
 
+    & .e-rule-list > .e-rule-container:not(:first-child)::before {
+      height: $after-ruleborder-height;
+      }
+
     & .e-rule-list > .e-rule-container::after {
       height: $qrybldr-rule-container-after-height;
       top: $qrybldr-rule-container-after-top;
@@ -99,8 +103,11 @@
       left: $qrybldr-grpcon-brder-left;
     }
 
+    & .e-rule-list .e-group-container::after {
+      left: $qrybldr-grpcon-aftrbrder-left;
+      }
+
     & .e-group-header {
-      overflow: $qrybldr-grpbody-overflow;
 
       & .e-group-action .e-btn {
         margin-left: $group-action-margin;
@@ -109,6 +116,8 @@
       & .e-btn-group {
         border: $qrybldr-btngrp-brdr;
         box-shadow: $qrybldr-btngrp-shadow;
+        display: $qrybldr-btngroup-display;
+        float: $qrybldr-field;
 
         & label.e-btn {
           line-height: $btngrp-line-height;
@@ -125,6 +134,10 @@
         margin-bottom: $qrybldr-add-mrgn-btm;
       }
 
+      & button.e-button-hide {
+        display: $qrybldr-button-hide;
+      }
+
       &.e-btn.e-small.e-round {
         box-shadow: $ruledelete-shadow;
          }
@@ -138,6 +151,7 @@
 
     & .e-rule-list {
       padding: $qrybldr-rulelist;
+      padding-bottom: 0;
     }
 
     & .e-group-container {
@@ -150,10 +164,11 @@
 
     & .e-rule-list > .e-group-container {
       padding: 0;
+      padding-bottom: $grpcon-padding;
     }
 
-    & .e-error {
-      box-shadow: $qrybldr-error-shadow;
+    & .e-group-container .e-rule-list > .e-group-container {
+      padding-bottom: 0;
     }
 
     & .e-group-body {
@@ -165,27 +180,48 @@
         margin-top: $qrybldr-rulecont-margin;
         padding-right: $hrmode-ruledlt-mrgn;
 
+        &.e-prev-joined-rule {
+          border-bottom: 0;
+        }
+
+        &.e-joined-rule {
+          border-top-style: $qrybldr-rule-list-border-style;
+          border-top-width: 2px;
+          margin-top: 0;
+        }
+
+        &.e-separate-rule {
+          margin-top: $grpcon-padding;
+        }
+
         & .e-rule-filter {
           padding: $rulecon-padding;
           width: $qrybldr-width;
         }
 
-        & .e-rule-operator,
+        & .e-rule-value .e-control-wrapper.e-numeric:not(:first-child),
+        & .e-rule-value .e-control-wrapper.e-date-wrapper:not(:first-child),
+        & .e-rule-value .e-control-wrapper.e-input-group:not(:first-child) {
+          float: $qrybldr-rulelist-grcon-float;
+          margin-top: $group-action-margin;
+        }
 
-        & .e-rule-value {
+        & .e-rule-value .e-multi-select-wrapper {
+          min-width: $qrybldr-multi-width;
+        }
+
+        & .e-rule-value .e-multiselect {
+          max-width: $qrybldr-multi-maxwidth;
+        }
+
+        & .e-operator,
+
+        & .e-value {
           padding: $rulecon-padding;
 
           & .e-radio-wrapper {
             margin-right: $radio-wrapper-margin;
         }
-        }
-
-        & .e-rule-value.e-rule-multiselect {
-          width: $qrybldr-multi-width;
-            }
-
-        & .e-deletegroup {
-          float: $qrybldr-rulelist-grcon-float;
         }
        }
 
@@ -194,10 +230,21 @@
         margin-left: $ruledelete-margin;
       }
 
+      & .e-rule-container button.e-button-hide {
+        display: $qrybldr-button-hide;
+      }
+
       & .e-horizontal-mode .e-rule-filter,
       & .e-horizontal-mode .e-rule-operator,
       & .e-horizontal-mode .e-rule-value {
         display: $qrybldr-device-diaplay;
+      }
+
+      & .e-rule-container.e-vertical-mode .e-rule-delete {
+        margin-bottom: $grpcon-padding;
+        margin-left: $qrybldr-vm-rule-delete;
+        padding-right: $device-rulecon-right-padding;
+        right: 0;
       }
 
       & .e-rule-field,
@@ -214,30 +261,80 @@
 
     }
 
-    & .e-button-hide {
-      display: $qrybldr-button-hide;
-    }
-
     & .e-dropdown-btn {
       box-shadow: $rule-boxshadow;
     }
 
-    &.e-device .e-group-body .e-rule-container .e-rule-filter,
-    &.e-device .e-group-body .e-rule-container .e-rule-operator,
-    &.e-device .e-group-body .e-rule-container .e-rule-value {
+    &.e-device .e-group-body .e-rule-container .e-rule-filter {
       padding: $device-rulecon-padding;
     }
 
     &.e-device .e-removerule.e-rule-delete {
       box-shadow: $ruledelete-shadow;
       }
+
+    &.e-device .e-group-body .e-rule-container .e-rule-value .e-multiselect {
+      max-width: $qrybldr-device-multi-maxwidth;
+    }
+
+    & .e-delete-icon::before {
+      content: $qrybldr-delete-icon;
+    }
+
+    & .e-edit-rule.e-btn.e-small {
+      box-shadow: $ruledelete-shadow;
+      }
+
+    & .e-edit-rule {
+      margin-bottom:  $qrybldr-edit-rule-mrginbtm;
+      margin-left: $qrybldr-edit-rule-width;
+      margin-top: $qrybldr-edit-rule-mrgin;
+      padding-right: $device-rulecon-right-padding;
+      right: 0;
+    }
+
+    & .e-collapse-rule .e-collapse-icon::before {
+      content: $qrybldr-collaspse-icon;
+     }
+
+    & .e-collapse-rule {
+      box-shadow: none;
+      margin-right: $qrybldr-clspe-margin;
+      position: $qrybldr-clspe-rule-pos;
+      right: 0;
+        }
+
+    & .e-summary-text {
+      border-style: none;
+      resize: none;
+      width: $qrybldr-summary-text-width;
+        }
+
+    & .e-summary-content {
+      padding: $qrybldr-summary-padding;
+        }
 }
+
+  .e-tooltip-wrap.e-querybuilder-error .e-arrow-tip-inner.e-tip-top,
+  .e-tooltip-wrap.e-querybuilder-error .e-arrow-tip-outer.e-tip-top {
+    border-bottom: $qrybldr-val-error-border;
+  }
+
+  .e-tooltip-wrap.e-querybuilder-error .e-arrow-tip-outer.e-tip-bottom,
+  .e-tooltip-wrap.e-querybuilder-error .e-arrow-tip-inner.e-tip-bottom {
+    border-top: $qrybldr-val-error-border;
+  }
 
   .e-dropdown-popup {
 
     & .e-addgroup {
       float: $qrybldr-rulelist-grcon-float;
     }
+
+    & .e-button-hide {
+      display: $qrybldr-button-hide;
+    }
+
   }
 
   .e-addrule.e-add-icon::before,
@@ -246,46 +343,33 @@
     content: $qrybldr-add-icon;
     }
 
-  .e-query-builder .e-delete-icon::before {
-    content: $qrybldr-delete-icon;
-    }
-
-  & .e-edit-rule.e-btn.e-small {
-    box-shadow: $ruledelete-shadow;
-             }
-
-  & .e-edit-rule {
-    margin-bottom:  $qrybldr-edit-rule-mrginbtm;
-    margin-left: $qrybldr-edit-rule-width;
-    margin-top: $qrybldr-edit-rule-mrgin;
-    padding-right: $device-rulecon-right-padding;
-    right: 0;
-            }
-
-  & .e-collapse-rule .e-collapse-icon::before {
-    content: $qrybldr-collaspse-icon;
-        }
-
-  & .e-collapse-rule {
-    box-shadow: none;
-    margin-right: $qrybldr-clspe-margin;
-    position: $qrybldr-clspe-rule-pos;
-    right: 0;
-    }
-
-  & .e-summary-text {
-    border-style: none;
-    resize: none;
-    width: $qrybldr-summary-text-width;
-    }
-
-  & .e-summary-content {
-    padding: $qrybldr-summary-padding;
-    }
-
   .e-query-builder.e-device,
   .e-bigger.e-query-builder,
   .e-bigger .e-query-builder {
+    & .e-group-container  {
+      padding: $device-rulecon-padding;
+    }
+
+    & .e-collapse-rule.e-btn.e-small {
+      padding: 0 14px;
+    }
+
+    & .e-rule-list > .e-group-container {
+      padding: 0;
+    }
+
+    & .e-rule-list > .e-rule-container:not(:first-child)::before {
+      height: $biggerafter-ruleborder-height;
+    }
+
+    & .e-rule-list > .e-group-container:first-child {
+      margin-top: 0;
+    }
+
+    & .e-rule-list>::before {
+      top: $qrybldr-bigger-rule-list-before-top;
+    }
+
     & .e-group-action .e-btn {
       margin-left: $bigger-group-action-margin;
       }
@@ -300,6 +384,7 @@
 
     & .e-rule-list {
       padding: $qrybldr-bigger-rulelist;
+      padding-bottom: 0;
     }
 
     & .e-rule-list .e-group-container {
@@ -317,23 +402,18 @@
           padding: $bigger-rulecon-padding;
         }
 
-        & .e-rule-operator,
-        & .e-rule-value {
+        & .e-operator,
+        & .e-value {
           padding: $bigger-rulecon-padding;
           }
-
-        & .e-rule-multiselect,
-        & .e-rule-value {
-          width: $qrybldr-device-value-width;
-        }
     }
 
       & .e-rule-container.e-vertical-mode {
         width: auto;
+      }
 
-        & .e-rule-value {
-          padding-bottom: $rulevalue-paddingbtm;
-        }
+      & .e-rule-container.e-separate-rule {
+        margin-top: $bigger-group-action-margin;
       }
 
       & .e-rule-delete,
@@ -342,6 +422,10 @@
         margin-left: $qrybldr-rule-delete;
         padding-right: $device-rulecon-right-padding;
         right: 0;
+        }
+
+      & .e-rule-container.e-horizontal-mode .e-rule-delete {
+        margin-bottom: 0;
         }
 
       & .e-horizontal-mode .e-rule-delete {
@@ -359,8 +443,12 @@
       & .e-rule-delete {
         &.e-btn.e-small.e-round {
           box-shadow: $ruledelete-shadow;
-             }
+            }
         }
       }
+    }
+
+  &.e-device .e-rule-value {
+    width: $qrybldr-device-value-width;
     }
 }

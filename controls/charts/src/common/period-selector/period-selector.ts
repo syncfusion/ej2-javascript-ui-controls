@@ -30,7 +30,7 @@ export class PeriodSelector {
     }
     /**
      * To set the control values
-     * @param control 
+     * @param control
      */
     public setControlValues(control: RangeNavigator | StockChart): void {
         if (control.getModuleName() === 'rangeNavigator') {
@@ -62,7 +62,7 @@ export class PeriodSelector {
     }
     /**
      * renderSelector div
-     * @param control 
+     * @param control
      */
     public renderSelectorElement(control?: RangeNavigator, options?: ISelectorRenderArgs, x? : number): void {
         //render border
@@ -151,10 +151,8 @@ export class PeriodSelector {
         this.datePicker = new DateRangePicker({
             min: new Date(this.control.seriesXMin),
             max: new Date(this.control.seriesXMax),
-            format: 'dd\'\/\'MM\'\/\'yyyy',
-            placeholder: 'Select a range',
-            showClearButton: false,
-            startDate: new Date(this.control.startValue),
+            format: 'dd\'\/\'MM\'\/\'yyyy', placeholder: 'Select a range',
+            showClearButton: false, startDate: new Date(this.control.startValue),
             endDate: new Date(this.control.endValue),
             created: (args: RangeEventArgs) => {
                 if (selctorArgs.enableCustomFormat) {
@@ -163,11 +161,11 @@ export class PeriodSelector {
                     datePickerElement.insertAdjacentElement('afterend', createElement('div', {
                         id: 'customRange',
                         innerHTML: selctorArgs.content, className: 'e-btn e-flat',
-                        styles: 'font-family: "Segoe UI"; font-size: 14px; font-weight: 500; text-transform: none; padding-top: 6px'
+                        styles: 'font-family: "Segoe UI"; font-size: 14px; font-weight: 500; text-transform: none '
                     }));
                     getElement('customRange').insertAdjacentElement('afterbegin', (createElement('span', {
-                        id: 'dateIcon',
-                        className: 'e-input-group-icon e-range-icon e-btn-icon', styles: 'padding-top:5px'
+                        id: 'dateIcon', className: 'e-input-group-icon e-range-icon e-btn-icon e-icons',
+                        styles: (this.rootControl.theme === 'Material') ? 'padding-top: 4px' : 'padding-top: 5px'
                     })));
                     document.getElementById('customRange').onclick = () => {
                         this.datePicker.show(<HTMLElement>getElement('customRange'));
@@ -186,8 +184,10 @@ export class PeriodSelector {
                     }
                     this.nodes = this.toolbar.element.querySelectorAll('.e-toolbar-left')[0];
                     for (let i: number = 0, length: number = this.nodes.childNodes.length; i < length; i++) {
-                        (this.nodes.childNodes[i].childNodes[0] as Element).classList.remove('e-active');
-                        (this.nodes.childNodes[i].childNodes[0] as Element).classList.remove('e-active');
+                        if (!(this.rootControl as StockChart).resizeTo) {
+                            (this.nodes.childNodes[i].childNodes[0] as Element).classList.remove('e-active');
+                            (this.nodes.childNodes[i].childNodes[0] as Element).classList.remove('e-active');
+                        }
                     }
                 }
             }
@@ -196,22 +196,26 @@ export class PeriodSelector {
     }
     private updateCustomElement(): ItemModel[] {
         let selector: ItemModel[] = [];
+        let buttonStyles: string = 'text-transform: none; text-overflow: unset';
         if (this.rootControl.getModuleName() === 'stockChart') {
             if ((<StockChart>this.rootControl).seriesType.length) {
-                selector.push({ template: '<button id="seriesType">Series</button>', align: 'Left' });
+                selector.push({ template: createElement('button', { id: 'seriesType', innerHTML: 'Series', styles: buttonStyles }),
+                            align: 'Left'});
             }
             if ((<StockChart>this.rootControl).indicatorType.length) {
-                selector.push({ template: ' <button id="indicatorType" >Indicators</button>', align: 'Left' });
+                selector.push({ template: createElement('button', { id: 'indicatorType', innerHTML: 'Indicators', styles: buttonStyles }),
+                            align: 'Left'});
             }
             if ((<StockChart>this.rootControl).trendlineType.length) {
-                selector.push({ template: ' <button id="trendType" >Trendline</button>', align: 'Left' });
+                selector.push({ template: createElement('button', { id: 'trendType', innerHTML: 'Trendline', styles: buttonStyles }),
+                            align: 'Left'});
             }
         }
         return selector;
     }
     /**
      * To set and deselect the acrive style
-     * @param buttons 
+     * @param buttons
      */
     private setSelectedStyle(selectedIndex: number): void {
         if (this.control.disableRangeSelector || this.rootControl.getModuleName() === 'stockChart') {
@@ -282,10 +286,10 @@ export class PeriodSelector {
         }
     }
     /**
-     * 
+     *
      * @param type updatedRange for selector
-     * @param end 
-     * @param interval 
+     * @param end
+     * @param interval
      */
     public changedRange(type: RangeIntervalType, end: number, interval: number): Date {
         let result: Date = new Date(end);

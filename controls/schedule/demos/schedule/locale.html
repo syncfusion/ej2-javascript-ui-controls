@@ -11,6 +11,11 @@
     <link rel="stylesheet" href="../css/material.css" />
     <script data-main="locale" src="../../node_modules/requirejs/require.js"></script>
     <script src="require.config.js"></script>
+    <style type="text/css">
+        .prop-grid .row {
+            padding: 10px 0;
+        }
+    </style>
 </head>
 
 <body>
@@ -34,6 +39,17 @@
                                 <option value="ar">Arabic*</option>
                                 <option value="zh">Chinese - China*</option>
                                 <option value="nl">Dutch*</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label for="cultures">Calendar Type</label>
+                        </div>
+                        <div class="col-md-9">
+                            <select id="calendarMode" class="form-control">
+                                <option value="Gregorian" selected>Gregorian</option>
+                                <option value="Islamic">Islamic</option>
                             </select>
                         </div>
                     </div>

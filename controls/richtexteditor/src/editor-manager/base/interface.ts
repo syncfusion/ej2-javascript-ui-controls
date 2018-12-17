@@ -60,6 +60,7 @@ export interface IHtmlItem {
     selectParent?: Node[];
     item: IHtmlItemArgs;
     subCommand: string;
+    value: string;
     callBack(args: IHtmlFormatterCallBack): () => void;
 }
 export interface IHtmlItemArgs {
@@ -78,6 +79,8 @@ export interface IHtmlItemArgs {
     subCommand?: string;
     tableCell?: HTMLElement;
     cssClass?: string;
+    insertElement?: Element;
+    captionClass?: string;
 }
 export interface IHtmlUndoRedoData {
     text?: string;

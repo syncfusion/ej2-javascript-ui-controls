@@ -37,3 +37,18 @@ export enum ToolbarType {
     /**  Defines ToolbarType as MultiRow */
     MultiRow = 'MultiRow'
 }
+
+export type ToolbarItems = 'alignments' | 'justifyLeft' | 'justifyCenter' | 'justifyRight'
+    | 'justifyFull' | 'fontName' | 'fontSize' | 'fontColor' | 'backgroundColor'
+    | 'bold' | 'italic' | 'underline' | 'strikeThrough' | 'clearFormat' | 'clearAll'
+    | 'cut' | 'copy' | 'paste' | 'unorderedList' | 'orderedList' | 'indent'
+    | 'outdent' | 'undo' | 'redo' | 'superScript' | 'subScript'
+    | 'createLink' | 'openLink' | 'editLink' | 'image' | 'createTable'
+    | 'removeTable' | 'replace' | 'align' | 'caption' | 'remove'
+    | 'openImageLink' | 'editImageLink' | 'removeImageLink' | 'insertLink'
+    | 'display' | 'altText' | 'dimension' | 'fullScreen' | 'maximize'
+    | 'minimize' | 'lowerCase' | 'upperCase' | 'print' | 'formats'
+    | 'sourceCode' | 'preview' | 'viewSide' | 'insertCode' | 'tableHeader'
+    | 'tableRemove' | 'tableRows' | 'tableColumns' | 'tableCellBackground'
+    | 'tableCellHorizontalAlign' | 'tableCellVerticalAlign' | 'tableEditProperties'
+    | 'styles' | 'removeLink';

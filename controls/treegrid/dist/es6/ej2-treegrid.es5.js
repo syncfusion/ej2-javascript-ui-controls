@@ -391,21 +391,31 @@ function findParentRecords(records) {
 /**
  * @hidden
  */
-function getExpandStatus(record, parents) {
+function getExpandStatus(parent, record, parents) {
     var parentRecord = isNullOrUndefined(record.parentItem) ? null :
         parents.filter(function (e) { return e.uniqueID === record.parentItem.uniqueID; })[0];
     var childParent;
     if (parentRecord != null) {
-        if (parentRecord.expanded === false) {
+        if (parent.initialRender && !isNullOrUndefined(parentRecord[parent.expandStateMapping])
+            && !parentRecord[parent.expandStateMapping]) {
+            parentRecord.expanded = false;
+            return false;
+        }
+        else if (parentRecord.expanded === false) {
             return false;
         }
         else if (parentRecord.parentItem) {
             childParent = parents.filter(function (e) { return e.uniqueID === parentRecord.parentItem.uniqueID; })[0];
+            if (childParent && parent.initialRender && !isNullOrUndefined(childParent[parent.expandStateMapping])
+                && !childParent[parent.expandStateMapping]) {
+                childParent.expanded = false;
+                return false;
+            }
             if (childParent && childParent.expanded === false) {
                 return false;
             }
             else if (childParent) {
-                return getExpandStatus(childParent, parents);
+                return getExpandStatus(parent, childParent, parents);
             }
             return true;
         }
@@ -486,11 +496,11 @@ var Render = /** @__PURE__ @class */ (function () {
         var data = args.data;
         var parentData = data.parentItem;
         var index;
-        if (!isNullOrUndefined(data.parentIndex)) {
+        if (!isNullOrUndefined(data.parentIndex) && !(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root'))) {
             index = data.parentIndex;
             var collapsed$$1 = !(isNullOrUndefined(parentData[this.parent.expandStateMapping]) ||
                 parentData[this.parent.expandStateMapping]) || this.parent.enableCollapseAll ||
-                !getExpandStatus(args.data, this.parent.grid.getCurrentViewRecords());
+                !getExpandStatus(this.parent, args.data, this.parent.grid.getCurrentViewRecords());
             if (collapsed$$1) {
                 args.row.style.display = 'none';
             }
@@ -540,14 +550,28 @@ var Render = /** @__PURE__ @class */ (function () {
             var iconRequired = !isNullOrUndefined(data.hasFilteredChildRecords)
                 ? data.hasFilteredChildRecords : data.hasChildRecords;
             if (iconRequired) {
+                addClass([args.cell], 'e-treerowcell');
                 var expandIcon = createElement('span', {
                     className: 'e-icons'
                 });
-                var expand = data.expanded &&
-                    (isNullOrUndefined(data[this.parent.expandStateMapping]) || data[this.parent.expandStateMapping]) &&
-                    !this.parent.enableCollapseAll;
-                addClass([expandIcon], expand ? 'e-treegridexpand' : 'e-treegridcollapse');
+                var expand = void 0;
+                if (this.parent.initialRender) {
+                    expand = data.expanded &&
+                        (isNullOrUndefined(data[this.parent.expandStateMapping]) || data[this.parent.expandStateMapping]) &&
+                        !this.parent.enableCollapseAll;
+                }
+                else {
+                    expand = data.expanded;
+                }
+                var collapsed$$1 = true;
+                if (!isNullOrUndefined(data.parentIndex) && (!isNullOrUndefined(data[this.parent.expandStateMapping])
+                    && data[this.parent.expandStateMapping])
+                    && !(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root'))) {
+                    collapsed$$1 = !getExpandStatus(this.parent, args.data, this.parent.grid.getCurrentViewRecords());
+                }
+                addClass([expandIcon], (expand && collapsed$$1) ? 'e-treegridexpand' : 'e-treegridcollapse');
                 container.appendChild(expandIcon);
+                emptyExpandIcon.style.width = '7px';
                 container.appendChild(emptyExpandIcon.cloneNode());
             }
             else if (pad) {
@@ -970,7 +994,8 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
             if (!isNullOrUndefined(currentData[this.parent.childMapping])) {
                 currentData.childRecords = currentData[this.parent.childMapping];
                 currentData.hasChildRecords = true;
-                currentData.expanded = true;
+                currentData.expanded = !isNullOrUndefined(currentData[this.parent.expandStateMapping])
+                    ? currentData[this.parent.expandStateMapping] : true;
             }
             currentData.index = currentData.hasChildRecords ? this.storedIndex : this.storedIndex;
             if (isNullOrUndefined(currentData[this.parent.parentIdMapping])) {
@@ -1056,7 +1081,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
                     gridQuery = getValue('grid.renderModule.data', this.parent).aggregateQuery(new Query());
                 }
                 var summaryQuery = query.queries.filter(function (q) { return q.fn === 'onAggregates'; });
-                results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, results);
+                results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, results, true);
             }
         }
         if (this.parent.grid.aggregates.length && this.parent.grid.sortSettings.columns.length === 0
@@ -1066,7 +1091,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
                 gridQuery = getValue('grid.renderModule.data', this.parent).aggregateQuery(new Query());
             }
             var summaryQuery = gridQuery.queries.filter(function (q) { return q.fn === 'onAggregates'; });
-            results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, this.parent.flatData);
+            results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, this.parent.flatData, true);
         }
         if (this.parent.grid.sortSettings.columns.length > 0 || this.isSortAction) {
             this.isSortAction = false;
@@ -1095,9 +1120,10 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
             results = this.sortedData;
             this.parent.notify('updateModel', {});
             if (this.parent.grid.aggregates.length > 0) {
+                var isSort = false;
                 var query = getObject('query', args);
                 var summaryQuery = query.queries.filter(function (q) { return q.fn === 'onAggregates'; });
-                results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, this.sortedData);
+                results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, this.sortedData, isSort);
             }
         }
         count = results.length;
@@ -1646,8 +1672,55 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                     var expandtarget = e.target;
                     this.expandCollapseRequest(expandtarget.querySelector('.e-icons'));
                     break;
+                case 'downArrow':
+                    var target = e.target.parentElement;
+                    var summaryElement = this.findnextRowElement(target);
+                    if (summaryElement !== null) {
+                        var rowIndex = summaryElement.rowIndex;
+                        this.selectRow(rowIndex);
+                        var cellIndex = e.target.cellIndex;
+                        var row = summaryElement.children[cellIndex];
+                        addClass([row], 'e-focused');
+                        addClass([row], 'e-focus');
+                    }
+                    else {
+                        this.clearSelection();
+                    }
+                    break;
+                case 'upArrow':
+                    var targetRow = e.target.parentElement;
+                    var summaryRowElement = this.findPreviousRowElement(targetRow);
+                    if (summaryRowElement !== null) {
+                        var rIndex = summaryRowElement.rowIndex;
+                        this.selectRow(rIndex);
+                        var cIndex = e.target.cellIndex;
+                        var rows = summaryRowElement.children[cIndex];
+                        addClass([rows], 'e-focused');
+                        addClass([rows], 'e-focus');
+                    }
+                    else {
+                        this.clearSelection();
+                    }
             }
         }
+    };
+    // Get Proper Row Element from the summary 
+    TreeGrid.prototype.findnextRowElement = function (summaryRowElement) {
+        var rowElement = summaryRowElement.nextSibling;
+        if (rowElement !== null && (rowElement.className.indexOf('e-summaryrow') !== -1 ||
+            rowElement.style.display === 'none')) {
+            rowElement = this.findnextRowElement(rowElement);
+        }
+        return rowElement;
+    };
+    // Get Proper Row Element from the summary 
+    TreeGrid.prototype.findPreviousRowElement = function (summaryRowElement) {
+        var rowElement = summaryRowElement.previousSibling;
+        if (rowElement !== null && (rowElement.className.indexOf('e-summaryrow') !== -1 ||
+            rowElement.style.display === 'none')) {
+            rowElement = this.findPreviousRowElement(rowElement);
+        }
+        return rowElement;
     };
     TreeGrid.prototype.initProperties = function () {
         this.defaultLocale = {};
@@ -1660,6 +1733,8 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             ctrlUpArrow: 'ctrl+uparrow',
             ctrlShiftUpArrow: 'ctrl+shift+uparrow',
             ctrlShiftDownArrow: 'ctrl+shift+downarrow',
+            downArrow: 'downArrow',
+            upArrow: 'upArrow'
         };
         this.isLocalData = (!(this.dataSource instanceof DataManager) || this.dataSource.dataSource.offline
             || (!isNullOrUndefined(this.dataSource.ready)) || this.dataSource.adaptor instanceof RemoteSaveAdaptor);
@@ -1930,6 +2005,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                 }).length;
                 setValue('grid.contentModule.isLoaded', !(req > 0), _this);
             }
+            _this.initialRender = false;
         };
         this.grid.beforeDataBound = function (args) {
             if (isRemoteData(treeGrid) && !isOffline(treeGrid)) {
@@ -2213,6 +2289,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         for (var _i = 0, properties_1 = properties; _i < properties_1.length; _i++) {
             var prop = properties_1[_i];
             switch (prop) {
+                case 'columns':
+                    this.grid.columns = this.getGridColumns();
+                    break;
                 case 'treeColumnIndex':
                     this.grid.refreshColumns();
                     break;
@@ -2359,7 +2438,44 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * @hidden
      */
     TreeGrid.prototype.getPersistData = function () {
-        return this.addOnPersist([]);
+        var _this = this;
+        var keyEntity = ['pageSettings', 'sortSettings',
+            'filterSettings', 'columns', 'searchSettings', 'selectedRowIndex'];
+        var ignoreOnPersist = {
+            pageSettings: ['template', 'pageSizes', 'pageSizeMode', 'enableQueryString', 'totalRecordsCount', 'pageCount'],
+            filterSettings: ['type', 'mode', 'showFilterBarStatus', 'immediateModeDelay', 'ignoreAccent', 'hierarchyMode'],
+            searchSettings: ['fields', 'operator', 'ignoreCase'],
+            sortSettings: [], columns: [], selectedRowIndex: []
+        };
+        var ignoreOnColumn = ['filter', 'edit', 'filterBarTemplate', 'headerTemplate', 'template',
+            'commandTemplate', 'commands', 'dataSource'];
+        keyEntity.forEach(function (value) {
+            var currentObject = _this[value];
+            for (var _i = 0, _a = ignoreOnPersist[value]; _i < _a.length; _i++) {
+                var val = _a[_i];
+                delete currentObject[val];
+            }
+        });
+        this.ignoreInArrays(ignoreOnColumn, this.columns);
+        return this.addOnPersist(keyEntity);
+    };
+    TreeGrid.prototype.ignoreInArrays = function (ignoreOnColumn, columns) {
+        var _this = this;
+        columns.forEach(function (column) {
+            if (column.columns) {
+                _this.ignoreInColumn(ignoreOnColumn, column);
+                _this.ignoreInArrays(ignoreOnColumn, column.columns);
+            }
+            else {
+                _this.ignoreInColumn(ignoreOnColumn, column);
+            }
+        });
+    };
+    TreeGrid.prototype.ignoreInColumn = function (ignoreOnColumn, column) {
+        ignoreOnColumn.forEach(function (val) {
+            delete column[val];
+            column.filter = {};
+        });
     };
     TreeGrid.prototype.mouseClickHandler = function (e) {
         if (!isNullOrUndefined(e.touches)) {
@@ -2520,6 +2636,24 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         return this.grid.getFooterContentTable();
     };
     /**
+     * Shows a column by its column name.
+     * @param  {string|string[]} keys - Defines a single or collection of column names.
+     * @param  {string} showBy - Defines the column key either as field name or header text.
+     * @return {void}
+     */
+    TreeGrid.prototype.showColumns = function (keys, showBy) {
+        return this.grid.showColumns(keys, showBy);
+    };
+    /**
+     * Hides a column by column name.
+     * @param  {string|string[]} keys - Defines a single or collection of column names.
+     * @param  {string} hideBy - Defines the column key either as field name or header text.
+     * @return {void}
+     */
+    TreeGrid.prototype.hideColumns = function (keys, hideBy) {
+        return this.grid.hideColumns(keys, hideBy);
+    };
+    /**
      * Gets a column header by column name.
      * @param  {string} field - Specifies the column name.
      * @return {Element}
@@ -2579,7 +2713,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             }
             this.columnModel.push(new Column(gridColumn));
         }
-        this.columns = this.columnModel;
+        this.setProperties({ columns: this.columnModel }, true);
         return this.columnModel;
     };
     /**
@@ -3924,6 +4058,7 @@ var Page$1 = /** @__PURE__ @class */ (function () {
         getValue('grid.renderModule', this.parent).dataManagerSuccess(ret);
     };
     Page$$1.prototype.pageAction = function (pageingDetails) {
+        var _this = this;
         var dm = new DataManager(pageingDetails.result);
         if (this.parent.pageSettings.pageSizeMode === 'Root') {
             var temp_1 = [];
@@ -3962,7 +4097,7 @@ var Page$1 = /** @__PURE__ @class */ (function () {
             var expanded$$1 = new Predicate$1('expanded', 'notequal', null).or('expanded', 'notequal', undefined);
             var parents_1 = dm_1.executeLocal(new Query().where(expanded$$1));
             var visualData = parents_1.filter(function (e) {
-                return getExpandStatus(e, parents_1);
+                return getExpandStatus(_this.parent, e, parents_1);
             });
             pageingDetails.count = visualData.length;
             var query = new Query();
@@ -4053,7 +4188,7 @@ var Aggregate$1 = /** @__PURE__ @class */ (function () {
      * Function to calculate summary values
      *  @hidden
      */
-    Aggregate$$1.prototype.calculateSummaryValue = function (summaryQuery, filteredData) {
+    Aggregate$$1.prototype.calculateSummaryValue = function (summaryQuery, filteredData, isSort) {
         this.summaryQuery = summaryQuery;
         var parentRecord;
         var parentDataLength = Object.keys(filteredData).length;
@@ -4091,14 +4226,19 @@ var Aggregate$1 = /** @__PURE__ @class */ (function () {
                         return;
                     } });
                     var currentIndex = idx_1 + childRecordsLength + summaryRowIndex;
-                    setValue('parentItem', parentRecord, item);
-                    var level = getObject('level', parentRecord);
+                    var summaryParent = extend({}, parentRecord);
+                    delete summaryParent.childRecords;
+                    delete summaryParent[this_1.parent.childMapping];
+                    setValue('parentItem', summaryParent, item);
+                    var level = getObject('level', summaryParent);
                     setValue('level', level + 1, item);
-                    var index = getObject('index', parentRecord);
+                    var index = getObject('index', summaryParent);
                     setValue('parentIndex', index, item);
                     setValue('isSummaryRow', true, item);
-                    var childRecords = getObject('childRecords', parentRecord);
-                    childRecords.push(item);
+                    if (isSort) {
+                        var childRecords = getObject('childRecords', parentRecord);
+                        childRecords.push(item);
+                    }
                     flatRecords.splice(currentIndex, 0, item);
                 }
                 else {
@@ -4136,7 +4276,8 @@ var Aggregate$1 = /** @__PURE__ @class */ (function () {
     Aggregate$$1.prototype.createSummaryItem = function (itemData, summary) {
         var summaryColumnLength = Object.keys(summary.columns).length;
         for (var i = 0, len = summaryColumnLength; i < len; i++) {
-            var displayColumn = summary.columns[i].columnName;
+            var displayColumn = isNullOrUndefined(summary.columns[i].columnName) ? summary.columns[i].field :
+                summary.columns[i].columnName;
             var keys = Object.keys(itemData);
             for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
                 var key = keys_1[_i];
@@ -4167,8 +4308,10 @@ var Aggregate$1 = /** @__PURE__ @class */ (function () {
         qry.requiresCount();
         var sumData = new DataManager(summaryData).executeLocal(qry);
         var types = summaryColumn.type;
+        var summaryKey;
         types = [summaryColumn.type];
         types.forEach(function (type) {
+            summaryKey = type;
             var key = summaryColumn.field + ' - ' + type.toLowerCase();
             var val = type !== 'Custom' ? getObject('aggregates', sumData) :
                 calculateAggregate(type, sumData, summaryColumn, _this.parent);
@@ -4183,7 +4326,15 @@ var Aggregate$1 = /** @__PURE__ @class */ (function () {
             className: 'e-summary'
         });
         appendChildren(cellElement, tempObj.fn(single[summaryColumn.columnName], this.parent, tempObj.property));
-        return cellElement.innerHTML;
+        var value = single[summaryColumn.columnName][summaryKey];
+        var summaryValue;
+        if (cellElement.innerHTML.indexOf(value) === -1) {
+            summaryValue = cellElement.innerHTML + value;
+            return summaryValue;
+        }
+        else {
+            return cellElement.innerHTML;
+        }
     };
     Aggregate$$1.prototype.getFormatFromType = function (summaryformat, type) {
         if (isNullOrUndefined(type) || typeof summaryformat !== 'string') {
@@ -4383,13 +4534,18 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                 args.cancel = true;
                 this.keyPress = null;
             }
-            var toolbarID = this.parent.element.id + '_gridcontrol_';
-            this.parent.grid.toolbarModule.enableItems([toolbarID + 'add', toolbarID + 'edit', toolbarID + 'delete'], false);
-            this.parent.grid.toolbarModule.enableItems([toolbarID + 'update', toolbarID + 'cancel'], true);
+            this.enableToolbarItems();
         }
         // if (this.isAdd && this.parent.editSettings.mode === 'Batch' && !args.cell.parentElement.classList.contains('e-insertedrow')) {
         //   this.isAdd = false;
         // }
+    };
+    Edit$$1.prototype.enableToolbarItems = function () {
+        if (!isNullOrUndefined(this.parent.grid.toolbarModule)) {
+            var toolbarID = this.parent.element.id + '_gridcontrol_';
+            this.parent.grid.toolbarModule.enableItems([toolbarID + 'add', toolbarID + 'edit', toolbarID + 'delete'], false);
+            this.parent.grid.toolbarModule.enableItems([toolbarID + 'update', toolbarID + 'cancel'], true);
+        }
     };
     Edit$$1.prototype.batchCancel = function (e) {
         if (this.parent.editSettings.mode === 'Cell') {
@@ -4445,9 +4601,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             }
             row = this.parent.grid.getRows()[rowIndex_1];
             this.parent.grid.editModule.updateRow(rowIndex_1, args.rowData);
-            var toolbarID = this.parent.element.id + '_gridcontrol_';
-            this.parent.grid.toolbarModule.enableItems([toolbarID + 'add', toolbarID + 'edit', toolbarID + 'delete'], true);
-            this.parent.grid.toolbarModule.enableItems([toolbarID + 'update', toolbarID + 'cancel'], false);
+            this.enableToolbarItems();
             this.parent.grid.editModule.formObj.destroy();
             if (this.keyPress !== 'tab' && this.keyPress !== 'shiftTab') {
                 this.parent.grid.editSettings.mode = 'Normal';

@@ -12,7 +12,7 @@ import { RenderType } from '../base/enum';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import * as classes from '../base/classes';
-import { dispatchEvent } from '../base/util';
+import { dispatchEvent, parseHtml } from '../base/util';
 import { EditorManager } from '../../editor-manager';
 /**
  * `Table` module is used to handle table actions.
@@ -859,7 +859,7 @@ export class Table {
         let content: string = '<div class="e-rte-field"><input type="text" '
             + ' data-role ="none" id="tableColumn" class="e-table-column"/></div>'
             + '<div class="e-rte-field"><input type="text" data-role ="none" id="tableRow" class="e-table-row" /></div>';
-        let contentElem: DocumentFragment = document.createRange().createContextualFragment(content);
+        let contentElem: DocumentFragment = parseHtml(content);
         tableWrap.appendChild(contentElem);
         this.columnTextBox = new NumericTextBox({
             format: 'n0',
@@ -956,7 +956,7 @@ export class Table {
         let content: string = '<div class="e-rte-field"><input type="text" data-role ="none" id="tableWidth" class="e-table-width" '
             + ' /></div>' + '<div class="e-rte-field"><input type="text" data-role ="none" id="cellPadding" class="e-cell-padding" />'
             + ' </div><div class="e-rte-field"><input type="text" data-role ="none" id="cellSpacing" class="e-cell-spacing" /></div>';
-        let contentElem: DocumentFragment = document.createRange().createContextualFragment(content);
+        let contentElem: DocumentFragment = parseHtml(content);
         tableWrap.appendChild(contentElem);
         let widthNum: NumericTextBox = new NumericTextBox({
             format: 'n0',

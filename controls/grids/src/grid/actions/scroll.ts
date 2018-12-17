@@ -220,7 +220,8 @@ export class Scroll implements IAction {
                 this.previousValues.left = left;
             } else {
                 cont = this.parent.getContent().querySelector('.e-frozencontent');
-                if (this.previousValues.top === top || (top < 0 || (cont.scrollHeight - cont.clientHeight) < top)) {
+                if (this.previousValues.top === top && (top < 0 || (cont.scrollHeight - cont.clientHeight) < top)
+                   || (top < 0 || (cont.scrollHeight - cont.clientHeight) < top)) {
                     return;
                 }
                 e.preventDefault();

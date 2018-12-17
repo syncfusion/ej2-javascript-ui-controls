@@ -1,0 +1,19 @@
+@include export-module('inplaceeditor-highcontrast-dark-icons') {
+
+  /*! inplaceeditor icons */
+  #{&}.e-inplaceeditor,
+  .e-inplaceeditor-tip {
+
+    .e-save-icon::before {
+      content: '\e593';
+    }
+
+    .e-cancel-icon::before {
+      content: '\e594';
+    }
+
+    .e-editable-overlay-icon::before {
+      content: '\e97c';
+    }
+  }
+}

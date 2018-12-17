@@ -6,6 +6,9 @@ import { Grid } from '../base/grid';
 import * as events from '../base/constant';
 import { Deferred } from '@syncfusion/ej2-data';
 
+/**
+ * @hidden
+ */
 export function getCloneProperties(): string[] {
     return ['aggregates', 'allowGrouping', 'allowFiltering', 'allowMultiSorting', 'allowReordering', 'allowSorting',
         'allowTextWrap', 'childGrid', 'columns', 'currentViewData', 'dataSource', 'detailTemplate', 'enableAltRow',

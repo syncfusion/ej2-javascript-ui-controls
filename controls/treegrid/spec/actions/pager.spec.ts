@@ -260,4 +260,27 @@ describe('TreeGrid Pager module', () => {
       destroy(gridObj);
     });
   });
+  describe('ExpandStateMapping with pager', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                allowPaging: true,
+                pageSettings: { pageSize: 35 },
+                expandStateMapping: 'isInExpandState',
+                columns: ['taskID', 'taskName', 'startDate', 'duration']
+            },
+            done
+        );
+    });
+    it('Checking the rendered records', () => {
+      expect(gridObj.grid.pageSettings.totalRecordsCount).toBe(24);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
 });

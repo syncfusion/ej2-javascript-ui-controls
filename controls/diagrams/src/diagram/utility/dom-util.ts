@@ -276,6 +276,9 @@ export function measureText(
     text.childNodes = childNodes = wrapSvgText(options, textValue);
     text.wrapBounds = wrapBounds = wrapSvgTextAlign(options, childNodes);
     bounds.width = wrapBounds.width;
+    if (text.wrapBounds.width >= maxWidth && options.textOverflow !== 'Wrap') {
+        bounds.width = maxWidth;
+    }
     bounds.height = childNodes.length * text.style.fontSize * 1.2;
     return bounds;
 }

@@ -3,6 +3,7 @@
  * Collision module.
  */
 import { calculatePosition, OffsetPosition } from './position';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
     interface TopCorners {
         topSide: boolean;
@@ -332,8 +333,11 @@ import { calculatePosition, OffsetPosition } from './position';
     }
 
     function getViewPortHeight(): number {
-        return window.innerHeight;
+        return  window.innerHeight;
     }
+
     function getViewPortWidth(): number {
-        return window.innerWidth;
+        let windowWidth : number = window.innerWidth;
+        let offsetWidth: number = (isNullOrUndefined(document.documentElement)) ? 0 : document.documentElement.offsetWidth;
+        return windowWidth - (windowWidth - offsetWidth);
     }

@@ -85,7 +85,7 @@ export class EditRender {
                 }
                 continue;
             }
-            if (!col.visible || col.commands) {
+            if (this.parent.editModule.checkColumnIsGrouped(col) || col.commands) {
                 continue;
             }
             value = ((col.valueAccessor as Function)(col.field, args.rowData, col)) as string;
@@ -140,7 +140,7 @@ export class EditRender {
         }
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
             let col: Column = cols[i];
-            if (!col.visible) {
+            if (this.parent.editModule.checkColumnIsGrouped(col)) {
                 continue;
             }
             if (col.commands || col.commandsTemplate) {

@@ -1,11 +1,11 @@
-import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, closest, createElement, extend, formatUnit, getInstance, isNullOrUndefined, prepend, remove, removeClass, setStyleAttribute } from '@syncfusion/ej2-base';
-import { DataManager, Query } from '@syncfusion/ej2-data';
+import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, closest, createElement, extend, formatUnit, getInstance, isNullOrUndefined, prepend, remove, removeClass, setCurrencyCode, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Dialog, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { ColumnChooser, CommandColumn, ContextMenu, Edit, ExcelExport, Freeze, Grid, Page, PdfExport, Reorder, Resize, Selection, Toolbar, VirtualScroll, headerRefreshed, setStyleAndAttributes } from '@syncfusion/ej2-grids';
 import { Workbook } from '@syncfusion/ej2-excel-export';
 import { PdfColor, PdfDocument, PdfFontFamily, PdfFontStyle, PdfGrid, PdfLayoutFormat, PdfPageTemplateElement, PdfPen, PdfSolidBrush, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfVerticalAlignment, PointF, RectangleF } from '@syncfusion/ej2-pdf-export';
 import { Accordion, ContextMenu as ContextMenu$1, Tab, TreeView } from '@syncfusion/ej2-navigations';
-import { ColorPicker, MaskedTextBox } from '@syncfusion/ej2-inputs';
+import { DataManager, Query } from '@syncfusion/ej2-data';
+import { ColorPicker, MaskedTextBox, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { DatePicker } from '@syncfusion/ej2-calendars';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
@@ -116,12 +116,12 @@ class PivotEngine {
         this.valueSortSettings = dataSource.valueSortSettings ||
             { sortOrder: 'None', headerDelimiter: '.', headerText: '', columnIndex: undefined };
         this.valueSortData = [];
+        this.pageSettings = pageSettings ? pageSettings : this.pageSettings;
         this.savedFieldList = savedFieldList;
         this.isDrillThrough = isDrillThrough ? isDrillThrough : false;
         this.getFieldList(fields, this.enableSort, dataSource.allowValueFilter);
         this.fillFieldMembers(dataSource.data, this.indexMatrix);
         this.updateSortSettings(dataSource.sortSettings, this.enableSort);
-        this.pageSettings = pageSettings ? pageSettings : this.pageSettings;
         this.valueMatrix = this.generateValueMatrix(dataSource.data);
         this.filterMembers = [];
         this.updateFilterMembers(dataSource);
@@ -312,7 +312,11 @@ class PivotEngine {
                 if (!isNullOrUndefined(mkey)) {
                     if (!isDataAvail) {
                         let fKey = mkey;
-                        let formattedValue = this.getFormattedValue(mkey, key);
+                        let formattedValue = (this.pageSettings &&
+                            !(this.formatFields[key] && this.formatFields[key].type === 'date')) ? ({
+                            formattedText: isNullOrUndefined(mkey) ? mkey : mkey.toString(),
+                            actualText: mkey
+                        }) : this.getFormattedValue(mkey, key);
                         if (formattedValue.formattedText) {
                             fKey = formattedValue.formattedText;
                         }
@@ -513,8 +517,9 @@ class PivotEngine {
                 for (let member of members) {
                     let operand1 = this.getParsedValue(filterElement.name, filterElement.value1);
                     let operand2 = this.getParsedValue(filterElement.name, filterElement.value2);
+                    let cValue = this.getParsedValue(filterElement.name, member);
                     /* tslint:disable-next-line:max-line-length */
-                    if (this.validateFilterValue(parseInt(member, 10), filterElement.condition, operand1, operand2)) {
+                    if (this.validateFilterValue(cValue, filterElement.condition, operand1, operand2)) {
                         filterElement.items.push(member);
                     }
                 }
@@ -688,7 +693,8 @@ class PivotEngine {
             field.filter = filter;
             field.filterType = type;
             field.isExcelFilter = isLabelFilter;
-            let members = field.formattedMembers;
+            let members = (this.formatFields[name] && this.formatFields[name].type === 'date') ?
+                field.formattedMembers : field.members;
             let allowFil = isInclude;
             let final = {};
             let filterObj = {};
@@ -786,13 +792,14 @@ class PivotEngine {
         }
     }
     getParsedValue(measure, value) {
+        let cValue = value ? value.toString() : '';
         if (this.formatFields[measure] && value) {
             let formatSetting = extend({}, this.formatFields[measure], null, true);
             delete formatSetting.name;
-            return this.globalize.parseNumber(value, formatSetting);
+            return this.globalize.parseNumber(cValue, formatSetting);
         }
         else {
-            return parseInt(value, 10);
+            return this.globalize.parseNumber(cValue, { format: 'N' });
         }
     }
     removefilteredData(row, rowFilterData) {
@@ -1369,7 +1376,8 @@ class PivotEngine {
                     continue;
                 }
                 member.isDrilled = member.hasChild ? childrens.members[headerValue].isDrilled : false;
-                let formattedValue = this.getFormattedValue(headerValue, fieldName);
+                let formattedValue = (this.formatFields[fieldName] && this.formatFields[fieldName].type === 'date') ?
+                    this.getFormattedValue(headerValue, fieldName) : { formattedText: headerValue.toString(), actualText: headerValue };
                 member.actualText = formattedValue.actualText;
                 member.formattedText = formattedValue.formattedText;
                 let availData = showNoDataItems ? (this.filterPosObj[position[pos]] !== undefined &&
@@ -1451,12 +1459,17 @@ class PivotEngine {
                     /* tslint:enable:align */
                 }
             }
+            /* tslint:disable:typedef */
             if (this.enableSort) {
-                return new DataManager(hierarchy).executeLocal(new Query().sortBy('actualText', childrens.sort.toLowerCase()));
+                //return new DataManager(hierarchy as JSON[]).executeLocal(new Query().sortBy('actualText', childrens.sort.toLowerCase()));
+                return childrens.sort === 'Ascending' ?
+                    (hierarchy.sort((a, b) => (a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0))) :
+                    (hierarchy.sort((a, b) => (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0)));
             }
             else {
                 return hierarchy;
             }
+            /* tslint:enable:typedef */
         }
         else {
             return hierarchy;
@@ -1482,7 +1495,9 @@ class PivotEngine {
                 let member = {};
                 let memInd = this.indexMatrix[position[pos]][childrens.index];
                 let slicedHeader = slicedHeaders[orderedIndex[memInd]];
-                let formattedValue = this.getFormattedValue(data[position[pos]][field], field);
+                let formattedValue = (this.formatFields[field] && this.formatFields[field].type === 'date') ?
+                    this.getFormattedValue(data[position[pos]][field], field) :
+                    { formattedText: data[position[pos]][field].toString(), actualText: data[position[pos]][field].toString() };
                 if (!(slicedHeader && slicedHeader.formattedText === formattedValue.formattedText)) {
                     continue;
                 }
@@ -2582,7 +2597,9 @@ class PivotEngine {
                             actualFormula = (actualFormula).replace(aggregatedValue.formula, value.toString());
                         }
                     }
-                    cellValue = this.evaluate(actualFormula);
+                    // /* tslint:disable */
+                    cellValue = eval(actualFormula);
+                    // /* tslint:enable */
                     JSON.parse(cellValue.toString());
                 }
                 ri++;
@@ -2623,6 +2640,7 @@ class PivotEngine {
         return ((type && type.toLowerCase() === 'avg' && cellValue !== 0) ? (cellValue / avgCnt) : cellValue);
     }
     /* tslint:enable */
+    /** hidden */
     getFormattedValue(value, fieldName) {
         let formattedValue = {
             formattedText: value !== undefined ? value === null ? 'null' : value.toString() : undefined,
@@ -2670,10 +2688,6 @@ class PivotEngine {
         }
         return formula;
     }
-    evaluate(obj) {
-        return Function('"use strict";return (' + obj + ')')();
-    }
-    ;
 }
 
 /**
@@ -3175,6 +3189,12 @@ const CHECKBOX_LAYOUT = 'e-checkbox-layout';
 const DEFER_UPDATE_BUTTON = 'e-defer-update-btn';
 /** @hidden */
 const HEADERCONTENT = 'e-headercontent';
+/** @hidden */
+const BACK_ICON = 'e-field-list-back-icon';
+/** @hidden */
+const TITLE_MOBILE_HEADER = 'e-title-mobile-header';
+/** @hidden */
+const TITLE_MOBILE_CONTENT = 'e-title-mobile-content';
 
 /**
  * Module to render PivotGrid control
@@ -3411,7 +3431,6 @@ class Render {
             args.column.customAttributes.cell.valueSort.levelName;
         this.parent.resizeInfo[column] =
             Number(args.column.width.toString().split('px')[0]);
-        this.parent.grid.headerModule.refreshUI();
         this.setGroupWidth(args);
     }
     setGroupWidth(args) {
@@ -3818,7 +3837,7 @@ class Render {
         this.parent.triggerColumnRenderEvent(integrateModel);
         return integrateModel;
     }
-    /** hidden */
+    /** @hidden */
     setSavedWidth(column, width) {
         width = this.parent.resizeInfo[column] ? this.parent.resizeInfo[column] : width;
         return width;
@@ -5164,6 +5183,7 @@ class DrillThroughDialog {
             isModal: true,
             visible: true,
             showCloseIcon: true,
+            locale: this.parent.locale,
             enableRtl: this.parent.enableRtl,
             width: this.parent.isAdaptive ? '100%' : '60%',
             position: { X: 'center', Y: 'center' },
@@ -5240,6 +5260,7 @@ class DrillThroughDialog {
             showColumnChooser: true,
             toolbar: toolbarItems,
             columns: this.frameGridColumns(),
+            locale: this.parent.locale,
             enableRtl: this.parent.enableRtl,
             enableVirtualization: this.parent.editSettings.allowEditing,
             allowPaging: this.parent.editSettings.allowEditing
@@ -5267,7 +5288,7 @@ class DrillThroughDialog {
             }
             /* tslint:disable:align */
             this.drillThroughGrid.columns.push({
-                field: '__index', visible: false, isPrimaryKey: true, type: 'number', showInColumnChooser: false
+                field: '__index', visible: false, isPrimaryKey: true, type: 'string', showInColumnChooser: false
             });
             /* tslint:disable-next-line:no-any */
             this.drillThroughGrid.actionComplete = (args) => {
@@ -5314,7 +5335,8 @@ class DrillThroughDialog {
                     width: 120,
                     visible: this.parent.engineModule.fieldList[key].isSelected,
                     validationRules: { required: true },
-                    editType: editType
+                    editType: editType,
+                    type: 'string'
                 });
             }
         }
@@ -5726,23 +5748,24 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.isDragging = false;
         this.addInternalEvents();
+        setCurrencyCode(this.currencyCode);
     }
     onBeforeTooltipOpen(args) {
         args.element.classList.add('e-pivottooltipwrap');
     }
     renderToolTip() {
         if (this.showTooltip) {
-            this.toolTip = new Tooltip({
+            this.tooltip = new Tooltip({
                 target: 'td.e-valuescontent',
                 showTipPointer: false,
                 enableRtl: this.enableRtl,
                 beforeRender: this.setToolTip.bind(this),
                 beforeOpen: this.onBeforeTooltipOpen
             });
-            this.toolTip.appendTo(this.element);
+            this.tooltip.appendTo(this.element);
         }
-        else if (this.toolTip) {
-            this.toolTip.destroy();
+        else if (this.tooltip) {
+            this.tooltip.destroy();
         }
     }
     /* tslint:disable:align */
@@ -5897,8 +5920,8 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                     break;
                 case 'locale':
                 case 'currencyCode':
-                    if (this.toolTip) {
-                        this.toolTip.destroy();
+                    if (this.tooltip) {
+                        this.tooltip.destroy();
                     }
                     super.refresh();
                     break;
@@ -6143,6 +6166,10 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             this.element.style.minWidth = '400px';
             this.grid.element.style.minWidth = '400px';
         }
+        else {
+            this.element.style.minWidth = '310px';
+            this.grid.element.style.minWidth = '310px';
+        }
         this.unwireEvents();
         this.wireEvents();
     }
@@ -6150,9 +6177,9 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         let colIndex = Number(args.target.getAttribute('aria-colindex'));
         let rowIndex = Number(args.target.getAttribute('index'));
         let cell = this.pivotValues[rowIndex][colIndex];
-        this.toolTip.content = '';
+        this.tooltip.content = '';
         if (cell) {
-            this.toolTip.content = '<div class=' + PIVOTTOOLTIP + '><p class=' + TOOLTIP_HEADER + '>' +
+            this.tooltip.content = '<div class=' + PIVOTTOOLTIP + '><p class=' + TOOLTIP_HEADER + '>' +
                 this.localeObj.getConstant('row') + ':</p><p class=' + TOOLTIP_CONTENT + '>' +
                 this.getRowText(rowIndex, 0) +
                 '</p></br><p class=' + TOOLTIP_HEADER + '>' +
@@ -6335,7 +6362,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             /* tslint:enable */
         }
     }
-    /** hidden */
+    /** @hidden */
     triggerColumnRenderEvent(gridcolumns) {
         this.pivotColumns = [];
         this.totColWidth = 0;
@@ -6352,7 +6379,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         this.posCount = 0;
         this.setGridColumns(gridcolumns);
     }
-    /** hidden */
+    /** @hidden */
     setCommonColumnsWidth(columns, width) {
         for (let column of columns) {
             if (column.field !== '0.formattedText') {
@@ -6946,9 +6973,9 @@ class EventBase {
         let filterObj = this.getFilterItemByName(fieldName);
         if (!isNullOrUndefined(filterObj)) {
             isInclude = filterObj.type === 'Include' ? true : false;
-            filterItems = filterObj.items;
+            filterItems = filterObj.items ? filterObj.items : [];
         }
-        let treeData = this.getTreeData(isInclude, this.parent.engineModule.fieldList[fieldName].dateMember, filterItems);
+        let treeData = this.getTreeData(isInclude, this.parent.engineModule.fieldList[fieldName].dateMember, filterItems, fieldName);
         if (this.parent.filterDialog.dialogPopUp) {
             this.parent.filterDialog.dialogPopUp.close();
         }
@@ -7022,14 +7049,12 @@ class EventBase {
         }
         else {
             let searchList = [];
+            this.parent.searchTreeItems = [];
             let memberCount = 0;
-            for (let item of this.parent.currentTreeItems) {
-                item.checkedStatus = this.parent.savedTreeFilterPos[memberCount] !== undefined ? false : true;
-                memberCount++;
-            }
             memberCount = 1;
             for (let item of this.parent.currentTreeItems) {
                 if (item.name.toLowerCase().indexOf(args.value.toLowerCase()) > -1) {
+                    this.parent.searchTreeItems.push(item);
                     if (memberCount <= this.parent.control.maxNodeLimitInMemberEditor) {
                         searchList.push(item);
                     }
@@ -7054,10 +7079,13 @@ class EventBase {
             treeObj.dataBind();
         }
     }
-    getTreeData(isInclude, members, filterItems) {
+    getTreeData(isInclude, members, filterItems, fieldName) {
         this.parent.currentTreeItems = [];
+        this.parent.searchTreeItems = [];
         this.parent.currentTreeItemsPos = {};
         this.parent.savedTreeFilterPos = {};
+        this.parent.isDateField = this.parent.engineModule.formatFields[fieldName] &&
+            this.parent.engineModule.formatFields[fieldName].type === 'date';
         let list = [];
         let memberCount = 1;
         let filterObj = {};
@@ -7065,25 +7093,27 @@ class EventBase {
             filterObj[item] = item;
         }
         for (let member of members) {
+            let memberName = this.parent.isDateField ? member.formattedText : member.actualText.toString();
             let obj = {
-                id: member.formattedText,
-                name: member.formattedText,
+                id: member.actualText.toString(),
+                name: memberName,
                 checkedStatus: isInclude ? false : true
             };
-            if (filterObj[member.formattedText] !== undefined) {
+            if (filterObj[memberName] !== undefined) {
                 obj.checkedStatus = isInclude ? true : false;
             }
             if (memberCount <= this.parent.control.maxNodeLimitInMemberEditor) {
                 list.push(obj);
             }
             if (!obj.checkedStatus) {
-                this.parent.savedTreeFilterPos[memberCount - 1] = member.formattedText;
+                this.parent.savedTreeFilterPos[memberCount - 1] = memberName;
             }
             this.parent.currentTreeItems.push(obj);
-            this.parent.currentTreeItemsPos[member.formattedText] = memberCount - 1;
+            this.parent.searchTreeItems.push(obj);
+            this.parent.currentTreeItemsPos[member.actualText] = memberCount - 1;
             memberCount++;
         }
-        this.parent.isDataOverflow = (memberCount > this.parent.control.maxNodeLimitInMemberEditor);
+        this.parent.isDataOverflow = ((memberCount - 1) > this.parent.control.maxNodeLimitInMemberEditor);
         return list;
     }
 }
@@ -7479,6 +7509,7 @@ class FilterDialog {
             placeholder: this.parent.localeObj.getConstant('search') + ' ' + '"' + fieldCaption + '"',
             enableRtl: this.parent.enableRtl,
             cssClass: EDITOR_SEARCH_CLASS,
+            showClearButton: true,
             change: (e) => {
                 this.parent.eventBase.searchTreeNodes(e, this.memberTreeView, false);
                 let filterDialog = this.dialogPopUp.element;
@@ -7655,7 +7686,7 @@ class FilterDialog {
         mainDiv.appendChild(filterWrapperDiv2);
         return mainDiv;
     }
-    /* tslint:disable-next-line:max-line-length */
+    /* tslint:disable */
     createElements(filterObj, operators, optionDiv1, optionDiv2, inputDiv1, inputDiv2, vDataSource, oDataSource, valueIndex, option, type) {
         let popupInstance = this;
         let optionWrapper1 = new DropDownList({
@@ -7664,8 +7695,13 @@ class FilterDialog {
             cssClass: VALUE_OPTIONS_CLASS, width: '100%',
             change(args) {
                 let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
-                setStyleAndAttributes(element, { 'data-measure': args.value });
+                if (!isNullOrUndefined(element)) {
+                    popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
+                    setStyleAndAttributes(element, { 'data-measure': args.value });
+                }
+                else {
+                    return;
+                }
             }
         });
         optionWrapper1.appendTo(optionDiv1);
@@ -7675,17 +7711,22 @@ class FilterDialog {
             cssClass: FILTER_OPERATOR_CLASS, width: '100%',
             change(args) {
                 let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
-                let disabledClasses = [BETWEEN_TEXT_DIV_CLASS, FILTER_INPUT_DIV_2_CLASS];
-                for (let className of disabledClasses) {
-                    if (operators.indexOf(args.value) >= 0) {
-                        removeClass([element.querySelector('.' + className)], ICON_DISABLE);
+                if (!isNullOrUndefined(element)) {
+                    popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
+                    let disabledClasses = [BETWEEN_TEXT_DIV_CLASS, FILTER_INPUT_DIV_2_CLASS];
+                    for (let className of disabledClasses) {
+                        if (operators.indexOf(args.value) >= 0) {
+                            removeClass([element.querySelector('.' + className)], ICON_DISABLE);
+                        }
+                        else {
+                            addClass([element.querySelector('.' + className)], ICON_DISABLE);
+                        }
                     }
-                    else {
-                        addClass([element.querySelector('.' + className)], ICON_DISABLE);
-                    }
+                    setStyleAndAttributes(element, { 'data-operator': args.value });
                 }
-                setStyleAndAttributes(element, { 'data-operator': args.value });
+                else {
+                    return;
+                }
             }
         });
         optionWrapper.appendTo(optionDiv2);
@@ -7694,10 +7735,16 @@ class FilterDialog {
                 placeholder: this.parent.localeObj.getConstant('chooseDate'),
                 enableRtl: this.parent.enableRtl,
                 format: 'dd/MM/yyyy',
+                showClearButton: true,
                 value: (filterObj && option === filterObj.condition ? filterObj.value1 : null),
                 change: (e) => {
                     let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                    setStyleAndAttributes(element, { 'data-value1': e.value, 'data-value2': inputObj2.value });
+                    if (!isNullOrUndefined(element)) {
+                        setStyleAndAttributes(element, { 'data-value1': e.value, 'data-value2': inputObj2.value });
+                    }
+                    else {
+                        return;
+                    }
                 },
                 width: '100%',
             });
@@ -7705,12 +7752,60 @@ class FilterDialog {
                 placeholder: this.parent.localeObj.getConstant('chooseDate'),
                 enableRtl: this.parent.enableRtl,
                 format: 'dd/MM/yyyy',
+                showClearButton: true,
                 value: (filterObj && option === filterObj.condition ? filterObj.value2 : null),
                 change: (e) => {
                     let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                    setStyleAndAttributes(element, { 'data-value1': inputObj1.value, 'data-value2': e.value });
+                    if (!isNullOrUndefined(element)) {
+                        setStyleAndAttributes(element, { 'data-value1': inputObj1.value, 'data-value2': e.value });
+                    }
+                    else {
+                        return;
+                    }
                 },
                 width: '100%',
+            });
+            inputObj1.appendTo(inputDiv1);
+            inputObj2.appendTo(inputDiv2);
+        }
+        else if (type === 'value') {
+            let inputObj1 = new NumericTextBox({
+                placeholder: this.parent.localeObj.getConstant('enterValue'),
+                enableRtl: this.parent.enableRtl,
+                showClearButton: true,
+                format: '###.##',
+                value: (filterObj && option === filterObj.condition ? parseInt(filterObj.value1, 10) : undefined),
+                change: (e) => {
+                    let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
+                    if (!isNullOrUndefined(element)) {
+                        setStyleAndAttributes(element, {
+                            'data-value1': (e.value ? e.value.toString() : '0'),
+                            'data-value2': (inputObj2.value ? inputObj2.value.toString() : '0')
+                        });
+                    }
+                    else {
+                        return;
+                    }
+                }, width: '100%'
+            });
+            let inputObj2 = new NumericTextBox({
+                placeholder: this.parent.localeObj.getConstant('enterValue'),
+                enableRtl: this.parent.enableRtl,
+                showClearButton: true,
+                format: '###.##',
+                value: (filterObj && option === filterObj.condition ? parseInt(filterObj.value2, 10) : undefined),
+                change: (e) => {
+                    let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
+                    if (!isNullOrUndefined(element)) {
+                        setStyleAndAttributes(element, {
+                            'data-value1': (inputObj1.value ? inputObj1.value.toString() : '0'),
+                            'data-value2': (e.value ? e.value.toString() : '0')
+                        });
+                    }
+                    else {
+                        return;
+                    }
+                }, width: '100%'
             });
             inputObj1.appendTo(inputDiv1);
             inputObj2.appendTo(inputDiv2);
@@ -7719,25 +7814,38 @@ class FilterDialog {
             let inputObj1 = new MaskedTextBox({
                 placeholder: this.parent.localeObj.getConstant('enterValue'),
                 enableRtl: this.parent.enableRtl,
+                showClearButton: true,
                 value: (filterObj && option === filterObj.condition ? filterObj.value1 : ''),
                 change: (e) => {
                     let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                    setStyleAndAttributes(element, { 'data-value1': e.value, 'data-value2': inputObj2.value });
+                    if (!isNullOrUndefined(element)) {
+                        setStyleAndAttributes(element, { 'data-value1': e.value, 'data-value2': inputObj2.value });
+                    }
+                    else {
+                        return;
+                    }
                 }, width: '100%'
             });
             let inputObj2 = new MaskedTextBox({
                 placeholder: this.parent.localeObj.getConstant('enterValue'),
                 enableRtl: this.parent.enableRtl,
+                showClearButton: true,
                 value: (filterObj && option === filterObj.condition ? filterObj.value2 : ''),
                 change: (e) => {
                     let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                    setStyleAndAttributes(element, { 'data-value1': inputObj1.value, 'data-value2': e.value });
+                    if (!isNullOrUndefined(element)) {
+                        setStyleAndAttributes(element, { 'data-value1': inputObj1.value, 'data-value2': e.value });
+                    }
+                    else {
+                        return;
+                    }
                 }, width: '100%'
             });
             inputObj1.appendTo(inputDiv1);
             inputObj2.appendTo(inputDiv2);
         }
     }
+    /* tslint:enable */
     updateInputValues(element, type, inputDiv1, inputDiv2) {
         let value1;
         let value2;
@@ -7784,27 +7892,30 @@ class FilterDialog {
                     removeClass([firstNode], NODE_STOP_CLASS);
                     addClass([firstNode], NODE_CHECK_CLASS);
                 }
+                this.dialogPopUp.buttons[0].buttonModel.disabled = false;
                 filterDialog.querySelector('.' + OK_BUTTON_CLASS).removeAttribute('disabled');
             }
             else if (uncheckedNodes.length > 0 && checkedNodes.length === 0) {
                 removeClass([firstNode], [NODE_CHECK_CLASS, NODE_STOP_CLASS]);
                 if (this.getCheckedNodes().length === checkedNodes.length) {
+                    this.dialogPopUp.buttons[0].buttonModel.disabled = true;
                     filterDialog.querySelector('.' + OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
                 }
             }
         }
         else {
+            this.dialogPopUp.buttons[0].buttonModel.disabled = true;
             filterDialog.querySelector('.' + OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
         }
     }
     getCheckedNodes() {
-        let checkeNodes = this.parent.currentTreeItems.filter((item) => {
+        let checkeNodes = this.parent.searchTreeItems.filter((item) => {
             return item.checkedStatus;
         });
         return checkeNodes;
     }
     getUnCheckedNodes() {
-        let unCheckeNodes = this.parent.currentTreeItems.filter((item) => {
+        let unCheckeNodes = this.parent.searchTreeItems.filter((item) => {
             return !item.checkedStatus;
         });
         return unCheckeNodes;
@@ -7872,7 +7983,11 @@ class PivotCommon {
         /** @hidden */
         this.currentTreeItemsPos = {};
         /** @hidden */
+        this.searchTreeItems = [];
+        /** @hidden */
         this.isDataOverflow = false;
+        /** @hidden */
+        this.isDateField = false;
         this.element = control.element;
         this.moduleName = control.moduleName;
         this.dataSource = control.dataSource;
@@ -7976,13 +8091,13 @@ class DialogRenderer {
     }
     renderDeferUpdateButtons() {
         if (this.parent.allowDeferLayoutUpdate) {
-            let checkBoxObj = new CheckBox({
+            this.deferUpdateCheckBox = new CheckBox({
                 label: this.parent.localeObj.getConstant('deferLayoutUpdate'),
                 checked: true,
                 enableRtl: this.parent.enableRtl,
                 change: this.onCheckChange.bind(this)
             });
-            checkBoxObj.appendTo('#' + this.parent.element.id + 'DeferUpdateCheckBox');
+            this.deferUpdateCheckBox.appendTo('#' + this.parent.element.id + 'DeferUpdateCheckBox');
             this.deferUpdateApplyButton = new Button({
                 cssClass: DEFER_APPLY_BUTTON + ' ' + DEFER_UPDATE_BUTTON + (this.parent.renderMode === 'Popup' ?
                     (' ' + BUTTON_FLAT_CLASS) : ''),
@@ -8082,6 +8197,9 @@ class DialogRenderer {
         });
         this.parent.element.appendChild(toggleFieldList);
         if (this.parent.isAdaptive) {
+            let headerTemplate = '<div class=' + TITLE_MOBILE_HEADER + '><span class="' + ICON + ' ' +
+                BACK_ICON + '"></span><div class=' + TITLE_MOBILE_CONTENT + '>' + this.parent.localeObj.getConstant('fieldList') +
+                '</div></div>';
             let buttons = [{
                     click: this.showFieldListDialog.bind(this),
                     buttonModel: {
@@ -8097,27 +8215,10 @@ class DialogRenderer {
                         iconCss: ICON + ' ' + ADD_ICON_CLASS, enableRtl: this.parent.enableRtl,
                         isPrimary: true
                     }
-                }, {
-                    click: this.onDeferUpdateClick.bind(this),
-                    buttonModel: {
-                        content: this.parent.localeObj.getConstant('apply'), enableRtl: this.parent.enableRtl,
-                        cssClass: DEFER_APPLY_BUTTON + ' ' + DEFER_UPDATE_BUTTON + ' ' + BUTTON_FLAT_CLASS,
-                        isPrimary: true
-                    }
-                }, {
-                    click: this.onCloseFieldList.bind(this),
-                    buttonModel: {
-                        cssClass: DEFER_CANCEL_BUTTON + ' ' + CANCEL_BUTTON_CLASS + ' ' + BUTTON_FLAT_CLASS,
-                        content: this.parent.allowDeferLayoutUpdate ? this.parent.localeObj.getConstant('cancel') :
-                            this.parent.localeObj.getConstant('close'),
-                        enableRtl: this.parent.enableRtl
-                    }
                 }];
-            if (!this.parent.allowDeferLayoutUpdate) {
-                buttons.splice(2, 1);
-            }
             this.fieldListDialog = new Dialog({
-                animationSettings: { effect: 'Zoom' },
+                animationSettings: { effect: this.parent.enableRtl ? 'SlideRight' : 'SlideLeft' },
+                header: headerTemplate,
                 content: this.parentElement,
                 isModal: true,
                 showCloseIcon: false,
@@ -8140,6 +8241,8 @@ class DialogRenderer {
             addClass([footer], FIELD_LIST_FOOTER_CLASS);
             removeClass([footer.querySelector('.' + ADAPTIVE_CALCULATED_FIELD_BUTTON_CLASS)], BUTTON_FLAT_CLASS);
             removeClass([footer.querySelector('.' + ADAPTIVE_FIELD_LIST_BUTTON_CLASS)], BUTTON_FLAT_CLASS);
+            this.fieldListDialog.element.querySelector('.' + BACK_ICON).onclick =
+                this.parent.allowDeferLayoutUpdate ? this.onDeferUpdateClick.bind(this) : this.onCloseFieldList.bind(this);
         }
         else {
             let template = this.createDeferUpdateButtons().outerHTML;
@@ -8885,13 +8988,13 @@ class AggregateMenu {
     }
     createContextMenu() {
         let menuItems = [
+            { text: 'Sum', id: 'Sum' },
             { text: 'Count', id: 'Count' },
-            { text: 'DistinctCount', id: 'DistinctCount' },
+            { text: 'Distinct Count', id: 'DistinctCount' },
+            { text: 'Product', id: 'Product' },
             { text: 'Avg', id: 'Avg' },
             { text: 'Min', id: 'Min' },
             { text: 'Max', id: 'Max' },
-            { text: 'Sum', id: 'Sum' },
-            { text: 'Product', id: 'Product' },
             { text: 'More...', id: 'MoreOption' }
         ];
         let menuOptions = {
@@ -9105,8 +9208,10 @@ class AggregateMenu {
             else {
                 let field = buttonElement.getAttribute('data-uid');
                 let valuefields = this.parent.dataSource.values;
-                buttonElement.querySelector('.e-content').innerHTML = menu.item.text + ' ' + 'of' + ' ' +
-                    this.parent.engineModule.fieldList[field].caption;
+                let contentElement = buttonElement.querySelector('.e-content');
+                let captionName = menu.item.text + ' ' + 'of' + ' ' + this.parent.engineModule.fieldList[field].caption;
+                contentElement.innerHTML = captionName;
+                contentElement.setAttribute('title', captionName);
                 buttonElement.setAttribute('data-type', menu.item.id);
                 for (let vCnt = 0; vCnt < this.parent.dataSource.values.length; vCnt++) {
                     if (this.parent.dataSource.values[vCnt].name === field) {
@@ -9144,9 +9249,10 @@ class AggregateMenu {
         let baseItemInstance = getInstance('#' + this.parentElement.id + '_base_item_option', DropDownList);
         let fieldName = dialogElement.getAttribute('data-field');
         let buttonElement = this.parentElement.querySelector('.' + PIVOT_BUTTON_CLASS + '#' + fieldName);
-        buttonElement.querySelector('.e-content').innerHTML =
-            this.parent.localeObj.getConstant(summaryInstance.value)
-                + ' ' + 'of' + ' ' + captionInstance.value;
+        let contentElement = buttonElement.querySelector('.e-content');
+        let captionName = this.parent.localeObj.getConstant(summaryInstance.value) + ' ' + 'of' + ' ' + captionInstance.value;
+        contentElement.innerHTML = captionName;
+        contentElement.setAttribute('title', captionName);
         buttonElement.setAttribute('data-type', summaryInstance.value);
         buttonElement.setAttribute('data-caption', captionInstance.value);
         buttonElement.setAttribute('data-basefield', baseFieldInstance.value);
@@ -9338,6 +9444,7 @@ class PivotButton {
         let text = field[i].caption ? field[i].caption : field[i].name;
         buttonText = createElement('span', {
             attrs: {
+                title: ((axis !== 'values' || aggregation === 'CalculatedField') ? text : this.parent.localeObj.getConstant(aggregation) + ' ' + 'of' + ' ' + text),
                 'tabindex': '-1', 'aria-disabled': 'false', 'oncontextmenu': 'return false;',
                 'data-type': valuePos === i ? '' : aggregation
             },
@@ -9604,6 +9711,13 @@ class PivotButton {
                     /* tslint:disable-next-line:max-line-length */
                     addClass([this.dialogPopUp.element.querySelector('.e-filter-div-content' + '.' + (e.selectedIndex === 1 && this.parent.dataSource.allowLabelFilter ? 'e-label-filter' : 'e-value-filter'))], 'e-selected-tab');
                 }
+                if (e.selectedIndex === 0) {
+                    this.parent.pivotCommon.filterDialog.updateCheckedState();
+                }
+                else {
+                    this.dialogPopUp.buttons[0].buttonModel.disabled = false;
+                    this.dialogPopUp.element.querySelector('.' + OK_BUTTON_CLASS).removeAttribute('disabled');
+                }
             };
         }
         else {
@@ -9632,6 +9746,14 @@ class PivotButton {
             value1: filterType === 'date' ? new Date(operand1) : operand1,
             value2: filterType === 'date' ? new Date(operand2) : operand2
         };
+        if ((isNullOrUndefined(operand1) || operand1 === '') ||
+            (['Between', 'NotBetween'].indexOf(operator) > -1 && (isNullOrUndefined(operand2) || operand2 === ''))) {
+            let inputElementString = (type.toLowerCase() + ((isNullOrUndefined(operand1) || operand1 === '') ? '_input_option_1' : '_input_option_2'));
+            let focusElement = dialogElement.querySelector('#' + this.parent.element.id + '_' + inputElementString);
+            addClass([focusElement], EMPTY_FIELD);
+            focusElement.focus();
+            return;
+        }
         let filterObject = this.parent.pivotCommon.eventBase.getFilterItemByName(fieldName);
         if (filterObject) {
             // this.removeDataSourceSettings(fieldName);
@@ -9699,26 +9821,40 @@ class PivotButton {
     checkedStateAll(state) {
         if (state === 'check') {
             for (let item of this.parent.pivotCommon.currentTreeItems) {
-                item.checkedStatus = true;
+                for (let searctItem of this.parent.pivotCommon.searchTreeItems) {
+                    if (item.id === searctItem.id) {
+                        item.checkedStatus = true;
+                        searctItem.checkedStatus = true;
+                    }
+                }
             }
         }
         else {
             for (let item of this.parent.pivotCommon.currentTreeItems) {
-                item.checkedStatus = false;
+                for (let searctItem of this.parent.pivotCommon.searchTreeItems) {
+                    if (item.id === searctItem.id) {
+                        item.checkedStatus = false;
+                        searctItem.checkedStatus = false;
+                    }
+                }
             }
         }
     }
     updateFilterState(fieldName, args) {
-        let unCheckedNodeCount = 0;
+        let isNodeUnChecked = false;
         let filterItem = { items: [], name: fieldName, type: 'Include' };
-        for (let item of this.parent.pivotCommon.currentTreeItems) {
+        for (let item of this.parent.pivotCommon.searchTreeItems) {
             if (item.checkedStatus) {
-                filterItem.items.push(item.id);
-            }
-            else {
-                unCheckedNodeCount = unCheckedNodeCount + 1;
+                if (this.parent.pivotCommon.isDateField) {
+                    filterItem.items.push(item.name);
+                }
+                else {
+                    filterItem.items.push(item.id);
+                }
             }
         }
+        isNodeUnChecked = (filterItem.items.length === this.parent.pivotCommon.currentTreeItems.length ?
+            false : true);
         let filterObject = this.parent.pivotCommon.eventBase.getFilterItemByName(fieldName);
         if (filterObject) {
             for (let i = 0; i < this.parent.dataSource.filterSettings.length; i++) {
@@ -9733,8 +9869,8 @@ class PivotButton {
             this.parent.dataSource.filterSettings.push(filterItem);
         }
         this.dialogPopUp.close();
-        this.refreshPivotButtonState(fieldName, (unCheckedNodeCount > 0) ? true : false);
-        if (unCheckedNodeCount === 0) {
+        this.refreshPivotButtonState(fieldName, isNodeUnChecked);
+        if (!isNodeUnChecked) {
             this.removeDataSourceSettings(fieldName);
         }
         this.updateDataSource(true);
@@ -10253,7 +10389,7 @@ let PivotFieldList = class PivotFieldList extends Component {
             let pageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined;
             let enableValueSorting = this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined;
             let isDrillThrough = this.pivotGridModule ?
-                (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : undefined;
+                (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true;
             this.engineModule =
                 new PivotEngine(this.dataSource, '', this.pivotFieldList, pageSettings, enableValueSorting, isDrillThrough);
             this.getFieldCaption(this.dataSource);
@@ -10363,6 +10499,10 @@ let PivotFieldList = class PivotFieldList extends Component {
         if (this.pivotButtonModule) {
             this.pivotButtonModule.destroy();
         }
+        if (this.allowDeferLayoutUpdate && this.dialogRenderer &&
+            this.dialogRenderer.deferUpdateCheckBox && !this.dialogRenderer.deferUpdateCheckBox.isDestroyed) {
+            this.dialogRenderer.deferUpdateCheckBox.destroy();
+        }
         super.destroy();
         this.element.innerHTML = '';
         removeClass([this.element], ROOT);
@@ -10453,7 +10593,7 @@ const SUM = 'Sum';
 const DISTINCTCOUNT = 'DistinctCount';
 const PRODUCT = 'Product';
 const STDEV = 'SampleStDev';
-const STDEVP = 'Popultion StDev';
+const STDEVP = 'PopulationStDev';
 const VAR = 'SampleVar';
 const VARP = 'PopulationVar';
 const CALC = 'CalculatedField';
@@ -10883,11 +11023,11 @@ class CalculatedField {
             outerDiv.appendChild(accordDiv);
             let buttonDiv = createElement('div', { id: this.parentID + 'buttonDiv', className: CALCBUTTONDIV });
             let addBtn = createElement('button', {
-                id: this.parentID + 'addBtn', innerHTML: 'ADD',
+                id: this.parentID + 'addBtn', innerHTML: this.parent.localeObj.getConstant('add'),
                 className: CALCADDBTN
             });
             let cancelBtn = createElement('button', {
-                id: this.parentID + 'cancelBtn', innerHTML: 'CANCEL',
+                id: this.parentID + 'cancelBtn', innerHTML: this.parent.localeObj.getConstant('cancel'),
                 className: CALCCANCELBTN
             });
             buttonDiv.appendChild(cancelBtn);
@@ -11019,7 +11159,7 @@ class CalculatedField {
     createTypeContainer(key) {
         let wrapDiv = createElement('div', { id: this.parentID + 'control_wrapper', className: TREEVIEWOUTER });
         let type = [SUM, COUNT, AVG, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < type.length; i++) {
             let input = createElement('input', {
                 id: this.parentID + 'radio' + key + type[i],
                 attrs: { 'type': 'radio', 'data-ftxt': key },
@@ -11094,7 +11234,7 @@ class CalculatedField {
                             let type = [SUM, COUNT, AVG, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
                             let radiobutton;
                             if (key === args.element.querySelector('[data-field').getAttribute('data-field')) {
-                                for (let i = 0; i < 5; i++) {
+                                for (let i = 0; i < type.length; i++) {
                                     radiobutton = new RadioButton({
                                         label: type[i],
                                         name: AGRTYPE + key,
@@ -11789,9 +11929,14 @@ class GroupingBar {
                 }
             }
             else {
-                let pivotButtons = [].slice.call(this.rowPanel.querySelectorAll('.' + PIVOT_BUTTON_WRAPPER_CLASS));
-                for (let btn of pivotButtons) {
-                    btn.style.width = '140px';
+                if (!this.parent.firstColWidth) {
+                    let resColWidth = 180;
+                    let gridColumn = this.parent.grid.columns;
+                    if (gridColumn && gridColumn.length > 0) {
+                        gridColumn[0].width = resColWidth;
+                    }
+                    this.parent.posCount = 0;
+                    this.parent.grid.headerModule.refreshUI();
                 }
             }
         }
@@ -12043,7 +12188,7 @@ class ConditionalFormatting {
         let value1 = createElement('input', {
             id: this.parentID + 'conditionvalue1' + i,
             attrs: { 'type': 'text', 'tabindex': '1', 'value': !isNullOrUndefined(format.value1) ? format.value1.toString() : '0' },
-            styles: this.parent.isAdaptive ? style === '' ? 'width: 28%' : 'width: 100%' : style === '' ? 'width: 45px' : 'width: 120px',
+            styles: this.parent.isAdaptive ? style === '' ? 'width: 35%' : 'width: 100%' : style === '' ? 'width: 45px' : 'width: 120px',
             className: INPUT + ' ' + FORMAT_VALUE1
         });
         td.appendChild(value1);
@@ -12055,7 +12200,7 @@ class ConditionalFormatting {
         let value2 = createElement('input', {
             id: this.parentID + 'conditionvalue2' + i,
             attrs: { 'type': 'text', 'tabindex': '1', 'value': !isNullOrUndefined(format.value2) ? format.value2.toString() : '0' },
-            styles: (this.parent.isAdaptive && style === '') ? 'width: 28%' : style === '' ? 'width: 45px' : style,
+            styles: (this.parent.isAdaptive && style === '') ? 'width: 35%' : style === '' ? 'width: 45px' : style,
             className: INPUT + ' ' + FORMAT_VALUE2
         });
         td.appendChild(value2);
@@ -12136,7 +12281,7 @@ class ConditionalFormatting {
         this.fieldsDropDown[i] = new DropDownList({
             dataSource: fields, fields: { text: 'name' },
             value: value, width: this.parent.isAdaptive ? '100%' : '120px',
-            popupHeight: '200px',
+            popupHeight: '200px', popupWidth: 'auto',
             change: (args) => {
                 this.newFormat[i].measure = args.value.toString() === this.parent.localeObj.getConstant('AllValues') ?
                     undefined : args.value.toString();
@@ -12157,7 +12302,7 @@ class ConditionalFormatting {
         this.conditionsDropDown[i] = new DropDownList({
             dataSource: conditions, fields: { value: 'value', text: 'name' },
             value: value, width: this.parent.isAdaptive ? '100%' : '120px',
-            popupHeight: '200px', popupWidth: '200px',
+            popupHeight: '200px', popupWidth: 'auto',
             change: (args) => {
                 this.newFormat[i].conditions = args.value;
                 if (args.value === 'Between' || args.value === 'NotBetween') {
@@ -12166,9 +12311,9 @@ class ConditionalFormatting {
                         this.parent.isAdaptive ? '10%' : '10px';
                     document.querySelector('#' + this.parentID + 'conditionvalue2' + i).style.display = 'inline-block';
                     document.querySelector('#' + this.parentID + 'conditionvalue2' + i).style.width =
-                        this.parent.isAdaptive ? '28%' : '45px';
+                        this.parent.isAdaptive ? '35%' : '45px';
                     document.querySelector('#' + this.parentID + 'conditionvalue1' + i).style.width =
-                        this.parent.isAdaptive ? '28%' : '45px';
+                        this.parent.isAdaptive ? '35%' : '45px';
                 }
                 else {
                     document.querySelector('#' + this.parentID + 'valuespan' + i).style.display = 'none';

@@ -136,7 +136,9 @@ export class EventWindow {
     public openEditor(data: Object, type: CurrentAction, isEventData?: boolean, repeatType?: number): void {
         this.parent.removeNewEventElement();
         this.parent.quickPopup.quickPopupHide(true);
-        if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
+        if (this.parent.calendarMode === 'Islamic') {
+            addClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], cls.DISABLE_CLASS);
+        } else if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
             removeClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], cls.DISABLE_CLASS);
         }
         switch (type) {
@@ -298,6 +300,7 @@ export class EventWindow {
         dateTimeDiv.appendChild(dateTimeInput);
         let dateTimePicker: DateTimePicker = new DateTimePicker({
             change: changeEvent,
+            calendarMode: this.parent.calendarMode,
             cssClass: this.parent.cssClass,
             enableRtl: this.parent.enableRtl,
             floatLabelType: 'Always',
@@ -843,7 +846,8 @@ export class EventWindow {
         } else {
             startDate = new Date(this.parent.activeCellsData.startTime.getTime());
             if (this.parent.currentView === 'Month' || this.parent.currentView === 'MonthAgenda' || this.parent.activeCellsData.isAllDay) {
-                let startHour: Date = this.parent.globalize.parseDate(this.parent.workHours.start, { skeleton: 'Hm' });
+                let startHour: Date = this.parent.globalize.parseDate(
+                    this.parent.workHours.start, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
                 startDate.setHours(startHour.getHours(), startHour.getMinutes(), startHour.getSeconds());
                 endDate = new Date(startDate.getTime());
                 endDate.setMilliseconds(util.MS_PER_MINUTE * this.getSlotDuration());
@@ -862,7 +866,10 @@ export class EventWindow {
         if (this.parent.locale === 'en' || this.parent.locale === 'en-US') {
             format = getValue(formatType + '.short', getDefaultDateObject());
         } else {
-            format = getValue('main.' + '' + this.parent.locale + '.dates.calendars.gregorian.' + formatType + '.short', cldrData);
+            format = getValue(
+                // tslint:disable-next-line:max-line-length
+                'main.' + '' + this.parent.locale + '.dates.calendars.' + this.parent.getCalendarMode() + '.' + formatType + '.short', cldrData
+            );
         }
         return format;
     }

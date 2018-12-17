@@ -362,7 +362,7 @@ function editText(): void {
 }
 
 function resetDiagram(): void {
-    for (let i: number = diagram.historyList.undoStack.length; i >= 0; i--) {
+    for (let i: number = diagram.historyManager.undoStack.length; i >= 0; i--) {
         diagram.undo();
     }
 }

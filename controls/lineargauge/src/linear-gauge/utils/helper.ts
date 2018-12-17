@@ -408,7 +408,7 @@ export function getPointer(target: HTMLElement, gauge: LinearGauge): IVisiblePoi
     let pointIndex: number;
     let axis: Axis;
     let pointer: Pointer;
-    split = target.id.split('_');
+    split = target.id.replace(gauge.element.id, '').split('_');
     axisIndex = parseInt(split[2], radix);
     pointIndex = parseInt(split[4], radix);
     axis = <Axis>gauge.axes[axisIndex];

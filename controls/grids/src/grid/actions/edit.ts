@@ -717,7 +717,7 @@ export class Edit implements IAction {
         let mForm: HTMLFormElement = gObj.element.querySelectorAll('.e-gridform')[1] as HTMLFormElement;
         let rules: Object = {};
         let mRules: Object = {};
-        cols = cols ? cols : gObj.columns as Column[];
+        cols = cols ? cols : gObj.getColumns() as Column[];
         cols.forEach((col: Column, index: number) => {
             if (!col.visible) {
                 return;
@@ -739,6 +739,7 @@ export class Edit implements IAction {
     private createFormObj(form: HTMLFormElement, rules: Object): FormValidator {
         return new FormValidator(form, {
             rules: rules as { [name: string]: { [rule: string]: Object } },
+            locale: this.parent.locale,
             validationComplete: (args: { status: string, inputName: string, element: HTMLElement, message: string }) => {
                 this.validationComplete(args);
             },
@@ -844,6 +845,12 @@ export class Edit implements IAction {
             div.style.bottom = inputClient.height + 9  + 'px';
             div.style.top = null;
         }
+    }
+    /**
+     * @hidden
+     */
+    public checkColumnIsGrouped(col: Column): boolean {
+        return !col.visible && !(this.parent.groupSettings.columns.indexOf(col.field) > -1);
     }
 
 }

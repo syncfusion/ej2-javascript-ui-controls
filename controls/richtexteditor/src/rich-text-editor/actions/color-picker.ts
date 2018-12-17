@@ -1,15 +1,14 @@
-import { select, detach } from '@syncfusion/ej2-base';
+import { select, detach, extend } from '@syncfusion/ej2-base';
 import { ColorPicker } from '@syncfusion/ej2-inputs';
-import { RenderType } from '../base/enum';
+import { RenderType, ToolbarItems } from '../base/enum';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { RichTextEditorModel } from '../base/rich-text-editor-model';
-import { getIndex } from '../base/util';
+import { getIndex, toObjectLowerCase } from '../base/util';
 import { templateItems, tools } from '../models/items';
-import { IRichTextEditor, IRenderer, IColorPickerModel, IColorPickerRenderArgs } from '../base/interface';
+import { IRichTextEditor, IRenderer, IColorPickerModel, IColorPickerRenderArgs, IToolsItems } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
-import { Toolbar } from './toolbar';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 /**
  * `Color Picker` module is used to handle ColorPicker actions.
@@ -23,12 +22,18 @@ export class ColorPickerInput {
     protected locator: ServiceLocator;
     protected toolbarRenderer: IRenderer;
     protected renderFactory: RendererFactory;
+    private tools: { [key: string]: IToolsItems; } = {};
 
     constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.locator = serviceLocator;
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
         this.addEventListener();
+        if (this.parent.toolbarSettings && Object.keys(this.parent.toolbarSettings.itemConfigs).length > 0) {
+            extend(this.tools, tools, toObjectLowerCase(this.parent.toolbarSettings.itemConfigs), true);
+        } else {
+            this.tools = tools;
+        }
     }
 
     private initializeInstance(): void {
@@ -49,10 +54,11 @@ export class ColorPickerInput {
                         fontNode.classList.add(classes.CLS_FONT_COLOR_TARGET);
                         document.body.appendChild(fontNode);
                         let args: IColorPickerModel = {
-                            cssClass: tools[item].icon + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_ICONS,
-                            value: tools[item].value,
-                            command: tools[item].command,
-                            subCommand: tools[item].subCommand,
+                            cssClass: this.tools[item.toLocaleLowerCase() as ToolbarItems].icon
+                                + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_ICONS,
+                            value: this.tools[item.toLocaleLowerCase() as ToolbarItems].value,
+                            command: this.tools[item.toLocaleLowerCase() as ToolbarItems].command,
+                            subCommand: this.tools[item.toLocaleLowerCase() as ToolbarItems].subCommand,
                             element: select('#' + this.parent.getID() + '_' + suffixID + '_FontColor', tbElement),
                             target: ('#' + targetID)
                         } as IColorPickerModel;
@@ -66,10 +72,11 @@ export class ColorPickerInput {
                         backNode.classList.add(classes.CLS_BACKGROUND_COLOR_TARGET);
                         document.body.appendChild(backNode);
                         args = {
-                            cssClass: tools[item].icon + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_ICONS,
-                            value: tools[item].value,
-                            command: tools[item].command,
-                            subCommand: tools[item].subCommand,
+                            cssClass: this.tools[item.toLocaleLowerCase() as ToolbarItems].icon
+                                + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_ICONS,
+                            value: this.tools[item.toLocaleLowerCase() as ToolbarItems].value,
+                            command: this.tools[item.toLocaleLowerCase() as ToolbarItems].command,
+                            subCommand: this.tools[item.toLocaleLowerCase() as ToolbarItems].subCommand,
                             element: select('#' + this.parent.getID() + '_' + suffixID + '_BackgroundColor', tbElement),
                             target: ('#' + targetID)
                         } as IColorPickerModel;
@@ -134,7 +141,7 @@ export class ColorPickerInput {
                                 case 'default':
                                     this.fontColorPicker.setProperties({ value: newProp.fontColor.default });
                                     let element: HTMLElement = <HTMLElement>this.fontColorDropDown.element;
-                                    let fontBorder: HTMLElement = element.querySelector('.' + tools.fontcolor.icon);
+                                    let fontBorder: HTMLElement = element.querySelector('.' + this.tools['fontcolor' as ToolbarItems].icon);
                                     fontBorder.style.borderBottomColor = newProp.fontColor.default;
                                     break;
                                 case 'mode':
@@ -160,7 +167,8 @@ export class ColorPickerInput {
                                 case 'default':
                                     this.backgroundColorPicker.setProperties({ value: newProp.backgroundColor.default });
                                     let element: HTMLElement = <HTMLElement>this.backgroundColorDropDown.element;
-                                    let backgroundBorder: HTMLElement = element.querySelector('.' + tools.backgroundcolor.icon);
+                                    let backgroundBorder: HTMLElement = element.querySelector(
+                                        '.' + this.tools['backgroundcolor' as ToolbarItems].icon);
                                     backgroundBorder.style.borderBottomColor = newProp.backgroundColor.default;
                                     break;
                                 case 'mode':

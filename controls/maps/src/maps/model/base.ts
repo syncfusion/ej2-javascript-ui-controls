@@ -987,7 +987,7 @@ export class ShapeSettings extends ChildProperty<ShapeSettings> {
 /**
  * To configure the marker settings for the maps.
  */
-export class MarkerSettings extends ChildProperty<MarkerSettings> {
+export class MarkerBase extends ChildProperty<MarkerBase> {
 
     /**
      * Options for customizing the color and width of the marker.
@@ -1105,6 +1105,12 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
 
 }
 
+export class MarkerSettings extends MarkerBase {
+    // tslint:disable-next-line:no-any
+    constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
+        super(parent, propName, defaultValue, isArray);
+    }
+}
 
 /**
  * To configure the layers of the maps.

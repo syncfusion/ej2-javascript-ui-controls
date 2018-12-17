@@ -28,7 +28,7 @@ export class UndoRedo {
 
     /** @private */
     public initHistory(diagram: Diagram): void {
-        diagram.historyList = {
+        diagram.historyManager = {
             canRedo: false, canUndo: false, currentEntry: null,
             push: diagram.addHistoryEntry.bind(diagram), undo: Function, redo: Function,
             startGroupAction: diagram.startGroupAction.bind(diagram), endGroupAction: diagram.endGroupAction.bind(diagram),
@@ -40,14 +40,14 @@ export class UndoRedo {
     public addHistoryEntry(entry: HistoryEntry, diagram: Diagram): void {
         let entryObject: HistoryEntry = null;
         let nextEntry: HistoryEntry = null;
-        if (diagram.historyList.canLog) {
-            let hEntry: HistoryEntry = diagram.historyList.canLog(entry);
+        if (diagram.historyManager.canLog) {
+            let hEntry: HistoryEntry = diagram.historyManager.canLog(entry);
             if (hEntry.cancel === true) {
                 return;
             }
         }
-        if (diagram.historyList && diagram.historyList.canUndo && diagram.historyList.currentEntry) {
-            entryObject = diagram.historyList.currentEntry;
+        if (diagram.historyManager && diagram.historyManager.canUndo && diagram.historyManager.currentEntry) {
+            entryObject = diagram.historyManager.currentEntry;
             if (entryObject.next) {
                 if (entryObject.previous) {
                     nextEntry = entryObject.next;
@@ -60,10 +60,10 @@ export class UndoRedo {
                 entry.previous = entryObject;
             }
         }
-        diagram.historyList.currentEntry = entry;
+        diagram.historyManager.currentEntry = entry;
         this.getHistoryList(diagram);
-        diagram.historyList.canUndo = true;
-        diagram.historyList.canRedo = false;
+        diagram.historyManager.canUndo = true;
+        diagram.historyManager.canRedo = false;
     }
 
     /** @private */
@@ -83,7 +83,7 @@ export class UndoRedo {
                     this.groupUndo = false;
                 }
             } else {
-                diagram.historyList.undo(entry);
+                diagram.historyManager.undo(entry);
             }
         }
     }
@@ -91,12 +91,12 @@ export class UndoRedo {
     private getHistoryList(diagram: Diagram): void {
         let undoStack: HistoryEntry[] = [];
         let redoStack: HistoryEntry[] = [];
-        let currEntry: HistoryEntry = diagram.historyList.currentEntry;
+        let currEntry: HistoryEntry = diagram.historyManager.currentEntry;
         let undoObj: HistoryEntry;
         let redoObj: HistoryEntry;
 
-        currEntry = diagram.historyList.currentEntry;
-        if (diagram.historyList.canUndo || diagram.historyList.undoStack.length === 0) {
+        currEntry = diagram.historyManager.currentEntry;
+        if (diagram.historyManager.canUndo || diagram.historyManager.undoStack.length === 0) {
             this.getHistroyObject(undoStack, currEntry);
         } else {
             this.getHistroyObject(redoStack, currEntry);
@@ -108,14 +108,14 @@ export class UndoRedo {
             currEntry = currEntry.previous;
         }
 
-        currEntry = diagram.historyList.currentEntry;
+        currEntry = diagram.historyManager.currentEntry;
         while (currEntry && currEntry.next) {
             redoObj = currEntry.next;
             this.getHistroyObject(redoStack, redoObj);
             currEntry = currEntry.next;
         }
-        diagram.historyList.undoStack = undoStack;
-        diagram.historyList.redoStack = redoStack;
+        diagram.historyManager.undoStack = undoStack;
+        diagram.historyManager.redoStack = redoStack;
     }
 
     private getHistroyObject(list: HistoryEntry[], obj: HistoryEntry): void {
@@ -148,9 +148,9 @@ export class UndoRedo {
             obj = (entry.undoObject) as SelectorModel;
         }
         if (entry.type !== 'StartGroup' && entry.type !== 'EndGroup') {
-            if (diagram.historyList.undoStack.length > 0) {
-                let addObject: HistoryEntry[] = diagram.historyList.undoStack.splice(0, 1);
-                diagram.historyList.redoStack.splice(0, 0, addObject[0]);
+            if (diagram.historyManager.undoStack.length > 0) {
+                let addObject: HistoryEntry[] = diagram.historyManager.undoStack.splice(0, 1);
+                diagram.historyManager.redoStack.splice(0, 0, addObject[0]);
             }
         }
         diagram.protectPropertyChange(true);
@@ -324,6 +324,9 @@ export class UndoRedo {
         let currentElement: PointPort = findPort(currentObject, entry.objectId) as PointPort;
         currentElement.offset = oldElement.offset;
         diagram.nodePropertyChange(currentObject as Node, {} as Node, undoChanges as Node);
+        if ((currentObject as Node).parentId) {
+            diagram.updateConnectorEdges(diagram.nameTable[(currentObject as Node).parentId]);
+        }
     }
 
     private recordPropertyChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
@@ -638,7 +641,7 @@ export class UndoRedo {
                     this.groupUndo = false;
                 }
             } else {
-                diagram.historyList.redo(entry);
+                diagram.historyManager.redo(entry);
             }
         }
     }
@@ -663,9 +666,9 @@ export class UndoRedo {
         }
         diagram.diagramActions |= DiagramAction.UndoRedo;
         if (historyEntry.type !== 'StartGroup' && historyEntry.type !== 'EndGroup') {
-            if (diagram.historyList.redoStack.length > 0) {
-                let addObject: HistoryEntry[] = diagram.historyList.redoStack.splice(0, 1);
-                diagram.historyList.undoStack.splice(0, 0, addObject[0]);
+            if (diagram.historyManager.redoStack.length > 0) {
+                let addObject: HistoryEntry[] = diagram.historyManager.redoStack.splice(0, 1);
+                diagram.historyManager.undoStack.splice(0, 0, addObject[0]);
             }
         }
         diagram.protectPropertyChange(true);
@@ -728,7 +731,7 @@ export class UndoRedo {
     private getUndoEntry(diagram: Diagram): HistoryEntry {
         let undoEntry: HistoryEntry = null;
         let currentObject: HistoryEntry;
-        let hList: History = diagram.historyList;
+        let hList: History = diagram.historyManager;
         if (hList.canUndo) {
             undoEntry = hList.currentEntry;
             currentObject = hList.currentEntry.previous;
@@ -748,7 +751,7 @@ export class UndoRedo {
     private getRedoEntry(diagram: Diagram): HistoryEntry {
         let redoEntry: HistoryEntry = null;
         let entryCurrent: HistoryEntry;
-        let hList: History = diagram.historyList;
+        let hList: History = diagram.historyManager;
         if (hList.canRedo) {
             if (!hList.currentEntry.previous && !hList.canUndo) {
                 entryCurrent = hList.currentEntry;

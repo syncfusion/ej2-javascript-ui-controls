@@ -226,7 +226,7 @@ export class PdfViewerBase {
                 // tslint:disable-next-line
                 let data: any = event.currentTarget.response; // jshint ignore:line
                 // tslint:disable-next-line:max-line-length
-                if (navigator.userAgent.indexOf('MSIE') !== -1 || navigator.userAgent.indexOf('Edge') !== -1 || navigator.userAgent.indexOf('Trident') !== -1 || typeof data !== 'object') {
+                if (typeof data !== 'object') {
                     data = JSON.parse(data);
                 }
                 this.requestSuccess(data, documentData, password);
@@ -578,10 +578,10 @@ export class PdfViewerBase {
         if (this.navigationPane.sideBarToolbar) {
         this.navigationPane.clear();
         }
-        if (this.pdfViewer.enableToolbar && this.pdfViewer.thumbnailViewModule) {
+        if (this.pdfViewer.thumbnailViewModule) {
             this.pdfViewer.thumbnailViewModule.clear();
         }
-        if (this.pdfViewer.enableToolbar && this.pdfViewer.bookmarkViewModule) {
+        if (this.pdfViewer.bookmarkViewModule) {
             this.pdfViewer.bookmarkViewModule.clear();
         }
         if (this.pdfViewer.magnificationModule) {
@@ -664,9 +664,36 @@ export class PdfViewerBase {
         let scrollX: number = window.scrollX;
         let scrollY: number = window.scrollY;
         this.viewerContainer.focus();
+        // tslint:disable-next-line
+        let parentNode: any = this.getScrollParent(this.viewerContainer);
+        let scrollNodeX: number = 0;
+        let scrollNodeY: number = 0;
+        if (parentNode !== null) {
+            scrollNodeX = parentNode.scrollLeft;
+            scrollNodeY = parentNode.scrollTop;
+        }
+        this.viewerContainer.focus();
+        // tslint:disable-next-line:max-line-length
+        if (navigator.userAgent.indexOf('MSIE') !== -1 || navigator.appVersion.indexOf('Trident/') > -1 || navigator.userAgent.indexOf('Edge') !== -1 && parentNode != null) {
+            parentNode.scrollLeft = scrollNodeX;
+            parentNode.scrollTop = scrollNodeY;
+        } else if (parentNode !== null) {
+            parentNode.scrollTo(scrollNodeX, scrollNodeY);
+        }
         window.scrollTo(scrollX, scrollY);
     }
-
+    // tslint:disable-next-line
+    private getScrollParent(node: any): any {
+        if (node === null || node.nodeName === 'HTML') {
+            return null;
+        }
+        let style: CSSStyleDeclaration = getComputedStyle(node);
+        if (this.viewerContainer.id !== node.id && (style.overflowY === 'scroll' || style.overflowY === 'auto')) {
+            return node;
+        } else {
+            return this.getScrollParent(node.parentNode);
+        }
+    }
     private createCorruptedPopup(): void {
         // tslint:disable-next-line:max-line-length
         let popupElement: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_corrupted_popup', className: 'e-pv-corrupted-popup' });
@@ -912,8 +939,12 @@ export class PdfViewerBase {
             this.scrollPosition = this.viewerContainer.scrollTop / this.getZoomFactor();
             this.mouseX = event.clientX;
             this.mouseY = event.clientY;
+            // tslint:disable-next-line
+            let isIE: boolean = !!(document as any).documentMode;
             if (this.pdfViewer.textSelectionModule && !this.isClickedOnScrollBar(event) && !this.isTextSelectionDisabled) {
-                event.preventDefault();
+                if (!isIE) {
+                    event.preventDefault();
+                }
                 this.pdfViewer.textSelectionModule.clearTextSelection();
             }
         }
@@ -1032,8 +1063,9 @@ export class PdfViewerBase {
     private viewerContainerOnMousemove = (event: MouseEvent): void => {
         this.mouseX = event.clientX;
         this.mouseY = event.clientY;
+        // tslint:disable-next-line
+        let isIE: boolean = !!(document as any).documentMode;
         if (this.isViewerMouseDown) {
-            event.preventDefault();
             // tslint:disable-next-line:max-line-length
             if (this.pdfViewer.textSelectionModule && this.pdfViewer.enableTextSelection && !this.isTextSelectionDisabled) {
                 // text selection won't perform if we start the selection from hyperlink content by commenting this line.
@@ -1041,7 +1073,17 @@ export class PdfViewerBase {
                 // if ((event.target as HTMLElement).classList.contains('e-pv-hyperlink') && this.pdfViewer.linkAnnotationModule) {
                 // this.pdfViewer.linkAnnotationModule.modifyZindexForHyperlink((event.target as HTMLElement), true);
                 // }
+            if (!isIE) {
+                event.preventDefault();
                 this.pdfViewer.textSelectionModule.textSelectionOnMouseMove(event.target, this.mouseX, this.mouseY);
+            } else {
+                let selection: Selection = window.getSelection();
+                if (!selection.type && !selection.isCollapsed && selection.anchorNode !== null) {
+                    this.pdfViewer.textSelectionModule.isTextSelection = true;
+                }
+            }
+            } else {
+                event.preventDefault();
             }
         }
         if (this.isPanMode) {
@@ -1114,8 +1156,12 @@ export class PdfViewerBase {
     }
 
     private viewerContainerOnMouseOver = (event: MouseEvent): void => {
+        // tslint:disable-next-line
+        let isIE: boolean = !!(document as any).documentMode;
         if (this.isViewerMouseDown) {
-            event.preventDefault();
+            if (!isIE) {
+                event.preventDefault();
+            }
         }
     }
 
@@ -1153,7 +1199,11 @@ export class PdfViewerBase {
     }
 
     private viewerContainerOnDragStart = (event: DragEvent): void => {
-        event.preventDefault();
+        // tslint:disable-next-line
+        let isIE: boolean = !!(document as any).documentMode;
+        if (!isIE) {
+            event.preventDefault();
+        }
     }
 
     // tslint:disable-next-line
@@ -1438,7 +1488,7 @@ export class PdfViewerBase {
             if (request.readyState === 4 && request.status === 200) {
                 // tslint:disable-next-line
                 let data: any = event.currentTarget.response;
-                if (navigator.userAgent.indexOf('MSIE') !== -1 || navigator.userAgent.indexOf('Edge') !== -1 || navigator.userAgent.indexOf('Trident') !== -1 || typeof data !== 'object') {
+                if (typeof data !== 'object') {
                     data = JSON.parse(data);
                 }
                 if (data) {
@@ -1664,9 +1714,7 @@ export class PdfViewerBase {
         }
         if (pageIndex !== this.currentPageNumber) {
             if (proxy.pdfViewer.thumbnailViewModule) {
-                if (!proxy.pdfViewer.thumbnailViewModule.isThumbnailClicked) {
-                    proxy.pdfViewer.thumbnailViewModule.gotoThumbnailImage(proxy.currentPageNumber - 1);
-                }
+                proxy.pdfViewer.thumbnailViewModule.gotoThumbnailImage(proxy.currentPageNumber - 1);
                 proxy.pdfViewer.thumbnailViewModule.isThumbnailClicked = false;
             }
             this.pdfViewer.firePageChange(pageIndex);
@@ -1774,7 +1822,7 @@ export class PdfViewerBase {
                 // tslint:disable-next-line
                 let data: any = event.currentTarget.response;
                 // tslint:disable-next-line:max-line-length
-                if (navigator.userAgent.indexOf('MSIE') !== -1 || navigator.userAgent.indexOf('Edge') !== -1 || navigator.userAgent.indexOf('Trident') !== -1) {
+                if (typeof data === 'object') {
                     data = JSON.parse(data);
                 }
                 if (data) {
@@ -1829,7 +1877,7 @@ export class PdfViewerBase {
                                 // tslint:disable-next-line
                                 let data: any = event.currentTarget.response;
                                 // tslint:disable-next-line:max-line-length
-                                if (navigator.userAgent.indexOf('MSIE') !== -1 || navigator.userAgent.indexOf('Edge') !== -1 || navigator.userAgent.indexOf('Trident') !== -1 || typeof data !== 'object') {
+                                if (typeof data !== 'object') {
                                     data = JSON.parse(data);
                                 }
                                 if (data) {

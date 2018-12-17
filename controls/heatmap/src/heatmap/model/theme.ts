@@ -62,6 +62,7 @@ export function getThemeColor(theme: HeatMapTheme): IThemeStyle {
     let style: IThemeStyle;
     switch (theme.toLowerCase()) {
         case 'highcontrastlight':
+        case 'highcontrast':
             style = {
                 heatMapTitle: '#ffffff',
                 axisTitle: '#ffffff',
@@ -80,7 +81,6 @@ export function getThemeColor(theme: HeatMapTheme): IThemeStyle {
         case 'materialdark':
         case 'fabricdark':
         case 'bootstrapdark':
-        case 'highcontrastdark':
             style = {
                 heatMapTitle: '#ffffff',
                 axisTitle: '#ffffff',

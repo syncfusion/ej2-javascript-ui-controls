@@ -28,7 +28,7 @@ const SUM: string = 'Sum';
 const DISTINCTCOUNT: string = 'DistinctCount';
 const PRODUCT: string = 'Product';
 const STDEV: string = 'SampleStDev';
-const STDEVP: string = 'Popultion StDev';
+const STDEVP: string = 'PopulationStDev';
 const VAR: string = 'SampleVar';
 const VARP: string = 'PopulationVar';
 const CALC: string = 'CalculatedField';
@@ -484,11 +484,11 @@ export class CalculatedField implements IAction {
             outerDiv.appendChild(accordDiv);
             let buttonDiv: HTMLElement = createElement('div', { id: this.parentID + 'buttonDiv', className: cls.CALCBUTTONDIV });
             let addBtn: HTMLElement = createElement('button', {
-                id: this.parentID + 'addBtn', innerHTML: 'ADD',
+                id: this.parentID + 'addBtn', innerHTML: this.parent.localeObj.getConstant('add'),
                 className: cls.CALCADDBTN
             });
             let cancelBtn: HTMLElement = createElement('button', {
-                id: this.parentID + 'cancelBtn', innerHTML: 'CANCEL',
+                id: this.parentID + 'cancelBtn', innerHTML: this.parent.localeObj.getConstant('cancel'),
                 className: cls.CALCCANCELBTN
             });
             buttonDiv.appendChild(cancelBtn);
@@ -622,7 +622,7 @@ export class CalculatedField implements IAction {
     private createTypeContainer(key: string): HTMLElement {
         let wrapDiv: HTMLElement = createElement('div', { id: this.parentID + 'control_wrapper', className: cls.TREEVIEWOUTER });
         let type: string[] = [SUM, COUNT, AVG, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
-        for (let i: number = 0; i < 5; i++) {
+        for (let i: number = 0; i < type.length; i++) {
             let input: HTMLInputElement = createElement('input', {
                 id: this.parentID + 'radio' + key + type[i],
                 attrs: { 'type': 'radio', 'data-ftxt': key },
@@ -698,7 +698,7 @@ export class CalculatedField implements IAction {
                             let type: string[] = [SUM, COUNT, AVG, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
                             let radiobutton: RadioButton;
                             if (key === args.element.querySelector('[data-field').getAttribute('data-field')) {
-                                for (let i: number = 0; i < 5; i++) {
+                                for (let i: number = 0; i < type.length; i++) {
                                     radiobutton = new RadioButton({
                                         label: type[i],
                                         name: AGRTYPE + key,

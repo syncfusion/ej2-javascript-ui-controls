@@ -196,7 +196,7 @@ export interface ShapeStyleModel {
 
     /**
      * Sets the fill color of a shape/path
-     * @default 'transparent'
+     * @default 'white'
      */
     fill?: string;
 
@@ -342,5 +342,11 @@ export interface TextStyleModel extends ShapeStyleModel{
      * @default 'Wrap'
      */
     textOverflow?: TextOverflow;
+
+    /**
+     * Sets the fill color of a shape/path
+     * @default 'transparent'
+     */
+    fill?: string;
 
 }

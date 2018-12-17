@@ -1,5 +1,5 @@
 /**
- * Content renderer spec
+ * Content renderer spec 
  */
 import { Browser, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { Dialog } from '@syncfusion/ej2-popups';
@@ -62,11 +62,20 @@ describe('insert image', () => {
                 },
                 insertImageSettings: { resize: true, minHeight: 80, minWidth: 80 },
                 actionBegin: function (e: any) {
+                    if(e.item.subCommand === 'Image'){
                     expect(!isNullOrUndefined(e.itemCollection)).toBe(true);
                     expect(!isNullOrUndefined(e.itemCollection.url)).toBe(true);
+                    }
+                if(e.item.subCommand === 'Caption') { expect(e.item.subCommand === 'Caption').toBe(true); }
+                if(e.item.subCommand === 'JustifyLeft') { expect(e.item.subCommand === 'JustifyLeft').toBe(true); }
+                if(e.item.subCommand === 'JustifyRight') { expect(e.item.subCommand === 'JustifyRight').toBe(true); }
+                if(e.item.subCommand === 'JustifyCenter') { expect(e.item.subCommand === 'JustifyCenter').toBe(true); }
+                if(e.item.subCommand === 'Inline') { expect(e.item.subCommand === 'Inline').toBe(true); }
+                if(e.item.subCommand === 'Break') { expect(e.item.subCommand === 'Break').toBe(true); }
                 },
                 actionComplete: function (e: any) {
-                    expect(e.requestType === 'Image').toBe(true);
+                    if(e.requestType === 'Image') { expect(e.requestType === 'Image').toBe(true);}
+                    if(e.requestType === 'Caption') { expect(e.requestType === 'Caption').toBe(true);}
                 }
             });
             rteEle = rteObj.element;
@@ -88,7 +97,7 @@ describe('insert image', () => {
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
-            
+
         });
         it('resize start', () => {
             let trg = (rteObj.element.querySelector('.e-rte-image') as HTMLElement);
@@ -121,6 +130,7 @@ describe('insert image', () => {
             let width = (rteObj.element.querySelector('.e-rte-image') as HTMLElement).offsetWidth;
             (<any>rteObj.imageModule).resizeBtnStat.botRight = true;
             (rteObj.imageModule as any).resizing({ target: resizeBot, pageX: 300 });
+
             width += 100;
             expect(width).toEqual((rteObj.element.querySelector('.e-rte-image') as HTMLElement).offsetWidth);
             (<any>rteObj.imageModule).resizeBtnStat.botRight = true;
@@ -149,26 +159,6 @@ describe('insert image', () => {
             width -= 200;
             expect(width).toEqual((rteObj.element.querySelector('.e-rte-image') as HTMLElement).offsetWidth);
         });
-        it('resizing - mousemove - bottom Left', () => {
-            let trg = (rteObj.element.querySelector('.e-rte-image') as HTMLElement);
-            (rteObj.imageModule as any).resizeStart({ target: trg, pageX: 0 });
-            let resizeBot: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('.e-rte-botLeft') as HTMLElement;
-            clickEvent = document.createEvent("MouseEvents");
-            clickEvent.initEvent("mousedown", false, true);
-            resizeBot.dispatchEvent(clickEvent);
-            (rteObj.imageModule as any).resizeStart(clickEvent);
-            (<any>rteObj.imageModule).resizeBtnStat.botLeft = true;
-            (rteObj.imageModule as any).resizing({ target: resizeBot, pageX: 200 });
-            let width = (rteObj.element.querySelector('.e-rte-image') as HTMLElement).offsetWidth;
-            (<any>rteObj.imageModule).resizeBtnStat.botLeft = true;
-            (rteObj.imageModule as any).resizing({ target: resizeBot, pageX: 300 });
-            // width += 100;
-            // expect(width).toEqual((rteObj.element.querySelector('.e-rte-image') as HTMLElement).offsetWidth + 100);
-            // (<any>rteObj.imageModule).resizeBtnStat.botLeft = true;
-            // (rteObj.imageModule as any).resizing({ target: resizeBot, pageX: 100 });
-            // width -= 200;
-            // expect(width).toEqual((rteObj.element.querySelector('.e-rte-image') as HTMLElement).offsetWidth - 100);
-        });
         it('resizing - mousemove - top Left', () => {
             let trg = (rteObj.element.querySelector('.e-rte-image') as HTMLElement);
             (rteObj.imageModule as any).resizeStart({ target: trg, pageX: 0 });
@@ -189,6 +179,25 @@ describe('insert image', () => {
             width -= 200;
             expect(width).toEqual((rteObj.element.querySelector('.e-rte-image') as HTMLElement).offsetWidth - 300);
         });
+
+        it('resizing - mousemove - bottom Left', () => {
+            let trg = (rteObj.element.querySelector('.e-rte-image') as HTMLElement);
+            (rteObj.imageModule as any).resizeStart({ target: trg, pageX: 0 });
+            let resizeBot: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('.e-rte-botLeft') as HTMLElement;
+            clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            resizeBot.dispatchEvent(clickEvent);
+            (rteObj.imageModule as any).resizeStart(clickEvent);
+            (<any>rteObj.imageModule).resizeBtnStat.botLeft = true;
+            (rteObj.imageModule as any).resizing({ target: resizeBot, pageX: 200 });
+            // width += 100;
+            // expect(width).toEqual((rteObj.element.querySelector('.e-rte-image') as HTMLElement).offsetWidth + 100);
+            // (<any>rteObj.imageModule).resizeBtnStat.botLeft = true;
+            // (rteObj.imageModule as any).resizing({ target: resizeBot, pageX: 100 });
+            // width -= 200;
+            // expect(width).toEqual((rteObj.element.querySelector('.e-rte-image') as HTMLElement).offsetWidth - 100);
+        });
+
     });
 
     describe('percentage resize', () => {
@@ -222,7 +231,7 @@ describe('insert image', () => {
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
-            
+
         });
         it('resize start', () => {
             let trg = (rteObj.element.querySelector('.e-rte-image') as HTMLElement);
@@ -242,7 +251,7 @@ describe('insert image', () => {
             expect((rteObj.imageModule as any).pageX).toBe(null);
             expect(rteObj.contentModule.getDocument().body.contains(this.imgResizeDiv)).toBe(false);
         });
-        it('resizing - mousemove - bottom right', () => {
+        it('resizing - mousemove - bottom right', (done) => {
             let trg = (rteObj.element.querySelector('.e-rte-image') as HTMLElement);
             (rteObj.imageModule as any).resizeStart({ target: trg, pageX: 0 });
             let resizeBot: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('.e-rte-botRight') as HTMLElement;
@@ -252,10 +261,23 @@ describe('insert image', () => {
             (rteObj.imageModule as any).resizeStart(clickEvent);
             (<any>rteObj.imageModule).resizeBtnStat.botRight = true;
             (rteObj.imageModule as any).resizing({ target: resizeBot, pageX: 200 });
-            let width = (rteObj.element.querySelector('.e-rte-image') as HTMLElement).offsetWidth;
-            expect(((rteObj.element.querySelector('.e-rte-image') as HTMLElement).style.width as any).search('%')).not.toBe(-1);
-            (<any>rteObj.imageModule).resizeBtnStat.botRight = true;
-            (rteObj.imageModule as any).resizing({ target: resizeBot, pageX: 300 });
+            setTimeout(() => {
+                let width = (rteObj.element.querySelector('.e-rte-image') as HTMLElement).offsetWidth;
+                expect(((rteObj.element.querySelector('.e-rte-image') as HTMLElement).style.width as any).search('%')).not.toBe(-1);
+                (<any>rteObj.imageModule).resizeBtnStat.botRight = true;
+                (rteObj.imageModule as any).resizing({ target: resizeBot, pageX: 300 });
+                setTimeout(() => {
+                    width += 100;
+                    expect(width).toEqual((rteObj.element.querySelector('.e-rte-image') as HTMLElement).offsetWidth);
+                    (<any>rteObj.imageModule).resizeBtnStat.botRight = true;
+                    (rteObj.imageModule as any).resizing({ target: resizeBot, pageX: 100 });
+                    setTimeout(() => {
+                        width -= 200;
+                        expect(width).toEqual((rteObj.element.querySelector('.e-rte-image') as HTMLElement).offsetWidth);
+                        done();
+                    }, 200);
+                }, 200);
+            }, 200);
         });
     });
     describe('predefined set image', () => {
@@ -267,7 +289,7 @@ describe('insert image', () => {
 client side. Customer easy to edit the contents and get the HTML content for
 <img src='https://ej2.syncfusion.com/demos/src/rte/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
 `;
-    let innerHTML1: string = `<p><b>Description:</b></p>
+        let innerHTML1: string = `<p><b>Description:</b></p>
 <p>The Rich Text Editor (RTE) control is an easy to render in
 client side. Customer easy to edit the contents and get the HTML content for
 <img src='https://ej2.syncfusion.com/demos/src/rte/images/RTEImage-Feather.png' style="width:200px; height: 300px"/>
@@ -279,7 +301,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                     items: ['Image', 'Bold']
                 },
                 value: innerHTML,
-                insertImageSettings: { resize: true}
+                insertImageSettings: { resize: true }
             });
             rteEle = rteObj.element;
         });
@@ -384,10 +406,10 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect(rteObj.contentModule.getEditPanel().querySelector('.e-img-resize')).not.toBe(null);
             expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-rte-imageboxmark').length).toBe(4);
             let resizeBot: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('.e-rte-botRight') as HTMLElement;
-             trg = (rteObj.element.querySelector('.e-rte-image') as HTMLElement);
-             (rteObj.imageModule as any).resizeStart({target: resizeBot, preventDefault: function(){}, stopImmediatePropagation: function(){}});
-             (rteObj.imageModule as any).resizing({ target: resizeBot, touches:[{ pageX: 300 }]});
-             expect((rteObj.imageModule as any).pageX).toBe(300);
+            trg = (rteObj.element.querySelector('.e-rte-image') as HTMLElement);
+            (rteObj.imageModule as any).resizeStart({ target: resizeBot, preventDefault: function () { }, stopImmediatePropagation: function () { } });
+            (rteObj.imageModule as any).resizing({ target: resizeBot, touches: [{ pageX: 300 }] });
+            expect((rteObj.imageModule as any).pageX).toBe(300);
             (rteObj.imageModule as any).onDocumentClick({ target: rteObj.contentModule.getEditPanel() });
             expect(rteObj.contentModule.getEditPanel().querySelector('.e-img-resize')).toBe(null);
             expect(rteObj.contentModule.getDocument().body.contains(this.imgResizeDiv)).toBe(false);
@@ -486,7 +508,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             Browser.userAgent = defaultUA;
             destroy(rteObj);
         });
-        it(' contenteditable set as false while click on image to close the virtual keyboard', () => {
+        it(' contenteditable set as false while click on image to close the virtual keyboard', (done) => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
             let args: any = {
                 preventDefault: function () { },
@@ -500,10 +522,17 @@ client side. Customer easy to edit the contents and get the HTML content for
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
             (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
-            expect(rteObj.contentModule.getEditPanel().getAttribute('contenteditable') === 'false').toBe(true);
-            (rteObj.element.querySelector('.testNode') as HTMLElement).click();
-            expect(rteObj.contentModule.getEditPanel().getAttribute('contenteditable') === 'true').toBe(true);
-            Browser.userAgent = defaultUA;
+            dispatchEvent((rteObj.element.querySelector('.e-rte-image') as HTMLElement), 'mouseup');
+            setTimeout(() => {
+                expect(rteObj.contentModule.getEditPanel().getAttribute('contenteditable') === 'false').toBe(true);
+                (rteObj.element.querySelector('.testNode') as HTMLElement).click();
+                dispatchEvent((rteObj.element.querySelector('.testNode') as HTMLElement), 'mouseup');
+                setTimeout(() => {
+                    expect(rteObj.contentModule.getEditPanel().getAttribute('contenteditable') === 'true').toBe(true);
+                    Browser.userAgent = defaultUA;
+                    done()
+                }, 40);
+            }, 40);
         });
     });
 
@@ -516,13 +545,93 @@ client side. Customer easy to edit the contents and get the HTML content for
                 toolbarSettings: {
                     items: ['Image', 'Bold']
                 },
+                insertImageSettings: { resize: false }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('image dialog', () => {
+            expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            expect(dialogEle.firstElementChild.querySelector('.e-dlg-header').innerHTML === 'Insert Image').toBe(true);
+            expect(dialogEle.querySelector('.e-img-uploadwrap').firstElementChild.classList.contains('e-droptext')).toBe(true);
+            expect(dialogEle.querySelector('.imgUrl').firstElementChild.classList.contains('e-img-url')).toBe(true);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            expect(rteObj.element.lastElementChild.classList.contains('.e-dialog')).not.toBe(true);
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let range: any = new NodeSelection().getRange(document);
+            let save: any = new NodeSelection().save(range, document);
+            let args: any = {
+                item: { url: 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png', selection: save },
+                preventDefault: function () { }
+            };
+            (<any>rteObj).formatter.editorManager.imgObj.createImage(args);
+            (rteObj.element.querySelector('.e-rte-image') as HTMLElement).focus();
+            args = {
+                item: {url: 'https://www.syncfusion.com', selectNode : [(rteObj.element.querySelector('.e-rte-image') as HTMLElement)]},
+                preventDefault: function () { }, target: '_blank'
+            };
+            (<any>rteObj).formatter.editorManager.imgObj.insertImageLink (args);
+            expect((<any>rteObj).contentModule.getEditPanel().querySelector('a')).not.toBe(null);
+            args.item = { url: 'https://www.syncfusion.com', target: '_blank', selectNode : [(rteObj.element.querySelector('.e-rte-image') as HTMLElement)] };
+            (<any>rteObj).formatter.editorManager.imgObj.editImageLink (args);
+            args.item = { url: 'https://www.syncfusion.com', target: '_blank',
+            insertElement:(rteObj.element.querySelector('.e-rte-image') as HTMLElement) , selectParent : [(rteObj.element.querySelector('.e-rte-image') as HTMLElement)] };
+            (<any>rteObj).formatter.editorManager.imgObj.removeImageLink(args);
+            expect((<any>rteObj).contentModule.getEditPanel().querySelector('a')).toBe(null);
+            args.item= { selectNode : [(rteObj.element.querySelector('.e-rte-image') as HTMLElement)]};
+            (<any>rteObj).formatter.editorManager.imgObj.removeImage(args);
+             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+             range = new NodeSelection().getRange(document);
+             save = new NodeSelection().save(range, document);
+             args = {
+                item: { url: 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png', selection: save },
+                preventDefault: function () { }
+            };
+            (<any>rteObj).formatter.editorManager.imgObj.createImage(args);
+            (rteObj.element.querySelector('.e-rte-image') as HTMLElement).focus();
+            args.item = {altText: 'image', selectNode : [(rteObj.element.querySelector('.e-rte-image') as HTMLElement)] };
+            (<any>rteObj).formatter.editorManager.imgObj.insertAltTextImage(args);
+            args.item = {width: 200, height: 200, selectNode : [(rteObj.element.querySelector('.e-rte-image') as HTMLElement)]};
+            (<any>rteObj).formatter.editorManager.imgObj.imageDimension(args);
+            (<any>rteObj).formatter.editorManager.imgObj.imageJustifyLeft(args);
+            (<any>rteObj).formatter.editorManager.imgObj.imageJustifyCenter(args);
+            args.item = {width: 200, height: 200, selectNode : [(rteObj.element.querySelector('.e-rte-image') as HTMLElement)]};
+            (<any>rteObj).formatter.editorManager.imgObj.imageJustifyRight(args);
+            args.item = {width: 200, height: 200, selectNode : [(rteObj.element.querySelector('.e-rte-image') as HTMLElement)]};
+            (<any>rteObj).formatter.editorManager.imgObj.imageInline(args);
+            (<any>rteObj).formatter.editorManager.imgObj.imageBreak(args);
+            args = {
+                item: {url: 'https://www.syncfusion.com', selectNode : [(rteObj.element.querySelector('.e-rte-image') as HTMLElement)]},
+                preventDefault: function () { }, target: '_blank'
+            };
+            (<any>rteObj).formatter.editorManager.imgObj.insertImageLink (args);
+            expect((<any>rteObj).contentModule.getEditPanel().querySelector('a')).not.toBe(null);
+            (<any>rteObj).formatter.editorManager.imgObj.openImageLink(args);
+        });
+    });
+    describe('div content-rte testing', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
                 insertImageSettings: { resize: false },
                 actionBegin: function (e: any) {
+                    if(e.item.subCommand === 'Image'){
                     expect(!isNullOrUndefined(e.itemCollection)).toBe(true);
                     expect(!isNullOrUndefined(e.itemCollection.url)).toBe(true);
+                    }
                 },
                 actionComplete: function (e: any) {
-                    expect(e.requestType === 'Image').toBe(true);
+                    if(e.requestType === 'Image'){ expect(e.requestType === 'Image').toBe(true);}
                 }
             });
             rteEle = rteObj.element;
@@ -576,7 +685,8 @@ client side. Customer easy to edit the contents and get the HTML content for
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
             let args: any = {
                 preventDefault: function () { },
-                originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') }
+                originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') },
+                item: {},
             };
             let range: any = new NodeSelection().getRange(document);
             let save: any = new NodeSelection().save(range, document);
@@ -587,7 +697,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
             (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
-            evnArg.args = { preventDefault: function () { }, originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') } };
+            evnArg.args = { preventDefault: function () { }, originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') }, item: {} };
             evnArg.selectNode = [(rteObj.element.querySelector('.e-rte-image') as HTMLElement)];
             let trget: any = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
             let clickEvent: any = document.createEvent("MouseEvents");
@@ -615,16 +725,19 @@ client side. Customer easy to edit the contents and get the HTML content for
             evnArg.item = { command: 'Images', subCommand: 'JustifyLeft' };
             evnArg.e = args;
             (<any>rteObj).imageModule.alignmentSelect(evnArg);
+            evnArg.args.item = { command: 'Images', subCommand: 'JustifyLeft' };
             (<any>rteObj).imageModule.justifyImageLeft(evnArg);
             expect((<any>rteObj).element.querySelector('.e-rte-image').classList.contains('e-imgleft')).toBe(true);
             evnArg.item = { command: 'Images', subCommand: 'JustifyRight' };
             evnArg.e = args;
             (<any>rteObj).imageModule.alignmentSelect(evnArg);
+            evnArg.args.item = { command: 'Images', subCommand: 'JustifyRight' };
             (<any>rteObj).imageModule.justifyImageRight(evnArg);
             expect((<any>rteObj).element.querySelector('.e-rte-image').classList.contains('e-imgright')).toBe(true);
             evnArg.item = { command: 'Images', subCommand: 'JustifyCenter' };
             evnArg.e = args;
             (<any>rteObj).imageModule.alignmentSelect(evnArg);
+            evnArg.args.item = { command: 'Images', subCommand: 'JustifyCenter' };
             (<any>rteObj).imageModule.justifyImageCenter(evnArg);
             expect((<any>rteObj).element.querySelector('.e-rte-image').classList.contains('e-imgright')).not.toBe(true);
             expect((<any>rteObj).element.querySelector('.e-rte-image').classList.contains('e-imgleft')).not.toBe(true);
@@ -634,12 +747,14 @@ client side. Customer easy to edit the contents and get the HTML content for
             evnArg.item = { command: 'Images', subCommand: 'Break' };
             evnArg.e = args;
             (<any>rteObj).imageModule.alignmentSelect(evnArg);
+            evnArg.args.item = { command: 'Images', subCommand: 'Break' };
             evnArg.selectNode = [rteObj.element];
             (<any>rteObj).imageModule.inline(evnArg);
             evnArg.selectNode = [(rteObj.element.querySelector('.e-rte-image') as HTMLElement)];
             evnArg.item = { command: 'Images', subCommand: 'Inline' };
             evnArg.e = args;
             (<any>rteObj).imageModule.alignmentSelect(evnArg);
+            evnArg.args.item = { command: 'Images', subCommand: 'Inline' };
             (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
             evnArg.selectNode = [(<any>rteObj).element.querySelector('.e-rte-image')];
             let trg: any = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
@@ -660,6 +775,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
             (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
             evnArg.selectNode = [(<any>rteObj).element.querySelector('.e-rte-image')];
+            evnArg.args.item = {command: 'Images', subCommand: 'Remove'};
             (<any>rteObj).imageModule.deleteImg(evnArg);
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             dialogEle = rteObj.element.querySelector('.e-dialog');
@@ -667,8 +783,9 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
             (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
-            evnArg.args = { preventDefault: function () { }, originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') } };
+            evnArg.args = { item: {}, preventDefault: function () { }, originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') } };
             evnArg.selectNode = [rteObj.element];
+            evnArg.args.item = {command: 'Images', subCommand: 'Dimension'};
             (<any>rteObj).imageModule.imageSize(evnArg);
             evnArg.selectNode = [(<any>rteObj).element.querySelector('.e-rte-image')];
             (<any>rteObj).imageModule.imageSize(evnArg);
@@ -679,7 +796,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect((<any>rteObj).element.querySelector('.e-rte-image').height).toBe(180);
             let eventsArgs: any = { target: rteObj.element.querySelector('.e-rte-image') as HTMLElement, preventDefault: function () { } };
             rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, rteObj.element.querySelector('.e-rte-image'));
-            (<any>rteObj).editAreaClickHandler(eventsArgs);
+            (<any>rteObj).mouseUp(eventsArgs);
             linkPop = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
             linkTBItems = linkPop.querySelectorAll('.e-toolbar-item');
             expect(linkPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
@@ -694,7 +811,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             evnArg.selectNode = [rteObj.element];
             eventsArgs = { target: rteObj.element.querySelector('.e-rte-image') as HTMLElement, preventDefault: function () { } };
             rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, rteObj.element.querySelector('.e-rte-image'));
-            (<any>rteObj).editAreaClickHandler(eventsArgs);
+            (<any>rteObj).mouseUp(eventsArgs);
             linkPop = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
             linkTBItems = linkPop.querySelectorAll('.e-toolbar-item');
             expect(linkPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
@@ -702,7 +819,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             evnArg.selectNode = [(rteObj.element.querySelector('.e-rte-image') as HTMLElement)];
             eventsArgs = { target: rteObj.element.querySelector('.e-rte-image') as HTMLElement, preventDefault: function () { } };
             rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, rteObj.element.querySelector('.e-rte-image'));
-            (<any>rteObj).editAreaClickHandler(eventsArgs);
+            (<any>rteObj).mouseUp(eventsArgs);
             linkPop = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
             linkTBItems = linkPop.querySelectorAll('.e-toolbar-item');
             expect(linkPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
@@ -718,7 +835,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             eventsArgs = { target: rteObj.element.querySelector('.e-rte-image') as HTMLElement, preventDefault: function () { } };
             rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, rteObj.element.querySelector('.e-rte-image'));
-            (<any>rteObj).editAreaClickHandler(eventsArgs);
+            (<any>rteObj).mouseUp(eventsArgs);
             linkPop = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
             linkTBItems = linkPop.querySelectorAll('.e-toolbar-item');
             expect(linkPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
@@ -738,21 +855,27 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<any>rteObj).element.querySelector('.e-rte-image').click();
             let args: any = {
                 preventDefault: function () { },
-                originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') }
+                originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') },
+                item: {}
             };
             let range: any = new NodeSelection().getRange(document);
             let save: any = new NodeSelection().save(range, document);
             let evnArg: any = { args, selfImage: (<any>rteObj).imageModule, selection: save, selectNode: [(<any>rteObj).element.querySelector('.e-rte-image')], link: null, target: '' };
+            evnArg.args.item = { command: 'Images', subCommand: 'JustifyLeft' };
             (<any>rteObj).imageModule.justifyImageLeft(evnArg);
             expect((<any>rteObj).element.querySelector('.e-rte-image').classList.contains('e-imgleft')).toBe(true);
+            evnArg.args.item = { command: 'Images', subCommand: 'JustifyRight' };
             (<any>rteObj).imageModule.justifyImageRight(evnArg);
             expect((<any>rteObj).element.querySelector('.e-rte-image').classList.contains('e-imgright')).toBe(true);
+            evnArg.args.item = { command: 'Images', subCommand: 'JustifyCenter' };
             (<any>rteObj).imageModule.justifyImageCenter(evnArg);
             expect((<any>rteObj).element.querySelector('.e-rte-image').classList.contains('e-imgright')).not.toBe(true);
             expect((<any>rteObj).element.querySelector('.e-rte-image').classList.contains('e-imgleft')).not.toBe(true);
             expect((<any>rteObj).element.querySelector('.e-rte-image').classList.contains('e-rte-image')).toBe(true);
+            evnArg.args.item = { command: 'Images', subCommand: 'Break' };
             (<any>rteObj).imageModule.break(evnArg);
             expect((<any>rteObj).element.querySelector('.e-rte-image').classList.contains('e-imginline')).not.toBe(true);
+            evnArg.args.item = { command: 'Images', subCommand: 'Inline' };
             (<any>rteObj).imageModule.inline(evnArg);
             expect((<any>rteObj).element.querySelector('.e-rte-image').classList.contains('e-imginline')).toBe(true);
             (<any>rteObj).imageModule.insertImgLink(evnArg);
@@ -769,6 +892,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<any>rteObj).imageModule.insertImgLink(evnArg);
             evnArg.selectNode = [(rteObj.element.querySelector('.e-rte-image') as HTMLElement)];
             (<any>rteObj).imageModule.insertImgLink(evnArg);
+            evnArg.args.item = { command: 'Images', subCommand: 'insertlink' };
             (<any>rteObj).imageModule.dialogObj.element.querySelector('.e-input.e-img-link').value = 'http://www.goole.com';
             (<any>rteObj).imageModule.dialogObj.element.querySelector('.e-update-link').click();
             (<any>rteObj).imageModule.insertImgLink(evnArg);
@@ -776,24 +900,40 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect((<any>rteObj).imageModule.dialogObj.element.classList.contains('e-rte-img-dialog')).toBe(true);
             expect((<any>rteObj).imageModule.dialogObj.element.querySelector('.e-input.e-img-link')).not.toBe(null);
             ((<any>rteObj).imageModule.dialogObj.element.querySelector('.e-img-linkwrap .e-img-link') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            (<any>rteObj).element.querySelector('.e-rte-image').click();
+            args = {
+                preventDefault: function () { },
+                originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') },
+                item: {}
+            };
+            range = new NodeSelection().getRange(document);
+            save = new NodeSelection().save(range, document);
+            evnArg = { args, selfImage: (<any>rteObj).imageModule, selection: save, selectNode: [(<any>rteObj).element.querySelector('.e-rte-image')], link: null, target: '' };
             evnArg.link = (<any>rteObj).imageModule.dialogObj.element.querySelector('.e-img-linkwrap .e-img-link') as HTMLInputElement;
             evnArg.target = '';
+            evnArg.args.item = { command: 'Images', subCommand: 'insertlink' };
             (<any>rteObj).imageModule.insertlink(evnArg);
             expect((<any>rteObj).contentModule.getEditPanel().querySelector('a')).not.toBe(null);
+            evnArg.args.item = { command: 'Images', subCommand: 'JustifyLeft' };
             (<any>rteObj).imageModule.justifyImageLeft(evnArg);
             expect((<any>rteObj).element.querySelector('.e-rte-image').parentElement.classList.contains('e-imgleft')).toBe(true);
+            evnArg.args.item = { command: 'Images', subCommand: 'JustifyRight' };
             (<any>rteObj).imageModule.justifyImageRight(evnArg);
             expect((<any>rteObj).element.querySelector('.e-rte-image').parentElement.classList.contains('e-imgright')).toBe(true);
+            evnArg.args.item = { command: 'Images', subCommand: 'JustifyCenter' };
             (<any>rteObj).imageModule.justifyImageCenter(evnArg);
             expect((<any>rteObj).element.querySelector('.e-rte-image').classList.contains('e-imgright')).not.toBe(true);
             expect((<any>rteObj).element.querySelector('.e-rte-image').classList.contains('e-imgleft')).not.toBe(true);
             expect((<any>rteObj).element.querySelector('.e-rte-image').classList.contains('e-rte-image')).toBe(true);
+            evnArg.args.item = { command: 'Images', subCommand: 'Break' };
             (<any>rteObj).imageModule.break(evnArg);
             expect((<any>rteObj).element.querySelector('.e-rte-image').classList.contains('e-imginline')).not.toBe(true);
+            evnArg.args.item = { command: 'Images', subCommand: 'Inline' };
             (<any>rteObj).imageModule.inline(evnArg);
             expect((<any>rteObj).element.querySelector('.e-rte-image').classList.contains('e-imginline')).toBe(true);
             let eventsArgs = { target: rteObj.element.querySelector('.e-rte-image') as HTMLElement, preventDefault: function () { } };
-            (<any>rteObj).editAreaClickHandler(eventsArgs);
+            (<any>rteObj).mouseUp(eventsArgs);
             let linkPop = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
             let linkTBItems = linkPop.querySelectorAll('.e-toolbar-item');
             expect(linkPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
@@ -801,6 +941,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>linkTBItems.item(3)).click();
             let eventArgs = { target: document, preventDefault: function () { } };
             (<any>rteObj).imageModule.onDocumentClick(eventArgs);
+            evnArg.args.item = { command: 'Images', subCommand: 'AltText' };
             (<any>rteObj).imageModule.insertAlt(evnArg);
         });
         it('insert image upload', (done) => {
@@ -829,10 +970,10 @@ client side. Customer easy to edit the contents and get the HTML content for
             let eventArgs = { target: document, preventDefault: function () { } };
             (<any>rteObj).imageModule.onDocumentClick(eventArgs);
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            let args = { preventDefault: function () { } };
+            let args = { preventDefault: function () { }, item: {} };
             let range = new NodeSelection().getRange(document);
             let save = new NodeSelection().save(range, document);
-            let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, alt: '', selectNode: new Array(), };
+            let evnArg = { args: args, self: (<any>rteObj).imageModule, selection: save, alt: '', selectNode: new Array(), };
             rteObj.quickToolbarModule.imageQTBar.hidePopup();
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
@@ -845,6 +986,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
             evnArg.selectNode = [(rteObj.element.querySelector('.e-rte-image') as HTMLElement)];
             (<any>rteObj).imageModule.insertAltText(evnArg);
+            evnArg.args.item = { command: 'Images', subCommand: 'AltText' };;
             (<any>rteObj).imageModule.dialogObj.element.querySelector('.e-update-alt').click();
             let eventsArgs: any = { target: document, preventDefault: function () { } };
             (<any>rteObj).imageModule.onDocumentClick(eventsArgs);
@@ -966,13 +1108,15 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<any>rteObj).element.querySelector('.e-rte-image').click();
             let args: any = {
                 preventDefault: function () { },
-                originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') }
+                originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') },
+                item: {}
             };
             let range: any = new NodeSelection().getRange(document);
             let save: any = new NodeSelection().save(range, document);
             let evnArg: any = { args, selfImage: (<any>rteObj).imageModule, selection: save, selectNode: [(<any>rteObj).element.querySelector('.e-rte-image')], link: null, target: '' };
             (<any>rteObj).imageModule.insertImgLink(evnArg);
             (<any>rteObj).imageModule.dialogObj.element.querySelector('.e-input.e-img-link').value = 'http://www.goole.com';
+            evnArg.args.item = { command: 'Images', subCommand: 'insertlink' };
             (<any>rteObj).imageModule.dialogObj.element.querySelector('.e-update-link').click();
             (rteObj.element.querySelector('.e-rte-image') as HTMLElement).focus();
             let selectNode = [(<any>rteObj).element.querySelector('.e-rte-image')];
@@ -987,6 +1131,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect(linkPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
             (<HTMLElement>linkTBItems.item(4)).click();
             (<HTMLElement>linkTBItems.item(6)).click();
+            evnArg.args.item = { command: 'Images', subCommand: 'insertlink' };
             (<any>rteObj).imageModule.dialogObj.element.querySelector('.e-update-link').click();
             (<HTMLElement>linkTBItems.item(7)).click();
             (rteObj.element.querySelector('.e-rte-image') as HTMLElement).focus();
@@ -1060,54 +1205,64 @@ client side. Customer easy to edit the contents and get the HTML content for
             destroy(rteObj);
         });
 
-        it('edit image', () => {
+        it('edit image', (done) => {
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
             (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
-            let nodObj: NodeSelection = new NodeSelection();
-            var range = nodObj.getRange(document);
-            var save = nodObj.save(range, document);
-            var args = {
-                item: { url: 'https://gitlab.syncfusion.com/uploads/-/system/appearance/header_logo/1/Syncfusion_logo_plain.jpg', selection: save, selectParent: [(rteObj.element.querySelector('.e-rte-image') as HTMLElement)] },
-                preventDefault: function () { }
-            };
-            (<any>rteObj).formatter.editorManager.imgObj.createImage(args);
-            expect(((rteObj.element.querySelector('.e-rte-image') as HTMLImageElement).src === 'https://gitlab.syncfusion.com/uploads/-/system/appearance/header_logo/1/Syncfusion_logo_plain.jpg')).toBe(true);
-            (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
-            (<any>QTBarModule).renderQuickToolbars();
-            QTBarModule.imageQTBar.showPopup(10, 131, (rteObj.element.querySelector('.e-rte-image') as HTMLElement));
-            let imgPop: HTMLElement = <HTMLElement>document.querySelector('.e-rte-quick-popup');
-            let imgTBItems: NodeList = imgPop.querySelectorAll('.e-toolbar-item');
-            expect(imgPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
-            expect((<HTMLElement>imgTBItems.item(1)).title).toBe('Align');
-            ((<HTMLElement>imgTBItems.item(1)).firstElementChild as HTMLElement).click();
-            let popupElement: Element = curDocument.querySelectorAll(".e-rte-dropdown-popup.e-popup-open")[0];
-            let mouseEventArgs = {
-                item: { command: 'Images', subCommand: 'JustifyLeft' }
-            };
-            (<any>rteObj).imageModule.alignmentSelect(mouseEventArgs);
-            let img: HTMLElement = rteObj.element.querySelector('.e-rte-image') as HTMLElement;
-            expect(img.classList.contains('e-imgleft')).toBe(true);
-            mouseEventArgs.item.subCommand = 'JustifyCenter';
-            (<any>rteObj).imageModule.alignmentSelect(mouseEventArgs);
-            expect(img.classList.contains('e-imgcenter')).toBe(true);
-            mouseEventArgs.item.subCommand = 'JustifyRight';
-            (<any>rteObj).imageModule.alignmentSelect(mouseEventArgs);
-            expect(img.classList.contains('e-imgright')).toBe(true);
-            ((<HTMLElement>imgTBItems.item(9)).firstElementChild as HTMLElement).click();
-            popupElement = curDocument.querySelectorAll(".e-rte-dropdown-popup.e-popup-open")[1];
-            mouseEventArgs.item.subCommand = 'Inline';
-            (<any>rteObj).imageModule.alignmentSelect(mouseEventArgs);
-            expect(img.classList.contains('e-imginline')).toBe(true);
-            mouseEventArgs.item.subCommand = 'Break';
-            (<any>rteObj).imageModule.alignmentSelect(mouseEventArgs);
-            expect(img.classList.contains('e-imgbreak')).toBe(true);
-            QTBarModule.imageQTBar.hidePopup();
-            (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
-            (<any>rteObj).imageModule.onKeyDown({ args: keyboardEventArgs });
+            dispatchEvent((rteObj.element.querySelector('.e-rte-image') as HTMLElement), 'mouseup');
+            setTimeout(() => {
+                let nodObj: NodeSelection = new NodeSelection();
+                var range = nodObj.getRange(document);
+                var save = nodObj.save(range, document);
+                var args = {
+                    item: { url: 'https://gitlab.syncfusion.com/uploads/-/system/appearance/header_logo/1/Syncfusion_logo_plain.jpg', selection: save, selectParent: [(rteObj.element.querySelector('.e-rte-image') as HTMLElement)] },
+                    preventDefault: function () { }
+                };
+                (<any>rteObj).formatter.editorManager.imgObj.createImage(args);
+                expect(((rteObj.element.querySelector('.e-rte-image') as HTMLImageElement).src === 'https://gitlab.syncfusion.com/uploads/-/system/appearance/header_logo/1/Syncfusion_logo_plain.jpg')).toBe(true);
+                (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
+                dispatchEvent((rteObj.element.querySelector('.e-rte-image') as HTMLElement), 'mouseup');
+                setTimeout(() => {
+                    (<any>QTBarModule).renderQuickToolbars();
+                    QTBarModule.imageQTBar.showPopup(10, 131, (rteObj.element.querySelector('.e-rte-image') as HTMLElement));
+                    let imgPop: HTMLElement = <HTMLElement>document.querySelector('.e-rte-quick-popup');
+                    let imgTBItems: NodeList = imgPop.querySelectorAll('.e-toolbar-item');
+                    expect(imgPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
+                    expect((<HTMLElement>imgTBItems.item(1)).title).toBe('Align');
+                    ((<HTMLElement>imgTBItems.item(1)).firstElementChild as HTMLElement).click();
+                    let popupElement: Element = curDocument.querySelectorAll(".e-rte-dropdown-popup.e-popup-open")[0];
+                    let mouseEventArgs = {
+                        item: { command: 'Images', subCommand: 'JustifyLeft' }
+                    };
+                    (<any>rteObj).imageModule.alignmentSelect(mouseEventArgs);
+                    let img: HTMLElement = rteObj.element.querySelector('.e-rte-image') as HTMLElement;
+                    expect(img.classList.contains('e-imgleft')).toBe(true);
+                    mouseEventArgs.item.subCommand = 'JustifyCenter';
+                    (<any>rteObj).imageModule.alignmentSelect(mouseEventArgs);
+                    expect(img.classList.contains('e-imgcenter')).toBe(true);
+                    mouseEventArgs.item.subCommand = 'JustifyRight';
+                    (<any>rteObj).imageModule.alignmentSelect(mouseEventArgs);
+                    expect(img.classList.contains('e-imgright')).toBe(true);
+                    ((<HTMLElement>imgTBItems.item(9)).firstElementChild as HTMLElement).click();
+                    popupElement = curDocument.querySelectorAll(".e-rte-dropdown-popup.e-popup-open")[1];
+                    mouseEventArgs.item.subCommand = 'Inline';
+                    (<any>rteObj).imageModule.alignmentSelect(mouseEventArgs);
+                    expect(img.classList.contains('e-imginline')).toBe(true);
+                    mouseEventArgs.item.subCommand = 'Break';
+                    (<any>rteObj).imageModule.alignmentSelect(mouseEventArgs);
+                    expect(img.classList.contains('e-imgbreak')).toBe(true);
+                    QTBarModule.imageQTBar.hidePopup();
+                    (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
+                    dispatchEvent((rteObj.element.querySelector('.e-rte-image') as HTMLElement), 'mouseup');
+                    setTimeout(() => {
+                        (<any>rteObj).imageModule.onKeyDown({ args: keyboardEventArgs });
+                        done();
+                    }, 40);
+                }, 40);
+            }, 40);
         });
     });
 
@@ -1161,6 +1316,12 @@ client side. Customer easy to edit the contents and get the HTML content for
                 let quickTBItem: any = quickPop.querySelectorAll('.e-toolbar-item');
                 expect(quickPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
                 quickTBItem.item(5).click();
+                (document.querySelector('.e-img-link') as any).value = 'https://www.syncfusion.com';
+                (document.querySelector('.e-update-link') as any).click();
+                target = rteObj.contentModule.getEditPanel().querySelector('img');
+                expect(closest(target, 'a')).not.toBe(null);
+                (<any>rteObj).imageModule.editAreaClickHandler({ args: eventsArg });
+                quickTBItem.item(7).click();
                 (document.querySelector('.e-img-link') as any).value = 'https://www.syncfusion.com';
                 (document.querySelector('.e-update-link') as any).click();
                 target = rteObj.contentModule.getEditPanel().querySelector('img');
@@ -1256,7 +1417,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<any>rteObj).imageModule.onKeyDown({ args: keyboardEventArgs });
             (<any>rteObj).formatter.editorManager.undoRedoManager.keyDown({ event: keyboardEventArgs });
             trg = (rteObj.element.querySelector('.e-rte-image') as HTMLElement);
-            expect(trg.style.outline ==='').toBe(true);
+            expect(trg.style.outline === '').toBe(true);
             expect(rteObj.contentModule.getEditPanel().querySelector('.e-img-resize')).toBe(null);
         });
     });

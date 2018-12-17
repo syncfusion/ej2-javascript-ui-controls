@@ -1,10 +1,11 @@
-import { createElement, detach, getUniqueID } from '@syncfusion/ej2-base';
+import { createElement, detach, getUniqueID, extend } from '@syncfusion/ej2-base';
 import { RichTextEditor } from './../../src/rich-text-editor/base/rich-text-editor';
-import {RichTextEditorModel } from './../../src/rich-text-editor/base/rich-text-editor-model';
+import { RichTextEditorModel } from './../../src/rich-text-editor/base/rich-text-editor-model';
 
 export function renderRTE(options: RichTextEditorModel): RichTextEditor {
     let element: HTMLElement = createElement('div', { id: getUniqueID('rte-test') });
     document.body.appendChild(element);
+    extend(options, options, { saveInterval: 0 })
     let rteObj: RichTextEditor = new RichTextEditor(options);
     rteObj.appendTo(element);
     return rteObj;

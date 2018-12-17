@@ -1,11 +1,11 @@
 import { addClass, Browser, EventHandler, detach, removeClass, select, selectAll, KeyboardEvents } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, KeyboardEventArgs, closest, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { setStyleAttribute } from '@syncfusion/ej2-base';
+import { setStyleAttribute, extend } from '@syncfusion/ej2-base';
 import { Toolbar as tool, OverflowMode } from '@syncfusion/ej2-navigations';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
-import { RenderType, ToolbarType } from '../base/enum';
-import { setToolbarStatus, updateUndoRedoStatus, getTBarItemsIndex, getCollection } from '../base/util';
+import { RenderType, ToolbarType, ToolbarItems } from '../base/enum';
+import { setToolbarStatus, updateUndoRedoStatus, getTBarItemsIndex, getCollection, toObjectLowerCase } from '../base/util';
 import * as model from '../models/items';
 import { IRichTextEditor, IRenderer, NotifyArgs, IToolbarRenderOptions } from '../base/interface';
 import { IToolbarItemModel, IToolsItems, IUpdateItemsModel, IDropDownRenderArgs, ISetToolbarStatusArgs } from '../base/interface';
@@ -39,6 +39,7 @@ export class Toolbar {
     private toolbarActionModule: ToolbarAction;
     protected renderFactory: RendererFactory;
     private keyBoardModule: KeyboardEvents;
+    private tools: { [key: string]: IToolsItems };
 
     constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -50,6 +51,11 @@ export class Toolbar {
         this.toolbarRenderer = this.renderFactory.getRenderer(RenderType.Toolbar);
         this.baseToolbar = new BaseToolbar(this.parent, this.locator);
         this.addEventListener();
+        if (this.parent.toolbarSettings && Object.keys(this.parent.toolbarSettings.itemConfigs).length > 0) {
+            extend(this.tools, model.tools, toObjectLowerCase(this.parent.toolbarSettings.itemConfigs), true);
+        } else {
+            this.tools = model.tools;
+        }
     }
 
     private initializeInstance(): void {
@@ -259,8 +265,8 @@ export class Toolbar {
     }
 
     public updateItem(args: IUpdateItemsModel): void {
-        let item: IToolsItems = model.tools[args.updateItem.toLocaleLowerCase()];
-        let trgItem: IToolsItems = model.tools[args.targetItem.toLocaleLowerCase()];
+        let item: IToolsItems = this.tools[args.updateItem.toLocaleLowerCase() as ToolbarItems];
+        let trgItem: IToolsItems = this.tools[args.targetItem.toLocaleLowerCase() as ToolbarItems];
         let index: number = getTBarItemsIndex(getCollection(trgItem.subCommand), args.baseToolbar.toolbarObj.items)[0];
         if (!isNOU(index)) {
             let prefixId: string = this.parent.inlineMode.enable ? '_quick_' : '_toolbar_';

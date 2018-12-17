@@ -78,7 +78,7 @@ export class InterSectionObserver {
 
             let check: boolean = this.check(direction);
             if (current.entered) {
-                onEnterCallback(this.element, current, direction, { top: top, left: left });
+                onEnterCallback(this.element, current, direction, { top: top, left: left }, this.fromWheel, check);
             }
 
             if (check) {

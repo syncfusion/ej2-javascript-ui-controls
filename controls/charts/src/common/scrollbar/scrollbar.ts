@@ -529,7 +529,7 @@ private getStartEnd(start: number | Date, end: number | Date, isCurrentStartEnd:
         rightCircleEle.style.fill = isRightHover && isAxis ? style.circleHover : style.circle;
         leftCircleEle.style.stroke = isLeftHover && isAxis ? style.circleHover : style.circle;
         rightCircleEle.style.stroke = isRightHover && isAxis ? style.circleHover : style.circle;
-        if (this.component.theme === 'HighcontrastLight') {
+        if (this.component.theme === 'HighContrastLight') {
             leftArrowEle.style.fill = isLeftHover && isAxis ? style.arrowHover : style.arrow;
             leftArrowEle.style.stroke = isLeftHover && isAxis ? style.arrowHover : style.arrow;
             rightArrowEle.style.fill = isRightHover && isAxis ? style.arrowHover : style.arrow;

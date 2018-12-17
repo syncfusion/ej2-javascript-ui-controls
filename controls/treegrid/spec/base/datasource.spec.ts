@@ -53,6 +53,7 @@ export let sampleData: Object[] = [
                 endDate: new Date('02/27/2017'),
                 priority: 'High',
                 approved: false,
+                isInExpandState: false,
                 duration: 11,
                 subtasks: [{
                     taskID: 14,

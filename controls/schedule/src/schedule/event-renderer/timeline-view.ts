@@ -108,7 +108,7 @@ export class TimelineEvent extends MonthEvent {
                 setStyleAttribute(appointmentElement, {
                     'width': appWidth + 'px', 'left': appLeft + 'px', 'right': appRight + 'px', 'top': appTop + 'px'
                 });
-                this.wireAppointmentEvents(appointmentElement, false, event[this.fields.isReadonly] as boolean);
+                this.wireAppointmentEvents(appointmentElement, false, event);
                 this.renderEventElement(event, appointmentElement, cellTd);
             } else {
                 for (let i: number = 0; i < diffInDays; i++) {

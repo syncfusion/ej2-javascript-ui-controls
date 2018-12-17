@@ -313,36 +313,44 @@ export class PrintAndExport {
         let height: number = bounds.height;
         svg.appendChild(g);
         let attr: Object = {
-            'transform': 'translate(' + (-options.bounds.x + margin.left) + ', ' + (-options.bounds.y + margin.top) + ')',
             'x': String(left),
             'y': String(top), 'width': String(width), 'height': String(height)
         };
         setAttributeSvg(g, attr);
-        let backRect: SVGElement = document.getElementById(this.diagram.element.id + '_backgroundLayerrect').cloneNode(true) as SVGElement;
+        this.setTransform(g, options.bounds, margin);
+        let gradient: HTMLElement = document.getElementById(this.diagram.element.id + 'gradient_pattern');
+        if (gradient) {
+            svg.appendChild(gradient);
+        }
         attr = {
             'x': 0,
             'y': 0, 'width': String(width + margin.left + margin.right), 'height': String(height + margin.top + margin.bottom)
         };
+        let backimage: SVGElement =
+            document.getElementById(this.diagram.element.id + '_backgroundImageLayer').cloneNode(true) as SVGElement;
+        setAttributeSvg(backimage, attr);
+        svg.appendChild(backimage);
+        this.setTransform(backimage, bounds, margin);
+        let backRect: SVGElement = document.getElementById(this.diagram.element.id + '_backgroundLayerrect').cloneNode(true) as SVGElement;
         setAttributeSvg(backRect, attr);
         svg.appendChild(backRect);
+        this.setTransform(backRect, bounds, margin);
+
         if (this.diagram.mode === 'SVG') {
+            let element: HTMLElement;
+            let i: number;
             let diagramLayerSVG: SVGSVGElement = getDiagramLayerSvg(this.diagram.element.id);
             svg.appendChild(diagramLayerSVG.getElementById(this.diagram.diagramLayer.id).cloneNode(true));
-            for (let i: number = 0; i < svg.childNodes.length; i++) {
-                let element: HTMLElement = svg.childNodes[i] as HTMLElement;
-                if (element.id === 'diagram_diagramLayer') {
-                    element.setAttribute('transform', 'translate(' + (-bounds.x + margin.left) + ', ' +
-                        (-bounds.y + margin.top) + ')');
+            for (i = 0; i < svg.childNodes.length; i++) {
+                element = svg.childNodes[i] as HTMLElement;
+                if (element.id === this.diagram.element.id + '_diagramLayer') {
+                    this.setTransform(element, bounds, margin);
                 }
             }
         } else {
             g = createSvgElement('g', { 'id': this.diagram.element.id + '_diagramLayer' });
             svg.appendChild(g);
-            g.setAttribute(
-                'transform', 'translate(' + (-options.bounds.x + margin.left) + ', ' +
-                (-options.bounds.y + margin.top) + ')');
-
-            let nodes: NodeModel[] = this.diagram.nodes;
+            this.setTransform(g, options.bounds, margin);
             //renderLabels
             let renderer: DiagramRenderer = new DiagramRenderer('', null, true);
             let htmlLayer: HTMLElement = getHTMLLayer(this.diagram.element.id);
@@ -350,6 +358,10 @@ export class PrintAndExport {
         }
         document.body.removeChild(svg);
         return svg;
+    }
+    private setTransform(element: HTMLElement | SVGElement, bounds: Rect, margin: MarginModel): void {
+        element.setAttribute('transform', 'translate(' + (-bounds.x + margin.left) + ', ' +
+                        (-bounds.y + margin.top) + ')');
     }
     private diagramAsCanvas(options: IExportOptions, customBounds: boolean): HTMLCanvasElement {
         let scaleX: string = 'scaleX';
@@ -553,7 +565,11 @@ export class PrintAndExport {
                 0 + mLeft, 0 + mTop, pageWidth - (mRight + mLeft), pageHeight - (mTop + mBottom));
             url = canvas.toDataURL();
             ctx.restore();
-            this.printImage(div, url, 0);
+            if (isExport) {
+                imageArray.push(url);
+            } else {
+                this.printImage(div, url, 0);
+            }
         }
         if (isExport) {
             return imageArray;

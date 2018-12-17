@@ -5981,6 +5981,7 @@ var FormValidator = /** @__PURE__ @class */ (function (_super) {
         return _this;
     }
     FormValidator_1 = FormValidator;
+    // tslint:enable
     /**
      * Add validation rules to the corresponding input element based on `name` attribute.
      * @param {string} name `name` of form field.
@@ -6875,12 +6876,12 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     };
     Uploader.prototype.updateFileList = function () {
         var element;
+        /* istanbul ignore next */
         if (this.fileList.length > 0 && !isNullOrUndefined(this.uploadWrapper.querySelector('.' + LIST_PARENT))) {
             for (var i = 0; i < this.fileList.length; i++) {
                 element = this.fileList[i].querySelector('.e-file-status');
                 element.innerHTML = this.localizedTexts(this.getKeyValue(this.filesData[i].status));
                 this.filesData[i].status = this.localizedTexts(this.getKeyValue(this.filesData[i].status));
-                /* istanbul ignore next */
                 if (this.fileList[i].classList.contains(UPLOAD_SUCCESS)) {
                     this.fileList[i].querySelector('.e-icons').setAttribute('title', this.localizedTexts('delete'));
                 }
@@ -7460,6 +7461,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         var index = this.fileList.indexOf(selectedElement);
         var liElement = this.fileList[index];
         var fileData = this.filesData[index];
+        if (isNullOrUndefined(fileData)) {
+            return;
+        }
         if (args.target.classList.contains(ABORT_ICON)) {
             fileData.statusCode = '5';
             if (!isNullOrUndefined(liElement)) {
@@ -7519,6 +7523,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             if (!removeDirectly) {
                 _this.trigger('removing', eventArgs);
             }
+            /* istanbul ignore next */
             if (eventArgs.cancel) {
                 e.cancel = true;
                 return;
@@ -7733,6 +7738,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 validationMessages: this.validatedFileSize(file.size),
                 statusCode: '1'
             };
+            /* istanbul ignore next */
             if (paste) {
                 fileDetails.fileSource = 'paste';
             }

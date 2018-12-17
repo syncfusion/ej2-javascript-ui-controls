@@ -2,18 +2,17 @@
  * Specifies the print spec.
  */
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { getElement } from '../../../src/common/utils/helper';
 import { Chart } from '../../../src/chart/chart';
 import { Legend } from '../../../src/chart/legend/legend';
 import { ColumnSeries } from '../../../src/chart/series/column-series';
 import { ChartAnnotation } from '../../../src/chart/annotation/annotation';
-import { Marker } from '../../../src/chart/series/marker';
 import { DataLabel } from '../../../src/chart/series/data-label';
 import { unbindResizeEvents } from '../base/data.spec';
 import { IPrintEventArgs } from '../../../src/common/model/interface';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
-Chart.Inject(DataLabel, ColumnSeries, ChartAnnotation, Legend);
+import { Export} from '../../../src/chart/print-export/export';
+Chart.Inject(DataLabel, ColumnSeries, ChartAnnotation, Legend, Export);
 
 
 
@@ -152,35 +151,35 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
         it('Checking export', (done: Function) => {
-            chartObj.export('JPEG', 'chart');
+            chartObj.exportModule.export('JPEG', 'chart');
             setTimeout(() => {
                 expect('').toBe('');
                 done();
             }, 500);
         });
         it('Checking export - SVG', (done: Function) => {
-            chartObj.export('SVG', 'chart');
+            chartObj.exportModule.export('SVG', 'chart');
             setTimeout(() => {
                 expect('').toBe('');
                 done();
             }, 500);
         });
         it('Checking export - PDF', (done: Function) => {
-            chartObj.export('PDF', 'chart');
+            chartObj.exportModule.export('PDF', 'chart');
             setTimeout(() => {
                 expect('').toBe('');
                 done();
             }, 500);
         });
         it('Checking export - PDF - Potrait', (done: Function) => {
-            chartObj.export('PDF', 'chart', PdfPageOrientation.Portrait);
+            chartObj.exportModule.export('PDF', 'chart', PdfPageOrientation.Portrait);
             setTimeout(() => {
                 expect('').toBe('');
                 done();
             }, 500);
         });        
         it('Checking export - PDF - multi controls', (done: Function) => {
-            chartObj.export('PDF', 'chart', PdfPageOrientation.Portrait, [chartObj, chartObj], 500, 450);
+            chartObj.exportModule.export('PDF', 'chart', PdfPageOrientation.Portrait, [chartObj, chartObj], 500, 450);
             setTimeout(() => {
                 expect('').toBe('');
                 done();
@@ -188,7 +187,7 @@ describe('Chart Control', () => {
         });
         
         it('Checking export - PDF - multi controls width out size', (done: Function) => {
-            chartObj.export('PDF', 'chart', PdfPageOrientation.Portrait, [chartObj, chartObj]);
+            chartObj.exportModule.export('PDF', 'chart', PdfPageOrientation.Portrait, [chartObj, chartObj]);
             setTimeout(() => {
                 expect('').toBe('');
                 done();

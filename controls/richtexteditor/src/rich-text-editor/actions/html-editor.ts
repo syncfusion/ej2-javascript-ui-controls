@@ -145,7 +145,8 @@ export class HtmlEditor {
         let item: IToolbarItemModel = args.item as IToolbarItemModel;
         let closestElement: Element = closest(args.originalEvent.target as Element, '.e-rte-quick-popup');
         if (closestElement && !closestElement.classList.contains('e-rte-inline-popup')) {
-            if (!(item.subCommand === 'SourceCode' || item.subCommand === 'Preview')) {
+            if (!(item.subCommand === 'SourceCode' || item.subCommand === 'Preview' ||
+                item.subCommand === 'FontColor' || item.subCommand === 'BackgroundColor')) {
                 let range: Range = this.nodeSelectionObj.getRange(this.parent.contentModule.getDocument());
                 save = this.nodeSelectionObj.save(range, this.parent.contentModule.getDocument());
                 selectNodeEle = this.nodeSelectionObj.getNodeCollection(range);
@@ -169,7 +170,8 @@ export class HtmlEditor {
         } else {
             let linkDialog: Element = this.parent.element.querySelector('#' + this.parent.getID() + '_rtelink');
             let imageDialog: Element = this.parent.element.querySelector('#' + this.parent.getID() + '_image');
-            if (!(item.subCommand === 'SourceCode' || item.subCommand === 'Preview')) {
+            if (!(item.subCommand === 'SourceCode' || item.subCommand === 'Preview' ||
+                item.subCommand === 'FontColor' || item.subCommand === 'BackgroundColor')) {
                 let range: Range = this.nodeSelectionObj.getRange(this.parent.contentModule.getDocument());
                 if (isNullOrUndefined(linkDialog) && isNullOrUndefined(imageDialog)) {
                     save = this.nodeSelectionObj.save(range, this.parent.contentModule.getDocument());

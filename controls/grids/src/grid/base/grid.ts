@@ -1762,6 +1762,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     constructor(options?: GridModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
+        Grid.Inject(Selection);
         setValue('mergePersistData', this.mergePersistGridData, this);
     }
 
@@ -1782,7 +1783,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             sortSettings: [], columns: [], selectedRowIndex: []
         };
         let ignoreOnColumn: string[] = ['filter', 'edit', 'filterBarTemplate', 'headerTemplate', 'template',
-            'commandTemplate', 'commands', 'dataSource'];
+            'commandTemplate', 'commands', 'dataSource', 'headerText'];
         keyEntity.forEach((value: string) => {
             let currentObject: Object = this[value];
             for (let val of ignoreOnPersist[value]) {
@@ -2118,7 +2119,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.checkLockColumns(this.columns as Column[]);
         this.getColumns();
         this.processModel();
-        this.commonQuery = this.query.clone();
         this.gridRender();
         this.wireEvents();
         this.addListener();
@@ -2353,7 +2353,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (checkCursor) { this.updateDefaultCursor(); }
         if (requireGridRefresh) {
             if (freezeRefresh || this.frozenColumns || this.frozenRows) {
-                this.setProperties({ query: this.commonQuery }, true);
                 this.freezeRefresh();
             } else {
                 this.refresh();
@@ -2471,12 +2470,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @private
      */
     public setProperties(prop: Object, muteOnChange?: boolean): void {
-        let query: string = 'query';
-        if (prop[query]) {
-            this.commonQuery = (prop[query] as Query).clone();
-        }
         super.setProperties(prop, muteOnChange);
-        if (this.filterModule && muteOnChange) {
+        let filterSettings: string = 'filterSettings';
+        if (prop[filterSettings] && this.filterModule && muteOnChange) {
             this.filterModule.refreshFilter();
         }
     }
@@ -2590,7 +2586,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @private
      */
     public getQuery(): Query {
-        return this.commonQuery;
+        return this.query;
     }
 
     /**
@@ -3679,6 +3675,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.notify('refreshdataSource', e);
     }
 
+    /** 
+     * @hidden
+     */
     public disableRowDD(enable: boolean): void {
         let headerTable: Element = this.getHeaderTable();
         let contentTable: Element = this.getContentTable();
@@ -4356,5 +4355,3 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
 }
-
-Grid.Inject(Selection);

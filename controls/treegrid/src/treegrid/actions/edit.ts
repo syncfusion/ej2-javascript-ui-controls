@@ -132,14 +132,21 @@ export class Edit {
         args.cancel = true;
         this.keyPress = null;
       }
-      let toolbarID: string = this.parent.element.id  + '_gridcontrol_';
-      this.parent.grid.toolbarModule.enableItems([toolbarID + 'add', toolbarID + 'edit', toolbarID + 'delete'], false);
-      this.parent.grid.toolbarModule.enableItems([toolbarID + 'update', toolbarID + 'cancel'], true);
+      this.enableToolbarItems();
     }
     // if (this.isAdd && this.parent.editSettings.mode === 'Batch' && !args.cell.parentElement.classList.contains('e-insertedrow')) {
     //   this.isAdd = false;
     // }
   }
+
+  private enableToolbarItems(): void {
+    if (!isNullOrUndefined(this.parent.grid.toolbarModule)) {
+      let toolbarID: string = this.parent.element.id  + '_gridcontrol_';
+      this.parent.grid.toolbarModule.enableItems([toolbarID + 'add', toolbarID + 'edit', toolbarID + 'delete'], false);
+      this.parent.grid.toolbarModule.enableItems([toolbarID + 'update', toolbarID + 'cancel'], true);
+    }
+  }
+
   private batchCancel(e: BatchCancelArgs): void {
     if (this.parent.editSettings.mode === 'Cell') {
       this.parent.renderModule.cellRender({
@@ -190,9 +197,7 @@ export class Edit {
           }
           row = <HTMLTableRowElement>this.parent.grid.getRows()[rowIndex];
           this.parent.grid.editModule.updateRow(rowIndex, args.rowData);
-          let toolbarID: string = this.parent.element.id  + '_gridcontrol_';
-          this.parent.grid.toolbarModule.enableItems([toolbarID + 'add', toolbarID + 'edit', toolbarID + 'delete'], true);
-          this.parent.grid.toolbarModule.enableItems([toolbarID + 'update', toolbarID + 'cancel'], false);
+          this.enableToolbarItems();
           this.parent.grid.editModule.formObj.destroy();
           if (this.keyPress !== 'tab' && this.keyPress !== 'shiftTab') {
             this.parent.grid.editSettings.mode = 'Normal';

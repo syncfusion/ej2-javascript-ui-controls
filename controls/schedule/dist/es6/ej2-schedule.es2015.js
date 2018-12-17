@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, cldrData, closest, compile, createElement, extend, formatUnit, getDefaultDateObject, getValue, isNullOrUndefined, prepend, remove, removeClass, setStyleAttribute, uniqueID } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, HijriParser, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, cldrData, closest, compile, createElement, extend, formatUnit, getDefaultDateObject, getValue, isNullOrUndefined, prepend, remove, removeClass, setStyleAttribute, uniqueID } from '@syncfusion/ej2-base';
 import { Dialog, Popup, Tooltip, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Toolbar, TreeView } from '@syncfusion/ej2-navigations';
 import { Calendar, DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
@@ -743,7 +743,7 @@ class HeaderRenderer {
         }
     }
     getDateRangeText() {
-        return this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y' });
+        return this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() });
     }
     getItems() {
         let items = [];
@@ -876,6 +876,7 @@ class HeaderRenderer {
             locale: this.parent.locale,
             depth: calendarView,
             start: calendarView,
+            calendarMode: this.parent.calendarMode,
             change: this.calendarChange.bind(this)
         });
         this.headerCalendar.appendTo(headerCalendarEle);
@@ -1559,8 +1560,9 @@ class KeyboardInteraction {
         return this.parent.activeView.isInverseTableSelect;
     }
     /** @hidden */
-    selectCells(isMultiple, target) {
+    selectCells(isMultiple, targetCell) {
         this.parent.removeSelectedClass();
+        let target = (targetCell instanceof Array) ? targetCell.slice(-1)[0] : targetCell;
         if (isMultiple) {
             let initialId;
             let selectedCells = this.getCells(this.isInverseTableSelect(), this.initialTarget, target);
@@ -3021,6 +3023,12 @@ class EventBase {
         let eventData = processed.filter((data) => !data[this.parent.eventFields.isBlock]);
         this.parent.eventsProcessed = this.filterEvents(start, end, eventData);
         let blockData = processed.filter((data) => data[this.parent.eventFields.isBlock]);
+        blockData.forEach((eventObj) => {
+            if (eventObj[fields.isAllDay]) {
+                eventObj[fields.startTime] = resetTime(eventObj[fields.startTime]);
+                eventObj[fields.endTime] = addDays(resetTime(eventObj[fields.endTime]), 1);
+            }
+        });
         this.parent.blockProcessed = this.filterEvents(start, end, blockData);
         return eventData;
     }
@@ -3330,7 +3338,7 @@ class EventBase {
             if (this.parent.keyboardInteractionModule) {
                 let target = ((!isNullOrUndefined(this.parent.activeCellsData) &&
                     this.parent.activeCellsData.element) || selectedCell[selectedCell.length - 1]);
-                this.parent.keyboardInteractionModule.selectCells(false, target);
+                this.parent.keyboardInteractionModule.selectCells(target instanceof Array, target);
             }
             return;
         }
@@ -3415,7 +3423,12 @@ class EventBase {
             this.removeSelectedAppointmentClass();
         }
     }
-    wireAppointmentEvents(element, isAllDay = false, isReadOnly = false) {
+    wireAppointmentEvents(element, isAllDay = false, event) {
+        if (this.parent.calendarMode === 'Islamic' && (!isNullOrUndefined(event[this.parent.eventFields.recurrenceRule]) ||
+            !isNullOrUndefined(event[this.parent.eventFields.recurrenceID]))) {
+            return;
+        }
+        let isReadOnly = (!isNullOrUndefined(event)) ? event[this.parent.eventFields.isReadonly] : false;
         EventHandler.add(element, 'click', this.eventClick, this);
         if (!this.parent.isAdaptive && !this.parent.activeViewOptions.readonly && !isReadOnly) {
             EventHandler.add(element, 'dblclick', this.eventDoubleClick, this);
@@ -3948,11 +3961,11 @@ class Crud {
     checkBlockEvents(eventData) {
         let eventCollection = (eventData instanceof Array) ? eventData : [eventData];
         let isBlockAlert = false;
+        let fields = this.parent.eventFields;
         eventCollection.forEach((event) => {
             let dataCol = [];
-            if (!isNullOrUndefined(event[this.parent.eventFields.recurrenceRule])) {
-                let parentObj = this.parent.eventBase.getRecurrenceEvent(event);
-                dataCol = this.parent.eventBase.generateOccurrence(parentObj || event);
+            if (!isNullOrUndefined(event[fields.recurrenceRule]) && isNullOrUndefined(event[fields.recurrenceID])) {
+                dataCol = this.parent.eventBase.generateOccurrence(event);
             }
             else {
                 dataCol.push(event);
@@ -4316,7 +4329,7 @@ class QuickPopups {
                 this.parent.trigger(eventRendered, args);
                 if (!args.cancel) {
                     moreEventWrapperEle.appendChild(appointmentEle);
-                    this.parent.eventBase.wireAppointmentEvents(appointmentEle);
+                    this.parent.eventBase.wireAppointmentEvents(appointmentEle, false, eventData);
                     this.parent.eventBase.applyResourceColor(appointmentEle, eventData, 'backgroundColor', groupOrder);
                 }
             }
@@ -4353,23 +4366,25 @@ class QuickPopups {
             this.quickPopupHide();
             return;
         }
+        let targetEle = args.event.target;
         if (this.parent.isAdaptive) {
             this.quickPopupHide();
-            if (isNullOrUndefined(this.newEventClone)) {
-                this.newEventClone = createElement('div', {
+            let newEventClone = this.parent.element.querySelector('.' + NEW_EVENT_CLASS);
+            if (isNullOrUndefined(newEventClone)) {
+                newEventClone = createElement('div', {
                     className: NEW_EVENT_CLASS,
-                    innerHTML: '<div class="e-title"> + </div>'
+                    innerHTML: `<div class="e-title">+ ${this.l10n.getConstant('newEvent')}</div>`
                 });
             }
-            if (args.event.target.classList.contains(WORK_CELLS_CLASS) ||
-                args.event.target.classList.contains(ALLDAY_CELLS_CLASS)) {
-                args.event.target.appendChild(this.newEventClone);
+            let targetCell = closest(targetEle, '.' + WORK_CELLS_CLASS + ',.' + ALLDAY_CELLS_CLASS);
+            if (targetCell) {
+                targetCell.appendChild(newEventClone);
             }
             return;
         }
-        let target = closest(args.event.target, '.' + WORK_CELLS_CLASS + ',.' + ALLDAY_CELLS_CLASS + ',.' +
+        let target = closest(targetEle, '.' + WORK_CELLS_CLASS + ',.' + ALLDAY_CELLS_CLASS + ',.' +
             HEADER_CELLS_CLASS);
-        if (isNullOrUndefined(target) || args.event.target.classList.contains(MORE_INDICATOR_CLASS)) {
+        if (isNullOrUndefined(target) || targetEle.classList.contains(MORE_INDICATOR_CLASS)) {
             return;
         }
         let isSameTarget = this.quickPopup.relateTo === target;
@@ -4841,7 +4856,7 @@ class QuickPopups {
         return ruleSummary.charAt(0).toUpperCase() + ruleSummary.slice(1);
     }
     getDateFormat(date, formatString) {
-        return this.parent.globalize.formatDate(date, { skeleton: formatString });
+        return this.parent.globalize.formatDate(date, { skeleton: formatString, calendar: this.parent.getCalendarMode() });
     }
     getDataFromTarget(target) {
         if (target.classList.contains(APPOINTMENT_CLASS)) {
@@ -5036,6 +5051,7 @@ class QuickPopups {
         this.quickPopup.destroy();
         remove(this.quickPopup.element);
         this.morePopup.destroy();
+        remove(this.morePopup.element);
         if (this.quickDialog.element) {
             this.quickDialog.destroy();
             remove(this.quickDialog.element);
@@ -5094,14 +5110,14 @@ class EventTooltip {
             };
             let contentContainer = createElement('div');
             append(this.parent.getHeaderTooltipTemplate()(data), contentContainer);
-            this.tooltipObj.content = contentContainer;
+            this.setContent(contentContainer);
             return;
         }
         let record = this.parent.eventBase.getEventByGuid(args.target.getAttribute('data-guid'));
         if (!isNullOrUndefined(this.parent.eventSettings.tooltipTemplate)) {
             let contentContainer = createElement('div');
             append(this.parent.getEventTooltipTemplate()(record), contentContainer);
-            this.tooltipObj.content = contentContainer;
+            this.setContent(contentContainer);
         }
         else {
             let globalize = this.parent.globalize;
@@ -5113,14 +5129,26 @@ class EventTooltip {
             let endDate = resetTime(new Date('' + eventEnd));
             let tooltipSubject = (record[fields.subject] || this.parent.eventSettings.fields.subject.default);
             let tooltipLocation = !isNullOrUndefined(record[fields.location]) ? record[fields.location] : '';
-            let startMonthDate = globalize.formatDate(eventStart, { type: 'date', skeleton: 'MMMd' });
-            let startMonthYearDate = globalize.formatDate(eventStart, { type: 'date', skeleton: 'yMMMd' });
-            let endMonthYearDate = globalize.formatDate(eventEnd, { type: 'date', skeleton: 'yMMMd' });
-            let startTime = globalize.formatDate(eventStart, { type: 'time', skeleton: 'short' });
-            let endTime = globalize.formatDate(eventEnd, { type: 'time', skeleton: 'short' });
+            let startMonthDate = globalize.formatDate(eventStart, {
+                type: 'date', skeleton: 'MMMd', calendar: this.parent.getCalendarMode()
+            });
+            let startMonthYearDate = globalize.formatDate(eventStart, {
+                type: 'date', skeleton: 'medium', calendar: this.parent.getCalendarMode()
+            });
+            let endMonthYearDate = globalize.formatDate(eventEnd, {
+                type: 'date', skeleton: 'medium', calendar: this.parent.getCalendarMode()
+            });
+            let startTime = globalize.formatDate(eventStart, {
+                type: 'time', skeleton: 'short', calendar: this.parent.getCalendarMode()
+            });
+            let endTime = globalize.formatDate(eventEnd, {
+                type: 'time', skeleton: 'short', calendar: this.parent.getCalendarMode()
+            });
             let tooltipDetails;
             if (startDate.getTime() === endDate.getTime()) {
-                tooltipDetails = globalize.formatDate(eventStart, { type: 'date', skeleton: 'long' });
+                tooltipDetails = globalize.formatDate(eventStart, {
+                    type: 'date', skeleton: 'long', calendar: this.parent.getCalendarMode()
+                });
             }
             else {
                 tooltipDetails = (startDate.getFullYear() === endDate.getFullYear()) ? (startMonthDate + ' - ' + endMonthYearDate) :
@@ -5128,11 +5156,15 @@ class EventTooltip {
             }
             let tooltipTime = (record[fields.isAllDay]) ? this.parent.localeObj.getConstant('allDay') :
                 (startTime + ' - ' + endTime);
-            this.tooltipObj.content = '<div><div class="e-subject">' + tooltipSubject + '</div>' +
+            let content = '<div><div class="e-subject">' + tooltipSubject + '</div>' +
                 '<div class="e-location">' + tooltipLocation + '</div>' +
                 '<div class="e-details">' + tooltipDetails + '</div>' +
                 '<div class="e-all-day">' + tooltipTime + '</div></div>';
+            this.setContent(content);
         }
+    }
+    setContent(content) {
+        this.tooltipObj.setProperties({ content: content }, true);
     }
     close() {
         this.tooltipObj.close();
@@ -6253,7 +6285,10 @@ class EventWindow {
     openEditor(data, type, isEventData, repeatType) {
         this.parent.removeNewEventElement();
         this.parent.quickPopup.quickPopupHide(true);
-        if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
+        if (this.parent.calendarMode === 'Islamic') {
+            addClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], DISABLE_CLASS);
+        }
+        else if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
             removeClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], DISABLE_CLASS);
         }
         switch (type) {
@@ -6407,6 +6442,7 @@ class EventWindow {
         dateTimeDiv.appendChild(dateTimeInput);
         let dateTimePicker = new DateTimePicker({
             change: changeEvent,
+            calendarMode: this.parent.calendarMode,
             cssClass: this.parent.cssClass,
             enableRtl: this.parent.enableRtl,
             floatLabelType: 'Always',
@@ -6944,7 +6980,7 @@ class EventWindow {
         else {
             startDate = new Date(this.parent.activeCellsData.startTime.getTime());
             if (this.parent.currentView === 'Month' || this.parent.currentView === 'MonthAgenda' || this.parent.activeCellsData.isAllDay) {
-                let startHour = this.parent.globalize.parseDate(this.parent.workHours.start, { skeleton: 'Hm' });
+                let startHour = this.parent.globalize.parseDate(this.parent.workHours.start, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
                 startDate.setHours(startHour.getHours(), startHour.getMinutes(), startHour.getSeconds());
                 endDate = new Date(startDate.getTime());
                 endDate.setMilliseconds(MS_PER_MINUTE * this.getSlotDuration());
@@ -6964,7 +7000,9 @@ class EventWindow {
             format = getValue(formatType + '.short', getDefaultDateObject());
         }
         else {
-            format = getValue('main.' + '' + this.parent.locale + '.dates.calendars.gregorian.' + formatType + '.short', cldrData);
+            format = getValue(
+            // tslint:disable-next-line:max-line-length
+            'main.' + '' + this.parent.locale + '.dates.calendars.' + this.parent.getCalendarMode() + '.' + formatType + '.short', cldrData);
         }
         return format;
     }
@@ -8736,10 +8774,11 @@ class ResourceBase {
         let dateSlots = extend([], renderDates, null, true);
         for (let dateSlot of dateSlots) {
             if (startHour) {
-                dateSlot.startHour = this.parent.globalize.parseDate(startHour, { skeleton: 'Hm' });
+                dateSlot.startHour =
+                    this.parent.globalize.parseDate(startHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
             }
             if (endHour) {
-                dateSlot.endHour = this.parent.globalize.parseDate(endHour, { skeleton: 'Hm' });
+                dateSlot.endHour = this.parent.globalize.parseDate(endHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
             }
             if (groupOrder) {
                 dateSlot.groupOrder = groupOrder;
@@ -8772,7 +8811,7 @@ class ResourceBase {
                 }
             }
         }
-        this.lastResourceLevel = headerLevels.slice(-1)[0];
+        this.lastResourceLevel = headerLevels.slice(-1)[0] || [];
         if (!this.parent.activeViewOptions.group.byDate) {
             let index = 0;
             for (let lastLevelResource of this.lastResourceLevel) {
@@ -8835,7 +8874,9 @@ class ResourceBase {
         else if (this.parent.resources.length > 0) {
             for (let index = 0; index < this.resourceCollection.length; index++) {
                 let data = this.resourceCollection[index].dataSource[0];
-                setValues(index, this.resourceCollection[index].field, data[this.resourceCollection[index].idField]);
+                if (data) {
+                    setValues(index, this.resourceCollection[index].field, data[this.resourceCollection[index].idField]);
+                }
             }
         }
     }
@@ -8938,6 +8979,55 @@ class ResourceBase {
     }
 }
 
+class Gregorian {
+    firstDateOfMonth(date) {
+        return new Date(date.getFullYear(), date.getMonth());
+    }
+    lastDateOfMonth(dt) {
+        return new Date(dt.getFullYear(), dt.getMonth() + 1, 0);
+    }
+    isMonthStart(date) {
+        return (date.getDate() === 1);
+    }
+}
+class Islamic {
+    firstDateOfMonth(date) {
+        let hDate = HijriParser.getHijriDate(date);
+        let gDate = HijriParser.toGregorian(hDate.year, hDate.month, 1);
+        return gDate;
+    }
+    lastDateOfMonth(dt) {
+        let hDate = HijriParser.getHijriDate(dt);
+        let gDate = HijriParser.toGregorian(hDate.year, hDate.month, this.getDaysInMonth(hDate.month, hDate.year));
+        let finalGDate = new Date(gDate.getTime());
+        new Date(finalGDate.setDate(finalGDate.getDate() + 1));
+        let finalHDate = HijriParser.getHijriDate(finalGDate);
+        if (hDate.month === finalHDate.month) {
+            return finalGDate;
+        }
+        finalHDate = HijriParser.getHijriDate(gDate);
+        if (hDate.month === finalHDate.month) {
+            return gDate;
+        }
+        return new Date(gDate.setDate(gDate.getDate() - 1));
+    }
+    isMonthStart(date) {
+        let hijriDate = HijriParser.getHijriDate(date);
+        return (hijriDate.date === 1);
+    }
+    isLeapYear(year) {
+        return (14 + 11 * year) % 30 < 11;
+    }
+    getDaysInMonth(month, year) {
+        let length = 0;
+        length = 29 + ((month + 1) % 2);
+        if (month === 11 && this.isLeapYear(year)) {
+            length++;
+        }
+        return length;
+    }
+}
+
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -9002,6 +9092,7 @@ let Schedule = class Schedule extends Component {
         this.renderModule = new Render(this);
         this.eventBase = new EventBase(this);
         this.initializeDataModule();
+        this.element.appendChild(this.createElement('div', { className: TABLE_CONTAINER_CLASS }));
         this.initializeResources();
     }
     initializeResources(isSetModel = false) {
@@ -9022,15 +9113,20 @@ let Schedule = class Schedule extends Component {
             this.initializeView(this.currentView);
             return;
         }
+        this.destroyHeaderModule();
         if (this.showHeaderBar) {
             this.headerModule = new HeaderRenderer(this);
         }
-        this.element.appendChild(this.createElement('div', { className: TABLE_CONTAINER_CLASS }));
+        if (!this.element.querySelector('.' + TABLE_CONTAINER_CLASS)) {
+            this.element.appendChild(this.createElement('div', { className: TABLE_CONTAINER_CLASS }));
+        }
         if (Browser.isDevice || Browser.isTouch) {
             this.scheduleTouchModule = new ScheduleTouch(this);
         }
         this.initializeView(this.currentView);
+        this.destroyPopups();
         this.initializePopups();
+        this.unwireEvents();
         this.wireEvents();
     }
     validateDate() {
@@ -9188,7 +9284,7 @@ let Schedule = class Schedule extends Component {
             cldrObj = (getValue('days.stand-alone.' + type, getDefaultDateObject()));
         }
         else {
-            cldrObj = (getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.days.format.' + type, cldrData));
+            cldrObj = (getValue('main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.format.' + type, cldrData));
         }
         for (let obj of Object.keys(cldrObj)) {
             culShortNames.push(getValue(obj, cldrObj));
@@ -9200,11 +9296,22 @@ let Schedule = class Schedule extends Component {
             this.timeFormat = (getValue('timeFormats.short', getDefaultDateObject()));
         }
         else {
-            this.timeFormat = (getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.short', cldrData));
+            this.timeFormat = (getValue('main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.timeFormats.short', cldrData));
         }
     }
+    getCalendarMode() {
+        return this.calendarMode.toLowerCase();
+    }
     getTimeString(date) {
-        return this.globalize.formatDate(date, { format: this.timeFormat, type: 'time' });
+        return this.globalize.formatDate(date, { format: this.timeFormat, type: 'time', calendar: this.getCalendarMode() });
+    }
+    setcalendarMode() {
+        if (this.calendarMode === 'Islamic') {
+            this.calendarUtil = new Islamic();
+        }
+        else {
+            this.calendarUtil = new Gregorian();
+        }
     }
     changeView(view, event, muteOnChange, index) {
         if (isNullOrUndefined(index)) {
@@ -9388,6 +9495,7 @@ let Schedule = class Schedule extends Component {
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.setCldrTimeFormat();
+        this.setcalendarMode();
         this.eventsData = [];
         this.eventsProcessed = [];
         this.blockData = [];
@@ -9589,26 +9697,21 @@ let Schedule = class Schedule extends Component {
      * @private
      */
     onPropertyChanged(newProp, oldProp) {
-        let requireRefresh = false;
-        let requireScheduleRefresh = false;
+        let state = { isRefresh: false, isResource: false, isDate: false, isView: false, isLayout: false, isDataManager: false };
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'width':
-                case 'height':
-                    this.notify(uiUpdate, { module: 'scroll', properties: { width: newProp.width, height: newProp.height } });
-                    break;
                 case 'views':
                     this.setViewOptions();
                     if (this.headerModule) {
                         this.headerModule.updateItems();
                     }
-                    this.changeView(this.currentView, null, true);
+                    state.isView = true;
                     break;
                 case 'currentView':
-                    this.changeView(newProp.currentView, null, true);
+                    state.isView = true;
                     break;
                 case 'selectedDate':
-                    this.changeDate(newProp.selectedDate);
+                    state.isDate = true;
                     break;
                 case 'dateFormat':
                     this.activeViewOptions = this.getActiveViewOptions();
@@ -9617,10 +9720,7 @@ let Schedule = class Schedule extends Component {
                     }
                     break;
                 case 'showHeaderBar':
-                    if (this.headerModule) {
-                        this.headerModule.destroy();
-                        this.headerModule = null;
-                    }
+                    this.destroyHeaderModule();
                     if (newProp.showHeaderBar) {
                         this.headerModule = new HeaderRenderer(this);
                         this.headerModule.updateDateRange(this.activeView.getDateRangeText());
@@ -9638,57 +9738,77 @@ let Schedule = class Schedule extends Component {
                 case 'readonly':
                 case 'headerRows':
                 case 'showWeekNumber':
-                    requireRefresh = true;
-                    break;
-                case 'eventDragArea':
-                    this.notify(dataReady, {});
+                    state.isLayout = true;
                     break;
                 case 'locale':
+                case 'calendarMode':
                     this.setCldrTimeFormat();
-                    requireScheduleRefresh = true;
+                    this.setcalendarMode();
+                    state.isRefresh = true;
                     break;
                 case 'firstDayOfWeek':
                     if (this.headerModule) {
                         this.headerModule.setDayOfWeek(newProp.firstDayOfWeek);
                     }
-                    this.eventWindow.refreshRecurrenceEditor();
-                    requireRefresh = true;
+                    if (this.eventWindow) {
+                        this.eventWindow.refreshRecurrenceEditor();
+                    }
+                    state.isLayout = true;
                     break;
                 case 'showTimeIndicator':
-                    if (this.activeViewOptions.timeScale.enable) {
+                    if (this.activeViewOptions.timeScale.enable && this.activeView) {
                         this.activeView.highlightCurrentTime();
                     }
                     break;
                 case 'cellTemplate':
                     this.activeViewOptions.cellTemplate = newProp.cellTemplate;
                     this.cellTemplateFn = this.templateParser(this.activeViewOptions.cellTemplate);
-                    requireRefresh = true;
+                    state.isLayout = true;
                     break;
                 case 'dateHeaderTemplate':
                     this.activeViewOptions.dateHeaderTemplate = newProp.dateHeaderTemplate;
                     this.dateHeaderTemplateFn = this.templateParser(this.activeViewOptions.dateHeaderTemplate);
-                    requireRefresh = true;
+                    state.isLayout = true;
                     break;
                 case 'timezone':
                     this.eventBase.timezonePropertyChange(oldProp.timezone);
                     break;
                 case 'enableRtl':
-                    requireScheduleRefresh = true;
+                    state.isRefresh = true;
                     break;
                 default:
-                    this.extendedPropertyChange(prop, newProp, oldProp);
+                    this.extendedPropertyChange(prop, newProp, oldProp, state);
                     break;
             }
         }
-        if (requireScheduleRefresh) {
+        this.propertyChangeAction(state);
+    }
+    propertyChangeAction(state) {
+        if (state.isRefresh) {
             this.refresh();
         }
-        else if (requireRefresh) {
+        else if (state.isResource) {
+            this.initializeResources(true);
+        }
+        else if (state.isView) {
+            this.changeView(this.currentView, null, true);
+        }
+        else if (state.isDate) {
+            this.changeDate(this.selectedDate);
+        }
+        else if (state.isLayout) {
             this.initializeView(this.currentView);
         }
+        else if (state.isDataManager && this.renderModule) {
+            this.renderModule.refreshDataManager();
+        }
     }
-    extendedPropertyChange(prop, newProp, oldProp) {
+    extendedPropertyChange(prop, newProp, oldProp, state) {
         switch (prop) {
+            case 'width':
+            case 'height':
+                this.notify(uiUpdate, { module: 'scroll', properties: { width: newProp.width, height: newProp.height } });
+                break;
             case 'cssClass':
                 if (oldProp.cssClass) {
                     removeClass([this.element], oldProp.cssClass);
@@ -9700,10 +9820,10 @@ let Schedule = class Schedule extends Component {
             case 'hideEmptyAgendaDays':
             case 'agendaDaysCount':
                 this.activeViewOptions = this.getActiveViewOptions();
-                this.changeView(this.currentView, null, true);
+                state.isView = true;
                 break;
             case 'eventSettings':
-                this.onEventSettingsPropertyChanged(newProp.eventSettings, oldProp.eventSettings);
+                this.onEventSettingsPropertyChanged(newProp.eventSettings, oldProp.eventSettings, state);
                 break;
             case 'allowKeyboardInteraction':
                 if (this.keyboardInteractionModule) {
@@ -9718,7 +9838,9 @@ let Schedule = class Schedule extends Component {
                 if (!isNullOrUndefined(this.editorTemplate)) {
                     this.editorTemplateFn = this.templateParser(this.editorTemplate);
                 }
-                this.eventWindow.setDialogContent();
+                if (this.eventWindow) {
+                    this.eventWindow.setDialogContent();
+                }
                 break;
             case 'quickInfoTemplates':
                 if (this.quickInfoTemplates.header) {
@@ -9732,16 +9854,18 @@ let Schedule = class Schedule extends Component {
                 }
                 break;
             case 'group':
-                this.onGroupSettingsPropertyChanged(newProp.group, oldProp.group);
+                this.onGroupSettingsPropertyChanged(newProp.group, oldProp.group, state);
                 break;
             case 'resources':
-                this.initializeResources(true);
+                state.isResource = true;
                 break;
             case 'timeScale':
                 this.activeViewOptions.timeScale.interval = newProp.timeScale.interval || this.activeViewOptions.timeScale.interval;
                 this.activeViewOptions.timeScale.slotCount = newProp.timeScale.slotCount || this.activeViewOptions.timeScale.slotCount;
-                this.eventWindow.refreshDateTimePicker();
-                this.initializeView(this.currentView);
+                if (this.eventWindow) {
+                    this.eventWindow.refreshDateTimePicker();
+                }
+                state.isLayout = true;
                 break;
             case 'allowDragAndDrop':
             case 'allowResizing':
@@ -9749,33 +9873,37 @@ let Schedule = class Schedule extends Component {
                     processedData: this.eventBase.processData(this.eventsData)
                 });
                 break;
+            case 'eventDragArea':
+                this.notify(dataReady, {});
+                break;
         }
     }
-    onGroupSettingsPropertyChanged(newProp, oldProp) {
+    onGroupSettingsPropertyChanged(newProp, oldProp, state) {
         for (let prop of Object.keys(newProp)) {
             if (prop === 'headerTooltipTemplate') {
                 this.headerTooltipTemplateFn = this.templateParser(newProp[prop]);
             }
             else {
-                this.initializeView(this.currentView);
-                this.eventWindow.refresh();
+                state.isLayout = true;
+                if (this.eventWindow) {
+                    this.eventWindow.refresh();
+                }
             }
         }
     }
-    onEventSettingsPropertyChanged(newProp, oldProp) {
-        let requireRefresh = false;
+    onEventSettingsPropertyChanged(newProp, oldProp, state) {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'dataSource':
                 case 'query':
                 case 'fields':
                     this.initializeDataModule();
-                    requireRefresh = true;
+                    state.isDataManager = true;
                     break;
                 case 'template':
                     this.activeViewOptions.eventTemplate = newProp.template;
                     this.appointmentTemplateFn = this.templateParser(this.activeViewOptions.eventTemplate);
-                    requireRefresh = true;
+                    state.isDataManager = true;
                     break;
                 case 'enableTooltip':
                     if (this.eventTooltip) {
@@ -9793,12 +9921,25 @@ let Schedule = class Schedule extends Component {
                     if (this.resourceBase) {
                         this.resourceBase.setResourceCollection();
                     }
-                    requireRefresh = true;
+                    state.isDataManager = true;
                     break;
             }
         }
-        if (requireRefresh) {
-            this.renderModule.refreshDataManager();
+    }
+    destroyHeaderModule() {
+        if (this.headerModule) {
+            this.headerModule.destroy();
+            this.headerModule = null;
+        }
+    }
+    destroyPopups() {
+        if (this.quickPopup) {
+            this.quickPopup.destroy();
+            this.quickPopup = null;
+        }
+        if (this.eventWindow) {
+            this.eventWindow.destroy();
+            this.eventWindow = null;
         }
     }
     /**
@@ -9824,8 +9965,8 @@ let Schedule = class Schedule extends Component {
      * @returns {void}
      */
     setWorkHours(dates, start, end, groupIndex) {
-        let startHour = this.globalize.parseDate(start, { skeleton: 'Hm' });
-        let endHour = this.globalize.parseDate(end, { skeleton: 'Hm' });
+        let startHour = this.globalize.parseDate(start, { skeleton: 'Hm', calendar: this.getCalendarMode() });
+        let endHour = this.globalize.parseDate(end, { skeleton: 'Hm', calendar: this.getCalendarMode() });
         let tableEle = this.getContentTable();
         if (isNullOrUndefined(startHour) || isNullOrUndefined(endHour) || !tableEle) {
             return;
@@ -9878,31 +10019,31 @@ let Schedule = class Schedule extends Component {
      * @returns {CellClickEventArgs} Object An object holding the startTime, endTime and all-day information along with the target HTML
      *  element will be returned.
      */
-    getCellDetails(td) {
-        let startTime = this.getDateFromElement(td);
-        if (isNullOrUndefined(startTime)) {
+    getCellDetails(tdCol) {
+        let td = (tdCol instanceof Array) ? tdCol : [tdCol];
+        let firstTd = td[0];
+        let lastTd = td.slice(-1)[0];
+        let startTime = this.getDateFromElement(firstTd);
+        let endTime = this.getDateFromElement(lastTd);
+        if (isNullOrUndefined(startTime) || isNullOrUndefined(endTime)) {
             return undefined;
         }
-        let endTime;
-        let duration = 1;
-        let endDateFromColSpan = this.activeView.isTimelineView() && !isNullOrUndefined(td.getAttribute('colSpan'));
-        if (endDateFromColSpan) {
-            duration = parseInt(td.getAttribute('colSpan'), 10);
-        }
-        if (!this.activeViewOptions.timeScale.enable || td.classList.contains(ALLDAY_CELLS_CLASS) ||
-            td.classList.contains(HEADER_CELLS_CLASS) || endDateFromColSpan) {
+        let endDateFromColSpan = this.activeView.isTimelineView() && !isNullOrUndefined(lastTd.getAttribute('colSpan'));
+        let duration = endDateFromColSpan ? parseInt(lastTd.getAttribute('colSpan'), 10) : 1;
+        if (!this.activeViewOptions.timeScale.enable || endDateFromColSpan || lastTd.classList.contains(ALLDAY_CELLS_CLASS) ||
+            lastTd.classList.contains(HEADER_CELLS_CLASS)) {
             endTime = addDays(new Date(startTime.getTime()), duration);
         }
         else {
-            endTime = this.activeView.getEndDateFromStartDate(startTime);
+            endTime = this.activeView.getEndDateFromStartDate(endTime);
         }
         let data = {
             startTime: startTime,
             endTime: endTime,
-            isAllDay: this.isAllDayCell(td),
-            element: td
+            isAllDay: this.isAllDayCell(firstTd),
+            element: tdCol
         };
-        let groupIndex = td.getAttribute('data-group-index');
+        let groupIndex = firstTd.getAttribute('data-group-index');
         if (!isNullOrUndefined(groupIndex)) {
             data.groupIndex = parseInt(groupIndex, 10);
         }
@@ -10103,23 +10244,13 @@ let Schedule = class Schedule extends Component {
      * @return {void}
      */
     destroy() {
-        if (this.quickPopup) {
-            this.quickPopup.destroy();
-            this.quickPopup = null;
-        }
         if (this.eventTooltip) {
             this.eventTooltip.destroy();
             this.eventTooltip = null;
         }
-        if (this.eventWindow) {
-            this.eventWindow.destroy();
-            this.eventWindow = null;
-        }
+        this.destroyPopups();
         this.unwireEvents();
-        if (this.headerModule) {
-            this.headerModule.destroy();
-            this.headerModule = null;
-        }
+        this.destroyHeaderModule();
         if (this.scrollModule) {
             this.scrollModule.destroy();
             this.scrollModule = null;
@@ -10166,6 +10297,9 @@ __decorate([
 __decorate([
     Property()
 ], Schedule.prototype, "dateFormat", void 0);
+__decorate([
+    Property('Gregorian')
+], Schedule.prototype, "calendarMode", void 0);
 __decorate([
     Property(true)
 ], Schedule.prototype, "showWeekend", void 0);
@@ -11608,16 +11742,16 @@ class ViewBase {
                 return this.parent.getDayNames('abbreviated')[dt.getDay()];
             },
             getDate: (dt) => {
-                return this.parent.globalize.formatDate(dt, { format: 'd' });
+                return this.parent.globalize.formatDate(dt, { format: 'd', calendar: this.parent.getCalendarMode() });
             },
             getTime: (dt) => {
                 if (this.parent.isAdaptive) {
-                    return this.parent.globalize.formatDate(dt, { skeleton: 'h' });
+                    return this.parent.globalize.formatDate(dt, { skeleton: 'h', calendar: this.parent.getCalendarMode() });
                 }
                 return this.parent.getTimeString(dt);
             },
             getTimelineDate: (dt) => {
-                return this.parent.globalize.formatDate(dt, { skeleton: 'MMMd' }) + ', ' + this.parent.getDayNames('wide')[dt.getDay()];
+                return this.parent.globalize.formatDate(dt, { skeleton: 'MMMd', calendar: this.parent.getCalendarMode() }) + ', ' + this.parent.getDayNames('wide')[dt.getDay()];
             }
         };
         this.parent = parent;
@@ -11663,7 +11797,7 @@ class ViewBase {
     }
     createColGroup(table, lastRow) {
         let length = lastRow.length;
-        if (lastRow[0].colSpan) {
+        if (lastRow[0] && lastRow[0].colSpan) {
             length = lastRow.map((value) => value.colSpan).reduce((prev, next) => prev + next);
         }
         let colGroupEle = createElement('colgroup');
@@ -11724,7 +11858,10 @@ class ViewBase {
             headerBarHeight += getOuterHeight(this.parent.headerModule.getHeaderElement());
         }
         if (this.parent.uiStateValues.isGroupAdaptive) {
-            headerBarHeight += this.parent.element.querySelector('.' + RESOURCE_HEADER_TOOLBAR).offsetHeight;
+            let resHeader = this.parent.element.querySelector('.' + RESOURCE_HEADER_TOOLBAR);
+            if (resHeader) {
+                headerBarHeight += resHeader.offsetHeight;
+            }
         }
         return headerBarHeight;
     }
@@ -11769,14 +11906,14 @@ class ViewBase {
         return addDays(this.renderDates[this.renderDates.length - 1], 1);
     }
     getStartHour() {
-        let startHour = this.parent.globalize.parseDate(this.parent.activeViewOptions.startHour, { skeleton: 'Hm' });
+        let startHour = this.parent.globalize.parseDate(this.parent.activeViewOptions.startHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
         if (isNullOrUndefined(startHour)) {
             startHour = new Date(2000, 0, 0, 0);
         }
         return startHour;
     }
     getEndHour() {
-        let endHour = this.parent.globalize.parseDate(this.parent.activeViewOptions.endHour, { skeleton: 'Hm' });
+        let endHour = this.parent.globalize.parseDate(this.parent.activeViewOptions.endHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
         if (isNullOrUndefined(endHour)) {
             endHour = new Date(2000, 0, 0, 0);
         }
@@ -11864,12 +12001,12 @@ class ViewBase {
         }
     }
     getLabelText(view) {
-        return this.parent.localeObj.getConstant(view) + ' of ' +
-            this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'long' });
+        return this.parent.localeObj.getConstant(view) + ' of ' + this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'long', calendar: this.parent.getCalendarMode() });
     }
     getDateRangeText() {
         if (this.parent.isAdaptive) {
-            return this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y' });
+            return this.parent.globalize.
+                formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() });
         }
         return this.formatDateRange(this.renderDates[0], this.renderDates[this.renderDates.length - 1]);
     }
@@ -11880,10 +12017,11 @@ class ViewBase {
         }
         if (!isNullOrUndefined(this.parent.activeViewOptions.dateFormat)) {
             if (!endDate) {
-                return globalize.formatDate(startDate, { format: this.parent.activeViewOptions.dateFormat });
+                return globalize.formatDate(startDate, { format: this.parent.activeViewOptions.dateFormat, calendar: this.parent.getCalendarMode() });
             }
-            return globalize.formatDate(startDate, { format: this.parent.activeViewOptions.dateFormat }) + ' - ' +
-                globalize.formatDate(endDate, { format: this.parent.activeViewOptions.dateFormat });
+            return globalize.formatDate(startDate, { format: this.parent.activeViewOptions.dateFormat, calendar: this.parent.getCalendarMode() }) + ' - ' +
+                globalize.
+                    formatDate(endDate, { format: this.parent.activeViewOptions.dateFormat, calendar: this.parent.getCalendarMode() });
         }
         let formattedStr;
         let longDateFormat;
@@ -11891,55 +12029,56 @@ class ViewBase {
             longDateFormat = getValue('dateFormats.long', getDefaultDateObject());
         }
         else {
-            longDateFormat = getValue('main.' + '' + this.parent.locale + '.dates.calendars.gregorian.dateFormats.long', cldrData);
+            longDateFormat = getValue('main.' + '' + this.parent.locale + '.dates.calendars.' + this.parent.getCalendarMode() + '.dateFormats.long', cldrData);
         }
         if (!endDate) {
-            return globalize.formatDate(startDate, { format: longDateFormat });
+            return globalize.formatDate(startDate, { format: longDateFormat, calendar: this.parent.getCalendarMode() });
         }
         let dateFormat = longDateFormat.trim().toLocaleLowerCase();
         if (dateFormat.substr(0, 1) === 'd') {
             if (startDate.getFullYear() === endDate.getFullYear()) {
                 if (startDate.getMonth() === endDate.getMonth()) {
-                    formattedStr = globalize.formatDate(startDate, { format: 'dd' }) + ' - ' +
-                        globalize.formatDate(endDate, { format: 'dd MMMM yyyy' });
+                    formattedStr = globalize.formatDate(startDate, { format: 'dd', calendar: this.parent.getCalendarMode() }) + ' - ' +
+                        globalize.formatDate(endDate, { format: 'dd MMMM yyyy', calendar: this.parent.getCalendarMode() });
                 }
                 else {
-                    formattedStr = globalize.formatDate(startDate, { format: 'dd MMM' }) + ' - ' +
-                        globalize.formatDate(endDate, { format: 'dd MMM yyyy' });
+                    formattedStr = globalize.formatDate(startDate, { format: 'dd MMM', calendar: this.parent.getCalendarMode() }) + ' - ' +
+                        globalize.formatDate(endDate, { format: 'dd MMM yyyy', calendar: this.parent.getCalendarMode() });
                 }
             }
             else {
-                formattedStr = globalize.formatDate(startDate, { format: 'dd MMM yyyy' }) + ' - ' +
-                    globalize.formatDate(endDate, { format: 'dd MMM yyyy' });
+                formattedStr = globalize.formatDate(startDate, { format: 'dd MMM yyyy', calendar: this.parent.getCalendarMode() }) + ' - ' +
+                    globalize.formatDate(endDate, { format: 'dd MMM yyyy', calendar: this.parent.getCalendarMode() });
             }
         }
         else if (dateFormat.substr(0, 1) === 'm') {
             if (startDate.getFullYear() === endDate.getFullYear()) {
                 if (startDate.getMonth() === endDate.getMonth()) {
-                    formattedStr = globalize.formatDate(startDate, { format: 'MMMM dd' }) + ' - ' +
-                        globalize.formatDate(endDate, { format: 'dd, yyyy' });
+                    formattedStr = globalize.formatDate(startDate, { format: 'MMMM dd', calendar: this.parent.getCalendarMode() }) + ' - ' +
+                        globalize.formatDate(endDate, { format: 'dd, yyyy', calendar: this.parent.getCalendarMode() });
                 }
                 else {
-                    formattedStr = globalize.formatDate(startDate, { format: 'MMM dd' }) + ' - ' +
-                        globalize.formatDate(endDate, { format: 'MMM dd, yyyy' });
+                    formattedStr = globalize.formatDate(startDate, { format: 'MMM dd', calendar: this.parent.getCalendarMode() }) + ' - ' +
+                        globalize.formatDate(endDate, { format: 'MMM dd, yyyy', calendar: this.parent.getCalendarMode() });
                 }
             }
             else {
-                formattedStr = globalize.formatDate(startDate, { format: 'MMM dd, yyyy' }) + ' - ' +
-                    globalize.formatDate(endDate, { format: 'MMM dd, yyyy' });
+                formattedStr = globalize.
+                    formatDate(startDate, { format: 'MMM dd, yyyy', calendar: this.parent.getCalendarMode() }) + ' - ' +
+                    globalize.formatDate(endDate, { format: 'MMM dd, yyyy', calendar: this.parent.getCalendarMode() });
             }
         }
         else {
-            formattedStr = globalize.formatDate(startDate, { format: longDateFormat }) + ' - ' +
-                globalize.formatDate(endDate, { format: longDateFormat });
+            formattedStr = globalize.formatDate(startDate, { format: longDateFormat, calendar: this.parent.getCalendarMode() }) + ' - ' +
+                globalize.formatDate(endDate, { format: longDateFormat, calendar: this.parent.getCalendarMode() });
         }
         return formattedStr;
     }
     getMobileDateElement(date, className) {
         let wrap = createElement('div', {
             className: className,
-            innerHTML: '<div class="e-m-date">' + this.parent.globalize.formatDate(date, { format: 'd' }) + '</div>' +
-                '<div class="e-m-day">' + this.parent.globalize.formatDate(date, { format: 'E' }) + '</div>'
+            innerHTML: '<div class="e-m-date">' + this.parent.globalize.formatDate(date, { format: 'd', calendar: this.parent.getCalendarMode() }) + '</div>' + '<div class="e-m-day">' +
+                this.parent.globalize.formatDate(date, { format: 'E', calendar: this.parent.getCalendarMode() }) + '</div>'
         });
         return wrap;
     }
@@ -11958,6 +12097,9 @@ class ViewBase {
         }
     }
     renderResourceMobileLayout() {
+        if (this.parent.resourceBase.lastResourceLevel && this.parent.resourceBase.lastResourceLevel.length <= 0) {
+            return;
+        }
         this.parent.resourceBase.renderResourceHeader();
         this.parent.resourceBase.renderResourceTree();
     }
@@ -12084,6 +12226,9 @@ class VerticalEvent extends EventBase {
         let wrapperElements = [].slice.call(this.parent.element.querySelectorAll('.' + BLOCK_APPOINTMENT_CLASS +
             ',.' + APPOINTMENT_CLASS + ',.' + ROW_COUNT_WRAPPER_CLASS));
         wrapperElements.forEach((element) => remove(element));
+        if (!this.element.querySelector('.' + WORK_CELLS_CLASS)) {
+            return;
+        }
         this.allDayElement = [].slice.call(this.element.querySelectorAll('.' + ALLDAY_CELLS_CLASS));
         this.setAllDayRowHeight(0);
         if (this.parent.eventsProcessed.length === 0 && this.parent.blockProcessed.length === 0) {
@@ -12312,7 +12457,8 @@ class VerticalEvent extends EventBase {
             }
         }
         append(templateElement, appointmentDetails);
-        if (!this.parent.isAdaptive && !isNullOrUndefined(record[fieldMapping.recurrenceRule])) {
+        if (!this.parent.isAdaptive &&
+            (!isNullOrUndefined(record[fieldMapping.recurrenceRule]) || !isNullOrUndefined(record[fieldMapping.recurrenceID]))) {
             let iconClass = (record[fieldMapping.id] === record[fieldMapping.recurrenceID]) ?
                 EVENT_RECURRENCE_ICON_CLASS : EVENT_RECURRENCE_EDIT_ICON_CLASS;
             let recurrenceIcon = createElement('div', { className: ICON + ' ' + iconClass });
@@ -12453,7 +12599,7 @@ class VerticalEvent extends EventBase {
                     (3 * appHeight) : ((this.allDayLevel + 1) * appHeight)) + 4;
                 this.setAllDayRowHeight(allDayRowHeight);
                 this.addOrRemoveClass();
-                this.wireAppointmentEvents(appointmentElement, true, eventObj[this.fields.isReadonly]);
+                this.wireAppointmentEvents(appointmentElement, true, eventObj);
             }
         }
     }
@@ -12507,7 +12653,7 @@ class VerticalEvent extends EventBase {
             }
             let index = this.parent.activeViewOptions.group.byDate ? (this.resources.length * dayIndex) + resource : dayCount;
             this.appendEvent(eventObj, appointmentElement, index, tempData.appLeft);
-            this.wireAppointmentEvents(appointmentElement, false, eventObj[this.fields.isReadonly]);
+            this.wireAppointmentEvents(appointmentElement, false, eventObj);
         }
     }
     getTopValue(date, day, resource) {
@@ -12685,6 +12831,9 @@ class MonthEvent extends EventBase {
         let appointmentWrapper = [].slice.call(this.element.querySelectorAll('.' + APPOINTMENT_WRAPPER_CLASS));
         for (let wrap of appointmentWrapper) {
             remove(wrap);
+        }
+        if (!this.element.querySelector('.' + WORK_CELLS_CLASS)) {
+            return;
         }
         this.eventHeight = getElementHeightFromClass(this.element, APPOINTMENT_CLASS);
         if (this.parent.currentView === 'Month') {
@@ -12948,7 +13097,7 @@ class MonthEvent extends EventBase {
     }
     appendEventIcons(record, appointmentDetails) {
         let eventData = record.data;
-        if (!isNullOrUndefined(record[this.fields.recurrenceRule])) {
+        if (!isNullOrUndefined(record[this.fields.recurrenceRule]) || !isNullOrUndefined(record[this.fields.recurrenceID])) {
             let iconClass = (record[this.fields.id] === record[this.fields.recurrenceID]) ?
                 EVENT_RECURRENCE_ICON_CLASS : EVENT_RECURRENCE_EDIT_ICON_CLASS;
             appointmentDetails.appendChild(createElement('div', {
@@ -12987,7 +13136,7 @@ class MonthEvent extends EventBase {
             if (this.cellHeight > this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight) {
                 let appointmentElement = this.createAppointmentElement(event, resIndex);
                 this.applyResourceColor(appointmentElement, event, 'backgroundColor', this.groupOrder);
-                this.wireAppointmentEvents(appointmentElement, false, event[this.fields.isReadonly]);
+                this.wireAppointmentEvents(appointmentElement, false, event);
                 setStyleAttribute(appointmentElement, { 'width': appWidth + 'px', 'top': appTop + 'px' });
                 this.renderEventElement(event, appointmentElement, cellTd);
             }
@@ -13211,7 +13360,7 @@ class VerticalView extends ViewBase {
         }
     }
     scrollToHour(hour) {
-        let date = this.parent.globalize.parseDate(hour, { skeleton: 'Hm' });
+        let date = this.parent.globalize.parseDate(hour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
         if (isNullOrUndefined(date)) {
             return;
         }
@@ -13222,7 +13371,7 @@ class VerticalView extends ViewBase {
         let columnLevels = [];
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             columnLevels = this.parent.resourceBase.generateResourceLevels(level);
-            if (this.parent.uiStateValues.isGroupAdaptive) {
+            if (this.parent.uiStateValues.isGroupAdaptive && this.parent.resourceBase.lastResourceLevel.length > 0) {
                 let resourceLevel = this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex];
                 let resStartHour = resourceLevel.resourceData[resourceLevel.resource.startHourField];
                 let resEndHour = resourceLevel.resourceData[resourceLevel.resource.endHourField];
@@ -13238,8 +13387,8 @@ class VerticalView extends ViewBase {
     }
     getDateSlots(renderDates, workDays, workStartHour = this.parent.workHours.start, workEndHour = this.parent.workHours.end) {
         let dateCol = [];
-        let start = this.parent.globalize.parseDate(workStartHour, { skeleton: 'Hm' });
-        let end = this.parent.globalize.parseDate(workEndHour, { skeleton: 'Hm' });
+        let start = this.parent.globalize.parseDate(workStartHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        let end = this.parent.globalize.parseDate(workEndHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
         for (let col of renderDates) {
             let classList$$1 = [HEADER_CELLS_CLASS];
             if (this.isCurrentDate(col)) {
@@ -13292,7 +13441,7 @@ class VerticalView extends ViewBase {
             }
         }
         else {
-            let renderDates = (this.parent.uiStateValues.isGroupAdaptive) ?
+            let renderDates = (this.parent.uiStateValues.isGroupAdaptive && this.parent.resourceBase.lastResourceLevel.length > 0) ?
                 this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex].renderDates : this.renderDates;
             let index = this.parent.getIndexOfDate(renderDates, resetTime(new Date()));
             if (index >= 0) {
@@ -13461,7 +13610,7 @@ class VerticalView extends ViewBase {
         let rowCount = this.colLevels.length;
         for (let i = 0; i < rowCount; i++) {
             let ntr = trEle.cloneNode();
-            let data = { className: [this.colLevels[i][0].className[0]], type: 'emptyCells' };
+            let data = { className: [(this.colLevels[i][0] && this.colLevels[i][0].className[0])], type: 'emptyCells' };
             if (this.parent.activeViewOptions.showWeekNumber && data.className.indexOf(HEADER_CELLS_CLASS) !== -1) {
                 data.className.push(WEEK_NUMBER_CLASS);
                 let weekNo = getWeekNumber(this.renderDates.slice(-1)[0]);
@@ -13708,8 +13857,8 @@ class VerticalView extends ViewBase {
             length = 1;
         }
         let dt = new Date(msStartHour);
-        let start = this.parent.globalize.parseDate(this.parent.workHours.start, { skeleton: 'Hm' });
-        let end = this.parent.globalize.parseDate(this.parent.workHours.end, { skeleton: 'Hm' });
+        let start = this.parent.globalize.parseDate(this.parent.workHours.start, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        let end = this.parent.globalize.parseDate(this.parent.workHours.end, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
         for (let i = 0; i < length; i++) {
             let majorTickDivider = i % (msMajorInterval / msInterval);
             let row = {
@@ -13746,7 +13895,10 @@ class VerticalView extends ViewBase {
         }
         this.clearCurrentTimeIndicatorTimer();
         if (this.element) {
-            EventHandler.remove(this.getContentAreaElement(), 'scroll', this.onContentScroll);
+            let contentScrollableEle = this.getContentAreaElement();
+            if (contentScrollableEle) {
+                EventHandler.remove(contentScrollableEle, 'scroll', this.onContentScroll);
+            }
             if (this.parent.resourceBase) {
                 this.parent.resourceBase.destroy();
             }
@@ -13903,7 +14055,7 @@ class Month extends ViewBase {
             if (this.parent.currentView === 'MonthAgenda') {
                 colLevels = [level];
             }
-            if (this.parent.uiStateValues.isGroupAdaptive) {
+            if (this.parent.uiStateValues.isGroupAdaptive && this.parent.resourceBase.lastResourceLevel.length > 0) {
                 let resourceLevel = this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex];
                 colLevels = [this.getDateSlots(resourceLevel.renderDates, resourceLevel.workDays)];
             }
@@ -14058,11 +14210,12 @@ class Month extends ViewBase {
             }
             else {
                 let ele = createElement('span', { className: NAVIGATE_CLASS });
-                let title = this.parent.globalize.formatDate(td.date, { skeleton: 'full' });
+                let title = this.parent.globalize.formatDate(td.date, { skeleton: 'full', calendar: this.parent.getCalendarMode() });
                 ele.setAttribute('title', title);
-                ele.innerHTML = (td.date.getDate() === 1 && !this.isCurrentDate(td.date) && !this.parent.isAdaptive) ?
-                    this.parent.globalize.formatDate(td.date, { format: 'MMM d' }) :
-                    this.parent.globalize.formatDate(td.date, { skeleton: 'd' });
+                ele.innerHTML =
+                    (this.parent.calendarUtil.isMonthStart(td.date) && !this.isCurrentDate(td.date) && !this.parent.isAdaptive) ?
+                        this.parent.globalize.formatDate(td.date, { format: 'MMM d', calendar: this.parent.getCalendarMode() }) :
+                        this.parent.globalize.formatDate(td.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
                 tdEle.appendChild(ele);
             }
             this.wireCellEvents(tdEle);
@@ -14072,6 +14225,9 @@ class Month extends ViewBase {
         return tdEle;
     }
     getContentSlots() {
+        if (!(this.colLevels[this.colLevels.length - 1] && this.colLevels[this.colLevels.length - 1][0])) {
+            return [];
+        }
         let slotDatas = [];
         let prepareSlots = (rowIndex, renderDate, resData, classList$$1) => {
             let data = {
@@ -14141,8 +14297,8 @@ class Month extends ViewBase {
         }
         let monthDate = new Date(this.parent.selectedDate.getTime());
         this.monthDates = {
-            start: firstDateOfMonth(monthDate),
-            end: lastDateOfMonth(addMonths(monthDate, this.parent.activeViewOptions.interval - 1))
+            start: this.parent.calendarUtil.firstDateOfMonth(monthDate),
+            end: this.parent.calendarUtil.lastDateOfMonth(addMonths(monthDate, this.parent.activeViewOptions.interval - 1))
         };
         let tBody = tbl.querySelector('tbody');
         append(this.getContentRows(), tBody);
@@ -14205,22 +14361,23 @@ class Month extends ViewBase {
             return;
         }
         let dateHeader = createElement('div', { className: DATE_HEADER_CLASS });
-        dateHeader.innerHTML = (data.date.getDate() === 1 && !this.isCurrentDate(data.date) && !this.parent.isAdaptive) ?
-            this.parent.globalize.formatDate(data.date, { format: 'MMM d' }) :
-            this.parent.globalize.formatDate(data.date, { skeleton: 'd' });
+        dateHeader.innerHTML =
+            (this.parent.calendarUtil.isMonthStart(data.date) && !this.isCurrentDate(data.date) && !this.parent.isAdaptive) ?
+                this.parent.globalize.formatDate(data.date, { format: 'MMM d', calendar: this.parent.getCalendarMode() }) :
+                this.parent.globalize.formatDate(data.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
         ntd.appendChild(dateHeader);
         if (this.getModuleName() === 'month') {
             addClass([dateHeader], NAVIGATE_CLASS);
         }
     }
     getMonthStart(currentDate) {
-        let monthStart = getWeekFirstDate(firstDateOfMonth(currentDate), this.parent.firstDayOfWeek);
+        let monthStart = getWeekFirstDate(this.parent.calendarUtil.firstDateOfMonth(currentDate), this.parent.firstDayOfWeek);
         let start = new Date(monthStart.getFullYear(), monthStart.getMonth(), monthStart.getDate());
         return start;
     }
     getMonthEnd(currentDate) {
         let endDate = addMonths(currentDate, this.parent.activeViewOptions.interval - 1);
-        let lastWeekOfMonth = getWeekFirstDate(lastDateOfMonth(endDate), this.parent.firstDayOfWeek);
+        let lastWeekOfMonth = getWeekFirstDate(this.parent.calendarUtil.lastDateOfMonth(endDate), this.parent.firstDayOfWeek);
         let monthEnd = addDays(lastWeekOfMonth, WEEK_LENGTH - 1);
         return monthEnd;
     }
@@ -14261,21 +14418,23 @@ class Month extends ViewBase {
             if (this.parent.activeViewOptions.interval > 1) {
                 let endDate = addMonths(lastDateOfMonth(this.parent.selectedDate), this.parent.activeViewOptions.interval - 1);
                 if (this.parent.selectedDate.getFullYear() === endDate.getFullYear()) {
-                    let monthNames = (this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM' }))
-                        + ' - ' + (this.parent.globalize.formatDate(endDate, { format: 'MMMM ' })) + endDate.getFullYear();
+                    let monthNames = (this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM', calendar: this.parent.getCalendarMode() })) + ' - ' +
+                        (this.parent.globalize.formatDate(endDate, { format: 'MMMM ', calendar: this.parent.getCalendarMode() })) +
+                        endDate.getFullYear();
                     return monthNames;
                 }
-                return (this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM' })) + ' ' +
-                    this.parent.selectedDate.getFullYear() + ' - ' + (this.parent.globalize.formatDate(endDate, { format: 'MMMM ' })) +
+                return (this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM', calendar: this.parent.getCalendarMode() })) + ' ' +
+                    this.parent.selectedDate.getFullYear() + ' - ' + (this.parent.globalize.formatDate(endDate, { format: 'MMMM ', calendar: this.parent.getCalendarMode() })) +
                     endDate.getFullYear();
             }
-            return this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y' });
+            return this.parent.globalize.
+                formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() });
         }
         return this.formatDateRange(this.parent.selectedDate);
     }
     getLabelText(view) {
         return this.parent.localeObj.getConstant(view) + ' of ' +
-            this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y' });
+            this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() });
     }
     createWeekNumberElement(text) {
         let tr = createElement('tr');
@@ -15003,7 +15162,7 @@ class Agenda extends ViewBase {
         let formatDate = (this.parent.activeViewOptions.dateFormat) ? this.parent.activeViewOptions.dateFormat : 'MMMM y';
         if (this.parent.activeViewOptions.allowVirtualScrolling || this.parent.isAdaptive) {
             let currentDate = isNullOrUndefined(date) ? this.parent.selectedDate : date;
-            return this.parent.globalize.formatDate(currentDate, { format: formatDate });
+            return this.parent.globalize.formatDate(currentDate, { format: formatDate, calendar: this.parent.getCalendarMode() });
         }
         else {
             let startDate = this.parent.selectedDate;
@@ -15298,7 +15457,7 @@ class TimelineEvent extends MonthEvent {
                 setStyleAttribute(appointmentElement, {
                     'width': appWidth + 'px', 'left': appLeft + 'px', 'right': appRight + 'px', 'top': appTop + 'px'
                 });
-                this.wireAppointmentEvents(appointmentElement, false, event[this.fields.isReadonly]);
+                this.wireAppointmentEvents(appointmentElement, false, event);
                 this.renderEventElement(event, appointmentElement, cellTd);
             }
             else {
@@ -15549,10 +15708,10 @@ class TimelineHeaderRow {
         let tdDatas = [];
         let customHelper = {
             getYear: (dt) => {
-                return this.parent.globalize.formatDate(dt, { format: 'y' });
+                return this.parent.globalize.formatDate(dt, { format: 'y', calendar: this.parent.getCalendarMode() });
             },
             getMonth: (dt) => {
-                return this.parent.globalize.formatDate(dt, { format: 'MMMM' });
+                return this.parent.globalize.formatDate(dt, { format: 'MMMM', calendar: this.parent.getCalendarMode() });
             },
             getWeekNumber: (dt) => {
                 return getWeekNumber(dt);
@@ -15643,7 +15802,7 @@ class TimelineViews extends VerticalView {
         this.scrollHeaderLabels(target);
     }
     scrollToWorkHour() {
-        let start = this.parent.globalize.parseDate(this.parent.workHours.start, { skeleton: 'Hm' });
+        let start = this.parent.globalize.parseDate(this.parent.workHours.start, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
         let currDateTime = this.isWorkDay(this.parent.selectedDate) && this.parent.workHours.highlight &&
             !isNullOrUndefined(start) ? new Date(+this.parent.selectedDate).setHours(start.getHours(), start.getMinutes())
             : new Date(+this.parent.selectedDate).setHours(0, 0, 0, 0);
@@ -15654,7 +15813,7 @@ class TimelineViews extends VerticalView {
         }
     }
     scrollToHour(hour) {
-        let date = this.parent.globalize.parseDate(hour, { skeleton: 'Hm' });
+        let date = this.parent.globalize.parseDate(hour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
         if (isNullOrUndefined(date)) {
             return;
         }
@@ -15785,8 +15944,8 @@ class TimelineViews extends VerticalView {
         let resLevel = this.parent.resourceBase.renderedResources[i];
         let resSHr = resLevel.resourceData[resLevel.resource.startHourField] || this.parent.workHours.start;
         let resEHr = resLevel.resourceData[resLevel.resource.endHourField] || this.parent.workHours.end;
-        tdData.startHour = this.parent.globalize.parseDate(resSHr, { skeleton: 'Hm' });
-        tdData.endHour = this.parent.globalize.parseDate(resEHr, { skeleton: 'Hm' });
+        tdData.startHour = this.parent.globalize.parseDate(resSHr, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        tdData.endHour = this.parent.globalize.parseDate(resEHr, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
         tdData.workDays = resLevel.resourceData[resLevel.resource.workDaysField] || this.parent.workDays;
         tdData.className = resLevel.className;
         tdData.groupIndex = resLevel.groupIndex;
@@ -15942,12 +16101,12 @@ class TimelineMonth extends Month {
         EventHandler.remove(this.getContentAreaElement(), 'scroll', this.onContentScroll);
     }
     getMonthStart(currentDate) {
-        let monthStart = firstDateOfMonth(resetTime(currentDate));
+        let monthStart = this.parent.calendarUtil.firstDateOfMonth(resetTime(currentDate));
         return new Date(monthStart.getFullYear(), monthStart.getMonth(), monthStart.getDate());
     }
     getMonthEnd(currentDate) {
-        let monthStart = firstDateOfMonth(resetTime(currentDate));
-        return lastDateOfMonth(addMonths(new Date(+monthStart), this.parent.activeViewOptions.interval - 1));
+        let monthStart = this.parent.calendarUtil.firstDateOfMonth(resetTime(currentDate));
+        return this.parent.calendarUtil.lastDateOfMonth(addMonths(new Date(+monthStart), this.parent.activeViewOptions.interval - 1));
     }
     generateColumnLevels() {
         let colLevels = [];

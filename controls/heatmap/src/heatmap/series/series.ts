@@ -185,7 +185,7 @@ export class Series {
                     themeCellTextStyle, themeCellTextStyle.color || this.getSaturatedColor(this.color));
                 rectPosition.textId = options.id;
                 if (heatMap.rangeSelection && heatMap.paletteSettings.type === 'Fixed') {
-                    this.toggleCellTextColor(rectPosition, options);
+                    this.toggleCellTextColor(rectPosition, options, dataXIndex, dataYIndex);
                 }
                 if (Browser.isIE && !heatMap.enableCanvasRendering) {
                     options.dy = this.heatMap.cellSettings.tileType === 'Bubble' ? '0.5ex' : '1ex';
@@ -220,14 +220,20 @@ export class Series {
     /**
      * To toggle the cell text color based on legend selection.
      */
-    private toggleCellTextColor(rectPosition: CurrentRect, options: TextOption): void {
+    private toggleCellTextColor(rectPosition: CurrentRect, options: TextOption, dataXIndex: number, dataYIndex: number): void {
         for (let i: number = 0; i < this.heatMap.toggleValue.length; i++) {
             let minValue: number = (i === 0) ? this.heatMap.dataSourceMinValue : this.heatMap.toggleValue[i].value;
             let maxValue: number = (i === this.heatMap.toggleValue.length - 1) ? this.heatMap.dataSourceMaxValue :
                 this.heatMap.toggleValue[i + 1].value - 0.01;
-            if (this.text >= minValue && this.text <= maxValue) {
+            // tslint:disable-next-line:no-any
+            let clonedDataSource: any[] = this.heatMap.clonedDataSource;
+            let bubbleText: number = !isNullOrUndefined(clonedDataSource[dataXIndex][dataYIndex][1]) &&
+                clonedDataSource[dataXIndex][dataYIndex][1].toString() !== '' ? clonedDataSource[dataXIndex][dataYIndex][1] : '';
+            let text: number = this.heatMap.cellSettings.tileType === 'Bubble' && this.heatMap.cellSettings.bubbleType === 'SizeAndColor' ?
+                bubbleText : this.text;
+            if (text && text >= minValue && text <= maxValue) {
                 if (!this.heatMap.toggleValue[i].visible) {
-                    options.fill = this.color === '#EEEEEE' ? '#EEEEEE' : this.heatMap.themeStyle.toggledColor;
+                    options.fill = this.heatMap.themeStyle.toggledColor;
                     rectPosition.visible = false;
                     break;
                 } else {
@@ -498,6 +504,7 @@ export class Series {
     private getRadiusBypercentage(text: number, min: number, max: number, radius: number): number {
         let valueInPrecentage: number = ((text - min) /
             (max - min)) * 100;
+        valueInPrecentage = isNaN(valueInPrecentage) ? 100 : valueInPrecentage;
         radius = ((this.heatMap.bubbleSizeWithColor ||
             (this.heatMap.cellSettings.tileType === 'Bubble' && this.heatMap.cellSettings.bubbleType === 'Size'))
             && this.heatMap.cellSettings.isInversedBubbleSize) ? radius - (radius * (valueInPrecentage / 100))

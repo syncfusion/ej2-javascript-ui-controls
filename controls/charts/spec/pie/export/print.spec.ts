@@ -9,8 +9,9 @@ import { AccumulationAnnotation } from '../../../src/accumulation-chart/annotati
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { IPrintEventArgs } from '../../../src/common/model/interface';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
-AccumulationChart.Inject(AccumulationAnnotation, AccumulationDataLabel, AccumulationLegend);
-
+import { Export } from '../../../src/chart/print-export/export';
+AccumulationChart.Inject(AccumulationAnnotation, AccumulationDataLabel, AccumulationLegend, Export);
+//tslint:disable
 describe('Chart Control', () => {
     describe('Print Utils for Chart', () => {
         let chartObj: AccumulationChart;
@@ -106,7 +107,7 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });      
         it('Checking export', (done: Function) => {
-            chartObj.export('JPEG', 'chart');
+            chartObj.exportModule.export('JPEG', 'chart');
             setTimeout(() => {
                 expect('').toBe('');
                 done();
@@ -114,21 +115,21 @@ describe('Chart Control', () => {
         });
 
         it('Checking export - SVG', (done: Function) => {
-            chartObj.export('SVG', 'chart');
+            chartObj.exportModule.export('SVG', 'chart');
             setTimeout(() => {
                 expect('').toBe('');
                 done();
             }, 500);
         });
        it('Checking export - PDF', (done: Function) => {
-            chartObj.export('PDF', 'chart');
+            chartObj.exportModule.export('PDF', 'chart');
             setTimeout(() => {
                 expect('').toBe('');
                 done();
             }, 500);
         });
         it('Checking export - PDF - Potrait', (done: Function) => {
-            chartObj.export('PDF', 'chart', PdfPageOrientation.Portrait);
+            chartObj.exportModule.export('PDF', 'chart', PdfPageOrientation.Portrait);
             setTimeout(() => {
                 expect('').toBe('');
                 done();
@@ -136,7 +137,7 @@ describe('Chart Control', () => {
         });    
         
         it('Checking export - PDF - multi controls', (done: Function) => {
-            chartObj.export('PDF', 'chart', PdfPageOrientation.Portrait, [chartObj, chartObj], 500, 450);
+            chartObj.exportModule.export('PDF', 'chart', PdfPageOrientation.Portrait, [chartObj, chartObj], 500, 450);
             setTimeout(() => {
                 expect('').toBe('');
                 done();
@@ -144,7 +145,7 @@ describe('Chart Control', () => {
         });
         
         it('Checking export - PDF - multi controls width out size', (done: Function) => {
-            chartObj.export('PDF', 'chart', PdfPageOrientation.Portrait, [chartObj, chartObj]);
+            chartObj.exportModule.export('PDF', 'chart', PdfPageOrientation.Portrait, [chartObj, chartObj]);
             setTimeout(() => {
                 expect('').toBe('');
                 done();

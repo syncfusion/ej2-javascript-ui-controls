@@ -39,6 +39,9 @@ export class MonthEvent extends EventBase {
         for (let wrap of appointmentWrapper) {
             remove(wrap);
         }
+        if (!this.element.querySelector('.' + cls.WORK_CELLS_CLASS)) {
+            return;
+        }
         this.eventHeight = util.getElementHeightFromClass(this.element, cls.APPOINTMENT_CLASS);
         if (this.parent.currentView === 'Month') {
             this.monthHeaderHeight = util.getOuterHeight(this.element.querySelector('.' + cls.DATE_HEADER_CLASS) as HTMLElement);
@@ -310,7 +313,7 @@ export class MonthEvent extends EventBase {
 
     private appendEventIcons(record: { [key: string]: Object }, appointmentDetails: HTMLElement): void {
         let eventData: { [key: string]: Object } = record.data as { [key: string]: Object };
-        if (!isNullOrUndefined(record[this.fields.recurrenceRule])) {
+        if (!isNullOrUndefined(record[this.fields.recurrenceRule]) || !isNullOrUndefined(record[this.fields.recurrenceID])) {
             let iconClass: string = (record[this.fields.id] === record[this.fields.recurrenceID]) ?
                 cls.EVENT_RECURRENCE_ICON_CLASS : cls.EVENT_RECURRENCE_EDIT_ICON_CLASS;
             appointmentDetails.appendChild(createElement('div', {
@@ -350,7 +353,7 @@ export class MonthEvent extends EventBase {
             if (this.cellHeight > this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight) {
                 let appointmentElement: HTMLElement = this.createAppointmentElement(event, resIndex);
                 this.applyResourceColor(appointmentElement, event, 'backgroundColor', this.groupOrder);
-                this.wireAppointmentEvents(appointmentElement, false, event[this.fields.isReadonly] as boolean);
+                this.wireAppointmentEvents(appointmentElement, false, event);
                 setStyleAttribute(appointmentElement, { 'width': appWidth + 'px', 'top': appTop + 'px' });
                 this.renderEventElement(event, appointmentElement, cellTd);
             } else {

@@ -4,6 +4,7 @@
  */
 import { calculatePosition, OffsetPosition } from '../../src/common/position';
 import * as collision  from '../../src/common/collision';
+import {isNullOrUndefined } from '@syncfusion/ej2-base';
 
 
 function getPop(popupContent: string, container: Node = null): Node {
@@ -1285,8 +1286,12 @@ describe('Collision Module Specs', () => {
             expect(getViewPortHeight()-elementRect.height).toEqual(fitpos.top);
             removeContainerContent();
         });
-        
 
+        it('Collision with scrollable body element', () => {
+            document.body.style.overflow = 'scroll';
+            expect(getViewPortWidth()).not.toEqual(window.innerWidth);
+            document.body.style.overflow = '';
+        });
         });
 });
 function appendContainerContent(){
@@ -1304,5 +1309,7 @@ function getViewPortHeight(): number {
     return window.innerHeight;
 }
 function getViewPortWidth(): number {
-    return window.innerWidth;
+    let windowWidth : number = window.innerWidth;
+    let offsetWidth: number = (isNullOrUndefined(document.documentElement)) ? 0 : document.documentElement.offsetWidth;
+    return windowWidth - (windowWidth - offsetWidth);
 }

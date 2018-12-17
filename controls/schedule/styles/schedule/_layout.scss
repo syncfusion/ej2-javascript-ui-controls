@@ -443,22 +443,25 @@
 
     .e-new-event {
       background-color: $schedule-appointment-bg-color;
-      border: 1px solid $schedule-appointment-bg-color;
-      border-radius: 2px;
+      border: 1px solid $schedule-appointment-font-color;
+      border-radius: 5px;
       height: 100%;
       opacity: .9;
       position: relative;
+      width: 100%;
       z-index: 1;
 
       .e-title {
         color: $schedule-appointment-font-color;
-        font-size: 14px;
-        left: 50%;
+        font-size: 12px;
+        line-height: 1.2;
         margin: 0;
+        overflow-wrap: break-word;
+        padding: 3px;
         position: absolute;
-        text-align: center;
-        top: 50%;
-        transform: translateX(-50%)translateY(-50%);
+        text-align: left;
+        white-space: normal;
+        word-wrap: break-word;
       }
     }
 
@@ -553,6 +556,7 @@
       color: $schedule-block-appointment-font-color;
       cursor: default;
       overflow: hidden;
+      pointer-events: none;
       position: absolute;
 
       .e-subject {

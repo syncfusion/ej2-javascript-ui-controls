@@ -618,7 +618,9 @@ export function renderMovable(ele: Element, frzCols: number): Element {
     return mEle;
 }
 
-
+/**
+ * @hidden
+ */
 export function getObject(field: string = '', object?: Object): any {
     if (field) {
         let value: Object = object;
@@ -629,7 +631,9 @@ export function getObject(field: string = '', object?: Object): any {
         return value as string;
     }
 }
-
+/**
+ * @hidden
+ */
 export function getCustomDateFormat(format: string | Object, colType: string): string {
     let intl: Internationalization = new Internationalization();
     let formatvalue: string;
@@ -646,7 +650,9 @@ export function getCustomDateFormat(format: string | Object, colType: string): s
     }
     return formatvalue;
 }
-
+/**
+ * @hidden
+ */
 export function getExpandedState(gObj: IGrid, hierarchyPrintMode: HierarchyGridPrintMode): {[index: number]: IExpandedRow} {
     let rows: Row<Column>[] = gObj.getRowsObject();
     let obj: {[index: number]: IExpandedRow} = {};
@@ -662,7 +668,9 @@ export function getExpandedState(gObj: IGrid, hierarchyPrintMode: HierarchyGridP
     }
     return obj;
 }
-
+/**
+ * @hidden
+ */
 export function getPrintGridModel(gObj: IGrid, hierarchyPrintMode: HierarchyGridPrintMode = 'Expanded'): IGrid {
     let printGridModel: IGrid = {} as IGrid;
     if (!gObj) {
@@ -682,7 +690,9 @@ export function getPrintGridModel(gObj: IGrid, hierarchyPrintMode: HierarchyGrid
     }
     return printGridModel;
 }
-
+/**
+ * @hidden
+ */
 export function extendObjWithFn(copied: Object, first: Object, second?: Object, deep?: boolean): Object {
     let res: IKeyValue = copied as IKeyValue || {} as IKeyValue;
     let len: number = arguments.length;
@@ -715,7 +725,9 @@ export function extendObjWithFn(copied: Object, first: Object, second?: Object, 
     }
     return res;
 }
-
+/**
+ * @hidden
+ */
 function getPrototypesOfObj(obj: Object): string[] {
     let keys: string[] = [];
     while (Object.keys(Object.getPrototypeOf(obj)).length) {
@@ -724,7 +736,9 @@ function getPrototypesOfObj(obj: Object): string[] {
     }
     return keys;
 }
-
+/**
+ * @hidden
+ */
 export function measureColumnDepth(column: Column[]): number {
     let max: number = 0;
     for (let i: number = 0; i < column.length; i++) {
@@ -735,7 +749,9 @@ export function measureColumnDepth(column: Column[]): number {
     }
     return max + 1;
 }
-
+/**
+ * @hidden
+ */
 export function checkDepth(col: Column, index: number): number {
     let max: number = index;
     let indices: number[] = [];

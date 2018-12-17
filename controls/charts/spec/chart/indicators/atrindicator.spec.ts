@@ -131,7 +131,7 @@ describe('Chart', () => {
         it('ATR Technical indicator for a series with valid points & primary axis', (done: Function) => {
             loaded = (args: Object): void => {
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_ATR');
                 expect(signalLine.getAttribute('d')).not.toBeNull();
                 expect(chartObj.visibleSeries.length).toBe(2);
                 expect(chartObj.visibleSeries[1].points[0].x).toBe('Mar');
@@ -195,7 +195,7 @@ describe('Chart', () => {
         it('ATR Technical indicator with hidden series', (done: Function) => {
             loaded = (args: Object): void => {
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_ATR');
                 expect(signalLine.getAttribute('d')).not.toBeNull();
                 done();
                 //reset visibility
@@ -217,7 +217,7 @@ describe('Chart', () => {
         it('ATR Technical indicator with opposed position', (done: Function) => {
             loaded = (args: Object): void => {
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_ATR');
                 expect(signalLine.getAttribute('d')).not.toBeNull();
                 let svg: HTMLElement = document.getElementById('containerAxisLine_0');
                 expect(svg.getAttribute('d').split(' ')[1] == '57.5' || svg.getAttribute('d').split(' ')[1] == '62.5' || svg.getAttribute('d').split(' ')[1] == '53.5').toBe(true);
@@ -238,9 +238,9 @@ describe('Chart', () => {
             loaded = (args: Object): void => {
 
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_ATR');
                 expect(signalLine.getAttribute('d')).not.toBeNull();
-                let point: Element = document.getElementById('container_Indicator_0_SignalLine');
+                let point: Element = document.getElementById('container_Indicator_0_ATR');
                 expect(point != null).toBe(true);
                 expect(point.getAttribute('transform') == 'translate(91,115.75)');
                 done();
@@ -263,7 +263,7 @@ describe('Chart', () => {
         it('ATR Technical indicator with default appearance', (done: Function) => {
             loaded = (args: Object): void => {
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_ATR');
                 expect(signalLine.getAttribute('stroke')).toBe('#606eff');
                 done();
             };
@@ -275,7 +275,7 @@ describe('Chart', () => {
         it('ATR Technical indicator with custom color', (done: Function) => {
             loaded = (args: Object): void => {
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_ATR');
                 expect(signalLine.getAttribute('stroke')).toBe('orange');
                 done();
             };
@@ -288,7 +288,7 @@ describe('Chart', () => {
         it('ATR Technical indicator with custom stroke style', (done: Function) => {
             loaded = (args: Object): void => {
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_ATR');
                 expect(signalLine.getAttribute('stroke-width')).toBe('3');
                 //workaround
                 expect(signalLine.getAttribute('stroke-dasharray')).toBe('2,2');
@@ -456,7 +456,7 @@ describe('Chart', () => {
         //default period
         it('ATR Technical indicator with default period', (done: Function) => {
             loaded = (args: Object): void => {
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_ATR');
                 expect(signalLine.getAttribute('d')).not.toBeNull();
                 expect(chartObj.visibleSeries[1].points[0].x).toBe('Mar');
                 expect(chartObj.visibleSeries[1].points[0].y).toBe(5.666666666666667);
@@ -473,7 +473,7 @@ describe('Chart', () => {
         //custom period
         it('ATR Technical indicator with custom period', (done: Function) => {
             loaded = (args: Object): void => {
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_ATR');
                 expect(signalLine.getAttribute('d')).not.toBeNull();
                 expect(chartObj.visibleSeries[1].points[0].x).toBe('Oct');
                 expect(chartObj.visibleSeries[1].points[0].y).toBe(7.65);
@@ -491,7 +491,7 @@ describe('Chart', () => {
         it('Moving Average with number of points less than period', (done: Function) => {
             loaded = (args: Object): void => {
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_ATR');
                 expect(signalLine.getAttribute('d')).toBe('');
                 //reset the period
                 chartObj.indicators[0].period = 3;
@@ -553,7 +553,7 @@ describe('Chart', () => {
         //---multiple panel----
         it('ATR Technical indicator using panels', (done: Function) => {
             loaded = (args: Object): void => {
-                let element: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let element: HTMLElement = document.getElementById('container_Indicator_0_ATR');
                 let rect: ClientRect;
                 rect = element.getBoundingClientRect();
                 expect(Math.round(rect.top) == 333 || Math.round(rect.top) == 332).toBe(true);

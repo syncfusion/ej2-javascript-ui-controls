@@ -282,10 +282,10 @@ export class DiagramContextMenu {
         let target: boolean = false;
         switch (itemText) {
             case 'undo':
-                target = this.parent.historyList && this.parent.historyList.canUndo ? true : false;
+                target = this.parent.historyManager && this.parent.historyManager.canUndo ? true : false;
                 break;
             case 'redo':
-                target = this.parent.historyList && this.parent.historyList.canRedo ? true : false;
+                target = this.parent.historyManager && this.parent.historyManager.canRedo ? true : false;
                 break;
             case 'paste':
                 target = this.parent.commandHandler.clipboardData.clipObject ? true : false;

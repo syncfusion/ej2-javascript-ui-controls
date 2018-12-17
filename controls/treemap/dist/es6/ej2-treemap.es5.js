@@ -2199,6 +2199,10 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
      * To initilize the private varibales of treemap.
      */
     TreeMap.prototype.initPrivateVariable = function () {
+        if (this.element.id === '') {
+            var collection = document.getElementsByClassName('e-treemap').length;
+            this.element.id = 'treemap_control_' + collection;
+        }
         this.renderer = new SvgRenderer(this.element.id);
         this.layout = new LayoutPanel(this);
     };
@@ -2227,7 +2231,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
     TreeMap.prototype.setTextStyle = function (color, darkColor) {
         this.titleSettings.textStyle.color = this.titleSettings.textStyle.color || color;
         this.titleSettings.subtitleSettings.textStyle.color = this.titleSettings.subtitleSettings.textStyle.color || color;
-        this.legendSettings.textStyle.color = this.legendSettings.textStyle.color || !isNullOrUndefined(darkColor) ? darkColor : color;
+        this.legendSettings.textStyle.color = this.legendSettings.textStyle.color || (!isNullOrUndefined(darkColor) ? darkColor : color);
         this.legendSettings.titleStyle.color = this.legendSettings.titleStyle.color || color;
     };
     TreeMap.prototype.createSecondaryElement = function () {
@@ -2612,6 +2616,31 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
     };
     /* tslint:disable-next-line:max-func-body-length */
     TreeMap.prototype.mouseDownOnTreeMap = function (e) {
+        if (e.target.id.indexOf('_Item_Index') > -1) {
+            this.mouseDown = true;
+        }
+        this.notify(Browser.touchStartEvent, e);
+    };
+    TreeMap.prototype.mouseMoveOnTreeMap = function (e) {
+        var targetEle = e.target;
+        var targetId = targetEle.id;
+        var eventArgs;
+        var item;
+        var moveArgs = { cancel: false, name: mouseMove, treemap: this, mouseEvent: e };
+        this.trigger(mouseMove, moveArgs);
+        var childItems;
+        this.drillMouseMove = this.mouseDown;
+        if (targetId.indexOf('_Item_Index') > -1) {
+            item = this.layout.renderItems[parseFloat(targetId.split('_')[6])];
+            childItems = findChildren(item)['values'];
+            this.element.style.cursor = (!item['isLeafItem'] && childItems && childItems.length > 0 && this.enableDrillDown) ?
+                'pointer' : 'auto';
+            eventArgs = { cancel: false, name: itemMove, treemap: this, item: item, mouseEvent: e };
+            this.trigger(itemMove, eventArgs);
+        }
+        this.notify(Browser.touchMoveEvent, e);
+    };
+    TreeMap.prototype.mouseEndOnTreeMap = function (e) {
         var targetEle = e.target;
         var startEvent;
         var endEvent;
@@ -2623,10 +2652,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         var process = true;
         var layoutID = this.element.id + '_TreeMap_' + this.layoutType + '_Layout';
         var templateID = this.element.id + '_Label_Template_Group';
-        if (document.getElementById(templateID)) {
-            document.getElementById(templateID).remove();
-        }
-        if (targetId.indexOf('_Item_Index') > -1 && this.enableDrillDown) {
+        if (targetId.indexOf('_Item_Index') > -1 && this.enableDrillDown && !this.drillMouseMove) {
             e.preventDefault();
             index = parseFloat(targetId.split('_')[6]);
             item = this.layout.renderItems[index];
@@ -2682,6 +2708,9 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                         }
                         totalRect = !isNullOrUndefined(this.totalRect) ? this.totalRect : totalRect;
                     }
+                    if (document.getElementById(templateID)) {
+                        document.getElementById(templateID).remove();
+                    }
                     this.layout.calculateLayoutItems(newDrillItem, totalRect);
                     this.layout.renderLayoutItems(newDrillItem);
                 }
@@ -2692,27 +2721,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         }
-        this.notify(Browser.touchStartEvent, e);
-    };
-    TreeMap.prototype.mouseMoveOnTreeMap = function (e) {
-        var targetEle = e.target;
-        var targetId = targetEle.id;
-        var eventArgs;
-        var item;
-        var moveArgs = { cancel: false, name: mouseMove, treemap: this, mouseEvent: e };
-        this.trigger(mouseMove, moveArgs);
-        var childItems;
-        if (targetId.indexOf('_Item_Index') > -1) {
-            item = this.layout.renderItems[parseFloat(targetId.split('_')[6])];
-            childItems = findChildren(item)['values'];
-            this.element.style.cursor = (!item['isLeafItem'] && childItems && childItems.length > 0 && this.enableDrillDown) ?
-                'pointer' : 'auto';
-            eventArgs = { cancel: false, name: itemMove, treemap: this, item: item, mouseEvent: e };
-            this.trigger(itemMove, eventArgs);
-        }
-        this.notify(Browser.touchMoveEvent, e);
-    };
-    TreeMap.prototype.mouseEndOnTreeMap = function (e) {
+        this.mouseDown = false;
         this.notify(Browser.touchEndEvent, e);
     };
     TreeMap.prototype.mouseLeaveOnTreeMap = function (e) {
@@ -2969,6 +2978,8 @@ var TreeMapLegend = /** @__PURE__ @class */ (function () {
         this.legendNames = [];
         this.totalPages = [];
         this.gradientCount = 1;
+        this.widthIncrement = 0;
+        this.heightIncrement = 0;
         this.defsElement = this.treemap.renderer.createDefs();
         this.treemap.svgObject.appendChild(this.defsElement);
         this.calculateLegendBounds();
@@ -3677,7 +3688,7 @@ var TreeMapLegend = /** @__PURE__ @class */ (function () {
                 case 'Bottom':
                     totalRect.height = (areaHeight - height);
                     x = (totalWidth / 2) - (width / 2);
-                    y = (legend.position === 'Top') ? areaY : (areaY + totalRect.height);
+                    y = (legend.position === 'Top') ? areaY : (areaY + totalRect.height) + spacing;
                     totalRect.y = (legend.position === 'Top') ? areaY + height + spacing : areaY;
                     break;
                 case 'Left':
@@ -4220,53 +4231,54 @@ var TreeMapTooltip = /** @__PURE__ @class */ (function () {
         var markerFill;
         if (targetId.indexOf('_Item_Index') > -1) {
             item = this.treemap.layout.renderItems[parseFloat(targetId.split('_')[6])];
-            toolTipHeader = item['name'];
-            value = item['weight'];
-            this.currentTime = new Date().getTime();
-            toolTipData = item['data'];
-            markerFill = item['options']['fill'];
-            tooltipContent = [textFormatter(this.tooltipSettings.format, toolTipData, this.treemap) ||
-                    this.treemap.weightValuePath.toString() + ' : ' + formatValue(value, this.treemap)];
-            if (document.getElementById(this.tooltipId)) {
-                tooltipEle = document.getElementById(this.tooltipId);
-            }
-            else {
-                tooltipEle = createElement('div', {
-                    id: this.treemap.element.id + '_TreeMapTooltip',
-                    className: 'EJ2-TreeMap-Tooltip',
-                    styles: 'position: absolute;pointer-events:none;'
-                });
-                document.getElementById(this.treemap.element.id + '_Secondary_Element').appendChild(tooltipEle);
-            }
-            location = getMousePosition(pageX, pageY, this.treemap.svgObject);
-            location.y = (this.tooltipSettings.template) ? location.y + 10 : location.y;
-            tootipArgs = {
-                cancel: false, name: tooltipRendering, item: item,
-                options: {
-                    location: location, text: tooltipContent, data: toolTipData,
-                    textStyle: this.tooltipSettings.textStyle, template: this.tooltipSettings.template
-                },
-                treemap: this.treemap,
-                element: target, eventArgs: e
-            };
-            this.treemap.trigger(tooltipRendering, tootipArgs);
-            if (!tootipArgs.cancel) {
-                this.svgTooltip = new Tooltip({
-                    enable: true,
-                    header: '',
-                    data: tootipArgs.options['data'],
-                    template: tootipArgs.options['template'],
-                    content: tootipArgs.options['text'],
-                    shapes: [],
-                    location: tootipArgs.options['location'],
-                    palette: [markerFill],
-                    areaBounds: this.treemap.areaRect,
-                    textStyle: tootipArgs.options['textStyle']
-                });
-                this.svgTooltip.appendTo(tooltipEle);
-            }
-            else {
-                this.removeTooltip();
+            if (!isNullOrUndefined(item)) {
+                toolTipHeader = item['name'];
+                value = item['weight'];
+                toolTipData = item['data'];
+                markerFill = item['options']['fill'];
+                tooltipContent = [textFormatter(this.tooltipSettings.format, toolTipData, this.treemap) ||
+                        this.treemap.weightValuePath.toString() + ' : ' + formatValue(value, this.treemap)];
+                if (document.getElementById(this.tooltipId)) {
+                    tooltipEle = document.getElementById(this.tooltipId);
+                }
+                else {
+                    tooltipEle = createElement('div', {
+                        id: this.treemap.element.id + '_TreeMapTooltip',
+                        className: 'EJ2-TreeMap-Tooltip',
+                        styles: 'position: absolute;pointer-events:none;'
+                    });
+                    document.getElementById(this.treemap.element.id + '_Secondary_Element').appendChild(tooltipEle);
+                }
+                location = getMousePosition(pageX, pageY, this.treemap.svgObject);
+                location.y = (this.tooltipSettings.template) ? location.y + 10 : location.y;
+                tootipArgs = {
+                    cancel: false, name: tooltipRendering, item: item,
+                    options: {
+                        location: location, text: tooltipContent, data: toolTipData,
+                        textStyle: this.tooltipSettings.textStyle, template: this.tooltipSettings.template
+                    },
+                    treemap: this.treemap,
+                    element: target, eventArgs: e
+                };
+                this.treemap.trigger(tooltipRendering, tootipArgs);
+                if (!tootipArgs.cancel) {
+                    this.svgTooltip = new Tooltip({
+                        enable: true,
+                        header: '',
+                        data: tootipArgs.options['data'],
+                        template: tootipArgs.options['template'],
+                        content: tootipArgs.options['text'],
+                        shapes: [],
+                        location: tootipArgs.options['location'],
+                        palette: [markerFill],
+                        areaBounds: this.treemap.areaRect,
+                        textStyle: tootipArgs.options['textStyle']
+                    });
+                    this.svgTooltip.appendTo(tooltipEle);
+                }
+                else {
+                    this.removeTooltip();
+                }
             }
         }
         else {

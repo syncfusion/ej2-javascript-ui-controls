@@ -1,4 +1,4 @@
-import { addClass, Browser, removeClass, EventHandler, formatUnit } from '@syncfusion/ej2-base';
+import { addClass, Browser, removeClass, EventHandler, formatUnit, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { getInstance, closest, MouseEventArgs, selectAll } from '@syncfusion/ej2-base';
 import { Toolbar, ClickEventArgs, BeforeCreateArgs, OverflowMode } from '@syncfusion/ej2-navigations';
 import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
@@ -61,6 +61,7 @@ export class ToolbarRenderer implements IRenderer {
 
     private dropDownSelected(args: MenuEventArgs): void {
         this.parent.notify(events.dropDownSelect, args);
+        this.onPopupOverlay();
     }
 
     private beforeDropDownItemRender(args: MenuEventArgs): void {
@@ -69,6 +70,9 @@ export class ToolbarRenderer implements IRenderer {
     }
 
     private dropDownOpen(args: MenuEventArgs): void {
+        if (Browser.isDevice && !args.element.parentElement.classList.contains(classes.CLS_QUICK_DROPDOWN)) {
+            this.popupModal(args.element.parentElement);
+        }
         this.parent.notify(events.selectionSave, args);
     }
 
@@ -128,15 +132,6 @@ export class ToolbarRenderer implements IRenderer {
                     }
                 }
                 proxy.parent.notify(events.beforeDropDownOpen, args);
-                if (Browser.isDevice && !args.element.parentElement.classList.contains(classes.CLS_QUICK_DROPDOWN)) {
-                    let popupInst: Popup = getInstance(args.element.parentElement, Popup) as Popup;
-                    popupInst.relateTo = document.body;
-                    popupInst.position = { X: 0, Y: 0 };
-                    popupInst.targetType = 'container';
-                    popupInst.collision = { X: 'none', Y: 'none' };
-                    popupInst.offsetY = 4;
-                    this.setIsModel(args.element.parentElement);
-                }
             },
             close: this.dropDownClose.bind(this),
             open: this.dropDownOpen.bind(this),
@@ -147,10 +142,12 @@ export class ToolbarRenderer implements IRenderer {
         args.element.tabIndex = -1;
         return dropDown;
     }
-    private onPopupOverlay(args: MouseEvent): void {
-        (closest(this.popupOverlay, '.e-popup-container') as HTMLElement).style.display = 'none';
-        this.popupOverlay.style.display = 'none';
-        removeClass([this.popupOverlay], 'e-popup-overlay');
+    private onPopupOverlay(args?: MouseEvent): void {
+        if (!isNullOrUndefined(this.popupOverlay)) {
+            (closest(this.popupOverlay, '.e-popup-container') as HTMLElement).style.display = 'none';
+            this.popupOverlay.style.display = 'none';
+            removeClass([this.popupOverlay], 'e-popup-overlay');
+        }
     }
 
     private setIsModel(element: HTMLElement): void {
@@ -171,8 +168,9 @@ export class ToolbarRenderer implements IRenderer {
             EventHandler.add(this.popupOverlay, 'click touchmove', this.onPopupOverlay, this);
         } else {
             element.parentElement.style.display = 'flex';
-            (element.nextElementSibling as HTMLElement).style.display = 'block';
-            addClass([element.nextElementSibling], 'e-popup-overlay');
+            this.popupOverlay = (element.nextElementSibling as HTMLElement);
+            this.popupOverlay.style.display = 'block';
+            addClass([this.popupOverlay], 'e-popup-overlay');
         }
     }
     private paletteSelection(dropDownArgs: BeforeOpenCloseMenuEventArgs, currentElement: HTMLElement): void {
@@ -201,7 +199,6 @@ export class ToolbarRenderer implements IRenderer {
             enablePersistence: this.parent.enablePersistence,
             enableRtl: this.parent.enableRtl,
             beforeOpen: (dropDownArgs: BeforeOpenCloseMenuEventArgs): void => {
-                proxy.parent.notify(events.selectionRestore, {});
                 if (proxy.parent.readonly || !proxy.parent.enabled) { dropDownArgs.cancel = true; return; }
                 let element: HTMLElement = (dropDownArgs.event) ? (dropDownArgs.event.target as HTMLElement) : null;
                 proxy.currentElement = dropDown.element; proxy.currentDropdown = dropDown;
@@ -224,18 +221,10 @@ export class ToolbarRenderer implements IRenderer {
                     }
                     return;
                 } else {
-                    if (Browser.isDevice) {
-                        let popupInst: Popup = getInstance(dropDownArgs.element.parentElement, Popup) as Popup;
-                        popupInst.relateTo = document.body;
-                        popupInst.position = { X: 0, Y: 0 };
-                        popupInst.targetType = 'container';
-                        popupInst.collision = { X: 'fit', Y: 'fit' };
-                        popupInst.offsetY = 4;
-                        this.setIsModel(dropDownArgs.element.parentElement);
-                    }
                     let ele: HTMLElement = (dropDownArgs.element.querySelector('.e-control.e-colorpicker') as HTMLElement);
                     let inst: ColorPicker = getInstance(ele, ColorPicker) as ColorPicker;
                     inst.showButtons = (dropDownArgs.element.querySelector('.e-color-palette')) ? false : true;
+                    inst.dataBind();
                 }
                 dropDownArgs.element.onclick = (args: MouseEventArgs): void => {
                     if ((args.target as HTMLElement).classList.contains('e-cancel')) { dropDown.toggle(); }
@@ -249,6 +238,9 @@ export class ToolbarRenderer implements IRenderer {
                     focusEle = (ele.parentElement.querySelector('.e-palette') as HTMLElement);
                 } else { focusEle = (ele.parentElement.querySelector('e-handler') as HTMLElement); }
                 if (focusEle) { focusEle.focus(); }
+                if (Browser.isDevice) {
+                    this.popupModal(dropDownArgs.element.parentElement);
+                }
             },
             beforeClose: (dropDownArgs: BeforeOpenCloseMenuEventArgs): void => {
                 let element: HTMLElement = (dropDownArgs.event) ? (dropDownArgs.event.target as HTMLElement) : null;
@@ -287,12 +279,24 @@ export class ToolbarRenderer implements IRenderer {
         dropDown.element.onmousedown = (): void => { proxy.parent.notify(events.selectionSave, {}); };
         return dropDown;
     }
+    private popupModal(element: HTMLElement): void {
+        let popupInst: Popup = getInstance(element, Popup) as Popup;
+        popupInst.relateTo = document.body;
+        popupInst.position = { X: 0, Y: 0 };
+        popupInst.targetType = 'container';
+        popupInst.collision = { X: 'fit', Y: 'fit' };
+        popupInst.offsetY = 4;
+        popupInst.dataBind();
+        this.setIsModel(element);
+    }
     private setColorPickerContentWidth(colorPicker: ColorPicker): void {
-        let colorPickerContent: HTMLElement =  (colorPicker.element.nextSibling as HTMLElement);
-        colorPickerContent.style.width = '';
-        let borderWidth: number = parseInt(getComputedStyle(colorPickerContent).borderBottomWidth, 10);
-        colorPickerContent.style.width = formatUnit((colorPickerContent.children[0] as HTMLElement).offsetWidth
-            + borderWidth + borderWidth);
+        let colorPickerContent: HTMLElement = (colorPicker.element.nextSibling as HTMLElement);
+        if (colorPickerContent.style.width === '0px') {
+            colorPickerContent.style.width = '';
+            let borderWidth: number = parseInt(getComputedStyle(colorPickerContent).borderBottomWidth, 10);
+            colorPickerContent.style.width = formatUnit((colorPickerContent.children[0] as HTMLElement).offsetWidth
+                + borderWidth + borderWidth);
+        }
     }
     public renderColorPicker(args: IColorPickerModel, item: string): ColorPicker {
         let proxy: this = this;

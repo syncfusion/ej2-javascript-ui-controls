@@ -1,0 +1,283 @@
+@include export-module('inplaceeditor-layout') {
+  /*! inplaceeditor layout */
+
+  .e-bigger #{&}.e-inplaceeditor,
+  #{&}.e-inplaceeditor.e-bigger {
+
+    .e-editable-value-wrapper {
+      padding: $editor-big-value-container-padding;
+
+      .e-editable-value {
+        font-size: $editor-big-value-text-font-size;
+        margin: $editor-big-value-margin;
+      }
+
+      .e-editable-overlay-icon {
+        right: $editor-big-overlay-icon-left-right;
+        width: $editor-big-overlay-icon-container-size;
+
+        &::before {
+          font-size: $editor-big-overlay-icon-size;
+        }
+      }
+    }
+
+    &.e-rtl {
+
+      .e-editable-value-wrapper {
+
+        .e-editable-value {
+          margin: $editor-rtl-big-value-margin;
+        }
+
+        .e-editable-overlay-icon {
+          left: $editor-big-overlay-icon-left-right;
+          right: auto;
+        }
+      }
+    }
+  }
+
+  #{&}.e-inplaceeditor {
+    display: inline-block;
+    position: relative;
+    width: auto;
+
+    .e-editable-value-wrapper {
+      display: inline-block;
+      padding: $editor-nrml-value-container-padding;
+      position: relative;
+      width: auto;
+
+      .e-editable-value {
+        display: inline-block;
+        font-family: $font-family;
+        font-size: $editor-nrml-value-text-font-size;
+        margin: $editor-nrml-value-margin;
+      }
+
+      .e-editable-overlay-icon {
+        bottom: 0;
+        cursor: pointer;
+        display: inline-flex;
+        height: inherit;
+        position: absolute;
+        right: $editor-nrml-overlay-icon-left-right;
+        top: 0;
+        visibility: hidden;
+        width: $editor-nrml-overlay-icon-container-size;
+
+        &::before {
+          align-items: center;
+          display: flex;
+          font-size: $editor-nrml-overlay-icon-size;
+        }
+      }
+
+      &.e-hide {
+        display: none;
+      }
+
+      &.e-editable-open {
+        user-select: none;
+      }
+
+      &:hover {
+
+        .e-editable-overlay-icon {
+          visibility: visible;
+        }
+
+        &.e-editable-open {
+
+          .e-editable-overlay-icon {
+            visibility: hidden;
+          }
+        }
+      }
+    }
+
+    .e-editable-action-buttons {
+      margin-top: $editor-buttons-top-margin;
+      position: absolute;
+      right: 0;
+      z-index: 100;
+    }
+
+    &.e-overlay {
+      user-select: none;
+    }
+
+    &.e-rtl {
+
+      .e-editable-value-wrapper {
+
+        .e-editable-value {
+          margin: $editor-rtl-nrml-value-margin;
+        }
+
+        .e-editable-overlay-icon {
+          left: $editor-nrml-overlay-icon-left-right;
+          right: auto;
+        }
+      }
+
+      .e-editable-action-buttons {
+        left: 0;
+        right: auto;
+      }
+    }
+  }
+
+  .e-bigger #{&}.e-inplaceeditor,
+  #{&}.e-inplaceeditor.e-bigger,
+  .e-bigger .e-inplaceeditor-tip,
+  .e-inplaceeditor-tip.e-bigger {
+    width: auto;
+  }
+
+  #{&}.e-inplaceeditor,
+  .e-inplaceeditor-tip {
+
+    .e-editable-loading {
+      display: none;
+      min-height: 50px;
+
+      &.e-show {
+        display: block;
+      }
+    }
+
+    .e-editable-form {
+      width: 100%;
+
+      &.e-hide {
+        display: none;
+      }
+    }
+
+    .e-component-group {
+      margin-bottom: $editor-component-bottom-margin;
+
+      .e-editable-component {
+        min-width: 150px;
+      }
+    }
+
+    .e-editable-action-buttons {
+
+      .e-btn-save {
+        margin: $editor-btn-save-margin;
+
+        .e-btn-icon.e-icons {
+          font-size: $editor-btn-save-icon-size;
+        }
+      }
+
+      .e-btn-cancel {
+        margin: $editor-btn-cancel-margin;
+
+        .e-btn-icon.e-icons {
+          font-size: $editor-btn-cancel-icon-size;
+        }
+      }
+    }
+
+    &.e-rtl {
+
+      .e-editable-action-buttons {
+
+        .e-btn-save {
+          margin: $editor-rtl-btn-save-margin;
+        }
+
+        .e-btn-cancel {
+          margin: $editor-rtl-btn-cancel-margin;
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-inplaceeditor-tip,
+  .e-inplaceeditor-tip.e-bigger {
+
+    .e-editable-title {
+      font-size: $editor-big-tip-title-font-size;
+      min-height: $editor-big-tip-title-container-size;
+      padding: $editor-big-tip-title-padding;
+    }
+
+    &.e-rtl {
+
+      &.e-tooltip-wrap .e-tip-content {
+
+        .e-editable-title {
+          padding: $editor-rtl-big-tip-title-padding;
+        }
+      }
+    }
+  }
+
+  .e-inplaceeditor-tip {
+    opacity: 1;
+    width: auto;
+
+    &.e-tooltip-wrap {
+      max-width: 100%;
+
+      .e-tip-content {
+        padding: 0;
+
+        .e-editable-title {
+          align-content: center;
+          display: flex;
+          flex-direction: column;
+          font-family: $font-family;
+          font-size: $editor-nrml-tip-title-font-size;
+          font-weight: $editor-tip-title-font-weight;
+          height: $editor-nrml-tip-title-container-size;
+          justify-content: center;
+          padding: $editor-nrml-tip-title-padding;
+        }
+
+        .e-editable-wrapper {
+          display: flex;
+          padding: $editor-tip-wrapper-padding;
+
+          .e-editable-action-buttons {
+            float: right;
+            margin-top: $editor-buttons-top-margin;
+            position: relative;
+            right: auto;
+            top: auto;
+          }
+        }
+
+        .e-editable-title+.e-editable-wrapper {
+          padding: $editor-wrapper-title-with-padding;
+        }
+      }
+    }
+
+    &.e-hide {
+      visibility: hidden;
+    }
+
+    &.e-rtl {
+
+      &.e-tooltip-wrap .e-tip-content {
+
+        .e-editable-title {
+          padding: $editor-rtl-nrml-tip-title-padding;
+        }
+
+        .e-editable-wrapper {
+
+          .e-editable-action-buttons {
+            float: left;
+          }
+        }
+      }
+    }
+  }
+}

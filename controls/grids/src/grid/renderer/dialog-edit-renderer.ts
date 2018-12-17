@@ -111,7 +111,7 @@ export class DialogEditRender {
         let tbody: Element = this.parent.createElement('tbody');
         let cols: Column[] = gObj.getColumns() as Column[];
         for (let i: number = 0; i < cols.length; i++) {
-            if (!cols[i].visible || cols[i].commands || cols[i].commandsTemplate) {
+            if (this.parent.editModule.checkColumnIsGrouped(cols[i]) || cols[i].commands || cols[i].commandsTemplate) {
                 continue;
             }
             let tr: Element = this.parent.createElement('tr');

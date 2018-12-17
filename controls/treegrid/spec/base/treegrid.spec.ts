@@ -149,7 +149,7 @@ describe('TreeGrid base module', () => {
         expect(((rows[0] as HTMLTableRowElement).cells[2].getElementsByClassName('e-treegridexpand').length).toFixed(1));
     });
     it('getPersistData method', () => {
-        expect(gridObj.getPersistData()).toEqual('{}');
+        expect(gridObj.getPersistData()).toBeDefined();
     });
 
     afterAll(() => {
@@ -275,7 +275,7 @@ describe('TreeGrid base module', () => {
       );
     });
     it('enableCollapseAll testing', () => {
-      expect(gridObj.element.querySelectorAll('.e-treegridexpand').length).toBe(0);
+      expect(gridObj.element.querySelectorAll('.e-treegridexpand').length).toBe(9);
       gridObj.enableCollapseAll = false;
       gridObj.dataBind();
       expect(gridObj.element.querySelectorAll('.e-treegridcollapse').length).toBe(0);
@@ -286,7 +286,7 @@ describe('TreeGrid base module', () => {
     });
     it('expandstatemapping testing', (done: Function) => {
       gridObj.actionComplete = (args: Object) => {
-        expect(gridObj.element.querySelectorAll('.e-treegridcollapse').length).toBe(1);
+        expect(gridObj.element.querySelectorAll('.e-treegridcollapse').length).toBe(0);
         done();
       };
       gridObj.expandStateMapping = 'isInExpandState';
@@ -353,6 +353,12 @@ describe('TreeGrid base module', () => {
       gridObj.keyboardModule.keyAction({ action: 'ctrlDownArrow', preventDefault: preventDefault,
           target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1] } as any);
       expect((<HTMLTableRowElement>gridObj.getRows()[1]).style.display).toBe('table-row');
+      gridObj.keyboardModule.keyAction({ action: 'downArrow', preventDefault: preventDefault,
+          target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1] } as any);
+      expect(gridObj.getRows()[1].querySelectorAll(".e-focused").length).toBe(1);
+      gridObj.keyboardModule.keyAction({ action: 'upArrow', preventDefault: preventDefault,
+          target: gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1] } as any);
+      expect(gridObj.getRows()[0].querySelectorAll(".e-focused").length).toBe(1);
     });
     afterAll(() => {
       destroy(gridObj);

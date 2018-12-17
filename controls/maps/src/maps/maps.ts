@@ -862,6 +862,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * To initilize the private varibales of maps.
      */
     private initPrivateVariable(): void {
+        if (this.element.id === '') {
+            let collection: number = document.getElementsByClassName('e-maps').length;
+            this.element.id = 'maps_control_' + collection;
+        }
         this.renderer = new SvgRenderer(this.element.id);
         this.mapLayerPanel = new LayerPanel(this);
     }
@@ -1188,22 +1192,31 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public zoomByPosition(centerPosition: { latitude: number, longitude: number }, zoomFactor: number): void {
         let factor: number = this.mapLayerPanel.calculateFactor(this.layersCollection[0]);
         let position: Point; let size: Rect = this.mapAreaRect;
-        if (!isNullOrUndefined(centerPosition) && this.zoomModule) {
-            position = convertGeoToPoint(
-                centerPosition.latitude, centerPosition.longitude, factor, this.layersCollection[0], this);
-            let mapRect: ClientRect = document.getElementById(this.element.id + '_Layer_Collections').getBoundingClientRect();
-            let svgRect: ClientRect = this.svgObject.getBoundingClientRect();
-            let xDiff: number = Math.abs(mapRect.left - svgRect.left) / this.scale;
-            let yDiff: number = Math.abs(mapRect.top - svgRect.top) / this.scale;
-            let x: number = this.translatePoint.x + xDiff;
-            let y: number = this.translatePoint.y + yDiff;
-            this.scale = zoomFactor;
-            this.translatePoint.x = ((mapRect.left < svgRect.left ? x : 0) + (size.width / 2) - (position.x * zoomFactor)) / zoomFactor;
-            this.translatePoint.y = ((mapRect.top < svgRect.top ? y : 0) + (size.height / 2) - (position.y * zoomFactor)) / zoomFactor;
-            this.zoomModule.applyTransform();
+        if (!this.isTileMap && this.zoomModule) {
+            if (!isNullOrUndefined(centerPosition)) {
+                position = convertGeoToPoint(
+                    centerPosition.latitude, centerPosition.longitude, factor, this.layersCollection[0], this);
+                let mapRect: ClientRect = document.getElementById(this.element.id + '_Layer_Collections').getBoundingClientRect();
+                let svgRect: ClientRect = this.svgObject.getBoundingClientRect();
+                let xDiff: number = Math.abs(mapRect.left - svgRect.left) / this.scale;
+                let yDiff: number = Math.abs(mapRect.top - svgRect.top) / this.scale;
+                let x: number = this.translatePoint.x + xDiff;
+                let y: number = this.translatePoint.y + yDiff;
+                this.scale = zoomFactor;
+                this.translatePoint.x = ((mapRect.left < svgRect.left ? x : 0) + (size.width / 2) - (position.x * zoomFactor)) / zoomFactor;
+                this.translatePoint.y = ((mapRect.top < svgRect.top ? y : 0) + (size.height / 2) - (position.y * zoomFactor)) / zoomFactor;
+                this.zoomModule.applyTransform();
+            } else {
+                position = { x: size.width / 2, y: size.height / 2 };
+                this.zoomModule.performZooming(position, zoomFactor, zoomFactor > this.scale ? 'ZoomIn' : 'ZoomOut');
+            }
         } else if (this.zoomModule) {
-            position = { x: size.width / 2, y: size.height / 2 };
-            this.zoomModule.performZooming(position, zoomFactor, zoomFactor > this.scale ? 'ZoomIn' : 'ZoomOut');
+            this.tileZoomLevel = zoomFactor;
+            this.tileTranslatePoint = this.mapLayerPanel['panTileMap'](
+                this.availableSize.width, this.availableSize.height,
+                { x: centerPosition.longitude, y: centerPosition.latitude }
+            );
+            this.mapLayerPanel.generateTiles(zoomFactor, this.tileTranslatePoint, new BingMap(this));
         }
     }
 
@@ -1253,15 +1266,15 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @param layerIndex 
      * @param marker 
      */
-    public addMarker(layerIndex: number, marker: MarkerSettingsModel): void {
-        let currentMarker: MarkerSettingsModel[] = this.layersCollection[layerIndex].markerSettings;
-        currentMarker.push(new MarkerSettings(currentMarker[0] as MarkerSettings, 'markerSettings', marker));
+    public addMarker(layerIndex: number, markerCollection: MarkerSettingsModel[]): void {
         let layerEle: Element = document.getElementById(this.element.id + '_LayerIndex_' + layerIndex);
-        if (this.markerModule && layerEle) {
-            this.markerModule.markerRender(layerEle, layerIndex, this.mapLayerPanel['currentFactor'], 'AddMarker');
-            if (marker.template) {
-                this.arrangeTemplate();
+        if (markerCollection.length > 0 && layerEle) {
+            for (let newMarker of markerCollection) {
+                this.layersCollection[layerIndex].markerSettings.push(new MarkerSettings(this, 'markerSettings', newMarker));
             }
+            let markerModule: Marker = new Marker(this);
+            markerModule.markerRender(layerEle, layerIndex, this.mapLayerPanel['currentFactor'], 'AddMarker');
+            this.arrangeTemplate();
         }
     }
     /**

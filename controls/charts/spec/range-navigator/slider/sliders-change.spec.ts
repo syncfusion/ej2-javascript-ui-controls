@@ -178,7 +178,7 @@ describe('Range navigator', () => {
                 }
             };
             range.enableRtl = false;
-            range.theme = 'HighcontrastLight';
+            range.theme = 'HighContrastLight';
             range.refresh();
         });
         it('checking with right slider moving in side of selected area', (done: Function) => {

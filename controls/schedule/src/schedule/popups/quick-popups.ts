@@ -30,7 +30,6 @@ export class QuickPopups {
     public quickPopup: Popup;
     public morePopup: Popup;
     private fieldValidator: FieldValidator;
-    public newEventClone: Element;
 
     /**
      * Constructor for QuickPopups
@@ -304,7 +303,7 @@ export class QuickPopups {
                 this.parent.trigger(event.eventRendered, args);
                 if (!args.cancel) {
                     moreEventWrapperEle.appendChild(appointmentEle);
-                    this.parent.eventBase.wireAppointmentEvents(appointmentEle);
+                    this.parent.eventBase.wireAppointmentEvents(appointmentEle, false, eventData);
                     this.parent.eventBase.applyResourceColor(appointmentEle, eventData, 'backgroundColor', groupOrder);
                 }
             }
@@ -343,23 +342,25 @@ export class QuickPopups {
             this.quickPopupHide();
             return;
         }
+        let targetEle: Element = args.event.target as Element;
         if (this.parent.isAdaptive) {
             this.quickPopupHide();
-            if (isNullOrUndefined(this.newEventClone)) {
-                this.newEventClone = createElement('div', {
+            let newEventClone: HTMLElement = this.parent.element.querySelector('.' + cls.NEW_EVENT_CLASS) as HTMLElement;
+            if (isNullOrUndefined(newEventClone)) {
+                newEventClone = createElement('div', {
                     className: cls.NEW_EVENT_CLASS,
-                    innerHTML: '<div class="e-title"> + </div>'
+                    innerHTML: `<div class="e-title">+ ${this.l10n.getConstant('newEvent')}</div>`
                 });
             }
-            if ((args.event.target as Element).classList.contains(cls.WORK_CELLS_CLASS) ||
-                (args.event.target as Element).classList.contains(cls.ALLDAY_CELLS_CLASS)) {
-                (args.event.target as Element).appendChild(this.newEventClone);
+            let targetCell: Element = closest(targetEle, '.' + cls.WORK_CELLS_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS);
+            if (targetCell) {
+                targetCell.appendChild(newEventClone);
             }
             return;
         }
-        let target: Element = closest((args.event.target as Element), '.' + cls.WORK_CELLS_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS + ',.' +
+        let target: Element = closest(targetEle, '.' + cls.WORK_CELLS_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS + ',.' +
             cls.HEADER_CELLS_CLASS);
-        if (isNullOrUndefined(target) || (args.event.target as Element).classList.contains(cls.MORE_INDICATOR_CLASS)) {
+        if (isNullOrUndefined(target) || targetEle.classList.contains(cls.MORE_INDICATOR_CLASS)) {
             return;
         }
         let isSameTarget: Boolean = this.quickPopup.relateTo === target;
@@ -446,8 +447,7 @@ export class QuickPopups {
                 editIcon.focus();
             }
             if (!this.parent.isAdaptive) {
-                let editButton: HTMLButtonElement =
-                    this.quickPopup.element.querySelector('.' + cls.EDIT_EVENT_CLASS) as HTMLButtonElement;
+                let editButton: HTMLButtonElement = this.quickPopup.element.querySelector('.' + cls.EDIT_EVENT_CLASS) as HTMLButtonElement;
                 if (editButton) {
                     editButton.focus();
                 }
@@ -823,7 +823,7 @@ export class QuickPopups {
     }
 
     private getDateFormat(date: Date, formatString: string): string {
-        return this.parent.globalize.formatDate(date, { skeleton: formatString });
+        return this.parent.globalize.formatDate(date, { skeleton: formatString, calendar: this.parent.getCalendarMode() });
     }
 
     private getDataFromTarget(target: Element): Object {
@@ -1029,6 +1029,7 @@ export class QuickPopups {
         this.quickPopup.destroy();
         remove(this.quickPopup.element);
         this.morePopup.destroy();
+        remove(this.morePopup.element);
         if (this.quickDialog.element) {
             this.quickDialog.destroy();
             remove(this.quickDialog.element);

@@ -61,6 +61,20 @@
       .e-defer-apply-button {
         margin-right: 10px;
       }
+
+      .e-cancel-btn,
+      .e-defer-apply-button,
+      .e-checkbox-layout {
+        max-width: 20%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .e-checkbox-layout {
+        max-width: 45%;
+      }
+
     }
 
     .e-checkbox-layout {
@@ -94,6 +108,7 @@
         margin-right: 10px;
       }
     }
+
     // sass-lint:enable-all
 
     .e-dlg-header-content,
@@ -139,7 +154,7 @@
         }
 
         .e-field-header,
-        .e-field-list, {
+        .e-field-list {
           width: 100%;
         }
 
@@ -262,6 +277,7 @@
             }
 
             .e-pvt-btn-div {
+
               .e-drop-indicator-last,
               .e-drop-indicator {
                 display: block;
@@ -315,7 +331,7 @@
                   .e-sort,
                   .e-pv-filter,
                   .e-pv-filtered,
-                  .e-dropdown-icon, {
+                  .e-dropdown-icon {
                     color: $field-list-button-active-color;
                   }
                 }
@@ -349,7 +365,7 @@
                 .e-sort,
                 .e-pv-filter,
                 .e-pv-filtered,
-                .e-dropdown-icon, {
+                .e-dropdown-icon {
                   color: $pivotgrid-button-icon-color;
                   cursor: pointer;
                   display: inline-block;
@@ -384,7 +400,7 @@
                   .e-pv-filter,
                   .e-pv-filtered,
                   .e-remove,
-                  .e-dropdown-icon, {
+                  .e-dropdown-icon {
                     padding-left: 0;
                     padding-right: $field-list-icon-to-icon-padding;
                   }
@@ -458,9 +474,10 @@
             .e-drag {
               margin-left: 6px !important;
               margin-right: 0 !important;
-          }
+            }
+
             // sass-lint:enable-all
-        }
+          }
         }
 
         .e-field-header {
@@ -470,6 +487,7 @@
       }
 
       .e-axis-table {
+
         .e-left-axis-fields,
         .e-right-axis-fields {
           padding-left: 0;
@@ -577,6 +595,34 @@
       min-height: 500px;
       width: 100%;
 
+      .e-dlg-header-content {
+        background-color: $field-list-mobile-header-color;
+        color: $field-list-mobile-header-font-color;
+        font-size: 14px;
+        height: 48px;
+        padding-bottom: 9px;
+        padding-top: 9px;
+      }
+
+      .e-title-mobile-header {
+        display: flex;
+      }
+
+      .e-title-mobile-content {
+        margin-top: $field-list-back-margin;
+      }
+
+      .e-field-list-back-icon {
+        color: $field-list-back-font-color;
+        font-size: 16px;
+        height: 24px;
+        margin-left: 0;
+        margin-right: 12px;
+        padding-top: 7px;
+        text-align: center;
+        width: 24px;
+      }
+
       .e-disable {
         display: none;
       }
@@ -660,7 +706,7 @@
                 .e-pv-filter,
                 .e-pv-filtered,
                 .e-remove,
-                .e-dropdown-icon, {
+                .e-dropdown-icon {
                   color: $pivotgrid-button-icon-color;
                   cursor: pointer;
                   display: inline-block;
@@ -697,7 +743,7 @@
                   .e-pv-filter,
                   .e-pv-filtered,
                   .e-remove,
-                  .e-dropdown-icon, {
+                  .e-dropdown-icon {
                     padding-left: 0;
                     padding-right: 10px;
                   }
@@ -847,6 +893,19 @@
         .e-defer-apply-button {
           float: left;
         }
+
+        .e-cancel-btn,
+        .e-defer-apply-button,
+        .e-checkbox-layout {
+          max-width: 20%;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .e-checkbox-layout {
+          max-width: 45%;
+        }
       }
 
       &.e-static {
@@ -864,7 +923,14 @@
       }
 
       &.e-rtl {
+        .e-field-list-back-icon {
+          margin-left: 12px;
+          margin-right: 0;
+          transform: rotateY(180deg);
+        }
+
         .e-field-list-footer {
+
           .e-field-list-btn,
           .e-calculated-field-btn {
             float: left;
@@ -878,6 +944,7 @@
 
         // sass-lint:disable-all
         .e-pivot-calc-outer-div {
+
           .e-pivot-ok-button,
           .e-pivot-add-button,
           .e-pivot-cancel-button {
@@ -892,6 +959,7 @@
             }
           }
         }
+
         // sass-lint:enable-all
       }
     }
@@ -903,6 +971,7 @@
   .e-bigger .e-pivotfieldlist-wrapper,
   .e-bigger.e-pivotfieldlist-wrapper {
     .e-field-table {
+
       .e-left-axis-fields,
       .e-right-axis-fields {
         padding-left: $field-list-default-bigger-padding-size;
@@ -926,6 +995,7 @@
             padding: 0;
           }
         }
+
         .e-drag {
           font-size: $field-list-bigger-icon-size !important;
           height: 24px !important;
@@ -942,6 +1012,7 @@
     }
 
     .e-axis-table {
+
       .e-left-axis-fields .e-field-list-filters,
       .e-left-axis-fields .e-field-list-rows,
       .e-right-axis-fields .e-field-list-columns,
@@ -971,7 +1042,7 @@
           }
         }
 
-        .e-axis-content{
+        .e-axis-content {
           .e-pvt-btn-div {
             .e-pivot-button {
               font-size: $field-list-bigger-button-font-size;
@@ -992,7 +1063,7 @@
               .e-sort,
               .e-pv-filter,
               .e-pv-filtered,
-              .e-dropdown-icon, {
+              .e-dropdown-icon {
                 cursor: pointer;
                 display: inline-block;
                 font-size: $field-list-bigger-icon-size;
@@ -1017,9 +1088,9 @@
     .e-calculated-field {
       font-size: $field-list-bigger-button-font-size;
     }
-    
+
     &.e-static {
-	  max-height: 720px;
+      max-height: 720px;
 
       .e-field-list-container {
         .e-center-title {
@@ -1074,11 +1145,13 @@
             margin-left: 4px !important;
             margin-right: 0 !important;
           }
+
           // sass-lint:enable-all
         }
       }
 
       .e-axis-table {
+
         .e-left-axis-fields,
         .e-right-axis-fields {
           padding-left: 0;
@@ -1090,11 +1163,12 @@
         .e-right-axis-fields .e-field-list-columns,
         .e-right-axis-fields .e-field-list-values {
           .e-pivot-button {
+
             .e-sort,
             .e-pv-filter,
             .e-pv-filtered,
             .e-remove,
-            .e-dropdown-icon, {
+            .e-dropdown-icon {
               padding-left: 0;
               padding-right: $field-list-bigger-icon-to-icon-padding;
             }
@@ -1103,5 +1177,6 @@
       }
     }
   }
+
   // sass-lint:enable-all
 }

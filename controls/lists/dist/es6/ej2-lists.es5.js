@@ -1776,7 +1776,12 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
     ListView.prototype.setViewDataSource = function (dataSource) {
         if (dataSource === void 0) { dataSource = this.localData; }
         if (dataSource && this.fields.groupBy) {
-            this.curViewDS = ListBase.groupDataSource(dataSource, this.listBaseOption.fields, this.sortOrder);
+            if (this.sortOrder !== 'None') {
+                this.curViewDS = ListBase.groupDataSource(ListBase.getDataSource(dataSource, ListBase.addSorting(this.sortOrder, this.fields.sortBy)), this.listBaseOption.fields, this.sortOrder);
+            }
+            else {
+                this.curViewDS = ListBase.groupDataSource(dataSource, this.listBaseOption.fields, this.sortOrder);
+            }
         }
         else if (dataSource && this.sortOrder !== 'None') {
             this.curViewDS = ListBase.getDataSource(dataSource, ListBase.addSorting(this.sortOrder, this.fields.sortBy));

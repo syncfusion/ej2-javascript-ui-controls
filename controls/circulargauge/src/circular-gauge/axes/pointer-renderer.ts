@@ -156,31 +156,31 @@ export class PointerRenderer {
         } else {
             endAngle  = startAngle === endAngle ? [startAngle, startAngle = endAngle - 1][0] : [startAngle, startAngle = endAngle][0];
         }
-        let roundedStartAngle: number;
-        let roundedEndAngle: number;
-        let oldStart: number;
-        let oldEnd: number;
+        let roundStartAngle: number;
+        let roundEndAngle: number;
+        let oldStartValue: number;
+        let oldEndValue: number;
         let radius: number = pointer.roundedCornerRadius;
-        let process: number = radius * 0.25;
-        if (value <= process) {
+        let minRadius: number = (radius * 0.25);
+        if (value <= minRadius) {
             radius = value === 1 || 2 ? 8 : radius;
             radius /= 2;
-            process = radius * 0.25;
+            minRadius = radius * 0.25;
         }
-        oldStart = ((((pointer.currentRadius - (pointer.pointerWidth / 2)) * ((startAngle * Math.PI) / 180) -
-            (radius / process)) / (pointer.currentRadius - (pointer.pointerWidth / 2))) * 180) / Math.PI;
-        oldEnd = ((((pointer.currentRadius - (pointer.pointerWidth / 2)) * ((endAngle * Math.PI) / 180) +
-            (radius / process)) / (pointer.currentRadius - (pointer.pointerWidth / 2))) * 180) / Math.PI;
-        roundedStartAngle = ((((pointer.currentRadius) * ((startAngle * Math.PI) / 180) +
+        oldStartValue = ((((pointer.currentRadius - (pointer.pointerWidth / 2)) * ((startAngle * Math.PI) / 180) -
+            (radius / minRadius)) / (pointer.currentRadius - (pointer.pointerWidth / 2))) * 180) / Math.PI;
+        oldEndValue = ((((pointer.currentRadius - (pointer.pointerWidth / 2)) * ((endAngle * Math.PI) / 180) +
+            (radius / minRadius)) / (pointer.currentRadius - (pointer.pointerWidth / 2))) * 180) / Math.PI;
+        roundStartAngle = ((((pointer.currentRadius) * ((startAngle * Math.PI) / 180) +
             radius) / (pointer.currentRadius)) * 180) / Math.PI;
-        roundedEndAngle = ((((pointer.currentRadius) * ((endAngle * Math.PI) / 180) -
+        roundEndAngle = ((((pointer.currentRadius) * ((endAngle * Math.PI) / 180) -
             radius) / (pointer.currentRadius)) * 180) / Math.PI;
         pointer.pathElement.map((element: Element) => {
             if (pointer.type === 'RangeBar') {
                 if (pointer.roundedCornerRadius && value) {
                     element.setAttribute('d', getRoundedPathArc(
-                        location, roundedStartAngle, roundedEndAngle, oldStart, oldEnd, pointer.currentRadius,
-                        pointer.pointerWidth, pointer.pointerWidth
+                        location, Math.floor(roundStartAngle), Math.ceil(roundEndAngle), oldStartValue, oldEndValue,
+                        pointer.currentRadius, pointer.pointerWidth, pointer.pointerWidth
                     ));
                     radius = 0;
                 } else {

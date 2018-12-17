@@ -9,7 +9,7 @@ import { Scroll } from '../actions/scroll';
 import { ScheduleTouch } from '../actions/touch';
 import { KeyboardInteraction } from '../actions/keyboard';
 import { Data } from '../actions/data';
-import { View, CurrentAction, ReturnType } from '../base/type';
+import { View, CurrentAction, ReturnType, CalendarType } from '../base/type';
 import { EventBase } from '../event-renderer/event-base';
 import { QuickPopups } from '../popups/quick-popups';
 import { EventTooltip } from '../popups/event-tooltip';
@@ -38,11 +38,12 @@ import { Group } from '../models/group';
 import { Resources } from '../models/resources';
 import { IRenderer, ActionEventArgs, NavigatingEventArgs, CellClickEventArgs, RenderCellEventArgs, ScrollCss } from '../base/interface';
 import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, DragEventArgs, ResizeEventArgs } from '../base/interface';
-import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges } from '../base/interface';
+import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs } from '../base/interface';
 import { ResourceBase } from '../base/resource';
 import * as events from '../base/constant';
 import * as cls from '../base/css-constant';
 import * as util from '../base/util';
+import { CalendarUtil, Gregorian, Islamic } from './calendar-util';
 
 /**
  * Represents the Schedule component that displays a list of events scheduled against specific date and timings, 
@@ -116,6 +117,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public selectedElements: Element[];
     public uiStateValues: UIStateArgs;
     public timeFormat: string;
+    public calendarUtil: CalendarUtil;
 
     // Schedule Options
     /**
@@ -194,6 +196,14 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property()
     public dateFormat: string;
+    /**
+     *  It allows the Scheduler to display in other calendar modes. 
+     * By default, Scheduler is displayed in `Gregorian` calendar mode. 
+     * To change the mode, you can set either `Gregorian` or `Islamic` as a value to this `calendarMode` property. 
+     * @default 'Gregorian'
+     */
+    @Property('Gregorian')
+    public calendarMode: CalendarType;
     /**
      * When set to `false`, it hides the weekend days of a week from the Schedule. The days which are not defined in the working days
      *  collection are usually treated as weekend days.
@@ -581,6 +591,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.renderModule = new Render(this);
         this.eventBase = new EventBase(this);
         this.initializeDataModule();
+        this.element.appendChild(this.createElement('div', { className: cls.TABLE_CONTAINER_CLASS }));
         this.initializeResources();
     }
     private initializeResources(isSetModel: boolean = false): void {
@@ -600,15 +611,20 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.initializeView(this.currentView);
             return;
         }
+        this.destroyHeaderModule();
         if (this.showHeaderBar) {
             this.headerModule = new HeaderRenderer(this);
         }
-        this.element.appendChild(this.createElement('div', { className: cls.TABLE_CONTAINER_CLASS }));
+        if (!this.element.querySelector('.' + cls.TABLE_CONTAINER_CLASS)) {
+            this.element.appendChild(this.createElement('div', { className: cls.TABLE_CONTAINER_CLASS }));
+        }
         if (Browser.isDevice || Browser.isTouch) {
             this.scheduleTouchModule = new ScheduleTouch(this);
         }
         this.initializeView(this.currentView);
+        this.destroyPopups();
         this.initializePopups();
+        this.unwireEvents();
         this.wireEvents();
     }
     private validateDate(): void {
@@ -763,7 +779,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (this.locale === 'en' || this.locale === 'en-US') {
             cldrObj = <string[]>(getValue('days.stand-alone.' + type, getDefaultDateObject()));
         } else {
-            cldrObj = <string[]>(getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.days.format.' + type, cldrData));
+            cldrObj = <string[]>(
+                getValue('main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.format.' + type, cldrData));
         }
         for (let obj of Object.keys(cldrObj)) {
             culShortNames.push(getValue(obj, cldrObj));
@@ -774,11 +791,22 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (this.locale === 'en' || this.locale === 'en-US') {
             this.timeFormat = <string>(getValue('timeFormats.short', getDefaultDateObject()));
         } else {
-            this.timeFormat = <string>(getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.short', cldrData));
+            this.timeFormat = <string>
+                (getValue('main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.timeFormats.short', cldrData));
         }
     }
+    public getCalendarMode(): string {
+        return this.calendarMode.toLowerCase();
+    }
     public getTimeString(date: Date): string {
-        return this.globalize.formatDate(date, { format: this.timeFormat, type: 'time' });
+        return this.globalize.formatDate(date, { format: this.timeFormat, type: 'time', calendar: this.getCalendarMode() });
+    }
+    private setcalendarMode(): void {
+        if (this.calendarMode === 'Islamic') {
+            this.calendarUtil = new Islamic();
+        } else {
+            this.calendarUtil = new Gregorian();
+        }
     }
     public changeView(view: View, event?: Event, muteOnChange?: boolean, index?: number): void {
         if (isNullOrUndefined(index)) {
@@ -962,6 +990,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.setCldrTimeFormat();
+        this.setcalendarMode();
         this.eventsData = [];
         this.eventsProcessed = [];
         this.blockData = [];
@@ -1165,26 +1194,21 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
 
     public onPropertyChanged(newProp: ScheduleModel, oldProp: ScheduleModel): void {
-        let requireRefresh: boolean = false;
-        let requireScheduleRefresh: boolean = false;
+        let state: StateArgs = { isRefresh: false, isResource: false, isDate: false, isView: false, isLayout: false, isDataManager: false };
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'width':
-                case 'height':
-                    this.notify(events.uiUpdate, { module: 'scroll', properties: { width: newProp.width, height: newProp.height } });
-                    break;
                 case 'views':
                     this.setViewOptions();
                     if (this.headerModule) {
                         this.headerModule.updateItems();
                     }
-                    this.changeView(this.currentView, null, true);
+                    state.isView = true;
                     break;
                 case 'currentView':
-                    this.changeView(newProp.currentView, null, true);
+                    state.isView = true;
                     break;
                 case 'selectedDate':
-                    this.changeDate(newProp.selectedDate);
+                    state.isDate = true;
                     break;
                 case 'dateFormat':
                     this.activeViewOptions = this.getActiveViewOptions();
@@ -1193,10 +1217,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                     }
                     break;
                 case 'showHeaderBar':
-                    if (this.headerModule) {
-                        this.headerModule.destroy();
-                        this.headerModule = null;
-                    }
+                    this.destroyHeaderModule();
                     if (newProp.showHeaderBar) {
                         this.headerModule = new HeaderRenderer(this);
                         this.headerModule.updateDateRange(this.activeView.getDateRangeText());
@@ -1214,57 +1235,72 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 case 'readonly':
                 case 'headerRows':
                 case 'showWeekNumber':
-                    requireRefresh = true;
-                    break;
-                case 'eventDragArea':
-                    this.notify(events.dataReady, {});
+                    state.isLayout = true;
                     break;
                 case 'locale':
+                case 'calendarMode':
                     this.setCldrTimeFormat();
-                    requireScheduleRefresh = true;
+                    this.setcalendarMode();
+                    state.isRefresh = true;
                     break;
                 case 'firstDayOfWeek':
                     if (this.headerModule) {
                         this.headerModule.setDayOfWeek(newProp.firstDayOfWeek);
                     }
-                    this.eventWindow.refreshRecurrenceEditor();
-                    requireRefresh = true;
+                    if (this.eventWindow) { this.eventWindow.refreshRecurrenceEditor(); }
+                    state.isLayout = true;
                     break;
                 case 'showTimeIndicator':
-                    if (this.activeViewOptions.timeScale.enable) {
+                    if (this.activeViewOptions.timeScale.enable && this.activeView) {
                         this.activeView.highlightCurrentTime();
                     }
                     break;
                 case 'cellTemplate':
                     this.activeViewOptions.cellTemplate = newProp.cellTemplate;
                     this.cellTemplateFn = this.templateParser(this.activeViewOptions.cellTemplate);
-                    requireRefresh = true;
+                    state.isLayout = true;
                     break;
                 case 'dateHeaderTemplate':
                     this.activeViewOptions.dateHeaderTemplate = newProp.dateHeaderTemplate;
                     this.dateHeaderTemplateFn = this.templateParser(this.activeViewOptions.dateHeaderTemplate);
-                    requireRefresh = true;
+                    state.isLayout = true;
                     break;
                 case 'timezone':
                     this.eventBase.timezonePropertyChange(oldProp.timezone);
                     break;
                 case 'enableRtl':
-                    requireScheduleRefresh = true;
+                    state.isRefresh = true;
                     break;
                 default:
-                    this.extendedPropertyChange(prop, newProp, oldProp);
+                    this.extendedPropertyChange(prop, newProp, oldProp, state);
                     break;
             }
         }
-        if (requireScheduleRefresh) {
+        this.propertyChangeAction(state);
+    }
+
+    private propertyChangeAction(state: StateArgs): void {
+        if (state.isRefresh) {
             this.refresh();
-        } else if (requireRefresh) {
+        } else if (state.isResource) {
+            this.initializeResources(true);
+        } else if (state.isView) {
+            this.changeView(this.currentView, null, true);
+        } else if (state.isDate) {
+            this.changeDate(this.selectedDate);
+        } else if (state.isLayout) {
             this.initializeView(this.currentView);
+        } else if (state.isDataManager && this.renderModule) {
+            this.renderModule.refreshDataManager();
         }
     }
 
-    private extendedPropertyChange(prop: string, newProp: ScheduleModel, oldProp: ScheduleModel): void {
+    private extendedPropertyChange(prop: string, newProp: ScheduleModel, oldProp: ScheduleModel, state: StateArgs): void {
         switch (prop) {
+            case 'width':
+            case 'height':
+                this.notify(events.uiUpdate, { module: 'scroll', properties: { width: newProp.width, height: newProp.height } });
+                break;
             case 'cssClass':
                 if (oldProp.cssClass) { removeClass([this.element], oldProp.cssClass); }
                 if (newProp.cssClass) { addClass([this.element], newProp.cssClass); }
@@ -1272,10 +1308,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             case 'hideEmptyAgendaDays':
             case 'agendaDaysCount':
                 this.activeViewOptions = this.getActiveViewOptions();
-                this.changeView(this.currentView, null, true);
+                state.isView = true;
                 break;
             case 'eventSettings':
-                this.onEventSettingsPropertyChanged(newProp.eventSettings, oldProp.eventSettings);
+                this.onEventSettingsPropertyChanged(newProp.eventSettings, oldProp.eventSettings, state);
                 break;
             case 'allowKeyboardInteraction':
                 if (this.keyboardInteractionModule) {
@@ -1290,7 +1326,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 if (!isNullOrUndefined(this.editorTemplate)) {
                     this.editorTemplateFn = this.templateParser(this.editorTemplate);
                 }
-                this.eventWindow.setDialogContent();
+                if (this.eventWindow) { this.eventWindow.setDialogContent(); }
                 break;
             case 'quickInfoTemplates':
                 if (this.quickInfoTemplates.header) {
@@ -1304,16 +1340,16 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 }
                 break;
             case 'group':
-                this.onGroupSettingsPropertyChanged(newProp.group, oldProp.group);
+                this.onGroupSettingsPropertyChanged(newProp.group, oldProp.group, state);
                 break;
             case 'resources':
-                this.initializeResources(true);
+                state.isResource = true;
                 break;
             case 'timeScale':
                 this.activeViewOptions.timeScale.interval = newProp.timeScale.interval || this.activeViewOptions.timeScale.interval;
                 this.activeViewOptions.timeScale.slotCount = newProp.timeScale.slotCount || this.activeViewOptions.timeScale.slotCount;
-                this.eventWindow.refreshDateTimePicker();
-                this.initializeView(this.currentView);
+                if (this.eventWindow) { this.eventWindow.refreshDateTimePicker(); }
+                state.isLayout = true;
                 break;
             case 'allowDragAndDrop':
             case 'allowResizing':
@@ -1321,34 +1357,36 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                     processedData: this.eventBase.processData(this.eventsData as { [key: string]: Object }[])
                 });
                 break;
+            case 'eventDragArea':
+                this.notify(events.dataReady, {});
+                break;
         }
     }
 
-    private onGroupSettingsPropertyChanged(newProp: GroupModel, oldProp: GroupModel): void {
+    private onGroupSettingsPropertyChanged(newProp: GroupModel, oldProp: GroupModel, state: StateArgs): void {
         for (let prop of Object.keys(newProp)) {
             if (prop === 'headerTooltipTemplate') {
                 this.headerTooltipTemplateFn = this.templateParser(newProp[prop]);
             } else {
-                this.initializeView(this.currentView);
-                this.eventWindow.refresh();
+                state.isLayout = true;
+                if (this.eventWindow) { this.eventWindow.refresh(); }
             }
         }
     }
 
-    private onEventSettingsPropertyChanged(newProp: EventSettingsModel, oldProp: EventSettingsModel): void {
-        let requireRefresh: boolean = false;
+    private onEventSettingsPropertyChanged(newProp: EventSettingsModel, oldProp: EventSettingsModel, state: StateArgs): void {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'dataSource':
                 case 'query':
                 case 'fields':
                     this.initializeDataModule();
-                    requireRefresh = true;
+                    state.isDataManager = true;
                     break;
                 case 'template':
                     this.activeViewOptions.eventTemplate = newProp.template;
                     this.appointmentTemplateFn = this.templateParser(this.activeViewOptions.eventTemplate);
-                    requireRefresh = true;
+                    state.isDataManager = true;
                     break;
                 case 'enableTooltip':
                     if (this.eventTooltip) {
@@ -1366,12 +1404,27 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                     if (this.resourceBase) {
                         this.resourceBase.setResourceCollection();
                     }
-                    requireRefresh = true;
+                    state.isDataManager = true;
                     break;
             }
         }
-        if (requireRefresh) {
-            this.renderModule.refreshDataManager();
+    }
+
+    private destroyHeaderModule(): void {
+        if (this.headerModule) {
+            this.headerModule.destroy();
+            this.headerModule = null;
+        }
+    }
+
+    private destroyPopups(): void {
+        if (this.quickPopup) {
+            this.quickPopup.destroy();
+            this.quickPopup = null;
+        }
+        if (this.eventWindow) {
+            this.eventWindow.destroy();
+            this.eventWindow = null;
         }
     }
 
@@ -1400,8 +1453,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public setWorkHours(dates: Date[], start: string, end: string, groupIndex?: number): void {
-        let startHour: Date = this.globalize.parseDate(start, { skeleton: 'Hm' });
-        let endHour: Date = this.globalize.parseDate(end, { skeleton: 'Hm' });
+        let startHour: Date = this.globalize.parseDate(start, { skeleton: 'Hm', calendar: this.getCalendarMode() });
+        let endHour: Date = this.globalize.parseDate(end, { skeleton: 'Hm', calendar: this.getCalendarMode() });
         let tableEle: HTMLTableElement = this.getContentTable() as HTMLTableElement;
         if (isNullOrUndefined(startHour) || isNullOrUndefined(endHour) || !tableEle) {
             return;
@@ -1454,30 +1507,30 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {CellClickEventArgs} Object An object holding the startTime, endTime and all-day information along with the target HTML
      *  element will be returned. 
      */
-    public getCellDetails(td: Element): CellClickEventArgs {
-        let startTime: Date = this.getDateFromElement(td);
-        if (isNullOrUndefined(startTime)) {
+    public getCellDetails(tdCol: Element | Element[]): CellClickEventArgs {
+        let td: Element[] = (tdCol instanceof Array) ? tdCol : [tdCol];
+        let firstTd: Element = td[0];
+        let lastTd: Element = td.slice(-1)[0];
+        let startTime: Date = this.getDateFromElement(firstTd);
+        let endTime: Date = this.getDateFromElement(lastTd);
+        if (isNullOrUndefined(startTime) || isNullOrUndefined(endTime)) {
             return undefined;
         }
-        let endTime: Date;
-        let duration: number = 1;
-        let endDateFromColSpan: boolean = this.activeView.isTimelineView() && !isNullOrUndefined(td.getAttribute('colSpan'));
-        if (endDateFromColSpan) {
-            duration = parseInt(td.getAttribute('colSpan'), 10);
-        }
-        if (!this.activeViewOptions.timeScale.enable || td.classList.contains(cls.ALLDAY_CELLS_CLASS) ||
-            td.classList.contains(cls.HEADER_CELLS_CLASS) || endDateFromColSpan) {
+        let endDateFromColSpan: boolean = this.activeView.isTimelineView() && !isNullOrUndefined(lastTd.getAttribute('colSpan'));
+        let duration: number = endDateFromColSpan ? parseInt(lastTd.getAttribute('colSpan'), 10) : 1;
+        if (!this.activeViewOptions.timeScale.enable || endDateFromColSpan || lastTd.classList.contains(cls.ALLDAY_CELLS_CLASS) ||
+            lastTd.classList.contains(cls.HEADER_CELLS_CLASS)) {
             endTime = util.addDays(new Date(startTime.getTime()), duration);
         } else {
-            endTime = this.activeView.getEndDateFromStartDate(startTime);
+            endTime = this.activeView.getEndDateFromStartDate(endTime);
         }
         let data: CellClickEventArgs = {
             startTime: startTime,
             endTime: endTime,
-            isAllDay: this.isAllDayCell(td),
-            element: td as HTMLElement
+            isAllDay: this.isAllDayCell(firstTd),
+            element: tdCol as HTMLElement | HTMLElement[]
         };
-        let groupIndex: string = td.getAttribute('data-group-index');
+        let groupIndex: string = firstTd.getAttribute('data-group-index');
         if (!isNullOrUndefined(groupIndex)) {
             data.groupIndex = parseInt(groupIndex, 10);
         }
@@ -1696,23 +1749,13 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @return {void}
      */
     public destroy(): void {
-        if (this.quickPopup) {
-            this.quickPopup.destroy();
-            this.quickPopup = null;
-        }
         if (this.eventTooltip) {
             this.eventTooltip.destroy();
             this.eventTooltip = null;
         }
-        if (this.eventWindow) {
-            this.eventWindow.destroy();
-            this.eventWindow = null;
-        }
+        this.destroyPopups();
         this.unwireEvents();
-        if (this.headerModule) {
-            this.headerModule.destroy();
-            this.headerModule = null;
-        }
+        this.destroyHeaderModule();
         if (this.scrollModule) {
             this.scrollModule.destroy();
             this.scrollModule = null;

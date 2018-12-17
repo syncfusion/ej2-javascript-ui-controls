@@ -258,7 +258,6 @@ export class Render {
             (args.column.customAttributes as any).cell.valueSort.levelName;
         this.parent.resizeInfo[column] =
             Number(args.column.width.toString().split('px')[0]);
-        this.parent.grid.headerModule.refreshUI();
         this.setGroupWidth(args);
     }
 
@@ -662,7 +661,7 @@ export class Render {
         return integrateModel;
     }
 
-    /** hidden */
+    /** @hidden */
     public setSavedWidth(column: string, width: number): number {
         width = this.parent.resizeInfo[column] ? this.parent.resizeInfo[column] : width;
         return width;

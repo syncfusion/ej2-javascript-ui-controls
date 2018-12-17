@@ -70,7 +70,7 @@ export class Trendlines {
         x: Object, y: Object, sourcePoint: Points, series: Series, index: number,
     ): Points {
         let trendPoint: Points = new Points();
-        trendPoint.x = x;
+        trendPoint.x = series.xAxis.valueType === 'DateTime' ? new Date(Number(x)) : x;
         trendPoint.y = y;
         trendPoint.xValue = Number(x);
         trendPoint.color = series.fill;

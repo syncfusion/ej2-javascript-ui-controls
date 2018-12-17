@@ -116,21 +116,17 @@ export class Render {
             let deffered: Deferred = new Deferred();
             dataManager = this.getFData(deffered);
         }
-        let query: Query;
         if (!dataManager) {
-            query = this.data.generateQuery();
-            dataManager = this.data.getData(args as NotifyArgs, query.requiresCount());
-            this.parent.query.queries = query.queries;
+            dataManager = this.data.getData(args as NotifyArgs, this.data.generateQuery().requiresCount());
         } else {
             dataManager = dataManager.then((e: Object) => {
-                query = this.data.generateQuery();
+                let query: Query = this.data.generateQuery().requiresCount();
                 if (this.emptyGrid) {
                     let def: Deferred = new Deferred();
                     def.resolve(<ReturnType>{ result: [], count: 0 });
                     return def.promise;
                 }
-                this.parent.query.queries = query.queries;
-                return this.data.getData(args as NotifyArgs, query.requiresCount());
+                return this.data.getData(args as NotifyArgs, query);
             });
         }
         if (this.parent.getForeignKeyColumns().length && (!isFActon || this.parent.searchSettings.key.length)) {

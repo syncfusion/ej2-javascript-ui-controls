@@ -275,6 +275,7 @@ describe('Search module', () => {
 
     it('searchSettings using onproperty', () => {
       gridObj.searchSettings = { hierarchyMode : "Parent"};
+      gridObj.dataBind();
     });
     afterAll(() => {
       destroy(gridObj);

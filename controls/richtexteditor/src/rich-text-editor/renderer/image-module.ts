@@ -9,11 +9,10 @@ import { NodeSelection } from '../../selection/selection';
 import { Uploader, SelectedEventArgs, MetaData, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { Button, CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
-import { InsertHtml } from './../../editor-manager/plugin/inserthtml';
 import { RendererFactory } from '../services/renderer-factory';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { RenderType } from '../base/enum';
-import { dispatchEvent } from '../base/util';
+import { dispatchEvent, parseHtml } from '../base/util';
 /**
  * `Image` module is used to handle image actions.
  */
@@ -80,7 +79,7 @@ export class Image {
         this.parent.off(events.initialEnd, this.afterRender);
         this.parent.off(events.paste, this.imagePaste);
         if (!isNullOrUndefined(this.contentModule)) {
-            EventHandler.remove(this.contentModule.getEditPanel(), 'click', this.imageClick);
+            EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.imageClick);
             this.parent.formatter.editorManager.observer.off(events.checkUndo, this.undoStack);
             if (this.parent.insertImageSettings.resize) {
                 EventHandler.remove(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart);
@@ -95,7 +94,7 @@ export class Image {
     }
     private afterRender(): void {
         this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
-        EventHandler.add(this.contentModule.getEditPanel(), 'click', this.imageClick, this);
+        EventHandler.add(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.imageClick, this);
         if (this.parent.insertImageSettings.resize) {
             EventHandler.add(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
             EventHandler.add(this.contentModule.getDocument(), 'mousedown', this.onDocumentClick, this);
@@ -106,8 +105,7 @@ export class Image {
         if (args.subCommand.toLowerCase() === 'undo' || args.subCommand.toLowerCase() === 'redo') {
             for (let i: number = 0; i < this.parent.formatter.getUndoRedoStack().length; i++) {
                 let temp: Element = this.parent.createElement('div');
-                let contentElem: DocumentFragment = document.createRange().createContextualFragment(
-                    this.parent.formatter.getUndoRedoStack()[i].text);
+                let contentElem: DocumentFragment = parseHtml(this.parent.formatter.getUndoRedoStack()[i].text);
                 temp.appendChild(contentElem);
                 let img: NodeListOf<HTMLElement> = temp.querySelectorAll('img');
                 if (temp.querySelector('.e-img-resize') && img.length > 0) {
@@ -173,6 +171,7 @@ export class Image {
                 (e.target as HTMLElement).parentElement.tagName === 'A') ||
                 ((e.target as Element).tagName === 'IMG')) {
                 this.contentModule.getEditPanel().setAttribute('contenteditable', 'false');
+                (e.target as HTMLElement).focus();
             } else {
                 this.contentModule.getEditPanel().setAttribute('contenteditable', 'true');
             }
@@ -248,7 +247,7 @@ export class Image {
         let offset: OffsetPosition = elem.getBoundingClientRect();
         let doc: Document = elem.ownerDocument;
         let offsetParent: Node = ((elem.offsetParent && elem.offsetParent.classList.contains('e-img-caption')) ?
-            closest(elem, '.e-control') : elem.offsetParent) || doc.documentElement;
+            closest(elem, '#' + this.parent.getID() + '_rte-edit-view') : elem.offsetParent) || doc.documentElement;
         while (offsetParent &&
             (offsetParent === doc.body || offsetParent === doc.documentElement) &&
             (<HTMLElement>offsetParent).style.position === 'static') {
@@ -407,7 +406,12 @@ export class Image {
 
     private openImgLink(e: NotifyArgs): void {
         let target: string = (e.selectParent[0].parentNode as HTMLAnchorElement).target === '' ? '_self' : '_blank';
-        window.open((e.selectParent[0].parentNode as HTMLAnchorElement).href, target);
+        this.parent.formatter.process(
+            this.parent, e.args, e.args,
+            {
+                url: (e.selectParent[0].parentNode as HTMLAnchorElement).href, target: target, selectNode: e.selectNode,
+                subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
+            });
     }
 
     private editImgLink(e: NotifyArgs): void {
@@ -423,9 +427,12 @@ export class Image {
         e.selection.restore();
         let insertEle: HTMLElement = (this.contentModule.getEditPanel().contains(this.captionEle) && closest(this.captionEle, 'a')) ?
             this.captionEle : e.selectNode[0] as HTMLElement;
-        detach(closest(e.selectParent[0], 'a'));
-        InsertHtml.Insert(this.parent.contentModule.getDocument(), insertEle);
-        this.parent.formatter.saveData();
+        this.parent.formatter.process(
+            this.parent, e.args, e.args,
+            {
+                insertElement: insertEle, selectParent: e.selectParent,
+                subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
+            });
         if (this.quickToolObj && document.body.contains(this.quickToolObj.imageQTBar.element)) {
             this.quickToolObj.imageQTBar.hidePopup();
             if (!isNullOrUndefined(e.selectParent as Node[])) { removeClass([e.selectParent[0] as HTMLElement], 'e-img-focus'); }
@@ -461,7 +468,14 @@ export class Image {
         if (originalEvent.keyCode === 8 || originalEvent.keyCode === 46) {
             if (selectNodeEle && selectNodeEle[0].nodeName === 'IMG') {
                 originalEvent.preventDefault();
-                this.deleteImg({ selectNode: selectNodeEle, selection: save, selectParent: selectParentEle });
+                let event: IImageNotifyArgs = {
+                    selectNode: selectNodeEle, selection: save, selectParent: selectParentEle,
+                    args: {
+                        item: { command: 'Images', subCommand: 'Remove' } as IToolbarItemModel,
+                        originalEvent: originalEvent
+                    }
+                };
+                this.deleteImg(event);
             }
             if (this.contentModule.getEditPanel().querySelector('.e-img-resize')) {
                 this.remvoeResizEle();
@@ -647,11 +661,10 @@ export class Image {
                 '<input type="text" data-role ="none" class="e-input e-img-link" spellcheck="false" placeholder="' + linkUrl + '"/></div>' +
                 '<div class="e-rte-label"></div>' + '<div class="e-rte-field">' +
                 '<input type="checkbox" class="e-rte-linkTarget"  data-role ="none"></div>';
-            let contentElem: DocumentFragment = document.createRange().createContextualFragment(content);
+            let contentElem: DocumentFragment = parseHtml(content);
             linkWrap.appendChild(contentElem);
             let linkTarget: HTMLInputElement = linkWrap.querySelector('.e-rte-linkTarget') as HTMLInputElement;
             let inputLink: HTMLElement = linkWrap.querySelector('.e-img-link') as HTMLElement;
-            let target: string = '';
             let linkOpenLabel: string = this.i10n.getConstant('linkOpenInNewWindow');
             this.checkBoxObj = new CheckBox({
                 label: linkOpenLabel, checked: true, enableRtl: this.parent.enableRtl, change: (e: ChangeEventArgs) => {
@@ -664,8 +677,10 @@ export class Image {
             });
             this.checkBoxObj.createElement = this.parent.createElement;
             this.checkBoxObj.appendTo(linkTarget);
+            let target: string = this.checkBoxObj.checked ? '_blank' : '';
             let linkUpdate: string = this.i10n.getConstant('dialogUpdate');
             let linkargs: IImageNotifyArgs = {
+                args: e.args,
                 selfImage: this, selection: e.selection,
                 selectNode: e.selectNode, selectParent: e.selectParent, link: inputLink, target: target
             };
@@ -703,10 +718,13 @@ export class Image {
             let content: string = '<div class="e-rte-field">' +
                 '<input type="text" spellcheck="false" value="' + getAlt + '" class="e-input e-img-alt" placeholder="' + altText + '"/>' +
                 '</div>';
-            let contentElem: DocumentFragment = document.createRange().createContextualFragment(content);
+            let contentElem: DocumentFragment = parseHtml(content);
             altWrap.appendChild(contentElem);
             let inputAlt: HTMLElement = altWrap.querySelector('.e-img-alt') as HTMLElement;
-            let altArgs: IImageNotifyArgs = { selfImage: this, selection: e.selection, selectNode: e.selectNode, alt: inputAlt };
+            let altArgs: IImageNotifyArgs = {
+                args: e.args, selfImage: this, selection: e.selection, selectNode: e.selectNode,
+                alt: inputAlt
+            };
             this.dialogObj.setProperties({
                 height: 'initial', width: '290px', header: altHeader, content: altWrap, position: { X: 'center', Y: 'center' },
                 buttons: [{
@@ -728,9 +746,13 @@ export class Image {
                 this.parent.formatter.saveData();
             }
             let altText: string = (e.alt as HTMLInputElement).value;
-            (e.selectNode[0] as HTMLElement).setAttribute('alt', altText);
+            this.parent.formatter.process(
+                this.parent, e.args, e.args,
+                {
+                    altText: altText, selectNode: e.selectNode,
+                    subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
+                });
             this.dialogObj.hide({ returnValue: false } as Event);
-            this.parent.formatter.saveData();
         }
     }
 
@@ -750,34 +772,34 @@ export class Image {
         } else {
             removeClass([e.link], 'e-error');
         }
-        e.selection.restore();
-        if (e.selfImage.parent.formatter.getUndoRedoStack().length === 0) {
-            e.selfImage.parent.formatter.saveData();
+        let proxy: Image = e.selfImage;
+        if (proxy.parent.editorMode === 'HTML') { e.selection.restore(); }
+        if (proxy.parent.formatter.getUndoRedoStack().length === 0) {
+            proxy.parent.formatter.saveData();
         }
         if (e.selectNode[0].parentElement.nodeName === 'A') {
-            (e.selectNode[0].parentElement as HTMLAnchorElement).href = url;
-            (e.selectNode[0].parentElement as HTMLAnchorElement).target = e.target;
-            e.selfImage.parent.formatter.saveData();
-            e.selfImage.dialogObj.hide({ returnValue: true } as Event);
+            proxy.parent.formatter.process(
+                proxy.parent, e.args, e.args,
+                {
+                    url: url, target: proxy.checkBoxObj.checked ? '_blank' : '', selectNode: e.selectNode,
+                    subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
+                });
+            proxy.dialogObj.hide({ returnValue: true } as Event);
             return;
         }
-        let anchor: HTMLElement = this.parent.createElement('a', {
-            attrs: {
-                href: url,
-                target: '_blank'
-            }
-        });
-        anchor.appendChild(e.selectNode[0]);
-        InsertHtml.Insert(this.contentModule.getDocument(), anchor);
-        e.selfImage.parent.formatter.saveData();
-        e.selfImage.dialogObj.hide({ returnValue: false } as Event);
+        proxy.parent.formatter.process(
+            proxy.parent, e.args, e.args,
+            {
+                url: url, target: e.target, selectNode: e.selectNode,
+                subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
+            });
+        proxy.dialogObj.hide({ returnValue: false } as Event);
     }
     private isUrl(url: string): boolean {
         let regexp: RegExp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/gi;
         return regexp.test(url);
     }
     private deleteImg(e: IImageNotifyArgs): void {
-        let selectNode: HTMLElement = e.selectNode[0] as HTMLElement;
         if (e.selectNode[0].nodeName !== 'IMG') {
             return;
         }
@@ -785,18 +807,20 @@ export class Image {
             this.parent.formatter.saveData();
         }
         e.selection.restore();
-        if (closest(selectNode, 'a')) {
-            detach(closest(selectNode, 'a'));
-        } else if (!isNullOrUndefined(closest(selectNode, '.' + classes.CLS_CAPTION))) {
-            detach(closest(selectNode, '.' + classes.CLS_CAPTION));
-        } else {
-            detach(selectNode);
+        if (this.contentModule.getEditPanel().querySelector('.e-img-resize')) {
+            this.remvoeResizEle();
         }
+        this.parent.formatter.process(
+            this.parent, e.args, e.args,
+            {
+                selectNode: e.selectNode,
+                captionClass: classes.CLS_CAPTION,
+                subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
+            });
         if (this.quickToolObj && document.body.contains(this.quickToolObj.imageQTBar.element)) {
             this.quickToolObj.imageQTBar.hidePopup();
         }
         this.cancelResizeAction();
-        this.parent.formatter.saveData();
     }
     private caption(e: IImageNotifyArgs): void {
         let selectNode: HTMLElement = e.selectNode[0] as HTMLElement;
@@ -809,12 +833,17 @@ export class Image {
         }
         this.cancelResizeAction();
         addClass([selectNode], 'e-rte-image');
+        let subCommand: string = ((e.args as ClickEventArgs).item) ?
+            ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand : 'Caption';
         if (!isNullOrUndefined(closest(selectNode, '.' + classes.CLS_CAPTION))) {
             detach(closest(selectNode, '.' + classes.CLS_CAPTION));
             if (selectNode.parentElement.tagName === 'A') {
-                InsertHtml.Insert(this.contentModule.getDocument(), selectNode.parentElement);
+                this.parent.formatter.process(
+                    this.parent, e.args, e.args,
+                    { insertElement: selectNode.parentElement, selectNode: e.selectNode, subCommand: subCommand });
             } else {
-                InsertHtml.Insert(this.contentModule.getDocument(), selectNode);
+                this.parent.formatter.process(
+                    this.parent, e.args, e.args, { insertElement: selectNode, selectNode: e.selectNode, subCommand: subCommand });
             }
         } else {
             this.captionEle = this.parent.createElement('span', {
@@ -843,12 +872,12 @@ export class Image {
             if (selectNode.classList.contains(classes.CLS_IMGCENTER)) {
                 addClass([this.captionEle], classes.CLS_IMGCENTER);
             }
-            InsertHtml.Insert(this.contentModule.getDocument(), this.captionEle);
+            this.parent.formatter.process(
+                this.parent, e.args, e.args, { insertElement: this.captionEle, selectNode: e.selectNode, subCommand: subCommand });
             this.parent.formatter.editorManager.nodeSelection.setSelectionText(
                 this.contentModule.getDocument(),
                 imgInner.childNodes[0], imgInner.childNodes[0], 0, imgInner.childNodes[0].textContent.length);
         }
-        this.parent.formatter.saveData();
         if (this.quickToolObj && document.body.contains(this.quickToolObj.imageQTBar.element)) {
             this.quickToolObj.imageQTBar.hidePopup();
             removeClass([selectNode as HTMLElement], 'e-img-focus');
@@ -863,11 +892,11 @@ export class Image {
             let imgSizeHeader: string = this.i10n.getConstant('imageSizeHeader');
             let linkUpdate: string = this.i10n.getConstant('dialogUpdate');
             let dialogContent: HTMLElement = this.imgsizeInput(e);
-            let selectObj: IImageNotifyArgs = { selfImage: this, selection: e.selection, selectNode: e.selectNode };
+            let selectObj: IImageNotifyArgs = { args: e.args, selfImage: this, selection: e.selection, selectNode: e.selectNode };
             this.dialogObj.setProperties({
                 height: 'initial', width: '290px', header: imgSizeHeader, content: dialogContent, position: { X: 'center', Y: 'center' },
                 buttons: [{
-                    click: this.insertSize.bind(selectObj),
+                    click: (e: MouseEvent) => { this.insertSize(selectObj); },
                     buttonModel: {
                         content: linkUpdate, cssClass: 'e-flat e-update-size', isPrimary: true
                     }
@@ -881,86 +910,33 @@ export class Image {
         if (e.selectNode[0].nodeName !== 'IMG') {
             return;
         }
-        let selectNode: HTMLElement = e.selectNode[0] as HTMLElement;
-        selectNode.removeAttribute('class');
-        addClass([selectNode], classes.CLS_IMGBREAK);
-        addClass([selectNode], 'e-rte-image');
-        if (!isNullOrUndefined(closest(selectNode, '.' + classes.CLS_CAPTION))) {
-            removeClass([closest(selectNode, '.' + classes.CLS_CAPTION)], classes.CLS_CAPINLINE);
-            removeClass([closest(selectNode, '.' + classes.CLS_CAPTION)], classes.CLS_IMGCENTER);
-            removeClass([closest(selectNode, '.' + classes.CLS_CAPTION)], classes.CLS_IMGLEFT);
-            removeClass([closest(selectNode, '.' + classes.CLS_CAPTION)], classes.CLS_IMGRIGHT);
-            addClass([closest(selectNode, '.' + classes.CLS_CAPTION)], classes.CLS_IMGBREAK);
-        }
-        this.parent.formatter.saveData();
+        let subCommand: string = ((e.args as ClickEventArgs).item) ?
+            ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand : 'Break';
+        this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, subCommand: subCommand });
     }
     private inline(e: IImageNotifyArgs): void {
         if (e.selectNode[0].nodeName !== 'IMG') {
             return;
         }
-        let selectNode: HTMLElement = e.selectNode[0] as HTMLElement;
-        selectNode.removeAttribute('class');
-        addClass([selectNode], 'e-rte-image');
-        addClass([selectNode], classes.CLS_IMGINLINE);
-        if (!isNullOrUndefined(closest(selectNode, '.' + classes.CLS_CAPTION))) {
-            removeClass([closest(selectNode, '.' + classes.CLS_CAPTION)], classes.CLS_IMGBREAK);
-            removeClass([closest(selectNode, '.' + classes.CLS_CAPTION)], classes.CLS_IMGCENTER);
-            removeClass([closest(selectNode, '.' + classes.CLS_CAPTION)], classes.CLS_IMGLEFT);
-            removeClass([closest(selectNode, '.' + classes.CLS_CAPTION)], classes.CLS_IMGRIGHT);
-            addClass([closest(selectNode, '.' + classes.CLS_CAPTION)], classes.CLS_CAPINLINE);
-        }
-        this.parent.formatter.saveData();
+        let subCommand: string = ((e.args as ClickEventArgs).item) ?
+            ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand : 'Inline';
+        this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, subCommand: subCommand });
     }
 
     private justifyImageLeft(e: IImageNotifyArgs): void {
-        let selectNode: HTMLElement = e.selectNode[0] as HTMLElement;
-        selectNode.removeAttribute('class');
-        addClass([selectNode], 'e-rte-image');
-        if (!isNullOrUndefined(closest(selectNode, '.' + classes.CLS_CAPTION))) {
-            removeClass([closest(selectNode, '.' + classes.CLS_CAPTION)], classes.CLS_IMGRIGHT);
-            addClass([closest(selectNode, '.' + classes.CLS_CAPTION)], classes.CLS_IMGLEFT);
-        }
-        if (selectNode.parentElement.nodeName === 'A') {
-            removeClass([selectNode.parentElement], classes.CLS_IMGRIGHT);
-            addClass([selectNode.parentElement], classes.CLS_IMGLEFT);
-        } else {
-            addClass([selectNode], classes.CLS_IMGLEFT);
-        }
-        this.parent.formatter.saveData();
+        let subCommand: string = ((e.args as ClickEventArgs).item) ?
+            ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand : 'JustifyLeft';
+        this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, subCommand: subCommand });
     }
     private justifyImageRight(e: IImageNotifyArgs): void {
-        let selectNode: HTMLElement = e.selectNode[0] as HTMLElement;
-        selectNode.removeAttribute('class');
-        addClass([selectNode], 'e-rte-image');
-        if (!isNullOrUndefined(closest(selectNode, '.' + classes.CLS_CAPTION))) {
-            removeClass([closest(selectNode, '.' + classes.CLS_CAPTION)], classes.CLS_IMGLEFT);
-            addClass([closest(selectNode, '.' + classes.CLS_CAPTION)], classes.CLS_IMGRIGHT);
-        }
-        if (selectNode.parentElement.nodeName === 'A') {
-            removeClass([selectNode.parentElement], classes.CLS_IMGLEFT);
-            addClass([selectNode.parentElement], classes.CLS_IMGRIGHT);
-        } else {
-            addClass([selectNode], classes.CLS_IMGRIGHT);
-        }
-        this.parent.formatter.saveData();
+        let subCommand: string = ((e.args as ClickEventArgs).item) ?
+            ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand : 'JustifyRight';
+        this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, subCommand: subCommand });
     }
     private justifyImageCenter(e: IImageNotifyArgs): void {
-        let selectNode: HTMLElement = e.selectNode[0] as HTMLElement;
-        selectNode.removeAttribute('class');
-        addClass([selectNode], 'e-rte-image');
-        if (!isNullOrUndefined(closest(selectNode, '.' + classes.CLS_CAPTION))) {
-            removeClass([closest(selectNode, '.' + classes.CLS_CAPTION)], classes.CLS_IMGLEFT);
-            removeClass([closest(selectNode, '.' + classes.CLS_CAPTION)], classes.CLS_IMGRIGHT);
-            addClass([closest(selectNode, '.' + classes.CLS_CAPTION)], classes.CLS_IMGCENTER);
-        }
-        if (selectNode.parentElement.nodeName === 'A') {
-            removeClass([selectNode.parentElement], classes.CLS_IMGLEFT);
-            removeClass([selectNode.parentElement], classes.CLS_IMGRIGHT);
-            addClass([selectNode.parentElement], classes.CLS_IMGCENTER);
-        } else {
-            addClass([selectNode], classes.CLS_IMGCENTER);
-        }
-        this.parent.formatter.saveData();
+        let subCommand: string = ((e.args as ClickEventArgs).item) ?
+            ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand : 'JustifyCenter';
+        this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, subCommand: subCommand });
     }
     private imagDialog(e: IImageNotifyArgs): void {
         if (this.dialogObj) {
@@ -1129,7 +1105,7 @@ export class Image {
             '<input type="text" data-role ="none" id="imgheight" class="e-img-height" value=' +
             heightVal
             + ' /></div>';
-        let contentElem: DocumentFragment = document.createRange().createContextualFragment(content);
+        let contentElem: DocumentFragment = parseHtml(content);
         imgSizeWrap.appendChild(contentElem);
         let widthNum: NumericTextBox = new NumericTextBox({
             format: '###.### px', min: this.parent.insertImageSettings.minWidth as number,
@@ -1148,20 +1124,23 @@ export class Image {
         return imgSizeWrap;
     }
 
-    private insertSize(e: MouseEvent): void {
-        let selectNode: HTMLImageElement = (this as IImageNotifyArgs).selectNode[0] as HTMLImageElement;
-        (this as IImageNotifyArgs).selection.restore();
-        if ((this as IImageNotifyArgs).selfImage.parent.formatter.getUndoRedoStack().length === 0) {
-            (this as IImageNotifyArgs).selfImage.parent.formatter.saveData();
+    private insertSize(e: IImageNotifyArgs): void {
+        e.selection.restore();
+        let proxy: Image = e.selfImage;
+        if (proxy.parent.formatter.getUndoRedoStack().length === 0) {
+            proxy.parent.formatter.saveData();
         }
-        let dialogEle: Element = (this as IImageNotifyArgs).selfImage.dialogObj.element;
-        selectNode.style.height = '';
-        selectNode.style.width = '';
-        selectNode.width = parseFloat((dialogEle.querySelector('.e-img-width') as HTMLInputElement).value);
-        selectNode.height = parseFloat((dialogEle.parentElement.querySelector('.e-img-height') as HTMLInputElement).value);
-        if (this.imgResizeDiv) { (this as IImageNotifyArgs).selfImage.imgResizePos(selectNode, this.imgResizeDiv); }
-        (this as IImageNotifyArgs).selfImage.dialogObj.hide({ returnValue: true } as Event);
-        (this as IImageNotifyArgs).selfImage.parent.formatter.saveData();
+        let dialogEle: Element = proxy.dialogObj.element;
+        let width: number = parseFloat((dialogEle.querySelector('.e-img-width') as HTMLInputElement).value);
+        let height: number = parseFloat((dialogEle.parentElement.querySelector('.e-img-height') as HTMLInputElement).value);
+        proxy.parent.formatter.process(
+            this.parent, e.args, e.args,
+            {
+                width: width, height: height, selectNode: e.selectNode,
+                subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
+            });
+        if (this.imgResizeDiv) { proxy.imgResizePos(e.selectNode[0] as HTMLImageElement, this.imgResizeDiv); }
+        proxy.dialogObj.hide({ returnValue: true } as Event);
     }
 
     private insertImage(e: IImageNotifyArgs): void {

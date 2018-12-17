@@ -371,19 +371,16 @@ describe('ListView', () => {
             expect(treeObj.getSelectedItems()).toEqual(data);
         });
 
-        it('contentcontainer after and before empty the datasource', (done: Function) => {
+        it('contentcontainer after and before empty the datasource', () => {
 
             let listele: HTMLElement = createElement('div', { id: 'ListView' });
             let listObj = new ListView({ dataSource: [] });
             listObj.appendTo(listele);
             expect(listele.childNodes.length).toBe(0);
             listObj.dataSource = arrayData;
-            setTimeout(() => {
-                let contentdiv: HTMLElement = listele.childNodes[0] as HTMLElement;
-                expect(contentdiv.classList.contains('e-content')).toBe(true);
-                done();
-            }, 0);
-
+            listObj.dataBind();
+            let contentdiv: HTMLElement = listele.childNodes[0] as HTMLElement;
+            expect(contentdiv.classList.contains('e-content')).toBe(true);
         });
 
         afterAll(() => {

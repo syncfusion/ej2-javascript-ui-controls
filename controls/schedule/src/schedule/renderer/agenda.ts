@@ -352,7 +352,7 @@ export class Agenda extends ViewBase implements IRenderer {
         let formatDate: string = (this.parent.activeViewOptions.dateFormat) ? this.parent.activeViewOptions.dateFormat : 'MMMM y';
         if (this.parent.activeViewOptions.allowVirtualScrolling || this.parent.isAdaptive) {
             let currentDate: Date = isNullOrUndefined(date) ? this.parent.selectedDate : date;
-            return this.parent.globalize.formatDate(currentDate, { format: formatDate });
+            return this.parent.globalize.formatDate(currentDate, { format: formatDate, calendar: this.parent.getCalendarMode() });
         } else {
             let startDate: Date = this.parent.selectedDate;
             let endDate: Date = util.addDays(startDate, this.parent.agendaDaysCount - 1);

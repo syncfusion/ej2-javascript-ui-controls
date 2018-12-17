@@ -97,7 +97,7 @@ export class Month extends ViewBase implements IRenderer {
             if (this.parent.currentView === 'MonthAgenda') {
                 colLevels = [level];
             }
-            if (this.parent.uiStateValues.isGroupAdaptive) {
+            if (this.parent.uiStateValues.isGroupAdaptive && this.parent.resourceBase.lastResourceLevel.length > 0) {
                 let resourceLevel: TdData = this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex];
                 colLevels = [this.getDateSlots(resourceLevel.renderDates, resourceLevel.workDays)];
             }
@@ -247,11 +247,13 @@ export class Month extends ViewBase implements IRenderer {
                 }
             } else {
                 let ele: Element = createElement('span', { className: cls.NAVIGATE_CLASS });
-                let title: string = this.parent.globalize.formatDate(td.date, { skeleton: 'full' });
+                let title: string =
+                    this.parent.globalize.formatDate(td.date, { skeleton: 'full', calendar: this.parent.getCalendarMode() });
                 ele.setAttribute('title', title);
-                ele.innerHTML = (td.date.getDate() === 1 && !this.isCurrentDate(td.date) && !this.parent.isAdaptive) ?
-                    this.parent.globalize.formatDate(td.date, { format: 'MMM d' }) :
-                    this.parent.globalize.formatDate(td.date, { skeleton: 'd' });
+                ele.innerHTML =
+                    (this.parent.calendarUtil.isMonthStart(td.date) && !this.isCurrentDate(td.date) && !this.parent.isAdaptive) ?
+                        this.parent.globalize.formatDate(td.date, { format: 'MMM d', calendar: this.parent.getCalendarMode() }) :
+                        this.parent.globalize.formatDate(td.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
                 tdEle.appendChild(ele);
             }
             this.wireCellEvents(tdEle);
@@ -261,6 +263,9 @@ export class Month extends ViewBase implements IRenderer {
         return tdEle;
     }
     public getContentSlots(): TdData[][] {
+        if (!(this.colLevels[this.colLevels.length - 1] && this.colLevels[this.colLevels.length - 1][0])) {
+            return [];
+        }
         let slotDatas: TdData[][] = [];
         let prepareSlots: Function = (rowIndex: number, renderDate: Date, resData: TdData, classList?: string[]) => {
             let data: TdData = {
@@ -328,8 +333,8 @@ export class Month extends ViewBase implements IRenderer {
         }
         let monthDate: Date = new Date(this.parent.selectedDate.getTime());
         this.monthDates = {
-            start: util.firstDateOfMonth(monthDate),
-            end: util.lastDateOfMonth(util.addMonths(monthDate, this.parent.activeViewOptions.interval - 1))
+            start: this.parent.calendarUtil.firstDateOfMonth(monthDate),
+            end: this.parent.calendarUtil.lastDateOfMonth(util.addMonths(monthDate, this.parent.activeViewOptions.interval - 1))
         };
         let tBody: Element = tbl.querySelector('tbody');
         append(this.getContentRows(), tBody);
@@ -390,9 +395,10 @@ export class Month extends ViewBase implements IRenderer {
             return;
         }
         let dateHeader: Element = createElement('div', { className: cls.DATE_HEADER_CLASS });
-        dateHeader.innerHTML = (data.date.getDate() === 1 && !this.isCurrentDate(data.date) && !this.parent.isAdaptive) ?
-            this.parent.globalize.formatDate(data.date, { format: 'MMM d' }) :
-            this.parent.globalize.formatDate(data.date, { skeleton: 'd' });
+        dateHeader.innerHTML =
+            (this.parent.calendarUtil.isMonthStart(data.date) && !this.isCurrentDate(data.date) && !this.parent.isAdaptive) ?
+                this.parent.globalize.formatDate(data.date, { format: 'MMM d', calendar: this.parent.getCalendarMode() }) :
+                this.parent.globalize.formatDate(data.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
         ntd.appendChild(dateHeader);
         if (this.getModuleName() === 'month') {
             addClass([dateHeader], cls.NAVIGATE_CLASS);
@@ -400,14 +406,14 @@ export class Month extends ViewBase implements IRenderer {
     }
 
     public getMonthStart(currentDate: Date): Date {
-        let monthStart: Date = util.getWeekFirstDate(util.firstDateOfMonth(currentDate), this.parent.firstDayOfWeek);
+        let monthStart: Date = util.getWeekFirstDate(this.parent.calendarUtil.firstDateOfMonth(currentDate), this.parent.firstDayOfWeek);
         let start: Date = new Date(monthStart.getFullYear(), monthStart.getMonth(), monthStart.getDate());
         return start;
     }
 
     public getMonthEnd(currentDate: Date): Date {
         let endDate: Date = util.addMonths(currentDate, this.parent.activeViewOptions.interval - 1);
-        let lastWeekOfMonth: Date = util.getWeekFirstDate(util.lastDateOfMonth(endDate), this.parent.firstDayOfWeek);
+        let lastWeekOfMonth: Date = util.getWeekFirstDate(this.parent.calendarUtil.lastDateOfMonth(endDate), this.parent.firstDayOfWeek);
         let monthEnd: Date = util.addDays(lastWeekOfMonth, util.WEEK_LENGTH - 1);
         return monthEnd;
     }
@@ -448,21 +454,26 @@ export class Month extends ViewBase implements IRenderer {
                 let endDate: Date =
                     util.addMonths(util.lastDateOfMonth(this.parent.selectedDate), this.parent.activeViewOptions.interval - 1);
                 if (this.parent.selectedDate.getFullYear() === endDate.getFullYear()) {
-                    let monthNames: string = (this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM' }))
-                        + ' - ' + (this.parent.globalize.formatDate(endDate, { format: 'MMMM ' })) + endDate.getFullYear();
+                    let monthNames: string = (this.parent.globalize.formatDate(
+                        this.parent.selectedDate, { format: 'MMMM', calendar: this.parent.getCalendarMode() })) + ' - ' +
+                        (this.parent.globalize.formatDate(endDate, { format: 'MMMM ', calendar: this.parent.getCalendarMode() })) +
+                        endDate.getFullYear();
                     return monthNames;
                 }
-                return (this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM' })) + ' ' +
-                    this.parent.selectedDate.getFullYear() + ' - ' + (this.parent.globalize.formatDate(endDate, { format: 'MMMM ' })) +
+                return (this.parent.globalize.formatDate(
+                    this.parent.selectedDate, { format: 'MMMM', calendar: this.parent.getCalendarMode() })) + ' ' +
+                    this.parent.selectedDate.getFullYear() + ' - ' + (this.parent.globalize.formatDate(
+                        endDate, { format: 'MMMM ', calendar: this.parent.getCalendarMode() })) +
                     endDate.getFullYear();
             }
-            return this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y' });
+            return this.parent.globalize.
+                formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() });
         }
         return this.formatDateRange(this.parent.selectedDate);
     }
     public getLabelText(view: string): string {
         return this.parent.localeObj.getConstant(view) + ' of ' +
-            this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y' });
+            this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() });
     }
     private createWeekNumberElement(text?: string): HTMLElement {
         let tr: HTMLElement = createElement('tr');

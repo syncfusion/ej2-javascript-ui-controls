@@ -143,6 +143,7 @@ describe('Reorder module', () => {
         //     let mouseup: any = getEventObject('MouseEvents', 'mouseup', headers[1], 198, 13);
         //     EventHandler.trigger(<any>(document), 'mouseup', mouseup);
         // });
+        
 
         it('Reorder Column simulate testing', (done: Function) => {
             let cOld: Function = (gridObj.reorderModule as any).chkDropPosition;

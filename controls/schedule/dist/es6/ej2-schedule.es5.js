@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, cldrData, closest, compile, createElement, extend, formatUnit, getDefaultDateObject, getValue, isNullOrUndefined, prepend, remove, removeClass, setStyleAttribute, uniqueID } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, HijriParser, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, cldrData, closest, compile, createElement, extend, formatUnit, getDefaultDateObject, getValue, isNullOrUndefined, prepend, remove, removeClass, setStyleAttribute, uniqueID } from '@syncfusion/ej2-base';
 import { Dialog, Popup, Tooltip, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Toolbar, TreeView } from '@syncfusion/ej2-navigations';
 import { Calendar, DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
@@ -743,7 +743,7 @@ var HeaderRenderer = /** @__PURE__ @class */ (function () {
         }
     };
     HeaderRenderer.prototype.getDateRangeText = function () {
-        return this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y' });
+        return this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() });
     };
     HeaderRenderer.prototype.getItems = function () {
         var items = [];
@@ -877,6 +877,7 @@ var HeaderRenderer = /** @__PURE__ @class */ (function () {
             locale: this.parent.locale,
             depth: calendarView,
             start: calendarView,
+            calendarMode: this.parent.calendarMode,
             change: this.calendarChange.bind(this)
         });
         this.headerCalendar.appendTo(headerCalendarEle);
@@ -1563,8 +1564,9 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
         return this.parent.activeView.isInverseTableSelect;
     };
     /** @hidden */
-    KeyboardInteraction.prototype.selectCells = function (isMultiple, target) {
+    KeyboardInteraction.prototype.selectCells = function (isMultiple, targetCell) {
         this.parent.removeSelectedClass();
+        var target = (targetCell instanceof Array) ? targetCell.slice(-1)[0] : targetCell;
         if (isMultiple) {
             var initialId = void 0;
             var selectedCells = this.getCells(this.isInverseTableSelect(), this.initialTarget, target);
@@ -3037,6 +3039,12 @@ var EventBase = /** @__PURE__ @class */ (function () {
         var eventData = processed.filter(function (data) { return !data[_this.parent.eventFields.isBlock]; });
         this.parent.eventsProcessed = this.filterEvents(start, end, eventData);
         var blockData = processed.filter(function (data) { return data[_this.parent.eventFields.isBlock]; });
+        blockData.forEach(function (eventObj) {
+            if (eventObj[fields.isAllDay]) {
+                eventObj[fields.startTime] = resetTime(eventObj[fields.startTime]);
+                eventObj[fields.endTime] = addDays(resetTime(eventObj[fields.endTime]), 1);
+            }
+        });
         this.parent.blockProcessed = this.filterEvents(start, end, blockData);
         return eventData;
     };
@@ -3353,7 +3361,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
             if (this.parent.keyboardInteractionModule) {
                 var target = ((!isNullOrUndefined(this.parent.activeCellsData) &&
                     this.parent.activeCellsData.element) || selectedCell[selectedCell.length - 1]);
-                this.parent.keyboardInteractionModule.selectCells(false, target);
+                this.parent.keyboardInteractionModule.selectCells(target instanceof Array, target);
             }
             return;
         }
@@ -3439,9 +3447,13 @@ var EventBase = /** @__PURE__ @class */ (function () {
             this.removeSelectedAppointmentClass();
         }
     };
-    EventBase.prototype.wireAppointmentEvents = function (element, isAllDay, isReadOnly) {
+    EventBase.prototype.wireAppointmentEvents = function (element, isAllDay, event) {
         if (isAllDay === void 0) { isAllDay = false; }
-        if (isReadOnly === void 0) { isReadOnly = false; }
+        if (this.parent.calendarMode === 'Islamic' && (!isNullOrUndefined(event[this.parent.eventFields.recurrenceRule]) ||
+            !isNullOrUndefined(event[this.parent.eventFields.recurrenceID]))) {
+            return;
+        }
+        var isReadOnly = (!isNullOrUndefined(event)) ? event[this.parent.eventFields.isReadonly] : false;
         EventHandler.add(element, 'click', this.eventClick, this);
         if (!this.parent.isAdaptive && !this.parent.activeViewOptions.readonly && !isReadOnly) {
             EventHandler.add(element, 'dblclick', this.eventDoubleClick, this);
@@ -3991,11 +4003,11 @@ var Crud = /** @__PURE__ @class */ (function () {
         var _this = this;
         var eventCollection = (eventData instanceof Array) ? eventData : [eventData];
         var isBlockAlert = false;
+        var fields = this.parent.eventFields;
         eventCollection.forEach(function (event) {
             var dataCol = [];
-            if (!isNullOrUndefined(event[_this.parent.eventFields.recurrenceRule])) {
-                var parentObj = _this.parent.eventBase.getRecurrenceEvent(event);
-                dataCol = _this.parent.eventBase.generateOccurrence(parentObj || event);
+            if (!isNullOrUndefined(event[fields.recurrenceRule]) && isNullOrUndefined(event[fields.recurrenceID])) {
+                dataCol = _this.parent.eventBase.generateOccurrence(event);
             }
             else {
                 dataCol.push(event);
@@ -4367,7 +4379,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
                 this.parent.trigger(eventRendered, args);
                 if (!args.cancel) {
                     moreEventWrapperEle.appendChild(appointmentEle);
-                    this.parent.eventBase.wireAppointmentEvents(appointmentEle);
+                    this.parent.eventBase.wireAppointmentEvents(appointmentEle, false, eventData);
                     this.parent.eventBase.applyResourceColor(appointmentEle, eventData, 'backgroundColor', groupOrder);
                 }
             }
@@ -4404,23 +4416,25 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
             this.quickPopupHide();
             return;
         }
+        var targetEle = args.event.target;
         if (this.parent.isAdaptive) {
             this.quickPopupHide();
-            if (isNullOrUndefined(this.newEventClone)) {
-                this.newEventClone = createElement('div', {
+            var newEventClone = this.parent.element.querySelector('.' + NEW_EVENT_CLASS);
+            if (isNullOrUndefined(newEventClone)) {
+                newEventClone = createElement('div', {
                     className: NEW_EVENT_CLASS,
-                    innerHTML: '<div class="e-title"> + </div>'
+                    innerHTML: "<div class=\"e-title\">+ " + this.l10n.getConstant('newEvent') + "</div>"
                 });
             }
-            if (args.event.target.classList.contains(WORK_CELLS_CLASS) ||
-                args.event.target.classList.contains(ALLDAY_CELLS_CLASS)) {
-                args.event.target.appendChild(this.newEventClone);
+            var targetCell = closest(targetEle, '.' + WORK_CELLS_CLASS + ',.' + ALLDAY_CELLS_CLASS);
+            if (targetCell) {
+                targetCell.appendChild(newEventClone);
             }
             return;
         }
-        var target = closest(args.event.target, '.' + WORK_CELLS_CLASS + ',.' + ALLDAY_CELLS_CLASS + ',.' +
+        var target = closest(targetEle, '.' + WORK_CELLS_CLASS + ',.' + ALLDAY_CELLS_CLASS + ',.' +
             HEADER_CELLS_CLASS);
-        if (isNullOrUndefined(target) || args.event.target.classList.contains(MORE_INDICATOR_CLASS)) {
+        if (isNullOrUndefined(target) || targetEle.classList.contains(MORE_INDICATOR_CLASS)) {
             return;
         }
         var isSameTarget = this.quickPopup.relateTo === target;
@@ -4892,7 +4906,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         return ruleSummary.charAt(0).toUpperCase() + ruleSummary.slice(1);
     };
     QuickPopups.prototype.getDateFormat = function (date, formatString) {
-        return this.parent.globalize.formatDate(date, { skeleton: formatString });
+        return this.parent.globalize.formatDate(date, { skeleton: formatString, calendar: this.parent.getCalendarMode() });
     };
     QuickPopups.prototype.getDataFromTarget = function (target) {
         if (target.classList.contains(APPOINTMENT_CLASS)) {
@@ -5087,6 +5101,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         this.quickPopup.destroy();
         remove(this.quickPopup.element);
         this.morePopup.destroy();
+        remove(this.morePopup.element);
         if (this.quickDialog.element) {
             this.quickDialog.destroy();
             remove(this.quickDialog.element);
@@ -5146,14 +5161,14 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
             };
             var contentContainer = createElement('div');
             append(this.parent.getHeaderTooltipTemplate()(data), contentContainer);
-            this.tooltipObj.content = contentContainer;
+            this.setContent(contentContainer);
             return;
         }
         var record = this.parent.eventBase.getEventByGuid(args.target.getAttribute('data-guid'));
         if (!isNullOrUndefined(this.parent.eventSettings.tooltipTemplate)) {
             var contentContainer = createElement('div');
             append(this.parent.getEventTooltipTemplate()(record), contentContainer);
-            this.tooltipObj.content = contentContainer;
+            this.setContent(contentContainer);
         }
         else {
             var globalize = this.parent.globalize;
@@ -5165,14 +5180,26 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
             var endDate = resetTime(new Date('' + eventEnd));
             var tooltipSubject = (record[fields.subject] || this.parent.eventSettings.fields.subject.default);
             var tooltipLocation = !isNullOrUndefined(record[fields.location]) ? record[fields.location] : '';
-            var startMonthDate = globalize.formatDate(eventStart, { type: 'date', skeleton: 'MMMd' });
-            var startMonthYearDate = globalize.formatDate(eventStart, { type: 'date', skeleton: 'yMMMd' });
-            var endMonthYearDate = globalize.formatDate(eventEnd, { type: 'date', skeleton: 'yMMMd' });
-            var startTime = globalize.formatDate(eventStart, { type: 'time', skeleton: 'short' });
-            var endTime = globalize.formatDate(eventEnd, { type: 'time', skeleton: 'short' });
+            var startMonthDate = globalize.formatDate(eventStart, {
+                type: 'date', skeleton: 'MMMd', calendar: this.parent.getCalendarMode()
+            });
+            var startMonthYearDate = globalize.formatDate(eventStart, {
+                type: 'date', skeleton: 'medium', calendar: this.parent.getCalendarMode()
+            });
+            var endMonthYearDate = globalize.formatDate(eventEnd, {
+                type: 'date', skeleton: 'medium', calendar: this.parent.getCalendarMode()
+            });
+            var startTime = globalize.formatDate(eventStart, {
+                type: 'time', skeleton: 'short', calendar: this.parent.getCalendarMode()
+            });
+            var endTime = globalize.formatDate(eventEnd, {
+                type: 'time', skeleton: 'short', calendar: this.parent.getCalendarMode()
+            });
             var tooltipDetails = void 0;
             if (startDate.getTime() === endDate.getTime()) {
-                tooltipDetails = globalize.formatDate(eventStart, { type: 'date', skeleton: 'long' });
+                tooltipDetails = globalize.formatDate(eventStart, {
+                    type: 'date', skeleton: 'long', calendar: this.parent.getCalendarMode()
+                });
             }
             else {
                 tooltipDetails = (startDate.getFullYear() === endDate.getFullYear()) ? (startMonthDate + ' - ' + endMonthYearDate) :
@@ -5180,11 +5207,15 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
             }
             var tooltipTime = (record[fields.isAllDay]) ? this.parent.localeObj.getConstant('allDay') :
                 (startTime + ' - ' + endTime);
-            this.tooltipObj.content = '<div><div class="e-subject">' + tooltipSubject + '</div>' +
+            var content = '<div><div class="e-subject">' + tooltipSubject + '</div>' +
                 '<div class="e-location">' + tooltipLocation + '</div>' +
                 '<div class="e-details">' + tooltipDetails + '</div>' +
                 '<div class="e-all-day">' + tooltipTime + '</div></div>';
+            this.setContent(content);
         }
+    };
+    EventTooltip.prototype.setContent = function (content) {
+        this.tooltipObj.setProperties({ content: content }, true);
     };
     EventTooltip.prototype.close = function () {
         this.tooltipObj.close();
@@ -6338,7 +6369,10 @@ var EventWindow = /** @__PURE__ @class */ (function () {
     EventWindow.prototype.openEditor = function (data, type, isEventData, repeatType) {
         this.parent.removeNewEventElement();
         this.parent.quickPopup.quickPopupHide(true);
-        if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
+        if (this.parent.calendarMode === 'Islamic') {
+            addClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], DISABLE_CLASS);
+        }
+        else if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
             removeClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], DISABLE_CLASS);
         }
         switch (type) {
@@ -6492,6 +6526,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         dateTimeDiv.appendChild(dateTimeInput);
         var dateTimePicker = new DateTimePicker({
             change: changeEvent,
+            calendarMode: this.parent.calendarMode,
             cssClass: this.parent.cssClass,
             enableRtl: this.parent.enableRtl,
             floatLabelType: 'Always',
@@ -7031,7 +7066,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         else {
             startDate = new Date(this.parent.activeCellsData.startTime.getTime());
             if (this.parent.currentView === 'Month' || this.parent.currentView === 'MonthAgenda' || this.parent.activeCellsData.isAllDay) {
-                var startHour = this.parent.globalize.parseDate(this.parent.workHours.start, { skeleton: 'Hm' });
+                var startHour = this.parent.globalize.parseDate(this.parent.workHours.start, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
                 startDate.setHours(startHour.getHours(), startHour.getMinutes(), startHour.getSeconds());
                 endDate = new Date(startDate.getTime());
                 endDate.setMilliseconds(MS_PER_MINUTE * this.getSlotDuration());
@@ -7051,7 +7086,9 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             format = getValue(formatType + '.short', getDefaultDateObject());
         }
         else {
-            format = getValue('main.' + '' + this.parent.locale + '.dates.calendars.gregorian.' + formatType + '.short', cldrData);
+            format = getValue(
+            // tslint:disable-next-line:max-line-length
+            'main.' + '' + this.parent.locale + '.dates.calendars.' + this.parent.getCalendarMode() + '.' + formatType + '.short', cldrData);
         }
         return format;
     };
@@ -9011,10 +9048,11 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
         for (var _i = 0, dateSlots_1 = dateSlots; _i < dateSlots_1.length; _i++) {
             var dateSlot = dateSlots_1[_i];
             if (startHour) {
-                dateSlot.startHour = this.parent.globalize.parseDate(startHour, { skeleton: 'Hm' });
+                dateSlot.startHour =
+                    this.parent.globalize.parseDate(startHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
             }
             if (endHour) {
-                dateSlot.endHour = this.parent.globalize.parseDate(endHour, { skeleton: 'Hm' });
+                dateSlot.endHour = this.parent.globalize.parseDate(endHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
             }
             if (groupOrder) {
                 dateSlot.groupOrder = groupOrder;
@@ -9050,7 +9088,7 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
                 }
             }
         }
-        this.lastResourceLevel = headerLevels.slice(-1)[0];
+        this.lastResourceLevel = headerLevels.slice(-1)[0] || [];
         if (!this.parent.activeViewOptions.group.byDate) {
             var index = 0;
             for (var _d = 0, _e = this.lastResourceLevel; _d < _e.length; _d++) {
@@ -9118,7 +9156,9 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
         else if (this.parent.resources.length > 0) {
             for (var index = 0; index < this.resourceCollection.length; index++) {
                 var data = this.resourceCollection[index].dataSource[0];
-                setValues(index, this.resourceCollection[index].field, data[this.resourceCollection[index].idField]);
+                if (data) {
+                    setValues(index, this.resourceCollection[index].field, data[this.resourceCollection[index].idField]);
+                }
             }
         }
     };
@@ -9230,6 +9270,61 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
     return ResourceBase;
 }());
 
+var Gregorian = /** @__PURE__ @class */ (function () {
+    function Gregorian() {
+    }
+    Gregorian.prototype.firstDateOfMonth = function (date) {
+        return new Date(date.getFullYear(), date.getMonth());
+    };
+    Gregorian.prototype.lastDateOfMonth = function (dt) {
+        return new Date(dt.getFullYear(), dt.getMonth() + 1, 0);
+    };
+    Gregorian.prototype.isMonthStart = function (date) {
+        return (date.getDate() === 1);
+    };
+    return Gregorian;
+}());
+var Islamic = /** @__PURE__ @class */ (function () {
+    function Islamic() {
+    }
+    Islamic.prototype.firstDateOfMonth = function (date) {
+        var hDate = HijriParser.getHijriDate(date);
+        var gDate = HijriParser.toGregorian(hDate.year, hDate.month, 1);
+        return gDate;
+    };
+    Islamic.prototype.lastDateOfMonth = function (dt) {
+        var hDate = HijriParser.getHijriDate(dt);
+        var gDate = HijriParser.toGregorian(hDate.year, hDate.month, this.getDaysInMonth(hDate.month, hDate.year));
+        var finalGDate = new Date(gDate.getTime());
+        new Date(finalGDate.setDate(finalGDate.getDate() + 1));
+        var finalHDate = HijriParser.getHijriDate(finalGDate);
+        if (hDate.month === finalHDate.month) {
+            return finalGDate;
+        }
+        finalHDate = HijriParser.getHijriDate(gDate);
+        if (hDate.month === finalHDate.month) {
+            return gDate;
+        }
+        return new Date(gDate.setDate(gDate.getDate() - 1));
+    };
+    Islamic.prototype.isMonthStart = function (date) {
+        var hijriDate = HijriParser.getHijriDate(date);
+        return (hijriDate.date === 1);
+    };
+    Islamic.prototype.isLeapYear = function (year) {
+        return (14 + 11 * year) % 30 < 11;
+    };
+    Islamic.prototype.getDaysInMonth = function (month, year) {
+        var length = 0;
+        length = 29 + ((month + 1) % 2);
+        if (month === 11 && this.isLeapYear(year)) {
+            length++;
+        }
+        return length;
+    };
+    return Islamic;
+}());
+
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -9308,6 +9403,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         this.renderModule = new Render(this);
         this.eventBase = new EventBase(this);
         this.initializeDataModule();
+        this.element.appendChild(this.createElement('div', { className: TABLE_CONTAINER_CLASS }));
         this.initializeResources();
     };
     Schedule.prototype.initializeResources = function (isSetModel) {
@@ -9329,15 +9425,20 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             this.initializeView(this.currentView);
             return;
         }
+        this.destroyHeaderModule();
         if (this.showHeaderBar) {
             this.headerModule = new HeaderRenderer(this);
         }
-        this.element.appendChild(this.createElement('div', { className: TABLE_CONTAINER_CLASS }));
+        if (!this.element.querySelector('.' + TABLE_CONTAINER_CLASS)) {
+            this.element.appendChild(this.createElement('div', { className: TABLE_CONTAINER_CLASS }));
+        }
         if (Browser.isDevice || Browser.isTouch) {
             this.scheduleTouchModule = new ScheduleTouch(this);
         }
         this.initializeView(this.currentView);
+        this.destroyPopups();
         this.initializePopups();
+        this.unwireEvents();
         this.wireEvents();
     };
     Schedule.prototype.validateDate = function () {
@@ -9497,7 +9598,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             cldrObj = (getValue('days.stand-alone.' + type, getDefaultDateObject()));
         }
         else {
-            cldrObj = (getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.days.format.' + type, cldrData));
+            cldrObj = (getValue('main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.format.' + type, cldrData));
         }
         for (var _i = 0, _a = Object.keys(cldrObj); _i < _a.length; _i++) {
             var obj = _a[_i];
@@ -9510,11 +9611,22 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             this.timeFormat = (getValue('timeFormats.short', getDefaultDateObject()));
         }
         else {
-            this.timeFormat = (getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.short', cldrData));
+            this.timeFormat = (getValue('main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.timeFormats.short', cldrData));
         }
     };
+    Schedule.prototype.getCalendarMode = function () {
+        return this.calendarMode.toLowerCase();
+    };
     Schedule.prototype.getTimeString = function (date) {
-        return this.globalize.formatDate(date, { format: this.timeFormat, type: 'time' });
+        return this.globalize.formatDate(date, { format: this.timeFormat, type: 'time', calendar: this.getCalendarMode() });
+    };
+    Schedule.prototype.setcalendarMode = function () {
+        if (this.calendarMode === 'Islamic') {
+            this.calendarUtil = new Islamic();
+        }
+        else {
+            this.calendarUtil = new Gregorian();
+        }
     };
     Schedule.prototype.changeView = function (view, event, muteOnChange, index) {
         if (isNullOrUndefined(index)) {
@@ -9699,6 +9811,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.setCldrTimeFormat();
+        this.setcalendarMode();
         this.eventsData = [];
         this.eventsProcessed = [];
         this.blockData = [];
@@ -9902,27 +10015,22 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Schedule.prototype.onPropertyChanged = function (newProp, oldProp) {
-        var requireRefresh = false;
-        var requireScheduleRefresh = false;
+        var state = { isRefresh: false, isResource: false, isDate: false, isView: false, isLayout: false, isDataManager: false };
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
             switch (prop) {
-                case 'width':
-                case 'height':
-                    this.notify(uiUpdate, { module: 'scroll', properties: { width: newProp.width, height: newProp.height } });
-                    break;
                 case 'views':
                     this.setViewOptions();
                     if (this.headerModule) {
                         this.headerModule.updateItems();
                     }
-                    this.changeView(this.currentView, null, true);
+                    state.isView = true;
                     break;
                 case 'currentView':
-                    this.changeView(newProp.currentView, null, true);
+                    state.isView = true;
                     break;
                 case 'selectedDate':
-                    this.changeDate(newProp.selectedDate);
+                    state.isDate = true;
                     break;
                 case 'dateFormat':
                     this.activeViewOptions = this.getActiveViewOptions();
@@ -9931,10 +10039,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
                     }
                     break;
                 case 'showHeaderBar':
-                    if (this.headerModule) {
-                        this.headerModule.destroy();
-                        this.headerModule = null;
-                    }
+                    this.destroyHeaderModule();
                     if (newProp.showHeaderBar) {
                         this.headerModule = new HeaderRenderer(this);
                         this.headerModule.updateDateRange(this.activeView.getDateRangeText());
@@ -9952,57 +10057,77 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
                 case 'readonly':
                 case 'headerRows':
                 case 'showWeekNumber':
-                    requireRefresh = true;
-                    break;
-                case 'eventDragArea':
-                    this.notify(dataReady, {});
+                    state.isLayout = true;
                     break;
                 case 'locale':
+                case 'calendarMode':
                     this.setCldrTimeFormat();
-                    requireScheduleRefresh = true;
+                    this.setcalendarMode();
+                    state.isRefresh = true;
                     break;
                 case 'firstDayOfWeek':
                     if (this.headerModule) {
                         this.headerModule.setDayOfWeek(newProp.firstDayOfWeek);
                     }
-                    this.eventWindow.refreshRecurrenceEditor();
-                    requireRefresh = true;
+                    if (this.eventWindow) {
+                        this.eventWindow.refreshRecurrenceEditor();
+                    }
+                    state.isLayout = true;
                     break;
                 case 'showTimeIndicator':
-                    if (this.activeViewOptions.timeScale.enable) {
+                    if (this.activeViewOptions.timeScale.enable && this.activeView) {
                         this.activeView.highlightCurrentTime();
                     }
                     break;
                 case 'cellTemplate':
                     this.activeViewOptions.cellTemplate = newProp.cellTemplate;
                     this.cellTemplateFn = this.templateParser(this.activeViewOptions.cellTemplate);
-                    requireRefresh = true;
+                    state.isLayout = true;
                     break;
                 case 'dateHeaderTemplate':
                     this.activeViewOptions.dateHeaderTemplate = newProp.dateHeaderTemplate;
                     this.dateHeaderTemplateFn = this.templateParser(this.activeViewOptions.dateHeaderTemplate);
-                    requireRefresh = true;
+                    state.isLayout = true;
                     break;
                 case 'timezone':
                     this.eventBase.timezonePropertyChange(oldProp.timezone);
                     break;
                 case 'enableRtl':
-                    requireScheduleRefresh = true;
+                    state.isRefresh = true;
                     break;
                 default:
-                    this.extendedPropertyChange(prop, newProp, oldProp);
+                    this.extendedPropertyChange(prop, newProp, oldProp, state);
                     break;
             }
         }
-        if (requireScheduleRefresh) {
+        this.propertyChangeAction(state);
+    };
+    Schedule.prototype.propertyChangeAction = function (state) {
+        if (state.isRefresh) {
             this.refresh();
         }
-        else if (requireRefresh) {
+        else if (state.isResource) {
+            this.initializeResources(true);
+        }
+        else if (state.isView) {
+            this.changeView(this.currentView, null, true);
+        }
+        else if (state.isDate) {
+            this.changeDate(this.selectedDate);
+        }
+        else if (state.isLayout) {
             this.initializeView(this.currentView);
         }
+        else if (state.isDataManager && this.renderModule) {
+            this.renderModule.refreshDataManager();
+        }
     };
-    Schedule.prototype.extendedPropertyChange = function (prop, newProp, oldProp) {
+    Schedule.prototype.extendedPropertyChange = function (prop, newProp, oldProp, state) {
         switch (prop) {
+            case 'width':
+            case 'height':
+                this.notify(uiUpdate, { module: 'scroll', properties: { width: newProp.width, height: newProp.height } });
+                break;
             case 'cssClass':
                 if (oldProp.cssClass) {
                     removeClass([this.element], oldProp.cssClass);
@@ -10014,10 +10139,10 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             case 'hideEmptyAgendaDays':
             case 'agendaDaysCount':
                 this.activeViewOptions = this.getActiveViewOptions();
-                this.changeView(this.currentView, null, true);
+                state.isView = true;
                 break;
             case 'eventSettings':
-                this.onEventSettingsPropertyChanged(newProp.eventSettings, oldProp.eventSettings);
+                this.onEventSettingsPropertyChanged(newProp.eventSettings, oldProp.eventSettings, state);
                 break;
             case 'allowKeyboardInteraction':
                 if (this.keyboardInteractionModule) {
@@ -10032,7 +10157,9 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
                 if (!isNullOrUndefined(this.editorTemplate)) {
                     this.editorTemplateFn = this.templateParser(this.editorTemplate);
                 }
-                this.eventWindow.setDialogContent();
+                if (this.eventWindow) {
+                    this.eventWindow.setDialogContent();
+                }
                 break;
             case 'quickInfoTemplates':
                 if (this.quickInfoTemplates.header) {
@@ -10046,16 +10173,18 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
                 }
                 break;
             case 'group':
-                this.onGroupSettingsPropertyChanged(newProp.group, oldProp.group);
+                this.onGroupSettingsPropertyChanged(newProp.group, oldProp.group, state);
                 break;
             case 'resources':
-                this.initializeResources(true);
+                state.isResource = true;
                 break;
             case 'timeScale':
                 this.activeViewOptions.timeScale.interval = newProp.timeScale.interval || this.activeViewOptions.timeScale.interval;
                 this.activeViewOptions.timeScale.slotCount = newProp.timeScale.slotCount || this.activeViewOptions.timeScale.slotCount;
-                this.eventWindow.refreshDateTimePicker();
-                this.initializeView(this.currentView);
+                if (this.eventWindow) {
+                    this.eventWindow.refreshDateTimePicker();
+                }
+                state.isLayout = true;
                 break;
             case 'allowDragAndDrop':
             case 'allowResizing':
@@ -10063,22 +10192,26 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
                     processedData: this.eventBase.processData(this.eventsData)
                 });
                 break;
+            case 'eventDragArea':
+                this.notify(dataReady, {});
+                break;
         }
     };
-    Schedule.prototype.onGroupSettingsPropertyChanged = function (newProp, oldProp) {
+    Schedule.prototype.onGroupSettingsPropertyChanged = function (newProp, oldProp, state) {
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
             if (prop === 'headerTooltipTemplate') {
                 this.headerTooltipTemplateFn = this.templateParser(newProp[prop]);
             }
             else {
-                this.initializeView(this.currentView);
-                this.eventWindow.refresh();
+                state.isLayout = true;
+                if (this.eventWindow) {
+                    this.eventWindow.refresh();
+                }
             }
         }
     };
-    Schedule.prototype.onEventSettingsPropertyChanged = function (newProp, oldProp) {
-        var requireRefresh = false;
+    Schedule.prototype.onEventSettingsPropertyChanged = function (newProp, oldProp, state) {
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
             switch (prop) {
@@ -10086,12 +10219,12 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
                 case 'query':
                 case 'fields':
                     this.initializeDataModule();
-                    requireRefresh = true;
+                    state.isDataManager = true;
                     break;
                 case 'template':
                     this.activeViewOptions.eventTemplate = newProp.template;
                     this.appointmentTemplateFn = this.templateParser(this.activeViewOptions.eventTemplate);
-                    requireRefresh = true;
+                    state.isDataManager = true;
                     break;
                 case 'enableTooltip':
                     if (this.eventTooltip) {
@@ -10109,12 +10242,25 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
                     if (this.resourceBase) {
                         this.resourceBase.setResourceCollection();
                     }
-                    requireRefresh = true;
+                    state.isDataManager = true;
                     break;
             }
         }
-        if (requireRefresh) {
-            this.renderModule.refreshDataManager();
+    };
+    Schedule.prototype.destroyHeaderModule = function () {
+        if (this.headerModule) {
+            this.headerModule.destroy();
+            this.headerModule = null;
+        }
+    };
+    Schedule.prototype.destroyPopups = function () {
+        if (this.quickPopup) {
+            this.quickPopup.destroy();
+            this.quickPopup = null;
+        }
+        if (this.eventWindow) {
+            this.eventWindow.destroy();
+            this.eventWindow = null;
         }
     };
     /**
@@ -10140,8 +10286,8 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * @returns {void}
      */
     Schedule.prototype.setWorkHours = function (dates, start, end, groupIndex) {
-        var startHour = this.globalize.parseDate(start, { skeleton: 'Hm' });
-        var endHour = this.globalize.parseDate(end, { skeleton: 'Hm' });
+        var startHour = this.globalize.parseDate(start, { skeleton: 'Hm', calendar: this.getCalendarMode() });
+        var endHour = this.globalize.parseDate(end, { skeleton: 'Hm', calendar: this.getCalendarMode() });
         var tableEle = this.getContentTable();
         if (isNullOrUndefined(startHour) || isNullOrUndefined(endHour) || !tableEle) {
             return;
@@ -10195,31 +10341,31 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * @returns {CellClickEventArgs} Object An object holding the startTime, endTime and all-day information along with the target HTML
      *  element will be returned.
      */
-    Schedule.prototype.getCellDetails = function (td) {
-        var startTime = this.getDateFromElement(td);
-        if (isNullOrUndefined(startTime)) {
+    Schedule.prototype.getCellDetails = function (tdCol) {
+        var td = (tdCol instanceof Array) ? tdCol : [tdCol];
+        var firstTd = td[0];
+        var lastTd = td.slice(-1)[0];
+        var startTime = this.getDateFromElement(firstTd);
+        var endTime = this.getDateFromElement(lastTd);
+        if (isNullOrUndefined(startTime) || isNullOrUndefined(endTime)) {
             return undefined;
         }
-        var endTime;
-        var duration = 1;
-        var endDateFromColSpan = this.activeView.isTimelineView() && !isNullOrUndefined(td.getAttribute('colSpan'));
-        if (endDateFromColSpan) {
-            duration = parseInt(td.getAttribute('colSpan'), 10);
-        }
-        if (!this.activeViewOptions.timeScale.enable || td.classList.contains(ALLDAY_CELLS_CLASS) ||
-            td.classList.contains(HEADER_CELLS_CLASS) || endDateFromColSpan) {
+        var endDateFromColSpan = this.activeView.isTimelineView() && !isNullOrUndefined(lastTd.getAttribute('colSpan'));
+        var duration = endDateFromColSpan ? parseInt(lastTd.getAttribute('colSpan'), 10) : 1;
+        if (!this.activeViewOptions.timeScale.enable || endDateFromColSpan || lastTd.classList.contains(ALLDAY_CELLS_CLASS) ||
+            lastTd.classList.contains(HEADER_CELLS_CLASS)) {
             endTime = addDays(new Date(startTime.getTime()), duration);
         }
         else {
-            endTime = this.activeView.getEndDateFromStartDate(startTime);
+            endTime = this.activeView.getEndDateFromStartDate(endTime);
         }
         var data = {
             startTime: startTime,
             endTime: endTime,
-            isAllDay: this.isAllDayCell(td),
-            element: td
+            isAllDay: this.isAllDayCell(firstTd),
+            element: tdCol
         };
-        var groupIndex = td.getAttribute('data-group-index');
+        var groupIndex = firstTd.getAttribute('data-group-index');
         if (!isNullOrUndefined(groupIndex)) {
             data.groupIndex = parseInt(groupIndex, 10);
         }
@@ -10421,23 +10567,13 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     Schedule.prototype.destroy = function () {
-        if (this.quickPopup) {
-            this.quickPopup.destroy();
-            this.quickPopup = null;
-        }
         if (this.eventTooltip) {
             this.eventTooltip.destroy();
             this.eventTooltip = null;
         }
-        if (this.eventWindow) {
-            this.eventWindow.destroy();
-            this.eventWindow = null;
-        }
+        this.destroyPopups();
         this.unwireEvents();
-        if (this.headerModule) {
-            this.headerModule.destroy();
-            this.headerModule = null;
-        }
+        this.destroyHeaderModule();
         if (this.scrollModule) {
             this.scrollModule.destroy();
             this.scrollModule = null;
@@ -10483,6 +10619,9 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property()
     ], Schedule.prototype, "dateFormat", void 0);
+    __decorate([
+        Property('Gregorian')
+    ], Schedule.prototype, "calendarMode", void 0);
     __decorate([
         Property(true)
     ], Schedule.prototype, "showWeekend", void 0);
@@ -11978,16 +12117,16 @@ var ViewBase = /** @__PURE__ @class */ (function () {
                 return _this.parent.getDayNames('abbreviated')[dt.getDay()];
             },
             getDate: function (dt) {
-                return _this.parent.globalize.formatDate(dt, { format: 'd' });
+                return _this.parent.globalize.formatDate(dt, { format: 'd', calendar: _this.parent.getCalendarMode() });
             },
             getTime: function (dt) {
                 if (_this.parent.isAdaptive) {
-                    return _this.parent.globalize.formatDate(dt, { skeleton: 'h' });
+                    return _this.parent.globalize.formatDate(dt, { skeleton: 'h', calendar: _this.parent.getCalendarMode() });
                 }
                 return _this.parent.getTimeString(dt);
             },
             getTimelineDate: function (dt) {
-                return _this.parent.globalize.formatDate(dt, { skeleton: 'MMMd' }) + ', ' + _this.parent.getDayNames('wide')[dt.getDay()];
+                return _this.parent.globalize.formatDate(dt, { skeleton: 'MMMd', calendar: _this.parent.getCalendarMode() }) + ', ' + _this.parent.getDayNames('wide')[dt.getDay()];
             }
         };
         this.parent = parent;
@@ -12033,7 +12172,7 @@ var ViewBase = /** @__PURE__ @class */ (function () {
     };
     ViewBase.prototype.createColGroup = function (table, lastRow) {
         var length = lastRow.length;
-        if (lastRow[0].colSpan) {
+        if (lastRow[0] && lastRow[0].colSpan) {
             length = lastRow.map(function (value) { return value.colSpan; }).reduce(function (prev, next) { return prev + next; });
         }
         var colGroupEle = createElement('colgroup');
@@ -12095,7 +12234,10 @@ var ViewBase = /** @__PURE__ @class */ (function () {
             headerBarHeight += getOuterHeight(this.parent.headerModule.getHeaderElement());
         }
         if (this.parent.uiStateValues.isGroupAdaptive) {
-            headerBarHeight += this.parent.element.querySelector('.' + RESOURCE_HEADER_TOOLBAR).offsetHeight;
+            var resHeader = this.parent.element.querySelector('.' + RESOURCE_HEADER_TOOLBAR);
+            if (resHeader) {
+                headerBarHeight += resHeader.offsetHeight;
+            }
         }
         return headerBarHeight;
     };
@@ -12140,14 +12282,14 @@ var ViewBase = /** @__PURE__ @class */ (function () {
         return addDays(this.renderDates[this.renderDates.length - 1], 1);
     };
     ViewBase.prototype.getStartHour = function () {
-        var startHour = this.parent.globalize.parseDate(this.parent.activeViewOptions.startHour, { skeleton: 'Hm' });
+        var startHour = this.parent.globalize.parseDate(this.parent.activeViewOptions.startHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
         if (isNullOrUndefined(startHour)) {
             startHour = new Date(2000, 0, 0, 0);
         }
         return startHour;
     };
     ViewBase.prototype.getEndHour = function () {
-        var endHour = this.parent.globalize.parseDate(this.parent.activeViewOptions.endHour, { skeleton: 'Hm' });
+        var endHour = this.parent.globalize.parseDate(this.parent.activeViewOptions.endHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
         if (isNullOrUndefined(endHour)) {
             endHour = new Date(2000, 0, 0, 0);
         }
@@ -12236,12 +12378,12 @@ var ViewBase = /** @__PURE__ @class */ (function () {
         }
     };
     ViewBase.prototype.getLabelText = function (view) {
-        return this.parent.localeObj.getConstant(view) + ' of ' +
-            this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'long' });
+        return this.parent.localeObj.getConstant(view) + ' of ' + this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'long', calendar: this.parent.getCalendarMode() });
     };
     ViewBase.prototype.getDateRangeText = function () {
         if (this.parent.isAdaptive) {
-            return this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y' });
+            return this.parent.globalize.
+                formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() });
         }
         return this.formatDateRange(this.renderDates[0], this.renderDates[this.renderDates.length - 1]);
     };
@@ -12252,10 +12394,11 @@ var ViewBase = /** @__PURE__ @class */ (function () {
         }
         if (!isNullOrUndefined(this.parent.activeViewOptions.dateFormat)) {
             if (!endDate) {
-                return globalize.formatDate(startDate, { format: this.parent.activeViewOptions.dateFormat });
+                return globalize.formatDate(startDate, { format: this.parent.activeViewOptions.dateFormat, calendar: this.parent.getCalendarMode() });
             }
-            return globalize.formatDate(startDate, { format: this.parent.activeViewOptions.dateFormat }) + ' - ' +
-                globalize.formatDate(endDate, { format: this.parent.activeViewOptions.dateFormat });
+            return globalize.formatDate(startDate, { format: this.parent.activeViewOptions.dateFormat, calendar: this.parent.getCalendarMode() }) + ' - ' +
+                globalize.
+                    formatDate(endDate, { format: this.parent.activeViewOptions.dateFormat, calendar: this.parent.getCalendarMode() });
         }
         var formattedStr;
         var longDateFormat;
@@ -12263,55 +12406,56 @@ var ViewBase = /** @__PURE__ @class */ (function () {
             longDateFormat = getValue('dateFormats.long', getDefaultDateObject());
         }
         else {
-            longDateFormat = getValue('main.' + '' + this.parent.locale + '.dates.calendars.gregorian.dateFormats.long', cldrData);
+            longDateFormat = getValue('main.' + '' + this.parent.locale + '.dates.calendars.' + this.parent.getCalendarMode() + '.dateFormats.long', cldrData);
         }
         if (!endDate) {
-            return globalize.formatDate(startDate, { format: longDateFormat });
+            return globalize.formatDate(startDate, { format: longDateFormat, calendar: this.parent.getCalendarMode() });
         }
         var dateFormat = longDateFormat.trim().toLocaleLowerCase();
         if (dateFormat.substr(0, 1) === 'd') {
             if (startDate.getFullYear() === endDate.getFullYear()) {
                 if (startDate.getMonth() === endDate.getMonth()) {
-                    formattedStr = globalize.formatDate(startDate, { format: 'dd' }) + ' - ' +
-                        globalize.formatDate(endDate, { format: 'dd MMMM yyyy' });
+                    formattedStr = globalize.formatDate(startDate, { format: 'dd', calendar: this.parent.getCalendarMode() }) + ' - ' +
+                        globalize.formatDate(endDate, { format: 'dd MMMM yyyy', calendar: this.parent.getCalendarMode() });
                 }
                 else {
-                    formattedStr = globalize.formatDate(startDate, { format: 'dd MMM' }) + ' - ' +
-                        globalize.formatDate(endDate, { format: 'dd MMM yyyy' });
+                    formattedStr = globalize.formatDate(startDate, { format: 'dd MMM', calendar: this.parent.getCalendarMode() }) + ' - ' +
+                        globalize.formatDate(endDate, { format: 'dd MMM yyyy', calendar: this.parent.getCalendarMode() });
                 }
             }
             else {
-                formattedStr = globalize.formatDate(startDate, { format: 'dd MMM yyyy' }) + ' - ' +
-                    globalize.formatDate(endDate, { format: 'dd MMM yyyy' });
+                formattedStr = globalize.formatDate(startDate, { format: 'dd MMM yyyy', calendar: this.parent.getCalendarMode() }) + ' - ' +
+                    globalize.formatDate(endDate, { format: 'dd MMM yyyy', calendar: this.parent.getCalendarMode() });
             }
         }
         else if (dateFormat.substr(0, 1) === 'm') {
             if (startDate.getFullYear() === endDate.getFullYear()) {
                 if (startDate.getMonth() === endDate.getMonth()) {
-                    formattedStr = globalize.formatDate(startDate, { format: 'MMMM dd' }) + ' - ' +
-                        globalize.formatDate(endDate, { format: 'dd, yyyy' });
+                    formattedStr = globalize.formatDate(startDate, { format: 'MMMM dd', calendar: this.parent.getCalendarMode() }) + ' - ' +
+                        globalize.formatDate(endDate, { format: 'dd, yyyy', calendar: this.parent.getCalendarMode() });
                 }
                 else {
-                    formattedStr = globalize.formatDate(startDate, { format: 'MMM dd' }) + ' - ' +
-                        globalize.formatDate(endDate, { format: 'MMM dd, yyyy' });
+                    formattedStr = globalize.formatDate(startDate, { format: 'MMM dd', calendar: this.parent.getCalendarMode() }) + ' - ' +
+                        globalize.formatDate(endDate, { format: 'MMM dd, yyyy', calendar: this.parent.getCalendarMode() });
                 }
             }
             else {
-                formattedStr = globalize.formatDate(startDate, { format: 'MMM dd, yyyy' }) + ' - ' +
-                    globalize.formatDate(endDate, { format: 'MMM dd, yyyy' });
+                formattedStr = globalize.
+                    formatDate(startDate, { format: 'MMM dd, yyyy', calendar: this.parent.getCalendarMode() }) + ' - ' +
+                    globalize.formatDate(endDate, { format: 'MMM dd, yyyy', calendar: this.parent.getCalendarMode() });
             }
         }
         else {
-            formattedStr = globalize.formatDate(startDate, { format: longDateFormat }) + ' - ' +
-                globalize.formatDate(endDate, { format: longDateFormat });
+            formattedStr = globalize.formatDate(startDate, { format: longDateFormat, calendar: this.parent.getCalendarMode() }) + ' - ' +
+                globalize.formatDate(endDate, { format: longDateFormat, calendar: this.parent.getCalendarMode() });
         }
         return formattedStr;
     };
     ViewBase.prototype.getMobileDateElement = function (date, className) {
         var wrap = createElement('div', {
             className: className,
-            innerHTML: '<div class="e-m-date">' + this.parent.globalize.formatDate(date, { format: 'd' }) + '</div>' +
-                '<div class="e-m-day">' + this.parent.globalize.formatDate(date, { format: 'E' }) + '</div>'
+            innerHTML: '<div class="e-m-date">' + this.parent.globalize.formatDate(date, { format: 'd', calendar: this.parent.getCalendarMode() }) + '</div>' + '<div class="e-m-day">' +
+                this.parent.globalize.formatDate(date, { format: 'E', calendar: this.parent.getCalendarMode() }) + '</div>'
         });
         return wrap;
     };
@@ -12331,6 +12475,9 @@ var ViewBase = /** @__PURE__ @class */ (function () {
         }
     };
     ViewBase.prototype.renderResourceMobileLayout = function () {
+        if (this.parent.resourceBase.lastResourceLevel && this.parent.resourceBase.lastResourceLevel.length <= 0) {
+            return;
+        }
         this.parent.resourceBase.renderResourceHeader();
         this.parent.resourceBase.renderResourceTree();
     };
@@ -12474,6 +12621,9 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
         var wrapperElements = [].slice.call(this.parent.element.querySelectorAll('.' + BLOCK_APPOINTMENT_CLASS +
             ',.' + APPOINTMENT_CLASS + ',.' + ROW_COUNT_WRAPPER_CLASS));
         wrapperElements.forEach(function (element) { return remove(element); });
+        if (!this.element.querySelector('.' + WORK_CELLS_CLASS)) {
+            return;
+        }
         this.allDayElement = [].slice.call(this.element.querySelectorAll('.' + ALLDAY_CELLS_CLASS));
         this.setAllDayRowHeight(0);
         if (this.parent.eventsProcessed.length === 0 && this.parent.blockProcessed.length === 0) {
@@ -12707,7 +12857,8 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
             }
         }
         append(templateElement, appointmentDetails);
-        if (!this.parent.isAdaptive && !isNullOrUndefined(record[fieldMapping.recurrenceRule])) {
+        if (!this.parent.isAdaptive &&
+            (!isNullOrUndefined(record[fieldMapping.recurrenceRule]) || !isNullOrUndefined(record[fieldMapping.recurrenceID]))) {
             var iconClass = (record[fieldMapping.id] === record[fieldMapping.recurrenceID]) ?
                 EVENT_RECURRENCE_ICON_CLASS : EVENT_RECURRENCE_EDIT_ICON_CLASS;
             var recurrenceIcon = createElement('div', { className: ICON + ' ' + iconClass });
@@ -12853,7 +13004,7 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
                     (3 * appHeight) : ((this.allDayLevel + 1) * appHeight)) + 4;
                 this.setAllDayRowHeight(allDayRowHeight);
                 this.addOrRemoveClass();
-                this.wireAppointmentEvents(appointmentElement, true, eventObj[this.fields.isReadonly]);
+                this.wireAppointmentEvents(appointmentElement, true, eventObj);
             }
         }
     };
@@ -12907,7 +13058,7 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
             }
             var index = this.parent.activeViewOptions.group.byDate ? (this.resources.length * dayIndex) + resource : dayCount;
             this.appendEvent(eventObj, appointmentElement, index, tempData.appLeft);
-            this.wireAppointmentEvents(appointmentElement, false, eventObj[this.fields.isReadonly]);
+            this.wireAppointmentEvents(appointmentElement, false, eventObj);
         }
     };
     VerticalEvent.prototype.getTopValue = function (date, day, resource) {
@@ -13108,6 +13259,9 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
         for (var _i = 0, appointmentWrapper_1 = appointmentWrapper; _i < appointmentWrapper_1.length; _i++) {
             var wrap = appointmentWrapper_1[_i];
             remove(wrap);
+        }
+        if (!this.element.querySelector('.' + WORK_CELLS_CLASS)) {
+            return;
         }
         this.eventHeight = getElementHeightFromClass(this.element, APPOINTMENT_CLASS);
         if (this.parent.currentView === 'Month') {
@@ -13377,7 +13531,7 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
     };
     MonthEvent.prototype.appendEventIcons = function (record, appointmentDetails) {
         var eventData = record.data;
-        if (!isNullOrUndefined(record[this.fields.recurrenceRule])) {
+        if (!isNullOrUndefined(record[this.fields.recurrenceRule]) || !isNullOrUndefined(record[this.fields.recurrenceID])) {
             var iconClass = (record[this.fields.id] === record[this.fields.recurrenceID]) ?
                 EVENT_RECURRENCE_ICON_CLASS : EVENT_RECURRENCE_EDIT_ICON_CLASS;
             appointmentDetails.appendChild(createElement('div', {
@@ -13416,7 +13570,7 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
             if (this.cellHeight > this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight) {
                 var appointmentElement = this.createAppointmentElement(event, resIndex);
                 this.applyResourceColor(appointmentElement, event, 'backgroundColor', this.groupOrder);
-                this.wireAppointmentEvents(appointmentElement, false, event[this.fields.isReadonly]);
+                this.wireAppointmentEvents(appointmentElement, false, event);
                 setStyleAttribute(appointmentElement, { 'width': appWidth + 'px', 'top': appTop + 'px' });
                 this.renderEventElement(event, appointmentElement, cellTd);
             }
@@ -13657,7 +13811,7 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     VerticalView.prototype.scrollToHour = function (hour) {
-        var date = this.parent.globalize.parseDate(hour, { skeleton: 'Hm' });
+        var date = this.parent.globalize.parseDate(hour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
         if (isNullOrUndefined(date)) {
             return;
         }
@@ -13668,7 +13822,7 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
         var columnLevels = [];
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             columnLevels = this.parent.resourceBase.generateResourceLevels(level);
-            if (this.parent.uiStateValues.isGroupAdaptive) {
+            if (this.parent.uiStateValues.isGroupAdaptive && this.parent.resourceBase.lastResourceLevel.length > 0) {
                 var resourceLevel = this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex];
                 var resStartHour = resourceLevel.resourceData[resourceLevel.resource.startHourField];
                 var resEndHour = resourceLevel.resourceData[resourceLevel.resource.endHourField];
@@ -13686,8 +13840,8 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
         if (workStartHour === void 0) { workStartHour = this.parent.workHours.start; }
         if (workEndHour === void 0) { workEndHour = this.parent.workHours.end; }
         var dateCol = [];
-        var start = this.parent.globalize.parseDate(workStartHour, { skeleton: 'Hm' });
-        var end = this.parent.globalize.parseDate(workEndHour, { skeleton: 'Hm' });
+        var start = this.parent.globalize.parseDate(workStartHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        var end = this.parent.globalize.parseDate(workEndHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
         for (var _i = 0, renderDates_1 = renderDates; _i < renderDates_1.length; _i++) {
             var col = renderDates_1[_i];
             var classList$$1 = [HEADER_CELLS_CLASS];
@@ -13743,7 +13897,7 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
             }
         }
         else {
-            var renderDates = (this.parent.uiStateValues.isGroupAdaptive) ?
+            var renderDates = (this.parent.uiStateValues.isGroupAdaptive && this.parent.resourceBase.lastResourceLevel.length > 0) ?
                 this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex].renderDates : this.renderDates;
             var index = this.parent.getIndexOfDate(renderDates, resetTime(new Date()));
             if (index >= 0) {
@@ -13913,7 +14067,7 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
         var rowCount = this.colLevels.length;
         for (var i = 0; i < rowCount; i++) {
             var ntr_1 = trEle.cloneNode();
-            var data_1 = { className: [this.colLevels[i][0].className[0]], type: 'emptyCells' };
+            var data_1 = { className: [(this.colLevels[i][0] && this.colLevels[i][0].className[0])], type: 'emptyCells' };
             if (this.parent.activeViewOptions.showWeekNumber && data_1.className.indexOf(HEADER_CELLS_CLASS) !== -1) {
                 data_1.className.push(WEEK_NUMBER_CLASS);
                 var weekNo = getWeekNumber(this.renderDates.slice(-1)[0]);
@@ -14164,8 +14318,8 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
             length = 1;
         }
         var dt = new Date(msStartHour);
-        var start = this.parent.globalize.parseDate(this.parent.workHours.start, { skeleton: 'Hm' });
-        var end = this.parent.globalize.parseDate(this.parent.workHours.end, { skeleton: 'Hm' });
+        var start = this.parent.globalize.parseDate(this.parent.workHours.start, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        var end = this.parent.globalize.parseDate(this.parent.workHours.end, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
         for (var i = 0; i < length; i++) {
             var majorTickDivider = i % (msMajorInterval / msInterval);
             var row = {
@@ -14202,7 +14356,10 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
         }
         this.clearCurrentTimeIndicatorTimer();
         if (this.element) {
-            EventHandler.remove(this.getContentAreaElement(), 'scroll', this.onContentScroll);
+            var contentScrollableEle = this.getContentAreaElement();
+            if (contentScrollableEle) {
+                EventHandler.remove(contentScrollableEle, 'scroll', this.onContentScroll);
+            }
             if (this.parent.resourceBase) {
                 this.parent.resourceBase.destroy();
             }
@@ -14423,7 +14580,7 @@ var Month = /** @__PURE__ @class */ (function (_super) {
             if (this.parent.currentView === 'MonthAgenda') {
                 colLevels = [level];
             }
-            if (this.parent.uiStateValues.isGroupAdaptive) {
+            if (this.parent.uiStateValues.isGroupAdaptive && this.parent.resourceBase.lastResourceLevel.length > 0) {
                 var resourceLevel = this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex];
                 colLevels = [this.getDateSlots(resourceLevel.renderDates, resourceLevel.workDays)];
             }
@@ -14578,11 +14735,12 @@ var Month = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 var ele = createElement('span', { className: NAVIGATE_CLASS });
-                var title = this.parent.globalize.formatDate(td.date, { skeleton: 'full' });
+                var title = this.parent.globalize.formatDate(td.date, { skeleton: 'full', calendar: this.parent.getCalendarMode() });
                 ele.setAttribute('title', title);
-                ele.innerHTML = (td.date.getDate() === 1 && !this.isCurrentDate(td.date) && !this.parent.isAdaptive) ?
-                    this.parent.globalize.formatDate(td.date, { format: 'MMM d' }) :
-                    this.parent.globalize.formatDate(td.date, { skeleton: 'd' });
+                ele.innerHTML =
+                    (this.parent.calendarUtil.isMonthStart(td.date) && !this.isCurrentDate(td.date) && !this.parent.isAdaptive) ?
+                        this.parent.globalize.formatDate(td.date, { format: 'MMM d', calendar: this.parent.getCalendarMode() }) :
+                        this.parent.globalize.formatDate(td.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
                 tdEle.appendChild(ele);
             }
             this.wireCellEvents(tdEle);
@@ -14592,6 +14750,9 @@ var Month = /** @__PURE__ @class */ (function (_super) {
         return tdEle;
     };
     Month.prototype.getContentSlots = function () {
+        if (!(this.colLevels[this.colLevels.length - 1] && this.colLevels[this.colLevels.length - 1][0])) {
+            return [];
+        }
         var slotDatas = [];
         var prepareSlots = function (rowIndex, renderDate, resData, classList$$1) {
             var data = {
@@ -14664,8 +14825,8 @@ var Month = /** @__PURE__ @class */ (function (_super) {
         }
         var monthDate = new Date(this.parent.selectedDate.getTime());
         this.monthDates = {
-            start: firstDateOfMonth(monthDate),
-            end: lastDateOfMonth(addMonths(monthDate, this.parent.activeViewOptions.interval - 1))
+            start: this.parent.calendarUtil.firstDateOfMonth(monthDate),
+            end: this.parent.calendarUtil.lastDateOfMonth(addMonths(monthDate, this.parent.activeViewOptions.interval - 1))
         };
         var tBody = tbl.querySelector('tbody');
         append(this.getContentRows(), tBody);
@@ -14728,22 +14889,23 @@ var Month = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         var dateHeader = createElement('div', { className: DATE_HEADER_CLASS });
-        dateHeader.innerHTML = (data.date.getDate() === 1 && !this.isCurrentDate(data.date) && !this.parent.isAdaptive) ?
-            this.parent.globalize.formatDate(data.date, { format: 'MMM d' }) :
-            this.parent.globalize.formatDate(data.date, { skeleton: 'd' });
+        dateHeader.innerHTML =
+            (this.parent.calendarUtil.isMonthStart(data.date) && !this.isCurrentDate(data.date) && !this.parent.isAdaptive) ?
+                this.parent.globalize.formatDate(data.date, { format: 'MMM d', calendar: this.parent.getCalendarMode() }) :
+                this.parent.globalize.formatDate(data.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
         ntd.appendChild(dateHeader);
         if (this.getModuleName() === 'month') {
             addClass([dateHeader], NAVIGATE_CLASS);
         }
     };
     Month.prototype.getMonthStart = function (currentDate) {
-        var monthStart = getWeekFirstDate(firstDateOfMonth(currentDate), this.parent.firstDayOfWeek);
+        var monthStart = getWeekFirstDate(this.parent.calendarUtil.firstDateOfMonth(currentDate), this.parent.firstDayOfWeek);
         var start = new Date(monthStart.getFullYear(), monthStart.getMonth(), monthStart.getDate());
         return start;
     };
     Month.prototype.getMonthEnd = function (currentDate) {
         var endDate = addMonths(currentDate, this.parent.activeViewOptions.interval - 1);
-        var lastWeekOfMonth = getWeekFirstDate(lastDateOfMonth(endDate), this.parent.firstDayOfWeek);
+        var lastWeekOfMonth = getWeekFirstDate(this.parent.calendarUtil.lastDateOfMonth(endDate), this.parent.firstDayOfWeek);
         var monthEnd = addDays(lastWeekOfMonth, WEEK_LENGTH - 1);
         return monthEnd;
     };
@@ -14784,21 +14946,23 @@ var Month = /** @__PURE__ @class */ (function (_super) {
             if (this.parent.activeViewOptions.interval > 1) {
                 var endDate = addMonths(lastDateOfMonth(this.parent.selectedDate), this.parent.activeViewOptions.interval - 1);
                 if (this.parent.selectedDate.getFullYear() === endDate.getFullYear()) {
-                    var monthNames = (this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM' }))
-                        + ' - ' + (this.parent.globalize.formatDate(endDate, { format: 'MMMM ' })) + endDate.getFullYear();
+                    var monthNames = (this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM', calendar: this.parent.getCalendarMode() })) + ' - ' +
+                        (this.parent.globalize.formatDate(endDate, { format: 'MMMM ', calendar: this.parent.getCalendarMode() })) +
+                        endDate.getFullYear();
                     return monthNames;
                 }
-                return (this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM' })) + ' ' +
-                    this.parent.selectedDate.getFullYear() + ' - ' + (this.parent.globalize.formatDate(endDate, { format: 'MMMM ' })) +
+                return (this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM', calendar: this.parent.getCalendarMode() })) + ' ' +
+                    this.parent.selectedDate.getFullYear() + ' - ' + (this.parent.globalize.formatDate(endDate, { format: 'MMMM ', calendar: this.parent.getCalendarMode() })) +
                     endDate.getFullYear();
             }
-            return this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y' });
+            return this.parent.globalize.
+                formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() });
         }
         return this.formatDateRange(this.parent.selectedDate);
     };
     Month.prototype.getLabelText = function (view) {
         return this.parent.localeObj.getConstant(view) + ' of ' +
-            this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y' });
+            this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() });
     };
     Month.prototype.createWeekNumberElement = function (text) {
         var tr = createElement('tr');
@@ -15548,7 +15712,7 @@ var Agenda = /** @__PURE__ @class */ (function (_super) {
         var formatDate = (this.parent.activeViewOptions.dateFormat) ? this.parent.activeViewOptions.dateFormat : 'MMMM y';
         if (this.parent.activeViewOptions.allowVirtualScrolling || this.parent.isAdaptive) {
             var currentDate = isNullOrUndefined(date) ? this.parent.selectedDate : date;
-            return this.parent.globalize.formatDate(currentDate, { format: formatDate });
+            return this.parent.globalize.formatDate(currentDate, { format: formatDate, calendar: this.parent.getCalendarMode() });
         }
         else {
             var startDate = this.parent.selectedDate;
@@ -15880,7 +16044,7 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
                 setStyleAttribute(appointmentElement, {
                     'width': appWidth + 'px', 'left': appLeft + 'px', 'right': appRight + 'px', 'top': appTop + 'px'
                 });
-                this.wireAppointmentEvents(appointmentElement, false, event[this.fields.isReadonly]);
+                this.wireAppointmentEvents(appointmentElement, false, event);
                 this.renderEventElement(event, appointmentElement, cellTd);
             }
             else {
@@ -16136,10 +16300,10 @@ var TimelineHeaderRow = /** @__PURE__ @class */ (function () {
         var tdDatas = [];
         var customHelper = {
             getYear: function (dt) {
-                return _this.parent.globalize.formatDate(dt, { format: 'y' });
+                return _this.parent.globalize.formatDate(dt, { format: 'y', calendar: _this.parent.getCalendarMode() });
             },
             getMonth: function (dt) {
-                return _this.parent.globalize.formatDate(dt, { format: 'MMMM' });
+                return _this.parent.globalize.formatDate(dt, { format: 'MMMM', calendar: _this.parent.getCalendarMode() });
             },
             getWeekNumber: function (dt) {
                 return getWeekNumber(dt);
@@ -16247,7 +16411,7 @@ var TimelineViews = /** @__PURE__ @class */ (function (_super) {
         this.scrollHeaderLabels(target);
     };
     TimelineViews.prototype.scrollToWorkHour = function () {
-        var start = this.parent.globalize.parseDate(this.parent.workHours.start, { skeleton: 'Hm' });
+        var start = this.parent.globalize.parseDate(this.parent.workHours.start, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
         var currDateTime = this.isWorkDay(this.parent.selectedDate) && this.parent.workHours.highlight &&
             !isNullOrUndefined(start) ? new Date(+this.parent.selectedDate).setHours(start.getHours(), start.getMinutes())
             : new Date(+this.parent.selectedDate).setHours(0, 0, 0, 0);
@@ -16258,7 +16422,7 @@ var TimelineViews = /** @__PURE__ @class */ (function (_super) {
         }
     };
     TimelineViews.prototype.scrollToHour = function (hour) {
-        var date = this.parent.globalize.parseDate(hour, { skeleton: 'Hm' });
+        var date = this.parent.globalize.parseDate(hour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
         if (isNullOrUndefined(date)) {
             return;
         }
@@ -16392,8 +16556,8 @@ var TimelineViews = /** @__PURE__ @class */ (function (_super) {
         var resLevel = this.parent.resourceBase.renderedResources[i];
         var resSHr = resLevel.resourceData[resLevel.resource.startHourField] || this.parent.workHours.start;
         var resEHr = resLevel.resourceData[resLevel.resource.endHourField] || this.parent.workHours.end;
-        tdData.startHour = this.parent.globalize.parseDate(resSHr, { skeleton: 'Hm' });
-        tdData.endHour = this.parent.globalize.parseDate(resEHr, { skeleton: 'Hm' });
+        tdData.startHour = this.parent.globalize.parseDate(resSHr, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        tdData.endHour = this.parent.globalize.parseDate(resEHr, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
         tdData.workDays = resLevel.resourceData[resLevel.resource.workDaysField] || this.parent.workDays;
         tdData.className = resLevel.className;
         tdData.groupIndex = resLevel.groupIndex;
@@ -16568,12 +16732,12 @@ var TimelineMonth = /** @__PURE__ @class */ (function (_super) {
         EventHandler.remove(this.getContentAreaElement(), 'scroll', this.onContentScroll);
     };
     TimelineMonth.prototype.getMonthStart = function (currentDate) {
-        var monthStart = firstDateOfMonth(resetTime(currentDate));
+        var monthStart = this.parent.calendarUtil.firstDateOfMonth(resetTime(currentDate));
         return new Date(monthStart.getFullYear(), monthStart.getMonth(), monthStart.getDate());
     };
     TimelineMonth.prototype.getMonthEnd = function (currentDate) {
-        var monthStart = firstDateOfMonth(resetTime(currentDate));
-        return lastDateOfMonth(addMonths(new Date(+monthStart), this.parent.activeViewOptions.interval - 1));
+        var monthStart = this.parent.calendarUtil.firstDateOfMonth(resetTime(currentDate));
+        return this.parent.calendarUtil.lastDateOfMonth(addMonths(new Date(+monthStart), this.parent.activeViewOptions.interval - 1));
     };
     TimelineMonth.prototype.generateColumnLevels = function () {
         var colLevels = [];

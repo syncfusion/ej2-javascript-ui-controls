@@ -4,8 +4,8 @@ import { Rect } from './../primitives/rect';
 import { identityMatrix, rotateMatrix, transformPointByMatrix, Matrix, scaleMatrix } from './../primitives/matrix';
 import { DiagramElement, Corners } from './../core/elements/diagram-element';
 import { Container } from './../core/containers/container';
-import { StrokeStyle } from './../core/appearance';
-import { TextStyleModel } from './../core/appearance-model';
+import { StrokeStyle, LinearGradient, RadialGradient } from './../core/appearance';
+import { TextStyleModel, GradientModel, LinearGradientModel, RadialGradientModel } from './../core/appearance-model';
 import { Point } from './../primitives/point';
 import { PortVisibility, ConnectorConstraints, NodeConstraints, Shapes, UmlActivityShapes, PortConstraints } from './../enum/enum';
 import { FlowShapes, SelectorConstraints, ThumbsConstraints } from './../enum/enum';
@@ -669,12 +669,55 @@ export function updateStyle(changedObject: TextStyleModel, target: DiagramElemen
                 style.textDecoration = changedObject.textDecoration;
                 break;
             case 'gradient':
-                style.gradient = changedObject.gradient;
+                updateGradient(changedObject.gradient, style.gradient);
                 break;
         }
     }
     if (target instanceof TextElement) {
         textElement.refreshTextElement();
+    }
+}
+
+function updateGradient(
+    changedGradient: GradientModel | LinearGradientModel | RadialGradientModel,
+    targetGradient: GradientModel | LinearGradientModel | RadialGradientModel
+): void {
+    for (let key of Object.keys(changedGradient)) {
+        switch (key) {
+            case 'type':
+                targetGradient.type = changedGradient.type;
+                break;
+            case 'x1':
+                (targetGradient as LinearGradient).x1 = (changedGradient as LinearGradient).x1;
+                break;
+            case 'x2':
+                (targetGradient as LinearGradient).x2 = (changedGradient as LinearGradient).x2;
+                break;
+            case 'y1':
+                (targetGradient as LinearGradient).y1 = (changedGradient as LinearGradient).y1;
+                break;
+            case 'y2':
+                (targetGradient as LinearGradient).y2 = (changedGradient as LinearGradient).y2;
+                break;
+            case 'cx':
+                (targetGradient as RadialGradient).cx = (changedGradient as RadialGradient).cx;
+                break;
+            case 'cy':
+                (targetGradient as RadialGradient).cy = (changedGradient as RadialGradient).cy;
+                break;
+            case 'fx':
+                (targetGradient as RadialGradient).fx = (changedGradient as RadialGradient).fx;
+                break;
+            case 'fy':
+                (targetGradient as RadialGradient).fy = (changedGradient as RadialGradient).fy;
+                break;
+            case 'r':
+                (targetGradient as RadialGradient).r = (changedGradient as RadialGradient).r;
+                break;
+            case 'stops':
+                targetGradient.stops = changedGradient.stops;
+                break;
+        }
     }
 }
 
@@ -703,6 +746,8 @@ export function updateHyperlink(changedObject: HyperlinkModel, target: DiagramEl
         }
     }
 }
+
+/** @private */
 export function updateShapeContent(content: DiagramElement, actualObject: Node, diagram: Diagram): void {
     content.width = actualObject.width;
     content.height = actualObject.height;
@@ -735,7 +780,7 @@ export function updateShapeContent(content: DiagramElement, actualObject: Node, 
 export function updateShape(node: Node, actualObject: Node, oldObject: Node, diagram: Diagram): void {
     let content: DiagramElement = new DiagramElement(); let i: number;
     let textStyle: TextStyleModel; let nodeStyle: TextStyleModel;
-    switch (node.shape.type) {
+    switch (actualObject.shape.type) {
         case 'Path':
             let pathContent: PathElement = new PathElement();
             pathContent.data = (actualObject.shape as PathModel).data;
@@ -924,6 +969,12 @@ export function getUMLActivityShapes(umlActivityShape: PathElement, content: Dia
             break;
     }
     return content;
+}
+
+/**   @private  */
+export  function removeGradient(svgId: string): void {
+    removeElement(svgId + '_linear');
+    removeElement(svgId + '_radial');
 }
 
 /** @private */

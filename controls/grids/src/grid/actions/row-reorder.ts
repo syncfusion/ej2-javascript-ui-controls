@@ -106,9 +106,10 @@ export class RowDD {
             target: e.target, draggableType: 'rows', data: gObj.getSelectedRecords()
         });
         let dropElem: EJ2Intance = document.getElementById(gObj.rowDropSettings.targetID) as EJ2Intance;
-        if (gObj.rowDropSettings.targetID && dropElem && dropElem.ej2_instances) {
-            dropElem.ej2_instances[0].getContent().classList.add('e-allowRowDrop');
-        }
+        if (gObj.rowDropSettings.targetID && dropElem && dropElem.ej2_instances &&
+            (<{getModuleName?: Function}>dropElem.ej2_instances[0]).getModuleName() === 'grid') {
+             dropElem.ej2_instances[0].getContent().classList.add('e-allowRowDrop');
+         }
     }
 
     private drag: Function = (e: { target: HTMLElement, event: MouseEventArgs }) => {
@@ -178,9 +179,10 @@ export class RowDD {
         let target: Element = targetEle ? targetEle : e.target;
         let cloneElement: HTMLElement = this.parent.element.querySelector('.e-cloneproperties') as HTMLElement;
         gObj.element.classList.remove('e-rowdrag');
-        let dropElem: EJ2Intance = document.getElementById(gObj.rowDropSettings.targetID) as EJ2Intance;
-        if (gObj.rowDropSettings.targetID && dropElem && dropElem.ej2_instances) {
-            dropElem.ej2_instances[0].getContent().classList.remove('e-allowRowDrop');
+        let dropElement: EJ2Intance = document.getElementById(gObj.rowDropSettings.targetID) as EJ2Intance;
+        if (gObj.rowDropSettings.targetID && dropElement && dropElement.ej2_instances &&
+            (<{getModuleName?: Function}>dropElement.ej2_instances[0]).getModuleName() === 'grid') {
+                dropElement.ej2_instances[0].getContent().classList.remove('e-allowRowDrop');
         }
         let startRow: Element[] = gObj.getSelectedRows().length > 0 ? gObj.getSelectedRows() : [this.startedRow];
 

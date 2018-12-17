@@ -19,28 +19,22 @@ export class Legend {
     /* tslint:disable:no-string-literal */
     public legendCollection: Object[];
     public legendRenderingCollections: Object[];
-    private legendHeight: number;
-    private legendWidth: number;
     private translate: Point;
     private legendBorderRect: Rect = new Rect(0, 0, 0, 0);
     private maps: Maps;
     private totalPages: Object[] = [];
     private page: number = 0;
     private currentPage: number = 0;
-    private interactiveLocation: Point = new Point(0, 0);
     private legendItemRect: Rect = new Rect(0, 0, 0, 0);
     private heightIncrement: number = 0;
     private widthIncrement: number = 0;
     private textMaxWidth: number = 0;
     private legendGroup: Element;
-    private previousId: string;
-    private areaRect: Rect = new Rect(0, 0, 0, 0);
     private shapeHighlightCollection: object[] = [];
     private shapeSelectionCollection: object[] = [];
     public legendHighlightCollection: object[] = [];
     public legendSelectionCollection: object[] = [];
     private legendLinearGradient: Element;
-    private legendInteractiveGradient: Element[] = [];
     private defsElement: Element;
     public legendElement: Element = null;
     private shapeElement: Element = null;
@@ -55,6 +49,11 @@ export class Legend {
      * To calculate legend bounds and draw the legend shape and text.
      */
     public renderLegend(): void {
+        this.legendRenderingCollections = [];
+        this.legendCollection = [];
+        this.totalPages = [];
+        this.widthIncrement = 0;
+        this.heightIncrement = 0;
         this.defsElement = this.maps.renderer.createDefs();
         this.maps.svgObject.appendChild(this.defsElement);
         this.calculateLegendBounds();

@@ -17,6 +17,7 @@ export class StackPanel extends Container {
 
     /**
      * Not applicable for canvas
+     * to avoid the child size updation with respect to parent ser true
      * @private 
      */
     public measureChildren: boolean = undefined;
@@ -51,7 +52,11 @@ export class StackPanel extends Container {
             for (let child of this.children) {
                 child.parentTransform = this.rotateAngle + this.parentTransform;
                 //Measure children
-                child.measure(child.desiredSize);
+                if (this.measureChildren) {
+                    child.measure(child.desiredSize);
+                } else {
+                    child.measure(availableSize);
+                }
                 let childSize: Size = child.desiredSize.clone();
                 //Consider Child's margin
                 this.applyChildMargin(child, childSize);
@@ -63,7 +68,9 @@ export class StackPanel extends Container {
                 if (desired === undefined) {
                     desired = childSize;
                 } else {
-                    updateSize(childSize, desired);
+                    if (!child.preventContainer) {
+                        updateSize(childSize, desired);
+                    }
                 }
             }
         }

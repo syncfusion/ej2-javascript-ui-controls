@@ -125,7 +125,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         }
     }
     public scrollToHour(hour: string): void {
-        let date: Date = this.parent.globalize.parseDate(hour, { skeleton: 'Hm' });
+        let date: Date = this.parent.globalize.parseDate(hour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
         if (isNullOrUndefined(date)) {
             return;
         }
@@ -136,7 +136,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         let columnLevels: TdData[][] = [];
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             columnLevels = this.parent.resourceBase.generateResourceLevels(level);
-            if (this.parent.uiStateValues.isGroupAdaptive) {
+            if (this.parent.uiStateValues.isGroupAdaptive && this.parent.resourceBase.lastResourceLevel.length > 0) {
                 let resourceLevel: TdData = this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex];
                 let resStartHour: string = resourceLevel.resourceData[resourceLevel.resource.startHourField] as string;
                 let resEndHour: string = resourceLevel.resourceData[resourceLevel.resource.endHourField] as string;
@@ -152,8 +152,8 @@ export class VerticalView extends ViewBase implements IRenderer {
     public getDateSlots(renderDates: Date[], workDays: number[], workStartHour: string = this.parent.workHours.start, workEndHour: string =
         this.parent.workHours.end): TdData[] {
         let dateCol: TdData[] = [];
-        let start: Date = this.parent.globalize.parseDate(workStartHour, { skeleton: 'Hm' });
-        let end: Date = this.parent.globalize.parseDate(workEndHour, { skeleton: 'Hm' });
+        let start: Date = this.parent.globalize.parseDate(workStartHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        let end: Date = this.parent.globalize.parseDate(workEndHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
         for (let col of renderDates) {
             let classList: string[] = [cls.HEADER_CELLS_CLASS];
             if (this.isCurrentDate(col)) {
@@ -203,7 +203,7 @@ export class VerticalView extends ViewBase implements IRenderer {
                 count += this.parent.activeViewOptions.group.byDate ? 1 : resource.renderDates.length;
             }
         } else {
-            let renderDates: Date[] = (this.parent.uiStateValues.isGroupAdaptive) ?
+            let renderDates: Date[] = (this.parent.uiStateValues.isGroupAdaptive && this.parent.resourceBase.lastResourceLevel.length > 0) ?
                 this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex].renderDates : this.renderDates;
             let index: number = this.parent.getIndexOfDate(renderDates, util.resetTime(new Date()));
             if (index >= 0) {
@@ -364,7 +364,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         let rowCount: number = this.colLevels.length;
         for (let i: number = 0; i < rowCount; i++) {
             let ntr: Element = trEle.cloneNode() as Element;
-            let data: TdData = { className: [this.colLevels[i][0].className[0]], type: 'emptyCells' };
+            let data: TdData = { className: [(this.colLevels[i][0] && this.colLevels[i][0].className[0])], type: 'emptyCells' };
             if (this.parent.activeViewOptions.showWeekNumber && data.className.indexOf(cls.HEADER_CELLS_CLASS) !== -1) {
                 data.className.push(cls.WEEK_NUMBER_CLASS);
                 let weekNo: number = util.getWeekNumber(this.renderDates.slice(-1)[0]);
@@ -607,8 +607,10 @@ export class VerticalView extends ViewBase implements IRenderer {
             length = 1;
         }
         let dt: Date = new Date(msStartHour);
-        let start: Date = this.parent.globalize.parseDate(this.parent.workHours.start, { skeleton: 'Hm' });
-        let end: Date = this.parent.globalize.parseDate(this.parent.workHours.end, { skeleton: 'Hm' });
+        let start: Date =
+            this.parent.globalize.parseDate(this.parent.workHours.start, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        let end: Date =
+            this.parent.globalize.parseDate(this.parent.workHours.end, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
         for (let i: number = 0; i < length; i++) {
             let majorTickDivider: number = i % (msMajorInterval / msInterval);
             let row: TimeSlotData = {
@@ -643,7 +645,10 @@ export class VerticalView extends ViewBase implements IRenderer {
         if (this.parent.isDestroyed) { return; }
         this.clearCurrentTimeIndicatorTimer();
         if (this.element) {
-            EventHandler.remove(this.getContentAreaElement(), 'scroll', this.onContentScroll);
+            let contentScrollableEle: Element = this.getContentAreaElement();
+            if (contentScrollableEle) {
+                EventHandler.remove(contentScrollableEle, 'scroll', this.onContentScroll);
+            }
             if (this.parent.resourceBase) {
                 this.parent.resourceBase.destroy();
             }

@@ -78,19 +78,24 @@ export function getSeriesColor(theme: ChartTheme | AccumulationTheme): string[] 
     let palette: string[];
     switch (theme) {
         case 'Fabric':
-        case 'FabricDark':
             palette = ['#4472c4', '#ed7d31', '#ffc000', '#70ad47', '#5b9bd5',
                 '#c1c1c1', '#6f6fe2', '#e269ae', '#9e480e', '#997300'];
             break;
         case 'Bootstrap':
-        case 'BootstrapDark':
             palette = ['#a16ee5', '#f7ce69', '#55a5c2', '#7ddf1e', '#ff6ea6',
                 '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
             break;
-        case 'HighcontrastLight':
+        case 'HighContrastLight':
         case 'Highcontrast':
+        case 'HighContrast':
             palette = ['#79ECE4', '#E98272', '#DFE6B6', '#C6E773', '#BA98FF',
                 '#FA83C3', '#00C27A', '#43ACEF', '#D681EF', '#D8BC6E'];
+            break;
+        case 'MaterialDark':
+        case 'FabricDark':
+        case 'BootstrapDark':
+            palette = ['#B586FF', '#71F9A3', '#FF9572', '#5BD5FF', '#F9F871',
+                '#B6F971', '#8D71F9', '#FF6F91', '#FFC75F', '#D55DB1'];
             break;
         default:
             palette = ['#00bdae', '#404041', '#357cd2', '#e56590', '#f8b883',
@@ -102,9 +107,11 @@ export function getSeriesColor(theme: ChartTheme | AccumulationTheme): string[] 
 /** @private */
 export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyle {
     let style: IThemeStyle;
+    let darkBackground: string = theme === 'MaterialDark' ? '#303030' : (theme === 'FabricDark' ? '#201F1F' : '1A1A1A');
     switch (theme) {
-        case 'HighcontrastLight':
+        case 'HighContrastLight':
         case 'Highcontrast':
+        case 'HighContrast':
             style = {
                 axisLabel: '#ffffff',
                 axisTitle: '#ffffff',
@@ -144,7 +151,7 @@ export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyl
                 minorTickLine: ' #4A4848',
                 chartTitle: '#ffffff',
                 legendLabel: '#DADADA',
-                background: '#000000',
+                background: darkBackground,
                 areaBorder: ' #9A9A9A',
                 errorBar: '#ffffff',
                 crosshairLine: '#F4F4F4',
@@ -195,7 +202,7 @@ export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyl
 export function getScrollbarThemeColor(theme: ChartTheme): IScrollbarThemeStyle {
     let scrollStyle: IScrollbarThemeStyle;
     switch (theme) {
-        case 'HighcontrastLight':
+        case 'HighContrastLight':
             scrollStyle = {
                 backRect: '#333',
                 thumb: '#bfbfbf',

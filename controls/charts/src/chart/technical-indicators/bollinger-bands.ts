@@ -20,7 +20,7 @@ export class BollingerBands extends TechnicalAnalysis {
                 rangeArea, indicator, 'BollingerBand', indicator.bandColor, 0, chart);
         }
         let signalLine: Series = new Series(indicator, 'targetSeries', {}, true);
-        this.setSeriesProperties(signalLine, indicator, 'SignalLine', indicator.fill, indicator.width, chart);
+        this.setSeriesProperties(signalLine, indicator, 'BollingerBand', indicator.fill, indicator.width, chart);
         let upperLine: Series = new Series(indicator, 'targetSeries', {}, true);
         this.setSeriesProperties(
             upperLine, indicator, 'UpperLine', indicator.upperLine.color,

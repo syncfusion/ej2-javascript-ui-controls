@@ -739,7 +739,7 @@ export class CartesianAxisLayoutPanel {
 
             elementSize = axis.visibleLabels[i].size;
 
-            pointY = (valueToCoefficient(axis.visibleLabels[i].value, axis) * rect.height) + (chart.stockChart ? 5 : 0);
+            pointY = (valueToCoefficient(axis.visibleLabels[i].value, axis) * rect.height) + (chart.stockChart ? 7 : 0);
 
             pointY = Math.floor((pointY * -1) + (rect.y + rect.height));
 

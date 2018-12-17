@@ -1,5 +1,28 @@
 @include export-module('tree-layout') {
+  .e-bigger {
+    .e-treegrid {
+      .e-treegridexpand,
+      .e-treegridcollapse {
+        height: 18px;
+        width: 18px;
+      }
+
+      .e-rowcell.e-treerowcell {
+        padding-left: $treegrid-bigger-treecell-padding;
+      }
+    }
+  }
+
   .e-treegrid {
+
+    .e-treegridexpand::before,
+    .e-treegridcollapse::before {
+      vertical-align: middle;
+    }
+
+    .e-rowcell.e-treerowcell {
+      padding-left: $treegrid-treecell-padding;
+    }
 
     .e-rtl {
       .e-treegridcollapse {
@@ -23,6 +46,10 @@
       color: $treegrid-right-arrow-icon-color;
       cursor: pointer;
       font-size: $treegrid-right-arrow-icon-font-size;
+      height: 16px;
+      text-align: center;
+      vertical-align: bottom;
+      width: 16px;
     }
 
     .e-treecell {

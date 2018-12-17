@@ -63,6 +63,11 @@ export class Toolbar {
      */
     public intializeToolbar(width: string): HTMLElement {
         let toolbarDiv: HTMLElement = this.createToolbar(width);
+        // tslint:disable-next-line
+        let isIE: boolean = !!(document as any).documentMode;
+        if (isIE) {
+            this.totalPageItem.classList.add('e-pv-total-page-ms');
+        }
         this.createFileElement(toolbarDiv);
         this.wireEvent();
         this.updateToolbarItems();
@@ -207,41 +212,41 @@ export class Toolbar {
     }
 
     private enableOpenOption(enableOpenOption: boolean): void {
-        this.toolbar.enableItems(this.openDocumentItem, enableOpenOption);
+        this.toolbar.enableItems(this.openDocumentItem.parentElement, enableOpenOption);
     }
 
     private enablePageNavigationTool(enablePageNavigationTool: boolean): void {
-        this.toolbar.enableItems(this.firstPageItem, enablePageNavigationTool);
-        this.toolbar.enableItems(this.previousPageItem, enablePageNavigationTool);
-        this.toolbar.enableItems(this.nextPageItem, enablePageNavigationTool);
-        this.toolbar.enableItems(this.lastPageItem, enablePageNavigationTool);
+        this.toolbar.enableItems(this.firstPageItem.parentElement, enablePageNavigationTool);
+        this.toolbar.enableItems(this.previousPageItem.parentElement, enablePageNavigationTool);
+        this.toolbar.enableItems(this.nextPageItem.parentElement, enablePageNavigationTool);
+        this.toolbar.enableItems(this.lastPageItem.parentElement, enablePageNavigationTool);
         this.currentPageBox.readonly = !enablePageNavigationTool;
     }
 
     private enableMagnificationTool(enableMagnificationTool: boolean): void {
-        this.toolbar.enableItems(this.zoomInItem, enableMagnificationTool);
-        this.toolbar.enableItems(this.zoomOutItem, enableMagnificationTool);
+        this.toolbar.enableItems(this.zoomInItem.parentElement, enableMagnificationTool);
+        this.toolbar.enableItems(this.zoomOutItem.parentElement, enableMagnificationTool);
         this.zoomDropDown.readonly = !enableMagnificationTool;
     }
 
     private enableSelectionTool(enableSelectionTool: boolean): void {
-        this.toolbar.enableItems(this.textSelectItem, enableSelectionTool);
+        this.toolbar.enableItems(this.textSelectItem.parentElement, enableSelectionTool);
     }
 
     private enableScrollingTool(enableScrollingTool: boolean): void {
-        this.toolbar.enableItems(this.panItem, enableScrollingTool);
+        this.toolbar.enableItems(this.panItem.parentElement, enableScrollingTool);
     }
 
     private enableDownloadOption(enableDownloadOption: boolean): void {
-        this.toolbar.enableItems(this.downloadItem, enableDownloadOption);
+        this.toolbar.enableItems(this.downloadItem.parentElement, enableDownloadOption);
     }
 
     private enablePrintOption(enablePrintOption: boolean): void {
-        this.toolbar.enableItems(this.printItem, enablePrintOption);
+        this.toolbar.enableItems(this.printItem.parentElement, enablePrintOption);
     }
 
     private enableSearchOption(enableSearchOption: boolean): void {
-        this.toolbar.enableItems(this.textSearchItem, enableSearchOption);
+        this.toolbar.enableItems(this.textSearchItem.parentElement, enableSearchOption);
     }
     /** 
      * @private
@@ -257,20 +262,24 @@ export class Toolbar {
      */
     public updateToolbarItems(): void {
         if (this.pdfViewerBase.pageCount === 0) {
-            this.toolbar.enableItems(this.downloadItem, false);
-            this.toolbar.enableItems(this.printItem, false);
+            this.toolbar.enableItems(this.downloadItem.parentElement, false);
+            this.toolbar.enableItems(this.printItem.parentElement, false);
             this.updateNavigationButtons();
-            this.toolbar.enableItems(this.zoomInItem, false);
-            this.toolbar.enableItems(this.zoomOutItem, false);
+            this.toolbar.enableItems(this.zoomInItem.parentElement, false);
+            this.toolbar.enableItems(this.zoomOutItem.parentElement, false);
             if (this.pdfViewer.magnificationModule) {
                 this.zoomDropDown.readonly = true;
             }
-            this.toolbar.enableItems(this.textSelectItem, false);
-            this.toolbar.enableItems(this.panItem, false);
-            this.toolbar.enableItems(this.textSearchItem, false);
+            this.toolbar.enableItems(this.pdfViewerBase.getElement('_currentPageInputContainer'), false);
+            this.toolbar.enableItems(this.pdfViewerBase.getElement('_zoomDropDownContainer'), false);
+            this.toolbar.enableItems(this.textSelectItem.parentElement, false);
+            this.toolbar.enableItems(this.panItem.parentElement, false);
+            this.toolbar.enableItems(this.textSearchItem.parentElement, false);
         } else if (this.pdfViewerBase.pageCount > 0) {
-            this.toolbar.enableItems(this.downloadItem, true);
-            this.toolbar.enableItems(this.printItem, true);
+            this.toolbar.enableItems(this.downloadItem.parentElement, true);
+            this.toolbar.enableItems(this.printItem.parentElement, true);
+            this.toolbar.enableItems(this.pdfViewerBase.getElement('_currentPageInputContainer'), true);
+            this.toolbar.enableItems(this.pdfViewerBase.getElement('_zoomDropDownContainer'), true);
             this.updateNavigationButtons();
             this.updateZoomButtons();
             if (this.pdfViewer.magnificationModule) {
@@ -278,7 +287,7 @@ export class Toolbar {
             }
             this.updateInteractionItems();
             if (this.pdfViewer.textSearchModule && this.pdfViewer.enableTextSearch) {
-                this.toolbar.enableItems(this.textSearchItem, true);
+                this.toolbar.enableItems(this.textSearchItem.parentElement, true);
             }
         }
     }
@@ -288,31 +297,31 @@ export class Toolbar {
     public updateNavigationButtons(): void {
         if (this.pdfViewer.navigationModule && !this.isPageNavigationToolDisabled) {
             if (this.pdfViewerBase.pageCount === 0 || (this.pdfViewerBase.currentPageNumber === 1 && this.pdfViewerBase.pageCount === 1)) {
-                this.toolbar.enableItems(this.firstPageItem, false);
-                this.toolbar.enableItems(this.previousPageItem, false);
-                this.toolbar.enableItems(this.nextPageItem, false);
-                this.toolbar.enableItems(this.lastPageItem, false);
+                this.toolbar.enableItems(this.firstPageItem.parentElement, false);
+                this.toolbar.enableItems(this.previousPageItem.parentElement, false);
+                this.toolbar.enableItems(this.nextPageItem.parentElement, false);
+                this.toolbar.enableItems(this.lastPageItem.parentElement, false);
             } else if (this.pdfViewerBase.currentPageNumber === 1 && this.pdfViewerBase.pageCount > 0) {
-                this.toolbar.enableItems(this.firstPageItem, false);
-                this.toolbar.enableItems(this.previousPageItem, false);
-                this.toolbar.enableItems(this.nextPageItem, true);
-                this.toolbar.enableItems(this.lastPageItem, true);
+                this.toolbar.enableItems(this.firstPageItem.parentElement, false);
+                this.toolbar.enableItems(this.previousPageItem.parentElement, false);
+                this.toolbar.enableItems(this.nextPageItem.parentElement, true);
+                this.toolbar.enableItems(this.lastPageItem.parentElement, true);
             } else if (this.pdfViewerBase.currentPageNumber === this.pdfViewerBase.pageCount && this.pdfViewerBase.pageCount > 0) {
-                this.toolbar.enableItems(this.firstPageItem, true);
-                this.toolbar.enableItems(this.previousPageItem, true);
-                this.toolbar.enableItems(this.nextPageItem, false);
-                this.toolbar.enableItems(this.lastPageItem, false);
+                this.toolbar.enableItems(this.firstPageItem.parentElement, true);
+                this.toolbar.enableItems(this.previousPageItem.parentElement, true);
+                this.toolbar.enableItems(this.nextPageItem.parentElement, false);
+                this.toolbar.enableItems(this.lastPageItem.parentElement, false);
             } else if (this.pdfViewerBase.currentPageNumber > 1 && this.pdfViewerBase.currentPageNumber < this.pdfViewerBase.pageCount) {
-                this.toolbar.enableItems(this.firstPageItem, true);
-                this.toolbar.enableItems(this.previousPageItem, true);
-                this.toolbar.enableItems(this.nextPageItem, true);
-                this.toolbar.enableItems(this.lastPageItem, true);
+                this.toolbar.enableItems(this.firstPageItem.parentElement, true);
+                this.toolbar.enableItems(this.previousPageItem.parentElement, true);
+                this.toolbar.enableItems(this.nextPageItem.parentElement, true);
+                this.toolbar.enableItems(this.lastPageItem.parentElement, true);
             }
         } else {
-            this.toolbar.enableItems(this.firstPageItem, false);
-            this.toolbar.enableItems(this.previousPageItem, false);
-            this.toolbar.enableItems(this.nextPageItem, false);
-            this.toolbar.enableItems(this.lastPageItem, false);
+            this.toolbar.enableItems(this.firstPageItem.parentElement, false);
+            this.toolbar.enableItems(this.previousPageItem.parentElement, false);
+            this.toolbar.enableItems(this.nextPageItem.parentElement, false);
+            this.toolbar.enableItems(this.lastPageItem.parentElement, false);
             this.currentPageBox.readonly = true;
         }
     }
@@ -322,14 +331,14 @@ export class Toolbar {
     public updateZoomButtons(): void {
         if (this.pdfViewer.magnificationModule && !this.isMagnificationToolDisabled) {
             if (this.pdfViewer.magnificationModule.zoomFactor <= 0.5) {
-                this.toolbar.enableItems(this.zoomInItem, true);
-                this.toolbar.enableItems(this.zoomOutItem, false);
+                this.toolbar.enableItems(this.zoomInItem.parentElement, true);
+                this.toolbar.enableItems(this.zoomOutItem.parentElement, false);
             } else if (this.pdfViewer.magnificationModule.zoomFactor >= 4) {
-                this.toolbar.enableItems(this.zoomInItem, false);
-                this.toolbar.enableItems(this.zoomOutItem, true);
+                this.toolbar.enableItems(this.zoomInItem.parentElement, false);
+                this.toolbar.enableItems(this.zoomOutItem.parentElement, true);
             } else {
-                this.toolbar.enableItems(this.zoomInItem, true);
-                this.toolbar.enableItems(this.zoomOutItem, true);
+                this.toolbar.enableItems(this.zoomInItem.parentElement, true);
+                this.toolbar.enableItems(this.zoomOutItem.parentElement, true);
             }
         }
     }
@@ -786,14 +795,14 @@ export class Toolbar {
     private updateInteractionItems(): void {
         if (this.pdfViewer.textSelectionModule) {
             if (this.pdfViewer.enableTextSelection) {
-                this.toolbar.enableItems(this.textSelectItem, true);
+                this.toolbar.enableItems(this.textSelectItem.parentElement, true);
             } else {
-                this.toolbar.enableItems(this.textSelectItem, false);
+                this.toolbar.enableItems(this.textSelectItem.parentElement, false);
             }
         } else {
-            this.toolbar.enableItems(this.textSelectItem, false);
+            this.toolbar.enableItems(this.textSelectItem.parentElement, false);
         }
-        this.toolbar.enableItems(this.panItem, true);
+        this.toolbar.enableItems(this.panItem.parentElement, true);
         if (this.pdfViewer.interactionMode === 'TextSelection') {
             this.selectItem(this.textSelectItem);
             this.deSelectItem(this.panItem);
@@ -922,6 +931,7 @@ export class Toolbar {
         }
         this.showSeparator(toolbarSettingsItems);
     }
+
     /** 
      * @private
      */

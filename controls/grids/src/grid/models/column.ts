@@ -381,6 +381,8 @@ export class Column {
      * @aspIgnore
      */
     public filterTemplate: string;
+    /** @hidden */
+    public toJSON: Function;
 
     /**    
      * Defines the mapping column name of the foreign data source.
@@ -397,6 +399,7 @@ export class Column {
             this.setFormatter(valueFormatter.getFormatFunction(options.format as DateFormatOptions));
             this.setParser(valueFormatter.getParserFunction(options.format as DateFormatOptions));
         }
+        this.toJSON = () => {return {}; };
         if (!this.field) {
             this.allowFiltering = false;
             this.allowGrouping = false;

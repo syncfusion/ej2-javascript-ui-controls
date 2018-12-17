@@ -4,7 +4,6 @@
 import { Property, Component, Complex, Collection, NotifyPropertyChanges, INotifyPropertyChanged, SvgRenderer } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, Internationalization, Event, EmitType, Browser, EventHandler, Touch } from '@syncfusion/ej2-base';
 import { remove, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { AccumulationChartModel } from './accumulation-model';
 import { Font, Margin, Border, TooltipSettings, Indexes } from '../common/model/base';
 import { AccumulationSeries, AccPoints, PieCenter } from './model/acc-base';
@@ -39,13 +38,14 @@ import { AccumulationAnnotationSettingsModel } from './model/acc-base-model';
 import { AccumulationAnnotationSettings } from './model/acc-base';
 import { AccumulationAnnotation } from './annotation/annotation';
 import { IPrintEventArgs } from '../common/model/interface';
-import { ExportUtils } from '../common/utils/export';
-import { ExportType, Alignment } from '../common/utils/enum';
+import { Alignment } from '../common/utils/enum';
 import { getTitle } from '../common/utils/helper';
 import {Index} from '../common/model/base';
-import { IThemeStyle, Chart, RangeNavigator } from '../index';
+import { IThemeStyle } from '../index';
 import { IAccResizeEventArgs } from './model/pie-interface';
 import { DataManager } from '@syncfusion/ej2-data';
+import { Export } from '../chart/print-export/export';
+import { ExportUtils } from '../common/utils/export';
 /**
  * Represents the AccumulationChart control.
  * ```html
@@ -108,6 +108,10 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * `annotationModule` is used to manipulate and add annotation in chart.
      */
     public annotationModule: AccumulationAnnotation;
+    /**
+     * Export Module is used to export Accumulation chart.
+     */
+    public exportModule: Export;
 
     // Property declarations goes here
 
@@ -294,6 +298,13 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      */
     @Property('Material')
     public theme: AccumulationTheme;
+
+    /**
+     * To enable export feature in chart.
+     * @default true
+     */
+    @Property(true)
+    public enableExport: boolean;
 
     /**
      * Triggers after accumulation chart loaded.
@@ -677,21 +688,6 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             },
             500);
         return false;
-    }
-
-    /**
-     * Handles the export method for accumulation control.
-     */
-    public export(
-        type: ExportType,
-        fileName: string, orientation?: PdfPageOrientation,
-        controls?: (Chart | AccumulationChart | RangeNavigator)[], width?: number, height?: number
-    ): void {
-        let exportChart: ExportUtils = new ExportUtils(this);
-        exportChart.export(
-            type, fileName, orientation, (controls ? controls : [this]),
-            width, height
-        );
     }
 
     /**
@@ -1233,6 +1229,12 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         if (this.selectionMode !== 'None') {
             modules.push({
                 member: 'AccumulationSelection',
+                args: [this]
+            });
+        }
+        if (this.enableExport) {
+            modules.push({
+                member: 'Export',
                 args: [this]
             });
         }

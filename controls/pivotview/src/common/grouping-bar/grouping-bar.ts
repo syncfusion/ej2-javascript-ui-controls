@@ -278,9 +278,14 @@ export class GroupingBar implements IAction {
                     setStyleAttribute(rowContentTable, { 'width': buttonWidth });
                 }
             } else {
-                let pivotButtons: HTMLElement[] = [].slice.call(this.rowPanel.querySelectorAll('.' + cls.PIVOT_BUTTON_WRAPPER_CLASS));
-                for (let btn of pivotButtons) {
-                    btn.style.width = '140px';
+                if (!this.parent.firstColWidth) {
+                    let resColWidth: number = 180;
+                    let gridColumn: Column[] = this.parent.grid.columns as Column[];
+                    if (gridColumn && gridColumn.length > 0) {
+                        gridColumn[0].width = resColWidth;
+                    }
+                    this.parent.posCount = 0;
+                    this.parent.grid.headerModule.refreshUI();
                 }
             }
         }

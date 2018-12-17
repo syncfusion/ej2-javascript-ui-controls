@@ -307,8 +307,8 @@
     }
 
     .e-cloneproperties.e-draganddrop {
-      box-shadow: 2px 2px 2px 1px $grid-row-selection-bg-color;
-      opacity: .9;
+      box-shadow: $grid-clone-prop-box-shadow;
+      opacity: .95;
       overflow: visible;
     }
 
@@ -415,7 +415,7 @@
 
     .e-cloneproperties.e-draganddrop table,
     .e-cloneproperties.e-draganddrop table .e-selectionbackground {
-      background-color: $grid-table-background-color;
+      background-color: $grid-clone-dragdrop-bg-color;
       height: 30px;
     }
 

@@ -16,6 +16,10 @@
       border-color: $groupborder-color;
     }
 
+    & .e-rule-container.e-joined-rule {
+      border-top-color: $qrybldr-rule-list-border-color;
+    }
+
     & .e-rule-list .e-group-container {
       background-color: $qrybldr-bg-color;
     }
@@ -51,3 +55,27 @@
     background-color: inherit;
     }
 }
+
+.e-tooltip-wrap.e-querybuilder-error,
+.e-control.e-tooltip-wrap.e-popup.e-querybuilder-error {
+  background-color: $qrybldr-val-error-bg-color;
+  border-color: $qrybldr-val-error-bg-color;
+  }
+
+.e-tooltip-wrap.e-querybuilder-error .e-arrow-tip-inner.e-tip-top,
+.e-tooltip-wrap.e-querybuilder-error .e-arrow-tip-outer.e-tip-top {
+  border-bottom-color: $qrybldr-val-error-bg-color;
+  color: $qrybldr-val-error-bg-color;
+  }
+
+.e-tooltip-wrap.e-querybuilder-error .e-arrow-tip-outer.e-tip-bottom,
+.e-tooltip-wrap.e-querybuilder-error .e-arrow-tip-inner.e-tip-bottom {
+  border-top-color: $qrybldr-val-error-bg-color;
+  color: $qrybldr-val-error-bg-color;
+  }
+
+.e-tooltip-wrap.e-querybuilder-error .e-tip-content,
+.e-tooltip-wrap.e-querybuilder-error .e-tip-content label {
+  color: $qrybldr-val-error-color;
+  }
+

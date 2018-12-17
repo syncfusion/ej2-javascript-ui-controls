@@ -8,6 +8,7 @@ export class Print {
     private pdfViewer: PdfViewer;
     private pdfViewerBase: PdfViewerBase;
     private printViewerContainer: HTMLElement;
+    private printImageContainer: HTMLElement;
     // tslint:disable-next-line
     private frameDoc: any;
     // tslint:disable-next-line
@@ -42,9 +43,9 @@ export class Print {
             () => {
             for (pageIndex = 0; pageIndex <= this.pdfViewerBase.pageCount; pageIndex++) {
                 if (pageIndex < this.pdfViewerBase.pageCount) {
-                let pageWidth: number = this.pdfViewerBase.getPageWidth(pageIndex);
-                let pageHeight: number = this.pdfViewerBase.getPageHeight(pageIndex);
-                this.pdfViewer.printModule.createRequestForPrint (pageIndex, pageWidth, pageHeight, this.pdfViewerBase.pageCount);
+                    let pageWidth: number = this.pdfViewerBase.pageSize[pageIndex].width;
+                    let pageHeight: number = this.pdfViewerBase.pageSize[pageIndex].height;
+                    this.pdfViewer.printModule.createRequestForPrint (pageIndex, pageWidth, pageHeight, this.pdfViewerBase.pageCount);
                 } else {
                     this.printWindowOpen();
                 }
@@ -58,8 +59,9 @@ export class Print {
         let  proxy: Print = this;
         let request: XMLHttpRequest = new XMLHttpRequest();
         // tslint: disable-next-line:max-line-length
+        // set default zoomFactor value.  
         let jsonObject: object = {pageNumber: pageIndex, documentId: this.pdfViewerBase.documentId,
-        hashId: this.pdfViewerBase.hashId, zoomFactor: this.pdfViewerBase.getZoomFactor() };
+        hashId: this.pdfViewerBase.hashId, zoomFactor: 1 };
         request.open('POST', proxy.pdfViewer.serviceUrl + '/PrintImages', false);
         request.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
         request.send(JSON.stringify(jsonObject));
@@ -69,7 +71,15 @@ export class Print {
         pageImage.src = printImage;
         pageImage.height = pageHeight;
         pageImage.width = pageWidth;
-        this.printViewerContainer.appendChild(pageImage);
+        this.printImageContainer = createElement('div', { id: this.pdfViewer.element.id + '_print_image_container' + pageIndex });
+        if (pageHeight < pageWidth)  {
+            this.printImageContainer.style.height = pageWidth + 'px';
+            pageImage.height = pageWidth;
+            this.printImageContainer.style.width = pageHeight + 'px';
+            pageImage.width = pageHeight;
+        }
+        this.printImageContainer.appendChild(pageImage);
+        this.printViewerContainer.appendChild(this.printImageContainer);
     }
 
     private printWindowOpen(): void {
@@ -81,15 +91,19 @@ export class Print {
             this.frameDoc.document.write('<!DOCTYPE html>');
             // tslint: disable-next-line:max-line-length
             this.frameDoc.document.write('<html moznomarginboxes mozdisallowselectionprint><head><style>html, body { height: 100%; }'
-            + ' img { height: 100%; width: 100%; display: block; }@media print { body { margin: 0cm; }img { box-sizing: border-box; }br,'
-            + ' button { display: none; }} @page{margin:0mm; size:auto;}</style></head><body><center class="loader">');
+            + ' img { height: 100%; width: 100%; display: block; }@media print { body { margin: 0cm; }'
+            + ' img { width:98%; max-width: 1048px; box-sizing: border-box; }br, button { display: none; }'
+            // set default page Height and page Width for A4 size.
+            + ' div{ page-break-inside: avoid; }} @page{margin:0mm; size: 816px 1056px;}</style></head><body><center class="loader">');
         } else {
             //ie
             this.frameDoc.document.write('<!DOCTYPE html>');
             // tslint: disable-next-line:max-line-length
             this.frameDoc.document.write('<html><head>'
             + '<style>html, body { height: 99%; } img { height: 99%; width: 100%; }@media print { body { margin: 0cm; }'
-            + 'img { box-sizing: border-box; }br, button { display: none; }} @page{margin:0mm; size:auto;}</style></head><body><center>');
+            + 'img { width:98%; max-width: 1048px; box-sizing: border-box; }br, button { display: none; } '
+            // set default page Height and page Width for A4 size.
+            + 'div{ page-break-inside: avoid; }} @page{margin:0mm; size: 816px 1056px;}</style></head><body><center>');
         }
         this.frameDoc.document.write(this.printViewerContainer.outerHTML);
         this.pdfViewerBase.showPrintLoadingIndicator(false);

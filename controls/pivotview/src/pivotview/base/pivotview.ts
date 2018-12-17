@@ -1,7 +1,7 @@
-import { Property, Browser, Event, Component, ModuleDeclaration, createElement, setStyleAttribute, remove } from '@syncfusion/ej2-base';
-import { EmitType, EventHandler, Complex, extend, ChildProperty, Collection, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Property, Browser, Component, ModuleDeclaration, createElement, setStyleAttribute, setCurrencyCode } from '@syncfusion/ej2-base';
+import { EmitType, EventHandler, Complex, extend, ChildProperty, Collection, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { Internationalization, L10n, NotifyPropertyChanges, INotifyPropertyChanged } from '@syncfusion/ej2-base';
-import { removeClass, addClass } from '@syncfusion/ej2-base';
+import { removeClass, addClass, Event } from '@syncfusion/ej2-base';
 import { PivotEngine, IPivotValues, IAxisSet, IDataOptions, IDataSet, IPageSettings } from '../../base/engine';
 import { IConditionalFormatSettings } from '../../base/engine';
 import { PivotViewModel, GroupingBarSettingsModel, CellEditSettingsModel } from './pivotview-model';
@@ -254,7 +254,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /** @hidden */
     public localeObj: L10n;
     /** @hidden */
-    public toolTip: Tooltip;
+    public tooltip: Tooltip;
     /** @hidden */
     public grid: Grid;
     /** @hidden */
@@ -397,7 +397,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public showGroupingBar: boolean;
 
     /**
-     * Allows to display the Tool-Tip on hovering value cells in pivot grid.
+     * Allows to display the Tooltip on hovering value cells in pivot grid.
      * @default true
      */
     @Property(true)
@@ -827,6 +827,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.isDragging = false;
         this.addInternalEvents();
+        setCurrencyCode(this.currencyCode);
     }
 
     private onBeforeTooltipOpen(args: TooltipEventArgs): void {
@@ -835,16 +836,16 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
 
     private renderToolTip(): void {
         if (this.showTooltip) {
-            this.toolTip = new Tooltip({
+            this.tooltip = new Tooltip({
                 target: 'td.e-valuescontent',
                 showTipPointer: false,
                 enableRtl: this.enableRtl,
                 beforeRender: this.setToolTip.bind(this),
                 beforeOpen: this.onBeforeTooltipOpen
             });
-            this.toolTip.appendTo(this.element);
-        } else if (this.toolTip) {
-            this.toolTip.destroy();
+            this.tooltip.appendTo(this.element);
+        } else if (this.tooltip) {
+            this.tooltip.destroy();
         }
     }
 
@@ -1006,8 +1007,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     break;
                 case 'locale':
                 case 'currencyCode':
-                    if (this.toolTip) {
-                        this.toolTip.destroy();
+                    if (this.tooltip) {
+                        this.tooltip.destroy();
                     }
                     super.refresh();
                     break;
@@ -1259,6 +1260,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         if (this.showGroupingBar) {
             this.element.style.minWidth = '400px';
             this.grid.element.style.minWidth = '400px';
+        } else {
+            this.element.style.minWidth = '310px';
+            this.grid.element.style.minWidth = '310px';
         }
         this.unwireEvents();
         this.wireEvents();
@@ -1268,9 +1272,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         let colIndex: number = Number(args.target.getAttribute('aria-colindex'));
         let rowIndex: number = Number(args.target.getAttribute('index'));
         let cell: IAxisSet = (this.pivotValues[rowIndex][colIndex] as IAxisSet);
-        this.toolTip.content = '';
+        this.tooltip.content = '';
         if (cell) {
-            this.toolTip.content = '<div class=' + cls.PIVOTTOOLTIP + '><p class=' + cls.TOOLTIP_HEADER + '>' +
+            this.tooltip.content = '<div class=' + cls.PIVOTTOOLTIP + '><p class=' + cls.TOOLTIP_HEADER + '>' +
                 this.localeObj.getConstant('row') + ':</p><p class=' + cls.TOOLTIP_CONTENT + '>' +
                 this.getRowText(rowIndex, 0) +
                 '</p></br><p class=' + cls.TOOLTIP_HEADER + '>' +
@@ -1451,7 +1455,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         }
     }
 
-    /** hidden */
+    /** @hidden */
     public triggerColumnRenderEvent(gridcolumns: ColumnModel[]): void {
         this.pivotColumns = [];
         this.totColWidth = 0;
@@ -1469,7 +1473,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.setGridColumns(gridcolumns);
     }
 
-    /** hidden */
+    /** @hidden */
     public setCommonColumnsWidth(columns: ColumnModel[], width: number): void {
         for (let column of columns) {
             if (column.field !== '0.formattedText') {

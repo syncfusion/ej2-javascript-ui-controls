@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.42 (2018-12-10)
+
+### Schedule
+
+#### New Features
+
+- Provided support to display Scheduler in Islamic calendar mode.
+
 ## 16.4.40-beta (2018-12-10)
 
 ### Schedule

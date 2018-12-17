@@ -19,6 +19,8 @@ export class DialogRenderer {
     /** @hidden */
     public fieldListDialog: Dialog;
     /** @hidden */
+    public deferUpdateCheckBox: CheckBox;
+    /** @hidden */
     public adaptiveElement: Tab;
 
     private deferUpdateApplyButton: Button;
@@ -91,16 +93,16 @@ export class DialogRenderer {
 
     private renderDeferUpdateButtons(): void {
         if (this.parent.allowDeferLayoutUpdate) {
-            let checkBoxObj: CheckBox = new CheckBox({
+            this.deferUpdateCheckBox = new CheckBox({
                 label: this.parent.localeObj.getConstant('deferLayoutUpdate'),
                 checked: true,
                 enableRtl: this.parent.enableRtl,
                 change: this.onCheckChange.bind(this)
             });
-            checkBoxObj.appendTo('#' + this.parent.element.id + 'DeferUpdateCheckBox');
+            this.deferUpdateCheckBox.appendTo('#' + this.parent.element.id + 'DeferUpdateCheckBox');
             this.deferUpdateApplyButton = new Button({
                 cssClass: cls.DEFER_APPLY_BUTTON + ' ' + cls.DEFER_UPDATE_BUTTON + (this.parent.renderMode === 'Popup' ?
-                (' ' + cls.BUTTON_FLAT_CLASS) : ''),
+                    (' ' + cls.BUTTON_FLAT_CLASS) : ''),
                 content: this.parent.localeObj.getConstant('apply'),
                 enableRtl: this.parent.enableRtl,
                 isPrimary: true
@@ -111,7 +113,7 @@ export class DialogRenderer {
         }
         this.deferUpdateCancelButton = new Button({
             cssClass: cls.DEFER_CANCEL_BUTTON + ' ' + cls.CANCEL_BUTTON_CLASS + (this.parent.renderMode === 'Popup' ?
-            (' ' + cls.BUTTON_FLAT_CLASS) : ''),
+                (' ' + cls.BUTTON_FLAT_CLASS) : ''),
             content: this.parent.allowDeferLayoutUpdate ? this.parent.localeObj.getConstant('cancel') :
                 this.parent.localeObj.getConstant('close'),
             enableRtl: this.parent.enableRtl, isPrimary: !this.parent.allowDeferLayoutUpdate
@@ -163,11 +165,11 @@ export class DialogRenderer {
         } else {
             if (this.parent.allowDeferLayoutUpdate) {
                 this.deferUpdateApplyButton.element.style.display = '';
-                this.deferUpdateCancelButton.setProperties({ content: this.parent.localeObj.getConstant('cancel')});
+                this.deferUpdateCancelButton.setProperties({ content: this.parent.localeObj.getConstant('cancel') });
                 this.deferUpdateCancelButton.isPrimary = false;
             } else {
                 this.deferUpdateApplyButton.element.style.display = 'none';
-                this.deferUpdateCancelButton.setProperties({ content: this.parent.localeObj.getConstant('close')});
+                this.deferUpdateCancelButton.setProperties({ content: this.parent.localeObj.getConstant('close') });
                 this.deferUpdateCancelButton.isPrimary = true;
             }
         }
@@ -196,6 +198,9 @@ export class DialogRenderer {
         });
         this.parent.element.appendChild(toggleFieldList);
         if (this.parent.isAdaptive) {
+            let headerTemplate: string = '<div class=' + cls.TITLE_MOBILE_HEADER + '><span class="' + cls.ICON + ' ' +
+                cls.BACK_ICON + '"></span><div class=' + cls.TITLE_MOBILE_CONTENT + '>' + this.parent.localeObj.getConstant('fieldList') +
+                '</div></div>';
             let buttons: ButtonPropsModel[] = [{
                 click: this.showFieldListDialog.bind(this),
                 buttonModel: {
@@ -211,27 +216,10 @@ export class DialogRenderer {
                     iconCss: cls.ICON + ' ' + cls.ADD_ICON_CLASS, enableRtl: this.parent.enableRtl,
                     isPrimary: true
                 }
-            }, {
-                click: this.onDeferUpdateClick.bind(this),
-                buttonModel: {
-                    content: this.parent.localeObj.getConstant('apply'), enableRtl: this.parent.enableRtl,
-                    cssClass: cls.DEFER_APPLY_BUTTON + ' ' + cls.DEFER_UPDATE_BUTTON + ' ' + cls.BUTTON_FLAT_CLASS,
-                    isPrimary: true
-                }
-            }, {
-                click: this.onCloseFieldList.bind(this),
-                buttonModel: {
-                    cssClass: cls.DEFER_CANCEL_BUTTON + ' ' + cls.CANCEL_BUTTON_CLASS + ' ' + cls.BUTTON_FLAT_CLASS,
-                    content: this.parent.allowDeferLayoutUpdate ? this.parent.localeObj.getConstant('cancel') :
-                        this.parent.localeObj.getConstant('close'),
-                    enableRtl: this.parent.enableRtl
-                }
             }];
-            if (!this.parent.allowDeferLayoutUpdate) {
-                buttons.splice(2, 1);
-            }
             this.fieldListDialog = new Dialog({
-                animationSettings: { effect: 'Zoom' },
+                animationSettings: { effect: this.parent.enableRtl ? 'SlideRight' : 'SlideLeft' },
+                header: headerTemplate,
                 content: this.parentElement,
                 isModal: true,
                 showCloseIcon: false,
@@ -254,6 +242,8 @@ export class DialogRenderer {
             addClass([footer], cls.FIELD_LIST_FOOTER_CLASS);
             removeClass([footer.querySelector('.' + cls.ADAPTIVE_CALCULATED_FIELD_BUTTON_CLASS) as Element], cls.BUTTON_FLAT_CLASS);
             removeClass([footer.querySelector('.' + cls.ADAPTIVE_FIELD_LIST_BUTTON_CLASS)], cls.BUTTON_FLAT_CLASS);
+            (this.fieldListDialog.element.querySelector('.' + cls.BACK_ICON) as HTMLElement).onclick =
+                this.parent.allowDeferLayoutUpdate ? this.onDeferUpdateClick.bind(this) : this.onCloseFieldList.bind(this);
         } else {
             let template: string = this.createDeferUpdateButtons().outerHTML;
             let headerTemplate: string = '<div class=' + cls.TITLE_HEADER_CLASS + '><div class=' +

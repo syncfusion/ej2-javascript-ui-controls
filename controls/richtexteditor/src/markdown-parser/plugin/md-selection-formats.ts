@@ -165,6 +165,22 @@ export class MDSelectionFormats {
         let end: number = textArea.selectionEnd;
         let addedLength: number = 0;
         let selection: { [key: string]: string | number } = this.parent.markdownSelection.getSelectedInlinePoints(textArea);
+        if (this.isAppliedCommand(e.subCommand) && selection.text !== '') {
+            let startCmd: string = this.syntax[e.subCommand];
+            let endCmd: string = e.subCommand === 'SubScript' ? '</sub>' :
+                e.subCommand === 'SuperScript' ? '</sup>' : this.syntax[e.subCommand];
+            let startLength: number = (e.subCommand === 'UpperCase' || e.subCommand === 'LowerCase') ? 0 : startCmd.length;
+            let startNo: number = textArea.value.substr(0, selection.start as number).lastIndexOf(startCmd);
+            let endNo: number = textArea.value.substr(selection.end as number, selection.end as number).indexOf(endCmd);
+            endNo = endNo + (selection.end as number);
+            let repStartText: string = this.replaceAt(
+                textArea.value.substr(0, selection.start as number), startCmd, '', startNo, selection.start as number);
+            let repEndText: string = this.replaceAt(
+                textArea.value.substr(selection.end as number, textArea.value.length), endCmd, '', 0, endNo);
+            textArea.value = repStartText + selection.text + repEndText;
+            this.restore(textArea, start - startLength, end - startLength, e);
+            return;
+        }
         if (selection.text !== '' && !this.isApplied(selection, e.subCommand)) {
             addedLength = (e.subCommand === 'UpperCase' || e.subCommand === 'LowerCase') ? 0 :
                 this.syntax[e.subCommand].length;

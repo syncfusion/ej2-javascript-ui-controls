@@ -7,6 +7,7 @@ import { IToolsItems, IDropDownItemModel } from '../base/interface';
 
 export let templateItems: string[] = ['alignments', 'formats', 'fontname', 'fontsize', 'fontcolor', 'backgroundcolor', 'align', 'display', 'tablerows', 'tablecolumns', 'tablecellhorizontalalign', 'tablecellverticalalign', 'styles'];
 
+
 export let tools: { [key: string]: IToolsItems } = {
     'alignments': {
         'id': 'Alignments',
@@ -500,5 +501,3 @@ export let TableStyleItems: IDropDownItemModel[] = [
     { text: 'Dashed Borders', cssClass: 'e-dashed-borders', command: 'Table', subCommand: 'Dashed' },
     { text: 'Alternate Rows', cssClass: 'e-alternate-rows', command: 'Table', subCommand: 'Alternate' }
 ];
-
-

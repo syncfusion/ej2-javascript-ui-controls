@@ -1151,25 +1151,27 @@ export class DiagramRenderer {
     }
 
     /**   @private  */
-    public static renderSvgBackGroundImage
-        (background: BackgroundModel, diagramElement: HTMLElement, x: number, y: number, width: number, height: number): void {
-        let container: HTMLElement = document.getElementById(diagramElement.id);
-        let backgroundLayer: SVGSVGElement = getBackgroundLayerSvg(diagramElement.id);
-
-        let target: SVGElement = backgroundLayer.getElementById(diagramElement.id + '_image') as SVGElement;
-        if (!target && background.source) {
-            let bgimageLayer: SVGElement = getBackgroundImageLayer(diagramElement.id);
-            target = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-            target.setAttribute('id', diagramElement.id + '_image');
-            bgimageLayer.appendChild(target);
-        }
-        if (target) {
-            target.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', background.source);
+    public static renderSvgBackGroundImage (
+        background: BackgroundModel, diagramElement: HTMLElement, x: number, y: number, width: number, height: number
+    ): void {
+        if (background.source) {
+            let backgroundLayer: SVGSVGElement = getBackgroundLayerSvg(diagramElement.id);
+            let target: SVGElement = backgroundLayer.getElementById(diagramElement.id + '_image') as SVGElement;
+            if (!target) {
+                let bgimageLayer: SVGElement = getBackgroundImageLayer(diagramElement.id);
+                target = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+                target.setAttribute('id', diagramElement.id + '_image');
+                bgimageLayer.appendChild(target);
+            }
+            let imageObj: HTMLImageElement = new Image();
+            imageObj.src = background.source;
+            target.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imageObj.src.toString());
             let scale: string = background.scale !== 'None' ? background.scale : '';
             let imgAlign: string = background.align;
-            let aspectRatio: string = imgAlign.charAt(0).toLowerCase() + imgAlign.slice(1) + ' '
-                + scale.charAt(0).toLowerCase() + scale.slice(1);
-            let container: HTMLElement = document.getElementById(diagramElement.id);
+            let aspectRatio: string = imgAlign.charAt(0).toLowerCase() + imgAlign.slice(1);
+            if (scale) {
+                aspectRatio += ' ' + scale.charAt(0).toLowerCase() + scale.slice(1);
+            }
             let attr: Object = {
                 'id': diagramElement.id + '_image', 'x': x, 'y': y,
                 'width': width, 'height': height,

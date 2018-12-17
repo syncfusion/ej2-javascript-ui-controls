@@ -228,6 +228,7 @@ export class AxisRenderer {
         let rangeElement: Element = gauge.renderer.createGroup({
             id: gauge.element.id + '_Axis_Ranges_' + index
         });
+        let location: GaugeLocation = this.gauge.midPoint;
         let startAngle: number;
         let endAngle: number;
         let isClockWise: boolean = axis.direction === 'ClockWise';
@@ -266,22 +267,24 @@ export class AxisRenderer {
                 }
                 endAngle = isClockWise ? endAngle : [startAngle, startAngle = endAngle][0];
                 endWidth = isClockWise ? endWidth : [startWidth, startWidth = endWidth][0];
+                let radius: number = range.roundedCornerRadius;
+                let process: number = (radius * 0.25);
                 oldStart = ((((range.currentRadius - (startWidth / 2)) * ((startAngle * Math.PI) / 180) -
-                    (range.roundedCornerRadius / 4)) / (range.currentRadius - (startWidth / 2))) * 180) / Math.PI;
+                    (radius / process)) / (range.currentRadius - (startWidth / 2))) * 180) / Math.PI;
                 oldEnd = ((((range.currentRadius - (endWidth / 2)) * ((endAngle * Math.PI) / 180) +
-                    (range.roundedCornerRadius / 4)) / (range.currentRadius - (endWidth / 2))) * 180) / Math.PI;
+                    (radius / process)) / (range.currentRadius - (endWidth / 2))) * 180) / Math.PI;
                 roundedStartAngle = ((((range.currentRadius) * ((startAngle * Math.PI) / 180) +
-                    range.roundedCornerRadius) / (range.currentRadius)) * 180) / Math.PI;
+                    radius) / (range.currentRadius)) * 180) / Math.PI;
                 roundedEndAngle = ((((range.currentRadius) * ((endAngle * Math.PI) / 180) -
-                    range.roundedCornerRadius) / (range.currentRadius)) * 180) / Math.PI;
+                    radius) / (range.currentRadius)) * 180) / Math.PI;
                 if (range.roundedCornerRadius) {
                     appendPath(
                         new PathOption(
                             gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex, range.rangeColor,
                             0, range.rangeColor, 1, '0',
                             getRoundedPathArc(
-                                gauge.midPoint,
-                                Math.floor(roundedStartAngle), Math.ceil(roundedEndAngle), Math.floor(oldStart), Math.ceil(oldEnd),
+                                location,
+                                Math.floor(roundedStartAngle), Math.ceil(roundedEndAngle), oldStart, oldEnd,
                                 range.currentRadius, startWidth, endWidth
                             ),
                             '', 'pointer-events:none;'

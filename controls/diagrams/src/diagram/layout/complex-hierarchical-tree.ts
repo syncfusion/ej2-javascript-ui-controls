@@ -1414,13 +1414,15 @@ class CrossReduction {
                     let rank: (IVertex | IEdge)[] = model.ranks[j];
                     for (let k: number = 0; k < rank.length; k++) {
                         let cell: IVertex | IEdge = rank[k];
-                        if (this.nestedBestRanks[j][cell.temp[0]]) {
+                        let obj: IVertex = this.nestedBestRanks[j][cell.temp[0]];
+                        if (obj && ((obj.id === (cell as IVertex).id) || ((cell as IEdge).ids && (obj as IEdge).ids &&
+                            (obj as IEdge).ids[0] === (cell as IEdge).ids[0]))) {
                             this.nestedBestRanks[j][cell.temp[0]] = cell;
                         }
                     }
                 }
             } else {
-                // Increase count of iterations  
+                // Increase count of iterations
                 iterationsWithoutImprovement++;
                 // Restore the best values to the cells
                 for (let j: number = 0; j < this.nestedBestRanks.length; j++) {

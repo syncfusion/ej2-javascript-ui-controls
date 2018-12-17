@@ -18,7 +18,22 @@ export class LinkCommand {
         this.addEventListener();
     }
     private addEventListener(): void {
-        this.parent.observer.on(CONSTANT.LINK, this.createLink, this);
+        this.parent.observer.on(CONSTANT.LINK, this.linkCommand, this);
+    }
+
+    private linkCommand(e: IHtmlItem): void {
+        switch (e.value.toString().toLocaleLowerCase()) {
+            case 'createlink':
+            case 'editlink':
+                this.createLink(e);
+                break;
+            case 'openlink':
+                this.openLink(e);
+                break;
+            case 'removelink':
+                this.removeLink(e);
+                break;
+        }
     }
 
     private createLink(e: IHtmlItem): void {
@@ -70,5 +85,35 @@ export class LinkCommand {
             }
         }
         return arr.join(' ');
+    }
+
+    private openLink(e: IHtmlItem): void {
+        document.defaultView.open(e.item.url, e.item.target);
+        this.callBack(e);
+    }
+    private removeLink(e: IHtmlItem): void {
+        let parent: Node = e.item.selectParent[0].parentNode;
+        let child: Node[] = [];
+        for (; e.item.selectParent[0].firstChild; null) {
+            child.push(parent.insertBefore(e.item.selectParent[0].firstChild, e.item.selectParent[0]));
+        }
+        parent.removeChild(e.item.selectParent[0]);
+        if (child && child.length === 1) {
+            e.item.selection.startContainer = e.item.selection.getNodeArray(child[child.length - 1], true);
+            e.item.selection.endContainer = e.item.selection.startContainer;
+        }
+        e.item.selection.restore();
+        this.callBack(e);
+    }
+    private callBack(e: IHtmlItem): void {
+        if (e.callBack) {
+            e.callBack({
+                requestType: e.item.subCommand,
+                editorMode: 'HTML',
+                event: e.event,
+                range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
+                elements: this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument) as Element[]
+            });
+        }
     }
 }

@@ -18,16 +18,17 @@ export class ViewBase {
             return this.parent.getDayNames('abbreviated')[dt.getDay()];
         },
         getDate: (dt: Date) => {
-            return this.parent.globalize.formatDate(dt, { format: 'd' });
+            return this.parent.globalize.formatDate(dt, { format: 'd', calendar: this.parent.getCalendarMode() });
         },
         getTime: (dt: Date) => {
             if (this.parent.isAdaptive) {
-                return this.parent.globalize.formatDate(dt, { skeleton: 'h' });
+                return this.parent.globalize.formatDate(dt, { skeleton: 'h', calendar: this.parent.getCalendarMode() });
             }
             return this.parent.getTimeString(dt);
         },
         getTimelineDate: (dt: Date) => {
-            return this.parent.globalize.formatDate(dt, { skeleton: 'MMMd' }) + ', ' + this.parent.getDayNames('wide')[dt.getDay()];
+            return this.parent.globalize.formatDate(
+                dt, { skeleton: 'MMMd', calendar: this.parent.getCalendarMode() }) + ', ' + this.parent.getDayNames('wide')[dt.getDay()];
         }
     };
     /**
@@ -77,7 +78,7 @@ export class ViewBase {
     }
     public createColGroup(table: Element, lastRow: TdData[]): void {
         let length: number = lastRow.length;
-        if (lastRow[0].colSpan) {
+        if (lastRow[0] && lastRow[0].colSpan) {
             length = lastRow.map((value: TdData) => value.colSpan).reduce((prev: number, next: number) => prev + next);
         }
         let colGroupEle: Element = createElement('colgroup');
@@ -132,7 +133,10 @@ export class ViewBase {
             headerBarHeight += getOuterHeight(this.parent.headerModule.getHeaderElement());
         }
         if (this.parent.uiStateValues.isGroupAdaptive) {
-            headerBarHeight += (<HTMLElement>this.parent.element.querySelector('.' + cls.RESOURCE_HEADER_TOOLBAR)).offsetHeight;
+            let resHeader: HTMLElement = (<HTMLElement>this.parent.element.querySelector('.' + cls.RESOURCE_HEADER_TOOLBAR));
+            if (resHeader) {
+                headerBarHeight += resHeader.offsetHeight;
+            }
         }
         return headerBarHeight;
     }
@@ -176,14 +180,16 @@ export class ViewBase {
         return addDays(this.renderDates[this.renderDates.length - 1], 1);
     }
     public getStartHour(): Date {
-        let startHour: Date = this.parent.globalize.parseDate(this.parent.activeViewOptions.startHour, { skeleton: 'Hm' });
+        let startHour: Date = this.parent.globalize.parseDate(
+            this.parent.activeViewOptions.startHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
         if (isNullOrUndefined(startHour)) {
             startHour = new Date(2000, 0, 0, 0);
         }
         return startHour;
     }
     public getEndHour(): Date {
-        let endHour: Date = this.parent.globalize.parseDate(this.parent.activeViewOptions.endHour, { skeleton: 'Hm' });
+        let endHour: Date = this.parent.globalize.parseDate(
+            this.parent.activeViewOptions.endHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
         if (isNullOrUndefined(endHour)) {
             endHour = new Date(2000, 0, 0, 0);
         }
@@ -266,12 +272,13 @@ export class ViewBase {
         }
     }
     public getLabelText(view: string): string {
-        return this.parent.localeObj.getConstant(view) + ' of ' +
-            this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'long' });
+        return this.parent.localeObj.getConstant(view) + ' of ' + this.parent.globalize.formatDate(
+            this.parent.selectedDate, { skeleton: 'long', calendar: this.parent.getCalendarMode() });
     }
     public getDateRangeText(): string {
         if (this.parent.isAdaptive) {
-            return this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y' });
+            return this.parent.globalize.
+                formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() });
         }
         return this.formatDateRange(this.renderDates[0], this.renderDates[this.renderDates.length - 1]);
     }
@@ -282,59 +289,65 @@ export class ViewBase {
         }
         if (!isNullOrUndefined(this.parent.activeViewOptions.dateFormat)) {
             if (!endDate) {
-                return globalize.formatDate(startDate, { format: this.parent.activeViewOptions.dateFormat });
+                return globalize.formatDate(
+                    startDate, { format: this.parent.activeViewOptions.dateFormat, calendar: this.parent.getCalendarMode() });
             }
-            return globalize.formatDate(startDate, { format: this.parent.activeViewOptions.dateFormat }) + ' - ' +
-                globalize.formatDate(endDate, { format: this.parent.activeViewOptions.dateFormat });
+            return globalize.formatDate(
+                startDate, { format: this.parent.activeViewOptions.dateFormat, calendar: this.parent.getCalendarMode() }) + ' - ' +
+                globalize.
+                    formatDate(endDate, { format: this.parent.activeViewOptions.dateFormat, calendar: this.parent.getCalendarMode() });
         }
         let formattedStr: string;
         let longDateFormat: string;
         if (this.parent.locale === 'en' || this.parent.locale === 'en-US') {
             longDateFormat = getValue('dateFormats.long', getDefaultDateObject());
         } else {
-            longDateFormat = getValue('main.' + '' + this.parent.locale + '.dates.calendars.gregorian.dateFormats.long', cldrData);
+            longDateFormat = getValue(
+                'main.' + '' + this.parent.locale + '.dates.calendars.' + this.parent.getCalendarMode() + '.dateFormats.long', cldrData);
         }
         if (!endDate) {
-            return globalize.formatDate(startDate, { format: longDateFormat });
+            return globalize.formatDate(startDate, { format: longDateFormat, calendar: this.parent.getCalendarMode() });
         }
         let dateFormat: string = longDateFormat.trim().toLocaleLowerCase();
         if (dateFormat.substr(0, 1) === 'd') {
             if (startDate.getFullYear() === endDate.getFullYear()) {
                 if (startDate.getMonth() === endDate.getMonth()) {
-                    formattedStr = globalize.formatDate(startDate, { format: 'dd' }) + ' - ' +
-                        globalize.formatDate(endDate, { format: 'dd MMMM yyyy' });
+                    formattedStr = globalize.formatDate(startDate, { format: 'dd', calendar: this.parent.getCalendarMode() }) + ' - ' +
+                        globalize.formatDate(endDate, { format: 'dd MMMM yyyy', calendar: this.parent.getCalendarMode() });
                 } else {
-                    formattedStr = globalize.formatDate(startDate, { format: 'dd MMM' }) + ' - ' +
-                        globalize.formatDate(endDate, { format: 'dd MMM yyyy' });
+                    formattedStr = globalize.formatDate(startDate, { format: 'dd MMM', calendar: this.parent.getCalendarMode() }) + ' - ' +
+                        globalize.formatDate(endDate, { format: 'dd MMM yyyy', calendar: this.parent.getCalendarMode() });
                 }
             } else {
-                formattedStr = globalize.formatDate(startDate, { format: 'dd MMM yyyy' }) + ' - ' +
-                    globalize.formatDate(endDate, { format: 'dd MMM yyyy' });
+                formattedStr = globalize.formatDate(startDate, { format: 'dd MMM yyyy', calendar: this.parent.getCalendarMode() }) + ' - ' +
+                    globalize.formatDate(endDate, { format: 'dd MMM yyyy', calendar: this.parent.getCalendarMode() });
             }
         } else if (dateFormat.substr(0, 1) === 'm') {
             if (startDate.getFullYear() === endDate.getFullYear()) {
                 if (startDate.getMonth() === endDate.getMonth()) {
-                    formattedStr = globalize.formatDate(startDate, { format: 'MMMM dd' }) + ' - ' +
-                        globalize.formatDate(endDate, { format: 'dd, yyyy' });
+                    formattedStr = globalize.formatDate(startDate, { format: 'MMMM dd', calendar: this.parent.getCalendarMode() }) + ' - ' +
+                        globalize.formatDate(endDate, { format: 'dd, yyyy', calendar: this.parent.getCalendarMode() });
                 } else {
-                    formattedStr = globalize.formatDate(startDate, { format: 'MMM dd' }) + ' - ' +
-                        globalize.formatDate(endDate, { format: 'MMM dd, yyyy' });
+                    formattedStr = globalize.formatDate(startDate, { format: 'MMM dd', calendar: this.parent.getCalendarMode() }) + ' - ' +
+                        globalize.formatDate(endDate, { format: 'MMM dd, yyyy', calendar: this.parent.getCalendarMode() });
                 }
             } else {
-                formattedStr = globalize.formatDate(startDate, { format: 'MMM dd, yyyy' }) + ' - ' +
-                    globalize.formatDate(endDate, { format: 'MMM dd, yyyy' });
+                formattedStr = globalize.
+                    formatDate(startDate, { format: 'MMM dd, yyyy', calendar: this.parent.getCalendarMode() }) + ' - ' +
+                    globalize.formatDate(endDate, { format: 'MMM dd, yyyy', calendar: this.parent.getCalendarMode() });
             }
         } else {
-            formattedStr = globalize.formatDate(startDate, { format: longDateFormat }) + ' - ' +
-                globalize.formatDate(endDate, { format: longDateFormat });
+            formattedStr = globalize.formatDate(startDate, { format: longDateFormat, calendar: this.parent.getCalendarMode() }) + ' - ' +
+                globalize.formatDate(endDate, { format: longDateFormat, calendar: this.parent.getCalendarMode() });
         }
         return formattedStr;
     }
     public getMobileDateElement(date: Date, className?: string): Element {
         let wrap: Element = createElement('div', {
             className: className,
-            innerHTML: '<div class="e-m-date">' + this.parent.globalize.formatDate(date, { format: 'd' }) + '</div>' +
-                '<div class="e-m-day">' + this.parent.globalize.formatDate(date, { format: 'E' }) + '</div>'
+            innerHTML: '<div class="e-m-date">' + this.parent.globalize.formatDate(
+                date, { format: 'd', calendar: this.parent.getCalendarMode() }) + '</div>' + '<div class="e-m-day">' +
+                this.parent.globalize.formatDate(date, { format: 'E', calendar: this.parent.getCalendarMode() }) + '</div>'
         });
         return wrap;
     }
@@ -353,6 +366,9 @@ export class ViewBase {
     }
 
     public renderResourceMobileLayout(): void {
+        if (this.parent.resourceBase.lastResourceLevel && this.parent.resourceBase.lastResourceLevel.length <= 0) {
+            return;
+        }
         this.parent.resourceBase.renderResourceHeader();
         this.parent.resourceBase.renderResourceTree();
     }

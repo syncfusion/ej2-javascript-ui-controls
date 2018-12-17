@@ -48,7 +48,7 @@ let fieldlist: PivotFieldList = new PivotFieldList({
         }
     },
     dataBound: (): void => {
-        pivotGridObj.toolTip.destroy();
+        pivotGridObj.tooltip.destroy();
         pivotGridObj.refresh();
         if (Browser.isDevice) {
             prepend([document.getElementById('FieldList')], document.getElementById('PivotView'));

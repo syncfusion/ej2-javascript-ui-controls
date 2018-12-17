@@ -632,7 +632,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public fullRowSelect: boolean;
 
     /**
-     * By default, load on demand is set as true. On disabling this property, all nodes are rendered at the beginning itself.
+     * By default, the load on demand (Lazy load) is set to true. By disabling this property, all the tree nodes are rendered at the
+     * beginning itself.
      * @default true
      */
     @Property(true)

@@ -1331,7 +1331,13 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         dataSource: { [key: string]: Object }[] = <{ [key: string]: Object }[]>this.localData): void {
 
         if (dataSource && this.fields.groupBy) {
-            this.curViewDS = ListBase.groupDataSource(dataSource, this.listBaseOption.fields, this.sortOrder);
+            if (this.sortOrder !== 'None') {
+                this.curViewDS = ListBase.groupDataSource(
+                    ListBase.getDataSource(dataSource, ListBase.addSorting(this.sortOrder, this.fields.sortBy)),
+                    this.listBaseOption.fields, this.sortOrder);
+            } else {
+                this.curViewDS = ListBase.groupDataSource(dataSource, this.listBaseOption.fields, this.sortOrder);
+            }
         } else if (dataSource && this.sortOrder !== 'None') {
             this.curViewDS = ListBase.getDataSource(dataSource, ListBase.addSorting(this.sortOrder, this.fields.sortBy));
         } else {

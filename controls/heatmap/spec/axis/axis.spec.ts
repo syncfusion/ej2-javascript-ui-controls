@@ -175,7 +175,7 @@ describe('Heatmap Control', () => {
             heatmap.refresh();
             text = document.getElementById('container_XAxis_Label1');
             expect(text.textContent == 'test1').toBe(true);
-            expect((text.getAttribute('x') == '215.5' || text.getAttribute('x') == '217.29999999999998') && (text.getAttribute('y') == '399.07660722732544' || text.getAttribute('y') == '398.8000726699829')).toBe(true);
+            expect((text.getAttribute('x') == '215.5' || text.getAttribute('x') == '217.29999999999998') && (text.getAttribute('y') == '398.7861557006836' || text.getAttribute('y') == '402.0400581359863')).toBe(true);
         });
         it('Checking x-axis with minimum and maximum', () => {
             heatmap.xAxis.interval = 1;

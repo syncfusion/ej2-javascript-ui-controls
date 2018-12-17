@@ -318,9 +318,9 @@ export class RadialGradient extends Gradient {
 export class ShapeStyle extends ChildProperty<ShapeStyle> {
     /**
      * Sets the fill color of a shape/path
-     * @default 'transparent'
+     * @default 'white'
      */
-    @Property('transparent')
+    @Property('white')
     public fill: string;
 
     /**
@@ -499,4 +499,11 @@ export class TextStyle extends ShapeStyle {
      */
     @Property('Wrap')
     public textOverflow: TextOverflow;
+
+    /**
+     * Sets the fill color of a shape/path
+     * @default 'transparent'
+     */
+    @Property('transparent')
+    public fill: string;
 }

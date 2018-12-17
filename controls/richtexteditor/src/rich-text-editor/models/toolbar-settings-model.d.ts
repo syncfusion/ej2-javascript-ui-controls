@@ -1,4 +1,4 @@
-import { Property, ChildProperty } from '@syncfusion/ej2-base';import { ToolbarType, ActionOnScroll } from '../base/enum';import { IToolbarItems, IDropDownItemModel, ColorModeType } from '../base/interface';import { TableStyleItems } from '../models/items';
+import { Property, ChildProperty } from '@syncfusion/ej2-base';import { ToolbarType, ActionOnScroll, ToolbarItems } from '../base/enum';import { IToolbarItems, IDropDownItemModel, ColorModeType, IToolsItemConfigs } from '../base/interface';import { TableStyleItems } from '../models/items';
 
 /**
  * Interface for a class ToolbarSettings
@@ -31,6 +31,12 @@ export interface ToolbarSettingsModel {
      * @default predefinedItems
      */
     items?: (string | IToolbarItems)[];
+
+    /**
+     * Using this property, Modify the default toolbar item configuration like icon class.
+     * @default {}
+     */
+    itemConfigs?: { [key in ToolbarItems]?: IToolsItemConfigs };
 
 }
 

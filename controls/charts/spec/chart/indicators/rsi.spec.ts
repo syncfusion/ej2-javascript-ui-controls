@@ -134,7 +134,7 @@ describe('Chart', () => {
         it('RSI Technical indicator for a series with valid points & primary axis', (done: Function) => {
             loaded = (args: Object): void => {
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_RSI');
                 expect(signalLine.getAttribute('d')).not.toBeNull();
                 expect(chartObj.visibleSeries.length === 4 || chartObj.visibleSeries.length === 2).toBe(true);
                 expect(chartObj.visibleSeries[1].points[0].x).toBe('Apr');
@@ -222,7 +222,7 @@ describe('Chart', () => {
             loaded = (args: Object): void => {
                 //define check condition
                 ;
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_RSI');
                 expect(signalLine.getAttribute('d')).not.toBeNull();
                 done();
                 //reset visibility
@@ -244,7 +244,7 @@ describe('Chart', () => {
         it('RSI Technical indicator with opposed position', (done: Function) => {
             loaded = (args: Object): void => {
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_RSI');
                 expect(signalLine.getAttribute('d')).not.toBeNull();
                 let svg: HTMLElement = document.getElementById('containerAxisLine_0');
                 expect(svg.getAttribute('d').split(' ')[1] == '57.5' || svg.getAttribute('d').split(' ')[1] == '53.5').toBe(true);
@@ -267,7 +267,7 @@ describe('Chart', () => {
             loaded = (args: Object): void => {
 
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_RSI');
                 expect(signalLine.getAttribute('d')).not.toBeNull();
                 let point: Element = document.getElementById('containerIndicatorGroup0');
                 expect(point != null).toBe(true);
@@ -292,7 +292,7 @@ describe('Chart', () => {
         it('RSI Technical indicator with default appearance', (done: Function) => {
             loaded = (args: Object): void => {
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_RSI');
                 expect(signalLine.getAttribute('stroke')).toBe('#606eff');
                 done();
             };
@@ -304,7 +304,7 @@ describe('Chart', () => {
         it('RSI Technical indicator with custom color', (done: Function) => {
             loaded = (args: Object): void => {
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_RSI');
                 expect(signalLine.getAttribute('stroke')).toBe('orange');
                 done();
             };
@@ -317,7 +317,7 @@ describe('Chart', () => {
         it('RSI Technical indicator with custom stroke style', (done: Function) => {
             loaded = (args: Object): void => {
                 //define check condition
-                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_SignalLine');
+                let signalLine: HTMLElement = document.getElementById('container_Indicator_0_RSI');
                 expect(signalLine.getAttribute('stroke-width')).toBe('3');
                 //workaround
                 expect(signalLine.getAttribute('stroke-dasharray')).toBe('2,2');

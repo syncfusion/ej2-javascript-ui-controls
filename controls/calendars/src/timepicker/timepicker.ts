@@ -92,8 +92,13 @@ export interface PopupEventArgs {
 
 export namespace TimePickerBase {
     // tslint:disable-next-line
-    export function createListItems(createdEl:createElementParams, min: Date, max: Date, globalize: Internationalization, timeFormat: string, step: number):
-    { collection: number[], list: HTMLElement } {
+    export function createListItems(createdEl: createElementParams, min: Date, max: Date, globalize: Internationalization, timeFormat: string, step: number): { collection: number[], list: HTMLElement } {
+        let formatOptions: object;
+        if (this.calendarMode === 'Gregorian') {
+            formatOptions = { format: timeFormat, type: 'time' };
+        } else {
+            formatOptions = { format: timeFormat, type: 'time', calendar: 'islamic' };
+        }
         let start: number;
         let end: number;
         let interval: number = step * 60000;
@@ -906,7 +911,9 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     this.hide();
                     addClass([this.inputWrapper.container], FOCUS);
                     this.isNavigate = false;
-                    event.stopPropagation();
+                    if (this.isPopupOpen()) {
+                        event.stopPropagation();
+                    }
                     break;
                 case 'open':
                     this.show(event);

@@ -99,7 +99,7 @@ Tabs and shift-tabs work too`;
         let editorObj: MarkdownParser;
         let textArea: HTMLTextAreaElement = <HTMLTextAreaElement>createElement('textarea', {
             id: 'markdown-editor',
-            styles: 'width:200px;height:200px'
+            styles: 'width:300px;height:200px'
         });
         beforeAll(() => {
             document.body.appendChild(textArea);
@@ -128,9 +128,9 @@ Tabs and shift-tabs work too`;
             let lineNumber: number = editorObj.markdownSelection.getLineNumber(textArea, 2);
             let line: string = editorObj.markdownSelection.getSelectedLine(textArea);
             let prev: string = editorObj.markdownSelection.getLine(textArea, lineNumber - 1);
-            let next: string = editorObj.markdownSelection.getLine(textArea, lineNumber + 2);
-            expect(new RegExp('^(```)', 'gim').test(prev)).toBe(true);
-            expect(new RegExp('^(```)', 'gim').test(next)).toBe(true);
+            let next: string = editorObj.markdownSelection.getLine(textArea, lineNumber + 3);
+            expect(new RegExp('^(```)', 'gim').test(prev)).not.toBe(true);
+            expect(new RegExp('^(```)', 'gim').test(next)).not.toBe(true);
         });
         it(' apply Pre inlineCode formats ', () => {
             editorObj.markdownSelection.save(textArea.value.length - 4, textArea.value.length);
@@ -170,7 +170,7 @@ Tabs and shift-tabs work too`;
             });
             expect(isCallBack).toBe(true);
             let line: string = editorObj.markdownSelection.getSelectedLine(textArea);
-            expect(new RegExp('^(# )', 'gim').test(line)).toBe(true);
+            expect(new RegExp('^(# )', 'gim').test(line)).not.toBe(true);
         });
 
         it(' apply h1 formats - to selected multi lines', () => {
@@ -404,6 +404,106 @@ Tabs and shift-tabs work too`;
             for (let i: number = 0; lines[i] !== '' && i < lines.length; i++) {
                 expect(new RegExp('^(###### )', 'gim').test(lines[i])).toBe(true);
             }
+        });
+        afterAll(() => {
+            detach(textArea);
+        });
+    });
+    describe(' check already applied', () => {
+        let innerValue: string =
+        `Lists are a piece of cake
+        They even auto continue as you type
+        A double enter will end them
+        Tabs and shift-tabs work too`;
+        let editorObj: MarkdownParser;
+        let textArea: HTMLTextAreaElement = <HTMLTextAreaElement>createElement('textarea', {
+            id: 'markdown-editor',
+            styles: 'width:300px;height:200px'
+        });
+        beforeAll(() => {
+            document.body.appendChild(textArea);
+            editorObj = new MarkdownParser({ element: textArea });
+            textArea.value = innerValue;
+            textArea.focus();
+        });
+
+        it(' apply and remove h1 formats ', () => {
+            editorObj.markdownSelection.save(0, 2);
+            editorObj.markdownSelection.restore(textArea);
+             editorObj.execCommand("Formats", 'h1', null);
+            let line: string = editorObj.markdownSelection.getSelectedLine(textArea);
+             expect(new RegExp('^(# )', 'gim').test(line)).toBe(true);
+             editorObj.execCommand("Formats", 'h1', null);
+             line = editorObj.markdownSelection.getSelectedLine(textArea);
+             expect(new RegExp('^(# )', 'gim').test(line)).not.toBe(true);
+        });
+        it('apply and remove h2 formats', () => {
+             editorObj.markdownSelection.save(6, 6);
+            editorObj.markdownSelection.restore(textArea);
+             editorObj.execCommand("Formats", 'h2', null);
+            let line: string = editorObj.markdownSelection.getSelectedLine(textArea);
+             expect(new RegExp('^(## )', 'gim').test(line)).toBe(true);
+             editorObj.execCommand("Formats", 'h2', null);
+             line = editorObj.markdownSelection.getSelectedLine(textArea);
+             expect(new RegExp('^(## )', 'gim').test(line)).not.toBe(true);
+        });
+        it('apply and remove h3 formats', () => {
+             editorObj.markdownSelection.save(6, 6);
+            editorObj.markdownSelection.restore(textArea);
+             editorObj.execCommand("Formats", 'h3', null);
+            let line: string = editorObj.markdownSelection.getSelectedLine(textArea);
+             expect(new RegExp('^(### )', 'gim').test(line)).toBe(true);
+             editorObj.execCommand("Formats", 'h3', null);
+             line = editorObj.markdownSelection.getSelectedLine(textArea);
+             expect(new RegExp('^(### )', 'gim').test(line)).not.toBe(true);
+        });
+        it('apply and remove h4 formats', () => {
+             editorObj.markdownSelection.save(6, 6);
+            editorObj.markdownSelection.restore(textArea);
+             editorObj.execCommand("Formats", 'h4', null);
+            let line: string = editorObj.markdownSelection.getSelectedLine(textArea);
+             expect(new RegExp('^(#### )', 'gim').test(line)).toBe(true);
+             editorObj.execCommand("Formats", 'h4', null);
+             line = editorObj.markdownSelection.getSelectedLine(textArea);
+             expect(new RegExp('^(#### )', 'gim').test(line)).not.toBe(true);
+        });
+        it('apply and remove h5 formats', () => {
+             editorObj.markdownSelection.save(6, 6);
+            editorObj.markdownSelection.restore(textArea);
+             editorObj.execCommand("Formats", 'h5', null);
+            let line: string = editorObj.markdownSelection.getSelectedLine(textArea);
+             expect(new RegExp('^(##### )', 'gim').test(line)).toBe(true);
+             editorObj.execCommand("Formats", 'h5', null);
+             line = editorObj.markdownSelection.getSelectedLine(textArea);
+             expect(new RegExp('^(##### )', 'gim').test(line)).not.toBe(true);
+        });
+        it('apply and remove h4 formats', () => {
+             editorObj.markdownSelection.save(6, 6);
+            editorObj.markdownSelection.restore(textArea);
+             editorObj.execCommand("Formats", 'h6', null);
+            let line: string = editorObj.markdownSelection.getSelectedLine(textArea);
+             expect(new RegExp('^(###### )', 'gim').test(line)).toBe(true);
+             editorObj.execCommand("Formats", 'h6', null);
+             line = editorObj.markdownSelection.getSelectedLine(textArea);
+             expect(new RegExp('^(###### )', 'gim').test(line)).not.toBe(true);
+        });
+            it(' apply Pre formats ', () => {
+            editorObj.markdownSelection.save(6, 55);
+            editorObj.markdownSelection.restore(textArea);
+            editorObj.execCommand("Formats", 'Pre')
+            let lineNumber: number = editorObj.markdownSelection.getLineNumber(textArea, 2);
+            let line: string = editorObj.markdownSelection.getSelectedLine(textArea);
+            let prev: string = editorObj.markdownSelection.getLine(textArea, lineNumber - 1);
+            let next: string = editorObj.markdownSelection.getLine(textArea, lineNumber + 2);
+            expect(new RegExp('^(```)', 'gim').test(prev)).toBe(true);
+            expect(new RegExp('^(```)', 'gim').test(next)).toBe(true);
+            editorObj.execCommand("Formats", 'Pre');
+            lineNumber = editorObj.markdownSelection.getLineNumber(textArea, 2);
+            line = editorObj.markdownSelection.getSelectedLine(textArea);
+            prev = editorObj.markdownSelection.getLine(textArea, lineNumber - 1);
+            next = editorObj.markdownSelection.getLine(textArea, lineNumber + 2);
+            expect(new RegExp('^(```)', 'gim').test(prev)).not.toBe(true);
+            expect(new RegExp('^(```)', 'gim').test(next)).not.toBe(true);
         });
         afterAll(() => {
             detach(textArea);

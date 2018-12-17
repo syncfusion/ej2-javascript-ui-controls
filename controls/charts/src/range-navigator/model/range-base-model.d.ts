@@ -64,6 +64,13 @@ export interface RangeNavigatorSeriesModel {
     width?: number;
 
     /**
+     * The opacity for the background.
+     * @default 1
+     */
+
+    opacity?: number;
+
+    /**
      * Defines the pattern of dashes and gaps to stroke the lines in `Line` type series.
      * @default '0'
      */

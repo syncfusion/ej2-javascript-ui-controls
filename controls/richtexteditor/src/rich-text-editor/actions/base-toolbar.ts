@@ -2,13 +2,14 @@ import { ItemModel, Toolbar as tool } from '@syncfusion/ej2-navigations';
 import { RenderType } from '../base/enum';
 import { CLS_HR_SEPARATOR } from '../base/classes';
 import * as events from '../base/constant';
-import { getTooltipText } from '../base/util';
+import { getTooltipText, toObjectLowerCase } from '../base/util';
+import { ToolbarItems } from '../base/enum';
 import { tools, templateItems } from '../models/items';
-import { IRichTextEditor, IRenderer, IToolbarRenderOptions, IToolbarItems } from '../base/interface';
+import { IRichTextEditor, IRenderer, IToolbarRenderOptions, IToolbarItems, IToolsItems } from '../base/interface';
 import { IToolbarOptions, IToolbarItemModel } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 
 /**
  * `Toolbar` module is used to handle Toolbar actions.
@@ -19,12 +20,18 @@ export class BaseToolbar {
     protected locator: ServiceLocator;
     protected toolbarRenderer: IRenderer;
     protected renderFactory: RendererFactory;
+    private tools: { [key: string]: IToolsItems } = {};
 
     constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.locator = serviceLocator;
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
         this.addEventListener();
+        if (this.parent.toolbarSettings && Object.keys(this.parent.toolbarSettings.itemConfigs).length > 0) {
+            extend(this.tools, tools, toObjectLowerCase(this.parent.toolbarSettings.itemConfigs), true);
+        } else {
+            this.tools = tools;
+        }
     }
 
     private addEventListener(): void {
@@ -55,9 +62,12 @@ export class BaseToolbar {
                 break;
         }
         return {
-            command: tools[itemStr].command,
-            subCommand: tools[itemStr].subCommand,
-            template: this.parent.createElement(tagName, { id: this.parent.getID() + '_' + container + '_' + tools[itemStr].id }).outerHTML,
+            command: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].command,
+            subCommand: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].subCommand,
+            template: this.parent.createElement(tagName, {
+                id: this.parent.getID() + '_' + container
+                    + '_' + this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].id
+            }).outerHTML,
             tooltipText: getTooltipText(itemStr, this.locator)
         };
     }
@@ -74,11 +84,11 @@ export class BaseToolbar {
                     return { type: 'Separator', cssClass: CLS_HR_SEPARATOR };
                 default:
                     return {
-                        id: this.parent.getID() + '_' + container + '_' + tools[itemStr].id,
-                        prefixIcon: tools[itemStr].icon,
+                        id: this.parent.getID() + '_' + container + '_' + this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].id,
+                        prefixIcon: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].icon,
                         tooltipText: getTooltipText(itemStr, this.locator),
-                        command: tools[itemStr].command,
-                        subCommand: tools[itemStr].subCommand
+                        command: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].command,
+                        subCommand: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].subCommand
                     };
             }
         }

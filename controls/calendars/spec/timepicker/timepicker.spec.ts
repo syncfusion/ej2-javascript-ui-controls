@@ -2095,7 +2095,6 @@ describe('TimePicker', () => {
     describe('document layout testing', () => {
         let clickEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
-            stopPropagation: (): void => { /** NO Code */ },
             currentTarget: '',
             target: ''
         };
