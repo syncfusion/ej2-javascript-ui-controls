@@ -2401,8 +2401,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     removeClass([this.element], 'e-grid-min-height');
                 }
                 this.renderModule.refresh();
-                this.headerModule.refreshUI();
-                break;
+                this.headerModule.refreshUI(); break;
             case 'gridLines':
                 this.updateGridLines(); break;
             case 'showColumnMenu':
@@ -2424,8 +2423,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this.notify(events.inBoundModelChanged, { module: 'search', properties: newProp.searchSettings });
                 break;
             case 'sortSettings':
-                this.notify(events.inBoundModelChanged, { module: 'sort' });
-                break;
+                this.notify(events.inBoundModelChanged, { module: 'sort' }); break;
             case 'selectionSettings':
                 this.notify(events.inBoundModelChanged, { module: 'selection', properties: newProp.selectionSettings });
                 break;
@@ -2463,6 +2461,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 let action: Function = newProp.enableHover ? addClass : removeClass;
                 (<Function>action)([this.element], 'e-gridhover');
                 break;
+            case 'selectedRowIndex':
+                this.selectRow(newProp.selectedRowIndex); break;
         }
     }
 

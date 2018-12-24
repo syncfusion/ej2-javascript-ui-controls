@@ -42,8 +42,8 @@ describe('MultiSelect module', () => {
             expect(selectAll('.e-chips-close', ele).length === 1).toEqual(true);
         });
         it('Value property testing', () => {
+            expect(editorObj.value[0] === 'test').toEqual(true);
             expect(editorObj.multiSelectModule.compObj.value[0] === 'test').toEqual(true);
-            expect(editorObj.value === editorObj.multiSelectModule.compObj.value).toEqual(true);
         });
         it('save method with value property testing', () => {
             editorObj.multiSelectModule.compObj.value = ['testing'];
@@ -87,8 +87,8 @@ describe('MultiSelect module', () => {
             expect(editorObj.multiSelectModule.compObj.showClearButton === true).toEqual(true);
         });
         it('Value property testing', () => {
+            expect(editorObj.value[0] === 'test').toEqual(true);
             expect(editorObj.multiSelectModule.compObj.value[0] === 'test').toEqual(true);
-            expect(editorObj.value === editorObj.multiSelectModule.compObj.value).toEqual(true);
         });
         it('Clear icon click testing', () => {
             let closeEle: HTMLElement = <HTMLElement>select('.e-multi-select-wrapper > .e-chips-close', document.body);
@@ -242,6 +242,50 @@ describe('MultiSelect module', () => {
                 expect(eventPrimaryKey).toBe('');
                 done(name);
             }, 400);
+        });
+    });
+    describe('Remove chips after cancel and open editor multiselect value not update proper testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        beforeAll((done: Function): void => {
+            editorObj = renderEditor({
+                value: ['Badminton', 'Cricket', 'Football'],
+                mode: 'Inline',
+                type: 'MultiSelect',
+                model: {
+                    dataSource: ['Badminton', 'Cricket', 'Football', 'Golf', 'Tennis']
+                }
+            });
+            ele = editorObj.element;
+            done();
+        });
+        afterAll((): void => {
+            destroy(editorObj);
+        });
+        it('chips availability testing', () => {
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-chips-collection .e-chips', ele).length === 3).toEqual(true);
+            select('.e-chips-collection .e-chips .e-chips-close', ele).dispatchEvent(new MouseEvent('mousedown'));
+            expect(selectAll('.e-chips-collection .e-chips', ele).length === 2).toEqual(true);
+            let buttonEle: HTMLElement = <HTMLElement>select('.' + classes.BTN_CANCEL, ele);
+            buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-chips-collection .e-chips', ele).length === 3).toEqual(true);
+            select('.e-chips-collection .e-chips .e-chips-close', ele).dispatchEvent(new MouseEvent('mousedown'));
+            expect(selectAll('.e-chips-collection .e-chips', ele).length === 2).toEqual(true);
+            buttonEle = <HTMLElement>select('.' + classes.BTN_CANCEL, ele);
+            buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-chips-collection .e-chips', ele).length === 3).toEqual(true);
         });
     });
 });

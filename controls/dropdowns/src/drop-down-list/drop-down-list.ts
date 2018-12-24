@@ -2219,22 +2219,16 @@ export class DropDownList extends DropDownBase implements IInput {
                 li = this.getElementByText(newProp as string);
                 if (!this.checkValidLi(li)) {
                     this.setOldText(oldProp as string);
-                } else {
-                    this.setScrollPosition();
                 }
             } else if (prop === 'value') {
                 li = this.getElementByValue(newProp);
                 if (!this.checkValidLi(li)) {
                     this.setOldValue(oldProp);
-                } else {
-                    this.setScrollPosition();
                 }
             } else if (prop === 'index') {
                 li = this.liCollections[newProp as number] as Element;
                 if (!this.checkValidLi(li)) {
                     this.index = oldProp as number;
-                } else {
-                    this.setScrollPosition();
                 }
             }
         };

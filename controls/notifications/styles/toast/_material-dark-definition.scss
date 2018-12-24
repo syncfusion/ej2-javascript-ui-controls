@@ -57,16 +57,16 @@ $toast-content-color: $grey-dark-font !default;
 
 // Flat Button Customization
 
-$btn-flat-color: $accent !default;
-$btn-flat-bgcolor: transparent !default;
-$btn-flat-border-color: transparent !default;
-$btn-flat-box-shadow: none !default;
-$btn-flat-hover-color: $btn-flat-color !default;
-$btn-flat-hover-bgcolor: transparent !default;
-$btn-flat-focus-color: $btn-flat-color !default;
-$btn-flat-focus-bgcolor: transparent !default;
-$btn-flat-active-color: $btn-flat-color !default;
-$btn-flat-active-bgcolor: transparent !default;
+$toast-btn-flat-color: lighten($accent, 15%) !default;
+$toast-btn-flat-bgcolor: transparent !default;
+$toast-btn-flat-border-color: transparent !default;
+$toast-btn-flat-box-shadow: none !default;
+$toast-btn-flat-hover-color: $toast-btn-flat-color !default;
+$toast-btn-flat-hover-bgcolor: transparent !default;
+$toast-btn-flat-focus-color: $toast-btn-flat-color !default;
+$toast-btn-flat-focus-bgcolor: transparent !default;
+$toast-btn-flat-active-color: $toast-btn-flat-color !default;
+$toast-btn-flat-active-bgcolor: transparent !default;
 
 
 // Toast Types theme definitions

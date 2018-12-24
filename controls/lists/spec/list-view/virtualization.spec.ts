@@ -45,7 +45,8 @@ describe('UI virtualization', () => {
             it('window  scroll down', () => {
                 let uiFirstIndex: number = listObj.virtualizationModule.uiFirstIndex;
                 let uiLastIndex: number = listObj.virtualizationModule.uiLastIndex;
-                let startingHeight: number = document.documentElement.getBoundingClientRect().height - listObj.ulElement.getBoundingClientRect().height;
+                let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
                 simulateScrollEvent(document.documentElement, startingHeight + 181);
                 expect(uiFirstIndex + 4).toBe(listObj.virtualizationModule.uiFirstIndex);
                 expect(uiLastIndex + 4).toBe(listObj.virtualizationModule.uiLastIndex);
@@ -53,16 +54,22 @@ describe('UI virtualization', () => {
             it('window  scroll up', () => {
                 let uiFirstIndex: number = listObj.virtualizationModule.uiFirstIndex;
                 let uiLastIndex: number = listObj.virtualizationModule.uiLastIndex;
-                simulateScrollEvent(document.documentElement, listObj.virtualizationModule.startingHeight + 91);
+                let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
+                simulateScrollEvent(document.documentElement, startingHeight + 91);
                 expect(uiFirstIndex - 2).toBe(listObj.virtualizationModule.uiFirstIndex);
                 expect(uiLastIndex - 2).toBe(listObj.virtualizationModule.uiLastIndex);
             });
             it('scrolling to top of the page', () => {
-                simulateScrollEvent(document.documentElement, listObj.virtualizationModule.startingHeight + 0);
+                let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
+                simulateScrollEvent(document.documentElement, startingHeight + 0);
                 expect(0).toBe(listObj.virtualizationModule.uiFirstIndex);
             });
             it('scrolling to end of the page', () => {
-                simulateScrollEvent(document.documentElement, listObj.virtualizationModule.startingHeight + 4500);
+                let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
+                simulateScrollEvent(document.documentElement, startingHeight + 4500);
                 expect(99).toBe(listObj.virtualizationModule.uiLastIndex);
             });
             it('Select list Item', () => {
@@ -90,35 +97,47 @@ describe('UI virtualization', () => {
             it('Adding single item at end of the scroll', () => {
                 let ItemCount: number = listObj.dataSource.length;
                 listObj.addItem([{ text: '999', id: '101' }]);
-                simulateScrollEvent(document.documentElement, listObj.virtualizationModule.startingHeight + 4545);
+                let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
+                simulateScrollEvent(document.documentElement, startingHeight + 4545);
                 expect(100).toBe(listObj.virtualizationModule.uiLastIndex);
                 expect(ItemCount + 1).toBe(listObj.dataSource.length);
             });
             it('Adding Multiple items at end of the the scroll', () => {
                 let ItemCount: number = listObj.dataSource.length;
                 listObj.addItem([{ text: '999999', id: '102' }, { text: '99999', id: '103' }, { text: '9999', id: '104' }]);
-                simulateScrollEvent(document.documentElement, listObj.virtualizationModule.startingHeight + 4680);
+                let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
+                simulateScrollEvent(document.documentElement, startingHeight + 4680);
                 expect(103).toBe(listObj.virtualizationModule.uiLastIndex);
                 expect(ItemCount + 3).toBe(listObj.dataSource.length);
             });
             it('Removing item at end of the scroll', () => {
                 let ItemCount: number = listObj.dataSource.length;
                 listObj.removeItem({ text: '999999', id: '104' });
-                simulateScrollEvent(document.documentElement, listObj.virtualizationModule.startingHeight + 4635);
+                let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
+                simulateScrollEvent(document.documentElement, startingHeight + 4635);
                 expect(102).toBe(listObj.virtualizationModule.uiLastIndex);
                 expect(ItemCount - 1).toBe(listObj.dataSource.length);
             });
             it('Removing Multiple items at end of the scroll', () => {
                 let ItemCount: number = listObj.dataSource.length;
                 listObj.removeMultipleItems([{ text: '999', id: '101' }, { text: '9999', id: '102' }, { text: '99999', id: '103' }]);
-                simulateScrollEvent(document.documentElement, listObj.virtualizationModule.startingHeight + 4500);
+                let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
+                simulateScrollEvent(document.documentElement, startingHeight + 4500);
                 expect(99).toBe(listObj.virtualizationModule.uiLastIndex);
                 expect(ItemCount - 3).toBe(listObj.dataSource.length);
             });
             it('Adding single item at begining of the scroll', () => {
-                simulateScrollEvent(document.documentElement, listObj.virtualizationModule.startingHeight + 181);
+                let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
+                simulateScrollEvent(document.documentElement, startingHeight + 181);
                 listObj.selectItem({text: '1', id: '1'})
-                simulateScrollEvent(document.documentElement, listObj.virtualizationModule.startingHeight + 0);
+                startingHeight = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
+                simulateScrollEvent(document.documentElement, startingHeight + 0);
                 let ItemCount: number = listObj.dataSource.length;
                 listObj.addItem([{ text: '0', id: '101' }]);
                 expect(ItemCount + 1).toBe(listObj.dataSource.length);
@@ -145,7 +164,9 @@ describe('UI virtualization', () => {
             });
             it('Removing slected item data', () => {
                 let ItemCount: number = listObj.dataSource.length;
-                simulateScrollEvent(document.documentElement, listObj.virtualizationModule.startingHeight + 4500);
+                let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
+                simulateScrollEvent(document.documentElement, startingHeight + 4500);
                 listObj.selectItem({ text: '999', id: '101' });
                 expect(listObj.element.querySelector('[data-uid="101"]').classList.contains('e-active')).toBe(true);
                 listObj.removeItem({ text: '999', id: '101' });
@@ -157,7 +178,9 @@ describe('UI virtualization', () => {
                 expect(ItemCount + 1).toBe(listObj.dataSource.length);
             });
             it('Disabling list item', () => {
-                simulateScrollEvent(document.documentElement, listObj.virtualizationModule.startingHeight + 0);
+                let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
+                simulateScrollEvent(document.documentElement, startingHeight + 0);
                 listObj.disableItem({ text: '1', id: '1' });
                 expect(listObj.element.querySelector('[data-uid="1"]').classList.contains('e-disabled')).toBe(true);
             });
@@ -399,7 +422,8 @@ describe('UI virtualization', () => {
         it('Adding new category', () => {
             let ItemCount: number = listObj.dataSource.length;
             let cusDsCount: number = listObj.curViewDS.length;
-            let startingHeight: number = document.documentElement.getBoundingClientRect().height - listObj.ulElement.getBoundingClientRect().height;
+            let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
             simulateScrollEvent(document.documentElement, startingHeight + 2500);
             listObj.addItem([{ text: '50', id: '50', category: '5' }]);
             expect(ItemCount + 1).toBe(listObj.dataSource.length);
@@ -408,7 +432,9 @@ describe('UI virtualization', () => {
         it('Adding item to new category', () => {
             let ItemCount: number = listObj.dataSource.length;
             let cusDsCount: number = listObj.curViewDS.length;
-            simulateScrollEvent(document.documentElement, listObj.virtualizationModule.startingHeight + 2600);
+            let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
+            simulateScrollEvent(document.documentElement, startingHeight + 2600);
             listObj.addItem([{ text: '51', id: '51', category: '5' }]);
             expect(ItemCount + 1).toBe(listObj.dataSource.length);
             expect(cusDsCount + 1).toBe(listObj.curViewDS.length);
@@ -425,7 +451,9 @@ describe('UI virtualization', () => {
         it('Deleting whole category', () => {
             let ItemCount: number = listObj.dataSource.length;
             let cusDsCount: number = listObj.curViewDS.length;
-            simulateScrollEvent(document.documentElement, listObj.virtualizationModule.startingHeight + 2650);
+            let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
+            simulateScrollEvent(document.documentElement, startingHeight + 2650);
             listObj.removeMultipleItems([{ text: '50', id: '50', category: '5' }, { text: '51', id: '51', category: '5' }]);
             expect(ItemCount - 2).toBe(listObj.dataSource.length);
             expect(cusDsCount - 3).toBe(listObj.curViewDS.length);
@@ -453,7 +481,8 @@ describe('UI virtualization', () => {
         });
         it('Adding check list item', () => {
             let ItemCount: number = listObj.dataSource.length;
-            let startingHeight: number = document.documentElement.getBoundingClientRect().height - listObj.ulElement.getBoundingClientRect().height;
+            let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
             simulateScrollEvent(document.documentElement, startingHeight + 2500);
             listObj.addItem([{ text: '50', id: '50' }]);
             expect(ItemCount + 1).toBe(listObj.dataSource.length);
@@ -492,7 +521,9 @@ describe('UI virtualization', () => {
             expect(ItemCount + 1).toBe(listObj.dataSource.length);
         });
         it('Deleting checked list item ', () => {
-            simulateScrollEvent(document.documentElement, listObj.virtualizationModule.startingHeight + 0);
+            let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
+            simulateScrollEvent(document.documentElement, startingHeight + 0);
             let ItemCount: number = listObj.dataSource.length;
             let element: HTMLElement = listObj.element.querySelector('.e-list-item');
             element.click();
@@ -500,18 +531,24 @@ describe('UI virtualization', () => {
             expect(element.classList.contains('e-active')).toBe(true);
             listObj.removeItem({ text: '0', id: '0' });
             expect(ItemCount - 1).toBe(listObj.dataSource.length);
-            simulateScrollEvent(document.documentElement, listObj.virtualizationModule.startingHeight + 2550);
+            startingHeight = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
+            simulateScrollEvent(document.documentElement, startingHeight + 2550);
             listObj.removeItem({ text: '52', id: '52' });
             expect(ItemCount - 2).toBe(listObj.dataSource.length);
         });
         it('Hiding check list item', () => {
-            simulateScrollEvent(document.documentElement, listObj.virtualizationModule.startingHeight + 0);
+            let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
+            simulateScrollEvent(document.documentElement, startingHeight + 0);
             listObj.hideItem({ text: '1', id: '1' });
             expect(listObj.element.querySelector('[data-uid="1"]').style.display).toBe('none');
         });
         it('Showing hidden check list item', () => {
-            simulateScrollEvent(document.documentElement, listObj.virtualizationModule.startingHeight + 2550);
-            simulateScrollEvent(document.documentElement, listObj.virtualizationModule.startingHeight + 0);
+            let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
+            simulateScrollEvent(document.documentElement, startingHeight + 2550);
+            simulateScrollEvent(document.documentElement, startingHeight + 0);
             listObj.showItem({ text: '1', id: '1' });
             expect(listObj.element.querySelector('[data-uid="1"]').style.display).toBe('');
         });
@@ -627,7 +664,8 @@ describe('UI virtualization', () => {
         it('Adding new category', () => {
             let ItemCount: number = listObj.dataSource.length;
             let cusDsCount: number = listObj.curViewDS.length;
-            let startingHeight: number = document.documentElement.getBoundingClientRect().height - listObj.ulElement.getBoundingClientRect().height;
+            let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
             simulateScrollEvent(document.documentElement, startingHeight + 2500);
             listObj.addItem([{ text: '50', id: '50', category: '5' }]);
             expect(ItemCount + 1).toBe(listObj.dataSource.length);
@@ -636,7 +674,9 @@ describe('UI virtualization', () => {
         it('Adding item to new category', () => {
             let ItemCount: number = listObj.dataSource.length;
             let cusDsCount: number = listObj.curViewDS.length;
-            simulateScrollEvent(document.documentElement, listObj.virtualizationModule.startingHeight + 2600);
+            let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
+            simulateScrollEvent(document.documentElement, startingHeight + 2600);
             listObj.addItem([{ text: '51', id: '51', category: '5' }]);
             expect(ItemCount + 1).toBe(listObj.dataSource.length);
             expect(cusDsCount + 1).toBe(listObj.curViewDS.length);
@@ -651,17 +691,23 @@ describe('UI virtualization', () => {
         it('Deleting whole category', () => {
             let ItemCount: number = listObj.dataSource.length;
             let cusDsCount: number = listObj.curViewDS.length;
-            simulateScrollEvent(document.documentElement, listObj.virtualizationModule.startingHeight + 2650);
+            let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
+            simulateScrollEvent(document.documentElement, startingHeight + 2650);
             listObj.removeMultipleItems([{ text: '50', id: '50', category: '5' }, { text: '51', id: '51', category: '5' }]);
             expect(ItemCount - 2).toBe(listObj.dataSource.length);
             expect(cusDsCount - 3).toBe(listObj.curViewDS.length);
         });
         it('scrolling up and down', () => {
-            simulateScrollEvent(document.documentElement, listObj.virtualizationModule.startingHeight + 0);
+            let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
+            simulateScrollEvent(document.documentElement, startingHeight + 0);
             let element: HTMLElement = listObj.element.querySelector('.e-list-item');
             element.click();
-            simulateScrollEvent(document.documentElement, listObj.virtualizationModule.startingHeight + 2500);
-            simulateScrollEvent(document.documentElement, listObj.virtualizationModule.startingHeight + 0);
+            startingHeight = listObj.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
+            simulateScrollEvent(document.documentElement, startingHeight + 2500);
+            simulateScrollEvent(document.documentElement, startingHeight + 0);
         });
         it('Checking all list item', () => {
             listObj.checkAllItems();

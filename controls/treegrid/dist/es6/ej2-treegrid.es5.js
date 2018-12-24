@@ -496,7 +496,9 @@ var Render = /** @__PURE__ @class */ (function () {
         var data = args.data;
         var parentData = data.parentItem;
         var index;
-        if (!isNullOrUndefined(data.parentIndex) && !(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root'))) {
+        if (!isNullOrUndefined(data.parentIndex) &&
+            (!(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root')) ||
+                (isRemoteData(this.parent) && !isOffline(this.parent)))) {
             index = data.parentIndex;
             var collapsed$$1 = !(isNullOrUndefined(parentData[this.parent.expandStateMapping]) ||
                 parentData[this.parent.expandStateMapping]) || this.parent.enableCollapseAll ||
@@ -950,7 +952,8 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
         }
         else {
             var dm = this.parent.dataSource;
-            var qry = new Query();
+            var qry = isNullOrUndefined(this.parent.grid.query) ?
+                new Query() : this.parent.grid.query;
             var clonequries = this.parent.query.queries.filter(function (e) { return e.fn !== 'onPage' && e.fn !== 'onWhere'; });
             qry.queries = clonequries;
             qry.where(this.parent.parentIdMapping, 'equal', rowDetails.record[this.parent.idMapping]);
@@ -2094,6 +2097,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             }
             if (_this.isLocalData) {
                 if ((args.requestType === 'delete' || args.requestType === 'save')) {
+                    if (args.requestType === 'save' && _this.editSettings.mode === 'Cell') {
+                        args.column = _this.getColumnByField(_this.cellEditedColumn);
+                    }
                     _this.notify(crudAction, { value: args.data, action: args.action || args.requestType });
                 }
                 if (args.requestType === 'add' && (_this.editSettings.newRowPosition !== 'Top' && _this.editSettings.newRowPosition !== 'Bottom')) {
@@ -2855,6 +2861,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     TreeGrid.prototype.expandRow = function (row, record) {
+        record = this.getCollapseExpandRecords(row, record);
         var args = { data: record, row: row, cancel: false };
         this.trigger(expanding, args);
         if (args.cancel) {
@@ -2866,11 +2873,23 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             this.trigger(expanded, collapseArgs);
         }
     };
+    TreeGrid.prototype.getCollapseExpandRecords = function (row, record) {
+        if (this.allowPaging && this.pageSettings.pageSizeMode === 'All' && this.isExpandAll && isNullOrUndefined(record)) {
+            record = this.flatData.filter(function (e) {
+                return e.hasChildRecords;
+            });
+        }
+        else if (isNullOrUndefined(record)) {
+            record = this.grid.getCurrentViewRecords()[row.rowIndex];
+        }
+        return record;
+    };
     /**
      * Collapses child rows
      * @return {void}
      */
     TreeGrid.prototype.collapseRow = function (row, record) {
+        record = this.getCollapseExpandRecords(row, record);
         var args = { data: record, row: row, cancel: false };
         this.trigger(collapsing, args);
         if (args.cancel) {
@@ -2885,19 +2904,54 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     TreeGrid.prototype.expandAtLevel = function (level) {
-        var records = this.getCurrentViewRecords().filter(function (e) { return e.level === level && e.hasChildRecords; });
-        for (var i = 0; i < records.length; i++) {
-            this.expandRow(null, records[i]);
+        if (this.allowPaging && this.pageSettings.pageSizeMode === 'All') {
+            var rec = this.flatData.filter(function (e) {
+                if (e.hasChildRecords && e.level === level) {
+                    e.expanded = true;
+                }
+                return e.hasChildRecords && e.level === level;
+            });
+            this.expandRow(null, rec);
         }
+        else {
+            var rec = this.getRecordDetails(level);
+            var row = getObject('rows', rec);
+            var record = getObject('records', rec);
+            for (var i = 0; i < record.length; i++) {
+                this.expandRow(row[i], record[i]);
+            }
+        }
+    };
+    TreeGrid.prototype.getRecordDetails = function (level) {
+        var rows = this.getRows().filter(function (e) {
+            return (e.className.indexOf('level' + level) !== -1
+                && (e.querySelector('.e-treegridcollapse') || e.querySelector('.e-treegridexpand')));
+        });
+        var records = this.getCurrentViewRecords().filter(function (e) { return e.level === level && e.hasChildRecords; });
+        var obj = { records: records, rows: rows };
+        return obj;
     };
     /**
      * Collapses the records at specific hierarchical level
      * @return {void}
      */
     TreeGrid.prototype.collapseAtLevel = function (level) {
-        var records = this.getCurrentViewRecords().filter(function (e) { return e.level === level && e.hasChildRecords; });
-        for (var i = 0; i < records.length; i++) {
-            this.collapseRow(null, records[i]);
+        if (this.allowPaging && this.pageSettings.pageSizeMode === 'All') {
+            var rec = this.flatData.filter(function (e) {
+                if (e.hasChildRecords && e.level === level) {
+                    e.expanded = false;
+                }
+                return e.hasChildRecords && e.level === level;
+            });
+            this.collapseRow(null, rec);
+        }
+        else {
+            var rec = this.getRecordDetails(level);
+            var rows = getObject('rows', rec);
+            var records = getObject('records', rec);
+            for (var i = 0; i < records.length; i++) {
+                this.collapseRow(rows[i], records[i]);
+            }
         }
     };
     /**
@@ -2916,11 +2970,21 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     };
     TreeGrid.prototype.expandCollapseAll = function (action) {
         var rows = this.getRows().filter(function (e) {
-            return e.className.indexOf('e-gridrowindex') !== -1 && e.className.indexOf('level0') !== -1;
+            return e.querySelector('.e-treegrid' + (action === 'expand' ? 'collapse' : 'expand'));
         });
         this.isExpandAll = true;
-        for (var i = 0; i < rows.length; i++) {
-            action === 'collapse' ? this.collapseRow(rows[i]) : this.expandRow(rows[i]);
+        if (this.allowPaging && this.pageSettings.pageSizeMode === 'All') {
+            this.flatData.filter(function (e) {
+                if (e.hasChildRecords) {
+                    e.expanded = action === 'collapse' ? false : true;
+                }
+            });
+            action === 'collapse' ? this.collapseRow(rows[0]) : this.expandRow(rows[0]);
+        }
+        else {
+            for (var i = 0; i < rows.length; i++) {
+                action === 'collapse' ? this.collapseRow(rows[i]) : this.expandRow(rows[i]);
+            }
         }
         this.isExpandAll = false;
     };
@@ -2933,9 +2997,6 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             rowIndex = +row.getAttribute('aria-rowindex');
-        }
-        if (isNullOrUndefined(record)) {
-            record = this.grid.getCurrentViewRecords()[rowIndex];
         }
         if (this.allowPaging && this.pageSettings.pageSizeMode === 'All' && !isRemoteData(this)) {
             this.notify(localPagedExpandCollapse, { action: action, row: row, record: record });
@@ -4599,6 +4660,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             else {
                 rowIndex_1 = row.rowIndex;
             }
+            this.parent.cellEditedColumn = args.columnName;
             row = this.parent.grid.getRows()[rowIndex_1];
             this.parent.grid.editModule.updateRow(rowIndex_1, args.rowData);
             this.enableToolbarItems();

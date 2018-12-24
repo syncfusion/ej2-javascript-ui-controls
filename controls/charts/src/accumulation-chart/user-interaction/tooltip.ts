@@ -1,7 +1,7 @@
 /**
  * AccumulationChart Tooltip file
  */
-import { Browser} from '@syncfusion/ej2-base';
+import { Browser, remove } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { AccPoints, AccumulationSeries, getSeriesFromIndex } from '../model/acc-base';
 import { AccumulationChart } from '../accumulation';
@@ -77,7 +77,7 @@ export class AccumulationTooltip extends BaseTooltip {
                                        data.series.clipRect, data.point, ['Circle'], 0, rect, null, data.point);
                 } else {
                     this.removeHighlight(this.control);
-                    this.getElement(this.element.id + '_tooltip').remove();
+                    remove(this.getElement(this.element.id + '_tooltip'));
                 }
                 this.isRemove = true;
             }

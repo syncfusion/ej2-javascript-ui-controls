@@ -53,7 +53,7 @@ export class ViewBase {
         let eventContainer: Element;
         for (let row: number = 0; row < trCount; row++) {
             eventContainer = createElement('div', { className: cls.APPOINTMENT_CONTAINER_CLASS });
-            if (!isNullOrUndefined(this.parent.resourceBase) && !this.parent.uiStateValues.isGroupAdaptive) {
+            if (this.parent.resourceBase && !this.parent.uiStateValues.isGroupAdaptive && this.parent.resourceBase.renderedResources) {
                 eventContainer.setAttribute('data-group-index', this.parent.resourceBase.renderedResources[row].groupIndex.toString());
             }
             eventRows.push(eventContainer);

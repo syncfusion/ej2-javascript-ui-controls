@@ -725,6 +725,9 @@ export class UrlAdaptor extends Adaptor {
 
     protected addParams(options: { dm: DataManager, query: Query, params: ParamOption[], reqParams: { [key: string]: Object } }): void {
         let req: { params: Object } = options.reqParams as { params: Object };
+        if (options.params.length) {
+            req.params = {};
+        }
         for (let tmp of options.params) {
             if (req[tmp.key]) {
                 throw new Error('Query() - addParams: Custom Param is conflicting other request arguments');
@@ -733,6 +736,7 @@ export class UrlAdaptor extends Adaptor {
             if (tmp.fn) {
                 req[tmp.key] = tmp.fn.call(options.query, tmp.key, options.query, options.dm);
             }
+            req.params[tmp.key] = req[tmp.key];
         }
     }
 
@@ -1728,6 +1732,7 @@ export class RemoteSaveAdaptor extends JsonAdaptor {
         if (this.updateType === 'update') {
             super.update(ds as DataManager, this.updateKey, data);
         }
+        this.updateType = undefined;
         if (data.added) {
             for (i = 0; i < data.added.length; i++) {
                 super.insert(ds as DataManager, data.added[i]);

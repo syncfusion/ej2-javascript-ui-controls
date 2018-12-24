@@ -765,4 +765,27 @@ export class EventBase {
         return (event[this.parent.eventFields.isReadonly]) ?
             event[this.parent.eventFields.isReadonly] as string : 'false';
     }
+
+    public isBlockRange(eventData: Object | Object[]): boolean {
+        let eventCollection: Object[] = (eventData instanceof Array) ? eventData : [eventData];
+        let isBlockAlert: boolean = false;
+        let fields: EventFieldsMapping = this.parent.eventFields;
+        eventCollection.forEach((event: { [key: string]: Object }) => {
+            let dataCol: Object[] = [];
+            if (!isNullOrUndefined(event[fields.recurrenceRule]) && isNullOrUndefined(event[fields.recurrenceID])) {
+                dataCol = this.parent.eventBase.generateOccurrence(event);
+            } else {
+                dataCol.push(event);
+            }
+            for (let data of dataCol) {
+                let filterBlockEvents: Object[] = this.parent.eventBase.filterBlockEvents(data as { [key: string]: Object });
+                if (filterBlockEvents.length > 0) {
+                    isBlockAlert = true;
+                    break;
+                }
+            }
+        });
+        this.parent.uiStateValues.isBlock = isBlockAlert;
+        return isBlockAlert;
+    }
 }

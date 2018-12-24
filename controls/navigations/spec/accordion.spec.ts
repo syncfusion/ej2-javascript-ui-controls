@@ -30,6 +30,24 @@ const CLS_TOGANIMATE: Str = "e-toggle-animation";
 const TIME_DELAY: number = 800;
 const CLS_NEST: Str = 'e-nested';
 
+interface acrdnTemplateRef {
+    elementRef: acrdnElementRef
+}
+
+interface acrdnElementRef {
+    nativeElement: acrdnElementComment
+}
+
+interface acrdnElementComment {
+    childNodes?: NodeList
+    firstChild?: HTMLElement
+    lastChild?: HTMLElement
+    nextElementSibling?: HTMLElement
+    parentElement?: HTMLElement
+    propName?: HTMLElement
+}
+
+
 describe("Accordion Testing", () => {
     let css: string = ".e-content-hide,.e-hide { display: none }  ";
     let style: HTMLStyleElement = document.createElement("style"); style.type = "text/css";
@@ -2888,6 +2906,28 @@ describe("Accordion Testing", () => {
             accordion.enableItem(index, false);
             expect(ele.children[index].firstElementChild.getAttribute('aria-disabled')).toBe('true');
         });
+        it("Accordion Angular contnet conditon testing", () => {
+            let ele: HTMLElement = document.getElementById('accordion');
+            let contentAngularEle: any = {
+                elementRef : {
+                    nativeElement : {
+                        nextElementSibling: null,
+                        childNodes: []
+                    }
+                }
+            }
+            let accordion1 : any = new Accordion(
+                {
+                    items: [
+                        { header: "Item1", content: contentAngularEle },
+                        { header: "Item2", content: "Content of Item2" },
+                        { header: "Item3", content: "Content of Item3" }
+                    ]
+                });
+            accordion1.isAngular = true;
+            accordion1.appendTo('#accordion');
+        });
+
     });
 
     describe("Accordion Aria Attributes with ExpandItem Public method Testing", () => {

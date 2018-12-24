@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { LayoutViewer, PageLayoutViewer, Editor, Selection, EditorHistory } from '../../src/index';
+import { LayoutViewer, PageLayoutViewer, Editor, Selection, EditorHistory, Page, ParagraphWidget } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 /**
  * Layout Spec
@@ -3251,7 +3251,7 @@ function getJson() {
 //         editor = undefined;
 //         setTimeout(function () {
 //             done();
-//         }, 1000);
+//         }, 750);
 //     });
 //     it('break character validation', () => {
 //         expect(() => { editor.open(getJson()) }).not.toThrowError();
@@ -3279,7 +3279,7 @@ describe('Page Break Layout Validation', () => {
         editor = undefined;
         setTimeout(() => {
             done();
-        }, 1000);
+        }, 750);
     });
     it('Layout page break', () => {
         editor.open(JSON.stringify(sfdt));
@@ -3332,7 +3332,7 @@ describe('Insert Page break API validation', () => {
         editor = undefined;
         setTimeout(() => {
             done();
-        }, 1000);
+        }, 750);
     });
     it('Ctrl + Enter key validation', () => {
         let event: any = {
@@ -3369,7 +3369,7 @@ describe('Insert page break history preservation', () => {
         document.body.innerHTML = '';
         setTimeout(() => {
             done();
-        }, 1000);
+        }, 750);
     });
     it('Insert Page break at paragraph start', () => {
         editor.editor.insertText('Syncfusion Software', false);
@@ -3413,7 +3413,7 @@ describe('Insert page break history preservation', () => {
         document.body.innerHTML = '';
         setTimeout(() => {
             done();
-        }, 1000);
+        }, 750);
     });
     it('Insert Page break at paragraph end', () => {
         editor.editor.insertText('Syncfusion Software', false);
@@ -3456,7 +3456,7 @@ describe('Insert page break history preservation', () => {
         document.body.innerHTML = '';
         setTimeout(() => {
             done();
-        }, 1000);
+        }, 750);
     });
     it('Insert Page break at paragraph middle', () => {
         editor.editor.insertText('Syncfusion Software', false);
@@ -3533,7 +3533,7 @@ describe('Insert page break history preservation', () => {
         document.body.innerHTML = '';
         setTimeout(() => {
             done();
-        }, 1000);
+        }, 750);
     });
     it('Insert Page break at paragraph middle', () => {
         editor.editor.insertText('Syncfusion Software', false);
@@ -3564,5 +3564,92 @@ describe('Insert page break history preservation', () => {
         expect(editor.viewer.pages.length).toBe(1);
         editor.editorHistory.redo();
         expect(editor.viewer.pages.length).toBe(2);
+    });
+});
+
+let documentWithoutHeaderFooter: any = {
+    "sections": [
+        {
+            "sectionFormat": {
+                "pageWidth": 612,
+                "pageHeight": 792,
+                "leftMargin": 10,
+                "rightMargin": 10,
+                "topMargin": 10,
+                "bottomMargin": 10,
+                "differentFirstPage": false,
+                "differentOddAndEvenPages": false,
+                "headerDistance": 36,
+                "footerDistance": 36,
+                "bidi": false
+            },
+            "blocks": [
+                {
+                    "paragraphFormat": {
+                        "listFormat": {}
+                    },
+                    "characterFormat": {},
+                    "inlines": [
+                        {
+                            "characterFormat": {
+                                "bold": true,
+                                "italic": true
+                            },
+                            "text": "Hello World"
+                        }
+                    ]
+                }
+            ],
+            "headersFooters": {}
+        }
+    ]
+};
+
+describe('Empty Header footer validation', () => {
+    let editor: DocumentEditor = undefined;
+    let viewer: LayoutViewer;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Selection, Editor, EditorHistory);
+        editor = new DocumentEditor({ isReadOnly: false, enableEditor: true, enableEditorHistory: true });
+        viewer = editor.viewer as PageLayoutViewer;
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 750);
+    });
+    it('Load empty header footer validation', () => {
+        editor.open(JSON.stringify(documentWithoutHeaderFooter));
+        expect(editor.viewer.pages.length).toBe(1);
+        let page: Page = editor.viewer.pages[0];
+        expect(page.headerWidget.isEmpty).toBe(true);
+        expect((page.bodyWidgets[0].firstChild as ParagraphWidget).y).toBeLessThan(page.headerWidget.y + page.headerWidget.height);
+    });
+    it('Go to header', () => {
+        editor.selection.goToHeader();
+        let page: Page = editor.viewer.pages[0];
+        expect((page.bodyWidgets[0].firstChild as ParagraphWidget).y).toBe(page.headerWidget.y + page.headerWidget.height);
+        editor.selection.disableHeaderFooter();
+        expect((page.bodyWidgets[0].firstChild as ParagraphWidget).y).toBeLessThan(page.headerWidget.y + page.headerWidget.height);
+    });
+    it('insert text in Empty Header', () => {
+        editor.selection.goToHeader();
+        editor.editor.insertText("Syncfusion", false);
+        let page: Page = editor.viewer.pages[0];
+        expect(page.headerWidget.isEmpty).toBe(false);
+        expect((page.bodyWidgets[0].firstChild as ParagraphWidget).y).toBe(page.headerWidget.y + page.headerWidget.height);
+        editor.selection.disableHeaderFooter();
+        expect((page.bodyWidgets[0].firstChild as ParagraphWidget).y).toBe(page.headerWidget.y + page.headerWidget.height);
     });
 });

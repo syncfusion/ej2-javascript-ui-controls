@@ -3,6 +3,7 @@ import { removeClass, EmitType, Complex, Collection, KeyboardEventArgs } from '@
 import {Event, Property, NotifyPropertyChanges, INotifyPropertyChanged, setValue, KeyboardEvents, L10n } from '@syncfusion/ej2-base';
 import { Column, ColumnModel } from '../models/column';
 import { GridModel, ColumnQueryModeType, HeaderCellInfoEventArgs, EditSettingsModel as GridEditModel}  from '@syncfusion/ej2-grids';
+import { SearchEventArgs, AddEventArgs, EditEventArgs, DeleteEventArgs}  from '@syncfusion/ej2-grids';
 import { SaveEventArgs, CellSaveArgs, BatchAddArgs, BatchCancelArgs,  BeginEditArgs, CellEditArgs}  from '@syncfusion/ej2-grids';
 import { FilterSettings } from '../models/filter-settings';
 import {Filter} from '../actions/filter';
@@ -35,6 +36,7 @@ import { Render } from '../renderer/render';
 import { DataManipulation } from './data';
 import { Sort } from '../actions/sort';
 import { ITreeData, RowExpandedEventArgs, RowExpandingEventArgs, RowCollapsedEventArgs, RowCollapsingEventArgs } from './interface';
+import { CellSaveEventArgs } from './interface';
 import { iterateArrayOrObject, GridLine } from '@syncfusion/ej2-grids';
 import { DataSourceChangedEventArgs, DataStateChangeEventArgs, RecordDoubleClickEventArgs, ResizeArgs } from '@syncfusion/ej2-grids';
 import { ToolbarItems, ToolbarItem, ContextMenuItem, ContextMenuItems } from '../enum';
@@ -101,6 +103,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
   public renderModule: Render;
     /** @hidden */
   public summaryModule: Aggregate;
+  /** @hidden */
+  public cellEditedColumn: string;
   /**
    * The `reorderModule` is used to manipulate reordering in TreeGrid.
    */
@@ -478,14 +482,15 @@ public pagerTemplate: string;
    * @event
    */
   @Event()
-  public actionBegin: EmitType<PageEventArgs> | EmitType<FilterEventArgs> | EmitType<SortEventArgs>;
+  public actionBegin: EmitType<PageEventArgs | FilterEventArgs | SortEventArgs | SearchEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs>;
+  
   /**
    * Triggers when TreeGrid actions such as sorting, filtering, paging etc. are completed.
    * @event
    */
 
   @Event()
-  public actionComplete: EmitType<PageEventArgs> | EmitType<FilterEventArgs> | EmitType<SortEventArgs>;
+  public actionComplete: EmitType<PageEventArgs | FilterEventArgs | SortEventArgs| SearchEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs | CellSaveEventArgs>;
 
   /** 
    * Triggers before the record is to be edit.
@@ -493,7 +498,7 @@ public pagerTemplate: string;
    */
   @Event()
   public beginEdit: EmitType<BeginEditArgs>;
-    /** 
+  /** 
    * Triggers when the cell is being edited.
    * @event
    */
@@ -505,7 +510,7 @@ public pagerTemplate: string;
    * @event
    */
   @Event()
-  public actionFailure: EmitType<FailureEventArgs> | EmitType<FilterEventArgs>;
+  public actionFailure: EmitType<FailureEventArgs>;
   /**
    * Triggers when data source is populated in the TreeGrid.
    * @event
@@ -1383,13 +1388,16 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       this.trigger(events.actionBegin, args);
       this.notify(events.beginEdit, args);
     };
-    this.grid.actionComplete = (args: SaveEventArgs) => {
+    this.grid.actionComplete = (args: CellSaveEventArgs) => {
       this.updateColumnModel();
       if (args.requestType === 'reorder') {
         this.notify('setColumnIndex', {});
       }
       if (this.isLocalData) {
         if ((args.requestType === 'delete' || args.requestType === 'save')) {
+          if ( args.requestType === 'save' && this.editSettings.mode === 'Cell') {
+            args.column = this.getColumnByField(this.cellEditedColumn);
+          }
           this.notify(events.crudAction, { value: args.data, action: args.action || args.requestType });
         }
         if (args.requestType === 'add' && (this.editSettings.newRowPosition !== 'Top' && this.editSettings.newRowPosition !== 'Bottom')) {
@@ -2162,6 +2170,7 @@ private getGridEditSettings(): GridEditModel {
    * @return {void}
    */
   public expandRow(row: HTMLTableRowElement, record?: Object): void {
+    record = this.getCollapseExpandRecords(row, record);
     let args: RowExpandingEventArgs = {data: record, row: row, cancel: false};
     this.trigger(events.expanding, args);
     if (args.cancel) {
@@ -2173,11 +2182,22 @@ private getGridEditSettings(): GridEditModel {
       this.trigger(events.expanded, collapseArgs);
     }
   }
+  private getCollapseExpandRecords(row?: HTMLTableRowElement, record?: Object): Object {
+    if (this.allowPaging && this.pageSettings.pageSizeMode === 'All' && this.isExpandAll && isNullOrUndefined(record)) {
+      record = this.flatData.filter((e: ITreeData) => {
+        return e.hasChildRecords;
+      });
+    } else if (isNullOrUndefined(record)) {
+      record = <ITreeData>this.grid.getCurrentViewRecords()[row.rowIndex];
+    }
+    return record;
+  }
   /**
    * Collapses child rows
    * @return {void}
    */
   public collapseRow(row: HTMLTableRowElement, record?: Object): void {
+    record = this.getCollapseExpandRecords(row, record);
     let args: RowCollapsingEventArgs = {data: record, row: row, cancel: false};
     this.trigger(events.collapsing, args);
     if (args.cancel) {
@@ -2193,19 +2213,52 @@ private getGridEditSettings(): GridEditModel {
    * @return {void}
    */
   public expandAtLevel(level: number): void {
-    let records: ITreeData[] = this.getCurrentViewRecords().filter((e: ITreeData) => {return e.level === level && e.hasChildRecords; });
-    for (let i: number = 0; i < records.length; i++) {
-      this.expandRow(null, records[i]);
+    if (this.allowPaging && this.pageSettings.pageSizeMode === 'All') {
+      let rec: ITreeData[] = this.flatData.filter((e: ITreeData) => {
+          if (e.hasChildRecords && e.level === level) {
+            e.expanded = true;
+          }
+          return e.hasChildRecords && e.level === level;
+      });
+      this.expandRow(null, rec);
+    } else {
+      let rec: Object = this.getRecordDetails(level);
+      let row: HTMLTableRowElement[] = getObject('rows', rec);
+      let record: HTMLTableRowElement[] = getObject('records', rec);
+      for (let i: number = 0; i < record.length; i++) {
+        this.expandRow(row[i], record[i]);
+      }
     }
+  }
+  private getRecordDetails(level: number) : Object {
+    let rows: HTMLTableRowElement[] = this.getRows().filter((e: HTMLTableRowElement) => {
+      return (e.className.indexOf('level' + level) !== -1
+        && (e.querySelector('.e-treegridcollapse') || e.querySelector('.e-treegridexpand')));
+      } );
+    let records: ITreeData[] = this.getCurrentViewRecords().filter((e: ITreeData) => {return e.level === level && e.hasChildRecords; });
+    let obj: Object = { records: records, rows: rows };
+    return obj;
   }
   /**
    * Collapses the records at specific hierarchical level
    * @return {void}
    */
   public collapseAtLevel(level: number): void {
-    let records: ITreeData[] = this.getCurrentViewRecords().filter((e: ITreeData) => {return e.level === level && e.hasChildRecords; });
-    for (let i: number = 0  ; i < records.length; i++) {
-      this.collapseRow(null, records[i]);
+    if (this.allowPaging && this.pageSettings.pageSizeMode === 'All') {
+      let rec: ITreeData[] = this.flatData.filter((e: ITreeData) => {
+          if (e.hasChildRecords && e.level === level) {
+            e.expanded = false;
+          }
+          return e.hasChildRecords && e.level === level;
+      });
+      this.collapseRow(null, rec);
+    } else {
+      let rec: Object = this.getRecordDetails(level);
+      let rows: HTMLTableRowElement[] = getObject('rows', rec);
+      let records: HTMLTableRowElement[] = getObject('records', rec);
+      for (let i: number = 0  ; i < records.length; i++) {
+        this.collapseRow(rows[i], records[i]);
+      }
     }
   }
 
@@ -2225,11 +2278,20 @@ private getGridEditSettings(): GridEditModel {
   }
   private expandCollapseAll(action: string): void {
     let rows: HTMLTableRowElement[] = this.getRows().filter((e: HTMLTableRowElement) => {
-      return e.className.indexOf('e-gridrowindex') !== -1 && e.className.indexOf('level0') !== -1;
+      return e.querySelector('.e-treegrid' + (action  === 'expand' ? 'collapse' : 'expand'));
     });
     this.isExpandAll = true;
-    for (let i: number = 0; i < rows.length; i++) {
-      action === 'collapse' ? this.collapseRow(rows[i]) :  this.expandRow(rows[i]);
+    if (this.allowPaging && this.pageSettings.pageSizeMode === 'All') {
+      this.flatData.filter((e: ITreeData) => {
+          if (e.hasChildRecords) {
+            e.expanded = action === 'collapse' ? false : true;
+          }
+      });
+      action === 'collapse' ? this.collapseRow(rows[0]) :  this.expandRow(rows[0]);
+    } else {
+        for (let i: number = 0; i < rows.length; i++) {
+            action === 'collapse' ? this.collapseRow(rows[i]) : this.expandRow(rows[i]);
+        }
     }
     this.isExpandAll = false;
   }
@@ -2241,9 +2303,6 @@ private getGridEditSettings(): GridEditModel {
       row = gridRows[rowIndex];
     } else {
       rowIndex = +row.getAttribute('aria-rowindex');
-    }
-    if (isNullOrUndefined(record)) {
-      record = <ITreeData>this.grid.getCurrentViewRecords()[rowIndex];
     }
     if (this.allowPaging && this.pageSettings.pageSizeMode === 'All' && !isRemoteData(this)) {
       this.notify(events.localPagedExpandCollapse, {action: action, row: row, record: record});
@@ -2466,5 +2525,3 @@ private getGridEditSettings(): GridEditModel {
    */
   public pagerModule: Page;
 }
-
-

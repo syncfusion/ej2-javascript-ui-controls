@@ -337,8 +337,20 @@ export class QuickPopups {
         this.beforeQuickPopupOpen(target);
     }
 
+    private isCellBlocked(args: CellClickEventArgs): boolean {
+        let tempObj: { [key: string]: Object } = {};
+        tempObj[this.parent.eventFields.startTime] = this.parent.activeCellsData.startTime;
+        tempObj[this.parent.eventFields.endTime] = this.parent.activeCellsData.endTime;
+        tempObj[this.parent.eventFields.isAllDay] = this.parent.activeCellsData.isAllDay;
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            let targetCell: HTMLElement = args.element instanceof Array ? args.element[0] : args.element;
+            this.parent.resourceBase.setResourceValues(tempObj, true, parseInt(targetCell.getAttribute('data-group-index'), 10));
+        }
+        return this.parent.eventBase.isBlockRange(tempObj);
+    }
+
     private cellClick(args: CellClickEventArgs): void {
-        if (!this.parent.showQuickInfo || this.parent.currentView === 'MonthAgenda') {
+        if (!this.parent.showQuickInfo || this.parent.currentView === 'MonthAgenda' || this.isCellBlocked(args)) {
             this.quickPopupHide();
             return;
         }

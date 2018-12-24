@@ -19,6 +19,7 @@
       font-weight: $chip-font-weight;
       height: $chip-height;
       justify-content: center;
+      line-height: $chip-line-height;
       margin: $chip-margin;
       outline: none;
       overflow: $chip-overflow;
@@ -35,6 +36,7 @@
         font-size: $chip-avatar-content-font-size;
         height: $chip-avatar-size;
         justify-content: center;
+        line-height: 1;
         margin: $chip-avatar-margin;
         overflow: hidden;
         width: $chip-avatar-size;
@@ -53,13 +55,13 @@
         font-size: $chip-leading-icon-font-size;
         height: $chip-leading-icon-size;
         justify-content: center;
+        line-height: 1;
         margin: $chip-leading-icon-margin;
         overflow: hidden;
         width: $chip-leading-icon-size;
       }
 
       .e-chip-text {
-        margin-top: $chip-text-margin-top;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -73,6 +75,7 @@
         font-size: $chip-delete-icon-font-size;
         height: $chip-delete-icon-size;
         justify-content: center;
+        line-height: 1;
         margin: $chip-delete-icon-margin;
         overflow: hidden;
         width: $chip-delete-icon-size;
@@ -94,6 +97,7 @@
         font-family: 'e-icons';
         height: $chip-leading-icon-size;
         justify-content: center;
+        line-height: 1;
         margin: $chip-leading-icon-margin;
         margin-top: $chip-multiselection-icon-margin-top;
         overflow: hidden;

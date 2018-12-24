@@ -622,6 +622,10 @@ export class HeaderFooterWidget extends BlockContainer {
      * @private
      */
     public headerFooterType: HeaderFooterType;
+    /**
+     * @private
+     */
+    public isEmpty: boolean = false;
     constructor(type: HeaderFooterType) {
         super();
         this.headerFooterType = type;
@@ -651,6 +655,7 @@ export class HeaderFooterWidget extends BlockContainer {
             block.index = i;
             block.containerWidget = headerFooter;
         }
+        headerFooter.isEmpty = this.isEmpty;
         headerFooter.x = this.x;
         headerFooter.y = this.y;
         headerFooter.height = 0;
@@ -1380,7 +1385,7 @@ export class TableWidget extends BlockWidget {
             //Converts the row grid before width from point to twips point by 15 factor.
             cellWidth = this.getCellWidth(rowFormat.gridBeforeWidth, rowFormat.gridBeforeWidthType, tableWidth, null);
             currOffset += cellWidth;
-            let startOffset: number = Math.round(currOffset);
+            let startOffset: number = parseFloat(currOffset.toFixed(2));
             if (tempGrid.indexOf(startOffset) < 0) {
                 tempGrid.push(startOffset);
             }
@@ -1436,13 +1441,13 @@ export class TableWidget extends BlockWidget {
                 }
                 // Add start offset of each cell based on its index
                 if (!rowCellInfo.containsKey(cell.cellIndex)) {
-                    rowCellInfo.add(cell.cellIndex, Math.round(currOffset - startOffset));
+                    rowCellInfo.add(cell.cellIndex, parseFloat((currOffset - startOffset).toFixed(2)));
                 }
                 columnSpan += cell.cellFormat.columnSpan;
                 //Converts the cell width from pixel to twips point by 15 factor.
                 cellWidth = this.getCellWidth(cell.cellFormat.preferredWidth, cell.cellFormat.preferredWidthType, tableWidth, null);
                 currOffset += cellWidth;
-                let offset: number = Math.round(currOffset);
+                let offset: number = parseFloat(currOffset.toFixed(2));
                 if (tempGrid.indexOf(offset) < 0) {
                     tempGrid.push(offset);
                 }
@@ -1451,8 +1456,8 @@ export class TableWidget extends BlockWidget {
                     cellWidth = this.getCellWidth(rowFormat.gridAfterWidth, 'Point', tableWidth, null);
                     currOffset += cellWidth;
 
-                    if (tempGrid.indexOf(Math.round(currOffset)) < 0) {
-                        tempGrid.push(Math.round(currOffset));
+                    if (tempGrid.indexOf(parseFloat(currOffset.toFixed(2))) < 0) {
+                        tempGrid.push(parseFloat(currOffset.toFixed(2)));
                     }
                     columnSpan += rowFormat.gridAfter;
                 }
@@ -2138,7 +2143,7 @@ export class TableRowWidget extends BlockWidget {
         return gridEndIndex - gridStartIndex;
     }
     private getOffsetIndex(tableGrid: number[], offset: number): number {
-        offset = Math.round(offset);
+        offset = parseFloat(offset.toFixed(2));
         let index: number = 0;
         if (tableGrid.indexOf(offset) >= 0) {
             index = tableGrid.indexOf(offset);
@@ -2542,9 +2547,9 @@ export class TableCellWidget extends BlockWidget {
      */
     public getCellWidth(): number {
         let ownerTable: TableWidget = this.ownerTable;
-        let containerWidth: number = ownerTable.getTableClientWidth(ownerTable.getOwnerWidth(true));
+        let containerWidth: number = ownerTable ? ownerTable.getTableClientWidth(ownerTable.getOwnerWidth(true)) : 0;
         let cellWidth: number = containerWidth;
-        if (ownerTable.tableFormat.preferredWidthType === 'Auto' && ownerTable.tableFormat.allowAutoFit) {
+        if (ownerTable && ownerTable.tableFormat.preferredWidthType === 'Auto' && ownerTable.tableFormat.allowAutoFit) {
             cellWidth = containerWidth;
         } else if (this.cellFormat.preferredWidthType === 'Percent') {
             cellWidth = (this.cellFormat.preferredWidth * containerWidth) / 100 - this.leftMargin - this.rightMargin;

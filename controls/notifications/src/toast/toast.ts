@@ -346,7 +346,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
      * @default document.body
      * @aspType string
      */
-    @Property(document.body)
+    @Property()
     public target: HTMLElement | Element | string;
 
     /**
@@ -423,6 +423,8 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.width === '300px') {
           this.width = (this.isDevice && screen.width < 768) ? '100%' : '300px';
         }
+        if (isNOU(this.target)) {
+          this.target = document.body; }
         if (this.enableRtl) {
           this.element.classList.add(RTL);
         }

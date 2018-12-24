@@ -25,37 +25,41 @@ const DISABLED: string = 'e-disabled';
 const RTL: string = 'e-rtl';
 const E_ICONS: string = 'e-icons';
 
+/**
+ * Interface to configure pane properties such as its content, size, min, max, and resizable.
+ */
 export class PaneProperties extends ChildProperty<PaneProperties> {
     /**
-     * Specifies Configure the properties for each pane.
+     * Configures the properties for each pane.
      * @default ''
      */
     @Property()
     public size: string;
 
     /**
-     * Specifies whether a pane is resizable or not resizable.
+     * Specifies the value whether a pane is resizable. By default, the Splitter is resizable in all panes.
+     * You can disable this for any specific panes using this property.
      * @default true
      */
     @Property(true)
     public resizable: boolean;
 
     /**
-     * Specifies the minimum size of a pane. The pane cannon be resized less than the specified minimum size.
+     * Specifies the minimum size of a pane. The pane cannot be resized if it is less than the specified minimum size.
      * @default null
      */
     @Property(null)
     public min: string;
 
     /**
-     * Specifies the maximum size of a pane. The pane cannon be resized greater than the specified maximum size.
+     * Specifies the maximum size of a pane. The pane cannot be resized if it is more than the specified maximum limit.
      * @default null
      */
     @Property(null)
     public max: string;
 
     /**
-     * Specifies the content of split pane.
+     * Specifies the content of split pane as plain text, HTML markup, or any other JavaScript controls.
      * @default ''
      */
     @Property()
@@ -1189,37 +1193,40 @@ interface Coordinates {
 
 export interface CreatedEventArgs {
     /**
-     * To access root element after control created.
+     * Contains the root element of splitter.
      */
     element?: HTMLElement;
 }
 
 export interface ResizeEventArgs {
-    /** To access root element after resizing pane. */
+    /** Contains the root element of resizing pane. */
     element?: HTMLElement;
-    /** Default event arguments */
+    /** Contains default event arguments. */
     event?: Event;
-    /** To get pane elements */
+    /** Contains the corresponding resizing pane. */
     pane?: HTMLElement[];
-    /** Index of pane */
+    /** Contains the index of resizing pane. */
     index?: number[];
-    /** Respective split-bar element */
+    /** Contains the resizing pane’s separator element. */
     separator?: HTMLElement;
-    /** prevent resize start by setting cancel as true */
+    /** 
+     * Control the resize action whether the resize action happens continuously.
+     * When you set this argument to true, resize process will be stopped.
+     */
     cancel?: boolean;
 }
 
 export interface ResizingEventArgs {
-    /** To access root element after control created */
+    /** Contains the root element of resizing pane. */
     element?: HTMLElement;
-    /** Default event arguments */
+    /** Contains default event arguments. */
     event?: Event;
-    /** To get paneSize */
+    /** Contains a pane size when it resizes. */
     paneSize?: number[];
-    /** To get pane elements */
+    /** Contains the corresponding resizing pane. */
     pane?: HTMLElement[];
-    /** Index of pane */
+    /** Contains the index of resizing pane. */
     index?: number[];
-    /** Respective split-bar element */
+    /** Contains the resizing pane’s separator element. */
     separator?: HTMLElement;
 }

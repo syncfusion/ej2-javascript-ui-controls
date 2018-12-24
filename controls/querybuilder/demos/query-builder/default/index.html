@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <title> Typescript Components</title>
     <meta charset="utf-8" />
@@ -23,46 +22,11 @@
         require.config(window.rsConfig);
     </script>
     <style>
-        .querybuilder-main {
-            margin: 4% 24%;
-        }
-
-        #getrules {
-            padding: 0;
-            height: 14px;
-        }
-
-        .e-display-icon::before {
-            content: "\e34f";
-        }
-
-        #displayrule {
-            float: right;
-        }
-
         td {
             padding: 10px;
         }
-
-        
-
-        .e-edit-rule {
-            margin-left: calc(100% - 50px);
-            margin-top: 10px;
-        }
-
-        
-
-        .e-collapse-rule {
-            position: absolute;
-            margin-right: 12px;
-            right: 0;
-        }
-
-        ​
     </style>
 </head>
-
 <body>
     <div>
         <table>
@@ -73,15 +37,6 @@
                     <td> <button id="bootstrap" class="e-control e-primary e-btn e-small">Bootstrap</button> </td>
                     <td> <button id="highcontrast" class="e-control e-primary e-btn e-small">High Contrast</button>
                     </td>
-                    <td> <button id="materialdark" class="e-control e-primary e-btn e-small">Material Dark</button>
-                    </td>
-                    <td> <button id="fabricdark" class="e-control e-primary e-btn e-small">Fabric Dark</button> </td>
-                    <td> <button id="bootstrapdark" class="e-control e-primary e-btn e-small">Bootstrap Dark</button>
-                    </td>
-                    <td> <button id="highcontrastlight" class="e-control e-primary e-btn e-small">Highcontrast Light</button>
-                    </td>
-                </tr>
-                <tr>
                     <td> <button id="materialtouch" class="e-control e-primary e-btn e-small">Material touch</button>
                     </td>
                     <td> <button id="fabrictouch" class="e-control e-primary e-btn e-small">Fabric touch</button> </td>
@@ -89,27 +44,15 @@
                     </td>
                     <td> <button id="highcontrasttouch" class="e-control e-primary e-btn e-small">High Contrast touch</button>
                     </td>
-                    <td> <button id="materialdarktouch" class="e-control e-primary e-btn e-small">Material Dark touch</button>
-                    </td>
-                    <td> <button id="fabricdarktouch" class="e-control e-primary e-btn e-small">Fabric Dark touch</button>
-                    </td>
-                    <td> <button id="bootstrapdarktouch" class="e-control e-primary e-btn e-small">Bootstrap Dark touch</button>
-                    </td>
-                    <td> <button id="highcontrastlighttouch" class="e-control e-primary e-btn e-small">Highcontrast
-                            Light touch
-                        </button> </td>
                 </tr>
             </tbody>
         </table>
     </div>
     <div class="col-lg-8 control-section">
         <div class="querybuilder-main">
-            <div id="querybuilder" class="row ">
-                <div id="displayrule"> </div>
+            <div id="querybuilder">
             </div>
         </div>
-
     </div>
 </body>
-
 </html>

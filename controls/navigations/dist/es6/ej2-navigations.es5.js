@@ -4741,7 +4741,10 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         }
         this.trigger('clicked', eventArgs);
         var cntclkCheck = (acrdnCtn && !isNullOrUndefined(select('.e-target', acrdnCtn)));
-        cntclkCheck = cntclkCheck && (isNullOrUndefined(select('.' + CLS_ROOT$2, acrdnCtn)) || !(closest(trgt, '.' + CLS_ROOT$2) === this.element));
+        var inlineAcrdnSel = '.' + CLS_CONTENT + ' .' + CLS_ROOT$2;
+        var inlineEleAcrdn = acrdnCtn && !isNullOrUndefined(select('.' + CLS_ROOT$2, acrdnCtn)) && isNullOrUndefined(closest(trgt, inlineAcrdnSel));
+        var nestContCheck = acrdnCtn && isNullOrUndefined(select('.' + CLS_ROOT$2, acrdnCtn)) || !(closest(trgt, '.' + CLS_ROOT$2) === this.element);
+        cntclkCheck = cntclkCheck && (inlineEleAcrdn || nestContCheck);
         trgt.classList.remove('e-target');
         if (trgt.classList.contains(CLS_CONTENT) || trgt.classList.contains(CLS_CTENT) || cntclkCheck) {
             return;
@@ -4849,7 +4852,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         var innerEle;
         innerEle = this.createElement('div', { className: CLS_ITEM$1 });
         innerEle.id = getUniqueID('acrdn_item');
-        if (item.header) {
+        if (item.header && this.angularnativeCondiCheck(item, 'header')) {
             var ctnEle = this.headerEleGenerate();
             var hdrEle = this.createElement('div', { className: CLS_HEADERCTN });
             ctnEle.appendChild(hdrEle);
@@ -4878,7 +4881,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                 hdr.insertBefore(hdrIcnEle, hdr.childNodes[0]);
             }
         }
-        if (item.content) {
+        if (item.content && this.angularnativeCondiCheck(item, 'content')) {
             var hdrIcon = this.toggleIconGenerate();
             if (isNullOrUndefined(hdr)) {
                 hdr = this.headerEleGenerate();
@@ -4888,6 +4891,21 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             this.add(innerEle, CLS_SLCT);
         }
         return innerEle;
+    };
+    Accordion.prototype.angularnativeCondiCheck = function (item, prop) {
+        var property = prop === 'content' ? item.content : item.header;
+        var content = property;
+        if (this.isAngular && !isNullOrUndefined(content.elementRef)) {
+            if (content.elementRef.nativeElement.childNodes.length === 0 && isNullOrUndefined(content.elementRef.nativeElement.nextElementSibling)) {
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
+        else {
+            return true;
+        }
     };
     Accordion.prototype.fetchElement = function (ele, value, index, isHeader) {
         var templateFn;

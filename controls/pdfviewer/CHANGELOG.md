@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.44 (2018-12-24)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- The scrolling when the toolbar is clicked is prevented.
+
 ## 16.4.40-beta (2018-12-10)
 
 ### PDF Viewer

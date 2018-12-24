@@ -8,31 +8,32 @@ import {ComponentModel} from '@syncfusion/ej2-base';
 export interface PanePropertiesModel {
 
     /**
-     * Specifies Configure the properties for each pane.
+     * Configures the properties for each pane.
      * @default ''
      */
     size?: string;
 
     /**
-     * Specifies whether a pane is resizable or not resizable.
+     * Specifies the value whether a pane is resizable. By default, the Splitter is resizable in all panes.
+     * You can disable this for any specific panes using this property.
      * @default true
      */
     resizable?: boolean;
 
     /**
-     * Specifies the minimum size of a pane. The pane cannon be resized less than the specified minimum size.
+     * Specifies the minimum size of a pane. The pane cannot be resized if it is less than the specified minimum size.
      * @default null
      */
     min?: string;
 
     /**
-     * Specifies the maximum size of a pane. The pane cannon be resized greater than the specified maximum size.
+     * Specifies the maximum size of a pane. The pane cannot be resized if it is more than the specified maximum limit.
      * @default null
      */
     max?: string;
 
     /**
-     * Specifies the content of split pane.
+     * Specifies the content of split pane as plain text, HTML markup, or any other JavaScript controls.
      * @default ''
      */
     content?: string;

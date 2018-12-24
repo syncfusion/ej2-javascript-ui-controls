@@ -469,7 +469,7 @@ export class DateTimePicker extends DatePicker {
     }
     private timeHandler(e?: MouseEvent): void {
         if (Browser.isDevice) {
-            this.element.setAttribute('readonly', 'readonly');
+            this.element.setAttribute('readonly', '');
         }
         if (e.currentTarget === this.timeIcon) {
             e.preventDefault();
@@ -964,7 +964,7 @@ export class DateTimePicker extends DatePicker {
                 }
             }
         }
-        if (Browser.isDevice) {
+        if (Browser.isDevice && this.allowEdit && !this.readonly) {
             this.element.removeAttribute('readonly');
         }
     }

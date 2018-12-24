@@ -407,7 +407,7 @@ export class Group implements IAction {
             this.element.classList.remove('e-grouped');
         } else {
             if ((this.element.innerHTML === this.l10n.getConstant('GroupDropArea') && (this.groupSettings.columns.length === 1
-                || !this.isAppliedGroup && !this.isAppliedUnGroup)) || clear ) {
+                || !this.isAppliedGroup && !this.isAppliedUnGroup)) || clear) {
                 this.element.innerHTML = '';
             }
             this.element.classList.add('e-grouped');
@@ -562,19 +562,19 @@ export class Group implements IAction {
         }
         //Todo headerTemplateID for grouped column, disableHtmlEncode                          
         let headerCell: Element = gObj.getColumnHeaderByUid(column.uid);
-        if (!isNullOrUndefined(column.headerTemplate)) {
-            if (column.headerTemplate.indexOf('#') !== -1) {
-                childDiv.innerHTML = document.querySelector(column.headerTemplate).innerHTML.trim();
-            } else {
-                childDiv.innerHTML = column.headerTemplate;
-            }
-            childDiv.firstElementChild.classList.add('e-grouptext');
-        } else {
-            childDiv.appendChild(this.parent.createElement('span', {
-                className: 'e-grouptext', innerHTML: column.headerText,
-                attrs: { tabindex: '-1', 'aria-label': 'sort the grouped column' }
-            }));
-        }
+        // if (!isNullOrUndefined(column.headerTemplate)) {
+        //     if (column.headerTemplate.indexOf('#') !== -1) {
+        //         childDiv.innerHTML = document.querySelector(column.headerTemplate).innerHTML.trim();
+        //     } else {
+        //         childDiv.innerHTML = column.headerTemplate;
+        //     }
+        //     childDiv.firstElementChild.classList.add('e-grouptext');
+        // } else {
+        childDiv.appendChild(this.parent.createElement('span', {
+            className: 'e-grouptext', innerHTML: column.headerText,
+            attrs: { tabindex: '-1', 'aria-label': 'sort the grouped column' }
+        }));
+        // }
 
         if (this.groupSettings.showToggleButton) {
             childDiv.appendChild(this.parent.createElement(
@@ -590,7 +590,7 @@ export class Group implements IAction {
         childDiv.appendChild(this.parent.createElement(
             'span', {
                 className: 'e-groupsort e-icons ' +
-                ('e-' + direction.toLowerCase() + ' e-icon-' + direction.toLowerCase()), innerHTML: '&nbsp;',
+                    ('e-' + direction.toLowerCase() + ' e-icon-' + direction.toLowerCase()), innerHTML: '&nbsp;',
                 attrs: { tabindex: '-1', 'aria-label': 'sort the grouped column' }
             }));
         childDiv.appendChild(this.parent.createElement(
@@ -620,8 +620,8 @@ export class Group implements IAction {
                             headers[i].appendChild(this.parent.createElement(
                                 'span', {
                                     className: 'e-grptogglebtn e-icons ' +
-                                    (this.groupSettings.columns.indexOf(column.field) > -1 ? 'e-toggleungroup e-icon-ungroup'
-                                        : 'e-togglegroup e-icon-group'), attrs: { tabindex: '-1', 'aria-label': 'Group button' }
+                                        (this.groupSettings.columns.indexOf(column.field) > -1 ? 'e-toggleungroup e-icon-ungroup'
+                                            : 'e-togglegroup e-icon-group'), attrs: { tabindex: '-1', 'aria-label': 'Group button' }
                                 }));
                         }
                     }
@@ -660,8 +660,10 @@ export class Group implements IAction {
                                     }
                                 }
                             }
-                            args = { columnName: this.colName, requestType: e.properties[prop].length ? 'grouping' : 'ungrouping',
-                                    type: events.actionBegin };
+                            args = {
+                                columnName: this.colName, requestType: e.properties[prop].length ? 'grouping' : 'ungrouping',
+                                type: events.actionBegin
+                            };
                         } else {
                             args = { requestType: 'ungrouping', type: events.actionBegin };
                         }

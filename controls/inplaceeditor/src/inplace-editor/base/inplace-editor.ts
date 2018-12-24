@@ -1,6 +1,6 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, Event, EmitType, select } from '@syncfusion/ej2-base';
 import { detach, addClass, removeClass, EventHandler, setStyleAttribute, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';
-import { isNullOrUndefined as isNOU, closest, extend, L10n, compile } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, closest, extend, L10n, compile, Browser, Touch, TapEventArgs } from '@syncfusion/ej2-base';
 import { DataManager, UrlAdaptor, Query, WebApiAdaptor, ODataV4Adaptor } from '@syncfusion/ej2-data';
 import { Button, ButtonModel } from '@syncfusion/ej2-buttons';
 import { RichTextEditorModel } from '@syncfusion/ej2-richtexteditor';
@@ -68,6 +68,7 @@ type ComponentTypes = DatePicker | DateTimePicker | DropDownList | MaskedTextBox
 @NotifyPropertyChanges
 export class InPlaceEditor extends Component<HTMLElement> implements INotifyPropertyChanged {
     private tipObj: Tooltip;
+    private touchModule: Touch;
     private loaderWidth: number;
     private loader: HTMLElement;
     private spinObj: SpinnerArgs;
@@ -177,17 +178,19 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     public url: string;
     /**
      * Specifies the mode to be render while editing. The possible modes are :
-     * Inline: Editable content is displayed as inline text and ok/cancel buttons are displayed at right bottom corner of input.
-     * Popup: Editable content and ok/cancel buttons are displayed inside popup while editing.
+     * 
+     * - `Inline`: Editable content is displayed as inline text and ok/cancel buttons are displayed at right bottom corner of input.
+     * - `Popup`: Editable content and ok/cancel buttons are displayed inside popup while editing.
      * @default 'Popup'
      */
     @Property('Popup')
     public mode: RenderMode;
     /**
      * Specifies the adaptor type that are used DataManager to communicate with DataSource. The possible values are,
-     * UrlAdaptor: Base adaptor for interacting with remote data services.
-     * ODataV4Adaptor: Used to interact with ODataV4 service.
-     * WebApiAdaptor: Used to interact with Web api created with OData endpoint.
+     * 
+     * - `UrlAdaptor`: Base adaptor for interacting with remote data services.
+     * - `ODataV4Adaptor`: Used to interact with ODataV4 service.
+     * - `WebApiAdaptor`: Used to interact with Web api created with OData endpoint.
      * @default 'UrlAdaptor'
      */
     @Property('UrlAdaptor')
@@ -200,9 +203,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     public type: InputType;
     /**
      * Specifies the event action of input to enter edit mode instead of using edit icon. The possible values are:
-     * Click: Do the single click action on input to enter into the edit mode.
-     * DblClick: Do the single double click action on input to enter into the edit mode.
-     * EditIconClick: Disables the editing of event action of input and allows user to edit only through edit icon.
+     * 
+     * - `Click`: Do the single click action on input to enter into the edit mode.
+     * - `DblClick`: Do the single double click action on input to enter into the edit mode.
+     * - `EditIconClick`: Disables the editing of event action of input and allows user to edit only through edit icon.
      * @default 'Click'
      */
     @Property('Click')
@@ -210,9 +214,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     /**
      * Specifies the action to be perform when user clicks outside the container, that is focus out of editable content.
      * The possible options are,
-     * Cancel: Cancel's the editing and resets the old content.
-     * Submit: Submit the edited content to the server.
-     * Ignore: No action is perform with this type and allows to have many containers open.
+     * 
+     * - `Cancel`: Cancel's the editing and resets the old content.
+     * - `Submit`: Submit the edited content to the server.
+     * - `Ignore`: No action is perform with this type and allows to have many containers open.
      * @default 'Submit'
      */
     @Property('Submit')
@@ -495,7 +500,11 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private renderComponent(ele: HTMLElement | HTMLInputElement): void {
         this.isExtModule = (Array.prototype.indexOf.call(this.moduleList, this.type) > -1) ? true : false;
         extend(this.model, this.model, { cssClass: classes.ELEMENTS });
-        this.model.value = this.value;
+        if (this.type === 'MultiSelect' && !this.isEmpty(this.value as string[])) {
+            this.model.value = (<string[]>this.value).slice();
+        } else {
+            this.model.value = this.value;
+        }
         if (this.isExtModule) {
             this.notify(events.render, { module: modulesList[this.type], target: ele, type: this.type });
         } else {
@@ -635,11 +644,13 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         if (!isNOU(this.submitBtn)) {
             EventHandler.remove(this.submitBtn.element, 'mousedown', this.submitHandler);
             EventHandler.remove(this.submitBtn.element, 'click', this.submitPrevent);
+            EventHandler.remove(this.submitBtn.element, 'keydown', this.btnKeyDownHandler);
             this.submitBtn.destroy();
             this.submitBtn = undefined;
         }
         if (!isNOU(this.cancelBtn)) {
             EventHandler.remove(this.cancelBtn.element, 'mousedown', this.cancelHandler);
+            EventHandler.remove(this.cancelBtn.element, 'keydown', this.btnKeyDownHandler);
             this.cancelBtn.destroy();
             this.cancelBtn = undefined;
         }
@@ -664,7 +675,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
         this.dataManager = undefined;
     }
-    private isEmpty(value: string): boolean {
+    private isEmpty(value: string | string[]): boolean {
         return (!isNOU(value) && value.length !== 0) ? false : true;
     }
     private checkIsTemplate(): void {
@@ -794,7 +805,11 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         if (event === 'EditIconClick') { return; }
         let titleConstant: string = (event === 'Click') ? 'editAreaClick' : 'editAreaDoubleClick';
         this.element.setAttribute('title', this.getLocale(localeConstant[event], titleConstant));
-        EventHandler.add(this.valueWrap, event.toLowerCase(), this.clickHandler, this);
+        if (Browser.isDevice && Browser.isIos && event === 'DblClick') {
+            this.touchModule = new Touch(this.valueWrap, { tap: this.doubleTapHandler.bind(this) });
+        } else {
+            EventHandler.add(this.valueWrap, event.toLowerCase(), this.clickHandler, this);
+        }
     }
     private wireEditorKeyDownEvent(ele: HTMLElement): void {
         EventHandler.add(ele, 'keydown', this.enterKeyDownHandler, this);
@@ -803,13 +818,12 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         if (!isNOU(this.submitBtn)) {
             EventHandler.add(this.submitBtn.element, 'mousedown', this.submitHandler, this);
             EventHandler.add(this.submitBtn.element, 'click', this.submitPrevent, this);
+            EventHandler.add(this.submitBtn.element, 'keydown', this.btnKeyDownHandler, this);
         }
         if (!isNOU(this.cancelBtn)) {
             EventHandler.add(this.cancelBtn.element, 'mousedown', this.cancelHandler, this);
+            EventHandler.add(this.cancelBtn.element, 'keydown', this.btnKeyDownHandler, this);
         }
-    }
-    private submitPrevent(e: Event): void {
-     e.preventDefault();
     }
     private unWireEvents(): void {
         this.unWireEditEvent(this.editableOn);
@@ -827,10 +841,28 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private unWireEditEvent(event: string): void {
         if (event === 'EditIconClick') { return; }
         this.element.removeAttribute('title');
-        EventHandler.remove(this.valueWrap, event.toLowerCase(), this.clickHandler);
+        if (Browser.isDevice && Browser.isIos && event === 'DblClick') {
+            this.touchModule.destroy();
+            this.touchModule = undefined;
+        } else {
+            EventHandler.remove(this.valueWrap, event.toLowerCase(), this.clickHandler);
+        }
     }
     private unWireEditorKeyDownEvent(ele: HTMLElement): void {
         EventHandler.remove(ele, 'keydown', this.enterKeyDownHandler);
+    }
+    private submitPrevent(e: Event): void {
+        e.preventDefault();
+    }
+    private btnKeyDownHandler(e: KeyboardEvent): void {
+        let trg: HTMLElement = <HTMLElement>e.target;
+        if ((e.keyCode === 13 && e.which === 13) || (e.keyCode === 32 && e.which === 32)) {
+            if (trg.classList.contains(classes.BTN_SAVE)) {
+                this.save();
+            } else if (trg.classList.contains(classes.BTN_CANCEL)) {
+                this.cancelHandler();
+            }
+        }
     }
     private afterOpenHandler(e: TooltipEventArgs): void {
         if (this.mode === 'Popup' && this.type === 'MultiSelect') {
@@ -851,6 +883,11 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         let trgClass: DOMTokenList = (<Element>e.target).classList;
         if (trgClass.contains('e-chips-close') && !trgClass.contains('e-close-hooker') ) {
             this.updateArrow();
+        }
+    }
+    private doubleTapHandler(e: TapEventArgs): void {
+        if (e.tapCount > 1) {
+            this.clickHandler(e.originalEvent);
         }
     }
     private clickHandler(e: MouseEvent): void {
@@ -884,8 +921,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         if (this.mode === 'Popup') { this.updateArrow(); }
     }
     private enterKeyDownHandler(e: KeyboardEvent): void {
-        if ((e.keyCode === 13 && e.which === 13) || (e.keyCode === 27 && e.which === 27)) {
+        if ((e.keyCode === 13 && e.which === 13) && closest(e.target as Element, '.' + classes.INPUT)) {
             this.save();
+        } else if (e.keyCode === 27 && e.which === 27) {
+            this.cancelHandler();
         }
     }
     private valueKeyDownHandler(e: KeyboardEvent): void {

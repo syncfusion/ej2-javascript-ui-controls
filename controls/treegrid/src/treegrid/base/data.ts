@@ -206,7 +206,8 @@ public isRemote(): boolean {
       this.parent.trigger(events.expanded, args);
     } else {
       let dm: DataManager = <DataManager>this.parent.dataSource;
-      let qry: Query = new Query();
+      let qry: Query = isNullOrUndefined(this.parent.grid.query) ?
+        new Query() : this.parent.grid.query;
       let clonequries: QueryOptions[] = this.parent.query.queries.filter((e: QueryOptions) => e.fn !== 'onPage' && e.fn !== 'onWhere');
       qry.queries = clonequries;
       qry.where(this.parent.parentIdMapping, 'equal', rowDetails.record[this.parent.idMapping]);

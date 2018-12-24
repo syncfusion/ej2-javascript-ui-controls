@@ -1,13 +1,15 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
+import { Aggregate } from '../../src/treegrid/actions/summary';
 import { createGrid, destroy } from '../base/treegridutil.spec';
 import { projectData, sampleData } from '../base/datasource.spec';
 import { Page } from '../../src/treegrid/actions/page';
-import { RowExpandedEventArgs, RowCollapsedEventArgs } from '../../src';
+import { RowExpandedEventArgs, RowCollapsedEventArgs, RowCollapsingEventArgs } from '../../src';
 import { Filter } from '../../src/treegrid/actions/filter';
+import { ActionEventArgs } from '@syncfusion/ej2-grids';
 /**
  * Grid Toolbar spec 
  */
-TreeGrid.Inject(Page, Filter);
+TreeGrid.Inject(Page, Filter, Aggregate);
 describe('TreeGrid Pager module', () => {
   describe('Pager', () => {
     let gridObj: TreeGrid;
@@ -278,6 +280,68 @@ describe('TreeGrid Pager module', () => {
     });
     it('Checking the rendered records', () => {
       expect(gridObj.grid.pageSettings.totalRecordsCount).toBe(24);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+  describe('CollaspeAll and ExpandAll methods with pager - All Mode', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                allowPaging: true,
+                columns: ['taskID', 'taskName', 'startDate', 'duration']
+            },
+            done
+        );
+    });
+    it('Check the collapseAll Method -- All Mode', (done: Function) => {
+        gridObj.collapsing = (args?: RowCollapsingEventArgs) => {
+            expect((args.data as Object[]).length).toBe(9);
+        }
+        gridObj.collapsed = (args?: RowCollapsingEventArgs) => {
+            expect((args.data as Object[]).length).toBe(9);
+            expect(gridObj.getRows().length).toBe(3);
+            done();
+        }
+        gridObj.collapseAll();
+    });
+    it('Check the expandAll Method -- All Mode', (done: Function) => {
+        gridObj.expanding = (args?: RowCollapsingEventArgs) => {
+            expect((args.data as Object[]).length).toBe(9);
+        }
+        gridObj.expanded = (args?: RowExpandedEventArgs) => {
+            expect((args.data as Object[]).length).toBe(9);
+            expect(gridObj.getRows().length).toBe(12);
+            done();
+        }
+        gridObj.expandAll();
+    });
+    it('Check the collapseAtLevel Method -- All Mode', (done: Function) => {
+        gridObj.collapsing = (args?: RowCollapsingEventArgs) => {
+            expect((args.data as Object[]).length).toBe(3);
+        }
+        gridObj.collapsed = (args?: RowExpandedEventArgs) => {
+            expect((args.data as Object[]).length).toBe(3);
+            expect(gridObj.grid.pageSettings.totalRecordsCount).toBe(15);
+            done();
+        }
+        gridObj.collapseAtLevel(1);
+    });
+    it('Check the expandAtLevel Method -- All Mode', (done: Function) => {
+        gridObj.expanding = (args?: RowCollapsingEventArgs) => {
+            expect((args.data as Object[]).length).toBe(3);
+        }
+        gridObj.expanded = (args?: RowExpandedEventArgs) => {
+            expect((args.data as Object[]).length).toBe(3);
+            expect(gridObj.grid.pageSettings.totalRecordsCount).toBe(36);
+            done();
+        }
+        gridObj.expandAtLevel(1);
     });
     afterAll(() => {
       destroy(gridObj);

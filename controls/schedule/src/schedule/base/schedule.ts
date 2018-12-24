@@ -592,6 +592,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.eventBase = new EventBase(this);
         this.initializeDataModule();
         this.element.appendChild(this.createElement('div', { className: cls.TABLE_CONTAINER_CLASS }));
+        this.activeViewOptions = this.getActiveViewOptions();
         this.initializeResources();
     }
     private initializeResources(isSetModel: boolean = false): void {
@@ -1639,7 +1640,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {Date[]} Returns the collection of dates.
      */
     public getCurrentViewDates(): Object[] {
-        return this.activeView.renderDates;
+        return this.activeView ? this.activeView.renderDates : [];
     }
 
     /**

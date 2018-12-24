@@ -2646,6 +2646,16 @@ describe('Grid Touch Selection', () => {
             }, done);
         });
 
+        it('change selectedrowindex', () => {
+          gridObj.selectedRowIndex = 3,
+          gridObj.dataBind();
+          let rows = gridObj.getRows();
+          expect(rows[3].hasAttribute('aria-selected')).toBeTruthy();
+          expect(rows[3].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
+          expect(gridObj.getSelectedRecords().length).toBe(1);
+          expect(gridObj.getSelectedRowIndexes().length).toBe(1);
+        });
+
         it('check de select', (done: Function) => {
             gridObj.rowDeselected = () => {
                 expect(true).toBeTruthy();

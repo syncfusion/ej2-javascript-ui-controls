@@ -181,7 +181,9 @@ export class CheckBoxSelection {
         if (this.parent.itemTemplate) {
             target = args.li.firstElementChild.childNodes[1];
         }
-        this.checkWrapper = closest((target as HTMLElement), '.' + CHECKBOXWRAP) as HTMLElement;
+        if (!isNullOrUndefined(target)) {
+            this.checkWrapper = closest((target as HTMLElement), '.' + CHECKBOXWRAP) as HTMLElement;
+        }
         if (!isNullOrUndefined(this.checkWrapper)) {
             let checkElement: Element = select('.' + CHECKBOXFRAME, this.checkWrapper);
             let selectAll: boolean = false;

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.44 (2018-12-24)
+
+### Accordion
+
+#### Bug Fixes
+
+- Parent accordion collapsing issue is fixed when Tab renders within it.
+
 ## 16.4.40-beta (2018-12-10)
 
 ### Tab

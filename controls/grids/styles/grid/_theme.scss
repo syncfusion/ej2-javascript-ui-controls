@@ -388,6 +388,11 @@
       border-top-color: $grid-header-border-color;
     }
 
+    .e-gridcontent .e-normaledit .e-dragindentcell,
+    .e-gridcontent .e-normaledit .e-detailrowcollapse {
+      border-top: 1px solid $grid-header-border-color;
+    }
+
     .e-excelfilter .e-footer-content {
       border-color: $grid-columnchooser-footer-border-color;
       opacity: $grid-columnchooser-footer-border-opacity;

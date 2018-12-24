@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.44 (2018-12-24)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Introduced validateFields method for validation.
+
 ## 16.4.40-beta (2018-12-10)
 
 ### QueryBuilder

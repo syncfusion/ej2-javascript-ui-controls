@@ -981,13 +981,26 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         let index: number;
         index = (isNullOrUndefined(itemIndex) || itemIndex < 0 || itemIndex > itemsCount - 1) ? itemsCount : itemIndex;
         let fields: FieldSettingsModel = this.fields;
+        if (items && fields.groupBy) {
+            items = ListBase.groupDataSource(
+                (items as { [key: string]: Object }[]), (fields as FieldSettingsModel & { properties: Object }).properties);
+        }
         let liCollections: HTMLElement[] = [];
         for (let i: number = 0; i < items.length; i++) {
             let item: { [key: string]: Object } | string | boolean | number = items[i];
-            let li: HTMLElement = this.createElement('li', { className: dropDownBaseClasses.li, id: 'option-add-' + i });
-            li.setAttribute('data-value', <string>getValue(fields.value, item));
+            let isHeader: boolean = (item as { [key: string]: Object }).isHeader as boolean;
+            let li: HTMLElement = this.createElement(
+                'li', { className: isHeader ? dropDownBaseClasses.group : dropDownBaseClasses.li, id: 'option-add-' + i });
+
+            if (isHeader) { li.innerText = getValue(fields.text, item); }
+            if (this.itemTemplate && !isHeader) {
+                let compiledString: Function = compile(this.itemTemplate);
+                append(compiledString(item), li);
+            } else if (!isHeader) {
+                li.appendChild(document.createTextNode(<string>getValue(fields.text, item)));
+            }
+            li.setAttribute('data-value', getValue(fields.value, item));
             li.setAttribute('role', 'option');
-            li.appendChild(document.createTextNode(<string>getValue(fields.text, item)));
             this.notify('addItem', { module: 'CheckBoxSelection', item: li });
             liCollections.push(li);
             (this.listData as { [key: string]: Object }[]).push(item as { [key: string]: Object });

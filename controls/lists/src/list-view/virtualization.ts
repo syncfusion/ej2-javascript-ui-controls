@@ -1,5 +1,5 @@
 import { ListView, ItemCreatedArgs, classNames, Fields, UISelectedItem } from './list-view';
-import { EventHandler, append, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
+import { EventHandler, append, isNullOrUndefined, detach, removeClass, addClass } from '@syncfusion/ej2-base';
 import { ListBase } from '../common/list-base';
 
 /**
@@ -21,7 +21,6 @@ export class Virtualization {
     private topElementHeight: number;
     private bottomElementHeight: number;
     public listItemHeight: number;
-    private startingHeight: number;
     private domItemCount: number;
     private expectedDomItemCount: number;
     private scrollPosition: number;
@@ -134,23 +133,22 @@ export class Virtualization {
         }
     }
 
-    private getscrollerHeight(): number {
-        return this.listViewInstance.isWindow ? (((pageYOffset - this.startingHeight) <= 0) ? 0 :
-            (pageYOffset - this.startingHeight)) : ((this.listViewInstance.element.scrollTop - this.startingHeight) <= 0) ? 0 :
-                (this.listViewInstance.element.scrollTop - this.startingHeight);
+    private getscrollerHeight(startingHeight: number): number {
+        return this.listViewInstance.isWindow ? (((pageYOffset - startingHeight) <= 0) ? 0 :
+            (pageYOffset - startingHeight)) : ((this.listViewInstance.element.scrollTop - startingHeight) <= 0) ? 0 :
+                (this.listViewInstance.element.scrollTop - startingHeight);
     }
 
     private onVirtualUiScroll(): void {
-        if (isNullOrUndefined(this.startingHeight)) {
-            if (this.listViewInstance.isWindow) {
-                this.startingHeight = document.documentElement.getBoundingClientRect().height -
-                    this.listViewInstance.ulElement.getBoundingClientRect().height;
-            } else {
-                this.startingHeight = this.listViewInstance.headerEle ? this.listViewInstance.headerEle.getBoundingClientRect().height : 0;
-            }
-            this.scrollPosition = 0;
+        let startingHeight: number;
+        if (this.listViewInstance.isWindow) {
+            startingHeight = this.listViewInstance.ulElement.getBoundingClientRect().top -
+                document.documentElement.getBoundingClientRect().top;
+        } else {
+            startingHeight = this.listViewInstance.headerEle ? this.listViewInstance.headerEle.getBoundingClientRect().height : 0;
         }
-        let scroll: number = this.getscrollerHeight();
+        this.scrollPosition = isNullOrUndefined(this.scrollPosition) ? 0 : this.scrollPosition;
+        let scroll: number = this.getscrollerHeight(startingHeight);
         this.topElementHeight = this.listItemHeight * Math.floor(scroll / this.listItemHeight);
         this.bottomElementHeight = this.totalHeight - this.topElementHeight;
         [this.topElementHeight, this.bottomElementHeight] = scroll <= this.totalHeight ?
@@ -423,6 +421,7 @@ export class Virtualization {
                     eventArgs.isChecked = isChecked;
                     this.listViewInstance.trigger('select', eventArgs);
                 } else if (!isSelected) {
+                    this.listViewInstance.removeSelect();
                     this.listViewInstance.trigger('select', eventArgs);
                 }
             }
@@ -739,14 +738,21 @@ export class Virtualization {
                     subNode.bindedvalue = classFunction(this.templateData);
                 }
                 subNode.onChange = (value: { [key: string]: Object }) => {
-                    element.classList.remove(subNode.bindedvalue as string);
-                    element.classList.add(classFunction(value));
-                    subNode.bindedvalue = classFunction(value);
+                    if (subNode.bindedvalue) {
+                        removeClass([element], (subNode.bindedvalue as string).split(' ').filter((css: string) => css));
+                    }
+                    let newCss: string = classFunction(value) as string;
+                    if (newCss) {
+                        addClass([element], (newCss).split(' ').filter((css: string) => css));
+                    }
+                    subNode.bindedvalue = newCss;
                 };
                 classNameMatch[0].split(' ').forEach((className: string) => {
                     element.classList.remove(className);
                 });
-                element.classList.add(subNode.bindedvalue as string);
+                if (subNode.bindedvalue) {
+                    addClass([element], (subNode.bindedvalue as string).split(' ').filter((css: string) => css));
+                }
                 this.updateContextData(listElement, subNode, isHeader);
             });
         }

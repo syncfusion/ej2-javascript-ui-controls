@@ -84,8 +84,8 @@ export class BookmarkView {
             {
                 dataSource: this.bookmarks.bookMark,
                 id: 'Id',
-                parentID: 'Pid',
                 text: 'Title',
+                child: 'Child',
                 hasChildren: 'HasChild',
             },
             nodeTemplate: bookmarkIconView.outerHTML,

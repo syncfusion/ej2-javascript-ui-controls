@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 16.4.44 (2018-12-24)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- Pasted URL is not converted to links automatically, that issue has been fixed.
+
+- Image paste as twice in Firefox browser, that issue has been fixed.
+
 ## 16.4.40-beta (2018-12-10)
 
 ### RichTextEditor

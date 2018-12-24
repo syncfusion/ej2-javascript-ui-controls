@@ -162,7 +162,13 @@ $ddl-close-icon-color: $content-font !default;
         }
       }
     }& .e-delim-values {
-      color: $border-fg;
+      &.e-delim-view {
+        color: $border-fg;
+      }
+    }&.e-delimiter {
+      & .e-delim-values {
+        color: $border-fg;
+      }
     }& .e-searcher input[type='text'] {
       color: $content-font;
       height: 100%;

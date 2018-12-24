@@ -518,7 +518,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     private setSize(): void {
         this.element.style.height = formatUnit(this.height);
         this.element.style.width = formatUnit(this.width);
-        this.isWindow = this.element.getBoundingClientRect().height ? false : true;
+        this.isWindow = this.element.clientHeight ? false : true;
     }
 
     private setEnable(): void {

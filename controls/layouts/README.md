@@ -2,9 +2,12 @@
 
 # ej2-layouts
 
-The layout package contains pure CSS components cards and avatars. The card is a small container in which user can
+The layout package contains cards, avatars, and splitter controls. The card is a small container in which user can
 show defined content in specific structure. The avatars are icons, initials or figures representing a particular
 person, used in popular media formats like images, SVG, font icons, and letters.
+The splitter is container control which used to construct different layouts using multiple and nested panes.
+
+![Layout](https://ej2.syncfusion.com/products/images/layout/readme.png)
 
 > This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this component, is subject to the terms and conditions of Syncfusion's [EULA](https://www.syncfusion.com/eula/es/). To acquire a license, you can purchase one at [https://www.syncfusion.com/sales/products](https://www.syncfusion.com/sales/products/?utm_source=npm&utm_campaign=layout) or start a free 30-day trial [here](https://www.syncfusion.com/account/manage-trials/start-trials/?utm_source=npm&utm_campaign=layout).
 
@@ -12,15 +15,15 @@ person, used in popular media formats like images, SVG, font icons, and letters.
 
 ## Setup
 
-To install `Layout components` and its dependent packages, use the following command.
+To install `Layout controls` and its dependent packages, use the following command.
 
 ```sh
 npm install @syncfusion/ej2-layouts
 ```
 
-## Components included
+## Controls included
 
-Following list of components are available in the package
+Following list of controls are available in the package
 
 * Card - Container used to display content in specific structure.
   * [Getting Started](https://ej2.syncfusion.com/documentation/card/getting-started/?utm_source=npm&utm_campaign=layout)
@@ -31,6 +34,11 @@ Following list of components are available in the package
   * [Getting Started](https://ej2.syncfusion.com/documentation/avatar/getting-started/?utm_source=npm&utm_campaign=layout)
   * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=avatar#/material/avatar/default.html)
   * [Product Page](https://www.syncfusion.com/javascript-ui-controls/avatar/?utm_source=npm&utm_campaign=layout)
+
+* Splitter - Used to construct a different layout using its multiple and nested panes with resizable.
+  * [Getting Started](https://ej2.syncfusion.com/documentation/splitter/getting-started/?utm_source=npm&utm_campaign=layout)
+  * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=splitter#/material/splitter/default.html)
+  * [Product Page](https://www.syncfusion.com/javascript-ui-controls/splitter/?utm_source=npm&utm_campaign=layout)
 
 ## Use Case samples
 
@@ -63,6 +71,17 @@ Following list of components are available in the package
         * medium (default)
         * large
         * xlarge
+
+* Splitter
+  * [Multiple Panes](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=splitter#/material/splitter/default.html) - Provided an option to configure more than two panes.
+
+  * [Resizable Panes](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=splitter#/material/splitter/code-editor-layout.html) - Supports resizable to adjust its pane size dynamically.
+
+  * [Orientation](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=splitter#/material/splitter/default.html) - The panes can orient either `horizontally` or `vertically`.
+
+  * [Integration](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=splitter#/material/splitter/accordion-navigation-menu.html) - Other JavaScript UI controls can be integrated within panes.
+
+  * [Nested Panes](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=splitter#/material/splitter/code-editor-layout.html) - Another splitter can be integrated within panes to create a complex layout.
 
 ## Support
 

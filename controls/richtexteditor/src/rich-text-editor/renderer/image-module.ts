@@ -1275,24 +1275,27 @@ export class Image {
         return false;
     }
     private imagePaste(args: NotifyArgs): void {
-        let proxy: Image = this;
-        let reader: FileReader = new FileReader();
-        reader.addEventListener('load', (e: MouseEvent) => {
-            let url: IImageCommandsArgs = {
-                cssClass: (proxy.parent.insertImageSettings.display === 'inline' ? classes.CLS_IMGINLINE : classes.CLS_IMGBREAK),
-                url: URL.createObjectURL(proxy.url(reader.result as string)),
-                width: {
-                    width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
-                    maxWidth: proxy.parent.insertImageSettings.maxWidth
-                },
-                height: {
-                    height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
-                    maxHeight: proxy.parent.insertImageSettings.maxHeight
-                }
-            };
-            proxy.parent.formatter.process(proxy.parent, { item: { command: 'Images', subCommand: 'Image' } }, args.args, url);
-        });
-        reader.readAsDataURL((args as NotifyArgs).file);
+        if (args.text.length === 0) {
+            let proxy: Image = this;
+            let reader: FileReader = new FileReader();
+            (args.args as KeyboardEvent).preventDefault();
+            reader.addEventListener('load', (e: MouseEvent) => {
+                let url: IImageCommandsArgs = {
+                    cssClass: (proxy.parent.insertImageSettings.display === 'inline' ? classes.CLS_IMGINLINE : classes.CLS_IMGBREAK),
+                    url: URL.createObjectURL(proxy.url(reader.result as string)),
+                    width: {
+                        width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
+                        maxWidth: proxy.parent.insertImageSettings.maxWidth
+                    },
+                    height: {
+                        height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
+                        maxHeight: proxy.parent.insertImageSettings.maxHeight
+                    }
+                };
+                proxy.parent.formatter.process(proxy.parent, { item: { command: 'Images', subCommand: 'Image' } }, args.args, url);
+            });
+            reader.readAsDataURL((args as NotifyArgs).file);
+        }
     }
     private url(dataurl: string): Blob {
         let arr: string[] = dataurl.split(',');

@@ -3161,6 +3161,9 @@ var UrlAdaptor = /** @__PURE__ @class */ (function (_super) {
     };
     UrlAdaptor.prototype.addParams = function (options) {
         var req = options.reqParams;
+        if (options.params.length) {
+            req.params = {};
+        }
         for (var _i = 0, _a = options.params; _i < _a.length; _i++) {
             var tmp = _a[_i];
             if (req[tmp.key]) {
@@ -3170,6 +3173,7 @@ var UrlAdaptor = /** @__PURE__ @class */ (function (_super) {
             if (tmp.fn) {
                 req[tmp.key] = tmp.fn.call(options.query, tmp.key, options.query, options.dm);
             }
+            req.params[tmp.key] = req[tmp.key];
         }
     };
     return UrlAdaptor;
@@ -4124,6 +4128,7 @@ var RemoteSaveAdaptor = /** @__PURE__ @class */ (function (_super) {
         if (this.updateType === 'update') {
             _super.prototype.update.call(this, ds, this.updateKey, data);
         }
+        this.updateType = undefined;
         if (data.added) {
             for (i = 0; i < data.added.length; i++) {
                 _super.prototype.insert.call(this, ds, data.added[i]);

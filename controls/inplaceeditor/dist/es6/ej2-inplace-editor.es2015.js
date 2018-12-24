@@ -1,4 +1,4 @@
-import { ChildProperty, Complex, Component, Event, EventHandler, L10n, NotifyPropertyChanges, Property, addClass, closest, compile, detach, extend, isNullOrUndefined, removeClass, select, setStyleAttribute } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Complex, Component, Event, EventHandler, L10n, NotifyPropertyChanges, Property, Touch, addClass, closest, compile, detach, extend, isNullOrUndefined, removeClass, select, setStyleAttribute } from '@syncfusion/ej2-base';
 import { DataManager, ODataV4Adaptor, Query, UrlAdaptor } from '@syncfusion/ej2-data';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DatePicker, DateRangePicker, DateTimePicker, TimePicker } from '@syncfusion/ej2-calendars';
@@ -373,7 +373,12 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     renderComponent(ele) {
         this.isExtModule = (Array.prototype.indexOf.call(this.moduleList, this.type) > -1) ? true : false;
         extend(this.model, this.model, { cssClass: ELEMENTS });
-        this.model.value = this.value;
+        if (this.type === 'MultiSelect' && !this.isEmpty(this.value)) {
+            this.model.value = this.value.slice();
+        }
+        else {
+            this.model.value = this.value;
+        }
         if (this.isExtModule) {
             this.notify(render, { module: modulesList[this.type], target: ele, type: this.type });
         }
@@ -525,11 +530,13 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         if (!isNullOrUndefined(this.submitBtn)) {
             EventHandler.remove(this.submitBtn.element, 'mousedown', this.submitHandler);
             EventHandler.remove(this.submitBtn.element, 'click', this.submitPrevent);
+            EventHandler.remove(this.submitBtn.element, 'keydown', this.btnKeyDownHandler);
             this.submitBtn.destroy();
             this.submitBtn = undefined;
         }
         if (!isNullOrUndefined(this.cancelBtn)) {
             EventHandler.remove(this.cancelBtn.element, 'mousedown', this.cancelHandler);
+            EventHandler.remove(this.cancelBtn.element, 'keydown', this.btnKeyDownHandler);
             this.cancelBtn.destroy();
             this.cancelBtn = undefined;
         }
@@ -696,7 +703,12 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         }
         let titleConstant = (event === 'Click') ? 'editAreaClick' : 'editAreaDoubleClick';
         this.element.setAttribute('title', this.getLocale(localeConstant[event], titleConstant));
-        EventHandler.add(this.valueWrap, event.toLowerCase(), this.clickHandler, this);
+        if (Browser.isDevice && Browser.isIos && event === 'DblClick') {
+            this.touchModule = new Touch(this.valueWrap, { tap: this.doubleTapHandler.bind(this) });
+        }
+        else {
+            EventHandler.add(this.valueWrap, event.toLowerCase(), this.clickHandler, this);
+        }
     }
     wireEditorKeyDownEvent(ele) {
         EventHandler.add(ele, 'keydown', this.enterKeyDownHandler, this);
@@ -705,13 +717,12 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         if (!isNullOrUndefined(this.submitBtn)) {
             EventHandler.add(this.submitBtn.element, 'mousedown', this.submitHandler, this);
             EventHandler.add(this.submitBtn.element, 'click', this.submitPrevent, this);
+            EventHandler.add(this.submitBtn.element, 'keydown', this.btnKeyDownHandler, this);
         }
         if (!isNullOrUndefined(this.cancelBtn)) {
             EventHandler.add(this.cancelBtn.element, 'mousedown', this.cancelHandler, this);
+            EventHandler.add(this.cancelBtn.element, 'keydown', this.btnKeyDownHandler, this);
         }
-    }
-    submitPrevent(e) {
-        e.preventDefault();
     }
     unWireEvents() {
         this.unWireEditEvent(this.editableOn);
@@ -731,10 +742,30 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             return;
         }
         this.element.removeAttribute('title');
-        EventHandler.remove(this.valueWrap, event.toLowerCase(), this.clickHandler);
+        if (Browser.isDevice && Browser.isIos && event === 'DblClick') {
+            this.touchModule.destroy();
+            this.touchModule = undefined;
+        }
+        else {
+            EventHandler.remove(this.valueWrap, event.toLowerCase(), this.clickHandler);
+        }
     }
     unWireEditorKeyDownEvent(ele) {
         EventHandler.remove(ele, 'keydown', this.enterKeyDownHandler);
+    }
+    submitPrevent(e) {
+        e.preventDefault();
+    }
+    btnKeyDownHandler(e) {
+        let trg = e.target;
+        if ((e.keyCode === 13 && e.which === 13) || (e.keyCode === 32 && e.which === 32)) {
+            if (trg.classList.contains(BTN_SAVE)) {
+                this.save();
+            }
+            else if (trg.classList.contains(BTN_CANCEL)) {
+                this.cancelHandler();
+            }
+        }
     }
     afterOpenHandler(e) {
         if (this.mode === 'Popup' && this.type === 'MultiSelect') {
@@ -756,6 +787,11 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         let trgClass = e.target.classList;
         if (trgClass.contains('e-chips-close') && !trgClass.contains('e-close-hooker')) {
             this.updateArrow();
+        }
+    }
+    doubleTapHandler(e) {
+        if (e.tapCount > 1) {
+            this.clickHandler(e.originalEvent);
         }
     }
     clickHandler(e) {
@@ -791,8 +827,11 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         }
     }
     enterKeyDownHandler(e) {
-        if ((e.keyCode === 13 && e.which === 13) || (e.keyCode === 27 && e.which === 27)) {
+        if ((e.keyCode === 13 && e.which === 13) && closest(e.target, '.' + INPUT)) {
             this.save();
+        }
+        else if (e.keyCode === 27 && e.which === 27) {
+            this.cancelHandler();
         }
     }
     valueKeyDownHandler(e) {

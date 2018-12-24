@@ -15,6 +15,10 @@
 - Support to render a large number of nodes and connectors in a diagram for effective performance is added.
 - Template support for annotation is added.
 
+#### Bug Fixes
+
+- Alignment issue on complex hierarchical tree layout with complex data source is working fine.
+
 ## 16.3.33 (2018-11-20)
 
 ### Diagram

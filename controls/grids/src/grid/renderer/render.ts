@@ -305,7 +305,8 @@ export class Render {
             e.result = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.currentViewData;
         }
         this.parent.notify(events.dataReady, extend({ count: e.count, result: e.result, aggregates: e.aggregates }, args));
-        if (gObj.groupSettings.columns.length || (args && args.requestType === 'ungrouping')) {
+        if ((gObj.groupSettings.columns.length || (args && args.requestType === 'ungrouping'))
+        && (args && args.requestType !== 'filtering')) {
             this.headerRenderer.refreshUI();
         }
         if (len) {

@@ -3723,6 +3723,31 @@ var EventBase = /** @__PURE__ @class */ (function () {
         return (event[this.parent.eventFields.isReadonly]) ?
             event[this.parent.eventFields.isReadonly] : 'false';
     };
+    EventBase.prototype.isBlockRange = function (eventData) {
+        var _this = this;
+        var eventCollection = (eventData instanceof Array) ? eventData : [eventData];
+        var isBlockAlert = false;
+        var fields = this.parent.eventFields;
+        eventCollection.forEach(function (event) {
+            var dataCol = [];
+            if (!isNullOrUndefined(event[fields.recurrenceRule]) && isNullOrUndefined(event[fields.recurrenceID])) {
+                dataCol = _this.parent.eventBase.generateOccurrence(event);
+            }
+            else {
+                dataCol.push(event);
+            }
+            for (var _i = 0, dataCol_1 = dataCol; _i < dataCol_1.length; _i++) {
+                var data = dataCol_1[_i];
+                var filterBlockEvents = _this.parent.eventBase.filterBlockEvents(data);
+                if (filterBlockEvents.length > 0) {
+                    isBlockAlert = true;
+                    break;
+                }
+            }
+        });
+        this.parent.uiStateValues.isBlock = isBlockAlert;
+        return isBlockAlert;
+    };
     return EventBase;
 }());
 
@@ -3773,7 +3798,7 @@ var Crud = /** @__PURE__ @class */ (function () {
         }
     };
     Crud.prototype.addEvent = function (eventData) {
-        if (this.checkBlockEvents(eventData)) {
+        if (this.parent.eventBase.isBlockRange(eventData)) {
             this.parent.quickPopup.openValidationError('blockAlert');
             return;
         }
@@ -3806,7 +3831,7 @@ var Crud = /** @__PURE__ @class */ (function () {
         this.refreshData(crudArgs);
     };
     Crud.prototype.saveEvent = function (event, action) {
-        if (this.checkBlockEvents(event)) {
+        if (this.parent.eventBase.isBlockRange(event)) {
             this.parent.quickPopup.openValidationError('blockAlert');
             return;
         }
@@ -3998,31 +4023,6 @@ var Crud = /** @__PURE__ @class */ (function () {
             exceptionDateList = exDate;
         }
         return exceptionDateList;
-    };
-    Crud.prototype.checkBlockEvents = function (eventData) {
-        var _this = this;
-        var eventCollection = (eventData instanceof Array) ? eventData : [eventData];
-        var isBlockAlert = false;
-        var fields = this.parent.eventFields;
-        eventCollection.forEach(function (event) {
-            var dataCol = [];
-            if (!isNullOrUndefined(event[fields.recurrenceRule]) && isNullOrUndefined(event[fields.recurrenceID])) {
-                dataCol = _this.parent.eventBase.generateOccurrence(event);
-            }
-            else {
-                dataCol.push(event);
-            }
-            for (var _i = 0, dataCol_1 = dataCol; _i < dataCol_1.length; _i++) {
-                var data = dataCol_1[_i];
-                var filterBlockEvents = _this.parent.eventBase.filterBlockEvents(data);
-                if (filterBlockEvents.length > 0) {
-                    isBlockAlert = true;
-                    break;
-                }
-            }
-        });
-        this.parent.uiStateValues.isBlock = isBlockAlert;
-        return isBlockAlert;
     };
     return Crud;
 }());
@@ -4411,8 +4411,19 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         this.renderButton('e-flat e-round e-small', ICON + ' ' + DELETE_ICON_CLASS, false, deleteIcon, this.deleteClick);
         this.beforeQuickPopupOpen(target);
     };
+    QuickPopups.prototype.isCellBlocked = function (args) {
+        var tempObj = {};
+        tempObj[this.parent.eventFields.startTime] = this.parent.activeCellsData.startTime;
+        tempObj[this.parent.eventFields.endTime] = this.parent.activeCellsData.endTime;
+        tempObj[this.parent.eventFields.isAllDay] = this.parent.activeCellsData.isAllDay;
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            var targetCell = args.element instanceof Array ? args.element[0] : args.element;
+            this.parent.resourceBase.setResourceValues(tempObj, true, parseInt(targetCell.getAttribute('data-group-index'), 10));
+        }
+        return this.parent.eventBase.isBlockRange(tempObj);
+    };
     QuickPopups.prototype.cellClick = function (args) {
-        if (!this.parent.showQuickInfo || this.parent.currentView === 'MonthAgenda') {
+        if (!this.parent.showQuickInfo || this.parent.currentView === 'MonthAgenda' || this.isCellBlocked(args)) {
             this.quickPopupHide();
             return;
         }
@@ -9404,6 +9415,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         this.eventBase = new EventBase(this);
         this.initializeDataModule();
         this.element.appendChild(this.createElement('div', { className: TABLE_CONTAINER_CLASS }));
+        this.activeViewOptions = this.getActiveViewOptions();
         this.initializeResources();
     };
     Schedule.prototype.initializeResources = function (isSetModel) {
@@ -10465,7 +10477,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * @returns {Date[]} Returns the collection of dates.
      */
     Schedule.prototype.getCurrentViewDates = function () {
-        return this.activeView.renderDates;
+        return this.activeView ? this.activeView.renderDates : [];
     };
     /**
      * Retrieves the events that lies on the current date range of the active view of Schedule.
@@ -12147,7 +12159,7 @@ var ViewBase = /** @__PURE__ @class */ (function () {
         var eventContainer;
         for (var row = 0; row < trCount; row++) {
             eventContainer = createElement('div', { className: APPOINTMENT_CONTAINER_CLASS });
-            if (!isNullOrUndefined(this.parent.resourceBase) && !this.parent.uiStateValues.isGroupAdaptive) {
+            if (this.parent.resourceBase && !this.parent.uiStateValues.isGroupAdaptive && this.parent.resourceBase.renderedResources) {
                 eventContainer.setAttribute('data-group-index', this.parent.resourceBase.renderedResources[row].groupIndex.toString());
             }
             eventRows.push(eventContainer);

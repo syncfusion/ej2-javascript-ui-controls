@@ -183,8 +183,8 @@ export class PeriodSelector {
                                                                       (args.endDate as Date).getTime());
                     }
                     this.nodes = this.toolbar.element.querySelectorAll('.e-toolbar-left')[0];
-                    for (let i: number = 0, length: number = this.nodes.childNodes.length; i < length; i++) {
-                        if (!(this.rootControl as StockChart).resizeTo) {
+                    if (!(this.rootControl as StockChart).resizeTo && this.control.rangeSlider.isDrag) {
+                        for (let i: number = 0, length: number = this.nodes.childNodes.length; i < length; i++) {
                             (this.nodes.childNodes[i].childNodes[0] as Element).classList.remove('e-active');
                             (this.nodes.childNodes[i].childNodes[0] as Element).classList.remove('e-active');
                         }
@@ -244,7 +244,9 @@ export class PeriodSelector {
                 this.selectedIndex = (this.nodes.childNodes.length - buttons.length) + index;
             }
         });
-        this.setSelectedStyle(this.selectedIndex);
+        if (args.item.text !== '') {
+            this.setSelectedStyle(this.selectedIndex);
+        }
 
         if (clickedEle.text.toLowerCase() === 'all') {
             updatedStart = control.seriesXMin;

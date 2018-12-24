@@ -2546,12 +2546,7 @@ function measureElementRect(element, redraw = false) {
     document.body.appendChild(element);
     bounds = element.getBoundingClientRect();
     if (redraw) {
-        if (typeof element.remove === 'function') {
-            element.remove();
-        }
-        else {
-            element.parentNode.removeChild(element);
-        }
+        remove(element);
     }
     else {
         removeElement(element.id);
@@ -2734,12 +2729,7 @@ function colorNameToHex(color) {
     element = document.getElementById('chartmeasuretext');
     element.style.color = color;
     color = window.getComputedStyle(element).color;
-    if (typeof element.remove === 'function') {
-        element.remove();
-    }
-    else {
-        element.parentNode.removeChild(element);
-    }
+    remove(element);
     let exp = /^(rgb|hsl)(a?)[(]\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*(?:,\s*([\d.]+)\s*)?[)]$/;
     let isRGBValue = exp.exec(color);
     return convertToHexCode(new ColorValue(parseInt(isRGBValue[3], 10), parseInt(isRGBValue[4], 10), parseInt(isRGBValue[5], 10)));
@@ -15302,19 +15292,21 @@ class BaseTooltip extends ChartData {
             }, '#' + this.element.id + '_tooltip');
         }
         else {
-            this.svgTooltip.location = location;
-            this.svgTooltip.content = this.text;
-            this.svgTooltip.header = header;
-            this.svgTooltip.offset = offset;
-            this.svgTooltip.palette = this.findPalette();
-            this.svgTooltip.shapes = shapes;
-            this.svgTooltip.data = templatePoint;
-            this.svgTooltip.template = chart.tooltip.template;
-            this.svgTooltip.textStyle = chart.tooltip.textStyle;
-            this.svgTooltip.isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
-            this.svgTooltip.clipBounds = this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation;
-            this.svgTooltip.arrowPadding = this.text.length > 1 || this.chart.stockChart ? 0 : 12;
-            this.svgTooltip.dataBind();
+            if (this.svgTooltip) {
+                this.svgTooltip.location = location;
+                this.svgTooltip.content = this.text;
+                this.svgTooltip.header = header;
+                this.svgTooltip.offset = offset;
+                this.svgTooltip.palette = this.findPalette();
+                this.svgTooltip.shapes = shapes;
+                this.svgTooltip.data = templatePoint;
+                this.svgTooltip.template = chart.tooltip.template;
+                this.svgTooltip.textStyle = chart.tooltip.textStyle;
+                this.svgTooltip.isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
+                this.svgTooltip.clipBounds = this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation;
+                this.svgTooltip.arrowPadding = this.text.length > 1 || this.chart.stockChart ? 0 : 12;
+                this.svgTooltip.dataBind();
+            }
         }
     }
     findPalette() {
@@ -15536,7 +15528,7 @@ class Tooltip$1 extends BaseTooltip {
                 }
                 else {
                     this.removeHighlight(this.control);
-                    this.getElement(this.element.id + '_tooltip').remove();
+                    remove(this.getElement(this.element.id + '_tooltip'));
                 }
                 this.isRemove = true;
             }
@@ -24520,7 +24512,7 @@ class AccumulationTooltip extends BaseTooltip {
                 }
                 else {
                     this.removeHighlight(this.control);
-                    this.getElement(this.element.id + '_tooltip').remove();
+                    remove(this.getElement(this.element.id + '_tooltip'));
                 }
                 this.isRemove = true;
             }
@@ -27015,8 +27007,8 @@ class PeriodSelector {
                         this.rootControl.rangeChanged(args.startDate.getTime(), args.endDate.getTime());
                     }
                     this.nodes = this.toolbar.element.querySelectorAll('.e-toolbar-left')[0];
-                    for (let i = 0, length = this.nodes.childNodes.length; i < length; i++) {
-                        if (!this.rootControl.resizeTo) {
+                    if (!this.rootControl.resizeTo && this.control.rangeSlider.isDrag) {
+                        for (let i = 0, length = this.nodes.childNodes.length; i < length; i++) {
                             this.nodes.childNodes[i].childNodes[0].classList.remove('e-active');
                             this.nodes.childNodes[i].childNodes[0].classList.remove('e-active');
                         }
@@ -27075,7 +27067,9 @@ class PeriodSelector {
                 this.selectedIndex = (this.nodes.childNodes.length - buttons.length) + index;
             }
         });
-        this.setSelectedStyle(this.selectedIndex);
+        if (args.item.text !== '') {
+            this.setSelectedStyle(this.selectedIndex);
+        }
         if (clickedEle.text.toLowerCase() === 'all') {
             updatedStart = control.seriesXMin;
             updatedEnd = control.seriesXMax;
@@ -27366,6 +27360,7 @@ class RangeTooltip {
 /**
  * Cartesian chart renderer for financial chart
  */
+/** @private */
 class CartesianChart {
     constructor(chart) {
         this.stockChart = chart;
@@ -27479,7 +27474,7 @@ class CartesianChart {
             ((stockChart.availableSize.height - stockChart.toolbarHeight - 80)) :
             (stockChart.enableSelector && !stockChart.enablePeriodSelector) ? (stockChart.availableSize.height - 80) :
                 (stockChart.enablePeriodSelector && !stockChart.enableSelector) ?
-                    stockChart.availableSize.height - stockChart.toolbarHeight : 0));
+                    stockChart.availableSize.height - stockChart.toolbarHeight : stockChart.availableSize.height));
     }
     calculateUpdatedRange(zoomFactor, zoomPosition, axis) {
         let start;
@@ -27527,6 +27522,7 @@ class CartesianChart {
 /**
  * Render range navigator for financial chart
  */
+/** @private */
 class RangeSelector {
     constructor(stockChart) {
         this.stockChart = stockChart;
@@ -27554,7 +27550,7 @@ class RangeSelector {
         }
         stockChart.rangeNavigator = new RangeNavigator({
             locale: 'en',
-            valueType: 'DateTime',
+            valueType: stockChart.primaryXAxis.valueType,
             theme: this.stockChart.theme,
             series: this.findSeriesCollection(stockChart.series),
             height: this.calculateChartSize().height.toString(),
@@ -27611,6 +27607,7 @@ class RangeSelector {
 /**
  * Period selector for range navigator
  */
+/** @private */
 class ToolBarSelector {
     constructor(chart) {
         this.intervalTypes = ['Years', 'Quarter', 'Months', 'Weeks', 'Days', 'Hours', 'Minutes', 'Seconds'];
@@ -27646,6 +27643,7 @@ class ToolBarSelector {
             for (let i = 0; i < this.stockChart.series.length; i++) {
                 for (let j = 0; j < result.length; j++) {
                     let text = result[j].text.replace('&nbsp;&nbsp;&nbsp;', '');
+                    text = (text === 'OHLC') ? 'HiloOpenClose' : text;
                     if (text === this.stockChart.series[i].type) {
                         result[j].text = result[j].text.replace('&nbsp;&nbsp;&nbsp;', '&#10004&nbsp;');
                     }
@@ -28651,7 +28649,7 @@ class StockChart extends Component {
         /** @private */
         this.trendlinetriggered = true;
         /** @private */
-        this.toolbarHeight = Browser.isDevice ? 56 : 42;
+        this.toolbarHeight = this.enablePeriodSelector ? (Browser.isDevice ? 56 : 42) : 0;
     }
     /**
      * Called internally if any of the property value changed.
@@ -29015,8 +29013,6 @@ class StockChart extends Component {
         this.isChartDrag = false;
         this.allowPan = false;
         if (this.isTouch) {
-            //this.titleTooltip(e, this.mouseX, this.mouseY, this.isTouch);
-            //this.axisTooltip(e, this.mouseX, this.mouseY, this.isTouch);
             this.threshold = new Date().getTime() + 300;
         }
         this.notify(Browser.touchEndEvent, e);
@@ -29083,9 +29079,9 @@ class StockChart extends Component {
         if (e.target.id.indexOf(this.element.id + '_stockChart_chart') === -1) {
             let element;
             if (this.chart.tooltip.enable || this.crosshair.enable) {
-                element = document.getElementById('chart_stockChart_chart_tooltip');
+                element = document.getElementById(this.element.id + '_stockChart_chart_tooltip');
                 if (element) {
-                    element.remove();
+                    remove(element);
                 }
             }
         }
@@ -29099,10 +29095,6 @@ class StockChart extends Component {
      */
     stockChartOnMouseClick(e) {
         let element = e.target;
-        // this.trigger(chartMouseClick, { target: element.id, x: this.mouseX, y: this.mouseY });
-        // if (this.pointClick) {
-        //     this.triggerPointEvent(pointClick);
-        // }
         this.notify('click', e);
         return false;
     }

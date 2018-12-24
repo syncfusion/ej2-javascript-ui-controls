@@ -188,6 +188,9 @@ export class InlineEditRender {
         if (isDetail) {
             tr.insertBefore(this.parent.createElement('td', { className: 'e-detailrowcollapse' }), tr.firstChild);
         }
+        if (gObj.isRowDragable()) {
+            tr.appendChild(this.parent.createElement('td', { className: 'e-dragindentcell' }));
+        }
         while (i < gLen) {
             tr.appendChild(this.parent.createElement('td', { className: 'e-indentcell' }));
             i++;

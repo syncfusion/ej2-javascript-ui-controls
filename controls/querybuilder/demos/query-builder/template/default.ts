@@ -93,8 +93,8 @@ let importRules: RuleModel = {
     'rules': [{
         'label': 'CustomerID',
         'field': 'CustomerID',
-        'type': 'number',
-        'operator': 'Not Equal',
+        'type': 'string',
+        'operator': 'notequal',
         'value': ['BERGS']
     },
     {
@@ -103,15 +103,15 @@ let importRules: RuleModel = {
             'label': 'In_stock',
                 'field': 'In_stock',
                 'type': 'string',
-                'operator': 'Equal',
-                'value': ['Yes']
+                'operator': 'equal',
+                'value': 'Yes'
         },
         {
             'label': 'OrderID',
             'field': 'OrderID',
             'type': 'number',
-            'operator': 'Equal',
-            'value': [10]
+            'operator': 'equal',
+            'value': 10
         },
         {
         'condition': 'and',
@@ -119,41 +119,11 @@ let importRules: RuleModel = {
                 'label': 'Price',
                 'field': 'Price',
                 'type': 'number',
-                'operator': 'Equal',
-                'value': ['10']
+                'operator': 'equal',
+                'value': 10
             }]
         }]
     }]
     };
-let queryBldrObj: QueryBuilder = new QueryBuilder({ columns: filter, height: 'auto', width: '800px' , rule: importRules });
+let queryBldrObj: QueryBuilder = new QueryBuilder({ columns: filter, height: 'auto', width: '800px' , rule: importRules, summaryView: true });
 queryBldrObj.appendTo('#querybuilder');
-
-let buttonElem: Element;
-
-//getrules
-buttonElem = queryBldrObj.createElement('Button',{ attrs: {type: 'button', class: 'e-control e-btn e-primary', id: 'getrules'}});
-buttonElem.textContent = 'GetRules';
-document.getElementById('property').appendChild(buttonElem);
-document.getElementById('getrules').onclick = (): void => {
-    //queryBldrObj.reset();
-    let content: HTMLElement = document.getElementById('content');
-	content.innerText = JSON.stringify({condition: queryBldrObj.rule.condition, rules: queryBldrObj.rule.rules}, null, 2);
-    dialogObj.show();
-};
-
-let dialogObj: Dialog = new Dialog({
-    width: '750px',
-    header: 'Rules',
-    target: document.getElementById('target'),
-    isModal: true,
-    animationSettings: { effect: 'None' },
-    buttons: [{
-        click: dlgButtonClick,
-        buttonModel: { content: 'OK', isPrimary: true }
-    }],
-});
-dialogObj.appendTo('#modalDialog');
-dialogObj.hide();
-function dlgButtonClick(): void {
-    dialogObj.hide();
-}

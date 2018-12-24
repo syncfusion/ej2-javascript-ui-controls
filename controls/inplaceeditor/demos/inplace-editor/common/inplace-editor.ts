@@ -1,7 +1,8 @@
 /**
  * Default Sample
  */
-import { InPlaceEditor, RenderMode, AdaptorType } from '../../../src/inplace-editor/base/inplace-editor';
+import { CheckBox, ChangeEventArgs as ChangeArgs } from '@syncfusion/ej2-buttons';
+import { InPlaceEditor, RenderMode, AdaptorType, EditableType, ActionBlur } from '../../../src/inplace-editor/base/inplace-editor';
 import { AutoComplete } from './../../../src/inplace-editor/modules/auto-complete';
 import { ColorPicker } from './../../../src/inplace-editor/modules/color-picker';
 import { ComboBox } from './../../../src/inplace-editor/modules/combo-box';
@@ -15,12 +16,19 @@ import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 InPlaceEditor.Inject(AutoComplete, ColorPicker, ComboBox, DateRangePicker, MultiSelect, Rte, Slider, TimePicker);
 
 let modeType: RenderMode = 'Inline';
-let serviceUrl: string = 'http://localhost:25255/api/WebApi';
 let adaptorType: AdaptorType = 'UrlAdaptor';
+let serviceUrl: string = 'https://ej2services.syncfusion.com/development/web-services/api/Editor/UpdateData';
 
-let darkThemes: string[] = ['material-dark', 'fabric-dark', 'bootstrap-dark', 'highcontrast'];
 let modeData: string[] = ['Inline', 'Popup'];
+let darkThemes: string[] = ['material-dark', 'fabric-dark', 'bootstrap-dark', 'highcontrast'];
 let sportsData: string[] = ['Badminton', 'Basketball', 'Cricket', 'Football', 'Golf', 'Gymnastics', 'Hockey', 'Tennis'];
+
+new CheckBox({ label: 'Enable RTL', checked: false, change: onRtlChange }, '#rtl');
+new CheckBox({ label: 'Enable Persistence', checked: false, change: onPersistChange }, '#persist');
+new CheckBox({ label: 'Disable Editor', checked: false, change: onDisabledChange }, '#disabled');
+new CheckBox({ label: 'ShowButtons', checked: true, change: onShowButtonsChange }, '#showButtons');
+new CheckBox({ label: 'EnableEditMode', checked: false, change: onEditorOpenChange }, '#openEditor');
+new CheckBox({ label: 'SubmitOnEnter', checked: true, change: onSubmitOnEnterChange }, '#enterSubmit');
 
 let modeObj: DropDownList = new DropDownList({
     dataSource: modeData,
@@ -33,14 +41,14 @@ let atcObj: InPlaceEditor = new InPlaceEditor({
     mode: modeType,
     type: 'AutoComplete',
     value: 'Badminton',
+    name: 'Game',
     primaryKey: '1',
     url: serviceUrl,
     adaptor: adaptorType,
     popupSettings: {
         title: 'Edit'
     },
-    name: 'Game',
-    validationRules : {
+    validationRules: {
         Game: { required: true }
     },
     model: {
@@ -54,14 +62,14 @@ let comboBoxObj: InPlaceEditor = new InPlaceEditor({
     mode: modeType,
     type: 'ComboBox',
     value: 'Basketball',
-    popupSettings: {
-        title: 'Edit'
-    },
     primaryKey: '1',
     url: serviceUrl,
     adaptor: adaptorType,
     name: 'Game',
-    validationRules : {
+    popupSettings: {
+        title: 'Edit'
+    },
+    validationRules: {
         Game: { required: true }
     },
     model: {
@@ -76,13 +84,13 @@ let dropDownObj: InPlaceEditor = new InPlaceEditor({
     type: 'DropDownList',
     value: 'Cricket',
     primaryKey: '1',
-    popupSettings: {
-        title: 'Edit'
-    },
     url: serviceUrl,
     adaptor: adaptorType,
     name: 'Game',
-    validationRules : {
+    popupSettings: {
+        title: 'Edit'
+    },
+    validationRules: {
         Game: { required: true }
     },
     model: {
@@ -97,13 +105,13 @@ let multiSelectObj: InPlaceEditor = new InPlaceEditor({
     type: 'MultiSelect',
     value: ['Badminton', 'Basketball'],
     primaryKey: '1',
-    popupSettings: {
-        title: 'Edit'
-    },
     url: serviceUrl,
     adaptor: adaptorType,
     name: 'Game',
-    validationRules : {
+    popupSettings: {
+        title: 'Edit'
+    },
+    validationRules: {
         Game: { required: true }
     },
     model: {
@@ -118,13 +126,13 @@ let dateObj: InPlaceEditor = new InPlaceEditor({
     type: 'Date',
     value: new Date(),
     primaryKey: '1',
-    popupSettings: {
-        title: 'Edit'
-    },
     url: serviceUrl,
     adaptor: adaptorType,
     name: 'Date',
-    validationRules : {
+    popupSettings: {
+        title: 'Edit'
+    },
+    validationRules: {
         Date: { required: true }
     }
 });
@@ -135,13 +143,13 @@ let dateRangeObj: InPlaceEditor = new InPlaceEditor({
     type: 'DateRange',
     value: [new Date('11/12/2018'), new Date('11/15/2018')],
     primaryKey: '1',
-    popupSettings: {
-        title: 'Edit'
-    },
     url: serviceUrl,
     adaptor: adaptorType,
     name: 'Date',
-    validationRules : {
+    popupSettings: {
+        title: 'Edit'
+    },
+    validationRules: {
         Date: { required: true }
     }
 });
@@ -152,13 +160,13 @@ let dateTimeObj: InPlaceEditor = new InPlaceEditor({
     type: 'DateTime',
     value: new Date(),
     primaryKey: '1',
-    popupSettings: {
-        title: 'Edit'
-    },
     url: serviceUrl,
     adaptor: adaptorType,
     name: 'Date',
-    validationRules : {
+    popupSettings: {
+        title: 'Edit'
+    },
+    validationRules: {
         Date: { required: true }
     }
 });
@@ -169,25 +177,29 @@ let timeObj: InPlaceEditor = new InPlaceEditor({
     type: 'Time',
     value: new Date(),
     primaryKey: '1',
-    popupSettings: {
-        title: 'Edit'
-    },
     url: serviceUrl,
     adaptor: adaptorType,
     name: 'Time',
-    validationRules : {
-        Time: { required: true }
+    popupSettings: {
+        title: 'Edit'
     },
+    validationRules: {
+        Time: { required: true }
+    }
 });
 timeObj.appendTo('#timePicker');
 
 let colorObj: InPlaceEditor = new InPlaceEditor({
     mode: modeType,
     type: 'Color',
+    primaryKey: '1',
+    url: serviceUrl,
+    adaptor: adaptorType,
+    name: 'Color',
+    value: '#eaeaea',
     popupSettings: {
         title: 'Edit'
-    },
-    value: '#eaeaea'
+    }
 });
 colorObj.appendTo('#colorPicker');
 
@@ -196,13 +208,13 @@ let maskedObj: InPlaceEditor = new InPlaceEditor({
     type: 'Mask',
     value: '12345',
     primaryKey: '1',
-    popupSettings: {
-        title: 'Edit'
-    },
     url: serviceUrl,
     adaptor: adaptorType,
     name: 'Masked',
-    validationRules : {
+    popupSettings: {
+        title: 'Edit'
+    },
+    validationRules: {
         Masked: { required: true }
     },
     model: {
@@ -216,13 +228,13 @@ let numericObj: InPlaceEditor = new InPlaceEditor({
     type: 'Numeric',
     value: '0.5',
     primaryKey: '1',
+    url: serviceUrl,
+    adaptor: adaptorType,
     popupSettings: {
         title: 'Edit'
     },
-    url: serviceUrl,
-    adaptor: adaptorType,
     name: 'Numeric',
-    validationRules : {
+    validationRules: {
         Numeric: { required: true }
     },
     model: {
@@ -240,13 +252,13 @@ let textBoxObj: InPlaceEditor = new InPlaceEditor({
     type: 'Text',
     value: 'Sample Text',
     primaryKey: '1',
-    popupSettings: {
-        title: 'Edit'
-    },
     url: serviceUrl,
     adaptor: adaptorType,
     name: 'TextBox',
-    validationRules : {
+    popupSettings: {
+        title: 'Edit'
+    },
+    validationRules: {
         TextBox: { required: true }
     }
 });
@@ -257,13 +269,13 @@ let sliderObj: InPlaceEditor = new InPlaceEditor({
     type: 'Slider',
     value: 30,
     primaryKey: '1',
-    popupSettings: {
-        title: 'Edit'
-    },
     url: serviceUrl,
     adaptor: adaptorType,
     name: 'Slide',
-    validationRules : {
+    popupSettings: {
+        title: 'Edit'
+    },
+    validationRules: {
         Slide: { required: true }
     },
     model: {
@@ -279,48 +291,16 @@ let rteObj: InPlaceEditor = new InPlaceEditor({
     value: 'RichTextEditor',
     primaryKey: '1',
     url: serviceUrl,
+    adaptor: adaptorType,
+    name: 'TextEditor',
     popupSettings: {
         title: 'Edit'
     },
-    adaptor: adaptorType,
-    name: 'TextEditor',
-    validationRules : {
+    validationRules: {
         TextEditor: { required: true }
     }
 });
 rteObj.appendTo('#rte');
-
-function onChange(e: ChangeEventArgs): void {
-    modeType = e.value as RenderMode;
-    textBoxObj.mode = modeType;
-    textBoxObj.dataBind();
-    atcObj.mode = modeType;
-    atcObj.dataBind();
-    comboBoxObj.mode = modeType;
-    comboBoxObj.dataBind();
-    dropDownObj.mode = modeType;
-    dropDownObj.dataBind();
-    multiSelectObj.mode = modeType;
-    multiSelectObj.dataBind();
-    dateObj.mode = modeType;
-    dateObj.dataBind();
-    dateRangeObj.mode = modeType;
-    dateRangeObj.dataBind();
-    dateTimeObj.mode = modeType;
-    dateTimeObj.dataBind();
-    timeObj.mode = modeType;
-    timeObj.dataBind();
-    colorObj.mode = modeType;
-    colorObj.dataBind();
-    maskedObj.mode = modeType;
-    maskedObj.dataBind();
-    numericObj.mode = modeType;
-    numericObj.dataBind();
-    sliderObj.mode = modeType;
-    sliderObj.dataBind();
-    rteObj.mode = modeType;
-    rteObj.dataBind();
-}
 
 document.getElementById('renderMode').addEventListener('change', (e: any) => {
     switch (e.target.value) {
@@ -341,3 +321,91 @@ document.getElementById('themes').addEventListener('change', (e: any) => {
     }
     document.getElementsByTagName('link')[0].href = '../theme-files/' + e.target.value + '.css';
 });
+
+function onChange(e: ChangeEventArgs): void {
+    modeType = e.value as RenderMode;
+    textBoxObj.mode = atcObj.mode = comboBoxObj.mode = dropDownObj.mode = multiSelectObj.mode = modeType;
+    dateObj.mode = dateRangeObj.mode = dateTimeObj.mode = timeObj.mode = colorObj.mode = modeType;
+    maskedObj.mode = numericObj.mode = sliderObj.mode = rteObj.mode = modeType;
+    triggerBind();
+}
+
+document.getElementById('editOn').addEventListener('change', (e: any) => {
+    let editOn: EditableType = e.target.value as EditableType;
+    textBoxObj.editableOn = atcObj.editableOn = comboBoxObj.editableOn = dropDownObj.editableOn = multiSelectObj.editableOn = editOn;
+    dateObj.editableOn = dateRangeObj.editableOn = dateTimeObj.editableOn = timeObj.editableOn = colorObj.editableOn = editOn;
+    maskedObj.editableOn = numericObj.editableOn = sliderObj.editableOn = rteObj.editableOn = editOn;
+    triggerBind();
+});
+
+document.getElementById('blurAction').addEventListener('change', (e: any) => {
+    let value: ActionBlur = e.target.value as ActionBlur;
+    textBoxObj.actionOnBlur = atcObj.actionOnBlur = comboBoxObj.actionOnBlur = dropDownObj.actionOnBlur = value;
+    multiSelectObj.actionOnBlur = dateObj.actionOnBlur = dateRangeObj.actionOnBlur = dateTimeObj.actionOnBlur = value;
+    timeObj.actionOnBlur = colorObj.actionOnBlur = maskedObj.actionOnBlur = numericObj.actionOnBlur = sliderObj.actionOnBlur = value;
+    rteObj.actionOnBlur = value;
+    triggerBind();
+});
+
+function onRtlChange(e: ChangeArgs): void {
+    textBoxObj.enableRtl = atcObj.enableRtl = comboBoxObj.enableRtl = dropDownObj.enableRtl = multiSelectObj.enableRtl = e.checked;
+    dateObj.enableRtl = dateRangeObj.enableRtl = dateTimeObj.enableRtl = timeObj.enableRtl = colorObj.enableRtl = e.checked;
+    maskedObj.enableRtl = numericObj.enableRtl = sliderObj.enableRtl = rteObj.enableRtl = e.checked;
+    triggerBind();
+}
+
+function onPersistChange(e: ChangeArgs): void {
+    textBoxObj.enablePersistence = atcObj.enablePersistence = comboBoxObj.enablePersistence = dropDownObj.enablePersistence = e.checked;
+    multiSelectObj.enablePersistence = dateObj.enablePersistence = dateRangeObj.enablePersistence = e.checked;
+    dateTimeObj.enablePersistence = timeObj.enablePersistence = colorObj.enablePersistence = e.checked;
+    maskedObj.enablePersistence = numericObj.enablePersistence = sliderObj.enablePersistence = rteObj.enablePersistence = e.checked;
+    triggerBind();
+}
+
+function onDisabledChange(e: ChangeArgs): void {
+    textBoxObj.disabled = atcObj.disabled = comboBoxObj.disabled = dropDownObj.disabled = multiSelectObj.disabled = e.checked;
+    dateObj.disabled = dateRangeObj.disabled = dateTimeObj.disabled = timeObj.disabled = colorObj.disabled = e.checked;
+    maskedObj.disabled = numericObj.disabled = sliderObj.disabled = rteObj.disabled = e.checked;
+    triggerBind();
+}
+
+function onShowButtonsChange(e: ChangeArgs): void {
+    textBoxObj.showButtons = atcObj.showButtons = comboBoxObj.showButtons = dropDownObj.showButtons = e.checked;
+    multiSelectObj.showButtons = dateObj.showButtons = dateRangeObj.showButtons = dateTimeObj.showButtons = e.checked;
+    timeObj.showButtons = colorObj.showButtons = maskedObj.showButtons = numericObj.showButtons = e.checked;
+    sliderObj.showButtons = rteObj.showButtons = e.checked;
+    triggerBind();
+}
+
+function onEditorOpenChange(e: ChangeArgs): void {
+    textBoxObj.enableEditMode = atcObj.enableEditMode = comboBoxObj.enableEditMode = dropDownObj.enableEditMode = e.checked;
+    multiSelectObj.enableEditMode = dateObj.enableEditMode = dateRangeObj.enableEditMode = dateTimeObj.enableEditMode = e.checked;
+    timeObj.enableEditMode = colorObj.enableEditMode = maskedObj.enableEditMode = numericObj.enableEditMode = e.checked;
+    sliderObj.enableEditMode = rteObj.enableEditMode = e.checked;
+    triggerBind();
+}
+
+function onSubmitOnEnterChange(e: ChangeArgs): void {
+    textBoxObj.submitOnEnter = atcObj.submitOnEnter = comboBoxObj.submitOnEnter = dropDownObj.submitOnEnter = e.checked;
+    multiSelectObj.submitOnEnter = dateObj.submitOnEnter = dateRangeObj.submitOnEnter = dateTimeObj.submitOnEnter = e.checked;
+    timeObj.submitOnEnter = colorObj.submitOnEnter = maskedObj.submitOnEnter = numericObj.submitOnEnter = e.checked;
+    sliderObj.submitOnEnter = rteObj.submitOnEnter = e.checked;
+    triggerBind();
+}
+
+function triggerBind(): void {
+    textBoxObj.dataBind();
+    atcObj.dataBind();
+    comboBoxObj.dataBind();
+    dropDownObj.dataBind();
+    multiSelectObj.dataBind();
+    dateObj.dataBind();
+    dateRangeObj.dataBind();
+    dateTimeObj.dataBind();
+    timeObj.dataBind();
+    colorObj.dataBind();
+    maskedObj.dataBind();
+    numericObj.dataBind();
+    sliderObj.dataBind();
+    rteObj.dataBind();
+}

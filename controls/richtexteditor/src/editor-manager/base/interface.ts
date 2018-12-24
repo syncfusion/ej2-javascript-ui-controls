@@ -81,6 +81,7 @@ export interface IHtmlItemArgs {
     cssClass?: string;
     insertElement?: Element;
     captionClass?: string;
+    action?: string;
 }
 export interface IHtmlUndoRedoData {
     text?: string;

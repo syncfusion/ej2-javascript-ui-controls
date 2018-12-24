@@ -151,6 +151,9 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         if (this.width === '300px') {
             this.width = (this.isDevice && screen.width < 768) ? '100%' : '300px';
         }
+        if (isNullOrUndefined(this.target)) {
+            this.target = document.body;
+        }
         if (this.enableRtl) {
             this.element.classList.add(RTL);
         }
@@ -657,7 +660,7 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         Collection([{}], ButtonModelProps)
     ], Toast.prototype, "buttons", void 0);
     __decorate([
-        Property(document.body)
+        Property()
     ], Toast.prototype, "target", void 0);
     __decorate([
         Event()

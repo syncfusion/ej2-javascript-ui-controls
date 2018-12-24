@@ -3,10 +3,11 @@
  */
 import { QueryBuilder, ColumnsModel, RulesModel, RuleModel } from '../src/query-builder/index';
 import { createElement, remove, select, selectAll, detach, getComponent } from '@syncfusion/ej2-base';
-import { NumericTextBox } from '@syncfusion/ej2-inputs';
+import { NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { DropDownList, MultiSelect, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';
 import { Slider } from '@syncfusion/ej2-inputs';
+import { DatePicker } from '@syncfusion/ej2-calendars';
 MultiSelect.Inject(CheckBoxSelection);
 /**
  * @param  {} 'Button'
@@ -97,6 +98,9 @@ describe('QueryBuilder', () => {
         {
             field: 'JoiningDate', label: 'Joining Date', type: 'date', format: 'dd/MM/yyyy', step: 1,
             validation: { isRequired: true, min: 5, max: 10 }
+        } ,
+        {
+            field: 'DOB', label: 'DOB', type: 'date'
         }
     ];
 
@@ -166,6 +170,15 @@ describe('QueryBuilder', () => {
         {
             field: 'EmployeeID', label: 'Employee ID', type: 'number'
         },
+        { field: 'FirstName', label: 'First Name', type: 'string' },
+        { field: 'TitleOfCourtesy', label: 'Title Of Courtesy', type: 'boolean', values: ['Mr.', 'Mrs.'] },
+        { field: 'Title', label: 'Title', type: 'string' },
+        { field: 'HireDate', label: 'Hire Date', type: 'date', format: 'dd/MM/yyyy' },
+        { field: 'Country', label: 'Country', type: 'string' },
+        { field: 'City', label: 'City', type: 'string' }
+    ];
+    let fieldData: ColumnsModel[] = [
+        { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
         { field: 'FirstName', label: 'First Name', type: 'string' },
         { field: 'TitleOfCourtesy', label: 'Title Of Courtesy', type: 'boolean', values: ['Mr.', 'Mrs.'] },
         { field: 'Title', label: 'Title', type: 'string' },
@@ -349,6 +362,16 @@ describe('QueryBuilder', () => {
             'value': 'Laptop'
         }]
     };
+    let dateRules: RuleModel = {
+        'condition': 'or',
+        'rules': [{
+            'label': 'DOB',
+            'field': 'DOB',
+            'type': 'date',
+            'operator': 'equal',
+            'value': '12/12/2001'
+        }]
+    };
     let eRules: RuleModel = {
         'condition': 'and',
         'rules': [{
@@ -365,6 +388,71 @@ describe('QueryBuilder', () => {
             'operator': 'equal',
             'value': 'Sales Manager'
         }]
+    };
+
+    let fieldRules: RuleModel = {
+        'condition': 'and',
+        'rules': [{
+            'label': 'EmployeeID',
+            'field': 'EmployeeID',
+            'type': 'number',
+            'operator': 'In',
+            'value': [4, 5]
+        },
+        {
+            'label': 'Title',
+            'field': 'Title',
+            'type': 'string',
+            'operator': 'equal',
+            'value': 'Sales Manager'
+        }]
+    };
+
+    let operatorRules: RuleModel = {
+        'condition': 'and',
+        'rules': [{
+            'label': 'EmployeeID',
+            'field': 'EmployeeID',
+            'type': 'number',
+            'operator': 'between',
+            'value': [4, 5]
+        },
+        {
+            'label': 'Title',
+            'field': 'Title',
+            'type': 'string',
+            'operator': 'in',
+            'value': ['Sales Manager']
+        },
+        {
+            'label': 'City',
+            'field': 'City',
+            'type': 'string',
+            'operator': 'startswith',
+            'value': 'u'
+        }]
+    };
+
+
+    let dataRules: RuleModel = {
+        'condition': 'and',
+        'rules': [{
+            'label': 'EmployeeID',
+            'field': 'EmployeeID',
+            'type': 'number',
+            'operator': 'equal',
+            'value': 1
+        },
+        {
+            'condition': 'or',
+            'rules': [{
+            'label': 'Title',
+            'field': 'Title',
+            'type': 'string',
+            'operator': 'equal',
+            'value': 'Sales Manager'
+        }] 
+    }]
     };
     describe('DOM', () => {
         beforeEach((): void => {
@@ -587,63 +675,63 @@ describe('QueryBuilder', () => {
             expect(queryBuilder.rule.rules[0].value).toEqual(2);
             //Change the operator 
             operatorElem[0].showPopup();
-            let items: Element[] = operatorElem[0].popupObj.element.querySelectorAll('li');
-            operatorElem[0].setSelection(items[3]);
-            //expect(operatorElem[0].value).toEqual('between');
-            //expect(queryBuilder.rule.rules[0].operator).toEqual('between');
-            //expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control').length).toBe(3);
+           let items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_e_groupundefined_e_rule0_operatorkey_options').querySelectorAll('li');
+           items[3].click();
+            expect(operatorElem[0].value).toEqual('between');
+            expect(queryBuilder.rule.rules[0].operator).toEqual('between');
+            expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control').length).toBe(3);
             //Change the numeric textbox value 
-            valueElem = queryBuilder.element.querySelector('.e-rule-value .e-control').ej2_instances;
+            valueElem = queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].ej2_instances;
             ele = valueElem[0].spinUp;
             mouseEvent.initEvent("mousedown", true, true);
             ele.dispatchEvent(mouseEvent);
             mouseEvent2.initEvent("mouseup", true, true);
             ele.dispatchEvent(mouseEvent2);
-           // expect(valueElem[0].value).toEqual(1);
-           // expect(queryBuilder.rule.rules[0].value[0]).toEqual(1);
+            expect(valueElem[0].value).toEqual(1);
+            expect(queryBuilder.rule.rules[0].value[0]).toEqual(1);
 
             valueElem = queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[1].ej2_instances;
             ele = valueElem[0].spinUp;
             mouseEvent.initEvent("mousedown", true, true);
-           // ele.dispatchEvent(mouseEvent);
+            ele.dispatchEvent(mouseEvent);
             mouseEvent2.initEvent("mouseup", true, true);
-           // ele.dispatchEvent(mouseEvent2);
-            //expect(valueElem[0].value).toEqual(1);
-            //expect(queryBuilder.rule.rules[0].value[1]).toEqual(1);
+            ele.dispatchEvent(mouseEvent2);
+            expect(valueElem[0].value).toEqual(1);
+            expect(queryBuilder.rule.rules[0].value[1]).toEqual(1);
 
             //Change the operator
             operatorElem = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
             operatorElem[0].showPopup();
-            items = operatorElem[0].popupObj.element.querySelectorAll('li');
-            operatorElem[0].setSelection(items[8]);
+            items = document.getElementById('querybuilder_e_groupundefined_e_rule0_operatorkey_options').querySelectorAll('li');
+            items[8].click();
             expect(operatorElem[0].value).toEqual('in');
             expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control').length).toBe(2);
-            expect(queryBuilder.element.querySelector('.e-rule-value .e-control').classList.contains('e-multiselect')).toBeTruthy;
+            expect(queryBuilder.element.querySelector('.e-rule-value .e-control').classList.contains('e-multiselect')).toBeTruthy();
 
             //Change the field
             filterElem[0].showPopup();
             operatorElem = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
-            items = filterElem[0].popupObj.element.querySelectorAll('li');
-            filterElem[0].setSelection(items[1]);
+            items = document.getElementById('querybuilder_e_groupundefined_e_rule0_filterkey_options').querySelectorAll('li');
+            items[1].click();
             expect(filterElem[0].value).toEqual('FirstName');
             expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('string');
 
-           // expect(operatorElem[0].value).toEqual('startswith');
-           // expect(queryBuilder.rule.rules[0].operator).toEqual('startswith');
-           // expect(queryBuilder.element.querySelector('.e-rule-value .e-control').classList.contains('e-textbox')).toBeTruthy;
+           expect(operatorElem[0].value).toEqual('startswith');
+            expect(queryBuilder.rule.rules[0].operator).toEqual('startswith');
+            expect(queryBuilder.element.querySelector('.e-rule-value .e-control').classList.contains('e-textbox')).toBeTruthy();
 
             //Change the field
             filterElem[0].showPopup();
-            items = filterElem[0].popupObj.element.querySelectorAll('li');
-            filterElem[0].setSelection(items[2]);
+            items = document.getElementById('querybuilder_e_groupundefined_e_rule0_filterkey_options').querySelectorAll('li');
+            items[2].click();
             operatorElem = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
             expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('boolean');
             operatorElem[0].showPopup();
-            items = operatorElem[0].popupObj.element.querySelectorAll('li');
-            operatorElem[0].setSelection(items[0]);
+            items = document.getElementById('querybuilder_e_groupundefined_e_rule0_operatorkey_options').querySelectorAll('li');
+            items[0].click();
             expect(operatorElem[0].value).toEqual('equal');
             expect(queryBuilder.rule.rules[0].operator).toEqual('equal');
-            expect(queryBuilder.element.querySelector('.e-rule-value .e-control').classList.contains('e-radio')).toBeTruthy;
+            expect(queryBuilder.element.querySelector('.e-rule-value .e-control').classList.contains('e-radio')).toBeTruthy();
 
         });
     });
@@ -764,6 +852,9 @@ describe('QueryBuilder', () => {
             // setmodel enablePersistence
             queryBuilder.enablePersistence = true;
             queryBuilder.dataBind();
+           
+            queryBuilder.locale = 'de-DE';
+            queryBuilder.dataBind();
 
             expect(queryBuilder.dataSource.length).toBe(0);
             // setmodel datasource
@@ -842,51 +933,51 @@ describe('QueryBuilder', () => {
             // Field change
             let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances;
             filterElem[0].showPopup();
-            let items: Element[] = filterElem[0].popupObj.element.querySelectorAll('li');
-            filterElem[0].setSelection(items[4]);
+            let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_e_groupundefined_e_rule0_filterkey_options').querySelectorAll('li');
+            itemsCln[4].click();
             expect(filterElem[0].value).toEqual('Date');
             expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('date');
-            expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-datepicker')).toBeTruthy;
+            expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-datepicker')).toBeTruthy();
 
              // Field change
              filterElem[0].showPopup();
-             items = filterElem[0].popupObj.element.querySelectorAll('li');
-             filterElem[0].setSelection(items[1]);
+             itemsCln = document.getElementById('querybuilder_e_groupundefined_e_rule0_filterkey_options').querySelectorAll('li');
+             itemsCln[1].click();
              expect(filterElem[0].value).toEqual('PaymentMode');
              expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('string');
-             expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-dropdownlist')).toBeTruthy;
+             expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-dropdownlist')).toBeTruthy();
 
           // Field change
           filterElem[0].showPopup();
-          items = filterElem[0].popupObj.element.querySelectorAll('li');
-          filterElem[0].setSelection(items[2]);
+          itemsCln = document.getElementById('querybuilder_e_groupundefined_e_rule0_filterkey_options').querySelectorAll('li');
+          itemsCln[2].click();
           expect(filterElem[0].value).toEqual('TransactionType');
           expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('boolean');
-          expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-checkbox')).toBeTruthy;
+          expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-checkbox')).toBeTruthy();
 
           // Field change
           filterElem[0].showPopup();
-          items = filterElem[0].popupObj.element.querySelectorAll('li');
-          filterElem[0].setSelection(items[5]);
+          itemsCln = document.getElementById('querybuilder_e_groupundefined_e_rule0_filterkey_options').querySelectorAll('li');
+             itemsCln[5].click();
           expect(filterElem[0].value).toEqual('Amount');
           expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('number');
-          expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-slider')).toBeTruthy;
+          expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-slider')).toBeTruthy();
 
            // Field change
            filterElem[0].showPopup();
-           items = filterElem[0].popupObj.element.querySelectorAll('li');
-           filterElem[0].setSelection(items[3]);
+           itemsCln = document.getElementById('querybuilder_e_groupundefined_e_rule0_filterkey_options').querySelectorAll('li');
+             itemsCln[3].click();
            expect(filterElem[0].value).toEqual('Description');
            expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('string');
-           expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-textbox')).toBeTruthy;
+           expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-textbox')).toBeTruthy();
 
            //Operator change
            let operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
            operatorElem[0].showPopup();
-           items = operatorElem[0].popupObj.element.querySelectorAll('li');
-           operatorElem[0].setSelection(items[5]);
+           itemsCln = document.getElementById('querybuilder_e_groupundefined_e_rule0_operatorkey_options').querySelectorAll('li');
+           itemsCln[5].click();
            expect(operatorElem[0].value).toEqual('in');
-           expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-multiselect')).toBeTruthy;
+           expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-multiselect')).toBeTruthy();
 
         });
     });
@@ -932,7 +1023,7 @@ describe('QueryBuilder', () => {
             queryBuilder = new QueryBuilder({
                 dataSource: employeeData,
                 columns: buttonData,
-                rule: eRules
+                rule: dataRules
             }, '#querybuilder');
             expect(queryBuilder.getDataManagerQuery(queryBuilder.rule).queries.length).toBe(2);
         });
@@ -1010,6 +1101,119 @@ describe('QueryBuilder', () => {
             let rules: RuleModel = queryBuilder.getRules();
             expect(rules.rules.length).toBe(2);
             expect(rules.rules[1].rules.length).toBe(1);
+        });
+        it('Validation', () => {
+            queryBuilder = new QueryBuilder({
+                columns: columnData,
+                allowValidation: true
+            }, '#querybuilder');
+            queryBuilder.validateFields();
+            let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter input.e-control').ej2_instances;
+            expect(filterElem[0].element.parentElement.classList.contains('e-tooltip')).toBeTruthy();
+            expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(1);
+            filterElem[0].showPopup();
+            let items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_e_groupundefined_e_rule0_filterkey_options').querySelectorAll('li');
+           items[3].click();
+           expect(filterElem[0].element.parentElement.classList.contains('e-tooltip')).toBeFalsy();
+           expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(0);
+           queryBuilder.validateFields();
+           filterElem = queryBuilder.element.querySelector('.e-rule-operator input.e-control').ej2_instances;
+           expect(filterElem[0].element.parentElement.classList.contains('e-tooltip')).toBeTruthy();
+           expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(2);
+           filterElem[0].showPopup();
+           items = document.getElementById('querybuilder_e_groupundefined_e_rule0_operatorkey_options').querySelectorAll('li');
+          items[3].click();
+          expect(filterElem[0].element.parentElement.classList.contains('e-tooltip')).toBeFalsy();
+          expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(1);
+          let textBoxObj: TextBox = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances;
+          textBoxObj[0].element.dispatchEvent(new Event('focus'));
+          textBoxObj[0].element.dispatchEvent(new KeyboardEvent('keypress', {'key': 'c'}));
+          textBoxObj[0].dataBind();
+          queryBuilder.updateRules(textBoxObj[0].element, 'US', 0);
+          expect(textBoxObj[0].element.parentElement.classList.contains('e-tooltip')).toBeFalsy();
+          expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(0);
+     });
+        it('Date Value changes', () => {
+            queryBuilder = new QueryBuilder({
+                columns: columnData,
+                rule: dateRules,
+            }, '#querybuilder');
+            let cObj: DatePicker = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances;
+            cObj[0].value = new Date('11/11/2015');
+            cObj[0].dataBind();
+            expect(queryBuilder.rule.rules[0].value).toEqual('11/11/2015');
+        });
+
+        it(' Radio Button Checking', () => {
+            queryBuilder = new QueryBuilder({
+                dataSource: employeeData,
+                columns: fieldData,
+                rule: fieldRules
+            }, '#querybuilder');
+           
+            // Field change
+            let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances;
+            filterElem[0].showPopup();
+            let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_e_groupundefined_e_rule0_filterkey_options').querySelectorAll('li');
+            itemsCln[2].click();
+            expect(filterElem[0].value).toEqual('TitleOfCourtesy');
+            expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('boolean');
+    
+             //operator change
+             let operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
+             operatorElem[0].showPopup();
+             itemsCln = document.getElementById('querybuilder_e_groupundefined_e_rule0_operatorkey_options').querySelectorAll('li');
+             itemsCln[0].click();
+             expect(operatorElem[0].value).toEqual('equal');
+             expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-radio')).toBeTruthy();
+
+             filterElem[0].showPopup();
+             itemsCln = document.getElementById('querybuilder_e_groupundefined_e_rule0_filterkey_options').querySelectorAll('li');
+             itemsCln[1].click();
+             expect(filterElem[0].value).toEqual('FirstName');
+             expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('string');
+        });
+        it(' in Operator Checking', () => {
+            queryBuilder = new QueryBuilder({
+                dataSource: employeeData,
+                columns: fieldData,
+                rule: operatorRules
+            }, '#querybuilder');
+            queryBuilder.getFilteredRecords(queryBuilder.rule);
+            expect(queryBuilder.getSqlFromRules(queryBuilder.rule)).toEqual("EmployeeID BETWEEN (4,5) and Title IN ('Sales Manager') and City LIKE ('u%')");
+            queryBuilder.getRulesFromSql("EmployeeID BETWEEN (4,5) and Title IN ('Sales Manager') and City LIKE ('u%')");
+            let operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
+            operatorElem[0].showPopup();
+            let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_e_groupundefined_e_rule0_operatorkey_options').querySelectorAll('li');
+            itemsCln[5].click();
+            expect(operatorElem[0].value).toEqual('notbetween');
+            operatorElem  = queryBuilder.element.querySelectorAll('.e-rule-operator .e-control')[1].ej2_instances;
+            operatorElem[0].showPopup();
+            itemsCln = document.getElementById('querybuilder_e_groupundefined_e_rule1_operatorkey_options').querySelectorAll('li');
+            itemsCln[6].click();
+            expect(operatorElem[0].value).toEqual('notin');
+            queryBuilder.getFilteredRecords(queryBuilder.rule);
+            expect(queryBuilder.getSqlFromRules(queryBuilder.rule)).toEqual("EmployeeID NOT BETWEEN (0,0) and Title NOT IN () and City LIKE ('%u')");
+            queryBuilder.reset();
+            expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(1);
+            expect(selectAll('.e-rule-container', queryBuilder.element).length).toBe(0);
+            queryBuilder.setRulesFromSql("EmployeeID BETWEEN (0,0) and Title IN ('Sales Manager') and City LIKE ('u%')");
+        });
+        it(' Multiple value in textbox  Checking', () => {
+            let valRule: RuleModel = {'condition': 'and',
+            'rules': [{
+                'label': 'First Name',
+                'field': 'FirstName',
+                'type': 'string',
+                'operator': 'in',
+                'value': 'Nancy, Andrew, Janet'
+            }] };
+            queryBuilder = new QueryBuilder({
+                dataSource: employeeData,
+                columns: fieldData,
+                rule: valRule
+            }, '#querybuilder');
+           
         });
     });
 

@@ -62,8 +62,10 @@ export class LinkCommand {
                 let startContainer: Node = e.item.selection.range.startContainer;
                 startContainer.textContent = this.removeText(startContainer.textContent, e.item.url);
             } else {
+                let startIndex: number = e.item.action === 'Paste' ? anchor.childNodes[0].textContent.length : 0;
                 e.item.selection.setSelectionText(
-                    this.parent.currentDocument, anchor.childNodes[0], anchor.childNodes[0], 0, anchor.childNodes[0].textContent.length);
+                    this.parent.currentDocument, anchor.childNodes[0], anchor.childNodes[0],
+                    startIndex, anchor.childNodes[0].textContent.length);
             }
         }
         if (e.callBack) {

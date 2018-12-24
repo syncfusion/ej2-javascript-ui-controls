@@ -28,7 +28,9 @@ export class Render {
         let data: ITreeData = <ITreeData>args.data;
         let parentData: ITreeData = <ITreeData>data.parentItem;
         let index: number;
-        if (!isNullOrUndefined(data.parentIndex) && !(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root')))  {
+        if (!isNullOrUndefined(data.parentIndex) &&
+            (!(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root')) ||
+                (isRemoteData(this.parent) && !isOffline(this.parent))))  {
             index = data.parentIndex;
             let collapsed: boolean = !(isNullOrUndefined(parentData[this.parent.expandStateMapping]) ||
                              parentData[this.parent.expandStateMapping]) || this.parent.enableCollapseAll ||

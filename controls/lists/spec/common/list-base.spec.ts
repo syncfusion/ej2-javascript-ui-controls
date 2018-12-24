@@ -1036,6 +1036,9 @@ describe('ListBase', () => {
             let li: HTMLElement = <HTMLElement>UL.querySelector('#s');
             expect(ListBase.getSiblingLI([], li)).toBe(undefined);
         });
+        afterAll(() => {
+            UL.remove();
+        });
     });
 
     describe('indexOf method', () => {
@@ -1060,7 +1063,9 @@ describe('ListBase', () => {
             let li: HTMLElement = <HTMLElement>UL.querySelector('#i');
             expect(ListBase.indexOf(li, UL.querySelectorAll('li'))).toBe(undefined);
         });
-
+        afterAll(() => {
+            UL.remove();
+        });
     });
 
     describe('generateIcon method', (): void => {

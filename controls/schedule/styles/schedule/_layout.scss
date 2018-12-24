@@ -556,7 +556,6 @@
       color: $schedule-block-appointment-font-color;
       cursor: default;
       overflow: hidden;
-      pointer-events: none;
       position: absolute;
 
       .e-subject {
@@ -602,7 +601,8 @@
       opacity: .8;
     }
 
-    &.e-event-action .e-appointment:not(.e-schedule-event-clone) {
+    &.e-event-action .e-appointment:not(.e-schedule-event-clone),
+    &.e-event-action .e-block-appointment {
       pointer-events: none;
     }
 

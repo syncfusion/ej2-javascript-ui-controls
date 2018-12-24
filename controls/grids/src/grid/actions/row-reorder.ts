@@ -377,8 +377,8 @@ export class RowDD {
                 }
             } else if (targetRow && parseInt(startedRow.getAttribute('aria-rowindex'), 10) > targetRow.rowIndex) {
                 element = this.parent.getRowByIndex(targetRow.rowIndex - 1);
-                rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop'));
-            } else { rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop')); }
+                rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'));
+            } else { rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse')); }
             if (rowElement.length > 0) {
                 addRemoveActiveClasses(rowElement, true, 'e-dragborder');
             }

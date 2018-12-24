@@ -56,7 +56,7 @@ export class Crud {
     }
 
     public addEvent(eventData: Object | Object[]): void {
-        if (this.checkBlockEvents(eventData)) {
+        if (this.parent.eventBase.isBlockRange(eventData)) {
             this.parent.quickPopup.openValidationError('blockAlert');
             return;
         }
@@ -88,7 +88,7 @@ export class Crud {
     }
 
     public saveEvent(event: Object | Object[], action?: CurrentAction): void {
-        if (this.checkBlockEvents(event)) {
+        if (this.parent.eventBase.isBlockRange(event)) {
             this.parent.quickPopup.openValidationError('blockAlert');
             return;
         }
@@ -272,28 +272,5 @@ export class Crud {
             exceptionDateList = exDate;
         }
         return exceptionDateList;
-    }
-
-    private checkBlockEvents(eventData: Object | Object[]): boolean {
-        let eventCollection: Object[] = (eventData instanceof Array) ? eventData : [eventData];
-        let isBlockAlert: boolean = false;
-        let fields: EventFieldsMapping = this.parent.eventFields;
-        eventCollection.forEach((event: { [key: string]: Object }) => {
-            let dataCol: Object[] = [];
-            if (!isNullOrUndefined(event[fields.recurrenceRule]) && isNullOrUndefined(event[fields.recurrenceID])) {
-                dataCol = this.parent.eventBase.generateOccurrence(event);
-            } else {
-                dataCol.push(event);
-            }
-            for (let data of dataCol) {
-                let filterBlockEvents: Object[] = this.parent.eventBase.filterBlockEvents(data as { [key: string]: Object });
-                if (filterBlockEvents.length > 0) {
-                    isBlockAlert = true;
-                    break;
-                }
-            }
-        });
-        this.parent.uiStateValues.isBlock = isBlockAlert;
-        return isBlockAlert;
     }
 }

@@ -73,28 +73,28 @@ describe('Diagram Control', () => {
             diagram.layout.verticalSpacing = 40;
             diagram.spatialSearch = new SpatialSearch(diagram.nameTable);
             diagram.dataBind();
-            expect((diagram.nodes[0].offsetX == 1.1238696756863291||diagram.nodes[0].offsetX == 1.257941532653028) && diagram.nodes[0].offsetY == 70).toBe(true);
+            expect((diagram.nodes[0].offsetX == 1.1238696756863291 && diagram.nodes[0].offsetY == 70)).toBe(true);
             done();
         });
         it('Checking BottomToTop complex tree layout', (done: Function) => {
             diagram.layout.type = 'ComplexHierarchicalTree';
             diagram.layout.orientation = 'BottomToTop';
             diagram.dataBind();
-            expect((diagram.nodes[0].offsetX == 1.1238696756863291||diagram.nodes[0].offsetX == 1.257941532653028) && diagram.nodes[0].offsetY == 470).toBe(true);
+            expect((diagram.nodes[0].offsetX == 1.1238696756863291 && diagram.nodes[0].offsetY == 470)).toBe(true);
             done();
         });
         it('Checking LeftToRight complex tree layout', (done: Function) => {
             diagram.layout.type = 'ComplexHierarchicalTree';
             diagram.layout.orientation = 'LeftToRight';
             diagram.dataBind();
-            expect(diagram.nodes[0].offsetX == 200 && (diagram.nodes[0].offsetY == 57.02686734040091||diagram.nodes[0].offsetY == 57.09756405520557)).toBe(true);
+            expect(diagram.nodes[0].offsetX == 200 && (diagram.nodes[0].offsetY == 57.02686734040091)).toBe(true);
             done();
         });
         it('Checking RightToLeft complex tree layout', (done: Function) => {
             diagram.layout.type = 'ComplexHierarchicalTree';
             diagram.layout.orientation = 'RightToLeft';
             diagram.dataBind();
-            expect(diagram.nodes[0].offsetX == 900 && (diagram.nodes[0].offsetY == 57.02686734040091||diagram.nodes[0].offsetY == 57.09756405520557)).toBe(true);
+            expect(diagram.nodes[0].offsetX == 900 && (diagram.nodes[0].offsetY == 57.02686734040091)).toBe(true);
             done();
         });
         it('Checking Margin layout', (done: Function) => {
@@ -532,9 +532,14 @@ describe('Diagram Control', () => {
         });
 
         it('checking the node which have multiple parent', (done: Function) => {
-        var nodes =diagram.nodes
-        expect(nodes.length===33).toBe(true);
-        done();
+            var nodes = diagram.nodes
+            expect(nodes.length === 33).toBe(true);
+            expect(nodes[0].offsetX === 462.5 && nodes[0].offsetY === 87.5 && nodes[1].offsetX === 510 && nodes[1].offsetY === 182.5).toBe(true);
+            expect(nodes[10].offsetX === 415 && nodes[10].offsetY === 562.5 && nodes[13].offsetX === 605 && nodes[13].offsetY === 562.5).toBe(true);
+            expect(nodes[16].offsetX === 605 && nodes[16].offsetY === 467.5 && nodes[18].offsetX === 605 && nodes[18].offsetY === 277.5).toBe(true);
+            expect(nodes[20].offsetX === 587.5 && nodes[20].offsetY === 372.5 && nodes[22].offsetX === 510 && nodes[22].offsetY === 277.5).toBe(true);
+            expect(nodes[27].offsetX === 892.5 && nodes[27].offsetY === 372.5 && nodes[30].offsetX === 1082.5 && nodes[30].offsetY === 372.5).toBe(true);
+            done();
         });
     });
 });

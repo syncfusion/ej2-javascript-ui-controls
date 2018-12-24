@@ -472,6 +472,9 @@ export class Toolbar {
      * @private
      */
     public showPropertiesPaneOnSelection = (): void => {
+        if (this.container.restrictEditing) {
+            return;
+        }
         let currentContext: string = this.documentEditor.selection.contextType;
         let isInHeaderFooter: boolean = currentContext.indexOf('Header') >= 0
             || currentContext.indexOf('Footer') >= 0;

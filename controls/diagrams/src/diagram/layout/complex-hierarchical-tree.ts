@@ -1415,8 +1415,11 @@ class CrossReduction {
                     for (let k: number = 0; k < rank.length; k++) {
                         let cell: IVertex | IEdge = rank[k];
                         let obj: IVertex = this.nestedBestRanks[j][cell.temp[0]];
-                        if (obj && ((obj.id === (cell as IVertex).id) || ((cell as IEdge).ids && (obj as IEdge).ids &&
-                            (obj as IEdge).ids[0] === (cell as IEdge).ids[0]))) {
+                        let check: boolean = true;
+                        if ((cell as IEdge).edges && obj && !(obj as IEdge).edges) {
+                            check = false;
+                        }
+                        if (obj && check) {
                             this.nestedBestRanks[j][cell.temp[0]] = cell;
                         }
                     }
@@ -1598,7 +1601,7 @@ class CrossReduction {
         medianValues.sort(this.compare);
         // Set the new position of each node within the rank using its temp variable
         for (let i: number = 0; i < numCellsForRank; i++) {
-            if (reservedPositions[i] == null) {
+            if (reservedPositions[i] == null && medianValues.length > 0) {
                 let cell: IVertex = medianValues.shift().cell;
                 this.setTempVariable(cell, rankValue, i);
             }

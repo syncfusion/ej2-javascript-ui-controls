@@ -1558,6 +1558,13 @@ describe('Datepicker', () => {
             expect(datepicker.value.valueOf()).toBe(new Date("12/12/2016").valueOf());
             expect(datepicker.inputWrapper.clearButton.classList.contains('e-clear-icon-hide')).toBe(true);
         });
+        it('clear button with destroy state', () => {
+            datepicker.showClearButton = false;
+            datepicker.dataBind();
+            datepicker.destroy();
+            expect(datepicker.inputWrapper.clearButton===null).toBe(true);
+            datepicker = null;
+        });
         it('Clear button Setmodel', () => {
             datepicker.showClearButton = false;
             datepicker.dataBind();

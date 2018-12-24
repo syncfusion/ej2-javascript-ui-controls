@@ -286,7 +286,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * By default, the footer is configured with action [buttons](#buttons).
      * If footer template is configured to dialog, the action buttons property will be disabled.
      * 
-     * > More information on the footer template configuration can be found on this [documentation](./template.html#footer) section.
+     * > More information on the footer template configuration can be found on this [documentation](../../dialog/template/#footer) section.
      * 
      * @default ''
      */
@@ -296,7 +296,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * Specifies the value whether the dialog component can be dragged by the end-user.
      * The dialog allows to drag by selecting the header and dragging it for re-position the dialog.
      * 
-     * > More information on the draggable behavior can be found on this [documentation](./getting-started.html#draggable) section.
+     * > More information on the draggable behavior can be found on this [documentation](../../dialog/getting-started/#draggable) section.
      * 
      * @default false
      */
@@ -306,7 +306,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * Configures the action `buttons` that contains button properties with primary attributes and click events.
      * One or more action buttons can be configured to the dialog.
      * 
-     * > More information on the button configuration can be found on this [documentation](./getting-started.html#enable-footer) section.
+     * > More information on the button configuration can be found on this
+     * [documentation](../../dialog/getting-started/#enable-footer) section.
      * 
      * {% codeBlock src="dialog/buttons-api/index.ts" %}{% endcodeBlock %}
      * 
@@ -326,7 +327,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * Specifies the animation settings of the dialog component.
      * The animation effect can be applied on open and close the dialog with duration and delay.
      * 
-     * > More information on the animation settings in dialog can be found on this [documentation](./animation.html)  section.
+     * > More information on the animation settings in dialog can be found on this [documentation](../../dialog/animation/)  section.
      * 
      * {% codeBlock src="dialog/animation-api/index.ts" %}{% endcodeBlock %}
      * 

@@ -1,15 +1,16 @@
 /**
  * InPlace-Editor spec document
  */
-import { isNullOrUndefined as isNOU, select, selectAll, createElement } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, select, selectAll, createElement, Browser } from '@syncfusion/ej2-base';
 import { InPlaceEditor } from '../../src/inplace-editor/base/index';
 import * as classes from '../../src/inplace-editor/base/classes';
-import { renderEditor, destroy, triggerKeyBoardEvent } from './../render.spec';
+import { renderEditor, destroy, triggerKeyBoardEvent, safariMobileUA } from './../render.spec';
 
 describe('InPlace-Editor Control', () => {
+    let currentUA: string = navigator.userAgent;
     describe('Root element testing', () => {
         let ele: HTMLElement;
-        let editorObj: InPlaceEditor;
+        let editorObj: any;
         beforeAll((done: Function): void => {
             editorObj = renderEditor({});
             ele = editorObj.element;
@@ -27,6 +28,9 @@ describe('InPlace-Editor Control', () => {
         });
         it('Custom attribute availability testing', () => {
             expect(ele.getAttribute('data-underline')).toEqual(null);
+        });
+        it('Submit prevent method testing', () => {
+            editorObj.submitPrevent({ preventDefault: function() {} });
         });
     });
     describe('Model value testing', () => {
@@ -764,7 +768,7 @@ describe('InPlace-Editor Control', () => {
     });
     describe('editableOn property testing', () => {
         let ele: HTMLElement;
-        let editorObj: InPlaceEditor;
+        let editorObj: any;
         let valueWrapper: HTMLElement;
         let valueEle: HTMLElement;
         afterEach((): void => {
@@ -849,6 +853,64 @@ describe('InPlace-Editor Control', () => {
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(editorObj.enableEditMode).toEqual(true);
+        });
+        it('IOS - editableOn as "DblClick" with single tap testing', () => {
+            Browser.userAgent = safariMobileUA;
+            editorObj = renderEditor({
+                mode: 'Inline',
+                editableOn: 'DblClick'
+            });
+            ele = editorObj.element;
+            let editIconEle: HTMLElement = <HTMLElement>select('.' + classes.OVERLAY_ICON, ele);
+            expect(editIconEle.getAttribute('title')).toEqual('Click to edit');
+            expect(ele.getAttribute('title')).toEqual('Double click to edit');
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            editorObj.doubleTapHandler({ tapCount: 1, originalEvent: { stopPropagation: function() {} } });
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
+            expect(editorObj.enableEditMode).toEqual(false);
+            editorObj.editableOn = 'EditIconClick';
+            editorObj.dataBind();
+            expect(ele.getAttribute('title')).toEqual(null);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
+            expect(editorObj.enableEditMode).toEqual(false);
+            editorObj.editableOn = 'Click';
+            editorObj.dataBind();
+            expect(ele.getAttribute('title')).toEqual('Click to edit');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(editorObj.enableEditMode).toEqual(true);
+            Browser.userAgent = currentUA;
+        });
+        it('IOS - editableOn as "DblClick" with double tap testing', () => {
+            Browser.userAgent = safariMobileUA;
+            editorObj = renderEditor({
+                mode: 'Inline',
+                editableOn: 'DblClick'
+            });
+            ele = editorObj.element;
+            let editIconEle: HTMLElement = <HTMLElement>select('.' + classes.OVERLAY_ICON, ele);
+            expect(editIconEle.getAttribute('title')).toEqual('Click to edit');
+            expect(ele.getAttribute('title')).toEqual('Double click to edit');
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            editorObj.doubleTapHandler({ tapCount: 2, originalEvent: { stopPropagation: function() {} } });
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(editorObj.enableEditMode).toEqual(true);
+            editorObj.editableOn = 'EditIconClick';
+            editorObj.dataBind();
+            expect(ele.getAttribute('title')).toEqual(null);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
+            expect(editorObj.enableEditMode).toEqual(false);
+            editorObj.editableOn = 'Click';
+            editorObj.dataBind();
+            expect(ele.getAttribute('title')).toEqual('Click to edit');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(editorObj.enableEditMode).toEqual(true);
+            Browser.userAgent = currentUA;
         });
     });
     describe('actionOnBlur with document click testing', () => {
@@ -1978,7 +2040,7 @@ describe('InPlace-Editor Control', () => {
                 name: 'Game',
                 value: 'Syncfusion',
                 adaptor: 'UrlAdaptor',
-                url: 'http://104.238.131.174:8025/api/WebApi',
+                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/UpdateData',
                 actionBegin: begin,
                 actionSuccess: success,
                 actionFailure: fail
@@ -2001,9 +2063,8 @@ describe('InPlace-Editor Control', () => {
                 mode: 'Inline',
                 value: 'Syncfusion',
                 adaptor: 'UrlAdaptor',
-                url: 'http://104.238.131.174:8025/api/Web',
+                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/Updates',
                 actionBegin: begin,
-                actionSuccess: success,
                 actionFailure: fail
             });
             valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
@@ -2016,6 +2077,174 @@ describe('InPlace-Editor Control', () => {
                 expect(failArgs['value']).toEqual('Syncfusion');
                 done();
             }, 2000);
+        });
+        it('Failure with popup testing', (done: Function) => {
+            editorObj = renderEditor({
+                primaryKey: 'text',
+                name: 'Game',
+                value: 'Syncfusion',
+                adaptor: 'UrlAdaptor',
+                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/Updates',
+                actionBegin: begin,
+                actionFailure: fail
+            });
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            editorObj.save();
+            setTimeout(() => {
+                expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 'text', value: 'Syncfusion' }, name: "actionBegin" });
+                expect(failArgs['name']).toEqual('actionFailure');
+                expect(failArgs['value']).toEqual('Syncfusion');
+                done();
+            }, 2000);
+        });
+    });
+    describe('Button keyboard action testing', () => {
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let editorObj: any;
+        let valueWrapper: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Enter key with save testing', () => {
+            editorObj = renderEditor({
+                mode: "Inline",
+                value: 'welcome'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(valueEle.innerHTML).toEqual('welcome');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(editorObj.enableEditMode).toEqual(true);
+            editorObj.componentObj.value = 'hi';
+            triggerKeyBoardEvent(select('.' + classes.BTN_SAVE, ele) as HTMLElement, 13);
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
+            expect(editorObj.enableEditMode).toEqual(false);
+            expect(valueEle.innerHTML).toEqual('hi');
+        });
+        it('Space key with save testing', () => {
+            editorObj = renderEditor({
+                mode: "Inline",
+                value: 'welcome'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(valueEle.innerHTML).toEqual('welcome');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(editorObj.enableEditMode).toEqual(true);
+            editorObj.componentObj.value = 'hi';
+            triggerKeyBoardEvent(select('.' + classes.BTN_SAVE, ele) as HTMLElement, 32);
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
+            expect(editorObj.enableEditMode).toEqual(false);
+            expect(valueEle.innerHTML).toEqual('hi');
+        });
+        it('Enter key with cancel testing', () => {
+            editorObj = renderEditor({
+                mode: "Inline",
+                value: 'welcome'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(valueEle.innerHTML).toEqual('welcome');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(editorObj.enableEditMode).toEqual(true);
+            editorObj.componentObj.value = 'hi';
+            triggerKeyBoardEvent(select('.' + classes.BTN_CANCEL, ele) as HTMLElement, 13);
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
+            expect(editorObj.enableEditMode).toEqual(false);
+            expect(valueEle.innerHTML).toEqual('welcome');
+        });
+        it('Space key with cancel testing', () => {
+            editorObj = renderEditor({
+                mode: "Inline",
+                value: 'welcome'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(valueEle.innerHTML).toEqual('welcome');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(editorObj.enableEditMode).toEqual(true);
+            editorObj.componentObj.value = 'hi';
+            triggerKeyBoardEvent(select('.' + classes.BTN_CANCEL, ele) as HTMLElement, 32);
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
+            expect(editorObj.enableEditMode).toEqual(false);
+            expect(valueEle.innerHTML).toEqual('welcome');
+        });
+        it('Without target button class testing', () => {
+            editorObj = renderEditor({
+                mode: "Inline",
+                value: 'welcome'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(valueEle.innerHTML).toEqual('welcome');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(editorObj.enableEditMode).toEqual(true);
+            editorObj.componentObj.value = 'hi';
+            select('.' + classes.BTN_SAVE, ele).classList.remove(classes.BTN_SAVE);
+            triggerKeyBoardEvent(select('button', ele) as HTMLElement, 13);
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(editorObj.enableEditMode).toEqual(true);
+            expect(valueEle.innerHTML).toEqual('welcome');
+        });
+        it('Other key with cancel testing', () => {
+            editorObj = renderEditor({
+                mode: "Inline",
+                value: 'welcome'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(valueEle.innerHTML).toEqual('welcome');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(editorObj.enableEditMode).toEqual(true);
+            editorObj.componentObj.value = 'hi';
+            triggerKeyBoardEvent(select('.' + classes.BTN_CANCEL, ele) as HTMLElement, 12);
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(editorObj.enableEditMode).toEqual(true);
+            expect(valueEle.innerHTML).toEqual('welcome');
+        });
+    });
+    describe('Spinner load/remove testing', () => {
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let editorObj: any;
+        let valueWrapper: HTMLElement;
+        beforeAll((): void => {
+            editorObj = renderEditor({
+                mode: "Inline",
+                value: 'welcome'
+            });
+            ele = editorObj.element;
+        });
+        afterAll((): void => {
+            destroy(editorObj);
+        });
+        it('Load spinner testing', () => {
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(valueEle.innerHTML).toEqual('welcome');
+            valueEle.click();
+            editorObj.formEle = undefined;
+            editorObj.loadSpinner();
+            expect(ele.querySelectorAll('.e-spinner-pane').length > 0).toEqual(true);
+        });
+        it('Remove spinner testing', () => {
+            editorObj.removeSpinner();
+            expect(ele.querySelectorAll('.e-spinner-pane').length > 0).toEqual(false);
         });
     });
 });

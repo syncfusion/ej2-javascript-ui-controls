@@ -3690,6 +3690,29 @@ class EventBase {
         return (event[this.parent.eventFields.isReadonly]) ?
             event[this.parent.eventFields.isReadonly] : 'false';
     }
+    isBlockRange(eventData) {
+        let eventCollection = (eventData instanceof Array) ? eventData : [eventData];
+        let isBlockAlert = false;
+        let fields = this.parent.eventFields;
+        eventCollection.forEach((event) => {
+            let dataCol = [];
+            if (!isNullOrUndefined(event[fields.recurrenceRule]) && isNullOrUndefined(event[fields.recurrenceID])) {
+                dataCol = this.parent.eventBase.generateOccurrence(event);
+            }
+            else {
+                dataCol.push(event);
+            }
+            for (let data of dataCol) {
+                let filterBlockEvents = this.parent.eventBase.filterBlockEvents(data);
+                if (filterBlockEvents.length > 0) {
+                    isBlockAlert = true;
+                    break;
+                }
+            }
+        });
+        this.parent.uiStateValues.isBlock = isBlockAlert;
+        return isBlockAlert;
+    }
 }
 
 /**
@@ -3738,7 +3761,7 @@ class Crud {
         }
     }
     addEvent(eventData) {
-        if (this.checkBlockEvents(eventData)) {
+        if (this.parent.eventBase.isBlockRange(eventData)) {
             this.parent.quickPopup.openValidationError('blockAlert');
             return;
         }
@@ -3770,7 +3793,7 @@ class Crud {
         this.refreshData(crudArgs);
     }
     saveEvent(event, action) {
-        if (this.checkBlockEvents(event)) {
+        if (this.parent.eventBase.isBlockRange(event)) {
             this.parent.quickPopup.openValidationError('blockAlert');
             return;
         }
@@ -3957,29 +3980,6 @@ class Crud {
             exceptionDateList = exDate;
         }
         return exceptionDateList;
-    }
-    checkBlockEvents(eventData) {
-        let eventCollection = (eventData instanceof Array) ? eventData : [eventData];
-        let isBlockAlert = false;
-        let fields = this.parent.eventFields;
-        eventCollection.forEach((event) => {
-            let dataCol = [];
-            if (!isNullOrUndefined(event[fields.recurrenceRule]) && isNullOrUndefined(event[fields.recurrenceID])) {
-                dataCol = this.parent.eventBase.generateOccurrence(event);
-            }
-            else {
-                dataCol.push(event);
-            }
-            for (let data of dataCol) {
-                let filterBlockEvents = this.parent.eventBase.filterBlockEvents(data);
-                if (filterBlockEvents.length > 0) {
-                    isBlockAlert = true;
-                    break;
-                }
-            }
-        });
-        this.parent.uiStateValues.isBlock = isBlockAlert;
-        return isBlockAlert;
     }
 }
 
@@ -4361,8 +4361,19 @@ class QuickPopups {
         this.renderButton('e-flat e-round e-small', ICON + ' ' + DELETE_ICON_CLASS, false, deleteIcon, this.deleteClick);
         this.beforeQuickPopupOpen(target);
     }
+    isCellBlocked(args) {
+        let tempObj = {};
+        tempObj[this.parent.eventFields.startTime] = this.parent.activeCellsData.startTime;
+        tempObj[this.parent.eventFields.endTime] = this.parent.activeCellsData.endTime;
+        tempObj[this.parent.eventFields.isAllDay] = this.parent.activeCellsData.isAllDay;
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            let targetCell = args.element instanceof Array ? args.element[0] : args.element;
+            this.parent.resourceBase.setResourceValues(tempObj, true, parseInt(targetCell.getAttribute('data-group-index'), 10));
+        }
+        return this.parent.eventBase.isBlockRange(tempObj);
+    }
     cellClick(args) {
-        if (!this.parent.showQuickInfo || this.parent.currentView === 'MonthAgenda') {
+        if (!this.parent.showQuickInfo || this.parent.currentView === 'MonthAgenda' || this.isCellBlocked(args)) {
             this.quickPopupHide();
             return;
         }
@@ -9093,6 +9104,7 @@ let Schedule = class Schedule extends Component {
         this.eventBase = new EventBase(this);
         this.initializeDataModule();
         this.element.appendChild(this.createElement('div', { className: TABLE_CONTAINER_CLASS }));
+        this.activeViewOptions = this.getActiveViewOptions();
         this.initializeResources();
     }
     initializeResources(isSetModel = false) {
@@ -10143,7 +10155,7 @@ let Schedule = class Schedule extends Component {
      * @returns {Date[]} Returns the collection of dates.
      */
     getCurrentViewDates() {
-        return this.activeView.renderDates;
+        return this.activeView ? this.activeView.renderDates : [];
     }
     /**
      * Retrieves the events that lies on the current date range of the active view of Schedule.
@@ -11772,7 +11784,7 @@ class ViewBase {
         let eventContainer;
         for (let row = 0; row < trCount; row++) {
             eventContainer = createElement('div', { className: APPOINTMENT_CONTAINER_CLASS });
-            if (!isNullOrUndefined(this.parent.resourceBase) && !this.parent.uiStateValues.isGroupAdaptive) {
+            if (this.parent.resourceBase && !this.parent.uiStateValues.isGroupAdaptive && this.parent.resourceBase.renderedResources) {
                 eventContainer.setAttribute('data-group-index', this.parent.resourceBase.renderedResources[row].groupIndex.toString());
             }
             eventRows.push(eventContainer);

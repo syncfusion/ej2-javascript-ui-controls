@@ -1,10 +1,10 @@
 /**
  * MultiSelect spec document
  */
-import { MultiSelect, TaggingEventArgs } from '../../src/multi-select/multi-select';
+import { MultiSelect, TaggingEventArgs, MultiSelectChangeEventArgs } from '../../src/multi-select/multi-select';
 import { Browser, isNullOrUndefined, EmitType } from '@syncfusion/ej2-base';
 import { createElement, L10n } from '@syncfusion/ej2-base';
-import { dropDownBaseClasses } from '../../src/drop-down-base/drop-down-base';
+import { dropDownBaseClasses, PopupEventArgs } from '../../src/drop-down-base/drop-down-base';
 import { DataManager, ODataV4Adaptor, Query } from '@syncfusion/ej2-data';
 import { CheckBoxSelection } from '../../src/multi-select/checkbox-selection';
 
@@ -1263,76 +1263,87 @@ describe('MultiSelect', () => {
         /**
          * Interaction automation. 
          */
-        it('select event validation with keyboard interaction-Esc key-default', () => {
+        it('select event validation with keyboard interaction-Esc key-default', (done) => {
             listObj = new MultiSelect({ closePopupOnSelect: false, mode: 'CheckBox', dataSource: datasource2, fields: { value: 'text', text: 'text' }, value: ['JAVA', 'Python'] });
             listObj.appendTo(element);
             //open action validation
             listObj.showPopup();
-            let list: Array<HTMLElement> = (<any>listObj).list.querySelectorAll('li');
-            mouseEventArgs.target = list[3];
-            mouseEventArgs.type = 'click';
-            (<any>listObj).tempValues = listObj.value.slice();
-            (<any>listObj).onMouseClick(mouseEventArgs);
-            keyboardEventArgs.altKey = false;
-            keyboardEventArgs.keyCode = 27;
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            expect((<any>listObj).isPopupOpen()).toBe(false);
-            expect(listObj.value.length).toBe(3);
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            expect(listObj.value.length).toBe(3);
-            listObj.destroy();
-
+            setTimeout((): void => {
+                let list: Array<HTMLElement> = (<any>listObj).list.querySelectorAll('li');
+                mouseEventArgs.target = list[3];
+                mouseEventArgs.type = 'click';
+                (<any>listObj).tempValues = listObj.value.slice();
+                (<any>listObj).onMouseClick(mouseEventArgs);
+                keyboardEventArgs.altKey = false;
+                keyboardEventArgs.keyCode = 27;
+                (<any>listObj).onKeyDown(keyboardEventArgs);
+                expect((<any>listObj).isPopupOpen()).toBe(false);
+                expect(listObj.value.length).toBe(3);
+                (<any>listObj).onKeyDown(keyboardEventArgs);
+                expect(listObj.value.length).toBe(3);
+                listObj.destroy();
+                done();
+            }, 200);
         });
-        it('select event validation with keyboard interaction-Esc key-Box', () => {
+        it('select event validation with keyboard interaction-Esc key-Box', (done) => {
             listObj = new MultiSelect({ closePopupOnSelect: false, mode: 'CheckBox', dataSource: datasource2, fields: { value: 'text', text: 'text' }, value: ['JAVA', 'Python'], });
             listObj.appendTo(element);
             //open action validation
             listObj.showPopup();
-            let list: Array<HTMLElement> = (<any>listObj).list.querySelectorAll('li');
-            mouseEventArgs.target = list[3];
-            mouseEventArgs.type = 'click';
-            (<any>listObj).tempValues = listObj.value.slice();
-            (<any>listObj).onMouseClick(mouseEventArgs);
-            keyboardEventArgs.altKey = false;
-            keyboardEventArgs.keyCode = 27;
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            expect((<any>listObj).isPopupOpen()).toBe(false);
-            expect(listObj.value.length).toBe(3);
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            expect(listObj.value.length).toBe(3);
-            listObj.destroy();
+            setTimeout((): void => {
+                let list: Array<HTMLElement> = (<any>listObj).list.querySelectorAll('li');
+                mouseEventArgs.target = list[3];
+                mouseEventArgs.type = 'click';
+                (<any>listObj).tempValues = listObj.value.slice();
+                (<any>listObj).onMouseClick(mouseEventArgs);
+                keyboardEventArgs.altKey = false;
+                keyboardEventArgs.keyCode = 27;
+                (<any>listObj).onKeyDown(keyboardEventArgs);
+                expect((<any>listObj).isPopupOpen()).toBe(false);
+                expect(listObj.value.length).toBe(3);
+                (<any>listObj).onKeyDown(keyboardEventArgs);
+                expect(listObj.value.length).toBe(3);
+                listObj.destroy();
+                done();
+            }, 200);
 
         });
-        it('select event validation with keyboard interaction-Esc key-Box no value interaction.', () => {
+        it('select event validation with keyboard interaction-Esc key-Box no value interaction.', (done) => {
             listObj = new MultiSelect({ dataSource: datasource2, mode: 'CheckBox', fields: { value: 'text', text: 'text' }, });
             listObj.appendTo(element);
             //open action validation
             listObj.showPopup();
-            keyboardEventArgs.altKey = false;
-            keyboardEventArgs.keyCode = 27;
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            expect(listObj.value).toBe(null);
-            listObj.destroy();
+            setTimeout((): void => {
+                keyboardEventArgs.altKey = false;
+                keyboardEventArgs.keyCode = 27;
+                (<any>listObj).onKeyDown(keyboardEventArgs);
+                expect(listObj.value).toBe(null);
+                listObj.destroy();
+                done();
+            }, 200);
 
         });
-        it('select event validation with keyboard interaction-Esc key-Delim', () => {
+        it('select event validation with keyboard interaction-Esc key-Delim', (done) => {
             listObj = new MultiSelect({ closePopupOnSelect: false, mode: 'CheckBox', dataSource: datasource2, fields: { value: 'text', text: 'text' }, value: ['JAVA', 'Python'], });
             listObj.appendTo(element);
             //open action validation
             listObj.showPopup();
-            let list: Array<HTMLElement> = (<any>listObj).list.querySelectorAll('li');
-            mouseEventArgs.target = list[3];
-            mouseEventArgs.type = 'click';
-            (<any>listObj).tempValues = listObj.value.slice();
-            (<any>listObj).onMouseClick(mouseEventArgs);
-            keyboardEventArgs.altKey = false;
-            keyboardEventArgs.keyCode = 27;
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            expect((<any>listObj).isPopupOpen()).toBe(false);
-            expect(listObj.value.length).toBe(3);
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            expect(listObj.value.length).toBe(3);
-            listObj.destroy();
+            setTimeout((): void => {
+                let list: Array<HTMLElement> = (<any>listObj).list.querySelectorAll('li');
+                mouseEventArgs.target = list[3];
+                mouseEventArgs.type = 'click';
+                (<any>listObj).tempValues = listObj.value.slice();
+                (<any>listObj).onMouseClick(mouseEventArgs);
+                keyboardEventArgs.altKey = false;
+                keyboardEventArgs.keyCode = 27;
+                (<any>listObj).onKeyDown(keyboardEventArgs);
+                expect((<any>listObj).isPopupOpen()).toBe(false);
+                expect(listObj.value.length).toBe(3);
+                (<any>listObj).onKeyDown(keyboardEventArgs);
+                expect(listObj.value.length).toBe(3);
+                listObj.destroy();
+                done();
+            }, 200);
 
         });
         /*
@@ -1340,45 +1351,51 @@ describe('MultiSelect', () => {
         /**
          * Interaction automation. 
          */
-        it('select event validation with keyboard interaction-Esc key-default', () => {
+        it('select event validation with keyboard interaction-Esc key-default', (done) => {
             listObj = new MultiSelect({ closePopupOnSelect: false, mode: 'CheckBox', dataSource: datasource2, fields: { value: 'text', text: 'text' } });
             listObj.appendTo(element);
             //open action validation
             listObj.showPopup();
-            let list: Array<HTMLElement> = (<any>listObj).list.querySelectorAll('li');
-            mouseEventArgs.target = list[0];
-            mouseEventArgs.type = 'click';
-            (<any>listObj).tempValues = listObj.value;
-            (<any>listObj).onMouseClick(mouseEventArgs);
-            keyboardEventArgs.altKey = false;
-            keyboardEventArgs.keyCode = 27;
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            expect((<any>listObj).isPopupOpen()).toBe(false);
-            expect(listObj.value.length).toBe(1);
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            expect(listObj.value.length).toBe(1);
+            setTimeout((): void => {
+                let list: Array<HTMLElement> = (<any>listObj).list.querySelectorAll('li');
+                mouseEventArgs.target = list[0];
+                mouseEventArgs.type = 'click';
+                (<any>listObj).tempValues = listObj.value;
+                (<any>listObj).onMouseClick(mouseEventArgs);
+                keyboardEventArgs.altKey = false;
+                keyboardEventArgs.keyCode = 27;
+                (<any>listObj).onKeyDown(keyboardEventArgs);
+                expect((<any>listObj).isPopupOpen()).toBe(false);
+                expect(listObj.value.length).toBe(1);
+                (<any>listObj).onKeyDown(keyboardEventArgs);
+                expect(listObj.value.length).toBe(1);
 
-            listObj.destroy();
+                listObj.destroy();
+                done();
+            }, 200);
 
         });
-        it('select event validation with keyboard interaction-Esc key-Box', () => {
+        it('select event validation with keyboard interaction-Esc key-Box', (done) => {
             listObj = new MultiSelect({ closePopupOnSelect: false, mode: 'CheckBox', dataSource: datasource2, fields: { value: 'text', text: 'text' }, });
             listObj.appendTo(element);
             //open action validation
             listObj.showPopup();
-            let list: Array<HTMLElement> = (<any>listObj).list.querySelectorAll('li');
-            mouseEventArgs.target = list[0];
-            mouseEventArgs.type = 'click';
-            (<any>listObj).tempValues = listObj.value;
-            (<any>listObj).onMouseClick(mouseEventArgs);
-            keyboardEventArgs.altKey = false;
-            keyboardEventArgs.keyCode = 27;
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            expect((<any>listObj).isPopupOpen()).toBe(false);
-            expect(listObj.value.length).toBe(1);
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            expect(listObj.value.length).toBe(1);
-            listObj.destroy();
+            setTimeout((): void => {
+                let list: Array<HTMLElement> = (<any>listObj).list.querySelectorAll('li');
+                mouseEventArgs.target = list[0];
+                mouseEventArgs.type = 'click';
+                (<any>listObj).tempValues = listObj.value;
+                (<any>listObj).onMouseClick(mouseEventArgs);
+                keyboardEventArgs.altKey = false;
+                keyboardEventArgs.keyCode = 27;
+                (<any>listObj).onKeyDown(keyboardEventArgs);
+                expect((<any>listObj).isPopupOpen()).toBe(false);
+                expect(listObj.value.length).toBe(1);
+                (<any>listObj).onKeyDown(keyboardEventArgs);
+                expect(listObj.value.length).toBe(1);
+                listObj.destroy();
+                done();
+            }, 200);
 
         });
         it('select event validation with keyboard interaction-Esc key-Delim', () => {
@@ -2358,7 +2375,183 @@ describe('MultiSelect', () => {
         });
 
     });
+    describe('EJ2-13211 - remote selection not maintain', () => {
+        let listObj: MultiSelect;
+        let originalTimeout: number;
+        let checkObj: any
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'textChild', attrs: { type: "text" } });
+        let datasource: { [key: string]: Object }[] = [
+            { id: 'level1', sports: 'American Football' }, { id: 'level2', sports: 'Badminton' },
+            { id: 'level3', sports: 'Basketball' }, { id: 'level4', sports: 'Cricket' },
+            { id: 'level5', sports: 'Football' }, { id: 'level6', sports: 'Golf' },
+            { id: 'level7', sports: 'Hockey' }, { id: 'level8', sports: 'Rugby' },
+            { id: 'level9', sports: 'Snooker' }, { id: 'level10', sports: 'Tennis' },
+        ];
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 8000;
+            document.body.appendChild(element);
+            document.body.appendChild(ele);
+            listObj = new MultiSelect({
+                dataSource: datasource,
+                mode: 'CheckBox',
+                fields: { text: "sports", value: "id" },
+                text: 'Tennis',
+                showSelectAll: true,
+                showDropDownIcon: true,
+                enableSelectionOrder: false,
+                popupHeight: 100
+            });
+            listObj.appendTo(element);
+            listObj.dataBind();
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+            if(ele) {
+                ele.remove();
+            }
+            checkObj = new CheckBoxSelection();
+            checkObj.destroy();
+        });
 
+        it('ensure text property -  Initial assignment', () => {
+            listObj.showPopup();
+            expect(listObj.value.length).toBeGreaterThan(0);
+        });
+        it('ensure list scroll', () => {
+            expect((<any>listObj).list.querySelector('.e-active').innerText).toBe('Tennis');
+        });
+        it('ensure text property - Dynamic assignment', (done) => {
+            listObj.change = (args: MultiSelectChangeEventArgs): void => {
+                expect(args.value.length).toBeGreaterThan(0);
+                expect(args.value[0]).toBe('level9');
+                done();
+            }
+            listObj.text = 'Snooker';
+        });
+    });
+    describe('EJ2-20084 - Multiselect select all and un select all not working properly', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let datasource: { [key: string]: Object }[] =  [
+                { id: 'list1', text: 'JAVA' },
+                { id: 'list2', text: 'C#' },
+                { id: 'list3', text: 'C++' },
+                { id: 'list4', text: '.NET' },
+                { id: 'list5', text: 'Oracle' },
+                { id: 'list6', text: 'GO' },
+                { id: 'list7', text: 'Haskell' },
+                { id: 'list8', text: 'Racket' },
+                { id: 'list8', text: 'F#' }];
+        let popup: HTMLElement;
+        let originalTimeout: number;
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+
+        it('check select all', (done) => {
+            listObj = new MultiSelect({
+                dataSource: datasource,
+                fields: { text: "text", value: "id" },
+                popupHeight: 50,
+                mode: 'CheckBox',
+                showSelectAll: true,
+                change: (): void => {
+                    if (popup) {
+                        expect(popup.querySelectorAll('.e-check').length).toBe(0);
+                        done();
+                    }                  
+                },
+                open: (args: PopupEventArgs): void => {
+                    popup = args.popup.element;
+                    listObj.value = [];
+                }
+            });
+            listObj.appendTo(element);
+            listObj.selectAll(true);
+            listObj.dataBind();
+            listObj.showPopup();
+        });
+        it('check select all without open', (done) => {
+            listObj = new MultiSelect({
+                dataSource: datasource,
+                fields: { text: "text", value: "id" },
+                popupHeight: 50,
+                mode: 'CheckBox',
+                showSelectAll: true,
+                open: (): void => {
+                    expect((<any>listObj).list.querySelectorAll('.e-check').length).toBe(0);
+                    done();               
+                }
+            });
+            listObj.appendTo(element);
+            listObj.selectAll(true);
+            listObj.dataBind();
+            listObj.value = [];
+            listObj.dataBind();
+            listObj.showPopup();
+        });
+    });
+
+    describe('EJ2-20148 - MultiSelect Dropdown value does not update', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let datasource: { [key: string]: Object }[] =  [
+            {
+             label: 'ACTIVITY_FEED__ACTIVITY_FEED_PAGE_INCOMING_TAB__FACEBOOK_ACTIVITY',
+             value: '1',
+             iconClass: 'fb',
+           }
+       ];
+        let popup: HTMLElement;
+        let originalTimeout: number;
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+
+        it('check select all', (done) => {
+            listObj = new MultiSelect({
+                dataSource: datasource,
+                placeholder: 'ACTIVITY_FEED__ACTIVITY_FEED_PAGE_INCOMING_TAB__SHOW_ACTIVITY_FROM_PLACEHOLDER',
+                fields: { text: 'label', value: 'value', iconCss: 'iconClass' },
+                popupHeight: 50,
+                mode: 'CheckBox',
+                showClearButton: true,
+                open: (): void => {
+                    expect(isNullOrUndefined((<any>listObj).checkWrapper)).toBe(true);
+                    done();               
+                }
+            });
+            listObj.appendTo(element);
+            listObj.value = ['1'];
+            listObj.dataBind();
+            listObj.showPopup();
+        });
+    });
+    
 });
 
 

@@ -27,6 +27,9 @@ const SPLIT_TOUCH = 'e-splitter-touch';
 const DISABLED = 'e-disabled';
 const RTL = 'e-rtl';
 const E_ICONS = 'e-icons';
+/**
+ * Interface to configure pane properties such as its content, size, min, max, and resizable.
+ */
 class PaneProperties extends ChildProperty {
 }
 __decorate([

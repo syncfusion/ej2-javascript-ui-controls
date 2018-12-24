@@ -1,14 +1,19 @@
-<!-- markdownlint-disable MD010 -->
-
-<!-- markdownlint-disable MD030 -->
-
-<!-- markdownlint-disable MD004 -->
 
 # Changelog
 
 ## [Unreleased]
 
-## 16.4.42 (2018-12-10)
+## 16.4.44 (2018-12-24)
+
+### Stock Chart
+
+#### Bug Fixes
+
+- Console error in tooltip fixed
+- Highlight of buttons in period selector is working properly.
+- Height of stock chart without period selector, range navigator is working fine
+
+## 16.4.42 (2018-12-14)
 
 ### Chart
 

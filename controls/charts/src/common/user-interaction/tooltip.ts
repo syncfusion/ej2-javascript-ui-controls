@@ -164,19 +164,21 @@ export class BaseTooltip extends ChartData {
                 },
                 '#' + this.element.id + '_tooltip');
         } else {
-            this.svgTooltip.location = location;
-            this.svgTooltip.content = this.text;
-            this.svgTooltip.header = header;
-            this.svgTooltip.offset = offset;
-            this.svgTooltip.palette = this.findPalette();
-            this.svgTooltip.shapes = shapes;
-            this.svgTooltip.data = templatePoint;
-            this.svgTooltip.template = chart.tooltip.template;
-            this.svgTooltip.textStyle = chart.tooltip.textStyle;
-            this.svgTooltip.isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
-            this.svgTooltip.clipBounds = this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation;
-            this.svgTooltip.arrowPadding = this.text.length > 1 || this.chart.stockChart ? 0 : 12;
-            this.svgTooltip.dataBind();
+            if (this.svgTooltip) {
+                this.svgTooltip.location = location;
+                this.svgTooltip.content = this.text;
+                this.svgTooltip.header = header;
+                this.svgTooltip.offset = offset;
+                this.svgTooltip.palette = this.findPalette();
+                this.svgTooltip.shapes = shapes;
+                this.svgTooltip.data = templatePoint;
+                this.svgTooltip.template = chart.tooltip.template;
+                this.svgTooltip.textStyle = chart.tooltip.textStyle;
+                this.svgTooltip.isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
+                this.svgTooltip.clipBounds = this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation;
+                this.svgTooltip.arrowPadding = this.text.length > 1 || this.chart.stockChart ? 0 : 12;
+                this.svgTooltip.dataBind();
+            }
         }
     }
 

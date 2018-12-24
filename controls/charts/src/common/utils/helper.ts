@@ -908,11 +908,7 @@ export function measureElementRect(element: HTMLElement, redraw: boolean = false
     document.body.appendChild(element);
     bounds = element.getBoundingClientRect();
     if (redraw) {
-        if (typeof element.remove === 'function') {
-            element.remove();
-        } else {
-            element.parentNode.removeChild(element);
-        }
+        remove(element);
     } else {
         removeElement(element.id);
     }
@@ -1114,11 +1110,7 @@ export function colorNameToHex(color: string): string {
     element = document.getElementById('chartmeasuretext');
     element.style.color = color;
     color = window.getComputedStyle(element).color;
-    if (typeof element.remove === 'function') {
-        element.remove();
-    } else {
-        element.parentNode.removeChild(element);
-    }
+    remove(element);
     let exp: RegExp = /^(rgb|hsl)(a?)[(]\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*(?:,\s*([\d.]+)\s*)?[)]$/;
     let isRGBValue: RegExpExecArray = exp.exec(color);
     return convertToHexCode(

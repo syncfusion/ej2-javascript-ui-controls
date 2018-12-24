@@ -569,6 +569,52 @@ describe('DropDownList', () => {
             }
         });
     });
+    describe(' add item with Template', () => {
+        let element: HTMLInputElement;
+        let listObj: DropDownList;
+        let popup: HTMLElement;
+        let liEle: HTMLElement;
+        let divNode: HTMLDivElement;
+        let textContent: string;
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+            document.body.appendChild(element);
+            listObj = new DropDownList({
+                dataSource: templateDataSource,
+                fields: { text: 'Name', value: 'Eimg' },
+                popupHeight: "200px",
+                // set the template content for list items
+                itemTemplate: '<div class ="ename" style="color:red;"> ${Name}</div>',
+            });
+            listObj.appendTo(element);
+        });
+        it("item template with add item values", function (done) {
+            expect((listObj.dataSource as string[]).length === templateDataSource.length).toBe(true);
+            listObj.addItem({ Name: 'dropdown', Eimg: 100 });
+            listObj.open = function (args) {
+                popup = document.getElementById('dropdownlist_popup');
+                divNode = popup.querySelectorAll("li div.ename")[templateDataSource.length] as HTMLDivElement;
+                textContent = divNode.innerText;
+                expect(textContent).toEqual('dropdown');
+                expect((listObj as any).listData.length === 10).toBe(true);
+                listObj.hidePopup();
+                listObj.open = null;
+            };
+            listObj.close = function (args) {
+                done();
+                listObj.close = null;
+            };
+            listObj.showPopup();
+
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+    });
+
     describe('EJ2-18309 - Maximum call stack error while emptying dataSource with filtering and remote data', () => {
         let listObj: any;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });

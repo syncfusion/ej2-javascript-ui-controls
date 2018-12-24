@@ -4,7 +4,7 @@ import { LineSpacingType, TextAlignment, OutlineLevel, TabJustification, TabLead
 import { WUniqueFormat } from '../../base/unique-format';
 import { WUniqueFormats } from '../../base/unique-formats';
 import { WListFormat } from './list-format';
-import { ParagraphWidget } from '../viewer/page';
+import { ParagraphWidget, BodyWidget } from '../viewer/page';
 import { WStyle, WParagraphStyle } from './style';
 import { WListLevel } from '../list/list-level';
 
@@ -90,7 +90,7 @@ export class WParagraphFormat {
     }
     private hasTabStop(position: number): boolean {
         for (let i: number = 0; i < this.tabs.length; i++) {
-            if (this.tabs[i].deletePosition === position) {
+            if (this.tabs[i].position === position) {
                 return true;
             }
         }
@@ -217,8 +217,12 @@ export class WParagraphFormat {
     private getDefaultValue(property: string): Object {
         let propertyType: number = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
         let docParagraphFormat: WParagraphFormat = this.documentParagraphFormat();
-        // tslint:disable-next-line:max-line-length
-        if (!isNullOrUndefined(docParagraphFormat) && !isNullOrUndefined(docParagraphFormat.uniqueParagraphFormat) && docParagraphFormat.uniqueParagraphFormat.propertiesHash.containsKey(propertyType)) {
+        let isInsideBodyWidget: boolean = true;
+        if (this.ownerBase && this.ownerBase instanceof ParagraphWidget) {
+            isInsideBodyWidget = this.ownerBase.containerWidget instanceof BodyWidget;
+        }
+        if (isInsideBodyWidget && !isNullOrUndefined(docParagraphFormat) && !isNullOrUndefined(docParagraphFormat.uniqueParagraphFormat) &&
+            docParagraphFormat.uniqueParagraphFormat.propertiesHash.containsKey(propertyType)) {
             return docParagraphFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);
         } else {
             return WParagraphFormat.getPropertyDefaultValue(property);

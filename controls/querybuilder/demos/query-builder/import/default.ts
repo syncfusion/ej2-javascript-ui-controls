@@ -4,15 +4,12 @@
 import { QueryBuilder, RuleModel, ColumnsModel } from './../../../src/query-builder/index';
 import { getComponent } from '@syncfusion/ej2-base';
 import { RadioButton, ChangeEventArgs } from '@syncfusion/ej2-buttons';
-import { DropDownList, MultiSelect, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';
+import { MultiSelect, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';
 MultiSelect.Inject(CheckBoxSelection);
-let elem: HTMLElement;
-let dropDownObj: DropDownList;
-let multiSelectObj: MultiSelect;
 let columnData: ColumnsModel [] = [
     { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
     { field: 'FirstName', label: 'FirstName', type: 'string'},
-    { field: 'TitleOfCourtesy', label: 'Title Of Courtesy', type: 'boolean', values: ['Mr.', 'Mrs.'] },
+    { field: 'Title Of Courtesy', label: 'Title Of Courtesy', type: 'boolean', values: ['Mr.', 'Mrs.'] },
     { field: 'Title', label: 'Title', type: 'string'},
     { field: 'HireDate', label: 'HireDate', type: 'date', format: 'dd/MM/yyyy' },
     { field: 'Country', label: 'Country', type: 'string' },
@@ -20,47 +17,47 @@ let columnData: ColumnsModel [] = [
 ];
 let importRules: RuleModel = {
     'condition': 'and',
-    'rules': [{
-        'label': 'EmployeeID',
-        'field': 'Employee ID',
-        'type': 'number',
-        'operator': 'equal',
-        'value': 1001
-    },
-    {
-        'condition': 'or',
         'rules': [{
-            'label': 'Title',
-            'field': 'Title',
-            'type': 'string',
-            'operator': 'equal',
-            'value':'Sales Manager'
-        },
-        {
-            'label': 'Title Of Courtesy',
-            'field': 'Title Of Courtesy',
-            'type': 'boolean',
-            'operator': 'equal',
-            'value': 'Mr.'
-        },
-        {
-        'condition': 'and',
-            'rules': [{
-                'label': 'City',
-                'field': 'City',
-                'type': 'string',
+                'label': 'EmployeeID',
+                'field': 'EmployeeID',
+                'type': 'number',
                 'operator': 'equal',
-                'value': 'Kirkland'
+                'value': 1001
             },
             {
-                'label': 'HireDate',
-                'field': 'HireDate',
-                'type': 'date',
-                'operator': 'equal',
-                'value': '07/07/1027'
+                'condition': 'or',
+                'rules': [{
+                        'label': 'Title',
+                        'field': 'Title',
+                        'type': 'string',
+                        'operator': 'equal',
+                        'value': 'Sales Manager'
+                    },
+                    {
+                        'label': 'Title Of Courtesy',
+                        'field': 'Title Of Courtesy',
+                        'type': 'boolean',
+                        'operator': 'equal',
+                        'value': ['Mr.']
+                    },
+                    {
+                        'condition': 'and',
+                        'rules': [{
+                                'label': 'City',
+                                'field': 'City',
+                                'type': 'string',
+                                'operator': 'equal',
+                                'value': 'Kirkland'
+                            },
+                            {
+                                'label': 'HireDate',
+                                'field': 'HireDate',
+                                'type': 'date',
+                                'operator': 'equal',
+                                'value': '07/07/1027'
+                            }]
+                    }]
             }]
-        }]
-    }]
     };
 let queryBldrObj: QueryBuilder = new QueryBuilder({
     width: '850px',

@@ -3029,7 +3029,7 @@ class WParagraphFormat {
     }
     hasTabStop(position) {
         for (let i = 0; i < this.tabs.length; i++) {
-            if (this.tabs[i].deletePosition === position) {
+            if (this.tabs[i].position === position) {
                 return true;
             }
         }
@@ -3153,8 +3153,12 @@ class WParagraphFormat {
     getDefaultValue(property) {
         let propertyType = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
         let docParagraphFormat = this.documentParagraphFormat();
-        // tslint:disable-next-line:max-line-length
-        if (!isNullOrUndefined(docParagraphFormat) && !isNullOrUndefined(docParagraphFormat.uniqueParagraphFormat) && docParagraphFormat.uniqueParagraphFormat.propertiesHash.containsKey(propertyType)) {
+        let isInsideBodyWidget = true;
+        if (this.ownerBase && this.ownerBase instanceof ParagraphWidget) {
+            isInsideBodyWidget = this.ownerBase.containerWidget instanceof BodyWidget;
+        }
+        if (isInsideBodyWidget && !isNullOrUndefined(docParagraphFormat) && !isNullOrUndefined(docParagraphFormat.uniqueParagraphFormat) &&
+            docParagraphFormat.uniqueParagraphFormat.propertiesHash.containsKey(propertyType)) {
             return docParagraphFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);
         }
         else {
@@ -6379,6 +6383,10 @@ class BodyWidget extends BlockContainer {
 class HeaderFooterWidget extends BlockContainer {
     constructor(type) {
         super();
+        /**
+         * @private
+         */
+        this.isEmpty = false;
         this.headerFooterType = type;
     }
     /**
@@ -6406,6 +6414,7 @@ class HeaderFooterWidget extends BlockContainer {
             block.index = i;
             block.containerWidget = headerFooter;
         }
+        headerFooter.isEmpty = this.isEmpty;
         headerFooter.x = this.x;
         headerFooter.y = this.y;
         headerFooter.height = 0;
@@ -7074,7 +7083,7 @@ class TableWidget extends BlockWidget {
             //Converts the row grid before width from point to twips point by 15 factor.
             cellWidth = this.getCellWidth(rowFormat.gridBeforeWidth, rowFormat.gridBeforeWidthType, tableWidth, null);
             currOffset += cellWidth;
-            let startOffset = Math.round(currOffset);
+            let startOffset = parseFloat(currOffset.toFixed(2));
             if (tempGrid.indexOf(startOffset) < 0) {
                 tempGrid.push(startOffset);
             }
@@ -7131,21 +7140,21 @@ class TableWidget extends BlockWidget {
                 }
                 // Add start offset of each cell based on its index
                 if (!rowCellInfo.containsKey(cell.cellIndex)) {
-                    rowCellInfo.add(cell.cellIndex, Math.round(currOffset - startOffset));
+                    rowCellInfo.add(cell.cellIndex, parseFloat((currOffset - startOffset).toFixed(2)));
                 }
                 columnSpan += cell.cellFormat.columnSpan;
                 //Converts the cell width from pixel to twips point by 15 factor.
                 cellWidth = this.getCellWidth(cell.cellFormat.preferredWidth, cell.cellFormat.preferredWidthType, tableWidth, null);
                 currOffset += cellWidth;
-                let offset = Math.round(currOffset);
+                let offset = parseFloat(currOffset.toFixed(2));
                 if (tempGrid.indexOf(offset) < 0) {
                     tempGrid.push(offset);
                 }
                 if (j === row.childWidgets.length - 1 && rowFormat.gridAfter > 0) {
                     cellWidth = this.getCellWidth(rowFormat.gridAfterWidth, 'Point', tableWidth, null);
                     currOffset += cellWidth;
-                    if (tempGrid.indexOf(Math.round(currOffset)) < 0) {
-                        tempGrid.push(Math.round(currOffset));
+                    if (tempGrid.indexOf(parseFloat(currOffset.toFixed(2))) < 0) {
+                        tempGrid.push(parseFloat(currOffset.toFixed(2)));
                     }
                     columnSpan += rowFormat.gridAfter;
                 }
@@ -7823,7 +7832,7 @@ class TableRowWidget extends BlockWidget {
         return gridEndIndex - gridStartIndex;
     }
     getOffsetIndex(tableGrid, offset) {
-        offset = Math.round(offset);
+        offset = parseFloat(offset.toFixed(2));
         let index = 0;
         if (tableGrid.indexOf(offset) >= 0) {
             index = tableGrid.indexOf(offset);
@@ -8226,9 +8235,9 @@ class TableCellWidget extends BlockWidget {
      */
     getCellWidth() {
         let ownerTable = this.ownerTable;
-        let containerWidth = ownerTable.getTableClientWidth(ownerTable.getOwnerWidth(true));
+        let containerWidth = ownerTable ? ownerTable.getTableClientWidth(ownerTable.getOwnerWidth(true)) : 0;
         let cellWidth = containerWidth;
-        if (ownerTable.tableFormat.preferredWidthType === 'Auto' && ownerTable.tableFormat.allowAutoFit) {
+        if (ownerTable && ownerTable.tableFormat.preferredWidthType === 'Auto' && ownerTable.tableFormat.allowAutoFit) {
             cellWidth = containerWidth;
         }
         else if (this.cellFormat.preferredWidthType === 'Percent') {
@@ -11087,6 +11096,10 @@ class Layout {
         let block = section.firstChild;
         let nextBlock;
         do {
+            if (block instanceof TableWidget && block.tableFormat.preferredWidthType === 'Auto'
+                && !block.tableFormat.allowAutoFit) {
+                block.calculateGrid();
+            }
             this.viewer.updateClientAreaForBlock(block, true);
             nextBlock = this.layoutBlock(block, index);
             index = 0;
@@ -11200,6 +11213,10 @@ class Layout {
         this.linkFieldInHeaderFooter(widget);
         for (let i = 0; i < widget.childWidgets.length; i++) {
             let block = widget.childWidgets[i];
+            if (block instanceof TableWidget && block.tableFormat.preferredWidthType === 'Auto'
+                && !block.tableFormat.allowAutoFit && !block.isGridUpdated) {
+                block.calculateGrid();
+            }
             viewer.updateClientAreaForBlock(block, true);
             this.layoutBlock(block, 0);
             viewer.updateClientAreaForBlock(block, false);
@@ -11492,10 +11509,10 @@ class Layout {
         else if (element instanceof TextElementBox) {
             if (element.text === '\t') {
                 let currentLine = element.line;
-                this.addSplittedLineWidget(currentLine, currentLine.children.indexOf(element));
+                this.addSplittedLineWidget(currentLine, currentLine.children.indexOf(element) - 1);
                 this.moveToNextLine(currentLine);
                 // Recalculates tab width based on new client active area X position
-                element.width = this.getTabWidth(paragraph, this.viewer, index, line, element);
+                element.width = this.getTabWidth(paragraph, this.viewer, index, element.line, element);
                 this.addElementToLine(paragraph, element);
             }
             else {
@@ -12792,7 +12809,8 @@ class Layout {
      */
     // tslint:disable-next-line:max-line-length
     getTabWidth(paragraph, viewer, index, lineWidget, element) {
-        let fposition = 0;
+        let elementWidth = element ? this.viewer.textHelper.getTextSize(element, element.characterFormat) : 0;
+        let fPosition = 0;
         let isCustomTab = false;
         let tabs = paragraph.paragraphFormat.getUpdatedTabs();
         //  Calculate hanging width
@@ -12809,41 +12827,46 @@ class Layout {
         else {
             if (tabs.length > 0) {
                 for (let i = 0; i < tabs.length; i++) {
+                    let tabStop = tabs[i];
                     let tabPosition = HelperMethods.convertPointToPixel(tabs[i].position);
-                    if (tabs[i].tabJustification === 'Left' && position < tabPosition) {
-                        fposition = tabPosition;
+                    if ((position + elementWidth) < tabPosition) {
                         isCustomTab = true;
-                        if (!isNullOrUndefined(element)) {
-                            element.tabLeader = tabs[i].tabLeader;
-                            element.tabText = '';
-                        }
-                        break;
-                    }
-                    else if (tabs[i].tabJustification === 'Right' && position < tabPosition) {
-                        let tabwidth = tabPosition - position;
-                        let width = this.getRightTabWidth(index + 1, lineWidget, paragraph);
-                        if (width < tabwidth) {
-                            defaultTabWidth = tabwidth - width;
+                        if (tabStop.tabJustification === 'Left') {
+                            fPosition = tabPosition;
+                            if (!isNullOrUndefined(element)) {
+                                element.tabLeader = tabs[i].tabLeader;
+                                element.tabText = '';
+                            }
+                            break;
                         }
                         else {
-                            defaultTabWidth = 0;
+                            let tabWidth = tabPosition - position;
+                            let width = this.getRightTabWidth(element.indexInOwner + 1, lineWidget, paragraph);
+                            if (width < tabWidth) {
+                                defaultTabWidth = tabStop.tabJustification === 'Right' ? tabWidth - width : tabWidth - width / 2;
+                            }
+                            else if (tabStop.tabJustification === 'Center' && (width / 2) < tabWidth) {
+                                defaultTabWidth = tabWidth - width / 2;
+                            }
+                            else {
+                                defaultTabWidth = tabStop.tabJustification === 'Right' ? 0 : elementWidth;
+                            }
+                            fPosition = position;
+                            if (!isNullOrUndefined(element)) {
+                                element.tabLeader = tabs[i].tabLeader;
+                                element.tabText = '';
+                            }
+                            break;
                         }
-                        fposition = position;
-                        isCustomTab = true;
-                        if (!isNullOrUndefined(element)) {
-                            element.tabLeader = tabs[i].tabLeader;
-                            element.tabText = '';
-                        }
-                        break;
                     }
                 }
             }
             if (!isCustomTab) {
                 let diff = ((Math.round(position) * 100) % (Math.round(defaultTabWidth) * 100)) / 100;
                 let cnt = (Math.round(position) - diff) / Math.round(defaultTabWidth);
-                fposition = (cnt + 1) * defaultTabWidth;
+                fPosition = (cnt + 1) * defaultTabWidth;
             }
-            return (fposition - position) > 0 ? fposition - position : defaultTabWidth;
+            return (fPosition - position) > 0 ? fPosition - position : defaultTabWidth;
         }
     }
     /**
@@ -12855,8 +12878,8 @@ class Layout {
     getRightTabWidth(index, lineWidget, paragraph) {
         let width = 0;
         let isFieldCode = false;
-        while (index < lineWidget.children.length) {
-            let elementBox = lineWidget.children[index];
+        let elementBox = lineWidget.children[index];
+        while (elementBox) {
             if ((elementBox instanceof FieldElementBox) || (elementBox instanceof BookmarkElementBox) || isFieldCode) {
                 if (elementBox instanceof FieldElementBox) {
                     if (elementBox.fieldType === 0) {
@@ -12877,7 +12900,7 @@ class Layout {
             else {
                 width = width + elementBox.width;
             }
-            index++;
+            elementBox = elementBox.nextNode;
         }
         return width;
     }
@@ -14752,6 +14775,7 @@ class Layout {
         let currentTable = table.combineWidget(this.viewer);
         let bodyWidget = currentTable.containerWidget;
         if (this.viewer.owner.enableHeaderAndFooter || block.isInHeaderFooter) {
+            block.bodyWidget.isEmpty = false;
             bodyWidget.height -= currentTable.height;
             // tslint:disable-next-line:max-line-length
             this.viewer.updateHCFClientAreaWithTop(table.bodyWidget.sectionFormat, this.viewer.isBlockInHeader(table), bodyWidget.page);
@@ -14843,6 +14867,7 @@ class Layout {
                     return;
                 }
                 if (bodyWidget instanceof HeaderFooterWidget) {
+                    bodyWidget.isEmpty = false;
                     // tslint:disable-next-line:max-line-length
                     this.viewer.updateHCFClientAreaWithTop(bodyWidget.sectionFormat, bodyWidget.headerFooterType.indexOf('Header') !== -1, bodyWidget.page);
                     curretBlock.containerWidget.height -= curretBlock.height;
@@ -15778,6 +15803,7 @@ class Layout {
         let bodyWidget = paragraph.containerWidget;
         bodyWidget.height -= paragraph.height;
         if (this.viewer.owner.enableHeaderAndFooter || paragraph.isInHeaderFooter) {
+            paragraph.bodyWidget.isEmpty = false;
             // tslint:disable-next-line:max-line-length
             this.viewer.updateHCFClientAreaWithTop(paragraph.bodyWidget.sectionFormat, this.viewer.isBlockInHeader(paragraph), bodyWidget.page);
         }
@@ -18953,12 +18979,19 @@ class LayoutViewer {
             headerDistance = HelperMethods.convertPointToPixel(sectionFormat.headerDistance);
             footerDistance = HelperMethods.convertPointToPixel(sectionFormat.footerDistance);
         }
+        let isEmptyWidget = false;
         if (!isNullOrUndefined(page.headerWidget)) {
-            top = Math.min(Math.max(headerDistance + page.headerWidget.height, top), pageHeight / 100 * 40);
+            isEmptyWidget = page.headerWidget.isEmpty;
+            if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
+                top = Math.min(Math.max(headerDistance + page.headerWidget.height, top), pageHeight / 100 * 40);
+            }
         }
         let bottom = 0.667 + bottomMargin;
         if (!isNullOrUndefined(page.footerWidget)) {
-            bottom = 0.667 + Math.min(pageHeight / 100 * 40, Math.max(footerDistance + page.footerWidget.height, bottomMargin));
+            isEmptyWidget = page.footerWidget.isEmpty;
+            if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
+                bottom = 0.667 + Math.min(pageHeight / 100 * 40, Math.max(footerDistance + page.footerWidget.height, bottomMargin));
+            }
         }
         let width = 0;
         if (!isNullOrUndefined(sectionFormat)) {
@@ -19743,6 +19776,7 @@ class PageLayoutViewer extends LayoutViewer {
             let headerFooter = this.headersFooters[sectionIndex][index];
             if (!headerFooter) {
                 headerFooter = this.createHeaderFooterWidget(type);
+                headerFooter.isEmpty = true;
                 this.headersFooters[sectionIndex][index] = headerFooter;
             }
             return headerFooter;
@@ -32686,11 +32720,15 @@ class Selection {
     isCursorInHeaderRegion(point, page) {
         let pageTop = this.getPageTop(page);
         let headerHeight = 0;
-        if (page.headerWidget) {
-            headerHeight = (page.headerWidget.y + page.headerWidget.height);
+        let header = page.headerWidget;
+        if (header) {
+            headerHeight = (header.y + header.height);
         }
-        let height = Math.max(headerHeight, HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin))
-            * this.viewer.zoomFactor;
+        let isEmpty = header.isEmpty && !this.owner.enableHeaderAndFooter;
+        let topMargin = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin);
+        let pageHeight = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.pageHeight);
+        let height = isEmpty ? topMargin : Math.min(Math.max(headerHeight, topMargin), pageHeight / 100 * 40);
+        height = height * this.viewer.zoomFactor;
         if ((this.viewer.containerTop + point.y) >= pageTop && (this.viewer.containerTop + point.y) <= pageTop + height) {
             return true;
         }
@@ -32708,9 +32746,16 @@ class Selection {
         if (page.footerWidget) {
             footerHeight = page.footerWidget.height;
         }
-        // tslint:disable-next-line:max-line-length
-        let height = (pageRect.height -
-            Math.max(footerHeight + footerDistance, HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.bottomMargin))) * this.viewer.zoomFactor;
+        let bottomMargin = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.bottomMargin);
+        let isEmpty = page.footerWidget.isEmpty && !this.owner.enableHeaderAndFooter;
+        let height = pageRect.height;
+        if (isEmpty) {
+            height = (height - bottomMargin) * this.viewer.zoomFactor;
+        }
+        else {
+            // tslint:disable-next-line:max-line-length
+            height = (height - Math.min(pageRect.height / 100 * 40, Math.max(footerHeight + footerDistance, bottomMargin))) * this.viewer.zoomFactor;
+        }
         if ((this.viewer.containerTop + point.y) <= pageBottom && (this.viewer.containerTop + point.y) >= pageTop + height) {
             return true;
         }
@@ -32722,7 +32767,20 @@ class Selection {
     enableHeadersFootersRegion(widget) {
         this.owner.enableHeaderAndFooter = true;
         this.updateTextPositionForBlockContainer(widget);
+        this.shiftBlockOnHeaderFooterEnableDisable();
         return true;
+    }
+    shiftBlockOnHeaderFooterEnableDisable() {
+        for (let i = 0; i < this.viewer.headersFooters.length; i++) {
+            let headerFooter = this.viewer.headersFooters[i];
+            let sectionFormat = this.owner.editor.getBodyWidgetInternal(i, 0).sectionFormat;
+            for (let key of Object.keys(headerFooter)) {
+                let widget = headerFooter[key];
+                if (widget.isEmpty) {
+                    this.owner.editor.shiftPageContent(widget.headerFooterType, sectionFormat);
+                }
+            }
+        }
     }
     /**
      * @private
@@ -32742,6 +32800,7 @@ class Selection {
         let page = this.getPage(this.start.paragraph);
         this.updateTextPositionForBlockContainer(page.bodyWidgets[0]);
         this.owner.enableHeaderAndFooter = false;
+        this.shiftBlockOnHeaderFooterEnableDisable();
     }
     //#endregion
     /**
@@ -39568,7 +39627,8 @@ class Editor {
      */
     updateHeaderFooterWidget() {
         this.updateHeaderFooterWidgetToPage(this.selection.start.paragraph.bodyWidget);
-        this.shiftPageContent(this.selection.start.paragraph.bodyWidget);
+        let headerFooterWidget = this.selection.start.paragraph.bodyWidget;
+        this.shiftPageContent(headerFooterWidget.headerFooterType, headerFooterWidget.sectionFormat);
     }
     /**
      * @private
@@ -39659,53 +39719,80 @@ class Editor {
     /**
      * @private
      */
-    shiftPageContent(headerFooter) {
-        let type = headerFooter.headerFooterType;
+    shiftPageContent(type, sectionFormat) {
+        // let type: HeaderFooterType = headerFooter.headerFooterType;
         let pageIndex;
-        if (type === 'FirstPageHeader' || type === 'FirstPageFooter') {
+        if (type.indexOf('First') !== -1) {
             pageIndex = 0;
         }
-        else if (headerFooter.sectionFormat.differentOddAndEvenPages) {
-            if (headerFooter.sectionFormat.differentFirstPage) {
-                pageIndex = (type === 'EvenHeader' || type === 'EvenFooter') ? 1 : 2;
+        else if (sectionFormat.differentOddAndEvenPages) {
+            let isEven = type.indexOf('Even') !== -1;
+            if (sectionFormat.differentFirstPage) {
+                pageIndex = isEven ? 1 : 2;
             }
             else {
-                pageIndex = (type.indexOf('Even') === -1) ? 0 : 1;
+                pageIndex = !isEven ? 0 : 1;
             }
         }
         else {
-            pageIndex = headerFooter.sectionFormat.differentFirstPage ? 1 : 0;
+            pageIndex = sectionFormat.differentFirstPage ? 1 : 0;
             if (pageIndex === 1 && this.viewer.pages.length === 1) {
                 pageIndex = 0;
             }
         }
-        let page = this.viewer.pages[pageIndex];
-        if (type.indexOf('Header') !== -1) {
-            let firstBlock = page.bodyWidgets[0].firstChild;
-            let top = HelperMethods.convertPointToPixel(headerFooter.sectionFormat.topMargin);
-            let headerDistance = HelperMethods.convertPointToPixel(headerFooter.sectionFormat.headerDistance);
-            top = Math.max(headerDistance + page.headerWidget.height, top);
-            if (firstBlock.y !== top) {
-                this.viewer.updateClientArea(page.bodyWidgets[0].sectionFormat, page);
-                firstBlock = firstBlock.combineWidget(this.viewer);
-                let prevWidget = firstBlock.previousRenderedWidget;
-                if (prevWidget) {
-                    this.viewer.cutFromTop(prevWidget.y + prevWidget.height);
-                    if (firstBlock.containerWidget !== prevWidget.containerWidget) {
-                        // tslint:disable-next-line:max-line-length
-                        this.viewer.layout.updateContainerWidget(firstBlock, prevWidget.containerWidget, prevWidget.indexInOwner + 1, false);
+        let section = this.viewer.pages[pageIndex].bodyWidgets[0];
+        do {
+            if (type.indexOf('Header') !== -1) {
+                let widget = section.page.headerWidget;
+                let isNotEmpty = !widget.isEmpty || widget.isEmpty && this.owner.enableHeaderAndFooter;
+                let firstBlock = section.firstChild;
+                let top = HelperMethods.convertPointToPixel(sectionFormat.topMargin);
+                let headerDistance = HelperMethods.convertPointToPixel(sectionFormat.headerDistance);
+                if (isNotEmpty) {
+                    top = Math.max(headerDistance + section.page.headerWidget.height, top);
+                }
+                if (firstBlock.y !== top) {
+                    this.viewer.updateClientArea(section.sectionFormat, section.page);
+                    firstBlock = firstBlock.combineWidget(this.viewer);
+                    let prevWidget = firstBlock.previousRenderedWidget;
+                    if (prevWidget) {
+                        if (firstBlock.containerWidget.equals(prevWidget.containerWidget)) {
+                            this.viewer.cutFromTop(prevWidget.y + prevWidget.height);
+                            // tslint:disable-next-line:max-line-length
+                            this.viewer.layout.updateContainerWidget(firstBlock, prevWidget.containerWidget, prevWidget.indexInOwner + 1, false);
+                        }
+                    }
+                    this.viewer.blockToShift = firstBlock;
+                }
+            }
+            else {
+                this.checkAndShiftFromBottom(section.page, section.page.footerWidget);
+            }
+            if (this.viewer.blockToShift) {
+                this.viewer.renderedLists.clear();
+                this.viewer.layout.shiftLayoutedItems();
+            }
+            while (section) {
+                let splittedSection = section.getSplitWidgets();
+                section = splittedSection[splittedSection.length - 1].nextRenderedWidget;
+                if (section) {
+                    if (pageIndex === 0) {
+                        break;
+                    }
+                    else {
+                        if (section.page.index + 1 % 2 === 0 && pageIndex === 1 ||
+                            (section.page.index + 1 % 2 !== 0 && pageIndex === 2)) {
+                            break;
+                        }
+                        let nextPage = section.page.nextPage;
+                        if (nextPage.bodyWidgets[0].equals(section)) {
+                            section = nextPage.bodyWidgets[0];
+                            break;
+                        }
                     }
                 }
-                this.viewer.blockToShift = firstBlock;
             }
-        }
-        else {
-            this.checkAndShiftFromBottom(page, headerFooter);
-        }
-        if (this.viewer.blockToShift) {
-            this.viewer.renderedLists.clear();
-            this.viewer.layout.shiftLayoutedItems();
-        }
+        } while (section);
     }
     /**
      * @private
@@ -44953,6 +45040,9 @@ class Editor {
             return page.footerWidget;
         }
     }
+    /**
+     * @private
+     */
     getBodyWidgetInternal(sectionIndex, blockIndex) {
         for (let i = 0; i < this.viewer.pages.length; i++) {
             let bodyWidget = this.viewer.pages[i].bodyWidgets[0];
@@ -52986,7 +53076,7 @@ class SfdtExport {
         section.headersFooters.firstPageFooter = this.writeHeaderFooter(hfs[5]);
     }
     writeHeaderFooter(widget) {
-        if (isNullOrUndefined(widget)) {
+        if (isNullOrUndefined(widget) || widget.isEmpty) {
             return undefined;
         }
         let headerFooter = {};
@@ -61638,6 +61728,9 @@ class Toolbar$1 {
          * @private
          */
         this.showPropertiesPaneOnSelection = () => {
+            if (this.container.restrictEditing) {
+                return;
+            }
             let currentContext = this.documentEditor.selection.contextType;
             let isInHeaderFooter = currentContext.indexOf('Header') >= 0
                 || currentContext.indexOf('Footer') >= 0;

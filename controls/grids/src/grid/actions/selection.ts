@@ -170,7 +170,7 @@ export class Selection implements IAction {
     }
 
     private isEditing(): boolean {
-        return (this.parent.editSettings.mode === 'Normal' || (this.parent.editSettings.mode === 'Batch' &&
+        return (this.parent.editSettings.mode === 'Normal' || (this.parent.editSettings.mode === 'Batch' && this.parent.editModule &&
             this.parent.editModule.formObj && !this.parent.editModule.formObj.validate())) &&
             this.parent.isEdit && !this.parent.isPersistSelection;
     }
@@ -187,7 +187,7 @@ export class Selection implements IAction {
         let gObj: IGrid = this.parent;
         let added: string = 'addedRecords';
         let deleted: string = 'deletedRecords';
-        if (gObj.editSettings.mode === 'Batch') {
+        if (gObj.editSettings.mode === 'Batch' && gObj.editModule) {
             let currentRecords: Object[] = iterateExtend(this.parent.getCurrentViewRecords());
             currentRecords = this.parent.editModule.getBatchChanges()[added].concat(currentRecords);
             let deletedRecords: Object[] = this.parent.editModule.getBatchChanges()[deleted];
@@ -253,9 +253,11 @@ export class Selection implements IAction {
             this.clearRow();
         }
         if (!isToggle) {
-            this.updateRowSelection(selectedRow, index);
-            if (gObj.getFrozenColumns()) { this.updateRowSelection(selectedMovableRow, index); }
-            gObj.selectedRowIndex = index;
+            if (this.selectedRowIndexes.indexOf(index) <= -1) {
+                this.updateRowSelection(selectedRow, index);
+                if (gObj.getFrozenColumns()) { this.updateRowSelection(selectedMovableRow, index); }
+            }
+            this.parent.setProperties({selectedRowIndex: index}, true);
         }
         if (!isToggle) {
             args = {
@@ -285,7 +287,7 @@ export class Selection implements IAction {
      */
     public selectRowsByRange(startIndex: number, endIndex?: number): void {
         this.selectRows(this.getCollectionFromIndexes(startIndex, endIndex));
-        this.parent.selectedRowIndex = endIndex;
+        this.parent.setProperties({selectedRowIndex: endIndex}, true);
     }
 
     /** 
@@ -316,7 +318,7 @@ export class Selection implements IAction {
             return;
         }
         this.clearRow();
-        gObj.selectedRowIndex = rowIndexes.slice(-1)[0];
+        this.parent.setProperties({selectedRowIndex: rowIndexes.slice(-1)[0]}, true);
         if (!this.isSingleSel()) {
             for (let rowIdx of rowIndexes) {
                 this.updateRowSelection(gObj.getRowByIndex(rowIdx), rowIdx);
@@ -359,7 +361,7 @@ export class Selection implements IAction {
         for (let rowIndex of rowIndexes) {
             let rowObj: Row<Column> = this.getRowObj(rowIndex);
             let isUnSelected: boolean = this.selectedRowIndexes.indexOf(rowIndex) > -1;
-            gObj.selectedRowIndex = rowIndex;
+            this.parent.setProperties({selectedRowIndex: rowIndex}, true);
             if (isUnSelected) {
                 this.rowDeselect(events.rowDeselecting, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target);
                 this.selectedRowIndexes.splice(this.selectedRowIndexes.indexOf(rowIndex), 1);
@@ -422,6 +424,9 @@ export class Selection implements IAction {
 
     private clearRow(): void {
         this.clearRowSelection();
+        if (this.isCancelDeSelect === true) {
+            return;
+        }
         this.selectedRowIndexes = [];
         this.selectedRecords = [];
         this.parent.selectedRowIndex = -1;
@@ -495,7 +500,7 @@ export class Selection implements IAction {
         if (!this.preventFocus) {
             let target: Element = this.focus.getPrevIndexes().cellIndex ?
                 (<HTMLTableRowElement>selectedRow).cells[this.focus.getPrevIndexes().cellIndex] :
-                selectedRow.querySelector('.e-selectionbackground:not(.e-hide)');
+                selectedRow.querySelector('.e-selectionbackground:not(.e-hide):not(.e-detailrowcollapse):not(.e-detailrowexpand)');
             if (!target) { return; }
             this.focus.onClick({ target }, true);
         }
@@ -1040,7 +1045,6 @@ export class Selection implements IAction {
             this.selectedRowCellIndexes = [];
             this.isCellSelected = false;
             this.cellDeselect(events.cellDeselected, rowCell, data, cells, foreignKeyData);
-            this.prevECIdxs = undefined;
         }
     }
 
@@ -1796,6 +1800,11 @@ export class Selection implements IAction {
             this.setCheckAllState();
             this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
         }
+        if (e.requestType === 'paging') {
+            this.prevRowIndex = undefined;
+            this.prevCIdxs = undefined;
+            this.prevECIdxs = undefined;
+        }
     }
 
     private onDataBound(): void {
@@ -1833,9 +1842,11 @@ export class Selection implements IAction {
         }
         if (!isNullOrUndefined(editForm)) {
             let editChkBox: HTMLElement = editForm.querySelector('.e-edit-checkselect') as HTMLElement;
+            if (!isNullOrUndefined(editChkBox)) {
             removeAddCboxClasses(editChkBox.nextElementSibling as HTMLElement, checkState);
         }
     }
+}
 
     private checkSelectAll(checkBox: HTMLInputElement): void {
         let stateStr: string = this.getCheckAllStatus(checkBox);
@@ -2292,11 +2303,10 @@ export class Selection implements IAction {
     private addRemoveClassesForRow(row: Element, isAdd: boolean, clearAll: boolean, ...args: string[]): void {
         if (row) {
             let cells: Element[] = [].slice.call(row.querySelectorAll('.e-rowcell'));
-            let cell: Element = row.querySelector('.e-detailrowcollapse') || row.querySelector('.e-detailrowexpand')
-            || row.querySelector('.e-rowdragdrop');
-            if (cell) {
-                cells.push(cell);
-            }
+            let detailIndentCell: Element = row.querySelector('.e-detailrowcollapse') || row.querySelector('.e-detailrowexpand');
+            let dragdropIndentCell: Element = row.querySelector('.e-rowdragdrop');
+            if (detailIndentCell) { cells.push(detailIndentCell); }
+            if (dragdropIndentCell) { cells.push(dragdropIndentCell); }
             addRemoveActiveClasses(cells, isAdd, ...args);
         }
         this.getRenderer().setSelection(row ? row.getAttribute('data-uid') : null, isAdd, clearAll);

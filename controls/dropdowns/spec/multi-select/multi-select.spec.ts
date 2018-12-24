@@ -1,10 +1,10 @@
 /**
  * MultiSelect spec document
  */
-import { MultiSelect, TaggingEventArgs } from '../../src/multi-select/multi-select';
+import { MultiSelect, TaggingEventArgs, MultiSelectChangeEventArgs } from '../../src/multi-select/multi-select';
 import { Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { createElement, L10n } from '@syncfusion/ej2-base';
-import { dropDownBaseClasses, FilteringEventArgs } from '../../src/drop-down-base/drop-down-base';
+import { dropDownBaseClasses, FilteringEventArgs, PopupEventArgs } from '../../src/drop-down-base/drop-down-base';
 import { DataManager, ODataV4Adaptor, Query, ODataAdaptor } from '@syncfusion/ej2-data';
 import { MultiSelectModel, ISelectAllEventArgs } from '../../src/index';
 
@@ -4676,5 +4676,117 @@ describe('MultiSelect', () => {
         });
 
     });
+    describe('EJ2-13211 - remote selection not maintain', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let datasource: { [key: string]: Object }[] = [
+            { id: 'level1', sports: 'American Football' }, { id: 'level2', sports: 'Badminton' },
+            { id: 'level3', sports: 'Basketball' }, { id: 'level4', sports: 'Cricket' },
+            { id: 'level5', sports: 'Football' }, { id: 'level6', sports: 'Golf' },
+            { id: 'level7', sports: 'Hockey' }, { id: 'level8', sports: 'Rugby' },
+            { id: 'level9', sports: 'Snooker' }, { id: 'level10', sports: 'Tennis' },
+        ];
 
+        let originalTimeout: number;
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: datasource,
+                fields: { text: "sports", value: "id" },
+                hideSelectedItem: false,
+                text: 'Tennis',
+                popupHeight: 100,
+                showDropDownIcon: true,
+                openOnClick: false
+            });
+            listObj.appendTo(element);
+            listObj.dataBind();
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+
+        it('bug(EJ2-7967): ensure text property -  Initial assignment', () => {
+            listObj.showPopup();
+            expect(listObj.value.length).toBeGreaterThan(0);
+        });
+        it('bug(EJ2-13211): ensure list scroll', () => {
+            expect((<any>listObj).list.querySelector('.e-active').innerText).toBe('Tennis');
+            listObj.hidePopup();
+        });
+
+        it('bug(EJ2-7967): ensure text property', (done) => {
+            listObj.change = (args: MultiSelectChangeEventArgs): void => {
+                expect(args.value.length).toBeGreaterThan(0);
+                expect(args.value[0]).toBe('level9');
+                done();
+            }
+            listObj.text = 'Snooker';
+        });
+
+        it('bug(EJ2-14587): ensure showDropDownIcon - popup open', (done) => {
+            listObj.open = (args: PopupEventArgs): void => {
+                expect(!isNullOrUndefined(args.popup)).toBe(true);
+                done();
+            }
+            let dropEle: HTMLElement = listObj.element.parentElement.parentElement;
+            let iconEle: HTMLElement = (<HTMLElement>dropEle.querySelector('.e-ddl-icon'));
+            iconEle.innerHTML = 'Icon';
+            let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+            clickEvent.initEvent('mousedown', true, true);
+            iconEle.dispatchEvent(clickEvent);
+        });
+
+        it('bug(EJ2-14587): ensure showDropDownIcon', () => {
+            let dropEle: HTMLElement = listObj.element.parentElement.parentElement;
+            expect(dropEle.classList.contains('e-down-icon')).toBe(true);
+            expect(!isNullOrUndefined(dropEle.querySelector('.e-ddl-icon'))).toBe(true);
+        });
+    });
+
+    describe('EJ2-19659 - Custom value cant be removed when value field is integer', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let datasource: { [key: string]: Object }[] = [
+            { Id: 1, item: 'Fruits and Vegetables' },
+            { Id: 2, item: 'Beverages' },
+            { Id: 3, item: 'Beauty and Hygiene' },
+            
+        ];
+
+        let originalTimeout: number;
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: datasource,
+                fields: { text: "item", value: "Id" },
+                popupHeight: 100,
+                allowCustomValue: true,
+                value: ['2344567'],
+                mode: 'Box'
+            });
+            listObj.appendTo(element);
+            listObj.dataBind();
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+
+        it('Check Custom value remove', () => {
+            (<any>listObj).removeValue('2344567', null);
+            expect(listObj.value.length).toBe(0);
+        });
+    });
 });

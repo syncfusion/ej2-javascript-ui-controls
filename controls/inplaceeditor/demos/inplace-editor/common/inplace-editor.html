@@ -23,7 +23,7 @@
 
 <body class="e-bigger">
     <select name="render-mode" id="renderMode">
-        <option value="" disabled selected>Mode</option>
+        <option value="" disabled selected>UI Mode</option>
         <option value="1">Mouse</option>
         <option value="2">Touch</option>
     </select>
@@ -38,7 +38,25 @@
         <option value="bootstrap-dark">Bootstrap-Dark</option>
         <option value="highcontrast-light">HighContrast-light</option>
     </select>
-    <br/><br/>
+    <select name="edit-on" id="editOn">
+        <option value="" disabled selected>EditableOn</option>
+        <option value="Click">Click</option>
+        <option value="DblClick">DblClick</option>
+        <option value="EditIconClick">EditIconClick</option>
+    </select>
+    <select name="action-on-blur" id="blurAction">
+        <option value="" disabled selected>ActionOnBlur</option>
+        <option value="Submit">Submit</option>
+        <option value="Cancel">Cancel</option>
+        <option value="Ignore">Ignore</option>
+    </select>
+    <input id="rtl" type="checkbox" />
+    <input id="persist" type="checkbox" />
+    <input id="disabled" type="checkbox" />
+    <input id="showButtons" type="checkbox" />
+    <input id="openEditor" type="checkbox" />
+    <input id="enterSubmit" type="checkbox" />
+    <br /><br />
     <div class="container">
         <div id="root">
             <table id="extra">
@@ -104,7 +122,7 @@
                         </td>
                     </tr>
                     <tr>
-                    <th>ColorPicker</th>
+                        <th>ColorPicker</th>
                         <td>
                             <div id="colorPicker"></div>
                         </td>

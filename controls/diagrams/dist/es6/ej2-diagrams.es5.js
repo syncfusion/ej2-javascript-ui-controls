@@ -42052,8 +42052,11 @@ var CrossReduction = /** @__PURE__ @class */ (function () {
                     for (var k = 0; k < rank.length; k++) {
                         var cell = rank[k];
                         var obj = this.nestedBestRanks[j][cell.temp[0]];
-                        if (obj && ((obj.id === cell.id) || (cell.ids && obj.ids &&
-                            obj.ids[0] === cell.ids[0]))) {
+                        var check = true;
+                        if (cell.edges && obj && !obj.edges) {
+                            check = false;
+                        }
+                        if (obj && check) {
                             this.nestedBestRanks[j][cell.temp[0]] = cell;
                         }
                     }
@@ -42240,7 +42243,7 @@ var CrossReduction = /** @__PURE__ @class */ (function () {
         medianValues.sort(this.compare);
         // Set the new position of each node within the rank using its temp variable
         for (var i = 0; i < numCellsForRank; i++) {
-            if (reservedPositions[i] == null) {
+            if (reservedPositions[i] == null && medianValues.length > 0) {
                 var cell = medianValues.shift().cell;
                 this.setTempVariable(cell, rankValue, i);
             }

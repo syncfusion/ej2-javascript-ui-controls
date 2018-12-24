@@ -472,7 +472,7 @@ export class ContentFocus implements IFocus {
     }
 
     public getCurrentFromAction(action: string, navigator: number[] = [0, 0], isPresent?: boolean, e?: KeyboardEventArgs): number[] {
-        if (!isPresent && !this.indexesByKey(action)) { return null; }
+        if (!isPresent && !this.indexesByKey(action) || (this.matrix.current.length === 0)) { return null; }
         if (!this.shouldFocusChange(e)) { return this.matrix.current; }
         let [rowIndex, cellIndex, rN, cN]: number[] = this.indexesByKey(action) || [...this.matrix.current, ...navigator];
         let current: number[] = this.matrix.get(rowIndex, cellIndex, [rN, cN], action, this.validator());

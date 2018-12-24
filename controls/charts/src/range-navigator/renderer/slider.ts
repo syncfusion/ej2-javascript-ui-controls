@@ -18,7 +18,8 @@ export class RangeSlider {
     private leftSlider: Element;
     private rightSlider: Element;
     private control: RangeNavigator;
-    private isDrag: boolean;
+    /** @private */
+    public isDrag: boolean;
     private elementId: string;
     public currentSlider: string;
     public startX: number;

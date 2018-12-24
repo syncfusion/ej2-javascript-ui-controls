@@ -468,9 +468,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         if (this.showTodayButton) {
             let minimum: Date = new Date(+this.min);
             let maximum: Date = new Date(+this.max);
-            let l10nLocale: object = { today: 'Today' };
-            this.globalize = new Internationalization(this.locale);
-            this.l10 = new L10n(this.getModuleName(), l10nLocale, this.locale);
             this.todayElement = this.createElement('button');
             rippleEffect(this.todayElement);
             this.updateFooter();
@@ -687,6 +684,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * @private
      */
     protected preRender(value?: Date): void {
+        this.globalize = new Internationalization(this.locale);
+        let l10nLocale: object = { today: 'Today' };
+        this.l10 = new L10n(this.getModuleName(), l10nLocale, this.locale);
         this.navigatePreviousHandler = this.navigatePrevious.bind(this);
         this.navigateNextHandler = this.navigateNext.bind(this);
         this.navigateHandler = (e: MouseEvent): void => {

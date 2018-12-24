@@ -2,7 +2,22 @@
 
 ## [Unreleased]
 
-## 16.4.42 (2018-12-10)
+## 16.4.44 (2018-12-24)
+
+### Grid
+
+#### Bug Fixes
+
+- Misalignment occurs when `footer aggreagate` in grid and also while editing is resolved.
+- Script error thrown when reorder header template column in grid using angular is fixed.
+- `RemoteSaveAdaptor` returns empty row while perform adding in Grid is resolved.
+- Filtering the localized date column throws script error is fixed.
+- Provided support for dynamic property change handling for `selectedRowIndex`.
+- Filtering after grouping any column focuses out of the `filterbar` is resolved.
+- `Deselecting` event is not triggered after double clicking a particular row and select different row is resolved.
+- Column data `stringify` is not working properly when persistence enabled is resolved.
+
+## 16.4.42 (2018-12-14)
 
 ### Grid
 

@@ -1,4 +1,4 @@
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { setStyleAttribute, closest as getClosest, remove } from '@syncfusion/ej2-base';
 import { classList } from '@syncfusion/ej2-base';
 import { CellType } from '../base/enum';
@@ -11,7 +11,7 @@ import { ServiceLocator } from '../services/service-locator';
 import * as events from '../base/constant';
 import { MouseEventArgs, Draggable, Droppable, DropEventArgs } from '@syncfusion/ej2-base';
 import { ColumnWidthService } from '../services/width-controller';
-import { parentsUntil, wrap, measureColumnDepth } from '../base/util';
+import { parentsUntil, wrap, measureColumnDepth, appendChildren } from '../base/util';
 import { AriaService } from '../services/aria-service';
 
 /**
@@ -59,8 +59,11 @@ export class HeaderRender implements IRenderer {
             visualElement.setAttribute('e-mappinguid', this.column.uid);
         }
         if (col && !isNullOrUndefined(col.headerTemplate)) {
-            if (col.headerTemplate.indexOf('#') !== -1) {
-                visualElement.innerHTML = document.querySelector(col.headerTemplate).innerHTML.trim();
+            if (!isNullOrUndefined(col.headerTemplate)) {
+                let result: Element[];
+                let colIndex: number = gObj.getColumnIndexByField(col.field);
+                result = col.getHeaderTemplate()(extend({ 'index': colIndex }, col), gObj, 'headerTemplate');
+                appendChildren(visualElement, result);
             } else {
                 visualElement.innerHTML = col.headerTemplate;
             }

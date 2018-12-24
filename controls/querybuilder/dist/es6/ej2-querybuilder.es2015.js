@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, detach, extend, getComponent, getInstance, getValue, isNullOrUndefined, removeClass, rippleEffect, selectAll } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, detach, extend, getComponent, getInstance, getValue, isNullOrUndefined, removeClass, rippleEffect } from '@syncfusion/ej2-base';
 import { Button, RadioButton } from '@syncfusion/ej2-buttons';
 import { CheckBoxSelection, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
 import { DataManager, Predicate, Query } from '@syncfusion/ej2-data';
@@ -38,7 +38,7 @@ __decorate([
     Property(null)
 ], Columns.prototype, "template", void 0);
 __decorate([
-    Property(null)
+    Property({ isRequired: true, min: 0, max: Number.MAX_VALUE })
 ], Columns.prototype, "validation", void 0);
 __decorate([
     Property(null)
@@ -126,6 +126,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             let type;
             let isDate = false;
             let value;
+            let validateObj = { isRequired: true, min: 0, max: Number.MAX_VALUE };
             if (this.columns.length) {
                 this.columnSort();
                 let columns = this.columns;
@@ -146,6 +147,9 @@ let QueryBuilder = class QueryBuilder extends Component {
                         }
                         type = 'string';
                     }
+                    if (!columns[i].validation) {
+                        columns[i].validation = validateObj;
+                    }
                 }
             }
             else {
@@ -159,7 +163,8 @@ let QueryBuilder = class QueryBuilder extends Component {
                         isDate = value instanceof Date && !isNaN(value.getTime());
                         type = 'string';
                     }
-                    cols[i] = { 'field': columnKeys[i], 'label': columnKeys[i], 'type': isDate ? 'date' : type };
+                    cols[i] = { 'field': columnKeys[i], 'label': columnKeys[i], 'type': isDate ? 'date' : type,
+                        'validation': validateObj };
                     isDate = false;
                 }
                 this.columns = cols;
@@ -285,10 +290,6 @@ let QueryBuilder = class QueryBuilder extends Component {
             value: rule ? rule.field : null
         });
         dropDownList.appendTo('#' + ruleElem.id + '_filterkey');
-        if (this.allowValidation) {
-            ruleElem.querySelector('.e-filter-input').setAttribute('name', ruleElem.id + 'field');
-            addClass([ruleElem.querySelector('.e-filter-input')], 'e-error');
-        }
         this.filterIndex = dropDownList.index;
         groupLevel = this.levelColl[target.id];
         if (!this.isImportRules) {
@@ -313,16 +314,19 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
     }
     renderToolTip(element) {
-        let tooltip = new Tooltip({ content: this.l10n.getConstant('ValidationMessage'), position: 'BottomCenter', cssClass: 'e-querybuilder-error' });
+        let tooltip = new Tooltip({ content: this.l10n.getConstant('ValidationMessage'),
+            position: 'BottomCenter', cssClass: 'e-querybuilder-error' });
         tooltip.appendTo(element);
         tooltip.open(element);
     }
     validateFields() {
+        let isValid = true;
         if (this.allowValidation) {
             let i;
             let len;
             let fieldElem;
             let indexElem;
+            let valArray = [];
             let groupElem;
             let index;
             let dropDownObj;
@@ -344,17 +348,28 @@ let QueryBuilder = class QueryBuilder extends Component {
                         index++;
                     }
                     fieldElem = tempElem.querySelector('.e-rule-field input.e-control');
-                    if (!rule.rules[index].field && fieldElem.parentElement.className.indexOf('e-tooltip') < 0) {
-                        this.renderToolTip(fieldElem.parentElement);
+                    if (!rule.rules[index].field) {
+                        if (fieldElem.parentElement.className.indexOf('e-tooltip') < 0) {
+                            this.renderToolTip(fieldElem.parentElement);
+                        }
+                        isValid = false;
                     }
                     fieldElem = tempElem.querySelector('.e-rule-operator input.e-control');
-                    if (!rule.rules[index].operator && fieldElem.parentElement.className.indexOf('e-tooltip') < 0) {
-                        this.renderToolTip(fieldElem.parentElement);
+                    if (!rule.rules[index].operator) {
+                        if (fieldElem.parentElement.className.indexOf('e-tooltip') < 0) {
+                            this.renderToolTip(fieldElem.parentElement);
+                        }
+                        isValid = false;
                     }
-                    if (!rule.rules[index].value) {
+                    if (rule.rules[index].value instanceof Array) {
+                        valArray = rule.rules[index].value;
+                    }
+                    if (isNullOrUndefined(rule.rules[index].value) || rule.rules[index].value === ''
+                        || (rule.rules[index].value instanceof Array && valArray.length < 1)) {
                         let valElem = tempElem.querySelectorAll('.e-rule-value input.e-control');
-                        do {
-                            let element = valElem[0];
+                        isValid = false;
+                        for (let j = 0, jLen = valElem.length; j < jLen; j++) {
+                            let element = valElem[j];
                             let elem;
                             if (element.parentElement.className.indexOf('e-searcher') > -1) {
                                 elem = closest(element, '.e-multi-select-wrapper');
@@ -362,21 +377,22 @@ let QueryBuilder = class QueryBuilder extends Component {
                                     this.renderToolTip(elem);
                                 }
                             }
-                            else if (valElem[0].parentElement.className.indexOf('e-tooltip') < 0) {
-                                this.renderToolTip(valElem[0].parentElement);
+                            else if (valElem[j].parentElement.className.indexOf('e-tooltip') < 0) {
+                                this.renderToolTip(valElem[j].parentElement);
                             }
-                            if (valElem.length > 1 && valElem[1].parentElement.className.indexOf('e-tooltip') < 0) {
-                                this.renderToolTip(valElem[1].parentElement);
-                            }
-                            valElem = tempElem.querySelectorAll('.e-rule-value div.e-control');
-                        } while (valElem.length > 0);
+                            j++;
+                        }
                     }
                 }
-                else if (dropDownObj.element && !dropDownObj.index && fieldElem.parentElement.className.indexOf('e-tooltip') < 0) {
-                    this.renderToolTip(fieldElem.parentElement);
+                else if (dropDownObj.element && isNullOrUndefined(dropDownObj.index)) {
+                    if (fieldElem.parentElement.className.indexOf('e-tooltip') < 0) {
+                        this.renderToolTip(fieldElem.parentElement);
+                    }
+                    isValid = false;
                 }
             }
         }
+        return isValid;
     }
     groupTemplate() {
         let groupElem;
@@ -430,7 +446,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         fieldElem.appendChild(tempElem);
         tempElem = this.createElement('div', { attrs: { class: 'e-rule-value' } });
         fieldElem.appendChild(tempElem);
-        ruleElem.appendChild(fieldElem);
+        tempElem = this.createElement('div', { attrs: { class: 'e-rule-value-delete' } });
         if (this.showButtons.ruleDelete) {
             clsName = 'e-removerule e-rule-delete e-css e-btn e-small';
         }
@@ -438,7 +454,9 @@ let QueryBuilder = class QueryBuilder extends Component {
             clsName = 'e-removerule e-rule-delete e-css e-btn e-small e-button-hide';
         }
         delBtnElem = this.createElement('button', { attrs: { class: clsName } });
-        fieldElem.appendChild(delBtnElem);
+        tempElem.appendChild(delBtnElem);
+        fieldElem.appendChild(tempElem);
+        ruleElem.appendChild(fieldElem);
         return ruleElem;
     }
     addGroupElement(isGroup, target, condition, isBtnClick) {
@@ -600,19 +618,10 @@ let QueryBuilder = class QueryBuilder extends Component {
                 && tempRule.operator.toLowerCase().indexOf('contains') < 0)) {
                 filterElem = operatorElem.previousElementSibling;
                 tempRule.type = rule.type;
-                let numArr = [];
-                let strArr = [];
-                if (typeof rule.value === 'string') {
-                    strArr.push(rule.value);
-                    rule.value = strArr;
-                }
-                else if (typeof rule.value === 'number') {
-                    numArr.push(rule.value);
-                    rule.value = numArr;
-                }
+                rule.value = [];
             }
             else if (typeof rule.value === 'object') {
-                rule.value = rule.value[0];
+                rule.value = rule.value.length > 0 ? rule.value[0] : '';
             }
             if (args.previousItemData) {
                 let prevValue = args.previousItemData.value.toLowerCase();
@@ -736,6 +745,9 @@ let QueryBuilder = class QueryBuilder extends Component {
         let result = [];
         for (let i = 0, iLen = dataSource.length; i < iLen; i++) {
             let value = dataSource[i][field];
+            if (Number(dataSource[i][field]) === dataSource[i][field] && dataSource[i][field] % 1 !== 0) {
+                value = dataSource[i][field].toString();
+            }
             let data = {};
             if (!(value in original)) {
                 original[value] = 1;
@@ -831,11 +843,13 @@ let QueryBuilder = class QueryBuilder extends Component {
             inputobj.dataBind();
         }
         else {
+            let fieldObj = getComponent(document.getElementById(parentId + '_filterkey'), 'dropdownlist');
+            itemData = this.columns[fieldObj.index];
             let min = (itemData.validation && itemData.validation.min) ? itemData.validation.min : 0;
             let max = (itemData.validation && itemData.validation.max) ? itemData.validation.max : Number.MAX_VALUE;
             let format = itemData.format ? itemData.format : '#';
             if (length > 1 && rule) {
-                selectedValue = rule.value[idx];
+                selectedValue = rule.value[idx] ? rule.value[idx] : 0;
             }
             let numeric = new NumericTextBox({
                 value: selectedValue,
@@ -905,8 +919,14 @@ let QueryBuilder = class QueryBuilder extends Component {
                         case 'date':
                             {
                                 let selectedValue = new Date();
+                                let selVal;
                                 if (this.isImportRules && rule && rule.value) {
                                     selectedValue = (length > 1) ? new Date(rule.value[i]) : new Date(rule.value);
+                                    let format;
+                                    let column = this.getColumn(rule.field);
+                                    selVal = (length > 1) ? rule.value[i] : rule.value;
+                                    format = { type: 'dateTime', format: column.format || 'MM/dd/yyyy' };
+                                    selectedValue = this.intl.parseDate(selVal, format);
                                 }
                                 let format = itemData.format ? itemData.format : 'MM/dd/yyyy';
                                 let datepick = new DatePicker({
@@ -947,7 +967,8 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         let filtElem = document.getElementById(element.id.replace('operatorkey', 'filterkey'));
         let filtObj = getComponent(filtElem, 'dropdownlist');
-        if (itemData.template || this.columns[filtObj.index].template) {
+        itemData.template = this.columns[filtObj.index].template;
+        if (itemData.template) {
             itemData.template = this.columns[filtObj.index].template;
             let valElem;
             if (itemData.template && typeof itemData.template.create === 'string') {
@@ -962,7 +983,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 addClass([valElem], 'e-' + itemData.field);
                 target.nextElementSibling.appendChild(valElem);
             }
-            else {
+            else if (valElem instanceof Array) {
                 addClass(valElem, 'e-template');
                 for (let i = 0, iLen = valElem.length; i < iLen; i++) {
                     valElem[i].id = parentId + '_valuekey' + i;
@@ -1014,7 +1035,8 @@ let QueryBuilder = class QueryBuilder extends Component {
                 }
                 break;
             case 'datepicker':
-                let format = { type: 'dateTime', format: 'MM/dd/yyyy' };
+                let column = this.getColumn(rule.field);
+                let format = { type: 'dateTime', format: column.format || 'MM/dd/yyyy' };
                 if (rule.operator.indexOf('between') > -1) {
                     rule.value[i] = getComponent(element, controlName).value;
                 }
@@ -1075,76 +1097,88 @@ let QueryBuilder = class QueryBuilder extends Component {
             this.trigger('operatorChanged', eventsArgs);
         }
         else if (closest(target, '.e-rule-value')) {
-            if (selectedValue !== null) {
-                if (target.className.indexOf('e-template') > -1) {
-                    let oper = rule.rules[index].operator.toLowerCase();
-                    if (selectedValue instanceof Array) {
-                        if ((oper.indexOf('in') > -1 && oper.indexOf('contains') < 0) || oper.indexOf('between') > -1) {
-                            rule.rules[index].value = selectedValue;
-                        }
-                        else {
-                            rule.rules[index].value = selectedValue[0];
-                        }
-                    }
-                    else {
-                        rule.rules[index].value = selectedValue;
-                    }
-                    eventsArgs = { groupID: groupElem.id, ruleID: ruleElem.id, selectedItem: selectedValue, cancel: false };
-                    this.trigger('valueChanged', eventsArgs);
-                }
-                else if (target.className.indexOf('e-spin') > -1 || target.className.indexOf('e-numeric') > -1) {
-                    if ((rule.rules[index].operator.indexOf('between') > -1)
-                        || (rule.rules[index].operator.indexOf('in') > -1 && rule.rules[index].operator.indexOf('contains') < 0)) {
-                        rule.rules[index].value[i] = selectedValue;
-                    }
-                    else {
-                        rule.rules[index].value = selectedValue;
+            this.ruleValueUpdate(target, selectedValue, rule, index, groupElem, ruleElem, i);
+        }
+    }
+    ruleValueUpdate(target, selectedValue, rule, index, groupElem, ruleElem, i) {
+        let eventsArgs;
+        let arrOperator = ['in', 'between'];
+        if (selectedValue !== null) {
+            let oper = rule.rules[index].operator.toLowerCase();
+            if (target.className.indexOf('e-multiselect') > -1 && rule.rules[index].type === 'number') {
+                let selVal = [];
+                let dupSelectedValue = selectedValue;
+                for (let k = 0, kLen = dupSelectedValue.length; k < kLen; k++) {
+                    if (typeof dupSelectedValue[k] === 'string') {
+                        selVal.push(parseFloat(dupSelectedValue[k]));
                     }
                 }
-                else if (target.className.indexOf('e-radio') > -1) {
-                    rule.rules[index].value = selectedValue;
+                if (selVal.length) {
+                    selectedValue = selVal;
                 }
-                else if (target.className.indexOf('e-multiselect') > -1) {
-                    rule.rules[index].value = selectedValue;
-                }
-                else if (target.className.indexOf('e-textbox') > -1) {
-                    if (rule.rules[index].operator === 'in' || rule.rules[index].operator === 'notin') {
-                        if (rule.rules[index].type === 'string') {
-                            rule.rules[index].value = this.processValueString(selectedValue, rule.rules[index].type);
-                        }
-                        else {
-                            rule.rules[index].value = this.processValueString(selectedValue, rule.rules[index].type);
-                        }
-                    }
-                    else {
-                        rule.rules[index].value = selectedValue;
-                    }
-                }
-                else if (target.className.indexOf('e-datepicker') > -1) {
-                    let ddlInst = getInstance(ruleElem.querySelector('.e-rule-filter input'), DropDownList);
-                    let format = { type: 'dateTime', format: this.columns[ddlInst.index].format || 'MM/dd/yyyy' };
-                    if (format.type) {
-                        if ((rule.rules[index].operator.indexOf('between') > -1) || (rule.rules[index].operator.indexOf('in') > -1
-                            && rule.rules[index].operator.indexOf('contains') < 0)) {
-                            rule.rules[index].value[i] = this.intl.formatDate(selectedValue, format);
-                        }
-                        else {
-                            rule.rules[index].value = this.intl.formatDate(selectedValue, format);
-                        }
-                    }
-                }
-                this.validatValue(rule, index, ruleElem);
             }
+            if (target.className.indexOf('e-template') > -1) {
+                if (selectedValue instanceof Array) {
+                    if (arrOperator.indexOf(oper) > -1) {
+                        rule.rules[index].value = selectedValue;
+                    }
+                    else {
+                        rule.rules[index].value = selectedValue[0];
+                    }
+                }
+                else {
+                    rule.rules[index].value = selectedValue;
+                }
+                eventsArgs = { groupID: groupElem.id, ruleID: ruleElem.id, selectedItem: selectedValue, cancel: false };
+                this.trigger('valueChanged', eventsArgs);
+            }
+            else if (target.className.indexOf('e-spin') > -1 || target.className.indexOf('e-numeric') > -1) {
+                if (arrOperator.indexOf(oper) > -1) {
+                    rule.rules[index].value[i] = selectedValue;
+                }
+                else {
+                    rule.rules[index].value = selectedValue;
+                }
+            }
+            else if (target.className.indexOf('e-radio') > -1) {
+                rule.rules[index].value = selectedValue;
+            }
+            else if (target.className.indexOf('e-multiselect') > -1) {
+                rule.rules[index].value = selectedValue;
+            }
+            else if (target.className.indexOf('e-textbox') > -1) {
+                if (oper === 'in' || oper === 'notin') {
+                    if (rule.rules[index].type === 'string') {
+                        rule.rules[index].value = this.processValueString(selectedValue, rule.rules[index].type);
+                    }
+                    else {
+                        rule.rules[index].value = this.processValueString(selectedValue, rule.rules[index].type);
+                    }
+                }
+                else {
+                    rule.rules[index].value = selectedValue;
+                }
+            }
+            else if (target.className.indexOf('e-datepicker') > -1) {
+                let ddlInst = getInstance(ruleElem.querySelector('.e-rule-filter input'), DropDownList);
+                let format = { type: 'dateTime', format: this.columns[ddlInst.index].format || 'MM/dd/yyyy' };
+                if (format.type) {
+                    if (arrOperator.indexOf(oper) > -1) {
+                        rule.rules[index].value[i] = this.intl.formatDate(selectedValue, format);
+                    }
+                    else {
+                        rule.rules[index].value = this.intl.formatDate(selectedValue, format);
+                    }
+                }
+            }
+            this.validatValue(rule, index, ruleElem);
         }
     }
     validatValue(rule, index, ruleElem) {
         if (this.allowValidation && rule.rules[index].value) {
             let valElem = ruleElem.querySelectorAll('.e-rule-value .e-control');
-            if (valElem[0].parentElement.className.indexOf('e-searcher') > -1) {
-                let elem = closest(valElem[0], '.e-multi-select-wrapper');
-                if (elem.className.indexOf('e-tooltip') > -1) {
-                    getComponent(elem, 'tooltip').destroy();
-                }
+            if (valElem[0].className.indexOf('e-tooltip') > -1) {
+                getComponent(valElem[0], 'tooltip').destroy();
             }
             else if (valElem[0].parentElement.className.indexOf('e-tooltip') > -1) {
                 getComponent(valElem[0].parentElement, 'tooltip').destroy();
@@ -1209,20 +1243,6 @@ let QueryBuilder = class QueryBuilder extends Component {
         this.unWireEvents();
         this.levelColl[this.element.id + '_e_group0'] = [0];
         this.rule = { condition: 'and', rules: [] };
-        let elementlist = selectAll('.e-control', this.element);
-        for (let i = 0; i < elementlist.length; i++) {
-            let control = elementlist[i];
-            if ((control).ej2_instances) {
-                while ((control).ej2_instances.length) {
-                    if (control.tagName === 'BUTTON') {
-                        (control).ej2_instances[0].destroy();
-                    }
-                    else {
-                        this.destroyControls(closest(control, '.e-rule-value').previousElementSibling);
-                    }
-                }
-            }
-        }
         this.element.innerHTML = '';
         classList(this.element, [], ['e-rtl', 'e-responsive', 'e-device']);
     }
@@ -1468,6 +1488,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             ValidationMessage: 'This field is required'
         };
         this.l10n = new L10n('querybuilder', this.defaultLocale, this.locale);
+        this.intl = new Internationalization();
         this.customOperators = {
             stringOperator: [
                 { value: 'startswith', key: this.l10n.getConstant('StartsWith') },
@@ -1698,29 +1719,39 @@ let QueryBuilder = class QueryBuilder extends Component {
         let pred;
         let pred2;
         let ruleValue;
-        let ignoreCase = false;
+        let matchCase = false;
+        let column;
         for (let i = 0, len = ruleColl.length; i < len; i++) {
             let keys = Object.keys(ruleColl[i]);
             if (keys.indexOf('rules') > -1) {
                 pred2 = this.getPredicate(ruleColl[i]);
                 if (pred2) {
-                    if (rule.condition === 'and') {
-                        pred = pred.and(pred2);
+                    if (pred) {
+                        if (rule.condition === 'and') {
+                            pred = pred.and(pred2);
+                        }
+                        else {
+                            pred = pred.or(pred2);
+                        }
                     }
                     else {
-                        pred = pred.or(pred2);
+                        pred = pred2;
                     }
                 }
             }
             else if (ruleColl[i].operator.length) {
+                let oper = ruleColl[i].operator.toLowerCase();
+                let strOperColl = ['contains', 'startswith', 'endswith'];
+                let dateOperColl = ['equal', 'notequal'];
+                matchCase = (strOperColl.indexOf(oper) > -1 || (ruleColl[i].type === 'date' && dateOperColl.indexOf(oper) > -1));
+                column = this.getColumn(ruleColl[i].field);
                 if (ruleColl[i].type === 'date') {
-                    ruleValue = new Date(ruleColl[i].value);
+                    let format = { type: 'dateTime', format: column.format || 'MM/dd/yyyy' };
+                    ruleValue = this.intl.parseDate(ruleColl[i].value, format);
                 }
                 else {
                     ruleValue = ruleColl[i].value;
                 }
-                let oper = ruleColl[i].operator.toLowerCase();
-                ignoreCase = (oper === 'contains' || oper === 'startswith' || oper === 'endswith');
                 if (i === 0) {
                     if ((oper.indexOf('in') > -1 || oper.indexOf('between') > -1) && oper !== 'contains') {
                         pred = this.arrayPredicate(ruleColl[i]);
@@ -1728,7 +1759,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                     else {
                         let value = ruleValue;
                         if (value !== '') {
-                            pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue, ignoreCase);
+                            pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue, matchCase);
                         }
                     }
                 }
@@ -1740,10 +1771,10 @@ let QueryBuilder = class QueryBuilder extends Component {
                         else {
                             let value = ruleValue;
                             if (pred && value !== '') {
-                                pred = pred.and(ruleColl[i].field, ruleColl[i].operator, ruleValue, ignoreCase);
+                                pred = pred.and(ruleColl[i].field, ruleColl[i].operator, ruleValue, matchCase);
                             }
                             else if (value !== '') {
-                                pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue, ignoreCase);
+                                pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue, matchCase);
                             }
                         }
                     }
@@ -1754,10 +1785,10 @@ let QueryBuilder = class QueryBuilder extends Component {
                         else {
                             let value = ruleValue;
                             if (pred && value !== '') {
-                                pred = pred.or(ruleColl[i].field, ruleColl[i].operator, ruleValue, ignoreCase);
+                                pred = pred.or(ruleColl[i].field, ruleColl[i].operator, ruleValue, matchCase);
                             }
                             else if (value !== '') {
-                                pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue, ignoreCase);
+                                pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue, matchCase);
                             }
                         }
                     }
@@ -1765,6 +1796,16 @@ let QueryBuilder = class QueryBuilder extends Component {
             }
         }
         return pred;
+    }
+    getColumn(field) {
+        let columns = this.columns;
+        let column;
+        for (let i = 0, iLen = columns.length; i < iLen; i++) {
+            if (columns[i].field === field) {
+                column = columns[i];
+            }
+        }
+        return column;
     }
     arrayPredicate(ruleColl, predicate, condition) {
         let value = ruleColl.value;

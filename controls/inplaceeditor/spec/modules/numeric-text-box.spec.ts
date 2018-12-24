@@ -47,5 +47,21 @@ describe('NumericTextBox Control', () => {
             editorObj.save();
             expect(valueEle.innerHTML === "2.00").toEqual(true);
         });
+        it('Model value "undefined" with render testing', () => {
+            destroy(editorObj);
+            editorObj = renderEditor({
+                type: 'Numeric',
+                mode: 'Inline',
+                model: {
+                    value: undefined
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-numeric', ele).length === 1).toEqual(true);
+        });
     });
 });

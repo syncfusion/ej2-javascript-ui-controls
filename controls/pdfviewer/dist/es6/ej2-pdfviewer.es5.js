@@ -1699,7 +1699,6 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
     PdfViewerBase.prototype.focusViewerContainer = function () {
         var scrollX = window.scrollX;
         var scrollY = window.scrollY;
-        this.viewerContainer.focus();
         // tslint:disable-next-line
         var parentNode = this.getScrollParent(this.viewerContainer);
         var scrollNodeX = 0;
@@ -6061,8 +6060,8 @@ var BookmarkView = /** @__PURE__ @class */ (function () {
             fields: {
                 dataSource: this.bookmarks.bookMark,
                 id: 'Id',
-                parentID: 'Pid',
                 text: 'Title',
+                child: 'Child',
                 hasChildren: 'HasChild',
             },
             nodeTemplate: bookmarkIconView.outerHTML,

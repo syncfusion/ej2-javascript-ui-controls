@@ -663,7 +663,6 @@ export class PdfViewerBase {
     public focusViewerContainer(): void {
         let scrollX: number = window.scrollX;
         let scrollY: number = window.scrollY;
-        this.viewerContainer.focus();
         // tslint:disable-next-line
         let parentNode: any = this.getScrollParent(this.viewerContainer);
         let scrollNodeX: number = 0;

@@ -117,6 +117,9 @@ let Toast = class Toast extends Component {
         if (this.width === '300px') {
             this.width = (this.isDevice && screen.width < 768) ? '100%' : '300px';
         }
+        if (isNullOrUndefined(this.target)) {
+            this.target = document.body;
+        }
         if (this.enableRtl) {
             this.element.classList.add(RTL);
         }
@@ -619,7 +622,7 @@ __decorate([
     Collection([{}], ButtonModelProps)
 ], Toast.prototype, "buttons", void 0);
 __decorate([
-    Property(document.body)
+    Property()
 ], Toast.prototype, "target", void 0);
 __decorate([
     Event()

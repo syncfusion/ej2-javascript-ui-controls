@@ -876,16 +876,20 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     public onPaste(e?: KeyboardEvent | ClipboardEvent): void {
         let args: Object = { requestType: 'Paste', editorMode: this.editorMode, event: e };
-        let proxy: RichTextEditor = this;
         let value: string = null;
-        if (e && !isNOU((e as ClipboardEvent).clipboardData)) { value = (e as ClipboardEvent).clipboardData.getData('text/plain'); }
-        setTimeout(() => { this.formatter.saveData(); }, 0);
-        this.formatter.onSuccess(this, args);
-        if (value !== null && value.length === 0) {
+        if (e && !isNOU((e as ClipboardEvent).clipboardData)) {
+            value = (e as ClipboardEvent).clipboardData.getData('text/plain');
+        }
+        let file: File = e && (e as ClipboardEvent).clipboardData && (e as ClipboardEvent).clipboardData.items.length > 0 ?
+            (e as ClipboardEvent).clipboardData.items[0].getAsFile() : null;
+        if (value !== null) {
             this.notify(events.paste, {
-                module: events.imgModule, file: (e as ClipboardEvent).clipboardData.items[0].getAsFile(), args: e
+                file: file,
+                args: e,
+                text: value
             });
         }
+        setTimeout(() => { this.formatter.onSuccess(this, args); }, 0);
     }
 
     /** 

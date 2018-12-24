@@ -146,7 +146,23 @@ class Column {
             this.setFormatter(valueFormatter.getFormatFunction(options.format));
             this.setParser(valueFormatter.getParserFunction(options.format));
         }
-        this.toJSON = () => { return {}; };
+        this.toJSON = () => {
+            let col = {};
+            let skip = ['headerText', 'template', 'headerTemplate', 'edit', 'editTemplate', 'filterTemplate', 'commandsTemplate'];
+            let keys = Object.keys(this);
+            for (let i = 0; i < keys.length; i++) {
+                if (keys[i] === 'columns') {
+                    col[keys[i]] = [];
+                    for (let j = 0; j < this[keys[i]].length; j++) {
+                        col[keys[i]].push(this[keys[i]][j].toJSON());
+                    }
+                }
+                else if (skip.indexOf(keys[i]) < 0) {
+                    col[keys[i]] = this[keys[i]];
+                }
+            }
+            return col;
+        };
         if (!this.field) {
             this.allowFiltering = false;
             this.allowGrouping = false;
@@ -3128,6 +3144,12 @@ class RowRenderer {
         let args = { row: tr, rowHeight: this.parent.rowHeight };
         if (row.isDataRow) {
             this.parent.trigger(rowDataBound, extend(rowArgs, args));
+            if (this.parent.childGrid || this.parent.isRowDragable() || this.parent.detailTemplate) {
+                let td = tr.querySelectorAll('.e-rowcell:not(.e-hide)')[0];
+                if (td) {
+                    td.classList.add('e-detailrowvisible');
+                }
+            }
         }
         if (this.parent.enableVirtualization) {
             rowArgs.rowHeight = this.parent.rowHeight;
@@ -3824,11 +3846,6 @@ class ContentRender {
                 }
             }
             if (modelData[i].isDataRow) {
-                //detailrowvisible 
-                let td = tr.querySelectorAll('.e-rowcell:not(.e-hide)')[0];
-                if (td) {
-                    td.classList.add('e-detailrowvisible');
-                }
                 this.rowElements.push(tr);
             }
             this.ariaService.setOptions(this.getTable(), { colcount: gObj.getColumns().length.toString() });
@@ -4119,8 +4136,11 @@ class HeaderRender {
                 visualElement.setAttribute('e-mappinguid', this.column.uid);
             }
             if (col && !isNullOrUndefined(col.headerTemplate)) {
-                if (col.headerTemplate.indexOf('#') !== -1) {
-                    visualElement.innerHTML = document.querySelector(col.headerTemplate).innerHTML.trim();
+                if (!isNullOrUndefined(col.headerTemplate)) {
+                    let result;
+                    let colIndex = gObj.getColumnIndexByField(col.field);
+                    result = col.getHeaderTemplate()(extend({ 'index': colIndex }, col), gObj, 'headerTemplate');
+                    appendChildren(visualElement, result);
                 }
                 else {
                     visualElement.innerHTML = col.headerTemplate;
@@ -5598,7 +5618,8 @@ class Render {
             e.result = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.currentViewData;
         }
         this.parent.notify(dataReady, extend({ count: e.count, result: e.result, aggregates: e.aggregates }, args));
-        if (gObj.groupSettings.columns.length || (args && args.requestType === 'ungrouping')) {
+        if ((gObj.groupSettings.columns.length || (args && args.requestType === 'ungrouping'))
+            && (args && args.requestType !== 'filtering')) {
             this.headerRenderer.refreshUI();
         }
         if (len) {
@@ -6475,7 +6496,7 @@ class ContentFocus {
         this.matrix.select(current[0], current[1]);
     }
     getCurrentFromAction(action, navigator = [0, 0], isPresent, e) {
-        if (!isPresent && !this.indexesByKey(action)) {
+        if (!isPresent && !this.indexesByKey(action) || (this.matrix.current.length === 0)) {
             return null;
         }
         if (!this.shouldFocusChange(e)) {
@@ -6904,7 +6925,7 @@ class Selection {
         EventHandler.remove(this.parent.getContent(), 'mousedown', this.mouseDownHandler);
     }
     isEditing() {
-        return (this.parent.editSettings.mode === 'Normal' || (this.parent.editSettings.mode === 'Batch' &&
+        return (this.parent.editSettings.mode === 'Normal' || (this.parent.editSettings.mode === 'Batch' && this.parent.editModule &&
             this.parent.editModule.formObj && !this.parent.editModule.formObj.validate())) &&
             this.parent.isEdit && !this.parent.isPersistSelection;
     }
@@ -6919,7 +6940,7 @@ class Selection {
         let gObj = this.parent;
         let added = 'addedRecords';
         let deleted = 'deletedRecords';
-        if (gObj.editSettings.mode === 'Batch') {
+        if (gObj.editSettings.mode === 'Batch' && gObj.editModule) {
             let currentRecords = iterateExtend(this.parent.getCurrentViewRecords());
             currentRecords = this.parent.editModule.getBatchChanges()[added].concat(currentRecords);
             let deletedRecords = this.parent.editModule.getBatchChanges()[deleted];
@@ -6985,11 +7006,13 @@ class Selection {
             this.clearRow();
         }
         if (!isToggle) {
-            this.updateRowSelection(selectedRow, index);
-            if (gObj.getFrozenColumns()) {
-                this.updateRowSelection(selectedMovableRow, index);
+            if (this.selectedRowIndexes.indexOf(index) <= -1) {
+                this.updateRowSelection(selectedRow, index);
+                if (gObj.getFrozenColumns()) {
+                    this.updateRowSelection(selectedMovableRow, index);
+                }
             }
-            gObj.selectedRowIndex = index;
+            this.parent.setProperties({ selectedRowIndex: index }, true);
         }
         if (!isToggle) {
             args = {
@@ -7017,7 +7040,7 @@ class Selection {
      */
     selectRowsByRange(startIndex, endIndex) {
         this.selectRows(this.getCollectionFromIndexes(startIndex, endIndex));
-        this.parent.selectedRowIndex = endIndex;
+        this.parent.setProperties({ selectedRowIndex: endIndex }, true);
     }
     /**
      * Selects a collection of rows by index.
@@ -7047,7 +7070,7 @@ class Selection {
             return;
         }
         this.clearRow();
-        gObj.selectedRowIndex = rowIndexes.slice(-1)[0];
+        this.parent.setProperties({ selectedRowIndex: rowIndexes.slice(-1)[0] }, true);
         if (!this.isSingleSel()) {
             for (let rowIdx of rowIndexes) {
                 this.updateRowSelection(gObj.getRowByIndex(rowIdx), rowIdx);
@@ -7094,7 +7117,7 @@ class Selection {
         for (let rowIndex of rowIndexes) {
             let rowObj = this.getRowObj(rowIndex);
             let isUnSelected = this.selectedRowIndexes.indexOf(rowIndex) > -1;
-            gObj.selectedRowIndex = rowIndex;
+            this.parent.setProperties({ selectedRowIndex: rowIndex }, true);
             if (isUnSelected) {
                 this.rowDeselect(rowDeselecting, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target);
                 this.selectedRowIndexes.splice(this.selectedRowIndexes.indexOf(rowIndex), 1);
@@ -7157,6 +7180,9 @@ class Selection {
     }
     clearRow() {
         this.clearRowSelection();
+        if (this.isCancelDeSelect === true) {
+            return;
+        }
         this.selectedRowIndexes = [];
         this.selectedRecords = [];
         this.parent.selectedRowIndex = -1;
@@ -7229,7 +7255,7 @@ class Selection {
         if (!this.preventFocus) {
             let target = this.focus.getPrevIndexes().cellIndex ?
                 selectedRow.cells[this.focus.getPrevIndexes().cellIndex] :
-                selectedRow.querySelector('.e-selectionbackground:not(.e-hide)');
+                selectedRow.querySelector('.e-selectionbackground:not(.e-hide):not(.e-detailrowcollapse):not(.e-detailrowexpand)');
             if (!target) {
                 return;
             }
@@ -7748,7 +7774,6 @@ class Selection {
             this.selectedRowCellIndexes = [];
             this.isCellSelected = false;
             this.cellDeselect(cellDeselected, rowCell, data, cells, foreignKeyData$$1);
-            this.prevECIdxs = undefined;
         }
     }
     getSelectedCellsElement() {
@@ -8449,6 +8474,11 @@ class Selection {
             this.setCheckAllState();
             this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
         }
+        if (e.requestType === 'paging') {
+            this.prevRowIndex = undefined;
+            this.prevCIdxs = undefined;
+            this.prevECIdxs = undefined;
+        }
     }
     onDataBound() {
         if (!this.parent.enableVirtualization && this.parent.isPersistSelection) {
@@ -8484,7 +8514,9 @@ class Selection {
         }
         if (!isNullOrUndefined(editForm)) {
             let editChkBox = editForm.querySelector('.e-edit-checkselect');
-            removeAddCboxClasses(editChkBox.nextElementSibling, checkState);
+            if (!isNullOrUndefined(editChkBox)) {
+                removeAddCboxClasses(editChkBox.nextElementSibling, checkState);
+            }
         }
     }
     checkSelectAll(checkBox) {
@@ -8946,10 +8978,13 @@ class Selection {
     addRemoveClassesForRow(row, isAdd, clearAll, ...args) {
         if (row) {
             let cells = [].slice.call(row.querySelectorAll('.e-rowcell'));
-            let cell = row.querySelector('.e-detailrowcollapse') || row.querySelector('.e-detailrowexpand')
-                || row.querySelector('.e-rowdragdrop');
-            if (cell) {
-                cells.push(cell);
+            let detailIndentCell = row.querySelector('.e-detailrowcollapse') || row.querySelector('.e-detailrowexpand');
+            let dragdropIndentCell = row.querySelector('.e-rowdragdrop');
+            if (detailIndentCell) {
+                cells.push(detailIndentCell);
+            }
+            if (dragdropIndentCell) {
+                cells.push(dragdropIndentCell);
             }
             addRemoveActiveClasses(cells, isAdd, ...args);
         }
@@ -10930,6 +10965,9 @@ let Grid = Grid_1 = class Grid extends Component {
             case 'enableHover':
                 let action = newProp.enableHover ? addClass : removeClass;
                 action([this.element], 'e-gridhover');
+                break;
+            case 'selectedRowIndex':
+                this.selectRow(newProp.selectedRowIndex);
                 break;
         }
     }
@@ -16498,7 +16536,7 @@ class Filter {
                     }
                     if (!isNullOrUndefined(column.format)) {
                         let flValue = (column.type === 'date' || column.type === 'datetime') ?
-                            new Date(this.values[column.field]) :
+                            this.valueFormatter.fromView(this.values[column.field], column.getParser(), column.type) :
                             this.values[column.field];
                         if (!(column.type === 'date' || column.type === 'datetime')) {
                             let formater = this.serviceLocator.getService('valueFormatter');
@@ -18198,10 +18236,10 @@ class RowDD {
             }
             else if (targetRow && parseInt(startedRow.getAttribute('aria-rowindex'), 10) > targetRow.rowIndex) {
                 element = this.parent.getRowByIndex(targetRow.rowIndex - 1);
-                rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop'));
+                rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'));
             }
             else {
-                rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop'));
+                rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'));
             }
             if (rowElement.length > 0) {
                 addRemoveActiveClasses(rowElement, true, 'e-dragborder');
@@ -18879,21 +18917,19 @@ class Group {
         }
         //Todo headerTemplateID for grouped column, disableHtmlEncode                          
         let headerCell = gObj.getColumnHeaderByUid(column.uid);
-        if (!isNullOrUndefined(column.headerTemplate)) {
-            if (column.headerTemplate.indexOf('#') !== -1) {
-                childDiv.innerHTML = document.querySelector(column.headerTemplate).innerHTML.trim();
-            }
-            else {
-                childDiv.innerHTML = column.headerTemplate;
-            }
-            childDiv.firstElementChild.classList.add('e-grouptext');
-        }
-        else {
-            childDiv.appendChild(this.parent.createElement('span', {
-                className: 'e-grouptext', innerHTML: column.headerText,
-                attrs: { tabindex: '-1', 'aria-label': 'sort the grouped column' }
-            }));
-        }
+        // if (!isNullOrUndefined(column.headerTemplate)) {
+        //     if (column.headerTemplate.indexOf('#') !== -1) {
+        //         childDiv.innerHTML = document.querySelector(column.headerTemplate).innerHTML.trim();
+        //     } else {
+        //         childDiv.innerHTML = column.headerTemplate;
+        //     }
+        //     childDiv.firstElementChild.classList.add('e-grouptext');
+        // } else {
+        childDiv.appendChild(this.parent.createElement('span', {
+            className: 'e-grouptext', innerHTML: column.headerText,
+            attrs: { tabindex: '-1', 'aria-label': 'sort the grouped column' }
+        }));
+        // }
         if (this.groupSettings.showToggleButton) {
             childDiv.appendChild(this.parent.createElement('span', {
                 className: 'e-togglegroupbutton e-icons e-icon-ungroup e-toggleungroup', innerHTML: '&nbsp;',
@@ -18968,8 +19004,10 @@ class Group {
                                     }
                                 }
                             }
-                            args = { columnName: this.colName, requestType: e.properties[prop].length ? 'grouping' : 'ungrouping',
-                                type: actionBegin };
+                            args = {
+                                columnName: this.colName, requestType: e.properties[prop].length ? 'grouping' : 'ungrouping',
+                                type: actionBegin
+                            };
                         }
                         else {
                             args = { requestType: 'ungrouping', type: actionBegin };
@@ -20936,6 +20974,9 @@ class InlineEditRender {
         if (isDetail) {
             tr.insertBefore(this.parent.createElement('td', { className: 'e-detailrowcollapse' }), tr.firstChild);
         }
+        if (gObj.isRowDragable()) {
+            tr.appendChild(this.parent.createElement('td', { className: 'e-dragindentcell' }));
+        }
         while (i < gLen) {
             tr.appendChild(this.parent.createElement('td', { className: 'e-indentcell' }));
             i++;
@@ -21298,7 +21339,7 @@ class EditRender {
                 }
                 if ((col.isPrimaryKey || col.isIdentity) && args.requestType === 'beginEdit' ||
                     (col.isIdentity && args.requestType === 'add')) { // already disabled in cell plugins
-                    input.setAttribute('disabled', 'true');
+                    input.setAttribute('disabled', '');
                 }
             }
             elements[col.uid] = input;
@@ -22853,7 +22894,7 @@ function dateanddatetimerender(args, mode, rtl) {
         format: format,
         placeholder: isInline ?
             '' : args.column.headerText, enableRtl: rtl,
-        enabled: isEditable(args.column, args.type, args.element),
+        enabled: isEditable(args.column, args.requestType, args.element),
     };
 }
 

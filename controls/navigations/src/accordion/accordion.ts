@@ -38,6 +38,24 @@ const CLS_TOGANIMATE: Str = 'e-toggle-animation';
 const CLS_NEST: Str = 'e-nested';
 const CLS_EXPANDSTATE: Str = 'e-expand-state';
 
+interface AcrdnTemplateRef {
+  elementRef: AcrdnElementRef;
+}
+
+interface AcrdnElementRef {
+  nativeElement: AcrdnElementComment;
+}
+
+interface AcrdnElementComment {
+  childNodes?: NodeList;
+  firstChild?: HTMLElement;
+  lastChild?: HTMLElement;
+  nextElementSibling?: HTMLElement;
+  parentElement?: HTMLElement;
+  propName?: HTMLElement;
+}
+
+
 export interface AccordionClickArgs extends BaseEventArgs {
   /** Defines the current Accordion Item Object. */
   item?: AccordionItemModel;
@@ -189,6 +207,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     private isNested: Boolean;
     private isDestroy: Boolean;
     private templateEle: string[];
+    private isAngular: boolean;
     /**
      * Contains the keyboard configuration of the Accordion.
      */
@@ -484,7 +503,10 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      }
      this.trigger('clicked', eventArgs);
      let cntclkCheck: boolean = (acrdnCtn && !isNOU(select('.e-target', acrdnCtn)));
-     cntclkCheck = cntclkCheck  && (isNOU(select('.' + CLS_ROOT, acrdnCtn)) || !(closest(trgt , '.' + CLS_ROOT) === this.element));
+     let inlineAcrdnSel: string = '.' + CLS_CONTENT + ' .' + CLS_ROOT;
+     let inlineEleAcrdn: boolean = acrdnCtn && !isNOU(select('.' + CLS_ROOT, acrdnCtn)) && isNOU(closest(trgt , inlineAcrdnSel )) ;
+     let nestContCheck: boolean = acrdnCtn && isNOU(select('.' + CLS_ROOT, acrdnCtn)) || !(closest(trgt , '.' + CLS_ROOT) === this.element);
+     cntclkCheck = cntclkCheck  && (inlineEleAcrdn || nestContCheck);
      trgt.classList.remove('e-target');
      if (trgt.classList.contains(CLS_CONTENT) || trgt.classList.contains(CLS_CTENT) || cntclkCheck) {
       return; }
@@ -581,7 +603,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       let innerEle: HTEle;
       innerEle = this.createElement('div', { className: CLS_ITEM });
       innerEle.id = getUniqueID('acrdn_item');
-      if (item.header) {
+      if (item.header && this.angularnativeCondiCheck(item, 'header')) {
         let ctnEle: HTEle = this.headerEleGenerate();
         let hdrEle: HTEle = this.createElement('div', { className: CLS_HEADERCTN});
         ctnEle.appendChild(hdrEle);
@@ -607,7 +629,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
          } else {
             hdr.insertBefore(hdrIcnEle, hdr.childNodes[0]); }
       }
-      if (item.content) {
+      if (item.content && this.angularnativeCondiCheck(item, 'content') ) {
         let hdrIcon: HTEle = this.toggleIconGenerate();
         if (isNOU(hdr)) {
           hdr = this.headerEleGenerate();
@@ -618,6 +640,21 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      }
       return innerEle;
     }
+
+    private angularnativeCondiCheck(item: AccordionItemModel, prop: string): boolean {
+      let property: string = prop === 'content' ? item.content : item.header;
+      let content: AcrdnTemplateRef = (property as Object) as AcrdnTemplateRef;
+      if (this.isAngular && !isNOU(content.elementRef) ) {
+        if (content.elementRef.nativeElement.childNodes.length === 0 && isNOU(content.elementRef.nativeElement.nextElementSibling)) {
+          return false;
+        } else {
+          return true;
+        }
+      } else {
+        return true;
+      }
+    }
+
     private fetchElement(ele: HTEle, value: Str, index: number, isHeader: boolean): HTEle {
       let templateFn: Function;
       let temString: Str;

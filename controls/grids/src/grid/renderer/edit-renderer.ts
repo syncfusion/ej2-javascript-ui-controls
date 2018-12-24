@@ -187,7 +187,7 @@ export class EditRender {
                 }
                 if ((col.isPrimaryKey || col.isIdentity) && args.requestType === 'beginEdit' ||
                     (col.isIdentity && args.requestType === 'add')) { // already disabled in cell plugins
-                    input.setAttribute('disabled', 'true');
+                    input.setAttribute('disabled', '');
                 }
             }
             elements[col.uid] = input;

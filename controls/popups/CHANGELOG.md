@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.44 (2018-12-24)
+
+### Popup library
+
+#### Bug Fixes
+
+- The issue with collision while displays popup on scrollable viewport element has been resolved.
+
 ## 16.4.40-beta (2018-12-10)
 
 ### Dialog

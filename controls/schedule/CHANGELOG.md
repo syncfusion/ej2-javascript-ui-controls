@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 16.4.42 (2018-12-10)
+## 16.4.44 (2018-12-24)
+
+### Schedule
+
+#### Bug Fixes
+
+- An issue with `quick popup` opening on blocked time ranges has been fixed.
+
+## 16.4.42 (2018-12-14)
 
 ### Schedule
 

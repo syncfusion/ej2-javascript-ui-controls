@@ -439,7 +439,9 @@ class Render {
         let data = args.data;
         let parentData = data.parentItem;
         let index;
-        if (!isNullOrUndefined(data.parentIndex) && !(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root'))) {
+        if (!isNullOrUndefined(data.parentIndex) &&
+            (!(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root')) ||
+                (isRemoteData(this.parent) && !isOffline(this.parent)))) {
             index = data.parentIndex;
             let collapsed$$1 = !(isNullOrUndefined(parentData[this.parent.expandStateMapping]) ||
                 parentData[this.parent.expandStateMapping]) || this.parent.enableCollapseAll ||
@@ -889,7 +891,8 @@ class DataManipulation {
         }
         else {
             let dm = this.parent.dataSource;
-            let qry = new Query();
+            let qry = isNullOrUndefined(this.parent.grid.query) ?
+                new Query() : this.parent.grid.query;
             let clonequries = this.parent.query.queries.filter((e) => e.fn !== 'onPage' && e.fn !== 'onWhere');
             qry.queries = clonequries;
             qry.where(this.parent.parentIdMapping, 'equal', rowDetails.record[this.parent.idMapping]);
@@ -1932,6 +1935,9 @@ let TreeGrid = class TreeGrid extends Component {
             }
             if (this.isLocalData) {
                 if ((args.requestType === 'delete' || args.requestType === 'save')) {
+                    if (args.requestType === 'save' && this.editSettings.mode === 'Cell') {
+                        args.column = this.getColumnByField(this.cellEditedColumn);
+                    }
                     this.notify(crudAction, { value: args.data, action: args.action || args.requestType });
                 }
                 if (args.requestType === 'add' && (this.editSettings.newRowPosition !== 'Top' && this.editSettings.newRowPosition !== 'Bottom')) {
@@ -2686,6 +2692,7 @@ let TreeGrid = class TreeGrid extends Component {
      * @return {void}
      */
     expandRow(row, record) {
+        record = this.getCollapseExpandRecords(row, record);
         let args = { data: record, row: row, cancel: false };
         this.trigger(expanding, args);
         if (args.cancel) {
@@ -2697,11 +2704,23 @@ let TreeGrid = class TreeGrid extends Component {
             this.trigger(expanded, collapseArgs);
         }
     }
+    getCollapseExpandRecords(row, record) {
+        if (this.allowPaging && this.pageSettings.pageSizeMode === 'All' && this.isExpandAll && isNullOrUndefined(record)) {
+            record = this.flatData.filter((e) => {
+                return e.hasChildRecords;
+            });
+        }
+        else if (isNullOrUndefined(record)) {
+            record = this.grid.getCurrentViewRecords()[row.rowIndex];
+        }
+        return record;
+    }
     /**
      * Collapses child rows
      * @return {void}
      */
     collapseRow(row, record) {
+        record = this.getCollapseExpandRecords(row, record);
         let args = { data: record, row: row, cancel: false };
         this.trigger(collapsing, args);
         if (args.cancel) {
@@ -2716,19 +2735,54 @@ let TreeGrid = class TreeGrid extends Component {
      * @return {void}
      */
     expandAtLevel(level) {
-        let records = this.getCurrentViewRecords().filter((e) => { return e.level === level && e.hasChildRecords; });
-        for (let i = 0; i < records.length; i++) {
-            this.expandRow(null, records[i]);
+        if (this.allowPaging && this.pageSettings.pageSizeMode === 'All') {
+            let rec = this.flatData.filter((e) => {
+                if (e.hasChildRecords && e.level === level) {
+                    e.expanded = true;
+                }
+                return e.hasChildRecords && e.level === level;
+            });
+            this.expandRow(null, rec);
         }
+        else {
+            let rec = this.getRecordDetails(level);
+            let row = getObject('rows', rec);
+            let record = getObject('records', rec);
+            for (let i = 0; i < record.length; i++) {
+                this.expandRow(row[i], record[i]);
+            }
+        }
+    }
+    getRecordDetails(level) {
+        let rows = this.getRows().filter((e) => {
+            return (e.className.indexOf('level' + level) !== -1
+                && (e.querySelector('.e-treegridcollapse') || e.querySelector('.e-treegridexpand')));
+        });
+        let records = this.getCurrentViewRecords().filter((e) => { return e.level === level && e.hasChildRecords; });
+        let obj = { records: records, rows: rows };
+        return obj;
     }
     /**
      * Collapses the records at specific hierarchical level
      * @return {void}
      */
     collapseAtLevel(level) {
-        let records = this.getCurrentViewRecords().filter((e) => { return e.level === level && e.hasChildRecords; });
-        for (let i = 0; i < records.length; i++) {
-            this.collapseRow(null, records[i]);
+        if (this.allowPaging && this.pageSettings.pageSizeMode === 'All') {
+            let rec = this.flatData.filter((e) => {
+                if (e.hasChildRecords && e.level === level) {
+                    e.expanded = false;
+                }
+                return e.hasChildRecords && e.level === level;
+            });
+            this.collapseRow(null, rec);
+        }
+        else {
+            let rec = this.getRecordDetails(level);
+            let rows = getObject('rows', rec);
+            let records = getObject('records', rec);
+            for (let i = 0; i < records.length; i++) {
+                this.collapseRow(rows[i], records[i]);
+            }
         }
     }
     /**
@@ -2747,11 +2801,21 @@ let TreeGrid = class TreeGrid extends Component {
     }
     expandCollapseAll(action) {
         let rows = this.getRows().filter((e) => {
-            return e.className.indexOf('e-gridrowindex') !== -1 && e.className.indexOf('level0') !== -1;
+            return e.querySelector('.e-treegrid' + (action === 'expand' ? 'collapse' : 'expand'));
         });
         this.isExpandAll = true;
-        for (let i = 0; i < rows.length; i++) {
-            action === 'collapse' ? this.collapseRow(rows[i]) : this.expandRow(rows[i]);
+        if (this.allowPaging && this.pageSettings.pageSizeMode === 'All') {
+            this.flatData.filter((e) => {
+                if (e.hasChildRecords) {
+                    e.expanded = action === 'collapse' ? false : true;
+                }
+            });
+            action === 'collapse' ? this.collapseRow(rows[0]) : this.expandRow(rows[0]);
+        }
+        else {
+            for (let i = 0; i < rows.length; i++) {
+                action === 'collapse' ? this.collapseRow(rows[i]) : this.expandRow(rows[i]);
+            }
         }
         this.isExpandAll = false;
     }
@@ -2764,9 +2828,6 @@ let TreeGrid = class TreeGrid extends Component {
         }
         else {
             rowIndex = +row.getAttribute('aria-rowindex');
-        }
-        if (isNullOrUndefined(record)) {
-            record = this.grid.getCurrentViewRecords()[rowIndex];
         }
         if (this.allowPaging && this.pageSettings.pageSizeMode === 'All' && !isRemoteData(this)) {
             this.notify(localPagedExpandCollapse, { action: action, row: row, record: record });
@@ -4390,6 +4451,7 @@ class Edit$1 {
             else {
                 rowIndex = row.rowIndex;
             }
+            this.parent.cellEditedColumn = args.columnName;
             row = this.parent.grid.getRows()[rowIndex];
             this.parent.grid.editModule.updateRow(rowIndex, args.rowData);
             this.enableToolbarItems();

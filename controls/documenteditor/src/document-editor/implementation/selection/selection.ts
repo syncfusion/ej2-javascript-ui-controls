@@ -2,7 +2,7 @@ import { DocumentEditor } from '../../document-editor';
 import {
     Rect, Margin, IWidget, Widget, BodyWidget, TableRowWidget, TableWidget,
     LineWidget, TextElementBox, ListTextElementBox, ImageElementBox, Page, ParagraphWidget, TableCellWidget,
-    FieldElementBox, BlockWidget, HeaderFooterWidget, BlockContainer, BookmarkElementBox, ElementBox
+    FieldElementBox, BlockWidget, HeaderFooterWidget, BlockContainer, BookmarkElementBox, ElementBox, HeaderFooters
 } from '../viewer/page';
 import {
     ElementInfo, CaretHeightInfo, IndexInfo, SizeInfo,
@@ -21,7 +21,7 @@ import {
     Strikethrough, Underline, TextAlignment
 } from '../../base/index';
 import { TextPositionInfo } from '../editor/editor-helper';
-import { WCharacterFormat, WParagraphFormat, WStyle, WParagraphStyle } from '../index';
+import { WCharacterFormat, WParagraphFormat, WStyle, WParagraphStyle, WSectionFormat } from '../index';
 import { HtmlExport } from '../writer/html-export';
 import { Popup } from '@syncfusion/ej2-popups';
 import { ContextType, RequestNavigateEventArgs } from '../../index';
@@ -7014,11 +7014,15 @@ export class Selection {
     public isCursorInHeaderRegion(point: Point, page: Page): boolean {
         let pageTop: number = this.getPageTop(page);
         let headerHeight: number = 0;
-        if (page.headerWidget) {
-            headerHeight = (page.headerWidget.y + page.headerWidget.height);
+        let header: HeaderFooterWidget = page.headerWidget;
+        if (header) {
+            headerHeight = (header.y + header.height);
         }
-        let height: number = Math.max(headerHeight, HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin))
-            * this.viewer.zoomFactor;
+        let isEmpty: boolean = header.isEmpty && !this.owner.enableHeaderAndFooter;
+        let topMargin: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin);
+        let pageHeight: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.pageHeight);
+        let height: number = isEmpty ? topMargin : Math.min(Math.max(headerHeight, topMargin), pageHeight / 100 * 40);
+        height = height * this.viewer.zoomFactor;
         if ((this.viewer.containerTop + point.y) >= pageTop && (this.viewer.containerTop + point.y) <= pageTop + height) {
             return true;
         }
@@ -7036,9 +7040,15 @@ export class Selection {
         if (page.footerWidget) {
             footerHeight = page.footerWidget.height;
         }
-        // tslint:disable-next-line:max-line-length
-        let height: number = (pageRect.height -
-            Math.max(footerHeight + footerDistance, HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.bottomMargin))) * this.viewer.zoomFactor;
+        let bottomMargin: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.bottomMargin);
+        let isEmpty: boolean = page.footerWidget.isEmpty && !this.owner.enableHeaderAndFooter;
+        let height: number = pageRect.height;
+        if (isEmpty) {
+            height = (height - bottomMargin) * this.viewer.zoomFactor;
+        } else {
+            // tslint:disable-next-line:max-line-length
+            height = (height - Math.min(pageRect.height / 100 * 40, Math.max(footerHeight + footerDistance, bottomMargin))) * this.viewer.zoomFactor;
+        }
         if ((this.viewer.containerTop + point.y) <= pageBottom && (this.viewer.containerTop + point.y) >= pageTop + height) {
             return true;
         }
@@ -7050,7 +7060,20 @@ export class Selection {
     public enableHeadersFootersRegion(widget: HeaderFooterWidget): boolean {
         this.owner.enableHeaderAndFooter = true;
         this.updateTextPositionForBlockContainer(widget);
+        this.shiftBlockOnHeaderFooterEnableDisable();
         return true;
+    }
+    public shiftBlockOnHeaderFooterEnableDisable(): void {
+        for (let i: number = 0; i < this.viewer.headersFooters.length; i++) {
+            let headerFooter: HeaderFooters = this.viewer.headersFooters[i];
+            let sectionFormat: WSectionFormat = this.owner.editor.getBodyWidgetInternal(i, 0).sectionFormat;
+            for (let key of Object.keys(headerFooter)) {
+                let widget: HeaderFooterWidget = headerFooter[key];
+                if (widget.isEmpty) {
+                    this.owner.editor.shiftPageContent(widget.headerFooterType, sectionFormat);
+                }
+            }
+        }
     }
     /**
      * @private
@@ -7070,6 +7093,7 @@ export class Selection {
         let page: Page = this.getPage(this.start.paragraph);
         this.updateTextPositionForBlockContainer(page.bodyWidgets[0]);
         this.owner.enableHeaderAndFooter = false;
+        this.shiftBlockOnHeaderFooterEnableDisable();
     }
     //#endregion
     /**

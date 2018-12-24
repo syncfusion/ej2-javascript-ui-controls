@@ -1646,7 +1646,6 @@ class PdfViewerBase {
     focusViewerContainer() {
         let scrollX = window.scrollX;
         let scrollY = window.scrollY;
-        this.viewerContainer.focus();
         // tslint:disable-next-line
         let parentNode = this.getScrollParent(this.viewerContainer);
         let scrollNodeX = 0;
@@ -5913,8 +5912,8 @@ class BookmarkView {
             fields: {
                 dataSource: this.bookmarks.bookMark,
                 id: 'Id',
-                parentID: 'Pid',
                 text: 'Title',
+                child: 'Child',
                 hasChildren: 'HasChild',
             },
             nodeTemplate: bookmarkIconView.outerHTML,

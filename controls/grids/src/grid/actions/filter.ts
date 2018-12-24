@@ -639,7 +639,7 @@ export class Filter implements IAction {
                     }
                     if (!isNullOrUndefined(column.format)) {
                         let flValue: Date | number = (column.type === 'date' || column.type === 'datetime') ?
-                            new Date(this.values[column.field]) :
+                            this.valueFormatter.fromView(this.values[column.field], column.getParser(), column.type) :
                             this.values[column.field];
                         if (!(column.type === 'date' || column.type === 'datetime')) {
                             let formater: IValueFormatter = this.serviceLocator.getService<IValueFormatter>('valueFormatter');

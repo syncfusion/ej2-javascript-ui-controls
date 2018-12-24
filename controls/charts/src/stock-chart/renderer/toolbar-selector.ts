@@ -7,15 +7,11 @@ import { Button } from '@syncfusion/ej2-buttons';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import { Rect } from '../../common/utils/helper';
 
-interface Intervals {
-    count: number;
-    type: string;
-}
-
 /**
  * Period selector for range navigator
  */
 
+/** @private */
 export class ToolBarSelector {
     private stockChart: StockChart;
     private intervalTypes: string[] = ['Years', 'Quarter', 'Months', 'Weeks', 'Days', 'Hours', 'Minutes', 'Seconds'];
@@ -55,6 +51,7 @@ export class ToolBarSelector {
             for (let i: number = 0; i < this.stockChart.series.length; i++) {
                 for (let j: number = 0; j < result.length; j++) {
                     let text: string = result[j].text.replace('&nbsp;&nbsp;&nbsp;', '');
+                    text = (text === 'OHLC') ? 'HiloOpenClose' : text;
                     if (text === this.stockChart.series[i].type) {
                         result[j].text = result[j].text.replace('&nbsp;&nbsp;&nbsp;', '&#10004&nbsp;');
                     }

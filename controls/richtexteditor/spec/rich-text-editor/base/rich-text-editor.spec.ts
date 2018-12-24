@@ -2761,3 +2761,38 @@ describe('RTE textarea with innerText', () => {
         detach(element);
     });
 });
+describe(' Paste url', () => {
+    let rteObj: RichTextEditor;
+    let rteEle: HTMLElement;
+    let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: false, shiftKey: false, action: null, which: 64, key: '' };
+    let curDocument: Document;
+    let selectNode: Element;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: `<div><p class='first-p'>First p node-0</p></div>`,
+            placeholder: 'Type something'
+        });
+        rteEle = rteObj.element;
+        curDocument = rteObj.contentModule.getDocument();
+        done();
+    });
+    it(" paste the url with create a anchor tag", (done) => {
+        selectNode = (rteObj as any).inputElement.querySelector('.first-p');
+        setCursorPoint(curDocument, selectNode, 0);
+        keyBoardEvent.clipboardData = {
+            getData: () => {
+                return 'https://ej2.syncfusion.com';
+            },
+            items: []
+        };
+        rteObj.onPaste(keyBoardEvent);
+        setTimeout(() => {
+            selectNode = (rteObj as any).inputElement.querySelector('a');
+            expect(!isNullOrUndefined(selectNode)).toBe(true);
+            done();
+        }, 10);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+})

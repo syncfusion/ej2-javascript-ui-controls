@@ -1,19 +1,11 @@
 /**
  * CheckBox Default Sample
  */
-import { QueryBuilder , RuleModel, ColumnsModel} from './../../../src/query-builder/index';
+import { QueryBuilder , RuleModel} from './../../../src/query-builder/index';
 import { employeeData } from '../data-source';
 import { addClass, removeClass } from '@syncfusion/ej2-base';
 
-let columnData: ColumnsModel [] = [
-    { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
-    { field: 'FirstName', label: 'FirstName', type: 'string'},
-    { field: 'TitleOfCourtesy', label: 'Title Of Courtesy', type: 'boolean', values: ['Mr.', 'Mrs.'] },
-    { field: 'Title', label: 'Title', type: 'string'},
-    { field: 'HireDate', label: 'HireDate', type: 'date', format: 'dd/MM/yyyy' },
-    { field: 'Country', label: 'Country', type: 'string' },
-    { field: 'City', label: 'City', type: 'string' },
-];
+
 let importRules: RuleModel = {
     'condition': 'and',
     'rules': [{
@@ -58,7 +50,7 @@ let importRules: RuleModel = {
         }]
     }]
     };
-let qryBldrObj: QueryBuilder = new QueryBuilder({ dataSource: employeeData, columns: columnData, rule: importRules,
+let qryBldrObj: QueryBuilder = new QueryBuilder({ dataSource: employeeData, rule: importRules,
     displayMode: "Horizontal", allowValidation: true });
 qryBldrObj.appendTo('#querybuilder');
 
@@ -84,25 +76,7 @@ document.getElementById('highcontrast').onclick = (e : Event) => {
     document.getElementById('theme').setAttribute('href', '../../theme-files/highcontrast.css');
 };
 
-document.getElementById('materialdark').onclick = (e : Event) => {
-    document.body.classList.add('darkBG');
-    document.getElementById('theme').setAttribute('href', '../../theme-files/material-dark.css');
-};
 
-document.getElementById('fabricdark').onclick = (e : Event) => {
-    document.body.classList.add('darkBG');
-    document.getElementById('theme').setAttribute('href', '../../theme-files/fabric-dark.css');
-};
-
-document.getElementById('bootstrapdark').onclick = (e : Event) => {
-    document.body.classList.add('darkBG');
-    document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap-dark.css');
-};
-
-document.getElementById('highcontrastlight').onclick = (e : Event) => {
-    document.body.classList.remove('darkBG');
-    document.getElementById('theme').setAttribute('href', '../../theme-files/highcontrast-light.css');
-};
 document.getElementById('materialtouch').onclick = (e : Event) => {
     document.body.classList.remove('darkBG');
     addClass([qryBldrObj.element], 'e-bigger');
@@ -122,28 +96,4 @@ document.getElementById('highcontrasttouch').onclick = (e : Event) => {
     document.body.classList.add('darkBG');
     addClass([qryBldrObj.element], 'e-bigger');
     document.getElementById('theme').setAttribute('href', '../../theme-files/highcontrast.css');
-};
-
-document.getElementById('materialdarktouch').onclick = (e : Event) => {
-    document.body.classList.add('darkBG');
-    addClass([qryBldrObj.element], 'e-bigger');
-    document.getElementById('theme').setAttribute('href', '../../theme-files/material-dark.css');
-};
-
-document.getElementById('fabricdarktouch').onclick = (e : Event) => {
-    document.body.classList.add('darkBG');
-    addClass([qryBldrObj.element], 'e-bigger');
-    document.getElementById('theme').setAttribute('href', '../../theme-files/fabric-dark.css');
-};
-
-document.getElementById('bootstrapdarktouch').onclick = (e : Event) => {
-    document.body.classList.add('darkBG');
-    addClass([qryBldrObj.element], 'e-bigger');
-    document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap-dark.css');
-};
-
-document.getElementById('highcontrastlighttouch').onclick = (e : Event) => {
-    document.body.classList.remove('darkBG');
-    addClass([qryBldrObj.element], 'e-bigger');
-    document.getElementById('theme').setAttribute('href', '../../theme-files/highcontrast-light.css');
 };

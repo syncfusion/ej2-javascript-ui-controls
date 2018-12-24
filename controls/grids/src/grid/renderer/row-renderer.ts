@@ -136,6 +136,12 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         let args: RowDataBoundEventArgs = { row: tr, rowHeight: this.parent.rowHeight };
         if (row.isDataRow) {
             this.parent.trigger(rowDataBound, extend(rowArgs, args));
+            if (this.parent.childGrid || this.parent.isRowDragable() || this.parent.detailTemplate ) {
+            let td: Element = tr.querySelectorAll('.e-rowcell:not(.e-hide)')[0];
+            if (td) {
+                td.classList.add('e-detailrowvisible');
+            }
+        }
         }
         if (this.parent.enableVirtualization) {
             rowArgs.rowHeight = this.parent.rowHeight;

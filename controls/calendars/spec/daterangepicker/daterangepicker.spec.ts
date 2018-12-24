@@ -426,6 +426,13 @@ describe('DateRangePicker', () => {
             it('clear icon', () => {
                 expect(daterangepicker.inputWrapper.clearButton.classList.contains('e-clear-icon')).toBe(true);
             });
+            it('clear button with destroy state', () => {
+                daterangepicker.showClearButton = false;
+                daterangepicker.dataBind();
+                daterangepicker.destroy();
+                expect(daterangepicker.inputWrapper===null).toBe(true);
+                daterangepicker = null;
+            });
             it('Clear button Setmodel', () => {
                 daterangepicker.showClearButton = false;
                 daterangepicker.dataBind();

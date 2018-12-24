@@ -1,12 +1,13 @@
 /**
  * Render range navigator for financial chart
  */
-import { RangeNavigator, RangeNavigatorSeriesModel, IChangedEventArgs, Size, getElement } from '../../index';
+import { RangeNavigator, RangeNavigatorSeriesModel, IChangedEventArgs, Size, getElement, RangeValueType } from '../../index';
 import { remove } from '@syncfusion/ej2-base';
 import { StockChart } from '../stock-chart';
 import { StockSeriesModel } from '../model/base-model';
 import { MarginModel } from '../../chart';
 
+/** @private */
 export class RangeSelector {
     private stockChart: StockChart;
     constructor(stockChart: StockChart) {
@@ -35,7 +36,7 @@ export class RangeSelector {
         }
         stockChart.rangeNavigator = new RangeNavigator({
             locale: 'en',
-            valueType: 'DateTime',
+            valueType: stockChart.primaryXAxis.valueType as RangeValueType,
             theme: this.stockChart.theme,
             series: this.findSeriesCollection(stockChart.series),
             height: this.calculateChartSize().height.toString(),

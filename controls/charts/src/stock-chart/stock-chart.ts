@@ -454,7 +454,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /** @private */
     public periodSelectorHeight: number;
     /** @private */
-    public toolbarHeight: number = Browser.isDevice ? 56 : 42;
+    public toolbarHeight: number = this.enablePeriodSelector ? (Browser.isDevice ? 56 : 42) : 0;
     /** @private */
     public stockChartTheme: IThemeStyle;
 
@@ -858,8 +858,6 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         this.isChartDrag = false;
         this.allowPan = false;
         if (this.isTouch) {
-            //this.titleTooltip(e, this.mouseX, this.mouseY, this.isTouch);
-            //this.axisTooltip(e, this.mouseX, this.mouseY, this.isTouch);
             this.threshold = new Date().getTime() + 300;
         }
         this.notify(Browser.touchEndEvent, e);
@@ -931,9 +929,9 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         if ((<HTMLElement>e.target).id.indexOf(this.element.id + '_stockChart_chart') === -1) {
             let element : HTMLElement;
             if (this.chart.tooltip.enable || this.crosshair.enable) {
-                element = document.getElementById('chart_stockChart_chart_tooltip');
+                element = document.getElementById( this.element.id + '_stockChart_chart_tooltip');
                 if (element) {
-                    element.remove();
+                   remove(element);
                 }
             }
         }
@@ -948,10 +946,6 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      */
     public stockChartOnMouseClick(e: PointerEvent | TouchEvent): boolean {
         let element: Element = <Element>e.target;
-        // this.trigger(chartMouseClick, { target: element.id, x: this.mouseX, y: this.mouseY });
-        // if (this.pointClick) {
-        //     this.triggerPointEvent(pointClick);
-        // }
         this.notify('click', e);
         return false;
     }

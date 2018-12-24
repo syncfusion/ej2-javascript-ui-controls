@@ -195,6 +195,7 @@ export class Edit {
           } else {
             rowIndex = row.rowIndex;
           }
+          this.parent.cellEditedColumn = args.columnName;
           row = <HTMLTableRowElement>this.parent.grid.getRows()[rowIndex];
           this.parent.grid.editModule.updateRow(rowIndex, args.rowData);
           this.enableToolbarItems();

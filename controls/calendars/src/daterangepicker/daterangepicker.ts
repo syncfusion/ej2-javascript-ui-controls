@@ -3,7 +3,7 @@ import { Property, EventHandler, Internationalization, NotifyPropertyChanges, de
 import { KeyboardEvents, BaseEventArgs, KeyboardEventArgs, Event, EmitType, Browser, L10n, ChildProperty } from '@syncfusion/ej2-base';
 import { addClass, createElement, remove, closest, select, prepend, removeClass, attributes, Collection } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, isUndefined, formatUnit, setValue, rippleEffect, merge, extend } from '@syncfusion/ej2-base';
-import { CalendarView, CalendarBase, NavigatedEventArgs, RenderDayCellEventArgs } from '../calendar/calendar';
+import { CalendarView, CalendarBase, NavigatedEventArgs, RenderDayCellEventArgs, CalendarType } from '../calendar/calendar';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Button } from '@syncfusion/ej2-buttons';
 import { Input, InputObject, FloatLabelType, FocusEventArgs, BlurEventArgs } from '@syncfusion/ej2-inputs';
@@ -283,6 +283,13 @@ export class DateRangePicker extends CalendarBase {
      */
     @Property(false)
     public weekNumber: boolean;
+    /**
+     * Gets or sets the Calendar's Type like gregorian or islamic.
+     * @default Gregorian
+     * @private
+     */
+    @Property('Gregorian')
+    public calendarMode: CalendarType;
     /** 
      * Triggers when Calendar is created.
      * @event 
@@ -811,7 +818,7 @@ export class DateRangePicker extends CalendarBase {
 
     private rangeIconHandler(e: MouseEvent): void {
         if (this.isMobile) {
-            this.element.setAttribute('readonly', 'readonly');
+            this.element.setAttribute('readonly', '');
         }
         e.preventDefault();
         this.targetElement = null;
@@ -2000,7 +2007,7 @@ export class DateRangePicker extends CalendarBase {
         }
         if (this.popupObj.element.querySelector('#custom_range')) {
             this.popupObj.element.querySelector('#custom_range').textContent =
-                this.l10.getConstant('customRange') !== '' ? this.l10.getConstant('customRange') : 'Custom Range';
+                this.l10n.getConstant('customRange') !== '' ? this.l10n.getConstant('customRange') : 'Custom Range';
         }
     }
     private removeSelection(): void {
@@ -2715,6 +2722,11 @@ export class DateRangePicker extends CalendarBase {
             attributes(listTag, { 'role': 'listbox', 'aria-hidden': 'false', 'id': this.element.id + '_options' });
             this.presetElement.appendChild(listTag);
             this.popupWrapper.appendChild(this.presetElement);
+            let customElement: HTMLElement = this.presetElement.querySelector('#custom_range');
+            if (!isNullOrUndefined(customElement)) {
+                customElement.textContent = this.l10n.getConstant('customRange') !== '' ? this.l10n.getConstant('customRange')
+                    : 'Custom Range';
+            }
             this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.presetElement.querySelectorAll('.' + LISTCLASS);
             this.wireListEvents();
             if (this.isMobile) {
@@ -3517,7 +3529,7 @@ export class DateRangePicker extends CalendarBase {
             }
         }
         this.updateHiddenInput();
-        if (this.isMobile) {
+        if (this.isMobile && this.allowEdit && !this.readonly) {
             this.element.removeAttribute('readonly');
         }
     }

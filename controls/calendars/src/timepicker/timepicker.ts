@@ -829,7 +829,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     //event related functions
     private popupHandler(e: MouseEvent): void {
         if (Browser.isDevice) {
-            this.element.setAttribute('readonly', 'readonly');
+            this.element.setAttribute('readonly', '');
         }
         e.preventDefault();
         if (this.isPopupOpen()) {
@@ -963,7 +963,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 EventHandler.remove(document, 'mousedown touchstart', this.documentClickHandler);
             }
         }
-        if (Browser.isDevice) {
+        if (Browser.isDevice && this.allowEdit && !this.readonly) {
             this.element.removeAttribute('readonly');
         }
     }
@@ -1146,13 +1146,17 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         e.stopPropagation();
     }
     protected unBindEvents(): void {
-        EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown touchstart', this.popupHandler);
+        if (this.inputWrapper) {
+            EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown touchstart', this.popupHandler);
+        }
         EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
         EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
         EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
         if (this.inputEvent) { this.inputEvent.destroy(); }
         EventHandler.remove(this.inputElement, 'mousedown touchstart', this.mouseDownHandler);
-        EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.clearHandler);
+        if (this.showClearButton) {
+            EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.clearHandler);
+        }
         let form: Element = closest(this.element, 'form');
         if (form) {
             EventHandler.remove(form, 'reset', this.formResetHandler.bind(this));

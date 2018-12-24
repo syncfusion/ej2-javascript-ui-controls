@@ -1988,16 +1988,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
 }(Component));
 
 /**
- * A chip component is a small block of essential information, mostly used on contacts or filter tags.
- * ```html
- * <div id="chip"></div>
- * ```
- * ```typescript
- * <script>
- * var chipObj = new ChipList();
- * chipObj.appendTo("#chip");
- * </script>
- * ```
+ * Represents ChipList `Chip` model class.
  */
 var Chip = /** @__PURE__ @class */ (function () {
     function Chip() {

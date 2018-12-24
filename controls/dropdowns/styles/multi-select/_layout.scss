@@ -1,4 +1,5 @@
 .e-multi-select-wrapper {
+  box-sizing: border-box;
   cursor: text;
   line-height: normal;
   min-height: $ddl-control-height;
@@ -19,6 +20,14 @@
 
   .e-delim-view {
     white-space: nowrap;
+
+    &.e-delim-values.e-delim-overflow,
+    &.e-delim-values.e-delim-total {
+      box-sizing: border-box;
+      display: inline-block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   }
 
   .e-chips.e-mob-chip.e-chip-selected .e-chips-close::before {
@@ -416,7 +425,8 @@
   }
 }
 
-.e-multiselect.e-checkbox .e-multi-select-wrapper {
+.e-multiselect.e-checkbox .e-multi-select-wrapper,
+.e-multiselect .e-multi-select-wrapper.e-down-icon {
   padding: 2px 0 0;
   @if $ddl-multiselect-skin-name != 'material' {
     padding: 0;

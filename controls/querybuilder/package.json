@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-querybuilder",
-	"version": "16.4.40",
+	"version": "16.4.42",
 	"description": "Essential JS 2 QueryBuilder",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -55,7 +55,7 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls/tree/master/controls/query-builder"
+		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls/tree/master/controls/querybuilder"
 	},
 	"scripts": {
 		"build": "gulp build",

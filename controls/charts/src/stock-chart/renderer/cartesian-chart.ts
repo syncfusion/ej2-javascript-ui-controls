@@ -14,7 +14,7 @@ interface Range {
     start: number;
     end: number;
 }
-
+/** @private */
 export class CartesianChart {
     private stockChart: StockChart;
     public cartesianChartSize: Size;
@@ -135,7 +135,7 @@ export class CartesianChart {
                 ((stockChart.availableSize.height - stockChart.toolbarHeight - 80)) :
                 (stockChart.enableSelector && !stockChart.enablePeriodSelector) ? (stockChart.availableSize.height - 80) :
                 (stockChart.enablePeriodSelector && !stockChart.enableSelector) ?
-                    stockChart.availableSize.height - stockChart.toolbarHeight : 0)
+                    stockChart.availableSize.height - stockChart.toolbarHeight : stockChart.availableSize.height)
         );
     }
 

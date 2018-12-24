@@ -547,7 +547,9 @@ describe('MultiSelect', () => {
                     args.preventDefaultAction = true;
                     let query: Query = new Query().where('CustomerID', 'startswith', args.text);
                     new DataManager(result).executeQuery(query).then((e: any) => {
+                        setTimeout((): void => {
                         args.updateData(<{ [key: string]: Object; }[]>e.result)
+                        }, 200);
                     });
                 }
             });

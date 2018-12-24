@@ -5,6 +5,23 @@
     width: $qrybldr-width;
 
     &.e-rtl {
+      &.e-bigger {
+        &.e-device .e-group-body .e-rule-container .e-rule-delete,
+        & .e-group-body .e-rule-container.e-vertical-mode .e-rule-delete {
+          padding-left: $qrybldr-touch-btn-left;
+        }
+      }
+
+      &.e-device .e-group-body .e-rule-container .e-rule-value-delete,
+      & .e-group-body .e-rule-container.e-vertical-mode .e-rule-value-delete {
+        text-align: $qrybldr-field;
+      }
+
+      &.e-device .e-group-body .e-rule-container .e-rule-delete,
+      & .e-group-body .e-rule-container.e-vertical-mode .e-rule-delete {
+        padding-left: $qrybldr-btn-left;
+      }
+
       & .e-group-header {
         & .e-group-action .e-btn {
           margin-left: $qrybldr-group-container-margin-left;
@@ -117,11 +134,6 @@
         border: $qrybldr-btngrp-brdr;
         box-shadow: $qrybldr-btngrp-shadow;
         display: $qrybldr-btngroup-display;
-        float: $qrybldr-field;
-
-        & label.e-btn {
-          line-height: $btngrp-line-height;
-        }
       }
 
       & .e-group-action {
@@ -210,7 +222,8 @@
           min-width: $qrybldr-multi-width;
         }
 
-        & .e-rule-value .e-multiselect {
+        & .e-rule-value .e-multiselect,
+        & .e-rule-value .e-multi-select-wrapper {
           max-width: $qrybldr-multi-maxwidth;
         }
 
@@ -236,13 +249,13 @@
 
       & .e-horizontal-mode .e-rule-filter,
       & .e-horizontal-mode .e-rule-operator,
-      & .e-horizontal-mode .e-rule-value {
+      & .e-horizontal-mode .e-rule-value,
+      & .e-horizontal-mode .e-rule-value-delete {
         display: $qrybldr-device-diaplay;
       }
 
       & .e-rule-container.e-vertical-mode .e-rule-delete {
         margin-bottom: $grpcon-padding;
-        margin-left: $qrybldr-vm-rule-delete;
         padding-right: $device-rulecon-right-padding;
         right: 0;
       }
@@ -273,8 +286,14 @@
       box-shadow: $ruledelete-shadow;
       }
 
-    &.e-device .e-group-body .e-rule-container .e-rule-value .e-multiselect {
+    &.e-device .e-group-body .e-rule-container .e-rule-value .e-multiselect,
+    &.e-device .e-group-body .e-rule-container .e-rule-value .e-multi-select-wrapper {
       max-width: $qrybldr-device-multi-maxwidth;
+    }
+
+    &.e-device .e-group-body .e-rule-container .e-rule-value-delete,
+    & .e-group-body .e-rule-container.e-vertical-mode .e-rule-value-delete {
+      text-align: $qrybldr-rulelist-grcon-float;
     }
 
     & .e-delete-icon::before {
@@ -313,6 +332,16 @@
     & .e-summary-content {
       padding: $qrybldr-summary-padding;
         }
+
+    & .e-rule-list .e-rule-container.e-vertical-mode,
+    &.e-device .e-rule-list .e-rule-container {
+      & .e-rule-filter,
+      & .e-operator,
+      & .e-value,
+      & .e-rule-value-delete  {
+        padding: $device-rule-padding;
+      }
+    }
 }
 
   .e-tooltip-wrap.e-querybuilder-error .e-arrow-tip-inner.e-tip-top,
@@ -374,10 +403,6 @@
       margin-left: $bigger-group-action-margin;
       }
 
-    & .e-btn-group label.e-btn {
-      line-height: $bigger-btngrp-line-height;
-    }
-
     & .e-rule-list>:first-child::before {
       top: $bigger-rule-list-first-top;
       }
@@ -397,15 +422,6 @@
       & .e-rule-container {
         margin-top: $qrybldr-rulecont-margin;
         padding-right: $bigger-hrmode-ruledlt-mrgn;
-
-        & .e-rule-filter {
-          padding: $bigger-rulecon-padding;
-        }
-
-        & .e-operator,
-        & .e-value {
-          padding: $bigger-rulecon-padding;
-          }
     }
 
       & .e-rule-container.e-vertical-mode {
@@ -419,7 +435,6 @@
       & .e-rule-delete,
       & .e-rule-container.e-vertical-mode .e-rule-delete {
         margin-bottom: $device-rulecon-padding;
-        margin-left: $qrybldr-rule-delete;
         padding-right: $device-rulecon-right-padding;
         right: 0;
         }
@@ -435,7 +450,8 @@
 
       & .e-horizontal-mode .e-rule-filter,
       & .e-horizontal-mode .e-rule-operator,
-      & .e-horizontal-mode .e-rule-value {
+      & .e-horizontal-mode .e-rule-value,
+      & .e-horizontal-mode .e-rule-value-delete {
         display: $qrybldr-device-diaplay;
     }
 
@@ -451,4 +467,12 @@
   &.e-device .e-rule-value {
     width: $qrybldr-device-value-width;
     }
+
+  &.e-bigger .e-group-body .e-rule-container {
+    & .e-rule-filter,
+    & .e-operator,
+    & .e-value {
+      padding: $bigger-rulecon-padding;
+      }
+  }
 }

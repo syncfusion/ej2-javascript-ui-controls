@@ -300,9 +300,6 @@ let CalendarBase = class CalendarBase extends Component {
         if (this.showTodayButton) {
             let minimum = new Date(+this.min);
             let maximum = new Date(+this.max);
-            let l10nLocale = { today: 'Today' };
-            this.globalize = new Internationalization(this.locale);
-            this.l10 = new L10n(this.getModuleName(), l10nLocale, this.locale);
             this.todayElement = this.createElement('button');
             rippleEffect(this.todayElement);
             this.updateFooter();
@@ -529,6 +526,9 @@ let CalendarBase = class CalendarBase extends Component {
      * @private
      */
     preRender(value) {
+        this.globalize = new Internationalization(this.locale);
+        let l10nLocale = { today: 'Today' };
+        this.l10 = new L10n(this.getModuleName(), l10nLocale, this.locale);
         this.navigatePreviousHandler = this.navigatePrevious.bind(this);
         this.navigateNextHandler = this.navigateNext.bind(this);
         this.navigateHandler = (e) => {
@@ -2904,7 +2904,7 @@ let DatePicker = class DatePicker extends Calendar {
     }
     dateIconHandler(e) {
         if (Browser.isDevice) {
-            this.element.setAttribute('readonly', 'readonly');
+            this.element.setAttribute('readonly', '');
         }
         e.preventDefault();
         if (!this.readonly) {
@@ -3382,7 +3382,7 @@ let DatePicker = class DatePicker extends Calendar {
             }
             EventHandler.remove(document, 'mousedown touchstart', this.documentHandler);
         }
-        if (Browser.isDevice) {
+        if (Browser.isDevice && this.allowEdit && !this.readonly) {
             this.element.removeAttribute('readonly');
         }
     }
@@ -4299,7 +4299,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
     }
     rangeIconHandler(e) {
         if (this.isMobile) {
-            this.element.setAttribute('readonly', 'readonly');
+            this.element.setAttribute('readonly', '');
         }
         e.preventDefault();
         this.targetElement = null;
@@ -5530,7 +5530,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         }
         if (this.popupObj.element.querySelector('#custom_range')) {
             this.popupObj.element.querySelector('#custom_range').textContent =
-                this.l10.getConstant('customRange') !== '' ? this.l10.getConstant('customRange') : 'Custom Range';
+                this.l10n.getConstant('customRange') !== '' ? this.l10n.getConstant('customRange') : 'Custom Range';
         }
     }
     removeSelection() {
@@ -6270,6 +6270,11 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
             attributes(listTag, { 'role': 'listbox', 'aria-hidden': 'false', 'id': this.element.id + '_options' });
             this.presetElement.appendChild(listTag);
             this.popupWrapper.appendChild(this.presetElement);
+            let customElement = this.presetElement.querySelector('#custom_range');
+            if (!isNullOrUndefined(customElement)) {
+                customElement.textContent = this.l10n.getConstant('customRange') !== '' ? this.l10n.getConstant('customRange')
+                    : 'Custom Range';
+            }
             this.liCollections = this.presetElement.querySelectorAll('.' + LISTCLASS);
             this.wireListEvents();
             if (this.isMobile) {
@@ -7080,7 +7085,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
             }
         }
         this.updateHiddenInput();
-        if (this.isMobile) {
+        if (this.isMobile && this.allowEdit && !this.readonly) {
             this.element.removeAttribute('readonly');
         }
     }
@@ -7330,6 +7335,9 @@ __decorate$2([
 __decorate$2([
     Property(false)
 ], DateRangePicker.prototype, "weekNumber", void 0);
+__decorate$2([
+    Property('Gregorian')
+], DateRangePicker.prototype, "calendarMode", void 0);
 __decorate$2([
     Event()
 ], DateRangePicker.prototype, "created", void 0);
@@ -8008,7 +8016,7 @@ let TimePicker = class TimePicker extends Component {
     //event related functions
     popupHandler(e) {
         if (Browser.isDevice) {
-            this.element.setAttribute('readonly', 'readonly');
+            this.element.setAttribute('readonly', '');
         }
         e.preventDefault();
         if (this.isPopupOpen()) {
@@ -8147,7 +8155,7 @@ let TimePicker = class TimePicker extends Component {
                 EventHandler.remove(document, 'mousedown touchstart', this.documentClickHandler);
             }
         }
-        if (Browser.isDevice) {
+        if (Browser.isDevice && this.allowEdit && !this.readonly) {
             this.element.removeAttribute('readonly');
         }
     }
@@ -8339,7 +8347,9 @@ let TimePicker = class TimePicker extends Component {
         e.stopPropagation();
     }
     unBindEvents() {
-        EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown touchstart', this.popupHandler);
+        if (this.inputWrapper) {
+            EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown touchstart', this.popupHandler);
+        }
         EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
         EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
         EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
@@ -8347,7 +8357,9 @@ let TimePicker = class TimePicker extends Component {
             this.inputEvent.destroy();
         }
         EventHandler.remove(this.inputElement, 'mousedown touchstart', this.mouseDownHandler);
-        EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.clearHandler);
+        if (this.showClearButton) {
+            EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.clearHandler);
+        }
         let form = closest(this.element, 'form');
         if (form) {
             EventHandler.remove(form, 'reset', this.formResetHandler.bind(this));
@@ -9592,7 +9604,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
     }
     timeHandler(e) {
         if (Browser.isDevice) {
-            this.element.setAttribute('readonly', 'readonly');
+            this.element.setAttribute('readonly', '');
         }
         if (e.currentTarget === this.timeIcon) {
             e.preventDefault();
@@ -10107,7 +10119,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
                 }
             }
         }
-        if (Browser.isDevice) {
+        if (Browser.isDevice && this.allowEdit && !this.readonly) {
             this.element.removeAttribute('readonly');
         }
     }

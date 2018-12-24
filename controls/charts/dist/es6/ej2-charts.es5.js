@@ -2764,12 +2764,7 @@ function measureElementRect(element, redraw) {
     document.body.appendChild(element);
     bounds = element.getBoundingClientRect();
     if (redraw) {
-        if (typeof element.remove === 'function') {
-            element.remove();
-        }
-        else {
-            element.parentNode.removeChild(element);
-        }
+        remove(element);
     }
     else {
         removeElement(element.id);
@@ -2963,12 +2958,7 @@ function colorNameToHex(color) {
     element = document.getElementById('chartmeasuretext');
     element.style.color = color;
     color = window.getComputedStyle(element).color;
-    if (typeof element.remove === 'function') {
-        element.remove();
-    }
-    else {
-        element.parentNode.removeChild(element);
-    }
+    remove(element);
     var exp = /^(rgb|hsl)(a?)[(]\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*(?:,\s*([\d.]+)\s*)?[)]$/;
     var isRGBValue = exp.exec(color);
     return convertToHexCode(new ColorValue(parseInt(isRGBValue[3], 10), parseInt(isRGBValue[4], 10), parseInt(isRGBValue[5], 10)));
@@ -16551,19 +16541,21 @@ var BaseTooltip = /** @__PURE__ @class */ (function (_super) {
             }, '#' + this.element.id + '_tooltip');
         }
         else {
-            this.svgTooltip.location = location;
-            this.svgTooltip.content = this.text;
-            this.svgTooltip.header = header;
-            this.svgTooltip.offset = offset;
-            this.svgTooltip.palette = this.findPalette();
-            this.svgTooltip.shapes = shapes;
-            this.svgTooltip.data = templatePoint;
-            this.svgTooltip.template = chart.tooltip.template;
-            this.svgTooltip.textStyle = chart.tooltip.textStyle;
-            this.svgTooltip.isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
-            this.svgTooltip.clipBounds = this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation;
-            this.svgTooltip.arrowPadding = this.text.length > 1 || this.chart.stockChart ? 0 : 12;
-            this.svgTooltip.dataBind();
+            if (this.svgTooltip) {
+                this.svgTooltip.location = location;
+                this.svgTooltip.content = this.text;
+                this.svgTooltip.header = header;
+                this.svgTooltip.offset = offset;
+                this.svgTooltip.palette = this.findPalette();
+                this.svgTooltip.shapes = shapes;
+                this.svgTooltip.data = templatePoint;
+                this.svgTooltip.template = chart.tooltip.template;
+                this.svgTooltip.textStyle = chart.tooltip.textStyle;
+                this.svgTooltip.isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
+                this.svgTooltip.clipBounds = this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation;
+                this.svgTooltip.arrowPadding = this.text.length > 1 || this.chart.stockChart ? 0 : 12;
+                this.svgTooltip.dataBind();
+            }
         }
     };
     BaseTooltip.prototype.findPalette = function () {
@@ -16806,7 +16798,7 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
                 }
                 else {
                     this.removeHighlight(this.control);
-                    this.getElement(this.element.id + '_tooltip').remove();
+                    remove(this.getElement(this.element.id + '_tooltip'));
                 }
                 this.isRemove = true;
             }
@@ -26232,7 +26224,7 @@ var AccumulationTooltip = /** @__PURE__ @class */ (function (_super) {
                 }
                 else {
                     this.removeHighlight(this.control);
-                    this.getElement(this.element.id + '_tooltip').remove();
+                    remove(this.getElement(this.element.id + '_tooltip'));
                 }
                 this.isRemove = true;
             }
@@ -28860,8 +28852,8 @@ var PeriodSelector = /** @__PURE__ @class */ (function () {
                         _this.rootControl.rangeChanged(args.startDate.getTime(), args.endDate.getTime());
                     }
                     _this.nodes = _this.toolbar.element.querySelectorAll('.e-toolbar-left')[0];
-                    for (var i = 0, length_1 = _this.nodes.childNodes.length; i < length_1; i++) {
-                        if (!_this.rootControl.resizeTo) {
+                    if (!_this.rootControl.resizeTo && _this.control.rangeSlider.isDrag) {
+                        for (var i = 0, length_1 = _this.nodes.childNodes.length; i < length_1; i++) {
                             _this.nodes.childNodes[i].childNodes[0].classList.remove('e-active');
                             _this.nodes.childNodes[i].childNodes[0].classList.remove('e-active');
                         }
@@ -28921,7 +28913,9 @@ var PeriodSelector = /** @__PURE__ @class */ (function () {
                 _this.selectedIndex = (_this.nodes.childNodes.length - buttons.length) + index;
             }
         });
-        this.setSelectedStyle(this.selectedIndex);
+        if (args.item.text !== '') {
+            this.setSelectedStyle(this.selectedIndex);
+        }
         if (clickedEle.text.toLowerCase() === 'all') {
             updatedStart = control.seriesXMin;
             updatedEnd = control.seriesXMax;
@@ -29215,6 +29209,7 @@ var RangeTooltip = /** @__PURE__ @class */ (function () {
 /**
  * Cartesian chart renderer for financial chart
  */
+/** @private */
 var CartesianChart = /** @__PURE__ @class */ (function () {
     function CartesianChart(chart) {
         this.stockChart = chart;
@@ -29329,7 +29324,7 @@ var CartesianChart = /** @__PURE__ @class */ (function () {
             ((stockChart.availableSize.height - stockChart.toolbarHeight - 80)) :
             (stockChart.enableSelector && !stockChart.enablePeriodSelector) ? (stockChart.availableSize.height - 80) :
                 (stockChart.enablePeriodSelector && !stockChart.enableSelector) ?
-                    stockChart.availableSize.height - stockChart.toolbarHeight : 0));
+                    stockChart.availableSize.height - stockChart.toolbarHeight : stockChart.availableSize.height));
     };
     CartesianChart.prototype.calculateUpdatedRange = function (zoomFactor, zoomPosition, axis) {
         var start;
@@ -29379,6 +29374,7 @@ var CartesianChart = /** @__PURE__ @class */ (function () {
 /**
  * Render range navigator for financial chart
  */
+/** @private */
 var RangeSelector = /** @__PURE__ @class */ (function () {
     function RangeSelector(stockChart) {
         this.stockChart = stockChart;
@@ -29407,7 +29403,7 @@ var RangeSelector = /** @__PURE__ @class */ (function () {
         }
         stockChart.rangeNavigator = new RangeNavigator({
             locale: 'en',
-            valueType: 'DateTime',
+            valueType: stockChart.primaryXAxis.valueType,
             theme: this.stockChart.theme,
             series: this.findSeriesCollection(stockChart.series),
             height: this.calculateChartSize().height.toString(),
@@ -29465,6 +29461,7 @@ var RangeSelector = /** @__PURE__ @class */ (function () {
 /**
  * Period selector for range navigator
  */
+/** @private */
 var ToolBarSelector = /** @__PURE__ @class */ (function () {
     function ToolBarSelector(chart) {
         this.intervalTypes = ['Years', 'Quarter', 'Months', 'Weeks', 'Days', 'Hours', 'Minutes', 'Seconds'];
@@ -29500,6 +29497,7 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
             for (var i = 0; i < this.stockChart.series.length; i++) {
                 for (var j = 0; j < result.length; j++) {
                     var text = result[j].text.replace('&nbsp;&nbsp;&nbsp;', '');
+                    text = (text === 'OHLC') ? 'HiloOpenClose' : text;
                     if (text === this.stockChart.series[i].type) {
                         result[j].text = result[j].text.replace('&nbsp;&nbsp;&nbsp;', '&#10004&nbsp;');
                     }
@@ -30615,7 +30613,7 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
         /** @private */
         _this.trendlinetriggered = true;
         /** @private */
-        _this.toolbarHeight = Browser.isDevice ? 56 : 42;
+        _this.toolbarHeight = _this.enablePeriodSelector ? (Browser.isDevice ? 56 : 42) : 0;
         return _this;
     }
     /**
@@ -30986,8 +30984,6 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
         this.isChartDrag = false;
         this.allowPan = false;
         if (this.isTouch) {
-            //this.titleTooltip(e, this.mouseX, this.mouseY, this.isTouch);
-            //this.axisTooltip(e, this.mouseX, this.mouseY, this.isTouch);
             this.threshold = new Date().getTime() + 300;
         }
         this.notify(Browser.touchEndEvent, e);
@@ -31054,9 +31050,9 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
         if (e.target.id.indexOf(this.element.id + '_stockChart_chart') === -1) {
             var element = void 0;
             if (this.chart.tooltip.enable || this.crosshair.enable) {
-                element = document.getElementById('chart_stockChart_chart_tooltip');
+                element = document.getElementById(this.element.id + '_stockChart_chart_tooltip');
                 if (element) {
-                    element.remove();
+                    remove(element);
                 }
             }
         }
@@ -31070,10 +31066,6 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
      */
     StockChart.prototype.stockChartOnMouseClick = function (e) {
         var element = e.target;
-        // this.trigger(chartMouseClick, { target: element.id, x: this.mouseX, y: this.mouseY });
-        // if (this.pointClick) {
-        //     this.triggerPointEvent(pointClick);
-        // }
         this.notify('click', e);
         return false;
     };

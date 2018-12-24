@@ -316,9 +316,6 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         if (this.showTodayButton) {
             var minimum = new Date(+this.min);
             var maximum = new Date(+this.max);
-            var l10nLocale = { today: 'Today' };
-            this.globalize = new Internationalization(this.locale);
-            this.l10 = new L10n(this.getModuleName(), l10nLocale, this.locale);
             this.todayElement = this.createElement('button');
             rippleEffect(this.todayElement);
             this.updateFooter();
@@ -546,6 +543,9 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
      */
     CalendarBase.prototype.preRender = function (value) {
         var _this = this;
+        this.globalize = new Internationalization(this.locale);
+        var l10nLocale = { today: 'Today' };
+        this.l10 = new L10n(this.getModuleName(), l10nLocale, this.locale);
         this.navigatePreviousHandler = this.navigatePrevious.bind(this);
         this.navigateNextHandler = this.navigateNext.bind(this);
         this.navigateHandler = function (e) {
@@ -2943,7 +2943,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
     };
     DatePicker.prototype.dateIconHandler = function (e) {
         if (Browser.isDevice) {
-            this.element.setAttribute('readonly', 'readonly');
+            this.element.setAttribute('readonly', '');
         }
         e.preventDefault();
         if (!this.readonly) {
@@ -3422,7 +3422,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             }
             EventHandler.remove(document, 'mousedown touchstart', this.documentHandler);
         }
-        if (Browser.isDevice) {
+        if (Browser.isDevice && this.allowEdit && !this.readonly) {
             this.element.removeAttribute('readonly');
         }
     };
@@ -4363,7 +4363,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
     };
     DateRangePicker.prototype.rangeIconHandler = function (e) {
         if (this.isMobile) {
-            this.element.setAttribute('readonly', 'readonly');
+            this.element.setAttribute('readonly', '');
         }
         e.preventDefault();
         this.targetElement = null;
@@ -5606,7 +5606,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         }
         if (this.popupObj.element.querySelector('#custom_range')) {
             this.popupObj.element.querySelector('#custom_range').textContent =
-                this.l10.getConstant('customRange') !== '' ? this.l10.getConstant('customRange') : 'Custom Range';
+                this.l10n.getConstant('customRange') !== '' ? this.l10n.getConstant('customRange') : 'Custom Range';
         }
     };
     DateRangePicker.prototype.removeSelection = function () {
@@ -6349,6 +6349,11 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             attributes(listTag, { 'role': 'listbox', 'aria-hidden': 'false', 'id': this.element.id + '_options' });
             this.presetElement.appendChild(listTag);
             this.popupWrapper.appendChild(this.presetElement);
+            var customElement = this.presetElement.querySelector('#custom_range');
+            if (!isNullOrUndefined(customElement)) {
+                customElement.textContent = this.l10n.getConstant('customRange') !== '' ? this.l10n.getConstant('customRange')
+                    : 'Custom Range';
+            }
             this.liCollections = this.presetElement.querySelectorAll('.' + LISTCLASS);
             this.wireListEvents();
             if (this.isMobile) {
@@ -7160,7 +7165,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             }
         }
         this.updateHiddenInput();
-        if (this.isMobile) {
+        if (this.isMobile && this.allowEdit && !this.readonly) {
             this.element.removeAttribute('readonly');
         }
     };
@@ -7410,6 +7415,9 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
     __decorate$2([
         Property(false)
     ], DateRangePicker.prototype, "weekNumber", void 0);
+    __decorate$2([
+        Property('Gregorian')
+    ], DateRangePicker.prototype, "calendarMode", void 0);
     __decorate$2([
         Event()
     ], DateRangePicker.prototype, "created", void 0);
@@ -8106,7 +8114,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     //event related functions
     TimePicker.prototype.popupHandler = function (e) {
         if (Browser.isDevice) {
-            this.element.setAttribute('readonly', 'readonly');
+            this.element.setAttribute('readonly', '');
         }
         e.preventDefault();
         if (this.isPopupOpen()) {
@@ -8245,7 +8253,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                 EventHandler.remove(document, 'mousedown touchstart', this.documentClickHandler);
             }
         }
-        if (Browser.isDevice) {
+        if (Browser.isDevice && this.allowEdit && !this.readonly) {
             this.element.removeAttribute('readonly');
         }
     };
@@ -8437,7 +8445,9 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         e.stopPropagation();
     };
     TimePicker.prototype.unBindEvents = function () {
-        EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown touchstart', this.popupHandler);
+        if (this.inputWrapper) {
+            EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown touchstart', this.popupHandler);
+        }
         EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
         EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
         EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
@@ -8445,7 +8455,9 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
             this.inputEvent.destroy();
         }
         EventHandler.remove(this.inputElement, 'mousedown touchstart', this.mouseDownHandler);
-        EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.clearHandler);
+        if (this.showClearButton) {
+            EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.clearHandler);
+        }
         var form = closest(this.element, 'form');
         if (form) {
             EventHandler.remove(form, 'reset', this.formResetHandler.bind(this));
@@ -9709,7 +9721,7 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
     };
     DateTimePicker.prototype.timeHandler = function (e) {
         if (Browser.isDevice) {
-            this.element.setAttribute('readonly', 'readonly');
+            this.element.setAttribute('readonly', '');
         }
         if (e.currentTarget === this.timeIcon) {
             e.preventDefault();
@@ -10225,7 +10237,7 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         }
-        if (Browser.isDevice) {
+        if (Browser.isDevice && this.allowEdit && !this.readonly) {
             this.element.removeAttribute('readonly');
         }
     };

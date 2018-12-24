@@ -437,7 +437,7 @@ export class DatePicker extends Calendar implements IInput {
 
     private dateIconHandler(e?: MouseEvent): void {
         if (Browser.isDevice) {
-            this.element.setAttribute('readonly', 'readonly');
+            this.element.setAttribute('readonly', '');
         }
         e.preventDefault();
         if (!this.readonly) {
@@ -902,7 +902,7 @@ export class DatePicker extends Calendar implements IInput {
             }
             EventHandler.remove(document, 'mousedown touchstart', this.documentHandler);
         }
-        if (Browser.isDevice) {
+        if (Browser.isDevice && this.allowEdit && !this.readonly) {
             this.element.removeAttribute('readonly');
         }
     }

@@ -148,7 +148,23 @@ var Column = /** @__PURE__ @class */ (function () {
             this.setFormatter(valueFormatter.getFormatFunction(options.format));
             this.setParser(valueFormatter.getParserFunction(options.format));
         }
-        this.toJSON = function () { return {}; };
+        this.toJSON = function () {
+            var col = {};
+            var skip = ['headerText', 'template', 'headerTemplate', 'edit', 'editTemplate', 'filterTemplate', 'commandsTemplate'];
+            var keys = Object.keys(_this);
+            for (var i = 0; i < keys.length; i++) {
+                if (keys[i] === 'columns') {
+                    col[keys[i]] = [];
+                    for (var j = 0; j < _this[keys[i]].length; j++) {
+                        col[keys[i]].push(_this[keys[i]][j].toJSON());
+                    }
+                }
+                else if (skip.indexOf(keys[i]) < 0) {
+                    col[keys[i]] = _this[keys[i]];
+                }
+            }
+            return col;
+        };
         if (!this.field) {
             this.allowFiltering = false;
             this.allowGrouping = false;
@@ -3180,6 +3196,12 @@ var RowRenderer = /** @__PURE__ @class */ (function () {
         var args = { row: tr, rowHeight: this.parent.rowHeight };
         if (row.isDataRow) {
             this.parent.trigger(rowDataBound, extend(rowArgs, args));
+            if (this.parent.childGrid || this.parent.isRowDragable() || this.parent.detailTemplate) {
+                var td = tr.querySelectorAll('.e-rowcell:not(.e-hide)')[0];
+                if (td) {
+                    td.classList.add('e-detailrowvisible');
+                }
+            }
         }
         if (this.parent.enableVirtualization) {
             rowArgs.rowHeight = this.parent.rowHeight;
@@ -3935,11 +3957,6 @@ var ContentRender = /** @__PURE__ @class */ (function () {
                 }
             }
             if (modelData[i].isDataRow) {
-                //detailrowvisible 
-                var td = tr.querySelectorAll('.e-rowcell:not(.e-hide)')[0];
-                if (td) {
-                    td.classList.add('e-detailrowvisible');
-                }
                 this.rowElements.push(tr);
             }
             this.ariaService.setOptions(this.getTable(), { colcount: gObj.getColumns().length.toString() });
@@ -4232,8 +4249,11 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
                 visualElement.setAttribute('e-mappinguid', _this.column.uid);
             }
             if (col && !isNullOrUndefined(col.headerTemplate)) {
-                if (col.headerTemplate.indexOf('#') !== -1) {
-                    visualElement.innerHTML = document.querySelector(col.headerTemplate).innerHTML.trim();
+                if (!isNullOrUndefined(col.headerTemplate)) {
+                    var result = void 0;
+                    var colIndex = gObj.getColumnIndexByField(col.field);
+                    result = col.getHeaderTemplate()(extend({ 'index': colIndex }, col), gObj, 'headerTemplate');
+                    appendChildren(visualElement, result);
                 }
                 else {
                     visualElement.innerHTML = col.headerTemplate;
@@ -5891,7 +5911,8 @@ var Render = /** @__PURE__ @class */ (function () {
             e.result = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.currentViewData;
         }
         this.parent.notify(dataReady, extend({ count: e.count, result: e.result, aggregates: e.aggregates }, args));
-        if (gObj.groupSettings.columns.length || (args && args.requestType === 'ungrouping')) {
+        if ((gObj.groupSettings.columns.length || (args && args.requestType === 'ungrouping'))
+            && (args && args.requestType !== 'filtering')) {
             this.headerRenderer.refreshUI();
         }
         if (len) {
@@ -6807,7 +6828,7 @@ var ContentFocus = /** @__PURE__ @class */ (function () {
     };
     ContentFocus.prototype.getCurrentFromAction = function (action, navigator, isPresent, e) {
         if (navigator === void 0) { navigator = [0, 0]; }
-        if (!isPresent && !this.indexesByKey(action)) {
+        if (!isPresent && !this.indexesByKey(action) || (this.matrix.current.length === 0)) {
             return null;
         }
         if (!this.shouldFocusChange(e)) {
@@ -7287,7 +7308,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         EventHandler.remove(this.parent.getContent(), 'mousedown', this.mouseDownHandler);
     };
     Selection.prototype.isEditing = function () {
-        return (this.parent.editSettings.mode === 'Normal' || (this.parent.editSettings.mode === 'Batch' &&
+        return (this.parent.editSettings.mode === 'Normal' || (this.parent.editSettings.mode === 'Batch' && this.parent.editModule &&
             this.parent.editModule.formObj && !this.parent.editModule.formObj.validate())) &&
             this.parent.isEdit && !this.parent.isPersistSelection;
     };
@@ -7302,7 +7323,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         var gObj = this.parent;
         var added = 'addedRecords';
         var deleted = 'deletedRecords';
-        if (gObj.editSettings.mode === 'Batch') {
+        if (gObj.editSettings.mode === 'Batch' && gObj.editModule) {
             var currentRecords = iterateExtend(this.parent.getCurrentViewRecords());
             currentRecords = this.parent.editModule.getBatchChanges()[added].concat(currentRecords);
             var deletedRecords = this.parent.editModule.getBatchChanges()[deleted];
@@ -7368,11 +7389,13 @@ var Selection = /** @__PURE__ @class */ (function () {
             this.clearRow();
         }
         if (!isToggle) {
-            this.updateRowSelection(selectedRow, index);
-            if (gObj.getFrozenColumns()) {
-                this.updateRowSelection(selectedMovableRow, index);
+            if (this.selectedRowIndexes.indexOf(index) <= -1) {
+                this.updateRowSelection(selectedRow, index);
+                if (gObj.getFrozenColumns()) {
+                    this.updateRowSelection(selectedMovableRow, index);
+                }
             }
-            gObj.selectedRowIndex = index;
+            this.parent.setProperties({ selectedRowIndex: index }, true);
         }
         if (!isToggle) {
             args = {
@@ -7400,7 +7423,7 @@ var Selection = /** @__PURE__ @class */ (function () {
      */
     Selection.prototype.selectRowsByRange = function (startIndex, endIndex) {
         this.selectRows(this.getCollectionFromIndexes(startIndex, endIndex));
-        this.parent.selectedRowIndex = endIndex;
+        this.parent.setProperties({ selectedRowIndex: endIndex }, true);
     };
     /**
      * Selects a collection of rows by index.
@@ -7430,7 +7453,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             return;
         }
         this.clearRow();
-        gObj.selectedRowIndex = rowIndexes.slice(-1)[0];
+        this.parent.setProperties({ selectedRowIndex: rowIndexes.slice(-1)[0] }, true);
         if (!this.isSingleSel()) {
             for (var _i = 0, rowIndexes_1 = rowIndexes; _i < rowIndexes_1.length; _i++) {
                 var rowIdx = rowIndexes_1[_i];
@@ -7479,7 +7502,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             var rowIndex = rowIndexes_2[_i];
             var rowObj = this.getRowObj(rowIndex);
             var isUnSelected = this.selectedRowIndexes.indexOf(rowIndex) > -1;
-            gObj.selectedRowIndex = rowIndex;
+            this.parent.setProperties({ selectedRowIndex: rowIndex }, true);
             if (isUnSelected) {
                 this.rowDeselect(rowDeselecting, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target);
                 this.selectedRowIndexes.splice(this.selectedRowIndexes.indexOf(rowIndex), 1);
@@ -7542,6 +7565,9 @@ var Selection = /** @__PURE__ @class */ (function () {
     };
     Selection.prototype.clearRow = function () {
         this.clearRowSelection();
+        if (this.isCancelDeSelect === true) {
+            return;
+        }
         this.selectedRowIndexes = [];
         this.selectedRecords = [];
         this.parent.selectedRowIndex = -1;
@@ -7616,7 +7642,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (!this.preventFocus) {
             var target = this.focus.getPrevIndexes().cellIndex ?
                 selectedRow.cells[this.focus.getPrevIndexes().cellIndex] :
-                selectedRow.querySelector('.e-selectionbackground:not(.e-hide)');
+                selectedRow.querySelector('.e-selectionbackground:not(.e-hide):not(.e-detailrowcollapse):not(.e-detailrowexpand)');
             if (!target) {
                 return;
             }
@@ -8138,7 +8164,6 @@ var Selection = /** @__PURE__ @class */ (function () {
             this.selectedRowCellIndexes = [];
             this.isCellSelected = false;
             this.cellDeselect(cellDeselected, rowCell, data, cells, foreignKeyData$$1);
-            this.prevECIdxs = undefined;
         }
     };
     Selection.prototype.getSelectedCellsElement = function () {
@@ -8841,6 +8866,11 @@ var Selection = /** @__PURE__ @class */ (function () {
             this.setCheckAllState();
             this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
         }
+        if (e.requestType === 'paging') {
+            this.prevRowIndex = undefined;
+            this.prevCIdxs = undefined;
+            this.prevECIdxs = undefined;
+        }
     };
     Selection.prototype.onDataBound = function () {
         if (!this.parent.enableVirtualization && this.parent.isPersistSelection) {
@@ -8876,7 +8906,9 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
         if (!isNullOrUndefined(editForm)) {
             var editChkBox = editForm.querySelector('.e-edit-checkselect');
-            removeAddCboxClasses(editChkBox.nextElementSibling, checkState);
+            if (!isNullOrUndefined(editChkBox)) {
+                removeAddCboxClasses(editChkBox.nextElementSibling, checkState);
+            }
         }
     };
     Selection.prototype.checkSelectAll = function (checkBox) {
@@ -9345,10 +9377,13 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
         if (row) {
             var cells = [].slice.call(row.querySelectorAll('.e-rowcell'));
-            var cell = row.querySelector('.e-detailrowcollapse') || row.querySelector('.e-detailrowexpand')
-                || row.querySelector('.e-rowdragdrop');
-            if (cell) {
-                cells.push(cell);
+            var detailIndentCell = row.querySelector('.e-detailrowcollapse') || row.querySelector('.e-detailrowexpand');
+            var dragdropIndentCell = row.querySelector('.e-rowdragdrop');
+            if (detailIndentCell) {
+                cells.push(detailIndentCell);
+            }
+            if (dragdropIndentCell) {
+                cells.push(dragdropIndentCell);
             }
             addRemoveActiveClasses.apply(void 0, [cells, isAdd].concat(args));
         }
@@ -11434,6 +11469,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             case 'enableHover':
                 var action = newProp.enableHover ? addClass : removeClass;
                 action([this.element], 'e-gridhover');
+                break;
+            case 'selectedRowIndex':
+                this.selectRow(newProp.selectedRowIndex);
                 break;
         }
     };
@@ -17104,7 +17142,7 @@ var Filter = /** @__PURE__ @class */ (function () {
                     }
                     if (!isNullOrUndefined(column.format)) {
                         var flValue = (column.type === 'date' || column.type === 'datetime') ?
-                            new Date(this.values[column.field]) :
+                            this.valueFormatter.fromView(this.values[column.field], column.getParser(), column.type) :
                             this.values[column.field];
                         if (!(column.type === 'date' || column.type === 'datetime')) {
                             var formater_1 = this.serviceLocator.getService('valueFormatter');
@@ -18826,10 +18864,10 @@ var RowDD = /** @__PURE__ @class */ (function () {
             }
             else if (targetRow && parseInt(startedRow.getAttribute('aria-rowindex'), 10) > targetRow.rowIndex) {
                 element = this.parent.getRowByIndex(targetRow.rowIndex - 1);
-                rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop'));
+                rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'));
             }
             else {
-                rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop'));
+                rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'));
             }
             if (rowElement.length > 0) {
                 addRemoveActiveClasses(rowElement, true, 'e-dragborder');
@@ -19512,21 +19550,19 @@ var Group = /** @__PURE__ @class */ (function () {
         }
         //Todo headerTemplateID for grouped column, disableHtmlEncode                          
         var headerCell = gObj.getColumnHeaderByUid(column.uid);
-        if (!isNullOrUndefined(column.headerTemplate)) {
-            if (column.headerTemplate.indexOf('#') !== -1) {
-                childDiv.innerHTML = document.querySelector(column.headerTemplate).innerHTML.trim();
-            }
-            else {
-                childDiv.innerHTML = column.headerTemplate;
-            }
-            childDiv.firstElementChild.classList.add('e-grouptext');
-        }
-        else {
-            childDiv.appendChild(this.parent.createElement('span', {
-                className: 'e-grouptext', innerHTML: column.headerText,
-                attrs: { tabindex: '-1', 'aria-label': 'sort the grouped column' }
-            }));
-        }
+        // if (!isNullOrUndefined(column.headerTemplate)) {
+        //     if (column.headerTemplate.indexOf('#') !== -1) {
+        //         childDiv.innerHTML = document.querySelector(column.headerTemplate).innerHTML.trim();
+        //     } else {
+        //         childDiv.innerHTML = column.headerTemplate;
+        //     }
+        //     childDiv.firstElementChild.classList.add('e-grouptext');
+        // } else {
+        childDiv.appendChild(this.parent.createElement('span', {
+            className: 'e-grouptext', innerHTML: column.headerText,
+            attrs: { tabindex: '-1', 'aria-label': 'sort the grouped column' }
+        }));
+        // }
         if (this.groupSettings.showToggleButton) {
             childDiv.appendChild(this.parent.createElement('span', {
                 className: 'e-togglegroupbutton e-icons e-icon-ungroup e-toggleungroup', innerHTML: '&nbsp;',
@@ -19602,8 +19638,10 @@ var Group = /** @__PURE__ @class */ (function () {
                                     }
                                 }
                             }
-                            args = { columnName: this_1.colName, requestType: e.properties[prop].length ? 'grouping' : 'ungrouping',
-                                type: actionBegin };
+                            args = {
+                                columnName: this_1.colName, requestType: e.properties[prop].length ? 'grouping' : 'ungrouping',
+                                type: actionBegin
+                            };
                         }
                         else {
                             args = { requestType: 'ungrouping', type: actionBegin };
@@ -21666,6 +21704,9 @@ var InlineEditRender = /** @__PURE__ @class */ (function () {
         if (isDetail) {
             tr.insertBefore(this.parent.createElement('td', { className: 'e-detailrowcollapse' }), tr.firstChild);
         }
+        if (gObj.isRowDragable()) {
+            tr.appendChild(this.parent.createElement('td', { className: 'e-dragindentcell' }));
+        }
         while (i < gLen) {
             tr.appendChild(this.parent.createElement('td', { className: 'e-indentcell' }));
             i++;
@@ -22032,7 +22073,7 @@ var EditRender = /** @__PURE__ @class */ (function () {
                 }
                 if ((col.isPrimaryKey || col.isIdentity) && args.requestType === 'beginEdit' ||
                     (col.isIdentity && args.requestType === 'add')) { // already disabled in cell plugins
-                    input.setAttribute('disabled', 'true');
+                    input.setAttribute('disabled', '');
                 }
             }
             elements[col.uid] = input;
@@ -23637,7 +23678,7 @@ function dateanddatetimerender(args, mode, rtl) {
         format: format,
         placeholder: isInline ?
             '' : args.column.headerText, enableRtl: rtl,
-        enabled: isEditable(args.column, args.type, args.element),
+        enabled: isEditable(args.column, args.requestType, args.element),
     };
 }
 

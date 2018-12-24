@@ -1027,10 +1027,8 @@ class Annotations {
             templateFn = getTemplateFunction(argsData.content);
             if (templateFn && templateFn(axis).length) {
                 templateElement = templateFn(axis);
-                let count = templateElement.length;
-                while (count > 0) {
-                    childElement.appendChild(templateElement[0]);
-                    count--;
+                for (let i = 0; i < templateElement.length; i++) {
+                    childElement.appendChild(templateElement[i]);
                 }
             }
             else {

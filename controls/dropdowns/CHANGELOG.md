@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 16.4.44 (2018-12-24)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- Item template with checkbox combination is not working issue has been resolved.
+
+- Value update with checkbox selection issue in reactive form has been resolved.
+
 ## 16.3.34 (2018-11-21)
 
 ### MultiSelect

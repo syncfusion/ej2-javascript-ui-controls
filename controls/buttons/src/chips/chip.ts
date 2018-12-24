@@ -1,14 +1,5 @@
 /**
- * A chip component is a small block of essential information, mostly used on contacts or filter tags.
- * ```html
- * <div id="chip"></div>
- * ```
- * ```typescript
- * <script>
- * var chipObj = new ChipList();
- * chipObj.appendTo("#chip");
- * </script>
- * ```
+ * Represents ChipList `Chip` model class.
  */
 export class Chip {
     /**
@@ -58,36 +49,43 @@ export class Chip {
 export interface ChipModel {
     /**
      * This text property helps to render ChipList component.
+     * @default ''
      */
     text?: string;
 
     /**
      * This avatarText property helps to customize avatar content.
+     * @default ''
      */
     avatarText?: string;
 
     /**
      * This avatarIconCss property helps to customize avatar element.
+     * @default ''
      */
     avatarIconCss?: string;
 
     /**
      * This leadingIconCss property helps to customize leading icon element.
+     * @default ''
      */
     leadingIconCss?: string;
 
     /**
      * This trailingIconCss property helps to customize trailing icon element.
+     * @default ''
      */
     trailingIconCss?: string;
 
     /**
      * This cssClass property helps to customize ChipList component.
+     * @default ''
      */
     cssClass?: string;
 
     /**
      * This enabled property helps to enable/disable ChipList component.
+     * @default true
      */
     enabled?: boolean;
 }

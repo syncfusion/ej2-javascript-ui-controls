@@ -161,7 +161,7 @@ var getSelectedHtml = 'getSelectedHtml';
 /** @hidden */
 var renderInlineToolbar = 'renderInlineToolbar';
 /** @hidden */
-var paste = 'pasteImage';
+var paste = 'paste-content';
 /** @hidden */
 var imgModule = 'imageModule';
 /** @hidden */
@@ -7745,7 +7745,8 @@ var LinkCommand = /** @__PURE__ @class */ (function () {
                 startContainer.textContent = this.removeText(startContainer.textContent, e.item.url);
             }
             else {
-                e.item.selection.setSelectionText(this.parent.currentDocument, anchor.childNodes[0], anchor.childNodes[0], 0, anchor.childNodes[0].textContent.length);
+                var startIndex = e.item.action === 'Paste' ? anchor.childNodes[0].textContent.length : 0;
+                e.item.selection.setSelectionText(this.parent.currentDocument, anchor.childNodes[0], anchor.childNodes[0], startIndex, anchor.childNodes[0].textContent.length);
             }
         }
         if (e.callBack) {
@@ -9951,6 +9952,7 @@ var HtmlEditor = /** @__PURE__ @class */ (function () {
         this.parent.on(selectionSave, this.onSelectionSave, this);
         this.parent.on(selectionRestore, this.onSelectionRestore, this);
         this.parent.on(readOnlyMode, this.updateReadOnly, this);
+        this.parent.on(paste, this.onPaste, this);
     };
     HtmlEditor.prototype.updateReadOnly = function () {
         if (this.parent.readonly) {
@@ -9997,6 +9999,16 @@ var HtmlEditor = /** @__PURE__ @class */ (function () {
         if (e.args.action === 'space' ||
             e.args.action === 'enter') {
             this.spaceLink(e.args);
+        }
+    };
+    HtmlEditor.prototype.onPaste = function (e) {
+        var regex = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
+        if (e.text.match(regex)) {
+            e.args.preventDefault();
+            var range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+            var saveSelection = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
+            var args = { url: e.text, text: '', selection: saveSelection, action: 'Paste' };
+            this.parent.formatter.editorManager.execCommand('Links', 'CreateLink', null, null, args, args);
         }
     };
     HtmlEditor.prototype.spaceLink = function (e) {
@@ -10134,6 +10146,7 @@ var HtmlEditor = /** @__PURE__ @class */ (function () {
         this.parent.off(selectionSave, this.onSelectionSave);
         this.parent.off(selectionRestore, this.onSelectionRestore);
         this.parent.off(readOnlyMode, this.updateReadOnly);
+        this.parent.off(paste, this.onPaste);
     };
     HtmlEditor.prototype.render = function () {
         this.contentRenderer = this.renderFactory.getRenderer(RenderType.Content);
@@ -11917,24 +11930,27 @@ var Image = /** @__PURE__ @class */ (function () {
         return false;
     };
     Image.prototype.imagePaste = function (args) {
-        var proxy = this;
-        var reader = new FileReader();
-        reader.addEventListener('load', function (e) {
-            var url = {
-                cssClass: (proxy.parent.insertImageSettings.display === 'inline' ? CLS_IMGINLINE : CLS_IMGBREAK),
-                url: URL.createObjectURL(proxy.url(reader.result)),
-                width: {
-                    width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
-                    maxWidth: proxy.parent.insertImageSettings.maxWidth
-                },
-                height: {
-                    height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
-                    maxHeight: proxy.parent.insertImageSettings.maxHeight
-                }
-            };
-            proxy.parent.formatter.process(proxy.parent, { item: { command: 'Images', subCommand: 'Image' } }, args.args, url);
-        });
-        reader.readAsDataURL(args.file);
+        if (args.text.length === 0) {
+            var proxy_1 = this;
+            var reader_2 = new FileReader();
+            args.args.preventDefault();
+            reader_2.addEventListener('load', function (e) {
+                var url = {
+                    cssClass: (proxy_1.parent.insertImageSettings.display === 'inline' ? CLS_IMGINLINE : CLS_IMGBREAK),
+                    url: URL.createObjectURL(proxy_1.url(reader_2.result)),
+                    width: {
+                        width: proxy_1.parent.insertImageSettings.width, minWidth: proxy_1.parent.insertImageSettings.minWidth,
+                        maxWidth: proxy_1.parent.insertImageSettings.maxWidth
+                    },
+                    height: {
+                        height: proxy_1.parent.insertImageSettings.height, minHeight: proxy_1.parent.insertImageSettings.minHeight,
+                        maxHeight: proxy_1.parent.insertImageSettings.maxHeight
+                    }
+                };
+                proxy_1.parent.formatter.process(proxy_1.parent, { item: { command: 'Images', subCommand: 'Image' } }, args.args, url);
+            });
+            reader_2.readAsDataURL(args.file);
+        }
     };
     Image.prototype.url = function (dataurl) {
         var arr = dataurl.split(',');
@@ -14151,13 +14167,16 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         if (e && !isNullOrUndefined(e.clipboardData)) {
             value = e.clipboardData.getData('text/plain');
         }
-        setTimeout(function () { _this.formatter.saveData(); }, 0);
-        this.formatter.onSuccess(this, args);
-        if (value !== null && value.length === 0) {
+        var file = e && e.clipboardData && e.clipboardData.items.length > 0 ?
+            e.clipboardData.items[0].getAsFile() : null;
+        if (value !== null) {
             this.notify(paste, {
-                module: imgModule, file: e.clipboardData.items[0].getAsFile(), args: e
+                file: file,
+                args: e,
+                text: value
             });
         }
+        setTimeout(function () { _this.formatter.onSuccess(_this, args); }, 0);
     };
     /**
      * @hidden

@@ -1896,16 +1896,7 @@ ChipList = __decorate$4([
 ], ChipList);
 
 /**
- * A chip component is a small block of essential information, mostly used on contacts or filter tags.
- * ```html
- * <div id="chip"></div>
- * ```
- * ```typescript
- * <script>
- * var chipObj = new ChipList();
- * chipObj.appendTo("#chip");
- * </script>
- * ```
+ * Represents ChipList `Chip` model class.
  */
 class Chip {
 }

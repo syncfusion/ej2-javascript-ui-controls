@@ -41,7 +41,7 @@ export declare class Columns extends ChildProperty<Columns> {
     template: TemplateColumn;
     /**
      * Specifies the validation for columns (text, number and date).
-     * @default null
+     * @default  { isRequired: true , min: 0, max: Number.MAX_VALUE }
      */
     validation: Validation;
     /**
@@ -313,7 +313,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private selectBtn;
     private addRuleElement;
     private renderToolTip;
-    validateFields(): void;
+    validateFields(): boolean;
     private groupTemplate;
     private ruleTemplate;
     private addGroupElement;
@@ -333,6 +333,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private renderValues;
     private updateValues;
     private updateRules;
+    private ruleValueUpdate;
     private validatValue;
     private findGroupByIdx;
     /**
@@ -400,6 +401,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      * @returns null
      */
     getPredicate(rule: RuleModel): Predicate;
+    private getColumn;
     private arrayPredicate;
     private importRules;
     private renderGroup;

@@ -1,5 +1,5 @@
 import { Chart } from '../chart';
-import { extend, Browser } from '@syncfusion/ej2-base';
+import { extend, Browser, remove } from '@syncfusion/ej2-base';
 import { Size, Rect, PointData, ChartLocation } from '../../common/utils/helper';
 import { valueToCoefficient, removeElement, valueToPolarCoefficient, withInBounds } from '../../common/utils/helper';
 import { Axis } from '../axis/axis';
@@ -139,7 +139,7 @@ export class Tooltip extends BaseTooltip {
                                        chart.chartAxisLayoutPanel.seriesClipRect, null, this.getTemplateText(data));
                 } else {
                     this.removeHighlight(this.control);
-                    this.getElement(this.element.id + '_tooltip').remove();
+                    remove(this.getElement(this.element.id + '_tooltip'));
                 }
                 this.isRemove = true;
             }

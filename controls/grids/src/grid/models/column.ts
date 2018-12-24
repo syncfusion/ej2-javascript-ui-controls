@@ -399,7 +399,22 @@ export class Column {
             this.setFormatter(valueFormatter.getFormatFunction(options.format as DateFormatOptions));
             this.setParser(valueFormatter.getParserFunction(options.format as DateFormatOptions));
         }
-        this.toJSON = () => {return {}; };
+        this.toJSON = () => {
+            let col: object = {};
+            let skip: string[] = ['headerText', 'template', 'headerTemplate', 'edit', 'editTemplate', 'filterTemplate', 'commandsTemplate'];
+            let keys : string[] = Object.keys(this);
+            for (let i: number = 0; i < keys.length; i++) {
+                if (keys[i] === 'columns') {
+                    col[keys[i]] = [];
+                    for (let j: number = 0; j < this[keys[i]].length; j++) {
+                        col[keys[i]].push(this[keys[i]][j].toJSON());
+                    }
+                } else if (skip.indexOf(keys[i]) < 0) {
+                    col[keys[i]] = this[keys[i]];
+                }
+            }
+            return col;
+        };
         if (!this.field) {
             this.allowFiltering = false;
             this.allowGrouping = false;

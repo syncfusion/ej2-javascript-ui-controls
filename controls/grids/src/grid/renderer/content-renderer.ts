@@ -229,11 +229,6 @@ export class ContentRender implements IRenderer {
                 }
             }
             if (modelData[i].isDataRow) {
-                //detailrowvisible 
-                let td: Element = tr.querySelectorAll('.e-rowcell:not(.e-hide)')[0];
-                if (td) {
-                    td.classList.add('e-detailrowvisible');
-                }
                 this.rowElements.push(tr);
             }
             this.ariaService.setOptions(this.getTable() as HTMLElement, { colcount: gObj.getColumns().length.toString() });

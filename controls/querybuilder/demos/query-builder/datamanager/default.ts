@@ -2,64 +2,53 @@
  * CheckBox Default Sample
  */
 import { QueryBuilder ,RuleModel} from './../../../src/query-builder/index';
-import { DataManager, Query, ReturnOption, Predicate } from '@syncfusion/ej2-data';
-import { getComponent, compile } from '@syncfusion/ej2-base';
 import { orderData } from '../data-source';
 import { Dialog } from '@syncfusion/ej2-popups';
 let importRules: RuleModel = {
     'condition': 'and',
     'rules': [{
-        'label': 'EmployeeID',
-        'field': 'EmployeeID',
-        'type': 'number',
-        'operator': 'In',
-        'value': [4, 5]
+        'label': 'CustomerName',
+        'field': 'CustomerName',
+        'type': 'string',
+        'operator': 'notequal',
+        'value': 'VINET'
     },
     {
         'condition': 'or',
         'rules': [{
-            'label': 'price',
-            'field': 'Price',
-            'type': 'string',
-            'operator': 'Equal',
-            'value': [1]
+            'label': 'Freight',
+            'field': 'Freight',
+            'type': 'number',
+            'operator': 'equal',
+            'value': 14
         },
         {
             'label': 'CustomerID',
             'field': 'CustomerID',
-            'type': 'number',
-            'operator': 'In',
+            'type': 'string',
+            'operator': 'in',
             'value': ['BERGS']
         },
         {
         'condition': 'and',
             'rules': [{
-                'label': 'in_stock',
-                'field': 'In stock',
+                'label': 'in stock',
+                'field': 'in stock',
                 'type': 'string',
-                'operator': 'Equal',
+                'operator': 'equal',
                 'value': ['Yes']
             },
             {
                 'label': 'OrderID',
                 'field': 'OrderID',
                 'type': 'number',
-                'operator': 'Equal',
-                'value': [10]
+                'operator': 'equal',
+                'value': 10
             }]
         }]
-    },
-    {
-        'label': 'EmployeeID',
-        'field': 'EmployeeID',
-        'type': 'number',
-        'operator': 'In',
-        'value': [4, 5]
-        }]
+    }]
     };
-let queryBldrObj: QueryBuilder = new QueryBuilder({ cssClass: 'e-rule1',
-    height: 'auto', width: 'auto' , showButtons: {groupDelete: true, groupInsert: true, ruleDelete: true}, displayMode: 'Horizontal',
-    dataSource: orderData, allowValidation: false,  sortDirection: 'Ascending', maxGroupCount: 5 });
+let queryBldrObj: QueryBuilder = new QueryBuilder({ dataSource: orderData, rule:importRules  });
 queryBldrObj.appendTo('#querybuilder');
 
 
@@ -78,9 +67,9 @@ buttonElem.textContent = 'AddRules';
 document.getElementById('property').appendChild(buttonElem);
 document.getElementById('addrules').onclick = (): void => {
     queryBldrObj.addRules([
-        {'label': 'CustomerID', 'field': 'CustomerID', 'type': 'string',  'operator': 'Equal', 'value': ['ALFKI']},
-        {'label': 'OrderID', 'field': 'OrderID', 'type': 'number', 'operator': 'Between', 'value': [10260] }
-    ], 'e_group0');
+        {'label': 'CustomerID', 'field': 'CustomerID', 'type': 'string',  'operator': 'equal', 'value': 'ALFKI'},
+        {'label': 'OrderID', 'field': 'OrderID', 'type': 'number', 'operator': 'notequal', 'value': 10260 }
+    ], 'querybuilder_e_group0');
 };
 
 //addgroup
@@ -92,30 +81,30 @@ document.getElementById('addgroups').onclick = (): void => {
         {
             'condition': 'and',
             'rules': [{
-                'label': 'EmployeeID',
-                'field': 'EmployeeID',
-                'type': 'number',
-                'operator': 'In',
-                'value': [4, 5]
+                'label': 'CustomerID',
+                'field': 'CustomerID',
+                'type': 'string',
+                'operator': 'in',
+                'value': ['VINET']
             }]
         },
         {
             'condition': 'and',
             'rules': [{
-                'label': 'in_stock',
-                'field': 'In stock',
+                'label': 'in stock',
+                'field': 'in stock',
                 'type': 'string',
-                'operator': 'Equal',
+                'operator': 'equal',
                 'value': ['Yes']
             },
             {
                 'label': 'OrderID',
                 'field': 'OrderID',
                 'type': 'number',
-                'operator': 'Equal',
-                'value': [10260]
+                'operator': 'equal',
+                'value': 10260
             }]
-        }], 'e_group0');
+        }], 'querybuilder_e_group0');
 };
 
 //deleterules
@@ -123,7 +112,7 @@ buttonElem = queryBldrObj.createElement('Button', { attrs: {type: 'button', clas
 buttonElem.textContent = 'DeleteRule';
 document.getElementById('property').appendChild(buttonElem);
 document.getElementById('deleterule').onclick = (): void => {
-    queryBldrObj.deleteRules(['e_group1_e_rule0']);
+    queryBldrObj.deleteRules(['querybuilder_e_group0_e_rule0']);
 };
 
 //deleteGroup
@@ -131,7 +120,7 @@ buttonElem = queryBldrObj.createElement('Button',{ attrs: {type: 'button', class
 buttonElem.textContent = 'DeleteGroup';
 document.getElementById('property').appendChild(buttonElem);
 document.getElementById('deletegroup').onclick = (): void => {
-    queryBldrObj.deleteGroups(['e_group2']);
+    queryBldrObj.deleteGroups(['querybuilder_e_group1']);
 };
 
 //reset rules
@@ -148,7 +137,10 @@ buttonElem.textContent = 'GetRules';
 document.getElementById('property').appendChild(buttonElem);
 document.getElementById('getrules').onclick = (): void => {
     //queryBldrObj.reset();
-    dialogObj.content = JSON.stringify(queryBldrObj.rule);
+    dialogObj.content = JSON.stringify({
+        condition: queryBldrObj.rule.condition,
+        rules: queryBldrObj.rule.rules
+    }, null, 4);
     dialogObj.show();
 };
 

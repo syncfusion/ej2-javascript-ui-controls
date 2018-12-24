@@ -3201,7 +3201,7 @@ var WParagraphFormat = /** @__PURE__ @class */ (function () {
     };
     WParagraphFormat.prototype.hasTabStop = function (position) {
         for (var i = 0; i < this.tabs.length; i++) {
-            if (this.tabs[i].deletePosition === position) {
+            if (this.tabs[i].position === position) {
                 return true;
             }
         }
@@ -3365,8 +3365,12 @@ var WParagraphFormat = /** @__PURE__ @class */ (function () {
     WParagraphFormat.prototype.getDefaultValue = function (property) {
         var propertyType = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
         var docParagraphFormat = this.documentParagraphFormat();
-        // tslint:disable-next-line:max-line-length
-        if (!isNullOrUndefined(docParagraphFormat) && !isNullOrUndefined(docParagraphFormat.uniqueParagraphFormat) && docParagraphFormat.uniqueParagraphFormat.propertiesHash.containsKey(propertyType)) {
+        var isInsideBodyWidget = true;
+        if (this.ownerBase && this.ownerBase instanceof ParagraphWidget) {
+            isInsideBodyWidget = this.ownerBase.containerWidget instanceof BodyWidget;
+        }
+        if (isInsideBodyWidget && !isNullOrUndefined(docParagraphFormat) && !isNullOrUndefined(docParagraphFormat.uniqueParagraphFormat) &&
+            docParagraphFormat.uniqueParagraphFormat.propertiesHash.containsKey(propertyType)) {
             return docParagraphFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);
         }
         else {
@@ -6966,6 +6970,10 @@ var HeaderFooterWidget = /** @__PURE__ @class */ (function (_super) {
     __extends$1(HeaderFooterWidget, _super);
     function HeaderFooterWidget(type) {
         var _this = _super.call(this) || this;
+        /**
+         * @private
+         */
+        _this.isEmpty = false;
         _this.headerFooterType = type;
         return _this;
     }
@@ -6994,6 +7002,7 @@ var HeaderFooterWidget = /** @__PURE__ @class */ (function (_super) {
             block.index = i;
             block.containerWidget = headerFooter;
         }
+        headerFooter.isEmpty = this.isEmpty;
         headerFooter.x = this.x;
         headerFooter.y = this.y;
         headerFooter.height = 0;
@@ -7721,7 +7730,7 @@ var TableWidget = /** @__PURE__ @class */ (function (_super) {
             //Converts the row grid before width from point to twips point by 15 factor.
             cellWidth = this.getCellWidth(rowFormat.gridBeforeWidth, rowFormat.gridBeforeWidthType, tableWidth, null);
             currOffset += cellWidth;
-            var startOffset = Math.round(currOffset);
+            var startOffset = parseFloat(currOffset.toFixed(2));
             if (tempGrid.indexOf(startOffset) < 0) {
                 tempGrid.push(startOffset);
             }
@@ -7778,21 +7787,21 @@ var TableWidget = /** @__PURE__ @class */ (function (_super) {
                 }
                 // Add start offset of each cell based on its index
                 if (!rowCellInfo.containsKey(cell.cellIndex)) {
-                    rowCellInfo.add(cell.cellIndex, Math.round(currOffset - startOffset));
+                    rowCellInfo.add(cell.cellIndex, parseFloat((currOffset - startOffset).toFixed(2)));
                 }
                 columnSpan += cell.cellFormat.columnSpan;
                 //Converts the cell width from pixel to twips point by 15 factor.
                 cellWidth = this.getCellWidth(cell.cellFormat.preferredWidth, cell.cellFormat.preferredWidthType, tableWidth, null);
                 currOffset += cellWidth;
-                var offset = Math.round(currOffset);
+                var offset = parseFloat(currOffset.toFixed(2));
                 if (tempGrid.indexOf(offset) < 0) {
                     tempGrid.push(offset);
                 }
                 if (j === row.childWidgets.length - 1 && rowFormat.gridAfter > 0) {
                     cellWidth = this.getCellWidth(rowFormat.gridAfterWidth, 'Point', tableWidth, null);
                     currOffset += cellWidth;
-                    if (tempGrid.indexOf(Math.round(currOffset)) < 0) {
-                        tempGrid.push(Math.round(currOffset));
+                    if (tempGrid.indexOf(parseFloat(currOffset.toFixed(2))) < 0) {
+                        tempGrid.push(parseFloat(currOffset.toFixed(2)));
                     }
                     columnSpan += rowFormat.gridAfter;
                 }
@@ -8485,7 +8494,7 @@ var TableRowWidget = /** @__PURE__ @class */ (function (_super) {
         return gridEndIndex - gridStartIndex;
     };
     TableRowWidget.prototype.getOffsetIndex = function (tableGrid, offset) {
-        offset = Math.round(offset);
+        offset = parseFloat(offset.toFixed(2));
         var index = 0;
         if (tableGrid.indexOf(offset) >= 0) {
             index = tableGrid.indexOf(offset);
@@ -8927,9 +8936,9 @@ var TableCellWidget = /** @__PURE__ @class */ (function (_super) {
      */
     TableCellWidget.prototype.getCellWidth = function () {
         var ownerTable = this.ownerTable;
-        var containerWidth = ownerTable.getTableClientWidth(ownerTable.getOwnerWidth(true));
+        var containerWidth = ownerTable ? ownerTable.getTableClientWidth(ownerTable.getOwnerWidth(true)) : 0;
         var cellWidth = containerWidth;
-        if (ownerTable.tableFormat.preferredWidthType === 'Auto' && ownerTable.tableFormat.allowAutoFit) {
+        if (ownerTable && ownerTable.tableFormat.preferredWidthType === 'Auto' && ownerTable.tableFormat.allowAutoFit) {
             cellWidth = containerWidth;
         }
         else if (this.cellFormat.preferredWidthType === 'Percent') {
@@ -11958,6 +11967,10 @@ var Layout = /** @__PURE__ @class */ (function () {
         var block = section.firstChild;
         var nextBlock;
         do {
+            if (block instanceof TableWidget && block.tableFormat.preferredWidthType === 'Auto'
+                && !block.tableFormat.allowAutoFit) {
+                block.calculateGrid();
+            }
             this.viewer.updateClientAreaForBlock(block, true);
             nextBlock = this.layoutBlock(block, index);
             index = 0;
@@ -12071,6 +12084,10 @@ var Layout = /** @__PURE__ @class */ (function () {
         this.linkFieldInHeaderFooter(widget);
         for (var i = 0; i < widget.childWidgets.length; i++) {
             var block = widget.childWidgets[i];
+            if (block instanceof TableWidget && block.tableFormat.preferredWidthType === 'Auto'
+                && !block.tableFormat.allowAutoFit && !block.isGridUpdated) {
+                block.calculateGrid();
+            }
             viewer.updateClientAreaForBlock(block, true);
             this.layoutBlock(block, 0);
             viewer.updateClientAreaForBlock(block, false);
@@ -12363,10 +12380,10 @@ var Layout = /** @__PURE__ @class */ (function () {
         else if (element instanceof TextElementBox) {
             if (element.text === '\t') {
                 var currentLine = element.line;
-                this.addSplittedLineWidget(currentLine, currentLine.children.indexOf(element));
+                this.addSplittedLineWidget(currentLine, currentLine.children.indexOf(element) - 1);
                 this.moveToNextLine(currentLine);
                 // Recalculates tab width based on new client active area X position
-                element.width = this.getTabWidth(paragraph, this.viewer, index, line, element);
+                element.width = this.getTabWidth(paragraph, this.viewer, index, element.line, element);
                 this.addElementToLine(paragraph, element);
             }
             else {
@@ -13663,7 +13680,8 @@ var Layout = /** @__PURE__ @class */ (function () {
      */
     // tslint:disable-next-line:max-line-length
     Layout.prototype.getTabWidth = function (paragraph, viewer, index, lineWidget, element) {
-        var fposition = 0;
+        var elementWidth = element ? this.viewer.textHelper.getTextSize(element, element.characterFormat) : 0;
+        var fPosition = 0;
         var isCustomTab = false;
         var tabs = paragraph.paragraphFormat.getUpdatedTabs();
         //  Calculate hanging width
@@ -13680,41 +13698,46 @@ var Layout = /** @__PURE__ @class */ (function () {
         else {
             if (tabs.length > 0) {
                 for (var i = 0; i < tabs.length; i++) {
+                    var tabStop = tabs[i];
                     var tabPosition = HelperMethods.convertPointToPixel(tabs[i].position);
-                    if (tabs[i].tabJustification === 'Left' && position < tabPosition) {
-                        fposition = tabPosition;
+                    if ((position + elementWidth) < tabPosition) {
                         isCustomTab = true;
-                        if (!isNullOrUndefined(element)) {
-                            element.tabLeader = tabs[i].tabLeader;
-                            element.tabText = '';
-                        }
-                        break;
-                    }
-                    else if (tabs[i].tabJustification === 'Right' && position < tabPosition) {
-                        var tabwidth = tabPosition - position;
-                        var width = this.getRightTabWidth(index + 1, lineWidget, paragraph);
-                        if (width < tabwidth) {
-                            defaultTabWidth = tabwidth - width;
+                        if (tabStop.tabJustification === 'Left') {
+                            fPosition = tabPosition;
+                            if (!isNullOrUndefined(element)) {
+                                element.tabLeader = tabs[i].tabLeader;
+                                element.tabText = '';
+                            }
+                            break;
                         }
                         else {
-                            defaultTabWidth = 0;
+                            var tabWidth = tabPosition - position;
+                            var width = this.getRightTabWidth(element.indexInOwner + 1, lineWidget, paragraph);
+                            if (width < tabWidth) {
+                                defaultTabWidth = tabStop.tabJustification === 'Right' ? tabWidth - width : tabWidth - width / 2;
+                            }
+                            else if (tabStop.tabJustification === 'Center' && (width / 2) < tabWidth) {
+                                defaultTabWidth = tabWidth - width / 2;
+                            }
+                            else {
+                                defaultTabWidth = tabStop.tabJustification === 'Right' ? 0 : elementWidth;
+                            }
+                            fPosition = position;
+                            if (!isNullOrUndefined(element)) {
+                                element.tabLeader = tabs[i].tabLeader;
+                                element.tabText = '';
+                            }
+                            break;
                         }
-                        fposition = position;
-                        isCustomTab = true;
-                        if (!isNullOrUndefined(element)) {
-                            element.tabLeader = tabs[i].tabLeader;
-                            element.tabText = '';
-                        }
-                        break;
                     }
                 }
             }
             if (!isCustomTab) {
                 var diff = ((Math.round(position) * 100) % (Math.round(defaultTabWidth) * 100)) / 100;
                 var cnt = (Math.round(position) - diff) / Math.round(defaultTabWidth);
-                fposition = (cnt + 1) * defaultTabWidth;
+                fPosition = (cnt + 1) * defaultTabWidth;
             }
-            return (fposition - position) > 0 ? fposition - position : defaultTabWidth;
+            return (fPosition - position) > 0 ? fPosition - position : defaultTabWidth;
         }
     };
     /**
@@ -13726,8 +13749,8 @@ var Layout = /** @__PURE__ @class */ (function () {
     Layout.prototype.getRightTabWidth = function (index, lineWidget, paragraph) {
         var width = 0;
         var isFieldCode = false;
-        while (index < lineWidget.children.length) {
-            var elementBox = lineWidget.children[index];
+        var elementBox = lineWidget.children[index];
+        while (elementBox) {
             if ((elementBox instanceof FieldElementBox) || (elementBox instanceof BookmarkElementBox) || isFieldCode) {
                 if (elementBox instanceof FieldElementBox) {
                     if (elementBox.fieldType === 0) {
@@ -13748,7 +13771,7 @@ var Layout = /** @__PURE__ @class */ (function () {
             else {
                 width = width + elementBox.width;
             }
-            index++;
+            elementBox = elementBox.nextNode;
         }
         return width;
     };
@@ -15623,6 +15646,7 @@ var Layout = /** @__PURE__ @class */ (function () {
         var currentTable = table.combineWidget(this.viewer);
         var bodyWidget = currentTable.containerWidget;
         if (this.viewer.owner.enableHeaderAndFooter || block.isInHeaderFooter) {
+            block.bodyWidget.isEmpty = false;
             bodyWidget.height -= currentTable.height;
             // tslint:disable-next-line:max-line-length
             this.viewer.updateHCFClientAreaWithTop(table.bodyWidget.sectionFormat, this.viewer.isBlockInHeader(table), bodyWidget.page);
@@ -15714,6 +15738,7 @@ var Layout = /** @__PURE__ @class */ (function () {
                     return;
                 }
                 if (bodyWidget instanceof HeaderFooterWidget) {
+                    bodyWidget.isEmpty = false;
                     // tslint:disable-next-line:max-line-length
                     this.viewer.updateHCFClientAreaWithTop(bodyWidget.sectionFormat, bodyWidget.headerFooterType.indexOf('Header') !== -1, bodyWidget.page);
                     curretBlock.containerWidget.height -= curretBlock.height;
@@ -16649,6 +16674,7 @@ var Layout = /** @__PURE__ @class */ (function () {
         var bodyWidget = paragraph.containerWidget;
         bodyWidget.height -= paragraph.height;
         if (this.viewer.owner.enableHeaderAndFooter || paragraph.isInHeaderFooter) {
+            paragraph.bodyWidget.isEmpty = false;
             // tslint:disable-next-line:max-line-length
             this.viewer.updateHCFClientAreaWithTop(paragraph.bodyWidget.sectionFormat, this.viewer.isBlockInHeader(paragraph), bodyWidget.page);
         }
@@ -19919,12 +19945,19 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
             headerDistance = HelperMethods.convertPointToPixel(sectionFormat.headerDistance);
             footerDistance = HelperMethods.convertPointToPixel(sectionFormat.footerDistance);
         }
+        var isEmptyWidget = false;
         if (!isNullOrUndefined(page.headerWidget)) {
-            top = Math.min(Math.max(headerDistance + page.headerWidget.height, top), pageHeight / 100 * 40);
+            isEmptyWidget = page.headerWidget.isEmpty;
+            if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
+                top = Math.min(Math.max(headerDistance + page.headerWidget.height, top), pageHeight / 100 * 40);
+            }
         }
         var bottom = 0.667 + bottomMargin;
         if (!isNullOrUndefined(page.footerWidget)) {
-            bottom = 0.667 + Math.min(pageHeight / 100 * 40, Math.max(footerDistance + page.footerWidget.height, bottomMargin));
+            isEmptyWidget = page.footerWidget.isEmpty;
+            if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
+                bottom = 0.667 + Math.min(pageHeight / 100 * 40, Math.max(footerDistance + page.footerWidget.height, bottomMargin));
+            }
         }
         var width = 0;
         if (!isNullOrUndefined(sectionFormat)) {
@@ -20712,6 +20745,7 @@ var PageLayoutViewer = /** @__PURE__ @class */ (function (_super) {
             var headerFooter = this.headersFooters[sectionIndex][index];
             if (!headerFooter) {
                 headerFooter = this.createHeaderFooterWidget(type);
+                headerFooter.isEmpty = true;
                 this.headersFooters[sectionIndex][index] = headerFooter;
             }
             return headerFooter;
@@ -34012,11 +34046,15 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.isCursorInHeaderRegion = function (point, page) {
         var pageTop = this.getPageTop(page);
         var headerHeight = 0;
-        if (page.headerWidget) {
-            headerHeight = (page.headerWidget.y + page.headerWidget.height);
+        var header = page.headerWidget;
+        if (header) {
+            headerHeight = (header.y + header.height);
         }
-        var height = Math.max(headerHeight, HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin))
-            * this.viewer.zoomFactor;
+        var isEmpty = header.isEmpty && !this.owner.enableHeaderAndFooter;
+        var topMargin = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin);
+        var pageHeight = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.pageHeight);
+        var height = isEmpty ? topMargin : Math.min(Math.max(headerHeight, topMargin), pageHeight / 100 * 40);
+        height = height * this.viewer.zoomFactor;
         if ((this.viewer.containerTop + point.y) >= pageTop && (this.viewer.containerTop + point.y) <= pageTop + height) {
             return true;
         }
@@ -34034,9 +34072,16 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (page.footerWidget) {
             footerHeight = page.footerWidget.height;
         }
-        // tslint:disable-next-line:max-line-length
-        var height = (pageRect.height -
-            Math.max(footerHeight + footerDistance, HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.bottomMargin))) * this.viewer.zoomFactor;
+        var bottomMargin = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.bottomMargin);
+        var isEmpty = page.footerWidget.isEmpty && !this.owner.enableHeaderAndFooter;
+        var height = pageRect.height;
+        if (isEmpty) {
+            height = (height - bottomMargin) * this.viewer.zoomFactor;
+        }
+        else {
+            // tslint:disable-next-line:max-line-length
+            height = (height - Math.min(pageRect.height / 100 * 40, Math.max(footerHeight + footerDistance, bottomMargin))) * this.viewer.zoomFactor;
+        }
         if ((this.viewer.containerTop + point.y) <= pageBottom && (this.viewer.containerTop + point.y) >= pageTop + height) {
             return true;
         }
@@ -34048,7 +34093,21 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.enableHeadersFootersRegion = function (widget) {
         this.owner.enableHeaderAndFooter = true;
         this.updateTextPositionForBlockContainer(widget);
+        this.shiftBlockOnHeaderFooterEnableDisable();
         return true;
+    };
+    Selection.prototype.shiftBlockOnHeaderFooterEnableDisable = function () {
+        for (var i = 0; i < this.viewer.headersFooters.length; i++) {
+            var headerFooter = this.viewer.headersFooters[i];
+            var sectionFormat = this.owner.editor.getBodyWidgetInternal(i, 0).sectionFormat;
+            for (var _i = 0, _a = Object.keys(headerFooter); _i < _a.length; _i++) {
+                var key = _a[_i];
+                var widget = headerFooter[key];
+                if (widget.isEmpty) {
+                    this.owner.editor.shiftPageContent(widget.headerFooterType, sectionFormat);
+                }
+            }
+        }
     };
     /**
      * @private
@@ -34068,6 +34127,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         var page = this.getPage(this.start.paragraph);
         this.updateTextPositionForBlockContainer(page.bodyWidgets[0]);
         this.owner.enableHeaderAndFooter = false;
+        this.shiftBlockOnHeaderFooterEnableDisable();
     };
     //#endregion
     /**
@@ -40974,7 +41034,8 @@ var Editor = /** @__PURE__ @class */ (function () {
      */
     Editor.prototype.updateHeaderFooterWidget = function () {
         this.updateHeaderFooterWidgetToPage(this.selection.start.paragraph.bodyWidget);
-        this.shiftPageContent(this.selection.start.paragraph.bodyWidget);
+        var headerFooterWidget = this.selection.start.paragraph.bodyWidget;
+        this.shiftPageContent(headerFooterWidget.headerFooterType, headerFooterWidget.sectionFormat);
     };
     /**
      * @private
@@ -41065,53 +41126,80 @@ var Editor = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
-    Editor.prototype.shiftPageContent = function (headerFooter) {
-        var type = headerFooter.headerFooterType;
+    Editor.prototype.shiftPageContent = function (type, sectionFormat) {
+        // let type: HeaderFooterType = headerFooter.headerFooterType;
         var pageIndex;
-        if (type === 'FirstPageHeader' || type === 'FirstPageFooter') {
+        if (type.indexOf('First') !== -1) {
             pageIndex = 0;
         }
-        else if (headerFooter.sectionFormat.differentOddAndEvenPages) {
-            if (headerFooter.sectionFormat.differentFirstPage) {
-                pageIndex = (type === 'EvenHeader' || type === 'EvenFooter') ? 1 : 2;
+        else if (sectionFormat.differentOddAndEvenPages) {
+            var isEven = type.indexOf('Even') !== -1;
+            if (sectionFormat.differentFirstPage) {
+                pageIndex = isEven ? 1 : 2;
             }
             else {
-                pageIndex = (type.indexOf('Even') === -1) ? 0 : 1;
+                pageIndex = !isEven ? 0 : 1;
             }
         }
         else {
-            pageIndex = headerFooter.sectionFormat.differentFirstPage ? 1 : 0;
+            pageIndex = sectionFormat.differentFirstPage ? 1 : 0;
             if (pageIndex === 1 && this.viewer.pages.length === 1) {
                 pageIndex = 0;
             }
         }
-        var page = this.viewer.pages[pageIndex];
-        if (type.indexOf('Header') !== -1) {
-            var firstBlock = page.bodyWidgets[0].firstChild;
-            var top_1 = HelperMethods.convertPointToPixel(headerFooter.sectionFormat.topMargin);
-            var headerDistance = HelperMethods.convertPointToPixel(headerFooter.sectionFormat.headerDistance);
-            top_1 = Math.max(headerDistance + page.headerWidget.height, top_1);
-            if (firstBlock.y !== top_1) {
-                this.viewer.updateClientArea(page.bodyWidgets[0].sectionFormat, page);
-                firstBlock = firstBlock.combineWidget(this.viewer);
-                var prevWidget = firstBlock.previousRenderedWidget;
-                if (prevWidget) {
-                    this.viewer.cutFromTop(prevWidget.y + prevWidget.height);
-                    if (firstBlock.containerWidget !== prevWidget.containerWidget) {
-                        // tslint:disable-next-line:max-line-length
-                        this.viewer.layout.updateContainerWidget(firstBlock, prevWidget.containerWidget, prevWidget.indexInOwner + 1, false);
+        var section = this.viewer.pages[pageIndex].bodyWidgets[0];
+        do {
+            if (type.indexOf('Header') !== -1) {
+                var widget = section.page.headerWidget;
+                var isNotEmpty = !widget.isEmpty || widget.isEmpty && this.owner.enableHeaderAndFooter;
+                var firstBlock = section.firstChild;
+                var top_1 = HelperMethods.convertPointToPixel(sectionFormat.topMargin);
+                var headerDistance = HelperMethods.convertPointToPixel(sectionFormat.headerDistance);
+                if (isNotEmpty) {
+                    top_1 = Math.max(headerDistance + section.page.headerWidget.height, top_1);
+                }
+                if (firstBlock.y !== top_1) {
+                    this.viewer.updateClientArea(section.sectionFormat, section.page);
+                    firstBlock = firstBlock.combineWidget(this.viewer);
+                    var prevWidget = firstBlock.previousRenderedWidget;
+                    if (prevWidget) {
+                        if (firstBlock.containerWidget.equals(prevWidget.containerWidget)) {
+                            this.viewer.cutFromTop(prevWidget.y + prevWidget.height);
+                            // tslint:disable-next-line:max-line-length
+                            this.viewer.layout.updateContainerWidget(firstBlock, prevWidget.containerWidget, prevWidget.indexInOwner + 1, false);
+                        }
+                    }
+                    this.viewer.blockToShift = firstBlock;
+                }
+            }
+            else {
+                this.checkAndShiftFromBottom(section.page, section.page.footerWidget);
+            }
+            if (this.viewer.blockToShift) {
+                this.viewer.renderedLists.clear();
+                this.viewer.layout.shiftLayoutedItems();
+            }
+            while (section) {
+                var splittedSection = section.getSplitWidgets();
+                section = splittedSection[splittedSection.length - 1].nextRenderedWidget;
+                if (section) {
+                    if (pageIndex === 0) {
+                        break;
+                    }
+                    else {
+                        if (section.page.index + 1 % 2 === 0 && pageIndex === 1 ||
+                            (section.page.index + 1 % 2 !== 0 && pageIndex === 2)) {
+                            break;
+                        }
+                        var nextPage = section.page.nextPage;
+                        if (nextPage.bodyWidgets[0].equals(section)) {
+                            section = nextPage.bodyWidgets[0];
+                            break;
+                        }
                     }
                 }
-                this.viewer.blockToShift = firstBlock;
             }
-        }
-        else {
-            this.checkAndShiftFromBottom(page, headerFooter);
-        }
-        if (this.viewer.blockToShift) {
-            this.viewer.renderedLists.clear();
-            this.viewer.layout.shiftLayoutedItems();
-        }
+        } while (section);
     };
     /**
      * @private
@@ -46361,6 +46449,9 @@ var Editor = /** @__PURE__ @class */ (function () {
             return page.footerWidget;
         }
     };
+    /**
+     * @private
+     */
     Editor.prototype.getBodyWidgetInternal = function (sectionIndex, blockIndex) {
         for (var i = 0; i < this.viewer.pages.length; i++) {
             var bodyWidget = this.viewer.pages[i].bodyWidgets[0];
@@ -54542,7 +54633,7 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         section.headersFooters.firstPageFooter = this.writeHeaderFooter(hfs[5]);
     };
     SfdtExport.prototype.writeHeaderFooter = function (widget) {
-        if (isNullOrUndefined(widget)) {
+        if (isNullOrUndefined(widget) || widget.isEmpty) {
             return undefined;
         }
         var headerFooter = {};
@@ -63288,6 +63379,9 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.showPropertiesPaneOnSelection = function () {
+            if (_this.container.restrictEditing) {
+                return;
+            }
             var currentContext = _this.documentEditor.selection.contextType;
             var isInHeaderFooter = currentContext.indexOf('Header') >= 0
                 || currentContext.indexOf('Footer') >= 0;

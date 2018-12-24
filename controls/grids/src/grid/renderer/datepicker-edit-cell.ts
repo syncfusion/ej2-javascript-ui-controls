@@ -60,6 +60,6 @@ function dateanddatetimerender(args: { rowData: Object, element: Element, column
     format: format,
     placeholder: isInline ?
         '' : args.column.headerText, enableRtl: rtl,
-    enabled: isEditable(args.column, args.type, args.element),
+    enabled: isEditable(args.column, args.requestType, args.element),
 };
 }

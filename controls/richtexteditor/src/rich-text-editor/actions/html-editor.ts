@@ -60,6 +60,7 @@ export class HtmlEditor {
         this.parent.on(events.selectionSave, this.onSelectionSave, this);
         this.parent.on(events.selectionRestore, this.onSelectionRestore, this);
         this.parent.on(events.readOnlyMode, this.updateReadOnly, this);
+        this.parent.on(events.paste, this.onPaste, this);
     }
     private updateReadOnly(): void {
         if (this.parent.readonly) {
@@ -109,7 +110,24 @@ export class HtmlEditor {
             this.spaceLink(e.args as KeyboardEvent);
         }
     }
-
+    private onPaste(e: NotifyArgs): void {
+        let regex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
+        if (e.text.match(regex)) {
+            (e.args as KeyboardEvent).preventDefault();
+            let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+            let saveSelection: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(
+                range, this.parent.contentModule.getDocument());
+            let args: NotifyArgs = { url: e.text, text: '', selection: saveSelection, action: 'Paste' };
+            this.parent.formatter.editorManager.execCommand(
+                'Links',
+                'CreateLink',
+                null,
+                null,
+                args,
+                args
+            );
+        }
+    }
     private spaceLink(e?: KeyboardEvent): void {
         let range: Range = this.nodeSelectionObj.getRange(this.contentRenderer.getDocument());
         let selectNodeEle: Node[] = this.nodeSelectionObj.getParentNodeCollection(range);
@@ -246,6 +264,7 @@ export class HtmlEditor {
         this.parent.off(events.selectionSave, this.onSelectionSave);
         this.parent.off(events.selectionRestore, this.onSelectionRestore);
         this.parent.off(events.readOnlyMode, this.updateReadOnly);
+        this.parent.off(events.paste, this.onPaste);
     }
 
     private render(): void {

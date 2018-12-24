@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, Event, EmitType, select } from '@syncfusion/ej2-base';import { detach, addClass, removeClass, EventHandler, setStyleAttribute, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, closest, extend, L10n, compile } from '@syncfusion/ej2-base';import { DataManager, UrlAdaptor, Query, WebApiAdaptor, ODataV4Adaptor } from '@syncfusion/ej2-data';import { Button, ButtonModel } from '@syncfusion/ej2-buttons';import { RichTextEditorModel } from '@syncfusion/ej2-richtexteditor';import { DatePicker, DatePickerModel, DateTimePicker } from '@syncfusion/ej2-calendars';import { DateTimePickerModel, DateRangePickerModel, TimePickerModel } from '@syncfusion/ej2-calendars';import { NumericTextBox, NumericTextBoxModel, TextBox, TextBoxModel } from '@syncfusion/ej2-inputs';import { createSpinner, hideSpinner, SpinnerArgs, showSpinner } from '@syncfusion/ej2-popups';import { Tooltip, TooltipEventArgs, TipPointerPosition } from '@syncfusion/ej2-popups';import { ColorPickerModel, FormValidator, MaskedTextBox, MaskedTextBoxModel, SliderModel } from '@syncfusion/ej2-inputs';import { AutoCompleteModel, ComboBoxModel, DropDownList, DropDownListModel, MultiSelectModel } from '@syncfusion/ej2-dropdowns';import { Rte } from '../modules/rte';import { Slider } from '../modules/slider';import { ComboBox } from '../modules/combo-box';import { TimePicker } from '../modules/time-picker';import { MultiSelect } from '../modules/multi-select';import { ColorPicker } from '../modules/color-picker';import { AutoComplete } from '../modules/auto-complete';import { DateRangePicker } from '../modules/date-range-picker';import * as events from './events';import * as classes from './classes';import { PopupSettings, modulesList, localeConstant } from './models';import { PopupSettingsModel } from './models-model';import { ActionBeginEventArgs, ActionEventArgs, FormEventArgs, ValidateEventArgs, IButton } from './interface';import { parseValue } from './util';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, Event, EmitType, select } from '@syncfusion/ej2-base';import { detach, addClass, removeClass, EventHandler, setStyleAttribute, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, closest, extend, L10n, compile, Browser, Touch, TapEventArgs } from '@syncfusion/ej2-base';import { DataManager, UrlAdaptor, Query, WebApiAdaptor, ODataV4Adaptor } from '@syncfusion/ej2-data';import { Button, ButtonModel } from '@syncfusion/ej2-buttons';import { RichTextEditorModel } from '@syncfusion/ej2-richtexteditor';import { DatePicker, DatePickerModel, DateTimePicker } from '@syncfusion/ej2-calendars';import { DateTimePickerModel, DateRangePickerModel, TimePickerModel } from '@syncfusion/ej2-calendars';import { NumericTextBox, NumericTextBoxModel, TextBox, TextBoxModel } from '@syncfusion/ej2-inputs';import { createSpinner, hideSpinner, SpinnerArgs, showSpinner } from '@syncfusion/ej2-popups';import { Tooltip, TooltipEventArgs, TipPointerPosition } from '@syncfusion/ej2-popups';import { ColorPickerModel, FormValidator, MaskedTextBox, MaskedTextBoxModel, SliderModel } from '@syncfusion/ej2-inputs';import { AutoCompleteModel, ComboBoxModel, DropDownList, DropDownListModel, MultiSelectModel } from '@syncfusion/ej2-dropdowns';import { Rte } from '../modules/rte';import { Slider } from '../modules/slider';import { ComboBox } from '../modules/combo-box';import { TimePicker } from '../modules/time-picker';import { MultiSelect } from '../modules/multi-select';import { ColorPicker } from '../modules/color-picker';import { AutoComplete } from '../modules/auto-complete';import { DateRangePicker } from '../modules/date-range-picker';import * as events from './events';import * as classes from './classes';import { PopupSettings, modulesList, localeConstant } from './models';import { PopupSettingsModel } from './models-model';import { ActionBeginEventArgs, ActionEventArgs, FormEventArgs, ValidateEventArgs, IButton } from './interface';import { parseValue } from './util';
 import {RenderMode,AdaptorType,InputType,EditableType,ActionBlur} from "./inplace-editor";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -52,17 +52,19 @@ export interface InPlaceEditorModel extends ComponentModel{
 
     /**
      * Specifies the mode to be render while editing. The possible modes are :
-     * Inline: Editable content is displayed as inline text and ok/cancel buttons are displayed at right bottom corner of input.
-     * Popup: Editable content and ok/cancel buttons are displayed inside popup while editing.
+     * 
+     * - `Inline`: Editable content is displayed as inline text and ok/cancel buttons are displayed at right bottom corner of input.
+     * - `Popup`: Editable content and ok/cancel buttons are displayed inside popup while editing.
      * @default 'Popup'
      */
     mode?: RenderMode;
 
     /**
      * Specifies the adaptor type that are used DataManager to communicate with DataSource. The possible values are,
-     * UrlAdaptor: Base adaptor for interacting with remote data services.
-     * ODataV4Adaptor: Used to interact with ODataV4 service.
-     * WebApiAdaptor: Used to interact with Web api created with OData endpoint.
+     * 
+     * - `UrlAdaptor`: Base adaptor for interacting with remote data services.
+     * - `ODataV4Adaptor`: Used to interact with ODataV4 service.
+     * - `WebApiAdaptor`: Used to interact with Web api created with OData endpoint.
      * @default 'UrlAdaptor'
      */
     adaptor?: AdaptorType;
@@ -75,9 +77,10 @@ export interface InPlaceEditorModel extends ComponentModel{
 
     /**
      * Specifies the event action of input to enter edit mode instead of using edit icon. The possible values are:
-     * Click: Do the single click action on input to enter into the edit mode.
-     * DblClick: Do the single double click action on input to enter into the edit mode.
-     * EditIconClick: Disables the editing of event action of input and allows user to edit only through edit icon.
+     * 
+     * - `Click`: Do the single click action on input to enter into the edit mode.
+     * - `DblClick`: Do the single double click action on input to enter into the edit mode.
+     * - `EditIconClick`: Disables the editing of event action of input and allows user to edit only through edit icon.
      * @default 'Click'
      */
     editableOn?: EditableType;
@@ -85,9 +88,10 @@ export interface InPlaceEditorModel extends ComponentModel{
     /**
      * Specifies the action to be perform when user clicks outside the container, that is focus out of editable content.
      * The possible options are,
-     * Cancel: Cancel's the editing and resets the old content.
-     * Submit: Submit the edited content to the server.
-     * Ignore: No action is perform with this type and allows to have many containers open.
+     * 
+     * - `Cancel`: Cancel's the editing and resets the old content.
+     * - `Submit`: Submit the edited content to the server.
+     * - `Ignore`: No action is perform with this type and allows to have many containers open.
      * @default 'Submit'
      */
     actionOnBlur?: ActionBlur;

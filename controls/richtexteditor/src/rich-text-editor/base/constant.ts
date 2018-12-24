@@ -156,7 +156,7 @@ export const getSelectedHtml: string = 'getSelectedHtml';
 /** @hidden */
 export const renderInlineToolbar: string = 'renderInlineToolbar';
 /** @hidden */
-export const paste: string = 'pasteImage';
+export const paste: string = 'paste-content';
 /** @hidden */
 export const imgModule: string = 'imageModule';
 /** @hidden */

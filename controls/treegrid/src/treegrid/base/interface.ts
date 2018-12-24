@@ -1,5 +1,5 @@
 import { Column } from '../models/column';
-
+import { SaveEventArgs } from '@syncfusion/ej2-grids';
 /**
  * Specifies FlatData interfaces.
  * @hidden
@@ -98,4 +98,8 @@ export interface RowCollapsingEventArgs {
     row?: HTMLTableRowElement;
     /** Cancel the row collapsing action */
     cancel?: boolean;
+}
+export interface CellSaveEventArgs extends SaveEventArgs {
+    /** Defines edited column */
+    column?: Column;
 }

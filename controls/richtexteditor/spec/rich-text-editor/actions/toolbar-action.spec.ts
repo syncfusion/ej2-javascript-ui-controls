@@ -724,15 +724,17 @@ Tabs and shift-tabs work too`;
             actionBegin = false;
             actionComplete = false;
         });
-        it(" Click the paste action", () => {
+        it(" Click the paste action", (done) => {
             let nodeSelection: NodeSelection = new NodeSelection();
             selectNode = editNode.querySelector('.third-p-node');
             nodeSelection.setSelectionText(curDocument, selectNode.childNodes[0], selectNode.childNodes[0], 0, 6);
             document.getElementById(controlId + "_toolbar_Paste").click();
-            expect(actionBegin).toBe(true);
-            expect(actionComplete).toBe(true);
-            actionBegin = false;
-            actionComplete = false;
+            setTimeout(() => {
+                expect(actionComplete).toBe(true);
+                actionBegin = false;
+                actionComplete = false;
+                done();
+            }, 10);
         });
 
         afterAll(() => {
@@ -785,14 +787,18 @@ Tabs and shift-tabs work too`;
             actionBegin = false;
             actionComplete = false;
         });
-        it(" Click the paste action", () => {
+        it(" Click the paste action", (done) => {
             rteObj.formatter.editorManager.markdownSelection.save(0, editNode.value.length);
             rteObj.formatter.editorManager.markdownSelection.restore(editNode);
             document.getElementById(controlId + "_toolbar_Paste").click();
-            expect(actionBegin).toBe(true);
-            expect(actionComplete).toBe(true);
-            actionBegin = false;
-            actionComplete = false;
+            setTimeout(() => {
+                expect(actionBegin).toBe(true);
+                expect(actionComplete).toBe(true);
+                actionBegin = false;
+                actionComplete = false;
+                done();
+            });
+
         });
 
         afterAll(() => {

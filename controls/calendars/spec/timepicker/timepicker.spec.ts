@@ -1227,6 +1227,13 @@ describe('TimePicker', () => {
             expect(timeObj.value.valueOf()).toBe(new Date("12/12/2016 10:00").valueOf());
             expect(timeObj.inputWrapper.clearButton.classList.contains('e-clear-icon-hide')).toBe(true);
         });
+        it('clear button with destroy state', () => {
+            timeObj.showClearButton = false;
+            timeObj.dataBind();
+            timeObj.destroy();
+            expect(timeObj.inputWrapper===undefined).toBe(true);
+            timeObj = null;
+        });
         it('click on clear button', (done) => {
             expect(timeObj.value.valueOf()).toBe(new Date("12/12/2016 10:00").valueOf());
             timeObj.show();

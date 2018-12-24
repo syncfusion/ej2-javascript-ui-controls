@@ -169,24 +169,24 @@
       .e-toast-actions {
 
         .e-btn {
-          background-color: $btn-flat-bgcolor;
-          border-color: $btn-flat-border-color;
-          box-shadow: $btn-flat-box-shadow;
-          color:  $btn-flat-color;
+          background-color: $toast-btn-flat-bgcolor;
+          border-color: $toast-btn-flat-border-color;
+          box-shadow: $toast-btn-flat-box-shadow;
+          color:  $toast-btn-flat-color;
 
           &:hover {
-            background-color: $btn-flat-hover-bgcolor;
-            color:  $btn-flat-hover-color;
+            background-color: $toast-btn-flat-hover-bgcolor;
+            color:  $toast-btn-flat-hover-color;
           }
 
           &:focus {
-            background-color: $btn-flat-focus-bgcolor;
-            color:  $btn-flat-focus-color;
+            background-color: $toast-btn-flat-focus-bgcolor;
+            color:  $toast-btn-flat-focus-color;
           }
 
           &:active {
-            background-color: $btn-flat-active-bgcolor;
-            color:  $btn-flat-active-color;
+            background-color: $toast-btn-flat-active-bgcolor;
+            color:  $toast-btn-flat-active-color;
           }
         }
       }
