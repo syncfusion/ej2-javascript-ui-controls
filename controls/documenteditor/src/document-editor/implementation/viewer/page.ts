@@ -2699,8 +2699,11 @@ export class TableCellWidget extends BlockWidget {
         if ((isNullOrUndefined(previousCell) || (!isNullOrUndefined(leftBorder) && (leftBorder.lineStyle === 'None' && !leftBorder.hasNoneStyle)))) {
             if (!isNullOrUndefined(leftBorder) && !((leftBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
                 // tslint:disable-next-line:max-line-length
-                return this.getLeftBorderToRenderByHierarchy(leftBorder, TableRowWidget.getRowOf(leftBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(leftBorder.ownerBase as WBorders).tableFormat.borders);
+                leftBorder = this.getLeftBorderToRenderByHierarchy(leftBorder, TableRowWidget.getRowOf(leftBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(leftBorder.ownerBase as WBorders).tableFormat.borders);
             }
+        }
+        if (isNullOrUndefined(previousCell)) {
+            return leftBorder;
         } else {
             let prevCellRightBorder: WBorder = undefined;
             // tslint:disable-next-line:max-line-length
@@ -2840,8 +2843,11 @@ export class TableCellWidget extends BlockWidget {
         if (isNullOrUndefined(nextCell) || (!isNullOrUndefined(rightBorder) && (rightBorder.lineStyle === 'None' && !rightBorder.hasNoneStyle))) {
             if (!isNullOrUndefined(rightBorder) && !((rightBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
                 // tslint:disable-next-line:max-line-length
-                return this.getRightBorderToRenderByHierarchy(rightBorder, TableRowWidget.getRowOf(rightBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(rightBorder.ownerBase).tableFormat.borders);
+                rightBorder = this.getRightBorderToRenderByHierarchy(rightBorder, TableRowWidget.getRowOf(rightBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(rightBorder.ownerBase).tableFormat.borders);
             }
+        }
+        if (isNullOrUndefined(nextCell)) {
+            return rightBorder;
         } else {
             let nextCellLeftBorder: WBorder = undefined;
             // tslint:disable-next-line:max-line-length
@@ -2950,8 +2956,11 @@ export class TableCellWidget extends BlockWidget {
         if (isNullOrUndefined(previousTopCell) || (!isNullOrUndefined(topBorder) && (topBorder.lineStyle === 'None' && !topBorder.hasNoneStyle))) {
             if (!isNullOrUndefined(topBorder) && !((topBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
                 // tslint:disable-next-line:max-line-length
-                return this.getTopBorderToRenderByHierarchy(topBorder, TableRowWidget.getRowOf(topBorder.ownerBase as WBorders).rowFormat.borders, TableWidget.getTableOf(topBorder.ownerBase as WBorders).tableFormat.borders);
+                topBorder = this.getTopBorderToRenderByHierarchy(topBorder, TableRowWidget.getRowOf(topBorder.ownerBase as WBorders).rowFormat.borders, TableWidget.getTableOf(topBorder.ownerBase as WBorders).tableFormat.borders);
             }
+        }
+        if (isNullOrUndefined(previousTopCell)) {
+            return topBorder;
         } else {
             let prevTopCellBottomBorder: WBorder = undefined;
             // tslint:disable-next-line:max-line-length
@@ -3030,8 +3039,11 @@ export class TableCellWidget extends BlockWidget {
         if (isNullOrUndefined(nextBottomCell) || (!isNullOrUndefined(bottomBorder) && (bottomBorder.lineStyle === 'None' && !bottomBorder.hasNoneStyle))) {
             if (!isNullOrUndefined(bottomBorder) && !((bottomBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
                 // tslint:disable-next-line:max-line-length
-                return this.getBottomBorderToRenderByHierarchy(bottomBorder, TableRowWidget.getRowOf(bottomBorder.ownerBase as WBorders).rowFormat.borders, TableWidget.getTableOf(bottomBorder.ownerBase as WBorders).tableFormat.borders);
+                bottomBorder = this.getBottomBorderToRenderByHierarchy(bottomBorder, TableRowWidget.getRowOf(bottomBorder.ownerBase as WBorders).rowFormat.borders, TableWidget.getTableOf(bottomBorder.ownerBase as WBorders).tableFormat.borders);
             }
+        }
+        if (isNullOrUndefined(nextBottomCell)) {
+            return bottomBorder;
         } else {
             let prevBottomCellTopBorder: WBorder = undefined;
             // tslint:disable-next-line:max-line-length

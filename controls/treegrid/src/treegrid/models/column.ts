@@ -1,6 +1,7 @@
 import { TextAlign, ClipMode, ValueAccessor, IFilter, IFilterUI, IEditCell, CommandModel  } from '@syncfusion/ej2-grids';
 import { NumberFormatOptions, DateFormatOptions, merge } from '@syncfusion/ej2-base';
 import { ITreeGridCellFormatter } from '../base/interface';
+import { SortComparer} from '@syncfusion/ej2-grids';
 
 /**
  * Represents TreeGrid `Column` model class.
@@ -38,6 +39,16 @@ export class Column {
      */
 
     public allowEditing: boolean = true;
+
+    /**
+     * Defines the custom sort comparer function.
+     * The sort comparer function has the same functionality like 
+     * [`Array.sort`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort) sort comparer.
+     * {% codeBlock src="grid/sort-comparer-api/index.ts" %}{% endcodeBlock %}
+     */
+
+    public sortComparer: SortComparer | string;
+
     /**    
      * If `isPrimaryKey` is set to true, considers this column as the primary key constraint.   
      * @default false         
@@ -326,6 +337,13 @@ export interface ColumnModel {
    * @default undefined    
    */
   minWidth?: string | number;
+
+  /**    
+   * Defines the sort comparer property.    
+   * @default undefined
+   */
+
+  sortComparer?: SortComparer | string;
 
   /**    
    * Defines the maximum width of the column in pixels or percentage, which will restrict resizing beyond this pixels or percentage.   

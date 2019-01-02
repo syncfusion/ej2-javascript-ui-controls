@@ -1150,7 +1150,7 @@ function isEditable(col, type, elem) {
         }
         return true;
     }
-    else if (type === 'add' && col.isIdentity && col.isPrimaryKey) {
+    else if (type === 'add' && col.isIdentity) {
         return false;
     }
     else {
@@ -5138,6 +5138,9 @@ class StackedHeaderCellRenderer extends CellRenderer {
         if (!isNullOrUndefined(cell.column.textAlign)) {
             div.style.textAlign = cell.column.textAlign;
         }
+        if (cell.column.customAttributes) {
+            setStyleAndAttributes(node, cell.column.customAttributes);
+        }
         node.setAttribute('colspan', cell.colSpan.toString());
         node.setAttribute('aria-colspan', cell.colSpan.toString());
         node.setAttribute('aria-rowspan', '1');
@@ -5673,7 +5676,7 @@ class Render {
                 cols[i].width = !isNullOrUndefined(cols[i].width) ? cols[i].width : 200;
             }
         }
-        this.parent.columns = cols;
+        this.parent.setProperties({ 'columns': cols }, true);
     }
     instantiateRenderer() {
         this.renderer.addRenderer(RenderType.Header, new HeaderRender(this.parent, this.locator));
@@ -14897,14 +14900,14 @@ class StringFilterUI {
         this.instance = this.parent.createElement('input', { className: 'e-flmenu-input', id: 'strui-' + args.column.uid });
         args.target.appendChild(this.instance);
         this.dialogObj = args.dialogObj;
-        this.actObj = new AutoComplete(this.getAutoCompleteOptions(args));
+        this.actObj = this.getAutoCompleteOptions(args);
         this.actObj.appendTo(this.instance);
     }
     getAutoCompleteOptions(args) {
         let isForeignColumn = args.column.isForeignColumn();
         let dataSource = isForeignColumn ? args.column.dataSource : this.parent.dataSource;
         let fields = { value: isForeignColumn ? args.column.foreignKeyValue : args.column.field };
-        return {
+        let autoComplete = new AutoComplete(extend({
             dataSource: dataSource instanceof DataManager ? dataSource : new DataManager(dataSource),
             fields: fields,
             locale: this.parent.locale,
@@ -14925,7 +14928,8 @@ class StringFilterUI {
                     }).indexOf(obj[this.actObj.fields.value]) === index;
                 });
             }
-        };
+        }, args.column.filter.params));
+        return autoComplete;
     }
     write(args) {
         let columns = this.filterSettings.columns;
@@ -14964,13 +14968,13 @@ class NumberFilterUI {
     create(args) {
         this.instance = this.parent.createElement('input', { className: 'e-flmenu-input', id: 'numberui-' + args.column.uid });
         args.target.appendChild(this.instance);
-        this.numericTxtObj = new NumericTextBox({
+        this.numericTxtObj = new NumericTextBox(extend({
             format: args.column.format,
             locale: this.parent.locale,
             cssClass: 'e-popup-flmenu',
             placeholder: args.localizeText.getConstant('EnterValue'),
             enableRtl: this.parent.enableRtl,
-        });
+        }, args.column.filter.params));
         this.numericTxtObj.appendTo(this.instance);
     }
     write(args) {
@@ -15001,7 +15005,7 @@ class BooleanFilterUI {
         this.elem = this.parent.createElement('input', { className: 'e-flmenu-input', id: 'bool-ui-' + args.column.uid });
         args.target.appendChild(this.elem);
         this.dialogObj = args.dialogObj;
-        this.dropInstance = new DropDownList({
+        this.dropInstance = new DropDownList(extend({
             dataSource: dataSource instanceof DataManager ?
                 dataSource : new DataManager(dataSource),
             query: new Query().select(fields),
@@ -15014,7 +15018,7 @@ class BooleanFilterUI {
             actionComplete: (e) => {
                 e.result = DataUtil.distinct(e.result, fields, true);
             }
-        });
+        }, args.column.filter.params));
         this.dropInstance.appendTo(this.elem);
     }
     write(args) {
@@ -15049,7 +15053,7 @@ class DateFilterUI {
         this.inputElem = this.parent.createElement('input', { className: 'e-flmenu-input', id: 'dateui-' + args.column.uid });
         args.target.appendChild(this.inputElem);
         if (args.column.type === 'date') {
-            this.datePickerObj = new DatePicker({
+            this.datePickerObj = new DatePicker(extend({
                 format: format,
                 cssClass: 'e-popup-flmenu',
                 placeholder: args.localizeText.getConstant('ChooseDate'),
@@ -15057,10 +15061,10 @@ class DateFilterUI {
                 locale: this.parent.locale,
                 enableRtl: this.parent.enableRtl,
                 open: this.openPopup.bind(this),
-            });
+            }, args.column.filter.params));
         }
         else if (args.column.type === 'datetime') {
-            this.datePickerObj = new DateTimePicker({
+            this.datePickerObj = new DateTimePicker(extend({
                 format: format,
                 cssClass: 'e-popup-flmenu',
                 placeholder: args.localizeText.getConstant('ChooseDate'),
@@ -15068,7 +15072,7 @@ class DateFilterUI {
                 locale: this.parent.locale,
                 enableRtl: this.parent.enableRtl,
                 open: this.openPopup.bind(this),
-            });
+            }, args.column.filter.params));
         }
         this.datePickerObj.appendTo(this.inputElem);
     }
@@ -15695,13 +15699,14 @@ class ExcelFilter extends CheckBoxFilter {
                 selectedValue = this.getLocalizedLabel(isFirst ? 'GreaterThanOrEqual' : 'LessThanOrEqual');
             }
         }
-        this.dropOptr = new DropDownList({
+        let col = this.parent.getColumnByField(column);
+        this.dropOptr = new DropDownList(extend$1({
             dataSource: dropDatasource,
             fields: { text: 'text', value: 'value' },
             text: selectedValue,
             open: this.dropDownOpen.bind(this),
             enableRtl: this.parent.enableRtl
-        });
+        }, col.filter.params));
         this.dropOptr.appendTo(optrInput);
         let operator = this.getSelectedValue(selectedValue);
         return { fieldElement, operator };
@@ -15867,27 +15872,27 @@ class ExcelFilter extends CheckBoxFilter {
     /* tslint:disable-next-line:max-line-length */
     renderDate(options, column, inputValue, fValue, isRtl) {
         let format = getCustomDateFormat(options.format, options.type);
-        this.datePicker = new DatePicker({
+        this.datePicker = new DatePicker(extend$1({
             format: format,
             cssClass: 'e-popup-flmenu',
             placeholder: this.getLocalizedLabel('CustomFilterDatePlaceHolder'),
             width: '100%',
             enableRtl: isRtl,
             value: new Date(fValue),
-        });
+        }, options.column.filter.params));
         this.datePicker.appendTo(inputValue);
     }
     /* tslint:disable-next-line:max-line-length */
     renderDateTime(options, column, inputValue, fValue, isRtl) {
         let format = getCustomDateFormat(options.format, options.type);
-        this.dateTimePicker = new DateTimePicker({
+        this.dateTimePicker = new DateTimePicker(extend$1({
             format: format,
             cssClass: 'e-popup-flmenu',
             placeholder: this.getLocalizedLabel('CustomFilterDatePlaceHolder'),
             width: '100%',
             enableRtl: isRtl,
             value: new Date(fValue),
-        });
+        }, options.column.filter.params));
         this.dateTimePicker.appendTo(inputValue);
     }
     completeAction(e) {
@@ -15895,12 +15900,12 @@ class ExcelFilter extends CheckBoxFilter {
     }
     /* tslint:disable-next-line:max-line-length */
     renderNumericTextBox(options, column, inputValue, fValue, isRtl) {
-        this.numericTxtObj = new NumericTextBox({
+        this.numericTxtObj = new NumericTextBox(extend$1({
             format: options.format,
             placeholder: this.getLocalizedLabel('CustomFilterPlaceHolder'),
             enableRtl: isRtl,
             value: fValue
-        });
+        }, options.column.filter.params));
         this.numericTxtObj.appendTo(inputValue);
     }
     /* tslint:disable-next-line:max-line-length */
@@ -15909,7 +15914,7 @@ class ExcelFilter extends CheckBoxFilter {
         let isForeignColumn = colObj.isForeignColumn();
         let dataSource = isForeignColumn ? colObj.dataSource : options.dataSource;
         let fields = { value: isForeignColumn ? colObj.foreignKeyValue : column };
-        let actObj = new AutoComplete({
+        let actObj = new AutoComplete(extend$1({
             dataSource: dataSource instanceof DataManager ? dataSource : new DataManager(dataSource),
             fields: fields,
             query: this.parent.getQuery().clone(),
@@ -15943,7 +15948,7 @@ class ExcelFilter extends CheckBoxFilter {
                 });
             },
             value: fValue
-        });
+        }, colObj.filter.params));
         actObj.appendTo(inputValue);
         this.actObj = actObj;
     }

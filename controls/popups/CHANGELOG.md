@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.45 (2018-12-24)
+
+### Tooltip
+
+#### Bug Fixes
+
+- Added index position for tooltip content container to avoid misalignment while customize background.
+
 ## 16.4.44 (2018-12-24)
 
 ### Popup library

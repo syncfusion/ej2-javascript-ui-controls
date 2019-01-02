@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## 16.4.45 (2018-12-24)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- When drag the range bar pointer, the console error thrown resolved now.
+
 ## 16.4.40-beta (2018-12-10)
 
 ### CircularGauge

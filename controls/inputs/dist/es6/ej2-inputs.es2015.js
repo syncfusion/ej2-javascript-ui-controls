@@ -261,6 +261,11 @@ var Input;
         container.classList.add('e-control-wrapper');
         return container;
     }
+    function encodePlaceHolder(placeholder) {
+        let spanEle = document.createElement('span');
+        spanEle.innerHTML = placeholder;
+        return spanEle.textContent;
+    }
     /**
      * Sets the value to the input element.
      * ```
@@ -316,6 +321,7 @@ var Input;
      */
     function setPlaceholder(placeholder, element) {
         let parentElement;
+        placeholder = encodePlaceHolder(placeholder);
         parentElement = getParentNode(element);
         if (parentElement.classList.contains(CLASSNAMES.FLOATINPUT)) {
             if (!isNullOrUndefined(placeholder) && placeholder !== '') {

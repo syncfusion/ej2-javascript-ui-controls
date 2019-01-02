@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 16.4.45 (2018-12-24)
+
+### Grid
+
+#### Bug Fixes
+
+- Server requests sent twice when column is not defined in the grid is resolved.
+- custom attribute is missing in stacked header issue is fixed.
+- Column `allowEditing` false is working for `datepicker` edit when it is specified as primary key column is resolved.
+- `allowEditing` property is not working in identity column is resolved.
+- Provided support to `addparams` for filtering.
+
 ## 16.4.44 (2018-12-24)
 
 ### Grid

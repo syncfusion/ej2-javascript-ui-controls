@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.45 (2018-12-24)
+
+### Document Editor
+
+#### Bug Fixes
+
+- Table border is rendered properly.
+
 ## 16.4.44 (2018-12-24)
 
 ### Document Editor

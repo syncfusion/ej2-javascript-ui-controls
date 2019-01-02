@@ -1,4 +1,5 @@
 import { ScrollBar } from './scrollbar';
+import { Chart } from '../../chart/chart';
 import { Rect, PathOption, RectOption, CircleOption } from '../utils/helper';
 import { SvgRenderer } from '@syncfusion/ej2-base';
 import { IScrollbarThemeStyle } from '../../chart/index';
@@ -11,7 +12,7 @@ export function createScrollSvg(scrollbar: ScrollBar, renderer: SvgRenderer): vo
     let rect: Rect = scrollbar.axis.rect;
     let isHorizontalAxis: boolean = scrollbar.axis.orientation === 'Horizontal';
     scrollbar.svgObject = renderer.createSvg({
-        id: 'scrollBar_svg' + scrollbar.axis.name,
+        id: scrollbar.component.element.id + '_'  + 'scrollBar_svg' + scrollbar.axis.name,
         width: scrollbar.isVertical ? scrollbar.height : scrollbar.width,
         height: scrollbar.isVertical ? scrollbar.width : scrollbar.height,
         style: 'position: absolute;top: ' + ((scrollbar.axis.opposedPosition && isHorizontalAxis ? -16 : 0) + rect.y) + 'px;left: ' +
@@ -40,13 +41,15 @@ export class ScrollElements {
     public gripCircle: Element;
     /** @private */
     public slider: Element;
+    /** @private */
+    public chartId: string;
 
     /**
      * Constructor for scroll elements
      * @param scrollObj 
      */
-    constructor() {
-        // Constructor Called here
+    constructor(chart: Chart) {
+        this.chartId = chart.element.id + '_';
     }
 
     /**
@@ -56,17 +59,17 @@ export class ScrollElements {
      */
     public renderElements(scroll: ScrollBar, renderer: SvgRenderer): Element {
         let scrollGroup: Element = renderer.createGroup({
-            id: 'scrollBar_' + scroll.axis.name,
+            id: this.chartId + 'scrollBar_' + scroll.axis.name,
             transform: 'translate(' + ((scroll.isVertical && scroll.axis.isInversed) ? scroll.height : scroll.axis.isInversed ?
                 scroll.width : '0') + ',' + (scroll.isVertical && scroll.axis.isInversed ? '0' : scroll.axis.isInversed ?
                     scroll.height : scroll.isVertical ? scroll.width : '0') + ') rotate(' + (scroll.isVertical && scroll.axis.isInversed ?
                         '90' : scroll.isVertical ? '270' : scroll.axis.isInversed ? '180' : '0') + ')'
         });
         let backRectGroup: Element = renderer.createGroup({
-            id: 'scrollBar_backRect_' + scroll.axis.name
+            id: this.chartId + 'scrollBar_backRect_' + scroll.axis.name
         });
         let thumbGroup: Element = renderer.createGroup({
-            id: 'scrollBar_thumb_' + scroll.axis.name,
+            id: this.chartId + 'scrollBar_thumb_' + scroll.axis.name,
             transform: 'translate(0,0)'
         });
         this.backRect(scroll, renderer, backRectGroup);
@@ -85,7 +88,7 @@ export class ScrollElements {
     private backRect(scroll: ScrollBar, renderer: SvgRenderer, parent: Element): void {
         let style: IScrollbarThemeStyle = scroll.scrollbarThemeStyle;
         let backRectEle: Element = renderer.drawRectangle(new RectOption(
-            'scrollBarBackRect_' + scroll.axis.name, style.backRect, { width: 1, color: style.backRect }, 1, new Rect(
+            this.chartId + 'scrollBarBackRect_' + scroll.axis.name, style.backRect, { width: 1, color: style.backRect }, 1, new Rect(
                 0, 0, scroll.width, scroll.height
             ),
             0, 0)
@@ -99,10 +102,10 @@ export class ScrollElements {
     private arrows(scroll: ScrollBar, renderer: SvgRenderer, parent: Element): void {
         let style: IScrollbarThemeStyle = scroll.scrollbarThemeStyle;
         let option: PathOption = new PathOption(
-            'scrollBar_leftArrow_' + scroll.axis.name, style.arrow, 1, style.arrow, 1, '', ''
+            this.chartId + 'scrollBar_leftArrow_' + scroll.axis.name, style.arrow, 1, style.arrow, 1, '', ''
         );
         this.leftArrowEle = renderer.drawPath(option);
-        option.id = 'scrollBar_rightArrow_' + scroll.axis.name;
+        option.id = this.chartId + 'scrollBar_rightArrow_' + scroll.axis.name;
         this.rightArrowEle = renderer.drawPath(option);
         this.setArrowDirection(this.thumbRectX, this.thumbRectWidth, scroll.height);
         parent.appendChild(this.leftArrowEle);
@@ -134,7 +137,7 @@ export class ScrollElements {
         scroll.startX = this.thumbRectX;
         let style: IScrollbarThemeStyle = scroll.scrollbarThemeStyle;
         this.slider = renderer.drawRectangle(new RectOption(
-            'scrollBarThumb_' + scroll.axis.name,
+            this.chartId + 'scrollBarThumb_' + scroll.axis.name,
             style.thumb, { width: 1, color: '' }, 1, new Rect(
                 this.thumbRectX, 0, this.thumbRectWidth, scroll.height
             )
@@ -150,7 +153,7 @@ export class ScrollElements {
     private renderCircle(scroll: ScrollBar, renderer: SvgRenderer, parent: Element): void {
         let style: IScrollbarThemeStyle = scroll.scrollbarThemeStyle;
         let option: CircleOption = new CircleOption(
-            'scrollBar_leftCircle_' + scroll.axis.name, style.circle, { width: 1, color: style.circle },
+            this.chartId + 'scrollBar_leftCircle_' + scroll.axis.name, style.circle, { width: 1, color: style.circle },
             1, this.thumbRectX, scroll.height / 2, 8
         );
         let scrollShadowEle: string = '<filter x="-25.0%" y="-20.0%" width="150.0%" height="150.0%" filterUnits="objectBoundingBox"' +
@@ -162,13 +165,14 @@ export class ScrollElements {
         let defElement: Element = renderer.createDefs();
         defElement.innerHTML = scrollShadowEle;
         let shadowGroup: Element = renderer.createGroup({
-            id: scroll.axis.name + '_thumb_shadow'
+            id: this.chartId + scroll.axis.name + '_thumb_shadow'
         });
-        shadowGroup.innerHTML = '<use fill="black" fill-opacity="1" filter="url(#scrollbar_shadow)" xlink:href="#' + 'scrollBar_leftCircle_'
-         + scroll.axis.name + '"></use><use fill="black" fill-opacity="1" filter="url(#scrollbar_shadow)" xlink:href="#'
-         + 'scrollBar_rightCircle_' + scroll.axis.name + '"></use>';
+        shadowGroup.innerHTML = '<use fill="black" fill-opacity="1" filter="url(#scrollbar_shadow)" xlink:href="#' +
+        this.chartId + 'scrollBar_leftCircle_' +
+        scroll.axis.name + '"></use><use fill="black" fill-opacity="1" filter="url(#scrollbar_shadow)" xlink:href="#' +
+        this.chartId + 'scrollBar_rightCircle_' + scroll.axis.name + '"></use>';
         this.leftCircleEle = renderer.drawCircle(option);
-        option.id = 'scrollBar_rightCircle_' + scroll.axis.name;
+        option.id = this.chartId + 'scrollBar_rightCircle_' + scroll.axis.name;
         option.cx = this.thumbRectX + this.thumbRectWidth;
         this.rightCircleEle = renderer.drawCircle(option);
         parent.appendChild(defElement);
@@ -190,16 +194,16 @@ export class ScrollElements {
         let padding: number = gripWidth / 2 - gripCircleDiameter;
         let style: IScrollbarThemeStyle = scroll.scrollbarThemeStyle;
         let option: CircleOption = new CircleOption(
-            'scrollBar_gripCircle0' + '_' + scroll.axis.name, style.grip,
+            this.chartId + 'scrollBar_gripCircle0' + '_' + scroll.axis.name, style.grip,
             { width: 1, color: style.grip }, 1, 0, 0, 1
         );
         this.gripCircle = renderer.createGroup({
-            id: 'scrollBar_gripCircle_' + scroll.axis.name,
+            id: this.chartId + 'scrollBar_gripCircle_' + scroll.axis.name,
             transform: 'translate(' + ((this.thumbRectX + this.thumbRectWidth / 2) + ((scroll.isVertical ? 1 : -1) * padding)) +
                 ',' + (scroll.isVertical ? '10' : '5') + ') rotate(' + (scroll.isVertical ? '180' : '0') + ')'
         });
         for (let i: number = 1; i <= 6; i++) {
-            option.id = 'scrollBar_gripCircle' + i + '_' + scroll.axis.name;
+            option.id = this.chartId + 'scrollBar_gripCircle' + i + '_' + scroll.axis.name;
             option.cx = sidePadding;
             option.cy = topPadding;
             this.gripCircle.appendChild(

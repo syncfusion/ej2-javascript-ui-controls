@@ -1,7 +1,7 @@
 import { EventHandler, Property, Internationalization, NotifyPropertyChanges } from '@syncfusion/ej2-base';
 import { KeyboardEvents, KeyboardEventArgs, Animation, AnimationModel, Browser, BaseEventArgs } from '@syncfusion/ej2-base';
 import { EmitType, cldrData, L10n, Component, getDefaultDateObject, rippleEffect, RippleOptions, Event } from '@syncfusion/ej2-base';
-import { createElement, remove, addClass, removeClass, closest, append, attributes, setStyleAttribute } from '@syncfusion/ej2-base';
+import { createElement, remove, addClass, detach, removeClass, closest, append, attributes, setStyleAttribute } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, formatUnit, getValue, setValue, getUniqueID } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Input, InputObject, IInput, FloatLabelType, FocusEventArgs, BlurEventArgs } from '@syncfusion/ej2-inputs';
@@ -77,17 +77,17 @@ export interface PopupEventArgs {
     /**
      * Illustrates whether the current action needs to be prevented or not.
      */
-
     cancel?: boolean;
-
     /** Defines the TimePicker popup object. */
     popup?: Popup;
-
     /**
      * Specifies the original event arguments.
      */
-
     event?: MouseEvent | KeyboardEvent | FocusEvent | Event;
+    /**
+     * Specifies the node to which the popup element to be appended.
+     */
+    appendTo?: HTMLElement;
 }
 
 export namespace TimePickerBase {
@@ -134,6 +134,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private cloneElement: HTMLElement;
     private listWrapper: HTMLElement;
     private listTag: HTMLElement;
+    private anchor: HTMLElement;
     private selectedElement: HTMLElement;
     private liCollections: HTMLElement[] = [];
     protected inputElement: HTMLInputElement;
@@ -159,6 +160,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private initValue: Date;
     private initMin: Date;
     private initMax: Date;
+    private openPopupEventArgs: PopupEventArgs;
     protected keyConfigure: { [key: string]: string };
     /**
      * Gets or sets the width of the TimePicker component. The width of the popup is based on the width of the component.
@@ -378,6 +380,9 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             this.inputElement = <HTMLInputElement>this.createElement('input');
             this.element.appendChild(this.inputElement);
         }
+        this.openPopupEventArgs = {
+            appendTo: document.body
+        };
     }
     // element creation
     protected render(): void {
@@ -389,6 +394,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         this.bindEvents();
         this.validateDisable();
         this.setValue(this.getFormattedValue(this.value));
+        this.anchor = this.inputElement;
     }
     private setTimeAllowEdit(): void {
         if (this.allowEdit) {
@@ -402,7 +408,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private validateDisable(): void {
         this.setMinMax(this.initMin, this.initMax);
         this.popupCreation();
-        this.popupObj.hide();
+        this.popupObj.destroy();
+        this.popupWrapper = this.popupObj = null;
         if ((!isNaN(+this.value) && this.value !== null)) {
             if (!this.valueIsDisable(this.value)) {
                 //disable value given in value property so reset the date based on current date
@@ -544,10 +551,10 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             this.generateList();
             append([this.listWrapper], this.popupWrapper);
         }
-        document.body.appendChild(this.popupWrapper);
+        this.openPopupEventArgs.appendTo.appendChild(this.popupWrapper);
         this.addSelection();
         this.renderPopup();
-        this.setScrollPosition();
+        detach(this.popupWrapper);
     }
     protected getPopupHeight(): number {
         let height: number = parseInt(<string>POPUPDIMENSION, 10);
@@ -1154,7 +1161,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
         if (this.inputEvent) { this.inputEvent.destroy(); }
         EventHandler.remove(this.inputElement, 'mousedown touchstart', this.mouseDownHandler);
-        if (this.showClearButton) {
+        if (this.showClearButton && !isNullOrUndefined(this.inputWrapper.clearButton)) {
             EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.clearHandler);
         }
         let form: Element = closest(this.element, 'form');
@@ -1787,32 +1794,99 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         if ((this.enabled && this.readonly) || !this.enabled || this.popupWrapper) {
             return;
         } else {
-            let args: PopupEventArgs = {
+            this.popupCreation();
+            this.openPopupEventArgs = {
                 popup: this.popupObj || null,
                 cancel: false,
                 event: event || null,
-                name: 'open'
+                name: 'open',
+                appendTo: document.body
             };
-            this.trigger('open', args);
-            if (!args.cancel && !this.isPopupOpen() && !this.inputWrapper.buttons[0].classList.contains(DISABLED)) {
-                this.inputElement.focus();
-                this.popupCreation();
-                if (!args.cancel) {
-                    let openAnimation: AnimationModel = {
-                        name: 'FadeIn',
-                        duration: ANIMATIONDURATION,
-                    };
-                    this.popupObj.refreshPosition(this.inputElement);
-                    if (this.zIndex === 1000) {
-                        this.popupObj.show(new Animation(openAnimation), this.element);
-                    } else {
-                        this.popupObj.show(new Animation(openAnimation), null);
-                    }
-                    this.setActiveDescendant();
-                    attributes(this.inputElement, { 'aria-expanded': 'true' });
-                    addClass([this.inputWrapper.container], FOCUS);
+            this.trigger('open', this.openPopupEventArgs);
+            if (!this.openPopupEventArgs.cancel && !this.inputWrapper.buttons[0].classList.contains(DISABLED)) {
+                this.openPopupEventArgs.appendTo.appendChild(this.popupWrapper);
+                this.popupAlignment(this.openPopupEventArgs);
+                this.setScrollPosition();
+                if (!Browser.isDevice) {
+                    this.inputElement.focus();
                 }
+                let openAnimation: AnimationModel = {
+                    name: 'FadeIn',
+                    duration: ANIMATIONDURATION,
+                };
+                this.popupObj.refreshPosition(this.anchor);
+                if (this.zIndex === 1000) {
+                    this.popupObj.show(new Animation(openAnimation), this.element);
+                } else {
+                    this.popupObj.show(new Animation(openAnimation), null);
+                }
+                this.setActiveDescendant();
+                attributes(this.inputElement, { 'aria-expanded': 'true' });
+                addClass([this.inputWrapper.container], FOCUS);
+
                 EventHandler.add(document, 'mousedown', this.documentClickHandler, this);
+            } else {
+                this.popupObj.destroy();
+                this.popupWrapper = this.listTag = undefined;
+                this.liCollections = this.timeCollections = this.disableItemCollection = [];
+                this.popupObj = null;
+            }
+        }
+    }
+    private formatValues(type: string | number): string {
+        let value: string;
+        if (typeof type === 'number') {
+            value = formatUnit(type);
+        } else if (typeof type === 'string') {
+            value = (type.match(/px|%|em/)) ? type : isNaN(parseInt(type, 10)) ? type : formatUnit(type);
+        }
+        return value;
+    }
+
+    private popupAlignment(args: PopupEventArgs): void {
+        args.popup.position.X = this.formatValues(args.popup.position.X);
+        args.popup.position.Y = this.formatValues(args.popup.position.Y);
+        if (!isNaN(parseFloat(args.popup.position.X)) || !isNaN(parseFloat(args.popup.position.Y))) {
+            this.popupObj.relateTo = this.anchor = document.body;
+            this.popupObj.targetType = 'container';
+        }
+        if (!isNaN(parseFloat(args.popup.position.X))) {
+            this.popupObj.offsetX = parseFloat(args.popup.position.X);
+        }
+        if (!isNaN(parseFloat(args.popup.position.Y))) {
+            this.popupObj.offsetY = parseFloat(args.popup.position.Y);
+        }
+        if (!Browser.isDevice) {
+            switch (args.popup.position.X) {
+                case 'left':
+                    break;
+                case 'right':
+                    args.popup.offsetX = this.containerStyle.width;
+                    break;
+                case 'center':
+                    args.popup.offsetX = -(this.containerStyle.width / 2);
+                    break;
+            }
+            switch (args.popup.position.Y) {
+                case 'top':
+                    break;
+                case 'bottom':
+                    break;
+                case 'center':
+                    args.popup.offsetY = -(this.containerStyle.height / 2);
+                    break;
+            }
+            if (args.popup.position.X === 'center' && args.popup.position.Y === 'center') {
+                this.popupObj.relateTo = this.inputWrapper.container;
+                this.anchor = this.inputElement;
+                this.popupObj.targetType = 'relative';
+            }
+        } else {
+            if (args.popup.position.X === 'center' && args.popup.position.Y === 'center') {
+                this.popupObj.relateTo = this.anchor = document.body;
+                this.popupObj.offsetY = 0;
+                this.popupObj.targetType = 'container';
+                this.popupObj.collision = { X: 'fit', Y: 'fit' };
             }
         }
     }

@@ -1653,7 +1653,7 @@ describe('Toolbar Control', () => {
     });
 
     describe('Resize testing', () => {
-        let toolbar: Toolbar;
+        let toolbar: any;
         document.body.innerHTML = '';
         beforeEach((): void => {
             toolbar = undefined;
@@ -1684,7 +1684,43 @@ describe('Toolbar Control', () => {
             toolbar.refreshOverflow();
             expect(element.classList.contains('e-toolpop')).toEqual(true);
             expect(element.querySelector('.e-toolbar-pop').childNodes.length).toEqual(2);
-            expect(element.querySelectorAll('.e-toolbar-items .-toolbar-item').length == 0).toEqual(true);
+            expect(element.querySelectorAll('.e-toolbar-items .e-toolbar-item').length == 0).toEqual(true);
+        });
+        it('Normal rendering after resize with "e-tbar-pos" class testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                width: 170,
+                overflowMode: 'Popup',
+                items: [{
+                    type: 'Button', text: 'New', htmlAttributes: { 'role': 'Toolbar' },
+                },
+                {
+                    type: 'Button', text: 'Underline Button',
+                }],
+            }); toolbar.appendTo('#ej2Toolbar');
+            element.style.width = '50px';
+            toolbar.resize();
+            expect(element.classList.contains('e-toolpop')).toEqual(true);
+            expect(element.querySelector('.e-toolbar-pop').childNodes.length).toEqual(2);
+            expect(element.querySelectorAll('.e-toolbar-items .e-toolbar-item').length == 0).toEqual(true);
+            expect(element.querySelectorAll('.e-toolbar-items.e-tbar-pos').length == 0).toEqual(true);
+        });
+        it('Align rendering after resize with "e-tbar-pos" class testing', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                width: 150,
+                overflowMode: 'Popup',
+                items: [{
+                    type: 'Button', text: 'New', htmlAttributes: { 'role': 'Toolbar' }, align: 'Left'
+                },
+                {
+                    type: 'Button', text: 'Underline Button', align: 'Right'
+                }],
+            }); toolbar.appendTo('#ej2Toolbar');
+            toolbar.resize();
+            expect(element.classList.contains('e-toolpop')).toEqual(true);
+            expect(element.querySelector('.e-toolbar-pop').childNodes.length).toEqual(1);
+            expect(element.querySelectorAll('.e-toolbar-items.e-tbar-pos').length == 0).toEqual(false);
         });
     });
 

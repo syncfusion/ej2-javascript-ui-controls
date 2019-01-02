@@ -1086,7 +1086,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             let trgt: Element = e.target as Element;
             let cli: Element = this.getLI(trgt);
             let cliWrapper: Element = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : null;
-            let isInstLI: boolean = cli && cliWrapper && (wrapper.firstElementChild.id === cliWrapper.firstElementChild.id || this.isMenu);
+            let isInstLI: boolean = cli && cliWrapper && (this.isMenu ? this.getIndex(cli.id, true).length > 0
+                : wrapper.firstElementChild.id === cliWrapper.firstElementChild.id);
             if (isInstLI && e.type === 'click' && !cli.classList.contains(HEADER)) {
                 this.setLISelected(cli);
                 let navIdx: number[] = this.getIndex(cli.id, true);

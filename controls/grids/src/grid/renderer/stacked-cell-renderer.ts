@@ -4,6 +4,7 @@ import { Cell } from '../models/cell';
 import { ICellRenderer } from '../base/interface';
 import { CellRenderer } from './cell-renderer';
 import { headerCellInfo } from '../base/constant';
+import { setStyleAndAttributes } from '../base/util';
 
 /**
  * StackedHeaderCellRenderer class which responsible for building stacked header cell content.
@@ -40,6 +41,10 @@ export class StackedHeaderCellRenderer extends CellRenderer implements ICellRend
 
         if (!isNullOrUndefined(cell.column.textAlign)) {
             (div as HTMLElement).style.textAlign = cell.column.textAlign;
+        }
+
+        if (cell.column.customAttributes) {
+            setStyleAndAttributes(node as HTMLElement, cell.column.customAttributes);
         }
 
         node.setAttribute('colspan', cell.colSpan.toString());

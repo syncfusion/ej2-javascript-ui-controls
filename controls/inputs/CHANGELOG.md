@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.45 (2018-12-24)
+
+### Common
+
+#### Bug Fixes
+
+- Fixed `CustomPlacement` typing issue.
+
 ## 16.4.40-beta (2018-12-10)
 
 ### Uploader

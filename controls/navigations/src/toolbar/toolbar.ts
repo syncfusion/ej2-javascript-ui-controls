@@ -266,6 +266,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     private scrollStep: number;
     private isVertical: boolean;
     private tempId: string[];
+    private resizeContext: EventListenerObject = this.resize.bind(this);
 
     /**
      * Contains the keyboard configuration of the Toolbar.
@@ -397,7 +398,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private wireEvents(): void {
         EventHandler.add(this.element, 'click', this.clickHandler, this);
-        window.addEventListener('resize', this.resize.bind(this));
+        window.addEventListener('resize', this.resizeContext);
         this.keyModule = new KeyboardEvents(
             this.element,
             {
@@ -422,6 +423,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         EventHandler.remove(this.element, 'click', this.clickHandler);
         this.destroyScroll();
         this.keyModule.destroy();
+        window.removeEventListener('resize', this.resizeContext);
         EventHandler.remove(document, 'scroll', this.docEvent);
         EventHandler.remove(this.element, 'keydown', this.docKeyDown);
         EventHandler.remove(document, 'click', this.docEvent);
@@ -1819,7 +1821,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             let multirowele: HTEle = ele.querySelector('.' + CLS_ITEMS);
             if (!isNOU(multirowele)) {
             this.remove(multirowele, CLS_MULTIROWPOS);
-            this.add(multirowele, CLS_TBARPOS);
+            if (this.tbarAlign) { this.add(multirowele, CLS_TBARPOS); }
             }
         }
         if (checkOverflow && this.scrollModule && (this.offsetWid === ele.offsetWidth)) { return; }

@@ -23,7 +23,7 @@ import { DropDownListModel } from '@syncfusion/ej2-dropdowns';
 import { NumericTextBoxModel } from '@syncfusion/ej2-inputs';
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import { Data } from '../actions/data';
-import { DatePickerModel } from '@syncfusion/ej2-calendars';
+import { DatePickerModel, DateTimePickerModel } from '@syncfusion/ej2-calendars';
 import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell } from '@syncfusion/ej2-pdf-export';
 import { Matrix } from '../services/focus-strategy';
 import { CheckBoxFilter } from '../actions/checkbox-filter';
@@ -37,6 +37,7 @@ import { Render } from '../renderer/render';
 import { DetailRow } from '../actions/detail-row';
 import { Print } from '../actions/print';
 import { PdfPaddings } from '@syncfusion/ej2-pdf-export';
+import { AutoCompleteModel } from '@syncfusion/ej2-dropdowns';
 
 /**
  * Specifies grid interfaces.
@@ -1775,6 +1776,7 @@ export interface IFilter {
     hideSearchbox?: boolean;
     itemTemplate?: string;
     ui?: IFilterMUI;
+    params?: DatePickerModel | NumericTextBoxModel | DropDownListModel | AutoCompleteModel | DateTimePickerModel;
 }
 
 /**

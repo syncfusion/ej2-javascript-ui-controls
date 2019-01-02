@@ -30,22 +30,23 @@ const CLS_TOGANIMATE: Str = "e-toggle-animation";
 const TIME_DELAY: number = 800;
 const CLS_NEST: Str = 'e-nested';
 
-interface acrdnTemplateRef {
-    elementRef: acrdnElementRef
-}
-
-interface acrdnElementRef {
-    nativeElement: acrdnElementComment
-}
-
-interface acrdnElementComment {
-    childNodes?: NodeList
-    firstChild?: HTMLElement
-    lastChild?: HTMLElement
-    nextElementSibling?: HTMLElement
-    parentElement?: HTMLElement
-    propName?: HTMLElement
-}
+interface AcrdnTemplateRef {
+    elementRef: AcrdnElementRef;
+  }
+  
+  interface AcrdnElementRef {
+    nativeElement: AcrdnElementComment;
+  }
+  
+  interface AcrdnElementComment {
+    childNodes?: NodeList;
+    firstChild?: HTMLElement;
+    lastChild?: HTMLElement;
+    nextElementSibling?: HTMLElement;
+    parentElement?: HTMLElement;
+    propName?: HTMLElement;
+    data?: string;
+  }
 
 
 describe("Accordion Testing", () => {
@@ -2912,7 +2913,52 @@ describe("Accordion Testing", () => {
                 elementRef : {
                     nativeElement : {
                         nextElementSibling: null,
-                        childNodes: []
+                        childNodes: [],
+                        data: 'bindings={"ng-reflect-ng-if": "false"}'
+                    }
+                }
+            }
+            let accordion1 : any = new Accordion(
+                {
+                    items: [
+                        { header: "Item1", content: contentAngularEle },
+                        { header: "Item2", content: "Content of Item2" },
+                        { header: "Item3", content: "Content of Item3" }
+                    ]
+                });
+            accordion1.isAngular = true;
+            accordion1.appendTo('#accordion');
+        });
+        it("Accordion Angular contnet conditon testing", () => {
+            let ele: HTMLElement = document.getElementById('accordion');
+            let contentAngularEle: any = {
+                elementRef : {
+                    nativeElement : {
+                        nextElementSibling: null,
+                        childNodes: [],
+                        data: 'bindings={"ng-reflect-ng-if": "true"}'
+                    }
+                }
+            }
+            let accordion1 : any = new Accordion(
+                {
+                    items: [
+                        { header: "Item1", content: contentAngularEle },
+                        { header: "Item2", content: "Content of Item2" },
+                        { header: "Item3", content: "Content of Item3" }
+                    ]
+                });
+            accordion1.isAngular = true;
+            accordion1.appendTo('#accordion');
+        });
+        it("Accordion Angular contnet conditon testing", () => {
+            let ele: HTMLElement = document.getElementById('accordion');
+            let contentAngularEle: any = {
+                elementRef : {
+                    nativeElement : {
+                        nextElementSibling: null,
+                        childNodes: [],
+                        data: ''
                     }
                 }
             }

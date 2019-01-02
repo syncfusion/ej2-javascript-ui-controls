@@ -24,9 +24,11 @@ import { SelectionSettings } from '../models/selection-settings';
 import { SelectionSettingsModel } from '../models/selection-settings-model';
 import {getActualProperties, SortDirection, getObject, ColumnDragEventArgs } from '@syncfusion/ej2-grids';
 import { TextWrapSettings, TextWrapSettingsModel, PrintMode, Data, IGrid, ContextMenuItemModel } from '@syncfusion/ej2-grids';
+import { ColumnMenuItem, ColumnMenuItemModel } from '@syncfusion/ej2-grids';
 import { ExcelExportCompleteArgs, ExcelHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { PdfExportCompleteArgs, PdfHeaderQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelExportProperties, PdfExportProperties, CellSelectingEventArgs, PrintEventArgs } from '@syncfusion/ej2-grids';
+import { ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';
 import {BeforeDataBoundArgs} from '@syncfusion/ej2-grids';
 import { DataManager, ReturnOption, RemoteSaveAdaptor, Query } from '@syncfusion/ej2-data';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
@@ -390,7 +392,21 @@ public pagerTemplate: string;
      * @default null
      */
     @Property()
-    public contextMenuItems: ContextMenuItem[] | ContextMenuItemModel[]  ;
+    public contextMenuItems: ContextMenuItem[] | ContextMenuItemModel[];
+
+    /**    
+     * `columnMenuItems` defines both built-in and custom column menu items.
+     * <br><br> 
+     * The available built-in items are,
+     * * `AutoFitAll` - Auto fit the size of all columns. 
+     * * `AutoFit` - Auto fit the current column.
+     * * `SortAscending` - Sort the current column in ascending order.
+     * * `SortDescending` - Sort the current column in descending order.
+     * * `Filter` - Filter options will show based on filterSettings property like filterbar, menu filter.
+     * @default null
+     */
+    @Property()
+    public columnMenuItems: ColumnMenuItem[] | ColumnMenuItemModel[];
   /**
    * Defines the height of TreeGrid rows.
    * @default null
@@ -595,14 +611,24 @@ public pagerTemplate: string;
      */
   @Event()
   public headerCellInfo: EmitType<HeaderCellInfoEventArgs>;
-
-      /**
-       * Triggers before any cell selection occurs.
-       * @event 
-       */
+    /**
+     * Triggers before any cell selection occurs.
+     * @event 
+     */
   @Event()
   public cellSelecting: EmitType<CellSelectingEventArgs>;
-
+    /** 
+     * Triggers before column menu opens.
+     * @event
+     */
+  @Event()
+  public columnMenuOpen: EmitType<ColumnMenuOpenEventArgs>;
+    /** 
+     * Triggers when click on column menu.
+     * @event
+     */
+  @Event()
+  public columnMenuClick: EmitType<MenuEventArgs>;
     /**
      * Triggers after a cell is selected.
      * @event 
@@ -1239,6 +1265,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.grid.printMode = getActualProperties(this.printMode);
     this.grid.locale = getActualProperties(this.locale);
     this.grid.contextMenuItems = getActualProperties(this.getContextMenu());
+    this.grid.columnMenuItems = getActualProperties(this.columnMenuItems);
     this.grid.editSettings = this.getGridEditSettings();
   }
   private triggerEvents(args?: Object): void {
@@ -1286,6 +1313,8 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.grid.cellDeselected = this.triggerEvents.bind(this);
     this.grid.cellSelecting = this.triggerEvents.bind(this);
     this.grid.cellDeselecting = this.triggerEvents.bind(this);
+    this.grid.columnMenuOpen = this.triggerEvents.bind(this);
+    this.grid.columnMenuClick = this.triggerEvents.bind(this);
     this.grid.cellSelected = this.triggerEvents.bind(this);
     this.grid.headerCellInfo = this.triggerEvents.bind(this);
     this.grid.resizeStart = this.triggerEvents.bind(this);
@@ -1664,7 +1693,9 @@ private getGridEditSettings(): GridEditModel {
         case 'allowTextWrap':
           this.grid.allowTextWrap = getActualProperties(this.allowTextWrap); break;
         case 'contextMenuItems':
-        this.grid.contextMenuItems = this.getContextMenu(); break;
+          this.grid.contextMenuItems = this.getContextMenu(); break;
+        case 'columnMenuItems':
+          this.grid.columnMenuItems = getActualProperties(this.columnMenuItems); break;
         case 'editSettings':
           if (this.grid.isEdit && this.grid.editSettings.mode === 'Normal' && newProp[prop].mode &&
                           (newProp[prop].mode === 'Cell' || newProp[prop].mode === 'Row')) {

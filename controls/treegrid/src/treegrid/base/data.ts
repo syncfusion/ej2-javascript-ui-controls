@@ -7,6 +7,7 @@ import { getObject, BeforeDataBoundArgs, iterateExtend, getUid } from '@syncfusi
 import { isRemoteData, isOffline } from '../utils';
 import * as events from './constant';
 import { Sort } from '../actions/sort';
+import { Column } from '../models';
 
 /**
  * Internal dataoperations for tree grid 
@@ -367,7 +368,11 @@ public isRemote(): boolean {
         this.parent.sortModule = new Sort(this.parent);
         let srtQry: Query = new Query();
         for (let srt: number = this.parent.grid.sortSettings.columns.length - 1; srt >= 0; srt--) {
-          srtQry.sortBy(this.parent.grid.sortSettings.columns[srt].field, this.parent.grid.sortSettings.columns[srt].direction);
+          let col: Column = this.parent.getColumnByField(this.parent.grid.sortSettings.columns[srt].field);
+          let compFun: Function | string = col.sortComparer && !this.isRemote() ?
+            (col.sortComparer as Function).bind(col) :
+            this.parent.grid.sortSettings.columns[srt].direction;
+          srtQry.sortBy(this.parent.grid.sortSettings.columns[srt].field, compFun);
         }
         let modifiedData: Object = new DataManager(parentData).executeLocal(srtQry);
         sortedData = <Object[]>modifiedData;

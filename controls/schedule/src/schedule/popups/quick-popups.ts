@@ -666,13 +666,15 @@ export class QuickPopups {
         }
         if (this.parent.currentView.indexOf('Timeline') !== -1) {
             let gIndex: string = target.getAttribute('data-group-index');
-            let startDate: string = target.getAttribute('data-start-date');
+            let startDate: Date = new Date(parseInt(target.getAttribute('data-start-date'), 10));
+            startDate.setHours(startDate.getHours(), startDate.getMinutes(), 0);
+            let tdDate: string = startDate.getTime().toString();
             if (isNullOrUndefined(gIndex)) {
                 this.morePopup.relateTo = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS +
-                    ' tbody tr td[data-date="' + startDate + '"]') as HTMLElement;
+                    ' tbody tr td[data-date="' + tdDate + '"]') as HTMLElement;
             } else {
                 this.morePopup.relateTo = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS +
-                    ' tbody tr td[data-group-index="' + gIndex + '"][data-date="' + startDate + '"]') as HTMLElement;
+                    ' tbody tr td[data-group-index="' + gIndex + '"][data-date="' + tdDate + '"]') as HTMLElement;
             }
         } else {
             this.morePopup.relateTo = closest(<Element>target, '.' + cls.WORK_CELLS_CLASS) as HTMLElement;

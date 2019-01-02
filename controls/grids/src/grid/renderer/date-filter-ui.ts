@@ -3,7 +3,7 @@ import { Column } from '../models/column';
 import { FilterSettings } from '../base/grid';
 import { PredicateModel } from '../base/grid-model';
 import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import { Filter } from '../actions/filter';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
@@ -35,7 +35,8 @@ export class DateFilterUI implements IFilterMUI {
         this.inputElem = this.parent.createElement('input', { className: 'e-flmenu-input', id: 'dateui-' + args.column.uid });
         args.target.appendChild(this.inputElem);
         if (args.column.type === 'date') {
-            this.datePickerObj = new DatePicker({
+            this.datePickerObj = new DatePicker(extend(
+            {
                 format: format,
                 cssClass: 'e-popup-flmenu',
                 placeholder: args.localizeText.getConstant('ChooseDate'),
@@ -43,17 +44,22 @@ export class DateFilterUI implements IFilterMUI {
                 locale: this.parent.locale,
                 enableRtl: this.parent.enableRtl,
                 open: this.openPopup.bind(this),
-            });
+            },
+            args.column.filter.params
+            ));
         } else if (args.column.type === 'datetime') {
-            this.datePickerObj = new DateTimePicker({
-                format: format,
-                cssClass: 'e-popup-flmenu',
-                placeholder: args.localizeText.getConstant('ChooseDate'),
-                width: '100%',
-                locale: this.parent.locale,
-                enableRtl: this.parent.enableRtl,
-                open: this.openPopup.bind(this),
-            });
+                this.datePickerObj = new DateTimePicker(extend(
+                    {
+                    format: format,
+                    cssClass: 'e-popup-flmenu',
+                    placeholder: args.localizeText.getConstant('ChooseDate'),
+                    width: '100%',
+                    locale: this.parent.locale,
+                    enableRtl: this.parent.enableRtl,
+                    open: this.openPopup.bind(this),
+                    },
+                    args.column.filter.params)
+            );
         }
         this.datePickerObj.appendTo(this.inputElem);
     }

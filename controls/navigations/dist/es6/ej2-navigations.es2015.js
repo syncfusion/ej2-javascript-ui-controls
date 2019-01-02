@@ -1719,7 +1719,8 @@ let MenuBase = class MenuBase extends Component {
             let trgt = e.target;
             let cli = this.getLI(trgt);
             let cliWrapper = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : null;
-            let isInstLI = cli && cliWrapper && (wrapper.firstElementChild.id === cliWrapper.firstElementChild.id || this.isMenu);
+            let isInstLI = cli && cliWrapper && (this.isMenu ? this.getIndex(cli.id, true).length > 0
+                : wrapper.firstElementChild.id === cliWrapper.firstElementChild.id);
             if (isInstLI && e.type === 'click' && !cli.classList.contains(HEADER)) {
                 this.setLISelected(cli);
                 let navIdx = this.getIndex(cli.id, true);
@@ -2456,6 +2457,7 @@ let Toolbar = class Toolbar extends Component {
      */
     constructor(options, element) {
         super(options, element);
+        this.resizeContext = this.resize.bind(this);
         /**
          * Contains the keyboard configuration of the Toolbar.
          */
@@ -2520,7 +2522,7 @@ let Toolbar = class Toolbar extends Component {
     }
     wireEvents() {
         EventHandler.add(this.element, 'click', this.clickHandler, this);
-        window.addEventListener('resize', this.resize.bind(this));
+        window.addEventListener('resize', this.resizeContext);
         this.keyModule = new KeyboardEvents(this.element, {
             keyAction: this.keyActionHandler.bind(this),
             keyConfigs: this.keyConfigs
@@ -2545,6 +2547,7 @@ let Toolbar = class Toolbar extends Component {
         EventHandler.remove(this.element, 'click', this.clickHandler);
         this.destroyScroll();
         this.keyModule.destroy();
+        window.removeEventListener('resize', this.resizeContext);
         EventHandler.remove(document, 'scroll', this.docEvent);
         EventHandler.remove(this.element, 'keydown', this.docKeyDown);
         EventHandler.remove(document, 'click', this.docEvent);
@@ -4082,7 +4085,9 @@ let Toolbar = class Toolbar extends Component {
             let multirowele = ele.querySelector('.' + CLS_ITEMS);
             if (!isNullOrUndefined(multirowele)) {
                 this.remove(multirowele, CLS_MULTIROWPOS);
-                this.add(multirowele, CLS_TBARPOS);
+                if (this.tbarAlign) {
+                    this.add(multirowele, CLS_TBARPOS);
+                }
             }
         }
         if (checkOverflow && this.scrollModule && (this.offsetWid === ele.offsetWidth)) {
@@ -4716,7 +4721,12 @@ let Accordion = class Accordion extends Component {
         let property = prop === 'content' ? item.content : item.header;
         let content = property;
         if (this.isAngular && !isNullOrUndefined(content.elementRef)) {
-            if (content.elementRef.nativeElement.childNodes.length === 0 && isNullOrUndefined(content.elementRef.nativeElement.nextElementSibling)) {
+            let data = content.elementRef.nativeElement.data;
+            if (isNullOrUndefined(data) || data === '' || (data.indexOf('bindings=') === -1)) {
+                return true;
+            }
+            let parseddata = JSON.parse(content.elementRef.nativeElement.data.replace('bindings=', ''));
+            if (!isNullOrUndefined(parseddata) && parseddata['ng-reflect-ng-if'] === 'false') {
                 return false;
             }
             else {
@@ -5461,20 +5471,12 @@ let Menu = class Menu extends MenuBase {
             }
         }
     }
-    createMenuItems(item, index) {
+    createMenuItems(item) {
         let pIdField;
-        let record = { items: [] };
         let idx;
         let i;
         let items = this.items;
-        let fields = ['itemId', 'text', 'iconCss', 'url', 'separator', 'children'];
         pIdField = this.getField('parentId');
-        for (i = 0; i < fields.length; i++) {
-            let field = this.getField(fields[i]);
-            if (item[field]) {
-                record[field] = item[field];
-            }
-        }
         if (item[pIdField]) {
             idx = this.getIndex(item[pIdField].toString(), true);
             for (i = 0; i < idx.length; i++) {
@@ -5483,10 +5485,10 @@ let Menu = class Menu extends MenuBase {
                 }
                 items = items[idx[i]].items;
             }
-            items.push(record);
+            items.push(item);
         }
         else {
-            this.items.push(record);
+            this.items.push(item);
         }
     }
 };
@@ -5632,6 +5634,7 @@ let Tab = class Tab extends Component {
         this.lastIndex = 0;
         this.isAdd = false;
         this.isIconAlone = false;
+        this.resizeContext = this.refreshActElePosition.bind(this);
         /**
          * Contains the keyboard configuration of the Tab.
          */
@@ -6430,7 +6433,7 @@ let Tab = class Tab extends Component {
         }
     }
     wireEvents() {
-        window.addEventListener('resize', this.refreshActElePosition.bind(this));
+        window.addEventListener('resize', this.resizeContext);
         EventHandler.add(this.element, 'mouseover', this.hoverHandler, this);
         EventHandler.add(this.element, 'keydown', this.spaceKeyDown, this);
         if (!isNullOrUndefined(this.cntEle)) {
@@ -6449,8 +6452,9 @@ let Tab = class Tab extends Component {
         if (!isNullOrUndefined(this.cntEle)) {
             this.touchModule.destroy();
         }
-        window.removeEventListener('resize', this.refreshActElePosition.bind(this));
-        this.element.removeEventListener('mouseover', this.hoverHandler.bind(this));
+        window.removeEventListener('resize', this.resizeContext);
+        EventHandler.remove(this.element, 'mouseover', this.hoverHandler);
+        EventHandler.remove(this.element, 'keydown', this.spaceKeyDown);
         this.element.classList.remove(CLS_RTL$4);
         this.element.classList.remove(CLS_FOCUS);
     }
@@ -10743,9 +10747,11 @@ let Sidebar = class Sidebar extends Component {
         this.element.classList.add(ROOT$1);
         addClass([this.element], (this.position === 'Right') ? RIGHT : LEFT);
         if (this.type === 'Auto' && !Browser.isDevice && !this.enableDock) {
+            this.setProperties({ isOpen: true }, true);
             addClass([this.element], OPEN);
         }
         else {
+            this.setProperties({ isOpen: false }, true);
             addClass([this.element], CLOSE);
         }
     }

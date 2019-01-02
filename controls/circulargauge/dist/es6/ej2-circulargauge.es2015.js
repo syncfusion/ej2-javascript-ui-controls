@@ -1027,8 +1027,10 @@ class Annotations {
             templateFn = getTemplateFunction(argsData.content);
             if (templateFn && templateFn(axis).length) {
                 templateElement = templateFn(axis);
-                for (let i = 0; i < templateElement.length; i++) {
-                    childElement.appendChild(templateElement[i]);
+                let count = templateElement.length;
+                while (count > 0) {
+                    childElement.appendChild(templateElement[0]);
+                    count--;
                 }
             }
             else {
@@ -1661,6 +1663,9 @@ class PointerRenderer {
             radius) / (pointer.currentRadius)) * 180) / Math.PI;
         roundEndAngle = ((((pointer.currentRadius) * ((endAngle * Math.PI) / 180) -
             radius) / (pointer.currentRadius)) * 180) / Math.PI;
+        if (isNullOrUndefined(pointer.currentRadius)) {
+            this.calculatePointerRadius(axis, pointer);
+        }
         pointer.pathElement.map((element) => {
             if (pointer.type === 'RangeBar') {
                 if (pointer.roundedCornerRadius && value) {
@@ -2303,6 +2308,9 @@ let CircularGauge = class CircularGauge extends Component {
             currentPointer = getPointer(args.target.id, this);
             this.activeAxis = this.axes[currentPointer.axisIndex];
             this.activePointer = this.activeAxis.pointers[currentPointer.pointerIndex];
+            if (isNullOrUndefined(this.activePointer.pathElement)) {
+                this.activePointer.pathElement = [e.target];
+            }
             this.trigger(dragStart, {
                 axis: this.activeAxis,
                 name: dragStart,
@@ -2664,6 +2672,8 @@ let CircularGauge = class CircularGauge extends Component {
         let renderer = false;
         let refreshBounds = false;
         let refreshWithoutAnimation = false;
+        let isPointerValueSame = (Object.keys(newProp).length === 1 && newProp instanceof Object &&
+            !isNullOrUndefined(this.activePointer));
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'height':
@@ -2697,19 +2707,21 @@ let CircularGauge = class CircularGauge extends Component {
                     break;
             }
         }
-        if (!refreshBounds && renderer) {
-            this.removeSvg();
-            this.renderElements();
-        }
-        if (refreshBounds) {
-            this.removeSvg();
-            this.calculateBounds();
-            this.renderElements();
-        }
-        if (refreshWithoutAnimation && !renderer && !refreshBounds) {
-            this.removeSvg();
-            this.calculateBounds();
-            this.renderElements(false);
+        if (!isPointerValueSame) {
+            if (!refreshBounds && renderer) {
+                this.removeSvg();
+                this.renderElements();
+            }
+            if (refreshBounds) {
+                this.removeSvg();
+                this.calculateBounds();
+                this.renderElements();
+            }
+            if (refreshWithoutAnimation && !renderer && !refreshBounds) {
+                this.removeSvg();
+                this.calculateBounds();
+                this.renderElements(false);
+            }
         }
     }
     /**

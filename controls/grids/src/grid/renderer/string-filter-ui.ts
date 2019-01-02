@@ -4,7 +4,7 @@ import { FilterSettings } from '../base/grid';
 import { PredicateModel } from '../base/grid-model';
 import { AutoComplete } from '@syncfusion/ej2-dropdowns';
 import { DataManager } from '@syncfusion/ej2-data';
-import { Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Browser, isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import { Filter } from '../actions/filter';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
@@ -36,15 +36,16 @@ export class StringFilterUI implements IFilterMUI {
         this.instance = this.parent.createElement('input', { className: 'e-flmenu-input', id: 'strui-' + args.column.uid });
         args.target.appendChild(this.instance);
         this.dialogObj = args.dialogObj;
-        this.actObj = new AutoComplete(this.getAutoCompleteOptions(args));
+        this.actObj = this.getAutoCompleteOptions(args);
         this.actObj.appendTo(this.instance);
     }
 
-    private getAutoCompleteOptions(args: IFilterCreate): Object {
+    private getAutoCompleteOptions(args: IFilterCreate): AutoComplete {
         let isForeignColumn: boolean = args.column.isForeignColumn();
         let dataSource: Object = isForeignColumn ? args.column.dataSource : this.parent.dataSource;
         let fields: Object = { value: isForeignColumn ? args.column.foreignKeyValue : args.column.field };
-        return {
+        let autoComplete: AutoComplete = new AutoComplete(extend(
+        {
             dataSource: dataSource instanceof DataManager ? dataSource : new DataManager(dataSource),
             fields: fields,
             locale: this.parent.locale,
@@ -65,7 +66,10 @@ export class StringFilterUI implements IFilterMUI {
                     }).indexOf(obj[this.actObj.fields.value]) === index;
                 });
             }
-        };
+        },
+        args.column.filter.params
+        ));
+        return autoComplete;
     }
 
 

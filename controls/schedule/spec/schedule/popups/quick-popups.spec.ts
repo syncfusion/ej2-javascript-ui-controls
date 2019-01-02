@@ -2,12 +2,13 @@
  * QuickPopups spec
  */
 import { createElement, remove, EmitType, extend, isVisible, Browser, closest } from '@syncfusion/ej2-base';
-import { Schedule, Day, Week, WorkWeek, Month, Agenda, TimelineViews, EJ2Instance, EventRenderedArgs } from '../../../src/schedule/index';
+import { Schedule, Day, Week, WorkWeek, Month, Agenda, TimelineViews, EJ2Instance, EventRenderedArgs, ScheduleModel, CellClickEventArgs } from '../../../src/schedule/index';
 import { RecurrenceEditor } from '../../../src/recurrence-editor/index';
 import { defaultData, resourceData } from '../base/datasource.spec';
 import { PopupOpenEventArgs, EventClickArgs } from '../../../src/index';
 import * as cls from '../../../src/schedule/base/css-constant';
 import { disableScheduleAnimation, triggerMouseEvent } from '../util.spec';
+import * as util from '../util.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, TimelineViews);
 
@@ -1119,6 +1120,79 @@ describe('Quick Popups', () => {
             (moreEventPopup.querySelector('.e-more-event-close') as HTMLElement).click();
             (moreEventPopup.querySelector('.e-header-date') as HTMLElement).click();
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-day');
+        });
+    });
+
+    describe('More Indicator with resource', () => {
+        let schObj: Schedule;
+        let data: Object [] = [
+            {
+                Id: 1,
+                Subject: 'Board Meeting',
+                Description: 'Meeting to discuss business goal of 2018.',
+                StartTime: new Date(2018, 11, 7, 12, 35, 26),
+                EndTime: new Date(2018, 11, 7, 14, 36, 0),
+                OwnerId: 1
+            }, {
+                Id: 100,
+                Subject: 'Board Meeting1',
+                Description: 'Meeting to discuss business goal of 2018.',
+                StartTime: new Date(2018, 11, 7, 10, 36, 26),
+                EndTime: new Date(2018, 11, 7, 12, 36, 0),
+                OwnerId: 1
+            }
+        ];
+
+        beforeAll((done: Function) => {
+            let schOptions: ScheduleModel = { 
+                height: '550px', width: '100%',
+                currentView: 'TimelineWeek',
+                views: ['TimelineWeek'],
+                group: {
+                    resources: ['Owners']
+                },
+                resources: [
+                    {
+                        field: 'OwnerId', title: 'Owner',
+                        name: 'Owners', allowMultiple: true,
+                        dataSource: [
+                            { OwnerText: 'Nancy', Id: 1, OwnerColor: '#ffaa00' },
+                            { OwnerText: 'Steven', Id: 2, OwnerColor: '#f8a398' },
+                            { OwnerText: 'Michael', Id: 3, OwnerColor: '#7499e1' },
+                            { OwnerText: 'Phoenix', Id: 4, OwnerColor: '#fec200'},
+                            { OwnerText: 'Mission', Id: 5, OwnerColor: '#df5286' },
+                            { OwnerText: 'Hangout', Id: 6, OwnerColor: '#00bdae' }
+                        ],
+                        textField: 'OwnerText', idField: 'Id', colorField: 'OwnerColor'
+                    }
+                ],
+                selectedDate: new Date(2018, 11, 7)
+            };
+            schObj = util.createSchedule(schOptions, data, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('CR Issue EJ2-19844 - timeline week more popup display position', () => {
+            let proxy: Schedule = schObj;
+            schObj.popupOpen = (args: PopupOpenEventArgs) => {
+                let target: Element = closest((<any>args.data).element, '.' + cls.MORE_INDICATOR_CLASS);
+                let gIndex: string = target.getAttribute('data-group-index');
+                let startDate: Date = new Date(parseInt(target.getAttribute('data-start-date'), 10));
+                startDate.setHours(startDate.getHours(), startDate.getMinutes(), 0);
+                let tdDate: string = startDate.getTime().toString();
+                let element: Element = proxy.element.querySelector('.' + cls.CONTENT_WRAP_CLASS +
+                ' tbody tr td[data-group-index="' + gIndex + '"][data-date="' + tdDate + '"]') as HTMLElement;                
+                let currentCellData: CellClickEventArgs = proxy.getCellDetails(element);
+                expect(element).toBeTruthy();
+                expect(parseInt(element.getAttribute('data-date'),10)).toEqual(new Date(2018, 11, 7, 12, 30).getTime());
+                expect(element.getAttribute('data-group-index')).toEqual("0");
+                expect(element.classList.contains('e-work-cells')).toBe(true);                
+                expect(currentCellData.groupIndex).toEqual(0);                
+                expect(currentCellData.startTime.getTime()).toEqual(new Date(2018, 11, 7, 12, 30).getTime());
+                expect(currentCellData.endTime.getTime()).toEqual(new Date(2018, 11, 7, 13, 0).getTime());
+            };
+            (schObj.element.querySelector('.e-more-indicator') as HTMLElement).click();
         });
     });
 

@@ -1159,7 +1159,7 @@ function isEditable(col, type, elem) {
         }
         return true;
     }
-    else if (type === 'add' && col.isIdentity && col.isPrimaryKey) {
+    else if (type === 'add' && col.isIdentity) {
         return false;
     }
     else {
@@ -5292,6 +5292,9 @@ var StackedHeaderCellRenderer = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(cell.column.textAlign)) {
             div.style.textAlign = cell.column.textAlign;
         }
+        if (cell.column.customAttributes) {
+            setStyleAndAttributes(node, cell.column.customAttributes);
+        }
         node.setAttribute('colspan', cell.colSpan.toString());
         node.setAttribute('aria-colspan', cell.colSpan.toString());
         node.setAttribute('aria-rowspan', '1');
@@ -5966,7 +5969,7 @@ var Render = /** @__PURE__ @class */ (function () {
                 cols[i].width = !isNullOrUndefined(cols[i].width) ? cols[i].width : 200;
             }
         }
-        this.parent.columns = cols;
+        this.parent.setProperties({ 'columns': cols }, true);
     };
     Render.prototype.instantiateRenderer = function () {
         this.renderer.addRenderer(RenderType.Header, new HeaderRender(this.parent, this.locator));
@@ -15472,7 +15475,7 @@ var StringFilterUI = /** @__PURE__ @class */ (function () {
         this.instance = this.parent.createElement('input', { className: 'e-flmenu-input', id: 'strui-' + args.column.uid });
         args.target.appendChild(this.instance);
         this.dialogObj = args.dialogObj;
-        this.actObj = new AutoComplete(this.getAutoCompleteOptions(args));
+        this.actObj = this.getAutoCompleteOptions(args);
         this.actObj.appendTo(this.instance);
     };
     StringFilterUI.prototype.getAutoCompleteOptions = function (args) {
@@ -15480,7 +15483,7 @@ var StringFilterUI = /** @__PURE__ @class */ (function () {
         var isForeignColumn = args.column.isForeignColumn();
         var dataSource = isForeignColumn ? args.column.dataSource : this.parent.dataSource;
         var fields = { value: isForeignColumn ? args.column.foreignKeyValue : args.column.field };
-        return {
+        var autoComplete = new AutoComplete(extend({
             dataSource: dataSource instanceof DataManager ? dataSource : new DataManager(dataSource),
             fields: fields,
             locale: this.parent.locale,
@@ -15501,7 +15504,8 @@ var StringFilterUI = /** @__PURE__ @class */ (function () {
                     }).indexOf(obj[_this.actObj.fields.value]) === index;
                 });
             }
-        };
+        }, args.column.filter.params));
+        return autoComplete;
     };
     StringFilterUI.prototype.write = function (args) {
         var columns = this.filterSettings.columns;
@@ -15541,13 +15545,13 @@ var NumberFilterUI = /** @__PURE__ @class */ (function () {
     NumberFilterUI.prototype.create = function (args) {
         this.instance = this.parent.createElement('input', { className: 'e-flmenu-input', id: 'numberui-' + args.column.uid });
         args.target.appendChild(this.instance);
-        this.numericTxtObj = new NumericTextBox({
+        this.numericTxtObj = new NumericTextBox(extend({
             format: args.column.format,
             locale: this.parent.locale,
             cssClass: 'e-popup-flmenu',
             placeholder: args.localizeText.getConstant('EnterValue'),
             enableRtl: this.parent.enableRtl,
-        });
+        }, args.column.filter.params));
         this.numericTxtObj.appendTo(this.instance);
     };
     NumberFilterUI.prototype.write = function (args) {
@@ -15579,7 +15583,7 @@ var BooleanFilterUI = /** @__PURE__ @class */ (function () {
         this.elem = this.parent.createElement('input', { className: 'e-flmenu-input', id: 'bool-ui-' + args.column.uid });
         args.target.appendChild(this.elem);
         this.dialogObj = args.dialogObj;
-        this.dropInstance = new DropDownList({
+        this.dropInstance = new DropDownList(extend({
             dataSource: dataSource instanceof DataManager ?
                 dataSource : new DataManager(dataSource),
             query: new Query().select(fields),
@@ -15592,7 +15596,7 @@ var BooleanFilterUI = /** @__PURE__ @class */ (function () {
             actionComplete: function (e) {
                 e.result = DataUtil.distinct(e.result, fields, true);
             }
-        });
+        }, args.column.filter.params));
         this.dropInstance.appendTo(this.elem);
     };
     BooleanFilterUI.prototype.write = function (args) {
@@ -15628,7 +15632,7 @@ var DateFilterUI = /** @__PURE__ @class */ (function () {
         this.inputElem = this.parent.createElement('input', { className: 'e-flmenu-input', id: 'dateui-' + args.column.uid });
         args.target.appendChild(this.inputElem);
         if (args.column.type === 'date') {
-            this.datePickerObj = new DatePicker({
+            this.datePickerObj = new DatePicker(extend({
                 format: format,
                 cssClass: 'e-popup-flmenu',
                 placeholder: args.localizeText.getConstant('ChooseDate'),
@@ -15636,10 +15640,10 @@ var DateFilterUI = /** @__PURE__ @class */ (function () {
                 locale: this.parent.locale,
                 enableRtl: this.parent.enableRtl,
                 open: this.openPopup.bind(this),
-            });
+            }, args.column.filter.params));
         }
         else if (args.column.type === 'datetime') {
-            this.datePickerObj = new DateTimePicker({
+            this.datePickerObj = new DateTimePicker(extend({
                 format: format,
                 cssClass: 'e-popup-flmenu',
                 placeholder: args.localizeText.getConstant('ChooseDate'),
@@ -15647,7 +15651,7 @@ var DateFilterUI = /** @__PURE__ @class */ (function () {
                 locale: this.parent.locale,
                 enableRtl: this.parent.enableRtl,
                 open: this.openPopup.bind(this),
-            });
+            }, args.column.filter.params));
         }
         this.datePickerObj.appendTo(this.inputElem);
     };
@@ -16294,13 +16298,14 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
                 selectedValue = this.getLocalizedLabel(isFirst ? 'GreaterThanOrEqual' : 'LessThanOrEqual');
             }
         }
-        this.dropOptr = new DropDownList({
+        var col = this.parent.getColumnByField(column);
+        this.dropOptr = new DropDownList(extend$1({
             dataSource: dropDatasource,
             fields: { text: 'text', value: 'value' },
             text: selectedValue,
             open: this.dropDownOpen.bind(this),
             enableRtl: this.parent.enableRtl
-        });
+        }, col.filter.params));
         this.dropOptr.appendTo(optrInput);
         var operator = this.getSelectedValue(selectedValue);
         return { fieldElement: fieldElement, operator: operator };
@@ -16467,27 +16472,27 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
     /* tslint:disable-next-line:max-line-length */
     ExcelFilter.prototype.renderDate = function (options, column, inputValue, fValue, isRtl) {
         var format = getCustomDateFormat(options.format, options.type);
-        this.datePicker = new DatePicker({
+        this.datePicker = new DatePicker(extend$1({
             format: format,
             cssClass: 'e-popup-flmenu',
             placeholder: this.getLocalizedLabel('CustomFilterDatePlaceHolder'),
             width: '100%',
             enableRtl: isRtl,
             value: new Date(fValue),
-        });
+        }, options.column.filter.params));
         this.datePicker.appendTo(inputValue);
     };
     /* tslint:disable-next-line:max-line-length */
     ExcelFilter.prototype.renderDateTime = function (options, column, inputValue, fValue, isRtl) {
         var format = getCustomDateFormat(options.format, options.type);
-        this.dateTimePicker = new DateTimePicker({
+        this.dateTimePicker = new DateTimePicker(extend$1({
             format: format,
             cssClass: 'e-popup-flmenu',
             placeholder: this.getLocalizedLabel('CustomFilterDatePlaceHolder'),
             width: '100%',
             enableRtl: isRtl,
             value: new Date(fValue),
-        });
+        }, options.column.filter.params));
         this.dateTimePicker.appendTo(inputValue);
     };
     ExcelFilter.prototype.completeAction = function (e) {
@@ -16495,12 +16500,12 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
     };
     /* tslint:disable-next-line:max-line-length */
     ExcelFilter.prototype.renderNumericTextBox = function (options, column, inputValue, fValue, isRtl) {
-        this.numericTxtObj = new NumericTextBox({
+        this.numericTxtObj = new NumericTextBox(extend$1({
             format: options.format,
             placeholder: this.getLocalizedLabel('CustomFilterPlaceHolder'),
             enableRtl: isRtl,
             value: fValue
-        });
+        }, options.column.filter.params));
         this.numericTxtObj.appendTo(inputValue);
     };
     /* tslint:disable-next-line:max-line-length */
@@ -16510,7 +16515,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         var isForeignColumn = colObj.isForeignColumn();
         var dataSource = isForeignColumn ? colObj.dataSource : options.dataSource;
         var fields = { value: isForeignColumn ? colObj.foreignKeyValue : column };
-        var actObj = new AutoComplete({
+        var actObj = new AutoComplete(extend$1({
             dataSource: dataSource instanceof DataManager ? dataSource : new DataManager(dataSource),
             fields: fields,
             query: this.parent.getQuery().clone(),
@@ -16544,7 +16549,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
                 });
             },
             value: fValue
-        });
+        }, colObj.filter.params));
         actObj.appendTo(inputValue);
         this.actObj = actObj;
     };

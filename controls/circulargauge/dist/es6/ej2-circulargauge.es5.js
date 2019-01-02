@@ -1152,8 +1152,10 @@ var Annotations = /** @__PURE__ @class */ (function () {
             templateFn = getTemplateFunction(argsData.content);
             if (templateFn && templateFn(axis).length) {
                 templateElement = templateFn(axis);
-                for (var i = 0; i < templateElement.length; i++) {
-                    childElement.appendChild(templateElement[i]);
+                var count = templateElement.length;
+                while (count > 0) {
+                    childElement.appendChild(templateElement[0]);
+                    count--;
                 }
             }
             else {
@@ -1792,6 +1794,9 @@ var PointerRenderer = /** @__PURE__ @class */ (function () {
             radius) / (pointer.currentRadius)) * 180) / Math.PI;
         roundEndAngle = ((((pointer.currentRadius) * ((endAngle * Math.PI) / 180) -
             radius) / (pointer.currentRadius)) * 180) / Math.PI;
+        if (isNullOrUndefined(pointer.currentRadius)) {
+            this.calculatePointerRadius(axis, pointer);
+        }
         pointer.pathElement.map(function (element) {
             if (pointer.type === 'RangeBar') {
                 if (pointer.roundedCornerRadius && value) {
@@ -2465,6 +2470,9 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
             currentPointer = getPointer(args.target.id, this);
             this.activeAxis = this.axes[currentPointer.axisIndex];
             this.activePointer = this.activeAxis.pointers[currentPointer.pointerIndex];
+            if (isNullOrUndefined(this.activePointer.pathElement)) {
+                this.activePointer.pathElement = [e.target];
+            }
             this.trigger(dragStart, {
                 axis: this.activeAxis,
                 name: dragStart,
@@ -2829,6 +2837,8 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
         var renderer = false;
         var refreshBounds = false;
         var refreshWithoutAnimation = false;
+        var isPointerValueSame = (Object.keys(newProp).length === 1 && newProp instanceof Object &&
+            !isNullOrUndefined(this.activePointer));
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
             switch (prop) {
@@ -2863,19 +2873,21 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
                     break;
             }
         }
-        if (!refreshBounds && renderer) {
-            this.removeSvg();
-            this.renderElements();
-        }
-        if (refreshBounds) {
-            this.removeSvg();
-            this.calculateBounds();
-            this.renderElements();
-        }
-        if (refreshWithoutAnimation && !renderer && !refreshBounds) {
-            this.removeSvg();
-            this.calculateBounds();
-            this.renderElements(false);
+        if (!isPointerValueSame) {
+            if (!refreshBounds && renderer) {
+                this.removeSvg();
+                this.renderElements();
+            }
+            if (refreshBounds) {
+                this.removeSvg();
+                this.calculateBounds();
+                this.renderElements();
+            }
+            if (refreshWithoutAnimation && !renderer && !refreshBounds) {
+                this.removeSvg();
+                this.calculateBounds();
+                this.renderElements(false);
+            }
         }
     };
     /**

@@ -95,7 +95,7 @@ export class ScrollBar {
     constructor(component: Chart, axis?: Axis) {
         this.component = component;
         this.elements = [];
-        this.scrollElements = new ScrollElements();
+        this.scrollElements = new ScrollElements(component);
         this.axis = axis;
         this.mouseMoveListener = this.scrollMouseMove.bind(this);
         this.mouseUpListener = this.scrollMouseUp.bind(this);
@@ -121,7 +121,7 @@ export class ScrollBar {
             pageX = e.clientX;
             pageY = e.clientY;
         }
-        let svgRect: ClientRect = getElement('scrollBar_svg' + this.axis.name).getBoundingClientRect();
+        let svgRect: ClientRect = getElement(this.component.element.id + '_scrollBar_svg' + this.axis.name).getBoundingClientRect();
         this.mouseX = pageX - Math.max(svgRect.left, 0);
         this.mouseY = pageY - Math.max(svgRect.top, 0);
     }
@@ -284,7 +284,7 @@ export class ScrollBar {
      * @param e
      */
     public scrollMouseWheel(e: WheelEvent): void {
-        let svgRect: ClientRect = getElement('scrollBar_svg' + this.axis.name).getBoundingClientRect();
+        let svgRect: ClientRect = getElement(this.component.element.id + '_scrollBar_svg' + this.axis.name).getBoundingClientRect();
         this.mouseX = e.clientX - Math.max(svgRect.left, 0);
         this.mouseY = e.clientY - Math.max(svgRect.top, 0);
         let origin: number = 0.5;
@@ -497,8 +497,8 @@ private getStartEnd(start: number | Date, end: number | Date, isCurrentStartEnd:
      * Method to remove existing scrollbar
      */
     public removeScrollSvg(): void {
-        if (document.getElementById('scrollBar_svg' + this.axis.name)) {
-            remove(document.getElementById('scrollBar_svg' + this.axis.name));
+        if (document.getElementById(this.component.element.id + '_scrollBar_svg' + this.axis.name)) {
+            remove(document.getElementById(this.component.element.id + '_scrollBar_svg' + this.axis.name));
         }
     }
     /**

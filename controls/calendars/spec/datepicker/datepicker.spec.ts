@@ -235,6 +235,72 @@ describe('Datepicker', () => {
             expect(datepicker.element.value).toBe('2/2/2017');
             expect(+datepicker.value).toBe(+new Date('2/2/2017'))
         });
+        it('invalid string type with value test case', () => {
+            datepicker = new DatePicker({ value: <any>"hgfnfhg" });
+            datepicker.appendTo('#date');
+            expect(datepicker.element.value).toBe("hgfnfhg");
+            expect(datepicker.value).toBe(null)
+        });
+        it('invalid string type with value less than six integers test case', () => {
+            datepicker = new DatePicker({ value: <any>"2019" });
+            datepicker.appendTo('#date');
+            expect(datepicker.element.value).toBe("2019");
+            expect(datepicker.value).toBe(null)
+        });
+        it('change event for invalid string type  with test case', () => {
+            datepicker = new DatePicker({
+                value: <any>'1/1/2019',
+                change: function (args) {
+                    expect(args.value).toBe(null);
+                }
+            });
+            datepicker.appendTo('#date');
+            datepicker.value = "2019";
+            datepicker.dataBind();
+            expect(datepicker.value).toBe(null)
+        });
+        it('change event for invalid string type  with empty string', () => {
+            datepicker = new DatePicker({
+                value: <any>'1/1/2019',
+                change: function (args) {
+                    expect(args.value).toBe(null);
+                }
+            });
+            datepicker.appendTo('#date');
+            datepicker.value = "";
+            datepicker.dataBind();
+            expect(datepicker.value).toBe(null)
+        });
+        it('invalid string type with test case', () => {
+            datepicker = new DatePicker({
+                value: <any>'1/1/2019',
+                change: function (args) {
+                    expect(args.value).toBe(null);
+                }
+            });
+            datepicker.appendTo('#date');
+            datepicker.value = "2019";
+            datepicker.dataBind();
+            expect(datepicker.value).toBe(null)
+        });
+        it('invalid number type with value test case ', () => {
+            datepicker = new DatePicker({ value: <any>12243 });
+            datepicker.appendTo('#date');
+            expect(datepicker.element.value).toBe("12243");
+            expect(datepicker.value).toBe(null)
+        });
+        it('invalid string type with value test case and strictMode true ', () => {
+            datepicker = new DatePicker({ value: <any>"hgfnfhg", strictMode: true });
+            datepicker.appendTo('#date');
+            expect(datepicker.element.value).toBe("");
+            expect(datepicker.value).toBe(null)
+        });
+        it('invalid string type with ISO string value test case', () => {
+            datepicker = new DatePicker({ value: <any>"2019-01-01T06:00:00.000Z" });
+            datepicker.appendTo('#date');
+            expect(datepicker.element.value).toBe("1/1/2019");
+            expect(datepicker.invalidValueString).toBe(null);
+        });
         it('string type value with onproperty test case ', () => {
             datepicker = new DatePicker({ value: <any>'2/2/2017' });
             datepicker.appendTo('#date');
@@ -371,8 +437,8 @@ describe('Datepicker', () => {
             datepicker.appendTo('#date');
             datepicker.value = '5/5';
             datepicker.dataBind();
-            expect(+datepicker.value).toBe(+new Date('5/5/2001'));
-            expect(datepicker.element.value).toBe('5/5/2001');
+            expect(datepicker.value).toBe(null);
+            expect(datepicker.element.value).toBe('5/5');
         });
         it('string value worst test case with format ', () => {
             datepicker = new DatePicker({ format: 'd/M' });
@@ -427,7 +493,7 @@ describe('Datepicker', () => {
             datepicker.inputBlurHandler();
             dateString(datepicker, '3/3/2017');
             expect(datepicker.element.value).toBe('3/3/2017');
-            
+
         });
         it('Input with different format value with test case ', () => {
             datepicker = new DatePicker({ value: new Date('3/3/2017') });
@@ -1104,9 +1170,9 @@ describe('Datepicker', () => {
         it('floatLabelType onproperty test case', () => {
             let ele = document.getElementById('date');
             datepicker = new DatePicker({ placeholder: 'Select a date' });
-            datepicker.appendTo('#date');            
+            datepicker.appendTo('#date');
             datepicker.floatLabelType = "Auto";
-            datepicker.dataBind();            
+            datepicker.dataBind();
         });
         /**
          * Attribute testing  
@@ -1562,7 +1628,7 @@ describe('Datepicker', () => {
             datepicker.showClearButton = false;
             datepicker.dataBind();
             datepicker.destroy();
-            expect(datepicker.inputWrapper.clearButton===null).toBe(true);
+            expect(datepicker.inputWrapper.clearButton === null).toBe(true);
             datepicker = null;
         });
         it('Clear button Setmodel', () => {
@@ -1723,7 +1789,7 @@ describe('Datepicker', () => {
         let datePicker: any;
         let keyEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
-            stopPropagation:(): void=>{},
+            stopPropagation: (): void => { },
             action: 'altDownArrow'
         };
         beforeEach(() => {

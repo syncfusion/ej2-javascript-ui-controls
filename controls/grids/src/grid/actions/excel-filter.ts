@@ -1,6 +1,6 @@
 import { EventHandler, remove, Browser } from '@syncfusion/ej2-base';
 import { FilterSettings } from '../base/grid';
-import { parentsUntil, isActionPrevent, appendChildren } from '../base/util';
+import { parentsUntil, isActionPrevent, appendChildren, extend } from '../base/util';
 import { IGrid, IFilterArgs, EJ2Intance } from '../base/interface';
 import * as events from '../base/constant';
 import { ContextMenu, MenuItemModel, ContextMenuModel, MenuEventArgs, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
@@ -455,14 +455,16 @@ export class ExcelFilter extends CheckBoxFilter {
                 selectedValue = this.getLocalizedLabel(isFirst ? 'GreaterThanOrEqual' : 'LessThanOrEqual');
             }
         }
-
-        this.dropOptr = new DropDownList({
+        let col: Column = this.parent.getColumnByField(column);
+        this.dropOptr = new DropDownList(extend(
+            {
             dataSource: dropDatasource,
             fields: { text: 'text', value: 'value' },
             text: selectedValue,
             open: this.dropDownOpen.bind(this),
             enableRtl: this.parent.enableRtl
-        });
+            },
+            col.filter.params));
         this.dropOptr.appendTo(optrInput);
         let operator: string = this.getSelectedValue(selectedValue);
         return { fieldElement, operator };
@@ -662,28 +664,32 @@ export class ExcelFilter extends CheckBoxFilter {
     /* tslint:disable-next-line:max-line-length */
     private renderDate(options: IFilterArgs, column: string, inputValue: HTMLElement, fValue: string | number | Date | boolean, isRtl: boolean): void {
         let format: string = getCustomDateFormat(options.format, options.type);
-        this.datePicker = new DatePicker({
+        this.datePicker = new DatePicker(extend(
+            {
             format: format,
             cssClass: 'e-popup-flmenu',
             placeholder: this.getLocalizedLabel('CustomFilterDatePlaceHolder'),
             width: '100%',
             enableRtl: isRtl,
             value: new Date(fValue as string),
-        });
+            },
+            options.column.filter.params));
         this.datePicker.appendTo(inputValue);
     }
 
     /* tslint:disable-next-line:max-line-length */
     private renderDateTime(options: IFilterArgs, column: string, inputValue: HTMLElement, fValue: string | number | Date | boolean, isRtl: boolean): void {
         let format: string = getCustomDateFormat(options.format, options.type);
-        this.dateTimePicker = new DateTimePicker({
+        this.dateTimePicker = new DateTimePicker(extend(
+            {
             format: format,
             cssClass: 'e-popup-flmenu',
             placeholder: this.getLocalizedLabel('CustomFilterDatePlaceHolder'),
             width: '100%',
             enableRtl: isRtl,
             value: new Date(fValue as string),
-        });
+            },
+            options.column.filter.params));
         this.dateTimePicker.appendTo(inputValue);
     }
 
@@ -693,12 +699,14 @@ export class ExcelFilter extends CheckBoxFilter {
 
     /* tslint:disable-next-line:max-line-length */
     private renderNumericTextBox(options: IFilterArgs, column: string, inputValue: HTMLElement, fValue: string | number | Date | boolean, isRtl: boolean): void {
-        this.numericTxtObj = new NumericTextBox({
+        this.numericTxtObj = new NumericTextBox(extend(
+            {
             format: options.format as string,
             placeholder: this.getLocalizedLabel('CustomFilterPlaceHolder'),
             enableRtl: isRtl,
             value: fValue as number
-        });
+            },
+            options.column.filter.params));
         this.numericTxtObj.appendTo(inputValue);
     }
 
@@ -708,7 +716,8 @@ export class ExcelFilter extends CheckBoxFilter {
         let isForeignColumn: boolean = colObj.isForeignColumn();
         let dataSource: Object = isForeignColumn ? colObj.dataSource : options.dataSource;
         let fields: Object = { value: isForeignColumn ? colObj.foreignKeyValue : column };
-        let actObj: AutoComplete = new AutoComplete({
+        let actObj: AutoComplete = new AutoComplete(extend(
+            {
             dataSource: dataSource instanceof DataManager ? dataSource : new DataManager(dataSource as object),
             fields: fields,
             query: this.parent.getQuery().clone(),
@@ -743,7 +752,8 @@ export class ExcelFilter extends CheckBoxFilter {
                 });
             },
             value: fValue as string
-        });
+            },
+            colObj.filter.params));
         actObj.appendTo(inputValue);
         this.actObj = actObj;
     }

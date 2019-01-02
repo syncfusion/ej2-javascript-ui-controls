@@ -7,7 +7,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { Query, DataManager, DataUtil } from '@syncfusion/ej2-data';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { Filter } from '../actions/filter';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { FlMenuOptrUI } from './filter-menu-operator';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
 /**
@@ -40,7 +40,8 @@ export class BooleanFilterUI implements IFilterMUI {
         this.elem = this.parent.createElement('input', { className: 'e-flmenu-input', id: 'bool-ui-' + args.column.uid });
         args.target.appendChild(this.elem);
         this.dialogObj = args.dialogObj;
-        this.dropInstance = new DropDownList({
+        this.dropInstance = new DropDownList(extend(
+            {
             dataSource: dataSource instanceof DataManager ?
             dataSource : new DataManager(dataSource),
             query: new Query().select(fields),
@@ -53,8 +54,9 @@ export class BooleanFilterUI implements IFilterMUI {
             actionComplete: (e: { result: string[] }) => {
                 e.result  = DataUtil.distinct(e.result, fields, true ) as string[];
             }
-
-        });
+            },
+            args.column.filter.params
+        ));
         this.dropInstance.appendTo(this.elem);
     }
 

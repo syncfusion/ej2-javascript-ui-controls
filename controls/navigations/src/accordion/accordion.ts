@@ -53,6 +53,7 @@ interface AcrdnElementComment {
   nextElementSibling?: HTMLElement;
   parentElement?: HTMLElement;
   propName?: HTMLElement;
+  data?: string;
 }
 
 
@@ -645,15 +646,21 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       let property: string = prop === 'content' ? item.content : item.header;
       let content: AcrdnTemplateRef = (property as Object) as AcrdnTemplateRef;
       if (this.isAngular && !isNOU(content.elementRef) ) {
-        if (content.elementRef.nativeElement.childNodes.length === 0 && isNOU(content.elementRef.nativeElement.nextElementSibling)) {
+        let data: string = content.elementRef.nativeElement.data;
+        if (isNOU(data) || data === '' || (data.indexOf('bindings=') === -1) ) {
+          return true;
+        }
+        let parseddata: { [key: string]: string } = JSON.parse(content.elementRef.nativeElement.data.replace('bindings=', ''));
+        if (!isNOU(parseddata) && parseddata['ng-reflect-ng-if'] === 'false' ) {
           return false;
         } else {
-          return true;
+            return true;
         }
       } else {
         return true;
       }
     }
+
 
     private fetchElement(ele: HTEle, value: Str, index: number, isHeader: boolean): HTEle {
       let templateFn: Function;

@@ -141,20 +141,12 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
         }
     }
 
-    private createMenuItems(item: obj, index: number): void {
+    private createMenuItems(item: obj): void {
         let pIdField: string;
-        let record: obj = { items: [] };
         let idx: number[];
         let i: number;
         let items: MenuItemModel[] = this.items as objColl;
-        let fields: string[] = ['itemId', 'text', 'iconCss', 'url', 'separator', 'children'];
         pIdField = this.getField('parentId');
-        for (i = 0; i < fields.length; i++) {
-            let field: string = this.getField(fields[i]);
-            if (item[field]) {
-                record[field] = item[field];
-            }
-        }
         if (item[pIdField]) {
             idx = this.getIndex(item[pIdField].toString(), true);
             for (i = 0; i < idx.length; i++) {
@@ -163,9 +155,9 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
                 }
                 items = items[idx[i]].items;
             }
-            items.push(record);
+            items.push(item);
         } else {
-            (<MenuItemModel[]>this.items).push(record);
+            (<MenuItemModel[]>this.items).push(item);
         }
     }
 }

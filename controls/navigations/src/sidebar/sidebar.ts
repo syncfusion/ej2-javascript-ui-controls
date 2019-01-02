@@ -307,8 +307,10 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         this.element.classList.add(ROOT);
         addClass([this.element], (this.position === 'Right') ? RIGHT : LEFT);
         if (this.type === 'Auto' && !Browser.isDevice && !this.enableDock) {
+            this.setProperties({ isOpen: true }, true);
             addClass([this.element], OPEN);
         } else {
+            this.setProperties({ isOpen: false }, true);
             addClass([this.element], CLOSE);
         }
     }

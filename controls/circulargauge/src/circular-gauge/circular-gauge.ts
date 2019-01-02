@@ -508,6 +508,9 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
             currentPointer = getPointer(args.target.id, this);
             this.activeAxis = <Axis>this.axes[currentPointer.axisIndex];
             this.activePointer = <Pointer>this.activeAxis.pointers[currentPointer.pointerIndex];
+            if (isNullOrUndefined(this.activePointer.pathElement)) {
+                this.activePointer.pathElement = [e.target as Element];
+            }
             this.trigger(dragStart, {
                 axis: this.activeAxis,
                 name: dragStart,
@@ -919,6 +922,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         let renderer: boolean = false;
         let refreshBounds: boolean = false;
         let refreshWithoutAnimation: boolean = false;
+        let isPointerValueSame: boolean = (Object.keys(newProp).length === 1 && newProp instanceof Object &&
+            !isNullOrUndefined(this.activePointer));
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'height':
@@ -951,19 +956,21 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                     break;
             }
         }
-        if (!refreshBounds && renderer) {
-            this.removeSvg();
-            this.renderElements();
-        }
-        if (refreshBounds) {
-            this.removeSvg();
-            this.calculateBounds();
-            this.renderElements();
-        }
-        if (refreshWithoutAnimation && !renderer && !refreshBounds) {
-            this.removeSvg();
-            this.calculateBounds();
-            this.renderElements(false);
+        if (!isPointerValueSame) {
+            if (!refreshBounds && renderer) {
+                this.removeSvg();
+                this.renderElements();
+            }
+            if (refreshBounds) {
+                this.removeSvg();
+                this.calculateBounds();
+                this.renderElements();
+            }
+            if (refreshWithoutAnimation && !renderer && !refreshBounds) {
+                this.removeSvg();
+                this.calculateBounds();
+                this.renderElements(false);
+            }
         }
     }
 

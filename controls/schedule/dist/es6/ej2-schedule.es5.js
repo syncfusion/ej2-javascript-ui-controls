@@ -4752,14 +4752,16 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         }
         if (this.parent.currentView.indexOf('Timeline') !== -1) {
             var gIndex = target.getAttribute('data-group-index');
-            var startDate = target.getAttribute('data-start-date');
+            var startDate = new Date(parseInt(target.getAttribute('data-start-date'), 10));
+            startDate.setHours(startDate.getHours(), startDate.getMinutes(), 0);
+            var tdDate = startDate.getTime().toString();
             if (isNullOrUndefined(gIndex)) {
                 this.morePopup.relateTo = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS +
-                    ' tbody tr td[data-date="' + startDate + '"]');
+                    ' tbody tr td[data-date="' + tdDate + '"]');
             }
             else {
                 this.morePopup.relateTo = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS +
-                    ' tbody tr td[data-group-index="' + gIndex + '"][data-date="' + startDate + '"]');
+                    ' tbody tr td[data-group-index="' + gIndex + '"][data-date="' + tdDate + '"]');
             }
         }
         else {

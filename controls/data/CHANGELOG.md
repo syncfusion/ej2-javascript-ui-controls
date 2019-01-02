@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.45 (2018-12-24)
+
+### DataManager
+
+#### Bug Fixes
+
+- Additional parameters should be send in `params` property is fixed.
+
 ## 16.4.40-beta (2018-12-10)
 
 ### DataManager

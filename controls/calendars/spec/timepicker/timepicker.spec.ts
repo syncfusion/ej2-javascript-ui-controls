@@ -1,4 +1,4 @@
-import { TimePicker, ItemEventArgs } from '../../src/timepicker/timepicker';
+import { TimePicker, ItemEventArgs, PopupEventArgs, TimePickerBase } from '../../src/timepicker/timepicker';
 import { Ajax } from '@syncfusion/ej2-base';
 import { Component, EventHandler, Property, Event, CreateBuilder, Internationalization, setCulture } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, KeyboardEvents, KeyboardEventArgs, L10n, Browser } from '@syncfusion/ej2-base';
@@ -36,6 +36,30 @@ function onRender(args: ItemEventArgs): void {
     if (args.text == "1:30 AM") {
         args.isDisabled = true;
     }
+}
+function pixel(args: PopupEventArgs): void {
+    args.popup.position = { X: '100px', Y: '100px' };
+}
+function pixelString(args: PopupEventArgs): void {
+    args.popup.position = { X: '100', Y: '100' };
+}
+function pixelNumber(args: PopupEventArgs): void {
+    args.popup.position = { X: 100, Y: 100 };
+}
+function leftTop(args: PopupEventArgs): void {
+    args.popup.position = { X: 'left', Y: 'top' };
+}
+function rightTop(args: PopupEventArgs): void {
+    args.popup.position = { X: 'right', Y: 'top' };
+}
+function centerCenter(args: PopupEventArgs): void {
+    args.popup.position = { X: 'center', Y: 'center' };
+}
+function leftBottom(args: PopupEventArgs): void {
+    args.popup.position = { X: 'left', Y: 'bottom' };
+}
+function rightBottom(args: PopupEventArgs): void {
+    args.popup.position = { X: 'right', Y: 'bottom' };
 }
 let clickEvent: MouseEvent = document.createEvent('MouseEvents');
 clickEvent.initEvent('mousedown', true, true);
@@ -304,6 +328,7 @@ describe('TimePicker', () => {
         });
         it('value testing in input box', () => {
             expect(timeObj.getText()).toEqual(timeObj.element.value);
+            TimePickerBase.createListItems(timeObj.createElement, new Date('12/12/2016 10:00 AM'), new Date('12/12/2016 10:00 PM'), timeObj.globalize, timeObj.cldrTimeFormat(), timeObj.step);
         });
         it('cssClass testing', (done) => {
             expect(timeObj.inputWrapper.container.classList.contains('e-custom')).toBe(true);
@@ -1231,7 +1256,7 @@ describe('TimePicker', () => {
             timeObj.showClearButton = false;
             timeObj.dataBind();
             timeObj.destroy();
-            expect(timeObj.inputWrapper===undefined).toBe(true);
+            expect(timeObj.inputWrapper === undefined).toBe(true);
             timeObj = null;
         });
         it('click on clear button', (done) => {
@@ -1367,7 +1392,7 @@ describe('TimePicker', () => {
     describe('Keyboard Navigation in input testing', () => {
         let KeyboardEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
-            stopPropagation: (): void => { /** No Code */},
+            stopPropagation: (): void => { /** No Code */ },
             action: '',
             altKey: false,
             keyCode: ''
@@ -2242,6 +2267,8 @@ describe('TimePicker', () => {
         let element: any;
         beforeEach(() => {
             element = createElement('EJS-TIMEPICKER');
+            element.setAttribute('required','');
+            element.setAttribute('aria-required',true);
         });
         afterEach(() => {
             timeObj.destroy();
@@ -2458,6 +2485,251 @@ describe('TimePicker', () => {
             timeObj.inputHandler(KeyboardEventArgs);
             expect(timeObj.getExactDateTime(timeObj.value)).toBe('11:59:45 PM');
             expect(timeObj.inputElement.value).toBe('11:59 PM');
+        });
+    });
+    describe('Popup position customization using open event in desktop', () => {
+        let ele: HTMLElement = createElement('input', { id: 'timepicker42' });
+        beforeEach(() => {
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            if (ele) {
+                timeObj1.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('position values with pixel', () => {
+            timeObj1 = new TimePicker({
+                value: new Date('12/12/2016 12:00 AM'),
+                open: pixel
+            });
+            timeObj1.appendTo(ele);
+            if (!timeObj1.isPopupOpen()) {
+                (<HTMLElement>document.getElementsByClassName('e-time-icon')[0]).dispatchEvent(clickEvent);
+            }
+            expect(timeObj1.popupObj.position.X).toEqual('100px');
+            expect(timeObj1.popupObj.position.Y).toEqual('100px');
+        });
+        it('position values with pixel string', () => {
+            timeObj1 = new TimePicker({
+                value: new Date('12/12/2016 12:00 AM'),
+                open: pixel
+            });
+            timeObj1.appendTo(ele);
+            if (!timeObj1.isPopupOpen()) {
+                (<HTMLElement>document.getElementsByClassName('e-time-icon')[0]).dispatchEvent(clickEvent);
+            }
+            expect(timeObj1.popupObj.position.X).toEqual('100px');
+            expect(timeObj1.popupObj.position.Y).toEqual('100px');
+        });
+        it('position values with pixel numbers', () => {
+            timeObj1 = new TimePicker({
+                value: new Date('12/12/2016 12:00 AM'),
+                open: pixelNumber
+            });
+            timeObj1.appendTo(ele);
+            if (!timeObj1.isPopupOpen()) {
+                (<HTMLElement>document.getElementsByClassName('e-time-icon')[0]).dispatchEvent(clickEvent);
+            }
+            expect(timeObj1.popupObj.position.X).toEqual('100px');
+            expect(timeObj1.popupObj.position.Y).toEqual('100px');
+        });
+        it('Left Top position', () => {
+            timeObj1 = new TimePicker({
+                value: new Date('12/12/2016 12:00 AM'),
+                open: leftTop
+            });
+            timeObj1.appendTo(ele);
+            if (!timeObj1.isPopupOpen()) {
+                (<HTMLElement>document.getElementsByClassName('e-time-icon')[0]).dispatchEvent(clickEvent);
+            }
+            expect(timeObj1.popupObj.position.X).toEqual('left');
+            expect(timeObj1.popupObj.position.Y).toEqual('top');
+        });
+        it('Left Bottom position', () => {
+            timeObj1 = new TimePicker({
+                value: new Date('12/12/2016 12:00 AM'),
+                open: leftBottom
+            });
+            timeObj1.appendTo(ele);
+            if (!timeObj1.isPopupOpen()) {
+                (<HTMLElement>document.getElementsByClassName('e-time-icon')[0]).dispatchEvent(clickEvent);
+            }
+            expect(timeObj1.popupObj.position.X).toEqual('left');
+            expect(timeObj1.popupObj.position.Y).toEqual('bottom');
+        });
+        it('Right Top position', () => {
+            timeObj1 = new TimePicker({
+                value: new Date('12/12/2016 12:00 AM'),
+                open: rightTop
+            });
+            timeObj1.appendTo(ele);
+            if (!timeObj1.isPopupOpen()) {
+                (<HTMLElement>document.getElementsByClassName('e-time-icon')[0]).dispatchEvent(clickEvent);
+            }
+            expect(timeObj1.popupObj.position.X).toEqual('right');
+            expect(timeObj1.popupObj.position.Y).toEqual('top');
+        });
+        it('Right Bottom position', () => {
+            timeObj1 = new TimePicker({
+                value: new Date('12/12/2016 12:00 AM'),
+                open: rightBottom
+            });
+            timeObj1.appendTo(ele);
+            if (!timeObj1.isPopupOpen()) {
+                (<HTMLElement>document.getElementsByClassName('e-time-icon')[0]).dispatchEvent(clickEvent);
+            }
+            expect(timeObj1.popupObj.position.X).toEqual('right');
+            expect(timeObj1.popupObj.position.Y).toEqual('bottom');
+        });
+        it('Center Center position', () => {
+            timeObj1 = new TimePicker({
+                value: new Date('12/12/2016 12:00 AM'),
+                open: centerCenter
+            });
+            timeObj1.appendTo(ele);
+            if (!timeObj1.isPopupOpen()) {
+                (<HTMLElement>document.getElementsByClassName('e-time-icon')[0]).dispatchEvent(clickEvent);
+            }
+            expect(timeObj1.popupObj.position.X).toEqual('center');
+            expect(timeObj1.popupObj.position.Y).toEqual('center');
+        });
+    });
+    describe('Popup position customization using open event in mobile', () => {
+        let ele: HTMLElement;
+        let ua = Browser.userAgent;
+        beforeAll(() => {
+            let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+                'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+            Browser.userAgent = androidPhoneUa;
+        });
+        afterAll(() => {
+            if (ele) {
+                timeObj.destroy();
+                document.body.innerHTML = '';
+            }
+            Browser.userAgent = ua;
+        })
+        it('position values with pixel', () => {
+            var ele = createElement('input', { id: 'timepicker41' });
+            document.body.appendChild(ele);
+            timeObj1 = new TimePicker({
+                value: new Date('12/12/2016 12:00 AM'),
+                open: pixel
+            });
+            timeObj1.appendTo(ele);
+            if (!timeObj1.isPopupOpen()) {
+                (<HTMLElement>document.getElementsByClassName('e-time-icon')[0]).dispatchEvent(clickEvent);
+            }
+            expect(timeObj1.popupObj.position.X).toEqual('100px');
+            expect(timeObj1.popupObj.position.Y).toEqual('100px');
+            timeObj1.destroy();
+            document.body.innerHTML = '';
+        });
+        it('position values with pixel numbers', (done) => {
+            var ele = createElement('input', { id: 'timepicker41' });
+            document.body.appendChild(ele);
+            timeObj1 = new TimePicker({
+                value: new Date('12/12/2016 12:00 AM'),
+                open: pixelNumber
+            });
+            timeObj1.appendTo(ele);
+            if (!timeObj1.isPopupOpen()) {
+                (<HTMLElement>document.getElementsByClassName('e-time-icon')[0]).dispatchEvent(clickEvent);
+            }
+            setTimeout(function () {
+                expect(timeObj1.popupObj.position.X).toEqual('100px');
+                expect(timeObj1.popupObj.position.Y).toEqual('100px');
+                done();
+            }, 500);
+            timeObj1.destroy();
+            document.body.innerHTML = '';
+        });
+        it('Left Top position', () => {
+            var ele = createElement('input', { id: 'timepicker41' });
+            document.body.appendChild(ele);
+            timeObj1 = new TimePicker({
+                value: new Date('12/12/2016 12:00 AM'),
+                open: leftTop
+            });
+            timeObj1.appendTo(ele);
+            if (!timeObj1.isPopupOpen()) {
+                (<HTMLElement>document.getElementsByClassName('e-time-icon')[0]).dispatchEvent(clickEvent);
+            }
+            expect(timeObj1.popupObj.position.X).toEqual('left');
+            expect(timeObj1.popupObj.position.Y).toEqual('top');
+            timeObj1.destroy();
+            document.body.innerHTML = '';
+        });
+        it('Left Bottom position', (done) => {
+            var ele = createElement('input', { id: 'timepicker41' });
+            document.body.appendChild(ele);
+            timeObj1 = new TimePicker({
+                value: new Date('12/12/2016 12:00 AM'),
+                open: leftBottom
+            });
+            timeObj1.appendTo(ele);
+            if (!timeObj1.isPopupOpen()) {
+                (<HTMLElement>document.getElementsByClassName('e-time-icon')[0]).dispatchEvent(clickEvent);
+            }
+            setTimeout(function () {
+                expect(timeObj1.popupObj.position.X).toEqual('left');
+                expect(timeObj1.popupObj.position.Y).toEqual('bottom');
+                done();
+            }, 500);
+            timeObj1.destroy();
+            document.body.innerHTML = '';
+        });
+        it('Right Top position', () => {
+            var ele = createElement('input', { id: 'timepicker41' });
+            document.body.appendChild(ele);
+            timeObj1 = new TimePicker({
+                value: new Date('12/12/2016 12:00 AM'),
+                open: rightTop
+            });
+            timeObj1.appendTo(ele);
+            if (!timeObj1.isPopupOpen()) {
+                (<HTMLElement>document.getElementsByClassName('e-time-icon')[0]).dispatchEvent(clickEvent);
+            }
+            expect(timeObj1.popupObj.position.X).toEqual('right');
+            expect(timeObj1.popupObj.position.Y).toEqual('top');
+            timeObj1.destroy();
+            document.body.innerHTML = '';
+        });
+        it('Right Bottom position', (done) => {
+            var ele = createElement('input', { id: 'timepicker41' });
+            document.body.appendChild(ele);
+            timeObj1 = new TimePicker({
+                value: new Date('12/12/2016 12:00 AM'),
+                open: rightBottom
+            });
+            timeObj1.appendTo(ele);
+            if (!timeObj1.isPopupOpen()) {
+                (<HTMLElement>document.getElementsByClassName('e-time-icon')[0]).dispatchEvent(clickEvent);
+            }
+            setTimeout(function () {
+                expect(timeObj1.popupObj.position.X).toEqual('right');
+                expect(timeObj1.popupObj.position.Y).toEqual('bottom');
+                done();
+            }, 500);
+            timeObj1.destroy();
+            document.body.innerHTML = '';
+        });
+        it('Center Center position', () => {
+            var ele = createElement('input', { id: 'timepicker41' });
+            document.body.appendChild(ele);
+            timeObj1 = new TimePicker({
+                value: new Date('12/12/2016 12:00 AM'),
+                open: centerCenter
+            });
+            timeObj1.appendTo(ele);
+            if (!timeObj1.isPopupOpen()) {
+                (<HTMLElement>document.getElementsByClassName('e-time-icon')[0]).dispatchEvent(clickEvent);
+            }
+            expect(timeObj1.popupObj.position.X).toEqual('center');
+            expect(timeObj1.popupObj.position.Y).toEqual('center');
+            timeObj1.destroy();
+            document.body.innerHTML = '';
         });
     });
     describe('before item render event', () => {

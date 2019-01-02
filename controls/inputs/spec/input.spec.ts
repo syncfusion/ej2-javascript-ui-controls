@@ -309,6 +309,10 @@ describe('Input', () => {
                 Input.setPlaceholder(null, element);
                 expect(isNullOrUndefined(element.getAttribute('placeholder'))).toBe(true);
             });
+            it('placeholder encode decode ', () => {
+                Input.setPlaceholder('Hi&eacute;rachie article', element);
+                expect(element.getAttribute('placeholder')).toBe('Hiérachie article');
+            });
             afterAll(() => {
                 element.remove();
             });
@@ -900,6 +904,36 @@ describe('FloatInput', () => {
                 element.remove();
             });
         });
+
+        describe('Placeholder encode / decode', () => {
+            let inputObj: InputObject;
+            let element: HTMLInputElement;
+            element = <HTMLInputElement>createElement('input', { id: 'inputpopup', attrs: {  value: 'Floating text'} });
+            beforeAll(() => {
+                document.body.appendChild(element);
+                inputObj = Input.createInput({
+                 element: element,
+                 floatLabelType: "Auto",
+              });
+                Input.setPlaceholder('Hi&eacute;rachie article', element);
+            });
+            it('placeholder text', () => {
+                expect(((<HTMLElement>inputObj.container.childNodes[2]).textContent === 'Hiérachie article')).toBe(true);
+            });
+            it('remove placeholder while pass empty string', () => {
+                Input.setPlaceholder('', element);
+                expect(isNullOrUndefined(element.getAttribute('placeholder'))).toBe(true);
+            });
+            it('remove placeholder while pass null value', () => {
+                Input.setPlaceholder('Hiérachie article', element);
+                Input.setPlaceholder(null, element);
+                expect(isNullOrUndefined(element.getAttribute('placeholder'))).toBe(true);
+            });
+            afterAll(() => {
+                element.remove();
+            });
+        });
+
         describe('setCssClass', () => {
             let inputObj: InputObject;
             let element: HTMLInputElement;

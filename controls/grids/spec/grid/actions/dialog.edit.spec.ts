@@ -145,7 +145,7 @@ describe('Dialog Editing module', () => {
                     // allow Editing false
                     expect(cells[2].querySelectorAll('input.e-disabled').length).toBe(1);
                     // isIdentity check
-                    expect(cells[6].querySelectorAll('input.e-disabled').length).toBe(0);
+                    expect(cells[6].querySelectorAll('input.e-disabled').length).toBe(1);
                     //focus check
                     expect(document.activeElement.id).toBe(gridObj.element.id + 'OrderID');
                     //toolbar status check

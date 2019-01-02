@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 16.4.45 (2018-12-24)
+
+### DatePicker
+
+#### Bug Fixes
+
+- DatePicker will allow assigning string value when type system configuration is disabled.
+
+### TimePicker
+
+#### Bug Fixes
+
+- Pop-up positioning support has been provided.
+
 ## 16.4.44 (2018-12-24)
 
 ### DatePicker

@@ -78,7 +78,7 @@ export interface AsyncSettingsModel {
      * If the chunk size property has value, the uploader enables the chunk upload by default.
      * It must be specified in bytes value.
      * 
-     * > For more information, refer to the [chunk upload](./chunk-upload.html) section from the documentation.
+     * > For more information, refer to the [chunk upload](../../uploader/chunk-upload/) section from the documentation.
      * 
      * @default 0
      */
@@ -133,7 +133,7 @@ export interface UploaderModel extends ComponentModel{
     /**
      * Specifies the HTML string that used to customize the content of each file in the list.
      * 
-     * > For more information, refer to the [template](./template.html) section from the documentation.
+     * > For more information, refer to the [template](../../uploader/template/) section from the documentation.
      * 
      * @default null
      */
@@ -188,7 +188,7 @@ export interface UploaderModel extends ComponentModel{
      * Specifies the drop target to handle the drag-and-drop upload.
      * By default, the component creates wrapper around file input that will act as drop target.
      * 
-     * > For more information, refer to the [drag-and-drop](./file-source.html#drag-and-drop) section from the documentation.
+     * > For more information, refer to the [drag-and-drop](../../uploader/file-source/#drag-and-drop) section from the documentation.
      * 
      * @default null
      */

@@ -226,3 +226,49 @@ describe('TreeGrid Sort module', () => {
   });
 });
 
+describe('Sorting with Sort comparer property functionality checking', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  let called: boolean = false;
+  let sortComparer: (reference: string, comparer: string) => number = (reference: string,
+    comparer: string) => {
+    called = true;
+    if (reference < comparer) {
+      return -1;
+    }
+    if (reference > comparer) {
+      return 1;
+    }
+    return 0;
+  };
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        allowSorting: true,
+        treeColumnIndex: 1,
+        allowPaging: true,
+        columns: [
+          { field: 'taskID', }, { field: 'taskName', sortComparer: sortComparer, }, { field: 'startDate' }, { field: 'endDate' },
+          { field: 'duration' },]
+      }, done);
+  });
+
+  it('Sorting with sortComparer property', (done: Function) => {
+    actionComplete = (args?: any): void => {
+      expect(called).toBe(true);
+      expect(args.rows[0].data.taskName === "Planning").toBe(true);
+      expect(args.direction === "Descending").toBe(true);
+      expect(args.rows[6].data.taskName === "Phase 3").toBe(true);
+      expect(args.rows[5].data.taskName === "Implementation Phase").toBe(true);
+      gridObj.actionComplete = null;
+      done();
+    }
+    gridObj.actionComplete = actionComplete;
+    gridObj.sortByColumn("taskName", "Descending", false);
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

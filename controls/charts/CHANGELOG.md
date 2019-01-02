@@ -1,7 +1,14 @@
-
 # Changelog
 
 ## [Unreleased]
+
+## 16.4.45 (2018-12-24)
+
+### Chart
+
+#### Bug Fixes
+
+- Duplicates of scrollbar id in multiple chart is fixed
 
 ## 16.4.44 (2018-12-24)
 

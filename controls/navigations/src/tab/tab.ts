@@ -235,6 +235,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     private selectedID: string;
     private selectingID: string;
     private isIconAlone: boolean = false;
+    private resizeContext: EventListenerObject = this.refreshActElePosition.bind(this);
     /**
      * Contains the keyboard configuration of the Tab.
      */
@@ -1113,9 +1114,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         }
     }
     private wireEvents(): void {
-        window.addEventListener('resize', this.refreshActElePosition.bind(this));
+        window.addEventListener('resize', this.resizeContext);
         EventHandler.add(this.element, 'mouseover', this.hoverHandler, this);
-        EventHandler.add(this.element, 'keydown', this.spaceKeyDown , this);
+        EventHandler.add(this.element, 'keydown', this.spaceKeyDown, this);
         if (!isNOU(this.cntEle)) { this.touchModule = new Touch(this.cntEle, { swipe: this.swipeHandler.bind(this) }); }
         this.keyModule = new KeyboardEvents(this.element, { keyAction: this.keyHandler.bind(this), keyConfigs: this.keyConfigs });
         this.tabKeyModule = new KeyboardEvents(this.element, {
@@ -1128,8 +1129,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         this.keyModule.destroy();
         this.tabKeyModule.destroy();
         if (!isNOU(this.cntEle)) { this.touchModule.destroy(); }
-        window.removeEventListener('resize', this.refreshActElePosition.bind(this));
-        this.element.removeEventListener('mouseover', this.hoverHandler.bind(this));
+        window.removeEventListener('resize', this.resizeContext);
+        EventHandler.remove(this.element, 'mouseover', this.hoverHandler);
+        EventHandler.remove(this.element, 'keydown', this.spaceKeyDown);
         this.element.classList.remove(CLS_RTL);
         this.element.classList.remove(CLS_FOCUS);
     }

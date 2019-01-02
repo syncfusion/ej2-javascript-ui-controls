@@ -8,7 +8,7 @@ $schedule-content-bg-color: $grey-dark !default;
 $schedule-content-border-color: $grey-700 !default;
 $schedule-primary-content-font-color: $grey-dark-font !default;
 $schedule-secondary-content-font-color: rgba($grey-dark-font, .7) !default;
-$schedule-select-font-color: rgba($grey-light-font, .87) !default;
+$schedule-select-font-color: $grey-dark-font !default;
 $schedule-select-bg-color: $grey-600 !default;
 $schedule-work-cells-bg-color: $grey-800 !default;
 $schedule-current-date-bg-color: $accent !default;
@@ -126,7 +126,7 @@ $schedule-popup-content-icon-color: $grey-dark-font !default;
 $schedule-popup-title-color: rgba($color: $schedule-appointment-bg-color, $alpha: .3) !default;
 $schedule-popup-btn-border: none !default;
 $schedule-btn-txt-bgr-padding: 5px 12px !default;
-$schedule-icon-color: $grey-dark-font !default;
+$schedule-icon-color: rgba(0, 0, 0, .54) !default;
 
 $schedule-event-box-shadow-1: 0 6px 10px 0 rgba(0, 0, 0, .14) !default;
 $schedule-event-box-shadow-2: 0 1px 18px 0 rgba(0, 0, 0, .12) !default;

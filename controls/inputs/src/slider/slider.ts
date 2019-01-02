@@ -442,7 +442,6 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * It is used to denote the type of the Slider. The available options are:
-     *
      *  * default - Used to select a single value in the Slider.
      *  * minRange - Used to select a single value in the Slider. It displays shadow from the start value to the current value.
      *  * range - Used to select a range of values in the Slider. It displays shadow in-between the selection range.

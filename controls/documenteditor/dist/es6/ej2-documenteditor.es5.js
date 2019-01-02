@@ -9092,8 +9092,11 @@ var TableCellWidget = /** @__PURE__ @class */ (function (_super) {
         if ((isNullOrUndefined(previousCell) || (!isNullOrUndefined(leftBorder) && (leftBorder.lineStyle === 'None' && !leftBorder.hasNoneStyle)))) {
             if (!isNullOrUndefined(leftBorder) && !(leftBorder.ownerBase.ownerBase instanceof WTableFormat)) {
                 // tslint:disable-next-line:max-line-length
-                return this.getLeftBorderToRenderByHierarchy(leftBorder, TableRowWidget.getRowOf(leftBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(leftBorder.ownerBase).tableFormat.borders);
+                leftBorder = this.getLeftBorderToRenderByHierarchy(leftBorder, TableRowWidget.getRowOf(leftBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(leftBorder.ownerBase).tableFormat.borders);
             }
+        }
+        if (isNullOrUndefined(previousCell)) {
+            return leftBorder;
         }
         else {
             var prevCellRightBorder = undefined;
@@ -9250,8 +9253,11 @@ var TableCellWidget = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(nextCell) || (!isNullOrUndefined(rightBorder) && (rightBorder.lineStyle === 'None' && !rightBorder.hasNoneStyle))) {
             if (!isNullOrUndefined(rightBorder) && !(rightBorder.ownerBase.ownerBase instanceof WTableFormat)) {
                 // tslint:disable-next-line:max-line-length
-                return this.getRightBorderToRenderByHierarchy(rightBorder, TableRowWidget.getRowOf(rightBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(rightBorder.ownerBase).tableFormat.borders);
+                rightBorder = this.getRightBorderToRenderByHierarchy(rightBorder, TableRowWidget.getRowOf(rightBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(rightBorder.ownerBase).tableFormat.borders);
             }
+        }
+        if (isNullOrUndefined(nextCell)) {
+            return rightBorder;
         }
         else {
             var nextCellLeftBorder = undefined;
@@ -9366,8 +9372,11 @@ var TableCellWidget = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(previousTopCell) || (!isNullOrUndefined(topBorder) && (topBorder.lineStyle === 'None' && !topBorder.hasNoneStyle))) {
             if (!isNullOrUndefined(topBorder) && !(topBorder.ownerBase.ownerBase instanceof WTableFormat)) {
                 // tslint:disable-next-line:max-line-length
-                return this.getTopBorderToRenderByHierarchy(topBorder, TableRowWidget.getRowOf(topBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(topBorder.ownerBase).tableFormat.borders);
+                topBorder = this.getTopBorderToRenderByHierarchy(topBorder, TableRowWidget.getRowOf(topBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(topBorder.ownerBase).tableFormat.borders);
             }
+        }
+        if (isNullOrUndefined(previousTopCell)) {
+            return topBorder;
         }
         else {
             var prevTopCellBottomBorder = undefined;
@@ -9453,8 +9462,11 @@ var TableCellWidget = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(nextBottomCell) || (!isNullOrUndefined(bottomBorder) && (bottomBorder.lineStyle === 'None' && !bottomBorder.hasNoneStyle))) {
             if (!isNullOrUndefined(bottomBorder) && !(bottomBorder.ownerBase.ownerBase instanceof WTableFormat)) {
                 // tslint:disable-next-line:max-line-length
-                return this.getBottomBorderToRenderByHierarchy(bottomBorder, TableRowWidget.getRowOf(bottomBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(bottomBorder.ownerBase).tableFormat.borders);
+                bottomBorder = this.getBottomBorderToRenderByHierarchy(bottomBorder, TableRowWidget.getRowOf(bottomBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(bottomBorder.ownerBase).tableFormat.borders);
             }
+        }
+        if (isNullOrUndefined(nextBottomCell)) {
+            return bottomBorder;
         }
         else {
             var prevBottomCellTopBorder = undefined;
@@ -17644,11 +17656,13 @@ var Renderer = /** @__PURE__ @class */ (function () {
         // tslint:disable-next-line:max-line-length
         this.renderSingleBorder(border, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellTopMargin, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
         // }
-        border = TableCellWidget.getCellTopBorder(tableCell);
-        // if (!isNullOrUndefined(border )) { //Renders the cell top border.        
-        lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
-        // tslint:disable-next-line:max-line-length
-        this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left, cellWidget.y - cellWidget.margin.top + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y - cellWidget.margin.top + lineWidth / 2, lineWidth);
+        if (tableCell.ownerTable.tableFormat.cellSpacing > 0 || tableCell.ownerRow.rowIndex === 0) {
+            border = TableCellWidget.getCellTopBorder(tableCell);
+            // if (!isNullOrUndefined(border )) { //Renders the cell top border.        
+            lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
+            // tslint:disable-next-line:max-line-length
+            this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left, cellWidget.y - cellWidget.margin.top + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y - cellWidget.margin.top + lineWidth / 2, lineWidth);
+        }
         // }
         var isLastCell = false;
         if (!isBidiTable) {
@@ -17681,23 +17695,16 @@ var Renderer = /** @__PURE__ @class */ (function () {
                 }
             }
         }
-        if (tableCell.ownerTable.tableFormat.cellSpacing > 0 || tableCell.ownerRow.rowIndex === tableCell.ownerTable.childWidgets.length - 1
-            || (tableCell.cellFormat.rowSpan > 1
-                && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan === tableCell.ownerTable.childWidgets.length) ||
-            !nextRowIsInCurrentTableWidget) {
-            // tslint:disable-next-line:max-line-length
-            border = (tableCell.cellFormat.rowSpan > 1 && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan === tableCell.ownerTable.childWidgets.length) ?
-                //true part for vertically merged cells specifically.
-                tableCell.getBorderBasedOnPriority(tableCell.cellFormat.borders.bottom, TableCellWidget.getCellBottomBorder(tableCell))
-                //false part for remaining cases that has been handled inside method. 
-                : TableCellWidget.getCellBottomBorder(tableCell);
-            // if (!isNullOrUndefined(border )) {
-            //Renders the cell bottom border.
-            lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
-            // tslint:disable-next-line:max-line-length
-            this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, lineWidth);
-            // }
-        }
+        // tslint:disable-next-line:max-line-length
+        border = (tableCell.cellFormat.rowSpan > 1 && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan === tableCell.ownerTable.childWidgets.length) ?
+            //true part for vertically merged cells specifically.
+            tableCell.getBorderBasedOnPriority(tableCell.cellFormat.borders.bottom, TableCellWidget.getCellBottomBorder(tableCell))
+            //false part for remaining cases that has been handled inside method. 
+            : TableCellWidget.getCellBottomBorder(tableCell);
+        //Renders the cell bottom border.
+        lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
+        // tslint:disable-next-line:max-line-length
+        this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, lineWidth);
         border = layout.getCellDiagonalUpBorder(tableCell);
         // if (!isNullOrUndefined(border )) {
         //Renders the cell diagonal up border.

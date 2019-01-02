@@ -33,12 +33,12 @@ const OFFSETVALUE: number = 4;
  * Represents the DatePicker component that allows user to select
  * or enter a date value.
  * ```html
- * <input id="datepicker"/>
+ * <input id='datepicker'/>
  * ```
  * ```typescript
  * <script>
  *   let datePickerObject:DatePicker = new DatePicker({ value: new Date() });
- *   datePickerObject.appendTo("#datepicker");
+ *   datePickerObject.appendTo('#datepicker');
  * </script>
  * ```
  */
@@ -62,6 +62,8 @@ export class DatePicker extends Calendar implements IInput {
     private isDateIconClicked: boolean = false;
     private index: number;
     private formElement: HTMLElement;
+    private invalidValueString: string = null;
+    private checkPreviousValue: Date = null;
     protected keyConfigs: { [key: string]: string } = {
         altUpArrow: 'alt+uparrow',
         altDownArrow: 'alt+downarrow',
@@ -258,6 +260,7 @@ export class DatePicker extends Calendar implements IInput {
         }
     }
     private initialize(): void {
+        this.checkInvalidValue(this.value);
         this.createInput();
         this.setAllowEdit();
         this.updateInput();
@@ -357,6 +360,9 @@ export class DatePicker extends Calendar implements IInput {
         if (isNullOrUndefined(this.value) && this.strictMode) {
             Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
         }
+        if (!this.strictMode && isNullOrUndefined(this.value) && this.invalidValueString) {
+            Input.setValue(this.invalidValueString, this.inputElement, this.floatLabelType, this.showClearButton);
+        }
         this.changedArgs = { value: this.value };
         this.errorClass();
     };
@@ -371,6 +377,33 @@ export class DatePicker extends Calendar implements IInput {
             }
         }
     }
+    private checkInvalidValue(value: Date): void {
+        if (!(value instanceof Date) && !isNullOrUndefined(value)) {
+            let valueString: string = <string>value;
+            if (typeof value === 'number') {
+                valueString = (value as string).toString();
+            }
+            let formatOptions: object = null;
+            if (this.calendarMode === 'Gregorian') {
+                formatOptions = { type: 'dateTime', skeleton: 'yMd' };
+            } else {
+                formatOptions = { type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+            }
+            if (!this.checkDateValue(this.globalize.parseDate(valueString, formatOptions))) {
+                let extISOString: RegExp = null;
+                let basicISOString: RegExp = null;
+                // tslint:disable-next-line
+                extISOString = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
+               // tslint:disable-next-line
+                basicISOString = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
+                if ((!extISOString.test(valueString) && !basicISOString.test(valueString))
+                 && !isNaN(parseInt(valueString, 10)) || isNaN(+new Date('' + valueString))) {
+                    this.invalidValueString = valueString;
+                    this.setProperties({ value: null }, true);
+                }
+            }
+        }
+    };
     protected bindEvents(): void {
         if (this.enabled) {
             EventHandler.add(this.inputWrapper.buttons[0], 'mousedown touchstart', this.dateIconHandler, this);
@@ -489,6 +522,10 @@ export class DatePicker extends Calendar implements IInput {
     }
     private inputBlurHandler(e: MouseEvent): void {
         this.strictModeUpdate();
+        if (this.inputElement.value === '' && isNullOrUndefined(this.value)) {
+            this.invalidValueString = null;
+            Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
+        }
         this.updateInput();
         this.changeTrigger(e);
         this.errorClass();
@@ -737,7 +774,7 @@ export class DatePicker extends Calendar implements IInput {
                 this.changedArgs.isInteracted = !isNullOrUndefined(event);
                 this.trigger('change', this.changedArgs);
                 this.previousElementValue = this.inputElement.value;
-                this.previousDate = new Date('' + this.value);
+                this.previousDate = !isNaN(+new Date('' + this.value)) ? new Date('' + this.value) : null;
             }
         }
     }
@@ -1216,8 +1253,10 @@ export class DatePicker extends Calendar implements IInput {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'value':
-                    if (typeof newProp.value === 'string') {
-                        newProp.value = this.checkDateValue(new Date('' + <string>newProp.value));
+                    this.invalidValueString = null;
+                    this.checkInvalidValue(newProp.value);
+                    if (typeof newProp.value === 'string' && !this.invalidValueString) {
+                        newProp.value = this.checkDateValue(new Date('' + newProp.value));
                         this.setProperties({ value: newProp.value }, true);
                     }
                     this.previousElementValue = this.inputElement.value;
@@ -1226,7 +1265,9 @@ export class DatePicker extends Calendar implements IInput {
                         this.currentDate = new Date(new Date().setHours(0, 0, 0, 0));
                     }
                     this.updateInput();
-                    this.changeTrigger(null);
+                    if (+this.previousDate !== +this.value) {
+                        this.changeTrigger(null);
+                    }
                     break;
                 case 'format':
                     this.updateInput();
@@ -1273,6 +1314,7 @@ export class DatePicker extends Calendar implements IInput {
                     this.bindClearEvent();
                     break;
                 case 'strictMode':
+                    this.invalidValueString = null;
                     this.updateInput();
                     break;
                 case 'width':

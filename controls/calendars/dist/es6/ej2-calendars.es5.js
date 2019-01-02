@@ -2694,12 +2694,12 @@ var OFFSETVALUE = 4;
  * Represents the DatePicker component that allows user to select
  * or enter a date value.
  * ```html
- * <input id="datepicker"/>
+ * <input id='datepicker'/>
  * ```
  * ```typescript
  * <script>
  *   let datePickerObject:DatePicker = new DatePicker({ value: new Date() });
- *   datePickerObject.appendTo("#datepicker");
+ *   datePickerObject.appendTo('#datepicker');
  * </script>
  * ```
  */
@@ -2712,6 +2712,8 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         var _this = _super.call(this, options, element) || this;
         _this.previousElementValue = '';
         _this.isDateIconClicked = false;
+        _this.invalidValueString = null;
+        _this.checkPreviousValue = null;
         _this.keyConfigs = {
             altUpArrow: 'alt+uparrow',
             altDownArrow: 'alt+downarrow',
@@ -2761,6 +2763,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DatePicker.prototype.initialize = function () {
+        this.checkInvalidValue(this.value);
         this.createInput();
         this.setAllowEdit();
         this.updateInput();
@@ -2862,6 +2865,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(this.value) && this.strictMode) {
             Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
         }
+        if (!this.strictMode && isNullOrUndefined(this.value) && this.invalidValueString) {
+            Input.setValue(this.invalidValueString, this.inputElement, this.floatLabelType, this.showClearButton);
+        }
         this.changedArgs = { value: this.value };
         this.errorClass();
     };
@@ -2878,6 +2884,35 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    DatePicker.prototype.checkInvalidValue = function (value) {
+        if (!(value instanceof Date) && !isNullOrUndefined(value)) {
+            var valueString = value;
+            if (typeof value === 'number') {
+                valueString = value.toString();
+            }
+            var formatOptions = null;
+            if (this.calendarMode === 'Gregorian') {
+                formatOptions = { type: 'dateTime', skeleton: 'yMd' };
+            }
+            else {
+                formatOptions = { type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+            }
+            if (!this.checkDateValue(this.globalize.parseDate(valueString, formatOptions))) {
+                var extISOString = null;
+                var basicISOString = null;
+                // tslint:disable-next-line
+                extISOString = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
+                // tslint:disable-next-line
+                basicISOString = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
+                if ((!extISOString.test(valueString) && !basicISOString.test(valueString))
+                    && !isNaN(parseInt(valueString, 10)) || isNaN(+new Date('' + valueString))) {
+                    this.invalidValueString = valueString;
+                    this.setProperties({ value: null }, true);
+                }
+            }
+        }
+    };
+    
     DatePicker.prototype.bindEvents = function () {
         if (this.enabled) {
             EventHandler.add(this.inputWrapper.buttons[0], 'mousedown touchstart', this.dateIconHandler, this);
@@ -2998,6 +3033,10 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
     };
     DatePicker.prototype.inputBlurHandler = function (e) {
         this.strictModeUpdate();
+        if (this.inputElement.value === '' && isNullOrUndefined(this.value)) {
+            this.invalidValueString = null;
+            Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
+        }
         this.updateInput();
         this.changeTrigger(e);
         this.errorClass();
@@ -3253,7 +3292,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 this.changedArgs.isInteracted = !isNullOrUndefined(event);
                 this.trigger('change', this.changedArgs);
                 this.previousElementValue = this.inputElement.value;
-                this.previousDate = new Date('' + this.value);
+                this.previousDate = !isNaN(+new Date('' + this.value)) ? new Date('' + this.value) : null;
             }
         }
     };
@@ -3759,7 +3798,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             var prop = _a[_i];
             switch (prop) {
                 case 'value':
-                    if (typeof newProp.value === 'string') {
+                    this.invalidValueString = null;
+                    this.checkInvalidValue(newProp.value);
+                    if (typeof newProp.value === 'string' && !this.invalidValueString) {
                         newProp.value = this.checkDateValue(new Date('' + newProp.value));
                         this.setProperties({ value: newProp.value }, true);
                     }
@@ -3769,7 +3810,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                         this.currentDate = new Date(new Date().setHours(0, 0, 0, 0));
                     }
                     this.updateInput();
-                    this.changeTrigger(null);
+                    if (+this.previousDate !== +this.value) {
+                        this.changeTrigger(null);
+                    }
                     break;
                 case 'format':
                     this.updateInput();
@@ -3817,6 +3860,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                     this.bindClearEvent();
                     break;
                 case 'strictMode':
+                    this.invalidValueString = null;
                     this.updateInput();
                     break;
                 case 'width':
@@ -7631,6 +7675,9 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
             this.inputElement = this.createElement('input');
             this.element.appendChild(this.inputElement);
         }
+        this.openPopupEventArgs = {
+            appendTo: document.body
+        };
     };
     // element creation
     TimePicker.prototype.render = function () {
@@ -7642,6 +7689,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         this.bindEvents();
         this.validateDisable();
         this.setValue(this.getFormattedValue(this.value));
+        this.anchor = this.inputElement;
     };
     TimePicker.prototype.setTimeAllowEdit = function () {
         if (this.allowEdit) {
@@ -7656,7 +7704,8 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     TimePicker.prototype.validateDisable = function () {
         this.setMinMax(this.initMin, this.initMax);
         this.popupCreation();
-        this.popupObj.hide();
+        this.popupObj.destroy();
+        this.popupWrapper = this.popupObj = null;
         if ((!isNaN(+this.value) && this.value !== null)) {
             if (!this.valueIsDisable(this.value)) {
                 //disable value given in value property so reset the date based on current date
@@ -7807,10 +7856,10 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
             this.generateList();
             append([this.listWrapper], this.popupWrapper);
         }
-        document.body.appendChild(this.popupWrapper);
+        this.openPopupEventArgs.appendTo.appendChild(this.popupWrapper);
         this.addSelection();
         this.renderPopup();
-        this.setScrollPosition();
+        detach(this.popupWrapper);
     };
     TimePicker.prototype.getPopupHeight = function () {
         var height = parseInt(POPUPDIMENSION, 10);
@@ -8455,7 +8504,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
             this.inputEvent.destroy();
         }
         EventHandler.remove(this.inputElement, 'mousedown touchstart', this.mouseDownHandler);
-        if (this.showClearButton) {
+        if (this.showClearButton && !isNullOrUndefined(this.inputWrapper.clearButton)) {
             EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.clearHandler);
         }
         var form = closest(this.element, 'form');
@@ -9124,33 +9173,101 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         else {
-            var args = {
+            this.popupCreation();
+            this.openPopupEventArgs = {
                 popup: this.popupObj || null,
                 cancel: false,
                 event: event || null,
-                name: 'open'
+                name: 'open',
+                appendTo: document.body
             };
-            this.trigger('open', args);
-            if (!args.cancel && !this.isPopupOpen() && !this.inputWrapper.buttons[0].classList.contains(DISABLED$3)) {
-                this.inputElement.focus();
-                this.popupCreation();
-                if (!args.cancel) {
-                    var openAnimation = {
-                        name: 'FadeIn',
-                        duration: ANIMATIONDURATION,
-                    };
-                    this.popupObj.refreshPosition(this.inputElement);
-                    if (this.zIndex === 1000) {
-                        this.popupObj.show(new Animation(openAnimation), this.element);
-                    }
-                    else {
-                        this.popupObj.show(new Animation(openAnimation), null);
-                    }
-                    this.setActiveDescendant();
-                    attributes(this.inputElement, { 'aria-expanded': 'true' });
-                    addClass([this.inputWrapper.container], FOCUS);
+            this.trigger('open', this.openPopupEventArgs);
+            if (!this.openPopupEventArgs.cancel && !this.inputWrapper.buttons[0].classList.contains(DISABLED$3)) {
+                this.openPopupEventArgs.appendTo.appendChild(this.popupWrapper);
+                this.popupAlignment(this.openPopupEventArgs);
+                this.setScrollPosition();
+                if (!Browser.isDevice) {
+                    this.inputElement.focus();
                 }
+                var openAnimation = {
+                    name: 'FadeIn',
+                    duration: ANIMATIONDURATION,
+                };
+                this.popupObj.refreshPosition(this.anchor);
+                if (this.zIndex === 1000) {
+                    this.popupObj.show(new Animation(openAnimation), this.element);
+                }
+                else {
+                    this.popupObj.show(new Animation(openAnimation), null);
+                }
+                this.setActiveDescendant();
+                attributes(this.inputElement, { 'aria-expanded': 'true' });
+                addClass([this.inputWrapper.container], FOCUS);
                 EventHandler.add(document, 'mousedown', this.documentClickHandler, this);
+            }
+            else {
+                this.popupObj.destroy();
+                this.popupWrapper = this.listTag = undefined;
+                this.liCollections = this.timeCollections = this.disableItemCollection = [];
+                this.popupObj = null;
+            }
+        }
+    };
+    TimePicker.prototype.formatValues = function (type) {
+        var value;
+        if (typeof type === 'number') {
+            value = formatUnit(type);
+        }
+        else if (typeof type === 'string') {
+            value = (type.match(/px|%|em/)) ? type : isNaN(parseInt(type, 10)) ? type : formatUnit(type);
+        }
+        return value;
+    };
+    TimePicker.prototype.popupAlignment = function (args) {
+        args.popup.position.X = this.formatValues(args.popup.position.X);
+        args.popup.position.Y = this.formatValues(args.popup.position.Y);
+        if (!isNaN(parseFloat(args.popup.position.X)) || !isNaN(parseFloat(args.popup.position.Y))) {
+            this.popupObj.relateTo = this.anchor = document.body;
+            this.popupObj.targetType = 'container';
+        }
+        if (!isNaN(parseFloat(args.popup.position.X))) {
+            this.popupObj.offsetX = parseFloat(args.popup.position.X);
+        }
+        if (!isNaN(parseFloat(args.popup.position.Y))) {
+            this.popupObj.offsetY = parseFloat(args.popup.position.Y);
+        }
+        if (!Browser.isDevice) {
+            switch (args.popup.position.X) {
+                case 'left':
+                    break;
+                case 'right':
+                    args.popup.offsetX = this.containerStyle.width;
+                    break;
+                case 'center':
+                    args.popup.offsetX = -(this.containerStyle.width / 2);
+                    break;
+            }
+            switch (args.popup.position.Y) {
+                case 'top':
+                    break;
+                case 'bottom':
+                    break;
+                case 'center':
+                    args.popup.offsetY = -(this.containerStyle.height / 2);
+                    break;
+            }
+            if (args.popup.position.X === 'center' && args.popup.position.Y === 'center') {
+                this.popupObj.relateTo = this.inputWrapper.container;
+                this.anchor = this.inputElement;
+                this.popupObj.targetType = 'relative';
+            }
+        }
+        else {
+            if (args.popup.position.X === 'center' && args.popup.position.Y === 'center') {
+                this.popupObj.relateTo = this.anchor = document.body;
+                this.popupObj.offsetY = 0;
+                this.popupObj.targetType = 'container';
+                this.popupObj.collision = { X: 'fit', Y: 'fit' };
             }
         }
     };

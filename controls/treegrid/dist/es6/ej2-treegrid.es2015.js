@@ -1050,7 +1050,11 @@ class DataManipulation {
                 this.parent.sortModule = new Sort$1(this.parent);
                 let srtQry = new Query();
                 for (let srt = this.parent.grid.sortSettings.columns.length - 1; srt >= 0; srt--) {
-                    srtQry.sortBy(this.parent.grid.sortSettings.columns[srt].field, this.parent.grid.sortSettings.columns[srt].direction);
+                    let col = this.parent.getColumnByField(this.parent.grid.sortSettings.columns[srt].field);
+                    let compFun = col.sortComparer && !this.isRemote() ?
+                        col.sortComparer.bind(col) :
+                        this.parent.grid.sortSettings.columns[srt].direction;
+                    srtQry.sortBy(this.parent.grid.sortSettings.columns[srt].field, compFun);
                 }
                 let modifiedData = new DataManager(parentData).executeLocal(srtQry);
                 this.parent.notify('createSort', { modifiedData: modifiedData, parent: this.parent, srtQry: srtQry });
@@ -1779,6 +1783,7 @@ let TreeGrid = class TreeGrid extends Component {
         this.grid.printMode = getActualProperties(this.printMode);
         this.grid.locale = getActualProperties(this.locale);
         this.grid.contextMenuItems = getActualProperties(this.getContextMenu());
+        this.grid.columnMenuItems = getActualProperties(this.columnMenuItems);
         this.grid.editSettings = this.getGridEditSettings();
     }
     triggerEvents(args) {
@@ -1827,6 +1832,8 @@ let TreeGrid = class TreeGrid extends Component {
         this.grid.cellDeselected = this.triggerEvents.bind(this);
         this.grid.cellSelecting = this.triggerEvents.bind(this);
         this.grid.cellDeselecting = this.triggerEvents.bind(this);
+        this.grid.columnMenuOpen = this.triggerEvents.bind(this);
+        this.grid.columnMenuClick = this.triggerEvents.bind(this);
         this.grid.cellSelected = this.triggerEvents.bind(this);
         this.grid.headerCellInfo = this.triggerEvents.bind(this);
         this.grid.resizeStart = this.triggerEvents.bind(this);
@@ -2229,6 +2236,9 @@ let TreeGrid = class TreeGrid extends Component {
                     break;
                 case 'contextMenuItems':
                     this.grid.contextMenuItems = this.getContextMenu();
+                    break;
+                case 'columnMenuItems':
+                    this.grid.columnMenuItems = getActualProperties(this.columnMenuItems);
                     break;
                 case 'editSettings':
                     if (this.grid.isEdit && this.grid.editSettings.mode === 'Normal' && newProp[prop].mode &&
@@ -3114,6 +3124,9 @@ __decorate([
     Property()
 ], TreeGrid.prototype, "contextMenuItems", void 0);
 __decorate([
+    Property()
+], TreeGrid.prototype, "columnMenuItems", void 0);
+__decorate([
     Property(null)
 ], TreeGrid.prototype, "rowHeight", void 0);
 __decorate([
@@ -3206,6 +3219,12 @@ __decorate([
 __decorate([
     Event()
 ], TreeGrid.prototype, "cellSelecting", void 0);
+__decorate([
+    Event()
+], TreeGrid.prototype, "columnMenuOpen", void 0);
+__decorate([
+    Event()
+], TreeGrid.prototype, "columnMenuClick", void 0);
 __decorate([
     Event()
 ], TreeGrid.prototype, "cellSelected", void 0);

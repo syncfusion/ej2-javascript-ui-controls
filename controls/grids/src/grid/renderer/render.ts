@@ -362,7 +362,7 @@ export class Render {
                 cols[i].width = !isNullOrUndefined(cols[i].width) ? cols[i].width : 200;
             }
         }
-        this.parent.columns = cols;
+        this.parent.setProperties({'columns': cols}, true);
     }
 
     private instantiateRenderer(): void {

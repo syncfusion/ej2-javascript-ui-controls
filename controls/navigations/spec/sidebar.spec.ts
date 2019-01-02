@@ -141,7 +141,7 @@ describe("Sidebar DOM class Testing ", () => {
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
         sidebar = new Sidebar({ type: 'Auto', mediaQuery: window.matchMedia(('min-width:1400px')) }, ele);
         expect(document.getElementById('sidebar').classList.contains('e-visibility')).toBe(false);
-        expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(true);
+        expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(false);
     });
 
     // animation onproperty change test case
@@ -490,7 +490,7 @@ describe("Sidebar DOM class Testing ", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
         sidebar = new Sidebar({ type: 'Auto', mediaQuery: window.matchMedia('(max-width:400px)') }, ele);
-        expect(ele.classList.contains("e-close")).toEqual(true);
+        expect(ele.classList.contains("e-close")).toEqual(false);
         sidebar.mediaQuery = window.matchMedia('(min-width:700px)');
         sidebar.dataBind();
         expect(ele.classList.contains("e-open")).toEqual(true);
@@ -500,10 +500,8 @@ describe("Sidebar DOM class Testing ", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
         sidebar = new Sidebar({ type: 'Auto', mediaQuery: window.matchMedia('(max-width:400px)') }, ele);
-        expect(ele.classList.contains("e-close")).toEqual(true);
-        sidebar.isOpen = true;
-        sidebar.dataBind();
-        //expect(ele.classList.contains("e-open")).toEqual(true);
+        expect(ele.classList.contains("e-close")).toEqual(false);
+        expect(ele.classList.contains("e-open")).toEqual(true);
         sidebar.isOpen = false;
         sidebar.dataBind();
         expect(ele.classList.contains("e-open")).toEqual(false);

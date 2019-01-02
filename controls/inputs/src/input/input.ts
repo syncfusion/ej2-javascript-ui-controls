@@ -272,6 +272,12 @@ export namespace Input {
         return container;
     }
 
+    function encodePlaceHolder(placeholder: string): string {
+        let spanEle: HTMLElement = document.createElement('span');
+        spanEle.innerHTML = placeholder;
+        return spanEle.textContent;
+    }
+
    /**
     * Sets the value to the input element.
     * ```
@@ -326,6 +332,7 @@ export namespace Input {
     */
     export function setPlaceholder(placeholder: string, element: HTMLInputElement): void {
         let parentElement: HTMLElement;
+        placeholder = encodePlaceHolder(placeholder);
         parentElement = getParentNode(element);
         if (parentElement.classList.contains(CLASSNAMES.FLOATINPUT)) {
          if (!isNullOrUndefined(placeholder) && placeholder !== '') {
