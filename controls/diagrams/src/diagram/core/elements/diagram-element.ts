@@ -41,6 +41,12 @@ export class DiagramElement {
     protected isDirt: boolean = true;
 
     /**
+     * Check whether style need to be apply or not
+     */
+    /** @private */
+    public canApplyStyle: boolean = true;
+
+    /**
      * Sets or gets whether the content of the element to be visible
      */
     public visible: boolean = true;

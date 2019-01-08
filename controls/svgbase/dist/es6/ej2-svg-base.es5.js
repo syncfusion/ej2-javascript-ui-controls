@@ -695,14 +695,18 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             if ((k !== 0) || (headerContent === '')) {
                 this.markerPoint.push((headerContent !== '' ? (this.marginY) : 0) + options.y + height);
             }
-            for (var i = 0, len = textCollection.length; i < len; i++) {
-                lines = textCollection[i].replace(/<b>/g, '<br><b>').replace(/<\/b>/g, '</b><br>').split('<br>');
+            for (var i = 0, len = textCollection.length; i < len; i++) { // string value of unicode for LTR is \u200E
+                lines = textCollection[i].replace(/<b>/g, '<br><b>').replace(/<\/b>/g, '</b><br>').replace(/:/g, '<br>\u200E:<br>')
+                    .split('<br>');
                 subWidth = 0;
                 isColumn = true;
                 height += dy;
                 for (var k_1 = 0, len_1 = lines.length; k_1 < len_1; k_1++) {
                     line = lines[k_1];
-                    if (line.replace(/<b>/g, '').replace(/<\/b>/g, '').trim() !== '') {
+                    if (!/\S/.test(line) && line !== '') {
+                        line = ' '; //to trim multiple white spaces to single white space
+                    }
+                    if ((!isColumn && line === ' ') || (line.replace(/<b>/g, '').replace(/<\/b>/g, '').trim() !== '')) {
                         subWidth += spaceWidth;
                         if (isColumn && !isRow) {
                             tspanOption = { x: (this.marginX * 2) + (markerSize + markerPadding),

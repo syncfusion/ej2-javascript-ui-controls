@@ -335,9 +335,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 node = options.palettes[i].symbols[j] as NodeModel;
                 if (child && child.shape.type === 'UmlActivity') {
                     setUMLActivityDefaults(node, child);
-                    }
                 }
             }
+        }
     }
 
     /**
@@ -549,7 +549,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                         width: isHorizontal ? header.width : swimLaneObj.width,
                         height: isHorizontal ? swimLaneObj.height : header.height,
                         style: headerStyle,
-                        annotations: [{ content: header.content.content}]
+                        annotations: [{ content: header.content.content }]
                     };
                     headerObj.offsetX = headerObj.width / 2;
                     headerObj.offsetY = headerObj.height / 2;
@@ -743,13 +743,13 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 let isLane: boolean = (symbol.shape as SwimLane).isLane ? true : false;
                 if (this.symbolWidth !== undefined) {
                     actualWidth = isLane ? this.laneTable[obj.id].width :
-                    this.symbolWidth - this.symbolMargin.left - this.symbolMargin.right;
+                        this.symbolWidth - this.symbolMargin.left - this.symbolMargin.right;
                 } else {
                     width += obj.style.strokeWidth;
                 }
                 if (this.symbolHeight !== undefined) {
                     actualHeight = isLane ? this.laneTable[obj.id].height :
-                    this.symbolHeight - this.symbolMargin.top - this.symbolMargin.bottom;
+                        this.symbolHeight - this.symbolMargin.top - this.symbolMargin.bottom;
                 } else {
                     height += obj.style.strokeWidth;
                 }
@@ -1215,6 +1215,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 dragTarget: '.e-symbol-draggable',
                 helper: this.helper,
                 dragStart: this.dragStart,
+                preventDefault: false,
                 dragStop: this.dragStop,
                 drag: (args: Object) => {
                     let target: string = 'target';

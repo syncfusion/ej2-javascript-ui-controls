@@ -89,3 +89,27 @@ describe('TreeGrid Row module', () => {
       });
     });
 });
+
+describe('height set through setmodel', () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        height:200,
+        treeColumnIndex: 1,
+        columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress']
+      },
+      done
+    );
+  });
+it('height set through setmodel method', () => {
+  gridObj.height = 600;
+  gridObj.dataBind();
+  expect((gridObj.getContent().firstChild as HTMLElement).style.height).toBe('600px');
+});
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

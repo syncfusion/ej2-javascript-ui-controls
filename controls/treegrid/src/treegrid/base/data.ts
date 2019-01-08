@@ -131,11 +131,12 @@ public isRemote(): boolean {
         if (!isNullOrUndefined(groupData.key)) {
           let childData: Object[] = iterateExtend(groupData.items);
           if (this.isSelfReference) {
-            if (!this.updateChildHierarchy(this.hierarchyData, this.hierarchyData[index], childData)) {
+            if (!this.updateChildHierarchy(this.hierarchyData, this.hierarchyData[index], childData, index)) {
               this.hierarchyData[index][this.parent.childMapping] = childData;
-            } else {
-              this.hierarchyData.splice(index, 1);
-              this.taskIds.splice(index, 1);
+              if (!isNullOrUndefined(this.hierarchyData[index][this.parent.parentIdMapping]) && groupData.key === this.taskIds[index]) {
+                this.hierarchyData.splice(index, 1);
+                this.taskIds.splice(index, 1);
+              }
             }
           } else {
             this.hierarchyData[index][this.parent.childMapping] = childData;
@@ -161,8 +162,9 @@ public isRemote(): boolean {
   //              }
   //   }
   // }
-  private updateChildHierarchy(data: Object[], currentData: ITreeData, childData: Object[]): boolean {
+  private updateChildHierarchy(data: Object[], currentData: ITreeData, childData: Object[], index: number): boolean {
     let parentID: string = currentData[this.parent.parentIdMapping];
+    let returns: boolean = false;
     let id: string = currentData[this.parent.idMapping];
     for (let i: number = 0; i < data.length; i++) {
       if (data[i][this.parent.idMapping] === parentID) {
@@ -170,14 +172,16 @@ public isRemote(): boolean {
         for (let j: number = 0; j < childs.length; j++) {
           if (childs[j][this.parent.idMapping] === id) {
             childs[j][this.parent.childMapping] = childData;
+            this.hierarchyData.splice(index, 1);
+            this.taskIds.splice(index, 1);
             return true;
           }
         }
-      } else if (!isNullOrUndefined(data[this.parent.childMapping])) {
-        this.updateChildHierarchy(data[i][this.parent.childMapping], currentData, childData);
+      } else if (!isNullOrUndefined(data[i][this.parent.childMapping])) {
+        returns = this.updateChildHierarchy(data[i][this.parent.childMapping], currentData, childData, index);
       }
     }
-    return false;
+    return returns;
   }
   /**
    * Function to update the zeroth level parent records in remote binding
@@ -185,7 +189,9 @@ public isRemote(): boolean {
    */
   public updateParentRemoteData(records: ITreeData[]) : ITreeData[] {
     for (let rec: number = 0; rec < records.length; rec++) {
-      if (!records[rec][this.parent.parentIdMapping] && isNullOrUndefined(records[rec].index) &&  records[rec].index !== 0) {
+      if (!records[rec][this.parent.parentIdMapping] &&
+        records[rec][this.parent.hasChildMapping] &&
+        isNullOrUndefined(records[rec].index) &&  records[rec].index !== 0) {
         records[rec].level = 0;
         records[rec].index = Math.ceil(Math.random() * 1000);
         records[rec].hasChildRecords = true;

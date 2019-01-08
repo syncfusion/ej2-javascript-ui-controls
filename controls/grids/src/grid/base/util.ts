@@ -115,7 +115,7 @@ export function extend(copied: Object, first: Object, second?: Object, exclude?:
     let moved: Object = baseExtend(copied, first, second);
 
     Object.keys(moved).forEach((value: string, index: number) => {
-        if (exclude.indexOf(value) !== -1) {
+        if (exclude && exclude.indexOf(value) !== -1) {
             delete moved[value];
         }
     });

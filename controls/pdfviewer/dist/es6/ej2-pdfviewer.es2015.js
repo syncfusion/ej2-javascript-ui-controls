@@ -76,8 +76,8 @@ class LinkAnnotation {
             let rect = linkAnnotation[i];
             aTag = this.setHyperlinkProperties(aTag, rect);
             aTag.setAttribute('href', '');
-            if (linkPage[i] !== undefined) {
-                let destPageHeight = (this.pdfViewerBase.pageSize[pageIndex - 1].height);
+            if (linkPage[i] !== undefined && linkPage[i] > 0) {
+                let destPageHeight = (this.pdfViewerBase.pageSize[pageIndex].height);
                 let destLocation;
                 let scrollValue;
                 if (annotationY.length !== 0) {
@@ -89,12 +89,14 @@ class LinkAnnotation {
                     // tslint:disable-next-line:max-line-length
                     scrollValue = this.pdfViewerBase.pageSize[linkPage[i]].top * this.pdfViewerBase.getZoomFactor();
                 }
-                aTag.name = scrollValue.toString();
-                aTag.onclick = () => {
-                    // tslint:disable-next-line:radix
-                    proxy.pdfViewerBase.viewerContainer.scrollTop = parseInt(aTag.name);
-                    return false;
-                };
+                if (scrollValue !== undefined) {
+                    aTag.name = scrollValue.toString();
+                    aTag.onclick = () => {
+                        // tslint:disable-next-line:radix
+                        proxy.pdfViewerBase.viewerContainer.scrollTop = parseInt(aTag.name);
+                        return false;
+                    };
+                }
             }
             let pageDiv = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
             pageDiv.appendChild(aTag);

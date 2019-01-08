@@ -36,7 +36,7 @@ export class EditSettings extends ChildProperty<EditSettings> {
      * @aspDefaultValueIgnore
      * @isEnumeration true
      */
-    @Property('Row')
+    @Property('Cell')
     public mode: EditMode;
     /**   
      * Defines the row position for new records. The available row positions are:

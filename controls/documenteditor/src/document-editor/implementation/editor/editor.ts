@@ -811,6 +811,8 @@ export class Editor {
             isRemoved = this.removeSelectedContents(selection);
             selection.skipFormatRetrieval = false;
             selection.isSkipLayouting = false;
+        } else if (selection.isEmpty && !this.viewer.isListTextSelected && !isReplace) {
+            this.viewer.isTextInput = true;
         }
         paragraphInfo = this.getParagraphInfo(selection.start);
         if (isRemoved) {
@@ -891,32 +893,24 @@ export class Editor {
             }
             this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + text.length, true);
             this.updateEndPosition();
-            // tslint:disable-next-line:max-line-length
-            if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentHistoryInfo) && (this.editorHistory.currentHistoryInfo.action === 'ListSelect') &&
+            if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentHistoryInfo)
+                && (this.editorHistory.currentHistoryInfo.action === 'ListSelect') &&
                 this.viewer.isListTextSelected) {
                 this.editorHistory.updateHistory();
                 this.editorHistory.updateComplexHistory();
             }
-            // if (!isNullOrUndefined(selection.currentHistoryInfo) && (selection.currentHistoryInfo.action === 'MultiSelection')) {
-            //     this.updateComplexHistory();
-            // } else {           
             this.reLayout(selection);
-            // }
-        } else {
-            // selection.selectContent(selection.start, true);
+            this.viewer.isTextInput = false;
         }
-        // insertFormat.destroy();
         if (!isReplace && isRemoved && (text === ' ' || text === '\t' || text === '\v')) {
-            let hyperlinkField: FieldElementBox = selection.getHyperlinkField();
-            let isSelectionOnHyperlink: boolean = !isNullOrUndefined(hyperlinkField);
             let isList: boolean = false;
             if (!(text === '\v')) {
                 isList = this.checkAndConvertList(selection, text === '\t');
             }
-            if (isSelectionOnHyperlink) {
-                return;
-            }
             if (!isList) {
+                if (!isNullOrUndefined(selection.getHyperlinkField())) {
+                    return;
+                }
                 //Checks if the previous text is URL, then it is auto formatted to hyperlink.
                 this.checkAndConvertToHyperlink(selection, false);
             }
@@ -3955,7 +3949,7 @@ export class Editor {
     }
     private getCompleteStyles(): string {
         let completeStylesString: string = '{"styles":[';
-        for (let name of this.viewer.preDefinedStyles.getItem()) {
+        for (let name of this.viewer.preDefinedStyles.keys) {
             completeStylesString += (this.viewer.preDefinedStyles.get(name) + ',');
         }
         return completeStylesString.slice(0, -1) + ']}';
@@ -6436,6 +6430,8 @@ export class Editor {
                             let isCellCleared: boolean = this.deleteCell(containerCell, selection, editAction, true);
                             if (!isCellCleared && editAction !== 2 && this.editorHistory) {
                                 this.editorHistory.currentBaseHistoryInfo = undefined;
+                            } else if (isCellCleared) {
+                                this.viewer.layout.reLayoutTable(containerCell.ownerRow.ownerTable);
                             }
                         }
                     } else {
@@ -8074,7 +8070,7 @@ export class Editor {
      */
     public updateListItemsTillEnd(blockAdv: BlockWidget, updateNextBlockList: boolean): void {
         let block: BlockWidget = updateNextBlockList ? this.viewer.selection.getNextRenderedBlock(blockAdv) : blockAdv;
-        while (!isNullOrUndefined(block)) {
+        while (!isNullOrUndefined(block) && !this.viewer.isTextInput) {
             //Updates the list value of the rendered paragraph. 
             this.updateRenderedListItems(block);
             block = block.getSplitWidgets().pop().nextRenderedWidget as BlockWidget;

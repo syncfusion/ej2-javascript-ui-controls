@@ -528,10 +528,11 @@ describe('Change Event testing', () => {
         let i: number = 0;
         let mouseEvent: MouseEvent = document.createEvent('MouseEvents');
         let mouseEvent2: MouseEvent = document.createEvent('MouseEvents');
-        let value:any, prevValue: any;
+        let value:any, prevValue: any, isInteraction: any;
         function clickFn(args: ChangeEventArgs): void {
             i++;
             value= args.value;
+            isInteraction =args.isInteraction;
             prevValue = args.previousValue;
         }
         beforeEach((): void => {
@@ -575,6 +576,19 @@ describe('Change Event testing', () => {
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '10';
             numeric.focusOut();
              expect(i).toEqual(4);
+        });
+        it('change the value and check the isInteraction value', () => {
+            numeric = new NumericTextBox({
+                value: 56,
+                change: clickFn
+            });
+            numeric.appendTo('#tsNumeric');
+            expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('56.00');
+            numeric.value = 0.6;
+            numeric.dataBind();
+            expect(value).toEqual(0.6);
+            expect(prevValue).toEqual(56.00);
+            expect(isInteraction).toEqual(false); 
         });
         });
     describe('Numeric textbox with element attribute', () => {

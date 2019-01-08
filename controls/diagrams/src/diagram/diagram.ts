@@ -33,7 +33,7 @@ import { NodeModel, TextModel, BpmnShapeModel, BpmnAnnotationModel } from './obj
 import { UmlActivityShapeModel, SwimLaneModel, LaneModel } from './objects/node-model';
 import { Size } from './primitives/size';
 import { Point } from './primitives/point';
-import { Keys, KeyModifiers, DiagramTools, AlignmentMode, AnnotationConstraints, NodeConstraints } from './enum/enum';
+import { Keys, KeyModifiers, DiagramTools, AlignmentMode, AnnotationConstraints, NodeConstraints, RendererAction } from './enum/enum';
 import { DiagramConstraints, BridgeDirection, AlignmentOptions, SelectorConstraints, PortVisibility, DiagramEvent } from './enum/enum';
 import { DistributeOptions, SizingOptions, RenderingMode, DiagramAction, ThumbsConstraints, NudgeDirection } from './enum/enum';
 import { RealAction } from './enum/enum';
@@ -1925,6 +1925,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         } else {
             this.drag(obj, tx, ty);
         }
+        this.refreshCanvasLayers();
     }
 
     /**
@@ -1972,13 +1973,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (!(this.diagramActions & DiagramAction.ToolAction)) {
             this.updateSelector();
         }
-        if (this.mode === 'Canvas') {
-            for (let temp of this.views) {
-                let view: View;
-                view = this.views[temp];
-                this.refreshCanvasDiagramLayer(view);
-            }
-        }
     }
 
     /**
@@ -2002,6 +1996,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
             this.updateSelector();
+            this.refreshCanvasLayers();
         } else {
             this.commandHandler.scale(
                 obj as NodeModel | ConnectorModel, sx, sy, pivot, ((obj as NodeModel).children ? obj as IElement : undefined));
@@ -2915,16 +2910,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                     attributes = {
                         'id': this.element.id + '_editTextBoxDiv', 'style': 'position: absolute' + ';left:' + x + 'px;top:' +
-                        y + 'px;width:' + ((bounds.width + 1) * scale) + 'px;height:' + (bounds.height * scale) +
-                        'px; containerName:' + node.id + ';'
+                            y + 'px;width:' + ((bounds.width + 1) * scale) + 'px;height:' + (bounds.height * scale) +
+                            'px; containerName:' + node.id + ';'
                     };
                     setAttributeHtml(textEditing, attributes);
                     attributes = {
                         'id': this.element.id + '_editBox', 'style': 'width:' + ((bounds.width + 1) * scale) +
-                        'px;height:' + (bounds.height * scale) + 'px;resize: none;outline: none;overflow: hidden;' +
-                        ';font-family:' + style.fontFamily +
-                        ';font-size:' + (style.fontSize * scale) + 'px;text-align:' +
-                        ((textWrapper.style as TextStyleModel).textAlign.toLocaleLowerCase()) + ';', 'class': 'e-diagram-text-edit'
+                            'px;height:' + (bounds.height * scale) + 'px;resize: none;outline: none;overflow: hidden;' +
+                            ';font-family:' + style.fontFamily +
+                            ';font-size:' + (style.fontSize * scale) + 'px;text-align:' +
+                            ((textWrapper.style as TextStyleModel).textAlign.toLocaleLowerCase()) + ';', 'class': 'e-diagram-text-edit'
                     };
                     setAttributeHtml(textArea, attributes);
                     textArea.style.fontWeight = (style.bold) ? 'bold' : '';
@@ -3384,7 +3379,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.intOffPageBackground();
         setAttributeHtml(this.element, {
             style: 'width:' + this.getSizeValue(this.width) + '; height:'
-            + this.getSizeValue(this.height) + ';position:relative;overflow:hidden;'
+                + this.getSizeValue(this.height) + ';position:relative;overflow:hidden;'
         });
     };
 
@@ -3501,7 +3496,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.htmlLayer = createHtmlElement('div', {
             'id': this.element.id + '_htmlLayer',
             'style': 'width:' + bounds.width + 'px; height:' + bounds.height + 'px;position:absolute;top:0px;' +
-            'left:0px;overflow:hidden;pointer-events:none;',
+                'left:0px;overflow:hidden;pointer-events:none;',
             'class': 'e-html-layer'
         });
         let htmlLayerDiv: HTMLElement = createHtmlElement('div', {
@@ -4311,8 +4306,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.diagramRenderer.updateNode(
                         obj.wrapper as DiagramElement, diagramElementsLayer,
                         htmlLayer, undefined);
-                } else {
-                    this.refreshCanvasDiagramLayer(view);
                 }
 
             }
@@ -5039,10 +5032,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             (selectorModel.nodes[0].constraints & NodeConstraints.HideThumbs) ? true : false);
                     }
                 } else {
+                    if (this.diagramActions & DiagramAction.Interactions) {
+                        this.diagramRenderer.rendererActions = this.diagramRenderer.rendererActions | RendererAction.PreventRenderSelector;
+                    }
                     this.diagramRenderer.renderResizeHandle(
                         selectorModel.wrapper, selectorElement, selectorModel.thumbsConstraints, this.scroller.currentZoom,
                         selectorModel.constraints, this.scroller.transform, canHideResizers, canMove(selectorModel),
                     );
+                    this.diagramRenderer.rendererActions = this.diagramRenderer.rendererActions & ~RendererAction.PreventRenderSelector;
                 }
             }
         }
@@ -5635,8 +5632,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (actualObject.sourceID && this.nameTable[actualObject.sourceID]) {
                     source = this.nameTable[actualObject.sourceID].wrapper;
                 }
-                actualObject.sourcePortWrapper = source ?
-                    this.getWrapper(source, newProp.sourcePortID) : undefined;
+                actualObject.sourcePortWrapper = source ? this.getWrapper(source, newProp.sourcePortID) : undefined;
             }
             if (newProp.targetPortID !== undefined && newProp.targetPortID !== oldProp.targetPortID) {
                 let target: Canvas;
@@ -5666,7 +5662,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         annotationWrapper = this.getWrapper(actualObject.wrapper, annotation.id) as TextElement;
                         actualObject.updateAnnotation(
                             annotation as PathAnnotation,
-                            actualObject.intermediatePoints, actualObject.wrapper.bounds, annotationWrapper);
+                            actualObject.intermediatePoints, actualObject.wrapper.bounds, annotationWrapper,
+                            (this.diagramActions & DiagramAction.Interactions));
                     }
                 }
                 actualObject.wrapper.measure(new Size(actualObject.wrapper.width, actualObject.wrapper.height));

@@ -17,7 +17,6 @@ var Dictionary = /** @__PURE__ @class */ (function () {
     function Dictionary() {
         this.keysInternal = [];
         this.valuesInternal = [];
-        this.item = [];
     }
     Object.defineProperty(Dictionary.prototype, "length", {
         /**
@@ -34,21 +33,11 @@ var Dictionary = /** @__PURE__ @class */ (function () {
          * @private
          */
         get: function () {
-            return this.getItem();
+            return this.keysInternal;
         },
         enumerable: true,
         configurable: true
     });
-    /**
-     * @private
-     */
-    Dictionary.prototype.getItem = function () {
-        this.item = [];
-        for (var i = 0; i < this.keysInternal.length; i++) {
-            this.item.push(this.keysInternal[i]);
-        }
-        return this.item;
-    };
     /**
      * @private
      */
@@ -849,7 +838,7 @@ var WUniqueFormat = /** @__PURE__ @class */ (function () {
      */
     WUniqueFormat.prototype.cloneItems = function (format, property, value, uniqueFormatType) {
         var propertyType = WUniqueFormat.getPropertyType(uniqueFormatType, property);
-        var keys = format.propertiesHash.getItem();
+        var keys = format.propertiesHash.keys;
         for (var i = 0; i < keys.length; i++) {
             if (keys[i] === propertyType) {
                 this.propertiesHash.add(propertyType, value);
@@ -8327,12 +8316,10 @@ var TableWidget = /** @__PURE__ @class */ (function (_super) {
         //     this.tableFormat.destroy();
         // }
         this.tableFormat = undefined;
-        // if (this.spannedRowCollection) {
-        //     this.spannedRowCollection.destroy();
-        // }
+        if (this.spannedRowCollection) {
+            this.spannedRowCollection.destroy();
+        }
         this.spannedRowCollection = undefined;
-        this.tableGrids = [];
-        this.tableGrids = undefined;
         // if (this.tableHolder) {
         //     this.tableHolder.destroy();
         // }
@@ -8356,10 +8343,6 @@ var TableRowWidget = /** @__PURE__ @class */ (function (_super) {
     __extends$1(TableRowWidget, _super);
     function TableRowWidget() {
         var _this = _super.call(this) || this;
-        /**
-         * @private
-         */
-        _this.spannedRowCollection = [];
         _this.topBorderWidth = 0;
         _this.bottomBorderWidth = 0;
         _this.rowFormat = new WRowFormat(_this);
@@ -8689,8 +8672,6 @@ var TableRowWidget = /** @__PURE__ @class */ (function (_super) {
         // }
         this.rowFormat = undefined;
         this.rowFormat = undefined;
-        this.spannedRowCollection = [];
-        this.spannedRowCollection = undefined;
         this.topBorderWidth = undefined;
         this.bottomBorderWidth = undefined;
         _super.prototype.destroy.call(this);
@@ -9031,7 +9012,7 @@ var TableCellWidget = /** @__PURE__ @class */ (function (_super) {
         var ownerTable = this.ownerTable;
         //Added null condition check for asynchronous loading.
         if (this.cellFormat !== null && this.cellFormat.borders !== null) {
-            borderWidth = TableCellWidget.getCellLeftBorder(this).getLineWidth();
+            borderWidth = TableCellWidget.getCellRightBorder(this).getLineWidth();
         }
         return borderWidth;
     };
@@ -16056,24 +16037,30 @@ var Layout = /** @__PURE__ @class */ (function () {
         var value = 0;
         for (var i = 0; i < row.childWidgets.length; i++) {
             if (row.childWidgets.length > 0) {
-                var cellFormat = row.childWidgets[i].cellFormat;
+                var cell = row.childWidgets[i];
+                var cellFormat = cell.cellFormat;
                 if (cellFormat.containsMargins()) {
-                    if (topOrBottom === 0 && !isNullOrUndefined(cellFormat.topMargin) &&
-                        HelperMethods.convertPointToPixel(cellFormat.topMargin) > value) {
-                        value = HelperMethods.convertPointToPixel(cellFormat.topMargin);
+                    var leftMargin = HelperMethods.convertPointToPixel(cellFormat.topMargin);
+                    var bottomMargin = void 0;
+                    if (topOrBottom === 0 && !isNullOrUndefined(cellFormat.topMargin) && leftMargin > value) {
+                        value = leftMargin;
                     }
                     else if (topOrBottom === 1 && !isNullOrUndefined(cellFormat.bottomMargin) &&
-                        HelperMethods.convertPointToPixel(cellFormat.bottomMargin) > value) {
-                        value = HelperMethods.convertPointToPixel(cellFormat.bottomMargin);
+                        // tslint:disable-next-line:no-conditional-assignment 
+                        (bottomMargin = HelperMethods.convertPointToPixel(cellFormat.bottomMargin)) > value) {
+                        value = bottomMargin;
                     }
                 }
                 else {
-                    var tableFormat = row.childWidgets[i].ownerTable.tableFormat;
-                    if (topOrBottom === 0 && HelperMethods.convertPointToPixel(tableFormat.topMargin) > value) {
-                        value = HelperMethods.convertPointToPixel(tableFormat.topMargin);
+                    var tableFormat = cell.ownerTable.tableFormat;
+                    var topMargin = HelperMethods.convertPointToPixel(tableFormat.topMargin);
+                    var bottomMargin = void 0;
+                    if (topOrBottom === 0 && topMargin > value) {
+                        value = topMargin;
+                        // tslint:disable-next-line:no-conditional-assignment 
                     }
-                    else if (topOrBottom === 1 && HelperMethods.convertPointToPixel(tableFormat.bottomMargin) > value) {
-                        value = HelperMethods.convertPointToPixel(tableFormat.bottomMargin);
+                    else if (topOrBottom === 1 && (bottomMargin = HelperMethods.convertPointToPixel(tableFormat.bottomMargin)) > value) {
+                        value = bottomMargin;
                     }
                 }
             }
@@ -17656,13 +17643,11 @@ var Renderer = /** @__PURE__ @class */ (function () {
         // tslint:disable-next-line:max-line-length
         this.renderSingleBorder(border, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellTopMargin, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
         // }
-        if (tableCell.ownerTable.tableFormat.cellSpacing > 0 || tableCell.ownerRow.rowIndex === 0) {
-            border = TableCellWidget.getCellTopBorder(tableCell);
-            // if (!isNullOrUndefined(border )) { //Renders the cell top border.        
-            lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
-            // tslint:disable-next-line:max-line-length
-            this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left, cellWidget.y - cellWidget.margin.top + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y - cellWidget.margin.top + lineWidth / 2, lineWidth);
-        }
+        border = TableCellWidget.getCellTopBorder(tableCell);
+        // if (!isNullOrUndefined(border )) { //Renders the cell top border.        
+        lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
+        // tslint:disable-next-line:max-line-length
+        this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left, cellWidget.y - cellWidget.margin.top + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y - cellWidget.margin.top + lineWidth / 2, lineWidth);
         // }
         var isLastCell = false;
         if (!isBidiTable) {
@@ -17695,16 +17680,23 @@ var Renderer = /** @__PURE__ @class */ (function () {
                 }
             }
         }
-        // tslint:disable-next-line:max-line-length
-        border = (tableCell.cellFormat.rowSpan > 1 && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan === tableCell.ownerTable.childWidgets.length) ?
-            //true part for vertically merged cells specifically.
-            tableCell.getBorderBasedOnPriority(tableCell.cellFormat.borders.bottom, TableCellWidget.getCellBottomBorder(tableCell))
-            //false part for remaining cases that has been handled inside method. 
-            : TableCellWidget.getCellBottomBorder(tableCell);
-        //Renders the cell bottom border.
-        lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
-        // tslint:disable-next-line:max-line-length
-        this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, lineWidth);
+        if (tableCell.ownerTable.tableFormat.cellSpacing > 0 || tableCell.ownerRow.rowIndex === tableCell.ownerTable.childWidgets.length - 1
+            || (tableCell.cellFormat.rowSpan > 1
+                && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan === tableCell.ownerTable.childWidgets.length) ||
+            !nextRowIsInCurrentTableWidget) {
+            // tslint:disable-next-line:max-line-length
+            border = (tableCell.cellFormat.rowSpan > 1 && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan === tableCell.ownerTable.childWidgets.length) ?
+                //true part for vertically merged cells specifically.
+                tableCell.getBorderBasedOnPriority(tableCell.cellFormat.borders.bottom, TableCellWidget.getCellBottomBorder(tableCell))
+                //false part for remaining cases that has been handled inside method. 
+                : TableCellWidget.getCellBottomBorder(tableCell);
+            // if (!isNullOrUndefined(border )) {
+            //Renders the cell bottom border.
+            lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
+            // tslint:disable-next-line:max-line-length
+            this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, lineWidth);
+            // }
+        }
         border = layout.getCellDiagonalUpBorder(tableCell);
         // if (!isNullOrUndefined(border )) {
         //Renders the cell diagonal up border.
@@ -17801,6 +17793,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
  */
 var TextHelper = /** @__PURE__ @class */ (function () {
     function TextHelper(viewer) {
+        this.paragraphMarkInfo = {};
         this.owner = viewer;
         if (!isNullOrUndefined(viewer)) {
             this.context = viewer.containerContext;
@@ -17824,18 +17817,24 @@ var TextHelper = /** @__PURE__ @class */ (function () {
      * @private
      */
     TextHelper.prototype.getParagraphMarkWidth = function (characterFormat) {
-        return this.getWidth(this.paragraphMark, characterFormat);
+        return this.getParagraphMarkSize(characterFormat).Width;
     };
     /**
      * @private
      */
     TextHelper.prototype.getParagraphMarkSize = function (characterFormat) {
+        var format = this.getFormatText(characterFormat);
+        if (this.paragraphMarkInfo[format]) {
+            return this.paragraphMarkInfo[format];
+        }
         // Gets the text element's width;
         var width = this.getWidth(this.paragraphMark, characterFormat);
+        // Calculate the text element's height and baseline offset.
         var textHelper = this.getHeight(characterFormat);
-        return {
+        var textSizeInfo = {
             'Width': width, 'Height': textHelper.Height, 'BaselineOffset': textHelper.BaselineOffset
         };
+        return this.paragraphMarkInfo[format] = textSizeInfo;
     };
     /**
      * @private
@@ -17891,11 +17890,8 @@ var TextHelper = /** @__PURE__ @class */ (function () {
         var textHeight = 0;
         var baselineOffset = 0;
         var spanElement = document.createElement('span');
-        spanElement.id = 'tempSpan';
-        spanElement.style.whiteSpace = 'nowrap';
         spanElement.innerText = 'm';
         this.applyStyle(spanElement, characterFormat);
-        var body = document.getElementsByTagName('body');
         var parentDiv = document.createElement('div');
         parentDiv.style.display = 'inline-block';
         var tempDiv = document.createElement('div');
@@ -17943,10 +17939,11 @@ var TextHelper = /** @__PURE__ @class */ (function () {
         if (textToRender.length === 0) {
             return '';
         }
-        if ((!this.isRTLText(textToRender) && (bdo === 'RTL')) || (this.isRTLText(textToRender) && (bdo === 'LTR'))) {
+        var isRtlText = isBidi;
+        if ((!isRtlText && (bdo === 'RTL')) || (isRtlText && (bdo === 'LTR'))) {
             textToRender = HelperMethods.ReverseString(textToRender);
         }
-        else if (isRender && this.isRTLText(textToRender) && HelperMethods.endsWith(textToRender)) {
+        else if (isRender && isRtlText && HelperMethods.endsWith(textToRender)) {
             var spaceCount = textToRender.length - HelperMethods.trimEnd(textToRender).length;
             textToRender = HelperMethods.addSpace(spaceCount) + HelperMethods.trimEnd(textToRender);
         }
@@ -17957,20 +17954,22 @@ var TextHelper = /** @__PURE__ @class */ (function () {
      */
     TextHelper.prototype.applyStyle = function (spanElement, characterFormat) {
         if (!isNullOrUndefined(spanElement) && !isNullOrUndefined(characterFormat)) {
+            var style = 'white-space:nowrap;';
             if (characterFormat.fontFamily !== '') {
-                spanElement.style.fontFamily = characterFormat.fontFamily;
+                style += 'font-family:' + characterFormat.fontFamily + ';';
             }
             var fontSize = characterFormat.fontSize;
             if (fontSize <= 0.5) {
                 fontSize = 0.5;
             }
-            spanElement.style.fontSize = fontSize.toString() + 'pt';
+            style += 'font-size:' + fontSize.toString() + 'pt;';
             if (characterFormat.bold) {
-                spanElement.style.fontWeight = 'bold';
+                style += 'font-weight:bold;';
             }
             if (characterFormat.italic) {
-                spanElement.style.fontStyle = 'italic';
+                style += 'font-style:italic;';
             }
+            spanElement.setAttribute('style', style);
         }
     };
     /**
@@ -18020,7 +18019,7 @@ var TextHelper = /** @__PURE__ @class */ (function () {
      */
     TextHelper.prototype.isRTLText = function (text) {
         var isRTL = false;
-        if (!isNullOrUndefined(text) && text !== '') {
+        if (!isNullOrUndefined(text)) {
             for (var i = 0; i < text.length; i++) {
                 var temp = text[i];
                 if ((temp >= '\u0590' && temp <= '\u05ff') //Hebrew characters
@@ -18088,6 +18087,8 @@ var TextHelper = /** @__PURE__ @class */ (function () {
     TextHelper.prototype.destroy = function () {
         this.owner = undefined;
         this.context = undefined;
+        this.paragraphMarkInfo = {};
+        this.paragraphMarkInfo = undefined;
     };
     return TextHelper;
 }());
@@ -18344,6 +18345,10 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.moveCaretPosition = 0;
+        /**
+         * @private
+         */
+        this.isTextInput = false;
         /**
          * @private
          */
@@ -38367,6 +38372,9 @@ var Editor = /** @__PURE__ @class */ (function () {
             selection.skipFormatRetrieval = false;
             selection.isSkipLayouting = false;
         }
+        else if (selection.isEmpty && !this.viewer.isListTextSelected && !isReplace) {
+            this.viewer.isTextInput = true;
+        }
         paragraphInfo = this.getParagraphInfo(selection.start);
         if (isRemoved) {
             selection.owner.isShiftingEnabled = true;
@@ -38451,33 +38459,24 @@ var Editor = /** @__PURE__ @class */ (function () {
             }
             this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + text.length, true);
             this.updateEndPosition();
-            // tslint:disable-next-line:max-line-length
-            if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentHistoryInfo) && (this.editorHistory.currentHistoryInfo.action === 'ListSelect') &&
+            if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentHistoryInfo)
+                && (this.editorHistory.currentHistoryInfo.action === 'ListSelect') &&
                 this.viewer.isListTextSelected) {
                 this.editorHistory.updateHistory();
                 this.editorHistory.updateComplexHistory();
             }
-            // if (!isNullOrUndefined(selection.currentHistoryInfo) && (selection.currentHistoryInfo.action === 'MultiSelection')) {
-            //     this.updateComplexHistory();
-            // } else {           
             this.reLayout(selection);
-            // }
+            this.viewer.isTextInput = false;
         }
-        else {
-            // selection.selectContent(selection.start, true);
-        }
-        // insertFormat.destroy();
         if (!isReplace && isRemoved && (text === ' ' || text === '\t' || text === '\v')) {
-            var hyperlinkField = selection.getHyperlinkField();
-            var isSelectionOnHyperlink = !isNullOrUndefined(hyperlinkField);
             var isList = false;
             if (!(text === '\v')) {
                 isList = this.checkAndConvertList(selection, text === '\t');
             }
-            if (isSelectionOnHyperlink) {
-                return;
-            }
             if (!isList) {
+                if (!isNullOrUndefined(selection.getHyperlinkField())) {
+                    return;
+                }
                 //Checks if the previous text is URL, then it is auto formatted to hyperlink.
                 this.checkAndConvertToHyperlink(selection, false);
             }
@@ -41585,7 +41584,7 @@ var Editor = /** @__PURE__ @class */ (function () {
     };
     Editor.prototype.getCompleteStyles = function () {
         var completeStylesString = '{"styles":[';
-        for (var _i = 0, _a = this.viewer.preDefinedStyles.getItem(); _i < _a.length; _i++) {
+        for (var _i = 0, _a = this.viewer.preDefinedStyles.keys; _i < _a.length; _i++) {
             var name_1 = _a[_i];
             completeStylesString += (this.viewer.preDefinedStyles.get(name_1) + ',');
         }
@@ -44163,6 +44162,9 @@ var Editor = /** @__PURE__ @class */ (function () {
                             if (!isCellCleared && editAction !== 2 && this.editorHistory) {
                                 this.editorHistory.currentBaseHistoryInfo = undefined;
                             }
+                            else if (isCellCleared) {
+                                this.viewer.layout.reLayoutTable(containerCell.ownerRow.ownerTable);
+                            }
                         }
                     }
                     else {
@@ -45873,7 +45875,7 @@ var Editor = /** @__PURE__ @class */ (function () {
      */
     Editor.prototype.updateListItemsTillEnd = function (blockAdv, updateNextBlockList) {
         var block = updateNextBlockList ? this.viewer.selection.getNextRenderedBlock(blockAdv) : blockAdv;
-        while (!isNullOrUndefined(block)) {
+        while (!isNullOrUndefined(block) && !this.viewer.isTextInput) {
             //Updates the list value of the rendered paragraph. 
             this.updateRenderedListItems(block);
             block = block.getSplitWidgets().pop().nextRenderedWidget;

@@ -32,7 +32,7 @@ describe('Map layer testing', () => {
                 layers: [{
                     tooltipSettings: {
                         visible: true,
-                        format: 'State: ${State} <br> Vote Counts ${Electors} <br> Winner: ${Candidate}',
+                        format: '${State} <br> Vote Counts ${Electors} <br> Winner: ${Candidate}',
                         valuePath: 'Electors',
                         border: { color: '', width: 0 }
                     },
@@ -44,7 +44,7 @@ describe('Map layer testing', () => {
                             tooltipSettings: {
                                 visible: true,
                                 valuePath: 'Name',
-                                format: 'State: ${Name} <br> Lat ${latitude} <br> Marker',
+                                format: '${Name} <br> Lat ${latitude} <br> Marker',
                             },
                             height: 30,
                             width: 30,
@@ -139,11 +139,11 @@ describe('Map layer testing', () => {
                 let event: PointerEvent = <PointerEvent>trigger.onPointerMove(spec, 140, 230, 1, 'touch');
                 (tooltip.mapsTooltipModule['renderTooltip'])(event);
                 tooltipElement = document.getElementById('mapst_mapsTooltip_text');
-                expect(tooltipElement.textContent).toBe('State: Alabama  Vote Counts €9.00  Bubble');
+                expect(tooltipElement.textContent).toBe('Alabama  Vote Counts €9.00  Bubble');
                 done();
             };
             tooltip.format = null;
-            tooltip.layers[0].bubbleSettings[0].tooltipSettings.format = 'State: ${State} <br> Vote Counts ${Electors} <br> Bubble';
+            tooltip.layers[0].bubbleSettings[0].tooltipSettings.format = '${State} <br> Vote Counts ${Electors} <br> Bubble';
             tooltip.refresh();
         });
         it('tooltip checking format for bubble', (done: Function) => {
@@ -151,11 +151,11 @@ describe('Map layer testing', () => {
                 spec = getElement(bubbleId + 0);
                 trigger.mousemoveEvent(spec, 0, 0, 345, 310);
                 tooltipElement = document.getElementById('mapst_mapsTooltip_text');
-                expect(tooltipElement.textContent).toBe('State: Alabama  Vote Counts €9.00  Bubble');
+                expect(tooltipElement.textContent).toBe('Alabama  Vote Counts €9.00  Bubble');
                 done();
             };
             tooltip.format = null;
-            tooltip.layers[0].bubbleSettings[0].tooltipSettings.format = 'State: ${State} <br> Vote Counts ${Electors} <br> Bubble';
+            tooltip.layers[0].bubbleSettings[0].tooltipSettings.format = '${State} <br> Vote Counts ${Electors} <br> Bubble';
             tooltip.refresh();
         });
         it('tooltip checking format for marker', () => {
@@ -166,7 +166,7 @@ describe('Map layer testing', () => {
             trigger.mousemoveEvent(spec, 0, 0, 190, 230);
             trigger.mousemoveEvent(spec, 0, 0, 190, 230);
             tooltipElement = document.getElementById('mapst_mapsTooltip_text');
-            expect(tooltipElement.textContent).toBe('State: Colorado  Lat 39.5501  Marker');
+            expect(tooltipElement.textContent).toBe('Colorado  Lat 39.5501  Marker');
         });
         it('tooltip checking format for Shape', () => {
             spec = getElement(getShape(23));
@@ -181,7 +181,7 @@ describe('Map layer testing', () => {
             trigger.mousemoveEvent(spec, 120, 360, 70, 270);
             trigger.mousemoveEvent(spec, 120, 360, 70, 270);
             tooltipElement = document.getElementById('mapst_mapsTooltip_text');
-            expect(tooltipElement.textContent).toBe('State: California  Lat 36.7783  Marker');
+            expect(tooltipElement.textContent).toBe('California  Lat 36.7783  Marker');
         });
         it('tooltip checking template for marker', (done: Function) => {
             tooltip.loaded = (args: ILoadedEventArgs) => {

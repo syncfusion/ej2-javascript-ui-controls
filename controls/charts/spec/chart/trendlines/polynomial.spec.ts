@@ -348,7 +348,7 @@ describe('Chart', () => {
 
                 let tooltip: HTMLElement = document.getElementById('container_tooltip');
                 expect(tooltip != null).toBe(true);
-                expect(tooltip.childNodes[0].childNodes[0].childNodes[1].textContent).toEqual('Polynomial1978 : 7.019');
+                expect(tooltip.childNodes[0].childNodes[0].childNodes[1].textContent.replace(/\u200E/g, '')).toEqual('Polynomial1978 : 7.019');
                 expect(parseFloat(tooltip.style.top) < (series.points[1].regions[0].y + parseFloat(chartArea.getAttribute('y'))));
                 done();
                 done();

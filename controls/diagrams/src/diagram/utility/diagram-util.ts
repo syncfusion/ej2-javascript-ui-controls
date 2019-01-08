@@ -617,6 +617,7 @@ export function updateStyle(changedObject: TextStyleModel, target: DiagramElemen
     //since text style model is the super set of shape style model, we used text style model
     let style: TextStyleModel = target.style as TextStyleModel;
     let textElement: TextElement = target as TextElement;
+    target.canApplyStyle = true;
     for (let key of Object.keys(changedObject)) {
         switch (key) {
             case 'fill':

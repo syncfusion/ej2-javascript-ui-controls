@@ -61,6 +61,7 @@ export class BaseQuickToolbar {
         let popupId: string = getUniqueID(args.popupType + '_Quick_Popup');
         this.stringItems = args.toolbarItems;
         this.element = this.parent.createElement('div', { id: popupId, className: className + ' ' + classes.CLS_RTE_ELEMENTS });
+        this.element.setAttribute('aria-owns', this.parent.getID());
         this.appendPopupContent();
         this.createToolbar(args.toolbarItems, args.mode);
         this.popupRenderer.renderPopup(this);

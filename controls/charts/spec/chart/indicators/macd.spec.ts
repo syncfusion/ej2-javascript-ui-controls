@@ -458,7 +458,7 @@ describe('Chart', () => {
                 let text2: Element = group.childNodes[2] as HTMLElement;
                 expect(path.getAttribute('fill') == 'rgba(0, 8, 22, 0.75)').toBe(true);
                 expect((<Element>text1.childNodes[0]).getAttribute('fill') == '#ffffff').toBe(true);
-                expect(text1.textContent == 'FebgoldHigh : 6.3Low : 1.3Open : 4.8Close : 2.5').toBe(true);
+                expect(text1.textContent.replace(/\u200E/g, '') == 'FebgoldHigh : 6.3Low : 1.3Open : 4.8Close : 2.5').toBe(true);
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y + 50));
                 done();
 

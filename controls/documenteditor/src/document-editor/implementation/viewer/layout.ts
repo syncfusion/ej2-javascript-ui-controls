@@ -4086,21 +4086,27 @@ export class Layout {
         let value: number = 0;
         for (let i: number = 0; i < row.childWidgets.length; i++) {
             if (row.childWidgets.length > 0) {
-                let cellFormat: WCellFormat = (row.childWidgets[i] as TableCellWidget).cellFormat;
+                let cell: TableCellWidget = row.childWidgets[i] as TableCellWidget;
+                let cellFormat: WCellFormat = cell.cellFormat;
                 if (cellFormat.containsMargins()) {
-                    if (topOrBottom === 0 && !isNullOrUndefined(cellFormat.topMargin) &&
-                        HelperMethods.convertPointToPixel(cellFormat.topMargin) > value) {
-                        value = HelperMethods.convertPointToPixel(cellFormat.topMargin);
+                    let leftMargin: number = HelperMethods.convertPointToPixel(cellFormat.topMargin);
+                    let bottomMargin: number;
+                    if (topOrBottom === 0 && !isNullOrUndefined(cellFormat.topMargin) && leftMargin > value) {
+                        value = leftMargin;
                     } else if (topOrBottom === 1 && !isNullOrUndefined(cellFormat.bottomMargin) &&
-                        HelperMethods.convertPointToPixel(cellFormat.bottomMargin) > value) {
-                        value = HelperMethods.convertPointToPixel(cellFormat.bottomMargin);
+                        // tslint:disable-next-line:no-conditional-assignment 
+                        (bottomMargin = HelperMethods.convertPointToPixel(cellFormat.bottomMargin)) > value) {
+                        value = bottomMargin;
                     }
                 } else {
-                    let tableFormat: WTableFormat = (row.childWidgets[i] as TableCellWidget).ownerTable.tableFormat;
-                    if (topOrBottom === 0 && HelperMethods.convertPointToPixel(tableFormat.topMargin) > value) {
-                        value = HelperMethods.convertPointToPixel(tableFormat.topMargin);
-                    } else if (topOrBottom === 1 && HelperMethods.convertPointToPixel(tableFormat.bottomMargin) > value) {
-                        value = HelperMethods.convertPointToPixel(tableFormat.bottomMargin);
+                    let tableFormat: WTableFormat = cell.ownerTable.tableFormat;
+                    let topMargin: number = HelperMethods.convertPointToPixel(tableFormat.topMargin);
+                    let bottomMargin: number;
+                    if (topOrBottom === 0 && topMargin > value) {
+                        value = topMargin;
+                        // tslint:disable-next-line:no-conditional-assignment 
+                    } else if (topOrBottom === 1 && (bottomMargin = HelperMethods.convertPointToPixel(tableFormat.bottomMargin)) > value) {
+                        value = bottomMargin;
                     }
                 }
             }

@@ -925,6 +925,9 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
             if (event) {
                 this.changeEventArgs.event = event;
             }
+            if (this.changeEventArgs.event === undefined) {
+                this.changeEventArgs.isInteraction = false;
+            }
             merge(eventArgs, this.changeEventArgs);
             this.prevValue = this.value;
             this.isInteract = false;
@@ -2505,11 +2508,8 @@ function changeToLowerUpperCase(key, value) {
 function setMaskValue(val) {
     if (this.mask && val !== undefined && (this.prevValue === undefined || this.prevValue !== val)) {
         this.maskKeyPress = true;
-        if (val === null && this.floatLabelType === 'Never' && this.placeholder) {
-            setElementValue.call(this, this.promptMask);
-        }
-        else if (val !== '') {
-            setElementValue.call(this, this.promptMask);
+        setElementValue.call(this, this.promptMask);
+        if (val !== '' && !(val === null && this.floatLabelType === 'Never' && this.placeholder)) {
             this.element.selectionStart = 0;
             this.element.selectionEnd = 0;
         }
@@ -6798,6 +6798,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         _this.uploadMetaData = [];
         _this.tabIndex = '0';
         _this.count = -1;
+        _this.actionCompleteCount = 0;
+        _this.flag = true;
+        _this.selectedFiles = [];
         return _this;
     }
     /**
@@ -6842,13 +6845,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 case 'maxFileSize':
                 case 'template':
                 case 'autoUpload':
-                    if (this.sequentialUpload) {
-                        this.count = -1;
-                    }
                     this.clearAll();
                     break;
                 case 'sequentialUpload':
-                    this.count = -1;
                     this.clearAll();
                     break;
                 case 'locale':
@@ -7415,6 +7414,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         if (this.sequentialUpload) {
             this.count = -1;
         }
+        this.actionCompleteCount = 0;
     };
     Uploader.prototype.bindDropEvents = function () {
         if (this.dropZoneElement) {
@@ -7442,9 +7442,15 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         e.preventDefault();
         e.stopPropagation();
     };
+    /* istanbul ignore next */
     Uploader.prototype.dropElement = function (e) {
         this.dropZoneElement.classList.remove(DRAG_HOVER);
-        this.onSelectFiles(e);
+        if (Browser.info.name === 'chrome') {
+            this.element.files = e.dataTransfer.files;
+        }
+        else {
+            this.onSelectFiles(e);
+        }
         e.preventDefault();
         e.stopPropagation();
     };
@@ -7481,6 +7487,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 /* istanbul ignore next */
                 this.uploadSequential();
             }
+            this.checkActionComplete(true);
         }
         else {
             this.remove(fileData, false, false, args);
@@ -7691,8 +7698,8 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         var targetFiles;
+        /* istanbul ignore next */
         if (args.type === 'drop') {
-            /* istanbul ignore next */
             if (this.directoryUpload) {
                 this.getFilesFromFolder(args);
             }
@@ -7725,6 +7732,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             this.trigger('selected', eventArgs);
             return;
         }
+        this.flag = true;
         var fileData = [];
         if (!this.multiple) {
             this.clearData(true);
@@ -7752,6 +7760,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 fileDetails.validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : fileDetails.status;
             if (fileDetails.validationMessages.minSize !== '' || fileDetails.validationMessages.maxSize !== '') {
                 fileDetails.statusCode = '0';
+                this.checkActionComplete(true);
             }
             fileData.push(fileDetails);
         }
@@ -7763,6 +7772,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             fileData = this.checkExtension(fileData);
         }
         this.trigger('selected', eventArgs);
+        this.selectedFiles = fileData;
         if (eventArgs.cancel) {
             return;
         }
@@ -7889,6 +7899,13 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             this.uploadTemplateFn = this.templateComplier(this.template);
             this.listParent.appendChild(liElement);
             var fromElements = [].slice.call(this.uploadTemplateFn(listItem));
+            var index = fileData.indexOf(listItem);
+            var eventArgs = {
+                element: liElement,
+                fileInfo: listItem,
+                index: index
+            };
+            this.trigger('rendering', eventArgs);
             append(fromElements, liElement);
             this.fileList.push(liElement);
         }
@@ -7953,6 +7970,13 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 if (!iconElement.classList.contains(DELETE_ICON)) {
                     iconElement.classList.add(REMOVE_ICON);
                 }
+                var index = fileData.indexOf(listItem);
+                var eventArgs = {
+                    element: liElement,
+                    fileInfo: listItem,
+                    index: index
+                };
+                this.trigger('rendering', eventArgs);
                 this.listParent.appendChild(liElement);
                 this.fileList.push(liElement);
                 this.truncateName(textElement);
@@ -8003,15 +8027,18 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         }
         return filterFiles;
     };
-    Uploader.prototype.updateStatus = function (files, status, statusCode) {
+    Uploader.prototype.updateStatus = function (files, status, statusCode, updateLiStatus) {
+        if (updateLiStatus === void 0) { updateLiStatus = true; }
         if (!(status === '' || isNullOrUndefined(status)) && !(statusCode === '' || isNullOrUndefined(statusCode))) {
             files.status = status;
             files.statusCode = statusCode;
         }
-        var li = this.getLiElement(files);
-        if (!isNullOrUndefined(li)) {
-            if (!isNullOrUndefined(li.querySelector('.' + STATUS)) && !((status === '' || isNullOrUndefined(status)))) {
-                li.querySelector('.' + STATUS).textContent = status;
+        if (updateLiStatus) {
+            var li = this.getLiElement(files);
+            if (!isNullOrUndefined(li)) {
+                if (!isNullOrUndefined(li.querySelector('.' + STATUS)) && !((status === '' || isNullOrUndefined(status)))) {
+                    li.querySelector('.' + STATUS).textContent = status;
+                }
             }
         }
         return files;
@@ -8211,10 +8238,13 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     };
     Uploader.prototype.raiseSuccessEvent = function (e, file) {
         var response = e && e.currentTarget ? this.getResponse(e) : null;
+        var statusMessage = this.localizedTexts('uploadSuccessMessage');
         var args = {
-            e: e, response: response, operation: 'upload', file: this.updateStatus(file, this.localizedTexts('uploadSuccessMessage'), '2')
+            e: e, response: response, operation: 'upload', file: this.updateStatus(file, statusMessage, '2', false), statusText: statusMessage
         };
         this.trigger('success', args);
+        // tslint:disable-next-line
+        this.updateStatus(file, args.statusText, '2');
         this.uploadedFilesData.push(file);
         this.trigger('change', { file: this.uploadedFilesData });
         this.checkActionButtonStatus();
@@ -8227,19 +8257,24 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 (this.getLiElement(file)).classList.remove(RESTRICT_SEQUENTIAL);
             }
         }
+        this.checkActionComplete(true);
     };
     Uploader.prototype.uploadFailed = function (e, file) {
         var li = this.getLiElement(file);
         var response = e && e.currentTarget ? this.getResponse(e) : null;
+        var statusMessage = this.localizedTexts('uploadFailedMessage');
         var args = {
-            e: e, response: response, operation: 'upload', file: this.updateStatus(file, this.localizedTexts('uploadFailedMessage'), '0')
+            e: e, response: response, operation: 'upload', file: this.updateStatus(file, statusMessage, '0', false), statusText: statusMessage
         };
         if (!isNullOrUndefined(li)) {
             this.renderFailureState(e, file, li);
         }
         this.trigger('failure', args);
+        // tslint:disable-next-line
+        this.updateStatus(file, args.statusText, '0');
         this.checkActionButtonStatus();
         this.uploadSequential();
+        this.checkActionComplete(true);
     };
     Uploader.prototype.uploadSequential = function () {
         if (this.sequentialUpload) {
@@ -8251,6 +8286,34 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 this.uploadButtonClick();
             }
         }
+    };
+    Uploader.prototype.checkActionComplete = function (increment) {
+        increment ? ++this.actionCompleteCount : --this.actionCompleteCount;
+        this.raiseActionComplete();
+    };
+    Uploader.prototype.raiseActionComplete = function () {
+        if ((this.filesData.length === this.actionCompleteCount) && this.flag) {
+            this.flag = false;
+            var eventArgs = {
+                fileData: []
+            };
+            eventArgs.fileData = this.getSelectedFileStatus(this.selectedFiles);
+            this.trigger('actionComplete', eventArgs);
+        }
+    };
+    Uploader.prototype.getSelectedFileStatus = function (selectedFiles) {
+        var matchFiles = [];
+        var matchFilesIndex = 0;
+        for (var selectFileIndex = 0; selectFileIndex < selectedFiles.length; selectFileIndex++) {
+            var selectedFileData = selectedFiles[selectFileIndex];
+            for (var fileDataIndex = 0; fileDataIndex < this.filesData.length; fileDataIndex++) {
+                if (this.filesData[fileDataIndex].name === selectedFileData.name) {
+                    matchFiles[matchFilesIndex] = this.filesData[fileDataIndex];
+                    ++matchFilesIndex;
+                }
+            }
+        }
+        return matchFiles;
     };
     Uploader.prototype.updateProgressBarClasses = function (li, className) {
         var progressBar = li.querySelector('.' + PROGRESSBAR);
@@ -8450,6 +8513,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             if (metaData.file.statusCode === '5') {
                 var eventArgs_1 = { event: e, fileData: metaData.file, cancel: false };
                 this.trigger('canceling', eventArgs_1);
+                /* istanbul ignore next */
                 if (eventArgs_1.cancel) {
                     metaData.file.statusCode = '3';
                     var spinnerTarget = liElement.querySelector('.' + ABORT_ICON);
@@ -8668,13 +8732,18 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 }
                 metaData.retryCount = 0;
                 var file = metaData.file;
+                var failureMessage = this.localizedTexts('uploadFailedMessage');
                 var args = {
                     e: e, response: requestResponse,
                     operation: 'upload',
-                    file: this.updateStatus(file, this.localizedTexts('uploadFailedMessage'), '0')
+                    file: this.updateStatus(file, failureMessage, '0', false),
+                    statusText: failureMessage
                 };
                 this.trigger('failure', args);
+                // tslint:disable-next-line
+                this.updateStatus(file, args.statusText, '0');
                 this.uploadSequential();
+                this.checkActionComplete(true);
             }
         }
     };
@@ -8692,9 +8761,11 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         var fileData = this.filesData[index];
         var metaData = this.getCurrentMetaData(fileData);
         if (targetElement.classList.contains(PAUSE_UPLOAD)) {
+            /* istanbul ignore next */
             this.pauseUpload(metaData, e);
         }
         else if (targetElement.classList.contains(RESUME_UPLOAD)) {
+            /* istanbul ignore next */
             this.resumeUpload(metaData, e);
         }
         else if (targetElement.classList.contains(RETRY_ICON)) {
@@ -8717,8 +8788,8 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             metaData.file.status = this.localizedTexts('readyToUploadMessage');
             this.chunkUpload(metaData.file);
         }
+        /* istanbul ignore next */
         if (this.sequentialUpload) {
-            /* istanbul ignore next */
             (this.getLiElement(metaData.file)).classList.add(RESTRICT_SEQUENTIAL);
         }
     };
@@ -8804,6 +8875,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      * @param { FileList } filesData - specifies the files data for upload.
      * @returns File[]
      */
+    /* istanbul ignore next */
     Uploader.prototype.sortFileList = function (filesData) {
         var files = filesData;
         var fileNames = [];
@@ -8943,6 +9015,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             customFormData: [],
             postRawFile: true
         };
+        var index;
         if (this.isForm) {
             eventArgs.filesData = this.getFilesData();
             this.trigger('removing', eventArgs);
@@ -8964,6 +9037,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         var validUrl = (removeUrl === '' || isNullOrUndefined(removeUrl)) ? false : true;
         for (var _i = 0, removeFiles_1 = removeFiles; _i < removeFiles_1.length; _i++) {
             var files = removeFiles_1[_i];
+            index = this.filesData.indexOf(files);
             if ((files.statusCode === '2' || files.statusCode === '4') && validUrl) {
                 this.removeUploadedFile(files, eventArgs, removeDirectly, customTemplate);
             }
@@ -8975,6 +9049,15 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                     return;
                 }
                 this.removeFilesData(files, customTemplate);
+            }
+            if (this.sequentialUpload) {
+                /* istanbul ignore next */
+                if (index <= this.actionCompleteCount) {
+                    this.checkActionComplete(false);
+                }
+            }
+            else {
+                this.checkActionComplete(false);
             }
         }
     };
@@ -8999,6 +9082,8 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         this.clearData();
+        this.actionCompleteCount = 0;
+        this.count = -1;
     };
     /**
      * Get the data of files which are shown in file list.
@@ -9169,6 +9254,12 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     __decorate$4([
         Event()
     ], Uploader.prototype, "created", void 0);
+    __decorate$4([
+        Event()
+    ], Uploader.prototype, "actionComplete", void 0);
+    __decorate$4([
+        Event()
+    ], Uploader.prototype, "rendering", void 0);
     __decorate$4([
         Event()
     ], Uploader.prototype, "selected", void 0);

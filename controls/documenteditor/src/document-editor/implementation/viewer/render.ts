@@ -825,13 +825,11 @@ export class Renderer {
         // tslint:disable-next-line:max-line-length
         this.renderSingleBorder(border, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellTopMargin, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
         // }
-        if (tableCell.ownerTable.tableFormat.cellSpacing > 0 || tableCell.ownerRow.rowIndex === 0) {
-            border = TableCellWidget.getCellTopBorder(tableCell);
-            // if (!isNullOrUndefined(border )) { //Renders the cell top border.        
-            lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
-            // tslint:disable-next-line:max-line-length
-            this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left, cellWidget.y - cellWidget.margin.top + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y - cellWidget.margin.top + lineWidth / 2, lineWidth);
-        }
+        border = TableCellWidget.getCellTopBorder(tableCell);
+        // if (!isNullOrUndefined(border )) { //Renders the cell top border.        
+        lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
+        // tslint:disable-next-line:max-line-length
+        this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left, cellWidget.y - cellWidget.margin.top + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y - cellWidget.margin.top + lineWidth / 2, lineWidth);
         // }
 
         let isLastCell: boolean = false;
@@ -864,16 +862,23 @@ export class Renderer {
                 }
             }
         }
-        // tslint:disable-next-line:max-line-length
-        border = (tableCell.cellFormat.rowSpan > 1 && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan === tableCell.ownerTable.childWidgets.length) ?
-            //true part for vertically merged cells specifically.
-            tableCell.getBorderBasedOnPriority(tableCell.cellFormat.borders.bottom, TableCellWidget.getCellBottomBorder(tableCell))
-            //false part for remaining cases that has been handled inside method. 
-            : TableCellWidget.getCellBottomBorder(tableCell);
-        //Renders the cell bottom border.
-        lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
-        // tslint:disable-next-line:max-line-length
-        this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, lineWidth);
+        if (tableCell.ownerTable.tableFormat.cellSpacing > 0 || tableCell.ownerRow.rowIndex === tableCell.ownerTable.childWidgets.length - 1
+            || (tableCell.cellFormat.rowSpan > 1
+                && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan === tableCell.ownerTable.childWidgets.length) ||
+            !nextRowIsInCurrentTableWidget) {
+            // tslint:disable-next-line:max-line-length
+            border = (tableCell.cellFormat.rowSpan > 1 && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan === tableCell.ownerTable.childWidgets.length) ?
+                //true part for vertically merged cells specifically.
+                tableCell.getBorderBasedOnPriority(tableCell.cellFormat.borders.bottom, TableCellWidget.getCellBottomBorder(tableCell))
+                //false part for remaining cases that has been handled inside method. 
+                : TableCellWidget.getCellBottomBorder(tableCell);
+            // if (!isNullOrUndefined(border )) {
+            //Renders the cell bottom border.
+            lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
+            // tslint:disable-next-line:max-line-length
+            this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, lineWidth);
+            // }
+        }
         border = layout.getCellDiagonalUpBorder(tableCell);
         // if (!isNullOrUndefined(border )) {
         //Renders the cell diagonal up border.

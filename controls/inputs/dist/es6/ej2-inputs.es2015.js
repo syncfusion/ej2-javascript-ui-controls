@@ -907,6 +907,9 @@ let NumericTextBox = class NumericTextBox extends Component {
             if (event) {
                 this.changeEventArgs.event = event;
             }
+            if (this.changeEventArgs.event === undefined) {
+                this.changeEventArgs.isInteraction = false;
+            }
             merge(eventArgs, this.changeEventArgs);
             this.prevValue = this.value;
             this.isInteract = false;
@@ -2474,11 +2477,8 @@ function changeToLowerUpperCase(key, value) {
 function setMaskValue(val) {
     if (this.mask && val !== undefined && (this.prevValue === undefined || this.prevValue !== val)) {
         this.maskKeyPress = true;
-        if (val === null && this.floatLabelType === 'Never' && this.placeholder) {
-            setElementValue.call(this, this.promptMask);
-        }
-        else if (val !== '') {
-            setElementValue.call(this, this.promptMask);
+        setElementValue.call(this, this.promptMask);
+        if (val !== '' && !(val === null && this.floatLabelType === 'Never' && this.placeholder)) {
             this.element.selectionStart = 0;
             this.element.selectionEnd = 0;
         }
@@ -6650,6 +6650,9 @@ let Uploader = class Uploader extends Component {
         this.uploadMetaData = [];
         this.tabIndex = '0';
         this.count = -1;
+        this.actionCompleteCount = 0;
+        this.flag = true;
+        this.selectedFiles = [];
     }
     /**
      * Calls internally if any of the property value is changed.
@@ -6692,13 +6695,9 @@ let Uploader = class Uploader extends Component {
                 case 'maxFileSize':
                 case 'template':
                 case 'autoUpload':
-                    if (this.sequentialUpload) {
-                        this.count = -1;
-                    }
                     this.clearAll();
                     break;
                 case 'sequentialUpload':
-                    this.count = -1;
                     this.clearAll();
                     break;
                 case 'locale':
@@ -7263,6 +7262,7 @@ let Uploader = class Uploader extends Component {
         if (this.sequentialUpload) {
             this.count = -1;
         }
+        this.actionCompleteCount = 0;
     }
     bindDropEvents() {
         if (this.dropZoneElement) {
@@ -7290,9 +7290,15 @@ let Uploader = class Uploader extends Component {
         e.preventDefault();
         e.stopPropagation();
     }
+    /* istanbul ignore next */
     dropElement(e) {
         this.dropZoneElement.classList.remove(DRAG_HOVER);
-        this.onSelectFiles(e);
+        if (Browser.info.name === 'chrome') {
+            this.element.files = e.dataTransfer.files;
+        }
+        else {
+            this.onSelectFiles(e);
+        }
         e.preventDefault();
         e.stopPropagation();
     }
@@ -7329,6 +7335,7 @@ let Uploader = class Uploader extends Component {
                 /* istanbul ignore next */
                 this.uploadSequential();
             }
+            this.checkActionComplete(true);
         }
         else {
             this.remove(fileData, false, false, args);
@@ -7526,8 +7533,8 @@ let Uploader = class Uploader extends Component {
             return;
         }
         let targetFiles;
+        /* istanbul ignore next */
         if (args.type === 'drop') {
-            /* istanbul ignore next */
             if (this.directoryUpload) {
                 this.getFilesFromFolder(args);
             }
@@ -7560,6 +7567,7 @@ let Uploader = class Uploader extends Component {
             this.trigger('selected', eventArgs);
             return;
         }
+        this.flag = true;
         let fileData = [];
         if (!this.multiple) {
             this.clearData(true);
@@ -7587,6 +7595,7 @@ let Uploader = class Uploader extends Component {
                 fileDetails.validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : fileDetails.status;
             if (fileDetails.validationMessages.minSize !== '' || fileDetails.validationMessages.maxSize !== '') {
                 fileDetails.statusCode = '0';
+                this.checkActionComplete(true);
             }
             fileData.push(fileDetails);
         }
@@ -7598,6 +7607,7 @@ let Uploader = class Uploader extends Component {
             fileData = this.checkExtension(fileData);
         }
         this.trigger('selected', eventArgs);
+        this.selectedFiles = fileData;
         if (eventArgs.cancel) {
             return;
         }
@@ -7721,6 +7731,13 @@ let Uploader = class Uploader extends Component {
             this.uploadTemplateFn = this.templateComplier(this.template);
             this.listParent.appendChild(liElement);
             let fromElements = [].slice.call(this.uploadTemplateFn(listItem));
+            let index = fileData.indexOf(listItem);
+            let eventArgs = {
+                element: liElement,
+                fileInfo: listItem,
+                index: index
+            };
+            this.trigger('rendering', eventArgs);
             append(fromElements, liElement);
             this.fileList.push(liElement);
         }
@@ -7784,6 +7801,13 @@ let Uploader = class Uploader extends Component {
                 if (!iconElement.classList.contains(DELETE_ICON)) {
                     iconElement.classList.add(REMOVE_ICON);
                 }
+                let index = fileData.indexOf(listItem);
+                let eventArgs = {
+                    element: liElement,
+                    fileInfo: listItem,
+                    index: index
+                };
+                this.trigger('rendering', eventArgs);
                 this.listParent.appendChild(liElement);
                 this.fileList.push(liElement);
                 this.truncateName(textElement);
@@ -7834,15 +7858,17 @@ let Uploader = class Uploader extends Component {
         }
         return filterFiles;
     }
-    updateStatus(files, status, statusCode) {
+    updateStatus(files, status, statusCode, updateLiStatus = true) {
         if (!(status === '' || isNullOrUndefined(status)) && !(statusCode === '' || isNullOrUndefined(statusCode))) {
             files.status = status;
             files.statusCode = statusCode;
         }
-        let li = this.getLiElement(files);
-        if (!isNullOrUndefined(li)) {
-            if (!isNullOrUndefined(li.querySelector('.' + STATUS)) && !((status === '' || isNullOrUndefined(status)))) {
-                li.querySelector('.' + STATUS).textContent = status;
+        if (updateLiStatus) {
+            let li = this.getLiElement(files);
+            if (!isNullOrUndefined(li)) {
+                if (!isNullOrUndefined(li.querySelector('.' + STATUS)) && !((status === '' || isNullOrUndefined(status)))) {
+                    li.querySelector('.' + STATUS).textContent = status;
+                }
             }
         }
         return files;
@@ -8040,10 +8066,13 @@ let Uploader = class Uploader extends Component {
     }
     raiseSuccessEvent(e, file) {
         let response = e && e.currentTarget ? this.getResponse(e) : null;
+        let statusMessage = this.localizedTexts('uploadSuccessMessage');
         let args = {
-            e, response: response, operation: 'upload', file: this.updateStatus(file, this.localizedTexts('uploadSuccessMessage'), '2')
+            e, response: response, operation: 'upload', file: this.updateStatus(file, statusMessage, '2', false), statusText: statusMessage
         };
         this.trigger('success', args);
+        // tslint:disable-next-line
+        this.updateStatus(file, args.statusText, '2');
         this.uploadedFilesData.push(file);
         this.trigger('change', { file: this.uploadedFilesData });
         this.checkActionButtonStatus();
@@ -8056,19 +8085,24 @@ let Uploader = class Uploader extends Component {
                 (this.getLiElement(file)).classList.remove(RESTRICT_SEQUENTIAL);
             }
         }
+        this.checkActionComplete(true);
     }
     uploadFailed(e, file) {
         let li = this.getLiElement(file);
         let response = e && e.currentTarget ? this.getResponse(e) : null;
+        let statusMessage = this.localizedTexts('uploadFailedMessage');
         let args = {
-            e, response: response, operation: 'upload', file: this.updateStatus(file, this.localizedTexts('uploadFailedMessage'), '0')
+            e, response: response, operation: 'upload', file: this.updateStatus(file, statusMessage, '0', false), statusText: statusMessage
         };
         if (!isNullOrUndefined(li)) {
             this.renderFailureState(e, file, li);
         }
         this.trigger('failure', args);
+        // tslint:disable-next-line
+        this.updateStatus(file, args.statusText, '0');
         this.checkActionButtonStatus();
         this.uploadSequential();
+        this.checkActionComplete(true);
     }
     uploadSequential() {
         if (this.sequentialUpload) {
@@ -8080,6 +8114,34 @@ let Uploader = class Uploader extends Component {
                 this.uploadButtonClick();
             }
         }
+    }
+    checkActionComplete(increment) {
+        increment ? ++this.actionCompleteCount : --this.actionCompleteCount;
+        this.raiseActionComplete();
+    }
+    raiseActionComplete() {
+        if ((this.filesData.length === this.actionCompleteCount) && this.flag) {
+            this.flag = false;
+            let eventArgs = {
+                fileData: []
+            };
+            eventArgs.fileData = this.getSelectedFileStatus(this.selectedFiles);
+            this.trigger('actionComplete', eventArgs);
+        }
+    }
+    getSelectedFileStatus(selectedFiles) {
+        let matchFiles = [];
+        let matchFilesIndex = 0;
+        for (let selectFileIndex = 0; selectFileIndex < selectedFiles.length; selectFileIndex++) {
+            let selectedFileData = selectedFiles[selectFileIndex];
+            for (let fileDataIndex = 0; fileDataIndex < this.filesData.length; fileDataIndex++) {
+                if (this.filesData[fileDataIndex].name === selectedFileData.name) {
+                    matchFiles[matchFilesIndex] = this.filesData[fileDataIndex];
+                    ++matchFilesIndex;
+                }
+            }
+        }
+        return matchFiles;
     }
     updateProgressBarClasses(li, className) {
         let progressBar = li.querySelector('.' + PROGRESSBAR);
@@ -8275,6 +8337,7 @@ let Uploader = class Uploader extends Component {
             if (metaData.file.statusCode === '5') {
                 let eventArgs = { event: e, fileData: metaData.file, cancel: false };
                 this.trigger('canceling', eventArgs);
+                /* istanbul ignore next */
                 if (eventArgs.cancel) {
                     metaData.file.statusCode = '3';
                     let spinnerTarget = liElement.querySelector('.' + ABORT_ICON);
@@ -8492,13 +8555,18 @@ let Uploader = class Uploader extends Component {
                 }
                 metaData.retryCount = 0;
                 let file = metaData.file;
+                let failureMessage = this.localizedTexts('uploadFailedMessage');
                 let args = {
                     e, response: requestResponse,
                     operation: 'upload',
-                    file: this.updateStatus(file, this.localizedTexts('uploadFailedMessage'), '0')
+                    file: this.updateStatus(file, failureMessage, '0', false),
+                    statusText: failureMessage
                 };
                 this.trigger('failure', args);
+                // tslint:disable-next-line
+                this.updateStatus(file, args.statusText, '0');
                 this.uploadSequential();
+                this.checkActionComplete(true);
             }
         }
     }
@@ -8516,9 +8584,11 @@ let Uploader = class Uploader extends Component {
         let fileData = this.filesData[index];
         let metaData = this.getCurrentMetaData(fileData);
         if (targetElement.classList.contains(PAUSE_UPLOAD)) {
+            /* istanbul ignore next */
             this.pauseUpload(metaData, e);
         }
         else if (targetElement.classList.contains(RESUME_UPLOAD)) {
+            /* istanbul ignore next */
             this.resumeUpload(metaData, e);
         }
         else if (targetElement.classList.contains(RETRY_ICON)) {
@@ -8541,8 +8611,8 @@ let Uploader = class Uploader extends Component {
             metaData.file.status = this.localizedTexts('readyToUploadMessage');
             this.chunkUpload(metaData.file);
         }
+        /* istanbul ignore next */
         if (this.sequentialUpload) {
-            /* istanbul ignore next */
             (this.getLiElement(metaData.file)).classList.add(RESTRICT_SEQUENTIAL);
         }
     }
@@ -8627,6 +8697,7 @@ let Uploader = class Uploader extends Component {
      * @param { FileList } filesData - specifies the files data for upload.
      * @returns File[]
      */
+    /* istanbul ignore next */
     sortFileList(filesData) {
         let files = filesData;
         let fileNames = [];
@@ -8760,6 +8831,7 @@ let Uploader = class Uploader extends Component {
             customFormData: [],
             postRawFile: true
         };
+        let index;
         if (this.isForm) {
             eventArgs.filesData = this.getFilesData();
             this.trigger('removing', eventArgs);
@@ -8780,6 +8852,7 @@ let Uploader = class Uploader extends Component {
         let removeUrl = this.asyncSettings.removeUrl;
         let validUrl = (removeUrl === '' || isNullOrUndefined(removeUrl)) ? false : true;
         for (let files of removeFiles) {
+            index = this.filesData.indexOf(files);
             if ((files.statusCode === '2' || files.statusCode === '4') && validUrl) {
                 this.removeUploadedFile(files, eventArgs, removeDirectly, customTemplate);
             }
@@ -8791,6 +8864,15 @@ let Uploader = class Uploader extends Component {
                     return;
                 }
                 this.removeFilesData(files, customTemplate);
+            }
+            if (this.sequentialUpload) {
+                /* istanbul ignore next */
+                if (index <= this.actionCompleteCount) {
+                    this.checkActionComplete(false);
+                }
+            }
+            else {
+                this.checkActionComplete(false);
             }
         }
     }
@@ -8815,6 +8897,8 @@ let Uploader = class Uploader extends Component {
             return;
         }
         this.clearData();
+        this.actionCompleteCount = 0;
+        this.count = -1;
     }
     /**
      * Get the data of files which are shown in file list.
@@ -8986,6 +9070,12 @@ __decorate$4([
 __decorate$4([
     Event()
 ], Uploader.prototype, "created", void 0);
+__decorate$4([
+    Event()
+], Uploader.prototype, "actionComplete", void 0);
+__decorate$4([
+    Event()
+], Uploader.prototype, "rendering", void 0);
 __decorate$4([
     Event()
 ], Uploader.prototype, "selected", void 0);

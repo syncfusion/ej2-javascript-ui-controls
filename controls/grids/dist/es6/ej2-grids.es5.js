@@ -923,7 +923,7 @@ function setStyleAndAttributes(node, customAttributes) {
 function extend$1(copied, first, second, exclude) {
     var moved = extend(copied, first, second);
     Object.keys(moved).forEach(function (value, index) {
-        if (exclude.indexOf(value) !== -1) {
+        if (exclude && exclude.indexOf(value) !== -1) {
             delete moved[value];
         }
     });
@@ -2903,14 +2903,17 @@ var Data = /** @__PURE__ @class */ (function () {
         if (args.requestType !== undefined && this.dataState.isDataChanged !== false) {
             state.action = args;
             if (args.requestType === 'save' || args.requestType === 'delete') {
-                var editArgs = args;
-                editArgs.key = key;
-                editArgs.state = state;
+                var editArgs_1 = args;
+                editArgs_1.key = key;
+                editArgs_1.state = state;
                 this.setState({ isPending: true, resolver: deff.resolve });
                 dataArgs.endEdit = deff.resolve;
-                this.parent.trigger(dataSourceChanged, editArgs);
+                this.parent.trigger(dataSourceChanged, editArgs_1);
                 deff.promise.then(function (e) {
                     _this.setState({ isPending: true, resolver: def.resolve, group: state.group, aggregates: state.aggregates });
+                    if (editArgs_1.requestType === 'save') {
+                        _this.parent.notify(recordAdded, editArgs_1);
+                    }
                     _this.parent.trigger(dataStateChange, state);
                 });
             }
@@ -7255,6 +7258,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.isCancelDeSelect = false;
         this.isPreventCellSelect = false;
         this.disableUI = false;
+        this.isClearSelection = false;
         this.parent = parent;
         this.selectionSettings = selectionSettings;
         this.factory = locator.getService('rendererFactory');
@@ -7398,7 +7402,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                     this.updateRowSelection(selectedMovableRow, index);
                 }
             }
-            this.parent.setProperties({ selectedRowIndex: index }, true);
+            this.selectRowIndex(index);
         }
         if (!isToggle) {
             args = {
@@ -7426,7 +7430,7 @@ var Selection = /** @__PURE__ @class */ (function () {
      */
     Selection.prototype.selectRowsByRange = function (startIndex, endIndex) {
         this.selectRows(this.getCollectionFromIndexes(startIndex, endIndex));
-        this.parent.setProperties({ selectedRowIndex: endIndex }, true);
+        this.selectRowIndex(endIndex);
     };
     /**
      * Selects a collection of rows by index.
@@ -7456,7 +7460,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             return;
         }
         this.clearRow();
-        this.parent.setProperties({ selectedRowIndex: rowIndexes.slice(-1)[0] }, true);
+        this.selectRowIndex(rowIndexes.slice(-1)[0]);
         if (!this.isSingleSel()) {
             for (var _i = 0, rowIndexes_1 = rowIndexes; _i < rowIndexes_1.length; _i++) {
                 var rowIdx = rowIndexes_1[_i];
@@ -7505,7 +7509,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             var rowIndex = rowIndexes_2[_i];
             var rowObj = this.getRowObj(rowIndex);
             var isUnSelected = this.selectedRowIndexes.indexOf(rowIndex) > -1;
-            this.parent.setProperties({ selectedRowIndex: rowIndex }, true);
+            this.selectRowIndex(rowIndex);
             if (isUnSelected) {
                 this.rowDeselect(rowDeselecting, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target);
                 this.selectedRowIndexes.splice(this.selectedRowIndexes.indexOf(rowIndex), 1);
@@ -7573,7 +7577,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
         this.selectedRowIndexes = [];
         this.selectedRecords = [];
-        this.parent.selectedRowIndex = -1;
+        this.selectRowIndex(-1);
         if (this.isSingleSel() && this.parent.isPersistSelection) {
             this.selectedRowState = {};
         }
@@ -7725,7 +7729,9 @@ var Selection = /** @__PURE__ @class */ (function () {
             this.selectedRowIndexes = [];
             this.selectedRecords = [];
             this.isRowSelected = false;
-            this.parent.selectedRowIndex = -1;
+            if (!this.isClearSelection) {
+                this.selectRowIndex(-1);
+            }
             this.rowDeselect(rowDeselected, rowIndex, data, row, foreignKeyData$$1, target, mRow);
         }
     };
@@ -8879,6 +8885,9 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (!this.parent.enableVirtualization && this.parent.isPersistSelection) {
             this.refreshPersistSelection();
         }
+        if (this.parent.selectedRowIndex > -1 && this.selectedRowIndexes.indexOf(this.parent.selectedRowIndex) === -1) {
+            this.selectRow(this.parent.selectedRowIndex);
+        }
     };
     Selection.prototype.checkSelectAllAction = function (checkState) {
         var cRenderer = this.getRenderer();
@@ -9447,7 +9456,10 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.dataReady = function (e) {
         if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection) {
             this.disableUI = true;
+            var old = this.isClearSelection;
+            this.isClearSelection = e.isClearSelection;
             this.clearSelection();
+            this.isClearSelection = old;
             this.disableUI = false;
         }
     };
@@ -9455,6 +9467,10 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (e.requestType === 'save' && this.parent.isPersistSelection) {
             this.refreshPersistSelection();
         }
+    };
+    Selection.prototype.selectRowIndex = function (index) {
+        this.parent.isSelectedRowIndexUpdating = true;
+        this.parent.selectedRowIndex = index;
     };
     return Selection;
 }());
@@ -11356,7 +11372,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                 this.freezeRefresh();
             }
             else {
-                this.refresh();
+                this.refresh(true);
             }
         }
         else if (requireRefresh) {
@@ -11474,7 +11490,10 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                 action([this.element], 'e-gridhover');
                 break;
             case 'selectedRowIndex':
-                this.selectRow(newProp.selectedRowIndex);
+                if (!this.isSelectedRowIndexUpdating) {
+                    this.selectRow(newProp.selectedRowIndex);
+                }
+                this.isSelectedRowIndexUpdating = false;
                 break;
         }
     };
@@ -12165,10 +12184,10 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     /**
      * Refreshes the Grid header and content.
      */
-    Grid.prototype.refresh = function () {
+    Grid.prototype.refresh = function (isClearSelection) {
         this.headerModule.refreshUI();
         this.updateStackedFilter();
-        this.renderModule.refresh();
+        this.renderModule.refresh({ requestType: 'refresh', isClearSelection: isClearSelection });
     };
     /**
      * Refreshes the Grid header.

@@ -2,7 +2,7 @@ import { Diagram } from '../diagram';
 import { NodeModel } from './../objects/node-model';
 import { Node } from './../objects/node';
 import { ConnectorModel } from './../objects/connector-model';
-import { NodeConstraints, ConnectorConstraints, DiagramConstraints, DiagramTools, DiagramAction } from '../enum/enum';
+import { NodeConstraints, ConnectorConstraints, DiagramConstraints, DiagramTools, DiagramAction, RendererAction } from '../enum/enum';
 import { AnnotationConstraints, PortConstraints } from '../enum/enum';
 import { Connector } from './../objects/connector';
 import { AnnotationModel, PathAnnotationModel, ShapeAnnotationModel } from './../objects/annotation-model';
@@ -315,3 +315,11 @@ export function canDrag(port: PointPortModel | NodeModel, diagram: Diagram): num
 
 }
 
+/** @private */
+export function avoidDrawSelector(rendererActions: RendererAction): boolean {
+    if ((rendererActions & RendererAction.PreventRenderSelector)) {
+        return true;
+    } else {
+        return false;
+    }
+}

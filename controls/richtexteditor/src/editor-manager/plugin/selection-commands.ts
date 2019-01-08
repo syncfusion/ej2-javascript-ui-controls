@@ -66,7 +66,7 @@ export class SelectionCommands {
                         format,
                         value);
                 }
-                domSelection = this.applySelection(nodes, domSelection, nodeCutter, index, isCollapsed, );
+                domSelection = this.applySelection(nodes, domSelection, nodeCutter, index, isCollapsed);
             }
             save.restore();
         }
@@ -262,6 +262,7 @@ export class SelectionCommands {
             case 'fontcolor':
                 node = document.createElement('span');
                 node.style.color = value;
+                node.style.textDecoration = 'inherit';
                 return node;
             case 'fontname':
                 node = document.createElement('span');

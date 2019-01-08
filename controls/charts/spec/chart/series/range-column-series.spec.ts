@@ -433,7 +433,7 @@ describe('Chart', () => {
                 let tooltip: HTMLElement = document.getElementById('container_tooltip');
                 expect(tooltip != null).toBe(true);
                 expect(target.getAttribute('opacity') == '0.5').toBe(true);
-                expect(tooltip.childNodes[0].childNodes[0].childNodes[1].textContent).toEqual('series12High : 10Low : 12');
+                expect(tooltip.childNodes[0].childNodes[0].childNodes[1].textContent.replace(/\u200E/g, '')).toEqual('series12High : 10Low : 12');
                 expect(parseFloat(tooltip.style.top) < (series.points[1].regions[0].y + parseFloat(chartArea.getAttribute('y'))));
                 done();
             };
@@ -775,7 +775,7 @@ describe('Chart', () => {
                 let text1: Element = group.childNodes[1] as HTMLElement;
                 expect(path.getAttribute('fill') == 'pink').toBe(true);
                 expect((<HTMLElement>text1.childNodes[0]).getAttribute('fill') == 'red').toBe(true);
-                expect(text1.textContent == 'series1#2High : 10CLow : 12C').toBe(true);
+                expect(text1.textContent.replace(/\u200E/g, '') == 'series1#2High : 10CLow : 12C').toBe(true);
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y + 50));
                 done();
             };
@@ -804,7 +804,7 @@ describe('Chart', () => {
                 let text2: Element = group.childNodes[2] as HTMLElement;
                 expect(path.getAttribute('fill') == 'pink').toBe(true);
                 expect((<HTMLElement>text1.childNodes[0]).getAttribute('fill') == 'red').toBe(true);
-                expect(text1.textContent == '#2series1High : 10CLow : 12Cseries2 : 10C').toBe(true);
+                expect(text1.textContent.replace(/\u200E/g, '') == '#2series1High : 10CLow : 12Cseries2 : 10C').toBe(true);
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y + 50));
                 done();
             };

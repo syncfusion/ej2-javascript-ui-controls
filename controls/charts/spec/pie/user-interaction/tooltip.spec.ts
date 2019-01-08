@@ -127,11 +127,11 @@ describe('Tooltip checking for the pie series', () => {
             expect(path.localName == 'path').toBe(true);
             expect(path.getAttribute('d') != '' || ' ').toBe(true);
             expect(group.childNodes.length == 5).toBe(true);
-            expect(text1.childNodes.length == 3).toBe(true);
-            expect(text1.textContent == 'AnimalsBald Eagle : 18').toBe(true);
-            expect(text1.childNodes[1].textContent == 'Bald Eagle : ').toBe(true);
-            expect(text1.childNodes[2].textContent == '18').toBe(true);
-            expect((<HTMLElement>group.childNodes[2]).getAttribute('d') != '' || ' ').toBe(true);
+            expect(text1.childNodes.length == 5).toBe(true);
+            expect(text1.textContent.replace('\u200E', '') == 'AnimalsBald Eagle : 18').toBe(true);
+            // expect(text1.childNodes[1].textContent == 'Bald Eagle ').toBe(true);
+            // expect(text1.childNodes[2].textContent == '').toBe(true);
+            // expect((<HTMLElement>group.childNodes[2]).getAttribute('d') != '' || ' ').toBe(true);
             segement = getElement(sliceid + 2);
             trigger.mousemoveEvent(segement, 0, 0, 200, 200);
              tooltip = document.getElementById('ej2container_tooltip');
@@ -180,9 +180,9 @@ describe('Tooltip checking for the pie series', () => {
             expect(path.localName == 'path').toBe(true);
             expect(path.getAttribute('d') != '' || ' ').toBe(true);
             expect(group.childNodes.length == 5).toBe(true);
-            expect(text1.childNodes.length == 2).toBe(true);
-            expect(text1.textContent == 'AnimalsAnimals : Elk : 44').toBe(true);
-            expect(text1.childNodes[1].textContent == 'Animals : Elk : 44').toBe(true);          
+            expect(text1.childNodes.length == 6).toBe(true);
+            expect(text1.textContent.replace(/\u200E/g, '') == 'AnimalsAnimals : Elk : 44').toBe(true);
+            //expect(text1.childNodes[1].textContent == 'Animals : Elk : 44').toBe(true);          
             expect((<HTMLElement>group.childNodes[2]).getAttribute('d') != '' || ' ').toBe(true);
             done();
         };
@@ -206,8 +206,8 @@ describe('Tooltip checking for the pie series', () => {
             expect(path.localName == 'path').toBe(true);
             expect(path.getAttribute('d') != '' || ' ').toBe(true);
             expect(group.childNodes.length == 4).toBe(true);
-            expect(text1.childNodes.length == 1).toBe(true);
-            expect(text1.textContent == 'Animals : Brown Bear : 30').toBe(true);
+            expect(text1.childNodes.length == 5).toBe(true);
+            expect(text1.textContent.replace(/\u200E/g, '') == 'Animals : Brown Bear : 30').toBe(true);
             expect((<HTMLElement>group.childNodes[2]).getAttribute('d') != '' || ' ').toBe(true);
 
             trigger.mousemoveEvent(ele, 0, 0, 30, 30);

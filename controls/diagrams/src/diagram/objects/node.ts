@@ -1997,7 +1997,7 @@ export class Node extends NodeBase implements IElement {
     public initAnnotations(accessibilityContent: Function | string, container: Container, diagramId: string, virtualize?: boolean): void {
         let annotation: DiagramElement;
         for (let i: number = 0; this.annotations !== undefined, i < this.annotations.length; i++) {
-            annotation = this.initAnnotationWrapper(this.annotations[i] as Annotation, diagramId, virtualize);
+            annotation = this.initAnnotationWrapper(this.annotations[i] as Annotation, diagramId, virtualize, i);
             // tslint:disable-next-line:no-any
             let wrapperContent: any;
             let contentAccessibility: Function = getFunction(accessibilityContent);
@@ -2036,8 +2036,8 @@ export class Node extends NodeBase implements IElement {
         return portContent;
     }
     /** @private */
-    public initAnnotationWrapper(annotation: Annotation, diagramId?: string, virtualize?: boolean): DiagramElement {
-        annotation.id = annotation.id || randomId();
+    public initAnnotationWrapper(annotation: Annotation, diagramId?: string, virtualize?: boolean, value?: number): DiagramElement {
+        annotation.id = annotation.id || value + 'annotation' || randomId();
         let label: ShapeAnnotation = annotation as ShapeAnnotation;
         let annotationcontent: TextElement | DiagramHtmlElement;
         if (diagramId && annotation.template) {

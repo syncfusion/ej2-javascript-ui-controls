@@ -479,6 +479,9 @@ export class Data implements IDataProcessor {
                 this.parent.trigger(events.dataSourceChanged, editArgs);
                 deff.promise.then((e: ReturnType) => {
                     this.setState({ isPending: true, resolver: def.resolve, group: state.group, aggregates: state.aggregates });
+                    if (editArgs.requestType === 'save') {
+                        this.parent.notify(events.recordAdded, editArgs);
+                    }
                     this.parent.trigger(events.dataStateChange, state);
                 });
             } else {

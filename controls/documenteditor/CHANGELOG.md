@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 16.4.45 (2018-12-24)
+## 16.4.46 (2019-01-02)
+
+### Document Editor
+
+#### New Features
+
+- Table editing performance optimized.
+
+## 16.4.45 (2019-01-02)
 
 ### Document Editor
 

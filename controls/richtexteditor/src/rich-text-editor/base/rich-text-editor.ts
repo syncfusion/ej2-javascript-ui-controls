@@ -670,14 +670,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         extend(htmlAttr, this.htmlAttributes, htmlAttr);
         this.setProperties({ htmlAttributes: htmlAttr }, true);
         if (this.element.tagName === 'TEXTAREA') {
-            let rteOutterWrapper: HTMLElement = this.createElement('div', {
+            let rteOuterWrapper: HTMLElement = this.createElement('div', {
                 className: 'e-control e-richtexteditor'
             }) as HTMLElement;
-            rteOutterWrapper.innerHTML = (this.element as HTMLTextAreaElement).value;
-            this.element.parentElement.insertBefore(rteOutterWrapper, this.element);
+            rteOuterWrapper.innerHTML = (this.element as HTMLTextAreaElement).value;
+            this.element.parentElement.insertBefore(rteOuterWrapper, this.element);
             this.valueContainer = this.element as HTMLTextAreaElement;
             this.valueContainer.classList.remove('e-control', 'e-richtexteditor');
-            this.element = rteOutterWrapper;
+            this.element = rteOuterWrapper;
         } else {
             this.valueContainer = this.createElement('textarea', {
                 id: this.getID() + '-value'
@@ -1527,7 +1527,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.isFocusOut = false;
             addClass([this.element], [classes.CLS_FOCUS]);
             if (this.editorMode === 'HTML') {
-                this.cloneValue = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.inputElement.innerHTML;
+                this.cloneValue = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.enableHtmlEncode ?
+                    this.encode(this.decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
             } else {
                 this.cloneValue = (this.inputElement as HTMLTextAreaElement).value === '' ? null :
                     (this.inputElement as HTMLTextAreaElement).value;
@@ -1546,7 +1547,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     private setPanelValue(): void {
         if (this.editorMode === 'HTML') {
-            this.value = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.inputElement.innerHTML;
+            this.value = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.enableHtmlEncode ?
+                this.encode(this.decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
         } else {
             this.value = (this.inputElement as HTMLTextAreaElement).value === '' ? null :
                 (this.inputElement as HTMLTextAreaElement).value;
@@ -1561,8 +1563,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     private onDocumentClick(e: MouseEvent): void {
         let target: HTMLElement = <HTMLElement>e.target;
-        if (!this.element.contains(e.target as Node) && document !== e.target && !closest(target, '.' + classes.CLS_RTE) &&
-            !closest(target, '.' + classes.CLS_RTE_ELEMENTS)) {
+        let rteElement: Element = closest(target, '.' + classes.CLS_RTE);
+        if (!this.element.contains(e.target as Node) && document !== e.target && rteElement !== this.element &&
+            !closest(target, '[aria-owns="' + this.getID() + '"]')) {
             this.isBlur = true;
             this.isRTE = false;
         }
@@ -1572,9 +1575,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private blurHandler(e: FocusEvent): void {
         let trg: Element = e.relatedTarget as Element;
         if (trg) {
-            if (closest(trg, '.' + classes.CLS_RTE)) {
+            let rteElement: Element = closest(trg, '.' + classes.CLS_RTE);
+            if (rteElement && rteElement === this.element) {
                 this.isBlur = false;
-            } else if (closest(trg, '.' + classes.CLS_RTE_ELEMENTS)) {
+            } else if (closest(trg, '[aria-owns="' + this.getID() + '"]')) {
                 this.isBlur = false;
             } else {
                 this.isBlur = true;

@@ -2,7 +2,17 @@
 
 ## [Unreleased]
 
-## 16.4.45 (2018-12-24)
+## 16.4.46 (2019-01-02)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- Property change support for `height` property has been provided.
+- Expand icon is prevented from displaying for the root/zeroth level record which has `hasChildMapping` field as false.
+- Child records of third level or its successor displays properly based on their hierarchy relation in self reference data binding.
+
+## 16.4.45 (2019-01-02)
 
 ### TreeGrid
 

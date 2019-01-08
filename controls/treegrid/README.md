@@ -1,187 +1,72 @@
 [![coverage](http://ej2.syncfusion.com/badges/ej2-treegrid/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-treegrid)
 
-# New Component Configuration
-## Template Location:
-The component configuration template can be checkout from the below bitbucket location.
+# ej2-treegrid
 
-[https://gitlab.syncfusion.com/essential-studio/ej2-component-template](https://gitlab.syncfusion.com/essential-studio/ej2-component-template "")
+The TreeGrid component is a feature-rich control used to visualize self-referential hierarchical data effectively in a tabular format.. It will pull data from a data source, such as array of JSON objects, `OData web services`, or [`DataManager`](http://ej2.syncfusion.com/documentation/data) binding data fields to columns. It also incudes interactions like expanding and collapsing the parent records.
 
-## Required Node Versions:
-**node:** >= 5
+![TreeGrid](https://ej2.syncfusion.com/products/tree-grid/readme.png)
 
-**npm:** >= 3
+> This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this component, is subject to the terms and conditions of Syncfusion's EULA https://www.syncfusion.com/eula/es. To acquire a license, you can purchase one at https://www.syncfusion.com/sales/products or start a free 30-day trial here https://www.syncfusion.com/account/manage-trials/start-trials.
+> A free community license <https://www.syncfusion.com/products/communitylicense> is also available for companies and individuals whose organizations have less than $1 million USD in annual gross revenue and five or fewer developers.
 
-## package.json
-1. Should replace the name from `@syncfusion/component` to `@syncfusion/{package-name}`.
-2. Should replace description from `Essential JS 2 Component` to `Essential JS 2 {Component-Name} Components/Library`.
+## Setup
 
-The Essential JS 2 components must have the below folder structure in its new repository.
+To install TreeGrid and its dependent packages, use the following command.
 
-![](http://www.syncfusion.com/downloads/support/directtrac/general/template-img12026308336)
-
-## .vscode
-It configures the VS code application’s edit settings. The default tslint configuration and other edit settings are already included itself.
-## spec
-It should have all testing scripts and its specification documents for code coverage and jasmine test cases.
-## src
-All typescript source files related to the component should place inside the **src** location.
-### index.ts
-This is the main file in the current repository. It needs to be export all modules from the **src** folder. Each sub folder under src should have independent index.ts file. 
-## styles
-The component’s style sheet should placed inside the styles location. The default style sheet files are already included in the template.
-
-If the current repository contains a group of components, then each component should have it's own folder under styles location. 
-
-Example:
-
-```css
-
- ---> ej2-button-components
-     ---> styles
-         ---> button
-             ---> button themes here
-         ---> radio button
-             ---> radio button themes here
-         ---> checkbox
-             ---> checkbox themes here
-
+```sh
+npm install @syncfusion/ej2-treegrid
 ```
 
-### Icon Base:
+## Resources
 
-All embed font icon declarations are placed inside the **styles/common/_icons.scss** of [**ej2-base-library**](https://bitbucket.org/syncfusion/ej2-base-library/src) repository. 
+* [Getting Started](https://ej2.syncfusion.com/documentation/tree-grid/getting-started/)
+* [View Online Demos](https://ej2.syncfusion.com/demos/#/material/tree-grid/default.html)
+* [Product Page](https://www.syncfusion.com/javascript-ui-controls/treegrid)
 
-The show case icon sample (demo.html) also placed inside the **styles/resources** folder of [**ej2-base-library**](https://bitbucket.org/syncfusion/ej2-base-library/src).
+## Supported Frameworks
 
-![](http://files2.syncfusion.com/dtsupport/directtrac/general/template_img2-927093325.png)
+TreeGrid component is also offered in following list of frameworks.
 
-All CSS styles have to be wrapped into a mixin **export-module** with unique module name.
+1. [Angular](https://github.com/syncfusion/ej2-angular-ui-controls/tree/master/components/treegrid)
+2. [React](https://github.com/syncfusion/ej2-react-ui-components/tree/master/components/treegrid)
+3. [VueJS](https://github.com/syncfusion/ej2-vue-ui-components/tree/master/components/treegrid)
+4. [ASP.NET Core](https://www.syncfusion.com/aspnet-core-ui-controls/treegrid)
+5. [ASP.NET MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls/treegrid)
+6. [JavaScript (ES5)](https://www.syncfusion.com/javascript-ui-controls/treegrid)
 
-The required icon details can be gathered from demo.html of [**ej2-base-library**](https://bitbucket.org/syncfusion/ej2-base-library/src). Each icon class must have **ej-** prefix in **_icons.scss**. 
+## Key Features
 
-All icon elements must have class name **e-icons** in the DOM.
+* [**Data sources**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=grid#/material/tree-grid/localdata.html) - Bind the TreeGrid component with an array of JSON objects or DataManager.
+* [**Sorting**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=grid#/material/tree-grid/sorting.html) - Supports n levels of sorting.
+* [**Filtering**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=grid#/material/tree-grid/filtering.html) - Offers filter UI such as filter bar and menu at each column to filter data.
+* [**Paging**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=grid#/material/tree-grid/default-paging.html) - Provides the option to easily switch between pages using the pager bar.
+* [**Editing**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=grid#/material/tree-grid/inline-editing.html) - provides the options for create, read, update, and delete operations.
+* **Columns** - The column definitions are used as the dataSource schema in the TreeGrid. This plays a vital role in rendering column values in the required format.
+  * [**Reordering**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=grid#/material/tree-grid/reorder.html) - Allows you to drag any column and drop it at any position in the TreeGrid’s column header row, allowing columns to be repositioned.
+  * [**Resizing**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=grid#/material/tree-grid/resizing.html) - Resizing allows changing column width on the fly by simply dragging the right corner of the column header.
+  * [**Cell Styling**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=grid#/material/tree-grid/conditional-formatting.html) - TreeGrid cell styles can be customized either by using CSS or programmatically.
+  * [**Selection**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=grid#/material/tree-grid/selection.html) - Rows or cells can be selected in the TreeGrid. One or more rows or cells can also be selected by holding Ctrl or Command, or programmatically.
+  * [**Templates**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=grid#/material/tree-grid/column-template.html) - Templates can be used to create custom user experiences in the TreeGrid.
+* [**Aggregation**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=grid#/material/tree-grid/aggregate-default.html) - Provides the option to easily visualized the Aggregates for column values.
+* [**Context menu**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=grid#/material/tree-grid/default-context-menu.html) -The context menu provides a list of actions to be performed in the TreeGrid. It appears when a cell, header, or the pager is right-clicked.
+* [**Export**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=grid#/material/tree-grid/default-exporting.html) - Provides the options to Export the TreeGrid data to Excel, PDF, and CSV formats.
+* **RTL support** - Provides a full-fledged right-to-left mode which aligns content in the TreeGrid control from right to left.
+* **Localization** - Provides inherent support to localize the UI.
 
-```css
+## Support
 
-@include export-module('component-icons') {
-   .e-file-delete-01:before { 
-     content: "\e700"; 
-  }
-}
+Product support is available through following mediums.
 
-```
+* Creating incident in Syncfusion [Direct-trac](https://www.syncfusion.com/support/directtrac/incidents?utm_source=npm&utm_campaign=grid) support system or [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_campaign=grid).
+* New [GitHub issue](https://github.com/syncfusion/ej2-javascript-ui-controls/issues/new).
+* Ask your query in Stack Overflow with tag `syncfusion`, `ej2`.
 
-### _layout.scss:
+## License
 
-It contains the layout design of component. The common SCSS variables should not define inside the layout style sheet.
+Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license?utm_source=npm&utm_campaign=grid).
 
-|       Correct Usage        |         Wrong Usage                 |
-| -------------------------- | ------------------------------------|
-| .ej-head { border:  0px; } | .ej-head { border:  $border-size; } |
+## Changelog
 
+Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/treegrid/CHANGELOG.md?utm_source=npm&utm_campaign=grid)
 
-### _theme.scss:
-
-It contains the theme implementation of component. It can be use the common variables and local values in the styles.
-
-### _definition.scss:
-
-The component's default defintion and variables can be declared in this file. We need to use this variables in the component’s theme files. 
-This file refernece will be automated, so we don't need to import this file in `_all.scss`.
-
-### _{themeName}-definition.scss:
-
-We can override the default component variables by this theme wise definition file. This file also automated to import in main theme file,
-so don't import this file in `_all.scss`.
-
-### theme files (SCSS):
-
-The default theme file (bootstrap.scss) will automatically generate while running `gulp styles` task. The style dependencies can be added by using `styleDependency` option of `config.json` file. These dependencies will automatically import in the generated theme files.
-
-**Single component repository:**
-
-```json
-
-// If component have style dependency packages
-"styleDependency": ["ej2-pack1", "ej2-pack2"]
-
-// If component don't have styles
-"styleDependency": "none"
-
-```
-
-**Multiple component repository:**
-
-```json
-
-"styleDependency": [{ "grid": [ "ej2-button", "ej2-dropdown"] }, { "treegrid": ["ej2-button", "ej2-lists"] }, { "button": [] }]
-
-```
-
-If the component doesn't have any dependencies, then add an empty array in `styleDependency`. The key must have the same name as folder name in styles.
-
-`ej2-base` is common to all theme files, so it will automatically imported at top of generating files, so don't add `ej2-base` in the `styleDependency`.
-
-`gulp styles-all` task will generate all defined themes in the styles folder.
-
-
-**Automated Theme File Structure:** 
-
-The automated theme files will have the below contents.
-
-`bootstrap.scss:`
-
-```css
-
-    /*!  dependent component's styles */
-    @import 'ej2-base/styles/bootstrap.scss';
-
-    /*! current component's default defintions */
-    @import 'definition.scss';
-
-    /*! current component's theme wise override defintions */
-    @import 'bootstrap-definition.scss';
-
-    /*! current component's styles */
-    @import 'all.scss';
-
-```
-
-## .gitignore
-Specify the file or folders, which will be ignored while committing in git.
-## .npmignore
-Specify the files or folder, which will be ignored when publish the changes in npm.
-## .npmrc
-It contains the remote server IP registry, which has been used for sinopia to get npm packages from remote server. Do not change anything from this file. 
-## Jenkinsfile
-Jenkinsfile is nothing but a pipeline file which contains the build steps need to be run in the Jenkins server.
-## ReadMe.md
-Description of current repository is placed in this md file. The file name must have `ReadMe.md` case sensitive.
-## config.json
-It can override the gulp task’s default source path from [**ej2-build-tasks**](https://bitbucket.org/syncfusion/ej2-build-tasks/) config settings.
-
-If current repository contains a group of components, then it should have declared in components option.
-
-Example:
-
-```json
-
-{
-  "components": ["button", "radiobutton", "checkbox"]
-}
-
-```
-
-The `customWords` option in config.json is used to ignore some specific words on api spell checking process.
-
-The `sampleList` is used to get the samples need to be tested on sample browser for each merge request.
-
-
-## gulpfile.js
-The gulp tasks from [**ej2-build-tasks**](https://gitlab.syncfusion.com/essential-studio/ej2-build-tasks) can be run from local repository using this gulpfile.js. Do not change anything from this file. 
-## karma.conf.js
-The karma configuration setup is configured in this file. All src, spec and dependent components src files must be declared inside the files option. 
-## test-main.js
-This configuration is used to run the karma code coverage . If the component has dependent components, then it must be included using packages option. 
-## Reference:
-[https://gitlab.syncfusion.com/essential-studio/ej2-button-components/tree/master](https://gitlab.syncfusion.com/essential-studio/ej2-button-components/tree/master "")
+&copy; Copyright 2018 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

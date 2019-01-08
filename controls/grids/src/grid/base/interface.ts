@@ -395,6 +395,7 @@ export interface IGrid extends Component<HTMLElement> {
     lockcolPositionCount?: number;
     isPrinting?: boolean;
     id?: string;
+    isSelectedRowIndexUpdating?: boolean;
 
     //public methods
     getHeaderContent?(): Element;

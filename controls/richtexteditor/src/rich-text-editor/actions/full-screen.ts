@@ -75,7 +75,7 @@ export class FullScreen {
                 let elem: HTMLElement = document.querySelector('body');
                 addClass([elem], ['e-rte-overflow']);
             } else {
-                let elem: HTMLElement = document.querySelector('#' + this.scrollableParent[i].id);
+                let elem: HTMLElement = this.scrollableParent[i];
                 addClass([elem], ['e-rte-overflow']);
             }
         }

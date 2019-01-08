@@ -104,10 +104,10 @@ describe('Chart Control', () => {
                 expect(path.localName == 'path').toBe(true);
                 expect(path.getAttribute('d') != '' || ' ').toBe(true);
                 expect(group.childNodes.length == 5).toBe(true);
-                expect(text1.childNodes.length == 3).toBe(true);
-                expect(text1.textContent == 'ChartSeriesNameGold$2000.00 : 40').toBe(true);
-                expect(text1.childNodes[1].textContent == '$2000.00 : ').toBe(true);
-                expect(text1.childNodes[2].textContent == '40').toBe(true);
+                expect(text1.childNodes.length == 5).toBe(true);
+                expect(text1.textContent.replace(/\u200E/g, '') == 'ChartSeriesNameGold$2000.00 : 40').toBe(true);
+                // expect(text1.childNodes[1].textContent.replace(/\u200E/g, '') == '$2000.00 : ').toBe(true);
+                // expect(text1.childNodes[2].textContent.replace(/\u200E/g, '') == '40').toBe(true);
                 expect((<HTMLElement>group.childNodes[2]).getAttribute('d') != '' || ' ').toBe(true);
                 done();
             };
@@ -130,8 +130,10 @@ describe('Chart Control', () => {
             let tooltip: HTMLElement = document.getElementById('container_tooltip');
             expect(tooltip != null).toBe(true);
 
-            let text2: HTMLElement = tooltip.childNodes[0].childNodes[0].childNodes[1].childNodes[2] as HTMLElement;
-            expect(text2.textContent == '70').toBe(true);
+            let text2: HTMLElement = tooltip.childNodes[0].childNodes[0].childNodes[1] as HTMLElement;
+            expect(text2.textContent.replace(/\u200E/g, '')).toEqual('ChartSeriesNameGold$1000.00 : 70');
+            
+            //expect(text2.textContent.replace(/\u200E/g, '') == '70').toBe(true);
 
             let trackSymbol: HTMLElement = document.getElementById('containerSymbolGroup0').lastChild as HTMLElement;
             expect(trackSymbol != null).toBe(true);
@@ -141,9 +143,9 @@ describe('Chart Control', () => {
             y = parseFloat(targetElement.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
             x = parseFloat(targetElement.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft - 1;
             trigger.mousemovetEvent(targetElement, Math.ceil(x), Math.ceil(y));
-            let text1: HTMLElement = tooltip.childNodes[0].childNodes[0].childNodes[1].childNodes[1] as HTMLElement;
+            let text1: HTMLElement = tooltip.childNodes[0].childNodes[0].childNodes[1]as HTMLElement;
 
-            expect(text1.textContent == '$8000.00 : ').toBe(true);
+            expect(text1.textContent.replace(/\u200E/g, '') == 'ChartSeriesNameGold$8000.00 : 70').toBe(true);
             expect((<HTMLElement>tooltip.childNodes[0].childNodes[0].childNodes[2]).getAttribute('d') != '' || ' ').toBe(true);
         });
 
@@ -228,7 +230,7 @@ describe('Chart Control', () => {
                 let tooltip: HTMLElement = document.getElementById('container_tooltip');
                 expect(tooltip != null).toBe(true);
                 let text1: HTMLElement = tooltip.childNodes[0].childNodes[0].childNodes[1] as HTMLElement;
-                expect(text1.textContent == 'ChartSeriesNameGold7000 : 40').toBe(true);
+                expect(text1.textContent.replace(/\u200E/g, '') == 'ChartSeriesNameGold7000 : 40').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -249,7 +251,7 @@ describe('Chart Control', () => {
                 let tooltip: HTMLElement = document.getElementById('container_tooltip');
                 expect(tooltip != null).toBe(true);
                 let text1: HTMLElement = tooltip.childNodes[0].childNodes[0].childNodes[1] as HTMLElement;
-                expect(text1.textContent == 'ChartSeriesNameGold5000 : 50').toBe(true);
+                expect(text1.textContent.replace(/\u200E/g, '') == 'ChartSeriesNameGold5000 : 50').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -300,7 +302,7 @@ describe('Chart Control', () => {
                 let tooltip: HTMLElement = document.getElementById('container_tooltip');
                 expect(tooltip != null).toBe(true);
                 let text1: HTMLElement = tooltip.childNodes[0].childNodes[0].childNodes[1] as HTMLElement;
-                expect(text1.textContent == 'ChartSeriesNameGold2006 : 65').toBe(true);
+                expect(text1.textContent.replace(/\u200E/g, '') == 'ChartSeriesNameGold2006 : 65').toBe(true);
                 remove(document.getElementById('container_tooltip'));
                 remove(document.getElementById('container_Series_0_Point_3_Trackball_0'));
                 remove(document.getElementById('container_Series_0_Point_3_Trackball_1'));
@@ -351,7 +353,7 @@ describe('Chart Control', () => {
                 let text1: HTMLElement = group.childNodes[1] as HTMLElement;
                 expect(path.getAttribute('fill') == 'pink').toBe(true);
                 expect((<HTMLElement>text1.childNodes[0]).getAttribute('fill') == 'red').toBe(true);
-                expect(text1.textContent == 'ChartSeriesNameGold#3000 : 70C').toBe(true);
+                expect(text1.textContent.replace(/\u200E/g, '') == 'ChartSeriesNameGold#3000 : 70C').toBe(true);
                 expect(document.getElementById('container_Series_0_Point_2_Trackball_0').getAttribute('fill') == 'transparent').toBe(true);
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y + 50));
             };

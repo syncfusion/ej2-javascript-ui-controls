@@ -3320,6 +3320,13 @@ let ComboBox = class ComboBox extends DropDownList {
             e.preventDefault();
         }
     }
+    onBlur(e) {
+        let inputValue = this.inputElement.value === '' ? null : this.inputElement.value;
+        if (!isNullOrUndefined(this.listData) && !isNullOrUndefined(inputValue) && inputValue !== this.text) {
+            this.customValue();
+        }
+        super.onBlur(e);
+    }
     targetElement() {
         return this.inputElement;
     }
@@ -6739,9 +6746,10 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             'li[aria-selected="true"]:not(.e-reorder-hide)');
         let length = li.length;
         if (li && li.length) {
-            while (length > 0) {
-                this.updateListSelection(li[length - 1], event, length);
-                length--;
+            let index = 0;
+            while (index < length) {
+                this.updateListSelection(li[index], event, length - index);
+                index++;
             }
         }
         if (this.mode !== 'Box' && !this.isPopupOpen()) {

@@ -3392,6 +3392,13 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
             e.preventDefault();
         }
     };
+    ComboBox.prototype.onBlur = function (e) {
+        var inputValue = this.inputElement.value === '' ? null : this.inputElement.value;
+        if (!isNullOrUndefined(this.listData) && !isNullOrUndefined(inputValue) && inputValue !== this.text) {
+            this.customValue();
+        }
+        _super.prototype.onBlur.call(this, e);
+    };
     ComboBox.prototype.targetElement = function () {
         return this.inputElement;
     };
@@ -6851,9 +6858,10 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             'li[aria-selected="true"]:not(.e-reorder-hide)');
         var length = li.length;
         if (li && li.length) {
-            while (length > 0) {
-                this.updateListSelection(li[length - 1], event, length);
-                length--;
+            var index = 0;
+            while (index < length) {
+                this.updateListSelection(li[index], event, length - index);
+                index++;
             }
         }
         if (this.mode !== 'Box' && !this.isPopupOpen()) {

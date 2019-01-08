@@ -1390,6 +1390,8 @@ class ToolbarRenderer {
         dropDown.createElement = proxy.parent.createElement;
         dropDown.appendTo(args.element);
         args.element.tabIndex = -1;
+        let popupElement = document.getElementById(dropDown.element.id + '-popup');
+        popupElement.setAttribute('aria-owns', this.parent.getID());
         return dropDown;
     }
     onPopupOverlay(args) {
@@ -1540,6 +1542,8 @@ class ToolbarRenderer {
         });
         dropDown.createElement = proxy.parent.createElement;
         dropDown.appendTo(args.element);
+        let popupElement = document.getElementById(dropDown.element.id + '-popup');
+        popupElement.setAttribute('aria-owns', this.parent.getID());
         dropDown.element.insertBefore(content, dropDown.element.querySelector('.e-caret'));
         args.element.tabIndex = -1;
         dropDown.element.onmousedown = () => { proxy.parent.notify(selectionSave, {}); };
@@ -3101,6 +3105,7 @@ class BaseQuickToolbar {
         let popupId = getUniqueID(args.popupType + '_Quick_Popup');
         this.stringItems = args.toolbarItems;
         this.element = this.parent.createElement('div', { id: popupId, className: className + ' ' + CLS_RTE_ELEMENTS });
+        this.element.setAttribute('aria-owns', this.parent.getID());
         this.appendPopupContent();
         this.createToolbar(args.toolbarItems, args.mode);
         this.popupRenderer.renderPopup(this);
@@ -8745,6 +8750,7 @@ class SelectionCommands {
             case 'fontcolor':
                 node = document.createElement('span');
                 node.style.color = value;
+                node.style.textDecoration = 'inherit';
                 return node;
             case 'fontname':
                 node = document.createElement('span');
@@ -9808,6 +9814,7 @@ class IframeContentRender extends ContentRender {
         this.setPanel(iframe);
         rteObj.element.appendChild(iframe);
         iframe.contentDocument.body.id = this.parent.getID() + '_rte-edit-view';
+        iframe.contentDocument.body.setAttribute('aria-owns', this.parent.getID());
         iframe.contentDocument.open();
         iFrameContent = this.setThemeColor(iFrameContent, { color: '#333' });
         iframe.contentDocument.write(iFrameContent);
@@ -13607,7 +13614,7 @@ class FullScreen {
                 addClass([elem], ['e-rte-overflow']);
             }
             else {
-                let elem = document.querySelector('#' + this.scrollableParent[i].id);
+                let elem = this.scrollableParent[i];
                 addClass([elem], ['e-rte-overflow']);
             }
         }
@@ -13758,14 +13765,14 @@ let RichTextEditor = class RichTextEditor extends Component {
         extend(htmlAttr, this.htmlAttributes, htmlAttr);
         this.setProperties({ htmlAttributes: htmlAttr }, true);
         if (this.element.tagName === 'TEXTAREA') {
-            let rteOutterWrapper = this.createElement('div', {
+            let rteOuterWrapper = this.createElement('div', {
                 className: 'e-control e-richtexteditor'
             });
-            rteOutterWrapper.innerHTML = this.element.value;
-            this.element.parentElement.insertBefore(rteOutterWrapper, this.element);
+            rteOuterWrapper.innerHTML = this.element.value;
+            this.element.parentElement.insertBefore(rteOuterWrapper, this.element);
             this.valueContainer = this.element;
             this.valueContainer.classList.remove('e-control', 'e-richtexteditor');
-            this.element = rteOutterWrapper;
+            this.element = rteOuterWrapper;
         }
         else {
             this.valueContainer = this.createElement('textarea', {
@@ -14605,7 +14612,8 @@ let RichTextEditor = class RichTextEditor extends Component {
             this.isFocusOut = false;
             addClass([this.element], [CLS_FOCUS]);
             if (this.editorMode === 'HTML') {
-                this.cloneValue = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.inputElement.innerHTML;
+                this.cloneValue = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.enableHtmlEncode ?
+                    this.encode(this.decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
             }
             else {
                 this.cloneValue = this.inputElement.value === '' ? null :
@@ -14624,7 +14632,8 @@ let RichTextEditor = class RichTextEditor extends Component {
     }
     setPanelValue() {
         if (this.editorMode === 'HTML') {
-            this.value = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.inputElement.innerHTML;
+            this.value = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.enableHtmlEncode ?
+                this.encode(this.decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
         }
         else {
             this.value = this.inputElement.value === '' ? null :
@@ -14638,8 +14647,9 @@ let RichTextEditor = class RichTextEditor extends Component {
     }
     onDocumentClick(e) {
         let target = e.target;
-        if (!this.element.contains(e.target) && document !== e.target && !closest(target, '.' + CLS_RTE) &&
-            !closest(target, '.' + CLS_RTE_ELEMENTS)) {
+        let rteElement = closest(target, '.' + CLS_RTE);
+        if (!this.element.contains(e.target) && document !== e.target && rteElement !== this.element &&
+            !closest(target, '[aria-owns="' + this.getID() + '"]')) {
             this.isBlur = true;
             this.isRTE = false;
         }
@@ -14648,10 +14658,11 @@ let RichTextEditor = class RichTextEditor extends Component {
     blurHandler(e) {
         let trg = e.relatedTarget;
         if (trg) {
-            if (closest(trg, '.' + CLS_RTE)) {
+            let rteElement = closest(trg, '.' + CLS_RTE);
+            if (rteElement && rteElement === this.element) {
                 this.isBlur = false;
             }
-            else if (closest(trg, '.' + CLS_RTE_ELEMENTS)) {
+            else if (closest(trg, '[aria-owns="' + this.getID() + '"]')) {
                 this.isBlur = false;
             }
             else {

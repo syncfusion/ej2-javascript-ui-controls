@@ -80,8 +80,8 @@ var LinkAnnotation = /** @__PURE__ @class */ (function () {
             var rect = linkAnnotation[i];
             aTag = this_2.setHyperlinkProperties(aTag, rect);
             aTag.setAttribute('href', '');
-            if (linkPage[i] !== undefined) {
-                var destPageHeight = (this_2.pdfViewerBase.pageSize[pageIndex - 1].height);
+            if (linkPage[i] !== undefined && linkPage[i] > 0) {
+                var destPageHeight = (this_2.pdfViewerBase.pageSize[pageIndex].height);
                 var destLocation = void 0;
                 var scrollValue = void 0;
                 if (annotationY.length !== 0) {
@@ -93,12 +93,14 @@ var LinkAnnotation = /** @__PURE__ @class */ (function () {
                     // tslint:disable-next-line:max-line-length
                     scrollValue = this_2.pdfViewerBase.pageSize[linkPage[i]].top * this_2.pdfViewerBase.getZoomFactor();
                 }
-                aTag.name = scrollValue.toString();
-                aTag.onclick = function () {
-                    // tslint:disable-next-line:radix
-                    proxy.pdfViewerBase.viewerContainer.scrollTop = parseInt(aTag.name);
-                    return false;
-                };
+                if (scrollValue !== undefined) {
+                    aTag.name = scrollValue.toString();
+                    aTag.onclick = function () {
+                        // tslint:disable-next-line:radix
+                        proxy.pdfViewerBase.viewerContainer.scrollTop = parseInt(aTag.name);
+                        return false;
+                    };
+                }
             }
             var pageDiv = document.getElementById(this_2.pdfViewer.element.id + '_pageDiv_' + pageIndex);
             pageDiv.appendChild(aTag);

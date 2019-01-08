@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 16.4.45 (2018-12-24)
+## 16.4.46 (2019-01-02)
+
+### Grid
+
+#### Bug Fixes
+
+- Edit dialog does not destroyed after perform add operation with custom binding is resolved.
+
+## 16.4.45 (2019-01-02)
 
 ### Grid
 

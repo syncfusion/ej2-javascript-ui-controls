@@ -899,10 +899,8 @@ function changeToLowerUpperCase(key: string, value: string): string {
 export function setMaskValue(val?: string): void {
     if (this.mask && val !== undefined && (this.prevValue === undefined || this.prevValue !== val)) {
         this.maskKeyPress = true;
-        if (val === null && this.floatLabelType === 'Never' && this.placeholder) {
-            setElementValue.call(this, this.promptMask);
-        } else if (val !== '') {
-            setElementValue.call(this, this.promptMask);
+        setElementValue.call(this, this.promptMask);
+        if (val !== '' && !(val === null && this.floatLabelType === 'Never' && this.placeholder)) {
             this.element.selectionStart = 0;
             this.element.selectionEnd = 0;
         }

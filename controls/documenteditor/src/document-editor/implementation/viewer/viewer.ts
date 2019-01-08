@@ -318,6 +318,10 @@ export abstract class LayoutViewer {
      * @private
      */
     public moveCaretPosition: number = 0;
+    /**
+     * @private
+     */
+    public isTextInput: boolean = false;
 
     //#region Properties
     /**

@@ -708,7 +708,7 @@ export class WUniqueFormat {
      */
     public cloneItems(format: WUniqueFormat, property: string, value: object, uniqueFormatType: number): void {
         let propertyType: number = WUniqueFormat.getPropertyType(uniqueFormatType, property);
-        let keys: number[] = format.propertiesHash.getItem();
+        let keys: number[] = format.propertiesHash.keys;
         for (let i: number = 0; i < keys.length; i++) {
             if (keys[i] === propertyType) {
                 this.propertiesHash.add(propertyType, value);

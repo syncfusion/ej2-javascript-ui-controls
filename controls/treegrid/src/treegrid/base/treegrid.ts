@@ -1674,6 +1674,8 @@ private getGridEditSettings(): GridEditModel {
           this.grid.gridLines = this.gridLines; break;
         case 'rowHeight':
           this.grid.rowHeight = this.rowHeight; break;
+        case 'height':
+          this.grid.height = this.height; break;
         case 'enableAltRow':
           this.grid.enableAltRow = this.enableAltRow; break;
         case 'enableHover':

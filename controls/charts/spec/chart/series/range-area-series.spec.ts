@@ -558,7 +558,7 @@ describe('Chart', () => {
                 let tooltip: HTMLElement = document.getElementById('container_tooltip');
                 expect(tooltip != null).toBe(true);
                 expect(target.getAttribute('opacity') == '1').toBe(true);
-                expect(tooltip.childNodes[0].childNodes[0].childNodes[1].textContent).toEqual('IndiaFebHigh : 6.3Low : 1.3');
+                expect(tooltip.childNodes[0].childNodes[0].childNodes[1].textContent.replace(/\u200E/g, '')).toEqual('IndiaFebHigh : 6.3Low : 1.3');
                 done();
             };
             chartObj.loaded = loaded;

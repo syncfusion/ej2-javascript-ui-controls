@@ -1393,6 +1393,8 @@ var ToolbarRenderer = /** @__PURE__ @class */ (function () {
         dropDown.createElement = proxy.parent.createElement;
         dropDown.appendTo(args.element);
         args.element.tabIndex = -1;
+        var popupElement = document.getElementById(dropDown.element.id + '-popup');
+        popupElement.setAttribute('aria-owns', this.parent.getID());
         return dropDown;
     };
     ToolbarRenderer.prototype.onPopupOverlay = function (args) {
@@ -1544,6 +1546,8 @@ var ToolbarRenderer = /** @__PURE__ @class */ (function () {
         });
         dropDown.createElement = proxy.parent.createElement;
         dropDown.appendTo(args.element);
+        var popupElement = document.getElementById(dropDown.element.id + '-popup');
+        popupElement.setAttribute('aria-owns', this.parent.getID());
         dropDown.element.insertBefore(content, dropDown.element.querySelector('.e-caret'));
         args.element.tabIndex = -1;
         dropDown.element.onmousedown = function () { proxy.parent.notify(selectionSave, {}); };
@@ -3143,6 +3147,7 @@ var BaseQuickToolbar = /** @__PURE__ @class */ (function () {
         var popupId = getUniqueID(args.popupType + '_Quick_Popup');
         this.stringItems = args.toolbarItems;
         this.element = this.parent.createElement('div', { id: popupId, className: className + ' ' + CLS_RTE_ELEMENTS });
+        this.element.setAttribute('aria-owns', this.parent.getID());
         this.appendPopupContent();
         this.createToolbar(args.toolbarItems, args.mode);
         this.popupRenderer.renderPopup(this);
@@ -8850,6 +8855,7 @@ var SelectionCommands = /** @__PURE__ @class */ (function () {
             case 'fontcolor':
                 node = document.createElement('span');
                 node.style.color = value;
+                node.style.textDecoration = 'inherit';
                 return node;
             case 'fontname':
                 node = document.createElement('span');
@@ -9888,6 +9894,7 @@ var IframeContentRender = /** @__PURE__ @class */ (function (_super) {
         this.setPanel(iframe);
         rteObj.element.appendChild(iframe);
         iframe.contentDocument.body.id = this.parent.getID() + '_rte-edit-view';
+        iframe.contentDocument.body.setAttribute('aria-owns', this.parent.getID());
         iframe.contentDocument.open();
         iFrameContent = this.setThemeColor(iFrameContent, { color: '#333' });
         iframe.contentDocument.write(iFrameContent);
@@ -13805,7 +13812,7 @@ var FullScreen = /** @__PURE__ @class */ (function () {
                 addClass([elem], ['e-rte-overflow']);
             }
             else {
-                var elem = document.querySelector('#' + this.scrollableParent[i].id);
+                var elem = this.scrollableParent[i];
                 addClass([elem], ['e-rte-overflow']);
             }
         }
@@ -13972,14 +13979,14 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         extend(htmlAttr, this.htmlAttributes, htmlAttr);
         this.setProperties({ htmlAttributes: htmlAttr }, true);
         if (this.element.tagName === 'TEXTAREA') {
-            var rteOutterWrapper = this.createElement('div', {
+            var rteOuterWrapper = this.createElement('div', {
                 className: 'e-control e-richtexteditor'
             });
-            rteOutterWrapper.innerHTML = this.element.value;
-            this.element.parentElement.insertBefore(rteOutterWrapper, this.element);
+            rteOuterWrapper.innerHTML = this.element.value;
+            this.element.parentElement.insertBefore(rteOuterWrapper, this.element);
             this.valueContainer = this.element;
             this.valueContainer.classList.remove('e-control', 'e-richtexteditor');
-            this.element = rteOutterWrapper;
+            this.element = rteOuterWrapper;
         }
         else {
             this.valueContainer = this.createElement('textarea', {
@@ -14821,7 +14828,8 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             this.isFocusOut = false;
             addClass([this.element], [CLS_FOCUS]);
             if (this.editorMode === 'HTML') {
-                this.cloneValue = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.inputElement.innerHTML;
+                this.cloneValue = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.enableHtmlEncode ?
+                    this.encode(this.decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
             }
             else {
                 this.cloneValue = this.inputElement.value === '' ? null :
@@ -14840,7 +14848,8 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     };
     RichTextEditor.prototype.setPanelValue = function () {
         if (this.editorMode === 'HTML') {
-            this.value = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.inputElement.innerHTML;
+            this.value = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.enableHtmlEncode ?
+                this.encode(this.decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
         }
         else {
             this.value = this.inputElement.value === '' ? null :
@@ -14854,8 +14863,9 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     };
     RichTextEditor.prototype.onDocumentClick = function (e) {
         var target = e.target;
-        if (!this.element.contains(e.target) && document !== e.target && !closest(target, '.' + CLS_RTE) &&
-            !closest(target, '.' + CLS_RTE_ELEMENTS)) {
+        var rteElement = closest(target, '.' + CLS_RTE);
+        if (!this.element.contains(e.target) && document !== e.target && rteElement !== this.element &&
+            !closest(target, '[aria-owns="' + this.getID() + '"]')) {
             this.isBlur = true;
             this.isRTE = false;
         }
@@ -14864,10 +14874,11 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     RichTextEditor.prototype.blurHandler = function (e) {
         var trg = e.relatedTarget;
         if (trg) {
-            if (closest(trg, '.' + CLS_RTE)) {
+            var rteElement = closest(trg, '.' + CLS_RTE);
+            if (rteElement && rteElement === this.element) {
                 this.isBlur = false;
             }
-            else if (closest(trg, '.' + CLS_RTE_ELEMENTS)) {
+            else if (closest(trg, '[aria-owns="' + this.getID() + '"]')) {
                 this.isBlur = false;
             }
             else {

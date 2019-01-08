@@ -1126,7 +1126,7 @@ export class Splitter extends Component<HTMLDivElement> {
         }
     }
 
-    public removeSeparator() : void {
+    private removeSeparator() : void {
         for (let i: number = 0; i < this.allBars.length; i ++) {
             detach(this.allBars[i]);
         }
@@ -1139,6 +1139,12 @@ export class Splitter extends Component<HTMLDivElement> {
         this.addSeparator(this.element);
     }
 
+    /**
+     * Allows you to add a pane dynamically to the specified index position by passing the pane properties.
+     * @param { PanePropertiesModel } paneProperties - Specifies the pane’s properties that apply to new pane.
+     * @param { number } index - Specifies the index where the pane will be inserted.
+     * @returns void
+     */
     public addPane(paneProperties: PanePropertiesModel, index: number) : void {
         let newPane : HTMLElement = this.createElement('div');
         newPane = this.addPaneClass(newPane);
@@ -1164,6 +1170,11 @@ export class Splitter extends Component<HTMLDivElement> {
         this.allPanes[this.allPanes.length - 1].classList.remove(STATIC_PANE);
     }
 
+    /**
+     * Allows you to remove the specified pane dynamically by passing its index value.
+     * @param { number } index - Specifies the index value to remove the corresponding pane.
+     * @returns void
+     */
     public removePane(index: number) : void {
         index = (index > this.allPanes.length + 1) ? this.allPanes.length : index;
         let elementClass: string = (this.orientation === 'Horizontal') ? SPLIT_H_PANE : SPLIT_V_PANE;

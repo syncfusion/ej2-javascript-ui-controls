@@ -2712,9 +2712,10 @@ export class MultiSelect extends DropDownBase implements IInput {
             'li[aria-selected="true"]:not(.e-reorder-hide)');
         let length: number = li.length;
         if (li && li.length) {
-            while (length > 0) {
-                this.updateListSelection(li[length - 1], event, length);
-                length--;
+            let index: number = 0;
+            while (index < length) {
+                this.updateListSelection(li[index], event, length - index);
+                index++;
             }
         }
         if (this.mode !== 'Box' && !this.isPopupOpen()) {

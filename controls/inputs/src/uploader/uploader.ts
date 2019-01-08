@@ -318,6 +318,28 @@ export interface PauseResumeEventArgs {
     chunkSize: number;
 }
 
+export interface ActionCompleteEventArgs {
+    /**
+     * Return the selected file details.
+     */
+    fileData: FileInfo[];
+}
+
+export interface RenderingEventArgs {
+    /**
+     * Return the current file item element.
+     */
+    element: HTMLElement;
+    /**
+     * Return the current rendering file item data as File object.
+     */
+    fileInfo: FileInfo;
+    /**
+     * Return the index of the file item in the file list.
+     */
+    index: number;
+}
+
 interface InitialAttr {
     accept: string;
     multiple: boolean;
@@ -371,6 +393,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private uploadMetaData: MetaData[] = [];
     private tabIndex: string = '0';
     private count: number = -1;
+    private actionCompleteCount: number = 0;
+    private flag: boolean = true;
+    private selectedFiles: FileInfo[] = [];
     /**
      * Configures the save and remove URL to perform the upload operations in the server asynchronously.
      * @default { saveUrl: '', removeUrl: '' }
@@ -514,6 +539,21 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      */
     @Event()
     public created: EmitType<Object>;
+
+    /**
+     * Triggers after all the selected files has processed to upload successfully or failed to server.
+     * @event 
+     */
+    @Event()
+    public actionComplete: EmitType<ActionCompleteEventArgs>;
+
+    /**
+     * Triggers before rendering each file item from the file list in a page.
+     * It helps to customize specific file item structure.
+     * @event
+     */
+    @Event()
+    public rendering: EmitType<RenderingEventArgs>;
 
     /**
      * Triggers after selecting or dropping the files by adding the files in upload queue.
@@ -800,13 +840,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 case 'maxFileSize':
                 case 'template':
                 case 'autoUpload':
-                    if (this.sequentialUpload) {
-                        this.count = -1;
-                    }
                     this.clearAll();
                     break;
                 case 'sequentialUpload':
-                    this.count = -1;
                     this.clearAll();
                     break;
                 case 'locale':
@@ -1371,6 +1407,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         if (this.sequentialUpload) {
             this.count = -1;
         }
+        this.actionCompleteCount = 0;
     }
 
     private bindDropEvents(): void {
@@ -1401,9 +1438,14 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         e.stopPropagation();
     }
 
+    /* istanbul ignore next */
     private dropElement(e: DragEvent): void {
         this.dropZoneElement.classList.remove(DRAG_HOVER);
-        this.onSelectFiles(e);
+        if (Browser.info.name === 'chrome') {
+            this.element.files = e.dataTransfer.files;
+        } else {
+            this.onSelectFiles(e);
+        }
         e.preventDefault();
         e.stopPropagation();
     }
@@ -1436,6 +1478,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 /* istanbul ignore next */
                 this.uploadSequential();
             }
+            this.checkActionComplete(true);
         } else {
             this.remove(fileData, false, false, args);
         }
@@ -1623,8 +1666,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private onSelectFiles(args: MouseEvent | TouchEvent | DragEvent | ClipboardEvent): void {
         if (!this.enabled) { return; }
         let targetFiles: File[];
+        /* istanbul ignore next */
         if (args.type === 'drop') {
-            /* istanbul ignore next */
             if (this.directoryUpload) {
                 this.getFilesFromFolder(args);
             } else {
@@ -1657,6 +1700,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             this.trigger('selected', eventArgs);
             return;
         }
+        this.flag = true;
         let fileData: FileInfo[] = [];
         if (!this.multiple) {
             this.clearData(true);
@@ -1682,6 +1726,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             fileDetails.validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : fileDetails.status;
             if (fileDetails.validationMessages.minSize !== '' || fileDetails.validationMessages.maxSize !== '') {
                 fileDetails.statusCode = '0';
+                this.checkActionComplete(true);
             }
             fileData.push(fileDetails);
         }
@@ -1689,6 +1734,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         if (this.allowedExtensions.indexOf('*') > -1) { this.allTypes = true; }
         if (!this.allTypes) { fileData =  this.checkExtension(fileData); }
         this.trigger('selected', eventArgs);
+        this.selectedFiles = fileData;
         if (eventArgs.cancel) { return; }
         if (this.showFileList) {
             if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
@@ -1805,6 +1851,13 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             this.uploadTemplateFn = this.templateComplier(this.template);
             this.listParent.appendChild(liElement);
             let fromElements: HTMLElement[] = [].slice.call(this.uploadTemplateFn(listItem));
+            let index: number = fileData.indexOf(listItem);
+            let eventArgs: RenderingEventArgs = {
+                element: liElement,
+                fileInfo: listItem,
+                index: index
+            };
+            this.trigger('rendering', eventArgs);
             append(fromElements, liElement);
             this.fileList.push(liElement);
         }
@@ -1865,6 +1918,13 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 if (!iconElement.classList.contains(DELETE_ICON)) {
                     iconElement.classList.add(REMOVE_ICON);
                 }
+                let index: number = fileData.indexOf(listItem);
+                let eventArgs: RenderingEventArgs = {
+                    element: liElement,
+                    fileInfo: listItem,
+                    index: index
+                };
+                this.trigger('rendering', eventArgs);
                 this.listParent.appendChild(liElement);
                 this.fileList.push(liElement);
                 this.truncateName(textElement);
@@ -1917,15 +1977,17 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         return filterFiles;
     }
 
-    private updateStatus(files : FileInfo, status ? : string, statusCode? : string ) : FileInfo {
+    private updateStatus(files : FileInfo, status ? : string, statusCode? : string, updateLiStatus : boolean = true ) : FileInfo {
         if (!(status === '' || isNullOrUndefined(status)) && !(statusCode === '' || isNullOrUndefined(statusCode))) {
             files.status = status;
             files.statusCode = statusCode;
         }
-        let li : HTMLElement = this.getLiElement(files);
-        if (!isNullOrUndefined(li)) {
-            if (!isNullOrUndefined(li.querySelector('.' + STATUS)) && !((status === '' || isNullOrUndefined(status)))) {
-                li.querySelector('.' + STATUS).textContent = status;
+        if (updateLiStatus) {
+            let li : HTMLElement = this.getLiElement(files);
+            if (!isNullOrUndefined(li)) {
+                if (!isNullOrUndefined(li.querySelector('.' + STATUS)) && !((status === '' || isNullOrUndefined(status)))) {
+                    li.querySelector('.' + STATUS).textContent = status;
+                }
             }
         }
         return files;
@@ -2124,10 +2186,13 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
 
     private raiseSuccessEvent(e: Event, file: FileInfo): void {
         let response: Object = e && e.currentTarget ? this.getResponse(e) : null;
-        let args: object = {
-            e, response: response, operation: 'upload', file: this.updateStatus(file, this.localizedTexts('uploadSuccessMessage'), '2')
+        let statusMessage: string = this.localizedTexts('uploadSuccessMessage');
+        let args: Object = {
+            e, response: response, operation: 'upload', file: this.updateStatus(file, statusMessage, '2', false), statusText: statusMessage
         };
         this.trigger('success', args );
+        // tslint:disable-next-line
+        this.updateStatus(file, (args as any).statusText, '2');
         this.uploadedFilesData.push(file);
         this.trigger('change', { file: this.uploadedFilesData });
         this.checkActionButtonStatus();
@@ -2139,18 +2204,23 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 (this.getLiElement(file)).classList.remove(RESTRICT_SEQUENTIAL);
             }
         }
+        this.checkActionComplete(true);
     }
 
     private uploadFailed(e: Event, file : FileInfo) : void {
         let li : HTMLElement = this.getLiElement(file);
         let response: Object = e && e.currentTarget ? this.getResponse(e) : null;
-        let args : object = {
-            e, response: response, operation: 'upload', file: this.updateStatus(file, this.localizedTexts('uploadFailedMessage'), '0')
+        let statusMessage: string = this.localizedTexts('uploadFailedMessage');
+        let args : Object = {
+            e, response: response, operation: 'upload', file: this.updateStatus(file, statusMessage, '0', false), statusText: statusMessage
         };
         if (!isNullOrUndefined(li)) { this.renderFailureState(e, file, li); }
         this.trigger('failure', args);
+        // tslint:disable-next-line
+        this.updateStatus(file, (args as any).statusText, '0');
         this.checkActionButtonStatus();
         this.uploadSequential();
+        this.checkActionComplete(true);
     }
 
     private uploadSequential() : void {
@@ -2162,6 +2232,37 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 this.uploadButtonClick();
             }
         }
+    }
+
+    private checkActionComplete(increment: boolean): void {
+        increment ? ++this.actionCompleteCount : --this.actionCompleteCount;
+        this.raiseActionComplete();
+    }
+
+    private raiseActionComplete(): void {
+        if ((this.filesData.length === this.actionCompleteCount) && this.flag) {
+            this.flag = false;
+            let eventArgs: ActionCompleteEventArgs = {
+                fileData: []
+            };
+            eventArgs.fileData =  this.getSelectedFileStatus(this.selectedFiles);
+            this.trigger('actionComplete', eventArgs);
+        }
+    }
+
+    private getSelectedFileStatus(selectedFiles: FileInfo[]): FileInfo[] {
+        let matchFiles: FileInfo [] = [];
+        let matchFilesIndex: number = 0;
+        for ( let selectFileIndex: number =  0 ; selectFileIndex < selectedFiles.length; selectFileIndex++ ) {
+            let selectedFileData: FileInfo = selectedFiles[selectFileIndex];
+            for ( let fileDataIndex: number = 0 ; fileDataIndex < this.filesData.length; fileDataIndex++ ) {
+                if ( this.filesData[fileDataIndex].name === selectedFileData.name ) {
+                    matchFiles[matchFilesIndex] = this.filesData[fileDataIndex];
+                    ++matchFilesIndex;
+                }
+            }
+        }
+        return matchFiles;
     }
 
     private updateProgressBarClasses (li : HTMLElement, className : string) : void {
@@ -2362,6 +2463,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             if (metaData.file.statusCode === '5') {
                 let eventArgs: CancelEventArgs = { event: e, fileData: metaData.file, cancel: false };
                 this.trigger('canceling', eventArgs);
+                /* istanbul ignore next */
                 if (eventArgs.cancel) {
                     metaData.file.statusCode = '3';
                     let spinnerTarget: HTMLElement = liElement.querySelector('.' + ABORT_ICON) as HTMLElement;
@@ -2578,13 +2680,18 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             }
             metaData.retryCount = 0;
             let file: FileInfo = metaData.file;
+            let failureMessage: string = this.localizedTexts('uploadFailedMessage');
             let args: Object = {
                 e, response: requestResponse,
                 operation: 'upload',
-                file: this.updateStatus(file, this.localizedTexts('uploadFailedMessage'), '0')
+                file: this.updateStatus(file, failureMessage, '0', false),
+                statusText: failureMessage
             };
             this.trigger('failure', args);
+            // tslint:disable-next-line
+            this.updateStatus(file, (args as any).statusText, '0');
             this.uploadSequential();
+            this.checkActionComplete(true);
         }
     }
     }
@@ -2604,8 +2711,10 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         let fileData: FileInfo = this.filesData[index];
         let metaData: MetaData = this.getCurrentMetaData(fileData);
         if (targetElement.classList.contains(PAUSE_UPLOAD)) {
+            /* istanbul ignore next */
             this.pauseUpload(metaData, e);
         } else if (targetElement.classList.contains(RESUME_UPLOAD)) {
+            /* istanbul ignore next */
             this.resumeUpload(metaData, e);
         } else if (targetElement.classList.contains(RETRY_ICON)) {
             if (metaData.file.status === this.localizedTexts('fileUploadCancel')) {
@@ -2626,8 +2735,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             metaData.file.status = this.localizedTexts('readyToUploadMessage');
             this.chunkUpload(metaData.file);
         }
+        /* istanbul ignore next */
         if (this.sequentialUpload) {
-            /* istanbul ignore next */
             (this.getLiElement(metaData.file)).classList.add(RESTRICT_SEQUENTIAL);
         }
     }
@@ -2711,6 +2820,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * @param { FileList } filesData - specifies the files data for upload.
      * @returns File[]
      */
+    /* istanbul ignore next */
     public sortFileList(filesData: FileList): File[] {
         let files: FileList = filesData;
         let fileNames: string[] = [];
@@ -2845,6 +2955,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             customFormData: [],
             postRawFile: true
         };
+        let index: number;
         if (this.isForm) {
             eventArgs.filesData = this.getFilesData();
             this.trigger('removing', eventArgs);
@@ -2864,6 +2975,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         let removeUrl: string = this.asyncSettings.removeUrl;
         let validUrl: boolean = (removeUrl === '' || isNullOrUndefined(removeUrl)) ? false : true;
         for (let files of removeFiles) {
+            index = this.filesData.indexOf(files);
             if ((files.statusCode === '2' || files.statusCode === '4') && validUrl) {
                 this.removeUploadedFile(files, eventArgs, removeDirectly, customTemplate);
             } else {
@@ -2872,6 +2984,14 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 }
                 if (eventArgs.cancel) { return; }
                 this.removeFilesData(files, customTemplate);
+            }
+            if (this.sequentialUpload) {
+                /* istanbul ignore next */
+                if (index <= this.actionCompleteCount ) {
+                    this.checkActionComplete(false);
+                }
+            } else {
+                this.checkActionComplete(false);
             }
         }
     }
@@ -2893,6 +3013,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         this.trigger('clearing', eventArgs);
         if (eventArgs.cancel) { return; }
         this.clearData();
+        this.actionCompleteCount = 0;
+        this.count = -1;
     }
 
     /**

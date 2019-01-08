@@ -1,7 +1,7 @@
 /**
  * MultiSelect spec document
  */
-import { MultiSelect, TaggingEventArgs, MultiSelectChangeEventArgs } from '../../src/multi-select/multi-select';
+import { MultiSelect, TaggingEventArgs, MultiSelectChangeEventArgs, ISelectAllEventArgs } from '../../src/multi-select/multi-select';
 import { Browser, isNullOrUndefined, EmitType } from '@syncfusion/ej2-base';
 import { createElement, L10n } from '@syncfusion/ej2-base';
 import { dropDownBaseClasses, PopupEventArgs } from '../../src/drop-down-base/drop-down-base';
@@ -2549,6 +2549,50 @@ describe('MultiSelect', () => {
             listObj.value = ['1'];
             listObj.dataBind();
             listObj.showPopup();
+        });
+    });
+
+    describe('EJ2-20390 - Checking SelectAll option in MultiSelect select items in reverse order', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let datasource: { [key: string]: Object }[] = [
+            { Name: 'Australia', Code: 'AU' },
+            { Name: 'Bermuda', Code: 'BM' },
+            { Name: 'Canada', Code: 'CA' },
+            { Name: 'Cameroon', Code: 'CM' },
+            { Name: 'Denmark', Code: 'DK' },
+            { Name: 'France', Code: 'FR' },
+            { Name: 'Finland', Code: 'FI' },
+        ];
+        let originalTimeout: number;
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: datasource,
+                fields: { text: 'Name' },
+                popupHeight: 50,
+                mode: 'CheckBox',
+                showSelectAll: true
+            });
+            listObj.appendTo(element);
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+
+        it('check select all', (done) => {
+            listObj.selectedAll = (args: ISelectAllEventArgs): void => {
+                expect((args.itemData[0] as { [key: string]: Object }).Name).toBe('Australia');
+                expect(listObj.value[0]).toBe('Australia');
+                done();
+            };
+            listObj.selectAll(true);
         });
     });
     

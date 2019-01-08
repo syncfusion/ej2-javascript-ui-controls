@@ -50,7 +50,6 @@ export class Selection implements IAction {
     private prevRowIndex: number;
     private prevCIdxs: IIndex;
     private prevECIdxs: IIndex;
-    private selectedRowIndex: number;
     private isMultiShiftRequest: boolean = false;
     private isMultiCtrlRequest: boolean = false;
     private enableSelectMultiTouch: boolean = false;
@@ -103,6 +102,7 @@ export class Selection implements IAction {
     private isCancelDeSelect: boolean = false;
     private isPreventCellSelect: boolean = false;
     private disableUI: boolean = false;
+    private isClearSelection: boolean = false;
 
     /**
      * Constructor for the Grid selection module
@@ -257,7 +257,7 @@ export class Selection implements IAction {
                 this.updateRowSelection(selectedRow, index);
                 if (gObj.getFrozenColumns()) { this.updateRowSelection(selectedMovableRow, index); }
             }
-            this.parent.setProperties({selectedRowIndex: index}, true);
+            this.selectRowIndex(index);
         }
         if (!isToggle) {
             args = {
@@ -287,7 +287,7 @@ export class Selection implements IAction {
      */
     public selectRowsByRange(startIndex: number, endIndex?: number): void {
         this.selectRows(this.getCollectionFromIndexes(startIndex, endIndex));
-        this.parent.setProperties({selectedRowIndex: endIndex}, true);
+        this.selectRowIndex(endIndex);
     }
 
     /** 
@@ -318,7 +318,7 @@ export class Selection implements IAction {
             return;
         }
         this.clearRow();
-        this.parent.setProperties({selectedRowIndex: rowIndexes.slice(-1)[0]}, true);
+        this.selectRowIndex(rowIndexes.slice(-1)[0]);
         if (!this.isSingleSel()) {
             for (let rowIdx of rowIndexes) {
                 this.updateRowSelection(gObj.getRowByIndex(rowIdx), rowIdx);
@@ -361,7 +361,7 @@ export class Selection implements IAction {
         for (let rowIndex of rowIndexes) {
             let rowObj: Row<Column> = this.getRowObj(rowIndex);
             let isUnSelected: boolean = this.selectedRowIndexes.indexOf(rowIndex) > -1;
-            this.parent.setProperties({selectedRowIndex: rowIndex}, true);
+            this.selectRowIndex(rowIndex);
             if (isUnSelected) {
                 this.rowDeselect(events.rowDeselecting, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target);
                 this.selectedRowIndexes.splice(this.selectedRowIndexes.indexOf(rowIndex), 1);
@@ -429,7 +429,7 @@ export class Selection implements IAction {
         }
         this.selectedRowIndexes = [];
         this.selectedRecords = [];
-        this.parent.selectedRowIndex = -1;
+        this.selectRowIndex(-1);
         if (this.isSingleSel() && this.parent.isPersistSelection) {
             this.selectedRowState = {};
         }
@@ -580,7 +580,9 @@ export class Selection implements IAction {
             this.selectedRowIndexes = [];
             this.selectedRecords = [];
             this.isRowSelected = false;
-            this.parent.selectedRowIndex = -1;
+            if (!this.isClearSelection) {
+                this.selectRowIndex(-1);
+            }
             this.rowDeselect(events.rowDeselected, rowIndex, data, row, foreignKeyData, target, mRow);
         }
     }
@@ -1811,6 +1813,9 @@ export class Selection implements IAction {
         if (!this.parent.enableVirtualization && this.parent.isPersistSelection) {
             this.refreshPersistSelection();
         }
+        if (this.parent.selectedRowIndex > -1 && this.selectedRowIndexes.indexOf(this.parent.selectedRowIndex) === -1) {
+            this.selectRow(this.parent.selectedRowIndex);
+        }
     }
 
     private checkSelectAllAction(checkState: boolean): void {
@@ -2369,10 +2374,13 @@ export class Selection implements IAction {
         this.parent.off(events.click, this.clickHandler);
     }
 
-    public dataReady(e: { requestType: string }): void {
+    public dataReady(e: { requestType: string, isClearSelection: boolean }): void {
         if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection) {
             this.disableUI = true;
+            let old: boolean = this.isClearSelection;
+            this.isClearSelection = e.isClearSelection;
             this.clearSelection();
+            this.isClearSelection = old;
             this.disableUI = false;
         }
     }
@@ -2382,5 +2390,8 @@ export class Selection implements IAction {
             this.refreshPersistSelection();
         }
     }
-
+    private selectRowIndex(index: number): void {
+        this.parent.isSelectedRowIndexUpdating = true;
+        this.parent.selectedRowIndex = index;
+    }
 }

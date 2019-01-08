@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 16.4.46 (2019-01-02)
+
+### Diagram
+
+#### Bug Fixes
+
+- Performance has been improved when dragging more number of nodes and connectors.
+- Issue on applying style for connector’s annotation is now fixed.
+
+## 16.4.44 (2018-12-24)
+
+### Diagram
+
+#### Bug Fixes
+
+- Alignment issue on complex hierarchical tree layout with complex data source is working fine.
+
 ## 16.4.40-beta (2018-12-10)
 
 ### Diagram
@@ -14,10 +31,6 @@
 - Support to generate a diagram by reading the data from the database, and updating the database with the newly inserted/updated/deleted nodes and connectors is added.
 - Support to render a large number of nodes and connectors in a diagram for effective performance is added.
 - Template support for annotation is added.
-
-#### Bug Fixes
-
-- Alignment issue on complex hierarchical tree layout with complex data source is working fine.
 
 ## 16.3.33 (2018-11-20)
 

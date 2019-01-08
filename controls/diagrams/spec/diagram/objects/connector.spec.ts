@@ -89,7 +89,7 @@ describe('Diagram Control', () => {
             connector6.style = { fill: 'red' };
             connector6.sourceDecorator = {
                 shape: 'Custom', pathData: 'M80.5,12.5 C80.5,19.127417 62.59139,24.5 40.5,24.5 C18.40861,24.5 0.5,19.127417 0.5,12.5' +
-                    'C0.5,5.872583 18.40861,0.5 40.5,0.5 C62.59139,0.5 80.5,5.872583 80.5,12.5 z'
+                'C0.5,5.872583 18.40861,0.5 40.5,0.5 C62.59139,0.5 80.5,5.872583 80.5,12.5 z'
             }
             connector6.sourcePoint = { x: 900, y: 380 };
             connector6.targetPoint = { x: 730, y: 280 };
@@ -908,28 +908,28 @@ describe('Diagram Control', () => {
                     }]
                 },
                 {
-                    id: 'End', width: 150, height: 60, offsetX: 377.46, offsetY: 457.94, rotateAngle:255,
+                    id: 'End', width: 150, height: 60, offsetX: 377.46, offsetY: 457.94, rotateAngle: 255,
                     shape: { type: 'Flow', shape: 'Process' },
                     annotations: [{
                         id: 'label5', content: 'Implement and Deliver', offset: { x: 0.5, y: 0.5 },
                     }]
                 },
                 {
-                    id: 'Resources', width: 150, height: 60, offsetX: 261.53, offsetY: 489,rotateAngle:255,
+                    id: 'Resources', width: 150, height: 60, offsetX: 261.53, offsetY: 489, rotateAngle: 255,
                     shape: { type: 'Flow', shape: 'Process' },
                     annotations: [{
                         id: 'label8', content: 'Hire new resources', offset: { x: 0.5, y: 0.5 },
                     }]
                 },
                 {
-                    id: 'node1', width: 150, height: 60, offsetX: 418.65, offsetY: 19.79, rotateAngle:25,
+                    id: 'node1', width: 150, height: 60, offsetX: 418.65, offsetY: 19.79, rotateAngle: 25,
                     shape: { type: 'Flow', shape: 'Process' },
                     annotations: [{
                         id: 'label5', content: 'Implement and Deliver', offset: { x: 0.5, y: 0.5 },
                     }]
                 },
                 {
-                    id: 'node2', width: 150, height: 60, offsetX: 378.5, offsetY: 105.89,rotateAngle:25,
+                    id: 'node2', width: 150, height: 60, offsetX: 378.5, offsetY: 105.89, rotateAngle: 25,
                     shape: { type: 'Flow', shape: 'Process' },
                     annotations: [{
                         id: 'label8', content: 'Hire new resources', offset: { x: 0.5, y: 0.5 },
@@ -940,7 +940,7 @@ describe('Diagram Control', () => {
                     { id: 'connector1', type: 'Straight', sourceID: 'NewIdea', targetID: 'Meeting' },
                     { id: 'connector2', type: 'Straight', sourceID: 'BoardDecision', targetID: 'Project' },
                     { id: 'connector3', type: 'Straight', sourceID: 'Resources', targetID: 'End' },
-                    { id: 'connector4', type: 'Straight', sourceID: 'node1', targetID: 'node2' },                    
+                    { id: 'connector4', type: 'Straight', sourceID: 'node1', targetID: 'node2' },
                 ],
                 getConnectorDefaults: (obj: ConnectorModel) => {
                     let connector: ConnectorModel = {};
@@ -1406,7 +1406,7 @@ describe('Diagram Control', () => {
                 connectors: [
                     {
                         id: 'c1', targetPoint: { x: 400, y: 200 }, sourcePoint: { x: 100, y: 100 },
-                        style:{strokeWidth:2}, type: 'Orthogonal',
+                        style: { strokeWidth: 2 }, type: 'Orthogonal',
                         sourceDecorator: { shape: 'OpenArrow', height: 10, width: 10 },
                     }
                 ],
@@ -1450,6 +1450,7 @@ describe('Diagram Control', () => {
                         type: 'Straight',
                         sourcePoint: { x: 100, y: 100 },
                         targetPoint: { x: 500, y: 200 },
+                        annotations: [{ content: 'dddd', style: { color: 'red' } }],
                         segments: [
                             { type: 'Straight', point: { x: 150, y: 150 } }
                         ],
@@ -1489,6 +1490,8 @@ describe('Diagram Control', () => {
             expect((diagram.connectors[0].wrapper.children[0] as any).pathData === 'M100 100 L150 150 L499.51 199.93')
             done();
             expect((diagram.connectors[0].wrapper.children[0] as any).pathData === 'M15,10 L15,22 L5,16Z')
+            done();
+            expect((diagram.connectors[0].wrapper.children[3].style as any).color === 'red');
             done();
         });
     });

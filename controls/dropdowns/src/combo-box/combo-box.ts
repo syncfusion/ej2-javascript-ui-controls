@@ -187,6 +187,14 @@ export class ComboBox extends DropDownList {
         }
     }
 
+    protected onBlur(e: MouseEvent): void {
+        let inputValue: string = this.inputElement.value === '' ? null : this.inputElement.value;
+        if (!isNullOrUndefined(this.listData) && !isNullOrUndefined(inputValue) && inputValue !== this.text) {
+            this.customValue();
+        }
+        super.onBlur(e);
+    }
+
     protected targetElement(): HTMLElement | HTMLInputElement {
         return this.inputElement;
     }

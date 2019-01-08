@@ -1890,6 +1890,7 @@ export class CommandHandler {
         if (!preventUpdate) {
             this.updateEndPoint(connector as Connector);
         }
+        this.diagram.refreshCanvasLayers();
         return checkBoundaryConstraints;
     }
 
@@ -2240,6 +2241,7 @@ export class CommandHandler {
         if (!preventUpdate) {
             this.updateEndPoint(connector as Connector);
         }
+        this.diagram.refreshCanvasLayers();
         return boundaryConstraints;
     }
 
@@ -2297,6 +2299,7 @@ export class CommandHandler {
             }
             this.diagram.updateDiagramObject(obj);
         }
+        this.diagram.refreshCanvasLayers();
         this.diagram.updateSelector();
     }
 
@@ -2948,6 +2951,7 @@ export class CommandHandler {
         obj = renderContainerHelper(this.diagram, obj) || obj;
         if (this.checkBoundaryConstraints(tx, ty)) {
             this.diagram.drag(obj, tx, ty);
+            this.diagram.refreshCanvasLayers();
             return true;
         }
         return false;

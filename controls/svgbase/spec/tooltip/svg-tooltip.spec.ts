@@ -1,5 +1,5 @@
 /**
- * AccumulationChart Series Spec file
+ * Tooltip Spec file
  */
 
 import { SvgRenderer, EmitType, remove,createElement }  from '@syncfusion/ej2-base';
@@ -410,5 +410,21 @@ describe('SVG Tooltip', () => {
        tooltip.refresh();
        tooltip.fadeOut();     
       
+    });
+
+    it('checking with arablic unicode', (done: Function) => {
+        tooltip.animationComplete = (args: ITooltipAnimationCompleteArgs) => {
+            if (args.tooltip.fadeOut) {
+                let text: HTMLElement = <HTMLElement>getElement("tooltipcontainer_text");
+                expect(text.childElementCount).toBe(6);
+                done();
+            }
+
+        };
+        tooltip.header = 'ذكي متصفح',
+        tooltip.content =  ['كروم : <b>14%</b> '],
+        tooltip.loaded = null;
+        tooltip.refresh();
+        tooltip.fadeOut();
     });
 });

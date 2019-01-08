@@ -17,7 +17,7 @@ import { Gridlines } from '../../diagram/diagram/grid-lines';
 import { BackgroundModel } from '../../diagram/diagram/page-settings-model';
 import { PathAttributes, TextAttributes, LineAttributes, CircleAttributes } from './canvas-interface';
 import { RectAttributes, ImageAttributes, BaseAttributes } from './canvas-interface';
-import { Stretch, WhiteSpace, TextAlign, TextWrap, SnapConstraints } from '../enum/enum';
+import { Stretch, WhiteSpace, TextAlign, TextWrap, SnapConstraints, RendererAction } from '../enum/enum';
 import { ThumbsConstraints, SelectorConstraints } from '../enum/enum';
 import { TransformFactor as Transforms } from '../interaction/scroller';
 import { SelectorModel } from '../interaction/selector-model';
@@ -32,6 +32,7 @@ import { BezierSegment, StraightSegment, OrthogonalSegment } from '../objects/co
 import { Point } from '../primitives/point';
 import { RulerSettingsModel } from '../diagram/ruler-settings-model';
 import { RulerModel, Ruler } from '../../ruler';
+import { avoidDrawSelector } from '../utility/constraints-util';
 
 /**
  * Renderer module is used to render basic diagram elements
@@ -49,6 +50,8 @@ export class DiagramRenderer {
     private iconSvgLayer: SVGSVGElement;
     /** @private */
     public adornerSvgLayer: SVGSVGElement;
+    /** @private */
+    public rendererActions: RendererAction;
     private element: HTMLElement;
     private transform: PointModel = { x: 0, y: 0 };
     constructor(name: string, svgRender: IRenderer, isSvgMode: Boolean) {
@@ -150,7 +153,9 @@ export class DiagramRenderer {
         element: DiagramElement, canvas: HTMLCanvasElement | SVGElement, htmlLayer: HTMLElement, transform?: Transforms,
         parentSvg?: SVGSVGElement, createParent?: boolean, fromPalette?: boolean, indexValue?: number):
         void {
+        let isElement: boolean = true;
         if (element instanceof Container) {
+            isElement = false;
             this.renderContainer(element, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue);
         } else if (element instanceof ImageElement) {
             this.renderImageElement(element, canvas, transform, parentSvg, fromPalette);
@@ -164,6 +169,9 @@ export class DiagramRenderer {
             this.renderHTMLElement(element, canvas, htmlLayer, transform, parentSvg, fromPalette);
         } else {
             this.renderRect(element, canvas, transform, parentSvg);
+        }
+        if (isElement) {
+            element.canApplyStyle = false;
         }
     }
 
@@ -285,7 +293,7 @@ export class DiagramRenderer {
         let top: number = element.offsetY - element.actualSize.height * element.pivot.y;
         let height: number = element.actualSize.height;
         let width: number = element.actualSize.width;
-        if (constraints & ThumbsConstraints.Rotate) {
+        if (constraints & ThumbsConstraints.Rotate && (!avoidDrawSelector(this.rendererActions))) {
             this.renderPivotLine(element, canvas, transform, selectorConstraints, canMask);
             this.renderRotateThumb(element, canvas, transform, selectorConstraints, canMask);
         }
@@ -293,7 +301,7 @@ export class DiagramRenderer {
             element, canvas, transform, enableNode, nodeConstraints);
         let nodeWidth: number = element.actualSize.width * currentZoom;
         let nodeHeight: number = element.actualSize.height * currentZoom;
-        if (!nodeConstraints) {
+        if (!nodeConstraints && (!avoidDrawSelector(this.rendererActions))) {
             if (nodeWidth >= 40 && nodeHeight >= 40) {
                 //Hide corners when the size is less than 40
                 if (selectorConstraints & SelectorConstraints.ResizeNorthWest) {
@@ -1142,6 +1150,7 @@ export class DiagramRenderer {
             pivotX: element.pivot.x, pivotY: element.pivot.y, strokeWidth: element.style.strokeWidth,
             dashArray: element.style.strokeDashArray || '', opacity: element.style.opacity, shadow: element.shadow,
             gradient: element.style.gradient, visible: element.visible, id: element.id, description: element.description,
+            canApplyStyle: element.canApplyStyle
         };
         if (transform) {
             options.x += transform.tx;
@@ -1151,7 +1160,7 @@ export class DiagramRenderer {
     }
 
     /**   @private  */
-    public static renderSvgBackGroundImage (
+    public static renderSvgBackGroundImage(
         background: BackgroundModel, diagramElement: HTMLElement, x: number, y: number, width: number, height: number
     ): void {
         if (background.source) {

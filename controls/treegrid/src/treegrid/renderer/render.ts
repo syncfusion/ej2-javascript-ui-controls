@@ -69,6 +69,7 @@ export class Render {
         let data: ITreeData = <ITreeData>args.data;
         let ispadfilter: boolean = isNullOrUndefined(data.filterLevel);
         let pad: number = ispadfilter ? data.level : data.filterLevel;
+        let totalIconsWidth: number = 0;
         if (grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex) {
             let container: Element = createElement('div', {
                 className: 'e-treecolumn-container'
@@ -78,6 +79,7 @@ export class Render {
                 styles: 'width: 10px; display: inline-block'
             });
             for (let n: number = 0; n < pad; n++) {
+                totalIconsWidth += 10;
                 container.appendChild(emptyExpandIcon.cloneNode());
             }
             let iconRequired: boolean = !isNullOrUndefined(data.hasFilteredChildRecords)
@@ -102,10 +104,14 @@ export class Render {
                     collapsed = !getExpandStatus(this.parent, args.data, this.parent.grid.getCurrentViewRecords());
                 }
                 addClass([expandIcon], (expand && collapsed) ? 'e-treegridexpand' : 'e-treegridcollapse');
+                totalIconsWidth += 18;
                 container.appendChild(expandIcon);
                 emptyExpandIcon.style.width = '7px';
+                totalIconsWidth += 7;
                 container.appendChild(emptyExpandIcon.cloneNode());
             } else if (pad) {
+                // icons width
+                totalIconsWidth += 20;
                 container.appendChild(emptyExpandIcon.cloneNode());
                 container.appendChild(emptyExpandIcon.cloneNode());
             }
@@ -117,7 +123,7 @@ export class Render {
                 className: 'e-treecell'
             });
             if (this.parent.allowTextWrap) {
-                cellElement.style.width = 'Calc(100% - ' + container.querySelectorAll('.e-icons').length * 10 + 'px)';
+                cellElement.style.width = 'Calc(100% - ' + totalIconsWidth + 'px)';
             }
             let textContent: string = args.cell.querySelector('.e-treecell') != null ?
             args.cell.querySelector('.e-treecell').innerHTML : args.cell.innerHTML;

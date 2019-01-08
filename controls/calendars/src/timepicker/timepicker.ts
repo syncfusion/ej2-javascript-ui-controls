@@ -1885,6 +1885,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             if (args.popup.position.X === 'center' && args.popup.position.Y === 'center') {
                 this.popupObj.relateTo = this.anchor = document.body;
                 this.popupObj.offsetY = 0;
+                this.popupObj.offsetX = 0;
                 this.popupObj.targetType = 'container';
                 this.popupObj.collision = { X: 'fit', Y: 'fit' };
             }

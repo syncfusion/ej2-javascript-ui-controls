@@ -17,7 +17,6 @@ class Dictionary {
     constructor() {
         this.keysInternal = [];
         this.valuesInternal = [];
-        this.item = [];
     }
     /**
      * @private
@@ -29,17 +28,7 @@ class Dictionary {
      * @private
      */
     get keys() {
-        return this.getItem();
-    }
-    /**
-     * @private
-     */
-    getItem() {
-        this.item = [];
-        for (let i = 0; i < this.keysInternal.length; i++) {
-            this.item.push(this.keysInternal[i]);
-        }
-        return this.item;
+        return this.keysInternal;
     }
     /**
      * @private
@@ -840,7 +829,7 @@ class WUniqueFormat {
      */
     cloneItems(format, property, value, uniqueFormatType) {
         let propertyType = WUniqueFormat.getPropertyType(uniqueFormatType, property);
-        let keys = format.propertiesHash.getItem();
+        let keys = format.propertiesHash.keys;
         for (let i = 0; i < keys.length; i++) {
             if (keys[i] === propertyType) {
                 this.propertiesHash.add(propertyType, value);
@@ -7680,12 +7669,10 @@ class TableWidget extends BlockWidget {
         //     this.tableFormat.destroy();
         // }
         this.tableFormat = undefined;
-        // if (this.spannedRowCollection) {
-        //     this.spannedRowCollection.destroy();
-        // }
+        if (this.spannedRowCollection) {
+            this.spannedRowCollection.destroy();
+        }
         this.spannedRowCollection = undefined;
-        this.tableGrids = [];
-        this.tableGrids = undefined;
         // if (this.tableHolder) {
         //     this.tableHolder.destroy();
         // }
@@ -7705,16 +7692,6 @@ class TableWidget extends BlockWidget {
  * @private
  */
 class TableRowWidget extends BlockWidget {
-    constructor() {
-        super();
-        /**
-         * @private
-         */
-        this.spannedRowCollection = [];
-        this.topBorderWidth = 0;
-        this.bottomBorderWidth = 0;
-        this.rowFormat = new WRowFormat(this);
-    }
     /**
      * @private
      */
@@ -7742,6 +7719,12 @@ class TableRowWidget extends BlockWidget {
             return this.ownerTable.childWidgets[index + 1];
         }
         return undefined;
+    }
+    constructor() {
+        super();
+        this.topBorderWidth = 0;
+        this.bottomBorderWidth = 0;
+        this.rowFormat = new WRowFormat(this);
     }
     /**
      * @private
@@ -8027,8 +8010,6 @@ class TableRowWidget extends BlockWidget {
         // }
         this.rowFormat = undefined;
         this.rowFormat = undefined;
-        this.spannedRowCollection = [];
-        this.spannedRowCollection = undefined;
         this.topBorderWidth = undefined;
         this.bottomBorderWidth = undefined;
         super.destroy();
@@ -8330,7 +8311,7 @@ class TableCellWidget extends BlockWidget {
         let ownerTable = this.ownerTable;
         //Added null condition check for asynchronous loading.
         if (this.cellFormat !== null && this.cellFormat.borders !== null) {
-            borderWidth = TableCellWidget.getCellLeftBorder(this).getLineWidth();
+            borderWidth = TableCellWidget.getCellRightBorder(this).getLineWidth();
         }
         return borderWidth;
     }
@@ -15185,24 +15166,30 @@ class Layout {
         let value = 0;
         for (let i = 0; i < row.childWidgets.length; i++) {
             if (row.childWidgets.length > 0) {
-                let cellFormat = row.childWidgets[i].cellFormat;
+                let cell = row.childWidgets[i];
+                let cellFormat = cell.cellFormat;
                 if (cellFormat.containsMargins()) {
-                    if (topOrBottom === 0 && !isNullOrUndefined(cellFormat.topMargin) &&
-                        HelperMethods.convertPointToPixel(cellFormat.topMargin) > value) {
-                        value = HelperMethods.convertPointToPixel(cellFormat.topMargin);
+                    let leftMargin = HelperMethods.convertPointToPixel(cellFormat.topMargin);
+                    let bottomMargin;
+                    if (topOrBottom === 0 && !isNullOrUndefined(cellFormat.topMargin) && leftMargin > value) {
+                        value = leftMargin;
                     }
                     else if (topOrBottom === 1 && !isNullOrUndefined(cellFormat.bottomMargin) &&
-                        HelperMethods.convertPointToPixel(cellFormat.bottomMargin) > value) {
-                        value = HelperMethods.convertPointToPixel(cellFormat.bottomMargin);
+                        // tslint:disable-next-line:no-conditional-assignment 
+                        (bottomMargin = HelperMethods.convertPointToPixel(cellFormat.bottomMargin)) > value) {
+                        value = bottomMargin;
                     }
                 }
                 else {
-                    let tableFormat = row.childWidgets[i].ownerTable.tableFormat;
-                    if (topOrBottom === 0 && HelperMethods.convertPointToPixel(tableFormat.topMargin) > value) {
-                        value = HelperMethods.convertPointToPixel(tableFormat.topMargin);
+                    let tableFormat = cell.ownerTable.tableFormat;
+                    let topMargin = HelperMethods.convertPointToPixel(tableFormat.topMargin);
+                    let bottomMargin;
+                    if (topOrBottom === 0 && topMargin > value) {
+                        value = topMargin;
+                        // tslint:disable-next-line:no-conditional-assignment 
                     }
-                    else if (topOrBottom === 1 && HelperMethods.convertPointToPixel(tableFormat.bottomMargin) > value) {
-                        value = HelperMethods.convertPointToPixel(tableFormat.bottomMargin);
+                    else if (topOrBottom === 1 && (bottomMargin = HelperMethods.convertPointToPixel(tableFormat.bottomMargin)) > value) {
+                        value = bottomMargin;
                     }
                 }
             }
@@ -16768,13 +16755,11 @@ class Renderer {
         // tslint:disable-next-line:max-line-length
         this.renderSingleBorder(border, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellTopMargin, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
         // }
-        if (tableCell.ownerTable.tableFormat.cellSpacing > 0 || tableCell.ownerRow.rowIndex === 0) {
-            border = TableCellWidget.getCellTopBorder(tableCell);
-            // if (!isNullOrUndefined(border )) { //Renders the cell top border.        
-            lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
-            // tslint:disable-next-line:max-line-length
-            this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left, cellWidget.y - cellWidget.margin.top + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y - cellWidget.margin.top + lineWidth / 2, lineWidth);
-        }
+        border = TableCellWidget.getCellTopBorder(tableCell);
+        // if (!isNullOrUndefined(border )) { //Renders the cell top border.        
+        lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
+        // tslint:disable-next-line:max-line-length
+        this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left, cellWidget.y - cellWidget.margin.top + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y - cellWidget.margin.top + lineWidth / 2, lineWidth);
         // }
         let isLastCell = false;
         if (!isBidiTable) {
@@ -16807,16 +16792,23 @@ class Renderer {
                 }
             }
         }
-        // tslint:disable-next-line:max-line-length
-        border = (tableCell.cellFormat.rowSpan > 1 && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan === tableCell.ownerTable.childWidgets.length) ?
-            //true part for vertically merged cells specifically.
-            tableCell.getBorderBasedOnPriority(tableCell.cellFormat.borders.bottom, TableCellWidget.getCellBottomBorder(tableCell))
-            //false part for remaining cases that has been handled inside method. 
-            : TableCellWidget.getCellBottomBorder(tableCell);
-        //Renders the cell bottom border.
-        lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
-        // tslint:disable-next-line:max-line-length
-        this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, lineWidth);
+        if (tableCell.ownerTable.tableFormat.cellSpacing > 0 || tableCell.ownerRow.rowIndex === tableCell.ownerTable.childWidgets.length - 1
+            || (tableCell.cellFormat.rowSpan > 1
+                && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan === tableCell.ownerTable.childWidgets.length) ||
+            !nextRowIsInCurrentTableWidget) {
+            // tslint:disable-next-line:max-line-length
+            border = (tableCell.cellFormat.rowSpan > 1 && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan === tableCell.ownerTable.childWidgets.length) ?
+                //true part for vertically merged cells specifically.
+                tableCell.getBorderBasedOnPriority(tableCell.cellFormat.borders.bottom, TableCellWidget.getCellBottomBorder(tableCell))
+                //false part for remaining cases that has been handled inside method. 
+                : TableCellWidget.getCellBottomBorder(tableCell);
+            // if (!isNullOrUndefined(border )) {
+            //Renders the cell bottom border.
+            lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
+            // tslint:disable-next-line:max-line-length
+            this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, lineWidth);
+            // }
+        }
         border = layout.getCellDiagonalUpBorder(tableCell);
         // if (!isNullOrUndefined(border )) {
         //Renders the cell diagonal up border.
@@ -16911,34 +16903,41 @@ class Renderer {
  * @private
  */
 class TextHelper {
+    constructor(viewer) {
+        this.paragraphMarkInfo = {};
+        this.owner = viewer;
+        if (!isNullOrUndefined(viewer)) {
+            this.context = viewer.containerContext;
+        }
+    }
     get paragraphMark() {
         return '¶';
     }
     get lineBreakMark() {
         return '↲';
     }
-    constructor(viewer) {
-        this.owner = viewer;
-        if (!isNullOrUndefined(viewer)) {
-            this.context = viewer.containerContext;
-        }
-    }
     /**
      * @private
      */
     getParagraphMarkWidth(characterFormat) {
-        return this.getWidth(this.paragraphMark, characterFormat);
+        return this.getParagraphMarkSize(characterFormat).Width;
     }
     /**
      * @private
      */
     getParagraphMarkSize(characterFormat) {
+        let format = this.getFormatText(characterFormat);
+        if (this.paragraphMarkInfo[format]) {
+            return this.paragraphMarkInfo[format];
+        }
         // Gets the text element's width;
         let width = this.getWidth(this.paragraphMark, characterFormat);
+        // Calculate the text element's height and baseline offset.
         let textHelper = this.getHeight(characterFormat);
-        return {
+        let textSizeInfo = {
             'Width': width, 'Height': textHelper.Height, 'BaselineOffset': textHelper.BaselineOffset
         };
+        return this.paragraphMarkInfo[format] = textSizeInfo;
     }
     /**
      * @private
@@ -16994,11 +16993,8 @@ class TextHelper {
         let textHeight = 0;
         let baselineOffset = 0;
         let spanElement = document.createElement('span');
-        spanElement.id = 'tempSpan';
-        spanElement.style.whiteSpace = 'nowrap';
         spanElement.innerText = 'm';
         this.applyStyle(spanElement, characterFormat);
-        let body = document.getElementsByTagName('body');
         let parentDiv = document.createElement('div');
         parentDiv.style.display = 'inline-block';
         let tempDiv = document.createElement('div');
@@ -17046,10 +17042,11 @@ class TextHelper {
         if (textToRender.length === 0) {
             return '';
         }
-        if ((!this.isRTLText(textToRender) && (bdo === 'RTL')) || (this.isRTLText(textToRender) && (bdo === 'LTR'))) {
+        let isRtlText = isBidi;
+        if ((!isRtlText && (bdo === 'RTL')) || (isRtlText && (bdo === 'LTR'))) {
             textToRender = HelperMethods.ReverseString(textToRender);
         }
-        else if (isRender && this.isRTLText(textToRender) && HelperMethods.endsWith(textToRender)) {
+        else if (isRender && isRtlText && HelperMethods.endsWith(textToRender)) {
             let spaceCount = textToRender.length - HelperMethods.trimEnd(textToRender).length;
             textToRender = HelperMethods.addSpace(spaceCount) + HelperMethods.trimEnd(textToRender);
         }
@@ -17060,20 +17057,22 @@ class TextHelper {
      */
     applyStyle(spanElement, characterFormat) {
         if (!isNullOrUndefined(spanElement) && !isNullOrUndefined(characterFormat)) {
+            let style = 'white-space:nowrap;';
             if (characterFormat.fontFamily !== '') {
-                spanElement.style.fontFamily = characterFormat.fontFamily;
+                style += 'font-family:' + characterFormat.fontFamily + ';';
             }
             let fontSize = characterFormat.fontSize;
             if (fontSize <= 0.5) {
                 fontSize = 0.5;
             }
-            spanElement.style.fontSize = fontSize.toString() + 'pt';
+            style += 'font-size:' + fontSize.toString() + 'pt;';
             if (characterFormat.bold) {
-                spanElement.style.fontWeight = 'bold';
+                style += 'font-weight:bold;';
             }
             if (characterFormat.italic) {
-                spanElement.style.fontStyle = 'italic';
+                style += 'font-style:italic;';
             }
+            spanElement.setAttribute('style', style);
         }
     }
     /**
@@ -17123,7 +17122,7 @@ class TextHelper {
      */
     isRTLText(text) {
         let isRTL = false;
-        if (!isNullOrUndefined(text) && text !== '') {
+        if (!isNullOrUndefined(text)) {
             for (let i = 0; i < text.length; i++) {
                 let temp = text[i];
                 if ((temp >= '\u0590' && temp <= '\u05ff') //Hebrew characters
@@ -17191,6 +17190,8 @@ class TextHelper {
     destroy() {
         this.owner = undefined;
         this.context = undefined;
+        this.paragraphMarkInfo = {};
+        this.paragraphMarkInfo = undefined;
     }
 }
 
@@ -17430,6 +17431,10 @@ class LayoutViewer {
          * @private
          */
         this.moveCaretPosition = 0;
+        /**
+         * @private
+         */
+        this.isTextInput = false;
         /**
          * @private
          */
@@ -36960,6 +36965,9 @@ class Editor {
             selection.skipFormatRetrieval = false;
             selection.isSkipLayouting = false;
         }
+        else if (selection.isEmpty && !this.viewer.isListTextSelected && !isReplace) {
+            this.viewer.isTextInput = true;
+        }
         paragraphInfo = this.getParagraphInfo(selection.start);
         if (isRemoved) {
             selection.owner.isShiftingEnabled = true;
@@ -37044,33 +37052,24 @@ class Editor {
             }
             this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + text.length, true);
             this.updateEndPosition();
-            // tslint:disable-next-line:max-line-length
-            if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentHistoryInfo) && (this.editorHistory.currentHistoryInfo.action === 'ListSelect') &&
+            if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentHistoryInfo)
+                && (this.editorHistory.currentHistoryInfo.action === 'ListSelect') &&
                 this.viewer.isListTextSelected) {
                 this.editorHistory.updateHistory();
                 this.editorHistory.updateComplexHistory();
             }
-            // if (!isNullOrUndefined(selection.currentHistoryInfo) && (selection.currentHistoryInfo.action === 'MultiSelection')) {
-            //     this.updateComplexHistory();
-            // } else {           
             this.reLayout(selection);
-            // }
+            this.viewer.isTextInput = false;
         }
-        else {
-            // selection.selectContent(selection.start, true);
-        }
-        // insertFormat.destroy();
         if (!isReplace && isRemoved && (text === ' ' || text === '\t' || text === '\v')) {
-            let hyperlinkField = selection.getHyperlinkField();
-            let isSelectionOnHyperlink = !isNullOrUndefined(hyperlinkField);
             let isList = false;
             if (!(text === '\v')) {
                 isList = this.checkAndConvertList(selection, text === '\t');
             }
-            if (isSelectionOnHyperlink) {
-                return;
-            }
             if (!isList) {
+                if (!isNullOrUndefined(selection.getHyperlinkField())) {
+                    return;
+                }
                 //Checks if the previous text is URL, then it is auto formatted to hyperlink.
                 this.checkAndConvertToHyperlink(selection, false);
             }
@@ -40178,7 +40177,7 @@ class Editor {
     }
     getCompleteStyles() {
         let completeStylesString = '{"styles":[';
-        for (let name of this.viewer.preDefinedStyles.getItem()) {
+        for (let name of this.viewer.preDefinedStyles.keys) {
             completeStylesString += (this.viewer.preDefinedStyles.get(name) + ',');
         }
         return completeStylesString.slice(0, -1) + ']}';
@@ -42754,6 +42753,9 @@ class Editor {
                             if (!isCellCleared && editAction !== 2 && this.editorHistory) {
                                 this.editorHistory.currentBaseHistoryInfo = undefined;
                             }
+                            else if (isCellCleared) {
+                                this.viewer.layout.reLayoutTable(containerCell.ownerRow.ownerTable);
+                            }
                         }
                     }
                     else {
@@ -44464,7 +44466,7 @@ class Editor {
      */
     updateListItemsTillEnd(blockAdv, updateNextBlockList) {
         let block = updateNextBlockList ? this.viewer.selection.getNextRenderedBlock(blockAdv) : blockAdv;
-        while (!isNullOrUndefined(block)) {
+        while (!isNullOrUndefined(block) && !this.viewer.isTextInput) {
             //Updates the list value of the rendered paragraph. 
             this.updateRenderedListItems(block);
             block = block.getSplitWidgets().pop().nextRenderedWidget;

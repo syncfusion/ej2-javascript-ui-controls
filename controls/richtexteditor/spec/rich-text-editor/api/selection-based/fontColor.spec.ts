@@ -283,7 +283,7 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
                 document.body.click();
                 (rteObj as any).isBlur = true;
                 dispatchEvent((rteObj as any).inputElement, 'focusout');
-                expect(rteObj.getHtml() === '<p id="rte"><span style="color: rgb(255, 255, 0);">RTE</span></p>').toBe(true);
+                expect(rteObj.getHtml() === '<p id="rte"><span style="color: rgb(255, 255, 0); text-decoration: inherit;">RTE</span></p>').toBe(true);
                 done();
             });
             it(' Test the getText method after apply the background color ', () => {
@@ -323,7 +323,7 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
                 item.click();
                 rteObj.showSourceCode();
                 let textArea: HTMLTextAreaElement = rteObj.element.querySelector('.e-rte-srctextarea');
-                expect(textArea.value === '<p id="rte"><span style="color: rgb(255, 255, 0);">RTE</span></p>').toBe(true);
+                expect(textArea.value === '<p id="rte"><span style="color: rgb(255, 255, 0); text-decoration: inherit;">RTE</span></p>').toBe(true);
                 done();
             });
         });

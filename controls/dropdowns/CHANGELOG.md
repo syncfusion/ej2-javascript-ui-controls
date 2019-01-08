@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 16.4.45 (2018-12-24)
+## 16.4.46 (2019-01-02)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- Value is updated in reverse while using select all option in checkbox selection issue has been resolved.
+
+## 16.4.44 (2018-12-24)
 
 ### MultiSelect
 

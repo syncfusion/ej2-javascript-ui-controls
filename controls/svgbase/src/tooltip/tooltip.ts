@@ -615,10 +615,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private renderText(isRender: boolean): void {
-        let height: number = 0;
-        let width: number = 0; // Padding for text;
-        let subWidth: number = 0;
-        let size: Size;
+        let height: number = 0; let width: number = 0; // Padding for text;
+        let subWidth: number = 0; let size: Size;
         let lines: string[];
         let key: string = 'properties';
         let font: TextStyle = <TextStyle>extend({}, this.textStyle, null, true)[key];
@@ -659,14 +657,18 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             if ((k !== 0) || (headerContent === '')) {
                 this.markerPoint.push((headerContent !== '' ? (this.marginY) : 0) + options.y + height);
             }
-            for (let i: number = 0, len: number = textCollection.length; i < len; i++) {
-                lines = textCollection[i].replace(/<b>/g, '<br><b>').replace(/<\/b>/g, '</b><br>').split('<br>');
+            for (let i: number = 0, len: number = textCollection.length; i < len; i++) { // string value of unicode for LTR is \u200E
+                lines = textCollection[i].replace(/<b>/g, '<br><b>').replace(/<\/b>/g, '</b><br>').replace(/:/g, '<br>\u200E:<br>')
+                        .split('<br>');
                 subWidth = 0;
                 isColumn = true;
                 height += dy;
                 for (let k: number = 0, len: number = lines.length; k < len; k++) {
                     line = lines[k];
-                    if (line.replace(/<b>/g, '').replace(/<\/b>/g, '').trim() !== '') {
+                    if (!/\S/.test(line) && line !== '') {
+                        line = ' ';  //to trim multiple white spaces to single white space
+                    }
+                    if ( (!isColumn && line === ' ') || (line.replace(/<b>/g, '').replace(/<\/b>/g, '').trim() !== '')) {
                         subWidth += spaceWidth;
                         if (isColumn && !isRow) {
                             tspanOption = { x: (this.marginX * 2) + (markerSize + markerPadding),

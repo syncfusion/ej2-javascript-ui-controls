@@ -16,6 +16,41 @@ RichTextEditor.Inject(Toolbar);
 RichTextEditor.Inject(QuickToolbar, Link, Image);
 
 describe('RTE CR issues', () => {
+    describe('EJ2-20672 - Full Screen not working properly when render inside the overflow element', () => {
+        let rteObj: RichTextEditor;
+        let elem: HTMLTextAreaElement;
+        let divElem: HTMLTextAreaElement;
+        let innerData: string = `<textarea style = "overflow: auto; width: 100%; height: 200px;"> In RichTextEditor , you click the toolbar buttons to format the words and the changes are visible immediately.
+        Markdown is not like that. When you format the word in Markdown format, you need to add Markdown syntax to the word to indicate which words 
+        and phrases should look different from each other.
+        RichTextEditor supports markdown editing when the editorMode set as **markdown** and using both *keyboard interaction* and *toolbar action*, you can apply the formatting to text.Q
+        We can add our own custom formation syntax for the Markdown formation, [sample link](https://ej2.syncfusion.com/home/).
+        The third-party library <b>Marked</b> is used in this sample to convert markdown into HTML content. </textarea>`
+        beforeEach((done: Function) => {
+            done();
+        });
+
+        it('Full Screen Handler when render inside the overflow element', (done) => {
+            divElem = <HTMLTextAreaElement>createElement('div', { styles: 'overflow: auto; border: 1px solid;' });
+            elem = <HTMLTextAreaElement>createElement('textarea', { id: 'rte_test_EJ2_20672', attrs: { name: 'formName' } });
+            document.body.appendChild(divElem);
+            divElem.appendChild(elem);
+            rteObj = new RichTextEditor({
+            });
+            rteObj.appendTo(elem);
+            rteObj.focusIn();
+            (rteObj as any).inputElement.innerHTML = innerData;
+            rteObj.showFullScreen();
+            expect(divElem.classList.contains("e-rte-overflow")).toBe(true);
+            expect(rteObj.element.classList.contains("e-rte-full-screen")).toBe(true);
+            done();
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
     describe('RTE - Incident issues', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLElement;
@@ -104,7 +139,7 @@ describe('RTE CR issues', () => {
                 placeholder: 'Type something'
             });
             rteEle = rteObj.element;
-            rteObj.saveInterval= 100;
+            rteObj.saveInterval = 100;
             rteObj.dataBind();
             done();
         });
@@ -132,6 +167,94 @@ describe('RTE CR issues', () => {
             }, 110);
         });
         afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('EJ2-20436 - Changing font color of underlined text doesn’t changes the color of the line in RTE', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Underline', 'StrikeThrough',
+                        'FontName', 'FontSize', 'FontColor', 'BackgroundColor']
+                },
+                value: `<p id="rte">RichTextEditor</p>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            done();
+        });
+        it(' Apply the underline and then apply the fontcolor', (done) => {
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 3);
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Underline');
+            dispatchEvent(item, 'mousedown');
+            item.click();
+            item = rteObj.element.querySelector('#' + controlId + '_toolbar_FontColor');
+            dispatchEvent(item, 'mousedown');
+            item = (item.querySelector('.e-rte-color-content') as HTMLElement);
+            item.click();
+            dispatchEvent(item, 'mousedown');
+            let span: HTMLSpanElement = pEle.querySelector('span span');
+            expect(span.style.color === 'rgb(255, 0, 0)').toBe(true);
+            expect(span.style.textDecoration === 'inherit').toBe(true);
+            done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('EJ2-20463 - Change event is triggered on clicking into html source code view in Edge browser', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        let triggerChange: boolean = false;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                value: `<p id="rte">RichTextEditor</p>`,
+                enableHtmlEncode: true,
+                change: () => {
+                    triggerChange = true;
+                }
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            rteObj.saveInterval = 100;
+            rteObj.dataBind();
+            done();
+        });
+        it(' change event not trigger while click on source code without edit ', (done) => {
+            rteObj.focusIn();
+            expect(triggerChange).toBe(false);
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_SourceCode');
+            dispatchEvent(item, 'mousedown');
+            item.click();
+            expect(triggerChange).toBe(false);
+            setTimeout(() => {
+                expect(triggerChange).toBe(false);
+                done();
+            }, 110);
+        });
+
+        it(' change event trigger while click on source code with edit ', (done) => {
+            rteObj.focusIn();
+            expect(triggerChange).toBe(false);
+            (rteObj as any).inputElement.innerHTML = `<p id="rte">RichTextEditor component</p>`;
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_SourceCode');
+            dispatchEvent(item, 'mousedown');
+            item.click();
+            expect(triggerChange).toBe(true);
+            triggerChange = false;
+            setTimeout(() => {
+                expect(triggerChange).toBe(false);
+                done();
+            }, 110);
+        });
+
+        afterEach(() => {
             destroy(rteObj);
         });
     });

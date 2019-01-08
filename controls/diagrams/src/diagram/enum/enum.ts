@@ -2103,8 +2103,28 @@ export enum DiagramAction {
     /** Indicates the group is in progress. */
     Group = 1 << 6,
     /** Indicates diagram have clear all. */
-    Clear = 1 << 7
+    Clear = 1 << 7,
+    /** prevents diagram from clear selection. */
+    PreventClearSelection = 1 << 8,
+    /** Indicates whether drag or rotate tool has been activated */
+    Interactions = 1 << 9
 }
+
+
+/**
+ * Defines the Selector type to be drawn
+ * None - Draws Normal selector with resize handles
+ * Symbol - Draws only the rectangle for the selector
+ */
+export enum RendererAction {
+    /** None - Draws Normal selector with resize handles */
+    None = 1 << 1,
+    /** DrawSelectorBorder - Draws only the Border for the selector */
+    DrawSelectorBorder = 1 << 2,
+    /** PreventRenderSelector - Avoid the render of selector during interaction */
+    PreventRenderSelector = 1 << 3
+}
+
 
 export enum RealAction {
     None = 0,

@@ -27,6 +27,7 @@ export interface BaseAttributes extends StyleAttributes {
     pivotY: number;
     visible: boolean;
     description?: string;
+    canApplyStyle?: boolean;
 }
 /** @private */
 export interface LineAttributes extends BaseAttributes {

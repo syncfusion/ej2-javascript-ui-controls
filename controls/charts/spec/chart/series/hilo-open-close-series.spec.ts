@@ -348,7 +348,7 @@ describe('Chart Control Series', () => {
                 let tooltip: HTMLElement = document.getElementById('container_tooltip');
                 expect(tooltip != null).toBe(true);
                 expect(target.getAttribute('opacity') == '1').toBe(true);
-                expect(tooltip.childNodes[0].childNodes[0].childNodes[1].textContent).toEqual('HiloOpenCloseAustriaHigh : $150.99Low : $60.23Open : $120.55Close : $70.9');
+                expect(tooltip.childNodes[0].childNodes[0].childNodes[1].textContent.replace(/\u200E/g, '')).toEqual('HiloOpenCloseAustriaHigh : $150.99Low : $60.23Open : $120.55Close : $70.9');
                 done();
             };
             chartObj.loaded = loaded;

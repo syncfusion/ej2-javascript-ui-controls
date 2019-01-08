@@ -544,6 +544,9 @@ export class DiagramEventHandler {
                     this.updateCursor();
                     this.inAction = true;
                     this.initialEventArgs = null;
+                    if (this.action === 'Drag' || this.action === 'Rotate') {
+                        this.diagram.diagramActions = this.diagram.diagramActions | DiagramAction.Interactions;
+                    }
                     this.mouseMoveExtend(e, obj);
                 }
                 this.prevPosition = this.currentPosition;
@@ -623,6 +626,9 @@ export class DiagramEventHandler {
                         let info: Info = (ctrlKey && evt.shiftKey) ? { ctrlKey: ctrlKey, shiftKey: evt.shiftKey } :
                             { ctrlKey: true };
                         this.eventArgs.info = info;
+                    }
+                    if (this.diagram.diagramActions & DiagramAction.Interactions) {
+                        this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.Interactions;
                     }
                     this.eventArgs.clickCount = evt.detail; this.tool.mouseUp(this.eventArgs);
                     if (hasStack) {
@@ -1319,7 +1325,7 @@ export class DiagramEventHandler {
                         style: { fill: node.style.fill, strokeColor: '#ffffff00' },
                         annotations: (target as Node).annotations, verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
                         constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~
-                        (NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
+                            (NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
                         minHeight: 25
                     } as NodeModel,
                     true);

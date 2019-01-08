@@ -104,6 +104,7 @@ export class IframeContentRender extends ContentRender {
         this.setPanel(iframe);
         rteObj.element.appendChild(iframe);
         iframe.contentDocument.body.id = this.parent.getID() + '_rte-edit-view';
+        iframe.contentDocument.body.setAttribute('aria-owns', this.parent.getID());
         iframe.contentDocument.open();
         iFrameContent = this.setThemeColor(iFrameContent, { color: '#333' });
         iframe.contentDocument.write(iFrameContent);

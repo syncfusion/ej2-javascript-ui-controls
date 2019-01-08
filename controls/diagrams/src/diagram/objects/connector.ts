@@ -1150,7 +1150,7 @@ export class Connector extends NodeBase implements IElement {
         textele.id = this.id + '_' + annotation.id;
         if (bounds.width === 0) { bounds.width = this.style.strokeWidth; }
         if (bounds.height === 0) { bounds.height = this.style.strokeWidth; }
-        // textele.style = annotation.style;
+        textele.style = annotation.style;
         // tslint:disable-next-line:no-any
         let wrapperContent: any;
         let description: Function = getFunction(getDescription);
@@ -1163,12 +1163,12 @@ export class Connector extends NodeBase implements IElement {
     }
     /** @private */
     public updateAnnotation(
-        annotation: PathAnnotation, points: PointModel[], bounds: Rect, textElement: TextElement | DiagramHtmlElement
+        annotation: PathAnnotation, points: PointModel[], bounds: Rect, textElement: TextElement | DiagramHtmlElement, canRefresh?: number
     ): void {
         let getPointloop: SegmentInfo;
         let newPoint: PointModel; let align: Alignment; let hAlign: string;
         let vAlign: string; let offsetPoint: PointModel; let pivotPoint: PointModel = { x: 0, y: 0 };
-        if (!(textElement instanceof DiagramHtmlElement)) {
+        if (!(textElement instanceof DiagramHtmlElement) && (!canRefresh)) {
             (textElement as TextElement).refreshTextElement();
         }
         textElement.width = (annotation.width || bounds.width);

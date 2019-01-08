@@ -365,4 +365,51 @@ describe('ComboBox', () => {
         });
     });
 
+    describe('EJ2-20519- Change event not trigger when focus out the control using tab key', () => {
+        let comboEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ComboBox' });
+        let data: { [key: string]: Object }[] = [
+            { id: 'level1', country: 'American Football' }, { id: 'level2', country: 'Badminton' },
+            { id: 'level3', country: 'Basketball' }, { id: 'level4', country: 'Cricket' },
+            { id: 'level5', country: 'Football' }, { id: 'level6', country: 'Golf' },
+            { id: 'level7', country: 'Hockey' }, { id: 'level8', country: 'Rugby' },
+            { id: 'level9', country: 'Snooker' }, { id: 'level10', country: 'Tennis' },
+        ];
+        let listObj: ComboBox;
+        let originalTimeout: number;
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
+            document.body.appendChild(comboEle);
+            listObj = new ComboBox({
+                dataSource: data,
+                fields: { text: 'country', value: 'id' }
+            });
+            listObj.appendTo('#ComboBox');
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            document.body.innerHTML = '';
+        });
+        it('Check the value selection', (done) => {
+            listObj.focusIn();
+            (<any>listObj).inputElement.value = 'Cricket';
+            listObj.showPopup();
+            listObj.change = function (args) {
+                expect(args.value).toBe('level4');
+                done();
+            };
+            listObj.focusOut();
+        });
+		it('Check the value selection', (done) => {
+            listObj.focusIn();
+            (<any>listObj).inputElement.value = 'Cr';
+            listObj.showPopup();
+            listObj.change = function (args) {
+                expect(args.value).toBe('Cr');
+                done();
+            };
+            listObj.focusOut();
+        });
+    });
+
 });

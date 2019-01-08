@@ -991,6 +991,12 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         this.removeSeparator();
         this.addSeparator(this.element);
     };
+    /**
+     * Allows you to add a pane dynamically to the specified index position by passing the pane properties.
+     * @param { PanePropertiesModel } paneProperties - Specifies the pane’s properties that apply to new pane.
+     * @param { number } index - Specifies the index where the pane will be inserted.
+     * @returns void
+     */
     Splitter.prototype.addPane = function (paneProperties, index) {
         var newPane = this.createElement('div');
         newPane = this.addPaneClass(newPane);
@@ -1016,6 +1022,11 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         this.setTemplate(this.paneSettings[index].content, newPane);
         this.allPanes[this.allPanes.length - 1].classList.remove(STATIC_PANE);
     };
+    /**
+     * Allows you to remove the specified pane dynamically by passing its index value.
+     * @param { number } index - Specifies the index value to remove the corresponding pane.
+     * @returns void
+     */
     Splitter.prototype.removePane = function (index) {
         index = (index > this.allPanes.length + 1) ? this.allPanes.length : index;
         var elementClass = (this.orientation === 'Horizontal') ? SPLIT_H_PANE : SPLIT_V_PANE;

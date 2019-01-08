@@ -538,6 +538,7 @@ var Render = /** @__PURE__ @class */ (function () {
         var data = args.data;
         var ispadfilter = isNullOrUndefined(data.filterLevel);
         var pad = ispadfilter ? data.level : data.filterLevel;
+        var totalIconsWidth = 0;
         if (grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex) {
             var container = createElement('div', {
                 className: 'e-treecolumn-container'
@@ -547,6 +548,7 @@ var Render = /** @__PURE__ @class */ (function () {
                 styles: 'width: 10px; display: inline-block'
             });
             for (var n = 0; n < pad; n++) {
+                totalIconsWidth += 10;
                 container.appendChild(emptyExpandIcon.cloneNode());
             }
             var iconRequired = !isNullOrUndefined(data.hasFilteredChildRecords)
@@ -572,11 +574,15 @@ var Render = /** @__PURE__ @class */ (function () {
                     collapsed$$1 = !getExpandStatus(this.parent, args.data, this.parent.grid.getCurrentViewRecords());
                 }
                 addClass([expandIcon], (expand && collapsed$$1) ? 'e-treegridexpand' : 'e-treegridcollapse');
+                totalIconsWidth += 18;
                 container.appendChild(expandIcon);
                 emptyExpandIcon.style.width = '7px';
+                totalIconsWidth += 7;
                 container.appendChild(emptyExpandIcon.cloneNode());
             }
             else if (pad) {
+                // icons width
+                totalIconsWidth += 20;
                 container.appendChild(emptyExpandIcon.cloneNode());
                 container.appendChild(emptyExpandIcon.cloneNode());
             }
@@ -588,7 +594,7 @@ var Render = /** @__PURE__ @class */ (function () {
                 className: 'e-treecell'
             });
             if (this.parent.allowTextWrap) {
-                cellElement.style.width = 'Calc(100% - ' + container.querySelectorAll('.e-icons').length * 10 + 'px)';
+                cellElement.style.width = 'Calc(100% - ' + totalIconsWidth + 'px)';
             }
             var textContent = args.cell.querySelector('.e-treecell') != null ?
                 args.cell.querySelector('.e-treecell').innerHTML : args.cell.innerHTML;
@@ -871,12 +877,12 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
                     if (!isNullOrUndefined(groupData.key)) {
                         var childData = iterateExtend(groupData.items);
                         if (this.isSelfReference) {
-                            if (!this.updateChildHierarchy(this.hierarchyData, this.hierarchyData[index], childData)) {
+                            if (!this.updateChildHierarchy(this.hierarchyData, this.hierarchyData[index], childData, index)) {
                                 this.hierarchyData[index][this.parent.childMapping] = childData;
-                            }
-                            else {
-                                this.hierarchyData.splice(index, 1);
-                                this.taskIds.splice(index, 1);
+                                if (!isNullOrUndefined(this.hierarchyData[index][this.parent.parentIdMapping]) && groupData.key === this.taskIds[index]) {
+                                    this.hierarchyData.splice(index, 1);
+                                    this.taskIds.splice(index, 1);
+                                }
                             }
                         }
                         else {
@@ -903,8 +909,9 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
     //              }
     //   }
     // }
-    DataManipulation.prototype.updateChildHierarchy = function (data, currentData, childData) {
+    DataManipulation.prototype.updateChildHierarchy = function (data, currentData, childData, index) {
         var parentID = currentData[this.parent.parentIdMapping];
+        var returns = false;
         var id = currentData[this.parent.idMapping];
         for (var i = 0; i < data.length; i++) {
             if (data[i][this.parent.idMapping] === parentID) {
@@ -912,15 +919,17 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
                 for (var j = 0; j < childs.length; j++) {
                     if (childs[j][this.parent.idMapping] === id) {
                         childs[j][this.parent.childMapping] = childData;
+                        this.hierarchyData.splice(index, 1);
+                        this.taskIds.splice(index, 1);
                         return true;
                     }
                 }
             }
-            else if (!isNullOrUndefined(data[this.parent.childMapping])) {
-                this.updateChildHierarchy(data[i][this.parent.childMapping], currentData, childData);
+            else if (!isNullOrUndefined(data[i][this.parent.childMapping])) {
+                returns = this.updateChildHierarchy(data[i][this.parent.childMapping], currentData, childData, index);
             }
         }
-        return false;
+        return returns;
     };
     /**
      * Function to update the zeroth level parent records in remote binding
@@ -928,7 +937,9 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
      */
     DataManipulation.prototype.updateParentRemoteData = function (records) {
         for (var rec = 0; rec < records.length; rec++) {
-            if (!records[rec][this.parent.parentIdMapping] && isNullOrUndefined(records[rec].index) && records[rec].index !== 0) {
+            if (!records[rec][this.parent.parentIdMapping] &&
+                records[rec][this.parent.hasChildMapping] &&
+                isNullOrUndefined(records[rec].index) && records[rec].index !== 0) {
                 records[rec].level = 0;
                 records[rec].index = Math.ceil(Math.random() * 1000);
                 records[rec].hasChildRecords = true;
@@ -1404,7 +1415,7 @@ var EditSettings = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], EditSettings.prototype, "allowDeleting", void 0);
     __decorate$6([
-        Property('Row')
+        Property('Cell')
     ], EditSettings.prototype, "mode", void 0);
     __decorate$6([
         Property('Top')
@@ -2370,6 +2381,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'rowHeight':
                     this.grid.rowHeight = this.rowHeight;
+                    break;
+                case 'height':
+                    this.grid.height = this.height;
                     break;
                 case 'enableAltRow':
                     this.grid.enableAltRow = this.enableAltRow;

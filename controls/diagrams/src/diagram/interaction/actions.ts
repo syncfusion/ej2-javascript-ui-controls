@@ -55,8 +55,6 @@ export function findToolToActivate(
             }
         }
     }
-    //Panning
-    if (canZoomPan(diagram) && !obj) { return 'Pan'; }
     if (hasSelection(diagram)) {
         let element: DiagramElement = ((diagram.selectedItems as Selector).annotation) ?
             diagram.selectedItems.wrapper.children[0] : diagram.selectedItems.wrapper;
@@ -103,6 +101,8 @@ export function findToolToActivate(
             }
         }
     }
+    //Panning
+    if (canZoomPan(diagram) && !obj) { return 'Pan'; }
     if (target instanceof PointPort && (!canZoomPan(diagram))) {
         let action: Actions = findPortToolToActivate(diagram, target);
         if (action !== 'None') { return action; }

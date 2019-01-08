@@ -1,6 +1,6 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from './treegridutil.spec';
-import { sampleData, projectData, treeMappedData } from './datasource.spec';
+import { sampleData, projectData, treeMappedData, multiLevelSelfRef } from './datasource.spec';
 import { PageEventArgs, extend, Page, doesImplementInterface } from '@syncfusion/ej2-grids';
 import { RowExpandingEventArgs, RowCollapsingEventArgs } from '../../src';
 import { ColumnMenu } from '../../src/treegrid/actions/column-menu';
@@ -382,6 +382,33 @@ describe('TreeGrid base module', () => {
     it('setmodel', () => {
       gridObj.columnMenuItems = [{text:'Clear Sorting', id:'gridclearsorting'}];
       expect(gridObj.columnMenuModule.getColumnMenu().children.length).toBeGreaterThan(0);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+  describe('Self Reference -multiple child levels', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: multiLevelSelfRef,
+          idMapping: 'TaskID',
+          parentIdMapping: 'parentID',
+          treeColumnIndex: 1,
+          columns: ['TaskID', 'TaskName', 'StartDate', 'EndDate']
+        },
+        done
+      );
+    });
+
+    it('third inner level child', () => {
+      expect(gridObj.getRows()[3].querySelector('td').innerText).toBe('4');
+      expect(gridObj.getRows()[3].querySelectorAll('.e-treegridexpand').length).toBe(1);
+      expect(gridObj.getRows()[5].querySelector('td').innerText).toBe('444');
+      expect(gridObj.getRows()[6].querySelector('td').innerText).toBe('33');
+      expect(gridObj.getRows()[10].querySelectorAll('.e-treegridexpand').length).toBe(1);
     });
     afterAll(() => {
       destroy(gridObj);

@@ -635,14 +635,18 @@ let Tooltip = class Tooltip extends Component {
             if ((k !== 0) || (headerContent === '')) {
                 this.markerPoint.push((headerContent !== '' ? (this.marginY) : 0) + options.y + height);
             }
-            for (let i = 0, len = textCollection.length; i < len; i++) {
-                lines = textCollection[i].replace(/<b>/g, '<br><b>').replace(/<\/b>/g, '</b><br>').split('<br>');
+            for (let i = 0, len = textCollection.length; i < len; i++) { // string value of unicode for LTR is \u200E
+                lines = textCollection[i].replace(/<b>/g, '<br><b>').replace(/<\/b>/g, '</b><br>').replace(/:/g, '<br>\u200E:<br>')
+                    .split('<br>');
                 subWidth = 0;
                 isColumn = true;
                 height += dy;
                 for (let k = 0, len = lines.length; k < len; k++) {
                     line = lines[k];
-                    if (line.replace(/<b>/g, '').replace(/<\/b>/g, '').trim() !== '') {
+                    if (!/\S/.test(line) && line !== '') {
+                        line = ' '; //to trim multiple white spaces to single white space
+                    }
+                    if ((!isColumn && line === ' ') || (line.replace(/<b>/g, '').replace(/<\/b>/g, '').trim() !== '')) {
                         subWidth += spaceWidth;
                         if (isColumn && !isRow) {
                             tspanOption = { x: (this.marginX * 2) + (markerSize + markerPadding),

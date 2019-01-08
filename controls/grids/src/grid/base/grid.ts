@@ -678,6 +678,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public filterOperators: IFilterOperator;
     /** @hidden */
     public localeObj: L10n;
+    public isSelectedRowIndexUpdating: boolean;
     private defaultLocale: Object;
     private keyConfigs: { [key: string]: string };
     private keyPress: boolean;
@@ -2355,7 +2356,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             if (freezeRefresh || this.frozenColumns || this.frozenRows) {
                 this.freezeRefresh();
             } else {
-                this.refresh();
+                this.refresh(true);
             }
         } else if (requireRefresh) {
             this.notify(events.modelChanged, args);
@@ -2420,16 +2421,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this.notify(events.inBoundModelChanged, { module: 'filter', properties: newProp.filterSettings });
                 break;
             case 'searchSettings':
-                this.notify(events.inBoundModelChanged, { module: 'search', properties: newProp.searchSettings });
-                break;
+                this.notify(events.inBoundModelChanged, { module: 'search', properties: newProp.searchSettings }); break;
             case 'sortSettings':
                 this.notify(events.inBoundModelChanged, { module: 'sort' }); break;
             case 'selectionSettings':
-                this.notify(events.inBoundModelChanged, { module: 'selection', properties: newProp.selectionSettings });
-                break;
+                this.notify(events.inBoundModelChanged, { module: 'selection', properties: newProp.selectionSettings }); break;
             case 'editSettings':
-                this.notify(events.inBoundModelChanged, { module: 'edit', properties: newProp.editSettings });
-                break;
+                this.notify(events.inBoundModelChanged, { module: 'edit', properties: newProp.editSettings }); break;
             case 'allowTextWrap':
             case 'textWrapSettings':
                 if (this.allowTextWrap) {
@@ -2462,8 +2460,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 (<Function>action)([this.element], 'e-gridhover');
                 break;
             case 'selectedRowIndex':
-                this.selectRow(newProp.selectedRowIndex); break;
-        }
+                if (!this.isSelectedRowIndexUpdating) {
+                    this.selectRow(newProp.selectedRowIndex);
+                }
+                this.isSelectedRowIndexUpdating = false; break;
+    }
     }
 
     /**
@@ -3212,10 +3213,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Refreshes the Grid header and content.
      */
-    public refresh(): void {
+    public refresh(isClearSelection?: boolean): void {
         this.headerModule.refreshUI();
         this.updateStackedFilter();
-        this.renderModule.refresh();
+        this.renderModule.refresh({ requestType: 'refresh', isClearSelection: isClearSelection } as object);
     }
 
     /**

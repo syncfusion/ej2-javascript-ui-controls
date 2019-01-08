@@ -916,7 +916,7 @@ function setStyleAndAttributes(node, customAttributes) {
 function extend$1(copied, first, second, exclude) {
     let moved = extend(copied, first, second);
     Object.keys(moved).forEach((value, index) => {
-        if (exclude.indexOf(value) !== -1) {
+        if (exclude && exclude.indexOf(value) !== -1) {
             delete moved[value];
         }
     });
@@ -2872,6 +2872,9 @@ class Data {
                 this.parent.trigger(dataSourceChanged, editArgs);
                 deff.promise.then((e) => {
                     this.setState({ isPending: true, resolver: def.resolve, group: state.group, aggregates: state.aggregates });
+                    if (editArgs.requestType === 'save') {
+                        this.parent.notify(recordAdded, editArgs);
+                    }
                     this.parent.trigger(dataStateChange, state);
                 });
             }
@@ -6872,6 +6875,7 @@ class Selection {
         this.isCancelDeSelect = false;
         this.isPreventCellSelect = false;
         this.disableUI = false;
+        this.isClearSelection = false;
         this.parent = parent;
         this.selectionSettings = selectionSettings;
         this.factory = locator.getService('rendererFactory');
@@ -7015,7 +7019,7 @@ class Selection {
                     this.updateRowSelection(selectedMovableRow, index);
                 }
             }
-            this.parent.setProperties({ selectedRowIndex: index }, true);
+            this.selectRowIndex(index);
         }
         if (!isToggle) {
             args = {
@@ -7043,7 +7047,7 @@ class Selection {
      */
     selectRowsByRange(startIndex, endIndex) {
         this.selectRows(this.getCollectionFromIndexes(startIndex, endIndex));
-        this.parent.setProperties({ selectedRowIndex: endIndex }, true);
+        this.selectRowIndex(endIndex);
     }
     /**
      * Selects a collection of rows by index.
@@ -7073,7 +7077,7 @@ class Selection {
             return;
         }
         this.clearRow();
-        this.parent.setProperties({ selectedRowIndex: rowIndexes.slice(-1)[0] }, true);
+        this.selectRowIndex(rowIndexes.slice(-1)[0]);
         if (!this.isSingleSel()) {
             for (let rowIdx of rowIndexes) {
                 this.updateRowSelection(gObj.getRowByIndex(rowIdx), rowIdx);
@@ -7120,7 +7124,7 @@ class Selection {
         for (let rowIndex of rowIndexes) {
             let rowObj = this.getRowObj(rowIndex);
             let isUnSelected = this.selectedRowIndexes.indexOf(rowIndex) > -1;
-            this.parent.setProperties({ selectedRowIndex: rowIndex }, true);
+            this.selectRowIndex(rowIndex);
             if (isUnSelected) {
                 this.rowDeselect(rowDeselecting, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target);
                 this.selectedRowIndexes.splice(this.selectedRowIndexes.indexOf(rowIndex), 1);
@@ -7188,7 +7192,7 @@ class Selection {
         }
         this.selectedRowIndexes = [];
         this.selectedRecords = [];
-        this.parent.selectedRowIndex = -1;
+        this.selectRowIndex(-1);
         if (this.isSingleSel() && this.parent.isPersistSelection) {
             this.selectedRowState = {};
         }
@@ -7337,7 +7341,9 @@ class Selection {
             this.selectedRowIndexes = [];
             this.selectedRecords = [];
             this.isRowSelected = false;
-            this.parent.selectedRowIndex = -1;
+            if (!this.isClearSelection) {
+                this.selectRowIndex(-1);
+            }
             this.rowDeselect(rowDeselected, rowIndex, data, row, foreignKeyData$$1, target, mRow);
         }
     }
@@ -8487,6 +8493,9 @@ class Selection {
         if (!this.parent.enableVirtualization && this.parent.isPersistSelection) {
             this.refreshPersistSelection();
         }
+        if (this.parent.selectedRowIndex > -1 && this.selectedRowIndexes.indexOf(this.parent.selectedRowIndex) === -1) {
+            this.selectRow(this.parent.selectedRowIndex);
+        }
     }
     checkSelectAllAction(checkState) {
         let cRenderer = this.getRenderer();
@@ -9047,7 +9056,10 @@ class Selection {
     dataReady(e) {
         if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection) {
             this.disableUI = true;
+            let old = this.isClearSelection;
+            this.isClearSelection = e.isClearSelection;
             this.clearSelection();
+            this.isClearSelection = old;
             this.disableUI = false;
         }
     }
@@ -9055,6 +9067,10 @@ class Selection {
         if (e.requestType === 'save' && this.parent.isPersistSelection) {
             this.refreshPersistSelection();
         }
+    }
+    selectRowIndex(index) {
+        this.parent.isSelectedRowIndexUpdating = true;
+        this.parent.selectedRowIndex = index;
     }
 }
 
@@ -10852,7 +10868,7 @@ let Grid = Grid_1 = class Grid extends Component {
                 this.freezeRefresh();
             }
             else {
-                this.refresh();
+                this.refresh(true);
             }
         }
         else if (requireRefresh) {
@@ -10970,7 +10986,10 @@ let Grid = Grid_1 = class Grid extends Component {
                 action([this.element], 'e-gridhover');
                 break;
             case 'selectedRowIndex':
-                this.selectRow(newProp.selectedRowIndex);
+                if (!this.isSelectedRowIndexUpdating) {
+                    this.selectRow(newProp.selectedRowIndex);
+                }
+                this.isSelectedRowIndexUpdating = false;
                 break;
         }
     }
@@ -11649,10 +11668,10 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Refreshes the Grid header and content.
      */
-    refresh() {
+    refresh(isClearSelection) {
         this.headerModule.refreshUI();
         this.updateStackedFilter();
-        this.renderModule.refresh();
+        this.renderModule.refresh({ requestType: 'refresh', isClearSelection: isClearSelection });
     }
     /**
      * Refreshes the Grid header.

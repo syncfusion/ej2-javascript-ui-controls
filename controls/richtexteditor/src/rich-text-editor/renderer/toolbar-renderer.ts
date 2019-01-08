@@ -140,6 +140,8 @@ export class ToolbarRenderer implements IRenderer {
         dropDown.createElement = proxy.parent.createElement;
         dropDown.appendTo(args.element);
         args.element.tabIndex = -1;
+        let popupElement: Element = document.getElementById(dropDown.element.id + '-popup');
+        popupElement.setAttribute('aria-owns', this.parent.getID());
         return dropDown;
     }
     private onPopupOverlay(args?: MouseEvent): void {
@@ -274,6 +276,8 @@ export class ToolbarRenderer implements IRenderer {
         });
         dropDown.createElement = proxy.parent.createElement;
         dropDown.appendTo(args.element);
+        let popupElement: Element = document.getElementById(dropDown.element.id + '-popup');
+        popupElement.setAttribute('aria-owns', this.parent.getID());
         dropDown.element.insertBefore(content, dropDown.element.querySelector('.e-caret'));
         args.element.tabIndex = -1;
         dropDown.element.onmousedown = (): void => { proxy.parent.notify(events.selectionSave, {}); };

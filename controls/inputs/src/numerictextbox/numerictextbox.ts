@@ -557,6 +557,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             let eventArgs: Object = {};
             this.changeEventArgs = { value: this.value, previousValue: this.prevValue, isInteraction: this.isInteract, event: event };
             if (event) { this.changeEventArgs.event = event; }
+            if (this.changeEventArgs.event === undefined) {
+                this.changeEventArgs.isInteraction = false;
+             }
             merge(eventArgs, this.changeEventArgs);
             this.prevValue = this.value;
             this.isInteract = false;

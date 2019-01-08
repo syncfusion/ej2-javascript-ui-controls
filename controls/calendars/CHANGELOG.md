@@ -2,19 +2,21 @@
 
 ## [Unreleased]
 
-## 16.4.45 (2018-12-24)
+## 16.4.46 (2019-01-02)
+
+### TimePicker
+
+#### New Features
+
+- Pop-up positioning support has been provided.
+
+## 16.4.45 (2019-01-02)
 
 ### DatePicker
 
 #### Bug Fixes
 
 - DatePicker will allow assigning string value when type system configuration is disabled.
-
-### TimePicker
-
-#### Bug Fixes
-
-- Pop-up positioning support has been provided.
 
 ## 16.4.44 (2018-12-24)
 

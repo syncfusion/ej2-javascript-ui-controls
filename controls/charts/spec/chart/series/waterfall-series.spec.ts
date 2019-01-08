@@ -617,7 +617,7 @@ describe('Waterfall Series', () => {
                 let tooltip: HTMLElement = document.getElementById('container_tooltip');
                 expect(tooltip != null).toBe(true);
                 expect(target.getAttribute('opacity') == '0.5').toBe(true);
-                expect(tooltip.childNodes[0].childNodes[0].childNodes[1].textContent).toEqual('Marketting and Sales : $-607M');
+                expect(tooltip.childNodes[0].childNodes[0].childNodes[1].textContent.replace(/\u200E/g, '')).toEqual('Marketting and Sales : $-607M');
                 expect(parseFloat(tooltip.style.top) < (series.points[1].regions[0].y + parseFloat(chartArea.getAttribute('y'))));
                 done();
             };
@@ -641,7 +641,7 @@ describe('Waterfall Series', () => {
                 let tooltip: HTMLElement = document.getElementById('container_tooltip');
                 expect(tooltip != null).toBe(true);
                 expect(target.getAttribute('opacity') == '0.5').toBe(true);
-                expect(tooltip.childNodes[0].childNodes[0].childNodes[1].textContent).toEqual('series1 Marketting and Sales : $-607M');
+                expect(tooltip.childNodes[0].childNodes[0].childNodes[1].textContent.replace(/\u200E/g, '')).toEqual('series1 Marketting and Sales : $-607M');
                 expect(parseFloat(tooltip.style.top) < (series.points[1].regions[0].y + parseFloat(chartArea.getAttribute('y'))));
                 done();
             };
@@ -673,8 +673,8 @@ describe('Waterfall Series', () => {
                 let text2: Element = group.childNodes[2] as HTMLElement;
                 expect(path.getAttribute('fill') == 'rgba(0, 8, 22, 0.75)').toBe(true);
                 expect((<HTMLElement>text1.childNodes[0]).getAttribute('fill') == '#dbdbdb').toBe(true);
-                expect(text1.childNodes[0].textContent == 'series1 Marketting and Sales : -607C').toBe(true);
-                expect(text1.childNodes[1].textContent == 'series2 Marketting and Sales : -427C').toBe(true);
+                expect(text1.childNodes[0].textContent.replace(/\u200E/g, '') == 'series1 Marketting and Sales ').toBe(true);
+                expect(text1.childNodes[1].textContent.replace(/\u200E/g, '') == ':').toBe(true);
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y + 50));
                 done();
             };

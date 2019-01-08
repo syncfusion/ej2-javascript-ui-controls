@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 16.4.46 (2019-01-02)
+
+### LinearGauge
+
+#### Bug Fixes
+
+- When hover on pointer, console error thrown fixed now.
+
 ## 16.3.32 (2018-11-13)
 
 ### LinearGauge

@@ -1162,10 +1162,6 @@ export class TableWidget extends BlockWidget {
     /**
      * @private
      */
-    public tableGrids: number[];
-    /**
-     * @private
-     */
     public tableHolder: WTableHolder;
     /**
      * @private
@@ -1982,12 +1978,10 @@ export class TableWidget extends BlockWidget {
         //     this.tableFormat.destroy();
         // }
         this.tableFormat = undefined;
-        // if (this.spannedRowCollection) {
-        //     this.spannedRowCollection.destroy();
-        // }
+        if (this.spannedRowCollection) {
+            this.spannedRowCollection.destroy();
+        }
         this.spannedRowCollection = undefined;
-        this.tableGrids = [];
-        this.tableGrids = undefined;
         // if (this.tableHolder) {
         //     this.tableHolder.destroy();
         // }
@@ -2019,10 +2013,6 @@ export class TableRowWidget extends BlockWidget {
      * @private
      */
     public rowFormat: WRowFormat;
-    /**
-     * @private
-     */
-    public spannedRowCollection: TableRowWidget[] = [];
 
     /**
      * @private
@@ -2339,8 +2329,6 @@ export class TableRowWidget extends BlockWidget {
         // }
         this.rowFormat = undefined;
         this.rowFormat = undefined;
-        this.spannedRowCollection = [];
-        this.spannedRowCollection = undefined;
         this.topBorderWidth = undefined;
         this.bottomBorderWidth = undefined;
         super.destroy();
@@ -2638,7 +2626,7 @@ export class TableCellWidget extends BlockWidget {
         let ownerTable: TableWidget = this.ownerTable;
         //Added null condition check for asynchronous loading.
         if (this.cellFormat !== null && this.cellFormat.borders !== null) {
-            borderWidth = TableCellWidget.getCellLeftBorder(this).getLineWidth();
+            borderWidth = TableCellWidget.getCellRightBorder(this).getLineWidth();
         }
         return borderWidth;
     }
