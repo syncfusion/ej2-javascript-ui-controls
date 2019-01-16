@@ -717,7 +717,7 @@ class Sort$1 {
 class DataManipulation {
     constructor(grid) {
         this.parent = grid;
-        this.isParent = [];
+        this.parentItems = [];
         this.taskIds = [];
         this.hierarchyData = [];
         this.rootIndex = -1;
@@ -733,6 +733,7 @@ class DataManipulation {
      */
     addEventListener() {
         this.parent.on('Sorting', this.sortedRecords, this);
+        this.parent.on('updateRemoteLevel', this.updateParentRemoteData, this);
         this.parent.grid.on('sorting-begin', this.beginSorting, this);
         this.parent.on('updateAction', this.updateData, this);
         this.parent.on(remoteExpand, this.collectExpandingRecs, this);
@@ -746,6 +747,7 @@ class DataManipulation {
             return;
         }
         this.parent.off(remoteExpand, this.collectExpandingRecs);
+        this.parent.off('updateRemoteLevel', this.updateParentRemoteData);
         this.parent.off('updateAction', this.updateData);
         this.parent.off('dataProcessor', this.dataProcessor);
         this.parent.off('Sorting', this.sortedRecords);
@@ -782,14 +784,21 @@ class DataManipulation {
                     this.parent.query.where(this.parent.parentIdMapping, 'equal', null);
                 }
                 if (!this.parent.hasChildMapping) {
-                    let qry = new Query().select([this.parent.parentIdMapping]);
+                    let qry = this.parent.query.clone();
+                    qry.queries = [];
+                    qry = qry.select([this.parent.parentIdMapping]);
                     dm.executeQuery(qry).then((e) => {
-                        this.isParent = DataUtil.distinct(e.result, this.parent.parentIdMapping, false);
+                        this.parentItems = DataUtil.distinct(e.result, this.parent.parentIdMapping, false);
                         let req = getObject('dataSource.requests', this.parent).filter((e) => {
                             return e.httpRequest.statusText !== 'OK';
                         }).length;
                         if (req === 0) {
                             setValue('grid.contentModule.isLoaded', true, this).parent;
+                            if (!isNullOrUndefined(this.zerothLevelData)) {
+                                setValue('cancel', false, this.zerothLevelData);
+                                getValue('grid.renderModule', this.parent).dataManagerSuccess(this.zerothLevelData);
+                                this.zerothLevelData = null;
+                            }
                             this.parent.grid.hideSpinner();
                         }
                     });
@@ -875,17 +884,24 @@ class DataManipulation {
      * Function to update the zeroth level parent records in remote binding
      * @hidden
      */
-    updateParentRemoteData(records) {
-        for (let rec = 0; rec < records.length; rec++) {
-            if (!records[rec][this.parent.parentIdMapping] &&
-                records[rec][this.parent.hasChildMapping] &&
-                isNullOrUndefined(records[rec].index) && records[rec].index !== 0) {
-                records[rec].level = 0;
-                records[rec].index = Math.ceil(Math.random() * 1000);
-                records[rec].hasChildRecords = true;
+    updateParentRemoteData(args) {
+        let records = args.result;
+        if (!this.parent.hasChildMapping && !this.parentItems.length) {
+            this.zerothLevelData = args;
+            setValue('cancel', true, args);
+        }
+        else {
+            for (let rec = 0; rec < records.length; rec++) {
+                if ((records[rec][this.parent.hasChildMapping] || this.parentItems.indexOf(records[rec][this.parent.idMapping]) !== -1)
+                    && (isNullOrUndefined(records[rec].index))) {
+                    records[rec].level = 0;
+                    records[rec].index = Math.ceil(Math.random() * 1000);
+                    records[rec].hasChildRecords = true;
+                }
             }
         }
-        return records;
+        args.result = records;
+        this.parent.notify('updateResults', args);
     }
     /**
      * Function to manipulate datasource
@@ -902,9 +918,8 @@ class DataManipulation {
         }
         else {
             let dm = this.parent.dataSource;
-            let qry = isNullOrUndefined(this.parent.grid.query) ?
-                new Query() : this.parent.grid.query;
-            let clonequries = this.parent.query.queries.filter((e) => e.fn !== 'onPage' && e.fn !== 'onWhere');
+            let qry = this.parent.grid.getDataModule().generateQuery();
+            let clonequries = qry.queries.filter((e) => e.fn !== 'onPage' && e.fn !== 'onWhere');
             qry.queries = clonequries;
             qry.where(this.parent.parentIdMapping, 'equal', rowDetails.record[this.parent.idMapping]);
             showSpinner(this.parent.element);
@@ -918,7 +933,7 @@ class DataManipulation {
                     result[r].index = Math.ceil(Math.random() * 1000);
                     result[r].parentItem = rowDetails.record;
                     result[r].parentIndex = rowDetails.record.index;
-                    if ((result[r][this.parent.hasChildMapping] || this.isParent.indexOf(result[r][this.parent.idMapping]) !== -1)
+                    if ((result[r][this.parent.hasChildMapping] || this.parentItems.indexOf(result[r][this.parent.idMapping]) !== -1)
                         && !(haveChild && !haveChild[r])) {
                         result[r].hasChildRecords = true;
                         result[r].expanded = false;
@@ -1734,10 +1749,17 @@ let TreeGrid = class TreeGrid extends Component {
         this.trigger(load);
         this.autoGenerateColumns();
         this.convertTreeData(this.dataSource);
+        this.initialRender = true;
         this.loadGrid();
         this.addListener();
         let gridContainer = createElement('div', { id: this.element.id + '_gridcontrol' });
         addClass([this.element], 'e-treegrid');
+        if (!isNullOrUndefined(this.height) && typeof (this.height) === 'string' && this.height.indexOf('%') !== -1) {
+            this.element.style.height = this.height;
+        }
+        if (!isNullOrUndefined(this.width) && typeof (this.width) === 'string' && this.width.indexOf('%') !== -1) {
+            this.element.style.width = this.width;
+        }
         this.element.appendChild(gridContainer);
         this.grid.appendTo(gridContainer);
         this.wireEvents();
@@ -1812,13 +1834,11 @@ let TreeGrid = class TreeGrid extends Component {
             this.trigger(rowDeselected, args);
         };
         this.grid.toolbarClick = (args) => {
-            if (args.item.id === this.grid.element.id + '_expandall') {
-                this.expandAll();
-            }
-            else if (args.item.id === this.grid.element.id + '_collapseall') {
-                this.collapseAll();
-            }
             this.trigger(toolbarClick, args);
+            if (args.cancel) {
+                return;
+            }
+            this.notify(toolbarClick, args);
         };
         this.grid.resizeStop = (args) => {
             this.updateColumnModel();
@@ -1870,7 +1890,8 @@ let TreeGrid = class TreeGrid extends Component {
         };
         this.grid.beforeDataBound = function (args) {
             if (isRemoteData(treeGrid) && !isOffline(treeGrid)) {
-                args.result = treeGrid.dataModule.updateParentRemoteData(args.result);
+                treeGrid.notify('updateRemoteLevel', args);
+                args = (treeGrid.dataResults);
             }
             else if (treeGrid.flatData.length === 0 && isOffline(treeGrid) && treeGrid.dataSource instanceof DataManager) {
                 let dm = treeGrid.dataSource;
@@ -1953,9 +1974,6 @@ let TreeGrid = class TreeGrid extends Component {
             }
             if (this.isLocalData) {
                 if ((args.requestType === 'delete' || args.requestType === 'save')) {
-                    if (args.requestType === 'save' && this.editSettings.mode === 'Cell') {
-                        args.column = this.getColumnByField(this.cellEditedColumn);
-                    }
                     this.notify(crudAction, { value: args.data, action: args.action || args.requestType });
                 }
                 if (args.requestType === 'add' && (this.editSettings.newRowPosition !== 'Top' && this.editSettings.newRowPosition !== 'Bottom')) {
@@ -2219,7 +2237,16 @@ let TreeGrid = class TreeGrid extends Component {
                     this.grid.rowHeight = this.rowHeight;
                     break;
                 case 'height':
+                    if (!isNullOrUndefined(this.height) && typeof (this.height) === 'string' && this.height.indexOf('%') !== -1) {
+                        this.element.style.height = this.height;
+                    }
                     this.grid.height = this.height;
+                    break;
+                case 'width':
+                    if (!isNullOrUndefined(this.width) && typeof (this.width) === 'string' && this.width.indexOf('%') !== -1) {
+                        this.element.style.width = this.width;
+                    }
+                    this.grid.width = this.width;
                     break;
                 case 'enableAltRow':
                     this.grid.enableAltRow = this.enableAltRow;
@@ -4015,6 +4042,7 @@ class Toolbar$1 {
     constructor(parent) {
         Grid.Inject(Toolbar);
         this.parent = parent;
+        this.addEventListener();
     }
     /**
      * For internal use only - Get the module name.
@@ -4022,6 +4050,34 @@ class Toolbar$1 {
      */
     getModuleName() {
         return 'toolbar';
+    }
+    /**
+     * @hidden
+     */
+    addEventListener() {
+        this.parent.on(toolbarClick, this.toolbarClickHandler, this);
+    }
+    /**
+     * @hidden
+     */
+    removeEventListener() {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.off(toolbarClick, this.toolbarClickHandler);
+    }
+    toolbarClickHandler(args) {
+        if (this.parent.editSettings.mode === 'Cell' && this.parent.grid.editSettings.mode === 'Batch' &&
+            args.item.id === this.parent.grid.element.id + '_update') {
+            args.cancel = true;
+            this.parent.grid.editModule.saveCell();
+        }
+        if (args.item.id === this.parent.grid.element.id + '_expandall') {
+            this.parent.expandAll();
+        }
+        else if (args.item.id === this.parent.grid.element.id + '_collapseall') {
+            this.parent.collapseAll();
+        }
     }
     /**
      * Gets the toolbar of the TreeGrid.
@@ -4047,7 +4103,7 @@ class Toolbar$1 {
      * @return {void}
      */
     destroy() {
-        //this.parent.grid.toolbarModule.destroy();
+        this.removeEventListener();
     }
 }
 
@@ -4395,6 +4451,7 @@ class Edit$1 {
             column.allowEditing && !(target.classList.contains('e-treegridexpand') ||
             target.classList.contains('e-treegridcollapse'))) {
             this.isOnBatch = true;
+            this.parent.grid.setProperties({ selectedRowIndex: args.rowIndex }, true);
             this.parent.grid.editSettings.mode = 'Batch';
             this.parent.grid.dataBind();
         }
@@ -4419,17 +4476,19 @@ class Edit$1 {
                 args.cancel = true;
                 this.keyPress = null;
             }
-            this.enableToolbarItems();
+            if (!args.cancel) {
+                this.enableToolbarItems('edit');
+            }
         }
         // if (this.isAdd && this.parent.editSettings.mode === 'Batch' && !args.cell.parentElement.classList.contains('e-insertedrow')) {
         //   this.isAdd = false;
         // }
     }
-    enableToolbarItems() {
+    enableToolbarItems(request) {
         if (!isNullOrUndefined(this.parent.grid.toolbarModule)) {
             let toolbarID = this.parent.element.id + '_gridcontrol_';
-            this.parent.grid.toolbarModule.enableItems([toolbarID + 'add', toolbarID + 'edit', toolbarID + 'delete'], false);
-            this.parent.grid.toolbarModule.enableItems([toolbarID + 'update', toolbarID + 'cancel'], true);
+            this.parent.grid.toolbarModule.enableItems([toolbarID + 'add', toolbarID + 'edit', toolbarID + 'delete'], request === 'save');
+            this.parent.grid.toolbarModule.enableItems([toolbarID + 'update', toolbarID + 'cancel'], request === 'edit');
         }
     }
     batchCancel(e) {
@@ -4464,18 +4523,14 @@ class Edit$1 {
     cellSave(args) {
         if (this.parent.editSettings.mode === 'Cell') {
             args.cancel = true;
-            if (this.keyPress !== 'tab' && this.keyPress !== 'shiftTab') {
-                this.parent.grid.closeEdit();
-                this.isOnBatch = false;
-            }
             setValue('isEdit', false, this.parent.grid);
             args.rowData[args.columnName] = args.value;
             let row = args.cell.parentNode;
             let rowIndex;
+            let primaryKeys = this.parent.getPrimaryKeyFieldNames();
             if (isNullOrUndefined(row)) {
-                let key = this.parent.getPrimaryKeyFieldNames()[0];
                 this.parent.grid.getCurrentViewRecords().filter((e, i) => {
-                    if (e[key] === args.rowData[key]) {
+                    if (e[primaryKeys[0]] === args.rowData[primaryKeys[0]]) {
                         rowIndex = i;
                         return;
                     }
@@ -4484,18 +4539,23 @@ class Edit$1 {
             else {
                 rowIndex = row.rowIndex;
             }
-            this.parent.cellEditedColumn = args.columnName;
             row = this.parent.grid.getRows()[rowIndex];
             this.parent.grid.editModule.updateRow(rowIndex, args.rowData);
-            this.enableToolbarItems();
             this.parent.grid.editModule.formObj.destroy();
             if (this.keyPress !== 'tab' && this.keyPress !== 'shiftTab') {
                 this.parent.grid.editSettings.mode = 'Normal';
                 this.parent.grid.dataBind();
+                this.isOnBatch = false;
             }
+            this.enableToolbarItems('save');
             removeClass([row], ['e-editedrow', 'e-batchrow']);
             removeClass(row.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
             this.editAction({ value: args.rowData, action: 'edit' });
+            let saveArgs = {
+                type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
+                previousData: args.previousValue, row: row, target: args.cell
+            };
+            this.parent.trigger(actionComplete, saveArgs);
         }
     }
     beginAdd(args) {

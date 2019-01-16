@@ -125,7 +125,7 @@ export class RangeNavigator extends Component<HTMLElement> {
      * It defines the query for the data source.
      * @default null
      */
-    @Property(null)
+    @Property({})
     public query: Query;
 
     /**

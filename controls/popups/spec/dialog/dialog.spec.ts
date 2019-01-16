@@ -1137,6 +1137,69 @@ describe('Dialog Control', () => {
     });
 })
 
+describe('Dialog max-height testing', () => {
+    let dialog: Dialog;
+    beforeEach((): void => {
+        dialog = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'dialog' });
+        document.body.appendChild(ele);
+    });
+    afterEach((): void => {
+        if (dialog) {
+            dialog.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('If the Max-height is empty', () => {
+        let dlgcontent: HTMLElement = createElement("div");
+        let dialog = new Dialog({
+            content: dlgcontent,
+            beforeOpen: onBeforeOpen
+        }, '#dialog');
+        function onBeforeOpen(args: any) {
+            args.maxHeight = '';
+        }
+        dialog.show();
+        expect(document.getElementById('dialog').style.maxHeight).toEqual("");
+    });
+    it('If the Max-height is set', () => {
+        let dlgcontent: HTMLElement = createElement("div");
+        let dialog = new Dialog({
+            content: dlgcontent,
+            beforeOpen: onBeforeOpen
+        }, '#dialog');
+        function onBeforeOpen(args: any) {
+            args.maxHeight = '300px';
+        }
+        dialog.show();
+        expect(document.getElementById('dialog').style.maxHeight).toEqual("300px");
+    });
+    it('If the Max-height is empty in modal dialog', () => {
+        let dlgcontent: HTMLElement = createElement("div");
+        let dialog = new Dialog({
+            content: dlgcontent, isModal: true,
+            beforeOpen: onBeforeOpen
+        }, '#dialog');
+        function onBeforeOpen(args: any) {
+            args.maxHeight = '';
+        }
+        dialog.show();
+        expect(document.getElementById('dialog').style.maxHeight).toEqual("");
+    });
+    it('If the Max-height is set in modal dialog', () => {
+        let dlgcontent: HTMLElement = createElement("div");
+        let dialog = new Dialog({
+            content: dlgcontent, isModal: true,
+            beforeOpen: onBeforeOpen
+        }, '#dialog');
+        function onBeforeOpen(args: any) {
+            args.maxHeight = '300px';
+        }
+        dialog.show();
+        expect(document.getElementById('dialog').style.maxHeight).toEqual("300px");
+    });
+});
+
 describe('Isprimary Button Action while focus on form element', () => {
     describe('Application side ', () => {
         let events: any;

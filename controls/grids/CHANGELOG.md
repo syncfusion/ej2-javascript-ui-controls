@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 16.4.46 (2019-01-02)
+## 16.4.47 (2019-01-08)
+
+### Grid
+
+#### Bug Fixes
+
+- Provide property change handling for `selectedRowIndex` is resolved.
+
+## 16.4.46 (2019-01-08)
 
 ### Grid
 

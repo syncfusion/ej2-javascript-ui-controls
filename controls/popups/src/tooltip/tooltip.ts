@@ -1134,6 +1134,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         super.destroy();
         removeClass([this.element], ROOT);
         this.unwireEvents(this.opensOn);
+        this.unwireMouseEvents(this.element);
         if (this.popupObj) { this.popupObj.destroy(); }
         if (this.tooltipEle) { remove(this.tooltipEle); }
         this.tooltipEle = null;

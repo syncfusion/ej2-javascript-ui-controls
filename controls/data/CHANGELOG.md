@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 16.4.46 (2019-01-02)
+## 16.4.47 (2019-01-08)
+
+### DataManager
+
+#### Bug Fixes
+
+- Provided option in `DataManger` to define CRUD url in `OdataV4Adaptor` in Grid all edit modes.
+
+## 16.4.45 (2019-01-02)
 
 ### DataManager
 

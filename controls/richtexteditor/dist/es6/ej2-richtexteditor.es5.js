@@ -330,6 +330,8 @@ var CLS_TB_COL_RES = 'e-column-resize';
 var CLS_TB_ROW_RES = 'e-row-resize';
 /** @hidden */
 var CLS_TB_BOX_RES = 'e-table-box';
+/** @hidden */
+var CLS_RTE_HIDDEN = 'e-rte-hidden';
 
 /**
  * Defines types of Render
@@ -13969,10 +13971,11 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             this.setValue();
             this.element.innerHTML = '';
         }
-        var invalidAttr = ['class', 'style', 'id'];
+        var invalidAttr = ['class', 'style', 'id', 'ejs-for'];
         var htmlAttr = {};
         for (var a = 0; a < this.element.attributes.length; a++) {
-            if (invalidAttr.indexOf(this.element.attributes[a].name) === -1) {
+            if (invalidAttr.indexOf(this.element.attributes[a].name) === -1 &&
+                !(/^data-val/.test(this.element.attributes[a].name))) { // data-val for asp.net core data annotation validation.
                 htmlAttr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
             }
         }
@@ -13994,7 +13997,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             });
         }
         this.valueContainer.name = this.getID();
-        this.valueContainer.style.display = 'none';
+        addClass([this.valueContainer], CLS_RTE_HIDDEN);
         if (this.value !== null) {
             this.valueContainer.value = this.value;
         }
@@ -14224,7 +14227,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             this.element.parentElement.insertBefore(this.valueContainer, this.element);
             this.valueContainer.id = this.getID();
             this.valueContainer.removeAttribute('name');
-            this.element.remove();
+            detach(this.element);
             if (this.originalElement.innerHTML.trim() !== '') {
                 this.valueContainer.value = this.originalElement.innerHTML.trim();
             }
@@ -14242,7 +14245,8 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             }
         }
         if (this.placeholder && this.placeHolderWrapper) {
-            this.placeHolderWrapper.remove();
+            detach(this.placeHolderWrapper);
+            this.placeHolderWrapper = null;
         }
         if (!isNullOrUndefined(this.cssClass)) {
             removeClass([this.element], this.cssClass);
@@ -14427,7 +14431,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     RichTextEditor.prototype.removeSheets = function (srcList) {
         var i;
         for (i = 0; i < srcList.length; i++) {
-            srcList[i].remove();
+            detach(srcList[i]);
         }
     };
     RichTextEditor.prototype.updatePanelValue = function () {

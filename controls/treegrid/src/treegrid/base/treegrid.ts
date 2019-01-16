@@ -105,8 +105,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
   public renderModule: Render;
     /** @hidden */
   public summaryModule: Aggregate;
-  /** @hidden */
-  public cellEditedColumn: string;
   /**
    * The `reorderModule` is used to manipulate reordering in TreeGrid.
    */
@@ -1205,10 +1203,17 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.trigger(events.load);
     this.autoGenerateColumns();
     this.convertTreeData(this.dataSource);
+    this.initialRender = true;
     this.loadGrid();
     this.addListener();
     let gridContainer: Element = createElement('div', {id: this.element.id + '_gridcontrol'});
     addClass([this.element], 'e-treegrid');
+    if (!isNullOrUndefined(this.height) && typeof(this.height) === 'string' && this.height.indexOf('%') !== -1) {
+      this.element.style.height = this.height;
+    }
+    if (!isNullOrUndefined(this.width) && typeof(this.width) === 'string' && this.width.indexOf('%') !== -1) {
+      this.element.style.width = this.width;
+    }
     this.element.appendChild(gridContainer);
     this.grid.appendTo(gridContainer as HTMLElement);
     this.wireEvents();
@@ -1283,12 +1288,11 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       this.trigger(events.rowDeselected, args);
     };
     this.grid.toolbarClick = (args: ClickEventArgs): void => {
-      if (args.item.id === this.grid.element.id + '_expandall') {
-        this.expandAll();
-      } else if (args.item.id === this.grid.element.id + '_collapseall') {
-        this.collapseAll();
-      }
       this.trigger(events.toolbarClick, args);
+      if (args.cancel) {
+          return;
+      }
+      this.notify(events.toolbarClick, args);
     };
     this.grid.resizeStop = (args: ResizeArgs): void => {
       this.updateColumnModel();
@@ -1341,7 +1345,8 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     };
     this.grid.beforeDataBound = function (args: BeforeDataBoundArgs): void  {
       if (isRemoteData(treeGrid) && !isOffline(treeGrid)) {
-        args.result = treeGrid.dataModule.updateParentRemoteData(args.result);
+        treeGrid.notify('updateRemoteLevel', args);
+        args = <BeforeDataBoundArgs>(treeGrid.dataResults);
       } else if (treeGrid.flatData.length === 0 && isOffline(treeGrid) && treeGrid.dataSource instanceof DataManager) {
         let dm: DataManager = <DataManager>treeGrid.dataSource;
         treeGrid.dataModule.convertToFlatData(dm.dataSource.json);
@@ -1424,9 +1429,6 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       }
       if (this.isLocalData) {
         if ((args.requestType === 'delete' || args.requestType === 'save')) {
-          if ( args.requestType === 'save' && this.editSettings.mode === 'Cell') {
-            args.column = this.getColumnByField(this.cellEditedColumn);
-          }
           this.notify(events.crudAction, { value: args.data, action: args.action || args.requestType });
         }
         if (args.requestType === 'add' && (this.editSettings.newRowPosition !== 'Top' && this.editSettings.newRowPosition !== 'Bottom')) {
@@ -1675,7 +1677,15 @@ private getGridEditSettings(): GridEditModel {
         case 'rowHeight':
           this.grid.rowHeight = this.rowHeight; break;
         case 'height':
+          if (!isNullOrUndefined(this.height) && typeof(this.height) === 'string' && this.height.indexOf('%') !== -1) {
+            this.element.style.height = this.height;
+          }
           this.grid.height = this.height; break;
+        case 'width':
+          if (!isNullOrUndefined(this.width) && typeof(this.width) === 'string' && this.width.indexOf('%') !== -1) {
+            this.element.style.width = this.width;
+          }
+          this.grid.width = this.width; break;
         case 'enableAltRow':
           this.grid.enableAltRow = this.enableAltRow; break;
         case 'enableHover':
@@ -2421,7 +2431,7 @@ private getGridEditSettings(): GridEditModel {
     public addListener(): void {
       this.on('updateResults', this.updateResultModel, this);
     }
-    private updateResultModel(returnResult: { result: ITreeData[], count: number }): void {
+    private updateResultModel(returnResult: BeforeDataBoundArgs): void {
       this.dataResults = <ReturnOption>returnResult;
     }
     /**

@@ -3452,7 +3452,7 @@ class ODataAdaptor extends UrlAdaptor {
      */
     insert(dm, data, tableName) {
         return {
-            url: dm.dataSource.url.replace(/\/*$/, tableName ? '/' + tableName : ''),
+            url: (dm.dataSource.insertUrl || dm.dataSource.url).replace(/\/*$/, tableName ? '/' + tableName : ''),
             data: JSON.stringify(data, this.options.localTime ? this.localTimeReplacer : null)
         };
     }
@@ -3473,7 +3473,7 @@ class ODataAdaptor extends UrlAdaptor {
         }
         return {
             type: 'DELETE',
-            url: dm.dataSource.url.replace(/\/*$/, tableName ? '/' + tableName : '') + url
+            url: (dm.dataSource.removeUrl || dm.dataSource.url).replace(/\/*$/, tableName ? '/' + tableName : '') + url
         };
     }
     /**
@@ -3497,7 +3497,7 @@ class ODataAdaptor extends UrlAdaptor {
         }
         return {
             type: this.options.updateType,
-            url: dm.dataSource.url.replace(/\/*$/, tableName ? '/' + tableName : '') + url,
+            url: (dm.dataSource.updateUrl || dm.dataSource.url).replace(/\/*$/, tableName ? '/' + tableName : '') + url,
             data: JSON.stringify(value, this.options.localTime ? this.localTimeReplacer : null),
             accept: this.options.accept
         };

@@ -354,6 +354,10 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         tooltip.appendTo(element);
         tooltip.open(element);
     };
+    /**
+     * Validate the conditions and it display errors for invalid fields.
+     * @returns boolean.
+     */
     QueryBuilder.prototype.validateFields = function () {
         var isValid = true;
         if (this.allowValidation) {

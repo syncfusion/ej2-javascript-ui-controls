@@ -16,7 +16,8 @@ import { Column } from '../models';
 export class DataManipulation {
   //Internal variables
   private taskIds: Object[];
-  private isParent: Object[];
+  private parentItems: Object[];
+  private zerothLevelData: BeforeDataBoundArgs;
   private storedIndex: number;
   private parent: TreeGrid;
   private rootIndex: number;
@@ -27,7 +28,7 @@ export class DataManipulation {
   private isSortAction: boolean;
   constructor(grid: TreeGrid) {
     this.parent = grid;
-    this.isParent = [];
+    this.parentItems = [];
     this.taskIds = [];
     this.hierarchyData = [];
     this.rootIndex = -1;
@@ -44,6 +45,7 @@ export class DataManipulation {
      */
     public addEventListener(): void {
       this.parent.on('Sorting', this.sortedRecords, this);
+      this.parent.on('updateRemoteLevel', this.updateParentRemoteData, this);
       this.parent.grid.on('sorting-begin', this.beginSorting, this);
       this.parent.on('updateAction', this.updateData, this);
       this.parent.on(events.remoteExpand, this.collectExpandingRecs, this);
@@ -56,6 +58,7 @@ export class DataManipulation {
     public removeEventListener(): void {
       if (this.parent.isDestroyed) { return; }
       this.parent.off(events.remoteExpand, this.collectExpandingRecs);
+      this.parent.off('updateRemoteLevel', this.updateParentRemoteData);
       this.parent.off('updateAction', this.updateData);
       this.parent.off('dataProcessor', this.dataProcessor);
       this.parent.off('Sorting', this.sortedRecords);
@@ -95,14 +98,21 @@ public isRemote(): boolean {
           this.parent.query.where(this.parent.parentIdMapping, 'equal', null);
         }
         if (!this.parent.hasChildMapping) {
-          let qry: Query = new Query().select([this.parent.parentIdMapping]);
+          let qry: Query = this.parent.query.clone();
+          qry.queries = [];
+          qry = qry.select([this.parent.parentIdMapping]);
           dm.executeQuery(qry).then((e: ReturnOption) => {
-             this.isParent = DataUtil.distinct(<Object[]>e.result, this.parent.parentIdMapping, false);
+             this.parentItems = DataUtil.distinct(<Object[]>e.result, this.parent.parentIdMapping, false);
              let req: number = getObject('dataSource.requests', this.parent).filter((e: Ajax) => {
               return e.httpRequest.statusText !== 'OK'; }
              ).length;
              if (req === 0) {
                setValue('grid.contentModule.isLoaded', true, this).parent;
+               if (!isNullOrUndefined(this.zerothLevelData)) {
+                  setValue('cancel', false, this.zerothLevelData);
+                  getValue('grid.renderModule', this.parent).dataManagerSuccess(this.zerothLevelData);
+                  this.zerothLevelData = null;
+               }
                this.parent.grid.hideSpinner();
              }
           });
@@ -187,17 +197,23 @@ public isRemote(): boolean {
    * Function to update the zeroth level parent records in remote binding
    * @hidden
    */
-  public updateParentRemoteData(records: ITreeData[]) : ITreeData[] {
-    for (let rec: number = 0; rec < records.length; rec++) {
-      if (!records[rec][this.parent.parentIdMapping] &&
-        records[rec][this.parent.hasChildMapping] &&
-        isNullOrUndefined(records[rec].index) &&  records[rec].index !== 0) {
-        records[rec].level = 0;
-        records[rec].index = Math.ceil(Math.random() * 1000);
-        records[rec].hasChildRecords = true;
+  private updateParentRemoteData(args?: BeforeDataBoundArgs) : void {
+    let records: ITreeData[] = args.result;
+    if (!this.parent.hasChildMapping && !this.parentItems.length) {
+      this.zerothLevelData = args;
+      setValue('cancel', true, args);
+    } else {
+      for (let rec: number = 0; rec < records.length; rec++) {
+        if ((records[rec][this.parent.hasChildMapping] || this.parentItems.indexOf(records[rec][this.parent.idMapping]) !== -1)
+                      && (isNullOrUndefined(records[rec].index))) {
+          records[rec].level = 0;
+          records[rec].index = Math.ceil(Math.random() * 1000);
+          records[rec].hasChildRecords = true;
+        }
       }
     }
-    return records;
+    args.result = records;
+    this.parent.notify('updateResults', args);
   }
   /**
    * Function to manipulate datasource
@@ -213,9 +229,8 @@ public isRemote(): boolean {
       this.parent.trigger(events.expanded, args);
     } else {
       let dm: DataManager = <DataManager>this.parent.dataSource;
-      let qry: Query = isNullOrUndefined(this.parent.grid.query) ?
-        new Query() : this.parent.grid.query;
-      let clonequries: QueryOptions[] = this.parent.query.queries.filter((e: QueryOptions) => e.fn !== 'onPage' && e.fn !== 'onWhere');
+      let qry: Query = this.parent.grid.getDataModule().generateQuery();
+      let clonequries: QueryOptions[] = qry.queries.filter((e: QueryOptions) => e.fn !== 'onPage' && e.fn !== 'onWhere');
       qry.queries = clonequries;
       qry.where(this.parent.parentIdMapping, 'equal', rowDetails.record[this.parent.idMapping]);
       showSpinner(this.parent.element);
@@ -229,7 +244,7 @@ public isRemote(): boolean {
           result[r].index = Math.ceil(Math.random() * 1000);
           result[r].parentItem = rowDetails.record;
           result[r].parentIndex = rowDetails.record.index;
-          if ((result[r][this.parent.hasChildMapping] || this.isParent.indexOf(result[r][this.parent.idMapping]) !== -1)
+          if ((result[r][this.parent.hasChildMapping] || this.parentItems.indexOf(result[r][this.parent.idMapping]) !== -1)
              && !(haveChild && !haveChild[r])) {
             result[r].hasChildRecords = true;
             result[r].expanded = false;

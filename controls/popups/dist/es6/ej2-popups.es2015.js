@@ -823,8 +823,12 @@ let Popup = class Popup extends Component {
         if (isCollide(this.element, this.viewPortElement).length !== 0) {
             if (isNullOrUndefined(this.viewPortElement)) {
                 let data = fit(this.element, this.viewPortElement, param);
-                this.element.style.left = data.left + 'px';
-                this.element.style.top = data.top + 'px';
+                if (param.X) {
+                    this.element.style.left = data.left + 'px';
+                }
+                if (param.Y) {
+                    this.element.style.top = data.top + 'px';
+                }
             }
             else {
                 let elementRect = this.checkGetBoundingClientRect(this.element);
@@ -1607,6 +1611,7 @@ let Dialog = class Dialog extends Component {
      */
     preRender() {
         this.headerContent = null;
+        this.allowMaxHeight = true;
         let classArray = [];
         for (let j = 0; j < this.element.classList.length; j++) {
             if (!isNullOrUndefined(this.element.classList[j].match('e-control')) ||
@@ -1990,6 +1995,9 @@ let Dialog = class Dialog extends Component {
         append([].slice.call(fromElements), toElement);
     }
     setMaxHeight() {
+        if (!this.allowMaxHeight) {
+            return;
+        }
         let display = this.element.style.display;
         this.element.style.display = 'none';
         this.element.style.maxHeight = (!isNullOrUndefined(this.target)) && (this.targetEle.offsetHeight < window.innerHeight) ?
@@ -2423,11 +2431,16 @@ let Dialog = class Dialog extends Component {
                 cancel: false,
                 element: this.element,
                 container: this.isModal ? this.dlgContainer : this.element,
-                target: this.target
+                target: this.target,
+                maxHeight: this.element.style.maxHeight
             };
             this.trigger('beforeOpen', eventArgs);
             if (eventArgs.cancel) {
                 return;
+            }
+            if (this.element.style.maxHeight !== eventArgs.maxHeight) {
+                this.allowMaxHeight = false;
+                this.element.style.maxHeight = eventArgs.maxHeight;
             }
             this.storeActiveElement = document.activeElement;
             this.element.tabIndex = -1;
@@ -3723,6 +3736,7 @@ let Tooltip = class Tooltip extends Component {
         super.destroy();
         removeClass([this.element], ROOT$1);
         this.unwireEvents(this.opensOn);
+        this.unwireMouseEvents(this.element);
         if (this.popupObj) {
             this.popupObj.destroy();
         }

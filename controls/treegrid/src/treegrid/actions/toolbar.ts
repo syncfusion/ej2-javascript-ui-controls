@@ -1,5 +1,7 @@
 import { Grid, Toolbar as tool } from '@syncfusion/ej2-grids';
 import { TreeGrid } from '../base';
+import * as events from '../base/constant';
+import { ClickEventArgs } from '@syncfusion/ej2-navigations/src/toolbar';
 /**
  * Toolbar Module for TreeGrid
  * @hidden
@@ -9,6 +11,7 @@ export class Toolbar {
     constructor(parent: TreeGrid) {
         Grid.Inject(tool);
         this.parent = parent;
+        this.addEventListener();
     }
 
     /**
@@ -18,6 +21,35 @@ export class Toolbar {
     private getModuleName(): string {
         return 'toolbar';
     }
+
+    /**
+     * @hidden
+     */
+    public addEventListener(): void {
+        this.parent.on(events.toolbarClick, this.toolbarClickHandler, this);
+    }
+
+    /**
+     * @hidden
+     */
+    public removeEventListener(): void {
+        if (this.parent.isDestroyed) { return; }
+        this.parent.off(events.toolbarClick, this.toolbarClickHandler);
+    }
+
+    private toolbarClickHandler(args: ClickEventArgs): void {
+        if (this.parent.editSettings.mode === 'Cell' && this.parent.grid.editSettings.mode === 'Batch' &&
+            args.item.id === this.parent.grid.element.id + '_update') {
+            args.cancel = true;
+            this.parent.grid.editModule.saveCell();
+        }
+        if (args.item.id === this.parent.grid.element.id + '_expandall') {
+            this.parent.expandAll();
+        } else if (args.item.id === this.parent.grid.element.id + '_collapseall') {
+            this.parent.collapseAll();
+        }
+    }
+
     /**
      * Gets the toolbar of the TreeGrid.
      * @return {Element}
@@ -44,6 +76,6 @@ export class Toolbar {
      * @return {void}
      */
     public destroy(): void {
-        //this.parent.grid.toolbarModule.destroy();
+        this.removeEventListener();
     }
 }

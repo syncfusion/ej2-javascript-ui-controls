@@ -1,25 +1,23 @@
-import { enableRipple } from '@syncfusion/ej2-base';
 import { Splitter } from '../../src/splitter/splitter';
 
 
 let splitObj: Splitter = new Splitter({
-    height: '250px',
+    height: '300px',
     paneSettings: [
-        { size: '50px' },
-        { size: '200px' }
+        { size: '50%' },
+        { size: '50%' }
     ],
-    orientation: 'Vertical',
-    width: '610px'
+    orientation: 'Vertical'
 });
 splitObj.appendTo('#outterSplitter');
 
 let splitObj1: Splitter = new Splitter({
     height: '250px',
     paneSettings: [
-        { size: '200px' },
-        { size: '200px' },
-        { size: '200px' }
+        { size: '30%' },
+        { size: '40%' },
+        { size: '30%' }
     ],
-    width: '610px'
+    width: '100%'
 });
 splitObj1.appendTo('#splitter');

@@ -258,4 +258,37 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
+
+    describe(' EJ2-21471  -  RTE data annotation validation is not worked', () => {
+        let rteObj: RichTextEditor;
+        let element: HTMLElement = createElement('div', {
+            id: "form-element", innerHTML:
+                ` <div class="form-group">
+                    <textarea id="defaultRTE" ejs-for data-val="RTEValue">
+                    </textarea>
+                   </div>
+                ` });
+        beforeEach((done: Function) => {
+            document.body.appendChild(element);
+            rteObj = new RichTextEditor({
+                placeholder: 'Type something'
+            });
+            rteObj.appendTo("#defaultRTE");
+            rteObj.saveInterval = 0;
+            rteObj.dataBind();
+            done();
+        })
+        afterEach((done: Function) => {
+            rteObj.destroy();
+            detach(element);
+            done();
+        });
+
+        it(' Set the data annotation attribute to textarea alone ', () => {
+            expect(rteObj.element.hasAttribute('ejs-for')).toBe(false);
+            expect(rteObj.element.hasAttribute('data-val')).toBe(false);
+            expect((rteObj as any).valueContainer.hasAttribute('ejs-for')).toBe(true);
+            expect((rteObj as any).valueContainer.hasAttribute('data-val')).toBe(true);
+        });
+    });
 })

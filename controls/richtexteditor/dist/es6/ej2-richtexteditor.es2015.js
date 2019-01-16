@@ -330,6 +330,8 @@ const CLS_TB_COL_RES = 'e-column-resize';
 const CLS_TB_ROW_RES = 'e-row-resize';
 /** @hidden */
 const CLS_TB_BOX_RES = 'e-table-box';
+/** @hidden */
+const CLS_RTE_HIDDEN = 'e-rte-hidden';
 
 /**
  * Defines types of Render
@@ -13755,10 +13757,11 @@ let RichTextEditor = class RichTextEditor extends Component {
             this.setValue();
             this.element.innerHTML = '';
         }
-        let invalidAttr = ['class', 'style', 'id'];
+        let invalidAttr = ['class', 'style', 'id', 'ejs-for'];
         let htmlAttr = {};
         for (let a = 0; a < this.element.attributes.length; a++) {
-            if (invalidAttr.indexOf(this.element.attributes[a].name) === -1) {
+            if (invalidAttr.indexOf(this.element.attributes[a].name) === -1 &&
+                !(/^data-val/.test(this.element.attributes[a].name))) { // data-val for asp.net core data annotation validation.
                 htmlAttr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
             }
         }
@@ -13780,7 +13783,7 @@ let RichTextEditor = class RichTextEditor extends Component {
             });
         }
         this.valueContainer.name = this.getID();
-        this.valueContainer.style.display = 'none';
+        addClass([this.valueContainer], CLS_RTE_HIDDEN);
         if (this.value !== null) {
             this.valueContainer.value = this.value;
         }
@@ -14009,7 +14012,7 @@ let RichTextEditor = class RichTextEditor extends Component {
             this.element.parentElement.insertBefore(this.valueContainer, this.element);
             this.valueContainer.id = this.getID();
             this.valueContainer.removeAttribute('name');
-            this.element.remove();
+            detach(this.element);
             if (this.originalElement.innerHTML.trim() !== '') {
                 this.valueContainer.value = this.originalElement.innerHTML.trim();
             }
@@ -14027,7 +14030,8 @@ let RichTextEditor = class RichTextEditor extends Component {
             }
         }
         if (this.placeholder && this.placeHolderWrapper) {
-            this.placeHolderWrapper.remove();
+            detach(this.placeHolderWrapper);
+            this.placeHolderWrapper = null;
         }
         if (!isNullOrUndefined(this.cssClass)) {
             removeClass([this.element], this.cssClass);
@@ -14211,7 +14215,7 @@ let RichTextEditor = class RichTextEditor extends Component {
     removeSheets(srcList) {
         let i;
         for (i = 0; i < srcList.length; i++) {
-            srcList[i].remove();
+            detach(srcList[i]);
         }
     }
     updatePanelValue() {

@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 16.4.46 (2019-01-02)
+## 16.4.47 (2019-01-08)
+
+### TimePicker
+
+#### Bug Fixes
+
+- TimePicker will allow assigning string value when type system configuration is disabled.
+
+## 16.4.46 (2019-01-08)
 
 ### TimePicker
 

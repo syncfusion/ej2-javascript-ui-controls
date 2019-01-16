@@ -1443,6 +1443,13 @@ export class EventWindow {
         this.parent.quickPopup.openDeleteAlert();
     }
 
+    public getRecurrenceEditorInstance(): RecurrenceEditor {
+        if (this.parent.isAdaptive && !this.repeatDialogObject) {
+            this.renderRepeatDialog();
+        }
+        return this.recurrenceEditor;
+    }
+
     private destroyComponents(): void {
         let formelement: HTMLInputElement[] = this.getFormElements(cls.EVENT_WINDOW_DIALOG_CLASS);
         for (let element of formelement) {

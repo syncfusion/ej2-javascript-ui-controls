@@ -1955,6 +1955,100 @@ describe('TimePicker', () => {
             expect(timeObj.value).toBe(null);
             expect(timeObj.inputWrapper.container.classList.contains('e-error')).toBe(false);
         });
+        it('invalid string type with value test case', () => {
+            timeObj = new TimePicker({ value: <any>"hgfnfhg" });
+            timeObj.appendTo('#timepicker10');
+            expect(timeObj.element.value).toBe("hgfnfhg");
+            expect(timeObj.value).toBe(null);
+            expect(timeObj.inputWrapper.container.classList.contains('e-error')).toBe(true);
+        });
+        it('invalid string type with value less than six integers test case', () => {
+            timeObj = new TimePicker({ value: <any>"2019" });
+            timeObj.appendTo('#timepicker10');
+            expect(timeObj.element.value).toBe("2019");
+            expect(timeObj.value).toBe(null);
+            expect(timeObj.inputWrapper.container.classList.contains('e-error')).toBe(true);
+        });
+        it('change event for invalid string type  with test case', () => {
+            timeObj = new TimePicker({
+                value: <any>'1/1/2019 1:00 AM',
+                change: function (args) {
+                    expect(args.value).toBe(null);
+                }
+             });
+            timeObj.appendTo('#timepicker10');
+            timeObj.value ="1:00 AM";
+            timeObj.dataBind();
+            expect(timeObj.element.value).toBe("1:00 AM");
+            expect(timeObj.inputWrapper.container.classList.contains('e-error')).toBe(false);
+        });
+        it('change event for invalid string type  with empty string', () => {
+            timeObj = new TimePicker({
+                value: <any>'1/1/2019 1:00 AM',
+                change: function (args) {
+                    expect(args.value).toBe(null);
+                }
+             });
+            timeObj.appendTo('#timepicker10');
+            timeObj.value ="";
+            timeObj.dataBind();
+            expect(timeObj.value).toBe(null);
+            expect(timeObj.inputWrapper.container.classList.contains('e-error')).toBe(false);
+        });
+        it('invalid number type with value test case', () => {
+            timeObj = new TimePicker({ value: <any>12243 });
+            timeObj.appendTo('#timepicker10');
+            expect(timeObj.element.value).toBe("12243");
+            expect(timeObj.value).toBe(null);
+            expect(timeObj.inputWrapper.container.classList.contains('e-error')).toBe(true);
+        });
+        it('invalid string type with value test case and strictMode true', () => {
+            timeObj = new TimePicker({ value: <any>"hgfnfhg", strictMode: true });
+            timeObj.appendTo('#timepicker10');
+            expect(timeObj.element.value).toBe("");
+            expect(timeObj.value).toBe(null);
+            expect(timeObj.inputWrapper.container.classList.contains('e-error')).toBe(false);
+        });
+        it('invalid string type with ISO string value test case', () => {
+            timeObj = new TimePicker({ value: <any>"2019-01-01T06:00:00.000Z" });
+            timeObj.appendTo('#timepicker10');
+            expect(timeObj.element.value).toBe("6:00 AM");
+            expect(timeObj.invalidValueString).toBe(null);
+        });
+        it('string type value with onproperty test case', () => {
+            timeObj = new TimePicker({ value: <any>'2/2/2017 1:00 AM' });
+            timeObj.appendTo('#timepicker10');
+            expect(timeObj.element.value).toBe('1:00 AM');
+            expect(+timeObj.value).toBe(+new Date('2/2/2017 1:00 AM'));
+            timeObj.value = "1/1/2029 4:00 PM";
+            timeObj.dataBind();
+            expect(timeObj.element.value).toBe('4:00 PM');
+            expect(+timeObj.value).toBe(+new Date("1/1/2029 4:00 PM"));
+        });
+        it('ISO string type with value test case', () => {
+            timeObj = new TimePicker({ value: <any>"2017-02-01T18:30:00.000Z" });
+            timeObj.appendTo('#timepicker10');
+            expect(timeObj.element.value != '').toBe(true);
+            expect(timeObj.value !== null).toBe(true);
+        });
+        it('ISO string type with value test case', () => {
+            timeObj = new TimePicker({ value: <any>"2018-03-03T06:00:00" });
+            timeObj.appendTo('#timepicker10');
+            expect(timeObj.element.value != '').toBe(true);
+            expect(timeObj.value !== null).toBe(true);
+        });
+        it('ISO string type with value test case', () => {
+            timeObj = new TimePicker({ value: <any>"2019-01-02T08:06:13.3426049+00:00" });
+            timeObj.appendTo('#timepicker10');
+            expect(timeObj.element.value != '').toBe(true);
+            expect(timeObj.value !== null).toBe(true);
+        });
+        it('ISO string type with value test case', () => {
+            timeObj = new TimePicker({ value: <any>"2017-02-01T18:30:00.000Z" });
+            timeObj.appendTo('#timepicker10');
+            expect(timeObj.element.value != '').toBe(true);
+            expect(timeObj.value !== null).toBe(true);
+        });
         it('null testing', () => {
             timeObj = new TimePicker({ value: null });
             timeObj.appendTo('#timepicker10');

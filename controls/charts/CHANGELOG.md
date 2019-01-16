@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.47 (2019-01-08)
+
+### Chart
+
+#### Bug Fixes
+
+- Chart not rendering using remote data without query issue is fixed
+
 ## 16.4.45 (2019-01-02)
 
 ### Chart

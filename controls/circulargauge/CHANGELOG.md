@@ -4,7 +4,15 @@
 
 ## [Unreleased]
 
-## 16.4.46 (2019-01-02)
+## 16.4.47 (2019-01-08)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- Issue with annotation is not properly resolved now.
+
+## 16.4.45 (2019-01-02)
 
 ### CircularGauge
 

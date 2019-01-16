@@ -7258,7 +7258,6 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.isCancelDeSelect = false;
         this.isPreventCellSelect = false;
         this.disableUI = false;
-        this.isClearSelection = false;
         this.parent = parent;
         this.selectionSettings = selectionSettings;
         this.factory = locator.getService('rendererFactory');
@@ -7729,9 +7728,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             this.selectedRowIndexes = [];
             this.selectedRecords = [];
             this.isRowSelected = false;
-            if (!this.isClearSelection) {
-                this.selectRowIndex(-1);
-            }
+            this.selectRowIndex(-1);
             this.rowDeselect(rowDeselected, rowIndex, data, row, foreignKeyData$$1, target, mRow);
         }
     };
@@ -8885,9 +8882,6 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (!this.parent.enableVirtualization && this.parent.isPersistSelection) {
             this.refreshPersistSelection();
         }
-        if (this.parent.selectedRowIndex > -1 && this.selectedRowIndexes.indexOf(this.parent.selectedRowIndex) === -1) {
-            this.selectRow(this.parent.selectedRowIndex);
-        }
     };
     Selection.prototype.checkSelectAllAction = function (checkState) {
         var cRenderer = this.getRenderer();
@@ -9456,10 +9450,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.dataReady = function (e) {
         if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection) {
             this.disableUI = true;
-            var old = this.isClearSelection;
-            this.isClearSelection = e.isClearSelection;
             this.clearSelection();
-            this.isClearSelection = old;
             this.disableUI = false;
         }
     };
@@ -11372,7 +11363,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                 this.freezeRefresh();
             }
             else {
-                this.refresh(true);
+                this.refresh();
             }
         }
         else if (requireRefresh) {
@@ -12184,10 +12175,10 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     /**
      * Refreshes the Grid header and content.
      */
-    Grid.prototype.refresh = function (isClearSelection) {
+    Grid.prototype.refresh = function () {
         this.headerModule.refreshUI();
         this.updateStackedFilter();
-        this.renderModule.refresh({ requestType: 'refresh', isClearSelection: isClearSelection });
+        this.renderModule.refresh();
     };
     /**
      * Refreshes the Grid header.
@@ -24187,7 +24178,7 @@ var Edit = /** @__PURE__ @class */ (function () {
                 var inputElements = [].slice.call(form[getComplexFieldID(col.field)]);
                 inputElements = inputElements.length ? inputElements : [form[getComplexFieldID(col.field)]];
                 inputElements.forEach(function (input) {
-                    var value = _this.getValue(col, input);
+                    var value = _this.getValue(col, input, editedData);
                     DataUtil.setValue(col.field, value, editedData);
                 });
             }
@@ -24196,13 +24187,13 @@ var Edit = /** @__PURE__ @class */ (function () {
         for (var i = 0, len = inputs.length; i < len; i++) {
             var col = gObj.getColumnByUid(inputs[i].getAttribute('e-mappinguid'));
             if (col && col.field) {
-                var value = this.getValue(col, inputs[i]);
+                var value = this.getValue(col, inputs[i], editedData);
                 DataUtil.setValue(col.field, value, editedData);
             }
         }
         return editedData;
     };
-    Edit.prototype.getValue = function (col, input) {
+    Edit.prototype.getValue = function (col, input, editedData) {
         var value = input.value;
         var gObj = this.parent;
         var temp = col.edit.read;
@@ -24215,6 +24206,9 @@ var Edit = /** @__PURE__ @class */ (function () {
         }
         else {
             value = gObj.editModule.getValueFromType(col, col.edit.read(input, value));
+        }
+        if (isNullOrUndefined(editedData[col.field]) && value === '') {
+            value = editedData[col.field];
         }
         return value;
     };

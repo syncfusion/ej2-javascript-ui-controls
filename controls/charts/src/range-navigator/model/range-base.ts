@@ -38,7 +38,7 @@ export class RangeNavigatorSeries extends ChildProperty<RangeNavigatorSeries> {
      * It defines the query for the data source
      * @default null
      */
-    @Property(null)
+    @Property({})
     public query: Query;
 
     /**

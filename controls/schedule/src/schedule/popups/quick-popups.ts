@@ -5,7 +5,7 @@ import { Button } from '@syncfusion/ej2-buttons';
 import { Input, FormValidator } from '@syncfusion/ej2-inputs';
 import { Schedule } from '../base/schedule';
 import { ResourcesModel } from '../models/models';
-import { generateSummary } from '../../recurrence-editor/date-generator';
+import { RecurrenceEditor } from '../../recurrence-editor/index';
 import {
     CellClickEventArgs, EventClickArgs, EventFieldsMapping, PopupOpenEventArgs, EventRenderedArgs, EJ2Instance, TdData
 } from '../base/interface';
@@ -623,17 +623,16 @@ export class QuickPopups {
             this.getDateFormat(util.addDays(new Date(endDate.getTime()), -1), 'long') : this.getDateFormat(endDate, 'long');
         let startTimeDetail: string = this.parent.getTimeString(startDate);
         let endTimeDetail: string = this.parent.getTimeString(endDate);
-        let details: string;
-        let allDayLength: number = (endDate.getTime() - startDate.getTime()) / util.MS_PER_DAY;
+        let details: string = '';
         let spanLength: number = endDate.getDate() !== startDate.getDate() &&
             (endDate.getTime() - startDate.getTime()) / (60 * 60 * 1000) < 24 ? 1 : 0;
-        if (eventData[fields.isAllDay] || allDayLength >= 1 || spanLength > 0) {
-            details = startDateDetails + ' (' +
-                (eventData[fields.isAllDay] ? this.l10n.getConstant('allDay') : startTimeDetail) + ')';
-            if (allDayLength > 1 || spanLength > 0) {
-                details += '&nbsp;-&nbsp;' + endDateDetails + ' (' +
-                    (eventData[fields.isAllDay] ? this.l10n.getConstant('allDay') : endTimeDetail) + ')';
+        if (eventData[fields.isAllDay]) {
+            details = startDateDetails + ' (' + this.l10n.getConstant('allDay') + ')';
+            if (((endDate.getTime() - startDate.getTime()) / util.MS_PER_DAY) > 1) {
+                details += '&nbsp;-&nbsp;' + endDateDetails + ' (' + this.l10n.getConstant('allDay') + ')';
             }
+        } else if ((((endDate.getTime() - startDate.getTime()) / util.MS_PER_DAY) >= 1) || spanLength > 0) {
+            details = startDateDetails + ' (' + startTimeDetail + ')' + '&nbsp;-&nbsp;' + endDateDetails + ' (' + endTimeDetail + ')';
         } else {
             details = startDateDetails + ' (' + (startTimeDetail + '&nbsp;-&nbsp;' + endTimeDetail) + ')';
         }
@@ -831,9 +830,12 @@ export class QuickPopups {
     }
 
     private getRecurrenceSummary(event: { [key: string]: Object; }): string {
-        let recurrenceRule: string = event[this.parent.eventFields.recurrenceRule] as string;
-        let ruleSummary: string = generateSummary(recurrenceRule, this.parent.localeObj, this.parent.locale);
-        return ruleSummary.charAt(0).toUpperCase() + ruleSummary.slice(1);
+        let recurrenceEditor: RecurrenceEditor = this.parent.eventWindow.getRecurrenceEditorInstance();
+        if (recurrenceEditor) {
+            let ruleSummary: string = recurrenceEditor.getRuleSummary(<string>event[this.parent.eventFields.recurrenceRule]);
+            return ruleSummary.charAt(0).toUpperCase() + ruleSummary.slice(1);
+        }
+        return '';
     }
 
     private getDateFormat(date: Date, formatString: string): string {

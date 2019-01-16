@@ -319,6 +319,10 @@ let QueryBuilder = class QueryBuilder extends Component {
         tooltip.appendTo(element);
         tooltip.open(element);
     }
+    /**
+     * Validate the conditions and it display errors for invalid fields.
+     * @returns boolean.
+     */
     validateFields() {
         let isValid = true;
         if (this.allowValidation) {

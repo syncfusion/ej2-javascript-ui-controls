@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 16.4.46 (2019-01-02)
+## 16.4.47 (2019-01-08)
+
+### Diagram
+
+#### Bug Fixes
+
+- Connector label position is misplaced while adding the connector in layout at run time is working fine now.
+
+## 16.4.46 (2019-01-08)
 
 ### Diagram
 

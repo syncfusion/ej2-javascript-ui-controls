@@ -163,9 +163,10 @@ export class CartesianChart {
      * @param start
      * @param end
      */
-    public cartesianChartRefresh(stockChart: StockChart, start: number, end: number): void {
+    public cartesianChartRefresh(stockChart: StockChart, start: number, end: number, data?: object[]): void {
         stockChart.chart.series.forEach((series: Series) => {
-            series.dataSource = ((stockChart.tempDataSource[series.index] || stockChart.dataSource) as Object[]).filter((data: Object) => {
+            series.dataSource = data ? data : ((stockChart.tempDataSource[series.index] ||
+                stockChart.dataSource) as Object[]).filter((data: Object) => {
                 return (
                     data[series.xName].getTime() >= start && data[series.xName].getTime() <= end
                 );

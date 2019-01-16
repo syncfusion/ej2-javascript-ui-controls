@@ -402,14 +402,17 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
      * @method destroy
      * @return {void}
      */
+
     public destroy(): void {
         this.unWireEvents();
-        this.textboxWrapper.container.parentElement.appendChild(this.cloneElement);
+        this.element.classList.remove('e-input');
+        this.removeAttributes(['aria-placeholder', 'aria-disabled', 'aria-readonly', 'aria-labelledby']);
+        this.textboxWrapper.container.parentElement.appendChild(this.element);
         detach(this.textboxWrapper.container);
         this.textboxWrapper = null;
-        this.cloneElement.classList.remove(ROOT, CONTROL);
         super.destroy();
     }
+
 
     /**
      * Gets the properties to be maintained in the persisted state.

@@ -580,8 +580,8 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
         if (isCollide(this.element, this.viewPortElement).length !== 0) {
             if (isNullOrUndefined(this.viewPortElement)) {
                 let data: OffsetPosition = fit(this.element, this.viewPortElement, param);
-                this.element.style.left = data.left + 'px';
-                this.element.style.top = data.top + 'px';
+                if (param.X) { this.element.style.left = data.left + 'px'; }
+                if (param.Y) { this.element.style.top = data.top + 'px'; }
             } else {
                 let elementRect: ClientRect = this.checkGetBoundingClientRect(this.element);
                 let viewPortRect: ClientRect = this.checkGetBoundingClientRect(this.viewPortElement);

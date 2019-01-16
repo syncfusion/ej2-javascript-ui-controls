@@ -5409,7 +5409,7 @@ var SeriesBase = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         this.chart = chart;
         var dateSource = this.dataSource || chart.dataSource;
-        if (isNullOrUndefined(this.query) && !isNullOrUndefined(dateSource)) {
+        if (!(dateSource instanceof DataManager) && !isNullOrUndefined(dateSource)) {
             this.dataManagerSuccess({ result: dateSource, count: dateSource.length }, chart, false);
             return;
         }
@@ -5495,7 +5495,7 @@ var SeriesBase = /** @__PURE__ @class */ (function (_super) {
         Property('')
     ], SeriesBase.prototype, "dataSource", void 0);
     __decorate$4([
-        Property()
+        Property({})
     ], SeriesBase.prototype, "query", void 0);
     __decorate$4([
         Collection([], ChartSegment)
@@ -22525,7 +22525,7 @@ var AccumulationSeries = /** @__PURE__ @class */ (function (_super) {
     AccumulationSeries.prototype.refreshDataManager = function (accumulation, render) {
         var _this = this;
         var dateSource = this.dataSource || accumulation.dataSource;
-        if (isNullOrUndefined(this.query)) {
+        if (!(dateSource instanceof DataManager)) {
             this.dataManagerSuccess({ result: dateSource, count: dateSource.length }, accumulation, render);
             return;
         }
@@ -22769,7 +22769,7 @@ var AccumulationSeries = /** @__PURE__ @class */ (function (_super) {
         Property('')
     ], AccumulationSeries.prototype, "dataSource", void 0);
     __decorate$8([
-        Property()
+        Property({})
     ], AccumulationSeries.prototype, "query", void 0);
     __decorate$8([
         Property('')
@@ -26779,7 +26779,7 @@ var RangeSeries = /** @__PURE__ @class */ (function (_super) {
     };
     RangeSeries.prototype.processDataSource = function (dataSource, query, control, series) {
         var _this = this;
-        if (isNullOrUndefined(query) && !isNullOrUndefined(dataSource)) {
+        if (!(dataSource instanceof DataManager) && !isNullOrUndefined(dataSource)) {
             this.dataManagerSuccess({ result: dataSource, count: dataSource.length }, control, series);
             return;
         }
@@ -27513,7 +27513,7 @@ var RangeNavigatorSeries = /** @__PURE__ @class */ (function (_super) {
         Property(null)
     ], RangeNavigatorSeries.prototype, "yName", void 0);
     __decorate$11([
-        Property(null)
+        Property({})
     ], RangeNavigatorSeries.prototype, "query", void 0);
     __decorate$11([
         Property('Line')
@@ -28565,7 +28565,7 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
         Property(null)
     ], RangeNavigator.prototype, "yName", void 0);
     __decorate$10([
-        Property(null)
+        Property({})
     ], RangeNavigator.prototype, "query", void 0);
     __decorate$10([
         Collection([], RangeNavigatorSeries)
@@ -29351,9 +29351,10 @@ var CartesianChart = /** @__PURE__ @class */ (function () {
      * @param start
      * @param end
      */
-    CartesianChart.prototype.cartesianChartRefresh = function (stockChart, start, end) {
+    CartesianChart.prototype.cartesianChartRefresh = function (stockChart, start, end, data) {
         stockChart.chart.series.forEach(function (series) {
-            series.dataSource = (stockChart.tempDataSource[series.index] || stockChart.dataSource).filter(function (data) {
+            series.dataSource = data ? data : (stockChart.tempDataSource[series.index] ||
+                stockChart.dataSource).filter(function (data) {
                 return (data[series.xName].getTime() >= start && data[series.xName].getTime() <= end);
             });
             series.animation.enable = false;
@@ -29412,10 +29413,20 @@ var RangeSelector = /** @__PURE__ @class */ (function () {
             margin: this.findMargin(stockChart),
             tooltip: { enable: stockChart.tooltip.enable, displayMode: 'Always' },
             changed: function (args) {
+                var arg = {
+                    name: 'rangeChange',
+                    end: args.end,
+                    selectedData: args.selectedData,
+                    start: args.start,
+                    zoomFactor: args.zoomFactor,
+                    zoomPosition: args.zoomPosition,
+                    data: undefined
+                };
+                _this.stockChart.trigger('rangeChange', arg);
                 _this.stockChart.startValue = args.start;
                 _this.stockChart.endValue = args.end;
                 if (!_this.stockChart.zoomChange) {
-                    _this.stockChart.cartesianChart.cartesianChartRefresh(_this.stockChart, args.start, args.end);
+                    _this.stockChart.cartesianChart.cartesianChartRefresh(_this.stockChart, args.start, args.end, arg.data);
                 }
                 if (stockChart.periodSelector && stockChart.periodSelector.datePicker) {
                     stockChart.periodSelector.datePicker.startDate = new Date(args.start);
@@ -30137,7 +30148,7 @@ var StockSeries = /** @__PURE__ @class */ (function (_super) {
         Property('')
     ], StockSeries.prototype, "dataSource", void 0);
     __decorate$12([
-        Property()
+        Property({})
     ], StockSeries.prototype, "query", void 0);
     __decorate$12([
         Property('#e74c3d')
@@ -30297,7 +30308,7 @@ var StockChartIndicator = /** @__PURE__ @class */ (function (_super) {
         Property(1)
     ], StockChartIndicator.prototype, "width", void 0);
     __decorate$12([
-        Property()
+        Property({})
     ], StockChartIndicator.prototype, "query", void 0);
     __decorate$12([
         Property('')
@@ -31254,6 +31265,9 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
     __decorate$9([
         Event()
     ], StockChart.prototype, "loaded", void 0);
+    __decorate$9([
+        Event()
+    ], StockChart.prototype, "rangeChange", void 0);
     __decorate$9([
         Event()
     ], StockChart.prototype, "axisLabelRender", void 0);

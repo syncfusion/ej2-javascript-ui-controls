@@ -1151,11 +1151,10 @@ var Annotations = /** @__PURE__ @class */ (function () {
         if (!argsData.cancel) {
             templateFn = getTemplateFunction(argsData.content);
             if (templateFn && templateFn(axis).length) {
-                templateElement = templateFn(axis);
-                var count = templateElement.length;
-                while (count > 0) {
-                    childElement.appendChild(templateElement[0]);
-                    count--;
+                templateElement = Array.prototype.slice.call(templateFn(axis));
+                var length_1 = templateElement.length;
+                for (var i = 0; i < length_1; i++) {
+                    childElement.appendChild(templateElement[i]);
                 }
             }
             else {

@@ -6875,7 +6875,6 @@ class Selection {
         this.isCancelDeSelect = false;
         this.isPreventCellSelect = false;
         this.disableUI = false;
-        this.isClearSelection = false;
         this.parent = parent;
         this.selectionSettings = selectionSettings;
         this.factory = locator.getService('rendererFactory');
@@ -7341,9 +7340,7 @@ class Selection {
             this.selectedRowIndexes = [];
             this.selectedRecords = [];
             this.isRowSelected = false;
-            if (!this.isClearSelection) {
-                this.selectRowIndex(-1);
-            }
+            this.selectRowIndex(-1);
             this.rowDeselect(rowDeselected, rowIndex, data, row, foreignKeyData$$1, target, mRow);
         }
     }
@@ -8493,9 +8490,6 @@ class Selection {
         if (!this.parent.enableVirtualization && this.parent.isPersistSelection) {
             this.refreshPersistSelection();
         }
-        if (this.parent.selectedRowIndex > -1 && this.selectedRowIndexes.indexOf(this.parent.selectedRowIndex) === -1) {
-            this.selectRow(this.parent.selectedRowIndex);
-        }
     }
     checkSelectAllAction(checkState) {
         let cRenderer = this.getRenderer();
@@ -9056,10 +9050,7 @@ class Selection {
     dataReady(e) {
         if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection) {
             this.disableUI = true;
-            let old = this.isClearSelection;
-            this.isClearSelection = e.isClearSelection;
             this.clearSelection();
-            this.isClearSelection = old;
             this.disableUI = false;
         }
     }
@@ -10868,7 +10859,7 @@ let Grid = Grid_1 = class Grid extends Component {
                 this.freezeRefresh();
             }
             else {
-                this.refresh(true);
+                this.refresh();
             }
         }
         else if (requireRefresh) {
@@ -11668,10 +11659,10 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Refreshes the Grid header and content.
      */
-    refresh(isClearSelection) {
+    refresh() {
         this.headerModule.refreshUI();
         this.updateStackedFilter();
-        this.renderModule.refresh({ requestType: 'refresh', isClearSelection: isClearSelection });
+        this.renderModule.refresh();
     }
     /**
      * Refreshes the Grid header.
@@ -23398,7 +23389,7 @@ class Edit {
                 let inputElements = [].slice.call(form[getComplexFieldID(col.field)]);
                 inputElements = inputElements.length ? inputElements : [form[getComplexFieldID(col.field)]];
                 inputElements.forEach((input) => {
-                    let value = this.getValue(col, input);
+                    let value = this.getValue(col, input, editedData);
                     DataUtil.setValue(col.field, value, editedData);
                 });
             }
@@ -23407,13 +23398,13 @@ class Edit {
         for (let i = 0, len = inputs.length; i < len; i++) {
             let col = gObj.getColumnByUid(inputs[i].getAttribute('e-mappinguid'));
             if (col && col.field) {
-                let value = this.getValue(col, inputs[i]);
+                let value = this.getValue(col, inputs[i], editedData);
                 DataUtil.setValue(col.field, value, editedData);
             }
         }
         return editedData;
     }
-    getValue(col, input) {
+    getValue(col, input, editedData) {
         let value = input.value;
         let gObj = this.parent;
         let temp = col.edit.read;
@@ -23426,6 +23417,9 @@ class Edit {
         }
         else {
             value = gObj.editModule.getValueFromType(col, col.edit.read(input, value));
+        }
+        if (isNullOrUndefined(editedData[col.field]) && value === '') {
+            value = editedData[col.field];
         }
         return value;
     }

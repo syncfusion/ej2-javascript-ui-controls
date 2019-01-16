@@ -120,8 +120,9 @@ export class TimelineEvent extends MonthEvent {
                         let interval: number = this.interval / this.slotCount;
                         let startDate: Date = new Date(this.dateRender[this.day + i].getTime());
                         let endDate: Date = util.addDays(this.dateRender[this.day + i], 1);
+                        let startDateTime: Date = new Date(+startTime);
                         let slotStartTime: Date =
-                            (new Date(startTime.setMinutes(Math.floor(startTime.getMinutes() / interval) * interval)));
+                            (new Date(startDateTime.setMinutes(Math.floor(startDateTime.getMinutes() / interval) * interval)));
                         let slotEndTime: Date = new Date(slotStartTime.getTime() + (60000 * interval));
                         let groupIndex: string;
                         if (this.parent.activeViewOptions.group.resources.length > 0 && !isNullOrUndefined(resIndex)) {

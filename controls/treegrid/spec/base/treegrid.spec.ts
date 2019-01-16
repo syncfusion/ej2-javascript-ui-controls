@@ -275,13 +275,13 @@ describe('TreeGrid base module', () => {
       );
     });
     it('enableCollapseAll testing', () => {
-      expect(gridObj.element.querySelectorAll('.e-treegridexpand').length).toBe(9);
+      expect(gridObj.element.querySelectorAll('.e-treegridexpand').length).toBe(0);
       gridObj.enableCollapseAll = false;
       gridObj.dataBind();
-      expect(gridObj.element.querySelectorAll('.e-treegridcollapse').length).toBe(0);
+      expect(gridObj.element.querySelectorAll('.e-treegridexpand').length).toBe(9);
       gridObj.enableCollapseAll = true;
       gridObj.dataBind();
-      expect(gridObj.element.querySelectorAll('.e-treegridexpand').length).toBe(0);
+      expect(gridObj.element.querySelectorAll('.e-treegridcollapse').length).toBe(9);
       gridObj.enableCollapseAll = false;
     });
     it('expandstatemapping testing', (done: Function) => {
@@ -409,6 +409,56 @@ describe('TreeGrid base module', () => {
       expect(gridObj.getRows()[5].querySelector('td').innerText).toBe('444');
       expect(gridObj.getRows()[6].querySelector('td').innerText).toBe('33');
       expect(gridObj.getRows()[10].querySelectorAll('.e-treegridexpand').length).toBe(1);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('Set height and width as 100%', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          height: '100%',
+          width: '100%',
+          columns: ['taskID', 'taskName', 'duration', 'progress'],
+      },
+      done
+    );
+  });
+   it('Set height and width as 100%', () => {
+      expect(gridObj.element.style.height).toBe('100%');
+      expect(gridObj.element.style.width).toBe('100%');
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+
+
+  describe('Set height and width as 100% using set model', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          columns: ['taskID', 'taskName', 'duration', 'progress'],
+        },
+        done
+      );
+    });
+    it('Set height and width as 100% using set model', () => {
+      gridObj.height = '100%';
+      gridObj.width = '100%';
+      gridObj.dataBind();
+      expect(gridObj.element.style.height).toBe('100%');
+      expect(gridObj.element.style.width).toBe('100%');
     });
     afterAll(() => {
       destroy(gridObj);

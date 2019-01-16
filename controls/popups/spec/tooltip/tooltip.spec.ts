@@ -84,6 +84,24 @@ describe('Tooltip Control', () => {
             tooltip.destroy();
             expect(document.getElementById('tstooltip').classList.contains('e-tooltip')).toEqual(false);
         });
+        it('Destroy method testing while using beforeClose Event', () => { 
+            function cancelbeforeClose(args: TooltipEventArgs) {
+                args.cancel = true;
+            }
+            let tooltip: any = new Tooltip({
+                content: 'Tooltip Content',
+                mouseTrail: true,
+                animation: { open: { effect: 'None' }, close: { effect: 'None' } },
+                beforeClose: cancelbeforeClose
+            });
+            tooltip.appendTo('#tstooltip');
+            let target1: HTMLElement = document.getElementById('tstooltip');
+            triggerMouseEvent(target1, 'mouseover');
+            triggerMouseEvent(target1, 'mouseleave');
+            tooltip.destroy();
+            triggerMouseEvent(target1, 'mouseenter');
+            expect(document.getElementById('tstooltip').classList.contains('e-tooltip')).toEqual(false);
+        });
         it('get component name testing', () => {
             tooltip = new Tooltip({ content: 'Tooltip Content' }, '#tstooltip');
             expect(tooltip.getModuleName()).toEqual('tooltip');

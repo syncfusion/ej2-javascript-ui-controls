@@ -57,7 +57,7 @@ export class RangeSeries extends NiceInterval {
     }
 
     private processDataSource(dataSource: Object, query: Query, control: RangeNavigator, series?: RangeNavigatorSeries): void {
-        if (isNullOrUndefined(query) && !isNullOrUndefined(dataSource)) {
+        if (!(dataSource instanceof DataManager) && !isNullOrUndefined(dataSource)) {
             this.dataManagerSuccess({ result: dataSource, count: (dataSource as Object[]).length }, control, series);
             return;
         }

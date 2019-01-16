@@ -851,8 +851,12 @@ var Popup = /** @__PURE__ @class */ (function (_super) {
         if (isCollide(this.element, this.viewPortElement).length !== 0) {
             if (isNullOrUndefined(this.viewPortElement)) {
                 var data = fit(this.element, this.viewPortElement, param);
-                this.element.style.left = data.left + 'px';
-                this.element.style.top = data.top + 'px';
+                if (param.X) {
+                    this.element.style.left = data.left + 'px';
+                }
+                if (param.Y) {
+                    this.element.style.top = data.top + 'px';
+                }
             }
             else {
                 var elementRect = this.checkGetBoundingClientRect(this.element);
@@ -1664,6 +1668,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
     Dialog.prototype.preRender = function () {
         var _this = this;
         this.headerContent = null;
+        this.allowMaxHeight = true;
         var classArray = [];
         for (var j = 0; j < this.element.classList.length; j++) {
             if (!isNullOrUndefined(this.element.classList[j].match('e-control')) ||
@@ -2051,6 +2056,9 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         append([].slice.call(fromElements), toElement);
     };
     Dialog.prototype.setMaxHeight = function () {
+        if (!this.allowMaxHeight) {
+            return;
+        }
         var display = this.element.style.display;
         this.element.style.display = 'none';
         this.element.style.maxHeight = (!isNullOrUndefined(this.target)) && (this.targetEle.offsetHeight < window.innerHeight) ?
@@ -2485,11 +2493,16 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                 cancel: false,
                 element: this.element,
                 container: this.isModal ? this.dlgContainer : this.element,
-                target: this.target
+                target: this.target,
+                maxHeight: this.element.style.maxHeight
             };
             this.trigger('beforeOpen', eventArgs);
             if (eventArgs.cancel) {
                 return;
+            }
+            if (this.element.style.maxHeight !== eventArgs.maxHeight) {
+                this.allowMaxHeight = false;
+                this.element.style.maxHeight = eventArgs.maxHeight;
             }
             this.storeActiveElement = document.activeElement;
             this.element.tabIndex = -1;
@@ -3818,6 +3831,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         _super.prototype.destroy.call(this);
         removeClass([this.element], ROOT$1);
         this.unwireEvents(this.opensOn);
+        this.unwireMouseEvents(this.element);
         if (this.popupObj) {
             this.popupObj.destroy();
         }

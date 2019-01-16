@@ -5,6 +5,7 @@
 import { createElement, KeyboardEvents, EventHandler, extend  } from '@syncfusion/ej2-base';
 import { MaskedTextBox, MaskChangeEventArgs, MaskFocusEventArgs} from '../src/maskedtextbox/maskedtextbox/maskedtextbox';
 import { maskInput, setMaskValue, getVal, getMaskedVal, mobileRemoveFunction, maskInputDropHandler, maskInputBlurHandler } from '../src/maskedtextbox/base/mask-base';
+import  {profile , inMB, getMemoryProfile} from './common.spec';
 
 function eventObject(eventType: string, eventName: string): Object {
     let tempEvent: any = document.createEvent(eventType);
@@ -16,6 +17,14 @@ function eventObject(eventType: string, eventName: string): Object {
 
 describe('MaskedTextBox Component', () => {
     describe('MaskedTextBox creation', () => {
+		beforeAll(() => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+        });
         let maskBox: MaskedTextBox;
         beforeEach((): void => {
             maskBox = undefined;
@@ -2149,5 +2158,14 @@ describe('MaskedTextBox Component', () => {
             expect(selectEnd).toEqual(19);
             expect(name).toEqual("focus");
         });
+    });
+	it('memory leak testing', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(inMB(profile.samples[profile.samples.length - 1]) + 0.25);
     });
 });

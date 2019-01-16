@@ -154,6 +154,33 @@ describe('Diagram Control', () => {
             expect(diagram.nodes[0].offsetX == 572.5 && diagram.nodes[0].offsetY == 70).toBe(true);
             done();
         });
+        it('Checking connector annotation position issue after dolayout', (done: Function) => {
+            debugger
+            let node7: NodeModel = {
+                id: 'node7', width: 50, height: 50, annotations: [{ content: 'Web Server' }],
+                expandIcon: {
+                    shape: 'Minus',
+                    width: 10,
+                    height: 10
+                },
+                collapseIcon: {
+                    shape: 'Plus',
+                    width: 10,
+                    height: 10
+                },
+                shape: { type: 'Image', source: 'https://cdn0.iconfinder.com/data/icons/feather/96/591267-box-512.png'}
+            };
+        
+            diagram.add(node7);
+            let sourceID = diagram.nodes[2].id
+            let connector: ConnectorModel = {
+                id: 'connector6', sourceID:sourceID, targetID: 'node7', annotations: [{ content: 'connector6'}]
+            };
+            diagram.add(connector);
+            diagram.doLayout();
+            expect(diagram.connectors[3].wrapper.children[3].offsetX === 607.5 && diagram.connectors[3].wrapper.children[3].offsetY === 110).toBe(true);
+            done();
+        });
     });
 });
 

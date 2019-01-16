@@ -20,7 +20,7 @@ import { RangeSelector } from './renderer/range-selector';
 import { ToolBarSelector } from './renderer/toolbar-selector';
 import { SelectionMode } from '../index';
 import { StockMargin, StockChartArea, StockChartAxis, StockChartRow, StockChartIndexes } from './model/base';
-import { StockSeries, IStockChartEventArgs, StockChartIndicator, StockChartBorder } from './model/base';
+import { StockSeries, IStockChartEventArgs, StockChartIndicator, StockChartBorder, IRangeChangeEventArgs } from './model/base';
 import { StockChartAnnotationSettings } from './model/base';
 import { StockChartAnnotationSettingsModel} from './model/base-model';
 import { StockChartFont } from './model/base';
@@ -286,6 +286,13 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      */
     @Event()
     public loaded: EmitType<IStockChartEventArgs>;
+
+    /**
+     * Triggers if the range is changed
+     * @event
+     */
+    @Event()
+    public rangeChange: EmitType<IRangeChangeEventArgs>;
 
     /**
      * Triggers before each axis label is rendered.

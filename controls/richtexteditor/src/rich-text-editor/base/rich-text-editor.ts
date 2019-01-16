@@ -1,7 +1,7 @@
 import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, select } from '@syncfusion/ej2-base';
 import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';
 import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';
-import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, compile, append, extend, debounce, detach } from '@syncfusion/ej2-base';
 import { getScrollableParent } from '@syncfusion/ej2-popups';
 import { RichTextEditorModel } from './rich-text-editor-model';
 import * as events from '../base/constant';
@@ -660,10 +660,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.setValue();
             this.element.innerHTML = '';
         }
-        let invalidAttr: string[] = ['class', 'style', 'id'];
+        let invalidAttr: string[] = ['class', 'style', 'id', 'ejs-for'];
         let htmlAttr: { [key: string]: string; } = {};
         for (let a: number = 0; a < this.element.attributes.length; a++) {
-            if (invalidAttr.indexOf(this.element.attributes[a].name) === -1) {
+            if (invalidAttr.indexOf(this.element.attributes[a].name) === -1 &&
+                !(/^data-val/.test(this.element.attributes[a].name))) { // data-val for asp.net core data annotation validation.
                 htmlAttr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
             }
         }
@@ -684,7 +685,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }) as HTMLTextAreaElement;
         }
         this.valueContainer.name = this.getID();
-        this.valueContainer.style.display = 'none';
+        addClass([this.valueContainer], classes.CLS_RTE_HIDDEN);
         if (this.value !== null) {
             this.valueContainer.value = this.value;
         }
@@ -931,7 +932,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.element.parentElement.insertBefore(this.valueContainer, this.element);
             this.valueContainer.id = this.getID();
             this.valueContainer.removeAttribute('name');
-            this.element.remove();
+            detach(this.element);
             if (this.originalElement.innerHTML.trim() !== '') {
                 this.valueContainer.value = this.originalElement.innerHTML.trim();
             } else {
@@ -946,7 +947,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
         if (this.placeholder && this.placeHolderWrapper) {
-            this.placeHolderWrapper.remove();
+            detach(this.placeHolderWrapper);
+            this.placeHolderWrapper = null;
         }
         if (!isNOU(this.cssClass)) {
             removeClass([this.element], this.cssClass);
@@ -1134,7 +1136,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private removeSheets(srcList: Element[]): void {
         let i: number;
         for (i = 0; i < srcList.length; i++) {
-            srcList[i].remove();
+            detach(srcList[i]);
         }
     }
     private updatePanelValue(): void {

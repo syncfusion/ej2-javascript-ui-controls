@@ -309,6 +309,11 @@ describe('Input', () => {
                 Input.setPlaceholder(null, element);
                 expect(isNullOrUndefined(element.getAttribute('placeholder'))).toBe(true);
             });
+            it('remove placeholder while pass undefined value', () => {
+                Input.setPlaceholder('Search here', element);
+                Input.setPlaceholder(undefined, element);
+                expect(isNullOrUndefined(element.getAttribute('placeholder'))).toBe(true);
+            });
             it('placeholder encode decode ', () => {
                 Input.setPlaceholder('Hi&eacute;rachie article', element);
                 expect(element.getAttribute('placeholder')).toBe('Hiérachie article');
@@ -927,6 +932,11 @@ describe('FloatInput', () => {
             it('remove placeholder while pass null value', () => {
                 Input.setPlaceholder('Hiérachie article', element);
                 Input.setPlaceholder(null, element);
+                expect(isNullOrUndefined(element.getAttribute('placeholder'))).toBe(true);
+            });
+            it('remove placeholder while pass null value', () => {
+                Input.setPlaceholder('Hiérachie article', element);
+                Input.setPlaceholder(undefined, element);
                 expect(isNullOrUndefined(element.getAttribute('placeholder'))).toBe(true);
             });
             afterAll(() => {

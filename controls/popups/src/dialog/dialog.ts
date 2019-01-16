@@ -114,6 +114,10 @@ const DLG_RESTRICT_WIDTH_VALUE: string = 'e-resize-viewport';
 
 export interface BeforeOpenEventArgs {
     /**
+     * Specify the value to override max-height value of dialog.
+     */
+    maxHeight: string;
+    /**
      * Defines whether the current action can be prevented.
      */
     cancel: boolean;
@@ -202,6 +206,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     private clonedEle: HTMLElement;
     private closeArgs: Object;
     private calculatezIndex: boolean;
+    private allowMaxHeight: boolean;
     /**
      * Specifies the value that can be displayed in dialog's content area.
      * It can be information, list, or other HTML elements.
@@ -452,6 +457,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      */
     protected preRender(): void {
         this.headerContent = null;
+        this.allowMaxHeight = true;
         let classArray: string[] = [];
         for (let j: number = 0; j < this.element.classList.length; j++) {
             if (!isNullOrUndefined(this.element.classList[j].match('e-control')) ||
@@ -838,6 +844,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private setMaxHeight(): void {
+        if (!this.allowMaxHeight) { return; }
         let display: string = this.element.style.display;
         this.element.style.display = 'none';
         this.element.style.maxHeight = (!isNullOrUndefined(this.target)) && (this.targetEle.offsetHeight < window.innerHeight) ?
@@ -1249,10 +1256,15 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 cancel: false,
                 element: this.element,
                 container: this.isModal ? this.dlgContainer : this.element,
-                target: this.target
+                target: this.target,
+                maxHeight: this.element.style.maxHeight
             };
             this.trigger('beforeOpen', eventArgs);
             if (eventArgs.cancel) { return; }
+            if (this.element.style.maxHeight !== eventArgs.maxHeight) {
+                this.allowMaxHeight = false;
+                this.element.style.maxHeight = eventArgs.maxHeight;
+            }
             this.storeActiveElement = <HTMLElement>document.activeElement;
             this.element.tabIndex = -1;
             if (this.isModal && (!isNullOrUndefined(this.dlgOverlay))) {

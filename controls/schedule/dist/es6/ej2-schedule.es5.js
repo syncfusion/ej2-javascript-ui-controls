@@ -4709,17 +4709,17 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
             this.getDateFormat(addDays(new Date(endDate.getTime()), -1), 'long') : this.getDateFormat(endDate, 'long');
         var startTimeDetail = this.parent.getTimeString(startDate);
         var endTimeDetail = this.parent.getTimeString(endDate);
-        var details;
-        var allDayLength = (endDate.getTime() - startDate.getTime()) / MS_PER_DAY;
+        var details = '';
         var spanLength = endDate.getDate() !== startDate.getDate() &&
             (endDate.getTime() - startDate.getTime()) / (60 * 60 * 1000) < 24 ? 1 : 0;
-        if (eventData[fields.isAllDay] || allDayLength >= 1 || spanLength > 0) {
-            details = startDateDetails + ' (' +
-                (eventData[fields.isAllDay] ? this.l10n.getConstant('allDay') : startTimeDetail) + ')';
-            if (allDayLength > 1 || spanLength > 0) {
-                details += '&nbsp;-&nbsp;' + endDateDetails + ' (' +
-                    (eventData[fields.isAllDay] ? this.l10n.getConstant('allDay') : endTimeDetail) + ')';
+        if (eventData[fields.isAllDay]) {
+            details = startDateDetails + ' (' + this.l10n.getConstant('allDay') + ')';
+            if (((endDate.getTime() - startDate.getTime()) / MS_PER_DAY) > 1) {
+                details += '&nbsp;-&nbsp;' + endDateDetails + ' (' + this.l10n.getConstant('allDay') + ')';
             }
+        }
+        else if ((((endDate.getTime() - startDate.getTime()) / MS_PER_DAY) >= 1) || spanLength > 0) {
+            details = startDateDetails + ' (' + startTimeDetail + ')' + '&nbsp;-&nbsp;' + endDateDetails + ' (' + endTimeDetail + ')';
         }
         else {
             details = startDateDetails + ' (' + (startTimeDetail + '&nbsp;-&nbsp;' + endTimeDetail) + ')';
@@ -4914,9 +4914,12 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         return zoneDetails;
     };
     QuickPopups.prototype.getRecurrenceSummary = function (event) {
-        var recurrenceRule = event[this.parent.eventFields.recurrenceRule];
-        var ruleSummary = generateSummary(recurrenceRule, this.parent.localeObj, this.parent.locale);
-        return ruleSummary.charAt(0).toUpperCase() + ruleSummary.slice(1);
+        var recurrenceEditor = this.parent.eventWindow.getRecurrenceEditorInstance();
+        if (recurrenceEditor) {
+            var ruleSummary = recurrenceEditor.getRuleSummary(event[this.parent.eventFields.recurrenceRule]);
+            return ruleSummary.charAt(0).toUpperCase() + ruleSummary.slice(1);
+        }
+        return '';
     };
     QuickPopups.prototype.getDateFormat = function (date, formatString) {
         return this.parent.globalize.formatDate(date, { skeleton: formatString, calendar: this.parent.getCalendarMode() });
@@ -7700,6 +7703,12 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         }
         this.dialogObject.hide();
         this.parent.quickPopup.openDeleteAlert();
+    };
+    EventWindow.prototype.getRecurrenceEditorInstance = function () {
+        if (this.parent.isAdaptive && !this.repeatDialogObject) {
+            this.renderRepeatDialog();
+        }
+        return this.recurrenceEditor;
     };
     EventWindow.prototype.destroyComponents = function () {
         var formelement = this.getFormElements(EVENT_WINDOW_DIALOG_CLASS);
@@ -16071,7 +16080,8 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
                         var interval = this.interval / this.slotCount;
                         var startDate = new Date(this.dateRender[this.day + i].getTime());
                         var endDate = addDays(this.dateRender[this.day + i], 1);
-                        var slotStartTime = (new Date(startTime.setMinutes(Math.floor(startTime.getMinutes() / interval) * interval)));
+                        var startDateTime = new Date(+startTime);
+                        var slotStartTime = (new Date(startDateTime.setMinutes(Math.floor(startDateTime.getMinutes() / interval) * interval)));
                         var slotEndTime = new Date(slotStartTime.getTime() + (60000 * interval));
                         var groupIndex = void 0;
                         if (this.parent.activeViewOptions.group.resources.length > 0 && !isNullOrUndefined(resIndex)) {

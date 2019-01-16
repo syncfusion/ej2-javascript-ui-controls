@@ -375,7 +375,7 @@ describe('Filter module', () => {
 
     it('Filtering', (done: Function) => {
       actionComplete = (args?: Object) => {
-        expect(document.getElementsByClassName('e-treecolumn-container')[0].querySelectorAll('span').length).toBe(1);
+        expect(gridObj.element.getElementsByClassName('e-treecolumn-container')[0].querySelectorAll('span').length).toBe(1);
         done();
       };
       gridObj.grid.actionComplete = actionComplete;

@@ -3511,7 +3511,7 @@ var ODataAdaptor = /** @__PURE__ @class */ (function (_super) {
      */
     ODataAdaptor.prototype.insert = function (dm, data, tableName) {
         return {
-            url: dm.dataSource.url.replace(/\/*$/, tableName ? '/' + tableName : ''),
+            url: (dm.dataSource.insertUrl || dm.dataSource.url).replace(/\/*$/, tableName ? '/' + tableName : ''),
             data: JSON.stringify(data, this.options.localTime ? this.localTimeReplacer : null)
         };
     };
@@ -3532,7 +3532,7 @@ var ODataAdaptor = /** @__PURE__ @class */ (function (_super) {
         }
         return {
             type: 'DELETE',
-            url: dm.dataSource.url.replace(/\/*$/, tableName ? '/' + tableName : '') + url
+            url: (dm.dataSource.removeUrl || dm.dataSource.url).replace(/\/*$/, tableName ? '/' + tableName : '') + url
         };
     };
     /**
@@ -3556,7 +3556,7 @@ var ODataAdaptor = /** @__PURE__ @class */ (function (_super) {
         }
         return {
             type: this.options.updateType,
-            url: dm.dataSource.url.replace(/\/*$/, tableName ? '/' + tableName : '') + url,
+            url: (dm.dataSource.updateUrl || dm.dataSource.url).replace(/\/*$/, tableName ? '/' + tableName : '') + url,
             data: JSON.stringify(value, this.options.localTime ? this.localTimeReplacer : null),
             accept: this.options.accept
         };

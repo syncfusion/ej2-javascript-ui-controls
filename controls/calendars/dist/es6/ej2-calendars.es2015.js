@@ -2846,17 +2846,17 @@ let DatePicker = class DatePicker extends Calendar {
         }
     }
     checkInvalidValue(value) {
-        if (!(value instanceof Date) && !isNullOrUndefined(value)) {
+        if (typeof value !== 'object' && !isNullOrUndefined(value) && !this.strictMode) {
             let valueString = value;
             if (typeof value === 'number') {
                 valueString = value.toString();
             }
             let formatOptions = null;
             if (this.calendarMode === 'Gregorian') {
-                formatOptions = { type: 'dateTime', skeleton: 'yMd' };
+                formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
             }
             else {
-                formatOptions = { type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
             }
             if (!this.checkDateValue(this.globalize.parseDate(valueString, formatOptions))) {
                 let extISOString = null;
@@ -7551,6 +7551,7 @@ let TimePicker = class TimePicker extends Component {
         this.liCollections = [];
         this.timeCollections = [];
         this.disableItemCollection = [];
+        this.invalidValueString = null;
     }
     /**
      * Initialize the event handler
@@ -7640,6 +7641,7 @@ let TimePicker = class TimePicker extends Component {
     initialize() {
         this.globalize = new Internationalization(this.locale);
         this.defaultCulture = new Internationalization('en');
+        this.checkInvalidValue(this.value);
         // persist the value property.
         this.setProperties({ value: this.checkDateValue(new Date('' + this.value)) }, true);
         this.setProperties({ min: this.checkDateValue(new Date('' + this.min)) }, true);
@@ -7699,6 +7701,70 @@ let TimePicker = class TimePicker extends Component {
             Input.addAttributes({ 'style': this.inputStyle }, this.inputElement);
         }
         addClass([this.inputWrapper.container], WRAPPERCLASS);
+    }
+    getCldrDateTimeFormat() {
+        let culture = new Internationalization(this.locale);
+        let cldrTime;
+        let dateFormat = culture.getDatePattern({ skeleton: 'yMd' });
+        if (this.isNullOrEmpty(this.format)) {
+            cldrTime = dateFormat + ' ' + this.CldrFormat('time');
+        }
+        else {
+            cldrTime = this.format;
+        }
+        return cldrTime;
+    }
+    checkInvalidValue(value) {
+        if (typeof value !== 'object' && !isNullOrUndefined(value) && !this.strictMode) {
+            let valueString = value;
+            let valueExpression = null;
+            if (typeof value === 'number') {
+                valueString = value.toString();
+            }
+            else if (typeof value === 'string') {
+                if (!(/^[a-zA-Z0-9- ]*$/).test(value)) {
+                    valueExpression = this.setCurrentDate(this.getDateObject(value));
+                    if (isNullOrUndefined(valueExpression)) {
+                        valueExpression = this.checkDateValue(this.globalize.parseDate(valueString, {
+                            format: this.getCldrDateTimeFormat(), type: 'datetime'
+                        }));
+                        if (isNullOrUndefined(valueExpression)) {
+                            valueExpression = this.checkDateValue(this.globalize.parseDate(valueString, {
+                                format: this.format, type: 'dateTime', skeleton: 'yMd'
+                            }));
+                        }
+                    }
+                }
+            }
+            if (isNullOrUndefined(valueExpression) && valueString.replace(/\s/g, '').length) {
+                let extISOString = null;
+                let basicISOString = null;
+                // tslint:disable-next-line
+                extISOString = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
+                // tslint:disable-next-line
+                basicISOString = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
+                if ((!extISOString.test(valueString) && !basicISOString.test(valueString))
+                    || ((/^[a-zA-Z0-9- ]*$/).test(value)) || isNaN(+new Date('' + valueString))) {
+                    this.invalidValueString = valueString;
+                    this.setProperties({ value: null }, true);
+                    this.initValue = null;
+                }
+            }
+            else {
+                this.setProperties({ value: valueExpression }, true);
+                this.initValue = this.value;
+            }
+        }
+    }
+    CldrFormat(type) {
+        let cldrDateTimeString;
+        if (this.locale === 'en' || this.locale === 'en-US') {
+            cldrDateTimeString = (getValue('timeFormats.short', getDefaultDateObject()));
+        }
+        else {
+            cldrDateTimeString = (this.getCultureTimeObject(cldrData, '' + this.locale));
+        }
+        return cldrDateTimeString;
     }
     // destroy function
     destroy() {
@@ -7849,7 +7915,7 @@ let TimePicker = class TimePicker extends Component {
     }
     checkErrorState(val) {
         let value = this.getDateObject(val);
-        if (this.validateState(value)) {
+        if (this.validateState(value) && !this.invalidValueString) {
             this.removeErrorClass();
         }
         else {
@@ -8072,6 +8138,7 @@ let TimePicker = class TimePicker extends Component {
             this.closePopup(0, e);
         }
         else {
+            this.inputElement.focus();
             this.show(e);
         }
     }
@@ -8421,7 +8488,9 @@ let TimePicker = class TimePicker extends Component {
     }
     clearHandler(e) {
         e.preventDefault();
-        this.clear(e);
+        if (!isNullOrUndefined(this.value)) {
+            this.clear(e);
+        }
         if (this.popupWrapper) {
             this.popupWrapper.scrollTop = 0;
         }
@@ -8805,14 +8874,20 @@ let TimePicker = class TimePicker extends Component {
         eventArgs.value = this.valueWithMinutes || this.getDateObject(this.inputElement.value);
         this.prevDate = this.valueWithMinutes || this.getDateObject(this.inputElement.value);
         this.trigger('change', eventArgs);
+        this.invalidValueString = null;
+        this.checkErrorState(this.value);
     }
     updateInput(isUpdate, date) {
         if (isUpdate) {
             this.prevValue = this.getValue(date);
         }
         this.prevDate = this.valueWithMinutes = date;
-        if ((this.value && +new Date(+this.value).setMilliseconds(0)) !== +date) {
+        if ((typeof date !== 'number') || (this.value && +new Date(+this.value).setMilliseconds(0)) !== +date) {
             this.setProperties({ value: date }, true);
+        }
+        if (!this.strictMode && isNullOrUndefined(this.value) && this.invalidValueString) {
+            this.checkErrorState(this.invalidValueString);
+            Input.setValue(this.invalidValueString, this.inputElement, this.floatLabelType, this.showClearButton);
         }
     }
     setActiveDescendant() {
@@ -9015,6 +9090,9 @@ let TimePicker = class TimePicker extends Component {
         }
         this.cursorDetails = null;
         this.isNavigate = false;
+        if (this.inputElement.value === '') {
+            this.invalidValueString = null;
+        }
     }
     /**
      * Focuses out the TimePicker textbox element.
@@ -9138,22 +9216,8 @@ let TimePicker = class TimePicker extends Component {
         }
         if (!Browser.isDevice) {
             switch (args.popup.position.X) {
-                case 'left':
-                    break;
                 case 'right':
                     args.popup.offsetX = this.containerStyle.width;
-                    break;
-                case 'center':
-                    args.popup.offsetX = -(this.containerStyle.width / 2);
-                    break;
-            }
-            switch (args.popup.position.Y) {
-                case 'top':
-                    break;
-                case 'bottom':
-                    break;
-                case 'center':
-                    args.popup.offsetY = -(this.containerStyle.height / 2);
                     break;
             }
             if (args.popup.position.X === 'center' && args.popup.position.Y === 'center') {
@@ -9192,6 +9256,7 @@ let TimePicker = class TimePicker extends Component {
      * returns void
      * @private
      */
+    // tslint:disable-next-line:max-func-body-length
     onPropertyChanged(newProp, oldProp) {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -9251,17 +9316,26 @@ let TimePicker = class TimePicker extends Component {
                     this.setValue(this.value);
                     break;
                 case 'value':
-                    if (typeof newProp.value === 'string') {
-                        this.setProperties({ value: this.checkDateValue(new Date(newProp.value)) }, true);
-                        newProp.value = this.value;
+                    this.invalidValueString = null;
+                    this.checkInvalidValue(newProp.value);
+                    newProp.value = this.value;
+                    if (!this.invalidValueString) {
+                        if (typeof newProp.value === 'string') {
+                            this.setProperties({ value: this.checkDateValue(new Date(newProp.value)) }, true);
+                            newProp.value = this.value;
+                        }
+                        else {
+                            if ((newProp.value && +new Date(+newProp.value).setMilliseconds(0)) !== +this.value) {
+                                newProp.value = this.checkDateValue(new Date('' + newProp.value));
+                            }
+                        }
+                        this.initValue = newProp.value;
+                        newProp.value = this.compareFormatChange(this.checkValue(newProp.value));
                     }
                     else {
-                        if ((newProp.value && +new Date(+newProp.value).setMilliseconds(0)) !== +this.value) {
-                            newProp.value = this.checkDateValue(new Date('' + newProp.value));
-                        }
+                        Input.setValue(this.invalidValueString, this.inputElement, this.floatLabelType, this.showClearButton);
+                        this.checkErrorState(this.invalidValueString);
                     }
-                    this.initValue = newProp.value;
-                    newProp.value = this.compareFormatChange(this.checkValue(newProp.value));
                     this.checkValueChange(null, false);
                     break;
                 case 'floatLabelType':
@@ -9270,6 +9344,7 @@ let TimePicker = class TimePicker extends Component {
                     Input.addFloating(this.inputElement, this.floatLabelType, this.placeholder);
                     break;
                 case 'strictMode':
+                    this.invalidValueString = null;
                     if (newProp.strictMode) {
                         this.checkErrorState(null);
                     }

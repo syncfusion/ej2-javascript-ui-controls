@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 16.4.46 (2019-01-02)
+## 16.4.47 (2019-01-08)
+
+### Dialog
+
+#### Bug Fixes
+
+- Provided an additional argument in beforeOpen event to control the max-height of dialog.
+
+## 16.4.45 (2019-01-02)
 
 ### Tooltip
 

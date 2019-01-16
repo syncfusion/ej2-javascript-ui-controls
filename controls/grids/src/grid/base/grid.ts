@@ -2356,7 +2356,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             if (freezeRefresh || this.frozenColumns || this.frozenRows) {
                 this.freezeRefresh();
             } else {
-                this.refresh(true);
+                this.refresh();
             }
         } else if (requireRefresh) {
             this.notify(events.modelChanged, args);
@@ -3213,10 +3213,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Refreshes the Grid header and content.
      */
-    public refresh(isClearSelection?: boolean): void {
+    public refresh(): void {
         this.headerModule.refreshUI();
         this.updateStackedFilter();
-        this.renderModule.refresh({ requestType: 'refresh', isClearSelection: isClearSelection } as object);
+        this.renderModule.refresh();
     }
 
     /**

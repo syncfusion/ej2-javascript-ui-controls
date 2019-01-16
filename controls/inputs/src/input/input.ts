@@ -273,9 +273,13 @@ export namespace Input {
     }
 
     function encodePlaceHolder(placeholder: string): string {
-        let spanEle: HTMLElement = document.createElement('span');
-        spanEle.innerHTML = placeholder;
-        return spanEle.textContent;
+        let result: string = '';
+        if (!isNullOrUndefined(placeholder) && placeholder !== '') {
+            let spanEle: HTMLElement = document.createElement('span');
+            spanEle.innerHTML = placeholder;
+            result = spanEle.textContent;
+        }
+        return result;
     }
 
    /**

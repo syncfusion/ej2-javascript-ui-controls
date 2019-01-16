@@ -375,3 +375,55 @@ describe('accumulation and Doughnut Control Checking', () => {
     });*/
 
 });
+
+describe('Accumulation chart with remote dataSource', () => {
+    let pie: AccumulationChart;
+    let ele: Element;
+    let loaded: EmitType<IAccLoadedEventArgs>;
+    let dataManager: DataManager = new DataManager({
+        url: 'https://mvc.syncfusion.com/Services/Northwnd.svc/Tasks/'
+    });
+    let query: Query = new Query().take(5).where('Estimate', 'lessThan', 3, false);
+    beforeAll(() => {
+        ele = createElement('div', { id: 'remote' });
+        document.body.appendChild(ele);
+        pie = new AccumulationChart(
+            {
+                series: [
+                    {
+                        dataSource: dataManager,
+                        xName: 'Assignee', yName: 'Estimate', animation: { enable: false },
+                        name: 'Story Point',
+                    }
+                ],
+            });
+        pie.appendTo('#remote');
+
+
+    });
+    afterAll((): void => {
+        pie.destroy();
+        ele.remove();
+    });
+    it('Checking the series without query', (done: Function) => {
+        loaded = (args: Object): void => {
+            let element: Element = getElement('remote');
+            let svgObject = getElement('remote' + '_svg');
+            expect(svgObject).not.toBe(null);
+            done();
+        };
+        pie.loaded = loaded;
+        pie.refresh();
+    });
+    it('Checking with query', (done: Function) => {
+        loaded = (args: Object): void => {
+            let element: Element = getElement('remote');
+            let svgObject = getElement('remote' + '_svg');
+            expect(svgObject).not.toBe(null);
+            done();
+        };
+        pie.loaded = loaded;
+        pie.series[0].query = query;
+        pie.refresh();
+    });
+});

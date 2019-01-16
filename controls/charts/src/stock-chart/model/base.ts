@@ -588,7 +588,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
      * Specifies query to select data from DataSource. This property is applicable only when the DataSource is `ej.DataManager`.
      * @default null
      */
-    @Property()
+    @Property({})
     public query: Query;
 
     /**
@@ -728,6 +728,26 @@ export interface IStockChartEventArgs {
     name: string;
     /** rangeNavigator */
     stockChart: StockChart;
+}
+
+/**
+ * Interface for changed events
+ */
+export interface IRangeChangeEventArgs {
+    /** name of the event */
+    name: string;
+    /** Defines the start value */
+    start: number | Date;
+    /** Defines the end value */
+    end: number | Date;
+    /** Defines the data source */
+    data: Object[];
+    /** Defines the selected data */
+    selectedData: Object[];
+    /** Defined the zoomPosition of the Stock chart */
+    zoomPosition: number;
+    /** Defined the zoomFactor of the stock chart */
+    zoomFactor: number;
 }
 
 export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
@@ -1019,7 +1039,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
      * Specifies query to select data from DataSource. This property is applicable only when the DataSource is `ej.DataManager`.
      * @default null
      */
-    @Property()
+    @Property({})
     public query: Query;
 
     /**

@@ -21,6 +21,10 @@
           @include li-layout;
           @include li-size;
 
+          & .e-caret {
+            font-size: $cmenu-caret-font-size;
+          }
+
           & .e-previous {
             margin-right: $cmenu-back-icon-margin;
           }
@@ -48,6 +52,10 @@
 
     & .e-menu-item  {
       @include bigger-li-size;
+
+      & .e-caret {
+        font-size: $cmenu-bigger-caret-font-size;
+      }
     }
   }
 

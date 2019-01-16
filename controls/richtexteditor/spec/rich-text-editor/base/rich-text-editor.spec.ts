@@ -1157,7 +1157,7 @@ describe('RTE base module', () => {
         it('check textarea', () => {
             expect(rteObj.valueContainer).not.toBe(null);
             expect((rteObj.valueContainer as HTMLTextAreaElement).value).not.toBe(null);
-            expect(rteObj.valueContainer.style.display).toBe('none');
+            expect(rteObj.valueContainer.classList.contains('e-rte-hidden')).toBe(true);
         });
         it('value property', () => {
             expect(rteObj.value).not.toBe(null);
@@ -1202,7 +1202,7 @@ describe('RTE base module', () => {
         it('check textarea', () => {
             expect(rteObj.valueContainer).not.toBe(null);
             expect((rteObj.valueContainer as HTMLTextAreaElement).value).not.toBe(null);
-            expect(rteObj.valueContainer.style.display).toBe('none');
+            expect(rteObj.valueContainer.classList.contains('e-rte-hidden')).toBe(true);
         });
         it('value property', () => {
             expect(rteObj.value).not.toBe(null);
@@ -1241,7 +1241,7 @@ describe('RTE base module', () => {
         it('check textarea', () => {
             expect(rteObj.valueContainer).not.toBe(null);
             expect((rteObj.valueContainer as HTMLTextAreaElement).value).not.toBe(null);
-            expect(rteObj.valueContainer.style.display).toBe('none');
+            expect(rteObj.valueContainer.classList.contains('e-rte-hidden')).toBe(true);
         });
         it('value property', () => {
             expect(rteObj.value).not.toBe(null);
@@ -1287,7 +1287,7 @@ describe('RTE base module', () => {
         it('check textarea', () => {
             expect(rteObj.valueContainer).not.toBe(null);
             expect((rteObj.valueContainer as HTMLTextAreaElement).value).not.toBe(null);
-            expect(rteObj.valueContainer.style.display).toBe('none');
+            expect(rteObj.valueContainer.classList.contains('e-rte-hidden')).toBe(true);
         });
         it('value property', () => {
             expect(rteObj.value).not.toBe(null);

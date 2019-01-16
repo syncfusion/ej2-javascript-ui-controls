@@ -50,11 +50,11 @@
 
       & .e-ul {
         background-color: inherit;
-        color: $cmenu-color;
+        color: $submenu-color;
 
         & .e-menu-item {
           & .e-menu-url {
-            color: $cmenu-color;
+            color: $submenu-color;
           }
 
           &.e-focused {

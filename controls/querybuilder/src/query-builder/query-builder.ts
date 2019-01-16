@@ -570,6 +570,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         tooltip.appendTo(element);
         tooltip.open(element);
     }
+    /**
+     * Validate the conditions and it display errors for invalid fields.
+     * @returns boolean.
+     */
     public validateFields(): boolean {
         let isValid: boolean = true;
         if (this.allowValidation) {
@@ -2288,8 +2292,20 @@ export interface Level {
 }
 
 export interface TemplateColumn {
+    /**
+     * Creates the custom component.
+     * @default null
+     */
     create?: Element | Function | string;
+    /**
+     * Wire events for the custom component.
+     * @default null
+     */
     write?: void | Function | string;
+    /**
+     * Destroy the custom component.
+     * @default null
+     */
     destroy?: Function | string;
 }
 export interface Validation {

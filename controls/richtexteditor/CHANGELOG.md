@@ -2,7 +2,17 @@
 
 ## [Unreleased]
 
-## 16.4.46 (2019-01-02)
+## 16.4.47 (2019-01-08)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- ASP.NET core data annotation issue has been fixed.
+
+- Console error is thrown in IE browser with angular routing, that issue has been fixed.
+
+## 16.4.46 (2019-01-08)
 
 ### RichTextEditor
 

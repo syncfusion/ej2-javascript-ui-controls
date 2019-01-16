@@ -6,6 +6,7 @@ import { remove } from '@syncfusion/ej2-base';
 import { StockChart } from '../stock-chart';
 import { StockSeriesModel } from '../model/base-model';
 import { MarginModel } from '../../chart';
+import { IRangeChangeEventArgs } from '../model/base';
 
 /** @private */
 export class RangeSelector {
@@ -44,15 +45,25 @@ export class RangeSelector {
             margin : this.findMargin(stockChart),
             tooltip: { enable: stockChart.tooltip.enable, displayMode: 'Always' },
             changed: (args: IChangedEventArgs) => {
+                let arg: IRangeChangeEventArgs = {
+                    name: 'rangeChange',
+                    end : args.end,
+                    selectedData : args.selectedData,
+                    start : args.start,
+                    zoomFactor : args.zoomFactor,
+                    zoomPosition : args.zoomPosition,
+                    data: undefined
+                };
+                this.stockChart.trigger('rangeChange', arg );
                 this.stockChart.startValue = args.start  as number; this.stockChart.endValue = args.end as number;
                 if (!this.stockChart.zoomChange) {
-                    this.stockChart.cartesianChart.cartesianChartRefresh(this.stockChart, args.start as number, args.end as number);
+                    this.stockChart.cartesianChart.cartesianChartRefresh(this.stockChart, args.start as number,
+                                                                         args.end as number, arg.data);
                 }
                 if (stockChart.periodSelector && stockChart.periodSelector.datePicker) {
                     stockChart.periodSelector.datePicker.startDate = new Date(args.start as number);
                     stockChart.periodSelector.datePicker.endDate = new Date(args.end as number);
                     stockChart.periodSelector.datePicker.dataBind();
-
                 }
             }
         });

@@ -39,7 +39,7 @@ const ICON_FOCUSED : string = 'e-clear-icon-focus';
 const PROGRESS_INNER_WRAPPER: string = 'e-progress-inner-wrap';
 const PAUSE_UPLOAD: string = 'e-file-pause-btn';
 const RESUME_UPLOAD: string = 'e-file-play-btn';
-const RESTRICT_SEQUENTIAL: string = 'e-restrict-sequential';
+const RESTRICT_RETRY: string = 'e-restrict-retry';
 
 export class FilesProp extends ChildProperty<FilesProp> {
     /**
@@ -1478,7 +1478,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 /* istanbul ignore next */
                 this.uploadSequential();
             }
-            this.checkActionComplete(true);
+            if (!(liElement.classList.contains(RESTRICT_RETRY))) {
+                this.checkActionComplete(true);
+            }
         } else {
             this.remove(fileData, false, false, args);
         }
@@ -1761,6 +1763,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 this.upload(this.filesData, true);
             }
         }
+        this.raiseActionComplete();
     }
 
     private clearData(singleUpload?: boolean) : void {
@@ -2141,10 +2144,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             }
             this.pauseButton = null;
         }
-        if (this.sequentialUpload) {
-            /* istanbul ignore next */
-            liElement.classList.add(RESTRICT_SEQUENTIAL);
-        }
+        /* istanbul ignore next */
+        liElement.classList.add(RESTRICT_RETRY);
         this.upload([file]);
     }
 
@@ -2196,15 +2197,15 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         this.uploadedFilesData.push(file);
         this.trigger('change', { file: this.uploadedFilesData });
         this.checkActionButtonStatus();
-        if (this.sequentialUpload && this.fileList.length > 0) {
-            if ((!(this.getLiElement(file)).classList.contains(RESTRICT_SEQUENTIAL))) {
+        if (this.fileList.length > 0) {
+            if ((!(this.getLiElement(file)).classList.contains(RESTRICT_RETRY))) {
                 this.uploadSequential();
+                this.checkActionComplete(true);
             } else {
                 /* istanbul ignore next */
-                (this.getLiElement(file)).classList.remove(RESTRICT_SEQUENTIAL);
+                (this.getLiElement(file)).classList.remove(RESTRICT_RETRY);
             }
         }
-        this.checkActionComplete(true);
     }
 
     private uploadFailed(e: Event, file : FileInfo) : void {
@@ -2736,9 +2737,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             this.chunkUpload(metaData.file);
         }
         /* istanbul ignore next */
-        if (this.sequentialUpload) {
-            (this.getLiElement(metaData.file)).classList.add(RESTRICT_SEQUENTIAL);
-        }
+        (this.getLiElement(metaData.file)).classList.add(RESTRICT_RETRY);
     }
 
     private chunkUploadInProgress(e: ProgressEventInit, metaData: MetaData, custom?: boolean): void {
@@ -2858,8 +2857,11 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         }
         this.element.removeAttribute('accept');
         this.setInitialAttributes();
-        this.uploadWrapper.parentElement.appendChild(this.cloneElement);
-        this.cloneElement.classList.remove('e-control', ROOT);
+        let attributes: string[] = ['aria-label', 'directory', 'webkitdirectory', 'tabindex'];
+        for (let key of attributes) {
+            this.element.removeAttribute(key);
+        }
+        this.uploadWrapper.parentElement.appendChild(this.element);
         detach(this.uploadWrapper);
         this.uploadWrapper = null;
         super.destroy();

@@ -610,7 +610,7 @@ export interface SeriesBaseModel {
 
     /**
      * Specifies query to select data from DataSource. This property is applicable only when the DataSource is `ej.DataManager`.
-     * @default null
+     * @default ''
      */
     query?: Query;
 

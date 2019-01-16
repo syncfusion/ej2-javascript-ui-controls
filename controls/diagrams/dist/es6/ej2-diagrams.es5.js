@@ -27937,6 +27937,18 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    Diagram.prototype.updateConnectorAnnotation = function (connector) {
+        if (connector.annotations.length) {
+            var annotationWrapper = void 0;
+            for (var _i = 0, _a = connector.annotations; _i < _a.length; _i++) {
+                var annotation = _a[_i];
+                annotationWrapper = this.getWrapper(connector.wrapper, annotation.id);
+                connector.updateAnnotation(annotation, connector.intermediatePoints, connector.wrapper.bounds, annotationWrapper, (this.diagramActions & DiagramAction.Interactions));
+            }
+        }
+        connector.wrapper.measure(new Size(connector.wrapper.width, connector.wrapper.height));
+        connector.wrapper.arrange(connector.wrapper.desiredSize);
+    };
     /**
      * Automatically updates the diagram objects based on the type of the layout
      */
@@ -28006,6 +28018,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 updateConnector(connector, points);
                 connector.wrapper.measure(new Size(undefined, undefined));
                 connector.wrapper.arrange(connector.wrapper.desiredSize);
+                this.updateConnectorAnnotation(connector);
                 this.updateQuad(connector);
                 this.updateDiagramObject(connector);
             }
@@ -30607,16 +30620,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             if (points.length > 0) {
                 actualObject.wrapper.measure(new Size(actualObject.wrapper.width, actualObject.wrapper.height));
                 actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
-                if (actualObject.annotations.length) {
-                    for (var _i = 0, _a = actualObject.annotations; _i < _a.length; _i++) {
-                        var annotation = _a[_i];
-                        var annotationWrapper = void 0;
-                        annotationWrapper = this.getWrapper(actualObject.wrapper, annotation.id);
-                        actualObject.updateAnnotation(annotation, actualObject.intermediatePoints, actualObject.wrapper.bounds, annotationWrapper, (this.diagramActions & DiagramAction.Interactions));
-                    }
-                }
-                actualObject.wrapper.measure(new Size(actualObject.wrapper.width, actualObject.wrapper.height));
-                actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
+                this.updateConnectorAnnotation(actualObject);
                 this.updateObject(actualObject, oldProp, newProp);
             } //work-around to update intersected connector bridging
         }

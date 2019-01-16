@@ -378,16 +378,16 @@ export class DatePicker extends Calendar implements IInput {
         }
     }
     private checkInvalidValue(value: Date): void {
-        if (!(value instanceof Date) && !isNullOrUndefined(value)) {
+        if (typeof value !== 'object' && !isNullOrUndefined(value) && !this.strictMode) {
             let valueString: string = <string>value;
             if (typeof value === 'number') {
                 valueString = (value as string).toString();
             }
             let formatOptions: object = null;
             if (this.calendarMode === 'Gregorian') {
-                formatOptions = { type: 'dateTime', skeleton: 'yMd' };
+                formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
             } else {
-                formatOptions = { type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
             }
             if (!this.checkDateValue(this.globalize.parseDate(valueString, formatOptions))) {
                 let extISOString: RegExp = null;

@@ -262,9 +262,13 @@ var Input;
         return container;
     }
     function encodePlaceHolder(placeholder) {
-        let spanEle = document.createElement('span');
-        spanEle.innerHTML = placeholder;
-        return spanEle.textContent;
+        let result = '';
+        if (!isNullOrUndefined(placeholder) && placeholder !== '') {
+            let spanEle = document.createElement('span');
+            spanEle.innerHTML = placeholder;
+            result = spanEle.textContent;
+        }
+        return result;
     }
     /**
      * Sets the value to the input element.
@@ -6548,7 +6552,6 @@ var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-const ROOT$2 = 'e-uploader';
 const CONTROL_WRAPPER = 'e-upload';
 const INPUT_WRAPPER = 'e-file-select';
 const DROP_AREA = 'e-file-drop';
@@ -6582,7 +6585,7 @@ const ICON_FOCUSED = 'e-clear-icon-focus';
 const PROGRESS_INNER_WRAPPER = 'e-progress-inner-wrap';
 const PAUSE_UPLOAD = 'e-file-pause-btn';
 const RESUME_UPLOAD = 'e-file-play-btn';
-const RESTRICT_SEQUENTIAL = 'e-restrict-sequential';
+const RESTRICT_RETRY = 'e-restrict-retry';
 class FilesProp extends ChildProperty {
 }
 __decorate$4([
@@ -7335,7 +7338,9 @@ let Uploader = class Uploader extends Component {
                 /* istanbul ignore next */
                 this.uploadSequential();
             }
-            this.checkActionComplete(true);
+            if (!(liElement.classList.contains(RESTRICT_RETRY))) {
+                this.checkActionComplete(true);
+            }
         }
         else {
             this.remove(fileData, false, false, args);
@@ -7638,6 +7643,7 @@ let Uploader = class Uploader extends Component {
                 this.upload(this.filesData, true);
             }
         }
+        this.raiseActionComplete();
     }
     clearData(singleUpload) {
         if (!isNullOrUndefined(this.listParent)) {
@@ -8021,10 +8027,8 @@ let Uploader = class Uploader extends Component {
             }
             this.pauseButton = null;
         }
-        if (this.sequentialUpload) {
-            /* istanbul ignore next */
-            liElement.classList.add(RESTRICT_SEQUENTIAL);
-        }
+        /* istanbul ignore next */
+        liElement.classList.add(RESTRICT_RETRY);
         this.upload([file]);
     }
     /* istanbul ignore next */
@@ -8076,16 +8080,16 @@ let Uploader = class Uploader extends Component {
         this.uploadedFilesData.push(file);
         this.trigger('change', { file: this.uploadedFilesData });
         this.checkActionButtonStatus();
-        if (this.sequentialUpload && this.fileList.length > 0) {
-            if ((!(this.getLiElement(file)).classList.contains(RESTRICT_SEQUENTIAL))) {
+        if (this.fileList.length > 0) {
+            if ((!(this.getLiElement(file)).classList.contains(RESTRICT_RETRY))) {
                 this.uploadSequential();
+                this.checkActionComplete(true);
             }
             else {
                 /* istanbul ignore next */
-                (this.getLiElement(file)).classList.remove(RESTRICT_SEQUENTIAL);
+                (this.getLiElement(file)).classList.remove(RESTRICT_RETRY);
             }
         }
-        this.checkActionComplete(true);
     }
     uploadFailed(e, file) {
         let li = this.getLiElement(file);
@@ -8612,9 +8616,7 @@ let Uploader = class Uploader extends Component {
             this.chunkUpload(metaData.file);
         }
         /* istanbul ignore next */
-        if (this.sequentialUpload) {
-            (this.getLiElement(metaData.file)).classList.add(RESTRICT_SEQUENTIAL);
-        }
+        (this.getLiElement(metaData.file)).classList.add(RESTRICT_RETRY);
     }
     chunkUploadInProgress(e, metaData, custom) {
         if (metaData.file.statusCode === '4') {
@@ -8733,8 +8735,11 @@ let Uploader = class Uploader extends Component {
         }
         this.element.removeAttribute('accept');
         this.setInitialAttributes();
-        this.uploadWrapper.parentElement.appendChild(this.cloneElement);
-        this.cloneElement.classList.remove('e-control', ROOT$2);
+        let attributes$$1 = ['aria-label', 'directory', 'webkitdirectory', 'tabindex'];
+        for (let key of attributes$$1) {
+            this.element.removeAttribute(key);
+        }
+        this.uploadWrapper.parentElement.appendChild(this.element);
         detach(this.uploadWrapper);
         this.uploadWrapper = null;
         super.destroy();
@@ -10864,8 +10869,6 @@ var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-const ROOT$3 = 'e-textbox';
-const CONTROL$2 = 'e-control';
 const HIDE_CLEAR = 'e-clear-icon-hide';
 /**
  * Represents the TextBox component that allows the user to enter the values based on it's type.
@@ -11096,10 +11099,11 @@ let TextBox = class TextBox extends Component {
      */
     destroy() {
         this.unWireEvents();
-        this.textboxWrapper.container.parentElement.appendChild(this.cloneElement);
+        this.element.classList.remove('e-input');
+        this.removeAttributes(['aria-placeholder', 'aria-disabled', 'aria-readonly', 'aria-labelledby']);
+        this.textboxWrapper.container.parentElement.appendChild(this.element);
         detach(this.textboxWrapper.container);
         this.textboxWrapper = null;
-        this.cloneElement.classList.remove(ROOT$3, CONTROL$2);
         super.destroy();
     }
     /**

@@ -313,6 +313,10 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private selectBtn;
     private addRuleElement;
     private renderToolTip;
+    /**
+     * Validate the conditions and it display errors for invalid fields.
+     * @returns boolean.
+     */
     validateFields(): boolean;
     private groupTemplate;
     private ruleTemplate;
@@ -430,8 +434,20 @@ export interface Level {
     [key: string]: number[];
 }
 export interface TemplateColumn {
+    /**
+     * Creates the custom component.
+     * @default null
+     */
     create?: Element | Function | string;
+    /**
+     * Wire events for the custom component.
+     * @default null
+     */
     write?: void | Function | string;
+    /**
+     * Destroy the custom component.
+     * @default null
+     */
     destroy?: Function | string;
 }
 export interface Validation {

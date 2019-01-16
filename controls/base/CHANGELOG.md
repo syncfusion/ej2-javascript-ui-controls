@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.3.30 (2018-10-31)
+
+### Common
+
+#### Bug Fixes
+
+- Fixed `exporting issue` while complex field value is null.
+
 ## 16.3.29 (2018-10-31)
 
 ### Common

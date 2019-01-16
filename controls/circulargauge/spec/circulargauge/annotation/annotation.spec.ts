@@ -175,6 +175,17 @@ describe('Circular-Gauge Control', () => {
                 ' stroke-width="3" fill="red" /></svg>';
             gauge.refresh();
         });
+        it('checking annotation with multiple element', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_Axis_0_Annotation_1').childNodes[0];
+                expect(svg.innerHTML == 'Annotation1').toBe(true);
+                svg = <HTMLElement>document.getElementById('container_Axis_0_Annotation_1').childNodes[1];
+                expect(svg.innerHTML == 'Annotation2').toBe(true);
+                done();
+            };
+            gauge.axes[0].annotations[1].content = '<div id="content1">Annotation1</div><div id="content2">Annotation2</div>';
+            gauge.refresh();
+        });
     });
     describe('axis boarder with background', () => {
         let gauge: CircularGauge;

@@ -15,25 +15,25 @@ export interface TicksDataModel {
      *  * both - Ticks are placed on the both side of the Slider bar.
      *  * none - Ticks are not shown.
      *
-     * @default : 'None'
+     * @default 'None'
      */
     placement?: Placement;
 
     /**
      * It is used to denote the distance between two major (large) ticks from the scale of the Slider.
-     * @default : 10
+     * @default 10
      */
     largeStep?: number;
 
     /**
      * It is used to denote the distance between two minor (small) ticks from the scale of the Slider.
-     * @default : 1
+     * @default 1
      */
     smallStep?: number;
 
     /**
      * We can show or hide the small ticks in the Slider, which will be appeared in between the largeTicks.
-     * @default : false
+     * @default false
      */
     showSmallTicks?: boolean;
 

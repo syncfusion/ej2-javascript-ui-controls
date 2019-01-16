@@ -2958,6 +2958,21 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
+    private updateConnectorAnnotation(connector: Connector): void {
+        if (connector.annotations.length) {
+            let annotationWrapper: TextElement;
+            for (let annotation of connector.annotations) {
+                annotationWrapper = this.getWrapper(connector.wrapper, annotation.id) as TextElement;
+                connector.updateAnnotation(
+                    annotation as PathAnnotation,
+                    connector.intermediatePoints, connector.wrapper.bounds, annotationWrapper,
+                    (this.diagramActions & DiagramAction.Interactions));
+            }
+        }
+        connector.wrapper.measure(new Size(connector.wrapper.width, connector.wrapper.height));
+        connector.wrapper.arrange(connector.wrapper.desiredSize);
+    }
+
     /**
      * Automatically updates the diagram objects based on the type of the layout
      */
@@ -3032,6 +3047,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 updateConnector(connector, points);
                 connector.wrapper.measure(new Size(undefined, undefined));
                 connector.wrapper.arrange(connector.wrapper.desiredSize);
+                this.updateConnectorAnnotation(connector);
                 this.updateQuad(connector);
                 this.updateDiagramObject(connector);
             }
@@ -5656,18 +5672,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (points.length > 0) {
                 actualObject.wrapper.measure(new Size(actualObject.wrapper.width, actualObject.wrapper.height));
                 actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
-                if (actualObject.annotations.length) {
-                    for (let annotation of actualObject.annotations) {
-                        let annotationWrapper: TextElement;
-                        annotationWrapper = this.getWrapper(actualObject.wrapper, annotation.id) as TextElement;
-                        actualObject.updateAnnotation(
-                            annotation as PathAnnotation,
-                            actualObject.intermediatePoints, actualObject.wrapper.bounds, annotationWrapper,
-                            (this.diagramActions & DiagramAction.Interactions));
-                    }
-                }
-                actualObject.wrapper.measure(new Size(actualObject.wrapper.width, actualObject.wrapper.height));
-                actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
+                this.updateConnectorAnnotation(actualObject);
                 this.updateObject(actualObject, oldProp, newProp);
             } //work-around to update intersected connector bridging
         }

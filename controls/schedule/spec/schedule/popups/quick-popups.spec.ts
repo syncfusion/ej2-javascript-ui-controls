@@ -2,7 +2,10 @@
  * QuickPopups spec
  */
 import { createElement, remove, EmitType, extend, isVisible, Browser, closest } from '@syncfusion/ej2-base';
-import { Schedule, Day, Week, WorkWeek, Month, Agenda, TimelineViews, EJ2Instance, EventRenderedArgs, ScheduleModel, CellClickEventArgs } from '../../../src/schedule/index';
+import {
+    Schedule, Day, Week, WorkWeek, Month, Agenda, TimelineViews, EJ2Instance,
+    EventRenderedArgs, ScheduleModel, CellClickEventArgs
+} from '../../../src/schedule/index';
 import { RecurrenceEditor } from '../../../src/recurrence-editor/index';
 import { defaultData, resourceData } from '../base/datasource.spec';
 import { PopupOpenEventArgs, EventClickArgs } from '../../../src/index';
@@ -1125,7 +1128,7 @@ describe('Quick Popups', () => {
 
     describe('More Indicator with resource', () => {
         let schObj: Schedule;
-        let data: Object [] = [
+        let data: Object[] = [
             {
                 Id: 1,
                 Subject: 'Board Meeting',
@@ -1134,17 +1137,46 @@ describe('Quick Popups', () => {
                 EndTime: new Date(2018, 11, 7, 14, 36, 0),
                 OwnerId: 1
             }, {
-                Id: 100,
+                Id: 2,
                 Subject: 'Board Meeting1',
                 Description: 'Meeting to discuss business goal of 2018.',
                 StartTime: new Date(2018, 11, 7, 10, 36, 26),
                 EndTime: new Date(2018, 11, 7, 12, 36, 0),
                 OwnerId: 1
+            }, {
+                Id: 3,
+                Subject: 'Time Rounded',
+                StartTime: new Date(2018, 11, 7, 10),
+                EndTime: new Date(2018, 11, 7, 11, 30),
+                IsAllDay: false,
+                OwnerId: 3
+            }, {
+                Id: 4,
+                Subject: 'In-Between time',
+                StartTime: new Date(2018, 11, 7, 10, 12),
+                EndTime: new Date(2018, 11, 7, 11, 38),
+                IsAllDay: false,
+                OwnerId: 3
+            }, {
+                Id: 5,
+                Subject: 'spanned event',
+                StartTime: new Date(2018, 11, 7, 11),
+                EndTime: new Date(2018, 11, 8, 11),
+                IsAllDay: false,
+                OwnerId: 5
+            }, {
+                Id: 6,
+                Subject: 'Recurrence Summary Checking',
+                StartTime: new Date(2018, 11, 7, 10),
+                EndTime: new Date(2018, 11, 8, 12),
+                RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5',
+                IsAllDay: false,
+                OwnerId: 6
             }
         ];
 
         beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = { 
+            let schOptions: ScheduleModel = {
                 height: '550px', width: '100%',
                 currentView: 'TimelineWeek',
                 views: ['TimelineWeek'],
@@ -1159,7 +1191,7 @@ describe('Quick Popups', () => {
                             { OwnerText: 'Nancy', Id: 1, OwnerColor: '#ffaa00' },
                             { OwnerText: 'Steven', Id: 2, OwnerColor: '#f8a398' },
                             { OwnerText: 'Michael', Id: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Phoenix', Id: 4, OwnerColor: '#fec200'},
+                            { OwnerText: 'Phoenix', Id: 4, OwnerColor: '#fec200' },
                             { OwnerText: 'Mission', Id: 5, OwnerColor: '#df5286' },
                             { OwnerText: 'Hangout', Id: 6, OwnerColor: '#00bdae' }
                         ],
@@ -1173,6 +1205,45 @@ describe('Quick Popups', () => {
         afterAll(() => {
             util.destroy(schObj);
         });
+
+        it('CR Issue EJ2-21532 - Appointment time was wrong when it move on to the more indicator popup', () => {
+            (schObj.element.querySelectorAll('.e-more-indicator')[1] as HTMLElement).click();
+            expect(schObj.quickPopup.morePopup.element.classList.contains('e-popup-open')).toEqual(true);
+            let morePopupEvents: NodeListOf<Element> = schObj.quickPopup.morePopup.element.querySelectorAll('.e-appointment');
+            expect(morePopupEvents.length).toEqual(2);
+            (morePopupEvents[0] as HTMLElement).click();
+            let popupEle: HTMLElement = schObj.quickPopup.quickPopup.element as HTMLElement;
+            expect(popupEle.classList.contains('e-popup-open')).toEqual(true);
+            expect(popupEle.querySelector('.e-date-time-details').textContent).toEqual('December 7, 2018 (10:00 AM - 11:30 AM)');
+            (morePopupEvents[1] as HTMLElement).click();
+            expect(popupEle.querySelector('.e-date-time-details').textContent).toEqual('December 7, 2018 (10:12 AM - 11:38 AM)');
+            (popupEle.querySelector('.e-close') as HTMLElement).click();
+            expect(popupEle.classList.contains('e-popup-close')).toEqual(true);
+            (schObj.quickPopup.morePopup.element.querySelector('.e-more-event-close') as HTMLElement).click();
+            expect(schObj.quickPopup.morePopup.element.classList.contains('e-popup-close')).toEqual(true);
+        });
+
+        it('CR Issue EJ2-21478 - Spanned Appointment with Same Hours, Minutes and Seconds Do not display correctly in quick popup', () => {
+            let spanEventEle: HTMLElement = schObj.element.querySelector('[data-id="Appointment_5"]') as HTMLElement;
+            spanEventEle.click();
+            let popupEle: HTMLElement = schObj.quickPopup.quickPopup.element as HTMLElement;
+            expect(popupEle.classList.contains('e-popup-open')).toEqual(true);
+            expect(popupEle.querySelector('.e-date-time-details').textContent).
+                toEqual('December 7, 2018 (11:00 AM) - December 8, 2018 (11:00 AM)');
+            (popupEle.querySelector('.e-close') as HTMLElement).click();
+            expect(popupEle.classList.contains('e-popup-close')).toEqual(true);
+        });
+
+        it('CR Issue EJ2-21478 - Recurrence event summary in quick popup', () => {
+            let spanEventEle: HTMLElement = schObj.element.querySelector('[data-id="Appointment_6"]') as HTMLElement;
+            spanEventEle.click();
+            let popupEle: HTMLElement = schObj.quickPopup.quickPopup.element as HTMLElement;
+            expect(popupEle.classList.contains('e-popup-open')).toEqual(true);
+            expect(popupEle.querySelector('.e-recurrence-summary ').textContent).toEqual('Every day(s), 5 time(s)');
+            (popupEle.querySelector('.e-close') as HTMLElement).click();
+            expect(popupEle.classList.contains('e-popup-close')).toEqual(true);
+        });
+
         it('CR Issue EJ2-19844 - timeline week more popup display position', () => {
             let proxy: Schedule = schObj;
             schObj.popupOpen = (args: PopupOpenEventArgs) => {
@@ -1182,13 +1253,13 @@ describe('Quick Popups', () => {
                 startDate.setHours(startDate.getHours(), startDate.getMinutes(), 0);
                 let tdDate: string = startDate.getTime().toString();
                 let element: Element = proxy.element.querySelector('.' + cls.CONTENT_WRAP_CLASS +
-                ' tbody tr td[data-group-index="' + gIndex + '"][data-date="' + tdDate + '"]') as HTMLElement;                
+                    ' tbody tr td[data-group-index="' + gIndex + '"][data-date="' + tdDate + '"]') as HTMLElement;
                 let currentCellData: CellClickEventArgs = proxy.getCellDetails(element);
                 expect(element).toBeTruthy();
-                expect(parseInt(element.getAttribute('data-date'),10)).toEqual(new Date(2018, 11, 7, 12, 30).getTime());
-                expect(element.getAttribute('data-group-index')).toEqual("0");
-                expect(element.classList.contains('e-work-cells')).toBe(true);                
-                expect(currentCellData.groupIndex).toEqual(0);                
+                expect(parseInt(element.getAttribute('data-date'), 10)).toEqual(new Date(2018, 11, 7, 12, 30).getTime());
+                expect(element.getAttribute('data-group-index')).toEqual('0');
+                expect(element.classList.contains('e-work-cells')).toBe(true);
+                expect(currentCellData.groupIndex).toEqual(0);
                 expect(currentCellData.startTime.getTime()).toEqual(new Date(2018, 11, 7, 12, 30).getTime());
                 expect(currentCellData.endTime.getTime()).toEqual(new Date(2018, 11, 7, 13, 0).getTime());
             };

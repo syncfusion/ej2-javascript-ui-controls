@@ -542,7 +542,7 @@ export class Edit implements IAction {
                 let inputElements: HTMLInputElement[] = [].slice.call(form[getComplexFieldID(col.field)]);
                 inputElements = inputElements.length ? inputElements : [form[getComplexFieldID(col.field)]];
                 inputElements.forEach((input: HTMLInputElement) => {
-                    let value: number | string | Date | boolean  = this.getValue(col, input);
+                    let value: number | string | Date | boolean  = this.getValue(col, input, editedData);
                     DataUtil.setValue(col.field, value, editedData);
                 });
             }
@@ -552,14 +552,14 @@ export class Edit implements IAction {
         for (let i: number = 0, len: number = inputs.length; i < len; i++) {
             let col: Column = gObj.getColumnByUid(inputs[i].getAttribute('e-mappinguid'));
             if (col && col.field) {
-                let value:  number | string | Date | boolean = this.getValue(col, inputs[i]);
+                let value:  number | string | Date | boolean = this.getValue(col, inputs[i], editedData);
                 DataUtil.setValue(col.field, value, editedData);
             }
         }
         return editedData;
     }
 
-    private getValue(col: Column, input: HTMLInputElement): string | boolean | number | Date {
+    private getValue(col: Column, input: HTMLInputElement, editedData: Object): string | boolean | number | Date {
         let value: string | boolean | number | Date = input.value;
         let gObj: IGrid = this.parent;
         let temp: Function = col.edit.read as Function;
@@ -571,6 +571,9 @@ export class Edit implements IAction {
             value = gObj.editModule.getValueFromType(col, (temp)(input, value));
         } else {
             value = gObj.editModule.getValueFromType(col, (col.edit.read as Function)(input, value));
+        }
+        if (isNullOrUndefined(editedData[col.field]) && value === '') {
+            value = editedData[col.field];
         }
         return value;
     }

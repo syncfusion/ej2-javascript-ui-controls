@@ -263,9 +263,13 @@ var Input;
         return container;
     }
     function encodePlaceHolder(placeholder) {
-        var spanEle = document.createElement('span');
-        spanEle.innerHTML = placeholder;
-        return spanEle.textContent;
+        var result = '';
+        if (!isNullOrUndefined(placeholder) && placeholder !== '') {
+            var spanEle = document.createElement('span');
+            spanEle.innerHTML = placeholder;
+            result = spanEle.textContent;
+        }
+        return result;
     }
     /**
      * Sets the value to the input element.
@@ -6680,7 +6684,6 @@ var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var ROOT$2 = 'e-uploader';
 var CONTROL_WRAPPER = 'e-upload';
 var INPUT_WRAPPER = 'e-file-select';
 var DROP_AREA = 'e-file-drop';
@@ -6714,7 +6717,7 @@ var ICON_FOCUSED = 'e-clear-icon-focus';
 var PROGRESS_INNER_WRAPPER = 'e-progress-inner-wrap';
 var PAUSE_UPLOAD = 'e-file-pause-btn';
 var RESUME_UPLOAD = 'e-file-play-btn';
-var RESTRICT_SEQUENTIAL = 'e-restrict-sequential';
+var RESTRICT_RETRY = 'e-restrict-retry';
 var FilesProp = /** @__PURE__ @class */ (function (_super) {
     __extends$4(FilesProp, _super);
     function FilesProp() {
@@ -7487,7 +7490,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 /* istanbul ignore next */
                 this.uploadSequential();
             }
-            this.checkActionComplete(true);
+            if (!(liElement.classList.contains(RESTRICT_RETRY))) {
+                this.checkActionComplete(true);
+            }
         }
         else {
             this.remove(fileData, false, false, args);
@@ -7803,6 +7808,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 this.upload(this.filesData, true);
             }
         }
+        this.raiseActionComplete();
     };
     Uploader.prototype.clearData = function (singleUpload) {
         if (!isNullOrUndefined(this.listParent)) {
@@ -8193,10 +8199,8 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             }
             this.pauseButton = null;
         }
-        if (this.sequentialUpload) {
-            /* istanbul ignore next */
-            liElement.classList.add(RESTRICT_SEQUENTIAL);
-        }
+        /* istanbul ignore next */
+        liElement.classList.add(RESTRICT_RETRY);
         this.upload([file]);
     };
     /* istanbul ignore next */
@@ -8248,16 +8252,16 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         this.uploadedFilesData.push(file);
         this.trigger('change', { file: this.uploadedFilesData });
         this.checkActionButtonStatus();
-        if (this.sequentialUpload && this.fileList.length > 0) {
-            if ((!(this.getLiElement(file)).classList.contains(RESTRICT_SEQUENTIAL))) {
+        if (this.fileList.length > 0) {
+            if ((!(this.getLiElement(file)).classList.contains(RESTRICT_RETRY))) {
                 this.uploadSequential();
+                this.checkActionComplete(true);
             }
             else {
                 /* istanbul ignore next */
-                (this.getLiElement(file)).classList.remove(RESTRICT_SEQUENTIAL);
+                (this.getLiElement(file)).classList.remove(RESTRICT_RETRY);
             }
         }
-        this.checkActionComplete(true);
     };
     Uploader.prototype.uploadFailed = function (e, file) {
         var li = this.getLiElement(file);
@@ -8789,9 +8793,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             this.chunkUpload(metaData.file);
         }
         /* istanbul ignore next */
-        if (this.sequentialUpload) {
-            (this.getLiElement(metaData.file)).classList.add(RESTRICT_SEQUENTIAL);
-        }
+        (this.getLiElement(metaData.file)).classList.add(RESTRICT_RETRY);
     };
     Uploader.prototype.chunkUploadInProgress = function (e, metaData, custom) {
         var _this = this;
@@ -8912,8 +8914,12 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         }
         this.element.removeAttribute('accept');
         this.setInitialAttributes();
-        this.uploadWrapper.parentElement.appendChild(this.cloneElement);
-        this.cloneElement.classList.remove('e-control', ROOT$2);
+        var attributes$$1 = ['aria-label', 'directory', 'webkitdirectory', 'tabindex'];
+        for (var _i = 0, attributes_1 = attributes$$1; _i < attributes_1.length; _i++) {
+            var key = attributes_1[_i];
+            this.element.removeAttribute(key);
+        }
+        this.uploadWrapper.parentElement.appendChild(this.element);
         detach(this.uploadWrapper);
         this.uploadWrapper = null;
         _super.prototype.destroy.call(this);
@@ -11093,8 +11099,6 @@ var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var ROOT$3 = 'e-textbox';
-var CONTROL$2 = 'e-control';
 var HIDE_CLEAR = 'e-clear-icon-hide';
 /**
  * Represents the TextBox component that allows the user to enter the values based on it's type.
@@ -11328,10 +11332,11 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
      */
     TextBox.prototype.destroy = function () {
         this.unWireEvents();
-        this.textboxWrapper.container.parentElement.appendChild(this.cloneElement);
+        this.element.classList.remove('e-input');
+        this.removeAttributes(['aria-placeholder', 'aria-disabled', 'aria-readonly', 'aria-labelledby']);
+        this.textboxWrapper.container.parentElement.appendChild(this.element);
         detach(this.textboxWrapper.container);
         this.textboxWrapper = null;
-        this.cloneElement.classList.remove(ROOT$3, CONTROL$2);
         _super.prototype.destroy.call(this);
     };
     /**

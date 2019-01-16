@@ -1,9 +1,9 @@
 import { Grid, Edit as GridEdit, SaveEventArgs, CellSaveArgs, CellEditArgs, getUid} from '@syncfusion/ej2-grids';
 import { BatchCancelArgs, Column, RecordDoubleClickEventArgs } from '@syncfusion/ej2-grids';
 import { TreeGrid } from '../base/treegrid';
-import { ITreeData } from '../base/interface';
+import { ITreeData, CellSaveEventArgs } from '../base/interface';
 import * as events from '../base/constant';
-import { isNullOrUndefined, extend, setValue, removeClass, KeyboardEventArgs, TouchEventArgs } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, setValue, removeClass, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
 import { findChildrenRecords } from '../utils';
 import { getPlainData, extendArray } from '../utils';
@@ -102,7 +102,7 @@ export class Edit {
     public applyFormValidation(cols?: Column[]): void {
       this.parent.grid.editModule.applyFormValidation(cols);
     }
-    private recordDoubleClick(args: RecordDoubleClickEventArgs | TouchEventArgs): void {
+    private recordDoubleClick(args: RecordDoubleClickEventArgs): void {
       let target: HTMLElement = <HTMLElement>args.target;
       this.doubleClickTarget = target;
       let column: Column = this.parent.grid.getColumnByIndex(+target.closest('td').getAttribute('aria-colindex'));
@@ -110,6 +110,7 @@ export class Edit {
         column.allowEditing && !(target.classList.contains('e-treegridexpand') ||
                  target.classList.contains('e-treegridcollapse'))) {
         this.isOnBatch = true;
+        this.parent.grid.setProperties({selectedRowIndex: args.rowIndex}, true);
         this.parent.grid.editSettings.mode = 'Batch';
         this.parent.grid.dataBind();
       }
@@ -132,18 +133,20 @@ export class Edit {
         args.cancel = true;
         this.keyPress = null;
       }
-      this.enableToolbarItems();
+      if (!args.cancel) {
+        this.enableToolbarItems('edit');
+      }
     }
     // if (this.isAdd && this.parent.editSettings.mode === 'Batch' && !args.cell.parentElement.classList.contains('e-insertedrow')) {
     //   this.isAdd = false;
     // }
   }
 
-  private enableToolbarItems(): void {
+  private enableToolbarItems(request: string): void {
     if (!isNullOrUndefined(this.parent.grid.toolbarModule)) {
       let toolbarID: string = this.parent.element.id  + '_gridcontrol_';
-      this.parent.grid.toolbarModule.enableItems([toolbarID + 'add', toolbarID + 'edit', toolbarID + 'delete'], false);
-      this.parent.grid.toolbarModule.enableItems([toolbarID + 'update', toolbarID + 'cancel'], true);
+      this.parent.grid.toolbarModule.enableItems([toolbarID + 'add', toolbarID + 'edit', toolbarID + 'delete'], request === 'save');
+      this.parent.grid.toolbarModule.enableItems([toolbarID + 'update', toolbarID + 'cancel'], request === 'edit' );
     }
   }
 
@@ -179,34 +182,35 @@ export class Edit {
     private cellSave(args: CellSaveArgs): void {
       if (this.parent.editSettings.mode === 'Cell') {
           args.cancel = true;
-          if (this.keyPress !== 'tab' && this.keyPress !== 'shiftTab') {
-            this.parent.grid.closeEdit();
-            this.isOnBatch = false;
-          }
           setValue('isEdit', false, this.parent.grid);
           args.rowData[args.columnName] = args.value;
           let row: HTMLTableRowElement = <HTMLTableRowElement>args.cell.parentNode;
           let rowIndex: number;
+          let primaryKeys: string[] = this.parent.getPrimaryKeyFieldNames();
           if (isNullOrUndefined(row)) {
-            let key: string = this.parent.getPrimaryKeyFieldNames()[0];
             this.parent.grid.getCurrentViewRecords().filter((e: ITreeData, i: number) => {
-                 if (e[key] === args.rowData[key]) { rowIndex = i; return; }
+                 if (e[primaryKeys[0]] === args.rowData[primaryKeys[0]]) { rowIndex = i; return; }
                 });
           } else {
             rowIndex = row.rowIndex;
           }
-          this.parent.cellEditedColumn = args.columnName;
           row = <HTMLTableRowElement>this.parent.grid.getRows()[rowIndex];
           this.parent.grid.editModule.updateRow(rowIndex, args.rowData);
-          this.enableToolbarItems();
           this.parent.grid.editModule.formObj.destroy();
           if (this.keyPress !== 'tab' && this.keyPress !== 'shiftTab') {
             this.parent.grid.editSettings.mode = 'Normal';
             this.parent.grid.dataBind();
+            this.isOnBatch = false;
           }
+          this.enableToolbarItems('save');
           removeClass([row], ['e-editedrow', 'e-batchrow']);
           removeClass(row.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
           this.editAction({ value: <ITreeData>args.rowData, action: 'edit' });
+          let saveArgs: CellSaveEventArgs = {
+            type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
+            previousData: args.previousValue, row: row, target: (args.cell as HTMLElement)
+          };
+          this.parent.trigger(events.actionComplete, saveArgs);
       }
     }
     private beginAdd(args?: SaveEventArgs): void {

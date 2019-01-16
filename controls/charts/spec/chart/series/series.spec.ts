@@ -142,7 +142,7 @@ describe('Chart Control', () => {
                     series: [
                         {
                             name: 'series1', type: 'Line', fill: '#ACE5FF', width: 2,
-                            dataSource: dataManager, xName: 'Id', yName: 'Estimate', query: query
+                            dataSource: dataManager, xName: 'Id', yName: 'Estimate',
                         },
                     ],
                     height: '600', legendSettings: { visible: false }
@@ -155,12 +155,22 @@ describe('Chart Control', () => {
             chartEle1.destroy();
             ele.remove();
         });
-        it('Checking the series', (done: Function) => {
+        it('Checking the series without query', (done: Function) => {
             loaded = (args: Object): void => {
                 let text: HTMLElement = document.getElementById('container0_AxisLabel_0');
                 expect(text.textContent != null).toBe(true);
                 done();
             };
+            chartEle1.loaded = loaded;
+            chartEle1.refresh();
+        });
+        it('Checking with query', (done: Function) => {
+            loaded = (args: Object): void => {
+                let text: HTMLElement = document.getElementById('container0_AxisLabel_0');
+                expect(text.textContent != null).toBe(true);
+                done();
+            };
+            chartEle1.series[0].query = query;
             chartEle1.loaded = loaded;
             chartEle1.refresh();
         });

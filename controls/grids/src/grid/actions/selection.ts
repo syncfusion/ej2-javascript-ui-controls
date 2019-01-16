@@ -102,7 +102,6 @@ export class Selection implements IAction {
     private isCancelDeSelect: boolean = false;
     private isPreventCellSelect: boolean = false;
     private disableUI: boolean = false;
-    private isClearSelection: boolean = false;
 
     /**
      * Constructor for the Grid selection module
@@ -580,9 +579,7 @@ export class Selection implements IAction {
             this.selectedRowIndexes = [];
             this.selectedRecords = [];
             this.isRowSelected = false;
-            if (!this.isClearSelection) {
-                this.selectRowIndex(-1);
-            }
+            this.selectRowIndex(-1);
             this.rowDeselect(events.rowDeselected, rowIndex, data, row, foreignKeyData, target, mRow);
         }
     }
@@ -1813,9 +1810,6 @@ export class Selection implements IAction {
         if (!this.parent.enableVirtualization && this.parent.isPersistSelection) {
             this.refreshPersistSelection();
         }
-        if (this.parent.selectedRowIndex > -1 && this.selectedRowIndexes.indexOf(this.parent.selectedRowIndex) === -1) {
-            this.selectRow(this.parent.selectedRowIndex);
-        }
     }
 
     private checkSelectAllAction(checkState: boolean): void {
@@ -2374,13 +2368,10 @@ export class Selection implements IAction {
         this.parent.off(events.click, this.clickHandler);
     }
 
-    public dataReady(e: { requestType: string, isClearSelection: boolean }): void {
+    public dataReady(e: { requestType: string }): void {
         if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection) {
             this.disableUI = true;
-            let old: boolean = this.isClearSelection;
-            this.isClearSelection = e.isClearSelection;
             this.clearSelection();
-            this.isClearSelection = old;
             this.disableUI = false;
         }
     }

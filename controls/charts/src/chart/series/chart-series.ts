@@ -770,9 +770,9 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
 
     /**
      * Specifies query to select data from DataSource. This property is applicable only when the DataSource is `ej.DataManager`.
-     * @default null
+     * @default ''
      */
-    @Property()
+    @Property({})
     public query: Query;
 
     /**
@@ -1050,7 +1050,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public refreshDataManager(chart: Chart): void {
         this.chart = chart;
         let dateSource: Object | DataManager = this.dataSource || chart.dataSource;
-        if (isNullOrUndefined(this.query) && !isNullOrUndefined(dateSource)) {
+        if ( !(dateSource instanceof DataManager) && !isNullOrUndefined(dateSource)) {
             this.dataManagerSuccess({ result: dateSource, count: (dateSource as Object[]).length }, chart, false);
             return;
         }

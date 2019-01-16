@@ -2,7 +2,17 @@
 
 ## [Unreleased]
 
-## 16.4.46 (2019-01-02)
+## 16.4.47 (2019-01-08)
+
+### TextBox
+
+#### Bug Fixes
+
+- The issue with `refresh` method of textbox has been fixed.
+
+- Resolved the issue with placeholder property has 'null' value in Edge browser.
+
+## 16.4.46 (2019-01-08)
 
 ### Uploader
 

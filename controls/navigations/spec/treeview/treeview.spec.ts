@@ -9,6 +9,7 @@ import { TreeView, DragAndDropEventArgs, NodeEditEventArgs, NodeCheckEventArgs, 
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, localData, localData1, localData2, localData3, remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6, hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1 } from '../../spec/treeview/datasource.spec';
 import '../../node_modules/es6-promise/dist/es6-promise';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 
 function copyObject(source: any, destiation: any): Object {
     for (let prop in source) {
@@ -57,6 +58,14 @@ function setMouseCordinates(eventarg: any, x: number, y: number): Object {
 
 describe('TreeView control', () => {
     describe('DOM element testing', () => {
+		beforeAll(() => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+        });
         let treeObj: TreeView;
         beforeEach((): void => {
             let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
@@ -11227,5 +11236,14 @@ describe('Drag and drop with different TreeView functionality testing with empty
             expect(li[1].querySelector('[data-uid="02-01"]').classList.contains('e-disable')).toBe(true);
             done();
         });
+    });
+	it('memory leak testing', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(inMB(profile.samples[profile.samples.length - 1]) + 0.25);
     });
     });
