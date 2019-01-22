@@ -124,7 +124,7 @@ export class Splitter extends Component<HTMLDivElement> {
     private nextPaneIndex: number;
     // tslint:disable-next-line
     private nextPaneHeightWidth: any;
-    private validDataAttributes: string [] = ['data-size', 'data-min', 'data-max', 'data-collapsible', 'data-resizable'];
+    private validDataAttributes: string [] = ['data-size', 'data-min', 'data-max', 'data-collapsible', 'data-resizable', 'data-content'];
     private validElementAttributes: string [] = ['data-orientation', 'data-width', 'data-height'];
 
     /**
@@ -262,32 +262,35 @@ export class Splitter extends Component<HTMLDivElement> {
                     break;
                 case 'paneSettings':
                     if (!(newProp.paneSettings instanceof Array && oldProp.paneSettings instanceof Array)) {
-                        let changedProp: Object[] = Object.keys(newProp.paneSettings);
-                        for (let j: number = 0; j < changedProp.length; j++) {
-                            let index: number = parseInt(Object.keys(newProp.paneSettings)[j], 10);
-                            let property: string = Object.keys(newProp.paneSettings[index])[0];
-                            let newVal: string = Object(newProp.paneSettings[index])[property];
-                            index = (this.enableRtl) ? (this.allBars.length - 1) - index : index;
-                            if (property === 'content') {
-                                this.allPanes[index].innerHTML = '';
-                                this.setTemplate(newVal, this.allPanes[index]);
-                            }
-                            if (property === 'resizable') {
-                                EventHandler.remove(this.allBars[index], 'mousedown', this.onMouseDown);
-                                if (newVal) {
-                                    EventHandler.add(this.allBars[index], 'mousedown', this.onMouseDown, this);
-                                    this.currentSeparator = this.allBars[index];
-                                    if (this.isResizable()) {
-                                        this.showResizer(this.allBars[index]);
-                                        this.allBars[index].classList.add(RESIZABLE_BAR);
-                                    }
-                                } else {
-                                    this.hideResizer(this.allBars[index]);
-                                    this.allBars[index].classList.remove(RESIZABLE_BAR);
+                        let paneCounts: Object[] = Object.keys(newProp.paneSettings);
+                        for (let i: number = 0; i < paneCounts.length; i++) {
+                            let index: number = parseInt(Object.keys(newProp.paneSettings)[i], 10);
+                            let changedPropsCount: number = Object.keys(newProp.paneSettings[index]).length;
+                            for (let j: number = 0; j < changedPropsCount; j++) {
+                                let property: string = Object.keys(newProp.paneSettings[index])[j];
+                                let newVal: string = Object(newProp.paneSettings[index])[property];
+                                index = (this.enableRtl) ? (this.allBars.length - 1) - index : index;
+                                if (property === 'content') {
+                                    this.allPanes[index].innerHTML = '';
+                                    this.setTemplate(newVal, this.allPanes[index]);
                                 }
-                            }
-                            if (property === 'size') {
-                                this.allPanes[index].style.flexBasis = newVal;
+                                if (property === 'resizable') {
+                                    EventHandler.remove(this.allBars[index], 'mousedown', this.onMouseDown);
+                                    if (newVal) {
+                                        EventHandler.add(this.allBars[index], 'mousedown', this.onMouseDown, this);
+                                        this.currentSeparator = this.allBars[index];
+                                        if (this.isResizable()) {
+                                            this.showResizer(this.allBars[index]);
+                                            this.allBars[index].classList.add(RESIZABLE_BAR);
+                                        }
+                                    } else {
+                                        this.hideResizer(this.allBars[index]);
+                                        this.allBars[index].classList.remove(RESIZABLE_BAR);
+                                    }
+                                }
+                                if (property === 'size') {
+                                    this.allPanes[index].style.flexBasis = newVal;
+                                }
                             }
                         }
                     }
@@ -1063,10 +1066,11 @@ export class Splitter extends Component<HTMLDivElement> {
 
     private createSplitPane(target: HTMLDivElement): void {
         let childCount: number = target.children.length;
-        if (childCount < this.paneSettings.length) {
-            for (let i: number = 0; i < this.paneSettings.length; i++) {
+        for (let i: number = 0; i < this.paneSettings.length; i++) {
+            if (childCount < this.paneSettings.length) {
                 let childElement: HTMLElement = this.createElement('div');
                 this.element.appendChild(childElement);
+                childCount = childCount + 1;
             }
         }
         childCount = target.children.length;
@@ -1178,6 +1182,9 @@ export class Splitter extends Component<HTMLDivElement> {
     public removePane(index: number) : void {
         index = (index > this.allPanes.length + 1) ? this.allPanes.length : index;
         let elementClass: string = (this.orientation === 'Horizontal') ? SPLIT_H_PANE : SPLIT_V_PANE;
+        if (isNullOrUndefined(this.element.querySelectorAll('.' + elementClass)[index])) {
+            return;
+        }
         detach(this.element.querySelectorAll('.' + elementClass)[index]);
         this.allPanes.splice(index, 1);
         this.removePaneOrders(elementClass);

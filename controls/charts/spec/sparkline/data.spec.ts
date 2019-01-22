@@ -5,8 +5,17 @@ import {Sparkline, ISparklineLoadedEventArgs, SparklineTooltip} from '../../src/
 import {removeElement, getIdElement} from '../../src/sparkline/utils/helper';
 import {createElement} from '@syncfusion/ej2-base';
 import { MouseEvents } from './events.spec';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 Sparkline.Inject(SparklineTooltip);
 describe('Sparkline data source combination spec', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     let trigger: MouseEvents = new MouseEvents();
     let element: Element;
     let sparkline: Sparkline;
@@ -272,5 +281,14 @@ describe('Sparkline data source combination spec', () => {
         expect(d[2]).toBe('10');
         expect(d[4]).toBe('300');
         expect(d[5]).toBe('10');
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

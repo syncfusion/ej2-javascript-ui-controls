@@ -26,6 +26,9 @@ export class RowDD {
     private isOverflowBorder: boolean = true;
     private selectedRowColls: number[] = [];
     private isRefresh: boolean = true;
+    private rows: Element[];
+    private rowData: Object;
+    private dragStartData: Object;
 
     /* tslint:disable-next-line:max-line-length */
     // tslint:disable-next-line:max-func-body-length
@@ -49,9 +52,11 @@ export class RowDD {
             gObj.selectionSettings.mode === 'Row' && gObj.selectionSettings.type === 'Single') {
             gObj.selectRow(parseInt((e.sender.target as Element).parentElement.getAttribute('aria-rowindex'), 10));
         }
+        this.startedRow = closestElement(target as Element, 'tr').cloneNode(true) as HTMLTableRowElement;
+        this.processArgs(target);
         let args: Object = {
-            selectedRow: gObj.getSelectedRows(), dragelement: target,
-            cloneElement: visualElement, cancel: false
+            selectedRow: this.rows, dragelement: target,
+            cloneElement: visualElement, cancel: false, data: this.rowData
         };
         let selectedRows: Element[] = gObj.getSelectedRows();
         gObj.trigger(events.rowDragStartHelper, args);
@@ -61,8 +66,6 @@ export class RowDD {
             visualElement = args[cloneElement];
             return visualElement;
         }
-
-        this.startedRow = closestElement(target as Element, 'tr').cloneNode(true) as HTMLTableRowElement;
 
         removeElement(this.startedRow, '.e-indentcell');
         removeElement(this.startedRow, '.e-detailrowcollapse');
@@ -101,10 +104,13 @@ export class RowDD {
                 .offsetWidth - 5 + 'px';
         }
 
+        this.processArgs(target);
         gObj.trigger(events.rowDragStart, {
-            rows: gObj.getSelectedRows(),
-            target: e.target, draggableType: 'rows', data: gObj.getSelectedRecords()
+            rows: this.rows,
+            target: e.target, draggableType: 'rows', fromIndex: parseInt(this.rows[0].getAttribute('aria-rowindex'), 10),
+            data: this.rowData
         });
+        this.dragStartData = this.rowData;
         let dropElem: EJ2Intance = document.getElementById(gObj.rowDropSettings.targetID) as EJ2Intance;
         if (gObj.rowDropSettings.targetID && dropElem && dropElem.ej2_instances &&
             (<{getModuleName?: Function}>dropElem.ej2_instances[0]).getModuleName() === 'grid') {
@@ -124,9 +130,10 @@ export class RowDD {
         gObj.enableHover = false;
         if (!e.target) { return; }
 
+        this.processArgs(target);
         gObj.trigger(events.rowDrag, {
-            rows: gObj.getSelectedRows(),
-            target: target, draggableType: 'rows', data: gObj.getSelectedRecords(),
+            rows: this.rows,
+            target: target, draggableType: 'rows', data: this.rowData
         });
         this.stopTimer();
         gObj.element.classList.add('e-rowdrag');
@@ -184,7 +191,6 @@ export class RowDD {
             (<{getModuleName?: Function}>dropElement.ej2_instances[0]).getModuleName() === 'grid') {
                 dropElement.ej2_instances[0].getContent().classList.remove('e-allowRowDrop');
         }
-        let startRow: Element[] = gObj.getSelectedRows().length > 0 ? gObj.getSelectedRows() : [this.startedRow];
 
         if (gObj.isRowDragable()) {
             this.stopTimer();
@@ -196,12 +202,13 @@ export class RowDD {
                 stRow.classList.remove('e-dragstartrow');
             }
         }
+        this.processArgs(target);
         let args: RowDropEventArgs = {
             target: target, draggableType: 'rows',
             cancel: false,
-            fromIndex: this.startedRowIndex,
+            fromIndex: parseInt(this.rows[0].getAttribute('aria-rowindex'), 10),
             dropIndex: this.dragTarget,
-            rows: startRow, data: gObj.getSelectedRecords()
+            rows: this.rows, data: this.dragStartData as Object[]
         };
         gObj.trigger(events.rowDrop, args);
 
@@ -539,5 +546,17 @@ export class RowDD {
      */
     protected getModuleName(): string {
         return 'rowDragAndDrop';
+    }
+    private processArgs(target: Element): void {
+        let gObj: IGrid = this.parent;
+        if ((gObj.getSelectedRecords().length > 0 && this.startedRow.cells[0].classList.contains('e-selectionbackground') === false)
+         || gObj.getSelectedRecords().length === 0) {
+            this.rows = [this.startedRow];
+            this.rowData = this.parent.getRowInfo(parentsUntil(target, 'e-row').querySelector('.e-rowcell')).rowData;
+        } else {
+            this.rows = gObj.getSelectedRows();
+            this.rowData = gObj.getSelectedRecords();
+        }
+
     }
 }

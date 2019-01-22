@@ -5,7 +5,7 @@ import { PointerModel } from './axis-model';
 import { Orientation, Position } from '../utils/enum';
 import { axisLabelRender } from '../model/constant';
 import { IAxisLabelRenderEventArgs } from '../model/interface';
-import { VisibleLabels, Size, measureText, getLabelFormat, Rect } from '../utils/helper';
+import { VisibleLabels, Size, measureText, getLabelFormat, Rect, textFormatter, formatValue } from '../utils/helper';
 import { valueToCoefficient, Align, getRangePalette, VisibleRange, withInRange, calculateNiceInterval } from '../utils/helper';
 
 /**
@@ -353,8 +353,8 @@ export class AxisLayoutPanel {
         for (let i: number = min; (i <= max && interval > 0); i += interval) {
             argsData = {
                 cancel: false, name: axisLabelRender, axis: axis,
-                text: customLabelFormat ? style.format.replace(new RegExp('{value}', 'g'), format(i)) :
-                    format(i),
+                text: customLabelFormat ? textFormatter(style.format, { value: i }, this.gauge) :
+                    formatValue(i, this.gauge).toString(),
                 value: i
             };
             this.gauge.trigger(axisLabelRender, argsData);

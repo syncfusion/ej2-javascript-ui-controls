@@ -313,6 +313,23 @@ describe('Diagram Control', () => {
             browser.compareScreen(element(By.id('diagram')), 'node-DeleteDisable');
         });
     });
+    describe('PerFormance style issue', () => {
+        it('Rendering', () => {
+            browser.load('/demos/add-remove-ports-labels/performanceIssue.html')
+        });
+        it('PerFormance style issue text edit', () => {
+            executeClickEvent('testcases');
+            browser.compareScreen(element(By.id('diagram')), 'textedit');
+        });
+        it('PerFormance style issue connector decorator', () => {
+            executeClickEvent('testcases1');
+            browser.compareScreen(element(By.id('diagram')), 'connectordec');
+        });
+        it('PerFormance style issue group copy paste', () => {
+            executeClickEvent('testcases2');
+            browser.compareScreen(element(By.id('diagram')), 'groupcopypaste');
+        });
+    });
     function executeClickEvent(id: string): void {
         let buttonElement: ElementFinder = element(By.id(id));
         buttonElement.click();

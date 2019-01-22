@@ -1401,6 +1401,12 @@
       vertical-align: middle;
     }
 
+    .e-rowdragheader {
+      border-color: $grid-header-border-color;
+      border-style: $grid-border-type;
+      border-width: $grid-filterbarcell-border-width;
+    }
+
     .e-filterbarcell input {
       border-radius: $grid-filterbar-border-radius;
       border-style: solid;

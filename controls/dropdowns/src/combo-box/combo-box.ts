@@ -360,6 +360,13 @@ export class ComboBox extends DropDownList {
             return super.setValue(e);
         }
     }
+    protected checkCustomValue(): void {
+        this.itemData = this.getDataByValue(this.value);
+        let dataItem: { [key: string]: string } = this.getItemData();
+        if (!(this.allowCustom && isNullOrUndefined(dataItem.value) && isNullOrUndefined(dataItem.text))) {
+            this.setProperties({ 'value': dataItem.value, 'text': dataItem.text });
+        }
+    }
     /**
      * Shows the spinner loader.
      * @returns void.

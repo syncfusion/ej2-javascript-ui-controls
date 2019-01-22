@@ -4,6 +4,7 @@
 import { Sparkline, ISparklineLoadedEventArgs } from '../../src/sparkline/index';
 import { removeElement, getIdElement, Rect } from '../../src/sparkline/utils/helper';
 import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 export interface Label {
     x?: number;
     y?: number;
@@ -45,6 +46,14 @@ describe('Sparkline ', () => {
     let ele: Element;
     let d: string[];
     let options: Label;
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('datalabel spec', () => {
         beforeAll(() => {
             element = createElement('div', { id: id });
@@ -427,5 +436,14 @@ describe('Sparkline ', () => {
             ele = getIdElement(id + '_sparkline_label_text_7');
             expect(ele).toBeNull();
         });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

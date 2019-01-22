@@ -4,9 +4,18 @@
 import { Sparkline, ISparklineLoadedEventArgs, SparklineTooltip } from '../../src/sparkline/index';
 import { removeElement, getIdElement, Rect } from '../../src/sparkline/utils/helper';
 import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 import { MouseEvents } from './events.spec';
 Sparkline.Inject(SparklineTooltip);
 describe('Sparkline tooltip and tracker checking Spec', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Sparkline tracker Spec', () => {
         let trigger: MouseEvents = new MouseEvents();
         let element: Element;
@@ -233,5 +242,14 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
             ele = getIdElement(id + '_sparkline_tooltip_div');
             expect(ele.children[0].innerHTML.indexOf('<div style="border: 2px solid green;background: #a0e99680">50<br>-60$</div>') > -1).toBe(true);
         });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

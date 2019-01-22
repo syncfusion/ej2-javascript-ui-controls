@@ -4,8 +4,18 @@
 import { select, selectAll } from '@syncfusion/ej2-base';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy } from './../render.spec';
+import { profile, inMB, getMemoryProfile } from './../common.spec';
 
 describe('TextBox Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
+
     describe('TextBox render testing', () => {
         let editorObj: any;
         let ele: HTMLElement;
@@ -52,5 +62,343 @@ describe('TextBox Control', () => {
             editorObj.save();
             expect(valueEle.innerHTML === 'testing').toEqual(true);
         });
+    });
+    describe('Duplicate ID availability testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Inline - ID testing', () => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'Text'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-textbox', ele).length === 1).toEqual(true);
+            expect(selectAll('#' + ele.id, document.body).length === 1).toEqual(true);
+        });
+        it('Popup - ID testing', () => {
+            editorObj = renderEditor({
+                mode: 'Popup',
+                type: 'Text'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-textbox', document.body).length === 1).toEqual(true);
+            expect(selectAll('#' + ele.id, document.body).length === 1).toEqual(true);
+        });
+    });
+    describe('Value formatting related testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Default value with initial render testing', () => {
+            editorObj = renderEditor({
+                mode: 'Inline'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-textbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('');
+            (<HTMLInputElement>select('.e-textbox', document.body)).value = 'Test1';
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('Test1');
+            let changeEvent = document.createEvent('Events');
+            editorObj.componentObj.changeHandler(changeEvent);
+            editorObj.save();
+            expect(editorObj.value).toEqual('Test1');
+            expect(valueEle.innerHTML).toEqual('Test1');
+            editorObj.value = 'Hello';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('Hello');
+            expect(valueEle.innerHTML).toEqual('Hello');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-textbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('Hello');
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('Hello');
+            (<HTMLInputElement>select('.e-textbox', document.body)).value = 'Test2';
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('Test2');
+            editorObj.componentObj.changeHandler(changeEvent);
+            editorObj.save();
+            expect(editorObj.value).toEqual('Test2');
+            expect(valueEle.innerHTML).toEqual('Test2');
+            editorObj.value = '';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-textbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('');
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('');
+            (<HTMLInputElement>select('.e-textbox', document.body)).value = 'Test3';
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('Test3');
+            editorObj.componentObj.changeHandler(changeEvent);
+            editorObj.save();
+            expect(editorObj.value).toEqual('Test3');
+            expect(valueEle.innerHTML).toEqual('Test3');
+        });
+        it('Value as "null" with initial render testing', () => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                value: null
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-textbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('');
+            (<HTMLInputElement>select('.e-textbox', document.body)).value = 'Test1';
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('Test1');
+            let changeEvent = document.createEvent('Events');
+            editorObj.componentObj.changeHandler(changeEvent);
+            editorObj.save();
+            expect(editorObj.value).toEqual('Test1');
+            expect(valueEle.innerHTML).toEqual('Test1');
+            editorObj.value = 'Hello';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('Hello');
+            expect(valueEle.innerHTML).toEqual('Hello');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-textbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('Hello');
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('Hello');
+            (<HTMLInputElement>select('.e-textbox', document.body)).value = 'Test2';
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('Test2');
+            editorObj.componentObj.changeHandler(changeEvent);
+            editorObj.save();
+            expect(editorObj.value).toEqual('Test2');
+            expect(valueEle.innerHTML).toEqual('Test2');
+            editorObj.value = '';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-textbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('');
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('');
+            (<HTMLInputElement>select('.e-textbox', document.body)).value = 'Test3';
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('Test3');
+            editorObj.componentObj.changeHandler(changeEvent);
+            editorObj.save();
+            expect(editorObj.value).toEqual('Test3');
+            expect(valueEle.innerHTML).toEqual('Test3');
+        });
+        it('Value as "undefined" string with initial render testing', () => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                value: undefined
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-textbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('');
+            (<HTMLInputElement>select('.e-textbox', document.body)).value = 'Test1';
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('Test1');
+            let changeEvent = document.createEvent('Events');
+            editorObj.componentObj.changeHandler(changeEvent);
+            editorObj.save();
+            expect(editorObj.value).toEqual('Test1');
+            expect(valueEle.innerHTML).toEqual('Test1');
+            editorObj.value = 'Hello';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('Hello');
+            expect(valueEle.innerHTML).toEqual('Hello');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-textbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('Hello');
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('Hello');
+            (<HTMLInputElement>select('.e-textbox', document.body)).value = 'Test2';
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('Test2');
+            editorObj.componentObj.changeHandler(changeEvent);
+            editorObj.save();
+            expect(editorObj.value).toEqual('Test2');
+            expect(valueEle.innerHTML).toEqual('Test2');
+            editorObj.value = '';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-textbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('');
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('');
+            (<HTMLInputElement>select('.e-textbox', document.body)).value = 'Test3';
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('Test3');
+            editorObj.componentObj.changeHandler(changeEvent);
+            editorObj.save();
+            expect(editorObj.value).toEqual('Test3');
+            expect(valueEle.innerHTML).toEqual('Test3');
+        });
+        it('Value as empty string with initial render testing', () => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                value: ''
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-textbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('');
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('');
+            (<HTMLInputElement>select('.e-textbox', document.body)).value = 'Test1';
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('Test1');
+            let changeEvent = document.createEvent('Events');
+            editorObj.componentObj.changeHandler(changeEvent);
+            editorObj.save();
+            expect(editorObj.value).toEqual('Test1');
+            expect(valueEle.innerHTML).toEqual('Test1');
+            editorObj.value = 'Hello';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('Hello');
+            expect(valueEle.innerHTML).toEqual('Hello');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-textbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('Hello');
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('Hello');
+            (<HTMLInputElement>select('.e-textbox', document.body)).value = 'Test2';
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('Test2');
+            editorObj.componentObj.changeHandler(changeEvent);
+            editorObj.save();
+            expect(editorObj.value).toEqual('Test2');
+            expect(valueEle.innerHTML).toEqual('Test2');
+            editorObj.value = '';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-textbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('');
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('');
+            (<HTMLInputElement>select('.e-textbox', document.body)).value = 'Test3';
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('Test3');
+            editorObj.componentObj.changeHandler(changeEvent);
+            editorObj.save();
+            expect(editorObj.value).toEqual('Test3');
+            expect(valueEle.innerHTML).toEqual('Test3');
+        });
+        it('Defined value with initial render testing', () => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                value: 'Testing'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual('Testing');
+            expect(valueEle.innerHTML).toEqual('Testing');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('Testing');
+            expect(valueEle.innerHTML).toEqual('Testing');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-textbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('Testing');
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('Testing');
+            (<HTMLInputElement>select('.e-textbox', document.body)).value = 'Test1';
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('Test1');
+            let changeEvent = document.createEvent('Events');
+            editorObj.componentObj.changeHandler(changeEvent);
+            editorObj.save();
+            expect(editorObj.value).toEqual('Test1');
+            expect(valueEle.innerHTML).toEqual('Test1');
+            editorObj.value = '';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-textbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('');
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('');
+            (<HTMLInputElement>select('.e-textbox', document.body)).value = 'Test2';
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('Test2');
+            editorObj.componentObj.changeHandler(changeEvent);
+            editorObj.save();
+            expect(editorObj.value).toEqual('Test2');
+            expect(valueEle.innerHTML).toEqual('Test2');
+            editorObj.value = 'Hello';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('Hello');
+            expect(valueEle.innerHTML).toEqual('Hello');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-textbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('Hello');
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('Hello');
+            (<HTMLInputElement>select('.e-textbox', document.body)).value = 'Test3';
+            expect((<HTMLInputElement>select('.e-textbox', document.body)).value).toEqual('Test3');
+            editorObj.componentObj.changeHandler(changeEvent);
+            editorObj.save();
+            expect(editorObj.value).toEqual('Test3');
+            expect(valueEle.innerHTML).toEqual('Test3');
+        });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

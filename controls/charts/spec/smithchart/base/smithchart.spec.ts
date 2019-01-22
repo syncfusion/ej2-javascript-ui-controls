@@ -1,11 +1,20 @@
 
 import { Smithchart, ISmithchartLoadedEventArgs } from '../../../src/smithchart/index';
 import { createElement, remove } from '@syncfusion/ej2-base';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 
 /**
  * Title spec
  */
 describe('Smithchart title properties tesing', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Title testing', () => {
         let id: string = 'title';
         let smithchart: Smithchart;
@@ -240,6 +249,14 @@ describe('Smithchart title properties tesing', () => {
             smithchart.border.width = 2;
             smithchart.refresh();
         });
-
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

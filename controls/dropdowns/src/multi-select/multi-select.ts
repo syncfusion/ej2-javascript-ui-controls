@@ -502,7 +502,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                         let containerAttr: string[] = ['title', 'role', 'style', 'class'];
                         if (defaultAttr.indexOf(htmlAttr) > -1) {
                             this.element.setAttribute(htmlAttr, this.htmlAttributes[htmlAttr]);
-                        } else if (validateAttr.indexOf(htmlAttr) > -1) {
+                        } else if (htmlAttr.indexOf('data') === 0 || validateAttr.indexOf(htmlAttr) > -1) {
                             this.hiddenElement.setAttribute(htmlAttr, this.htmlAttributes[htmlAttr]);
                         } else if (containerAttr.indexOf(htmlAttr) > -1) {
                             this.overAllWrapper.setAttribute(htmlAttr, this.htmlAttributes[htmlAttr]);
@@ -636,6 +636,14 @@ export class MultiSelect extends DropDownBase implements IInput {
         attributes(this.inputElement, this.getAriaAttributes());
         if (disableStatus) {
             attributes(this.inputElement, { 'aria-disabled': 'true' });
+        }
+        this.ensureAriaDisabled((disableStatus) ? 'true' : 'false');
+    }
+    private ensureAriaDisabled(status: string): void {
+        if (this.htmlAttributes && this.htmlAttributes['aria-disabled']) {
+            let attr: { [key: string]: string; } = this.htmlAttributes;
+            extend(attr, {'aria-disabled' : status }, attr);
+            this.setProperties({ htmlAttributes: attr }, true);
         }
     }
     private removelastSelection(e: KeyboardEventArgs): void {
@@ -1058,10 +1066,12 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.overAllWrapper.classList.remove(DISABLED);
             this.inputElement.removeAttribute('disabled');
             attributes(this.inputElement, { 'aria-disabled': 'false' });
+            this.ensureAriaDisabled('false');
         } else {
             this.overAllWrapper.classList.add(DISABLED);
             this.inputElement.setAttribute('disabled', 'true');
             attributes(this.inputElement, { 'aria-disabled': 'true' });
+            this.ensureAriaDisabled('true');
         }
         if (this.enabled !== state) {
             this.enabled = state;
@@ -2167,6 +2177,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     protected preRender(): void {
         this.initializeData();
+        this.updateDataAttribute(this.htmlAttributes);
         super.preRender();
     }
     private initializeData(): void {

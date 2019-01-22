@@ -95,7 +95,7 @@ export class ColumnChooser implements IAction {
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
-        this.parent.on(events.click, this.clickHandler, this);
+        EventHandler.add(document, 'click', this.clickHandler, this);
         this.parent.on(events.uiUpdate, this.enableAfterRenderEle, this);
         this.parent.on(events.initialEnd, this.render, this);
         this.parent.addEventListener(events.dataBound, this.hideDialog.bind(this));
@@ -108,7 +108,7 @@ export class ColumnChooser implements IAction {
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
-        this.parent.off(events.click, this.clickHandler);
+        EventHandler.remove(document, 'click', this.clickHandler);
         this.parent.off(events.initialEnd, this.render);
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.uiUpdate, this.enableAfterRenderEle);

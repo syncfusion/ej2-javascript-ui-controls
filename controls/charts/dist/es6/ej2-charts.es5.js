@@ -5752,7 +5752,8 @@ var Series = /** @__PURE__ @class */ (function (_super) {
             var markerWidth = (this.type === 'Scatter') ? (this.marker.width + explodeValue) / 2 : 0;
             var options = void 0;
             if (chart.chartAreaType === 'PolarRadar') {
-                options = new CircleOption(elementId + '_ChartSeriesClipRect_' + index, 'transparent', { width: 1, color: 'Gray' }, 1, this.clipRect.width / 2 + this.clipRect.x, this.clipRect.height / 2 + this.clipRect.y, chart.radius);
+                var markerMaxValue = (this.drawType === 'Scatter') ? Math.max(this.marker.width, this.marker.height) : 0;
+                options = new CircleOption(elementId + '_ChartSeriesClipRect_' + index, 'transparent', { width: 1, color: 'Gray' }, 1, this.clipRect.width / 2 + this.clipRect.x, this.clipRect.height / 2 + this.clipRect.y, chart.radius + markerMaxValue);
                 this.clipRectElement = appendClipElement(chart.redraw, options, render, 'drawCircularClipPath');
             }
             else {
@@ -5825,7 +5826,8 @@ var Series = /** @__PURE__ @class */ (function (_super) {
             if (marker.visible) {
                 chart.markerRender.doMarkerAnimation(this);
             }
-            if (dataLabel.visible) {
+            //to datalabel animation disabled for edge and IE
+            if (dataLabel.visible && Browser.info.name !== 'edge' && !Browser.isIE) {
                 chart.dataLabelModule.doDataLabelAnimation(this);
             }
         }
@@ -8615,6 +8617,16 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         return null;
     };
     /**
+     * Clear visible Axis labels
+     */
+    Chart.prototype.clearVisibleAxisLabels = function () {
+        var axes = [this.primaryXAxis, this.primaryYAxis];
+        axes = this.chartAreaType === 'Cartesian' ? axes.concat(this.axes) : axes;
+        for (var i = 0, len = axes.length; i < len; i++) {
+            axes[i].labels = [];
+        }
+    };
+    /**
      * Called internally if any of the property value changed.
      * @private
      */
@@ -8703,6 +8715,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
                             }
                         }
                         if (seriesRefresh) {
+                            this.clearVisibleAxisLabels();
                             this.processData(false);
                             refreshBounds = true;
                         }
@@ -15579,6 +15592,10 @@ var Trendlines = /** @__PURE__ @class */ (function () {
         var slope = 0;
         var intercept = 0;
         while (index < points.length) {
+            // To fix trendline not rendered issue while Nan Value is provided for y values.
+            if (isNaN(yValues[index])) {
+                yValues[index] = ((yValues[index - 1] + yValues[index + 1]) / 2);
+            }
             xAvg += xValues[index];
             yAvg += yValues[index];
             xyAvg += xValues[index] * yValues[index];
@@ -35603,6 +35620,7 @@ var SparklineRenderer = /** @__PURE__ @class */ (function () {
             return;
         }
         else if (!isNaN(data[0]) || this.sparkline.valueType === 'Numeric') {
+            data = (this.sparkline.enableRtl) ? this.sparkline.dataSource.reverse() : this.sparkline.dataSource;
             this.sparkline.sparklineData = data; // extend([], data) as Object[];
         }
         else {
@@ -36171,6 +36189,7 @@ var SparklineRenderer = /** @__PURE__ @class */ (function () {
                 }
                 return a[x] - b[x];
             });
+            validData_1 = (this.sparkline.enableRtl) ? validData_1.reverse() : validData_1;
             interval = validData_1[1][x] - validData_1[0][x];
         }
         return interval;
@@ -36222,6 +36241,7 @@ var SparklineRenderer = /** @__PURE__ @class */ (function () {
                 }
                 if (!isNullOrUndefined(data[0][model.xName])) {
                     temp = temp.sort(function (a, b) { return a[model.xName] - b[model.xName]; });
+                    temp = (this.sparkline.enableRtl) ? temp.reverse() : temp;
                     maxX = temp[temp.length - 1][model.xName];
                     minX = temp[0][model.xName];
                 }

@@ -4300,16 +4300,16 @@ __decorate$4([
 class AccordionItem extends ChildProperty {
 }
 __decorate$4([
-    Property(undefined)
+    Property(null)
 ], AccordionItem.prototype, "content", void 0);
 __decorate$4([
-    Property(undefined)
+    Property(null)
 ], AccordionItem.prototype, "header", void 0);
 __decorate$4([
-    Property(undefined)
+    Property(null)
 ], AccordionItem.prototype, "cssClass", void 0);
 __decorate$4([
-    Property(undefined)
+    Property(null)
 ], AccordionItem.prototype, "iconCss", void 0);
 __decorate$4([
     Property(false)

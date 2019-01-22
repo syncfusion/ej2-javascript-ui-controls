@@ -4,11 +4,21 @@
 
 import { createElement } from '@syncfusion/ej2-base';
 import { CircularGauge } from '../../../src/circular-gauge/circular-gauge';
-import { Axis } from '../../../src/circular-gauge/axes/axis';
+import { Axis, Label } from '../../../src/circular-gauge/axes/axis';
 import { getAngleFromLocation, GaugeLocation } from '../../../src/circular-gauge/utils/helper';
-import { ILoadedEventArgs } from '../../../src/circular-gauge/model/interface';
+import { ILoadedEventArgs, IAxisLabelRenderEventArgs } from '../../../src/circular-gauge/model/interface';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import { axisLabelRender } from '../../../src/circular-gauge/model/constants';
 
 describe('Circular-Gauge Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Gauge axis properties default behavior', () => {
         let gauge: CircularGauge;
         let ele: HTMLElement;
@@ -887,5 +897,191 @@ describe('Circular-Gauge Control', () => {
             gauge.refresh();
         });
     });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
 
+    describe('Axis Label behaviour', () => {
+        let gauge: CircularGauge;
+        let ele: HTMLElement;
+        let direction: string;
+        let boundingRect: ClientRect;
+        let boundingRect1: ClientRect;
+        let svg: HTMLElement;
+        let value: string[] | string | number;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'gauge' });
+            document.body.appendChild(ele);
+            gauge = new CircularGauge({
+                axes: [{                       
+                    radius: '80%',
+                    startAngle: 230,
+                    endAngle: 130,
+                    minimum: 0,
+                    maximum: 100,
+                    showLastLabel: false,
+                    roundingPlaces: 1,
+                    majorTicks: {
+                        width: 2,
+                        interval: 8
+                    },
+                    lineStyle: { width: 8, color: '#E0E0E0' },
+                        minorTicks: {
+                        width: 1
+                    },
+                    labelStyle: {
+                        font: {
+                            color: 'green',
+                            fontFamily: 'Roboto',
+                            size: '12px',
+                            fontWeight: 'Regular'
+                        },
+                        offset: -5
+                    },
+                    pointers: [{
+                        animation: { enable: false },
+                        value: 60,
+                        radius: '60%',
+                        color: '#757575',
+                        pointerWidth: 7,
+                        cap: {
+                            radius: 8,
+                            color: '#757575',
+                            border: { width: 0 }
+                        },
+                        needleTail: {
+                            length: '25%'
+                        }
+                    }]
+
+                }]
+            },
+                '#gauge'
+        );
+    });
+        afterAll((): void => {
+            gauge.destroy();
+            ele.remove();
+        });
+        it('Checking last label', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_AxesCollection');
+                expect(svg.childElementCount == 1).toBe(true);
+                svg = document.getElementById('gauge_Axis_0_Label_12');
+                expect(svg.textContent == '96').toBe(true);
+                let svg1 = parseFloat(svg.textContent);
+                svg = document.getElementById('gauge_Axis_0_Label_13');
+                expect(svg.textContent == '100').toBe(true);
+                let svg2 = parseFloat(svg.textContent);
+                expect(svg1 != svg2).toBe(true);
+                expect(gauge.axes[0].labelStyle.format != null).toBe(true);
+                done();
+            };
+            gauge.axes[0].startAngle = 230;
+            gauge.axes[0].showLastLabel = true;
+            gauge.axes[0].endAngle  = 130;
+            gauge.axes[0].minimum = 0;
+            gauge.axes[0].maximum = 100;
+            gauge.refresh();
+        });
+
+        it('Checking label format', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_Axis_0_Label_13');
+                expect(gauge.axes[0].labelStyle.format == "{value}").toBe(true);
+                done();
+            };
+            gauge.axes[0].startAngle = 230;
+            gauge.axes[0].endAngle = 130;
+            gauge.axes[0].minimum = 0;
+            gauge.axes[0].labelStyle.format = "{value}";
+            gauge.axes[0].maximum = 100;
+            gauge.refresh();
+        });
+    });
+
+    describe('Axis Label behaviour', () => {
+        let gauge: CircularGauge;
+        let ele: HTMLElement;
+        let svg: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'gauge' });
+            document.body.appendChild(ele);
+            gauge = new CircularGauge({
+                axes: [{
+                    radius: '80%',
+                    startAngle: 230,
+                    endAngle: 130,
+                    roundingPlaces: 0,
+                    minimum: 10,
+                    maximum: 300,
+                    showLastLabel: true,
+                    majorTicks: {
+                        width: 2,
+                        interval: 34.123
+                    },
+                    lineStyle: { width: 8, color: '#E0E0E0' },
+                    minorTicks: {
+                        width: 1
+                    },
+                    labelStyle: {
+                        font: {
+                            color: '#424242',
+                            fontFamily: 'Roboto',
+                            size: '12px',
+                            fontWeight: 'Regular'
+                        },
+                        offset: -5
+                    },
+                    pointers: [{
+                        animation: { enable: false },
+                        value: 60,
+                        radius: '60%',
+                        color: '#757575',
+                        pointerWidth: 7,
+                        cap: {
+                            radius: 8,
+                            color: '#757575',
+                            border: { width: 0 }
+                        },
+                        needleTail: {
+                            length: '25%'
+                        }
+                    }]
+                }]
+            },
+                '#gauge'
+        );
+    });
+        afterAll((): void => {
+            gauge.destroy();
+            ele.remove();
+        });
+        it('Checking roundingPlace value in label', (done: Function) => {
+            gauge.loaded = (args:ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_Axis_Group_0');
+                expect(svg.childElementCount == 6).toBe(true);
+                svg = document.getElementById('gauge_Axis_Labels_0');
+                expect(svg.childElementCount == 10).toBe(true);
+                svg = document.getElementById('gauge_Axis_0_Label_1')
+                expect(svg.textContent == '44.1').toBe(true);
+                expect(gauge.axes[0].roundingPlaces == 1).toBe(true);
+                done();
+            };
+            gauge.axes[0].startAngle = 230;
+            gauge.axes[0].endAngle = 130;
+            gauge.axes[0].minimum = 10;
+            gauge.axes[0].maximum = 300;
+            gauge.axes[0].showLastLabel = true;
+            gauge.axes[0].roundingPlaces = 1;
+            gauge.refresh();
+        });
+
+    });
 });

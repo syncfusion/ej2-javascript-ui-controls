@@ -5,6 +5,7 @@ import { Sparkline, ISparklineLoadedEventArgs } from '../../src/sparkline/index'
 import { removeElement, getIdElement, Rect, RectOption } from '../../src/sparkline/utils/helper';
 import { createElement } from '@syncfusion/ej2-base';
 import { Label, getLabelOptions} from './datalabel.spec';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 export let getRect: Function = (ele: Element): Rect => {
     let d: string[] = ele.getAttribute('d').split(' ');
     let x: number = parseInt(d[1], 10);
@@ -14,6 +15,14 @@ export let getRect: Function = (ele: Element): Rect => {
     return new Rect(x, y, width, height);
 };
 describe('Sparkline Column and WinLoss series spec', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Sparkline Column Series Spec', () => {
         let element: Element;
         let sparkline: Sparkline;
@@ -443,5 +452,14 @@ describe('Sparkline Column and WinLoss series spec', () => {
             expect(rect.width).toBe(38);
             new RectOption('dasda', 'red', {color: 'blue', width: 2}, 1, new Rect(0, 0, 10, 20), 5, 5, 5, 5);
         });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

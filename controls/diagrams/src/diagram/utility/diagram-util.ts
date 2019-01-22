@@ -781,7 +781,7 @@ export function updateShapeContent(content: DiagramElement, actualObject: Node, 
 export function updateShape(node: Node, actualObject: Node, oldObject: Node, diagram: Diagram): void {
     let content: DiagramElement = new DiagramElement(); let i: number;
     let textStyle: TextStyleModel; let nodeStyle: TextStyleModel;
-    switch (actualObject.shape.type) {
+    switch (node.shape.type) {
         case 'Path':
             let pathContent: PathElement = new PathElement();
             pathContent.data = (actualObject.shape as PathModel).data;
@@ -894,6 +894,7 @@ export function updateContent(newValues: Node, actualObject: Node, diagram: Diag
             let shapes: string = (actualObject.shape as BasicShapeModel).shape;
             let basicShapeData: string = getBasicShape(shapes.toString());
             (actualObject.wrapper.children[0] as PathModel).data = basicShapeData;
+            (actualObject.wrapper.children[0] as PathElement).canMeasurePath = true;
         }
     }
 }

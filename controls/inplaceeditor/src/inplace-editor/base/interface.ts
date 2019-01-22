@@ -22,6 +22,7 @@ export interface IComponent {
     focus(): void;
     updateValue(e: NotifyParams): void;
     refresh?(): void;
+    getRenderValue?(): void;
 }
 
 export interface IButton {
@@ -35,7 +36,7 @@ export interface IButton {
 
 export interface ActionBeginEventArgs {
     /** Defines the name of the field */
-    data: { [key: string]: string };
+    data: { [key: string]: string | number };
 }
 
 export interface ActionEventArgs {

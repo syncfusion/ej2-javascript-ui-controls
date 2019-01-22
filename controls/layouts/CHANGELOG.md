@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.47 (2019-01-16)
+
+### Splitter
+
+#### Bug Fixes
+
+- The issue with dynamically updating the pane size has been fixed.
+
 ## 16.4.44 (2018-12-24)
 
 ### Splitter

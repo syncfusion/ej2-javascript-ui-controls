@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Complex, Component, Event, EventHandler, L10n, NotifyPropertyChanges, Property, Touch, addClass, closest, compile, detach, extend, isNullOrUndefined, removeClass, select, setStyleAttribute } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, Touch, addClass, closest, compile, detach, extend, isNullOrUndefined, removeClass, select, setStyleAttribute } from '@syncfusion/ej2-base';
 import { DataManager, ODataV4Adaptor, Query, UrlAdaptor } from '@syncfusion/ej2-data';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DatePicker, DateRangePicker, DateTimePicker, TimePicker } from '@syncfusion/ej2-calendars';
@@ -10,42 +10,56 @@ import { HtmlEditor, Image, Link, MarkdownEditor, QuickToolbar, RichTextEditor, 
 /**
  * Exports util methods used by In-place editor.
  */
+let intl = new Internationalization();
 /**
  * @hidden
  */
 function parseValue(type, val) {
-    let result;
     if (isNullOrUndefined(val) || val === '') {
         return '';
     }
-    if ((type === 'Date' || type === 'Time' || type === 'DateTime') && typeof (val) === 'string') {
-        val = new Date(val);
-    }
-    if (type === 'DateRange' && typeof (val) === 'object' && typeof (val[0]) === 'string') {
-        val = [new Date(val[0]), new Date(val[1])];
-    }
+    let result;
     switch (type) {
         case 'Color':
             let hex = val;
             result = (hex.length > 7) ? hex.slice(0, -2) : hex;
             break;
         case 'Date':
-            result = val.toLocaleDateString();
+            result = intl.formatDate(val, { skeleton: 'yMd' });
             break;
         case 'DateRange':
-            result = val[0].toLocaleDateString() + ' - ' + val[1].toLocaleDateString();
+            let date = val;
+            result = intl.formatDate(date[0], { skeleton: 'yMd' }) + ' - ' + intl.formatDate(date[1], { skeleton: 'yMd' });
             break;
         case 'DateTime':
-            result = val.toLocaleString().replace(/(.*)\D\d+/, '$1');
+            result = intl.formatDate(val, { skeleton: 'yMd' }) + ' ' + intl.formatDate(val, { skeleton: 'hm' });
             break;
         case 'Time':
-            result = val.toLocaleTimeString().replace(/(.*)\D\d+/, '$1');
+            result = intl.formatDate(val, { skeleton: 'hm' });
             break;
         default:
             result = val.toString();
             break;
     }
     return result;
+}
+function getCompValue(type, val) {
+    if (isNullOrUndefined(val) || val === '') {
+        return val;
+    }
+    if ((type === 'Date' || type === 'Time' || type === 'DateTime') && typeof (val) === 'string') {
+        val = new Date(val);
+    }
+    else if (type === 'DateRange') {
+        if (typeof (val) === 'object' && typeof (val[0]) === 'string') {
+            val = [new Date(val[0]), new Date(val[1])];
+        }
+        else if (typeof (val) === 'string') {
+            let temp = val.split('-');
+            val = [new Date(temp[0]), new Date(temp[1])];
+        }
+    }
+    return val;
 }
 
 /**
@@ -59,6 +73,8 @@ const update = 'update';
 const destroy = 'destroy';
 /** @hidden */
 const setFocus = 'set-focus';
+/** @hidden */
+const accessValue = 'access-value';
 /** @hidden */
 const destroyModules = 'destroy-modules';
 
@@ -195,6 +211,9 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         this.dataManager = undefined;
         this.divComponents = ['RTE', 'Slider'];
         this.clearComponents = ['AutoComplete', 'Mask', 'Text'];
+        this.dateType = ['Date', 'DateTime', 'Time'];
+        this.inputDataEle = ['Date', 'DateTime', 'DateRange', 'Time', 'Numeric'];
+        this.dropDownEle = ['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'];
         this.moduleList = ['AutoComplete', 'Color', 'ComboBox', 'DateRange', 'MultiSelect', 'RTE', 'Slider', 'Time'];
         /**
          * @hidden
@@ -221,6 +240,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         this.disable(this.disabled);
         this.updateAdaptor();
         this.appendValueElement();
+        this.updateValue();
         this.renderValue(this.checkValue(parseValue(this.type, this.value)));
         this.wireEvents();
         this.setRtl(this.enableRtl);
@@ -294,7 +314,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     setAttribute(ele, attr) {
         let value = this.name && this.name.length !== 0 ? this.name : this.element.id;
         attr.forEach((val) => {
-            ele.setAttribute(val, value);
+            ele.setAttribute(val, ((val === 'id') ? (value + '_editor') : value));
         });
     }
     renderControl(target) {
@@ -373,11 +393,8 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     renderComponent(ele) {
         this.isExtModule = (Array.prototype.indexOf.call(this.moduleList, this.type) > -1) ? true : false;
         extend(this.model, this.model, { cssClass: ELEMENTS });
-        if (this.type === 'MultiSelect' && !this.isEmpty(this.value)) {
-            this.model.value = this.value.slice();
-        }
-        else {
-            this.model.value = this.value;
+        if (!isNullOrUndefined(this.value)) {
+            this.updateModelValue();
         }
         if (this.isExtModule) {
             this.notify(render, { module: modulesList[this.type], target: ele, type: this.type });
@@ -444,6 +461,19 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     checkValue(val) {
         return (!this.isEmpty(val)) ? val : this.emptyText;
     }
+    updateValue() {
+        if (!isNullOrUndefined(this.value)) {
+            this.setProperties({ value: getCompValue(this.type, this.value) }, true);
+        }
+    }
+    updateModelValue() {
+        if (this.type === 'MultiSelect' && !this.isEmpty(this.value)) {
+            this.model.value = this.value.slice();
+        }
+        else {
+            this.model.value = this.value;
+        }
+    }
     setValue() {
         if (this.isExtModule) {
             this.notify(update, { type: this.type });
@@ -452,15 +482,43 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             this.setProperties({ value: this.componentObj.value }, true);
         }
     }
+    getDropDownsValue() {
+        let value;
+        if (Array.prototype.indexOf.call(this.dropDownEle, this.type) > -1 && this.type !== 'MultiSelect') {
+            value = select('.e-' + this.type.toLocaleLowerCase(), this.containerEle).value;
+        }
+        else if (this.type === 'MultiSelect') {
+            this.notify(accessValue, { type: this.type });
+            value = this.printValue;
+        }
+        return value;
+    }
     getSendValue() {
-        return (this.type === 'Mask' || this.type === 'Numeric') ? this.value : this.checkValue(parseValue(this.type, this.value));
+        if (this.isEmpty(this.value)) {
+            return '';
+        }
+        if (Array.prototype.indexOf.call(this.dropDownEle, this.type) > -1) {
+            return this.getDropDownsValue();
+        }
+        else if (Array.prototype.indexOf.call(this.dateType, this.type) > -1) {
+            return this.value.toISOString();
+        }
+        else if (this.type === 'DateRange') {
+            return this.value[0].toISOString() + ' - ' + this.value[1].toISOString();
+        }
+        else {
+            return this.value.toString();
+        }
     }
     getRenderValue() {
         if (this.type === 'Mask' && this.componentObj.value.length !== 0) {
             return this.componentObj.getMaskedValue();
         }
-        else if (this.type === 'Numeric') {
+        else if (Array.prototype.indexOf.call(this.inputDataEle, this.type) > -1) {
             return this.componentRoot.value;
+        }
+        else if (Array.prototype.indexOf.call(this.dropDownEle, this.type) > -1) {
+            return this.getDropDownsValue();
         }
         else {
             return parseValue(this.type, this.value);
@@ -557,7 +615,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             this.dataManager.executeQuery(this.getQuery(eventArgs.data), this.successHandler.bind(this), this.failureHandler.bind(this));
         }
         else {
-            let eventArg = { data: {}, value: this.getSendValue() };
+            let eventArg = { data: {}, value: eventArgs.data.value };
             this.triggerSuccess(eventArg);
         }
         this.dataManager = undefined;
@@ -780,6 +838,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         }
         else if (this.type === 'Slider') {
             this.sliderModule.refresh();
+            this.setAttribute(select('.e-slider-input', this.containerEle), ['name']);
         }
         this.setFocus();
     }
@@ -887,6 +946,9 @@ let InPlaceEditor = class InPlaceEditor extends Component {
      * @returns void
      */
     save() {
+        if (!this.formEle) {
+            return;
+        }
         this.element.focus();
         this.editEle = select('.' + INPUT, this.formEle);
         if (select('.' + ERROR, this.editEle) && isNullOrUndefined(this.validationRules)) {
@@ -915,7 +977,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             this.notify(destroy, {});
         }
         this.unWireEvents();
-        let classList = [ROOT, DISABLE, RTL];
+        let classList = [DISABLE, RTL];
         classList.forEach((val) => {
             removeClass([this.element], [val]);
         });
@@ -964,6 +1026,9 @@ let InPlaceEditor = class InPlaceEditor extends Component {
                     (newProp.showButtons) ? this.appendButtons(this.formEle) : this.destroyButtons();
                     break;
                 case 'value':
+                    this.updateValue();
+                    this.renderValue(this.checkValue(parseValue(this.type, this.value)));
+                    break;
                 case 'emptyText':
                     this.renderValue(this.checkValue(parseValue(this.type, this.value)));
                     break;
@@ -1109,6 +1174,9 @@ class Base {
     update(e) {
         this.module.updateValue(e);
     }
+    getValue() {
+        this.module.getRenderValue();
+    }
     destroyComponent() {
         if (isNullOrUndefined(this.module.compObj)) {
             return;
@@ -1124,6 +1192,7 @@ class Base {
         this.parent.on(render, this.render, this);
         this.parent.on(setFocus, this.focus, this);
         this.parent.on(update, this.update, this);
+        this.parent.on(accessValue, this.getValue, this);
         this.parent.on(destroyModules, this.destroyComponent, this);
         this.parent.on(destroy, this.destroy, this);
     }
@@ -1134,6 +1203,7 @@ class Base {
         this.parent.off(render, this.render);
         this.parent.off(setFocus, this.focus);
         this.parent.off(update, this.update);
+        this.parent.off(accessValue, this.getValue);
         this.parent.off(destroyModules, this.destroyComponent);
         this.parent.off(destroy, this.destroy);
     }
@@ -1313,6 +1383,9 @@ class MultiSelect$1 {
             this.parent.setProperties({ value: this.compObj.value }, true);
         }
     }
+    getRenderValue() {
+        this.parent.printValue = this.compObj.text;
+    }
     /**
      * Destroys the module.
      * @method destroy
@@ -1355,7 +1428,7 @@ class Rte {
         this.compObj.refresh();
     }
     /**
-     * Destroys the module.
+     * Destroys the rte module.
      * @method destroy
      * @return {void}
      */
@@ -1388,14 +1461,14 @@ class Slider$1 {
     }
     updateValue(e) {
         if (this.compObj && e.type === 'Slider') {
-            this.parent.setProperties({ value: this.compObj.value.toString() }, true);
+            this.parent.setProperties({ value: this.compObj.value }, true);
         }
     }
     refresh() {
         this.compObj.refresh();
     }
     /**
-     * Destroys the module.
+     * Destroys the slider module.
      * @method destroy
      * @return {void}
      */
@@ -1460,5 +1533,5 @@ class TimePicker$1 {
  *
  */
 
-export { parseValue, render, update, destroy, setFocus, destroyModules, PopupSettings, modulesList, localeConstant, ROOT, ROOT_TIP, VALUE_WRAPPER, VALUE, OVERLAY_ICON, TIP_TITLE, TITLE, INLINE, POPUP, WRAPPER, LOADING, FORM, CTRL_GROUP, INPUT, BUTTONS, EDITABLE_ERROR, ELEMENTS, OPEN, BTN_SAVE, BTN_CANCEL, DISABLE, ICONS, PRIMARY, SHOW, HIDE, RTL, ERROR, InPlaceEditor, Base, AutoComplete$1 as AutoComplete, ColorPicker$1 as ColorPicker, ComboBox$1 as ComboBox, DateRangePicker$1 as DateRangePicker, MultiSelect$1 as MultiSelect, Rte, Slider$1 as Slider, TimePicker$1 as TimePicker };
+export { parseValue, getCompValue, render, update, destroy, setFocus, accessValue, destroyModules, PopupSettings, modulesList, localeConstant, ROOT, ROOT_TIP, VALUE_WRAPPER, VALUE, OVERLAY_ICON, TIP_TITLE, TITLE, INLINE, POPUP, WRAPPER, LOADING, FORM, CTRL_GROUP, INPUT, BUTTONS, EDITABLE_ERROR, ELEMENTS, OPEN, BTN_SAVE, BTN_CANCEL, DISABLE, ICONS, PRIMARY, SHOW, HIDE, RTL, ERROR, InPlaceEditor, Base, AutoComplete$1 as AutoComplete, ColorPicker$1 as ColorPicker, ComboBox$1 as ComboBox, DateRangePicker$1 as DateRangePicker, MultiSelect$1 as MultiSelect, Rte, Slider$1 as Slider, TimePicker$1 as TimePicker };
 //# sourceMappingURL=ej2-inplace-editor.es2015.js.map

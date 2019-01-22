@@ -2,6 +2,7 @@ import { Smithchart, ISmithchartLoadedEventArgs, TooltipRender } from '../../../
 import { createElement, remove, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Tooltip} from '@syncfusion/ej2-svg-base';
 import { MouseEvents } from '../base/events.spec';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { SmithchartRect} from '../../../src/smithchart/utils/utils';
 
 Smithchart.Inject(TooltipRender);
@@ -10,6 +11,14 @@ Smithchart.Inject(TooltipRender);
  * Title spec
  */
     describe('Smithchart tooltip spec', () => {
+        beforeAll(() => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+        });
         describe('Tooltip spec', () => {
         let id: string = 'container';
         let smithchart: Smithchart;
@@ -20,35 +29,33 @@ Smithchart.Inject(TooltipRender);
             ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
             document.body.appendChild(ele);
             smithchart = new Smithchart({
-                series: [
-         {
-            points: [
-                { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                { resistance: 0, reactance: 0.05 }, { resistance: 0.3, reactance: 0.1 },
-                { resistance: 0.3, reactance: 0.1 }, { resistance: 0.3, reactance: 0.1 },
-                { resistance: 0.3, reactance: 0.1 }, { resistance: 0.5, reactance: 0.2 },
-                { resistance: 1.0, reactance: 0.4 },
-                { resistance: 1.5, reactance: 0.5 }, { resistance: 2.0, reactance: 0.5 },
-                { resistance: 2.5, reactance: 0.4 }, { resistance: 3.5, reactance: 0.0 },
-                { resistance: 4.5, reactance: -0.5 }, { resistance: 5.0, reactance: -1.0 }
-
-             ],
-    fill: 'red',
-    tooltip: { visible: true},
-    marker: {
-        visible: true,
-        dataLabel: {
-        visible: true,
-        fill: 'red'
-        },
-        width: 10,
-        height: 10
-    }
-    },
-],
+                series: [{
+                    points: [
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0.3, reactance: 0.1 },
+                        { resistance: 0.3, reactance: 0.1 }, { resistance: 0.3, reactance: 0.1 },
+                        { resistance: 0.3, reactance: 0.1 }, { resistance: 0.5, reactance: 0.2 },
+                        { resistance: 1.0, reactance: 0.4 },
+                        { resistance: 1.5, reactance: 0.5 }, { resistance: 2.0, reactance: 0.5 },
+                        { resistance: 2.5, reactance: 0.4 }, { resistance: 3.5, reactance: 0.0 },
+                        { resistance: 4.5, reactance: -0.5 }, { resistance: 5.0, reactance: -1.0 }
+                    ],
+                    fill: 'red',
+                    tooltip: { visible: true},
+                    marker: {
+                        visible: true,
+                        dataLabel: {
+                            visible: true,
+                            fill: 'red'
+                        },
+                        width: 10,
+                        height: 10
+                    }
+                    },
+                ],
             }, '#' + id);
         });
         afterAll(() => {
@@ -173,4 +180,13 @@ Smithchart.Inject(TooltipRender);
             smithchart.refresh();
         });
     });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
+});

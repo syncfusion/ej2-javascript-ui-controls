@@ -1,5 +1,5 @@
 /// <reference path='../drop-down-base/drop-down-base-model.d.ts'/>
-import { EventHandler, Property, Event, compile, EmitType, KeyboardEvents, append, extend } from '@syncfusion/ej2-base';
+import { EventHandler, Property, Event, compile, EmitType, KeyboardEvents, append } from '@syncfusion/ej2-base';
 import { attributes, isNullOrUndefined, getUniqueID, formatUnit, isUndefined, getValue } from '@syncfusion/ej2-base';
 import { Animation, AnimationModel, Browser, KeyboardEventArgs, NotifyPropertyChanges } from '@syncfusion/ej2-base';
 import { addClass, removeClass, setStyleAttribute, closest, prepend, detach, classList } from '@syncfusion/ej2-base';
@@ -2007,15 +2007,7 @@ export class DropDownList extends DropDownBase implements IInput {
         this.hiddenElement.id = id + '_hidden';
         this.targetElement().setAttribute('tabindex', this.tabIndex);
         attributes(this.targetElement(), this.getAriaAttributes());
-        let invalidAttr: string[] = ['class', 'style', 'id'];
-        let htmlAttr: { [key: string]: string; } = {};
-        for (let a: number = 0; a < this.element.attributes.length; a++) {
-            if (invalidAttr.indexOf(this.element.attributes[a].name) === -1) {
-                htmlAttr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
-            }
-        }
-        extend(htmlAttr, this.htmlAttributes, htmlAttr);
-        this.setProperties({ htmlAttributes: htmlAttr }, true);
+        this.updateDataAttribute(this.htmlAttributes);
         this.setHTMLAttributes();
         if (this.value !== null || this.activeIndex !== null || this.text !== null) {
             this.initValue();
@@ -2090,10 +2082,13 @@ export class DropDownList extends DropDownBase implements IInput {
             this.resetList(this.dataSource);
         }
         if (!this.isCustomFilter && !this.isFilterFocus && document.activeElement !== this.filterInput) {
-            this.itemData = this.getDataByValue(this.value);
-            let dataItem: { [key: string]: string } = this.getItemData();
-            this.setProperties({ 'value': dataItem.value, 'text': dataItem.text });
+            this.checkCustomValue();
         }
+    }
+    protected checkCustomValue(): void {
+        this.itemData = this.getDataByValue(this.value);
+        let dataItem: { [key: string]: string } = this.getItemData();
+        this.setProperties({ 'value': dataItem.value, 'text': dataItem.text });
     }
     /**
      * Dynamically change the value of properties.
@@ -2124,12 +2119,9 @@ export class DropDownList extends DropDownBase implements IInput {
                         Input.setReadonly(newProp.readonly, this.inputElement as HTMLInputElement);
                     }
                     break;
-                case 'cssClass': this.setCssClass(newProp, oldProp);
-                    break;
-                case 'enableRtl': this.setEnableRtl();
-                    break;
-                case 'enabled': this.setEnable();
-                    break;
+                case 'cssClass': this.setCssClass(newProp, oldProp); break;
+                case 'enableRtl': this.setEnableRtl(); break;
+                case 'enabled': this.setEnable(); break;
                 case 'text': if (newProp.text === null) { this.clear(); break; }
                     if (!this.list) {
                         if (this.dataSource instanceof DataManager) { this.initRemoteRender = true; }

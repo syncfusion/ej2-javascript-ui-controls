@@ -74,7 +74,7 @@ public width: number;
 
 /**
  * border color for marker border.
- * @default white
+ * @default 'white'
  */
 @Property('white')
 public color: string;
@@ -91,7 +91,7 @@ export class SeriesMarkerDataLabelBorder extends ChildProperty <SeriesMarkerData
 public width: number;
 /**
  * border color for data label color.
- * @default white
+ * @default 'white'
  */
 @Property('white')
 public color: string;
@@ -169,7 +169,7 @@ public visible: boolean;
 
 /**
  * shape for marker.
- * @default circle
+ * @default 'circle'
  */
 @Property('circle')
     public shape: string;
@@ -224,7 +224,7 @@ public height: number;
 export class SmithchartSeries extends ChildProperty<SmithchartSeries> {
 /**
  * visibility for series.
- * @default visible
+ * @default 'visible'
  */
  @Property('visible')
     public visibility: string;
@@ -281,7 +281,7 @@ public dataSource: Object;
 
 /**
  * perform animation of series based on animation duration.
- * @default 2000ms
+ * @default '2000ms'
  */
     @Property('2000ms')
     public animationDuration: string;

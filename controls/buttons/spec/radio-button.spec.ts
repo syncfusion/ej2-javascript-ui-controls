@@ -1,10 +1,20 @@
 import { RadioButton } from './../src/radio-button/radio-button';
 import { createElement } from '@syncfusion/ej2-base';
+import { profile , inMB, getMemoryProfile } from './common.spec';
 
 /**
  * RadioButton Spec document
  */
 describe('RadioButton', () => {
+    beforeAll(() => {
+        const isDef: any = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log('Unsupported environment, window.performance.memory is unavailable');
+            this.skip(); // skips test (in Chai)
+            return;
+        }
+    });
+
     let radio: any;
     let element: HTMLFormElement = createElement('input', { id: 'radio' }) as HTMLFormElement;
     element.setAttribute('type', 'radio');
@@ -262,5 +272,15 @@ describe('RadioButton', () => {
             expect(radio.element.id).toContain('e-radio');
             expect(radio.element.type).toEqual('radio');
         });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange);
+        // check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

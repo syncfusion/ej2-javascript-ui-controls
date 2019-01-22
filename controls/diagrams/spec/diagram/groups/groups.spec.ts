@@ -7,8 +7,8 @@ import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { Snapping } from '../../../src/diagram/objects/snapping';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
 import { DiagramContextMenu } from '../../../src/diagram/objects/context-menu';
-import { Node, SnapSettingsModel, DiagramElement, ShapeAnnotationModel, PointPortModel } from '../../../src/diagram/index';
-import { SnapConstraints, PortVisibility, PortConstraints } from '../../../src/diagram/enum/enum';
+import { Node, SnapSettingsModel, DiagramElement, ShapeAnnotationModel, PointPortModel, Connector } from '../../../src/diagram/index';
+import { SnapConstraints, PortVisibility, PortConstraints, AnnotationConstraints } from '../../../src/diagram/enum/enum';
 import { MenuItemModel } from '@syncfusion/ej2-navigations';
 Diagram.Inject(UndoRedo, DiagramContextMenu, Snapping);
 /**
@@ -701,6 +701,135 @@ describe('Group', () => {
             diagram.paste(data);
             
             expect(diagram.nodes.length===8).toBe(true);
+            done();
+        });
+
+    });
+    describe('Performance Fix break issue', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let scroller: DiagramScroller;
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram_group_group_width_height' });
+            document.body.appendChild(ele);
+            var newnode = {
+                offsetX: 250,
+                offsetY: 250,
+                width: 100,
+                height: 100,
+                shape: {
+                    type: "Basic",
+                    shape: "Triangle"
+                },
+                style: {
+                    fill: '#6BA5D7',
+                    strokeColor: 'white'
+                },
+                annotations: [
+                    { content: "ssss",
+                    constraints: AnnotationConstraints.Interaction,
+                        style: { fill: "transparent" } }
+                ]
+            };
+            var nodes = [
+                {
+                    id: 'node1', width: 50, height: 50, offsetX: 600,
+                    offsetY: 300,
+                }, {
+                    id: 'node2', width: 50, height: 50, offsetX: 600,
+                    offsetY: 400
+                },
+                { id: 'group', children: ['node1', 'node2'], rotateAngle: 45 },
+            ];
+            var connectors:ConnectorModel = {
+                id: 'connector2',
+                type: 'Straight',
+                sourcePoint: { x: 300, y: 100 },
+                targetPoint: { x: 400, y: 200 },
+                annotations: [{ content: 'tecp' }],
+                sourceDecorator: {
+                    style: { fill: 'black' },
+                    shape: 'Diamond',
+                    pivot: { x: 0, y: 0.5 }
+                },
+                targetDecorator: {
+                   // shape: 'None',
+                    style: { fill: 'blue' },
+                    pivot: { x: 0, y: 0.5 }
+                }
+            };
+            diagram = new Diagram({
+                width: '800px', height: '500px',nodes: nodes,
+                connectors: [connectors],
+            });
+            diagram.appendTo('#diagram_group_group_width_height');
+            diagram.add(newnode as Node);
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking node drag and changing the text element by double click', (done: Function) => {
+            var diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            var offsetX = diagram.nodes[3].offsetX;
+            var offsetY = diagram.nodes[3].offsetY;
+            var mouseEvents = new MouseEvents();
+            mouseEvents.mouseMoveEvent(diagramCanvas, offsetX, offsetY, true);
+            mouseEvents.dragAndDropEvent(diagramCanvas, offsetX, offsetY, offsetX, offsetY);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 800, 100);
+            mouseEvents.mouseLeaveEvent(diagramCanvas);
+            mouseEvents.dragAndDropEvent(diagramCanvas, offsetX, offsetY, offsetX + 100, offsetY);
+            var diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 400, 300);
+            diagram.startTextEdit(diagram.selectedItems.nodes[0], diagram.selectedItems.nodes[0].annotations[0].id);
+            (document.getElementById(diagram.element.id + '_editBox') as HTMLTextAreaElement).value = 'editText1';
+            mouseEvents.clickEvent(diagramCanvas, 10, 10);
+            var temp = document.getElementById(diagram.nodes[3].wrapper.children[1].id + '_groupElement');
+            expect(temp.children[0].getAttribute('fill') === 'transparent').toBe(true);
+            var shape = document.getElementById(diagram.nodes[3].wrapper.children[0].id + '_groupElement');
+            expect(shape.children[0].getAttribute('d') === "M50,0 L100,100 L0,100 L50,0 Z ").toBe(true);
+            let left: number; let top: number;
+            mouseEvents.clickEvent(diagramCanvas, 1, 1);
+            left = diagram.element.offsetLeft; top = diagram.element.offsetTop;
+            let node: NodeModel = (diagram.nodes[3] as NodeModel);
+            let annotation: DiagramElement = node.wrapper.children[1];
+            mouseEvents.clickEvent(diagramCanvas, annotation.offsetX + left, annotation.offsetY + top);
+            diagram.nudge('Right'); 
+            done();
+        });
+        it('Checking source and target decorator color', (done: Function) => {
+        let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        let offsetX = diagram.connectors[0].wrapper.offsetX;
+        let offsetY= diagram.connectors[0].wrapper.offsetY;
+
+        mouseEvents.dragAndDropEvent(diagramCanvas, offsetX, offsetY, offsetX - 20, offsetY - 20);
+        var connector = diagram.connectors[0];
+        connector.targetDecorator.style.fill = 'red';
+        diagram.dataBind();
+        var element = document.getElementById((connector as Connector).id+'_tarDec_groupElement')
+        expect(element.children[0].getAttribute('fill')==='red').toBe(true);
+            done();
+        });
+        it('copy and paste group issue', (done: Function) => {
+            let offsetX = diagram.nodes[2].offsetX;
+            let offsetY = diagram.nodes[2].offsetY;
+            let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            var mouseEvents = new MouseEvents();
+            mouseEvents.clickEvent(diagramCanvas, offsetX, offsetY);
+            diagram.copy();
+            diagram.paste();
+            var node = diagram.nodes[5];
+            var element = document.getElementById((node as Node).id + '_content_groupElement')
+            expect(element.children[0].getAttribute('fill') === 'white' && element.children[0].getAttribute('stroke') === 'black').toBe(true);
             done();
         });
 

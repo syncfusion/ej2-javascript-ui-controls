@@ -144,7 +144,7 @@ export class SmithchartLegendSettings extends ChildProperty<SmithchartLegendSett
 
   /**
    * position for legend.
-   * @default bottom
+   * @default 'bottom'
    */
 
 @Property('bottom')
@@ -175,7 +175,7 @@ public height: number;
 
   /**
    * shape for legend.
-   * @default circle
+   * @default 'circle'
    */
 
   @Property('circle')

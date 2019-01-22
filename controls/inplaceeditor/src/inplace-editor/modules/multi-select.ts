@@ -33,6 +33,10 @@ export class MultiSelect implements IComponent {
         }
     }
 
+    public getRenderValue(): void {
+        this.parent.printValue = this.compObj.text;
+    }
+
     /**
      * Destroys the module.
      * @method destroy

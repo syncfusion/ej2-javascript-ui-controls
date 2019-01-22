@@ -12,13 +12,13 @@ export interface SmithchartFontModel {
 
     /**
  * font style for text.
- * @default Normal
+ * @default 'Normal'
  */
     fontStyle?: string;
 
     /**
      * font weight for text.
-     * @default Regular
+     * @default 'Regular'
      */
     fontWeight?: string;
 
@@ -30,7 +30,7 @@ export interface SmithchartFontModel {
 
     /**
  * font size for text.
- * @default 12px
+ * @default '12px'
  */
     size?: string;
 
@@ -95,7 +95,7 @@ export interface SmithchartBorderModel {
 
     /**
  * color for smithchart border .
- * @default transparent
+ * @default 'transparent'
  */
 
     color?: string;

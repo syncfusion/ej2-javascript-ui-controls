@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 16.4.47 (2019-01-08)
+## 16.4.48 (2019-01-16)
+
+### SvgBase
+
+#### Bug Fixes
+
+- Tooltip text with colon within the bold tag issue fixed
+
+## 16.4.46 (2019-01-08)
 
 ### SvgBase
 

@@ -83,7 +83,7 @@ describe('AutoComplete', () => {
             expect(atcObj.value === 'PHP').toBe(true);
             atcObj.dataSource = [{ id: 'list1', text: 'JAVA' }, { id: 'list2', text: 'PYTHON' }];
             atcObj.dataBind();
-            expect(atcObj.value === 'PHP').toBe(false);
+            expect(atcObj.value === 'PHP').toBe(true);
         });
     });
 
@@ -1739,6 +1739,52 @@ describe('AutoComplete', () => {
             atcObj.onInput();
             atcObj.onFilterUp(e);
             expect(openAction).not.toHaveBeenCalled();
+        });
+    });
+    describe('EJ2-21720 - custom value not maintain after the reload the data source ', () => {
+        let atcObj: AutoComplete;
+        let sportsData: string[] = [
+            'Badminton',
+            'Basketball',
+            'Cricket',
+            'Football',
+            'Golf',
+            'Gymnastics',
+            'Hockey',
+            'Rugby',
+            'Snooker',
+            'Tennis'
+          ];
+        let data: string[] = [
+            'Bad',
+            'ball'
+          ];
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'autocomplete' });
+        let btnEle: HTMLButtonElement = <HTMLButtonElement>createElement('input', { id: 'btn',attrs: { type: 'button' } });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            document.body.appendChild(btnEle);
+            atcObj = new AutoComplete({
+                placeholder: 'e.g. Australia',
+                dataSource: sportsData
+            });
+            atcObj.appendTo(element);
+        });
+        afterAll(() => {
+            atcObj.destroy();
+            element.remove();
+            btnEle.remove();
+        });
+
+
+        it('check custom value', () => {
+            btnEle.onclick = (): void => {
+                atcObj.dataSource = data;
+                atcObj.dataBind();
+                expect((<any>atcObj).inputElement.value).toBe('abc');
+            }
+            (<any>atcObj).inputElement.value = 'abc';
+            btnEle.click();
         });
     });
 });

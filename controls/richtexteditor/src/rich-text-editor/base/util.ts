@@ -78,8 +78,7 @@ export function isIDevice(): boolean {
 
 export function getFormattedFontSize(value: string): string {
     if (isNOU(value)) { return ''; }
-    let result: string[] = value.split('pt');
-    return result[0] + ' pt';
+    return value;
 }
 
 export function pageYOffset(e: MouseEvent, parentElement: HTMLElement, isIFrame: boolean): number {
@@ -152,12 +151,12 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                         case 'fontsize':
                             if (isNOU(dropDown.fontSizeDropDown)) { return; }
                             let fontSizeItems: IDropDownItemModel[] = e.parent.fontSize.items;
-                            result = getDropDownValue(fontSizeItems, value, 'value', 'value');
+                            result = getDropDownValue(
+                                fontSizeItems, (value === '' ? e.parent.fontSize.default.replace(/\s/g, '') : value), 'value', 'text');
                             dropDown.fontSizeDropDown.content = ('<span style="display: inline-flex;' +
                                 'width:' + e.parent.fontSize.width + '" >' +
                                 '<span class="e-rte-dropdown-btn-text">'
-                                + (isNOU(result) ? '10 pt' : getFormattedFontSize(result)) +
-                                '</span></span>');
+                                + getFormattedFontSize(result) + '</span></span>');
                             dropDown.fontSizeDropDown.dataBind();
                             break;
                     }

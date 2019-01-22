@@ -281,7 +281,7 @@ export class AxisRenderer {
                     appendPath(
                         new PathOption(
                             gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex, range.rangeColor,
-                            0, range.rangeColor, 1, '0',
+                            0, range.rangeColor, range.opacity, '0',
                             getRoundedPathArc(
                                 location,
                                 Math.floor(roundedStartAngle), Math.ceil(roundedEndAngle), oldStart, oldEnd,
@@ -295,7 +295,7 @@ export class AxisRenderer {
                     appendPath(
                         new PathOption(
                             gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex, range.rangeColor,
-                            0, range.rangeColor, 1, '0',
+                            0, range.rangeColor, range.opacity, '0',
                             getPathArc(
                                 gauge.midPoint,
                                 Math.floor(startAngle), Math.ceil(endAngle),

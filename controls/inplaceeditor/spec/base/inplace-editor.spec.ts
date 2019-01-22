@@ -5,8 +5,18 @@ import { isNullOrUndefined as isNOU, select, selectAll, createElement, Browser }
 import { InPlaceEditor } from '../../src/inplace-editor/base/index';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy, triggerKeyBoardEvent, safariMobileUA } from './../render.spec';
+import { profile, inMB, getMemoryProfile } from './../common.spec';
 
 describe('InPlace-Editor Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
+
     let currentUA: string = navigator.userAgent;
     describe('Root element testing', () => {
         let ele: HTMLElement;
@@ -30,7 +40,7 @@ describe('InPlace-Editor Control', () => {
             expect(ele.getAttribute('data-underline')).toEqual(null);
         });
         it('Submit prevent method testing', () => {
-            editorObj.submitPrevent({ preventDefault: function() {} });
+            editorObj.submitPrevent({ preventDefault: function () { } });
         });
     });
     describe('Model value testing', () => {
@@ -69,7 +79,7 @@ describe('InPlace-Editor Control', () => {
                 name: 'comments',
                 value: 'MyText',
                 cssClass: 'customClass',
-                primaryKey: '1',
+                primaryKey: 1,
                 emptyText: 'Dummy Text',
                 url: 'http://www.google.com',
                 mode: 'Inline',
@@ -92,7 +102,7 @@ describe('InPlace-Editor Control', () => {
             expect(editorObj.name).toEqual('comments');
             expect(editorObj.value).toEqual('MyText');
             expect(editorObj.cssClass).toEqual('customClass');
-            expect(editorObj.primaryKey).toEqual('1');
+            expect(editorObj.primaryKey).toEqual(1);
             expect(editorObj.emptyText).toEqual('Dummy Text');
             expect(editorObj.url).toEqual('http://www.google.com');
             expect(editorObj.mode).toEqual('Inline');
@@ -549,6 +559,27 @@ describe('InPlace-Editor Control', () => {
             editorObj.dataBind();
             expect(editorObj.primaryKey).toEqual('Testing');
         });
+        it('"Number" Modified model with testing', () => {
+            editorObj = renderEditor({
+                primaryKey: 2
+            });
+            expect(editorObj.primaryKey).toEqual(2);
+            editorObj.primaryKey = '2';
+            editorObj.dataBind();
+            expect(editorObj.primaryKey).toEqual('2');
+            editorObj.primaryKey = '';
+            editorObj.dataBind();
+            expect(editorObj.primaryKey).toEqual('');
+            editorObj.primaryKey = null;
+            editorObj.dataBind();
+            expect(editorObj.primaryKey).toEqual(null);
+            editorObj.primaryKey = 'Testing';
+            editorObj.dataBind();
+            expect(editorObj.primaryKey).toEqual('Testing');
+            editorObj.primaryKey = 4;
+            editorObj.dataBind();
+            expect(editorObj.primaryKey).toEqual(4);
+        });
     });
     describe('emptyText property testing', () => {
         let ele: HTMLElement;
@@ -866,7 +897,7 @@ describe('InPlace-Editor Control', () => {
             expect(ele.getAttribute('title')).toEqual('Double click to edit');
             valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
             valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
-            editorObj.doubleTapHandler({ tapCount: 1, originalEvent: { stopPropagation: function() {} } });
+            editorObj.doubleTapHandler({ tapCount: 1, originalEvent: { stopPropagation: function () { } } });
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
             expect(editorObj.enableEditMode).toEqual(false);
             editorObj.editableOn = 'EditIconClick';
@@ -895,7 +926,7 @@ describe('InPlace-Editor Control', () => {
             expect(ele.getAttribute('title')).toEqual('Double click to edit');
             valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
             valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
-            editorObj.doubleTapHandler({ tapCount: 2, originalEvent: { stopPropagation: function() {} } });
+            editorObj.doubleTapHandler({ tapCount: 2, originalEvent: { stopPropagation: function () { } } });
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(editorObj.enableEditMode).toEqual(true);
             editorObj.editableOn = 'EditIconClick';
@@ -1570,6 +1601,15 @@ describe('InPlace-Editor Control', () => {
         afterEach((): void => {
             destroy(editorObj);
         });
+        it('Without open editor and save testing', (done: Function) => {
+            editorObj = renderEditor({});
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
+            editorObj.save();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
+            done();
+        });
         it('Without template to save testing', (done: Function) => {
             editorObj = renderEditor({
                 mode: 'Inline'
@@ -2056,6 +2096,29 @@ describe('InPlace-Editor Control', () => {
                 done();
             }, 4000);
         });
+        it('primaryKey as "number" with success testing', (done: Function) => {
+            editorObj = renderEditor({
+                primaryKey: 2,
+                mode: 'Inline',
+                name: 'Game',
+                value: 'Syncfusion',
+                adaptor: 'UrlAdaptor',
+                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/UpdateData',
+                actionBegin: begin,
+                actionSuccess: success,
+                actionFailure: fail
+            });
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            editorObj.save();
+            setTimeout(() => {
+                expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 2, value: 'Syncfusion' }, name: "actionBegin" });
+                expect(successArgs['name']).toEqual('actionSuccess');
+                expect(successArgs['value']).toEqual('Syncfusion');
+                done();
+            }, 4000);
+        });
         it('Failure testing', (done: Function) => {
             editorObj = renderEditor({
                 primaryKey: 'text',
@@ -2073,6 +2136,28 @@ describe('InPlace-Editor Control', () => {
             editorObj.save();
             setTimeout(() => {
                 expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 'text', value: 'Syncfusion' }, name: "actionBegin" });
+                expect(failArgs['name']).toEqual('actionFailure');
+                expect(failArgs['value']).toEqual('Syncfusion');
+                done();
+            }, 2000);
+        });
+        it('primaryKey as "number" with failure testing', (done: Function) => {
+            editorObj = renderEditor({
+                primaryKey: 3,
+                name: 'Game',
+                mode: 'Inline',
+                value: 'Syncfusion',
+                adaptor: 'UrlAdaptor',
+                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/Updates',
+                actionBegin: begin,
+                actionFailure: fail
+            });
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            editorObj.save();
+            setTimeout(() => {
+                expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 3, value: 'Syncfusion' }, name: "actionBegin" });
                 expect(failArgs['name']).toEqual('actionFailure');
                 expect(failArgs['value']).toEqual('Syncfusion');
                 done();
@@ -2247,4 +2332,14 @@ describe('InPlace-Editor Control', () => {
             expect(ele.querySelectorAll('.e-spinner-pane').length > 0).toEqual(false);
         });
     });
+
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        // Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        // Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

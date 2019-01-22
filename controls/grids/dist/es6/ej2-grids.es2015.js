@@ -17945,9 +17945,11 @@ class RowDD {
                 gObj.selectionSettings.mode === 'Row' && gObj.selectionSettings.type === 'Single') {
                 gObj.selectRow(parseInt(e.sender.target.parentElement.getAttribute('aria-rowindex'), 10));
             }
+            this.startedRow = closest(target, 'tr').cloneNode(true);
+            this.processArgs(target);
             let args = {
-                selectedRow: gObj.getSelectedRows(), dragelement: target,
-                cloneElement: visualElement, cancel: false
+                selectedRow: this.rows, dragelement: target,
+                cloneElement: visualElement, cancel: false, data: this.rowData
             };
             let selectedRows = gObj.getSelectedRows();
             gObj.trigger(rowDragStartHelper, args);
@@ -17957,7 +17959,6 @@ class RowDD {
                 visualElement = args[cloneElement];
                 return visualElement;
             }
-            this.startedRow = closest(target, 'tr').cloneNode(true);
             removeElement(this.startedRow, '.e-indentcell');
             removeElement(this.startedRow, '.e-detailrowcollapse');
             removeElement(this.startedRow, '.e-detailrowexpand');
@@ -17991,10 +17992,13 @@ class RowDD {
                 spanCssEle.style.left = this.parent.element.querySelector('.e-cloneproperties table')
                     .offsetWidth - 5 + 'px';
             }
+            this.processArgs(target);
             gObj.trigger(rowDragStart, {
-                rows: gObj.getSelectedRows(),
-                target: e.target, draggableType: 'rows', data: gObj.getSelectedRecords()
+                rows: this.rows,
+                target: e.target, draggableType: 'rows', fromIndex: parseInt(this.rows[0].getAttribute('aria-rowindex'), 10),
+                data: this.rowData
             });
+            this.dragStartData = this.rowData;
             let dropElem = document.getElementById(gObj.rowDropSettings.targetID);
             if (gObj.rowDropSettings.targetID && dropElem && dropElem.ej2_instances &&
                 dropElem.ej2_instances[0].getModuleName() === 'grid') {
@@ -18013,9 +18017,10 @@ class RowDD {
             if (!e.target) {
                 return;
             }
+            this.processArgs(target);
             gObj.trigger(rowDrag, {
-                rows: gObj.getSelectedRows(),
-                target: target, draggableType: 'rows', data: gObj.getSelectedRecords(),
+                rows: this.rows,
+                target: target, draggableType: 'rows', data: this.rowData
             });
             this.stopTimer();
             gObj.element.classList.add('e-rowdrag');
@@ -18077,7 +18082,6 @@ class RowDD {
                 dropElement.ej2_instances[0].getModuleName() === 'grid') {
                 dropElement.ej2_instances[0].getContent().classList.remove('e-allowRowDrop');
             }
-            let startRow = gObj.getSelectedRows().length > 0 ? gObj.getSelectedRows() : [this.startedRow];
             if (gObj.isRowDragable()) {
                 this.stopTimer();
                 gObj.enableHover = this.hoverState;
@@ -18088,12 +18092,13 @@ class RowDD {
                     stRow.classList.remove('e-dragstartrow');
                 }
             }
+            this.processArgs(target);
             let args = {
                 target: target, draggableType: 'rows',
                 cancel: false,
-                fromIndex: this.startedRowIndex,
+                fromIndex: parseInt(this.rows[0].getAttribute('aria-rowindex'), 10),
                 dropIndex: this.dragTarget,
-                rows: startRow, data: gObj.getSelectedRecords()
+                rows: this.rows, data: this.dragStartData
             };
             gObj.trigger(rowDrop, args);
             if (!parentsUntil(target, 'e-gridcontent') || args.cancel) {
@@ -18403,6 +18408,18 @@ class RowDD {
      */
     getModuleName() {
         return 'rowDragAndDrop';
+    }
+    processArgs(target) {
+        let gObj = this.parent;
+        if ((gObj.getSelectedRecords().length > 0 && this.startedRow.cells[0].classList.contains('e-selectionbackground') === false)
+            || gObj.getSelectedRecords().length === 0) {
+            this.rows = [this.startedRow];
+            this.rowData = this.parent.getRowInfo(parentsUntil(target, 'e-row').querySelector('.e-rowcell')).rowData;
+        }
+        else {
+            this.rows = gObj.getSelectedRows();
+            this.rowData = gObj.getSelectedRecords();
+        }
     }
 }
 
@@ -23757,7 +23774,7 @@ class ColumnChooser {
         if (this.parent.isDestroyed) {
             return;
         }
-        this.parent.on(click, this.clickHandler, this);
+        EventHandler.add(document, 'click', this.clickHandler, this);
         this.parent.on(uiUpdate, this.enableAfterRenderEle, this);
         this.parent.on(initialEnd, this.render, this);
         this.parent.addEventListener(dataBound, this.hideDialog.bind(this));
@@ -23771,7 +23788,7 @@ class ColumnChooser {
         if (this.parent.isDestroyed) {
             return;
         }
-        this.parent.off(click, this.clickHandler);
+        EventHandler.remove(document, 'click', this.clickHandler);
         this.parent.off(initialEnd, this.render);
         this.parent.off(destroy, this.destroy);
         this.parent.off(uiUpdate, this.enableAfterRenderEle);

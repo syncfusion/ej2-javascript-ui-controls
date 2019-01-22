@@ -2631,6 +2631,18 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
         return null;
     }
+
+    /**
+     * Clear visible Axis labels
+     */
+    private clearVisibleAxisLabels(): void {
+        let axes: AxisModel[] = [this.primaryXAxis, this.primaryYAxis];
+        axes = this.chartAreaType === 'Cartesian' ? axes.concat(this.axes) : axes;
+        for (let i: number = 0, len: number = axes.length; i < len; i++) {
+            (axes[i] as Axis).labels = [];
+        }
+    }
+
     /**
      * Called internally if any of the property value changed.
      * @private
@@ -2716,6 +2728,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                             }
                         }
                         if (seriesRefresh) {
+                            this.clearVisibleAxisLabels();
                             this.processData(false);
                             refreshBounds = true;
                         }

@@ -16,10 +16,14 @@ new CheckBox({ label: 'SubmitOnEnter', checked: true, change: onSubmitOnEnterCha
 let editObj: InPlaceEditor = new InPlaceEditor({
     mode: 'Inline',
     type: 'Date',
-    value: new Date(),
+    emptyText: '2019-01-17',
     primaryKey: '1',
     url: serviceUrl,
     adaptor: 'UrlAdaptor',
+    model: {
+        format: 'yyyy-MM-dd',
+        value: '2019-01-17'
+    },
     name: 'Date',
     popupSettings: {
         title: 'Edit'

@@ -206,7 +206,7 @@ export class TableCommand {
         selectedCell = (selectedCell.nodeType === 3) ? selectedCell.parentNode : selectedCell;
         let table: HTMLTableElement = closest(selectedCell.parentElement, 'table') as HTMLTableElement;
         if (table && 0 === table.querySelectorAll('thead').length) {
-            let cellCount: number = table.querySelectorAll('tr:first-child td').length;
+            let cellCount: number = table.querySelector('tr').querySelectorAll('td').length;
             let header: HTMLTableSectionElement = table.createTHead();
             let row: HTMLTableRowElement = header.insertRow(0);
             for (let i: number = 0; i < cellCount; i++) {

@@ -1,6 +1,7 @@
 
 import { Smithchart, SmithchartLegend, ISmithchartLoadedEventArgs } from '../../../src/smithchart/index';
 import { createElement, remove } from '@syncfusion/ej2-base';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 
 Smithchart.Inject(SmithchartLegend);
 
@@ -8,6 +9,14 @@ Smithchart.Inject(SmithchartLegend);
  * Legend spec
  */
 describe('Smithchart legend properties tesing', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Legend testing', () => {
         let id: string = 'legend';
         let smithchart: Smithchart;
@@ -17,37 +26,35 @@ describe('Smithchart legend properties tesing', () => {
             ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
             document.body.appendChild(ele);
             smithchart = new Smithchart({
-            series: [
-         {
-            points: [
-                { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 }, 
-                { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 }, 
-                { resistance: 0, reactance: 0.05 }, { resistance: 0.3, reactance: 0.1 },
-                { resistance: 0.3, reactance: 0.1 }, { resistance: 0.3, reactance: 0.1 }, 
-                { resistance: 0.3, reactance: 0.1 }, { resistance: 0.5, reactance: 0.2 }, 
-                { resistance: 1.0, reactance: 0.4 },
-                { resistance: 1.5, reactance: 0.5 }, { resistance: 2.0, reactance: 0.5 },
-                { resistance: 2.5, reactance: 0.4 }, { resistance: 3.5, reactance: 0.0 },
-                { resistance: 4.5, reactance: -0.5 }, { resistance: 5.0, reactance: -1.0 }
-
-             ],
-    fill: 'red',
-    name: 'Transmission1'
-},
-{
-                            points: [{ resistance: 0, reactance: 0.15 }, { resistance: 0.3, reactance: 0.2 },
-                                         { resistance: 0.5, reactance: 0.4 }, { resistance: 1.0, reactance: 0.8 },
-                                         { resistance: 1.5, reactance: 1.0 }, { resistance: 2.0, reactance: 1.2 },
-                                         { resistance: 2.5, reactance: 1.3 }, { resistance: 3.5, reactance: 1.6 },
-                                         { resistance: 4.5, reactance: 2.0 }, { resistance: 6.0, reactance: 4.5 },
-                                         { resistance: 8, reactance: 6 }, { resistance: 10, reactance: 25 }],
-                            name: 'Transmission2',
-                            fill: 'blue'
-                        }
-],
-                legendSettings: {
-                    visible: true,
-                }
+            series: [{
+                points: [
+                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 }, 
+                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 }, 
+                    { resistance: 0, reactance: 0.05 }, { resistance: 0.3, reactance: 0.1 },
+                    { resistance: 0.3, reactance: 0.1 }, { resistance: 0.3, reactance: 0.1 }, 
+                    { resistance: 0.3, reactance: 0.1 }, { resistance: 0.5, reactance: 0.2 }, 
+                    { resistance: 1.0, reactance: 0.4 },
+                    { resistance: 1.5, reactance: 0.5 }, { resistance: 2.0, reactance: 0.5 },
+                    { resistance: 2.5, reactance: 0.4 }, { resistance: 3.5, reactance: 0.0 },
+                    { resistance: 4.5, reactance: -0.5 }, { resistance: 5.0, reactance: -1.0 }
+                ],
+                fill: 'red',
+                name: 'Transmission1'
+            },{
+                points: [
+                    { resistance: 0, reactance: 0.15 }, { resistance: 0.3, reactance: 0.2 },
+                    { resistance: 0.5, reactance: 0.4 }, { resistance: 1.0, reactance: 0.8 },
+                    { resistance: 1.5, reactance: 1.0 }, { resistance: 2.0, reactance: 1.2 },
+                    { resistance: 2.5, reactance: 1.3 }, { resistance: 3.5, reactance: 1.6 },
+                    { resistance: 4.5, reactance: 2.0 }, { resistance: 6.0, reactance: 4.5 },
+                    { resistance: 8, reactance: 6 }, { resistance: 10, reactance: 25 }
+                ],
+                name: 'Transmission2',
+                fill: 'blue'
+            }],
+            legendSettings: {
+                visible: true,
+            }
             }, '#' + id);
         });
         afterAll(() => {
@@ -385,5 +392,14 @@ describe('Smithchart legend properties tesing', () => {
             smithchart.legendSettings.visible = false;
             smithchart.refresh();
         });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

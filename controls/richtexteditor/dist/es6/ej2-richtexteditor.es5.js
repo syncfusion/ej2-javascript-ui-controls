@@ -1108,8 +1108,7 @@ function getFormattedFontSize(value) {
     if (isNullOrUndefined(value)) {
         return '';
     }
-    var result = value.split('pt');
-    return result[0] + ' pt';
+    return value;
 }
 function pageYOffset(e, parentElement, isIFrame) {
     var y = 0;
@@ -1191,12 +1190,11 @@ function setToolbarStatus(e, isPopToolbar) {
                                 return;
                             }
                             var fontSizeItems = e.parent.fontSize.items;
-                            result = getDropDownValue(fontSizeItems, value, 'value', 'value');
+                            result = getDropDownValue(fontSizeItems, (value === '' ? e.parent.fontSize.default.replace(/\s/g, '') : value), 'value', 'text');
                             dropDown.fontSizeDropDown.content = ('<span style="display: inline-flex;' +
                                 'width:' + e.parent.fontSize.width + '" >' +
                                 '<span class="e-rte-dropdown-btn-text">'
-                                + (isNullOrUndefined(result) ? '10 pt' : getFormattedFontSize(result)) +
-                                '</span></span>');
+                                + getFormattedFontSize(result) + '</span></span>');
                             dropDown.fontSizeDropDown.dataBind();
                             break;
                     }
@@ -1843,7 +1841,7 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
                             });
                         });
                         _this.fontSizeDropDown = _this.toolbarRenderer.renderDropDownButton({
-                            content: _this.dropdownContent(_this.parent.fontSize.width, type, getFormattedFontSize(getDropDownValue(fontsize, _this.parent.fontSize.default, 'text', 'value'))),
+                            content: _this.dropdownContent(_this.parent.fontSize.width, type, getFormattedFontSize(getDropDownValue(fontsize, _this.parent.fontSize.default.replace(/\s/g, ''), 'value', 'text'))),
                             cssClass: CLS_DROPDOWN_POPUP + ' ' + CLS_DROPDOWN_ITEMS + ' ' + CLS_FONT_SIZE_TB_BTN,
                             itemName: 'FontSize',
                             items: fontsize,
@@ -1932,7 +1930,7 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
                                 case 'width':
                                     var fontsize = this.fontSizeDropDown.items;
                                     var type = !isNullOrUndefined(closest(this.fontSizeDropDown.element, '.' + CLS_QUICK_TB)) ? 'quick' : 'toolbar';
-                                    var content = this.dropdownContent(this.parent.fontSize.width, type, getFormattedFontSize(getDropDownValue(fontsize, this.parent.fontSize.default, 'text', 'value')));
+                                    var content = this.dropdownContent(this.parent.fontSize.width, type, getFormattedFontSize(getDropDownValue(fontsize, this.parent.fontSize.default.replace(/\s/g, ''), 'value', 'text')));
                                     this.fontSizeDropDown.setProperties({ content: content });
                                     break;
                                 case 'items':
@@ -8425,7 +8423,7 @@ var TableCommand = /** @__PURE__ @class */ (function () {
         selectedCell = (selectedCell.nodeType === 3) ? selectedCell.parentNode : selectedCell;
         var table = closest(selectedCell.parentElement, 'table');
         if (table && 0 === table.querySelectorAll('thead').length) {
-            var cellCount = table.querySelectorAll('tr:first-child td').length;
+            var cellCount = table.querySelector('tr').querySelectorAll('td').length;
             var header = table.createTHead();
             var row = header.insertRow(0);
             for (var i = 0; i < cellCount; i++) {
@@ -9693,7 +9691,9 @@ var ToolbarStatus = /** @__PURE__ @class */ (function () {
         var index = null;
         if ((name !== null && name !== '' && name !== undefined)
             && (fontName === null || fontName === undefined || (fontName.filter(function (value, pos) {
-                if (value.replace(/"/g, '').replace(/ /g, '') === name.replace(/"/g, '').replace(/ /g, '')) {
+                var pattern = new RegExp(name, 'i');
+                if ((value.replace(/"/g, '').replace(/ /g, '') === name.replace(/"/g, '').replace(/ /g, '')) ||
+                    (value.search(pattern) > -1)) {
                     index = pos;
                 }
             }) && (index !== null)))) {
@@ -12104,7 +12104,7 @@ var ViewSource = /** @__PURE__ @class */ (function () {
                 this.contentModule.getEditPanel().innerHTML.length === 12) ||
                 (this.contentModule.getEditPanel().childNodes.length === 1 &&
                     this.contentModule.getEditPanel().childNodes[0].tagName === 'P' &&
-                    this.contentModule.getEditPanel().innerHTML.length === 8) ? null : this.parent.value;
+                    this.contentModule.getEditPanel().innerHTML.length === 7) ? null : this.parent.value;
             this.contentModule.getEditPanel().style.display = 'none';
             this.previewElement.style.display = 'block';
         }
@@ -12478,8 +12478,10 @@ var Table = /** @__PURE__ @class */ (function () {
                 return;
             }
             var range = this.parent.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());
+            var closestTable = closest(target, 'table');
             if (target && target.nodeName !== 'A' && target.nodeName !== 'IMG' && (target.nodeName === 'TD' || target.nodeName === 'TH' ||
-                target.nodeName === 'TABLE' || closest(target, 'table')) && !(range.startContainer.nodeType === 3 && !range.collapsed)) {
+                target.nodeName === 'TABLE' || (closestTable && this.parent.contentModule.getEditPanel().contains(closestTable)))
+                && !(range.startContainer.nodeType === 3 && !range.collapsed)) {
                 var range_1 = this.parent.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.save(range_1, this.contentModule.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
@@ -12546,7 +12548,9 @@ var Table = /** @__PURE__ @class */ (function () {
     };
     Table.prototype.cellSelect = function (e) {
         var target = e.args.target;
-        target = (target.nodeName !== 'TD') ? closest(target, 'td,th') : target;
+        var tdNode = closest(target, 'td,th');
+        target = (target.nodeName !== 'TD' && tdNode && this.parent.contentModule.getEditPanel().contains(tdNode)) ?
+            tdNode : target;
         removeClass(this.contentModule.getEditPanel().querySelectorAll('table td, table th'), CLS_TABLE_SEL);
         if (target && (target.tagName === 'TD' || target.tagName === 'TH')) {
             target.removeAttribute('class');
@@ -12560,9 +12564,11 @@ var Table = /** @__PURE__ @class */ (function () {
     };
     Table.prototype.resizeHelper = function (e) {
         var target = e.target || e.targetTouches[0].target;
+        var closestTable = closest(target, 'table');
         if (target.nodeName === 'TABLE' || target.nodeName === 'TD' || target.nodeName === 'TH') {
-            this.curTable = (target.nodeName === 'TD' || target.nodeName === 'TH') ?
-                closest(target, 'table') : target;
+            this.curTable = (closestTable && this.parent.contentModule.getEditPanel().contains(closestTable))
+                && (target.nodeName === 'TD' || target.nodeName === 'TH') ?
+                closestTable : target;
             this.removeResizeEle();
             this.tableResizeEleCreation(this.curTable, e);
         }
@@ -12933,7 +12939,9 @@ var Table = /** @__PURE__ @class */ (function () {
             this.parent.isBlur = true;
             dispatchEvent(this.parent.element, 'focusout');
         }
-        if (target && target.tagName !== 'TD' && target.tagName !== 'TH' && !closest(target, 'td') &&
+        var closestEle = closest(target, 'td');
+        var isExist = closestEle && this.parent.contentModule.getEditPanel().contains(closestEle) ? true : false;
+        if (target && target.tagName !== 'TD' && target.tagName !== 'TH' && !isExist &&
             closest(target, '.e-rte-quick-popup') === null && target.offsetParent &&
             !target.offsetParent.classList.contains('e-quick-dropdown') &&
             !target.offsetParent.classList.contains('e-rte-backgroundcolor-dropdown') && !closest(target, '.e-rte-dropdown-popup')) {
@@ -13981,6 +13989,9 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         }
         extend(htmlAttr, this.htmlAttributes, htmlAttr);
         this.setProperties({ htmlAttributes: htmlAttr }, true);
+        if (!isNullOrUndefined(this.htmlAttributes.id)) {
+            this.element.id = this.htmlAttributes.id;
+        }
         if (this.element.tagName === 'TEXTAREA') {
             var rteOuterWrapper = this.createElement('div', {
                 className: 'e-control e-richtexteditor'
@@ -14629,7 +14640,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         this.updateRTL();
         this.updateReadOnly();
         this.updatePanelValue();
-        if (this.enableHtmlEncode) {
+        if (this.enableHtmlEncode && !isNullOrUndefined(this.value)) {
             this.setProperties({ value: this.encode(this.decode(this.value)) });
         }
     };

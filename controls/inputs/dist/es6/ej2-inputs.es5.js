@@ -925,12 +925,12 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
     NumericTextBox.prototype.raiseChangeEvent = function (event) {
         if (this.prevValue !== this.value) {
             var eventArgs = {};
-            this.changeEventArgs = { value: this.value, previousValue: this.prevValue, isInteraction: this.isInteract, event: event };
+            this.changeEventArgs = { value: this.value, previousValue: this.prevValue, isInteracted: this.isInteract, event: event };
             if (event) {
                 this.changeEventArgs.event = event;
             }
             if (this.changeEventArgs.event === undefined) {
-                this.changeEventArgs.isInteraction = false;
+                this.changeEventArgs.isInteracted = false;
             }
             merge(eventArgs, this.changeEventArgs);
             this.prevValue = this.value;
@@ -2189,12 +2189,12 @@ function maskInputKeyPressHandler(event) {
 function triggerMaskChangeEvent(event, oldValue) {
     if (!isNullOrUndefined(this.changeEventArgs) && !this.isInitial) {
         var eventArgs = {};
-        this.changeEventArgs = { value: this.element.value, maskedValue: this.element.value, isInteraction: false };
+        this.changeEventArgs = { value: this.element.value, maskedValue: this.element.value, isInteracted: false };
         if (this.mask) {
             this.changeEventArgs.value = strippedValue.call(this, this.element);
         }
         if (!isNullOrUndefined(event)) {
-            this.changeEventArgs.isInteraction = true;
+            this.changeEventArgs.isInteracted = true;
             this.changeEventArgs.event = event;
         }
         merge(eventArgs, this.changeEventArgs);
@@ -7127,7 +7127,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         this.setDropArea();
     };
     Uploader.prototype.renderPreLoadFiles = function () {
-        if (isNullOrUndefined(this.files[0].size) || !isNullOrUndefined(this.template)) {
+        if (isNullOrUndefined(this.files[0].size)) {
             return;
         }
         var files = [].slice.call(this.files);
@@ -7534,6 +7534,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         var selectedFiles = file;
         var name = this.element.getAttribute('name');
         var ajax = new Ajax(this.asyncSettings.removeUrl, 'POST', true, null);
+        ajax.emitError = false;
         var formData = new FormData();
         var liElement = this.getLiElement(file);
         ajax.beforeSend = function (e) {
@@ -7897,22 +7898,32 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         var errorMessage = { minSize: minSizeError, maxSize: maxSizeError };
         return errorMessage;
     };
+    Uploader.prototype.isPreLoadFile = function (fileData) {
+        var isPreload = false;
+        for (var i = 0; i < this.files.length; i++) {
+            if (this.files[i].name === fileData.name.slice(0, fileData.name.lastIndexOf('.')) && this.files[i].type === fileData.type) {
+                isPreload = true;
+            }
+        }
+        return isPreload;
+    };
     Uploader.prototype.createCustomfileList = function (fileData) {
         this.createParentUL();
         for (var _i = 0, fileData_1 = fileData; _i < fileData_1.length; _i++) {
             var listItem = fileData_1[_i];
             var liElement = this.createElement('li', { className: FILE, attrs: { 'data-file-name': listItem.name } });
             this.uploadTemplateFn = this.templateComplier(this.template);
-            this.listParent.appendChild(liElement);
             var fromElements = [].slice.call(this.uploadTemplateFn(listItem));
             var index = fileData.indexOf(listItem);
+            append(fromElements, liElement);
             var eventArgs = {
                 element: liElement,
                 fileInfo: listItem,
-                index: index
+                index: index,
+                isPreload: this.isPreLoadFile(listItem)
             };
             this.trigger('rendering', eventArgs);
-            append(fromElements, liElement);
+            this.listParent.appendChild(liElement);
             this.fileList.push(liElement);
         }
     };
@@ -7980,7 +7991,8 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 var eventArgs = {
                     element: liElement,
                     fileInfo: listItem,
-                    index: index
+                    index: index,
+                    isPreload: this.isPreLoadFile(listItem)
                 };
                 this.trigger('rendering', eventArgs);
                 this.listParent.appendChild(liElement);
@@ -8147,6 +8159,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 formData.append(name_1, files.name);
                 formData.append('cancel-uploading', files.name);
                 var ajax = new Ajax(this.asyncSettings.removeUrl, 'POST', true, null);
+                ajax.emitError = false;
                 ajax.onLoad = function (e) { _this.removecanceledFile(e, files); return {}; };
                 ajax.send(formData);
             }
@@ -8439,6 +8452,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         formData.append('total-chunk', totalChunk.toString());
         formData.append('totalChunk', totalChunk.toString());
         var ajax = new Ajax({ url: this.asyncSettings.saveUrl, type: 'POST', async: true, contentType: null });
+        ajax.emitError = false;
         ajax.onLoad = function (e) { _this.chunkUploadComplete(e, metaData, custom); return {}; };
         ajax.onUploadProgress = function (e) {
             _this.chunkUploadInProgress(e, metaData, custom);
@@ -8536,6 +8550,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 formData.append('cancel-uploading', metaData.file.name);
                 formData.append('cancelUploading', metaData.file.name);
                 var ajax = new Ajax(this.asyncSettings.removeUrl, 'POST', true, null);
+                ajax.emitError = false;
                 ajax.onLoad = function (e) { _this.removeChunkFile(e, metaData, custom); return {}; };
                 ajax.send(formData);
             }
@@ -8967,6 +8982,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         var chunkEnabled = this.checkChunkUpload();
         var _loop_4 = function (i) {
             var ajax = new Ajax(this_3.asyncSettings.saveUrl, 'POST', true, null);
+            ajax.emitError = false;
             var eventArgs = {
                 fileData: selectedFiles[i],
                 customFormData: [],

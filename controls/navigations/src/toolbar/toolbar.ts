@@ -188,7 +188,7 @@ export class Item extends ChildProperty<Item>  {
     /**
      * Defines htmlAttributes used to add custom attributes to Toolbar command.
      * Supports HTML attributes such as style, class, etc.
-     * @default 'null'
+     * @default null
      */
     @Property(null)
     public htmlAttributes: { [key: string]: string; };
@@ -314,7 +314,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     public overflowMode: OverflowMode;
     /**
      * Specifies the direction of the Toolbar commands. For cultures like Arabic, Hebrew, etc. direction can be switched to right to left.
-     * @default 'false'
+     * @default false
      */
     @Property(false)
     public enableRtl: boolean;
@@ -465,7 +465,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         this.remove(this.element, CLS_EXTENDEDPOPOPEN);
         this.remove(this.element, CLS_EXTEANDABLE_TOOLBAR);
-        let tempEle : HTMLElement = this.element.querySelector('.e-toolbar-multirow');
+        let tempEle: HTMLElement = this.element.querySelector('.e-toolbar-multirow');
         if (tempEle) { this.remove(tempEle, CLS_MULTIROW); }
         if (this.popObj) {
             this.popupRefresh(this.popObj.element, true);

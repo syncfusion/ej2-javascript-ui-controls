@@ -456,7 +456,7 @@ export interface MaskChangeEventArgs extends BaseEventArgs {
      */
     value?: string;
     /** Returns true when the value of MaskedTextBox is changed by user interaction. Otherwise, it returns false */
-    isInteraction?: boolean;
+    isInteracted?: boolean;
     /** Returns the original event arguments. */
     event?: Event;
 }

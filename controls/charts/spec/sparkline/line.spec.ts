@@ -2,13 +2,21 @@ import { Sparkline, SparklineTooltip } from '../../src/sparkline/index';
 import { createElement } from '@syncfusion/ej2-base';
 import { removeElement, getIdElement } from '../../src/sparkline/utils/helper';
 import { ISparklineLoadedEventArgs } from '../../src/sparkline/model/interface';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 Sparkline.Inject(SparklineTooltip);
 /**
  * Sparkline Test case file
  */
 
 describe('Sparkline Component Line Series Spec', () => {
-
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Sparkline testing Line series spec', () => {
         let element: Element;
         let sparkline: Sparkline;
@@ -124,6 +132,7 @@ describe('Sparkline Component Line Series Spec', () => {
                 value: 3300,
                 lineSettings: { visible: true, color: '#9900cc', width: 3}
             };
+            sparkline.theme = 'MaterialDark';
             sparkline.refresh();
         });
         it('Sparkline line with negative values', () => {
@@ -136,6 +145,7 @@ describe('Sparkline Component Line Series Spec', () => {
                 d = ele.getAttribute('d').split('L');
                 expect(d.length).toBe(10);
             };
+            sparkline.theme = 'BootstrapDark';
             sparkline.axisSettings = {minY: -9, maxY: -1, value: -5, minX: 0, maxX: 8};
             sparkline.dataSource = [-3, -8, -5, -1, -7, -4, -9, -2, -6];
             sparkline.refresh();
@@ -185,7 +195,43 @@ describe('Sparkline Component Line Series Spec', () => {
                 {xDate: new Date(2017, 1, 8), x: 7, xval: 'Aug', yval: 5000 },
             ];
             sparkline.xName = 'xDate';
+            sparkline.theme = 'HighContrast';
             sparkline.refresh();
         });
+        it('Sparkline line with datetime axis', () => {
+            sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
+                ele = getIdElement(id + '_sparkline_line');
+                d = ele.getAttribute('d').split(' ');
+                expect(d.length).toBe(28);
+                d = ele.getAttribute('d').split('M');
+                expect(d.length).toBe(2);
+                d = ele.getAttribute('d').split('L');
+                expect(d.length).toBe(9);
+            };
+            sparkline.axisSettings = { minX: new Date(2017, 1, 1).getTime(), maxX: new Date(2017, 1, 8).getTime()};
+            sparkline.dataSource = [
+                {xDate: new Date(2017, 1, 1), x: 0, xval: 'Jan', yval: 2900 },
+                {xDate: new Date(2017, 1, 2), x: 1, xval: 'Feb', yval: 3900 },
+                {xDate: new Date(2017, 1, 3), x: 2, xval: 'Mar', yval: 3500 },
+                {xDate: new Date(2017, 1, 4), x: 3, xval: 'Apr', yval: 3800 },
+                {xDate: new Date(2017, 1, 5), x: 4, xval: 'May', yval: 2500 },
+                {xDate: new Date(2017, 1, 6), x: 5, xval: 'Jun', yval: 3200 },
+                {xDate: new Date(2017, 1, 7), x: 6, xval: 'Jul', yval: 1800 },
+                {xDate: new Date(2017, 1, 8), x: 7, xval: 'Aug', yval: 5000 },
+            ];
+            sparkline.xName = 'xDate';
+            sparkline.theme = 'HighContrast';
+            sparkline.enableRtl = true;
+            sparkline.refresh();
+        });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

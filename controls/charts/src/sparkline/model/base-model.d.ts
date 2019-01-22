@@ -158,7 +158,7 @@ export interface LineSettingsModel {
 
     /**
      * To configure the sparkline axis line dashArray.
-     * @default ''.
+     * @default ''
      */
     dashArray?: string;
 
@@ -304,7 +304,7 @@ export interface SparklineMarkerSettingsModel {
 
     /**
      * To configure the marker fill color.
-     * @default `#00bdae`.
+     * @default '#00bdae'
      */
     fill?: string;
 
@@ -351,13 +351,13 @@ export interface SparklineDataLabelSettingsModel {
 
     /**
      * To configure the dataLabel fill color.
-     * @default `transparent`.
+     * @default 'transparent'
      */
     fill?: string;
 
     /**
      * To configure the dataLabel format the value.
-     * @default ``.
+     * @default ''
      */
     format?: string;
 

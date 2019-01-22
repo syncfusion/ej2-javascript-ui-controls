@@ -4789,4 +4789,41 @@ describe('MultiSelect', () => {
             expect(listObj.value.length).toBe(0);
         });
     });
+    describe('EJ2-21465 - Data attribute validation is not working in multiselect', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text", 'data-val': 'true', 'aria-disabled': 'false' } });
+        let datasource: { [key: string]: Object }[] = [
+            { Id: 1, item: 'Fruits and Vegetables' },
+            { Id: 2, item: 'Beverages' },
+            { Id: 3, item: 'Beauty and Hygiene' },
+            
+        ];
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: datasource,
+                fields: { text: "item", value: "Id" }
+            });
+            listObj.appendTo(element);
+            listObj.dataBind();
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+    
+        it('Check data attribute value', () => {
+            expect((<any>listObj).hiddenElement.getAttribute('data-val')).not.toBe(null);
+        });
+        it('enabled - html attribute', () => {
+            listObj.enabled = false;
+            listObj.dataBind();
+            expect((listObj).htmlAttributes['aria-disabled']).toEqual('true');
+            listObj.enabled = true;
+            listObj.dataBind();
+            expect((listObj).htmlAttributes['aria-disabled']).toEqual('false');
+        });
+    });
 });

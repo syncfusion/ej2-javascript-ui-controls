@@ -28,6 +28,10 @@ export class Base {
         this.module.updateValue(e);
     }
 
+    private getValue(): void {
+        this.module.getRenderValue();
+    }
+
     private destroyComponent(): void {
         if (isNOU(this.module.compObj)) { return; }
         this.module.compObj.destroy();
@@ -43,6 +47,7 @@ export class Base {
         this.parent.on(events.render, this.render, this);
         this.parent.on(events.setFocus, this.focus, this);
         this.parent.on(events.update, this.update, this);
+        this.parent.on(events.accessValue, this.getValue, this);
         this.parent.on(events.destroyModules, this.destroyComponent, this);
         this.parent.on(events.destroy, this.destroy, this);
     }
@@ -52,6 +57,7 @@ export class Base {
         this.parent.off(events.render, this.render);
         this.parent.off(events.setFocus, this.focus);
         this.parent.off(events.update, this.update);
+        this.parent.off(events.accessValue, this.getValue);
         this.parent.off(events.destroyModules, this.destroyComponent);
         this.parent.off(events.destroy, this.destroy);
     }

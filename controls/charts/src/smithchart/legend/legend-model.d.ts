@@ -138,7 +138,7 @@ export interface SmithchartLegendSettingsModel {
 
     /**
    * position for legend.
-   * @default bottom
+   * @default 'bottom'
    */
 
     position?: string;
@@ -165,7 +165,7 @@ export interface SmithchartLegendSettingsModel {
 
     /**
    * shape for legend.
-   * @default circle
+   * @default 'circle'
    */
 
     shape?: string;

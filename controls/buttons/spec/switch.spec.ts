@@ -1,6 +1,7 @@
 import { Switch } from './../src/switch/switch';
 import { createElement } from '@syncfusion/ej2-base';
 import { EventHandler } from '@syncfusion/ej2-base';
+import { profile , inMB, getMemoryProfile } from './common.spec';
 
 /* tslint:disable */
 function copyObject(source: any, destination: any): Object {
@@ -30,6 +31,15 @@ export function getEventObject(eventType: string, eventName: string): Object {
  * Switch Spec document.
  */
 describe('Switch', () => {
+    beforeAll(() => {
+        const isDef: any = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log('Unsupported environment, window.performance.memory is unavailable');
+            this.skip(); // skips test (in Chai)
+            return;
+        }
+    });
+
     let specSwitch: any;
     let element: HTMLFormElement = createElement('input', {id: 'specSwitch'}) as HTMLFormElement;
     element.setAttribute('type', 'checkbox');
@@ -321,6 +331,16 @@ describe('Switch', () => {
             specSwitch.toggle();
             expect(specSwitch.checked).toEqual(false);
         })
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange);
+        // check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });
 

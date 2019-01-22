@@ -1,10 +1,20 @@
 import { SplitButton } from '../src/split-button/split-button';
 import { ItemModel } from '../src/common/common-model';
 import { createElement } from '@syncfusion/ej2-base';
+import { profile , inMB, getMemoryProfile } from './common.spec';
 /**
  * Split Button spec
  */
 describe('Split Button', () => {
+    beforeAll(() => {
+        const isDef: any = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log('Unsupported environment, window.performance.memory is unavailable');
+            this.skip(); // skips test (in Chai)
+            return;
+        }
+    });
+
     let button: any;
     let items: ItemModel[] = [
         {
@@ -165,5 +175,15 @@ describe('Split Button', () => {
         expect(button.element.parentElement.tagName).toEqual('EJS-SPLITBUTTON');
         expect(button.element.parentElement.classList).toContain('e-split-btn-wrapper');
         expect(button.element.nextElementSibling.classList).toContain('e-dropdown-btn');
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange);
+        // check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

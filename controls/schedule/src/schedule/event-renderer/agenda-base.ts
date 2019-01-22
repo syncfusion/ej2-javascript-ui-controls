@@ -69,7 +69,8 @@ export class AgendaBase {
                     templateEle = this.createAppointment(listData[li]);
                 }
                 append([].slice.call(templateEle), appWrapper);
-                listElement.children[li].innerHTML = appWrapper.outerHTML;
+                listElement.children[li].innerHTML = '';
+                listElement.children[li].appendChild(appWrapper);
                 let args: EventRenderedArgs = { data: listData[li], element: listElement.children[li] as HTMLElement, cancel: false };
                 this.parent.trigger(event.eventRendered, args);
                 if (args.cancel) {

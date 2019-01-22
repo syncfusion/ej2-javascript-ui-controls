@@ -85,7 +85,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * The background color of the gauge, which accepts value in hex, rgba as a valid CSS color string.
      * @default 'transparent'
      */
-    @Property('transparent')
+    @Property(null)
     public background: string;
 
     /**
@@ -345,6 +345,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         if (theme === 'highcontrast') {
             this.titleStyle.color = this.titleStyle.color || '#FFFFFF';
             this.setThemeColors('#FFFFFF', '#FFFFFF');
+            this.background = this.background || '#000000';
         } else if (theme.indexOf('dark') > -1) {
             for (let axis of this.axes) {
                 axis.line.color = axis.line.color || '#C8C8C8';
@@ -355,10 +356,11 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                     pointer.color = pointer.color || '#9A9A9A';
                 }
             }
-            this.background = '#333232';
+            this.background = this.background || '#333232';
         } else {
             this.titleStyle.color = this.titleStyle.color || '#424242';
             this.setThemeColors('#686868', '#a6a6a6');
+            this.background = this.background || '#FFFFFF';
         }
     }
     private setThemeColors(labelcolor: string, others: string): void {
@@ -432,6 +434,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      */
     protected render(): void {
         this.renderGaugeElements();
+        this.renderArea();
         this.calculateBounds();
         this.renderAxisElements();
         this.trigger(loaded, { gauge: this });
@@ -457,6 +460,17 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         }
     }
 
+    /**
+     * Render the map area border
+     */
+    private renderArea(): void {
+        let size: Size = measureText(this.title, this.titleStyle);
+        let rectSize: Rect = new Rect(
+            this.actualRect.x, this.actualRect.y - (size.height / 2), this.actualRect.width, this.actualRect.height);
+        let rect: RectOption = new RectOption(
+            this.element.id + 'LinearGaugeBorder', this.background, this.border, 1, rectSize);
+        this.svgObject.appendChild(this.renderer.drawRectangle(rect) as SVGRectElement);
+    }
     /**
      * @private
      * To calculate axes bounds

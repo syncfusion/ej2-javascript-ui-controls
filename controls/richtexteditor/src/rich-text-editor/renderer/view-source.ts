@@ -137,7 +137,7 @@ export class ViewSource {
                 this.contentModule.getEditPanel().innerHTML.length === 12) ||
                 (this.contentModule.getEditPanel().childNodes.length === 1 &&
                     (this.contentModule.getEditPanel().childNodes[0] as HTMLElement).tagName === 'P' &&
-                    this.contentModule.getEditPanel().innerHTML.length === 8) ? null : this.parent.value;
+                    this.contentModule.getEditPanel().innerHTML.length === 7) ? null : this.parent.value;
             (this.contentModule.getEditPanel() as HTMLElement).style.display = 'none';
             this.previewElement.style.display = 'block';
         }

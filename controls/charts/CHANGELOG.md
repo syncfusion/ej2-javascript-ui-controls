@@ -2,7 +2,18 @@
 
 ## [Unreleased]
 
-## 16.4.47 (2019-01-08)
+## 16.4.48 (2019-01-16)
+
+### Chart
+
+#### Bug Fixes
+
+- Scatter chart's edge position render issue is fixed
+- Datalabel did not show properly in Edge browser is fixed
+- Trendline not rendering while using NaN as input issue is fixed
+- DataSource not refreshed in angular chart has been fixed
+
+## 16.4.47 (2019-01-16)
 
 ### Chart
 

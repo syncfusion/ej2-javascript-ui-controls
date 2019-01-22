@@ -2959,6 +2959,10 @@ var UrlAdaptor = /** @__PURE__ @class */ (function (_super) {
      * @param  {CrudOptions} changes?
      */
     UrlAdaptor.prototype.processResponse = function (data, ds, query, xhr, request, changes) {
+        if (xhr && xhr.getResponseHeader('Content-Type') &&
+            xhr.getResponseHeader('Content-Type').indexOf('application/json') !== -1) {
+            data = DataUtil.parse.parseJson(data);
+        }
         var requests = request;
         var pvt = requests.pvtData || {};
         var groupDs = data ? data.groupDs : [];
@@ -4081,43 +4085,43 @@ var RemoteSaveAdaptor = /** @__PURE__ @class */ (function (_super) {
         setValue('beforeSend', UrlAdaptor.prototype.beforeSend, _this);
         return _this;
     }
-    RemoteSaveAdaptor.prototype.insert = function (dm, data, tableName) {
+    RemoteSaveAdaptor.prototype.insert = function (dm, data, tableName, query) {
         this.updateType = 'add';
         return {
             url: dm.dataSource.insertUrl || dm.dataSource.crudUrl || dm.dataSource.url,
-            data: JSON.stringify({
+            data: JSON.stringify(extend({}, {
                 value: data,
                 table: tableName,
                 action: 'insert'
-            })
+            }, DataUtil.getAddParams(this, dm, query)))
         };
     };
-    RemoteSaveAdaptor.prototype.remove = function (dm, keyField, value, tableName) {
-        _super.prototype.remove.call(this, dm, keyField, value);
+    RemoteSaveAdaptor.prototype.remove = function (dm, keyField, val, tableName, query) {
+        _super.prototype.remove.call(this, dm, keyField, val);
         return {
             type: 'POST',
             url: dm.dataSource.removeUrl || dm.dataSource.crudUrl || dm.dataSource.url,
-            data: JSON.stringify({
-                key: value,
+            data: JSON.stringify(extend({}, {
+                key: val,
                 keyColumn: keyField,
                 table: tableName,
                 action: 'remove'
-            })
+            }, DataUtil.getAddParams(this, dm, query)))
         };
     };
-    RemoteSaveAdaptor.prototype.update = function (dm, keyField, value, tableName) {
+    RemoteSaveAdaptor.prototype.update = function (dm, keyField, val, tableName, query) {
         this.updateType = 'update';
         this.updateKey = keyField;
         return {
             type: 'POST',
             url: dm.dataSource.updateUrl || dm.dataSource.crudUrl || dm.dataSource.url,
-            data: JSON.stringify({
-                value: value,
+            data: JSON.stringify(extend({}, {
+                value: val,
                 action: 'update',
                 keyColumn: keyField,
-                key: value[keyField],
+                key: val[keyField],
                 table: tableName
-            })
+            }, DataUtil.getAddParams(this, dm, query)))
         };
     };
     RemoteSaveAdaptor.prototype.processResponse = function (data, ds, query, xhr, request, changes, e) {
@@ -4169,6 +4173,10 @@ var RemoteSaveAdaptor = /** @__PURE__ @class */ (function (_super) {
                 key: e.key
             })
         };
+    };
+    RemoteSaveAdaptor.prototype.addParams = function (options) {
+        var urlParams = new UrlAdaptor();
+        urlParams.addParams(options);
     };
     return RemoteSaveAdaptor;
 }(JsonAdaptor));

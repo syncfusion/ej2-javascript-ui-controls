@@ -71,6 +71,7 @@ export class SparklineRenderer {
         if (!this.sparkline.dataSource.length) {
             return;
         } else if (!isNaN(data[0] as number) || this.sparkline.valueType === 'Numeric') {
+            data = (this.sparkline.enableRtl) ? this.sparkline.dataSource.reverse() : this.sparkline.dataSource;
             this.sparkline.sparklineData = data; // extend([], data) as Object[];
         } else {
             this['process' + this.sparkline.valueType]();
@@ -630,6 +631,7 @@ export class SparklineRenderer {
                 }
                 return a[x] - b[x];
             });
+            validData = (this.sparkline.enableRtl) ? validData.reverse() : validData;
             interval = validData[1][x] - validData[0][x];
         }
         return interval;
@@ -673,6 +675,7 @@ export class SparklineRenderer {
                 }
                 if (!isNullOrUndefined(data[0][model.xName])) {
                     temp = temp.sort((a: object, b: object) => { return a[model.xName] - b[model.xName]; });
+                    temp = (this.sparkline.enableRtl) ? temp.reverse() : temp;
                     maxX = temp[temp.length - 1][model.xName];
                     minX = temp[0][model.xName];
                 } else {

@@ -117,7 +117,8 @@ export class DropDownButtons {
                             content: this.dropdownContent(
                                 this.parent.fontSize.width,
                                 type,
-                                getFormattedFontSize(getDropDownValue(fontsize, this.parent.fontSize.default, 'text', 'value'))),
+                                getFormattedFontSize(getDropDownValue(
+                                    fontsize, this.parent.fontSize.default.replace(/\s/g, ''), 'value', 'text'))),
                             cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_FONT_SIZE_TB_BTN,
                             itemName: 'FontSize',
                             items: fontsize,
@@ -207,7 +208,11 @@ export class DropDownButtons {
                                         closest(this.fontSizeDropDown.element, '.' + classes.CLS_QUICK_TB)) ? 'quick' : 'toolbar';
                                     let content: string = this.dropdownContent(
                                         this.parent.fontSize.width, type,
-                                        getFormattedFontSize(getDropDownValue(fontsize, this.parent.fontSize.default, 'text', 'value')));
+                                        getFormattedFontSize(getDropDownValue(
+                                            fontsize,
+                                            this.parent.fontSize.default.replace(/\s/g, ''),
+                                            'value',
+                                            'text')));
                                     this.fontSizeDropDown.setProperties({ content: content });
                                     break;
                                 case 'items':

@@ -7,10 +7,20 @@ import { TimePicker } from '../../src/inplace-editor/modules/index';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy } from './../render.spec';
 import { HtmlEditor } from '@syncfusion/ej2-richtexteditor';
+import { profile, inMB, getMemoryProfile } from './../common.spec';
 
 InPlaceEditor.Inject(TimePicker);
 
 describe('TimePicker module', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
+
     describe('Basic testing', () => {
         let editorObj: any;
         let ele: HTMLElement;
@@ -106,6 +116,41 @@ describe('TimePicker module', () => {
             expect(valueEle.innerHTML === 'Empty').toEqual(true);
         });
     });
+    describe('Duplicate ID availability testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Inline - ID testing', () => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'Time'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-timepicker', ele).length === 1).toEqual(true);
+            expect(selectAll('#' + ele.id, document.body).length === 1).toEqual(true);
+        });
+        it('Popup - ID testing', () => {
+            editorObj = renderEditor({
+                mode: 'Popup',
+                type: 'Time'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-timepicker', document.body).length === 1).toEqual(true);
+            expect(selectAll('#' + ele.id, document.body).length === 1).toEqual(true);
+        });
+    });
     describe('Form validation Testing', () => {
         let ele: HTMLElement;
         let editorObj: any;
@@ -115,9 +160,9 @@ describe('TimePicker module', () => {
         let editorError: HTMLElement;
         let valueWrapper: HTMLElement;
         let errMsg: string;
-        let eventValue: string;
-        let eventFieldName: string;
-        let eventPrimaryKey: string;
+        let eventValue: string | number;
+        let eventFieldName: string | number;
+        let eventPrimaryKey: string | number;
         let editEle: HTMLElement;
         let errorEle: HTMLElement;
         function click1(e: ValidateEventArgs): void {
@@ -235,5 +280,332 @@ describe('TimePicker module', () => {
                 done(name);
             }, 400);
         });
+    });
+    describe('Value formatting related testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Default value with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'Time',
+                mode: 'Inline'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-timepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect((<HTMLInputElement>select('.e-timepicker', document.body)).value).toEqual('');
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            editorObj.value = new Date('4/9/2018 12:30 AM');
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(new Date('4/9/2018 12:30 AM'));
+            expect(valueEle.innerHTML).toEqual('12:30 AM');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-timepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(new Date('4/9/2018 12:30 AM'));
+            expect((<HTMLInputElement>select('.e-timepicker', document.body)).value).toEqual('12:30 AM');
+            editorObj.save();
+            expect(editorObj.value).toEqual(new Date('4/9/2018 12:30 AM'));
+            expect(valueEle.innerHTML).toEqual('12:30 AM');
+            editorObj.value = '';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-timepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('');
+            expect((<HTMLInputElement>select('.e-timepicker', document.body)).value).toEqual('');
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+        });
+        it('Value as "null" with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'Time',
+                mode: 'Inline',
+                value: null
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-timepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect((<HTMLInputElement>select('.e-timepicker', document.body)).value).toEqual('');
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            editorObj.value = new Date('4/9/2018 12:30 AM');
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(new Date('4/9/2018 12:30 AM'));
+            expect(valueEle.innerHTML).toEqual('12:30 AM');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-timepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(new Date('4/9/2018 12:30 AM'));
+            expect((<HTMLInputElement>select('.e-timepicker', document.body)).value).toEqual('12:30 AM');
+            editorObj.save();
+            expect(editorObj.value).toEqual(new Date('4/9/2018 12:30 AM'));
+            expect(valueEle.innerHTML).toEqual('12:30 AM');
+            editorObj.value = '';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-timepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('');
+            expect((<HTMLInputElement>select('.e-timepicker', document.body)).value).toEqual('');
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+        });
+        it('Value as "undefined" string with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'Time',
+                mode: 'Inline',
+                value: undefined
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-timepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect((<HTMLInputElement>select('.e-timepicker', document.body)).value).toEqual('');
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            editorObj.value = new Date('4/9/2018 12:30 AM');
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(new Date('4/9/2018 12:30 AM'));
+            expect(valueEle.innerHTML).toEqual('12:30 AM');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-timepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(new Date('4/9/2018 12:30 AM'));
+            expect((<HTMLInputElement>select('.e-timepicker', document.body)).value).toEqual('12:30 AM');
+            editorObj.save();
+            expect(editorObj.value).toEqual(new Date('4/9/2018 12:30 AM'));
+            expect(valueEle.innerHTML).toEqual('12:30 AM');
+            editorObj.value = '';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-timepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('');
+            expect((<HTMLInputElement>select('.e-timepicker', document.body)).value).toEqual('');
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+        });
+        it('Value as empty string with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'Time',
+                mode: 'Inline',
+                value: ''
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-timepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('');
+            expect((<HTMLInputElement>select('.e-timepicker', document.body)).value).toEqual('');
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            editorObj.value = new Date('4/9/2018 12:30 AM');
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(new Date('4/9/2018 12:30 AM'));
+            expect(valueEle.innerHTML).toEqual('12:30 AM');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-timepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(new Date('4/9/2018 12:30 AM'));
+            expect((<HTMLInputElement>select('.e-timepicker', document.body)).value).toEqual('12:30 AM');
+            editorObj.save();
+            expect(editorObj.value).toEqual(new Date('4/9/2018 12:30 AM'));
+            expect(valueEle.innerHTML).toEqual('12:30 AM');
+            editorObj.value = '';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-timepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('');
+            expect((<HTMLInputElement>select('.e-timepicker', document.body)).value).toEqual('');
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+        });
+        it('Defined value with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'Time',
+                mode: 'Inline',
+                value: new Date('4/9/2018 12:30 AM')
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(valueEle.innerHTML).toEqual('12:30 AM');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(valueEle.innerHTML).toEqual('12:30 AM');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-timepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(new Date('4/9/2018 12:30 AM'));
+            editorObj.save();
+            expect(editorObj.value).toEqual(new Date('4/9/2018 12:30 AM'));
+            expect(valueEle.innerHTML).toEqual('12:30 AM');
+            editorObj.value = '';
+            editorObj.dataBind();
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-timepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('');
+            expect((<HTMLInputElement>select('.e-timepicker', document.body)).value).toEqual('');
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            editorObj.value = new Date('6/9/2018 11:30 AM');
+            editorObj.dataBind();
+            expect(valueEle.innerHTML).toEqual('11:30 AM');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-timepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(new Date('6/9/2018 11:30 AM'));
+            expect((<HTMLInputElement>select('.e-timepicker', document.body)).value).toEqual('11:30 AM');
+            editorObj.save();
+            expect(editorObj.value).toEqual(new Date('6/9/2018 11:30 AM'));
+            expect(valueEle.innerHTML).toEqual('11:30 AM');
+        });
+    });
+    describe('TimePicker format property testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Format testing', () => {
+            editorObj = renderEditor({
+                type: 'Time',
+                mode: 'Inline',
+                model: {
+                    format: 'hh:mm:ss',
+                    value: new Date('12/11/2018 10:52:23')
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(null);
+            expect(editorObj.emptyText).toEqual('Enter some text');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-timepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect((<HTMLInputElement>select('.e-timepicker', document.body)).value).toEqual('10:52:23');
+            editorObj.save();
+            expect(valueEle.innerHTML).toEqual('10:52:23');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-timepicker', document.body).length === 1).toEqual(true);
+            expect((<HTMLInputElement>select('.e-timepicker', document.body)).value).toEqual('10:52:23');
+            editorObj.save();
+            expect(valueEle.innerHTML).toEqual('10:52:23');
+        });
+    });
+    describe('Sending date value testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        let dateString: string;
+        function begin(e: any): void {
+            dateString = e.data.value;
+        }
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Value string testing', () => {
+            let date: Date = new Date('4/9/2018 12:30 AM');
+            editorObj = renderEditor({
+                type: 'Time',
+                mode: 'Inline',
+                model: {
+                    value: date
+                },
+                actionBegin: begin
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-timepicker', document.body).length === 1).toEqual(true);
+            editorObj.save();
+            expect(dateString).toEqual(date.toISOString());
+        });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

@@ -1988,6 +1988,10 @@ describe('Splitter Control', () => {
                expect(splitterObj.allPanes.length).toEqual(3);
                expect(splitterObj.allBars.length).toEqual(2);
                expect(splitterObj.allPanes[1].classList.contains('e-static-pane')).toBe(true);
+               splitterObj.removePane(2);
+               splitterObj.removePane(1);
+               splitterObj.removePane(1);
+               expect(splitterObj.element.querySelectorAll('.e-pane-horizontal').length).toBe(1);
             })
         });
 
@@ -2101,5 +2105,60 @@ describe('Splitter Control', () => {
                 expect(splitterObj.nextPane).toBe(splitterObj.element.querySelectorAll('.e-pane-vertical')[1]);
             });
         });
+
+        describe('Update panesettings properties dynamically', () => {
+            appendSplitterStyles();
+            let splitterObj: any;
+            beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default'});
+                element.style.width ='300px';
+                let child1: HTMLElement = createElement('div');
+                let child2: HTMLElement = createElement('div');
+                let child3: HTMLElement = createElement('div');
+                element.appendChild(child1);
+                element.appendChild(child2);
+                element.appendChild(child3);
+                document.body.appendChild(element);
+                splitterObj = new Splitter({ paneSettings: [{ size: '50%', min: '10px' }, { size: '20%', min: '20px', }, { size: '30%'}]});
+                splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+                document.body.innerHTML = '';
+            });
     
+            it('size and min', () => {
+                expect((document.querySelectorAll('.e-pane')[0] as HTMLElement).style.flexBasis).toBe('50%');
+                expect((document.querySelectorAll('.e-pane')[1] as HTMLElement).style.flexBasis).toBe('20%');
+                splitterObj['paneSettings'][0].min = '30%';
+                splitterObj['paneSettings'][0].size = '40%';
+                splitterObj['paneSettings'][1].min = '30%';
+                splitterObj['paneSettings'][1].size = '40%';
+                splitterObj.dataBind();
+                expect((document.querySelectorAll('.e-pane')[0] as HTMLElement).style.flexBasis).toBe('40%');
+                expect((document.querySelectorAll('.e-pane')[1] as HTMLElement).style.flexBasis).toBe('40%');
+            });
+        });
+
+        describe('check pane ', () => {
+            appendSplitterStyles();
+            let splitterObj: any;
+            beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default'});
+                element.style.width ='300px';
+                let child1: HTMLElement = createElement('div');
+                let child2: HTMLElement = createElement('div');
+                element.appendChild(child1);
+                element.appendChild(child2);
+                document.body.appendChild(element);
+                splitterObj = new Splitter({ paneSettings: [{ size: '50%', min: '10px' }, { size: '20%', min: '20px', },{ size: '20%'}, { size: '10%'}]});
+                splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+                document.body.innerHTML = '';
+            });
+    
+            it('size and min', () => {
+                expect(document.querySelectorAll('.e-pane').length).toBe(4);
+            });
+        });
  });

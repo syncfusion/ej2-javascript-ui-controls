@@ -81,20 +81,20 @@ export interface ExpandEventArgs extends BaseEventArgs {
 export class AccordionActionSettings extends ChildProperty<AccordionActionSettings> {
   /**
    * Specifies the type of animation.
-   * @default : 'SlideDown'
+   * @default 'SlideDown'
    * @aspType string
    */
   @Property('SlideDown')
   public effect: 'None' | Effect;
   /**
    * Specifies the duration to animate.
-   * @default : 400
+   * @default 400
    */
   @Property(400)
   public duration: number;
   /**
    * Specifies the animation timing function.
-   * @default : 'linear'
+   * @default 'linear'
    */
   @Property('linear')
   public easing: string;
@@ -124,39 +124,39 @@ export class AccordionItem extends ChildProperty<AccordionItem>  {
      * It also supports to include the title as `HTML element`, `string`, or `query selector`.
      * ```typescript
      *   let accordionObj: Accordion = new Accordion( { 
-     *        items : [ 
+     *        items: [ 
      *          { header: 'Accordion Header', content: 'Accordion Content' },
      *          { header: '<div>Accordion Header</div>', content: '<div>Accordion Content</div' },
      *          { header: '#headerContent', content: '#panelContent' }]
      *        });
      *   accordionObj.appendTo('#accordion');
      * ```
-     * @default undefined
+     * @default null
      */
-    @Property(undefined)
-    public content : string;
+    @Property(null)
+    public content: string;
     /**
      * Sets the header text to be displayed for the Accordion item.
      * You can set the title of the Accordion item using `header` property.
      * It also supports to include the title as `HTML element`, `string`, or `query selector`.
      * ```typescript
      *   let accordionObj: Accordion = new Accordion( { 
-     *        items : [ 
+     *        items: [ 
      *          { header: 'Accordion Header', content: 'Accordion Content' },
      *          { header: '<div>Accordion Header</div>', content: '<div>Accordion Content</div' },
      *          { header: '#headerContent', content: '#panelContent' }]
      *        });
      *   accordionObj.appendTo('#accordion');
      * ```
-     * @default undefined
+     * @default null
      */
-    @Property(undefined)
-    public header : string;
+    @Property(null)
+    public header: string;
     /**
      * Defines single/multiple classes (separated by a space) are to be used for Accordion item customization.
-     * @default undefined
+     * @default null
      */
-    @Property(undefined)
+    @Property(null)
     public cssClass: string;
     /**
      * Defines an icon with the given custom CSS class that is to be rendered before the header text.
@@ -164,7 +164,7 @@ export class AccordionItem extends ChildProperty<AccordionItem>  {
      * Adding icon is applicable only to the header.
      * ```typescript
      *   let accordionObj: Accordion = new Accordion( { 
-     *        items : [ 
+     *        items: [ 
      *          { header: 'Accordion Header', iconCss: 'e-app-icon' }]
      *        });
      *   accordionObj.appendTo('#accordion');
@@ -174,18 +174,17 @@ export class AccordionItem extends ChildProperty<AccordionItem>  {
      *   content: "\e710";
      * }
      * ```
-     * @default undefined
+     * @default null
      */
-    @Property(undefined)
-    public iconCss : string;
+    @Property(null)
+    public iconCss: string;
     /**
      * Sets the expand (true) or collapse (false) state of the Accordion item. By default, all the items are in a collapsed state.
-     * @default 'false'
+     * @default false
      */
     @Property(false)
-    public expanded  : Boolean;
+    public expanded: Boolean;
 }
-
 
 /**
  * The Accordion is a vertically collapsible content panel that displays one or more panels at a time within the available space.
@@ -225,7 +224,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      * An array of item that is used to specify Accordion items.
      * ```typescript
      *   let accordionObj: Accordion = new Accordion( { 
-     *        items : [ 
+     *        items: [ 
      *          { header: 'Accordion Header', content: 'Accordion Content' }]
      *        });
      *   accordionObj.appendTo('#accordion');
@@ -254,7 +253,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      * @default 'Multiple'
      */
     @Property('Multiple')
-    public expandMode : ExpandMode;
+    public expandMode: ExpandMode;
     /**
      * Specifies the animation configuration settings for expanding and collapsing the panel.
      * @default { expand: { effect: 'SlideDown', duration: 400, easing: 'linear' },
@@ -343,10 +342,10 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         if (!this.enablePersistence || isNOU(this.expandedItems)) {
           this.expandedItems = []; }
     }
-    private add(ele: HTEle, val : Str): void {
+    private add(ele: HTEle, val: Str): void {
       ele.classList.add(val);
     }
-    private remove(ele: HTEle, val : Str): void {
+    private remove(ele: HTEle, val: Str): void {
       ele.classList.remove(val);
     }
     /**
@@ -462,7 +461,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         if (!isNOU(this.trgtEle)) {
           this.ctrlTemplate();
         } else  if (ele && items.length > 0) {
-            items.forEach( (item : AccordionItem, index: number) =>  {
+            items.forEach( (item: AccordionItem, index: number) =>  {
               innerItem = this.renderInnerItem(item, index);
               ele.appendChild(innerItem);
               if (innerItem.childElementCount > 0) {
@@ -1063,13 +1062,13 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
           case 'items':
             if (!(newProp.items instanceof Array && oldProp.items instanceof Array)) {
               let changedProp: Object[] = Object.keys(newProp.items);
-              for (let j : number = 0; j < changedProp.length; j++) {
+              for (let j: number = 0; j < changedProp.length; j++) {
                 let index: number =  parseInt(Object.keys(newProp.items)[j], 10);
                 let property: Str = Object.keys(newProp.items[index])[0];
                 let item: HTEle = <HTEle> selectAll('.' + CLS_ITEM, this.element)[index];
                 let oldVal: Str = Object(oldProp.items[index])[property];
                 let newVal: Str = Object(newProp.items[index])[property];
-                let temp : Str = property;
+                let temp: Str = property;
                 if (temp === 'header' || temp === 'iconCss' || temp === 'expanded' || ((temp === 'content') && (oldVal === ''))) {
                   this.updateItem(item, index);
                 }

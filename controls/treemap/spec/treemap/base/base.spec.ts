@@ -2,6 +2,7 @@ import { TreeMap } from '../../../src/treemap/treemap';
 import { ILoadedEventArgs, IResizeEventArgs } from '../../../src/treemap/model/interface';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { jobData, sportsData, hierarchicalData, Country_Population } from '../base/data.spec';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 
 let jobDataSource: Object[] = jobData;
 let gameDataSource: Object[] = sportsData;
@@ -12,6 +13,14 @@ let popuationData: Object[] = Country_Population;
  */
 
 describe('TreeMap Component Base Spec', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('TreeMap testing spec', () => {
         let element: Element;
         let treemap: TreeMap;
@@ -233,6 +242,17 @@ describe('TreeMap Component Base Spec', () => {
             ];
             treemap.refresh();
         });
+        it('Checking with hierarchical data without label path', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout');
+                expect(element.childElementCount).toBeGreaterThan(1);
+            };
+            treemap.dataSource = hierarchyData;
+            treemap.layoutType = 'Squarified';
+            treemap.weightValuePath = 'value';
+            treemap.levels = [];
+            treemap.refresh();
+        });
         it('Checking with population data', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById(args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout');
@@ -291,6 +311,29 @@ describe('TreeMap Component Base Spec', () => {
             treemap.legendSettings.textStyle.color = null;
             treemap.legendSettings.titleStyle.color = null;
             treemap.theme = 'Fabric';
+            treemap.refresh();
+        });
+		it('Checking with tree map data', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout');
+                expect(element.childElementCount).toBeGreaterThan(1);
+            };
+            treemap.dataSource = jobData;
+            treemap.weightValuePath = 'EmployeesCount';
+            treemap.leafItemSettings = {
+                labelPath: 'JobGroup',
+                fill: '#6699cc',
+                border: { color: 'black', width: 2 }
+            };
+            treemap.levels = [
+                { groupPath: 'Country', fill: '#336699', border: { color: 'black', width: 2 } },
+                { groupPath: 'JobDescription', fill: '#336699', border: { color: 'black', width: 2 } }
+            ];
+            treemap.titleSettings.textStyle.color = null;
+            treemap.titleSettings.subtitleSettings.textStyle.color = null;
+            treemap.legendSettings.textStyle.color = null;
+            treemap.legendSettings.titleStyle.color = null;
+            treemap.theme = 'MaterialDark';
             treemap.refresh();
         });
     });
@@ -427,5 +470,14 @@ describe('TreeMap Component Base Spec', () => {
             treemap.resizeOnTreeMap(<Event>{});
             treemap.getPersistData();
         });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

@@ -32,12 +32,6 @@ export interface RecurrenceEditorModel extends ComponentModel{
     dateFormat?: string;
 
     /**
-     * Sets the locale to be applied on recurrence editor.
-     * @default true
-     */
-    locale?: string;
-
-    /**
      * Allows styling with custom class names.
      * @default null
      */

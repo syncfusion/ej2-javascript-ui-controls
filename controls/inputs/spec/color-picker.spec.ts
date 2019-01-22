@@ -1,5 +1,7 @@
-import { ColorPicker, ColorPickerEventArgs, BeforeOpenCloseEventArgs, OpenEventArgs, PaletteTileEventArgs } from '../src/color-picker/color-picker';
+import { ColorPicker, ColorPickerEventArgs, BeforeOpenCloseEventArgs } from '../src/color-picker/color-picker';
+import { OpenEventArgs, PaletteTileEventArgs } from '../src/color-picker/color-picker';
 import { createElement, Browser, select, L10n, setStyleAttribute } from '@syncfusion/ej2-base';
+import { profile , inMB, getMemoryProfile } from './common.spec';
 
 function triggerMouseEvent(node: HTMLElement, eventType: string, x?: number, y?: number) {
     let mouseEve: MouseEvent = document.createEvent("MouseEvents");
@@ -28,6 +30,15 @@ function triggerTouchEvent(node: HTMLElement, eventType: string, x?: number, y?:
  * @param  {} function
  */
 describe('ColorPicker', () => {
+    beforeAll(() => {
+        const isDef: any = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log('Unsupported environment, window.performance.memory is unavailable');
+            this.skip(); // skips test (in Chai)
+            return;
+        }
+    });
+
     let colorPicker: any;
     let element: HTMLInputElement = createElement('input', { id: 'color-picker', attrs: { 'type': 'color' } }) as HTMLInputElement;
     let target: HTMLElement;
@@ -1427,5 +1438,15 @@ describe('ColorPicker', () => {
                 expect(colorPicker.value).toEqual('');
             });
         });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange);
+        // check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

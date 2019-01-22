@@ -40,7 +40,7 @@ export class GaugeTooltip {
      * Internal use for tooltip rendering
      * @param pointerElement 
      */
-     /* tslint:disable:no-string-literal */
+    /* tslint:disable:no-string-literal */
     public renderTooltip(e: PointerEvent): void {
         let pageX: number; let pageY: number;
         let target: Element; let touchArg: TouchEvent;
@@ -56,7 +56,7 @@ export class GaugeTooltip {
             pageY = e.pageY;
             target = <Element>e.target;
         }
-        let tooltipEle: HTMLElement; let tooltipContent: string[] = [];
+        let tooltipEle: HTMLElement; let tooltipContent: string;
         if (target.id.indexOf('Pointer') > -1) {
             this.pointerElement = target;
             let areaRect: ClientRect = this.gauge.element.getBoundingClientRect();
@@ -64,8 +64,10 @@ export class GaugeTooltip {
             this.currentAxis = current.axis;
             this.axisIndex = current.axisIndex;
             this.currentPointer = current.pointer;
-            tooltipContent = [textFormatter(this.tooltip.format, { value: this.currentPointer.currentValue }, this.gauge) ||
-                formatValue(this.currentPointer.currentValue, this.gauge).toString()];
+            let customTooltipFormat: boolean = this.tooltip.format && this.tooltip.format.match('{value}') !== null;
+            tooltipContent = customTooltipFormat ? textFormatter(
+                this.tooltip.format, { value: this.currentPointer.currentValue }, this.gauge) :
+                formatValue(this.currentPointer.currentValue, this.gauge).toString();
             if (document.getElementById(this.tooltipId)) {
                 tooltipEle = document.getElementById(this.tooltipId);
             } else {
@@ -78,7 +80,7 @@ export class GaugeTooltip {
             }
             let location: GaugeLocation = this.getTooltipLocation();
             let args: ITooltipRenderEventArgs = {
-                name: tooltipRender, cancel: false, gauge: this.gauge, event: e, location: location, content: tooltipContent[0],
+                name: tooltipRender, cancel: false, gauge: this.gauge, event: e, location: location, content: tooltipContent,
                 tooltip: this.tooltip, axis: this.currentAxis, pointer: this.currentPointer
             };
             let tooltipPos: string = this.getTooltipPosition();
@@ -92,7 +94,7 @@ export class GaugeTooltip {
             let themes: string = this.gauge.theme.toLowerCase();
             if (!args.cancel) {
                 args['tooltip']['properties']['textStyle']['color'] =
-                (themes.indexOf('dark') > -1 || themes === 'highcontrast') ? '#00000' : '#FFFFFF';
+                    (themes.indexOf('dark') > -1 || themes === 'highcontrast') ? '#00000' : '#FFFFFF';
                 this.svgTooltip = new Tooltip({
                     enable: true,
                     header: '',

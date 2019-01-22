@@ -400,6 +400,20 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
         this.element.setAttribute('aria-disabled', (this.enabled) ? 'false' : 'true');
     };
     
+    /**
+     * Sets the enabled state to DropDownBase.
+     */
+    DropDownBase.prototype.updateDataAttribute = function (value) {
+        var invalidAttr = ['class', 'style', 'id', 'type'];
+        var attr = {};
+        for (var a = 0; a < this.element.attributes.length; a++) {
+            if (invalidAttr.indexOf(this.element.attributes[a].name) === -1) {
+                attr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
+            }
+        }
+        extend(attr, value, attr);
+        this.setProperties({ htmlAttributes: attr }, true);
+    };
     DropDownBase.prototype.renderItemsBySelect = function () {
         var element = this.element;
         var fields = { value: 'value', text: 'text' };
@@ -2798,15 +2812,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         this.hiddenElement.id = id + '_hidden';
         this.targetElement().setAttribute('tabindex', this.tabIndex);
         attributes(this.targetElement(), this.getAriaAttributes());
-        var invalidAttr = ['class', 'style', 'id'];
-        var htmlAttr = {};
-        for (var a = 0; a < this.element.attributes.length; a++) {
-            if (invalidAttr.indexOf(this.element.attributes[a].name) === -1) {
-                htmlAttr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
-            }
-        }
-        extend(htmlAttr, this.htmlAttributes, htmlAttr);
-        this.setProperties({ htmlAttributes: htmlAttr }, true);
+        this.updateDataAttribute(this.htmlAttributes);
         this.setHTMLAttributes();
         if (this.value !== null || this.activeIndex !== null || this.text !== null) {
             this.initValue();
@@ -2882,10 +2888,13 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             this.resetList(this.dataSource);
         }
         if (!this.isCustomFilter && !this.isFilterFocus && document.activeElement !== this.filterInput) {
-            this.itemData = this.getDataByValue(this.value);
-            var dataItem = this.getItemData();
-            this.setProperties({ 'value': dataItem.value, 'text': dataItem.text });
+            this.checkCustomValue();
         }
+    };
+    DropDownList.prototype.checkCustomValue = function () {
+        this.itemData = this.getDataByValue(this.value);
+        var dataItem = this.getItemData();
+        this.setProperties({ 'value': dataItem.value, 'text': dataItem.text });
     };
     /**
      * Dynamically change the value of properties.
@@ -3563,6 +3572,13 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             return _super.prototype.setValue.call(this, e);
+        }
+    };
+    ComboBox.prototype.checkCustomValue = function () {
+        this.itemData = this.getDataByValue(this.value);
+        var dataItem = this.getItemData();
+        if (!(this.allowCustom && isNullOrUndefined(dataItem.value) && isNullOrUndefined(dataItem.text))) {
+            this.setProperties({ 'value': dataItem.value, 'text': dataItem.text });
         }
     };
     /**
@@ -4586,7 +4602,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                         if (defaultAttr.indexOf(htmlAttr) > -1) {
                             this.element.setAttribute(htmlAttr, this.htmlAttributes[htmlAttr]);
                         }
-                        else if (validateAttr.indexOf(htmlAttr) > -1) {
+                        else if (htmlAttr.indexOf('data') === 0 || validateAttr.indexOf(htmlAttr) > -1) {
                             this.hiddenElement.setAttribute(htmlAttr, this.htmlAttributes[htmlAttr]);
                         }
                         else if (containerAttr.indexOf(htmlAttr) > -1) {
@@ -4728,6 +4744,14 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         attributes(this.inputElement, this.getAriaAttributes());
         if (disableStatus) {
             attributes(this.inputElement, { 'aria-disabled': 'true' });
+        }
+        this.ensureAriaDisabled((disableStatus) ? 'true' : 'false');
+    };
+    MultiSelect.prototype.ensureAriaDisabled = function (status) {
+        if (this.htmlAttributes && this.htmlAttributes['aria-disabled']) {
+            var attr = this.htmlAttributes;
+            extend(attr, { 'aria-disabled': status }, attr);
+            this.setProperties({ htmlAttributes: attr }, true);
         }
     };
     MultiSelect.prototype.removelastSelection = function (e) {
@@ -5153,11 +5177,13 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             this.overAllWrapper.classList.remove(DISABLED);
             this.inputElement.removeAttribute('disabled');
             attributes(this.inputElement, { 'aria-disabled': 'false' });
+            this.ensureAriaDisabled('false');
         }
         else {
             this.overAllWrapper.classList.add(DISABLED);
             this.inputElement.setAttribute('disabled', 'true');
             attributes(this.inputElement, { 'aria-disabled': 'true' });
+            this.ensureAriaDisabled('true');
         }
         if (this.enabled !== state) {
             this.enabled = state;
@@ -6298,6 +6324,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     };
     MultiSelect.prototype.preRender = function () {
         this.initializeData();
+        this.updateDataAttribute(this.htmlAttributes);
         _super.prototype.preRender.call(this);
     };
     MultiSelect.prototype.initializeData = function () {

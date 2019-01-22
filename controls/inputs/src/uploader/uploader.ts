@@ -338,6 +338,10 @@ export interface RenderingEventArgs {
      * Return the index of the file item in the file list.
      */
     index: number;
+    /**
+     * Return whether the file is preloaded
+     */
+    isPreload: boolean;
 }
 
 interface InitialAttr {
@@ -1128,7 +1132,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private renderPreLoadFiles(): void {
-        if (isNullOrUndefined(this.files[0].size) || !isNullOrUndefined(this.template)) {
+        if (isNullOrUndefined(this.files[0].size)) {
             return;
         }
         let files: FilesPropModel[] = [].slice.call(this.files);
@@ -1522,6 +1526,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         let selectedFiles: FileInfo = file;
         let name: string = this.element.getAttribute('name');
         let ajax: Ajax = new Ajax(this.asyncSettings.removeUrl, 'POST', true, null);
+        ajax.emitError = false;
         let formData: FormData = new FormData();
         let liElement: HTMLElement = this.getLiElement(file);
         ajax.beforeSend = (e: BeforeSendEventArgs) => {
@@ -1847,21 +1852,32 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         return errorMessage;
     }
 
+    private isPreLoadFile(fileData: FileInfo) : boolean {
+        let isPreload: boolean = false;
+        for (let i : number = 0; i < this.files.length; i++) {
+            if (this.files[i].name === fileData.name.slice(0, fileData.name.lastIndexOf('.')) && this.files[i].type === fileData.type) {
+                isPreload = true;
+            }
+        }
+        return isPreload;
+    }
+
     private createCustomfileList (fileData : FileInfo[]) : void {
         this.createParentUL();
         for (let listItem of fileData) {
             let liElement: HTMLElement = this.createElement('li', { className: FILE, attrs: {'data-file-name': listItem.name}});
             this.uploadTemplateFn = this.templateComplier(this.template);
-            this.listParent.appendChild(liElement);
             let fromElements: HTMLElement[] = [].slice.call(this.uploadTemplateFn(listItem));
             let index: number = fileData.indexOf(listItem);
+            append(fromElements, liElement);
             let eventArgs: RenderingEventArgs = {
                 element: liElement,
                 fileInfo: listItem,
-                index: index
+                index: index,
+                isPreload: this.isPreLoadFile(listItem)
             };
             this.trigger('rendering', eventArgs);
-            append(fromElements, liElement);
+            this.listParent.appendChild(liElement);
             this.fileList.push(liElement);
         }
     }
@@ -1925,7 +1941,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 let eventArgs: RenderingEventArgs = {
                     element: liElement,
                     fileInfo: listItem,
-                    index: index
+                    index: index,
+                    isPreload: this.isPreLoadFile(listItem)
                 };
                 this.trigger('rendering', eventArgs);
                 this.listParent.appendChild(liElement);
@@ -2094,6 +2111,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 formData.append(name, files.name);
                 formData.append('cancel-uploading', files.name);
                 let ajax: Ajax = new Ajax(this.asyncSettings.removeUrl, 'POST', true, null);
+                ajax.emitError = false;
                 ajax.onLoad = (e: Event): object => { this.removecanceledFile(e, files); return {}; };
                 ajax.send(formData);
             }
@@ -2390,6 +2408,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         formData.append('total-chunk', totalChunk.toString());
         formData.append('totalChunk', totalChunk.toString());
         let ajax: Ajax = new Ajax({ url: this.asyncSettings.saveUrl, type: 'POST', async: true, contentType: null });
+        ajax.emitError = false;
         ajax.onLoad = (e: Event): object => { this.chunkUploadComplete(e, metaData, custom); return {}; };
         ajax.onUploadProgress = (e: Event) => {
             this.chunkUploadInProgress(e, metaData, custom);
@@ -2483,6 +2502,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 formData.append('cancel-uploading', metaData.file.name);
                 formData.append('cancelUploading', metaData.file.name);
                 let ajax: Ajax = new Ajax(this.asyncSettings.removeUrl, 'POST', true, null);
+                ajax.emitError = false;
                 ajax.onLoad = (e: Event): object => { this.removeChunkFile(e, metaData, custom); return {}; };
                 ajax.send(formData);
             } else {
@@ -2906,6 +2926,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         let chunkEnabled: boolean = this.checkChunkUpload();
         for (let i: number = 0; i < selectedFiles.length; i++ ) {
             let ajax: Ajax = new Ajax(this.asyncSettings.saveUrl, 'POST', true, null);
+            ajax.emitError = false;
             let eventArgs: UploadingEventArgs = {
                 fileData: selectedFiles[i],
                 customFormData: [],

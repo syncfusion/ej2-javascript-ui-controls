@@ -461,6 +461,20 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected setEnabled(): void {
         this.element.setAttribute('aria-disabled', (this.enabled) ? 'false' : 'true');
     };
+    /**
+     * Sets the enabled state to DropDownBase.
+     */
+    protected updateDataAttribute(value: { [key: string]: string; }) : void {
+        let invalidAttr: string[] = ['class', 'style', 'id', 'type'];
+        let attr: { [key: string]: string; } = {};
+        for (let a: number = 0; a < this.element.attributes.length; a++) {
+            if (invalidAttr.indexOf(this.element.attributes[a].name) === -1) {
+                attr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
+            }
+        }
+        extend(attr, value, attr);
+        this.setProperties({ htmlAttributes: attr }, true);
+    }
 
     private renderItemsBySelect(): void {
         let element: Element = this.element;

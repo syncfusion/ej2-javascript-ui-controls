@@ -2906,6 +2906,10 @@ class UrlAdaptor extends Adaptor {
      * @param  {CrudOptions} changes?
      */
     processResponse(data, ds, query, xhr, request, changes) {
+        if (xhr && xhr.getResponseHeader('Content-Type') &&
+            xhr.getResponseHeader('Content-Type').indexOf('application/json') !== -1) {
+            data = DataUtil.parse.parseJson(data);
+        }
         let requests = request;
         let pvt = requests.pvtData || {};
         let groupDs = data ? data.groupDs : [];
@@ -4003,43 +4007,43 @@ class RemoteSaveAdaptor extends JsonAdaptor {
         super();
         setValue('beforeSend', UrlAdaptor.prototype.beforeSend, this);
     }
-    insert(dm, data, tableName) {
+    insert(dm, data, tableName, query) {
         this.updateType = 'add';
         return {
             url: dm.dataSource.insertUrl || dm.dataSource.crudUrl || dm.dataSource.url,
-            data: JSON.stringify({
+            data: JSON.stringify(extend({}, {
                 value: data,
                 table: tableName,
                 action: 'insert'
-            })
+            }, DataUtil.getAddParams(this, dm, query)))
         };
     }
-    remove(dm, keyField, value, tableName) {
-        super.remove(dm, keyField, value);
+    remove(dm, keyField, val, tableName, query) {
+        super.remove(dm, keyField, val);
         return {
             type: 'POST',
             url: dm.dataSource.removeUrl || dm.dataSource.crudUrl || dm.dataSource.url,
-            data: JSON.stringify({
-                key: value,
+            data: JSON.stringify(extend({}, {
+                key: val,
                 keyColumn: keyField,
                 table: tableName,
                 action: 'remove'
-            })
+            }, DataUtil.getAddParams(this, dm, query)))
         };
     }
-    update(dm, keyField, value, tableName) {
+    update(dm, keyField, val, tableName, query) {
         this.updateType = 'update';
         this.updateKey = keyField;
         return {
             type: 'POST',
             url: dm.dataSource.updateUrl || dm.dataSource.crudUrl || dm.dataSource.url,
-            data: JSON.stringify({
-                value: value,
+            data: JSON.stringify(extend({}, {
+                value: val,
                 action: 'update',
                 keyColumn: keyField,
-                key: value[keyField],
+                key: val[keyField],
                 table: tableName
-            })
+            }, DataUtil.getAddParams(this, dm, query)))
         };
     }
     processResponse(data, ds, query, xhr, request, changes, e) {
@@ -4091,6 +4095,10 @@ class RemoteSaveAdaptor extends JsonAdaptor {
                 key: e.key
             })
         };
+    }
+    addParams(options) {
+        let urlParams = new UrlAdaptor();
+        urlParams.addParams(options);
     }
 }
 /**

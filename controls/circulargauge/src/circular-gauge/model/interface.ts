@@ -64,6 +64,28 @@ export interface IAxisLabelRenderEventArgs extends ICircularGaugeEventArgs {
 }
 
 /**
+ * Specifies radiusRender event arguments for circular gauge
+ */
+export interface IRadiusCalculateEventArgs extends ICircularGaugeEventArgs {
+    /**
+     * Instance of Circular gauge component
+     */
+    gauge: CircularGauge;
+    /**
+     * current radius event argument
+     */
+    currentRadius: number;
+    /**
+     * axis event argument
+     */
+    axis: Axis;
+    /**
+     * midpoint event argument
+     */
+    midPoint: GaugeLocation;
+}
+
+/**
  * Specifies TooltipRender event arguments for circular gauge.
  */
 export interface ITooltipRenderEventArgs extends ICircularGaugeEventArgs {

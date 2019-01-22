@@ -5,8 +5,18 @@ import { select, selectAll } from '@syncfusion/ej2-base';
 import { ValidateEventArgs } from '../../src/inplace-editor/base/index';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy } from './../render.spec';
+import { profile, inMB, getMemoryProfile } from './../common.spec';
 
 describe('DatePicker Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
+
     describe('Date render testing', () => {
         let editorObj: any;
         let ele: HTMLElement;
@@ -55,6 +65,41 @@ describe('DatePicker Control', () => {
             }, 500);
         });
     });
+    describe('Duplicate ID availability testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Inline - ID testing', () => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'Date'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datepicker', ele).length === 1).toEqual(true);
+            expect(selectAll('#' + ele.id, document.body).length === 1).toEqual(true);
+        });
+        it('Popup - ID testing', () => {
+            editorObj = renderEditor({
+                mode: 'Popup',
+                type: 'Date'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datepicker', document.body).length === 1).toEqual(true);
+            expect(selectAll('#' + ele.id, document.body).length === 1).toEqual(true);
+        });
+    });
     describe('Date Picker Form validation Testing', () => {
         let ele: HTMLElement;
         let editorObj: any;
@@ -64,9 +109,9 @@ describe('DatePicker Control', () => {
         let ctrlGroup: HTMLElement;
         let editorError: HTMLElement;
         let errMsg: string;
-        let eventValue: string;
-        let eventFieldName: string;
-        let eventPrimaryKey: string;
+        let eventValue: string | number;
+        let eventFieldName: string | number;
+        let eventPrimaryKey: string | number;
         let editEle: HTMLElement;
         let errorEle: HTMLElement;
         function click1(e: ValidateEventArgs): void {
@@ -196,8 +241,8 @@ describe('DatePicker Control', () => {
             valueEle.click();
             setTimeout(() => {
                 expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
-                editorObj.componentObj.value = '4/6/2019';
-                editorObj.componentObj.value = new Date(editorObj.componentObj.value);
+                editorObj.componentObj.value = new Date('4/6/2019');
+                editorObj.componentObj.dataBind();
                 buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
                 buttonEle.dispatchEvent(new MouseEvent('mousedown'));
                 let editVal: HTMLElement = <HTMLElement>select('.' + classes.VALUE);
@@ -227,5 +272,339 @@ describe('DatePicker Control', () => {
             let editWrapper: HTMLElement = <HTMLElement>select('.' + classes.WRAPPER);
             expect(editWrapper.lastChild).toBe(<HTMLElement>select('.' + classes.FORM, ele));
         });
+    });
+    describe('Value formatting related testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Default value with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'Date',
+                mode: 'Inline'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(null);
+            expect(editorObj.emptyText).toEqual('Enter some text');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect((<HTMLInputElement>select('.e-datepicker', document.body)).value).toEqual('');
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            editorObj.value = new Date('4/9/2018');
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(new Date('4/9/2018'));
+            expect(valueEle.innerHTML).toEqual('4/9/2018');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(new Date('4/9/2018'));
+            expect((<HTMLInputElement>select('.e-datepicker', document.body)).value).toEqual('4/9/2018');
+            editorObj.save();
+            expect(editorObj.value).toEqual(new Date('4/9/2018'));
+            expect(valueEle.innerHTML).toEqual('4/9/2018');
+            editorObj.value = '';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('');
+            expect((<HTMLInputElement>select('.e-datepicker', document.body)).value).toEqual('');
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+        });
+        it('Value as "null" with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'Date',
+                mode: 'Inline',
+                value: null
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(null);
+            expect(editorObj.emptyText).toEqual('Enter some text');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect((<HTMLInputElement>select('.e-datepicker', document.body)).value).toEqual('');
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            editorObj.value = new Date('4/9/2018');
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(new Date('4/9/2018'));
+            expect(valueEle.innerHTML).toEqual('4/9/2018');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(new Date('4/9/2018'));
+            expect((<HTMLInputElement>select('.e-datepicker', document.body)).value).toEqual('4/9/2018');
+            editorObj.save();
+            expect(editorObj.value).toEqual(new Date('4/9/2018'));
+            expect(valueEle.innerHTML).toEqual('4/9/2018');
+            editorObj.value = '';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('');
+            expect((<HTMLInputElement>select('.e-datepicker', document.body)).value).toEqual('');
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+        });
+        it('Value as "undefined" string with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'Date',
+                mode: 'Inline',
+                value: undefined
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(null);
+            expect(editorObj.emptyText).toEqual('Enter some text');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect((<HTMLInputElement>select('.e-datepicker', document.body)).value).toEqual('');
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            editorObj.value = new Date('4/9/2018');
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(new Date('4/9/2018'));
+            expect(valueEle.innerHTML).toEqual('4/9/2018');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(new Date('4/9/2018'));
+            expect((<HTMLInputElement>select('.e-datepicker', document.body)).value).toEqual('4/9/2018');
+            editorObj.save();
+            expect(editorObj.value).toEqual(new Date('4/9/2018'));
+            expect(valueEle.innerHTML).toEqual('4/9/2018');
+            editorObj.value = '';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('');
+            expect((<HTMLInputElement>select('.e-datepicker', document.body)).value).toEqual('');
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+        });
+        it('Value as empty string with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'Date',
+                mode: 'Inline',
+                value: ''
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('');
+            expect((<HTMLInputElement>select('.e-datepicker', document.body)).value).toEqual('');
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            editorObj.value = new Date('4/9/2018');
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(new Date('4/9/2018'));
+            expect(valueEle.innerHTML).toEqual('4/9/2018');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(new Date('4/9/2018'));
+            expect((<HTMLInputElement>select('.e-datepicker', document.body)).value).toEqual('4/9/2018');
+            editorObj.save();
+            expect(editorObj.value).toEqual(new Date('4/9/2018'));
+            expect(valueEle.innerHTML).toEqual('4/9/2018');
+            editorObj.value = '';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('');
+            expect((<HTMLInputElement>select('.e-datepicker', document.body)).value).toEqual('');
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+        });
+        it('Defined value with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'Date',
+                mode: 'Inline',
+                value: new Date('4/9/2018')
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(new Date('4/9/2018'));
+            expect(valueEle.innerHTML).toEqual('4/9/2018');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(new Date('4/9/2018'));
+            expect(valueEle.innerHTML).toEqual('4/9/2018');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(new Date('4/9/2018'));
+            editorObj.save();
+            expect(editorObj.value).toEqual(new Date('4/9/2018'));
+            expect(valueEle.innerHTML).toEqual('4/9/2018');
+            editorObj.value = '';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('');
+            expect((<HTMLInputElement>select('.e-datepicker', document.body)).value).toEqual('');
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            editorObj.value = '6/9/2018';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(new Date('6/9/2018'));
+            expect(valueEle.innerHTML).toEqual('6/9/2018');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(new Date('6/9/2018'));
+            expect((<HTMLInputElement>select('.e-datepicker', document.body)).value).toEqual('6/9/2018');
+            editorObj.save();
+            expect(editorObj.value).toEqual(new Date('6/9/2018'));
+            expect(valueEle.innerHTML).toEqual('6/9/2018');
+        });
+    });
+    describe('DatePicker format property testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Format testing', () => {
+            editorObj = renderEditor({
+                type: 'Date',
+                mode: 'Inline',
+                model: {
+                    format: 'yyyy-MM-dd',
+                    value: '2019-01-10'
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(null);
+            expect(editorObj.emptyText).toEqual('Enter some text');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect((<HTMLInputElement>select('.e-datepicker', document.body)).value).toEqual('2019-01-10');
+            editorObj.save();
+            expect(valueEle.innerHTML).toEqual('2019-01-10');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datepicker', document.body).length === 1).toEqual(true);
+            expect((<HTMLInputElement>select('.e-datepicker', document.body)).value).toEqual('2019-01-10');
+            editorObj.save();
+            expect(valueEle.innerHTML).toEqual('2019-01-10');
+        });
+    });
+    describe('Sending date value testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        let dateString: string;
+        function begin(e: any): void {
+            dateString = e.data.value;
+        }
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Value string testing', () => {
+            let date: Date = new Date('01/02/2019');
+            editorObj = renderEditor({
+                type: 'Date',
+                mode: 'Inline',
+                model: {
+                    value: date
+                },
+                actionBegin: begin
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datepicker', document.body).length === 1).toEqual(true);
+            editorObj.save();
+            expect(dateString).toEqual(date.toISOString());
+        });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

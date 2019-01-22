@@ -739,6 +739,9 @@ __decorate$2([
 __decorate$2([
     Property(0)
 ], Range.prototype, "roundedCornerRadius", void 0);
+__decorate$2([
+    Property(1)
+], Range.prototype, "opacity", void 0);
 /**
  * Configures the major and minor tick lines of an axis.
  */
@@ -902,6 +905,12 @@ __decorate$2([
     Property(null)
 ], Axis.prototype, "maximum", void 0);
 __decorate$2([
+    Property(false)
+], Axis.prototype, "showLastLabel", void 0);
+__decorate$2([
+    Property(null)
+], Axis.prototype, "roundingPlaces", void 0);
+__decorate$2([
     Property(null)
 ], Axis.prototype, "radius", void 0);
 __decorate$2([
@@ -955,6 +964,8 @@ const load = 'load';
 const animationComplete = 'animationComplete';
 /** @private */
 const axisLabelRender = 'axisLabelRender';
+/** @private */
+const radiusCalculate = 'radiusCalculate';
 /** @private */
 const tooltipRender = 'tooltipRender';
 /** @private */
@@ -1026,10 +1037,11 @@ class Annotations {
         if (!argsData.cancel) {
             templateFn = getTemplateFunction(argsData.content);
             if (templateFn && templateFn(axis).length) {
-                templateElement = Array.prototype.slice.call(templateFn(axis));
-                let length = templateElement.length;
-                for (let i = 0; i < length; i++) {
-                    childElement.appendChild(templateElement[i]);
+                templateElement = templateFn(axis);
+                let count = templateElement.length;
+                while (count > 0) {
+                    childElement.appendChild(templateElement[0]);
+                    count--;
                 }
             }
             else {
@@ -1136,9 +1148,13 @@ class GaugeTooltip {
                 });
                 document.getElementById(this.gauge.element.id + '_Secondary_Element').appendChild(this.tooltipEle);
             }
+            let roundValue;
+            roundValue = this.currentAxis.roundingPlaces ?
+                parseFloat(this.currentPointer.currentValue.toFixed(this.currentAxis.roundingPlaces)) :
+                this.currentPointer.currentValue;
             let content = customLabelFormat ?
-                tooltipFormat.replace(new RegExp('{value}', 'g'), format(this.currentPointer.currentValue)) :
-                format(this.currentPointer.currentValue);
+                tooltipFormat.replace(new RegExp('{value}', 'g'), format(roundValue)) :
+                format(roundValue);
             location = getLocationFromAngle(angle, this.currentAxis.currentRadius, this.gauge.midPoint);
             location.x = (this.tooltip.template && ((angle >= 150 && angle <= 250) || (angle >= 330 && angle <= 360) ||
                 (angle >= 0 && angle <= 45))) ? (location.x + 10) : location.x;
@@ -1512,10 +1528,10 @@ class AxisRenderer {
                 roundedEndAngle = ((((range.currentRadius) * ((endAngle * Math.PI) / 180) -
                     radius) / (range.currentRadius)) * 180) / Math.PI;
                 if (range.roundedCornerRadius) {
-                    appendPath(new PathOption(gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex, range.rangeColor, 0, range.rangeColor, 1, '0', getRoundedPathArc(location, Math.floor(roundedStartAngle), Math.ceil(roundedEndAngle), oldStart, oldEnd, range.currentRadius, startWidth, endWidth), '', 'pointer-events:none;'), rangeElement, gauge);
+                    appendPath(new PathOption(gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex, range.rangeColor, 0, range.rangeColor, range.opacity, '0', getRoundedPathArc(location, Math.floor(roundedStartAngle), Math.ceil(roundedEndAngle), oldStart, oldEnd, range.currentRadius, startWidth, endWidth), '', 'pointer-events:none;'), rangeElement, gauge);
                 }
                 else {
-                    appendPath(new PathOption(gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex, range.rangeColor, 0, range.rangeColor, 1, '0', getPathArc(gauge.midPoint, Math.floor(startAngle), Math.ceil(endAngle), range.currentRadius, startWidth, endWidth), '', 'pointer-events:none;'), rangeElement, gauge);
+                    appendPath(new PathOption(gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex, range.rangeColor, 0, range.rangeColor, range.opacity, '0', getPathArc(gauge.midPoint, Math.floor(startAngle), Math.ceil(endAngle), range.currentRadius, startWidth, endWidth), '', 'pointer-events:none;'), rangeElement, gauge);
                 }
             }
         });
@@ -1662,9 +1678,6 @@ class PointerRenderer {
             radius) / (pointer.currentRadius)) * 180) / Math.PI;
         roundEndAngle = ((((pointer.currentRadius) * ((endAngle * Math.PI) / 180) -
             radius) / (pointer.currentRadius)) * 180) / Math.PI;
-        if (isNullOrUndefined(pointer.currentRadius)) {
-            this.calculatePointerRadius(axis, pointer);
-        }
         pointer.pathElement.map((element) => {
             if (pointer.type === 'RangeBar') {
                 if (pointer.roundedCornerRadius && value) {
@@ -1897,6 +1910,14 @@ class AxisLayoutPanel {
                 }
             }
             axis.visibleRange.interval = this.calculateNumericInterval(axis, axis.rect);
+            let args;
+            args = {
+                cancel: false, name: radiusCalculate, currentRadius: axis.currentRadius, gauge: this.gauge,
+                midPoint: this.gauge.midPoint, axis: axis
+            };
+            this.gauge.trigger(radiusCalculate, args);
+            axis.currentRadius = args.currentRadius;
+            this.gauge.midPoint = args.midPoint;
             this.calculateVisibleLabels(axis);
         }
     }
@@ -1991,16 +2012,32 @@ class AxisLayoutPanel {
         });
         let argsData;
         axis.visibleLabels = [];
+        let roundValue;
         for (let i = axis.visibleRange.min, interval = axis.visibleRange.interval, max = axis.visibleRange.max; (i <= max && interval); i += interval) {
+            roundValue = axis.roundingPlaces ? parseFloat(i.toFixed(axis.roundingPlaces)) : i;
             argsData = {
                 cancel: false, name: axisLabelRender, axis: axis,
-                text: customLabelFormat ? style.format.replace(new RegExp('{value}', 'g'), format(i)) :
-                    format(i),
-                value: i
+                text: customLabelFormat ? style.format.replace(new RegExp('{value}', 'g'), format(roundValue)) :
+                    format(roundValue),
+                value: roundValue
             };
             this.gauge.trigger(axisLabelRender, argsData);
             if (!argsData.cancel) {
                 axis.visibleLabels.push(new VisibleLabels(argsData.text, i));
+            }
+        }
+        let lastLabel = axis.visibleLabels[axis.visibleLabels.length - 1].value;
+        let maxVal = axis.visibleRange.max;
+        if (lastLabel !== maxVal && axis.showLastLabel === true) {
+            argsData = {
+                cancel: false, name: axisLabelRender, axis: axis,
+                text: customLabelFormat ? style.format.replace(new RegExp('{value}', 'g'), format(maxVal)) :
+                    format(maxVal),
+                value: maxVal
+            };
+            this.gauge.trigger(axisLabelRender, argsData);
+            if (!argsData.cancel) {
+                axis.visibleLabels.push(new VisibleLabels(argsData.text, maxVal));
             }
         }
         this.getMaxLabelWidth(this.gauge, axis);
@@ -2307,9 +2344,6 @@ let CircularGauge = class CircularGauge extends Component {
             currentPointer = getPointer(args.target.id, this);
             this.activeAxis = this.axes[currentPointer.axisIndex];
             this.activePointer = this.activeAxis.pointers[currentPointer.pointerIndex];
-            if (isNullOrUndefined(this.activePointer.pathElement)) {
-                this.activePointer.pathElement = [e.target];
-            }
             this.trigger(dragStart, {
                 axis: this.activeAxis,
                 name: dragStart,
@@ -2671,8 +2705,6 @@ let CircularGauge = class CircularGauge extends Component {
         let renderer = false;
         let refreshBounds = false;
         let refreshWithoutAnimation = false;
-        let isPointerValueSame = (Object.keys(newProp).length === 1 && newProp instanceof Object &&
-            !isNullOrUndefined(this.activePointer));
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'height':
@@ -2706,21 +2738,19 @@ let CircularGauge = class CircularGauge extends Component {
                     break;
             }
         }
-        if (!isPointerValueSame) {
-            if (!refreshBounds && renderer) {
-                this.removeSvg();
-                this.renderElements();
-            }
-            if (refreshBounds) {
-                this.removeSvg();
-                this.calculateBounds();
-                this.renderElements();
-            }
-            if (refreshWithoutAnimation && !renderer && !refreshBounds) {
-                this.removeSvg();
-                this.calculateBounds();
-                this.renderElements(false);
-            }
+        if (!refreshBounds && renderer) {
+            this.removeSvg();
+            this.renderElements();
+        }
+        if (refreshBounds) {
+            this.removeSvg();
+            this.calculateBounds();
+            this.renderElements();
+        }
+        if (refreshWithoutAnimation && !renderer && !refreshBounds) {
+            this.removeSvg();
+            this.calculateBounds();
+            this.renderElements(false);
         }
     }
     /**
@@ -2794,6 +2824,9 @@ __decorate([
 __decorate([
     Event()
 ], CircularGauge.prototype, "axisLabelRender", void 0);
+__decorate([
+    Event()
+], CircularGauge.prototype, "radiusCalculate", void 0);
 __decorate([
     Event()
 ], CircularGauge.prototype, "annotationRender", void 0);

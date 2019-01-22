@@ -6262,9 +6262,6 @@ var RecurrenceEditor = /** @__PURE__ @class */ (function (_super) {
         Property()
     ], RecurrenceEditor.prototype, "dateFormat", void 0);
     __decorate$1([
-        Property('en-US')
-    ], RecurrenceEditor.prototype, "locale", void 0);
-    __decorate$1([
         Property()
     ], RecurrenceEditor.prototype, "cssClass", void 0);
     __decorate$1([
@@ -15083,7 +15080,8 @@ var AgendaBase = /** @__PURE__ @class */ (function () {
                     templateEle = this.createAppointment(listData[li]);
                 }
                 append([].slice.call(templateEle), appWrapper);
-                listElement.children[li].innerHTML = appWrapper.outerHTML;
+                listElement.children[li].innerHTML = '';
+                listElement.children[li].appendChild(appWrapper);
                 var args = { data: listData[li], element: listElement.children[li], cancel: false };
                 this.parent.trigger(eventRendered, args);
                 if (args.cancel) {
@@ -15581,7 +15579,7 @@ var Agenda = /** @__PURE__ @class */ (function (_super) {
             filterData = this.appointmentFiltering(filterDate.start, filterDate.end);
             if (filterData.length > 0 || !this.parent.hideEmptyAgendaDays) {
                 this.renderContent(emptyTBody, filterDate.start);
-                tBody.innerHTML = emptyTBody.innerHTML + tBody.innerHTML;
+                prepend([].slice.call(emptyTBody.childNodes), tBody);
                 this.agendaBase.wireEventActions();
                 for (var s = 0, element = tBody.children; s < element.length; s++) {
                     if (element[s].getAttribute('aria-rowindex') === topElement.getAttribute('aria-colindex')) {
@@ -15599,7 +15597,7 @@ var Agenda = /** @__PURE__ @class */ (function (_super) {
             filterData = this.appointmentFiltering(filterDate.start, filterDate.end);
             if (filterData.length > 0 || !this.parent.hideEmptyAgendaDays) {
                 this.renderContent(emptyTBody, filterDate.start);
-                tBody.innerHTML += emptyTBody.innerHTML;
+                append([].slice.call(emptyTBody.childNodes), tBody);
                 this.agendaBase.wireEventActions();
                 this.updateHeaderText(scrollDate);
             }

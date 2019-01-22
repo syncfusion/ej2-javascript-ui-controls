@@ -6,6 +6,7 @@ import { createElement, remove } from '@syncfusion/ej2-base';
 import { jobData, sportsData } from '../base/data.spec';
 import { IPrintEventArgs } from '../../../src/treemap/model/interface';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 import { beforePrint } from '../../../src/treemap/model/constants';
 
 let jobDataSource: Object[] = jobData;
@@ -15,6 +16,14 @@ let gameDataSource: Object[] = sportsData;
  */
 
 describe('TreeMap component Spec', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('TreeMap label spec', () => {
         let element: Element;
         let treemap: TreeMap;
@@ -59,6 +68,7 @@ describe('TreeMap component Spec', () => {
                 let spec: string = document.getElementById('labels_Level_Index_0_Item_Index_2_Text').textContent
                 expect(spec).toEqual('Germany');
             }
+            treemap.theme = 'BootstrapDark';
             treemap.leafItemSettings.interSectAction = 'Trim';
             treemap.refresh();
         });
@@ -89,11 +99,27 @@ describe('TreeMap component Spec', () => {
             treemap.leafItemSettings.interSectAction = 'Wrap';
             treemap.refresh();
         });
-
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });
 
 describe('TreeMap component Spec', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('TreeMap colorMapping  spec', () => {
         let element: Element;
         let treemap: TreeMap;
@@ -211,9 +237,26 @@ describe('TreeMap component Spec', () => {
             treemap.refresh();
         });
     });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
 });
 
 describe('TreeMap component Spec', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('TreeMap print and export  spec', () => {
         let element: Element;
         let treemap: TreeMap;
@@ -354,6 +397,13 @@ describe('TreeMap component Spec', () => {
             }, 500);
         });
     });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
 });
-
-

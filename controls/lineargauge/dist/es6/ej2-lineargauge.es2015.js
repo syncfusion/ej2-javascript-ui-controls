@@ -489,7 +489,7 @@ function textFormatter(format, data, gauge) {
     }
     let keys = Object.keys(data);
     for (let key of keys) {
-        format = format.split('${' + key + '}').join(formatValue(data[key], gauge).toString());
+        format = format.split('{' + key + '}').join(formatValue(data[key], gauge).toString());
     }
     return format;
 }
@@ -503,7 +503,7 @@ function formatValue(value, gauge) {
     else {
         formatValue = value;
     }
-    return formatValue ? formatValue : '';
+    return formatValue !== null ? formatValue : '';
 }
 /** @private */
 function getLabelFormat(format) {
@@ -1218,8 +1218,8 @@ class AxisLayoutPanel {
         for (let i = min; (i <= max && interval > 0); i += interval) {
             argsData = {
                 cancel: false, name: axisLabelRender, axis: axis,
-                text: customLabelFormat ? style.format.replace(new RegExp('{value}', 'g'), format(i)) :
-                    format(i),
+                text: customLabelFormat ? textFormatter(style.format, { value: i }, this.gauge) :
+                    formatValue(i, this.gauge).toString(),
                 value: i
             };
             this.gauge.trigger(axisLabelRender, argsData);
@@ -1878,7 +1878,7 @@ class GaugeTooltip {
             target = e.target;
         }
         let tooltipEle;
-        let tooltipContent = [];
+        let tooltipContent;
         if (target.id.indexOf('Pointer') > -1) {
             this.pointerElement = target;
             let areaRect = this.gauge.element.getBoundingClientRect();
@@ -1886,8 +1886,9 @@ class GaugeTooltip {
             this.currentAxis = current.axis;
             this.axisIndex = current.axisIndex;
             this.currentPointer = current.pointer;
-            tooltipContent = [textFormatter(this.tooltip.format, { value: this.currentPointer.currentValue }, this.gauge) ||
-                    formatValue(this.currentPointer.currentValue, this.gauge).toString()];
+            let customTooltipFormat = this.tooltip.format && this.tooltip.format.match('{value}') !== null;
+            tooltipContent = customTooltipFormat ? textFormatter(this.tooltip.format, { value: this.currentPointer.currentValue }, this.gauge) :
+                formatValue(this.currentPointer.currentValue, this.gauge).toString();
             if (document.getElementById(this.tooltipId)) {
                 tooltipEle = document.getElementById(this.tooltipId);
             }
@@ -1901,7 +1902,7 @@ class GaugeTooltip {
             }
             let location = this.getTooltipLocation();
             let args = {
-                name: tooltipRender, cancel: false, gauge: this.gauge, event: e, location: location, content: tooltipContent[0],
+                name: tooltipRender, cancel: false, gauge: this.gauge, event: e, location: location, content: tooltipContent,
                 tooltip: this.tooltip, axis: this.currentAxis, pointer: this.currentPointer
             };
             let tooltipPos = this.getTooltipPosition();
@@ -2088,6 +2089,7 @@ let LinearGauge = class LinearGauge extends Component {
         if (theme === 'highcontrast') {
             this.titleStyle.color = this.titleStyle.color || '#FFFFFF';
             this.setThemeColors('#FFFFFF', '#FFFFFF');
+            this.background = this.background || '#000000';
         }
         else if (theme.indexOf('dark') > -1) {
             for (let axis of this.axes) {
@@ -2099,11 +2101,12 @@ let LinearGauge = class LinearGauge extends Component {
                     pointer.color = pointer.color || '#9A9A9A';
                 }
             }
-            this.background = '#333232';
+            this.background = this.background || '#333232';
         }
         else {
             this.titleStyle.color = this.titleStyle.color || '#424242';
             this.setThemeColors('#686868', '#a6a6a6');
+            this.background = this.background || '#FFFFFF';
         }
     }
     setThemeColors(labelcolor, others) {
@@ -2171,6 +2174,7 @@ let LinearGauge = class LinearGauge extends Component {
      */
     render() {
         this.renderGaugeElements();
+        this.renderArea();
         this.calculateBounds();
         this.renderAxisElements();
         this.trigger(loaded, { gauge: this });
@@ -2192,6 +2196,15 @@ let LinearGauge = class LinearGauge extends Component {
             secondaryElement.setAttribute('style', 'position: relative');
             this.element.appendChild(secondaryElement);
         }
+    }
+    /**
+     * Render the map area border
+     */
+    renderArea() {
+        let size = measureText(this.title, this.titleStyle);
+        let rectSize = new Rect(this.actualRect.x, this.actualRect.y - (size.height / 2), this.actualRect.width, this.actualRect.height);
+        let rect = new RectOption(this.element.id + 'LinearGaugeBorder', this.background, this.border, 1, rectSize);
+        this.svgObject.appendChild(this.renderer.drawRectangle(rect));
     }
     /**
      * @private
@@ -2789,7 +2802,7 @@ __decorate([
     Complex({ color: '', width: 0 }, Border)
 ], LinearGauge.prototype, "border", void 0);
 __decorate([
-    Property('transparent')
+    Property(null)
 ], LinearGauge.prototype, "background", void 0);
 __decorate([
     Property('')

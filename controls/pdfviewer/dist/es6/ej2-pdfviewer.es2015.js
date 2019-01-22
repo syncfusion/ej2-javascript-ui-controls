@@ -614,6 +614,7 @@ class PdfViewerBase {
         this.isViewerMouseDown = false;
         this.isViewerMouseWheel = false;
         this.scrollPosition = 0;
+        this.sessionStorage = [];
         this.pointerCount = 0;
         this.pointersForTouch = [];
         this.isPasswordAvailable = false;
@@ -1288,6 +1289,9 @@ class PdfViewerBase {
                         pageTop = this.getPageTop(pageNumber);
                         pageNumber = pageNumber + 1;
                     }
+                    else {
+                        break;
+                    }
                 }
             }
         }
@@ -1590,7 +1594,7 @@ class PdfViewerBase {
         if (this.pageCount > 0) {
             this.unloadDocument(null);
         }
-        window.sessionStorage.clear();
+        this.windowSessionStorageClear();
         if (this.pinchZoomStorage) {
             this.pinchZoomStorage = [];
         }
@@ -1641,6 +1645,17 @@ class PdfViewerBase {
         }
         window.sessionStorage.removeItem('hashId');
         window.sessionStorage.removeItem('documentLiveCount');
+    }
+    /**
+     * @private
+     */
+    windowSessionStorageClear() {
+        window.sessionStorage.removeItem('currentDocument');
+        window.sessionStorage.removeItem('serviceURL');
+        window.sessionStorage.removeItem('unload');
+        this.sessionStorage.forEach((element) => {
+            window.sessionStorage.removeItem(element);
+        });
     }
     /**
      * @private
@@ -2256,6 +2271,7 @@ class PdfViewerBase {
                 if (this.renderedPagesList.indexOf(next) === -1 && !this.getMagnified()) {
                     this.createRequestForRender(next);
                     let pageHeight = this.getPageHeight(next);
+                    this.renderCountIncrement();
                     while (this.viewerContainer.clientHeight > pageHeight) {
                         next = next + 1;
                         if (next < this.pageCount) {
@@ -2263,6 +2279,9 @@ class PdfViewerBase {
                             this.createRequestForRender(next);
                             pageHeight += this.getPageHeight(next);
                             this.renderCountIncrement();
+                        }
+                        else {
+                            break;
                         }
                     }
                 }
@@ -2461,6 +2480,7 @@ class PdfViewerBase {
             }
         }
         window.sessionStorage.setItem(this.documentId + '_' + pageIndex + '_' + this.getZoomFactor(), JSON.stringify(storeObject));
+        this.sessionStorage.push(this.documentId + '_' + pageIndex + '_' + this.getZoomFactor());
     }
     createBlobUrl(base64String, contentType) {
         let sliceSize = 512;

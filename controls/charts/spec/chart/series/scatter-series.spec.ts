@@ -4,7 +4,12 @@
  */
 import { remove, createElement } from '@syncfusion/ej2-base';
 import { Chart } from '../../../src/chart/chart';
+import { IPointEventArgs } from '../../../src/common/model/interface';
+import { ChartLocation } from '../../../src/common/utils/helper';
 import { ScatterSeries } from '../../../src/chart/series/scatter-series';
+import { ColumnSeries } from '../../../src/chart/series/column-series';
+import { AreaSeries } from '../../../src/chart/series/area-series';
+import { PolarSeries } from '../../../src/chart/series/polar-series';
 import { LineSeries } from '../../../src/chart/series/line-series';
 import { DateTime } from '../../../src/chart/axis/date-time-axis';
 import { Category } from '../../../src/chart/axis/category-axis';
@@ -18,7 +23,7 @@ import { MouseEvents } from '../base/events.spec';
 import { tool1, tool2, datetimeData, categoryData, negativeDataPoint, rotateData1, rotateData2 } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs } from '../../../src/common/model/interface';
-Chart.Inject(ScatterSeries, LineSeries, DateTime, Category, Tooltip, DataLabel);
+Chart.Inject(ScatterSeries, LineSeries, DateTime, Category, Tooltip, DataLabel, ColumnSeries, AreaSeries, PolarSeries);
 let data: any = tool1;
 let data2: any = tool2;
 let datetime: any = datetimeData;
@@ -934,4 +939,228 @@ describe('Scatter Series Inversed axis', () => {
             chart.tooltip.shared = true;
             chart.refresh();
         });
+    });
+    let series1: Object[] = [
+        { x: 0, y: 125 }, { x: 1, y: 125 },
+        { x: 2, y: 125 }, { x: 3, y: 125 },
+        { x: 4, y: 125 }, { x: 5, y: 125 },
+        { x: 6, y: 125 }, { x: 7, y: 125 },
+        { x: 8, y: 125 }, { x: 9, y: 125 },
+        { x: 10, y: 125 }, { x: 11, y: 125 },
+        { x: 12, y: 125 }, { x: 13, y: 125 },
+        { x: 14, y: 125 }, { x: 15, y: 125 },
+        //{ x: 16, y: 125 },
+        //{ x: 84, y: 125 },   
+        { x: 85, y: 125 },
+        { x: 86, y: 125 }, { x: 87, y: 125 }, { x: 88, y: 125 },
+        { x: 89, y: 125 }, { x: 90, y: 125 },
+        { x: 91, y: 125 }, { x: 92, y: 125 },
+        { x: 93, y: 125 }, { x: 94, y: 125 },
+        { x: 95, y: 125 }, { x: 96, y: 125 },
+        { x: 97, y: 125 }, { x: 98, y: 125 },
+        { x: 99, y: 125 }, { x: 100, y: 125 }];
+    // this.margin = { left: 20, right: 20 , top: 20, bottom: 20}
+    let series3: Object[] = [
+        { x: 97.4, y: 12 }, { x: 86, y: 95 },
+        { x: 87.7, y: 95 }, { x: 91, y: 95 },
+        { x: 91.1, y: 95 }, { x: 91.2, y: 95 },
+        { x: 91.3, y: 95 }, { x: 91.4, y: 95 },
+        { x: 92.1, y: 95 }, { x: 92, y: 95 },
+        { x: 95, y: 95.1 }, { x: 93, y: 95.5 },
+        { x: 94, y: 95.4 }, { x: 95, y: 95 },
+        { x: 96, y: 95 }, { x: 97, y: 95 },
+        { x: 98, y: 95 }, { x: 99, y: 95 },
+        { x: 2, y: 95 },
+        { x: 4, y: 95 }, { x: 6, y: 95 },
+        { x: 8, y: 95 }, { x: 8.4, y: 95 },
+        { x: 8.6, y: 95 }, { x: 8.7, y: 95 },
+        { x: 8.8, y: 95 }, { x: 8.9, y: 95 },
+        { x: 9.1, y: 95 }, { x: 9.2, y: 95 },
+        { x: 9.3, y: 95 }, { x: 9.4, y: 95 },
+        { x: 9.5, y: 95 }, { x: 9.6, y: 95 },
+        { x: 9.7, y: 95 }, { x: 9.8, y: 95 },
+        { x: 9.9, y: 95 }, { x: 10, y: 95 },
+        { x: 10.1, y: 95 }, { x: 10.2, y: 95 },
+        { x: 10.3, y: 95 }, { x: 10.4, y: 95 },
+        { x: 10.5, y: 95 }, { x: 10.6, y: 95 },
+        { x: 10.7, y: 95 }, { x: 10.8, y: 95 },
+        { x: 10.9, y: 95 }, { x: 11, y: 95 },
+        { x: 11.1, y: 95 }, { x: 11.2, y: 95 },
+        { x: 11.3, y: 95 }, { x: 11.4, y: 95 },
+        { x: 11.5, y: 95 }, { x: 11.6, y: 95 },
+        { x: 11.7, y: 95 }, { x: 11.8, y: 95 },
+        { x: 11.9, y: 95 }, { x: 12, y: 95 }, { x: 12, y: 95 },
+        { x: 14, y: 95 }, { x: 7, y: 15 },
+    
+    ];
+    let sline: Object[] = [{ x: 99.3, y: 52 }, { x: 0.5, y: 52 },];
+    let dataa2: Object[] = [{ x: 95, y: 22 }, { x: 86, y: 125 }];
+    let data3: Object[] = [{ x: 6, y: 22 }, { x: 13.9, y: 125 }];
+    let data4: Object[] = [
+        { x: 1, y: 75 },
+        { x: 10, y: 60 }, { x: 11, y: 59 },
+        { x: 89, y: 15 }, { x: 91, y: 2 },
+        { x: 90, y: 5 }, { x: 94, y: 29 },
+        { x: 89.5, y: 58.7 },
+        { x: 100, y: 78 }];
+    let scatter1: Object[] = [
+        { x: 88.8, y: 57.5 },
+        { x: 11.5, y: 58 },
+        { x: 0, y: 76 },
+    
+    ];
+    let scatter2: Object[] = [
+        { x: 0, y: 52 },
+    ];
+    let areaData: Object[] = [
+        { x: 0, y: 139 }, { x: 1, y: 140 },
+        { x: 2, y: 140 }, { x: 3, y: 139 },
+        { x: 4, y: 133 }, { x: 5, y: 140 },
+        { x: 6, y: 139 }, { x: 7, y: 121 },
+        { x: 8, y: 139 }, { x: 9, y: 139 },
+        { x: 10, y: 139 }, { x: 11, y: 134 },
+        { x: 12, y: 137 }, { x: 13, y: 139 },
+        { x: 14, y: 139 },
+        { x: 86, y: 139 }, { x: 87, y: 139 }, { x: 88, y: 139 },
+        { x: 89, y: 139 }, { x: 90, y: 139 },
+        { x: 91, y: 140 }, { x: 92, y: 139 },
+        { x: 93, y: 139 }, { x: 94, y: 140 },
+        { x: 95, y: 139 }, { x: 96, y: 139 },
+        { x: 97, y: 139 }, { x: 98, y: 139 },
+        { x: 99, y: 139 }, { x: 100, y: 139 },
+        { x: 0, y: 137 }, { x: 0, y: 133 }, { x: 1, y: 125 },
+        { x: 2, y: 129 }, { x: 3, y: 128 },
+        { x: 4, y: 121 }, { x: 5, y: 135 },
+        { x: 6, y: 128 }, { x: 7, y: 139 },
+        { x: 8, y: 134 }, { x: 9, y: 140 },
+        { x: 10, y: 106 }, { x: 11, y: 134 },
+        { x: 12, y: 129 }, { x: 13, y: 129 },
+        { x: 14, y: 139 },
+        { x: 86, y: 137 }, { x: 87, y: 140 }, { x: 88, y: 123 },
+        { x: 89, y: 132 }, { x: 90, y: 127 },
+        { x: 91, y: 136 }, { x: 92, y: 137 },
+        { x: 93, y: 123 }, { x: 94, y: 136 },
+        { x: 95, y: 127 }, { x: 96, y: 138 },
+        { x: 97, y: 124 }, { x: 98, y: 124 },
+        { x: 99, y: 134 }, { x: 100, y: 129 },
+    ];
+    let scatter3: Object[] = [{ x: 0, y: 20 }];
+    let scatter4: Object[] = [{ x: 0, y: 18 },];
+    
+    describe('checking scatter chart in polar using point click', () => {
+        let chart: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: HTMLElement = createElement('div', { id: 'container' });
+        let dataLabel: HTMLElement;
+        let point: Points;
+        let trigger: MouseEvents = new MouseEvents();
+        let x: number;
+        let y: number;
+        let tooltip: HTMLElement;
+        let chartArea: HTMLElement;
+        let series: Series;
+        let targetElement: HTMLElement;
+        beforeAll(() => {
+            document.body.appendChild(element);
+            chart = new Chart({
+                background: "#417a3a",
+                margin: { left: -70, right: -70 },
+                primaryXAxis: {
+                    majorGridLines: { width: 0 },
+                    majorTickLines: { width: 0 },
+                    minimum: 0, maximum: 100, interval: 10,
+                    labelStyle: { color: 'transparent' }
+                },
+                primaryYAxis: {
+                    majorGridLines: { width: 0 },
+                    majorTickLines: { width: 0 },
+                    minimum: 0, maximum: 140, interval: 20,
+                    labelStyle: { color: 'transparent' },
+                    lineStyle: { width: 0 }
+                },
+                series: [
+                    {
+                        dataSource: areaData, type: "Polar", drawType: 'Column', xName: "x", yName: "y", fill: "#417a3a", animation: { enable: false }
+                    },
+                    {
+                        dataSource: series1, type: "Polar", drawType: 'Column', xName: "x", yName: "y", fill: "#3be026",
+                    },
+                    {
+                        dataSource: series3, type: "Polar", drawType: 'Area', xName: "x", yName: "y", fill: "#F9E79F",
+                    },
+                    {
+                        dataSource: data4, type: "Polar", drawType: 'Area', xName: "x", yName: "y", fill: "#3be026",
+                    },
+                    {
+                        dataSource: scatter1, type: "Polar", drawType: 'Scatter', xName: "x", yName: "y", fill: "White", width: 3, marker: { visible: true, shape: 'Diamond', width: 10, height: 10 }
+                    },
+                    {
+                        dataSource: scatter2, type: "Polar", drawType: 'Scatter', xName: "x", yName: "y", fill: "#F9E79F", width: 2, marker: { visible: true, width: 12, height: 12 }
+                    },
+                    {
+                        dataSource: scatter3, type: "Polar", drawType: 'Scatter', xName: "x", yName: "y", fill: "#F9E79F", width: 2, marker: { visible: true, width: 36, height: 35 }
+                    },
+                    {
+                        dataSource: dataa2, type: "Polar", drawType: 'Line', xName: "x", yName: "y", fill: "White", width: 2,
+                    },
+                    {
+                        dataSource: data3, type: "Polar", drawType: 'Line', xName: "x", yName: "y", fill: "White", width: 2,
+                    },
+                    {
+                        dataSource: sline, type: "Polar", drawType: 'Line', xName: "x", yName: "y", fill: "White", width: 2,
+                    },
+                    {
+                        dataSource: scatter4, type: "Polar", drawType: 'Scatter', xName: "x", yName: "y", fill: "White", width: 2, marker: { visible: true, shape: 'Diamond', width: 12, height: 10 }
+                    },
+    
+                ],
+                pointClick: function (args: IPointEventArgs): void {
+    
+                    if (args.point.x > 86 || args.point.x < 15) {
+                        var newPoint = getPolarpoint(args.x, args.y, <Series>args.series, (<Series>args.series).chart);
+                        (<Series>args.series).chart.addSeries([{
+                            type: 'Polar', drawType: 'Scatter',
+                            dataSource: [
+                                { x: newPoint.x, y: newPoint.y }
+                            ],
+                            xName: 'x', width: 2, animation: { enable: false },
+                            yName: 'y', fill: 'orange'
+                        }]);
+                    }
+                }
+            });
+            chart.appendTo('#container');
+            function getPolarpoint(x: number, y: number, series: Series, chart: Chart): ChartLocation {
+                var centerX = series.clipRect.width / 2 + series.clipRect.x,
+                    centerY = series.clipRect.height / 2 + series.clipRect.y,
+                    distance = Math.sqrt(Math.pow(centerX - x, 2) + Math.pow(centerY - y, 2)),
+                    Value = distance / chart.radius,
+                    yValue = (Value * series.yAxis.visibleRange.delta) + series.yAxis.visibleRange.min,
+                    difference, result1;
+                var radians = Math.atan2(y - centerY, x - centerX),
+                    angle = ((90 - ((radians * 180) / Math.PI) + 360) % 360);
+                angle = 360 - angle;
+                angle = angle + 180;
+                if (angle > 360)
+                    angle = angle - 360;
+    
+                difference = series.xAxis.visibleRange.max - series.xAxis.visibleRange.min;
+                result1 = difference * (angle / 360);
+                result1 += series.xAxis.visibleRange.min;
+                return { x: result1, y: yValue };
+            }
+        });
+        afterAll((): void => {
+            chart.destroy();
+            element.remove();
+        });
+         it('checking scatter series', () => {
+            loaded = (args: Object): void => {
+                let target: HTMLElement = document.getElementById('containerSeriesGroup0');
+                trigger.mousedownEvent(target, 0, 0, Math.ceil(576.0000000000002), Math.ceil(63.999999999999886));
+                let clip: HTMLElement = document.getElementById("container_ChartSeriesClipRect_11_Circle");
+                expect(clip.getAttribute("r") == "193.875");
+            };
+            chart.loaded = loaded;
+         });
     });

@@ -394,6 +394,15 @@ describe('Diagram Control', () => {
             browser.compareScreen(element(By.id('diagram')), 'ComplexHierarchicalLayout - MarginX');
         });
     });
+    describe('Layout issue fix', () => {
+        it('Layout issue fix', () => {
+            browser.load('/demos/hierarchicaltree/layout-issue.html');
+        });
+        it('Layout issue fix without layoutdefinition', () => {
+            executeClickEvent('changeShape');
+            browser.compareScreen(element(By.id('diagram')), 'LayoutIssue');
+        });
+    });
     function executeClickEvent(id: string): void {
         let buttonElement: ElementFinder = element(By.id(id));
         buttonElement.click();

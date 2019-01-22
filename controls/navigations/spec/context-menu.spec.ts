@@ -6,6 +6,7 @@ import { BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs, MenuEventArgs } f
 import { MenuItemModel } from '../src/common/menu-base-model';
 import { createElement, select, isVisible, EventHandler, Browser } from '@syncfusion/ej2-base';
 import { getScrollableParent } from '@syncfusion/ej2-popups';
+import { profile , inMB, getMemoryProfile } from './common.spec';
 
 function copyObject(source: any, destination: any): Object {
     for (let prop in source) {
@@ -32,6 +33,15 @@ export function getEventObject(eventType: string, eventName: string): Object {
 }
 
 describe('ContextMenu', () => {
+    beforeAll(() => {
+        const isDef: any = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log('Unsupported environment, window.performance.memory is unavailable');
+            this.skip(); // skips test (in Chai)
+            return;
+        }
+    });
+
     let contextMenu: any;
     let items: MenuItemModel[] = [
         {
@@ -1263,5 +1273,15 @@ describe('ContextMenu', () => {
             contextMenu.close();
             expect(isVisible(contextMenu.element)).toBeFalsy();
         });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        // check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

@@ -7,6 +7,7 @@ import { CircularGauge } from '../../../src/circular-gauge/circular-gauge';
 import { Range, Pointer } from '../../../src/circular-gauge/axes/axis';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs } from '../../../src/circular-gauge/model/interface';
 import { GaugeLocation } from '../../../src/circular-gauge/utils/helper';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 
 describe('Circular-Gauge Control', () => {
     let gauge: CircularGauge;
@@ -17,6 +18,14 @@ describe('Circular-Gauge Control', () => {
     let boundingRect: ClientRect;
     let boundingRect1: ClientRect;
     let value: string[] | string | number;
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
 
     describe('Gauge axis pointer behavior - Needle Pointer', () => {
         beforeAll((): void => {
@@ -1128,5 +1137,14 @@ describe('Circular-Gauge Control', () => {
             gauge.axes[1].pointers[1].radius = '60%';
             gauge.refresh();
         });
+    });
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

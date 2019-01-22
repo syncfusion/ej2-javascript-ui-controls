@@ -2,7 +2,17 @@
 
 ## [Unreleased]
 
-## 16.4.47 (2019-01-08)
+## 16.4.48 (2019-01-16)
+
+### Grid
+
+#### Bug Fixes
+
+- Argument is not returned well in `rowDragStart` Event is resolved.
+- Column chooser dialog not getting hidden while click outside of the Grid is fixed.
+- Selecting cell using arrow keys with frozen column and cell selection is `misfocused` issue is fixed.
+
+## 16.4.47 (2019-01-16)
 
 ### Grid
 

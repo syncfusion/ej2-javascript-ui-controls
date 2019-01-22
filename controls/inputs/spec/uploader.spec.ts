@@ -3317,4 +3317,40 @@ describe('Uploader Control', () => {
             }, 400);
         });
     })
+
+    describe('File List Template UI for preload files', () => {
+        let uploadObj: any;       
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload'});            
+            document.body.appendChild(element);
+            element.setAttribute('type', 'file');
+            let preLoadFiles: any = [
+                {name: 'ASP.Net books', size: 500, type: 'png'},
+                {name: 'Movies', size: 12000, type: 'pdf'},
+                {name: 'Study materials', size: 500000, type: 'docx'},
+            ];
+            uploadObj = new Uploader({  
+              files: preLoadFiles,
+              template: "<div class='wrapper'><table><tbody><tr><td><span class='file-name'>${name}</span></td><td><span class='file-size'>${size} bytes</span><span class='upload-status'>${status}</span></td></tr></tbody></table></div>",
+              rendering: function (args: any) {
+                if(args.isPreload) {
+                    args.element.querySelector('.upload-status').innerHTML = 'Status Customized';
+                }
+              }
+            });
+            uploadObj.appendTo(document.getElementById('upload'));
+        })
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+        it('Check LI Count', (done) => {
+            setTimeout(() => {
+                expect(uploadObj.uploadWrapper.querySelectorAll('li').length).toBe(3);
+                expect(uploadObj.uploadWrapper.querySelectorAll('li')[0].querySelector('.upload-status').innerHTML).toBe('Status Customized');
+                expect(uploadObj.uploadWrapper.querySelectorAll('li')[1].querySelector('.upload-status').innerHTML).toBe('Status Customized');
+                expect(uploadObj.uploadWrapper.querySelectorAll('li')[2].querySelector('.upload-status').innerHTML).toBe('Status Customized');
+                done();
+            }, 3000);
+        });
+    })
 });

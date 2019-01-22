@@ -4,6 +4,7 @@
 import { Sparkline, ISparklineLoadedEventArgs } from '../../src/sparkline/index';
 import { removeElement, getIdElement } from '../../src/sparkline/utils/helper';
 import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 interface Marker {
     cx?: number;
     cy?: number;
@@ -25,6 +26,14 @@ function getMarkerOptions(marker: Element): Marker {
     };
 }
 describe('Sparkline marker and special point spec', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     let element: Element;
     let sparkline: Sparkline;
     let id: string = 'spark-container';
@@ -376,5 +385,14 @@ describe('Sparkline marker and special point spec', () => {
     it('Sparkline marker web accessibility checking', () => {
         ele = getIdElement(id + '_sparkline_marker_1');
         expect(ele.getAttribute('aria-label')).toBe('February : 312');
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

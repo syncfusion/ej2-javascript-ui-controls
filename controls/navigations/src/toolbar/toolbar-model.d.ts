@@ -95,7 +95,7 @@ export interface ItemModel {
     /**
      * Defines htmlAttributes used to add custom attributes to Toolbar command.
      * Supports HTML attributes such as style, class, etc.
-     * @default 'null'
+     * @default null
      */
     htmlAttributes?: { [key: string]: string; };
 
@@ -174,7 +174,7 @@ export interface ToolbarModel extends ComponentModel{
 
     /**
      * Specifies the direction of the Toolbar commands. For cultures like Arabic, Hebrew, etc. direction can be switched to right to left.
-     * @default 'false'
+     * @default false
      */
     enableRtl?: boolean;
 

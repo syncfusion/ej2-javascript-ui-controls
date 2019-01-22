@@ -163,12 +163,6 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     @Property()
     public dateFormat: string;
     /**
-     * Sets the locale to be applied on recurrence editor.
-     * @default true
-     */
-    @Property('en-US')
-    public locale: string;
-    /**
      * Allows styling with custom class names.
      * @default null
      */

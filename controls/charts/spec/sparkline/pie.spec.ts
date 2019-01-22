@@ -1,13 +1,21 @@
 import { Sparkline, SparklineTooltip } from '../../src/sparkline/index';
 import { createElement } from '@syncfusion/ej2-base';
 import { removeElement, getIdElement } from '../../src/sparkline/utils/helper';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 Sparkline.Inject(SparklineTooltip);
 /**
  * Sparkline Test case file for pie series
  */
 
 describe('Sparkline Component Pie Series Spec', () => {
-
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Sparkline testing Pie series spec', () => {
         let element: Element;
         let sparkline: Sparkline;
@@ -71,8 +79,25 @@ describe('Sparkline Component Pie Series Spec', () => {
             sparkline.refresh();
         });
     });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
 });
 describe('Sparkline testing Pie series spec for height greater than width', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     let element: Element;
     let sparkline: Sparkline;
     let id: string = 'spark-container';
@@ -140,5 +165,14 @@ describe('Sparkline testing Pie series spec for height greater than width', () =
         expect(ele.getAttribute('fill')).toBe('orange');
         ele = getIdElement(id + '_sparkline_pie_1');
         expect(ele.getAttribute('fill')).toBe('blue');
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

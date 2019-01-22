@@ -48,7 +48,7 @@ export interface AnnotationModel {
 
     /**
      * Sets the textual description of the node/connector
-     * @default undefined
+     * @default 'undefined'
      */
     template?: string | HTMLElement;
 

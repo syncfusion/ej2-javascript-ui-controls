@@ -4,8 +4,18 @@
 import { select, selectAll } from '@syncfusion/ej2-base';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy } from './../render.spec';
+import { profile, inMB, getMemoryProfile } from './../common.spec';
 
 describe('MaskedTextBox Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
+
     describe('MaskedTextBox render testing', () => {
         let editorObj: any;
         let ele: HTMLElement;
@@ -58,5 +68,311 @@ describe('MaskedTextBox Control', () => {
             editorObj.save();
             expect(valueEle.innerHTML === '98765').toEqual(true);
         });
+    });
+    describe('Duplicate ID availability testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Inline - ID testing', () => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'Mask'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-maskedtextbox', ele).length === 1).toEqual(true);
+            expect(selectAll('#' + ele.id, document.body).length === 1).toEqual(true);
+        });
+        it('Popup - ID testing', () => {
+            editorObj = renderEditor({
+                mode: 'Popup',
+                type: 'Mask'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-maskedtextbox', document.body).length === 1).toEqual(true);
+            expect(selectAll('#' + ele.id, document.body).length === 1).toEqual(true);
+        });
+    });
+    describe('Value formatting related testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Default value with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'Mask',
+                mode: 'Inline',
+                model: {
+                    mask: '#####'
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-maskedtextbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect((<HTMLInputElement>select('.e-maskedtextbox', document.body)).value).toEqual('_____');
+            editorObj.save();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            editorObj.value = '2';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('2');
+            expect(valueEle.innerHTML).toEqual('2');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-maskedtextbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('2');
+            expect((<HTMLInputElement>select('.e-maskedtextbox', document.body)).value).toEqual('2____');
+            editorObj.save();
+            expect(editorObj.value).toEqual('2');
+            expect(valueEle.innerHTML).toEqual('2____');
+            editorObj.value = '';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-maskedtextbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('');
+            expect((<HTMLInputElement>select('.e-maskedtextbox', document.body)).value).toEqual('_____');
+            editorObj.save();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+        });
+        it('Value as "null" with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'Mask',
+                mode: 'Inline',
+                model: {
+                    mask: '#####'
+                },
+                value: null
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-maskedtextbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect((<HTMLInputElement>select('.e-maskedtextbox', document.body)).value).toEqual('_____');
+            editorObj.save();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            editorObj.value = '2';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('2');
+            expect(valueEle.innerHTML).toEqual('2');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-maskedtextbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('2');
+            expect((<HTMLInputElement>select('.e-maskedtextbox', document.body)).value).toEqual('2____');
+            editorObj.save();
+            expect(editorObj.value).toEqual('2');
+            expect(valueEle.innerHTML).toEqual('2____');
+            editorObj.value = '';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-maskedtextbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('');
+            expect((<HTMLInputElement>select('.e-maskedtextbox', document.body)).value).toEqual('_____');
+            editorObj.save();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+        });
+        it('Value as "undefined" string with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'Mask',
+                mode: 'Inline',
+                model: {
+                    mask: '#####'
+                },
+                value: undefined
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-maskedtextbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect((<HTMLInputElement>select('.e-maskedtextbox', document.body)).value).toEqual('_____');
+            editorObj.save();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            editorObj.value = '2';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('2');
+            expect(valueEle.innerHTML).toEqual('2');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-maskedtextbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('2');
+            expect((<HTMLInputElement>select('.e-maskedtextbox', document.body)).value).toEqual('2____');
+            editorObj.save();
+            expect(editorObj.value).toEqual('2');
+            expect(valueEle.innerHTML).toEqual('2____');
+            editorObj.value = '';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-maskedtextbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('');
+            expect((<HTMLInputElement>select('.e-maskedtextbox', document.body)).value).toEqual('_____');
+            editorObj.save();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+        });
+        it('Value as empty string with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'Mask',
+                mode: 'Inline',
+                model: {
+                    mask: '#####'
+                },
+                value: ''
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-maskedtextbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('');
+            expect((<HTMLInputElement>select('.e-maskedtextbox', document.body)).value).toEqual('_____');
+            editorObj.save();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            editorObj.value = '2';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('2');
+            expect(valueEle.innerHTML).toEqual('2');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-maskedtextbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('2');
+            expect((<HTMLInputElement>select('.e-maskedtextbox', document.body)).value).toEqual('2____');
+            editorObj.save();
+            expect(editorObj.value).toEqual('2');
+            expect(valueEle.innerHTML).toEqual('2____');
+            editorObj.value = '';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-maskedtextbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('');
+            expect((<HTMLInputElement>select('.e-maskedtextbox', document.body)).value).toEqual('_____');
+            editorObj.save();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+        });
+        it('Defined value with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'Mask',
+                mode: 'Inline',
+                value: '000',
+                model: {
+                    mask: '#####'
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual('000');
+            expect(valueEle.innerHTML).toEqual('000');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual('000');
+            expect(valueEle.innerHTML).toEqual('000');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-maskedtextbox', document.body).length === 1).toEqual(true);
+            expect((<HTMLInputElement>select('.e-maskedtextbox', document.body)).value).toEqual('000__');
+            expect(editorObj.value).toEqual('000');
+            editorObj.save();
+            expect(editorObj.value).toEqual('000');
+            expect(valueEle.innerHTML).toEqual('000__');
+            editorObj.value = '';
+            editorObj.dataBind();
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-maskedtextbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('');
+            expect((<HTMLInputElement>select('.e-maskedtextbox', document.body)).value).toEqual('_____');
+            editorObj.save();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            editorObj.value = '123';
+            editorObj.dataBind();
+            expect(valueEle.innerHTML).toEqual('123');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-maskedtextbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('123');
+            expect((<HTMLInputElement>select('.e-maskedtextbox', document.body)).value).toEqual('123__');
+            editorObj.save();
+            expect(editorObj.value).toEqual('123');
+            expect(valueEle.innerHTML).toEqual('123__');
+        });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

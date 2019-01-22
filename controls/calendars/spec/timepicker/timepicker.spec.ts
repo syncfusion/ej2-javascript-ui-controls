@@ -2211,7 +2211,6 @@ describe('TimePicker', () => {
             timeObj.enableRtl = true;
             timeObj.dataBind();
             timeObj.show();
-            timeObj.popupCalculation();
             setTimeout(() => {
                 expect(timeObj.getText()).toBe('');
                 done();
@@ -2958,6 +2957,18 @@ describe('TimePicker', () => {
             expect(document.querySelector('.e-float-text')).toBe(null);
             expect(timepicker.element.value).toBe('');
         });
+        it('Form destroy event test case',()=>{
+            timepicker = new TimePicker({ value: new Date()});
+            timepicker.appendTo('#timepicker');
+            expect(document.getElementById('timepicker').classList.contains('e-timepicker')).toBe(true);
+            expect(!isNullOrUndefined(timepicker.inputWrapper)).toBe(true);
+            expect(document.forms[0].__eventList.events[0].name).toBe('reset');
+            timepicker.destroy();
+            expect(document.getElementById('timepicker').classList.contains('e-timepicker')).toBe(false);
+            expect(!isNullOrUndefined(timepicker.inputWrapper)).toBe(false);
+            expect(document.forms[0].__eventList.events.length).toBe(0);
+            timepicker.appendTo('#timepicker');
+        });
     });
     describe('Form element with value ', () => {
         let timepicker: any;
@@ -2982,5 +2993,83 @@ describe('TimePicker', () => {
             expect(+timepicker.value).toBe(+new Date('2/2/2017'));
         });
     });
+    /**
+    * Model dialog test case
+    */
+   describe('Model dialog', function () {
+       let timepicker: any;
+       beforeEach(()=>{
+           let ele: HTMLElement = createElement('input', { id: 'date' });
+           document.body.appendChild(ele);
+           timepicker = new TimePicker({
+               value: new Date('4/4/2017 1:00 AM')
+           });
+           timepicker.appendTo('#date');
+       });
+       afterEach(()=>{
+           if (timepicker) {
+               timepicker.destroy();
+           }
+           document.body.innerHTML = '';
+       });
+       it(' desktop test case', function () {
+           (<HTMLElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+           expect(document.getElementsByClassName('e-time-modal').length === 0).toBe(true);
+           expect(timepicker.popupObj.position.X).toBe('left');
+           expect(timepicker.popupObj.position.Y).toBe('bottom');
+           expect(timepicker.popupObj.relateTo).toBe(timepicker.inputWrapper.container);
+       });
+       it(' desktop no value test case', function () {
+           timepicker.value = null;
+           timepicker.dataBind();
+           (<HTMLElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+           expect(document.getElementsByClassName('e-time-modal').length === 0).toBe(true);
+           expect(timepicker.popupObj.position.X).toBe('left');
+           expect(timepicker.popupObj.position.Y).toBe('bottom');
+           expect(timepicker.popupObj.relateTo).toBe(timepicker.inputWrapper.container);
+       });
+   });
+   describe('Model dialog-mobile', function () {
+       let timepicker: any;
+       beforeAll(() => {
+           let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+               'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+           Browser.userAgent = androidPhoneUa;
+       });
+       beforeEach(()=>{
+           let ele: HTMLElement = createElement('input', { id: 'date' });
+           document.body.appendChild(ele);
+           timepicker = new TimePicker({
+               value: new Date('4/5/2017 1:00 AM')
+           });
+           timepicker.appendTo('#date');
+       });
+       afterEach(()=>{
+           if (timepicker) {
+               timepicker.destroy();
+           }
+           document.body.innerHTML = '';
+       });
+       afterAll(() => {
+           let androidPhoneUa: string = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36';
+           Browser.userAgent = androidPhoneUa;
+       });
+       it(' mobile test case', function () {
+           (<HTMLElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+           expect(document.getElementsByClassName('e-time-modal').length === 1).toBe(true);
+           expect(timepicker.popupObj.position.X).toBe('center');
+           expect(timepicker.popupObj.position.Y).toBe('center');
+           expect(timepicker.popupObj.relateTo).toBe(document.body)
+       });
+       it(' mobile no value test case', function () {
+           timepicker.value = null;
+           timepicker.dataBind();
+           (<HTMLElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+           expect(document.getElementsByClassName('e-time-modal').length === 1).toBe(true);
+           expect(timepicker.popupObj.position.X).toBe('center');
+           expect(timepicker.popupObj.position.Y).toBe('center');
+           expect(timepicker.popupObj.relateTo).toBe(document.body)
+       });
+   });
 });
 

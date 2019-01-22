@@ -69,7 +69,7 @@ export interface SeriesMarkerBorderModel {
 
     /**
  * border color for marker border.
- * @default white
+ * @default 'white'
  */
     color?: string;
 
@@ -88,7 +88,7 @@ export interface SeriesMarkerDataLabelBorderModel {
 
     /**
  * border color for data label color.
- * @default white
+ * @default 'white'
  */
     color?: string;
 
@@ -174,7 +174,7 @@ export interface SeriesMarkerModel {
 
     /**
  * shape for marker.
- * @default circle
+ * @default 'circle'
  */
     shape?: string;
 
@@ -229,7 +229,7 @@ export interface SmithchartSeriesModel {
 
     /**
  * visibility for series.
- * @default visible
+ * @default 'visible'
  */
     visibility?: string;
 
@@ -281,7 +281,7 @@ export interface SmithchartSeriesModel {
 
     /**
  * perform animation of series based on animation duration.
- * @default 2000ms
+ * @default '2000ms'
  */
     animationDuration?: string;
 

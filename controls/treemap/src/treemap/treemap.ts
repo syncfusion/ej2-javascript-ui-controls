@@ -16,7 +16,7 @@ import { LayoutMode, TreeMapTheme } from './utils/enum';
 import { ILoadEventArgs, ILoadedEventArgs, IPrintEventArgs, IItemRenderingEventArgs, IResizeEventArgs } from '../treemap/model/interface';
 import { IItemClickEventArgs, IItemMoveEventArgs, IClickEventArgs, IMouseMoveEventArgs } from '../treemap/model/interface';
 import { IDrillStartEventArgs, IItemSelectedEventArgs, ITreeMapTooltipRenderEventArgs } from '../treemap/model/interface';
-import { IItemHighlightEventArgs, IDrillEndEventArgs } from '../treemap/model/interface';
+import { IItemHighlightEventArgs, IDrillEndEventArgs, IThemeStyle } from '../treemap/model/interface';
 import { Size, stringToNumber, RectOption, Rect, textTrim, measureText, findChildren } from '../treemap/utils/helper';
 import { removeClassNames, removeShape } from '../treemap/utils/helper';
 import { findPosition, Location, TextOption, renderTextElement, isContainsData, TreeMapAjax } from '../treemap/utils/helper';
@@ -30,6 +30,7 @@ import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { TreeMapHighlight, TreeMapSelection } from './user-interaction/highlight-selection';
 import { TreeMapLegend } from './layout/legend';
 import { DataManager, Query } from '@syncfusion/ej2-data';
+import { getThemeStyle } from './model/theme';
 /**
  * Represents the TreeMap control.
  * ```html
@@ -316,6 +317,10 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     public areaRect: Rect;
     /**
      * @private
+     */
+    public themeStyle: IThemeStyle;
+    /**
+     * @private
      * Stores the legend bounds.
      */
     public totalRect: Rect;
@@ -366,11 +371,11 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     protected render(): void {
 
-        this.themeEffect();
-
         this.createSecondaryElement();
 
         this.addTabIndex();
+
+        this.themeStyle = getThemeStyle(this.theme);
 
         this.renderBorder();
 
@@ -463,36 +468,6 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     }
 
-    /**
-     * To change font styles of map based on themes
-     */
-    private themeEffect(): void {
-        let theme: string = this.theme.toLowerCase();
-        switch (theme) {
-            case 'material':
-            case 'bootstrap':
-            case 'fabric':
-            case 'highcontrastlight':
-                this.setTextStyle('#424242', null);
-                break;
-            case 'highcontrast':
-                this.setTextStyle('#FFFFFF', null);
-                break;
-            case 'materialdark':
-            case 'bootstrapdark':
-            case 'fabricdark':
-                this.setTextStyle('#FFFFFF', '#DADADA');
-                break;
-        }
-    }
-
-    private setTextStyle(color: string, darkColor: string): void {
-        this.titleSettings.textStyle.color = this.titleSettings.textStyle.color || color;
-        this.titleSettings.subtitleSettings.textStyle.color = this.titleSettings.subtitleSettings.textStyle.color || color;
-        this.legendSettings.textStyle.color = this.legendSettings.textStyle.color || (!isNullOrUndefined(darkColor) ? darkColor : color);
-        this.legendSettings.titleStyle.color = this.legendSettings.titleStyle.color || color;
-    }
-
     private createSecondaryElement(): void {
         let secondaryEle: Element = document.getElementById(this.element.id + '_Secondary_Element');
         if (secondaryEle && secondaryEle.childElementCount > 0) {
@@ -519,17 +494,14 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     private renderBorder(): void {
         let width: number = this.border.width;
-        let themes: string = this.theme.toLowerCase();
-        let color: string = (themes.indexOf('dark')) > -1 || themes === 'highcontrast' ? '#000000' : '#FFFFFF';
-        this.background = this.background ? this.background : color;
         let borderElement: Element = this.svgObject.querySelector('#' + this.element.id + '_TreeMap_Border');
-        if (isNullOrUndefined(borderElement)) {
+        if ((this.border.width > 0 || (this.background || this.themeStyle.backgroundColor)) && isNullOrUndefined(borderElement)) {
             let borderRect: RectOption = new RectOption(
-                this.element.id + '_TreeMap_Border', this.background, this.border, 1,
+                this.element.id + '_TreeMap_Border', this.background || this.themeStyle.backgroundColor, this.border, 1,
                 new Rect(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width));
             this.svgObject.appendChild(this.renderer.drawRectangle(borderRect) as SVGRectElement);
-        } else {
-            borderElement.setAttribute('fill', this.background);
+        } else if (borderElement) {
+            borderElement.setAttribute('fill', this.background || this.themeStyle.backgroundColor);
         }
     }
 
@@ -550,7 +522,10 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                 this.element.id + '_TreeMap_' + type, location.x, location.y, 'start', trimmedTitle
             );
             let titleBounds: Rect = new Rect(location.x, location.y, elementSize.width, elementSize.height);
-            let element: Element = renderTextElement(options, style, style.color, groupEle);
+            let element: Element = renderTextElement(
+                options, style, style.color || (type === 'title' ? this.themeStyle.titleFontColor : this.themeStyle.subTitleFontColor),
+                groupEle
+            );
             element.setAttribute('aria-label', title.description || title.text);
             element.setAttribute('tabindex', (this.tabIndex + (type === 'title' ? 1 : 2)).toString());
             if ((type === 'title' && !title.subtitleSettings.text) || (type === 'subtitle')) {

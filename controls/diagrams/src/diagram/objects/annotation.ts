@@ -55,7 +55,7 @@ export class Annotation extends ChildProperty<Annotation> {
 
     /**
      * Sets the textual description of the node/connector
-     * @default undefined
+     * @default 'undefined'
      */
     @Property(undefined)
     public template: string | HTMLElement;

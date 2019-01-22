@@ -427,4 +427,25 @@ describe('SVG Tooltip', () => {
         tooltip.refresh();
         tooltip.fadeOut();
     });
+
+    it('checking with colon within the bold tag', (done: Function) => {
+        tooltip.animationComplete = (args: ITooltipAnimationCompleteArgs) => {
+            if (args.tooltip.fadeOut) {
+                let text: HTMLElement = <HTMLElement>getElement("tooltipcontainer_text");
+                expect(text.childElementCount).toBe(7);
+                expect(text.childNodes[1].textContent).toEqual('Consumption');
+                expect((text.childNodes[1] as HTMLElement).outerHTML.indexOf('bold') > -1).toBe(true);
+                expect(text.childNodes[3].textContent).toEqual('IST');
+                expect((text.childNodes[3] as HTMLElement).outerHTML.indexOf('bold') > -1).toBe(true);
+                expect(text.childNodes[6].textContent).toEqual(' normalText');
+                expect((text.childNodes[6] as HTMLElement).outerHTML.indexOf('bold') > -1).toBe(false);
+                done();
+            }
+
+        };
+        tooltip.content =  [ '<b>Consumption:IST</b> : normalText'],
+        tooltip.loaded = null;
+        tooltip.refresh();
+        tooltip.fadeOut();
+    })
 });

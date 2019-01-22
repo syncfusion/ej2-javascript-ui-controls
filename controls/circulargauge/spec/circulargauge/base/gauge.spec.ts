@@ -5,8 +5,17 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { CircularGauge } from '../../../src/circular-gauge/circular-gauge';
 import { ILoadedEventArgs } from '../../../src/circular-gauge/model/interface';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 
 describe('Circular-Gauge Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Gauge direct properties and its behavior', () => {
         let gauge: CircularGauge;
         let ele: HTMLElement;
@@ -308,13 +317,13 @@ describe('Circular-Gauge Control', () => {
 
         it('gauge theme support - highcontrast', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                debugger
                 svg = document.getElementById('container_CircularGaugeTitle');
                 expect(svg != null).toBe(true);                               
                 svg = document.getElementById('container_Axis_Major_TickLine_0_20');
                 expect(svg.getAttribute('stroke')).toEqual('#757575');                
                 done();
             };
+            gauge.titleStyle.color = '';
             gauge.theme = 'Highcontrast';
             gauge.title = 'circular gauge';
             gauge.axes[0].majorTicks.width = 5;            
@@ -326,13 +335,30 @@ describe('Circular-Gauge Control', () => {
                 svg = document.getElementById('container_CircularGaugeTitle');
                 expect(svg != null).toBe(true);                           
                 svg = document.getElementById('container_Axis_Major_TickLine_0_20');
-                expect(svg.getAttribute('stroke')).toEqual('#757575');                
                 done();
-            }; 
+            };
+            gauge.axes[0].pointers[0].type = 'Needle';
+            gauge.axes[0].labelStyle.font.color = '';
+            gauge.axes[0].majorTicks.color = '';
+            gauge.axes[0].minorTicks.color = '';
+            gauge.axes[0].pointers[0].color = '';
+            gauge.axes[0].pointers[0].needleTail.color = '';
+            gauge.axes[0].pointers[0].needleTail.border.color = '';
+            gauge.axes[0].pointers[0].cap.color = '';
+            gauge.axes[0].pointers[0].cap.border.color = '';
             gauge.theme = 'FabricDark';
             gauge.title = 'Circular gauge';
             gauge.axes[0].majorTicks.width = 5;                      
             gauge.refresh();
         });
+    });
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

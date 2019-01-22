@@ -104,7 +104,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         _this.updateNextPaneInPercentage = false;
         _this.panesDimensions = [];
         _this.border = 0;
-        _this.validDataAttributes = ['data-size', 'data-min', 'data-max', 'data-collapsible', 'data-resizable'];
+        _this.validDataAttributes = ['data-size', 'data-min', 'data-max', 'data-collapsible', 'data-resizable', 'data-content'];
         _this.validElementAttributes = ['data-orientation', 'data-width', 'data-height'];
         return _this;
     }
@@ -142,33 +142,36 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'paneSettings':
                     if (!(newProp.paneSettings instanceof Array && oldProp.paneSettings instanceof Array)) {
-                        var changedProp = Object.keys(newProp.paneSettings);
-                        for (var j = 0; j < changedProp.length; j++) {
-                            var index = parseInt(Object.keys(newProp.paneSettings)[j], 10);
-                            var property = Object.keys(newProp.paneSettings[index])[0];
-                            var newVal = Object(newProp.paneSettings[index])[property];
-                            index = (this.enableRtl) ? (this.allBars.length - 1) - index : index;
-                            if (property === 'content') {
-                                this.allPanes[index].innerHTML = '';
-                                this.setTemplate(newVal, this.allPanes[index]);
-                            }
-                            if (property === 'resizable') {
-                                EventHandler.remove(this.allBars[index], 'mousedown', this.onMouseDown);
-                                if (newVal) {
-                                    EventHandler.add(this.allBars[index], 'mousedown', this.onMouseDown, this);
-                                    this.currentSeparator = this.allBars[index];
-                                    if (this.isResizable()) {
-                                        this.showResizer(this.allBars[index]);
-                                        this.allBars[index].classList.add(RESIZABLE_BAR);
+                        var paneCounts = Object.keys(newProp.paneSettings);
+                        for (var i = 0; i < paneCounts.length; i++) {
+                            var index = parseInt(Object.keys(newProp.paneSettings)[i], 10);
+                            var changedPropsCount = Object.keys(newProp.paneSettings[index]).length;
+                            for (var j = 0; j < changedPropsCount; j++) {
+                                var property = Object.keys(newProp.paneSettings[index])[j];
+                                var newVal = Object(newProp.paneSettings[index])[property];
+                                index = (this.enableRtl) ? (this.allBars.length - 1) - index : index;
+                                if (property === 'content') {
+                                    this.allPanes[index].innerHTML = '';
+                                    this.setTemplate(newVal, this.allPanes[index]);
+                                }
+                                if (property === 'resizable') {
+                                    EventHandler.remove(this.allBars[index], 'mousedown', this.onMouseDown);
+                                    if (newVal) {
+                                        EventHandler.add(this.allBars[index], 'mousedown', this.onMouseDown, this);
+                                        this.currentSeparator = this.allBars[index];
+                                        if (this.isResizable()) {
+                                            this.showResizer(this.allBars[index]);
+                                            this.allBars[index].classList.add(RESIZABLE_BAR);
+                                        }
+                                    }
+                                    else {
+                                        this.hideResizer(this.allBars[index]);
+                                        this.allBars[index].classList.remove(RESIZABLE_BAR);
                                     }
                                 }
-                                else {
-                                    this.hideResizer(this.allBars[index]);
-                                    this.allBars[index].classList.remove(RESIZABLE_BAR);
+                                if (property === 'size') {
+                                    this.allPanes[index].style.flexBasis = newVal;
                                 }
-                            }
-                            if (property === 'size') {
-                                this.allPanes[index].style.flexBasis = newVal;
                             }
                         }
                     }
@@ -919,10 +922,11 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
     };
     Splitter.prototype.createSplitPane = function (target) {
         var childCount = target.children.length;
-        if (childCount < this.paneSettings.length) {
-            for (var i = 0; i < this.paneSettings.length; i++) {
+        for (var i = 0; i < this.paneSettings.length; i++) {
+            if (childCount < this.paneSettings.length) {
                 var childElement = this.createElement('div');
                 this.element.appendChild(childElement);
+                childCount = childCount + 1;
             }
         }
         childCount = target.children.length;
@@ -1030,6 +1034,9 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
     Splitter.prototype.removePane = function (index) {
         index = (index > this.allPanes.length + 1) ? this.allPanes.length : index;
         var elementClass = (this.orientation === 'Horizontal') ? SPLIT_H_PANE : SPLIT_V_PANE;
+        if (isNullOrUndefined(this.element.querySelectorAll('.' + elementClass)[index])) {
+            return;
+        }
         detach(this.element.querySelectorAll('.' + elementClass)[index]);
         this.allPanes.splice(index, 1);
         this.removePaneOrders(elementClass);

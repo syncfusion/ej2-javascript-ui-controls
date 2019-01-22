@@ -28,6 +28,8 @@ const DEVICE: string = 'e-device';
 const LISTCLASS: string = ListBaseClasses.li;
 const HALFPOSITION: number = 2;
 const ANIMATIONDURATION: number = 50;
+const OVERFLOW: string = 'e-time-overflow';
+const OFFSETVAL: number = 4;
 
 
 export interface ChangeEventArgs {
@@ -160,8 +162,10 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private initValue: Date;
     private initMin: Date;
     private initMax: Date;
+    private formElement: Element;
     private invalidValueString: string = null;
     private openPopupEventArgs: PopupEventArgs;
+    private modal: HTMLElement;
     protected keyConfigure: { [key: string]: string };
     /**
      * Gets or sets the width of the TimePicker component. The width of the popup is based on the width of the component.
@@ -376,6 +380,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         this.cloneElement = <HTMLElement>this.element.cloneNode(true);
         this.inputElement = <HTMLInputElement>this.element;
         this.angularTag = null;
+        this.formElement = closest(this.element, 'form');
         if (this.element.tagName === 'EJS-TIMEPICKER') {
             this.angularTag = this.element.tagName;
             this.inputElement = <HTMLInputElement>this.createElement('input');
@@ -585,9 +590,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             this.rippleFn();
         }
         super.destroy();
-        let form: Element = closest(this.element, 'form');
-        if (form) {
-            EventHandler.remove(form, 'reset', this.formResetHandler.bind(this));
+        if (this.formElement) {
+            EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
         }
 
     }
@@ -630,34 +634,17 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         this.rippleFn = rippleEffect(this.listWrapper, rippleModel);
         this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.listWrapper.querySelectorAll('.' + LISTCLASS);
     }
-    private popupCalculation(): number {
-        let left: number = 0;
-        if (Browser.isDevice) {
-            let firstItem: HTMLElement = this.isEmptyList() ? this.listTag : this.liCollections[0];
-            left = -(parseInt(getComputedStyle(firstItem).textIndent, 10) -
-                (this.enableRtl ? parseInt(getComputedStyle(this.inputElement).paddingRight, 10) :
-                    parseInt(getComputedStyle(this.inputElement).paddingLeft, 10)));
-        }
-        return left;
-    }
-    private isEmptyList(): boolean {
-        return !isNullOrUndefined(this.liCollections) && this.liCollections.length === 0 ||
-            isNullOrUndefined(this.liCollections);
-
-    }
     private renderPopup(): void {
         this.containerStyle = this.inputWrapper.container.getBoundingClientRect();
-        let offset: number = Browser.isDevice ? this.setPopupPosition() : 2;
         this.popupObj = new Popup(this.popupWrapper as HTMLElement, {
             width: this.setPopupWidth(this.width),
             zIndex: this.zIndex,
             targetType: 'relative',
-            collision: { X: 'flip', Y: 'flip' },
-            relateTo: this.inputWrapper.container,
-            position: { X: 'left', Y: 'bottom' },
+            position: Browser.isDevice ? { X: 'center', Y: 'center' } : { X: 'left', Y: 'bottom' },
+            collision: Browser.isDevice ? { X: 'fit', Y: 'fit' } : { X: 'flip', Y: 'flip' },
             enableRtl: this.enableRtl,
-            offsetY: offset,
-            offsetX: this.popupCalculation(),
+            relateTo: Browser.isDevice ? document.body : this.inputWrapper.container,
+            offsetY: OFFSETVAL,
             open: () => {
                 this.popupWrapper.style.visibility = 'visible';
                 addClass([this.inputWrapper.buttons[0]], SELECTED);
@@ -776,12 +763,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         if (width.indexOf('%') > -1) {
             let inputWidth: number = this.containerStyle.width * parseFloat(width) / 100;
             width = inputWidth.toString() + 'px';
-        }
-        if (Browser.isDevice) {
-            let firstItem: HTMLElement = this.isEmptyList() ? this.listTag : this.liCollections[0];
-            width = (parseInt(width, 10) + (parseInt(getComputedStyle(firstItem).textIndent, 10) -
-                parseInt(getComputedStyle(this.inputElement).textIndent, 10) +
-                parseInt(getComputedStyle(this.inputElement.parentElement).borderLeftWidth, 10)) * 2) + 'px';
         }
         return width;
     }
@@ -1020,6 +1001,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 name: 'open'
             };
 
+            removeClass([document.body], OVERFLOW);
             this.trigger('close', args);
             if (!args.cancel) {
                 let animModel: AnimationModel = {
@@ -1031,6 +1013,11 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 removeClass([this.inputWrapper.container], [ICONANIMATION]);
                 attributes(this.inputElement, { 'aria-expanded': 'false' });
                 EventHandler.remove(document, 'mousedown touchstart', this.documentClickHandler);
+            }
+            if (Browser.isDevice && this.modal) {
+                this.modal.style.display = 'none';
+                this.modal.outerHTML = '';
+                this.modal = null;
             }
         }
         if (Browser.isDevice && this.allowEdit && !this.readonly) {
@@ -1187,9 +1174,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         if (this.showClearButton) {
             EventHandler.add(this.inputWrapper.clearButton, 'mousedown', this.clearHandler, this);
         }
-        let form: Element = closest(this.element, 'form');
-        if (form) {
-            EventHandler.add(form, 'reset', this.formResetHandler.bind(this));
+        if (this.formElement) {
+            EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
         }
         if (!Browser.isDevice) {
             this.inputEvent = new KeyboardEvents(
@@ -1227,9 +1213,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         if (this.showClearButton && !isNullOrUndefined(this.inputWrapper.clearButton)) {
             EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.clearHandler);
         }
-        let form: Element = closest(this.element, 'form');
-        if (form) {
-            EventHandler.remove(form, 'reset', this.formResetHandler.bind(this));
+        if (this.formElement) {
+            EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
         }
 
     }
@@ -1535,27 +1520,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         this.setActiveDescendant();
         this.selectInputText();
         if (this.isPopupOpen() && this.selectedElement !== null && (!event || event.type !== 'click')) { this.setScrollPosition(); }
-    }
-    protected setPopupPosition(): number {
-        let offsetValue: number;
-        let padding: number = 1;
-        let popupHeight: number = this.getPopupHeight();
-        let element: HTMLElement[] = this.getActiveElement();
-        let liHeight: number = this.liCollections[0].getBoundingClientRect().height;
-        let listHeight: number = popupHeight / HALFPOSITION;
-        let height: number = element.length === 0 ? this.liCollections[0].offsetTop : element[0].offsetTop;
-        let lastItemOffsetValue: number = this.liCollections[this.liCollections.length - 1].offsetTop;
-        let ulPadding: number = (parseInt(getComputedStyle(this.listTag).paddingTop, 10));
-        if (lastItemOffsetValue - listHeight < height) {
-            let count: number = popupHeight / liHeight;
-            offsetValue = (count - (this.liCollections.length - this.activeIndex)) * liHeight - ulPadding - HALFPOSITION;
-        } else if ((height + liHeight) > listHeight) {
-            offsetValue = listHeight - liHeight / HALFPOSITION;
-        } else {
-            offsetValue = height;
-        }
-        offsetValue = offsetValue + HALFPOSITION + ((liHeight - this.containerStyle.height) / HALFPOSITION);
-        return -offsetValue;
     }
     protected getCultureTimeObject(ld: Object, c: string): Object {
         return getValue('main.' + c + '.dates.calendars.gregorian.timeFormats.short', ld);
@@ -1869,6 +1833,12 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             return;
         } else {
             this.popupCreation();
+            if (Browser.isDevice && this.listWrapper) {
+                this.modal = this.createElement('div');
+                this.modal.className = '' + ROOT + ' e-time-modal';
+                document.body.className += ' ' + OVERFLOW;
+                document.body.appendChild(this.modal);
+            }
             this.openPopupEventArgs = {
                 popup: this.popupObj || null,
                 cancel: false,

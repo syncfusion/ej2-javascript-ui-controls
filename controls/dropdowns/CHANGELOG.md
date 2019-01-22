@@ -2,7 +2,29 @@
 
 ## [Unreleased]
 
-## 16.4.47 (2019-01-08)
+## 16.4.48 (2019-01-16)
+
+### AutoComplete
+
+#### Bug Fixes
+
+- Custom value is not maintain after reload the data issue has been resolved.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `en-US` locale JSON file not generated issue has been resolved.
+
+## 16.4.47 (2019-01-16)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- server side validation is not working issue has been resolved.
+
+## 16.4.46 (2019-01-08)
 
 ### MultiSelect
 

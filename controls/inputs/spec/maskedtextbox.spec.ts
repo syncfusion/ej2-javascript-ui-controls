@@ -2105,10 +2105,12 @@ describe('MaskedTextBox Component', () => {
         let i: number = 0, j: number = 0;
         let selectEnd: number = 0 , selectStart: number = 0;
         let name: any, maskedvalue: any ,value: any;
+        let isInteracted: any;
         function clickFn(args:MaskChangeEventArgs): void {
             i++;
             value= args.value;
             maskedvalue= args.maskedValue;
+            isInteracted=args.isInteracted;
         }
          function FocusFn(args: MaskFocusEventArgs): void {
             j++;
@@ -2141,6 +2143,7 @@ describe('MaskedTextBox Component', () => {
             expect(i).toEqual(1);
             expect(maskedvalue).toEqual("098_ ____ ____ ____");
             expect(value).toEqual("098");
+            expect(isInteracted).toEqual(false);
         });
          it('FocusFn event testing', () => {
             maskBox = new MaskedTextBox({

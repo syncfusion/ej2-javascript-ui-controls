@@ -7,9 +7,18 @@ import { CircularGauge } from '../../../src/circular-gauge/circular-gauge';
 import { Annotations } from '../../../src/circular-gauge/annotations/annotations';
 import { GaugeLocation } from '../../../src/circular-gauge/utils/helper';
 import { ILoadedEventArgs } from '../../../src/circular-gauge/model/interface';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 CircularGauge.Inject(Annotations);
 
 describe('Circular-Gauge Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Gauge Annotation', () => {
         let gauge: CircularGauge;
         let ele: HTMLElement;
@@ -175,17 +184,6 @@ describe('Circular-Gauge Control', () => {
                 ' stroke-width="3" fill="red" /></svg>';
             gauge.refresh();
         });
-        it('checking annotation with multiple element', (done: Function) => {
-            gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_Axis_0_Annotation_1').childNodes[0];
-                expect(svg.innerHTML == 'Annotation1').toBe(true);
-                svg = <HTMLElement>document.getElementById('container_Axis_0_Annotation_1').childNodes[1];
-                expect(svg.innerHTML == 'Annotation2').toBe(true);
-                done();
-            };
-            gauge.axes[0].annotations[1].content = '<div id="content1">Annotation1</div><div id="content2">Annotation2</div>';
-            gauge.refresh();
-        });
     });
     describe('axis boarder with background', () => {
         let gauge: CircularGauge;
@@ -241,5 +239,14 @@ describe('Circular-Gauge Control', () => {
             gauge.axes[0].background = 'whitesmoke';
             gauge.refresh();
         });
+    });
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

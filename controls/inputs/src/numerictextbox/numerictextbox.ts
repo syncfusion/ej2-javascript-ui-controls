@@ -555,10 +555,10 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     private raiseChangeEvent(event?: Event): void {
         if (this.prevValue !== this.value) {
             let eventArgs: Object = {};
-            this.changeEventArgs = { value: this.value, previousValue: this.prevValue, isInteraction: this.isInteract, event: event };
+            this.changeEventArgs = { value: this.value, previousValue: this.prevValue, isInteracted: this.isInteract, event: event };
             if (event) { this.changeEventArgs.event = event; }
             if (this.changeEventArgs.event === undefined) {
-                this.changeEventArgs.isInteraction = false;
+                this.changeEventArgs.isInteracted = false;
              }
             merge(eventArgs, this.changeEventArgs);
             this.prevValue = this.value;
@@ -1150,6 +1150,6 @@ export interface ChangeEventArgs extends BaseEventArgs {
     previousValue?: number;
     /** Returns the event parameters from NumericTextBox. */
     event?: Event;
-    /** Returns the original event arguments. */
-    isInteraction?: boolean;
+    /** Returns true when the value of NumericTextBox is changed by user interaction. Otherwise, it returns false */
+    isInteracted?: boolean;
 }

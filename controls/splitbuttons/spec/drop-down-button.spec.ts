@@ -3,12 +3,22 @@ import { MenuEventArgs, OpenCloseMenuEventArgs, BeforeOpenCloseMenuEventArgs } f
 import { ItemModel } from '../src/common/common-model';
 import { DropDownButtonModel } from '../src/drop-down-button/drop-down-button-model';
 import { createElement, Browser } from '@syncfusion/ej2-base';
+import { profile , inMB, getMemoryProfile } from './common.spec';
 
 /**
  * @param  {} 'DropDownButton'
  * @param  {} function(
  */
 describe('DropDownButton', () => {
+    beforeAll(() => {
+        const isDef: any = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log('Unsupported environment, window.performance.memory is unavailable');
+            this.skip(); // skips test (in Chai)
+            return;
+        }
+    });
+
     let drpButton: any;
     let element: HTMLElement = createElement('button', { id: 'drp-button' });
     document.body.appendChild(element);
@@ -671,5 +681,15 @@ describe('DropDownButton', () => {
             drpButton.clickHandler(mouseEventArgs);
             expect(drpButton.dropDown.element.classList.contains('e-popup-close')).toBeTruthy();
         });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange);
+        // check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

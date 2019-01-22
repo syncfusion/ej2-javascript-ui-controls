@@ -92,9 +92,13 @@ export class GaugeTooltip {
                 });
                 document.getElementById(this.gauge.element.id + '_Secondary_Element').appendChild(this.tooltipEle);
             }
+            let roundValue: number;
+            roundValue = this.currentAxis.roundingPlaces ?
+                parseFloat(this.currentPointer.currentValue.toFixed(this.currentAxis.roundingPlaces)) :
+                    this.currentPointer.currentValue;
             let content: string = customLabelFormat ?
-                tooltipFormat.replace(new RegExp('{value}', 'g'), format(this.currentPointer.currentValue)) :
-                format(this.currentPointer.currentValue);
+                tooltipFormat.replace(new RegExp('{value}', 'g'), format(roundValue)) :
+                format(roundValue);
             location = getLocationFromAngle(
                 angle, this.currentAxis.currentRadius, this.gauge.midPoint
             );

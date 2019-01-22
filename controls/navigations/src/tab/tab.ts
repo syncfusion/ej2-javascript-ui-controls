@@ -93,20 +93,20 @@ export interface RemoveEventArgs extends BaseEventArgs {
 export class TabActionSettings extends ChildProperty<TabActionSettings> {
     /**
      * Specifies the animation effect for displaying Tab content.
-     * @default : 'SlideLeftIn'
+     * @default 'SlideLeftIn'
      * @aspType string
      */
     @Property('SlideLeftIn')
     public effect: 'None' | Effect;
     /**
      * Specifies the time duration to transform content.
-     * @default : 600
+     * @default 600
      */
     @Property(600)
     public duration: number;
     /**
      * Specifies easing effect applied while transforming content.
-     * @default : 'ease'
+     * @default 'ease'
      */
     @Property('ease')
     public easing: string;
@@ -230,7 +230,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     private itemIndexArray: string[];
     private templateEle: string[];
     private scrCntClass: string;
-    private isAdd : boolean = false;
+    private isAdd: boolean = false;
     private content: HTEle;
     private selectedID: string;
     private selectingID: string;
@@ -343,7 +343,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * Enable or disable persisting component's state between page reloads. 
      * If enabled, following list of states will be persisted.
      * 1. selectedItem
-     * @default false.
+     * @default false
      */
     @Property(false)
     public enablePersistence: boolean;
@@ -583,8 +583,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         let tbCount: number = selectAll('.' + CLS_TB_ITEM, this.element).length;
         let tItems: Object[] = [];
         let txtWrapEle: HTEle;
-        let spliceArray : number[] = [];
-        let i : number = 0;
+        let spliceArray: number[] = [];
+        let i: number = 0;
         items.forEach((item: { [key: string]: Header }, i: number) => {
             let pos: Str = (isNOU(item.header.iconPosition)) ? '' : item.header.iconPosition;
             let css: Str = (isNOU(item.header.iconCss)) ? '' : item.header.iconCss;
@@ -750,7 +750,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         oldCnt.classList.remove(CLS_ACTIVE); }
     }
     private triggerAnimation(id: Str, value: boolean): void {
-        let prevIndex : number = this.prevIndex;
+        let prevIndex: number = this.prevIndex;
         let itemCollection: HTMLElement[] = [].slice.call(this.element.querySelector('.' + CLS_CONTENT).children);
         let oldCnt: HTEle;
         itemCollection.forEach((item: HTEle) => {
@@ -1257,7 +1257,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             trg.setAttribute('title', new L10n('tab', { closeButtonTitle: this.title }, this.locale).getConstant('closeButtonTitle'));
         }
     }
-    private evalOnPropertyChangeItems(newProp : TabModel, oldProp: TabModel): void {
+    private evalOnPropertyChangeItems(newProp: TabModel, oldProp: TabModel): void {
         if (!(newProp.items instanceof Array && oldProp.items instanceof Array)) {
             let changedProp: Object[] = Object.keys(newProp.items);
             for (let i: number = 0; i < changedProp.length; i++) {
@@ -1371,8 +1371,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         this.isAdd = true;
         let tabItems: object[] = this.parseObject(items, index);
         this.isAdd = false;
-        let i : number = 0;
-        let textValue : string | HTEle;
+        let i: number = 0;
+        let textValue: string | HTEle;
         items.forEach((item: TabItemModel, place: number) => {
             textValue = item.header.text;
             if (!((isNOU(item.header) || isNOU(textValue) || ((<string>textValue).length === 0) && isNOU(item.header.iconCss)))) {

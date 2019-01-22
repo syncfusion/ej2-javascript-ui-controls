@@ -147,7 +147,7 @@ export function textFormatter(format: string, data: object, gauge: LinearGauge):
     }
     let keys: string[] = Object.keys(data);
     for (let key of keys) {
-        format = format.split('${' + key + '}').join(formatValue(data[key], gauge).toString());
+        format = format.split('{' + key + '}').join(formatValue(data[key], gauge).toString());
     }
     return format;
 }
@@ -161,7 +161,7 @@ export function formatValue(value: number, gauge: LinearGauge): string | number 
     } else {
         formatValue = value;
     }
-    return formatValue ? formatValue : '';
+    return formatValue !== null ? formatValue : '';
 }
 
 

@@ -907,12 +907,12 @@ let NumericTextBox = class NumericTextBox extends Component {
     raiseChangeEvent(event) {
         if (this.prevValue !== this.value) {
             let eventArgs = {};
-            this.changeEventArgs = { value: this.value, previousValue: this.prevValue, isInteraction: this.isInteract, event: event };
+            this.changeEventArgs = { value: this.value, previousValue: this.prevValue, isInteracted: this.isInteract, event: event };
             if (event) {
                 this.changeEventArgs.event = event;
             }
             if (this.changeEventArgs.event === undefined) {
-                this.changeEventArgs.isInteraction = false;
+                this.changeEventArgs.isInteracted = false;
             }
             merge(eventArgs, this.changeEventArgs);
             this.prevValue = this.value;
@@ -2159,12 +2159,12 @@ function maskInputKeyPressHandler(event) {
 function triggerMaskChangeEvent(event, oldValue) {
     if (!isNullOrUndefined(this.changeEventArgs) && !this.isInitial) {
         let eventArgs = {};
-        this.changeEventArgs = { value: this.element.value, maskedValue: this.element.value, isInteraction: false };
+        this.changeEventArgs = { value: this.element.value, maskedValue: this.element.value, isInteracted: false };
         if (this.mask) {
             this.changeEventArgs.value = strippedValue.call(this, this.element);
         }
         if (!isNullOrUndefined(event)) {
-            this.changeEventArgs.isInteraction = true;
+            this.changeEventArgs.isInteracted = true;
             this.changeEventArgs.event = event;
         }
         merge(eventArgs, this.changeEventArgs);
@@ -6976,7 +6976,7 @@ let Uploader = class Uploader extends Component {
         this.setDropArea();
     }
     renderPreLoadFiles() {
-        if (isNullOrUndefined(this.files[0].size) || !isNullOrUndefined(this.template)) {
+        if (isNullOrUndefined(this.files[0].size)) {
             return;
         }
         let files = [].slice.call(this.files);
@@ -7381,6 +7381,7 @@ let Uploader = class Uploader extends Component {
         let selectedFiles = file;
         let name = this.element.getAttribute('name');
         let ajax = new Ajax(this.asyncSettings.removeUrl, 'POST', true, null);
+        ajax.emitError = false;
         let formData = new FormData();
         let liElement = this.getLiElement(file);
         ajax.beforeSend = (e) => {
@@ -7730,21 +7731,31 @@ let Uploader = class Uploader extends Component {
         let errorMessage = { minSize: minSizeError, maxSize: maxSizeError };
         return errorMessage;
     }
+    isPreLoadFile(fileData) {
+        let isPreload = false;
+        for (let i = 0; i < this.files.length; i++) {
+            if (this.files[i].name === fileData.name.slice(0, fileData.name.lastIndexOf('.')) && this.files[i].type === fileData.type) {
+                isPreload = true;
+            }
+        }
+        return isPreload;
+    }
     createCustomfileList(fileData) {
         this.createParentUL();
         for (let listItem of fileData) {
             let liElement = this.createElement('li', { className: FILE, attrs: { 'data-file-name': listItem.name } });
             this.uploadTemplateFn = this.templateComplier(this.template);
-            this.listParent.appendChild(liElement);
             let fromElements = [].slice.call(this.uploadTemplateFn(listItem));
             let index = fileData.indexOf(listItem);
+            append(fromElements, liElement);
             let eventArgs = {
                 element: liElement,
                 fileInfo: listItem,
-                index: index
+                index: index,
+                isPreload: this.isPreLoadFile(listItem)
             };
             this.trigger('rendering', eventArgs);
-            append(fromElements, liElement);
+            this.listParent.appendChild(liElement);
             this.fileList.push(liElement);
         }
     }
@@ -7811,7 +7822,8 @@ let Uploader = class Uploader extends Component {
                 let eventArgs = {
                     element: liElement,
                     fileInfo: listItem,
-                    index: index
+                    index: index,
+                    isPreload: this.isPreLoadFile(listItem)
                 };
                 this.trigger('rendering', eventArgs);
                 this.listParent.appendChild(liElement);
@@ -7976,6 +7988,7 @@ let Uploader = class Uploader extends Component {
                 formData.append(name, files.name);
                 formData.append('cancel-uploading', files.name);
                 let ajax = new Ajax(this.asyncSettings.removeUrl, 'POST', true, null);
+                ajax.emitError = false;
                 ajax.onLoad = (e) => { this.removecanceledFile(e, files); return {}; };
                 ajax.send(formData);
             }
@@ -8265,6 +8278,7 @@ let Uploader = class Uploader extends Component {
         formData.append('total-chunk', totalChunk.toString());
         formData.append('totalChunk', totalChunk.toString());
         let ajax = new Ajax({ url: this.asyncSettings.saveUrl, type: 'POST', async: true, contentType: null });
+        ajax.emitError = false;
         ajax.onLoad = (e) => { this.chunkUploadComplete(e, metaData, custom); return {}; };
         ajax.onUploadProgress = (e) => {
             this.chunkUploadInProgress(e, metaData, custom);
@@ -8360,6 +8374,7 @@ let Uploader = class Uploader extends Component {
                 formData.append('cancel-uploading', metaData.file.name);
                 formData.append('cancelUploading', metaData.file.name);
                 let ajax = new Ajax(this.asyncSettings.removeUrl, 'POST', true, null);
+                ajax.emitError = false;
                 ajax.onLoad = (e) => { this.removeChunkFile(e, metaData, custom); return {}; };
                 ajax.send(formData);
             }
@@ -8786,6 +8801,7 @@ let Uploader = class Uploader extends Component {
         let chunkEnabled = this.checkChunkUpload();
         for (let i = 0; i < selectedFiles.length; i++) {
             let ajax = new Ajax(this.asyncSettings.saveUrl, 'POST', true, null);
+            ajax.emitError = false;
             let eventArgs = {
                 fileData: selectedFiles[i],
                 customFormData: [],

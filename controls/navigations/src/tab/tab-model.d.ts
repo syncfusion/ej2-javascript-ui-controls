@@ -9,20 +9,20 @@ export interface TabActionSettingsModel {
 
     /**
      * Specifies the animation effect for displaying Tab content.
-     * @default : 'SlideLeftIn'
+     * @default 'SlideLeftIn'
      * @aspType string
      */
     effect?: 'None' | Effect;
 
     /**
      * Specifies the time duration to transform content.
-     * @default : 600
+     * @default 600
      */
     duration?: number;
 
     /**
      * Specifies easing effect applied while transforming content.
-     * @default : 'ease'
+     * @default 'ease'
      */
     easing?: string;
 
@@ -205,7 +205,7 @@ export interface TabModel extends ComponentModel{
      * Enable or disable persisting component's state between page reloads. 
      * If enabled, following list of states will be persisted.
      * 1. selectedItem
-     * @default false.
+     * @default false
      */
     enablePersistence?: boolean;
 

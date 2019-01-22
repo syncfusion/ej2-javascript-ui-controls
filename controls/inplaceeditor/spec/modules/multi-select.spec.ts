@@ -6,10 +6,20 @@ import { InPlaceEditor, ValidateEventArgs } from '../../src/inplace-editor/base/
 import { MultiSelect } from '../../src/inplace-editor/modules/index';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy } from './../render.spec';
+import { profile, inMB, getMemoryProfile } from './../common.spec';
 
 InPlaceEditor.Inject(MultiSelect);
 
 describe('MultiSelect module', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
+
     describe('Basic testing', () => {
         let editorObj: any;
         let ele: HTMLElement;
@@ -47,6 +57,8 @@ describe('MultiSelect module', () => {
         });
         it('save method with value property testing', () => {
             editorObj.multiSelectModule.compObj.value = ['testing'];
+            editorObj.multiSelectModule.compObj.text = 'testing';
+            editorObj.multiSelectModule.compObj.dataBind();
             editorObj.save();
             expect(valueEle.innerHTML === 'testing').toEqual(true);
         });
@@ -112,8 +124,45 @@ describe('MultiSelect module', () => {
         });
         it('save method with value property testing', () => {
             editorObj.multiSelectModule.compObj.value = ['testing'];
+            editorObj.multiSelectModule.compObj.text = 'testing';
+            editorObj.multiSelectModule.compObj.dataBind();
             editorObj.save();
             expect(valueEle.innerHTML === 'testing').toEqual(true);
+        });
+    });
+    describe('Duplicate ID availability testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Inline - ID testing', () => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'MultiSelect'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multiselect', ele).length === 2).toEqual(true);
+            expect(selectAll('#' + ele.id, document.body).length === 1).toEqual(true);
+        });
+        it('Popup - ID testing', () => {
+            editorObj = renderEditor({
+                mode: 'Popup',
+                type: 'MultiSelect'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multiselect', document.body).length === 2).toEqual(true);
+            expect(selectAll('#' + ele.id, document.body).length === 1).toEqual(true);
         });
     });
     describe('Form validation Testing', () => {
@@ -125,9 +174,9 @@ describe('MultiSelect module', () => {
         let editorError: HTMLElement;
         let valueWrapper: HTMLElement;
         let errMsg: string;
-        let eventValue: string;
-        let eventFieldName: string;
-        let eventPrimaryKey: string;
+        let eventValue: string | number;
+        let eventFieldName: string | number;
+        let eventPrimaryKey: string | number;
         function click1(e: ValidateEventArgs): void {
             e.errorMessage = 'Empty Field';
             errMsg = e.errorMessage;
@@ -287,5 +336,536 @@ describe('MultiSelect module', () => {
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-chips-collection .e-chips', ele).length === 3).toEqual(true);
         });
+    });
+    describe('Value formatting related testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        let dataSource: any = ['Badminton', 'Cricket', 'Baseball', 'Football'];
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Default value with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'MultiSelect',
+                mode: 'Inline',
+                model: {
+                    dataSource: dataSource
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual(null);
+            editorObj.value = ['Cricket'];
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(['Cricket']);
+            expect(valueEle.innerHTML).toEqual('Cricket');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(['Cricket']);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual(['Cricket']);
+            editorObj.value = [];
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual([]);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual([]);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual([]);
+        });
+        it('Value as "null" with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'MultiSelect',
+                mode: 'Inline',
+                value: null,
+                model: {
+                    dataSource: dataSource
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual(null);
+            editorObj.value = ['Cricket'];
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(['Cricket']);
+            expect(valueEle.innerHTML).toEqual('Cricket');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(['Cricket']);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual(['Cricket']);
+            editorObj.value = [];
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual([]);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual([]);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual([]);
+        });
+        it('Value as "undefined" with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'MultiSelect',
+                mode: 'Inline',
+                value: undefined,
+                model: {
+                    dataSource: dataSource
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual(null);
+            editorObj.value = ['Cricket'];
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(['Cricket']);
+            expect(valueEle.innerHTML).toEqual('Cricket');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(['Cricket']);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual(['Cricket']);
+            editorObj.value = [];
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual([]);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual([]);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual([]);
+        });
+        it('Value as empty array with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'MultiSelect',
+                mode: 'Inline',
+                value: [],
+                model: {
+                    dataSource: dataSource
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual([]);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual([]);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual([]);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual([]);
+            editorObj.value = ['Cricket'];
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(['Cricket']);
+            expect(valueEle.innerHTML).toEqual('Cricket');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(['Cricket']);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual(['Cricket']);
+            editorObj.value = [];
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual([]);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual([]);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual([]);
+        });
+        it('Defined value with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'MultiSelect',
+                mode: 'Inline',
+                value: ['Badminton'],
+                model: {
+                    dataSource: dataSource
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(['Badminton']);
+            expect(valueEle.innerHTML).toEqual('Badminton');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(['Badminton']);
+            expect(valueEle.innerHTML).toEqual('Badminton');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(['Badminton']);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual(['Badminton']);
+            editorObj.value = [];
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual([]);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual([]);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual([]);
+            editorObj.value = ['Football'];
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(['Football']);
+            expect(valueEle.innerHTML).toEqual('Football');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(['Football']);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual(['Football']);
+        });
+    });
+    describe('FieldSettings - Value formatting related testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let buttonEle: HTMLElement;
+        let serverValue: any = null;
+        let valueWrapper: HTMLElement;
+        let dataSource: { [key: string]: Object }[] = [
+            { Id: 'game1', Game: 'Badminton' },
+            { Id: 'game2', Game: 'Basketball' },
+            { Id: 'game3', Game: 'Cricket' },
+            { Id: 'game4', Game: 'Football' },
+            { Id: 'game5', Game: 'Golf' },
+            { Id: 'game6', Game: 'Gymnastics' },
+            { Id: 'game7', Game: 'Tennis' }
+        ];
+        function success(e: any): void {
+            serverValue = e.value;
+        }
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Default value with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'MultiSelect',
+                mode: 'Inline',
+                actionSuccess: success,
+                model: {
+                    dataSource: dataSource,
+                    fields: { text: 'Game', value: 'Id' }
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual(null);
+            buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
+            buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            editorObj.value = ['game1'];
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(['game1']);
+            expect(valueEle.innerHTML).toEqual('game1');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(['game1']);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual(['game1']);
+            buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
+            buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+            expect(editorObj.value).toEqual(['game1']);
+            expect(valueEle.innerHTML).toEqual('Badminton');
+            editorObj.value = [];
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual([]);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual([]);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual([]);
+            buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
+            buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+            expect(editorObj.value).toEqual([]);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+        });
+        it('Value as "null" with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'MultiSelect',
+                mode: 'Inline',
+                value: null,
+                actionSuccess: success,
+                model: {
+                    dataSource: dataSource,
+                    fields: { text: 'Game', value: 'Id' }
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual(null);
+            buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
+            buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            editorObj.value = ['game1'];
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(['game1']);
+            expect(valueEle.innerHTML).toEqual('game1');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(['game1']);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual(['game1']);
+            buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
+            buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+            expect(editorObj.value).toEqual(['game1']);
+            expect(valueEle.innerHTML).toEqual('Badminton');
+            editorObj.value = [];
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual([]);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual([]);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual([]);
+            buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
+            buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+            expect(editorObj.value).toEqual([]);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+        });
+        it('Value as "undefined" string with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'MultiSelect',
+                mode: 'Inline',
+                value: undefined,
+                actionSuccess: success,
+                model: {
+                    dataSource: dataSource,
+                    fields: { text: 'Game', value: 'Id' }
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual(null);
+            buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
+            buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            editorObj.value = ['game1'];
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(['game1']);
+            expect(valueEle.innerHTML).toEqual('game1');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(['game1']);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual(['game1']);
+            buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
+            buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+            expect(editorObj.value).toEqual(['game1']);
+            expect(valueEle.innerHTML).toEqual('Badminton');
+            editorObj.value = [];
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual([]);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual([]);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual([]);
+            buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
+            buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+            expect(editorObj.value).toEqual([]);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+        });
+        it('Value as empty array with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'MultiSelect',
+                mode: 'Inline',
+                value: [],
+                actionSuccess: success,
+                model: {
+                    dataSource: dataSource,
+                    fields: { text: 'Game', value: 'Id' }
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual([]);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual([]);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual([]);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual([]);
+            buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
+            buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+            expect(editorObj.value).toEqual([]);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            editorObj.value = ['game1'];
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(['game1']);
+            expect(valueEle.innerHTML).toEqual('game1');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(['game1']);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual(['game1']);
+            buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
+            buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+            expect(editorObj.value).toEqual(['game1']);
+            expect(valueEle.innerHTML).toEqual('Badminton');
+            editorObj.value = [];
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual([]);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual([]);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual([]);
+            buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
+            buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+            expect(editorObj.value).toEqual([]);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+        });
+        it('Defined value with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'MultiSelect',
+                mode: 'Inline',
+                value: ['game3'],
+                actionSuccess: success,
+                model: {
+                    dataSource: dataSource,
+                    fields: { text: 'Game', value: 'Id' }
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(['game3']);
+            expect(valueEle.innerHTML).toEqual('game3');
+            editorObj.emptyText = 'Enter some text';
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(['game3']);
+            expect(valueEle.innerHTML).toEqual('game3');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(['game3']);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual(['game3']);
+            buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
+            buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+            expect(editorObj.value).toEqual(['game3']);
+            expect(valueEle.innerHTML).toEqual('Cricket');
+            editorObj.value = ['game7'];
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual(['game7']);
+            expect(valueEle.innerHTML).toEqual('game7');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(['game7']);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual(['game7']);
+            buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
+            buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+            expect(editorObj.value).toEqual(['game7']);
+            expect(valueEle.innerHTML).toEqual('Tennis');
+            editorObj.value = [];
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual([]);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual([]);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual([]);
+            buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
+            buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+            expect(editorObj.value).toEqual([]);
+            expect(valueEle.innerHTML).toEqual('Enter some text');
+        });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

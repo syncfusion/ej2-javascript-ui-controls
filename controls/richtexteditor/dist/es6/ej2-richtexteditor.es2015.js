@@ -1108,8 +1108,7 @@ function getFormattedFontSize(value) {
     if (isNullOrUndefined(value)) {
         return '';
     }
-    let result = value.split('pt');
-    return result[0] + ' pt';
+    return value;
 }
 function pageYOffset(e, parentElement, isIFrame) {
     let y = 0;
@@ -1190,12 +1189,11 @@ function setToolbarStatus(e, isPopToolbar) {
                                 return;
                             }
                             let fontSizeItems = e.parent.fontSize.items;
-                            result = getDropDownValue(fontSizeItems, value, 'value', 'value');
+                            result = getDropDownValue(fontSizeItems, (value === '' ? e.parent.fontSize.default.replace(/\s/g, '') : value), 'value', 'text');
                             dropDown.fontSizeDropDown.content = ('<span style="display: inline-flex;' +
                                 'width:' + e.parent.fontSize.width + '" >' +
                                 '<span class="e-rte-dropdown-btn-text">'
-                                + (isNullOrUndefined(result) ? '10 pt' : getFormattedFontSize(result)) +
-                                '</span></span>');
+                                + getFormattedFontSize(result) + '</span></span>');
                             dropDown.fontSizeDropDown.dataBind();
                             break;
                     }
@@ -1834,7 +1832,7 @@ class DropDownButtons {
                             });
                         });
                         this.fontSizeDropDown = this.toolbarRenderer.renderDropDownButton({
-                            content: this.dropdownContent(this.parent.fontSize.width, type, getFormattedFontSize(getDropDownValue(fontsize, this.parent.fontSize.default, 'text', 'value'))),
+                            content: this.dropdownContent(this.parent.fontSize.width, type, getFormattedFontSize(getDropDownValue(fontsize, this.parent.fontSize.default.replace(/\s/g, ''), 'value', 'text'))),
                             cssClass: CLS_DROPDOWN_POPUP + ' ' + CLS_DROPDOWN_ITEMS + ' ' + CLS_FONT_SIZE_TB_BTN,
                             itemName: 'FontSize',
                             items: fontsize,
@@ -1920,7 +1918,7 @@ class DropDownButtons {
                                 case 'width':
                                     let fontsize = this.fontSizeDropDown.items;
                                     let type = !isNullOrUndefined(closest(this.fontSizeDropDown.element, '.' + CLS_QUICK_TB)) ? 'quick' : 'toolbar';
-                                    let content = this.dropdownContent(this.parent.fontSize.width, type, getFormattedFontSize(getDropDownValue(fontsize, this.parent.fontSize.default, 'text', 'value')));
+                                    let content = this.dropdownContent(this.parent.fontSize.width, type, getFormattedFontSize(getDropDownValue(fontsize, this.parent.fontSize.default.replace(/\s/g, ''), 'value', 'text')));
                                     this.fontSizeDropDown.setProperties({ content: content });
                                     break;
                                 case 'items':
@@ -8326,7 +8324,7 @@ class TableCommand {
         selectedCell = (selectedCell.nodeType === 3) ? selectedCell.parentNode : selectedCell;
         let table = closest(selectedCell.parentElement, 'table');
         if (table && 0 === table.querySelectorAll('thead').length) {
-            let cellCount = table.querySelectorAll('tr:first-child td').length;
+            let cellCount = table.querySelector('tr').querySelectorAll('td').length;
             let header = table.createTHead();
             let row = header.insertRow(0);
             for (let i = 0; i < cellCount; i++) {
@@ -9560,7 +9558,9 @@ class ToolbarStatus {
         let index = null;
         if ((name !== null && name !== '' && name !== undefined)
             && (fontName === null || fontName === undefined || (fontName.filter((value, pos) => {
-                if (value.replace(/"/g, '').replace(/ /g, '') === name.replace(/"/g, '').replace(/ /g, '')) {
+                let pattern = new RegExp(name, 'i');
+                if ((value.replace(/"/g, '').replace(/ /g, '') === name.replace(/"/g, '').replace(/ /g, '')) ||
+                    (value.search(pattern) > -1)) {
                     index = pos;
                 }
             }) && (index !== null)))) {
@@ -12011,7 +12011,7 @@ class ViewSource {
                 this.contentModule.getEditPanel().innerHTML.length === 12) ||
                 (this.contentModule.getEditPanel().childNodes.length === 1 &&
                     this.contentModule.getEditPanel().childNodes[0].tagName === 'P' &&
-                    this.contentModule.getEditPanel().innerHTML.length === 8) ? null : this.parent.value;
+                    this.contentModule.getEditPanel().innerHTML.length === 7) ? null : this.parent.value;
             this.contentModule.getEditPanel().style.display = 'none';
             this.previewElement.style.display = 'block';
         }
@@ -12384,8 +12384,10 @@ class Table {
                 return;
             }
             let range = this.parent.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());
+            let closestTable = closest(target, 'table');
             if (target && target.nodeName !== 'A' && target.nodeName !== 'IMG' && (target.nodeName === 'TD' || target.nodeName === 'TH' ||
-                target.nodeName === 'TABLE' || closest(target, 'table')) && !(range.startContainer.nodeType === 3 && !range.collapsed)) {
+                target.nodeName === 'TABLE' || (closestTable && this.parent.contentModule.getEditPanel().contains(closestTable)))
+                && !(range.startContainer.nodeType === 3 && !range.collapsed)) {
                 let range = this.parent.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
@@ -12452,7 +12454,9 @@ class Table {
     }
     cellSelect(e) {
         let target = e.args.target;
-        target = (target.nodeName !== 'TD') ? closest(target, 'td,th') : target;
+        let tdNode = closest(target, 'td,th');
+        target = (target.nodeName !== 'TD' && tdNode && this.parent.contentModule.getEditPanel().contains(tdNode)) ?
+            tdNode : target;
         removeClass(this.contentModule.getEditPanel().querySelectorAll('table td, table th'), CLS_TABLE_SEL);
         if (target && (target.tagName === 'TD' || target.tagName === 'TH')) {
             target.removeAttribute('class');
@@ -12466,9 +12470,11 @@ class Table {
     }
     resizeHelper(e) {
         let target = e.target || e.targetTouches[0].target;
+        let closestTable = closest(target, 'table');
         if (target.nodeName === 'TABLE' || target.nodeName === 'TD' || target.nodeName === 'TH') {
-            this.curTable = (target.nodeName === 'TD' || target.nodeName === 'TH') ?
-                closest(target, 'table') : target;
+            this.curTable = (closestTable && this.parent.contentModule.getEditPanel().contains(closestTable))
+                && (target.nodeName === 'TD' || target.nodeName === 'TH') ?
+                closestTable : target;
             this.removeResizeEle();
             this.tableResizeEleCreation(this.curTable, e);
         }
@@ -12838,7 +12844,9 @@ class Table {
             this.parent.isBlur = true;
             dispatchEvent(this.parent.element, 'focusout');
         }
-        if (target && target.tagName !== 'TD' && target.tagName !== 'TH' && !closest(target, 'td') &&
+        let closestEle = closest(target, 'td');
+        let isExist = closestEle && this.parent.contentModule.getEditPanel().contains(closestEle) ? true : false;
+        if (target && target.tagName !== 'TD' && target.tagName !== 'TH' && !isExist &&
             closest(target, '.e-rte-quick-popup') === null && target.offsetParent &&
             !target.offsetParent.classList.contains('e-quick-dropdown') &&
             !target.offsetParent.classList.contains('e-rte-backgroundcolor-dropdown') && !closest(target, '.e-rte-dropdown-popup')) {
@@ -13767,6 +13775,9 @@ let RichTextEditor = class RichTextEditor extends Component {
         }
         extend(htmlAttr, this.htmlAttributes, htmlAttr);
         this.setProperties({ htmlAttributes: htmlAttr }, true);
+        if (!isNullOrUndefined(this.htmlAttributes.id)) {
+            this.element.id = this.htmlAttributes.id;
+        }
         if (this.element.tagName === 'TEXTAREA') {
             let rteOuterWrapper = this.createElement('div', {
                 className: 'e-control e-richtexteditor'
@@ -14413,7 +14424,7 @@ let RichTextEditor = class RichTextEditor extends Component {
         this.updateRTL();
         this.updateReadOnly();
         this.updatePanelValue();
-        if (this.enableHtmlEncode) {
+        if (this.enableHtmlEncode && !isNullOrUndefined(this.value)) {
             this.setProperties({ value: this.encode(this.decode(this.value)) });
         }
     }

@@ -27,7 +27,7 @@ export class Slider implements IComponent {
 
     public updateValue(e: NotifyParams): void {
         if (this.compObj && e.type === 'Slider') {
-            this.parent.setProperties({ value: this.compObj.value.toString() }, true);
+            this.parent.setProperties({ value: this.compObj.value }, true);
         }
     }
 
@@ -36,7 +36,7 @@ export class Slider implements IComponent {
     }
 
     /**
-     * Destroys the module.
+     * Destroys the slider module.
      * @method destroy
      * @return {void}
      */

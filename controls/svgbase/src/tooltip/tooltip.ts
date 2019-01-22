@@ -616,8 +616,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
 
     private renderText(isRender: boolean): void {
         let height: number = 0; let width: number = 0; // Padding for text;
-        let subWidth: number = 0; let size: Size;
-        let lines: string[];
+        let subWidth: number = 0; let size: Size; let lines: string[];
         let key: string = 'properties';
         let font: TextStyle = <TextStyle>extend({}, this.textStyle, null, true)[key];
         let groupElement: Element = getElement(this.element.id + '_group');
@@ -626,13 +625,11 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.findFormattedText();
         let headerContent: string = this.header.replace(/<b>/g, '').replace(/<\/b>/g, '').trim();
         let headerSpace: number = (headerContent !== '') ? this.marginY : 0;
-        let isRow: boolean = true;
-        let isColumn: boolean = true;
-        this.markerPoint = [];
+        let isRow: boolean = true; let isColumn: boolean = true; this.markerPoint = [];
         let markerSize: number = (this.shapes.length > 0) ? 10 : 0;
         let markerPadding: number = (this.shapes.length > 0) ? 5 : 0;
         let spaceWidth: number = 4;
-        let fontSize : string = '13px';
+        let fontSize : string = '13px'; let fontWeight: string = 'Normal';  let labelColor: string = this.themeStyle.tooltipLightLabel;
         let dy: number = (22 / parseFloat(fontSize)) * (parseFloat(font.size));
 
         if (!isRender) {
@@ -686,13 +683,16 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                         tspanElement = <HTMLElement>this.renderer.createTSpan(tspanOption, '');
                         parentElement.appendChild(tspanElement);
                         if (line.indexOf('<b>') > -1) {
-                            tspanStyle = 'font-weight:bold';
-                            font.fontWeight = 'bold';
-                            (tspanElement).setAttribute('fill', this.textStyle.color || this.themeStyle.tooltipBoldLabel);
+                            fontWeight = 'bold'; labelColor = this.themeStyle.tooltipBoldLabel;
+                            tspanStyle = 'font-weight:' + fontWeight; font.fontWeight = fontWeight;
+                            (tspanElement).setAttribute('fill', this.textStyle.color || labelColor);
                         } else {
-                            tspanStyle = '';
-                            font.fontWeight = 'Normal';
-                            (tspanElement).setAttribute('fill', this.textStyle.color || this.themeStyle.tooltipLightLabel);
+                            tspanStyle = fontWeight === 'bold' ? 'font-weight:' + fontWeight : '';
+                            font.fontWeight = fontWeight;
+                            (tspanElement).setAttribute('fill', this.textStyle.color || labelColor);
+                        }
+                        if (line.indexOf('</b>') > -1 ) {
+                            fontWeight = 'Normal'; labelColor = this.themeStyle.tooltipLightLabel;
                         }
                         (tspanElement).textContent = line = line.replace(/<[a-zA-Z\/](.|\n)*?>/g, '');
                         subWidth += measureText(line, font).width;

@@ -161,7 +161,7 @@ export class LineSettings extends ChildProperty<LineSettings> {
     public color: string;
     /**
      * To configure the sparkline axis line dashArray.
-     * @default ''.
+     * @default ''
      */
     @Property('')
     public dashArray: string;
@@ -300,7 +300,7 @@ export class SparklineMarkerSettings extends ChildProperty<SparklineMarkerSettin
     public size: number;
     /**
      * To configure the marker fill color.
-     * @default `#00bdae`.
+     * @default '#00bdae'
      */
     @Property('#00bdae')
     public fill: string;
@@ -343,13 +343,13 @@ export class SparklineDataLabelSettings extends ChildProperty<SparklineDataLabel
     public opacity: number;
     /**
      * To configure the dataLabel fill color.
-     * @default `transparent`.
+     * @default 'transparent'
      */
     @Property('transparent')
     public fill: string;
     /**
      * To configure the dataLabel format the value.
-     * @default ``.
+     * @default ''
      */
     @Property('')
     public format: string;

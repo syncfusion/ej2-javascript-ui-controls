@@ -39,7 +39,7 @@ export class Rte implements IComponent {
     }
 
     /**
-     * Destroys the module.
+     * Destroys the rte module.
      * @method destroy
      * @return {void}
      */

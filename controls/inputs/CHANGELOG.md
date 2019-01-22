@@ -2,7 +2,19 @@
 
 ## [Unreleased]
 
-## 16.4.47 (2019-01-08)
+## 16.4.48 (2019-01-22)
+
+### Uploader
+
+#### New Features
+
+- Provided template support for preloaded files also to customize its default file list structure.
+
+#### Bug Fixes
+
+- Provided option to hide generated promise error manually on ajax failed event.
+
+## 16.4.47 (2019-01-16)
 
 ### TextBox
 

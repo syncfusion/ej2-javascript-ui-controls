@@ -1,9 +1,9 @@
-import { Toolbar } from '../../src/rich-text-editor/index';
+import { Toolbar, Table } from '../../src/rich-text-editor/index';
 import { dispatchEvent } from '../../src/rich-text-editor/base/util';
 import { RichTextEditor } from '../../src/rich-text-editor/base/rich-text-editor';
 import { NodeSelection } from '../../src/selection/index';
 
-import { renderRTE, destroy } from './../rich-text-editor/render.spec';
+import { renderRTE, destroy, setCursorPoint, dispatchEvent as dispatchEve } from './../rich-text-editor/render.spec';
 import { createElement, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { QuickToolbar, MarkdownEditor, HtmlEditor, Link, Image } from "../../src/rich-text-editor/index";
 import { Browser, detach, getUniqueID } from "@syncfusion/ej2-base";
@@ -12,7 +12,7 @@ import { FormValidator } from "@syncfusion/ej2-inputs";
 RichTextEditor.Inject(MarkdownEditor);
 RichTextEditor.Inject(HtmlEditor);
 
-RichTextEditor.Inject(Toolbar);
+RichTextEditor.Inject(Toolbar, Table);
 RichTextEditor.Inject(QuickToolbar, Link, Image);
 
 describe('RTE CR issues', () => {
@@ -290,5 +290,187 @@ describe('RTE CR issues', () => {
             expect((rteObj as any).valueContainer.hasAttribute('ejs-for')).toBe(true);
             expect((rteObj as any).valueContainer.hasAttribute('data-val')).toBe(true);
         });
+    });
+
+    describe(' EJ2-21612  -  To prevent the table quick toolbar when render RTE inside the table ', () => {
+        let rteObj: RichTextEditor;
+        let element: HTMLElement = createElement('div', {
+            id: "form-element", innerHTML:
+                ` <table>
+                <tbody>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div id="defaultRTE">
+                            <p id="rte-p"><b>Description:</b></p><p>The Rich Text Editor (RTE) control is an easy to render in
+                            client side.</p><table class="e-rte-table" style="width: 100%;"><tbody><tr><td class="" style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table><p>&nbsp;Customer easy to edit the contents and get the HTML content for
+                            the displayed content. </p>
+                            </div>
+    
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+                ` });
+        beforeEach((done: Function) => {
+            document.body.appendChild(element);
+            rteObj = new RichTextEditor({
+                placeholder: 'Type something'
+            });
+            rteObj.appendTo("#defaultRTE");
+            rteObj.saveInterval = 0;
+            rteObj.dataBind();
+            done();
+        })
+        afterEach((done: Function) => {
+            rteObj.destroy();
+            detach(element);
+            done();
+        });
+
+        it(' click on inside of table content for prevent the quick toolbar ', (done) => {
+            let firstP: Element = (rteObj as any).inputElement.querySelector('#rte-p');
+            setCursorPoint(firstP, 0);
+            dispatchEve(firstP, 'mousedown');
+            (firstP as HTMLElement).click();
+            dispatchEve(firstP, 'mouseup');
+            setTimeout(() => {
+                let popup: HTMLElement = document.querySelector("#defaultRTE_quick_TableRows");
+                expect(!isNullOrUndefined(popup)).toBe(false);
+                done();
+            }, 100)
+        });
+        it(' click on outside of table content for prevent the quick toolbar ', (done) => {
+            let firstP: Element = (rteObj as any).inputElement.querySelector('tr td');
+            setCursorPoint(firstP, 0);
+            dispatchEve(firstP, 'mousedown');
+            (firstP as HTMLElement).click();
+            dispatchEve(firstP, 'mouseup');
+            setTimeout(() => {
+                let popup: HTMLElement = document.querySelector("#defaultRTE_quick_TableRows");
+                expect(!isNullOrUndefined(popup)).toBe(true);
+                done();
+            }, 100)
+        });
+    });
+
+    describe('EJ2-21470 - RichTextEditor Font Size "px" not update in toolbar status and fontFamily "veranda" style not updated properly', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontName', 'FontSize']
+                },
+                fontSize: {
+                    default: '10px',
+                    items: [
+                        { text: '8 px', value: '8px' },
+                        { text: '10 px', value: '10px' },
+                        { text: '12 px', value: '12px' },
+                        { text: '14 px', value: '14px' },
+                        { text: '18 px', value: '18px' },
+                        { text: '24 px', value: '24px' },
+                        { text: '36 px', value: '36px' }
+                    ]
+                },
+                value: `<p id="rte"><span id="first-span">RichTextEditor</span><span id="rte-span" style="font-size: 14px;FONT-FAMILY: Verdana;FONT-WEIGHT: normal;FONT-STYLE: normal;">
+                The rich text editor is WYSIWYG</span></p>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            done();
+        });
+        it(' Check the toolbar status while click on fontsize and fontName element ', (done) => {
+            let spanEle: HTMLElement = rteObj.element.querySelector('#rte-span');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, spanEle.childNodes[0], spanEle.childNodes[0], 0, 3);
+            dispatchEve(spanEle, 'mousedown');
+            dispatchEve(spanEle, 'mouseup');
+            spanEle.click();
+            setTimeout(() => {
+                let fontSize: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontSize');
+                let fontName: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontName');
+                expect((fontSize.firstElementChild as HTMLElement).innerText.trim()).toBe('14 px');
+                expect((fontName.firstElementChild as HTMLElement).innerText.trim()).toBe('Verdana');
+                done();
+            }, 50)
+        });
+        it(' Check the toolbar status while click without fontsize element ', (done) => {
+            let spanEle: HTMLElement = rteObj.element.querySelector('#first-span');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, spanEle.childNodes[0], spanEle.childNodes[0], 0, 3);
+            dispatchEve(spanEle, 'mousedown');
+            dispatchEve(spanEle, 'mouseup');
+            spanEle.click();
+            setTimeout(() => {
+                let fontSize: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontSize');
+                let fontName: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontName');
+                expect((fontSize.firstElementChild as HTMLElement).innerText.trim()).toBe('10 px');
+                done();
+            }, 50)
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('EJ2-21814 - Clicking on view source code with single character inside textarea removes the character.', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                value: `<p>a</p>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            done();
+        });
+        it(' Click the source code with single character ', (done) => {
+            let sourceCode: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_SourceCode');
+            dispatchEve(sourceCode, 'mousedown');
+            dispatchEve(sourceCode, 'mouseup');
+            sourceCode.click();
+            setTimeout(() => {
+                let textarea: HTMLTextAreaElement = (rteObj as any).element.querySelector('.e-rte-srctextarea');
+                expect(textarea.value === "<p>a</p>").toBe(true);
+                done();
+            }, 50)
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe(' EJ2-218412  -  htmlAttributes "id" is not set to the validation textarea element in RTE ', () => {
+        let rteObj: RichTextEditor;
+        let element: HTMLElement = createElement('div', {
+            id: "form-element", innerHTML:
+                ` <div class="rte-element"></div>
+                ` });
+        beforeEach((done: Function) => {
+            document.body.appendChild(element);
+            rteObj = new RichTextEditor({
+                htmlAttributes: {
+                    id: "htmlAttr-id"
+                }
+            });
+            let target: HTMLElement = document.querySelector(".rte-element");
+            rteObj.appendTo(target);
+            rteObj.saveInterval = 0;
+            rteObj.dataBind();
+            done();
+        })
+        afterEach((done: Function) => {
+            rteObj.destroy();
+            detach(element);
+            done();
+        });
+
+        it(' Render the RTE without ID and set the id via htmlAttributes property ', () => {
+            expect(rteObj.element.id === 'htmlAttr-id').toBe(true);
+            expect((rteObj as any).valueContainer.id === 'htmlAttr-id-value').toBe(true);
+            expect((rteObj as any).inputElement.id === 'htmlAttr-id_rte-edit-view').toBe(true);
+        })
     });
 })

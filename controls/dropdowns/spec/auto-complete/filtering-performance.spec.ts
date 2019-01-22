@@ -87,7 +87,7 @@ describe('Filtering performance', () => {
                 allowFiltering: true,
                 sortOrder: 'Ascending',
                 width: '250px',
-                suggestionCount: 20000,
+                suggestionCount: 2000,
                 filtering: (e: FilteringEventArgs) => {
                     let predicate = new Predicate('Description', 'contains', e.text, true);
                     predicate = predicate.or('Code', 'contains', e.text, true);

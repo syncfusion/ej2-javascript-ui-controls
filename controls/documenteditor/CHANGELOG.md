@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.48 (2019-01-16)
+
+### Document Editor
+
+#### Bug Fixes
+
+- Broken image rendering is handled.
+
 ## 16.4.46 (2019-01-08)
 
 ### Document Editor

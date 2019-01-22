@@ -675,6 +675,8 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         var markerPadding = (this.shapes.length > 0) ? 5 : 0;
         var spaceWidth = 4;
         var fontSize = '13px';
+        var fontWeight = 'Normal';
+        var labelColor = this.themeStyle.tooltipLightLabel;
         var dy = (22 / parseFloat(fontSize)) * (parseFloat(font.size));
         if (!isRender) {
             removeElement(this.element.id + '_text');
@@ -726,14 +728,20 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
                         tspanElement = this.renderer.createTSpan(tspanOption, '');
                         parentElement.appendChild(tspanElement);
                         if (line.indexOf('<b>') > -1) {
-                            tspanStyle = 'font-weight:bold';
-                            font.fontWeight = 'bold';
-                            (tspanElement).setAttribute('fill', this.textStyle.color || this.themeStyle.tooltipBoldLabel);
+                            fontWeight = 'bold';
+                            labelColor = this.themeStyle.tooltipBoldLabel;
+                            tspanStyle = 'font-weight:' + fontWeight;
+                            font.fontWeight = fontWeight;
+                            (tspanElement).setAttribute('fill', this.textStyle.color || labelColor);
                         }
                         else {
-                            tspanStyle = '';
-                            font.fontWeight = 'Normal';
-                            (tspanElement).setAttribute('fill', this.textStyle.color || this.themeStyle.tooltipLightLabel);
+                            tspanStyle = fontWeight === 'bold' ? 'font-weight:' + fontWeight : '';
+                            font.fontWeight = fontWeight;
+                            (tspanElement).setAttribute('fill', this.textStyle.color || labelColor);
+                        }
+                        if (line.indexOf('</b>') > -1) {
+                            fontWeight = 'Normal';
+                            labelColor = this.themeStyle.tooltipLightLabel;
                         }
                         (tspanElement).textContent = line = line.replace(/<[a-zA-Z\/](.|\n)*?>/g, '');
                         subWidth += measureText(line, font).width;

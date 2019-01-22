@@ -4471,16 +4471,16 @@ var AccordionItem = /** @__PURE__ @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate$4([
-        Property(undefined)
+        Property(null)
     ], AccordionItem.prototype, "content", void 0);
     __decorate$4([
-        Property(undefined)
+        Property(null)
     ], AccordionItem.prototype, "header", void 0);
     __decorate$4([
-        Property(undefined)
+        Property(null)
     ], AccordionItem.prototype, "cssClass", void 0);
     __decorate$4([
-        Property(undefined)
+        Property(null)
     ], AccordionItem.prototype, "iconCss", void 0);
     __decorate$4([
         Property(false)

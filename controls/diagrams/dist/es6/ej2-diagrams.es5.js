@@ -12766,7 +12766,7 @@ function updateShapeContent(content, actualObject, diagram) {
 /** @private */
 function updateShape(node, actualObject, oldObject, diagram) {
     var content = new DiagramElement();
-    switch (actualObject.shape.type) {
+    switch (node.shape.type) {
         case 'Path':
             var pathContent = new PathElement();
             pathContent.data = actualObject.shape.data;
@@ -12888,6 +12888,7 @@ function updateContent(newValues, actualObject, diagram) {
             var shapes = actualObject.shape.shape;
             var basicShapeData = getBasicShape(shapes.toString());
             actualObject.wrapper.children[0].data = basicShapeData;
+            actualObject.wrapper.children[0].canMeasurePath = true;
         }
     }
 }
@@ -15652,9 +15653,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
     };
     /**   @private  */
     DiagramRenderer.prototype.renderElement = function (element, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue) {
-        var isElement = true;
         if (element instanceof Container) {
-            isElement = false;
             this.renderContainer(element, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue);
         }
         else if (element instanceof ImageElement) {
@@ -15674,9 +15673,6 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         }
         else {
             this.renderRect(element, canvas, transform, parentSvg);
-        }
-        if (isElement) {
-            element.canApplyStyle = false;
         }
     };
     /**   @private  */
@@ -26289,7 +26285,12 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 case 'dataSourceSettings':
                     this.clear();
                     this.initObjects();
-                    refreshLayout = true;
+                    if (this.layout.type === 'None') {
+                        refereshColelction = true;
+                    }
+                    else {
+                        refreshLayout = true;
+                    }
                     break;
                 case 'tooltip':
                     initTooltip(this);
@@ -29287,6 +29288,14 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         this.updateBridging();
         this.scroller.setSize();
     };
+    Diagram.prototype.updateCanupdateStyle = function (element, value) {
+        for (var j = 0; j < element.length; j++) {
+            if (element[j].children) {
+                this.updateCanupdateStyle(element[j].children, value);
+            }
+            element[j].canApplyStyle = value;
+        }
+    };
     /** @private */
     Diagram.prototype.updateDiagramObject = function (obj) {
         var view;
@@ -29297,7 +29306,11 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 if (view.mode === 'SVG') {
                     var htmlLayer = getHTMLLayer(this.element.id);
                     var diagramElementsLayer = document.getElementById(view.element.id + '_diagramLayer');
+                    if (this.diagramActions & DiagramAction.Interactions) {
+                        this.updateCanupdateStyle(obj.wrapper.children, false);
+                    }
                     this.diagramRenderer.updateNode(obj.wrapper, diagramElementsLayer, htmlLayer, undefined);
+                    this.updateCanupdateStyle(obj.wrapper.children, true);
                 }
             }
         }

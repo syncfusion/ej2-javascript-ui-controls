@@ -217,3 +217,17 @@ export interface IShapes {
     renderOption?: Object;
     functionName?: string;
 }
+
+
+/**
+ * Specifies the theme style interface.
+ */
+export interface IThemeStyle {
+    backgroundColor: string;
+    titleFontColor: string;
+    subTitleFontColor: string;
+    tooltipFillColor: string;
+    tooltipFontColor: string;
+    legendTitleColor: string;
+    legendTextColor: string;
+}

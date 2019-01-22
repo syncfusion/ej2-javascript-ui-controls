@@ -6,6 +6,7 @@ import { createElement, remove } from '@syncfusion/ej2-base';
 import { jobData, sportsData, hierarchicalData, Country_Population } from '../base/data.spec';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { TreeMapAjax } from '../../../src/treemap/utils/helper';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 TreeMap.Inject(TreeMapLegend);
 
 let jobDataSource: Object[] = jobData;
@@ -16,6 +17,14 @@ let popuationData: Object[] = Country_Population;
  * Tree map spec document
  */
 describe('TreeMap Component Spec', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('TreeMap Data Manager support spec', () => {
         let element: Element;
         let treemap: TreeMap;
@@ -73,5 +82,14 @@ describe('TreeMap Component Spec', () => {
             treemap.dataSource = new TreeMapAjax(location.origin + '/base/spec/treemap/data/population.json');
             treemap.refresh();
         });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

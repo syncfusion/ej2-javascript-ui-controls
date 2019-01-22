@@ -20,6 +20,18 @@
     }
   }
 
+  #{&}.e-timepicker.e-time-modal {
+    background-color: $timepicker-default-overlay;
+    height: 100%;
+    left: 0;
+    opacity: .5;
+    pointer-events: auto;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 999;
+	}
+
   #{&}.e-timepicker.e-popup {
     border-style: solid;
     border-width: 1px;

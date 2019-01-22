@@ -333,8 +333,10 @@ export class Table {
             let isPopupOpen: boolean = this.quickToolObj.tableQTBar.element.classList.contains('e-rte-pop');
             if (isPopupOpen) { return; }
             let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());
+            let closestTable: Element = closest(target, 'table');
             if (target && target.nodeName !== 'A' && target.nodeName !== 'IMG' && (target.nodeName === 'TD' || target.nodeName === 'TH' ||
-                target.nodeName === 'TABLE' || closest(target, 'table')) && !(range.startContainer.nodeType === 3 && !range.collapsed)) {
+                target.nodeName === 'TABLE' || (closestTable && this.parent.contentModule.getEditPanel().contains(closestTable)))
+                && !(range.startContainer.nodeType === 3 && !range.collapsed)) {
                 let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
@@ -402,7 +404,9 @@ export class Table {
 
     private cellSelect(e: ITableNotifyArgs): void {
         let target: HTMLTableCellElement = (e.args as MouseEvent).target as HTMLTableCellElement;
-        target = (target.nodeName !== 'TD') ? closest(target, 'td,th') as HTMLTableCellElement : target;
+        let tdNode: Element = closest(target, 'td,th') as HTMLTableCellElement;
+        target = (target.nodeName !== 'TD' && tdNode && this.parent.contentModule.getEditPanel().contains(tdNode)) ?
+            tdNode as HTMLTableCellElement : target;
         removeClass(this.contentModule.getEditPanel().querySelectorAll('table td, table th'), classes.CLS_TABLE_SEL);
         if (target && (target.tagName === 'TD' || target.tagName === 'TH')) {
             target.removeAttribute('class');
@@ -414,9 +418,11 @@ export class Table {
     }
     private resizeHelper(e: PointerEvent | TouchEvent): void {
         let target: HTMLElement = e.target as HTMLElement || (e as TouchEvent).targetTouches[0].target as HTMLElement;
+        let closestTable: Element = closest(target, 'table');
         if (target.nodeName === 'TABLE' || target.nodeName === 'TD' || target.nodeName === 'TH') {
-            this.curTable = (target.nodeName === 'TD' || target.nodeName === 'TH') ?
-                (closest(target, 'table') as HTMLTableElement) : target as HTMLTableElement;
+            this.curTable = (closestTable && this.parent.contentModule.getEditPanel().contains(closestTable))
+                && (target.nodeName === 'TD' || target.nodeName === 'TH') ?
+                (closestTable as HTMLTableElement) : target as HTMLTableElement;
             this.removeResizeEle();
             this.tableResizeEleCreation(this.curTable, e as PointerEvent);
         }
@@ -777,7 +783,9 @@ export class Table {
             this.parent.isBlur = true;
             dispatchEvent(this.parent.element, 'focusout');
         }
-        if (target && target.tagName !== 'TD' && target.tagName !== 'TH' && !closest(target, 'td') &&
+        let closestEle: Element = closest(target, 'td');
+        let isExist: boolean = closestEle && this.parent.contentModule.getEditPanel().contains(closestEle) ? true : false;
+        if (target && target.tagName !== 'TD' && target.tagName !== 'TH' && !isExist &&
             closest(target, '.e-rte-quick-popup') === null && target.offsetParent &&
             !target.offsetParent.classList.contains('e-quick-dropdown') &&
             !target.offsetParent.classList.contains('e-rte-backgroundcolor-dropdown') && !closest(target, '.e-rte-dropdown-popup')) {

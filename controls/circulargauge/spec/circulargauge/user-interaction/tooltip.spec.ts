@@ -8,8 +8,18 @@ import { ILoadedEventArgs } from '../../../src/circular-gauge/model/interface';
 import { GaugeTooltip } from '../../../src/circular-gauge/user-interaction/tooltip';
 import { GaugeLocation } from '../../../src/circular-gauge/utils/helper';
 import { MouseEvents } from './mouse-events.spec';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 CircularGauge.Inject(GaugeTooltip);
+
 describe('Circular-Gauge Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Gauge Tooltip', () => {
         let gauge: CircularGauge;
         let ele: HTMLElement;
@@ -92,5 +102,14 @@ describe('Circular-Gauge Control', () => {
             gauge.tooltip.template = '<div id="tooltip1" style="border:2px solid red;"><div class="des"><span>${value} MPH</span></div></div>';
             gauge.refresh();
         });
+    });
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

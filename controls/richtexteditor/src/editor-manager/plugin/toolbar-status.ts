@@ -104,7 +104,7 @@ export class ToolbarStatus {
         fontSize?: string[],
         fontName?: string[]): IToolbarStatus {
         if (targetNode.contains(node) ||
-        (node.nodeType === 3 && targetNode.nodeType !== 3 && targetNode.contains(node.parentNode) ) ) {
+            (node.nodeType === 3 && targetNode.nodeType !== 3 && targetNode.contains(node.parentNode))) {
             do {
                 formatCollection = this.isFormattedNode(docElement, formatCollection, node, formatNode, fontSize, fontName);
                 node = node.parentNode;
@@ -216,7 +216,9 @@ export class ToolbarStatus {
         let index: number = null;
         if ((name !== null && name !== '' && name !== undefined)
             && (fontName === null || fontName === undefined || (fontName.filter((value: string, pos: number) => {
-                if (value.replace(/"/g, '').replace(/ /g, '') === name.replace(/"/g, '').replace(/ /g, '')) {
+                let pattern: RegExp = new RegExp(name, 'i');
+                if ((value.replace(/"/g, '').replace(/ /g, '') === name.replace(/"/g, '').replace(/ /g, '')) ||
+                    (value.search(pattern) > -1)) {
                     index = pos;
                 }
             }) && (index !== null)))) {

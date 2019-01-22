@@ -2075,6 +2075,57 @@ var ExportUtils = /** @__PURE__ @class */ (function () {
 }());
 
 /**
+ * Maps Themes doc
+ */
+var Theme;
+(function (Theme) {
+    /** @private */
+    Theme.mapsTitleFont = {
+        size: '14px',
+        fontWeight: 'Medium',
+        color: '#424242',
+        fontStyle: 'Medium',
+        fontFamily: 'Roboto, Noto, Sans-serif'
+    };
+})(Theme || (Theme = {}));
+/**
+ * @private
+ * To get the theme style based on treemap theme.
+ */
+function getThemeStyle(theme) {
+    var style;
+    switch (theme) {
+        case 'BootstrapDark':
+        case 'FabricDark':
+        case 'MaterialDark':
+        case 'Highcontrast':
+        case 'HighContrast':
+            style = {
+                backgroundColor: '#000000',
+                titleFontColor: '#FFFFFF',
+                subTitleFontColor: '#FFFFFF',
+                tooltipFillColor: '#363F4C',
+                tooltipFontColor: '#ffffff',
+                legendTitleColor: '#FFFFFF',
+                legendTextColor: '#FFFFFF'
+            };
+            break;
+        default:
+            style = {
+                backgroundColor: '#FFFFFF',
+                titleFontColor: '#424242',
+                subTitleFontColor: '#424242',
+                tooltipFillColor: '#363F4C',
+                tooltipFontColor: '#ffffff',
+                legendTitleColor: '#353535',
+                legendTextColor: '#353535'
+            };
+            break;
+    }
+    return style;
+}
+
+/**
  * Tree Map Component
  */
 var __extends = (undefined && undefined.__extends) || (function () {
@@ -2130,9 +2181,9 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         this.setCulture();
     };
     TreeMap.prototype.render = function () {
-        this.themeEffect();
         this.createSecondaryElement();
         this.addTabIndex();
+        this.themeStyle = getThemeStyle(this.theme);
         this.renderBorder();
         this.renderTitle(this.titleSettings, 'title', null, null);
         this.processDataManager();
@@ -2206,34 +2257,6 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         this.renderer = new SvgRenderer(this.element.id);
         this.layout = new LayoutPanel(this);
     };
-    /**
-     * To change font styles of map based on themes
-     */
-    TreeMap.prototype.themeEffect = function () {
-        var theme = this.theme.toLowerCase();
-        switch (theme) {
-            case 'material':
-            case 'bootstrap':
-            case 'fabric':
-            case 'highcontrastlight':
-                this.setTextStyle('#424242', null);
-                break;
-            case 'highcontrast':
-                this.setTextStyle('#FFFFFF', null);
-                break;
-            case 'materialdark':
-            case 'bootstrapdark':
-            case 'fabricdark':
-                this.setTextStyle('#FFFFFF', '#DADADA');
-                break;
-        }
-    };
-    TreeMap.prototype.setTextStyle = function (color, darkColor) {
-        this.titleSettings.textStyle.color = this.titleSettings.textStyle.color || color;
-        this.titleSettings.subtitleSettings.textStyle.color = this.titleSettings.subtitleSettings.textStyle.color || color;
-        this.legendSettings.textStyle.color = this.legendSettings.textStyle.color || (!isNullOrUndefined(darkColor) ? darkColor : color);
-        this.legendSettings.titleStyle.color = this.legendSettings.titleStyle.color || color;
-    };
     TreeMap.prototype.createSecondaryElement = function () {
         var secondaryEle = document.getElementById(this.element.id + '_Secondary_Element');
         if (secondaryEle && secondaryEle.childElementCount > 0) {
@@ -2258,16 +2281,13 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
      */
     TreeMap.prototype.renderBorder = function () {
         var width = this.border.width;
-        var themes = this.theme.toLowerCase();
-        var color = (themes.indexOf('dark')) > -1 || themes === 'highcontrast' ? '#000000' : '#FFFFFF';
-        this.background = this.background ? this.background : color;
         var borderElement = this.svgObject.querySelector('#' + this.element.id + '_TreeMap_Border');
-        if (isNullOrUndefined(borderElement)) {
-            var borderRect = new RectOption(this.element.id + '_TreeMap_Border', this.background, this.border, 1, new Rect(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width));
+        if ((this.border.width > 0 || (this.background || this.themeStyle.backgroundColor)) && isNullOrUndefined(borderElement)) {
+            var borderRect = new RectOption(this.element.id + '_TreeMap_Border', this.background || this.themeStyle.backgroundColor, this.border, 1, new Rect(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width));
             this.svgObject.appendChild(this.renderer.drawRectangle(borderRect));
         }
-        else {
-            borderElement.setAttribute('fill', this.background);
+        else if (borderElement) {
+            borderElement.setAttribute('fill', this.background || this.themeStyle.backgroundColor);
         }
     };
     TreeMap.prototype.renderTitle = function (title, type, bounds, groupEle) {
@@ -2285,7 +2305,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
             var location_1 = findPosition(rect, title.alignment, elementSize, type);
             var options = new TextOption(this.element.id + '_TreeMap_' + type, location_1.x, location_1.y, 'start', trimmedTitle);
             var titleBounds = new Rect(location_1.x, location_1.y, elementSize.width, elementSize.height);
-            var element = renderTextElement(options, style, style.color, groupEle);
+            var element = renderTextElement(options, style, style.color || (type === 'title' ? this.themeStyle.titleFontColor : this.themeStyle.subTitleFontColor), groupEle);
             element.setAttribute('aria-label', title.description || title.text);
             element.setAttribute('tabindex', (this.tabIndex + (type === 'title' ? 1 : 2)).toString());
             if ((type === 'title' && !title.subtitleSettings.text) || (type === 'subtitle')) {
@@ -2939,21 +2959,6 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
 }(Component));
 
 /**
- * Maps Themes doc
- */
-var Theme;
-(function (Theme) {
-    /** @private */
-    Theme.mapsTitleFont = {
-        size: '14px',
-        fontWeight: 'Medium',
-        color: '#424242',
-        fontStyle: 'Medium',
-        fontFamily: 'Roboto, Noto, Sans-serif'
-    };
-})(Theme || (Theme = {}));
-
-/**
  * Legend module class
  */
 var TreeMapLegend = /** @__PURE__ @class */ (function () {
@@ -3461,7 +3466,7 @@ var TreeMapLegend = /** @__PURE__ @class */ (function () {
                 var textLocation = new Location(item['textX'], item['textY']);
                 var rectOptions = new RectOption(itemId, fill, legend.shapeBorder, legend.opacity, bounds);
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'middle', item['text'], '', '');
-                renderTextElement(textOptions, textFont, textFont.color, this.legendGroup);
+                renderTextElement(textOptions, textFont, textFont.color || this.treemap.themeStyle.legendTextColor, this.legendGroup);
                 this.legendGroup.appendChild(render.drawRectangle(rectOptions));
             }
         }
@@ -3497,7 +3502,7 @@ var TreeMapLegend = /** @__PURE__ @class */ (function () {
                 var renderOptions_1 = new PathOption(shapeId, eventArgs.fill, strokeWidth, isLineShape ? collection['Fill'] : strokeColor, legend.opacity, '');
                 legendElement.appendChild(drawSymbol(shapeLocation, eventArgs.shape, shapeSize, eventArgs.imageUrl, renderOptions_1, legendText));
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
-                renderTextElement(textOptions, legend.textStyle, legend.textStyle.color, legendElement);
+                renderTextElement(textOptions, legend.textStyle, legend.textStyle.color || this.treemap.themeStyle.legendTextColor, legendElement);
                 this.legendGroup.appendChild(legendElement);
             }
             var pagingGroup = void 0;
@@ -3580,7 +3585,7 @@ var TreeMapLegend = /** @__PURE__ @class */ (function () {
         var textSize = measureText(trimTitle, textStyle);
         if (legendTitle) {
             textOptions = new TextOption(treemap.element.id + '_LegendTitle', (this.legendItemRect.x) + (this.legendItemRect.width / 2), this.legendItemRect.y - (textSize.height / 2) - (spacing / 2), 'middle', trimTitle, '');
-            renderTextElement(textOptions, textStyle, textStyle.color, this.legendGroup);
+            renderTextElement(textOptions, textStyle, textStyle.color || this.treemap.themeStyle.legendTitleColor, this.legendGroup);
         }
     };
     /**
@@ -4231,54 +4236,53 @@ var TreeMapTooltip = /** @__PURE__ @class */ (function () {
         var markerFill;
         if (targetId.indexOf('_Item_Index') > -1) {
             item = this.treemap.layout.renderItems[parseFloat(targetId.split('_')[6])];
-            if (!isNullOrUndefined(item)) {
-                toolTipHeader = item['name'];
-                value = item['weight'];
-                toolTipData = item['data'];
-                markerFill = item['options']['fill'];
-                tooltipContent = [textFormatter(this.tooltipSettings.format, toolTipData, this.treemap) ||
-                        this.treemap.weightValuePath.toString() + ' : ' + formatValue(value, this.treemap)];
-                if (document.getElementById(this.tooltipId)) {
-                    tooltipEle = document.getElementById(this.tooltipId);
-                }
-                else {
-                    tooltipEle = createElement('div', {
-                        id: this.treemap.element.id + '_TreeMapTooltip',
-                        className: 'EJ2-TreeMap-Tooltip',
-                        styles: 'position: absolute;pointer-events:none;'
-                    });
-                    document.getElementById(this.treemap.element.id + '_Secondary_Element').appendChild(tooltipEle);
-                }
-                location = getMousePosition(pageX, pageY, this.treemap.svgObject);
-                location.y = (this.tooltipSettings.template) ? location.y + 10 : location.y;
-                tootipArgs = {
-                    cancel: false, name: tooltipRendering, item: item,
-                    options: {
-                        location: location, text: tooltipContent, data: toolTipData,
-                        textStyle: this.tooltipSettings.textStyle, template: this.tooltipSettings.template
-                    },
-                    treemap: this.treemap,
-                    element: target, eventArgs: e
-                };
-                this.treemap.trigger(tooltipRendering, tootipArgs);
-                if (!tootipArgs.cancel) {
-                    this.svgTooltip = new Tooltip({
-                        enable: true,
-                        header: '',
-                        data: tootipArgs.options['data'],
-                        template: tootipArgs.options['template'],
-                        content: tootipArgs.options['text'],
-                        shapes: [],
-                        location: tootipArgs.options['location'],
-                        palette: [markerFill],
-                        areaBounds: this.treemap.areaRect,
-                        textStyle: tootipArgs.options['textStyle']
-                    });
-                    this.svgTooltip.appendTo(tooltipEle);
-                }
-                else {
-                    this.removeTooltip();
-                }
+            toolTipHeader = item['name'];
+            value = item['weight'];
+            this.currentTime = new Date().getTime();
+            toolTipData = item['data'];
+            markerFill = item['options']['fill'];
+            tooltipContent = [textFormatter(this.tooltipSettings.format, toolTipData, this.treemap) ||
+                    this.treemap.weightValuePath.toString() + ' : ' + formatValue(value, this.treemap)];
+            if (document.getElementById(this.tooltipId)) {
+                tooltipEle = document.getElementById(this.tooltipId);
+            }
+            else {
+                tooltipEle = createElement('div', {
+                    id: this.treemap.element.id + '_TreeMapTooltip',
+                    className: 'EJ2-TreeMap-Tooltip',
+                    styles: 'position: absolute;pointer-events:none;'
+                });
+                document.getElementById(this.treemap.element.id + '_Secondary_Element').appendChild(tooltipEle);
+            }
+            location = getMousePosition(pageX, pageY, this.treemap.svgObject);
+            location.y = (this.tooltipSettings.template) ? location.y + 10 : location.y;
+            tootipArgs = {
+                cancel: false, name: tooltipRendering, item: item,
+                options: {
+                    location: location, text: tooltipContent, data: toolTipData,
+                    textStyle: this.tooltipSettings.textStyle, template: this.tooltipSettings.template
+                },
+                treemap: this.treemap,
+                element: target, eventArgs: e
+            };
+            this.treemap.trigger(tooltipRendering, tootipArgs);
+            if (!tootipArgs.cancel) {
+                this.svgTooltip = new Tooltip({
+                    enable: true,
+                    header: '',
+                    data: tootipArgs.options['data'],
+                    template: tootipArgs.options['template'],
+                    content: tootipArgs.options['text'],
+                    shapes: [],
+                    location: tootipArgs.options['location'],
+                    palette: [markerFill],
+                    areaBounds: this.treemap.areaRect,
+                    textStyle: tootipArgs.options['textStyle']
+                });
+                this.svgTooltip.appendTo(tooltipEle);
+            }
+            else {
+                this.removeTooltip();
             }
         }
         else {
@@ -4343,5 +4347,5 @@ var TreeMapTooltip = /** @__PURE__ @class */ (function () {
  * exporting all modules from tree map index
  */
 
-export { TreeMap, Border, Margin, Font, CommonTitleSettings, SubTitleSettings, TitleSettings, ColorMapping, LegendSettings, InitialDrillSettings, LeafItemSettings, TooltipSettings, SelectionSettings, HighlightSettings, LevelSettings, load, loaded, beforePrint, itemRendering, drillStart, drillEnd, itemSelected, itemHighlight, tooltipRendering, itemClick, itemMove, click, mouseMove, legendItemRendering, resize, defaultFont, Theme, Size, stringToNumber, Rect, RectOption, PathOption, measureText, TextOption, textTrim, Location, findPosition, renderTextElement, getElement, itemsToOrder, isContainsData, findChildren, findHightLightItems, getTemplateFunction, convertElement, findLabelLocation, measureElement, getArea, getShortestEdge, convertToContainer, convertToRect, getMousePosition, colorMap, deSaturationColor, colorCollections, rgbToHex, getColorByValue, getGradientColor, getPercentageColor, getPercentage, wordWrap, textWrap, hide, orderByArea, removeClassNames, applyOptions, textFormatter, formatValue, ColorValue, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, drawSymbol, renderLegendShape, isParentItem, TreeMapAjax, removeShape, removeLegend, setColor, removeSelectionWithHighlight, getLegendIndex, pushCollection, ExportUtils, TreeMapLegend, LayoutPanel, TreeMapHighlight, TreeMapSelection, TreeMapTooltip };
+export { TreeMap, Border, Margin, Font, CommonTitleSettings, SubTitleSettings, TitleSettings, ColorMapping, LegendSettings, InitialDrillSettings, LeafItemSettings, TooltipSettings, SelectionSettings, HighlightSettings, LevelSettings, load, loaded, beforePrint, itemRendering, drillStart, drillEnd, itemSelected, itemHighlight, tooltipRendering, itemClick, itemMove, click, mouseMove, legendItemRendering, resize, defaultFont, Theme, getThemeStyle, Size, stringToNumber, Rect, RectOption, PathOption, measureText, TextOption, textTrim, Location, findPosition, renderTextElement, getElement, itemsToOrder, isContainsData, findChildren, findHightLightItems, getTemplateFunction, convertElement, findLabelLocation, measureElement, getArea, getShortestEdge, convertToContainer, convertToRect, getMousePosition, colorMap, deSaturationColor, colorCollections, rgbToHex, getColorByValue, getGradientColor, getPercentageColor, getPercentage, wordWrap, textWrap, hide, orderByArea, removeClassNames, applyOptions, textFormatter, formatValue, ColorValue, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, drawSymbol, renderLegendShape, isParentItem, TreeMapAjax, removeShape, removeLegend, setColor, removeSelectionWithHighlight, getLegendIndex, pushCollection, ExportUtils, TreeMapLegend, LayoutPanel, TreeMapHighlight, TreeMapSelection, TreeMapTooltip };
 //# sourceMappingURL=ej2-treemap.es5.js.map

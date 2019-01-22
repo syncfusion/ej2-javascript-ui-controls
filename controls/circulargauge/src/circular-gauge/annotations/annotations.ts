@@ -61,10 +61,11 @@ export class Annotations {
         if (!argsData.cancel) {
             templateFn = getTemplateFunction(argsData.content);
             if (templateFn && templateFn(axis).length) {
-                templateElement = Array.prototype.slice.call(templateFn(axis));
-                let length: number = templateElement.length;
-                for (let i: number = 0; i < length; i++) {
-                    childElement.appendChild(templateElement[i]);
+                templateElement = templateFn(axis);
+                let count: number = templateElement.length;
+                while (count > 0) {
+                    childElement.appendChild(templateElement[0]);
+                    count--;
                 }
             } else {
                 childElement.appendChild(createElement('div', {
@@ -100,7 +101,7 @@ export class Annotations {
         return 'Annotations';
     }
     /**
-     * To destroy the annotation.
+     * To destroy the annotation. 
      * @return {void}
      * @private
      */

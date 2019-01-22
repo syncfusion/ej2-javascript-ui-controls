@@ -6,9 +6,18 @@ import { GaugeTooltip } from '../../src/linear-gauge/user-interaction/tooltip';
 import { ILoadedEventArgs, ILoadEventArgs, IAnimationCompleteEventArgs } from '../../src/linear-gauge/model/interface';
 import { LinearGauge } from '../../src/linear-gauge/linear-gauge';
 import { MouseEvents } from '../base/events.spec';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 LinearGauge.Inject(GaugeTooltip);
 
 describe('Linear gauge control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Checking user interaction - tooltip', () => {
         let gauge: LinearGauge;
         let element: HTMLElement;
@@ -60,6 +69,29 @@ describe('Linear gauge control', () => {
             };
             gauge.axes[0].opposedPosition = false;
             gauge.tooltip.format = '####. KM';
+            gauge.refresh();
+        });
+
+        it('Checking Tooltip format as Currency', () => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                targetElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
+                trigger.mousemoveEvent(targetElement, 667.5, 223, (667.5 + 10), (223 + 10));
+                trigger.mousemoveEvent(gauge.element, 0, 0, 0, 0);
+            };
+            gauge.format = 'c';
+            gauge.axes[0].opposedPosition = false;
+            gauge.tooltip.format = 'c';
+            gauge.refresh();
+        });
+
+        it('Checking Value Tooltip format', () => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                targetElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
+                trigger.mousemoveEvent(targetElement, 667.5, 223, (667.5 + 10), (223 + 10));
+                trigger.mousemoveEvent(gauge.element, 0, 0, 0, 0);
+            };
+            gauge.axes[0].opposedPosition = false;
+            gauge.tooltip.format = '${value}';
             gauge.refresh();
         });
 
@@ -177,6 +209,14 @@ describe('Linear gauge control', () => {
         it('Checking Tooltip destroy method ', () => {
             gauge.tooltipModule.destroy(gauge);
         });
-
+    });
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

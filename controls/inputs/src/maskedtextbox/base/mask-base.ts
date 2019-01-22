@@ -579,12 +579,12 @@ function maskInputKeyPressHandler(event: KeyboardEvent): void {
 function triggerMaskChangeEvent(event: KeyboardEvent, oldValue: string): void {
     if (!isNullOrUndefined(this.changeEventArgs) && !this.isInitial) {
         let eventArgs: Object = {};
-        this.changeEventArgs = { value: this.element.value, maskedValue: this.element.value, isInteraction: false };
+        this.changeEventArgs = { value: this.element.value, maskedValue: this.element.value, isInteracted: false };
         if (this.mask) {
             this.changeEventArgs.value = strippedValue.call(this, this.element);
         }
         if (!isNullOrUndefined(event)) {
-            this.changeEventArgs.isInteraction = true;
+            this.changeEventArgs.isInteracted = true;
             this.changeEventArgs.event = event;
         }
         merge(eventArgs, this.changeEventArgs);

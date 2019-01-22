@@ -9,20 +9,20 @@ export interface AccordionActionSettingsModel {
 
     /**
    * Specifies the type of animation.
-   * @default : 'SlideDown'
+   * @default 'SlideDown'
    * @aspType string
    */
     effect?: 'None' | Effect;
 
     /**
    * Specifies the duration to animate.
-   * @default : 400
+   * @default 400
    */
     duration?: number;
 
     /**
    * Specifies the animation timing function.
-   * @default : 'linear'
+   * @default 'linear'
    */
     easing?: string;
 
@@ -58,14 +58,14 @@ export interface AccordionItemModel {
      * It also supports to include the title as `HTML element`, `string`, or `query selector`.
      * ```typescript
      *   let accordionObj: Accordion = new Accordion( { 
-     *        items : [ 
+     *        items: [ 
      *          { header: 'Accordion Header', content: 'Accordion Content' },
      *          { header: '<div>Accordion Header</div>', content: '<div>Accordion Content</div' },
      *          { header: '#headerContent', content: '#panelContent' }]
      *        });
      *   accordionObj.appendTo('#accordion');
      * ```
-     * @default undefined
+     * @default null
      */
     content?: string;
 
@@ -75,20 +75,20 @@ export interface AccordionItemModel {
      * It also supports to include the title as `HTML element`, `string`, or `query selector`.
      * ```typescript
      *   let accordionObj: Accordion = new Accordion( { 
-     *        items : [ 
+     *        items: [ 
      *          { header: 'Accordion Header', content: 'Accordion Content' },
      *          { header: '<div>Accordion Header</div>', content: '<div>Accordion Content</div' },
      *          { header: '#headerContent', content: '#panelContent' }]
      *        });
      *   accordionObj.appendTo('#accordion');
      * ```
-     * @default undefined
+     * @default null
      */
     header?: string;
 
     /**
      * Defines single/multiple classes (separated by a space) are to be used for Accordion item customization.
-     * @default undefined
+     * @default null
      */
     cssClass?: string;
 
@@ -98,7 +98,7 @@ export interface AccordionItemModel {
      * Adding icon is applicable only to the header.
      * ```typescript
      *   let accordionObj: Accordion = new Accordion( { 
-     *        items : [ 
+     *        items: [ 
      *          { header: 'Accordion Header', iconCss: 'e-app-icon' }]
      *        });
      *   accordionObj.appendTo('#accordion');
@@ -108,13 +108,13 @@ export interface AccordionItemModel {
      *   content: "\e710";
      * }
      * ```
-     * @default undefined
+     * @default null
      */
     iconCss?: string;
 
     /**
      * Sets the expand (true) or collapse (false) state of the Accordion item. By default, all the items are in a collapsed state.
-     * @default 'false'
+     * @default false
      */
     expanded?: Boolean;
 
@@ -129,7 +129,7 @@ export interface AccordionModel extends ComponentModel{
      * An array of item that is used to specify Accordion items.
      * ```typescript
      *   let accordionObj: Accordion = new Accordion( { 
-     *        items : [ 
+     *        items: [ 
      *          { header: 'Accordion Header', content: 'Accordion Content' }]
      *        });
      *   accordionObj.appendTo('#accordion');

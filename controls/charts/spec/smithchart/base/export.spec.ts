@@ -5,9 +5,18 @@ import { Smithchart, ISmithchartLoadedEventArgs } from '../../../src/smithchart/
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { ISmithchartPrintEventArgs } from '../../../src/smithchart/model/interface';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 
 /* tslint:disable:no-string-literal */
 describe('smithChart component Spec', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('smithChart print and export  spec', () => {
         let smithChartElement: Element;
         let smithChart: Smithchart;
@@ -41,23 +50,21 @@ describe('smithChart component Spec', () => {
                         visible: true
                     }
                 },
-                series: [
-                         {
-                            points: [
-                                { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                                { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
-                                { resistance: 0, reactance: 0.05 }, { resistance: 0.3, reactance: 0.1 },
-                                { resistance: 0.3, reactance: 0.1 }, { resistance: 0.3, reactance: 0.1 },
-                                { resistance: 0.3, reactance: 0.1 }, { resistance: 0.5, reactance: 0.2 },
-                                { resistance: 1.0, reactance: 0.4 },
-                                { resistance: 1.5, reactance: 0.5 }, { resistance: 2.0, reactance: 0.5 },
-                                { resistance: 2.5, reactance: 0.4 }, { resistance: 3.5, reactance: 0.0 },
-                                { resistance: 4.5, reactance: -0.5 }, { resistance: 5.0, reactance: -1.0 }
-                
-                             ],
+                series: [{
+                    points: [
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                        { resistance: 0, reactance: 0.05 }, { resistance: 0.3, reactance: 0.1 },
+                        { resistance: 0.3, reactance: 0.1 }, { resistance: 0.3, reactance: 0.1 },
+                        { resistance: 0.3, reactance: 0.1 }, { resistance: 0.5, reactance: 0.2 },
+                        { resistance: 1.0, reactance: 0.4 },
+                        { resistance: 1.5, reactance: 0.5 }, { resistance: 2.0, reactance: 0.5 },
+                        { resistance: 2.5, reactance: 0.4 }, { resistance: 3.5, reactance: 0.0 },
+                        { resistance: 4.5, reactance: -0.5 }, { resistance: 5.0, reactance: -1.0 }
+        
+                    ],
                     name: 'Transmission1',
-                    },
-                ],
+                }],
             });
             smithChart.appendTo('#container')
         });
@@ -176,16 +183,24 @@ describe('smithChart component Spec', () => {
             };
             smithChart.refresh();
         });
-    it('Checking to print single element', () => {
-            smithChart.loaded = (args: Object): void => {
-                smithChart.print('tempElement');
-            };
-            smithChart.beforePrint = (args: ISmithchartPrintEventArgs): void => {
-               // expect(args.htmlContent.outerHTML.indexOf('<div id="tempElement"') > -1).toBe(true);
-                //done();
-            };
-            smithChart.refresh();
+        it('Checking to print single element', () => {
+                smithChart.loaded = (args: Object): void => {
+                    smithChart.print('tempElement');
+                };
+                smithChart.beforePrint = (args: ISmithchartPrintEventArgs): void => {
+                    // expect(args.htmlContent.outerHTML.indexOf('<div id="tempElement"') > -1).toBe(true);
+                    //done();
+                };
+                smithChart.refresh();
         });
-
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

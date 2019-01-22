@@ -137,7 +137,7 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Specifies the start width of the ranges
-     * @default 10
+     * @default '10'
      */
 
     @Property(10)
@@ -145,7 +145,7 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Specifies the end width of the ranges
-     * @default 10
+     * @default '10'
      */
 
     @Property(10)
@@ -167,6 +167,14 @@ export class Range extends ChildProperty<Range> {
 
     @Property(0)
     public roundedCornerRadius: number;
+
+    /**
+     * Specifies the opacity for ranges.
+     * @default 1
+     */
+
+    @Property(1)
+    public opacity: number;
 
     /** @private */
     public currentRadius: number;
@@ -299,7 +307,7 @@ export class NeedleTail extends ChildProperty<NeedleTail> {
 
     /**
      * The radius of the back needle in pixels or in percentage.
-     * @default 0%
+     * @default '0%'
      */
 
     @Property('0%')
@@ -550,6 +558,22 @@ export class Axis extends ChildProperty<Axis> {
 
     @Property(null)
     public maximum: number;
+
+    /**
+     * Specifies the last label to be shown
+     * @default false
+     */
+
+    @Property(false)
+    public showLastLabel: boolean;
+
+    /**
+     * Specifies the rounding Off value in the label
+     * @default null
+     */
+
+    @Property(null)
+    public roundingPlaces: number;
 
     /**
      * Radius of an axis in pixels or in percentage.

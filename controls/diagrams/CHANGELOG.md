@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 16.4.47 (2019-01-08)
+## 16.4.48 (2019-01-16)
+
+### Diagram
+
+#### Bug Fixes
+
+- Updating data source at runtime is now working properly even if you did not define layout for a diagram.
+- Now, you can modify the nodes and connectors styles at runtime.
+
+## 16.4.47 (2019-01-16)
 
 ### Diagram
 

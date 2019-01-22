@@ -3,8 +3,8 @@ import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { calculateSum, VisibleLabels, measureText, isCompleteAngle, GaugeLocation, getLocationFromAngle } from '../utils/helper';
 import { Size, Rect, stringToNumber, getLabelFormat } from '../utils/helper';
 import { Axis, Range, Label, Pointer } from './axis';
-import { IAxisLabelRenderEventArgs } from '../model/interface';
-import { axisLabelRender } from '../model/constants';
+import { IAxisLabelRenderEventArgs, IRadiusCalculateEventArgs } from '../model/interface';
+import { axisLabelRender, radiusCalculate } from '../model/constants';
 import { AxisRenderer } from './axis-renderer';
 import { PointerRenderer } from './pointer-renderer';
 
@@ -130,6 +130,14 @@ export class AxisLayoutPanel {
                 }
             }
             axis.visibleRange.interval = this.calculateNumericInterval(axis, axis.rect);
+            let args: IRadiusCalculateEventArgs;
+            args = {
+                cancel: false, name: radiusCalculate, currentRadius: axis.currentRadius, gauge: this.gauge,
+                midPoint: this.gauge.midPoint, axis: axis
+            };
+            this.gauge.trigger(radiusCalculate, args);
+            axis.currentRadius = args.currentRadius;
+            this.gauge.midPoint = args.midPoint;
             this.calculateVisibleLabels(axis);
         }
     }
@@ -243,18 +251,36 @@ export class AxisLayoutPanel {
         });
         let argsData: IAxisLabelRenderEventArgs;
         axis.visibleLabels = [];
+        let roundValue: number;
         for (let i: number = axis.visibleRange.min, interval: number = axis.visibleRange.interval,
             max: number = axis.visibleRange.max; (i <= max && interval); i += interval) {
+            roundValue = axis.roundingPlaces ? parseFloat(i.toFixed(axis.roundingPlaces)) : i;
             argsData = {
                 cancel: false, name: axisLabelRender, axis: axis,
-                text: customLabelFormat ? style.format.replace(new RegExp('{value}', 'g'), format(i)) :
-                    format(i),
-                value: i
+                text: customLabelFormat ? style.format.replace(new RegExp('{value}', 'g'), format(roundValue)) :
+                    format(roundValue),
+                value: roundValue
             };
             this.gauge.trigger(axisLabelRender, argsData);
             if (!argsData.cancel) {
                 axis.visibleLabels.push(new VisibleLabels(
                     argsData.text, i
+                ));
+            }
+        }
+        let lastLabel: number = axis.visibleLabels[axis.visibleLabels.length - 1].value;
+        let maxVal: number = axis.visibleRange.max;
+        if ( lastLabel !== maxVal && axis.showLastLabel === true) {
+            argsData = {
+                cancel: false, name: axisLabelRender, axis: axis,
+                text: customLabelFormat ? style.format.replace(new RegExp('{value}', 'g'), format(maxVal)) :
+                    format(maxVal),
+                value: maxVal
+            };
+            this.gauge.trigger(axisLabelRender, argsData);
+            if (!argsData.cancel) {
+                axis.visibleLabels.push(new VisibleLabels(
+                argsData.text, maxVal
                 ));
             }
         }

@@ -6,10 +6,19 @@ import { ILoadedEventArgs, ILoadEventArgs, IAnimationCompleteEventArgs } from '.
 import { LinearGauge } from '../../src/linear-gauge/linear-gauge';
 import { MouseEvents } from '../base/events.spec';
 import { GaugeTooltip } from '../../src/linear-gauge/user-interaction/tooltip';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 LinearGauge.Inject(GaugeTooltip);
 
 
 describe('Linear gauge control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Checking user interaction - marker drag', () => {
         let gauge: LinearGauge;
         let element: HTMLElement;
@@ -261,6 +270,14 @@ describe('Linear gauge control', () => {
             gauge.mouseElement = document.getElementById('container_AxisIndex_0_BarPointer_0');
             gauge.refresh();
         });
-
+    });
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

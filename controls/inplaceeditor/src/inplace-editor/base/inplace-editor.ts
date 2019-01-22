@@ -30,7 +30,7 @@ import { PopupSettingsModel } from './models-model';
 /* Interface */
 import { ActionBeginEventArgs, ActionEventArgs, FormEventArgs, ValidateEventArgs, IButton } from './interface';
 /* Interface */
-import { parseValue } from './util';
+import { parseValue, getCompValue } from './util';
 
 /**
  * Specifies the mode to be render while editing.
@@ -71,6 +71,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private touchModule: Touch;
     private loaderWidth: number;
     private loader: HTMLElement;
+    private editEle: HTMLElement;
     private spinObj: SpinnerArgs;
     private formEle: HTMLElement;
     private valueEle: HTMLElement;
@@ -94,8 +95,15 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private dataAdaptor: UrlAdaptor | ODataV4Adaptor | WebApiAdaptor;
     private divComponents: string[] = ['RTE', 'Slider'];
     private clearComponents: string[] = ['AutoComplete', 'Mask', 'Text'];
+    private dateType: string[] = ['Date', 'DateTime', 'Time' ];
+    private inputDataEle: string[] = ['Date', 'DateTime', 'DateRange', 'Time', 'Numeric'];
+    private dropDownEle: string[] = ['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'];
     private moduleList: string[] = ['AutoComplete', 'Color', 'ComboBox', 'DateRange', 'MultiSelect', 'RTE', 'Slider', 'Time'];
-    private editEle: HTMLElement;
+
+    /**
+     * @hidden
+     */
+    public printValue: string;
     /**
      * @hidden
      */
@@ -145,7 +153,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      * @default null
      */
     @Property(null)
-    public value: string | number | Date | string[] | Date[];
+    public value: string | number | Date | string[] | Date[] | number[];
     /**
      * Specifies the HTML element ID as a string that can be added as a editable field.
      * @default ''
@@ -163,7 +171,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      * @default ''
      */
     @Property('')
-    public primaryKey: string;
+    public primaryKey: string | number;
     /**
      * Sets the text to be shown when an element has 'Empty' value.
      * @default 'Empty'
@@ -231,7 +239,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     /**
      * Enable or disable persisting component's state between page reloads. If enabled, following list of states will be persisted.
      * 1. value
-     * @default false.
+     * @default false
      */
     @Property(false)
     public enablePersistence: boolean;
@@ -347,6 +355,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.disable(this.disabled);
         this.updateAdaptor();
         this.appendValueElement();
+        this.updateValue();
         this.renderValue(this.checkValue(parseValue(this.type, this.value)));
         this.wireEvents();
         this.setRtl(this.enableRtl);
@@ -423,7 +432,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private setAttribute(ele: HTMLElement, attr: string[]): void {
         let value: string = this.name && this.name.length !== 0 ? this.name : this.element.id;
         attr.forEach((val: string) => {
-            ele.setAttribute(val, value);
+            ele.setAttribute(val, ((val === 'id') ? (value + '_editor') : value));
         });
     }
     private renderControl(target: HTMLElement): HTMLElement {
@@ -500,11 +509,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private renderComponent(ele: HTMLElement | HTMLInputElement): void {
         this.isExtModule = (Array.prototype.indexOf.call(this.moduleList, this.type) > -1) ? true : false;
         extend(this.model, this.model, { cssClass: classes.ELEMENTS });
-        if (this.type === 'MultiSelect' && !this.isEmpty(this.value as string[])) {
-            this.model.value = (<string[]>this.value).slice();
-        } else {
-            this.model.value = this.value;
-        }
+        if (!isNOU(this.value)) { this.updateModelValue(); }
         if (this.isExtModule) {
             this.notify(events.render, { module: modulesList[this.type], target: ele, type: this.type });
         } else {
@@ -565,6 +570,18 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private checkValue(val: string): string {
         return (!this.isEmpty(val)) ? val : this.emptyText;
     }
+    private updateValue(): void {
+        if (!isNOU(this.value)) {
+            this.setProperties({ value: getCompValue(this.type, this.value) }, true);
+        }
+    }
+    private updateModelValue(): void {
+        if (this.type === 'MultiSelect' && !this.isEmpty(this.value as string[])) {
+            this.model.value = (<string[]>this.value).slice();
+        } else {
+            this.model.value = this.value;
+        }
+    }
     public setValue(): void {
         if (this.isExtModule) {
             this.notify(events.update, { type: this.type });
@@ -572,14 +589,35 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             this.setProperties({ value: this.componentObj.value }, true);
         }
     }
+    private getDropDownsValue(): string {
+        let value: string;
+        if (Array.prototype.indexOf.call(this.dropDownEle, this.type) > -1 && this.type !== 'MultiSelect') {
+            value = (select('.e-' + this.type.toLocaleLowerCase(), this.containerEle) as HTMLInputElement).value;
+        } else if (this.type === 'MultiSelect') {
+            this.notify(events.accessValue, { type: this.type });
+            value = this.printValue;
+        }
+        return value;
+    }
     private getSendValue(): string {
-        return (this.type === 'Mask' || this.type === 'Numeric') ? <string>this.value : this.checkValue(parseValue(this.type, this.value));
+        if (this.isEmpty(this.value as string)) { return ''; }
+        if (Array.prototype.indexOf.call(this.dropDownEle, this.type) > -1) {
+            return this.getDropDownsValue();
+        } else if (Array.prototype.indexOf.call(this.dateType, this.type) > -1) {
+            return (<Date>this.value).toISOString();
+        } else if (this.type === 'DateRange') {
+            return (<Date[]>this.value)[0].toISOString() + ' - ' + (<Date[]>this.value)[1].toISOString();
+        } else {
+            return this.value.toString();
+        }
     }
     private getRenderValue(): string {
         if (this.type === 'Mask' && (<string>this.componentObj.value).length !== 0) {
             return (this.componentObj as MaskedTextBox).getMaskedValue();
-        } else if (this.type === 'Numeric') {
+        } else if (Array.prototype.indexOf.call(this.inputDataEle, this.type) > -1) {
             return (this.componentRoot as HTMLInputElement).value;
+        } else if (Array.prototype.indexOf.call(this.dropDownEle, this.type) > -1) {
+            return this.getDropDownsValue();
         } else {
             return parseValue(this.type, this.value);
         }
@@ -656,21 +694,21 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
         this.btnElements = undefined;
     }
-    private getQuery(params: { [key: string]: string }): Query {
+    private getQuery(params: { [key: string]: string | number }): Query {
         let query: Query = new Query();
         Object.keys(params).forEach((key: string) => {
-            query.addParams(key, params[key]);
+            query.addParams(key, params[key] as string);
         });
         return query;
     }
     private sendValue(): void {
         let eventArgs: ActionBeginEventArgs = { data: { name: this.name, primaryKey: this.primaryKey, value: this.getSendValue() } };
         this.trigger('actionBegin', eventArgs);
-        if (!this.isEmpty(this.url) && !this.isEmpty(this.primaryKey)) {
+        if (!this.isEmpty(this.url) && !this.isEmpty(this.primaryKey as string)) {
             this.dataManager = new DataManager({ url: this.url, adaptor: this.dataAdaptor });
             this.dataManager.executeQuery(this.getQuery(eventArgs.data), this.successHandler.bind(this), this.failureHandler.bind(this));
         } else {
-            let eventArg: ActionEventArgs = { data: {}, value: this.getSendValue() };
+            let eventArg: ActionEventArgs = { data: {}, value: eventArgs.data.value as string };
             this.triggerSuccess(eventArg);
         }
         this.dataManager = undefined;
@@ -876,12 +914,13 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             this.rteModule.refresh();
         } else if (this.type === 'Slider') {
             this.sliderModule.refresh();
+            this.setAttribute(<HTMLElement>select('.e-slider-input', this.containerEle), ['name']);
         }
         this.setFocus();
     }
     private popMouseDown(e: MouseEvent): void {
         let trgClass: DOMTokenList = (<Element>e.target).classList;
-        if (trgClass.contains('e-chips-close') && !trgClass.contains('e-close-hooker') ) {
+        if (trgClass.contains('e-chips-close') && !trgClass.contains('e-close-hooker')) {
             this.updateArrow();
         }
     }
@@ -978,9 +1017,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      * @returns void
      */
     public save(): void {
+        if (!this.formEle) { return; }
         this.element.focus();
         this.editEle = <HTMLElement>select('.' + classes.INPUT, this.formEle);
-        if (<HTMLElement>select('.' + classes.ERROR, this.editEle) && isNOU(this.validationRules) ) {
+        if (<HTMLElement>select('.' + classes.ERROR, this.editEle) && isNOU(this.validationRules)) {
             return;
         }
         if (!this.isTemplate) {
@@ -1004,7 +1044,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             this.notify(events.destroy, {});
         }
         this.unWireEvents();
-        let classList: string[] = [classes.ROOT, classes.DISABLE, classes.RTL];
+        let classList: string[] = [classes.DISABLE, classes.RTL];
         classList.forEach((val: string): void => {
             removeClass([this.element], [val]);
         });
@@ -1054,6 +1094,9 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                     (newProp.showButtons) ? this.appendButtons(this.formEle) : this.destroyButtons();
                     break;
                 case 'value':
+                    this.updateValue();
+                    this.renderValue(this.checkValue(parseValue(this.type, this.value)));
+                    break;
                 case 'emptyText':
                     this.renderValue(this.checkValue(parseValue(this.type, this.value)));
                     break;

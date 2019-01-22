@@ -70,7 +70,7 @@ export class TreeMapLegend {
         let legend: LegendSettingsModel = treemap.legendSettings;
         this.findColorMappingLegendItems(treemap.levelsOfData[0]);
         if ((this.treemap.palette.length > 0 || !isNullOrUndefined(this.treemap.colorValuePath))
-        && this.legendCollections.length === 0) {
+            && this.legendCollections.length === 0) {
             this.findPaletteLegendItems(this.treemap.levelsOfData[0], 'Parent');
         }
         if (this.legendCollections.length > 0) {
@@ -289,16 +289,16 @@ export class TreeMapLegend {
         if (child && child.length > 0) {
             for (let i: number = 0; i < child.length; i++) {
                 if (isNullOrUndefined(child[i]['data'][this.treemap.legendSettings.showLegendPath]) ||
-                child[i]['data'][this.treemap.legendSettings.showLegendPath]) {
+                    child[i]['data'][this.treemap.legendSettings.showLegendPath]) {
                     legendName = child[i]['data'][this.treemap.legendSettings.valuePath] ?
-                    child[i]['data'][this.treemap.legendSettings.valuePath] : child[i]['name'];
+                        child[i]['data'][this.treemap.legendSettings.valuePath] : child[i]['name'];
                     isDuplicate = this.treemap.legendSettings.removeDuplicateLegend ?
-                     this.removeDuplicates(this.legendCollections, legendName) : false;
+                        this.removeDuplicates(this.legendCollections, legendName) : false;
                     if (!isDuplicate) {
                         this.legendCollections.push({
                             legendName: legendName,
                             legendFill: this.treemap.palette.length > 0 ? this.treemap.palette[i % this.treemap.palette.length] :
-                             child[i]['data'][this.treemap.colorValuePath],
+                                child[i]['data'][this.treemap.colorValuePath],
                             legendData: [],
                             itemArea: child[i]['weight']
                         });
@@ -383,7 +383,7 @@ export class TreeMapLegend {
                     this.gradientCount++;
                 }
                 isDuplicate = this.treemap.legendSettings.removeDuplicateLegend ?
-                this.removeDuplicates(this.legendCollections, legendText) : false;
+                    this.removeDuplicates(this.legendCollections, legendText) : false;
                 if (isAddData && isAddData['process'] && colorMapProcess && !isDuplicate) {
                     colorMapProcess = false;
                     fill = ((Object.prototype.toString.call(colorMap.color) === '[object Array]')) && isNullOrUndefined(gradientElement)
@@ -484,7 +484,7 @@ export class TreeMapLegend {
                 let textLocation: Location = new Location(item['textX'], item['textY']);
                 let rectOptions: RectOption = new RectOption(itemId, fill, legend.shapeBorder, legend.opacity, bounds);
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'middle', item['text'], '', '');
-                renderTextElement(textOptions, textFont, textFont.color, this.legendGroup);
+                renderTextElement(textOptions, textFont, textFont.color || this.treemap.themeStyle.legendTextColor, this.legendGroup);
                 this.legendGroup.appendChild(render.drawRectangle(rectOptions));
             }
         }
@@ -526,7 +526,9 @@ export class TreeMapLegend {
                     drawSymbol(shapeLocation, eventArgs.shape, shapeSize, eventArgs.imageUrl, renderOptions, legendText)
                 );
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
-                renderTextElement(textOptions, legend.textStyle, legend.textStyle.color, legendElement);
+                renderTextElement(
+                    textOptions, legend.textStyle, legend.textStyle.color || this.treemap.themeStyle.legendTextColor, legendElement
+                );
                 this.legendGroup.appendChild(legendElement);
             }
             let pagingGroup: Element;
@@ -629,7 +631,7 @@ export class TreeMapLegend {
                 (this.legendItemRect.x) + (this.legendItemRect.width / 2),
                 this.legendItemRect.y - (textSize.height / 2) - (spacing / 2),
                 'middle', trimTitle, '');
-            renderTextElement(textOptions, textStyle, textStyle.color, this.legendGroup);
+            renderTextElement(textOptions, textStyle, textStyle.color || this.treemap.themeStyle.legendTitleColor, this.legendGroup);
         }
     }
     /**

@@ -117,14 +117,14 @@ export interface RangeModel {
 
     /**
      * Specifies the start width of the ranges
-     * @default 10
+     * @default '10'
      */
 
     startWidth?: number | string;
 
     /**
      * Specifies the end width of the ranges
-     * @default 10
+     * @default '10'
      */
 
     endWidth?: number | string;
@@ -143,6 +143,13 @@ export interface RangeModel {
      */
 
     roundedCornerRadius?: number;
+
+    /**
+     * Specifies the opacity for ranges.
+     * @default 1
+     */
+
+    opacity?: number;
 
 }
 
@@ -256,7 +263,7 @@ export interface NeedleTailModel {
 
     /**
      * The radius of the back needle in pixels or in percentage.
-     * @default 0%
+     * @default '0%'
      */
 
     length?: string;
@@ -467,6 +474,20 @@ export interface AxisModel {
      */
 
     maximum?: number;
+
+    /**
+     * Specifies the last label to be shown
+     * @default false
+     */
+
+    showLastLabel?: boolean;
+
+    /**
+     * Specifies the rounding Off value in the label
+     * @default null
+     */
+
+    roundingPlaces?: number;
 
     /**
      * Radius of an axis in pixels or in percentage.

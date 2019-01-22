@@ -6,6 +6,7 @@ import { ILoadedEventArgs } from '../../../src/treemap/model/interface';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { jobData, sportsData } from '../base/data.spec';
 import { electionData } from '../base/election.spec';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 TreeMap.Inject(TreeMapHighlight, TreeMapSelection);
 
 let jobDataSource: Object[] = jobData;
@@ -15,6 +16,14 @@ let gameDataSource: Object[] = sportsData;
  */
 
 describe('TreeMap component Spec', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('TreeMap drill down spec', () => {
         let element: Element;
         let treemap: TreeMap;
@@ -145,7 +154,6 @@ describe('TreeMap component Spec', () => {
 
         it('Checking with drilldown to generate legend for each levels ', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
-                debugger
                 let rectEle: Element = document.getElementById('drill-container_Level_Index_0_Item_Index_0_RectPath');
                 let eventObj: Object = {
                     target: rectEle,
@@ -985,5 +993,14 @@ describe('TreeMap component Spec', () => {
             treemap.highlightSettings.enable = true;
             treemap.refresh();
         });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

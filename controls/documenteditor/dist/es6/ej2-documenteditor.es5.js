@@ -4369,6 +4369,60 @@ var HelperMethods = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
+    HelperMethods.formatClippedString = function (base64ImageString) {
+        var extension = '';
+        var formatClippedString = '';
+        if (this.startsWith(base64ImageString, 'data:image/bmp;base64,')) {
+            extension = '.bmp';
+            formatClippedString = base64ImageString.replace('data:image/bmp;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/x-emf;base64,')) {
+            extension = '.emf';
+            formatClippedString = base64ImageString.replace('data:image/x-emf;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/exif;base64,')) {
+            extension = '.exif';
+            formatClippedString = base64ImageString.replace('data:image/exif;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/gif;base64,')) {
+            extension = '.gif';
+            formatClippedString = base64ImageString.replace('data:image/gif;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/icon;base64,')) {
+            extension = '.ico';
+            formatClippedString = base64ImageString.replace('data:image/icon;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/jpeg;base64,')) {
+            extension = '.jpeg';
+            formatClippedString = base64ImageString.replace('data:image/jpeg;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/jpg;base64,')) {
+            extension = '.jpg';
+            formatClippedString = base64ImageString.replace('data:image/jpg;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/png;base64,')) {
+            extension = '.png';
+            formatClippedString = base64ImageString.replace('data:image/png;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/tiff;base64,')) {
+            extension = '.tif';
+            formatClippedString = base64ImageString.replace('data:image/tiff;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/x-wmf;base64,')) {
+            extension = '.wmf';
+            formatClippedString = base64ImageString.replace('data:image/x-wmf;base64,', '');
+        }
+        else {
+            extension = '.jpeg';
+        }
+        return { 'extension': extension, 'formatClippedString': formatClippedString };
+    };
+    HelperMethods.startsWith = function (sourceString, startString) {
+        return startString.length > 0 && sourceString.substring(0, startString.length) === startString;
+    };
+    /**
+     * @private
+     */
     HelperMethods.wordBefore = '\\b';
     /**
      * @private
@@ -21360,6 +21414,7 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
             rowFormat.gridAfterWidthType = data.gridAfterWidthType;
         }
     };
+    // tslint:disable:max-func-body-length
     SfdtReader.prototype.parseParagraph = function (data, paragraph, writeInlineFormat) {
         var lineWidget = new LineWidget(paragraph);
         for (var i = 0; i < data.length; i++) {
@@ -21393,7 +21448,15 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
                 image.characterFormat = new WCharacterFormat(image);
                 image.line = lineWidget;
                 lineWidget.children.push(image);
-                image.imageString = inline.imageString;
+                var imageString = HelperMethods.formatClippedString(inline.imageString).formatClippedString;
+                var isValidImage = this.validateImageUrl(imageString);
+                if (!isValidImage) {
+                    // tslint:disable-next-line:max-line-length
+                    image.imageString = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAgVBMVEX///8AAADgAADY2Njl5eVcXFxjY2NZWVl/f3+wsLCmpqb4+PiioqKpqam7u7vV1dX2uLj2wsLhFRXzpKT3vb30sbHhCwv74+P40dH+9vbkIyO2trbBwcHLy8tsbGycnJz529v4zMzrbGzlLS3qZmblNzfrdXXoRkbvi4vvgYHlHh7CZsBOAAADpUlEQVR4nO3da1faQBSF4ekAUQlUEFs14AXxVv7/D6yaQiZx5mSEYXF2ut+PNKzyyK5diYDmR9czx34AB49C/CjE759w3jvvWr15Tdgz3atXE54f++EcIArxoxA/CvGjED8K8aMQPwrxoxA/CvGLEeZ9jPJdhfk4GyCUjb3ECGE/Q6m/q3DwfudjP0ERZYN9hKdn2hvd3+0jHJz5/kBVuTk96bbQUEjhYR9ckiikUH8UUqg/CinUH4UU6o9CCvVHIYX6o5BC/VFIof4opFB/FFKoPwop1B+FFOqPQgrjyxfjVC38Lxk9tnAxGqZqdKtSOE4GHA5/fuNJpDCtcNHbv4VqYYqPLjgfUViPQgrjozA2CptRSGF8/59w+Wrt+rr1btNna1cPzg0wwuXavncxabnX7PfHYYXzlYARvlobQZyUR9mXm+1NMEK7SSLONgcVV9vb8IQXv4J3KSeKKlxXxNCzONkeYp8AV3p9UT1+P3FWHVAsq5thhGZSEb1DrSZq7dS5HUdoLiuBZ6jORG3tCwAkNJfCUJ2Jrqe1P0ESCkMNTdSACYNDDU7UoAkDQw1P1MAJvUMVJmrwhJ6hShM1gMIvQxUnahCFjaHKEzWQQneoxR95ogZTWBuqPFEDKnSHKk/UoArdoYoTNbDC5lBDEzW4QjMpYiZqgIXG/S76JhwHK5zVVipcnkIVuv/RW/HyFKhwYhuFr6NiCmdNoDBUSGFjovJQEYXuRN9ahwoorJ8uSZenPsMTNk+X2q6jwgm/ntHL11HhhL4zenmoYEL/Gb04VCxh6KKTNFQoYfiikzBUJKF00Sk8VCChfF00OFQcYdt10dBQYYRT5xn0n9G7Q0X8GfCzNNEyZ6iPgD/HlydaVg11DfhajJaJlm2HugIUrlomWrYZKuJKHz6vHhbSM/hROdRnxNe1meuXYvW0DB6+aflYrB7dlzDiCM3N1dVN6GDhMCDhjlHYjEIK46MwNgqbUUhhfJ/vA07wO8N1vw94ONo/3e/lTpVOYfc/UyG//ZmqW52fi/FuTNW3/lZ+eguF+qOQQv1RSKH+KKRQfxRSqD8KKdQfhRTqj0IK9UchhfqjkEL9UUih/iikUH8UUqg/CmXh6Hsv3jlK+wnvD/vgkrSHMMuyu1P9ZdmuwnycDQYn+svG3n9KEUKT9zHyf6+IEWJHIX4U4kchfhTiRyF+FOJHIX4U4kchfnVhijeZa6sunCf4ZdPamteEHY5C/CjEr/vCv0ec0g+AtS1QAAAAAElFTkSuQmCC';
+                }
+                else {
+                    image.imageString = inline.imageString;
+                }
                 image.width = HelperMethods.convertPointToPixel(inline.width);
                 image.height = HelperMethods.convertPointToPixel(inline.height);
                 this.parseCharacterFormat(inline.characterFormat, image.characterFormat);
@@ -21757,6 +21820,27 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
             tabStop.tabJustification = wTabs[i].tabJustification;
             tabs.push(tabStop);
         }
+    };
+    SfdtReader.prototype.validateImageUrl = function (imagestr) {
+        var keyStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+        imagestr = imagestr.replace(/[^A-Za-z0-9\+\/\=]/g, '');
+        var totalLength = imagestr.length * 3 / 4;
+        if (imagestr.charAt(imagestr.length - 1) === keyStr.charAt(64)) {
+            totalLength--;
+        }
+        if (imagestr.charAt(imagestr.length - 2) === keyStr.charAt(64)) {
+            totalLength--;
+        }
+        if (totalLength % 1 !== 0) {
+            // totalLength is not an integer, the length does not match a valid
+            // base64 content. That can happen if:
+            // - the imagestr is not a base64 content
+            // - the imagestr is *almost* a base64 content, with a extra chars at the
+            // beginning or at the end
+            // - the imagestr uses a base64 variant (base64url for example)
+            return false;
+        }
+        return true;
     };
     return SfdtReader;
 }());
@@ -54009,51 +54093,9 @@ var WordExport = /** @__PURE__ @class */ (function () {
                     this.serializeRelationShip(writer, keys[i], this.imageRelType, imagePath.replace('word/', ''));
                 }
                 else {
-                    var extension = '';
-                    var formatClippedString = '';
-                    if (this.startsWith(base64ImageString, 'data:image/bmp;base64,')) {
-                        extension = '.bmp';
-                        formatClippedString = base64ImageString.replace('data:image/bmp;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/x-emf;base64,')) {
-                        extension = '.emf';
-                        formatClippedString = base64ImageString.replace('data:image/x-emf;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/exif;base64,')) {
-                        extension = '.exif';
-                        formatClippedString = base64ImageString.replace('data:image/exif;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/gif;base64,')) {
-                        extension = '.gif';
-                        formatClippedString = base64ImageString.replace('data:image/gif;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/icon;base64,')) {
-                        extension = '.ico';
-                        formatClippedString = base64ImageString.replace('data:image/icon;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/jpeg;base64,')) {
-                        extension = '.jpeg';
-                        formatClippedString = base64ImageString.replace('data:image/jpeg;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/jpg;base64,')) {
-                        extension = '.jpg';
-                        formatClippedString = base64ImageString.replace('data:image/jpg;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/png;base64,')) {
-                        extension = '.png';
-                        formatClippedString = base64ImageString.replace('data:image/png;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/tiff;base64,')) {
-                        extension = '.tif';
-                        formatClippedString = base64ImageString.replace('data:image/tiff;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/x-wmf;base64,')) {
-                        extension = '.wmf';
-                        formatClippedString = base64ImageString.replace('data:image/x-wmf;base64,', '');
-                    }
-                    else {
-                        extension = '.jpeg';
-                    }
+                    var imageInfo = HelperMethods.formatClippedString(base64ImageString);
+                    var extension = imageInfo.extension;
+                    var formatClippedString = imageInfo.formatClippedString;
                     imagePath = this.imagePath + keys[i] + extension;
                     this.serializeRelationShip(writer, keys[i], this.imageRelType, imagePath.replace('word/', ''));
                     //if (m_archive.Find(imagePath.Replace('\\', '/')) === -1)

@@ -11,4 +11,6 @@ export const destroy: string = 'destroy';
 /** @hidden */
 export const setFocus: string = 'set-focus';
 /** @hidden */
+export const accessValue: string = 'access-value';
+/** @hidden */
 export const destroyModules: string = 'destroy-modules';

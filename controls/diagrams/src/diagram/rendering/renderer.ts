@@ -170,9 +170,6 @@ export class DiagramRenderer {
         } else {
             this.renderRect(element, canvas, transform, parentSvg);
         }
-        if (isElement) {
-            element.canApplyStyle = false;
-        }
     }
 
     /**   @private  */

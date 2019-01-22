@@ -12030,7 +12030,7 @@ function updateShapeContent(content, actualObject, diagram) {
 /** @private */
 function updateShape(node, actualObject, oldObject, diagram) {
     let content = new DiagramElement();
-    switch (actualObject.shape.type) {
+    switch (node.shape.type) {
         case 'Path':
             let pathContent = new PathElement();
             pathContent.data = actualObject.shape.data;
@@ -12152,6 +12152,7 @@ function updateContent(newValues, actualObject, diagram) {
             let shapes = actualObject.shape.shape;
             let basicShapeData = getBasicShape(shapes.toString());
             actualObject.wrapper.children[0].data = basicShapeData;
+            actualObject.wrapper.children[0].canMeasurePath = true;
         }
     }
 }
@@ -14901,9 +14902,7 @@ class DiagramRenderer {
     }
     /**   @private  */
     renderElement(element, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue) {
-        let isElement = true;
         if (element instanceof Container) {
-            isElement = false;
             this.renderContainer(element, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue);
         }
         else if (element instanceof ImageElement) {
@@ -14923,9 +14922,6 @@ class DiagramRenderer {
         }
         else {
             this.renderRect(element, canvas, transform, parentSvg);
-        }
-        if (isElement) {
-            element.canApplyStyle = false;
         }
     }
     /**   @private  */
@@ -25192,7 +25188,12 @@ class Diagram extends Component {
                 case 'dataSourceSettings':
                     this.clear();
                     this.initObjects();
-                    refreshLayout = true;
+                    if (this.layout.type === 'None') {
+                        refereshColelction = true;
+                    }
+                    else {
+                        refreshLayout = true;
+                    }
                     break;
                 case 'tooltip':
                     initTooltip(this);
@@ -28159,6 +28160,14 @@ class Diagram extends Component {
         this.updateBridging();
         this.scroller.setSize();
     }
+    updateCanupdateStyle(element, value) {
+        for (let j = 0; j < element.length; j++) {
+            if (element[j].children) {
+                this.updateCanupdateStyle(element[j].children, value);
+            }
+            element[j].canApplyStyle = value;
+        }
+    }
     /** @private */
     updateDiagramObject(obj) {
         let view;
@@ -28168,7 +28177,11 @@ class Diagram extends Component {
                 if (view.mode === 'SVG') {
                     let htmlLayer = getHTMLLayer(this.element.id);
                     let diagramElementsLayer = document.getElementById(view.element.id + '_diagramLayer');
+                    if (this.diagramActions & DiagramAction.Interactions) {
+                        this.updateCanupdateStyle(obj.wrapper.children, false);
+                    }
                     this.diagramRenderer.updateNode(obj.wrapper, diagramElementsLayer, htmlLayer, undefined);
+                    this.updateCanupdateStyle(obj.wrapper.children, true);
                 }
             }
         }

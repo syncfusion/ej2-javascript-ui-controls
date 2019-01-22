@@ -585,7 +585,7 @@ function textFormatter(format, data, gauge) {
     var keys = Object.keys(data);
     for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
         var key = keys_1[_i];
-        format = format.split('${' + key + '}').join(formatValue(data[key], gauge).toString());
+        format = format.split('{' + key + '}').join(formatValue(data[key], gauge).toString());
     }
     return format;
 }
@@ -599,7 +599,7 @@ function formatValue(value, gauge) {
     else {
         formatValue = value;
     }
-    return formatValue ? formatValue : '';
+    return formatValue !== null ? formatValue : '';
 }
 /** @private */
 function getLabelFormat(format) {
@@ -1331,8 +1331,8 @@ var AxisLayoutPanel = /** @__PURE__ @class */ (function () {
         for (var i = min; (i <= max && interval > 0); i += interval) {
             argsData = {
                 cancel: false, name: axisLabelRender, axis: axis,
-                text: customLabelFormat ? style.format.replace(new RegExp('{value}', 'g'), format(i)) :
-                    format(i),
+                text: customLabelFormat ? textFormatter(style.format, { value: i }, this.gauge) :
+                    formatValue(i, this.gauge).toString(),
                 value: i
             };
             this.gauge.trigger(axisLabelRender, argsData);
@@ -2013,7 +2013,7 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
             target = e.target;
         }
         var tooltipEle;
-        var tooltipContent = [];
+        var tooltipContent;
         if (target.id.indexOf('Pointer') > -1) {
             this.pointerElement = target;
             var areaRect = this.gauge.element.getBoundingClientRect();
@@ -2021,8 +2021,9 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
             this.currentAxis = current.axis;
             this.axisIndex = current.axisIndex;
             this.currentPointer = current.pointer;
-            tooltipContent = [textFormatter(this.tooltip.format, { value: this.currentPointer.currentValue }, this.gauge) ||
-                    formatValue(this.currentPointer.currentValue, this.gauge).toString()];
+            var customTooltipFormat = this.tooltip.format && this.tooltip.format.match('{value}') !== null;
+            tooltipContent = customTooltipFormat ? textFormatter(this.tooltip.format, { value: this.currentPointer.currentValue }, this.gauge) :
+                formatValue(this.currentPointer.currentValue, this.gauge).toString();
             if (document.getElementById(this.tooltipId)) {
                 tooltipEle = document.getElementById(this.tooltipId);
             }
@@ -2036,7 +2037,7 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
             }
             var location_1 = this.getTooltipLocation();
             var args = {
-                name: tooltipRender, cancel: false, gauge: this.gauge, event: e, location: location_1, content: tooltipContent[0],
+                name: tooltipRender, cancel: false, gauge: this.gauge, event: e, location: location_1, content: tooltipContent,
                 tooltip: this.tooltip, axis: this.currentAxis, pointer: this.currentPointer
             };
             var tooltipPos = this.getTooltipPosition();
@@ -2239,6 +2240,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
         if (theme === 'highcontrast') {
             this.titleStyle.color = this.titleStyle.color || '#FFFFFF';
             this.setThemeColors('#FFFFFF', '#FFFFFF');
+            this.background = this.background || '#000000';
         }
         else if (theme.indexOf('dark') > -1) {
             for (var _i = 0, _a = this.axes; _i < _a.length; _i++) {
@@ -2252,11 +2254,12 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
                     pointer.color = pointer.color || '#9A9A9A';
                 }
             }
-            this.background = '#333232';
+            this.background = this.background || '#333232';
         }
         else {
             this.titleStyle.color = this.titleStyle.color || '#424242';
             this.setThemeColors('#686868', '#a6a6a6');
+            this.background = this.background || '#FFFFFF';
         }
     };
     LinearGauge.prototype.setThemeColors = function (labelcolor, others) {
@@ -2327,6 +2330,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
      */
     LinearGauge.prototype.render = function () {
         this.renderGaugeElements();
+        this.renderArea();
         this.calculateBounds();
         this.renderAxisElements();
         this.trigger(loaded, { gauge: this });
@@ -2348,6 +2352,15 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
             secondaryElement.setAttribute('style', 'position: relative');
             this.element.appendChild(secondaryElement);
         }
+    };
+    /**
+     * Render the map area border
+     */
+    LinearGauge.prototype.renderArea = function () {
+        var size = measureText(this.title, this.titleStyle);
+        var rectSize = new Rect(this.actualRect.x, this.actualRect.y - (size.height / 2), this.actualRect.width, this.actualRect.height);
+        var rect = new RectOption(this.element.id + 'LinearGaugeBorder', this.background, this.border, 1, rectSize);
+        this.svgObject.appendChild(this.renderer.drawRectangle(rect));
     };
     /**
      * @private
@@ -2946,7 +2959,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
         Complex({ color: '', width: 0 }, Border)
     ], LinearGauge.prototype, "border", void 0);
     __decorate([
-        Property('transparent')
+        Property(null)
     ], LinearGauge.prototype, "background", void 0);
     __decorate([
         Property('')

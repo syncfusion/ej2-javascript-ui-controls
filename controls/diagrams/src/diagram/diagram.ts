@@ -1224,7 +1224,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 case 'layout':
                     refreshLayout = true; break;
                 case 'dataSourceSettings':
-                    this.clear(); this.initObjects(); refreshLayout = true;
+                    this.clear(); this.initObjects();
+                    if (this.layout.type === 'None') {
+                        refereshColelction = true
+                    } else {
+                        refreshLayout = true;
+                    }
                     break;
                 case 'tooltip':
                     initTooltip(this);
@@ -3014,6 +3019,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             update = true;
         }
 
+
         if (update) {
             this.preventUpdate = true;
             let connectors: Object = {};
@@ -4309,6 +4315,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.scroller.setSize();
     }
 
+    private updateCanupdateStyle(element: DiagramElement[], value: boolean): void {
+        for (let j: number = 0; j < element.length; j++) {
+            if ((element[j] as Container).children) {
+                this.updateCanupdateStyle((element[j] as Container).children, value);
+            }
+            element[j].canApplyStyle = value;
+        }
+    }
+
+
     /** @private */
     public updateDiagramObject(obj: (NodeModel | ConnectorModel)): void {
         let view: View;
@@ -4319,9 +4335,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     let htmlLayer: HTMLElement = getHTMLLayer(this.element.id);
                     let diagramElementsLayer: HTMLCanvasElement =
                         document.getElementById(view.element.id + '_diagramLayer') as HTMLCanvasElement;
+                    if (this.diagramActions & DiagramAction.Interactions) {
+                        this.updateCanupdateStyle(obj.wrapper.children, false);
+                    }
                     this.diagramRenderer.updateNode(
                         obj.wrapper as DiagramElement, diagramElementsLayer,
                         htmlLayer, undefined);
+                    this.updateCanupdateStyle(obj.wrapper.children, true);
                 }
 
             }

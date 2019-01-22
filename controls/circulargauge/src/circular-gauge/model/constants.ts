@@ -15,6 +15,9 @@ export const animationComplete: string = 'animationComplete';
 export const axisLabelRender: string = 'axisLabelRender';
 
 /** @private */
+export const radiusCalculate: string = 'radiusCalculate';
+
+/** @private */
 export const tooltipRender : string = 'tooltipRender';
 
 /** @private */

@@ -670,6 +670,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         extend(htmlAttr, this.htmlAttributes, htmlAttr);
         this.setProperties({ htmlAttributes: htmlAttr }, true);
+        if (!isNOU(this.htmlAttributes.id)) {
+            this.element.id = this.htmlAttributes.id;
+        }
         if (this.element.tagName === 'TEXTAREA') {
             let rteOuterWrapper: HTMLElement = this.createElement('div', {
                 className: 'e-control e-richtexteditor'
@@ -1323,7 +1326,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.updateRTL();
         this.updateReadOnly();
         this.updatePanelValue();
-        if (this.enableHtmlEncode) {
+        if (this.enableHtmlEncode && !isNOU(this.value)) {
             this.setProperties({ value: this.encode(this.decode(this.value)) });
         }
     }

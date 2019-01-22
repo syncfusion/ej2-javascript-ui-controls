@@ -1,4 +1,4 @@
-import { formatUnit, isNullOrUndefined, closest, extend } from '@syncfusion/ej2-base';
+import { formatUnit, isNullOrUndefined, closest, extend, append, prepend } from '@syncfusion/ej2-base';
 import { createElement, remove, addClass, EventHandler } from '@syncfusion/ej2-base';
 import { IRenderer, NotifyEventArgs, EventFieldsMapping, TdData } from '../base/interface';
 import { AgendaBase } from '../event-renderer/agenda-base';
@@ -203,7 +203,7 @@ export class Agenda extends ViewBase implements IRenderer {
             filterData = this.appointmentFiltering(filterDate.start, filterDate.end);
             if (filterData.length > 0 || !this.parent.hideEmptyAgendaDays) {
                 this.renderContent(emptyTBody, filterDate.start);
-                tBody.innerHTML = emptyTBody.innerHTML + tBody.innerHTML;
+                prepend([].slice.call(emptyTBody.childNodes), tBody);
                 this.agendaBase.wireEventActions();
                 for (let s: number = 0, element: HTMLCollection = tBody.children; s < element.length; s++) {
                     if (element[s].getAttribute('aria-rowindex') === topElement.getAttribute('aria-colindex')) {
@@ -220,7 +220,7 @@ export class Agenda extends ViewBase implements IRenderer {
             filterData = this.appointmentFiltering(filterDate.start, filterDate.end);
             if (filterData.length > 0 || !this.parent.hideEmptyAgendaDays) {
                 this.renderContent(emptyTBody, filterDate.start);
-                tBody.innerHTML += emptyTBody.innerHTML;
+                append([].slice.call(emptyTBody.childNodes), tBody);
                 this.agendaBase.wireEventActions();
                 this.updateHeaderText(scrollDate);
             }

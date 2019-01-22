@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 16.4.47 (2019-01-08)
+## 16.4.48 (2019-01-16)
+
+### DataManager
+
+#### Bug Fixes
+
+- Provided `addParams` CRUD support in `RemoteSaveAdaptor`.
+- Need to parse the server response data in `UrlAdaptor` is resolved.
+
+## 16.4.47 (2019-01-16)
 
 ### DataManager
 

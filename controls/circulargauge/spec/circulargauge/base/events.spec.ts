@@ -8,11 +8,20 @@ import { GaugeLocation } from '../../../src/circular-gauge/utils/helper';
 import { Annotations } from '../../../src/circular-gauge/annotations/annotations';
 import { GaugeTooltip } from '../../../src/circular-gauge/user-interaction/tooltip';
 import { MouseEvents } from '../user-interaction/mouse-events.spec';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { IAnimationCompleteEventArgs, IAxisLabelRenderEventArgs, IMouseEventArgs } from '../../../src/circular-gauge/model/interface';
 import { IAnnotationRenderEventArgs, ILoadedEventArgs, ITooltipRenderEventArgs } from '../../../src/circular-gauge/model/interface';
 CircularGauge.Inject(Annotations, GaugeTooltip);
 
 describe('Circular-Gauge Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Checking Gauge Events', () => {
         let gauge: CircularGauge;
         let ele: HTMLElement;
@@ -186,5 +195,14 @@ describe('Circular-Gauge Control', () => {
             };
             gauge.refresh();
         });
+    });
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

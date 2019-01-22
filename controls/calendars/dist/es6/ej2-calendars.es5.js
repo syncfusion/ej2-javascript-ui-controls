@@ -7599,6 +7599,8 @@ var FOCUS = 'e-input-focus';
 var LISTCLASS$1 = cssClass.li;
 var HALFPOSITION = 2;
 var ANIMATIONDURATION = 50;
+var OVERFLOW$2 = 'e-time-overflow';
+var OFFSETVAL = 4;
 var TimePickerBase;
 (function (TimePickerBase) {
     // tslint:disable-next-line
@@ -7671,6 +7673,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         this.cloneElement = this.element.cloneNode(true);
         this.inputElement = this.element;
         this.angularTag = null;
+        this.formElement = closest(this.element, 'form');
         if (this.element.tagName === 'EJS-TIMEPICKER') {
             this.angularTag = this.element.tagName;
             this.inputElement = this.createElement('input');
@@ -7893,9 +7896,8 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
             this.rippleFn();
         }
         _super.prototype.destroy.call(this);
-        var form = closest(this.element, 'form');
-        if (form) {
-            EventHandler.remove(form, 'reset', this.formResetHandler.bind(this));
+        if (this.formElement) {
+            EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
         }
     };
     TimePicker.prototype.ensureInputAttribute = function () {
@@ -7939,34 +7941,18 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         this.rippleFn = rippleEffect(this.listWrapper, rippleModel);
         this.liCollections = this.listWrapper.querySelectorAll('.' + LISTCLASS$1);
     };
-    TimePicker.prototype.popupCalculation = function () {
-        var left = 0;
-        if (Browser.isDevice) {
-            var firstItem = this.isEmptyList() ? this.listTag : this.liCollections[0];
-            left = -(parseInt(getComputedStyle(firstItem).textIndent, 10) -
-                (this.enableRtl ? parseInt(getComputedStyle(this.inputElement).paddingRight, 10) :
-                    parseInt(getComputedStyle(this.inputElement).paddingLeft, 10)));
-        }
-        return left;
-    };
-    TimePicker.prototype.isEmptyList = function () {
-        return !isNullOrUndefined(this.liCollections) && this.liCollections.length === 0 ||
-            isNullOrUndefined(this.liCollections);
-    };
     TimePicker.prototype.renderPopup = function () {
         var _this = this;
         this.containerStyle = this.inputWrapper.container.getBoundingClientRect();
-        var offset = Browser.isDevice ? this.setPopupPosition() : 2;
         this.popupObj = new Popup(this.popupWrapper, {
             width: this.setPopupWidth(this.width),
             zIndex: this.zIndex,
             targetType: 'relative',
-            collision: { X: 'flip', Y: 'flip' },
-            relateTo: this.inputWrapper.container,
-            position: { X: 'left', Y: 'bottom' },
+            position: Browser.isDevice ? { X: 'center', Y: 'center' } : { X: 'left', Y: 'bottom' },
+            collision: Browser.isDevice ? { X: 'fit', Y: 'fit' } : { X: 'flip', Y: 'flip' },
             enableRtl: this.enableRtl,
-            offsetY: offset,
-            offsetX: this.popupCalculation(),
+            relateTo: Browser.isDevice ? document.body : this.inputWrapper.container,
+            offsetY: OFFSETVAL,
             open: function () {
                 _this.popupWrapper.style.visibility = 'visible';
                 addClass([_this.inputWrapper.buttons[0]], SELECTED$3);
@@ -8095,12 +8081,6 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         if (width.indexOf('%') > -1) {
             var inputWidth = this.containerStyle.width * parseFloat(width) / 100;
             width = inputWidth.toString() + 'px';
-        }
-        if (Browser.isDevice) {
-            var firstItem = this.isEmptyList() ? this.listTag : this.liCollections[0];
-            width = (parseInt(width, 10) + (parseInt(getComputedStyle(firstItem).textIndent, 10) -
-                parseInt(getComputedStyle(this.inputElement).textIndent, 10) +
-                parseInt(getComputedStyle(this.inputElement.parentElement).borderLeftWidth, 10)) * 2) + 'px';
         }
         return width;
     };
@@ -8356,6 +8336,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                 cancel: false,
                 name: 'open'
             };
+            removeClass([document.body], OVERFLOW$2);
             this.trigger('close', args);
             if (!args.cancel) {
                 var animModel = {
@@ -8367,6 +8348,11 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                 removeClass([this.inputWrapper.container], [ICONANIMATION]);
                 attributes(this.inputElement, { 'aria-expanded': 'false' });
                 EventHandler.remove(document, 'mousedown touchstart', this.documentClickHandler);
+            }
+            if (Browser.isDevice && this.modal) {
+                this.modal.style.display = 'none';
+                this.modal.outerHTML = '';
+                this.modal = null;
             }
         }
         if (Browser.isDevice && this.allowEdit && !this.readonly) {
@@ -8532,9 +8518,8 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         if (this.showClearButton) {
             EventHandler.add(this.inputWrapper.clearButton, 'mousedown', this.clearHandler, this);
         }
-        var form = closest(this.element, 'form');
-        if (form) {
-            EventHandler.add(form, 'reset', this.formResetHandler.bind(this));
+        if (this.formElement) {
+            EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
         }
         if (!Browser.isDevice) {
             this.inputEvent = new KeyboardEvents(this.inputWrapper.container, {
@@ -8574,9 +8559,8 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         if (this.showClearButton && !isNullOrUndefined(this.inputWrapper.clearButton)) {
             EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.clearHandler);
         }
-        var form = closest(this.element, 'form');
-        if (form) {
-            EventHandler.remove(form, 'reset', this.formResetHandler.bind(this));
+        if (this.formElement) {
+            EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
         }
     };
     TimePicker.prototype.bindClearEvent = function () {
@@ -8909,28 +8893,6 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
             this.setScrollPosition();
         }
     };
-    TimePicker.prototype.setPopupPosition = function () {
-        var offsetValue;
-        var popupHeight = this.getPopupHeight();
-        var element = this.getActiveElement();
-        var liHeight = this.liCollections[0].getBoundingClientRect().height;
-        var listHeight = popupHeight / HALFPOSITION;
-        var height = element.length === 0 ? this.liCollections[0].offsetTop : element[0].offsetTop;
-        var lastItemOffsetValue = this.liCollections[this.liCollections.length - 1].offsetTop;
-        var ulPadding = (parseInt(getComputedStyle(this.listTag).paddingTop, 10));
-        if (lastItemOffsetValue - listHeight < height) {
-            var count = popupHeight / liHeight;
-            offsetValue = (count - (this.liCollections.length - this.activeIndex)) * liHeight - ulPadding - HALFPOSITION;
-        }
-        else if ((height + liHeight) > listHeight) {
-            offsetValue = listHeight - liHeight / HALFPOSITION;
-        }
-        else {
-            offsetValue = height;
-        }
-        offsetValue = offsetValue + HALFPOSITION + ((liHeight - this.containerStyle.height) / HALFPOSITION);
-        return -offsetValue;
-    };
     TimePicker.prototype.getCultureTimeObject = function (ld, c) {
         return getValue('main.' + c + '.dates.calendars.gregorian.timeFormats.short', ld);
     };
@@ -9252,6 +9214,12 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             this.popupCreation();
+            if (Browser.isDevice && this.listWrapper) {
+                this.modal = this.createElement('div');
+                this.modal.className = '' + ROOT$3 + ' e-time-modal';
+                document.body.className += ' ' + OVERFLOW$2;
+                document.body.appendChild(this.modal);
+            }
             this.openPopupEventArgs = {
                 popup: this.popupObj || null,
                 cancel: false,
@@ -9604,7 +9572,7 @@ var ICONS$1 = 'e-icons';
 var HALFPOSITION$1 = 2;
 var LISTCLASS$2 = cssClass.li;
 var ANIMATIONDURATION$1 = 100;
-var OVERFLOW$2 = 'e-time-overflow';
+var OVERFLOW$3 = 'e-time-overflow';
 /**
  * Represents the DateTimePicker component that allows user to select
  * or enter a date time value.
@@ -10092,7 +10060,7 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
         if (Browser.isDevice) {
             this.timeModal = createElement('div');
             this.timeModal.className = '' + ROOT$4 + ' e-time-modal';
-            document.body.className += ' ' + OVERFLOW$2;
+            document.body.className += ' ' + OVERFLOW$3;
             this.timeModal.style.display = 'block';
             document.body.appendChild(this.timeModal);
         }
@@ -10420,7 +10388,7 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
                 }
                 else if (this.isTimePopupOpen()) {
                     this.closePopup(e);
-                    removeClass([document.body], OVERFLOW$2);
+                    removeClass([document.body], OVERFLOW$3);
                     if (Browser.isDevice && this.timeModal) {
                         this.timeModal.style.display = 'none';
                         this.timeModal.outerHTML = '';

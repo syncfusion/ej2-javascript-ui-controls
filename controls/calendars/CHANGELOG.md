@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 16.4.47 (2019-01-08)
+## 16.4.48 (2019-01-16)
+
+### TimePicker
+
+#### Breaking Changes
+
+- TimePicker pop-up will position at the center of the viewport in mobile resolution.
+
+## 16.4.47 (2019-01-16)
 
 ### TimePicker
 

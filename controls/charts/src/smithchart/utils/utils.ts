@@ -10,14 +10,14 @@ export class SmithchartFont extends ChildProperty<SmithchartFont> {
     public fontFamily: string;
 /**
  * font style for text.
- * @default Normal
+ * @default 'Normal'
  */
 @Property('Normal')
     public fontStyle: string;
 
     /**
      * font weight for text.
-     * @default Regular
+     * @default 'Regular'
      */
 @Property('Regular')
     public fontWeight: string;
@@ -31,7 +31,7 @@ public color: string;
 
 /**
  * font size for text.
- * @default 12px
+ * @default '12px'
  */
     @Property('12px')
     public size: string;
@@ -96,7 +96,7 @@ public opacity: number;
 
 /**
  * color for smithchart border .
- * @default transparent
+ * @default 'transparent'
  */
 
 @Property('transparent')
